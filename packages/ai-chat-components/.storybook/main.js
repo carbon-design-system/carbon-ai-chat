@@ -2,7 +2,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -11,12 +11,18 @@
 /** @type { import('@storybook/web-components-vite').StorybookConfig } */
 
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { mergeConfig } from "vite";
 import { litStyleLoader, litTemplateLoader } from "@mordech/vite-lit-loader";
 import remarkGfm from "remark-gfm";
 
 const require = createRequire(import.meta.url);
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const sassLoadPaths = [
+  resolve(__dirname, "../node_modules"),
+  resolve(__dirname, "../../../node_modules"),
+];
 
 const config = {
   stories: [
@@ -62,6 +68,18 @@ const config = {
         "process.env": process.env,
       },
       sourcemap: true,
+      // @carbon/web-components emits selectors like
+      // `:host(cds-button) .cds--btn ::slotted([slot=icon]) path` that
+      // lightningcss rejects (a pseudo-element followed by a descendant).
+      // Use esbuild's more permissive minifier instead.
+      build: { cssMinify: "esbuild" },
+      // Bare `@forward '@carbon/utilities'` chains from `@carbon/styles` need
+      // explicit node_modules load paths; matches web-test-runner.config.js.
+      css: {
+        preprocessorOptions: {
+          scss: { loadPaths: sassLoadPaths },
+        },
+      },
     });
   },
 };

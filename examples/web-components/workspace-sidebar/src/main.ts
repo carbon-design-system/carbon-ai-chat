@@ -10,12 +10,15 @@
 /**
  * Example: Carbon AI Chat — Workspace sidebar (Web components)
  *
- * Demonstrates: the workspace feature combined with a custom sidebar
- * layout driven by `VIEW_CHANGE` lifecycle hooks. Includes a custom host
- * chrome and `CornersType.SQUARE` for the sidebar treatment.
+ * Demonstrates: the workspace feature combined with a docked sidebar layout
+ * built on the library's shipped `cds-aichat-sidebar` classes and driven by
+ * `VIEW_CHANGE` lifecycle hooks. Includes a custom host chrome and
+ * `CornersType.SQUARE` for the sidebar treatment. The workspace expand /
+ * contract modifiers compose on top of the shipped base class.
  *
  * APIs exercised:
- *   - `<cds-aichat-custom-element>`
+ *   - `<cds-aichat-custom-element>` styled with the shipped sidebar-layout CSS
+ *     (`@carbon/ai-chat/css/chat-sidebar-layout.css`)
  *   - `BusEventType.WORKSPACE_*` (open / pre-open / close)
  *   - `BusEventType.VIEW_CHANGE`
  *   - `CornersType.SQUARE`
@@ -25,6 +28,7 @@
  */
 
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import "@carbon/ai-chat/css/chat-sidebar-layout.css";
 
 import {
   BusEventType,
@@ -43,7 +47,7 @@ import {
   type RenderUserDefinedState,
   type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
@@ -74,137 +78,11 @@ const config: PublicConfig = {
 
 @customElement("my-app")
 export class Demo extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    .app-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 48px;
-      background-color: #161616;
-      color: #f4f4f4;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1rem;
-      z-index: 10000;
-    }
-
-    .app-header__title {
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .app-header__button {
-      background: transparent;
-      border: none;
-      color: #f4f4f4;
-      cursor: pointer;
-      padding: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    .app-header__button:hover {
-      background-color: #353535;
-    }
-
-    .app-header__button:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
-    .sidebar {
-      position: fixed;
-      right: 0;
-      top: 48px;
-      height: calc(100vh - 48px);
-      width: 320px;
-      z-index: 9999;
-      transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
-      visibility: visible;
-    }
-
-    .sidebar .chat-custom-element {
-      height: 100%;
-      width: 100%;
-    }
-
-    .sidebar--expanded {
-      width: calc(100vw - 320px - 2rem);
-    }
-
-    .sidebar--expanding {
-      transition:
-        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    .sidebar--contracting {
-      transition:
-        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    .sidebar--closing {
-      right: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-    }
-
-    .sidebar--closed {
-      right: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-      visibility: hidden;
-    }
-
-    /* RTL support */
-    :host([dir="rtl"]) .sidebar {
-      right: auto;
-      left: 0;
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    :host([dir="rtl"]) .sidebar--expanded {
-      width: calc(100vw - 320px - 2rem);
-    }
-
-    :host([dir="rtl"]) .sidebar--expanding {
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    :host([dir="rtl"]) .sidebar--contracting {
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    :host([dir="rtl"]) .sidebar--closing {
-      left: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-    }
-
-    :host([dir="rtl"]) .sidebar--closed {
-      right: auto;
-      left: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 0s;
-    }
-  `;
+  // Disable shadow DOM so the document-level sidebar-layout CSS imported from
+  // @carbon/ai-chat (and the local styles.css) applies to the host elements.
+  createRenderRoot() {
+    return this;
+  }
 
   @state()
   accessor instance!: ChatInstance;
@@ -469,19 +347,21 @@ export class Demo extends LitElement {
   }
 
   getSidebarClassName() {
-    let className = "sidebar";
+    // Compose the shipped `cds-aichat-sidebar` base class with this example's
+    // workspace expand/contract modifiers.
+    let className = "cds-aichat-sidebar";
     if (this.workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += " cds-aichat-sidebar--expanded";
     }
     if (this.workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
+      className += " cds-aichat-sidebar--expanding";
     } else if (this.workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+      className += " cds-aichat-sidebar--contracting";
     }
     if (this.sideBarClosing) {
-      className += " sidebar--closing";
+      className += " cds-aichat-sidebar--closing";
     } else if (!this.sideBarOpen) {
-      className += " sidebar--closed";
+      className += " cds-aichat-sidebar--closed";
     }
     return className;
   }

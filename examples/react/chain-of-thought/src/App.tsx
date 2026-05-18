@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Chain of thought (React)
+ * Example: Carbon AI Chat — Chain of thought
  *
  * Demonstrates: shipping a complete `chain_of_thought` array on the final
  * response so the chat surfaces a tool-trace drawer with each step's

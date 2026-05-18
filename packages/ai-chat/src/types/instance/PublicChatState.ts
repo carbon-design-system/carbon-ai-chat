@@ -11,6 +11,7 @@ import { WorkspaceCustomPanelConfigOptions } from "./apiTypes";
 import type { PersistedState } from "../state/AppState";
 import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
 import { StructuredData } from "../messaging/Messages";
+import type { JSONContent } from "@tiptap/core";
 
 /**
  * This is the state made available by calling {@link ChatInstance.getState}. This is a public method that returns immutable values.
@@ -22,6 +23,35 @@ export interface PublicInputState {
    * @experimental Raw text currently queued in the input before being sent to customSendMessage.
    */
   rawValue: string;
+
+  /**
+   * Tiptap-native JSON projection of the editor doc. Updated on every doc
+   * change: user typing, paste, trigger-driven mentions/commands, host-pushed
+   * `updateContent` writes, and any host-dispatched transactions. Always
+   * consistent with `rawValue` (both derive from the same underlying
+   * document; no extra storage).
+   *
+   * Hosts persisting this value should serialize through `editor.getJSON()`
+   * (canonical) rather than partial walks; the JSONContent shape is
+   * governed by Tiptap's stability guarantees.
+   *
+   * @experimental
+   */
+  content: JSONContent;
+
+  /**
+   * Whether the input editor currently has focus. Mirrors the
+   * `cds-aichat-input-focus` / `cds-aichat-input-blur` web component
+   * events; for hosts that prefer DOM events or the live editor handle,
+   * those remain available (`instance.input.getEditor()?.isFocused`).
+   *
+   * Toggles in the same dispatch pass as the underlying focus event, so
+   * subscribing via {@link BusEventType.STATE_CHANGE} fires once per
+   * focus/blur transition.
+   *
+   * @experimental
+   */
+  focused: boolean;
 
   /**
    * A snapshot of the pending structured data currently queued in the input. This data will be merged

@@ -8,14 +8,17 @@
  */
 
 /**
- * Example: Carbon AI Chat — Workspace sidebar (React)
+ * Example: Carbon AI Chat — Workspace sidebar
  *
- * Demonstrates: the workspace feature combined with a custom sidebar layout
- * driven by `VIEW_CHANGE` / `VIEW_PRE_CHANGE` lifecycle hooks. Includes a
- * custom host chrome and `CornersType.SQUARE` for the sidebar treatment.
+ * Demonstrates: the workspace feature combined with a docked sidebar layout
+ * built on the library's shipped `cds-aichat-sidebar` classes and driven by
+ * `VIEW_CHANGE` / `VIEW_PRE_CHANGE` lifecycle hooks. Includes a custom host
+ * chrome and `CornersType.SQUARE` for the sidebar treatment. The workspace
+ * expand / contract modifiers compose on top of the shipped base class.
  *
  * APIs exercised:
- *   - `ChatCustomElement`
+ *   - `ChatCustomElement` styled with the shipped sidebar-layout CSS
+ *     (`@carbon/ai-chat/css/chat-sidebar-layout.css`)
  *   - `BusEventType.WORKSPACE_*` (open / pre-open / close)
  *   - `BusEventType.VIEW_CHANGE` / `VIEW_PRE_CHANGE`
  *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
@@ -24,6 +27,7 @@
  * `onBeforeRender`.
  */
 
+import "@carbon/ai-chat/css/chat-sidebar-layout.css";
 import "./App.css";
 import {
   BusEvent,
@@ -315,20 +319,21 @@ function App() {
     return { workspacePanelElement: component };
   }, [instance, workspaceData, stateText]);
 
-  // Build className for sidebar layout
-  let className = "sidebar";
+  // Build className for sidebar layout from the shipped `cds-aichat-sidebar`
+  // base class plus this example's workspace expand/contract modifiers.
+  let className = "cds-aichat-sidebar";
   if (workspaceExpanded) {
-    className += " sidebar--expanded";
+    className += " cds-aichat-sidebar--expanded";
   }
   if (workspaceAnimating === "expanding") {
-    className += " sidebar--expanding";
+    className += " cds-aichat-sidebar--expanding";
   } else if (workspaceAnimating === "contracting") {
-    className += " sidebar--contracting";
+    className += " cds-aichat-sidebar--contracting";
   }
   if (sideBarClosing) {
-    className += " sidebar--closing";
+    className += " cds-aichat-sidebar--closing";
   } else if (!sideBarOpen) {
-    className += " sidebar--closed";
+    className += " cds-aichat-sidebar--closed";
   }
 
   return (

@@ -46,7 +46,10 @@ import {
   BusEventViewChange,
   BusEventViewPreChange,
 } from "../../types/events/eventBusTypes";
-import type { WCRenderUserDefinedResponse } from "../../types/component/ChatContainer";
+import type {
+  WCRenderUserDefinedResponse,
+  WCRenderUserDefinedInputNode,
+} from "../../types/component/ChatContainer";
 
 /**
  * cds-aichat-custom-element will is a pass through to cds-aichat-container. It takes any user_defined and writeable element
@@ -268,6 +271,15 @@ class ChatCustomElement extends LitElement {
   @property({ attribute: false })
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
 
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
+
   @state()
   private _userDefinedSlotNames: string[] = [];
 
@@ -439,6 +451,7 @@ class ChatCustomElement extends LitElement {
         .onBeforeRender=${this.onBeforeRenderOverride}
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
+        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}
       >
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
@@ -494,6 +507,14 @@ interface CdsAiChatCustomElementAttributes extends PublicConfig {
    * manages all event listening, slot tracking, streaming state, and element lifecycle.
    */
   renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 }
 
 export { CdsAiChatCustomElementAttributes };

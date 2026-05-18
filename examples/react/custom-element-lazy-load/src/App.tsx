@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Custom element (lazy load) (React)
+ * Example: Carbon AI Chat — Custom element (lazy load)
  *
  * Demonstrates: code-splitting `ChatCustomElement` with `React.lazy` and
  * using `<cds-aichat-shell>` (via the `ChatShell` React wrapper) as a

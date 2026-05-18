@@ -171,6 +171,23 @@ class ServiceManager {
   async fire<T extends BusEvent>(busEvent: T) {
     return this.eventBus.fire(busEvent, this.instance);
   }
+
+  /**
+   * Live ref to the React `Input` component's imperative handle. Set by
+   * `Input.tsx` on mount and cleared on unmount. Used by content-write
+   * actions on `ChatActionsImpl` that must reach the underlying
+   * ProseMirror view synchronously (the legacy Redux-driven path cannot
+   * dispatch PM transactions).
+   */
+  private _inputFunctionsRef: InputFunctions | null = null;
+
+  setInputFunctionsRef(ref: InputFunctions | null): void {
+    this._inputFunctionsRef = ref;
+  }
+
+  getInputFunctionsRef(): InputFunctions | null {
+    return this._inputFunctionsRef;
+  }
 }
 
 export { ServiceManager };

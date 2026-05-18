@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,9 +11,16 @@ import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import React from "react";
 
+import { useSelector } from "../../../hooks/useSelector";
+import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useServiceManager } from "../../../hooks/useServiceManager";
+import { selectInputState } from "../../../store/selectors";
+import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { BodyWithFooterComponent } from "../../BodyWithFooterComponent";
+import { THROW_ERROR } from "../../../utils/constants";
+import { BodyMessageComponents } from "../util/BodyMessageComponents";
+import { FooterButtonComponents } from "../util/FooterButtonComponents";
 import {
   CardItem,
   MessageResponse,
@@ -46,8 +53,20 @@ interface CardItemComponentProps extends HasRequestFocus {
  * response types.
  */
 function CardItemComponent(props: CardItemComponentProps) {
-  const { ignoreMaxWidth } = props;
-  const item = props.localMessageItem.item as CardItem;
+  const {
+    ignoreMaxWidth,
+    localMessageItem,
+    fullMessage,
+    isMessageForInput,
+    requestFocus,
+    renderMessageComponent,
+  } = props;
+  const item = localMessageItem.item as CardItem;
+  const serviceManager = useServiceManager();
+  const languagePack = useLanguagePack();
+  const appConfig = useSelector((state: AppState) => state.config);
+  const inputState = useSelector(selectInputState);
+
   return (
     <Card
       className={cx("cds-aichat--card-message-component", {
@@ -59,10 +78,40 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <BodyWithFooterComponent
-        {...props}
-        renderMessageComponent={props.renderMessageComponent}
-      />
+      <div slot="body">
+        <BodyMessageComponents
+          message={localMessageItem}
+          originalMessage={fullMessage}
+          languagePack={languagePack}
+          requestInputFocus={requestFocus}
+          disableUserInputs={inputState.isReadonly}
+          config={appConfig}
+          isMessageForInput={isMessageForInput}
+          scrollElementIntoView={THROW_ERROR}
+          serviceManager={serviceManager}
+          hideFeedback
+          showChainOfThought={false}
+          allowNewFeedback={false}
+          renderMessageComponent={renderMessageComponent}
+        />
+      </div>
+      <div slot="footer">
+        <FooterButtonComponents
+          message={localMessageItem}
+          originalMessage={fullMessage}
+          languagePack={languagePack}
+          requestInputFocus={requestFocus}
+          disableUserInputs={inputState.isReadonly}
+          config={appConfig}
+          isMessageForInput={isMessageForInput}
+          scrollElementIntoView={THROW_ERROR}
+          serviceManager={serviceManager}
+          hideFeedback
+          showChainOfThought={false}
+          allowNewFeedback={false}
+          renderMessageComponent={renderMessageComponent}
+        />
+      </div>
     </Card>
   );
 }

@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Reasoning steps (React)
+ * Example: Carbon AI Chat — Reasoning steps
  *
  * Demonstrates: two reasoning-streaming UX patterns — discrete `ReasoningStep`
  * items (the default behavior) and a single long-form `reasoning.content`

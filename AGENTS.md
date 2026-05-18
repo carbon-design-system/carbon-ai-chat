@@ -76,13 +76,13 @@ When `aiChat:start` is running in another terminal, example webpack servers hot-
 
 ## Definition of done
 
-`npm run ci-check` does **not** run `build`. Because workspace deps resolve through built artifacts, `ci-check` alone can miss breakage in consumers of a changed package — always rebuild the producer before verifying. Pick the minimum gate for the area you edited:
+`npm run ci-check` does **not** run `build`, and workspace deps resolve through built artifacts (`es/`, `dist/es/`) rather than TS sources. **Always run `build` BEFORE `ci-check`** — running them the other way around (or running `ci-check` on its own after edits) makes tests resolve consumer imports against a stale `es/`, which surfaces as confusing "no exported member 'X'" errors even though the source clearly exports X. Pick the minimum gate for the area you edited:
 
 | Area edited                       | Minimum gate before shipping                                                                                                                                             |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Cross-cutting / multiple packages | `npm run ci-check && npm run build`                                                                                                                                      |
-| `packages/ai-chat/`               | `npm run test --workspace=@carbon/ai-chat` + `npm run build --workspace=@carbon/ai-chat`                                                                                 |
-| `packages/ai-chat-components/`    | `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites) + `npm run build --workspace=@carbon/ai-chat-components`                      |
+| Cross-cutting / multiple packages | `npm run build && npm run ci-check`                                                                                                                                      |
+| `packages/ai-chat/`               | `npm run build --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat`                                                                                 |
+| `packages/ai-chat-components/`    | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites)                      |
 | `demo/`                           | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright)                                        |
 | `examples/**`                     | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
 | SCSS only                         | `npm run lint:styles && npm run format`                                                                                                                                  |

@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Next.js App Router (React)
+ * Example: Carbon AI Chat — Next.js App Router
  *
  * Demonstrates: embedding `ChatContainer` inside a Next.js 16 App Router
  * page using `next/dynamic` with `ssr: false` to defer the chat module to

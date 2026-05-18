@@ -1,13 +1,13 @@
 # Input / Typeahead
 
-`<cds-aichat-custom-element>` configured with an `AUTOCOMPLETE` suggestion that filters a canned list as the user types and renders the matches in a dropdown above the input.
+`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
 
 ## What this example shows
 
-- Configuring `input.suggestions` with a single `SuggestionType.AUTOCOMPLETE` entry and an empty `trigger` (matches on every keystroke).
+- Configuring `input.autocomplete` with a single resolver — autocomplete has no trigger character; the dropdown opens whenever there is input and filters as the user types.
 - Resolving suggestions asynchronously from an `items` callback that filters a canned list by case-insensitive label match.
 - Using `debounceMs: 150` to coalesce rapid keystrokes before invoking `items`.
-- Returning an empty array when the query is whitespace-only to suppress the dropdown.
+- Returning an empty array when no entries match to suppress the dropdown.
 
 ## When to use this pattern
 
@@ -17,20 +17,17 @@
 
 ## APIs and props demonstrated
 
-| Symbol                         | Kind           | Role in this example                                  |
-| ------------------------------ | -------------- | ----------------------------------------------------- |
-| `<cds-aichat-custom-element>`  | custom element | Mounts the chat UI at the fullscreen baseline.        |
-| `PublicConfig`                 | type           | Types the config bound to the element's properties.   |
-| `SuggestionType.AUTOCOMPLETE`  | enum           | Selects the autocomplete suggestion behavior.         |
-| `SuggestionItem`               | type           | Shape of each entry returned from `items`.            |
-| `.input` (`input.suggestions`) | property       | Registers the typeahead behavior on the input.        |
-| `suggestion.trigger`           | property       | Empty string fires `items` on every keystroke.        |
-| `suggestion.items`             | property       | Async filter that returns matching `SuggestionItem`s. |
-| `suggestion.debounceMs`        | property       | Coalesces keystrokes before calling `items`.          |
-| `.layout` (`layout.showFrame`) | property       | Hides the default frame so the chat fills the host.   |
-| `.openChatByDefault`           | property       | Mounts straight into the conversation, no launcher.   |
-| `.messaging.customSendMessage` | property       | Mock backend echoing the user's message.              |
-| `.injectCarbonTheme`           | property       | Applies the white Carbon theme.                       |
+| Symbol                          | Kind           | Role in this example                                  |
+| ------------------------------- | -------------- | ----------------------------------------------------- |
+| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.        |
+| `PublicConfig`                  | type           | Types the config bound to the element's properties.   |
+| `SuggestionItem`                | type           | Shape of each entry returned from `items`.            |
+| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.        |
+| `autocomplete.items`            | property       | Async filter that returns matching `SuggestionItem`s. |
+| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.          |
+| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.   |
+| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.   |
+| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.              |
 
 ## Run it
 

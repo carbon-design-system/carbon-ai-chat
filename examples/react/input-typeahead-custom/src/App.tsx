@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Typeahead (custom list) (React)
+ * Example: Carbon AI Chat — Typeahead (custom list)
  *
  * Demonstrates: the same typeahead suggestion configuration as the
  * `input-typeahead` example, with the dropdown UI replaced by a fully custom
@@ -18,18 +18,13 @@
  *   - `ChatCustomElement`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
- *   - `PublicConfig.input.suggestions` + `SuggestionType.AUTOCOMPLETE`
- *   - `renderCustomList` for the dropdown body
+ *   - `PublicConfig.input.autocomplete`
+ *   - `autocomplete.renderCustomList` for the dropdown body
  *
  * Start reading at: `App()` and the `renderCustomList` prop.
  */
 
-import {
-  CarbonTheme,
-  ChatCustomElement,
-  PublicConfig,
-  SuggestionType,
-} from "@carbon/ai-chat";
+import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
 import React, { useMemo } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -43,9 +38,6 @@ function App() {
       // route every user turn through a local stub so the example runs
       // without a live backend.
       messaging: { customSendMessage },
-      // lock the demo to the WHITE Carbon theme so the custom dropdown
-      // styling stays predictable across host pages.
-      injectCarbonTheme: CarbonTheme.WHITE,
       layout: {
         // hide the default chat frame so the custom element fills its host
         // container — required for the canonical fullscreen surface.
@@ -55,33 +47,31 @@ function App() {
       // example exists to showcase, not a launcher.
       openChatByDefault: true,
       input: {
-        suggestions: [
-          {
-            // AUTOCOMPLETE is the typeahead variant that filters items
-            // against the live query as the user types.
-            type: SuggestionType.AUTOCOMPLETE,
-            // async resolver mimics a real fetch so consumers can swap in
-            // a network call without changing the surrounding shape.
-            items: async (query: string) =>
-              CANNED_SUGGESTIONS.filter((s) =>
-                s.label.toLowerCase().includes(query.toLowerCase()),
-              ),
-            // debounce keystrokes so rapid typing does not thrash the
-            // resolver; 150ms balances responsiveness with reduced churn.
-            debounceMs: 150,
-            // `renderCustomList` lives on the suggestion entry (not the
-            // top-level config) — it is scoped per suggestion source so each
-            // source can present its own dropdown UI.
-            renderCustomList: ({ items, query, onSelect, onDismiss }) => (
-              <CustomSuggestionList
-                items={items}
-                query={query}
-                onSelect={onSelect}
-                onDismiss={onDismiss}
-              />
+        // autocomplete is the typeahead variant that filters items
+        // against the live query as the user types — there is no
+        // trigger character.
+        autocomplete: {
+          // async resolver mimics a real fetch so consumers can swap in
+          // a network call without changing the surrounding shape.
+          items: async (query: string) =>
+            CANNED_SUGGESTIONS.filter((s) =>
+              s.label.toLowerCase().includes(query.toLowerCase()),
             ),
-          },
-        ],
+          // debounce keystrokes so rapid typing does not thrash the
+          // resolver; 150ms balances responsiveness with reduced churn.
+          debounceMs: 150,
+          // `renderCustomList` lives on the autocomplete config so the
+          // dropdown UI can be fully custom while the chat keeps
+          // ownership of when to show, update, and tear it down.
+          renderCustomList: ({ items, query, onSelect, onDismiss }) => (
+            <CustomSuggestionList
+              items={items}
+              query={query}
+              onSelect={onSelect}
+              onDismiss={onDismiss}
+            />
+          ),
+        },
       },
     }),
     [],

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { TokenTree } from "../markdown-token-tree";
+import type { TokenTree } from "../../../../globals/utils/markdown/markdown-token-tree.js";
 
 // Default localization functions for table pagination
 export const DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT = ({

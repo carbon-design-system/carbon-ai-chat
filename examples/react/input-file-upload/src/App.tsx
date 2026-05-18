@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — File upload (React)
+ * Example: Carbon AI Chat — File upload
  *
  * Demonstrates: enabling the file-attachment button via `upload.is_on` and
  * wiring an `onFileUpload` handler so attached files become

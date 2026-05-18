@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { createRef, ref } from "lit/directives/ref.js";
@@ -218,6 +218,13 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    */
   @state()
   private _isEditorLoading = true;
+
+  /**
+   * Set by `focusEditor()` when CodeMirror has not finished loading yet;
+   * drained from `createEditor()` once the editor view exists.
+   * @internal
+   */
+  private _focusOnEditorReady = false;
 
   /**
    * @internal
@@ -650,6 +657,11 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       this._checkShowMoreButton();
     });
 
+    if (this._focusOnEditorReady) {
+      this._focusOnEditorReady = false;
+      this.editorView.focus();
+    }
+
     languageController.handleStreamingLanguageDetection();
   }
 
@@ -745,6 +757,25 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     >
       <cds-skeleton-text lines="4"></cds-skeleton-text>
     </div>`;
+  }
+
+  /**
+   * Focus the editor surface — the contenteditable that accepts text input.
+   * Prefer this over `host.focus()`, which delegates via `delegatesFocus`
+   * to the first sequentially-focusable child in the shadow tree
+   * (`.cm-scroller`, focusable for accessibility but not editable). When
+   * CodeMirror is still loading, the call is queued and forwarded once
+   * the editor view is created. Useful right after inserting the snippet
+   * into a contenteditable host (e.g. a Tiptap atom block) so the next
+   * keystroke enters the editor instead of replacing the node.
+   */
+  focusEditor(): void {
+    if (this.editorView) {
+      this.editorView.focus();
+      return;
+    }
+    this._focusOnEditorReady = true;
+    void this.ensureCodeMirrorRuntime();
   }
 
   // Lifecycle methods
@@ -910,7 +941,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       [`${prefix}--snippet-container--fill-mode`]: this._isFillMode,
     };
 
-    return html` <div class="${prefix}--snippet">
+    return html`<div class="${prefix}--snippet">
       ${!this.hideHeader
         ? html`
             <cds-aichat-toolbar
@@ -923,7 +954,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
               <slot name="decorator" slot="decorator"></slot>
             </cds-aichat-toolbar>
           `
-        : ""}
+        : nothing}
 
       <div
         class="${classMap(containerClasses)}"
@@ -958,7 +989,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
               </cds-button>
             </div>
           `
-        : ``}
+        : nothing}
       <div class="${prefix}--visually-hidden">
         <slot
           ${ref(this.contentSlot)}

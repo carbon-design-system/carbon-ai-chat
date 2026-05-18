@@ -163,6 +163,8 @@ deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
   rawValue: "",
+  content: [],
+  focused: false,
   fieldVisible: true,
   isDisabled: false,
   isReadonly: false,

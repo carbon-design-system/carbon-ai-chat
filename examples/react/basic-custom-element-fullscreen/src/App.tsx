@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Custom element (Fullscreen) (React)
+ * Example: Carbon AI Chat — Custom element (Fullscreen)
  *
  * Demonstrates: rendering Carbon AI Chat as a fullscreen surface by mounting
  * `ChatCustomElement` with the chat frame disabled and the conversation open

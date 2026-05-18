@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Float (React)
+ * Example: Carbon AI Chat — Float
  *
  * Demonstrates: mounting `ChatContainer` with a mock streaming backend.
  * This is the canonical reference for the float / launcher chat shape.

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -105,9 +105,14 @@ export function createCarbonTheme() {
       caretColor: "var(--cds-text-primary, #161616)",
     },
 
+    // The snippet's container element ([data-cds-aichat-snippet-id]) is the
+    // single source of truth for height. It declares its own min/max-block-size
+    // and overflow rules in code-snippet.scss; the scroller sits inside it and
+    // should inherit those bounds rather than fight them with its own
+    // independent floor/ceiling.
     ".cm-scroller": {
-      maxBlockSize: "var(--cds-snippet-max-height, 16rem)",
-      minBlockSize: "var(--cds-snippet-min-height, 3rem)",
+      maxBlockSize: "var(--cds-snippet-max-height)",
+      minBlockSize: "var(--cds-snippet-min-height)",
     },
 
     // Fold gutter / caret icons

@@ -13,20 +13,14 @@ Guidance that applies to both [react/](react/) and [web-components/](web-compone
 
 ## Smoke tests
 
-Catches "the example stopped rendering" or "the demonstrated API disappeared" regressions.
+- Examples should have Playwright tests testing the functionality of the example.
 
-- New examples ship with a smoke test.
-- Editing an existing example without tests: add a minimal smoke test as part of your change.
-- Must cover: rendering without error, plus one assertion per bullet in the README's "What this example shows".
-- Expose as `npm test` so it runs via `npm run test --workspace=<example>`.
-
-Flavor-specific smoke-test setup (jsdom vs happy-dom, mounting syntax, reference example) lives in the flavor `AGENTS.md`.
+See [Examples smoke tests](AGENTS_PLAYWRIGHT.md) for instructions on creating those tests.
 
 ## Definition of done
 
 - `npm run build --workspace=<example>` exits 0.
 - `npm run test --workspace=<example>` passes (if the example has tests).
-- Visual smoke via `npm run start --workspace=<example>` — open chat, send one message, confirm no console errors.
 - README follows the [Indexer Contract](AGENTS_INDEXER_CONTRACT.md).
 
 ## Authoring rules

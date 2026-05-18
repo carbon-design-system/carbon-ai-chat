@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — History (host-driven) (React)
+ * Example: Carbon AI Chat — History (host-driven)
  *
  * Demonstrates: rehydrating the chat from a host-supplied history payload by
  * pairing `customLoadHistory` with manual calls to

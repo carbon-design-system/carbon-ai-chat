@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Workspace panel (React)
+ * Example: Carbon AI Chat — Workspace panel
  *
  * Demonstrates: the workspace feature for opening rich, side-by-side content
  * (inventory, orders, SQL editor) via the `workspacePanelElement` slot.

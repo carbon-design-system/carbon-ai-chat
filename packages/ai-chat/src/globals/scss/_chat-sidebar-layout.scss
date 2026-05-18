@@ -1,0 +1,96 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * Sidebar positioning styles for Carbon AI Chat docked side-panel mode.
+ * Following @carbon/styles component patterns where styles are wrapped in mixins.
+ *
+ * These styles dock the chat to the inline edge of the viewport as a fixed-width
+ * panel that slides in and out. They can be applied to ChatCustomElement (or the
+ * cds-aichat-custom-element host) so the open/closed view changes animate.
+ * Logical properties give automatic RTL support.
+ *
+ * Usage (Sass — mixin, for composing into your own stylesheet):
+ * @use "@carbon/ai-chat/scss/chat-sidebar-layout";
+ * @include chat-sidebar-layout.sidebar-positioning;
+ *
+ * Usage (CSS — pre-compiled, no Sass pipeline needed):
+ * @import "@carbon/ai-chat/css/chat-sidebar-layout.css";
+ *
+ * Classes generated:
+ * - .cds-aichat-sidebar          — base fixed positioning (open state)
+ * - .cds-aichat-sidebar--closing — slide-out transition state
+ * - .cds-aichat-sidebar--closed  — parked off-screen, fully hidden
+ *
+ * Custom properties (override to customize):
+ * - --cds-aichat-sidebar-width             — panel width (default 360px)
+ * - --cds-aichat-sidebar-inset-block-start — host header offset (default 0)
+ * - --cds-aichat-sidebar-z-index           — stacking order (default 9999)
+ */
+
+@use "@carbon/styles/scss/motion";
+@use "@carbon/layout";
+@use "@carbon/ai-chat-components/scss/utilities" as *;
+
+// Sidebar layout variables (only used in this file)
+$sidebar-width: get-var("sidebar-width", 360px);
+$sidebar-inset-block-start: get-var("sidebar-inset-block-start", 0);
+$sidebar-z-index: get-var("sidebar-z-index", 9999);
+
+// Distance the panel is parked off-screen: its own width plus a small gap so
+// box-shadows do not bleed back into the viewport.
+$sidebar-offscreen: calc((#{$sidebar-width} + #{layout.$spacing-05}) * -1);
+
+@mixin sidebar-positioning {
+  /* ============================================================================
+     SIDEBAR - BASE POSITIONING
+     Fixed positioning for the docked side panel (open / resting state).
+     Logical properties dock the panel to the inline-end edge with automatic
+     RTL support.
+     ============================================================================ */
+
+  .#{$prefix}-sidebar {
+    position: fixed;
+    z-index: $sidebar-z-index;
+    block-size: calc(100vh - #{$sidebar-inset-block-start});
+    inline-size: $sidebar-width;
+    inset-block-start: $sidebar-inset-block-start;
+    inset-inline-end: 0;
+    transition: inset-inline-end motion.$duration-moderate-02
+      motion.motion(standard, productive);
+    visibility: visible;
+  }
+
+  @media screen and (prefers-reduced-motion: reduce) {
+    .#{$prefix}-sidebar {
+      transition: none;
+    }
+  }
+
+  /* ============================================================================
+     SIDEBAR - CLOSING STATE
+     Slide-out transition state: parked off-screen while still rendered so the
+     transition is visible before the chat unmounts.
+     ============================================================================ */
+
+  .#{$prefix}-sidebar--closing,
+  .#{$prefix}-sidebar--closed {
+    inset-inline-end: $sidebar-offscreen;
+  }
+
+  /* ============================================================================
+     SIDEBAR - CLOSED STATE
+     Fully hidden: visibility:hidden also removes it from the tab order and the
+     accessibility tree once the slide-out has finished.
+     ============================================================================ */
+
+  .#{$prefix}-sidebar--closed {
+    visibility: hidden;
+  }
+}
+
+@include sidebar-positioning;

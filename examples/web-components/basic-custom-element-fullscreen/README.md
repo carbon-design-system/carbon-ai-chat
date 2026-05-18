@@ -7,7 +7,7 @@ Fullscreen chat driven by `<cds-aichat-custom-element>`, letting the host elemen
 - Mounting `<cds-aichat-custom-element>` sized to 100vw/100vh for a fullscreen layout.
 - Disabling the default frame with `layout.showFrame: false` and overriding a CSS custom property via `layout.customProperties`.
 - Opening the chat automatically with `openChatByDefault: true`.
-- Wiring a mock `customSendMessage` and `injectCarbonTheme`.
+- Wiring a mock `customSendMessage`.
 
 ## When to use this pattern
 

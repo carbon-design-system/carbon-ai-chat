@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Watch state (React)
+ * Example: Carbon AI Chat — Watch state
  *
  * Demonstrates: subscribing to `BusEventType.STATE_CHANGE` to mirror chat
  * state into the host UI. This example tracks

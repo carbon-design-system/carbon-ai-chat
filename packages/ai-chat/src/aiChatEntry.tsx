@@ -144,11 +144,13 @@ export {
   ToolbarAction,
 } from "./types/config/HeaderConfig";
 export { HistoryConfig } from "./types/config/HistoryConfig";
-export {
+export type {
   InputConfig,
-  SuggestionConfig,
+  InputMenuOption,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
   SuggestionItem,
-  SuggestionType,
   CustomListProps,
 } from "./types/config/InputConfig";
 export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
@@ -161,6 +163,33 @@ export {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
+
+// Carbon Tiptap extension factories and JSONContent / light-DOM helpers.
+// Local re-declarations live in `./types/utilities/inputUtils` so we own the
+// JSDoc + `@category` placement; see [src/types/AGENTS.md](./types/AGENTS.md)
+// for the cross-package re-export rule. Raw `@tiptap/core` types (`Editor`,
+// `Extension`, `JSONContent`, `Node`, ...) are not re-exported — import those
+// from `@tiptap/core` directly. The Carbon suggestion-config types are
+// exported from `./types/config/InputConfig` alongside `InputConfig`.
+export type {
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+} from "./types/utilities/inputUtils";
+
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  buildCarbonExtensions,
+  setHostOriginMeta,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+  renderTokenChip,
+  renderInLightDom,
+} from "./types/utilities/inputUtils";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -293,6 +322,9 @@ export {
   RenderUserDefinedState,
   RenderWriteableElementResponse,
   WCRenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+  WCRenderUserDefinedInputNode,
 } from "./types/component/ChatContainer";
 
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";

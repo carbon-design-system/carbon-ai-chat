@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,8 +15,11 @@ import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
 
-import { markdownToTokenTree, TokenTree } from "./markdown-token-tree.js";
-import { renderTokenTree } from "./markdown-renderer.js";
+import {
+  markdownToTokenTree,
+  renderTokenTree,
+  type TokenTree,
+} from "../../../globals/utils/markdown/index.js";
 import { consoleError } from "./utils.js";
 import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
 

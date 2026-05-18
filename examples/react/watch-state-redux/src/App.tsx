@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Watch state with Redux Toolkit (React)
+ * Example: Carbon AI Chat — Watch state with Redux Toolkit
  *
  * Demonstrates: bridging `BusEventType.STATE_CHANGE` into a Redux Toolkit
  * store so any component can read mirrored chat state via `useSelector`.

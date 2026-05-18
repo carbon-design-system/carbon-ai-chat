@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Human agent (React)
+ * Example: Carbon AI Chat — Human agent
  *
  * Demonstrates: handing the conversation off to a live agent through
  * `serviceDeskFactory`, including the `useMemo` pattern that keeps the

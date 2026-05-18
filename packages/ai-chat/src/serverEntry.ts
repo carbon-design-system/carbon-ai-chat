@@ -138,11 +138,13 @@ export {
   ToolbarAction,
 } from "./types/config/HeaderConfig";
 export { HistoryConfig } from "./types/config/HistoryConfig";
-export {
+export type {
   InputConfig,
-  SuggestionConfig,
+  InputMenuOption,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
   SuggestionItem,
-  SuggestionType,
   CustomListProps,
 } from "./types/config/InputConfig";
 export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
@@ -155,6 +157,25 @@ export {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
+
+// Carbon Tiptap extension factories and JSONContent helpers. Local
+// re-declarations live in `./types/utilities/inputUtils`; see
+// [src/types/AGENTS.md](./types/AGENTS.md) for the cross-package re-export
+// rule. Raw `@tiptap/core` types are not re-exported — import those from
+// `@tiptap/core` directly. The Carbon suggestion-config types are exported
+// from `./types/config/InputConfig` alongside `InputConfig`.
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  buildCarbonExtensions,
+  setHostOriginMeta,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+} from "./types/utilities/inputUtils";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";

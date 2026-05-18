@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,6 +7,7 @@
  *  @license
  */
 
+import "@carbon/ai-chat/css/chat-sidebar-layout.css";
 import "./DemoApp.css";
 import "@carbon/styles/css/styles.css";
 import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
@@ -345,24 +346,26 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }, []);
 
-  // And some logic to add the right classname to our custom element depending on what mode we are in.
+  // And some logic to add the right classname to our custom element depending
+  // on what mode we are in. The sidebar layout uses the shipped
+  // `cds-aichat-sidebar` classes plus the workspace expand/contract modifiers.
   let className = "";
   if (settings.layout === "fullscreen") {
     className = "fullScreen";
   } else if (isSidebarLayout) {
-    className = "sidebar";
+    className = "cds-aichat-sidebar";
     if (workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += " cds-aichat-sidebar--expanded";
     }
     if (workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
+      className += " cds-aichat-sidebar--expanding";
     } else if (workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+      className += " cds-aichat-sidebar--contracting";
     }
     if (sideBarClosing) {
-      className += " sidebar--closing";
+      className += " cds-aichat-sidebar--closing";
     } else if (!sideBarOpen) {
-      className += " sidebar--closed";
+      className += " cds-aichat-sidebar--closed";
     }
   }
 

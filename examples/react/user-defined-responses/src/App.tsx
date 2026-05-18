@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — User-defined responses (React)
+ * Example: Carbon AI Chat — User-defined responses
  *
  * Demonstrates: rendering `user_defined` response items via
  * `renderUserDefinedResponse`, with `STATE_CHANGE` tracking of

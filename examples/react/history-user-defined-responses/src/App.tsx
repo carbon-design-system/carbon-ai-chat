@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — History + user-defined responses (React)
+ * Example: Carbon AI Chat — History + user-defined responses
  *
  * Demonstrates: rehydrating a conversation that contains multiple
  * `user_defined` cards via `customLoadHistory` + `insertHistory`, and

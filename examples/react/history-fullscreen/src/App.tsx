@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — History (fullscreen) (React)
+ * Example: Carbon AI Chat — History (fullscreen)
  *
  * Demonstrates: the same history-panel pattern as `history-float`,
  * but on the fullscreen `ChatCustomElement` baseline. Adds a

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,6 +16,7 @@
   @extend :host(#{$cds-prefix}-tile);
   @include rounded-modifiers;
   @include flush-modifiers;
+
   // Set corner properties so slotted content can inherit them
   // These will be overridden if set from outside (e.g., from shell)
   --#{$prefix}-border-radius-start-start: #{layout.$spacing-03};
@@ -29,6 +30,13 @@
   border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
   border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
   border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
+
+  // The template renders named `<slot>`s with newlines between them. In a
+  // contenteditable host (e.g. the chat input) the card inherits
+  // `white-space: pre-wrap`, and those newlines render as phantom line boxes —
+  // vertical space that isn't real content. Reset to `normal` so the inherited
+  // value can't leak in.
+  white-space: normal;
 
   ::slotted([slot="card-media"]) {
     display: flex;

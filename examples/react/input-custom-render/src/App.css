@@ -1,0 +1,72 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/* Host-page layout only. Tile visuals come from Carbon (`@carbon/styles`). */
+
+.page {
+  display: flex;
+  min-block-size: 100vh;
+}
+
+.page__body {
+  flex: 1 1 auto;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.page__intro {
+  max-inline-size: 60ch;
+  margin: 0.5rem 0 0;
+  color: #525252;
+}
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block-start: 1.75rem;
+  max-inline-size: 640px;
+}
+
+.sidebar {
+  position: sticky;
+  inset-block-start: 0;
+  flex: 0 0 auto;
+  block-size: 100vh;
+  inline-size: 380px;
+  border-inline-start: 1px solid #e0e0e0;
+}
+
+.sidebar .chat-custom-element {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+/* Stacks the label over the description inside the Carbon Tile — both the
+   page-grid tiles and the tile injected into the chat input/bubble. The
+   children are forced block so they stack regardless of the tile's own
+   `display`; `@carbon/styles` owns the tile's border/padding/background. */
+.tile-chip {
+  max-inline-size: 320px;
+}
+
+.tile-chip > strong,
+.tile-chip > span {
+  display: block;
+}
+
+.tile-chip > span {
+  margin-block-start: 0.25rem;
+  color: #525252;
+  font-size: 0.875rem;
+}

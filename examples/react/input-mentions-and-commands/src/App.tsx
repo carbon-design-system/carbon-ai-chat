@@ -8,30 +8,28 @@
  */
 
 /**
- * Example: Carbon AI Chat — Mentions and commands (React)
+ * Example: Carbon AI Chat — Mentions and commands
  *
- * Demonstrates: configuring two `input.suggestions` entries — `@mentions`
- * for picking team members anywhere in the message, and `/commands`
- * constrained to the start of the line — and forwarding picks to the
+ * Demonstrates: configuring `input.mention` for picking team members
+ * anywhere in the message and `input.command` for slash commands
+ * constrained to the start of the line, then forwarding picks to the
  * structured-data sidecar via `onSelect` and `updateStructuredData`.
  *
  * APIs exercised:
  *   - `ChatCustomElement`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
- *   - `PublicConfig.input.suggestions` + `SuggestionType` (multiple)
+ *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
  *   - `instance.input.updateStructuredData`
  *
- * Start reading at: `App()` and the `input.suggestions` array.
+ * Start reading at: `App()` and the `input` config block.
  */
 
 import {
-  CarbonTheme,
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
   SuggestionItem,
-  SuggestionType,
 } from "@carbon/ai-chat";
 import React, { useCallback, useMemo, useRef } from "react";
 import { createRoot } from "react-dom/client";
@@ -49,8 +47,6 @@ function App() {
   const config: PublicConfig = useMemo(
     () => ({
       messaging: { customSendMessage },
-      // Match the surrounding page chrome by forcing the white Carbon theme.
-      injectCarbonTheme: CarbonTheme.WHITE,
       layout: {
         // Hide the default chat frame so the custom element fills its host container — required for the canonical fullscreen surface.
         showFrame: false,
@@ -58,61 +54,57 @@ function App() {
       // Auto-open the conversation so readers land on the input the example exists to showcase, not a launcher.
       openChatByDefault: true,
       input: {
-        // Two pickers: `@` for people anywhere in the message, `/` for slash
-        // commands constrained to the start of the line.
-        suggestions: [
-          {
-            type: SuggestionType.MENTION,
-            trigger: "@",
-            items: async (query: string) => {
-              if (!query) {
-                return mentionItems;
-              }
-              return mentionItems.filter((m) =>
-                m.label.toLowerCase().includes(query.toLowerCase()),
-              );
-            },
-            onSelect: (item: SuggestionItem) => {
-              // Mirror the pick into the message's structured-data sidecar so
-              // the backend can read the resolved id alongside the raw text.
-              instanceRef.current?.input.updateStructuredData((prev) => ({
-                ...prev,
-                fields: [
-                  ...(prev?.fields ?? []),
-                  {
-                    id: item.id,
-                    label: item.label,
-                    type: SuggestionType.MENTION,
-                    value: item.id,
-                  },
-                ],
-              }));
-            },
+        // `@` for people anywhere in the message.
+        mention: {
+          trigger: "@",
+          items: async (query: string) => {
+            if (!query) {
+              return mentionItems;
+            }
+            return mentionItems.filter((m) =>
+              m.label.toLowerCase().includes(query.toLowerCase()),
+            );
           },
-          {
-            type: SuggestionType.COMMAND,
-            trigger: "/",
-            // Slash commands only fire at the very start of the message.
-            triggerPosition: "start" as const,
-            items: commandItems,
-            onSelect: (item: SuggestionItem) => {
-              // Mirror the pick into the message's structured-data sidecar so
-              // the backend can dispatch on the command id without reparsing.
-              instanceRef.current?.input.updateStructuredData((prev) => ({
-                ...prev,
-                fields: [
-                  ...(prev?.fields ?? []),
-                  {
-                    id: item.id,
-                    label: item.label,
-                    type: SuggestionType.COMMAND,
-                    value: item.id,
-                  },
-                ],
-              }));
-            },
+          onSelect: (item: SuggestionItem) => {
+            // Mirror the pick into the message's structured-data sidecar so
+            // the backend can read the resolved id alongside the raw text.
+            instanceRef.current?.input.updateStructuredData((prev) => ({
+              ...prev,
+              fields: [
+                ...(prev?.fields ?? []),
+                {
+                  id: item.id,
+                  label: item.label,
+                  type: "mention",
+                  value: item.id,
+                },
+              ],
+            }));
           },
-        ],
+        },
+        // `/` for slash commands constrained to the start of the line.
+        command: {
+          trigger: "/",
+          // Slash commands only fire at the very start of the message.
+          triggerPosition: "start",
+          items: commandItems,
+          onSelect: (item: SuggestionItem) => {
+            // Mirror the pick into the message's structured-data sidecar so
+            // the backend can dispatch on the command id without reparsing.
+            instanceRef.current?.input.updateStructuredData((prev) => ({
+              ...prev,
+              fields: [
+                ...(prev?.fields ?? []),
+                {
+                  id: item.id,
+                  label: item.label,
+                  type: "command",
+                  value: item.id,
+                },
+              ],
+            }));
+          },
+        },
       },
     }),
     [],

@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Custom element as float (lazy load) (React)
+ * Example: Carbon AI Chat — Custom element as float (lazy load)
  *
  * Demonstrates: code-splitting `ChatCustomElement` so it is fetched on
  * first launcher click, with `<cds-aichat-shell>` (via `ChatShell`)

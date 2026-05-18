@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Feedback (React)
+ * Example: Carbon AI Chat — Feedback
  *
  * Demonstrates: subscribing to `BusEventType.FEEDBACK` so submitted thumbs
  * up/down events can be forwarded to a host telemetry pipeline. The mock

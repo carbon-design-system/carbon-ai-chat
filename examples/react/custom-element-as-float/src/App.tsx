@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Custom element as float (React)
+ * Example: Carbon AI Chat — Custom element as float
  *
  * Demonstrates: replicating the built-in float / launcher view using
  * `ChatCustomElement` styled with the shipped float-layout CSS plus a

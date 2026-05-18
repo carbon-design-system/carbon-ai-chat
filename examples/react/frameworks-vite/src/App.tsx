@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Vite + Vitest (React)
+ * Example: Carbon AI Chat — Vite + Vitest
  *
  * Demonstrates: building Carbon AI Chat with a Vite dev server (instead of
  * webpack) and exercising it under Vitest with happy-dom. The "one thing"

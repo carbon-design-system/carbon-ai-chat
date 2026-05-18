@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -250,6 +250,7 @@ async function postBuild() {
   const scssEntries = [
     { input: path.resolve(__dirname, "../src/globals/scss/_chat-float-layout.scss"), output: "chat-float-layout.css" },
     { input: path.resolve(__dirname, "../src/globals/scss/_chat-launcher-layout.scss"), output: "chat-launcher-layout.css" },
+    { input: path.resolve(__dirname, "../src/globals/scss/_chat-sidebar-layout.scss"), output: "chat-sidebar-layout.css" },
   ];
   for (const entry of scssEntries) {
     const result = sass.compile(entry.input, {

@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — watsonx.ai (React)
+ * Example: Carbon AI Chat — watsonx.ai
  *
  * Demonstrates: wiring `customSendMessage` to a real watsonx.ai endpoint via
  * a local Express proxy that handles IAM auth and CORS, then streaming SSE

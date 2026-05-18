@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — History (float) (React)
+ * Example: Carbon AI Chat — History (float)
  *
  * Demonstrates: enabling the built-in history feature via `history.isOn`,
  * supplying `customLoadHistory`, and rendering a custom conversation picker

@@ -8,7 +8,7 @@
  */
 
 /**
- * Example: Carbon AI Chat — Reasoning steps (controlled) (React)
+ * Example: Carbon AI Chat — Reasoning steps (controlled)
  *
  * Demonstrates: a controlled reasoning-step flow where the host drives the
  * in-progress affordance with `instance.updateIsMessageLoadingCounter` and the
