@@ -1,3 +1,12 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025, 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
 import React, { useState, useEffect } from "react";
 import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
@@ -9,7 +18,7 @@ import {
   CardSteps as CardStepsWC,
 } from "./preview-card.stories";
 import { Card, CardFooter, CardSteps } from "../../../react/card";
-import { AILabel } from "@carbon/react";
+import { AILabel, AILabelContent } from "@carbon/react";
 import Toolbar from "../../../react/toolbar";
 import "./story-styles.scss";
 import { action } from "storybook/actions";
@@ -17,13 +26,16 @@ import { name } from "@carbon/icons/lib/caret--down";
 import { previewCardFooterPresets, toolbarActions } from "./story-data";
 
 const aiContent = (
-  <div slot="body-text" class="ai-label-body">
-    <h4>Powered by IBM watsonx</h4>
+  <AILabelContent>
     <div>
-      IBM watsonx is powered by the latest AI models to intelligently process
-      conversations and provide help whenever and wherever you may need it.
+      <div>Powered by IBM watsonx</div>
+      <br />
+      <div>
+        IBM watsonx is powered by the latest AI models to intelligently process
+        conversations and provide help whenever and wherever you may need it.
+      </div>
     </div>
-  </div>
+  </AILabelContent>
 );
 
 const Wrapper = ({ width, children }) => {
@@ -67,14 +79,11 @@ export const Small = {
         />
       </div>
       {args.aiLabel && (
-        <AILabel
-          size="mini"
-          autoalign
-          alignment="bottom-right"
-          slot="decorator"
-        >
-          {aiContent}
-        </AILabel>
+        <div slot="decorator">
+          <AILabel size="mini" autoalign alignment="bottom-right">
+            {aiContent}
+          </AILabel>
+        </div>
       )}
     </Card>
   ),
@@ -115,14 +124,11 @@ export const Default = {
       )}
 
       {args.aiLabel && (
-        <AILabel
-          size="mini"
-          autoalign
-          alignment="bottom-right"
-          slot="decorator"
-        >
-          {aiContent}
-        </AILabel>
+        <div slot="decorator">
+          <AILabel size="mini" autoalign alignment="bottom-right">
+            {aiContent}
+          </AILabel>
+        </div>
       )}
     </Card>
   ),
@@ -151,9 +157,11 @@ export const WithToolbar = {
           </div>
 
           {args.aiLabel && (
-            <AILabel size="2xs" autoalign alignment="bottom" slot="decorator">
-              {aiContent}
-            </AILabel>
+            <div slot="decorator">
+              <AILabel size="2xs" autoalign alignment="bottom">
+                {aiContent}
+              </AILabel>
+            </div>
           )}
         </Toolbar>
       </div>
@@ -258,7 +266,7 @@ export const WithSteps = {
 
     return (
       <Card isLayered={args.isLayered} isFlush={args.isFlush}>
-        <div slot="header" className="preview-card preview-card-toolbar">
+        <div slot="header" className="preview-card">
           <Toolbar className="preview-card-toolbar">
             <div slot="title">
               <div className="title-container">
@@ -268,14 +276,11 @@ export const WithSteps = {
             </div>
 
             {args.aiLabel && (
-              <AILabel
-                size="mini"
-                autoalign
-                alignment="bottom"
-                slot="decorator"
-              >
-                {aiContent}
-              </AILabel>
+              <div slot="decorator">
+                <AILabel size="mini" autoalign alignment="bottom">
+                  {aiContent}
+                </AILabel>
+              </div>
             )}
           </Toolbar>
         </div>

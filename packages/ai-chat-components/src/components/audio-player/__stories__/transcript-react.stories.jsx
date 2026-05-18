@@ -11,6 +11,7 @@ import React from "react";
 import { Transcript } from "../../../react/transcript";
 import { AudioPlayer } from "../../../react/audio-player";
 import { Card } from "../../../react/card";
+import { waitForAudioReadyForSnapshot } from "./audio-player-story-helpers.js";
 import "./transcript-react.stories.css";
 
 export default {
@@ -112,6 +113,9 @@ export const WithAudioPlayer = {
         </div>
       </Card>
     );
+  },
+  play: async ({ canvasElement }) => {
+    await waitForAudioReadyForSnapshot(canvasElement);
   },
 };
 

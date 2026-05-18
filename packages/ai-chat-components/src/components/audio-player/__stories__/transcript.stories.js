@@ -9,6 +9,7 @@
 
 import "../index";
 import { html } from "lit";
+import { waitForAudioReadyForSnapshot } from "./audio-player-story-helpers.js";
 
 export default {
   title: "Preview/Audio player/Transcript",
@@ -122,6 +123,9 @@ export const WithAudioPlayer = {
         </div>
       </cds-aichat-card>
     `;
+  },
+  play: async ({ canvasElement }) => {
+    await waitForAudioReadyForSnapshot(canvasElement);
   },
 };
 
