@@ -7,9 +7,11 @@
  *  @license
  */
 
+import "@carbon/web-components/es/components/ai-label/index.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/tag/index.js";
 import "@carbon/web-components/es/components/link/index.js";
+import "@carbon/web-components/es/components/list/index.js";
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
@@ -98,6 +100,14 @@ class ExplainabilityPopoverContent extends LitElement {
       line-height: var(--cds-body-01-line-height);
       letter-spacing: var(--cds-body-01-letter-spacing);
     }
+
+    .cds-aichat-explainability-popover--content__section
+      cds-ordered-list
+      cds-list-item::before {
+      position: static;
+      margin-inline-end: 0.5rem;
+      display: inline-block;
+    }
   `;
 
   render() {
@@ -131,19 +141,37 @@ class ExplainabilityPopoverContent extends LitElement {
         <section class="cds-aichat-explainability-popover--content__section">
           <div>
             <h3>How it works</h3>
-            <ol>
-              <li>1. <strong>Key word.</strong> Description of key word.</li>
-              <li>2. <strong>Key word.</strong> Description of key word.</li>
-              <li>3. <strong>Key word.</strong> Description of key word.</li>
-            </ol>
+            <cds-ordered-list>
+              <cds-list-item
+                ><strong>Key word.</strong> Description of key
+                word.</cds-list-item
+              >
+              <cds-list-item
+                ><strong>Key word.</strong> Description of key
+                word.</cds-list-item
+              >
+              <cds-list-item
+                ><strong>Key word.</strong> Description of key
+                word.</cds-list-item
+              >
+            </cds-ordered-list>
           </div>
           <div>
             <h3>Data types used</h3>
-            <ul>
-              <li>— <strong>Data type 1.</strong> Explain how it's used.</li>
-              <li>— <strong>Data type 2.</strong> Explain how it's used.</li>
-              <li>— <strong>Data type 3.</strong> Explain how it's used.</li>
-            </ul>
+            <cds-unordered-list>
+              <cds-list-item
+                ><strong>Data type 1.</strong> Explain how it's
+                used.</cds-list-item
+              >
+              <cds-list-item
+                ><strong>Data type 2.</strong> Explain how it's
+                used.</cds-list-item
+              >
+              <cds-list-item
+                ><strong>Data type 3.</strong> Explain how it's
+                used.</cds-list-item
+              >
+            </cds-unordered-list>
           </div>
         </section>
         <section class="cds-aichat-explainability-popover--content__section">
@@ -154,8 +182,7 @@ class ExplainabilityPopoverContent extends LitElement {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span slot="icon">${iconLoader(Launch16)}</span>
-              granite.13b.v2.instruct
+              granite.13b.v2.instruct${iconLoader(Launch16, { slot: "icon" })}
             </cds-link>
           </div>
           <div>
@@ -174,8 +201,7 @@ class ExplainabilityPopoverContent extends LitElement {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span slot="icon">${iconLoader(Launch16)}</span>
-              IBM Security data piles
+              IBM Security data piles${iconLoader(Launch16, { slot: "icon" })}
             </cds-link>
           </div>
         </section>
@@ -195,15 +221,15 @@ class ExplainabilityPopoverActions extends LitElement {
   render() {
     return html`
       <cds-icon-button slot="actions" size="lg" kind="ghost">
-        <span slot="icon">${iconLoader(Folders16)}</span>
+        ${iconLoader(Folders16, { slot: "icon" })}
         <span slot="tooltip-content">Folders</span>
       </cds-icon-button>
       <cds-icon-button slot="actions" size="lg" kind="ghost">
-        <span slot="icon">${iconLoader(FolderOpen16)}</span>
+        ${iconLoader(FolderOpen16, { slot: "icon" })}
         <span slot="tooltip-content">Open Folder</span>
       </cds-icon-button>
       <cds-icon-button slot="actions" size="lg" kind="ghost">
-        <span slot="icon">${iconLoader(View16)}</span>
+        ${iconLoader(View16, { slot: "icon" })}
         <span slot="tooltip-content">View</span>
       </cds-icon-button>
       <cds-ai-label-action-button slot="actions">
