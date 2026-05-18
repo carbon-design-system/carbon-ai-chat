@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -427,6 +427,20 @@ export interface HeaderConfig {
    * blue gradients.
    */
   showAiLabel?: boolean;
+
+  /**
+   * Controls whether the default AI label content should be hidden.
+   * The default content is only meant to serve as a placeholder and should be
+   * replaced with custom content using:
+   * {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT} and
+   * {@link WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS}.
+   * When set to true, all the default ai label content including the deprecated
+   * {@link WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
+   * writeable element will be removed.
+   *
+   * @default false
+   */
+  hideDefaultAiLabelContent?: boolean;
 
   /**
    * Controls whether the header should be constrained to the messages max width

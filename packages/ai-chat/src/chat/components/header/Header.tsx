@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -145,7 +145,6 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   const backButtonRef = useRef<CDSButton>(undefined);
   const chatHeaderRef = useRef<any>(null);
   const isRTL = isDirectionRTL();
-
   const showRestartButton = headerConfig?.showRestartButton;
   const showAiLabel = headerConfig?.showAiLabel;
   const minimizeButtonIconType =
@@ -243,21 +242,33 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
+  const hideDefaultAiLabelContent =
+    headerConfig?.hideDefaultAiLabelContent ?? false;
+
+  const explainabilityPopoverContentElement = (
+    <WriteableElement
+      slotName={WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
+      id={`explainabilityPopoverContent${serviceManager.namespace.suffix}`}
+      className="cds-aichat--header__slug-explainability-content"
+      wrapperSlot="body-text"
+    />
+  );
+  const explainabilityPopoverActionsElement = (
+    <WriteableElement
+      slotName={WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS}
+      id={`explainabilityPopoverActions${serviceManager.namespace.suffix}`}
+      className="cds-aichat--header__slug-explainability-actions"
+      wrapperSlot="actions"
+    />
+  );
+
   const aiSlugAfterDescriptionElement = (
     <WriteableElement
       slotName={WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
       id={`aiTooltipAfterDescription${serviceManager.namespace.suffix}`}
     />
   );
-  const shouldShowAiLabel = showAiLabel !== undefined ? showAiLabel : true;
-  const showAiSlugContent =
-    shouldShowAiLabel &&
-    !!(
-      aiSlugLabel ||
-      aiSlugTitle ||
-      aiSlugDescription ||
-      aiSlugAfterDescriptionElement
-    );
+  const showAiSlugContent = showAiLabel !== undefined ? showAiLabel : true;
   const useHideCloseButton = hideCloseButton ?? false;
 
   // Build actions array for ChatHeader (can overflow)
@@ -402,20 +413,26 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
                 : POPOVER_ALIGNMENT.BOTTOM_RIGHT
             }
           >
-            <div role="dialog" slot="body-text">
-              {aiSlugLabel && (
-                <p className="cds-aichat--header__slug-label">{aiSlugLabel}</p>
-              )}
-              {aiSlugTitle && (
-                <h4 className="cds-aichat--header__slug-title">
-                  {aiSlugTitle}
-                </h4>
-              )}
-              <div className="cds-aichat--header__slug-description">
-                <div>{aiSlugDescription}</div>
-                {aiSlugAfterDescriptionElement}
+            {explainabilityPopoverContentElement}
+            {!hideDefaultAiLabelContent && (
+              <div role="dialog" slot="body-text">
+                {aiSlugLabel && (
+                  <p className="cds-aichat--header__slug-label">
+                    {aiSlugLabel}
+                  </p>
+                )}
+                {aiSlugTitle && (
+                  <h4 className="cds-aichat--header__slug-title">
+                    {aiSlugTitle}
+                  </h4>
+                )}
+                <div className="cds-aichat--header__slug-description">
+                  <div>{aiSlugDescription}</div>
+                  {aiSlugAfterDescriptionElement}
+                </div>
               </div>
-            </div>
+            )}
+            {explainabilityPopoverActionsElement}
           </AISlug>
         )}
         {/* Fixed actions slot - Custom actions before close/minimize */}

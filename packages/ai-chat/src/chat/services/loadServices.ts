@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -89,6 +89,10 @@ function createServiceManager(appConfig: AppConfig) {
   if (isBrowser()) {
     serviceManager.writeableElements = {
       [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
+        document.createElement("div"),
+      [WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT]:
+        document.createElement("div"),
+      [WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS]:
         document.createElement("div"),
       [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
         document.createElement("div"),

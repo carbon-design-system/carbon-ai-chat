@@ -19,6 +19,7 @@ import "@carbon/web-components/es/components/tag/tag.js";
 import "@carbon/web-components/es/components/icon-button/icon-button.js";
 import "@carbon/web-components/es/components/ai-label/ai-label.js";
 import "@carbon/web-components/es/components/notification/inline-notification.js";
+import "./explainability-popover-example";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 //icons
 import Version16 from "@carbon/icons/es/version/16.js";
@@ -141,13 +142,12 @@ class WorkspaceWriteableElementExample extends LitElement {
         titleText="Optimizing excess inventory"
       >
         <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
-          <div slot="body-text">
-            <p class="secondary">
-              Lorem ipsum dolor sit amet, di os consectetur adipiscing elit, sed
-              do eiusmod tempor incididunt ut fsil labore et dolore magna
-              aliqua.
-            </p>
-          </div>
+          <explainability-popover-content
+            slot="body-text"
+          ></explainability-popover-content>
+          <explainability-popover-actions
+            slot="actions"
+          ></explainability-popover-actions>
         </cds-ai-label>
       </cds-aichat-toolbar>
       <cds-inline-notification

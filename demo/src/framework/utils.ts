@@ -121,6 +121,7 @@ function getSettings() {
     framework: "react",
     layout: "fullscreen",
     writeableElements: "false",
+    hideDefaultAiLabelContent: "false",
     direction: "default",
     ...settings,
     // Parse header-related settings from URL or use defaults based on config

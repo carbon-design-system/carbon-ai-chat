@@ -28,10 +28,16 @@ import { ChatInstance, PanelType } from "@carbon/ai-chat";
 import {
   AILabel,
   AILabelContent,
+  AILabelActions,
   Button,
   InlineNotification,
   Tag,
 } from "@carbon/react";
+import {
+  ExplainabilityPopoverContent,
+  ExplainabilityPopoverActions,
+} from "./ExplainabilityPopoverExample";
+import "@carbon/ai-chat/css/chat-explainability-popover.css";
 
 interface WorkspaceExampleProps {
   location: string;
@@ -145,12 +151,10 @@ function WorkspaceWriteableElementExample({
         <div slot="decorator">
           <AILabel autoAlign={false} size="2xs" align="bottom">
             <AILabelContent>
-              <h4 className="margin-bottom-05">Powered by IBM watsonx</h4>
-              <div>
-                IBM watsonx is powered by the latest AI models to intelligently
-                process conversations and provide help whenever and wherever you
-                may need it.
-              </div>
+              <ExplainabilityPopoverContent />
+              <AILabelActions>
+                <ExplainabilityPopoverActions />
+              </AILabelActions>
             </AILabelContent>
           </AILabel>
         </div>

@@ -16,6 +16,7 @@ import "./custom-footer-example";
 import "./writeable-element-example";
 import "./workspace-writeable-element-example";
 import "./history-writeable-element-example";
+import "./explainability-popover-example";
 
 import {
   BusEvent,
@@ -383,7 +384,12 @@ export class DemoApp extends LitElement {
    * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom writeable element.
    */
   renderWriteableElementSlots() {
-    const ALWAYS_RENDER_KEYS = ["workspacePanelElement", "historyPanelElement"];
+    const ALWAYS_RENDER_KEYS = [
+      "workspacePanelElement",
+      "historyPanelElement",
+      "explainabilityPopoverContent",
+      "explainabilityPopoverActions",
+    ];
     const elements = this.instance?.writeableElements ?? {};
 
     const keys =
@@ -398,36 +404,43 @@ export class DemoApp extends LitElement {
       ...keys.filter((k) => !ALWAYS_RENDER_KEYS.includes(k)),
     ];
 
-    return finalKeys.map(
-      (key) => html`
-        <div slot=${key}>
-          ${key === "workspacePanelElement"
-            ? html`
-                <workspace-writeable-element-example
-                  location=${key}
-                  .instance=${this.instance}
-                  .valueFromParent=${this.valueFromParent}
-                ></workspace-writeable-element-example>
-              `
-            : key === "historyPanelElement"
-              ? html`
-                  <history-writeable-element-example
-                    location=${key}
-                    .instance=${this.instance}
-                    .valueFromParent=${this.valueFromParent}
-                    .isMobile=${this.instance?.getState().customPanels.history
-                      .isMobile ?? false}
-                  ></history-writeable-element-example>
-                `
-              : html`
-                  <writeable-element-example
-                    location=${key}
-                    valueFromParent=${this.valueFromParent}
-                  ></writeable-element-example>
-                `}
-        </div>
-      `,
-    );
+    return finalKeys.map((key) => {
+      switch (key) {
+        case "explainabilityPopoverContent":
+          return html`<div slot=${key}>
+            <explainability-popover-content></explainability-popover-content>
+          </div>`;
+        case "explainabilityPopoverActions":
+          return html`<div slot=${key}>
+            <explainability-popover-actions></explainability-popover-actions>
+          </div>`;
+        case "workspacePanelElement":
+          return html`<div slot=${key}>
+            <workspace-writeable-element-example
+              location=${key}
+              .instance=${this.instance}
+              .valueFromParent=${this.valueFromParent}
+            ></workspace-writeable-element-example>
+          </div>`;
+        case "historyPanelElement":
+          return html`<div slot=${key}>
+            <history-writeable-element-example
+              location=${key}
+              .instance=${this.instance}
+              .valueFromParent=${this.valueFromParent}
+              .isMobile=${this.instance?.getState().customPanels.history
+                .isMobile ?? false}
+            ></history-writeable-element-example>
+          </div>`;
+        default:
+          return html`<div slot=${key}>
+            <writeable-element-example
+              location=${key}
+              valueFromParent=${this.valueFromParent}
+            ></writeable-element-example>
+          </div>`;
+      }
+    });
   }
 
   handleTransitionEnd = (event: TransitionEvent) => {
@@ -476,7 +489,10 @@ export class DemoApp extends LitElement {
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${this.config.header}
+            .header=${{
+              ...this.config.header,
+              hideDefaultAiLabelContent: true,
+            }}
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
@@ -509,7 +525,10 @@ export class DemoApp extends LitElement {
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${this.config.header}
+            .header=${{
+              ...this.config.header,
+              hideDefaultAiLabelContent: true,
+            }}
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
@@ -543,7 +562,10 @@ export class DemoApp extends LitElement {
               .shouldTakeFocusIfOpensAutomatically ?? undefined}
             .namespace=${this.config.namespace ?? undefined}
             .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${this.config.header}
+            .header=${{
+              ...this.config.header,
+              hideDefaultAiLabelContent: true,
+            }}
             .layout=${this.config.layout}
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}

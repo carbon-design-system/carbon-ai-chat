@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -525,8 +525,22 @@ export enum WriteableElementName {
   /**
    * An element that appears in the AI theme only and is shown beneath the title and description in the AI tooltip
    * content.
+   *
+   * @deprecated Use {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
+   * and {@link WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS} for full control over AI label popover content.
    */
   AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT = "aiTooltipAfterDescriptionElement",
+
+  /**
+   * An element that appears in the header's AI label popover body. When content is provided to this slot,
+   * `HeaderConfig.hideDefaultAiLabelContent` should be set to true.
+   */
+  EXPLAINABILITY_POPOVER_CONTENT = "explainabilityPopoverContent",
+
+  /**
+   * An element that appears in the header's AI label popover actions footer area.
+   */
+  EXPLAINABILITY_POPOVER_ACTIONS = "explainabilityPopoverActions",
 
   /**
    * An element that appears in the main message body directly above the welcome node.

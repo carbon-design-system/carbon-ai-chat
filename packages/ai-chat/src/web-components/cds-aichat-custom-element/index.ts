@@ -437,6 +437,7 @@ class ChatCustomElement extends LitElement {
     return html`
       <cds-aichat-container
         .config=${this.resolvedConfig}
+        .header=${this.resolvedConfig.header}
         .onAfterRender=${this.onAfterRender}
         .onBeforeRender=${this.onBeforeRenderOverride}
         .element=${this}

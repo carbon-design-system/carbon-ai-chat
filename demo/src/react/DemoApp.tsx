@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -38,6 +38,10 @@ import { WriteableElementExample } from "./WriteableElementExample";
 import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
 import { CustomFooterExample } from "./CustomFooterExample";
 import { HistoryWriteableElementExample } from "./HistoryWriteableElementExample";
+import {
+  ExplainabilityPopoverActions,
+  ExplainabilityPopoverContent,
+} from "./ExplainabilityPopoverExample";
 import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
 
 const sleep = (milliseconds: number) =>
@@ -202,6 +206,8 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
+      explainabilityPopoverContent: <ExplainabilityPopoverContent />,
+      explainabilityPopoverActions: <ExplainabilityPopoverActions />,
       workspacePanelElement: (
         <WorkspaceWriteableElementExample
           location="workspacePanelElement"
@@ -235,7 +241,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     let elements;
 
     if (showAllWriteableElements) {
-      elements = allWriteableElements;
+      const {
+        explainabilityPopoverContent: _explainabilityPopoverContent,
+        explainabilityPopoverActions: _explainabilityPopoverActions,
+        ...writeableElements
+      } = allWriteableElements;
+      elements = writeableElements;
     } else if (showHomeScreenElements) {
       elements = {
         homeScreenHeaderBottomElement:
@@ -251,6 +262,10 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       ...elements,
       workspacePanelElement: allWriteableElements.workspacePanelElement,
       historyPanelElement: allWriteableElements.historyPanelElement,
+      explainabilityPopoverContent:
+        allWriteableElements.explainabilityPopoverContent,
+      explainabilityPopoverActions:
+        allWriteableElements.explainabilityPopoverActions,
     };
   }, [allWriteableElements, settings.writeableElements, config.homescreen]);
 
@@ -366,9 +381,15 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
+  const headerConfig = {
+    ...config.header,
+    hideDefaultAiLabelContent: true,
+  };
+
   return settings.layout === "float" ? (
     <ChatContainer
       {...config}
+      header={headerConfig}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -379,6 +400,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     <div onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
         {...config}
+        header={headerConfig}
         className={className as string}
         onViewPreChange={onViewPreChange}
         onViewChange={onViewChange}
