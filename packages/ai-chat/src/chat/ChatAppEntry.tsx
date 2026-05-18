@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -52,7 +52,7 @@ import type {
 } from "../types/config/ServiceDeskConfig";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
-import { enLanguagePack, LanguagePack } from "../types/config/PublicConfig";
+import { enLanguagePack, LanguagePack } from "../types/config/LanguagePack";
 import { DeepPartial } from "../types/utilities/DeepPartial";
 import { Dimension } from "../types/utilities/Dimension";
 import { setIntl } from "./utils/intlUtils";

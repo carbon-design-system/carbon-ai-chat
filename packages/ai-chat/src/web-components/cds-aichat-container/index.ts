@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,20 +17,18 @@ import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import {
-  PublicConfig,
-  OnErrorData,
-  DisclaimerPublicConfig,
-  CarbonTheme,
-  HeaderConfig,
-  HistoryConfig,
-  LayoutConfig,
-  PublicConfigMessaging,
-  InputConfig,
-  UploadConfig,
-} from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { OnErrorData } from "../../types/config/ErrorConfig";
+import { DisclaimerPublicConfig } from "../../types/config/DisclaimerConfig";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
+import { HeaderConfig } from "../../types/config/HeaderConfig";
+import { HistoryConfig } from "../../types/config/HistoryConfig";
+import { LayoutConfig } from "../../types/config/LayoutConfig";
+import { PublicConfigMessaging } from "../../types/config/PublicConfigMessaging";
+import { InputConfig } from "../../types/config/InputConfig";
+import { UploadConfig } from "../../types/config/UploadConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
 import { LauncherConfig } from "../../types/config/LauncherConfig";
 import type {

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -20,10 +20,8 @@ import MessageService from "./MessageService";
 import { NamespaceService } from "./NamespaceService";
 import { ThemeWatcherService } from "./ThemeWatcherService";
 import { UserSessionStorageService } from "./UserSessionStorageService";
-import {
-  ChatInstance,
-  WriteableElements,
-} from "../../types/instance/ChatInstance";
+import { ChatInstance } from "../../types/instance/ChatInstance";
+import { WriteableElements } from "../../types/instance/WriteableElements";
 import { BusEvent } from "../../types/events/eventBusTypes";
 import { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "./ChatActionsImpl";
