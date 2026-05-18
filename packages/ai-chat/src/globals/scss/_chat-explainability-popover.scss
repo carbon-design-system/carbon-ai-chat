@@ -137,8 +137,8 @@
     .cds--list--ordered
     .cds--list__item::before {
     position: static;
-    margin-inline-end: layout.$spacing-03;
     display: inline-block;
+    margin-inline-end: layout.$spacing-03;
   }
 
   /* ============================================================================
