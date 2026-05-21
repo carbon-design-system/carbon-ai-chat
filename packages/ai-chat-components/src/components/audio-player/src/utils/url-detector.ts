@@ -31,6 +31,7 @@ export enum AudioSource {
  * Derived from react-player v2.15.1
  */
 const MATCH_URL_SOUNDCLOUD = /(?:soundcloud\.com|snd\.sc)\/[^.]+$/;
+const MATCH_DATA_AUDIO_URI = /^data:audio\/[a-z0-9.+-]+(?:;[^,]*)?,/i;
 
 const AUDIO_EXTENSIONS =
   /\.(m4a|m4b|mp4a|mpga|mp2|mp2a|mp3|m2a|m3a|wav|weba|aac|oga|spx)($|\?)/i;
@@ -52,7 +53,7 @@ export function detectAudioSource(url: string): AudioSource {
   }
 
   // Check for native audio files
-  if (AUDIO_EXTENSIONS.test(url)) {
+  if (AUDIO_EXTENSIONS.test(url) || MATCH_DATA_AUDIO_URI.test(url)) {
     return AudioSource.NATIVE;
   }
 

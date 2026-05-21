@@ -36,6 +36,7 @@ collect:
         - playing
         - ready-label
         - ready-status-message
+        - show-actions
         - size
         - slot
         - source
@@ -104,12 +105,12 @@ collect:
         - categories-label
         - class
         - disclaimer
+        - disclaimer-checkbox
         - is-open
         - is-readonly
         - onfeedback-close
         - onfeedback-submit
         - primary-label
-        - secondary-label
         - show-body
         - show-text-area
         - text-area-placeholder
@@ -125,6 +126,9 @@ collect:
         - negative-label
         - onfeedback-buttons-click
         - positive-label
+        # cds-aichat-history-content
+        - results-count
+        - results-label
         # cds-aichat-history-delete-panel
         - cancel-text
         - delete-text
@@ -157,6 +161,7 @@ collect:
         - date
         - onhistory-search-item-selected
         # cds-aichat-history-toolbar
+        - close-button-label-text
         - new-chat-label
         - onchat-history-new-chat-click
         - search-off
