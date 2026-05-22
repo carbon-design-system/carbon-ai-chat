@@ -8,11 +8,17 @@
  */
 
 import DOMPurify from "dompurify";
-import { html, TemplateResult } from "lit";
+import { html, nothing, render, TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { nothing } from "lit";
-import { Directive, directive } from "lit/directive.js";
+import {
+  Directive,
+  ElementPart,
+  Part,
+  PartInfo,
+  PartType,
+  directive,
+} from "lit/directive.js";
 import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
@@ -27,7 +33,11 @@ import type {
 } from "../../table/src/table.js";
 import { extractTableData } from "./utils/table-helpers.js";
 import type { TableCellData } from "./utils/table-helpers.js";
-import { combineConsecutiveHtmlInline } from "./utils/html-helpers.js";
+import {
+  combineConsecutiveHtmlInline,
+  combineSplitHtmlBlocks,
+  HTML_CONTAINER_SLOT,
+} from "./utils/html-helpers.js";
 import type { TokenTree } from "./markdown-token-tree.js";
 
 // Generic attribute spread for Lit templates
@@ -50,6 +60,97 @@ class SpreadAttrs extends Directive {
   }
 }
 const spread = directive(SpreadAttrs);
+
+const sanitizeHtmlContent = (content: string) =>
+  DOMPurify.sanitize(content, {
+    ADD_ATTR: ["data-aichat-markdown"],
+    CUSTOM_ELEMENT_HANDLING: {
+      tagNameCheck: () => true, // Allow custom elements
+      attributeNameCheck: () => true,
+      allowCustomizedBuiltInElements: true,
+    },
+  });
+
+class HtmlContainer extends Directive {
+  private slotElement: HTMLElement | null = null;
+  private lastOpeningHtml = "";
+
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
+    if (partInfo.type !== PartType.ELEMENT) {
+      throw new Error("HtmlContainer must be used on an element");
+    }
+  }
+
+  render(
+    _openingHtml: string,
+    _childTemplate: TemplateResult,
+    _sanitize: boolean,
+  ) {
+    return nothing;
+  }
+
+  update(
+    part: Part,
+    [openingHtml, childTemplate, sanitize]: [string, TemplateResult, boolean],
+  ) {
+    const host = (part as ElementPart).element as HTMLElement;
+
+    if (!this.slotElement || this.lastOpeningHtml !== openingHtml) {
+      this.lastOpeningHtml = openingHtml;
+      let content = `${openingHtml}${HTML_CONTAINER_SLOT}`;
+      if (sanitize && content) {
+        content = sanitizeHtmlContent(content);
+      }
+
+      const fragment = document.createRange().createContextualFragment(content);
+      host.replaceChildren(...Array.from(fragment.childNodes));
+      this.slotElement = host.querySelector("[data-aichat-markdown]");
+    }
+
+    if (this.slotElement) {
+      render(childTemplate, this.slotElement);
+    }
+
+    return nothing;
+  }
+}
+
+const htmlContainer = directive(HtmlContainer);
+
+function renderChildTokenTrees(
+  children: TokenTree[],
+  options: RenderTokenTreeOptions,
+  childContext?: RenderTokenTreeOptions["context"],
+): TemplateResult {
+  const normalizedChildren = combineConsecutiveHtmlInline(
+    combineSplitHtmlBlocks(children),
+  );
+
+  return html`${repeat(
+    normalizedChildren,
+    (child, index) => {
+      const stableKey = `${index}:${child.token.type}:${child.token.tag}`;
+
+      if (child.token.type?.includes("table")) {
+        return `table-${stableKey}`;
+      }
+
+      return `stable-${stableKey}`;
+    },
+    (child, index) => {
+      const result = renderTokenTree(child, {
+        ...options,
+        context: {
+          ...childContext,
+          parentChildren: normalizedChildren,
+          currentIndex: index,
+        },
+      });
+      return result ?? html``;
+    },
+  )}`;
+}
 
 /**
  * Configuration options for rendering TokenTrees into HTML.
@@ -140,16 +241,21 @@ export function renderTokenTree(
 
     // Apply HTML sanitization if requested
     if (sanitize && content) {
-      content = DOMPurify.sanitize(content, {
-        CUSTOM_ELEMENT_HANDLING: {
-          tagNameCheck: () => true, // Allow custom elements
-          attributeNameCheck: () => true,
-          allowCustomizedBuiltInElements: true,
-        },
-      });
+      content = sanitizeHtmlContent(content);
     }
 
     return html`${unsafeHTML(content)}`;
+  }
+
+  // Handle split HTML blocks that wrap markdown siblings (e.g. <details>…</details>).
+  if (token.type === "html_container") {
+    const openingHtml = token.content ?? "";
+    const innerContent = renderChildTokenTrees(children, options, context);
+
+    return html`<div
+      class="cds-aichat-markdown-html-container"
+      ${htmlContainer(openingHtml, innerContent, sanitize)}
+    ></div>`;
   }
 
   // Handle plain text content
@@ -234,35 +340,7 @@ export function renderTokenTree(
     // Optimization: single text child doesn't need repeat wrapper
     content = html`${children[0].token.content}`;
   } else {
-    const normalizedChildren = combineConsecutiveHtmlInline(children);
-
-    // Multiple or complex children: use repeat for stable keying
-    content = html`${repeat(
-      normalizedChildren,
-      (c, index) => {
-        // Generate stable key that doesn't depend on line positions
-        // This prevents unnecessary re-renders during streaming
-        const stableKey = `${index}:${c.token.type}:${c.token.tag}`;
-
-        if (c.token.type?.includes("table")) {
-          return `table-${stableKey}`;
-        }
-
-        return `stable-${stableKey}`;
-      },
-      (c, index) => {
-        const result = renderTokenTree(c, {
-          ...options,
-          context: {
-            ...childContext,
-            parentChildren: normalizedChildren,
-            currentIndex: index,
-          },
-        });
-        // Ensure we never return undefined, which Lit would render as the string "undefined"
-        return result ?? html``;
-      },
-    )}`;
+    content = renderChildTokenTrees(children, options, childContext);
   }
 
   // Handle tokens without HTML tags (just return content)

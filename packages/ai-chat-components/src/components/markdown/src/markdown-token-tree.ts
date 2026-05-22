@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -57,6 +57,56 @@ const noHtmlMarkdown = new MarkdownIt("commonmark", {
   .use(markdownItHighlight)
   .use(markdownItTaskLists);
 
+function normalizeHtmlBlockBoundaries(markdown: string, allowHtml: boolean) {
+  if (!allowHtml) {
+    return markdown;
+  }
+
+  return markdown.replace(
+    /(^|\n)(\s*<\/\s*[A-Za-z][\w:-]*\s*>)(\r?\n)(?=\S)/g,
+    "$1$2$3$3",
+  );
+}
+
+function splitHtmlBlockTrailingMarkdown(
+  tokens: Token[],
+  allowHtml: boolean,
+): Token[] {
+  if (!allowHtml) {
+    return tokens;
+  }
+
+  return tokens.flatMap((token) => {
+    if (token.type !== "html_block") {
+      return [token];
+    }
+
+    const trailingMarkdownMatch = token.content.match(
+      /^(\s*<\/\s*[A-Za-z][\w:-]*\s*>)(\s*\n)([\s\S]*\S[\s\S]*)$/,
+    );
+
+    if (!trailingMarkdownMatch) {
+      return [token];
+    }
+
+    const [, closingHtml, leadingWhitespace, trailingMarkdown] =
+      trailingMarkdownMatch;
+    const htmlToken = {
+      ...token,
+      content: closingHtml,
+      map: token.map ? [token.map[0], token.map[0] + 1] : token.map,
+    } as Token;
+
+    return [
+      htmlToken,
+      ...markdownToMarkdownItTokens(
+        `${leadingWhitespace}${trailingMarkdown}`,
+        allowHtml,
+      ),
+    ];
+  });
+}
+
 /**
  * Parses markdown text into a flat array of markdown-it tokens.
  */
@@ -64,9 +114,14 @@ export function markdownToMarkdownItTokens(
   fullText: string,
   allowHtml = true,
 ): Token[] {
+  const normalizedText = normalizeHtmlBlockBoundaries(fullText, allowHtml);
+
   return allowHtml
-    ? htmlMarkdown.parse(fullText, {})
-    : noHtmlMarkdown.parse(fullText, {});
+    ? splitHtmlBlockTrailingMarkdown(
+        htmlMarkdown.parse(normalizedText, {}),
+        true,
+      )
+    : noHtmlMarkdown.parse(normalizedText, {});
 }
 
 /**

@@ -44,6 +44,58 @@ type HtmlInlineTag =
   | { kind: "opening"; tagName: string; selfClosing: boolean }
   | { kind: "closing"; tagName: string };
 
+type HtmlBlockBoundary =
+  | { kind: "opening"; tagName: string }
+  | { kind: "closing"; tagName: string };
+
+/** Marker element appended to opening HTML so markdown children mount inside the block. */
+export const HTML_CONTAINER_SLOT = '<div data-aichat-markdown=""></div>';
+
+function parseHtmlBlockOpening(
+  content: string | undefined,
+): HtmlBlockBoundary | null {
+  const trimmed = (content ?? "").trim();
+
+  if (
+    !trimmed.startsWith("<") ||
+    trimmed.startsWith("</") ||
+    trimmed.startsWith("<!") ||
+    trimmed.startsWith("<?") ||
+    trimmed.startsWith("<%")
+  ) {
+    return null;
+  }
+
+  const openingMatch = trimmed.match(/^<\s*([A-Za-z][\w:-]*)\b/);
+  if (!openingMatch) {
+    return null;
+  }
+
+  const tagName = openingMatch[1].toLowerCase();
+  if (SELF_CLOSING_HTML_TAGS.has(tagName) || /\/>\s*$/.test(trimmed)) {
+    return null;
+  }
+
+  const closePattern = new RegExp(`</\\s*${tagName}\\s*>`, "i");
+  if (closePattern.test(trimmed)) {
+    return null;
+  }
+
+  return { kind: "opening", tagName };
+}
+
+function parseHtmlBlockClosing(
+  content: string | undefined,
+): HtmlBlockBoundary | null {
+  const trimmed = (content ?? "").trim();
+  const closingMatch = trimmed.match(/^<\/\s*([A-Za-z][\w:-]*)\s*>$/);
+  if (!closingMatch) {
+    return null;
+  }
+
+  return { kind: "closing", tagName: closingMatch[1].toLowerCase() };
+}
+
 // Minimal tag parser that ignores comments/entities (e.g., <!-- ... -->) and reports whether a tag opens, closes, or
 // self-closes a given element.
 function parseHtmlInlineTag(content: string | undefined): HtmlInlineTag | null {
@@ -193,6 +245,98 @@ export function combineConsecutiveHtmlInline(
     }
 
     combinedChildren.push(startNode);
+  }
+
+  return didCombine ? combinedChildren : children;
+}
+
+// Wraps markdown block tokens that sit between a split html_block opener and
+// closer so rendered content stays inside the HTML element (e.g. <details>).
+export function combineSplitHtmlBlocks(children: TokenTree[]): TokenTree[] {
+  if (children.length < 2) {
+    return children;
+  }
+
+  const combinedChildren: TokenTree[] = [];
+  let didCombine = false;
+
+  for (let index = 0; index < children.length; index++) {
+    const startNode = children[index];
+
+    if (startNode.token.type !== "html_block") {
+      combinedChildren.push(startNode);
+      continue;
+    }
+
+    const openingTag = parseHtmlBlockOpening(startNode.token.content);
+    if (!openingTag) {
+      combinedChildren.push(startNode);
+      continue;
+    }
+
+    const stack: string[] = [openingTag.tagName];
+    const innerChildren: TokenTree[] = [];
+    let endIndex = index;
+    let closingHtml = "";
+    let success = false;
+
+    for (let lookahead = index + 1; lookahead < children.length; lookahead++) {
+      const candidate = children[lookahead];
+
+      if (candidate.token.type === "html_block") {
+        const nestedClosing = parseHtmlBlockClosing(candidate.token.content);
+        if (nestedClosing) {
+          const expected = stack[stack.length - 1];
+          if (expected !== nestedClosing.tagName) {
+            break;
+          }
+
+          stack.pop();
+          endIndex = lookahead;
+
+          if (stack.length === 0) {
+            closingHtml = candidate.token.content ?? "";
+            success = true;
+            break;
+          }
+
+          innerChildren.push(candidate);
+          continue;
+        }
+
+        const nestedOpening = parseHtmlBlockOpening(candidate.token.content);
+        if (nestedOpening) {
+          stack.push(nestedOpening.tagName);
+        }
+
+        innerChildren.push(candidate);
+        continue;
+      }
+
+      innerChildren.push(candidate);
+    }
+
+    if (!success || endIndex <= index) {
+      combinedChildren.push(startNode);
+      continue;
+    }
+
+    combinedChildren.push({
+      key: [
+        startNode.key,
+        ...innerChildren.map((child) => child.key),
+        children[endIndex].key,
+      ].join("|"),
+      token: {
+        ...startNode.token,
+        type: "html_container",
+        tag: openingTag.tagName,
+        meta: { closingHtml },
+      },
+      children: innerChildren,
+    });
+    index = endIndex;
+    didCombine = true;
   }
 
   return didCombine ? combinedChildren : children;
