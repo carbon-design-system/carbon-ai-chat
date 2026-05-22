@@ -622,6 +622,53 @@ HTTP: http://example.com
     });
   });
 
+  describe("markdown between HTML tags", () => {
+    const detailsWithTableMarkdown = `<details open>
+
+### Carbon elements
+| Allotrope | Form | Notes |
+|----------|------|-------|
+| Diamond | Crystalline | Hardest natural material |
+| Graphite | Layered | Used in pencils and lubricants |
+| Graphene | Single layer | Excellent conductivity |
+
+</details>`;
+
+    async function renderMarkdown(markdown: string) {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown .markdown=${markdown}></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+      return root;
+    }
+
+    it("renders markdown tables inside details elements", async () => {
+      const root = await renderMarkdown(detailsWithTableMarkdown);
+      const details = root.querySelector("details");
+
+      expect(details).to.not.equal(null);
+      expect(details?.open).to.equal(true);
+      expect(details?.querySelector("h3")?.textContent).to.equal(
+        "Carbon elements",
+      );
+      const table = details?.querySelector("cds-aichat-table");
+      expect(table).to.not.equal(null);
+      if (!table) {
+        throw new Error("Expected cds-aichat-table inside details");
+      }
+
+      await table.updateComplete;
+      await waitUntil(
+        () => table.shadowRoot?.textContent?.includes("Diamond") ?? false,
+        "Expected carbon allotrope table to render inside details",
+        { timeout: 5000 },
+      );
+    });
+  });
   describe("custom attribute syntax", () => {
     async function renderMarkdown(markdown: string) {
       const el = await fixture<MarkdownElementInstance>(

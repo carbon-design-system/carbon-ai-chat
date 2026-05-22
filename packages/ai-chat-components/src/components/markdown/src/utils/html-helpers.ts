@@ -51,6 +51,10 @@ type HtmlBlockBoundary =
 /** Marker element appended to opening HTML so markdown children mount inside the block. */
 export const HTML_CONTAINER_SLOT = '<div data-aichat-markdown=""></div>';
 
+// Detects html_block openers (e.g. "<div>\n<summary>…") that markdown-it split from
+// their closing tag. Used by combineSplitHtmlBlocks to wrap later markdown siblings
+// back inside the HTML element. Returns null for closers, self-closing tags, or blocks
+// that already include a matching </tag>.
 function parseHtmlBlockOpening(
   content: string | undefined,
 ): HtmlBlockBoundary | null {

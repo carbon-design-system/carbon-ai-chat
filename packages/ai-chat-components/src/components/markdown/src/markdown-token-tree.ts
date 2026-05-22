@@ -57,6 +57,9 @@ const noHtmlMarkdown = new MarkdownIt("commonmark", {
   .use(markdownItHighlight)
   .use(markdownItTaskLists);
 
+// markdown-it treats a closing HTML tag and the next markdown line (ie. </div>\n##Heading) as one HTML
+// block when there is no blank line between them. Insert an extra newline so the
+// following markdown is parsed as markdown, not swallowed into the HTML token.
 function normalizeHtmlBlockBoundaries(markdown: string, allowHtml: boolean) {
   if (!allowHtml) {
     return markdown;
@@ -68,6 +71,9 @@ function normalizeHtmlBlockBoundaries(markdown: string, allowHtml: boolean) {
   );
 }
 
+// Fallback for html_block tokens that still bundle a closing tag with trailing
+// markdown on the next line. Split them so the closer stays HTML and the rest
+// is re-parsed as markdown.
 function splitHtmlBlockTrailingMarkdown(
   tokens: Token[],
   allowHtml: boolean,

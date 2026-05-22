@@ -160,8 +160,23 @@ const BLOCKQUOTE = `
 > The [carbon cycle](https://ibm.com) describes how carbon moves between Earth's atmosphere, oceans, and [living organisms](https://ibm.com){{target="_self"}} through photosynthesis and respiration. Carbon dating uses the radioactive isotope ¹⁴C to determine the age of organic materials. Diamond and graphite demonstrate carbon's structural versatility through different bonding arrangements.
  `;
 
+const MARKDOWN_WITH_HTML = `
+<details open>
+
+### Carbon elements
+| Allotrope | Form | Notes |
+|----------|------|-------|
+| Diamond | Crystalline | Hardest natural material |
+| Graphite | Layered | Used in pencils and lubricants |
+| Graphene | Single layer | Excellent conductivity |
+
+</details>
+`;
+
 const MARKDOWN = `
 ${TEXT}
+---
+${MARKDOWN_WITH_HTML}
 ---
 ${HEADERS}
 ---
