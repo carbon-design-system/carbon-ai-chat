@@ -127,9 +127,12 @@ function renderChildTokenTrees(
     combineSplitHtmlBlocks(children),
   );
 
+  // Multiple or complex children: use repeat for stable keying
   return html`${repeat(
     normalizedChildren,
     (child, index) => {
+      // Generate stable key that doesn't depend on line positions
+      // This prevents unnecessary re-renders during streaming
       const stableKey = `${index}:${child.token.type}:${child.token.tag}`;
 
       if (child.token.type?.includes("table")) {
@@ -147,6 +150,7 @@ function renderChildTokenTrees(
           currentIndex: index,
         },
       });
+      // Ensure we never return undefined, which Lit would render as the string "undefined"
       return result ?? html``;
     },
   )}`;
