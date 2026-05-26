@@ -78,7 +78,11 @@ class ChatHistoryDemo extends LitElement {
     super();
     this.headerTitle = "Chats";
     this.searchOff = false;
-    this.searchAttributes = {};
+    this.searchAttributes = {
+      "label-text": "Search",
+      placeholder: "Search",
+      "close-button-label-text": "Clear search",
+    };
     this.overflowMenuLabel = "Options";
     this.showCloseAction = true;
     this.showActions = false;
@@ -513,7 +517,7 @@ export const Default = {
     searchOff: false,
     searchAttributes: {
       "label-text": "Search",
-      placeholder: "Search chats",
+      placeholder: "Search",
       "close-button-label-text": "Clear search",
     },
     overflowMenuLabel: "Options",
