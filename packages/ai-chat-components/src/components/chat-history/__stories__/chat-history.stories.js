@@ -80,7 +80,7 @@ class ChatHistoryDemo extends LitElement {
     this.searchOff = false;
     this.searchAttributes = {
       "label-text": "Search",
-      placeholder: "Search chats",
+      placeholder: "Search",
       "close-button-label-text": "Clear search",
     };
     this.overflowMenuLabel = "Options";
