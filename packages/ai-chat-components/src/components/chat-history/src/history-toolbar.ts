@@ -133,7 +133,7 @@ class CDSAIChatHistoryToolbar extends LitElement {
       ${!searchOff
         ? html`<cds-search
             close-button-label-text=${effectiveCloseButtonLabel}
-            ${spread(searchAttributes as any)}
+            ${searchAttributes ? spread(searchAttributes as any) : nothing}
           ></cds-search>`
         : nothing}
       <slot name="actions-end"></slot>

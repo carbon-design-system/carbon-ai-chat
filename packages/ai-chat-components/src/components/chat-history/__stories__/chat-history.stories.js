@@ -78,11 +78,7 @@ class ChatHistoryDemo extends LitElement {
     super();
     this.headerTitle = "Chats";
     this.searchOff = false;
-    this.searchAttributes = {
-      "label-text": "Search",
-      placeholder: "Search",
-      "close-button-label-text": "Clear search",
-    };
+    this.searchAttributes = {};
     this.overflowMenuLabel = "Options";
     this.showCloseAction = true;
     this.showActions = false;
@@ -517,7 +513,7 @@ export const Default = {
     searchOff: false,
     searchAttributes: {
       "label-text": "Search",
-      placeholder: "Search",
+      placeholder: "Search chats",
       "close-button-label-text": "Clear search",
     },
     overflowMenuLabel: "Options",
@@ -539,39 +535,36 @@ export const Default = {
 export const SearchResults = {
   render: () => {
     return html`
-    <cds-aichat-history-shell>
-      <cds-aichat-history-header
-        header-title="Chats"
-      ></cds-aichat-history-header>
-      <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
-      <cds-aichat-history-content
-        results-label="Results"
-        results-count="4"
-      >
-        <cds-aichat-history-panel aria-label="Search results">
-        <cds-aichat-history-panel-items>
-          <cds-aichat-history-panel-menu expanded title="Search results">
-            ${iconLoader(Search16, {
-              slot: "title-icon",
-            })}
-            <cds-aichat-history-search-item date="Monday, 12:04 PM">
-              Here's the onboarding doc that includes all the information to
-              get started.
-            </cds-aichat-history-search-item>
-            <cds-aichat-history-search-item date="Monday, 12:04 PM">
-              Let's use this as the master invoice document.
-            </cds-aichat-history-search-item>
-            <cds-aichat-history-search-item date="Monday, 12:04 PM">
-              Noticed some discrepancies between these two files.
-            </cds-aichat-history-search-item>
-            <cds-aichat-history-search-item date="Monday, 12:04 PM">
-              Do we need a PO number on every documentation here?
-            </cds-aichat-history-search-item>
-          </cds-aichåat-history-panel-menu>
-        </cds-aichat-history-panel-items>
-        </cds-aichat-history-panel>
-      </cds-aichat-history-content>
-    </cds-aichat-history-shell>
+      <cds-aichat-history-shell>
+        <cds-aichat-history-header
+          header-title="Chats"
+        ></cds-aichat-history-header>
+        <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
+        <cds-aichat-history-content results-label="Results" results-count="4">
+          <cds-aichat-history-panel aria-label="Search results">
+            <cds-aichat-history-panel-items>
+              <cds-aichat-history-panel-menu expanded title="Search results">
+                ${iconLoader(Search16, {
+                  slot: "title-icon",
+                })}
+                <cds-aichat-history-search-item date="Monday, 12:04 PM">
+                  Here's the onboarding doc that includes all the information to
+                  get started.
+                </cds-aichat-history-search-item>
+                <cds-aichat-history-search-item date="Monday, 12:04 PM">
+                  Let's use this as the master invoice document.
+                </cds-aichat-history-search-item>
+                <cds-aichat-history-search-item date="Monday, 12:04 PM">
+                  Noticed some discrepancies between these two files.
+                </cds-aichat-history-search-item>
+                <cds-aichat-history-search-item date="Monday, 12:04 PM">
+                  Do we need a PO number on every documentation here?
+                </cds-aichat-history-search-item>
+              </cds-aichat-history-panel-menu>
+            </cds-aichat-history-panel-items>
+          </cds-aichat-history-panel>
+        </cds-aichat-history-content>
+      </cds-aichat-history-shell>
     `;
   },
 };
