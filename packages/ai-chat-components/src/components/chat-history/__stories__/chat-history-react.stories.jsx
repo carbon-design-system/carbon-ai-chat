@@ -73,6 +73,15 @@ export const Default = {
       description:
         "true if search should be turned off in chat history toolbar.",
     },
+    searchAttributes: {
+      control: "object",
+      description:
+        "Optional attributes to pass to the cds-search component. Allows customization of search behavior and appearance (e.g., label-text, placeholder, disabled, value, close-button-label-text).",
+    },
+    overflowMenuLabel: {
+      control: "text",
+      description: "Overflow menu tooltip label for history panel items.",
+    },
     showCloseAction: {
       control: "boolean",
       description: "renders close chat history action in header.",
@@ -85,6 +94,12 @@ export const Default = {
   args: {
     HeaderTitle: "Chats",
     searchOff: false,
+    searchAttributes: {
+      "label-text": "Search",
+      placeholder: "Search",
+      "close-button-label-text": "Clear search",
+    },
+    overflowMenuLabel: "Options",
     showCloseAction: true,
     showActions: false,
   },
@@ -359,6 +374,7 @@ export const Default = {
         />
         <HistoryToolbar
           searchOff={args.searchOff}
+          searchAttributes={args.searchAttributes}
           onSearchInput={handleSearchInput}
         />
         <HistoryContent
@@ -404,6 +420,7 @@ export const Default = {
                           name={item.name}
                           selected={item.selected}
                           rename={item.rename}
+                          overflowMenuLabel={args.overflowMenuLabel}
                           actions={pinnedHistoryItemActions}
                           onMenuAction={handleHistoryItemAction}
                           onSelected={handleSelectChat}
@@ -428,6 +445,7 @@ export const Default = {
                             name={chat.name}
                             selected={chat.selected}
                             rename={chat.rename}
+                            overflowMenuLabel={args.overflowMenuLabel}
                             actions={historyItemActions}
                             onMenuAction={handleHistoryItemAction}
                             onSelected={handleSelectChat}

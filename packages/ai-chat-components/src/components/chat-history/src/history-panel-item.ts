@@ -361,6 +361,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       name,
       actions,
       rename,
+      overflowMenuLabel,
       _adjustMenuPosition: adjustMenuPosition,
       _handleMenuTriggerKeyDown: handleMenuTriggerKeyDown,
       _handleMenuItemClick: handleMenuItemClick,
@@ -385,7 +386,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                   class: `${prefix}--overflow-menu__icon`,
                   slot: "icon",
                 })}
-                <span slot="tooltip-content">Options</span>
+                <span slot="tooltip-content">${overflowMenuLabel}</span>
                 <cds-overflow-menu-body flipped>
                   ${repeat(
                     actions,

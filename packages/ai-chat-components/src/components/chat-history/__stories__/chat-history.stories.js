@@ -56,6 +56,8 @@ class ChatHistoryDemo extends LitElement {
     searchTotalCount: { type: Number },
     searchValue: { type: String },
     searchOff: { type: Boolean, attribute: "search-off" },
+    searchAttributes: { type: Object },
+    overflowMenuLabel: { type: String, attribute: "overflow-menu-label" },
     selectedId: { type: String },
     showCloseAction: { type: Boolean, attribute: "show-close-action" },
     showActions: { type: Boolean, attribute: "show-actions" },
@@ -76,6 +78,12 @@ class ChatHistoryDemo extends LitElement {
     super();
     this.headerTitle = "Chats";
     this.searchOff = false;
+    this.searchAttributes = {
+      "label-text": "Search",
+      placeholder: "Search chats",
+      "close-button-label-text": "Clear search",
+    };
+    this.overflowMenuLabel = "Options";
     this.showCloseAction = true;
     this.showActions = false;
     this.startPanel = false;
@@ -337,7 +345,10 @@ class ChatHistoryDemo extends LitElement {
           header-title="${this.headerTitle}"
           ?show-close-action=${this.showCloseAction}
         ></cds-aichat-history-header>
-        <cds-aichat-history-toolbar ?search-off=${this.searchOff}>
+        <cds-aichat-history-toolbar
+          ?search-off=${this.searchOff}
+          .searchAttributes=${this.searchAttributes}
+        >
         </cds-aichat-history-toolbar>
         <cds-aichat-history-content
           results-label="Results"
@@ -404,6 +415,8 @@ class ChatHistoryDemo extends LitElement {
                                   name="${item.name}"
                                   ?selected=${item.selected}
                                   ?rename=${item.rename}
+                                  overflow-menu-label="${this
+                                    .overflowMenuLabel}"
                                   .actions=${pinnedHistoryItemActions}
                                 ></cds-aichat-history-panel-item>
                               `,
@@ -426,6 +439,8 @@ class ChatHistoryDemo extends LitElement {
                                   id="${chat.id}"
                                   name="${chat.name}"
                                   ?selected=${chat.selected}
+                                  overflow-menu-label="${this
+                                    .overflowMenuLabel}"
                                   .actions=${historyItemActions}
                                 ></cds-aichat-history-panel-item>
                               `,
@@ -479,6 +494,15 @@ export const Default = {
       description:
         "true if search should be turned off in chat history toolbar.",
     },
+    searchAttributes: {
+      control: "object",
+      description:
+        "Optional attributes to pass to the cds-search component. Allows customization of search behavior and appearance (e.g., label-text, placeholder, disabled, value, close-button-label-text).",
+    },
+    overflowMenuLabel: {
+      control: "text",
+      description: "Overflow menu tooltip label for history panel items.",
+    },
     showCloseAction: {
       control: "boolean",
       description: "renders close chat history action in header.",
@@ -491,6 +515,12 @@ export const Default = {
   args: {
     HeaderTitle: "Chats",
     searchOff: false,
+    searchAttributes: {
+      "label-text": "Search",
+      placeholder: "Search",
+      "close-button-label-text": "Clear search",
+    },
+    overflowMenuLabel: "Options",
     showCloseAction: true,
     showActions: false,
   },
@@ -498,6 +528,8 @@ export const Default = {
     <cds-aichat-history-demo
       header-title="${args.HeaderTitle}"
       ?search-off=${args.searchOff}
+      .searchAttributes=${args.searchAttributes}
+      overflow-menu-label="${args.overflowMenuLabel}"
       ?show-close-action=${args.showCloseAction}
       ?show-actions=${args.showActions}
     ></cds-aichat-history-demo>
