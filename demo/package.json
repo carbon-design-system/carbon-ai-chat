@@ -7,7 +7,8 @@
   "scripts": {
     "start": "webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js --mode production",
-    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js --import ./tests/alias-loader.js' playwright test --workers=2"
+    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js --import ./tests/alias-loader.js' playwright test --workers=2",
+    "test:visual": "NODE_OPTIONS='--import ./tests/node-polyfill.js --import ./tests/alias-loader.js' playwright test tests/smoke-visual.spec.ts --workers=2"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",

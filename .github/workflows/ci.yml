@@ -256,7 +256,8 @@ jobs:
       - name: Build ai-chat stack
         run: npm run aiChat:build
       - name: Run demo Playwright tests
-        run: npm run test --workspace=@carbon/ai-chat-examples-demo
+        working-directory: demo
+        run: npm run test:visual
       - name: Run Chromatic
         uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
         with:
