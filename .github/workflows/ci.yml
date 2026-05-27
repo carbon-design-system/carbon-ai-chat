@@ -220,3 +220,59 @@ jobs:
           CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
           # 👇 Makes sure this is always set to the corect owner/repo
           CHROMATIC_SLUG: ${{ github.repository }}
+
+  chromatic-demo-playwright:
+    if:
+      ${{ github.repository == 'carbon-design-system/carbon-ai-chat' }}
+    runs-on: ubuntu-latest
+    outputs:
+      buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          # 👇 Tells the checkout which commit hash to reference
+          # https://www.chromatic.com/docs/github-actions/#recommended-configuration-for-build-events
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: "npm"
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key:
+            ${{ runner.os }}-npm-${{ hashFiles('package-lock.json',
+            'packages/**/package-lock.json') }}
+      - name: Install dependencies
+        run: |
+          npm ci --prefer-offline
+          npx playwright install --with-deps chromium
+      - name: Build ai-chat stack
+        run: npm run aiChat:build
+      - name: Run demo Playwright tests
+        run: npm run test --workspace=@carbon/ai-chat-examples-demo
+        name: Run Chromatic
+        uses: chromaui/action@0b8c883861c1663076150cf1f4592b19d1ff6a54 # v17.0.1
+        with:
+          # 👇 Token is intentionally plaintext
+          # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
+          projectToken: chpt_16f495b4c4e3977
+          workingDir: demo
+          playwright: true
+          zip: true
+          autoAcceptChanges: 'main'
+          onlyChanged: true
+        env:
+          # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
+          CHROMATIC_BRANCH:
+            ${{ github.event.pull_request.head.ref || github.ref_name }}
+          # 👇 Set to the PR head commit if it's a PR; otherwise to the ref (which typically resolves to the latest commit SHA)
+          CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
+          # 👇 Makes sure this is always set to the corect owner/repo
+          CHROMATIC_SLUG: ${{ github.repository }}
