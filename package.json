@@ -83,7 +83,7 @@
         72
       ],
       "body-max-line-length": [
-        2,
+        0,
         "always",
         90
       ],
