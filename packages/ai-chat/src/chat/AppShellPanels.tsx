@@ -168,6 +168,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
             languagePack={languagePack}
             title={catastrophicErrorPanelState?.title}
             bodyText={catastrophicErrorPanelState?.bodyText}
+            hideRetryButton={catastrophicErrorPanelState?.hideRetryButton}
             onRestart={onRestart}
           />
         </div>

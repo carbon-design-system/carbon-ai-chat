@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -28,6 +28,7 @@ interface CatastrophicErrorPanelProps {
   title?: string;
   bodyText?: string;
   onRestart: () => void;
+  hideRetryButton?: boolean;
 }
 
 const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
@@ -36,6 +37,7 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
   title,
   bodyText,
   onRestart,
+  hideRetryButton,
 }) => {
   const intl = useIntl();
   const { isDarkTheme } = useCarbonTheme();
@@ -72,7 +74,7 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
         <div className="cds-aichat--catastrophic-error__error-body">
           <MarkdownWithDefaults text={errorBodyText} highlight={true} />
         </div>
-        {onRestart && (
+        {!hideRetryButton && onRestart && (
           <ChatButton
             className="cds-aichat--catastrophic-error__restart-button"
             kind={CHAT_BUTTON_KIND.TERTIARY}
