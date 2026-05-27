@@ -457,6 +457,13 @@ interface CatastrophicErrorPanelState {
    * The error body text to be displayed in the `CatastrophicErrorPanel`. Will render markdown if provided.
    */
   bodyText?: string;
+
+  /**
+   * When true, the panel renders without the built-in retry button. The consumer is then responsible
+   * for closing the panel by calling `instance.updateCatastrophicErrorPanel({ isOpen: false })` once
+   * their own recovery flow completes.
+   */
+  hideRetryButton?: boolean;
 }
 
 /**
