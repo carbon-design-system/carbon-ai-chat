@@ -38,7 +38,11 @@ export default defineConfig({
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+      testIgnore: "**/smoke-visual.spec.ts", // Disabling for Chromatic snapshots for now
+    },
     // Disabling webkit for now. See https://github.com/microsoft/playwright/issues/33547 and https://webscraping.ai/faq/playwright/what-are-the-ways-to-handle-shadow-dom-elements-using-playwright
     // Just need to implement that.
     // { name: 'webkit',   use: { ...devices['Desktop Safari'] } },
