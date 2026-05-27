@@ -35,7 +35,31 @@ const TEST_CSP =
   "base-uri 'self'; " +
   "form-action 'self';";
 
+/**
+ * Chromatic's Playwright snapshot runtime injects a module script via
+ * `page.addScriptTag()` and some visual cases still exercise inline style
+ * attributes. Keep those allowances isolated to the visual snapshot suite.
+ */
+const CHROMATIC_TEST_CSP =
+  "default-src 'self'; " +
+  "script-src 'self' 'unsafe-inline' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; " +
+  "script-src-elem 'self' 'unsafe-inline' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; " +
+  "style-src 'self' 'unsafe-inline' https://1.www.s81c.com; " +
+  "style-src-attr 'unsafe-inline'; " +
+  "img-src 'self' data: blob: https://1.www.s81c.com https://live.staticflickr.com; " +
+  "font-src 'self' https://1.www.s81c.com; " +
+  "connect-src 'self' https://1.www.s81c.com ws: wss:; " +
+  "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://w.soundcloud.com https://cdnapisec.kaltura.com https://web-chat.assistant.test.watson.cloud.ibm.com; " +
+  "media-src https://web-chat.assistant.test.watson.cloud.ibm.com; " +
+  "object-src 'none'; " +
+  "base-uri 'self'; " +
+  "form-action 'self';";
+
 const cspInstalledPages = new WeakSet<Page>();
+
+interface InstallTestCspOptions {
+  chromatic?: boolean;
+}
 
 /**
  * Route-rewrites the demo's document response to inject a strict
@@ -46,7 +70,10 @@ const cspInstalledPages = new WeakSet<Page>();
  * fetched. Idempotent per page so beforeEach + prepareDemoPage callers don't
  * stack duplicate route handlers.
  */
-export const installTestCsp = async (page: Page) => {
+export const installTestCsp = async (
+  page: Page,
+  { chromatic = false }: InstallTestCspOptions = {},
+) => {
   if (cspInstalledPages.has(page)) {
     return;
   }
@@ -84,7 +111,8 @@ export const installTestCsp = async (page: Page) => {
       return route.fulfill({ response });
     }
     const body = await response.text();
-    const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${TEST_CSP}">`;
+    const csp = chromatic ? CHROMATIC_TEST_CSP : TEST_CSP;
+    const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
     // Match `<head>` with or without attributes so e.g. `<head data-foo>`
     // doesn't silently no-op the CSP injection.
     const injected = body.replace(
@@ -234,6 +262,7 @@ export enum DemoPageObjectId {
 
 interface PrepareDemoPageOptions {
   setChatConfig?: boolean;
+  chromatic?: boolean;
 }
 
 /**
@@ -247,10 +276,10 @@ interface PrepareDemoPageOptions {
  */
 export const prepareDemoPage = async (
   page: Page,
-  { setChatConfig = false }: PrepareDemoPageOptions = {},
+  { setChatConfig = false, chromatic = false }: PrepareDemoPageOptions = {},
 ) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
-  await installTestCsp(page);
+  await installTestCsp(page, { chromatic });
   await installCspGuard(page);
   const targetPath = setChatConfig ? "/?config=setChatConfig" : "/";
   await page.goto(targetPath);
