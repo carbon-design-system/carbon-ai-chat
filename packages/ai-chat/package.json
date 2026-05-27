@@ -95,6 +95,7 @@
     "@types/color": "^4.2.0",
     "@types/jest": "^30.0.0",
     "@types/lodash-es": "^4.17.12",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.0.12",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
@@ -143,6 +144,7 @@
     "intl-messageformat": "^11.0.0",
     "lit": "^3.1.0",
     "lodash-es": "^4.18.1",
+    "markdown-it": "^14.1.0",
     "tabbable": "^6.2.0",
     "tslib": "^2.6.3",
     "use-sync-external-store": "^1.2.0"

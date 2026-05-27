@@ -23,6 +23,7 @@ import { LauncherConfig } from "./LauncherConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
+import type { MarkdownItPlugin as _MarkdownItPlugin } from "@carbon/ai-chat-components/es/components/markdown/index.js";
 import type { KeyboardShortcuts } from "./ShortcutConfig";
 
 /**
@@ -223,6 +224,45 @@ export interface PublicConfig {
    * @experimental
    */
   keyboardShortcuts?: KeyboardShortcuts;
+
+  /**
+   * Markdown rendering customization. The framework-neutral subset; React and
+   * web-component layers extend this with their own `customRenderers` member.
+   *
+   * @experimental
+   */
+  markdown?: PublicConfigMarkdown;
+}
+
+/**
+ * Element type of {@link PublicConfigMarkdown.markdownItPlugins}. Either a
+ * bare plugin function or a `[plugin, options]` / `[plugin, ...params]` tuple
+ * matching `MarkdownIt.use(...)`.
+ *
+ * @category Config
+ * @experimental
+ */
+export type MarkdownItPlugin = _MarkdownItPlugin;
+
+/**
+ * Framework-neutral markdown configuration shared by the React `ChatContainer`
+ * and the `cds-aichat-container` web component. Each layer extends this with
+ * its own `customRenderers` member returning the layer-appropriate type
+ * (`ReactNode` vs `HTMLElement | null`).
+ *
+ * @category Config
+ * @experimental
+ */
+export interface PublicConfigMarkdown {
+  /**
+   * Markdown-it plugins applied after the built-in plugins
+   * (markdown-it-attrs, markdown-it-highlight, markdown-it-task-lists).
+   * Memoize this array — a new reference each render rebuilds the
+   * markdown-it instance.
+   *
+   * @experimental
+   */
+  markdownItPlugins?: MarkdownItPlugin[];
 }
 
 /**

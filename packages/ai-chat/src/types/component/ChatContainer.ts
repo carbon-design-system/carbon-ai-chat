@@ -8,9 +8,17 @@
  */
 
 import { type ReactNode } from "react";
+import type {
+  MarkdownCustomRenderers as _MarkdownCustomRenderers,
+  MarkdownRendererCodeBlockArgs as _MarkdownRendererCodeBlockArgs,
+  MarkdownRendererCodeBlockData as _MarkdownRendererCodeBlockData,
+  MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
+  MarkdownRendererTableData as _MarkdownRendererTableData,
+  TokenTree as _TokenTree,
+} from "@carbon/ai-chat-components/es/components/markdown/index.js";
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
 import { GenericItem, Message, MessageResponse } from "../messaging/Messages";
-import { PublicConfig } from "../config/PublicConfig";
+import { PublicConfig, PublicConfigMarkdown } from "../config/PublicConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import {
   BusEventViewChange,
@@ -158,6 +166,166 @@ type RenderWriteableElementResponse = {
 };
 
 /**
+ * Markdown-it parser node tree, surfaced on the `node` field of
+ * {@link MarkdownRendererTableArgs} and {@link MarkdownRendererCodeBlockArgs}
+ * so custom renderers can inspect the parsed token structure when the
+ * high-level data payload isn't enough.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type TokenTree = _TokenTree;
+
+/**
+ * Parsed table payload extended by {@link MarkdownRendererTableArgs} — the
+ * argument shape the table renderer callback actually receives. Carries the
+ * headers, rows, and streaming/loading flags.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererTableData = _MarkdownRendererTableData;
+
+/**
+ * Parsed code-block payload extended by {@link MarkdownRendererCodeBlockArgs} —
+ * the argument shape the code-block renderer callback actually receives.
+ * Carries the language, code text, and streaming flag.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
+
+/**
+ * Argument passed to the markdown table renderer callbacks on
+ * {@link CustomMarkdownRenderers.table} and
+ * {@link WCCustomMarkdownRenderers.table}. Extends
+ * {@link MarkdownRendererTableData} with the source token, full
+ * {@link TokenTree} node, and a stable `slotName` suitable for use as a key.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
+
+/**
+ * Argument passed to the fenced code-block renderer callbacks on
+ * {@link CustomMarkdownRenderers.codeBlock} and
+ * {@link WCCustomMarkdownRenderers.codeBlock}. Extends
+ * {@link MarkdownRendererCodeBlockData} with the source token, full
+ * {@link TokenTree} node, and a stable `slotName` suitable for use as a key.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
+
+/**
+ * Framework-neutral per-element renderer overrides accepted by the
+ * underlying `cds-aichat-markdown` element. The React variant
+ * {@link CustomMarkdownRenderers} and the web-component variant
+ * {@link WCCustomMarkdownRenderers} extend this contract with their layer's
+ * return type. Application code typically uses one of those variants rather
+ * than this baseline directly.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
+
+/**
+ * Per-element renderer overrides for the React `ChatContainer`. Each callback
+ * receives the parsed token data and returns a `ReactNode` that renders in
+ * place of the default Carbon rendering. Return `null` to opt out of the
+ * override for that particular descriptor — the default Carbon rendering
+ * runs unchanged.
+ *
+ * Callbacks fire once per matching element per render pass, including every
+ * streaming chunk that adds or changes the element's contents. When the
+ * underlying element stays in the document but its data changes (a new table
+ * row, more code lines), the same `slotName` is reused and the callback is
+ * invoked again with the updated payload.
+ *
+ * @experimental
+ * @category React
+ */
+interface CustomMarkdownRenderers {
+  /**
+   * Override the default rendering for markdown tables. Receives parsed table
+   * data; return `null` to fall back to the default Carbon table renderer.
+   */
+  table?: (args: MarkdownRendererTableArgs) => ReactNode;
+  /**
+   * Override the default rendering for fenced code blocks. Receives parsed
+   * code-block data; return `null` to fall back to the default Carbon code
+   * snippet renderer.
+   */
+  codeBlock?: (args: MarkdownRendererCodeBlockArgs) => ReactNode;
+}
+
+/**
+ * The web-component analogue of {@link CustomMarkdownRenderers} — same shape,
+ * but each callback returns an `HTMLElement` (or `null`) instead of a React
+ * node. Return `null` to opt out for a specific descriptor and use the
+ * default Carbon rendering instead.
+ *
+ * Callbacks fire once per matching element per render pass; return the same
+ * element reference across renders to avoid unnecessary DOM churn.
+ *
+ * @experimental
+ * @category Web component
+ */
+interface WCCustomMarkdownRenderers {
+  /**
+   * Override the default rendering for markdown tables. Receives parsed table
+   * data; return `null` to fall back to the default Carbon table renderer.
+   */
+  table?: (args: MarkdownRendererTableArgs) => HTMLElement | null;
+  /**
+   * Override the default rendering for fenced code blocks. Receives parsed
+   * code-block data; return `null` to fall back to the default Carbon code
+   * snippet renderer.
+   */
+  codeBlock?: (args: MarkdownRendererCodeBlockArgs) => HTMLElement | null;
+}
+
+/**
+ * React-layer `markdown` config — extends {@link PublicConfigMarkdown} with
+ * React renderers.
+ *
+ * @experimental
+ * @category React
+ */
+interface ChatContainerPropsMarkdown extends PublicConfigMarkdown {
+  /**
+   * Per-element renderer overrides — see {@link CustomMarkdownRenderers}.
+   * Pass a stable reference (`useMemo`) — an inline object literal will be a
+   * fresh reference each render.
+   *
+   * @experimental
+   */
+  customRenderers?: CustomMarkdownRenderers;
+}
+
+/**
+ * Web-component-layer `markdown` config — extends {@link PublicConfigMarkdown}
+ * with renderers returning `HTMLElement` (or `null`).
+ *
+ * @experimental
+ * @category Web component
+ */
+interface WCMarkdown extends PublicConfigMarkdown {
+  /**
+   * Per-element renderer overrides — see {@link WCCustomMarkdownRenderers}.
+   * Return the same element reference across renders to avoid unnecessary DOM
+   * churn.
+   *
+   * @experimental
+   */
+  customRenderers?: WCCustomMarkdownRenderers;
+}
+
+/**
  * Properties for the ChatContainer React component. This interface extends
  * {@link PublicConfig} with additional component-specific props, flattening all
  * config properties as top-level props for better TypeScript IntelliSense.
@@ -168,7 +336,15 @@ type RenderWriteableElementResponse = {
  *
  * @category React
  */
-interface ChatContainerProps extends PublicConfig {
+interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
+  /**
+   * Markdown rendering customization. Extends the framework-neutral
+   * {@link PublicConfigMarkdown} with React-layer custom renderers.
+   *
+   * @experimental
+   */
+  markdown?: ChatContainerPropsMarkdown;
+
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
@@ -227,11 +403,15 @@ interface ChatContainerProps extends PublicConfig {
 
 export {
   ChatContainerProps,
+  ChatContainerPropsMarkdown,
+  CustomMarkdownRenderers,
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
   RenderUserDefinedResponse,
   RenderWriteableElementResponse,
   RenderUserDefinedState,
+  WCCustomMarkdownRenderers,
+  WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
 };

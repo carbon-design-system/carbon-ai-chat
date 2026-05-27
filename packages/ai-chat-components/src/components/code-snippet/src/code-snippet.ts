@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -108,6 +108,12 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   /** Fallback language to use when detection fails. */
   @property({ type: String, attribute: "default-language" })
   defaultLanguage = "javascript";
+  /**
+   * Show the detected language label in the snippet header. When `false`
+   * (the default), only an explicit `language` attribute renders a label.
+   */
+  @property({ type: Boolean, attribute: "detect-language" })
+  detectLanguage = false;
   /** Text to copy when clicking the copy button. Defaults to slotted content. */
   @property({ attribute: "copy-text" })
   copyText = "";
@@ -866,16 +872,21 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * @returns Template result for title slot
    */
   private renderTitle() {
+    // Show the language label when one is locked in and either the host
+    // opted into `detectLanguage` or the `language` attribute is set
+    // explicitly (explicit always renders its label regardless of the flag).
+    const showLanguageLabel =
+      !!this._detectedLanguage &&
+      this._languageLabelLockedIn &&
+      (this.detectLanguage || !!this.language);
     return html`
       <div slot="title" data-rounded="top" class="${prefix}--snippet__meta">
-        ${this._detectedLanguage && this._languageLabelLockedIn
+        ${showLanguageLabel
           ? html`<div class="${prefix}--snippet__language">
               ${this._detectedLanguage}
             </div>`
           : ""}
-        ${this._detectedLanguage &&
-        this._languageLabelLockedIn &&
-        this._lineCount
+        ${showLanguageLabel && this._lineCount
           ? html`<div class="${prefix}--snippet__header-separator">
               &mdash;
             </div>`

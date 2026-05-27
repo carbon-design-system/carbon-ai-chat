@@ -279,14 +279,29 @@ export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-contai
 export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
 
 export {
+  ChatContainerPropsMarkdown,
+  CustomMarkdownRenderers,
+  MarkdownCustomRenderers,
+  MarkdownRendererCodeBlockArgs,
+  MarkdownRendererCodeBlockData,
+  MarkdownRendererTableArgs,
+  MarkdownRendererTableData,
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
+  TokenTree,
+  WCCustomMarkdownRenderers,
+  WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
 } from "./types/component/ChatContainer";
+
+export type {
+  MarkdownItPlugin,
+  PublicConfigMarkdown,
+} from "./types/config/PublicConfig";
 
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
 

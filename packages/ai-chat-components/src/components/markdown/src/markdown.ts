@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,66 +15,90 @@ import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
 
-import { markdownToTokenTree, TokenTree } from "./markdown-token-tree.js";
-import { renderTokenTree } from "./markdown-renderer.js";
-import { consoleError } from "./utils.js";
+import MarkdownIt from "markdown-it";
 
-function hasTrailingTableToken(node: TokenTree): boolean {
-  if (node.token.tag === "table") {
-    return true;
-  }
+import {
+  markdownToTokenTree,
+  type MarkdownItPlugin,
+  type TokenTree,
+} from "./markdown-token-tree.js";
+import {
+  renderMarkdownTree,
+  type MarkdownCustomRenderers,
+  type MarkdownRendererSlotDescriptor,
+} from "./markdown-renderer.js";
+import {
+  hasLikelyPartialTableTail,
+  hasNodeAfterTable,
+  hasTrailingTableToken,
+} from "./utils/streaming-table.js";
 
-  const children = node.children || [];
-  if (children.length === 0) {
-    return false;
-  }
+const CONSOLE_PREFIX = "[carbon-ai-chat-components]";
 
-  // Follow only the rightmost branch. A trailing table is one that sits at the
-  // end of the current markdown output, not just the end of an arbitrary subtree.
-  return hasTrailingTableToken(children[children.length - 1]);
-}
-
-function hasNodeAfterTable(node: TokenTree): boolean {
-  const children = node.children || [];
-  for (let index = 0; index < children.length; index++) {
-    const child = children[index];
-    if (child.token.tag === "table" && index < children.length - 1) {
+/**
+ * True if `node` is inside (or is) a light-DOM element with a `slot` attribute
+ * set, up to (but not including) `boundary`. Portal hosts mounted by consumers
+ * carry a `slot` attribute, so this is used to skip both `textContent`
+ * contributions and observed mutations that originated inside a portal subtree.
+ */
+function isInsidePortalHost(node: Node, boundary: Node): boolean {
+  let cur: Node | null = node;
+  while (cur && cur !== boundary) {
+    if (cur instanceof Element && cur.hasAttribute("slot")) {
       return true;
     }
-    if (hasNodeAfterTable(child)) {
-      return true;
-    }
+    cur = cur.parentNode;
   }
   return false;
 }
 
-function hasLikelyPartialTableTail(markdown: string): boolean {
-  const normalized = markdown.replace(/\r/g, "");
-  const lines = normalized.split("\n");
-  let index = lines.length - 1;
-
-  while (index >= 0 && lines[index].trim() === "") {
-    index--;
+/**
+ * Concatenates the markdown source from `element`'s light-DOM children,
+ * skipping any `<element slot="…">` portal hosts so consumer-rendered overrides
+ * don't contaminate the parsed markdown source.
+ */
+function readLightDomMarkdownSource(element: Element): string {
+  let out = "";
+  for (const child of Array.from(element.childNodes)) {
+    if (child instanceof Element && child.hasAttribute("slot")) {
+      continue;
+    }
+    if (child.nodeType === Node.TEXT_NODE) {
+      out += child.nodeValue ?? "";
+    } else if (child instanceof Element) {
+      out += child.textContent ?? "";
+    }
   }
-
-  if (index < 0) {
-    return false;
-  }
-
-  const lastLine = lines[index].trim();
-
-  // During streaming, partially emitted table rows frequently end with a pipe
-  // and markdown-it can temporarily stop recognizing the table token.
-  if (lastLine.startsWith("|") || lastLine.endsWith("|")) {
-    return true;
-  }
-
-  // Keep loading mode if the tail still looks like a table separator row.
-  return /^\|?[\s:-]+(\|[\s:-]+)+\|?$/.test(lastLine);
+  return out.trim();
 }
 
 /**
- * Markdown component
+ * Renders markdown as Carbon-styled DOM. Streaming-friendly: incremental updates reparse the markdown source into a `TokenTree`, diff it against the prior tree to reuse stable subtrees, then walk it into a Lit `TemplateResult` — Lit's `repeat` directive keys off the diffed nodes so unchanged DOM stays put.
+ *
+ * ### Lifecycle
+ *
+ * 1. A property setter (or a light-DOM mutation) lands. `willUpdate` decides whether the change requires a reparse (`markdown`, `removeHTML`, `markdownItPlugins`) or only a re-render (translated strings, `streaming`, `sanitizeHTML`, `customRenderers`).
+ * 2. `scheduleRender` throttles bursts to 100ms (leading + trailing).
+ * 3. `renderMarkdown` parses (if needed) via {@link markdownToTokenTree}, then calls {@link renderMarkdownTree} to produce both a `TemplateResult` and a batch of {@link MarkdownRendererSlotDescriptor} records.
+ * 4. After Lit commits, `updated()` runs `reconcileCustomRendererHosts` — that is where consumer-supplied `customRenderers` callbacks fire and plugin-fallback HTML is adopted into light-DOM slot hosts.
+ *
+ * ### Extensibility
+ *
+ * - {@link markdownItPlugins} runs after the built-in markdown-it plugins (markdown-it-attrs, highlight, task-lists). A new array identity rebuilds the markdown-it instance and forces a full reparse. Tokens introduced by a plugin that the native dispatch can't handle — either an unknown tag, or a plugin-overridden rule on a curated allow-list of leaf tokens — route through `md.renderer.render()` via `./utils/plugin-fallback.ts` and surface as `pluginFallback` descriptors. Their rendered HTML is adopted into a light-DOM slot host so consumer-supplied CSS (e.g. a KaTeX stylesheet on the host page) reaches it.
+ * - {@link customRenderers} overrides per-element rendering for `table` and `codeBlock`. The renderer emits a named `<slot>` placeholder; the reconciler invokes the consumer's callback with the parsed data and appends the returned `HTMLElement` as a `<div slot="…">` light-DOM child. Returning the same element reference across renders avoids DOM churn.
+ *
+ * ### Light-DOM source adoption
+ *
+ * When the `markdown` property has never been set explicitly, the element treats its light-DOM text content as the initial source and watches for further mutations via a `MutationObserver`. Setting the property explicitly stops the observer — the property is then the authoritative source.
+ *
+ * ### Related files
+ *
+ * - `./markdown-token-tree.ts` — markdown-it parse + tree builder + streaming-aware diff (with `cachedHtml` carry-forward for plugin-delegated tokens).
+ * - `./markdown-renderer.ts` — `TokenTree` → Lit `TemplateResult`, plus descriptor collection.
+ * - `./markdown-renderer-types.ts` — public ({@link MarkdownCustomRenderers}) and internal ({@link MarkdownRendererSlotDescriptor}, `RenderTokenTreeOptions`) contracts.
+ * - `./utils/plugin-fallback.ts` — delegation to `md.renderer.render()` for plugin-introduced tokens.
+ * - `./utils/streaming-table.ts` — heuristics that hold a streaming table in a skeleton "loading" state until its tail stabilizes.
+ *
  * @element cds-aichat-markdown
  */
 @carbonElement(`${prefix}-markdown`)
@@ -207,6 +231,60 @@ class CDSAIChatMarkdown extends LitElement {
   }) => string;
 
   /**
+   * Markdown-it plugins applied after the built-in plugins
+   * (markdown-it-attrs, markdown-it-highlight, markdown-it-task-lists).
+   * Changes force a reparse. Memoize this array — a new reference each render
+   * rebuilds the markdown-it instance.
+   */
+  @property({ type: Array, attribute: false })
+  markdownItPlugins?: MarkdownItPlugin[];
+
+  /**
+   * Per-element render overrides. For each `kind` whose callback is provided,
+   * the markdown element emits a named `<slot>` placeholder in its shadow
+   * DOM, then — after each render — invokes the callback with the parsed
+   * data and adopts the returned `HTMLElement` as a `<div slot="…">`
+   * light-DOM child of this element. Return `null` to fall back to the
+   * default Carbon rendering. Returning the same element reference across
+   * renders avoids DOM churn.
+   *
+   * The consumer's returned element lives in this element's light DOM, not
+   * in its shadow root, so external CSS applies normally.
+   */
+  @property({ attribute: false })
+  customRenderers?: MarkdownCustomRenderers;
+
+  /**
+   * Descriptors collected during the most recent render task; consumed by
+   * the `updated()` reconcile to invoke {@link customRenderers} callbacks.
+   * @internal
+   */
+  private latestRendererDescriptors: MarkdownRendererSlotDescriptor[] = [];
+
+  /**
+   * Light-DOM slot hosts adopted on behalf of {@link customRenderers}, keyed
+   * by slot name. Reused across renders for stable identity.
+   * @internal
+   */
+  private slotHosts: Map<string, HTMLElement> = new Map();
+
+  /**
+   * Slot names whose host was created by an outer listener (a chat container
+   * that called `preventDefault()` on the host-mount event). We track these
+   * so we can fire matching unmount events without trying to remove a host we
+   * never appended.
+   * @internal
+   */
+  private delegatedPluginSlots: Set<string> = new Set();
+
+  /**
+   * The markdown-it instance produced by the most recent parse. Forwarded into
+   * the renderer so unknown tokens can fall back to `md.renderer.render()`.
+   * @internal
+   */
+  private markdownItInstance?: MarkdownIt;
+
+  /**
    * @internal
    */
   private needsReparse = false;
@@ -237,10 +315,12 @@ class CDSAIChatMarkdown extends LitElement {
   private lightDomObserver: MutationObserver | null = null;
 
   /**
-   * Tracks pending Light DOM mutation processing promises.
+   * Generation counter for Light DOM mutation processing. Incremented when a
+   * mutation is observed and decremented when the resulting microtask
+   * completes. `updateComplete` waits while the counter is non-zero.
    * @internal
    */
-  private lightDomMutationPromise: Promise<void> | null = null;
+  private pendingLightDomMutations = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -255,13 +335,30 @@ class CDSAIChatMarkdown extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopObservingLightDom();
+    // Tear down any adopted slot hosts so they don't leak across re-connect.
+    for (const host of this.slotHosts.values()) {
+      host.remove();
+    }
+    this.slotHosts.clear();
+    // Ask any delegating chat container to drop its hosts too.
+    for (const slotName of this.delegatedPluginSlots) {
+      this.dispatchEvent(
+        new CustomEvent("cds-aichat-markdown-plugin-host-unmount", {
+          bubbles: true,
+          composed: true,
+          detail: { slotName },
+        }),
+      );
+    }
+    this.delegatedPluginSlots.clear();
+    this.latestRendererDescriptors = [];
   }
 
   private adoptLightDomMarkdown() {
     // Backward compatibility: treat static light-DOM text as initial markdown
     // when the explicit `markdown` property was not provided.
     if (!this.markdownPropertyExplicitlySet) {
-      const lightDomMarkdown = this.textContent?.trim() ?? "";
+      const lightDomMarkdown = readLightDomMarkdownSource(this);
       if (lightDomMarkdown) {
         // Set markdown without triggering the "explicitly set" flag
         this.isInternalMarkdownUpdate = true;
@@ -279,29 +376,35 @@ class CDSAIChatMarkdown extends LitElement {
       return;
     }
 
-    this.lightDomObserver = new MutationObserver(() => {
+    this.lightDomObserver = new MutationObserver((records) => {
       // Only update from Light DOM if markdown property still hasn't been explicitly set
       if (!this.markdownPropertyExplicitlySet) {
-        // Wrap in a promise so updateComplete can wait for it
-        const mutationPromise = Promise.resolve().then(() => {
-          // Read textContent directly - it should be up to date when the callback fires
-          const lightDomMarkdown = this.textContent?.trim() ?? "";
+        // Mutations that happened entirely inside a portal host (a light-DOM
+        // child with a `slot` attribute) are noise from the consumer's
+        // overrides re-rendering — they don't change the markdown source.
+        const relevant = records.filter(
+          (record) => !isInsidePortalHost(record.target, this),
+        );
+        if (relevant.length === 0) {
+          return;
+        }
 
-          // Directly update markdown without triggering the "explicitly set" flag
-          if (this.markdown !== lightDomMarkdown) {
-            this.isInternalMarkdownUpdate = true;
-            this.markdown = lightDomMarkdown;
-            this.isInternalMarkdownUpdate = false;
-          }
-        });
-
-        // Track the promise
-        this.lightDomMutationPromise = mutationPromise;
-        mutationPromise.finally(() => {
-          if (this.lightDomMutationPromise === mutationPromise) {
-            this.lightDomMutationPromise = null;
-          }
-        });
+        // Process the mutation in a microtask so the DOM has settled. Track
+        // it via a counter so `updateComplete` can await any concurrent
+        // mutations without the fragility of a single-slot promise field.
+        this.pendingLightDomMutations += 1;
+        Promise.resolve()
+          .then(() => {
+            const lightDomMarkdown = readLightDomMarkdownSource(this);
+            if (this.markdown !== lightDomMarkdown) {
+              this.isInternalMarkdownUpdate = true;
+              this.markdown = lightDomMarkdown;
+              this.isInternalMarkdownUpdate = false;
+            }
+          })
+          .finally(() => {
+            this.pendingLightDomMutations -= 1;
+          });
       } else {
         // If markdown was explicitly set, stop observing
         this.stopObservingLightDom();
@@ -330,11 +433,13 @@ class CDSAIChatMarkdown extends LitElement {
     if (
       changed.has("removeHTML") ||
       changed.has("markdown") ||
+      changed.has("markdownItPlugins") ||
       isInitialRender
     ) {
       // Properties that affect token tree structure require full reparse
-      // - removeHTML: changes which parser is used (html: true vs false)
+      // - removeHTML: toggles post-parse HTML-token stripping
       // - markdown: updates the source text to parse
+      // - markdownItPlugins: swaps the markdown-it instance, new parser rules
       // - isInitialRender: ensures pre-set markdown gets parsed on first render
       this.needsReparse = true;
       this.scheduleRender();
@@ -343,8 +448,10 @@ class CDSAIChatMarkdown extends LitElement {
       // - sanitizeHTML: applies DOMPurify during render, doesn't change tokens
       // - string properties: change translated strings in rendered output
       // - streaming: affects loading states in rendered output
+      // - customRenderers: only changes which tokens emit a slot
       changed.has("sanitizeHTML") ||
       changed.has("streaming") ||
+      changed.has("customRenderers") ||
       // Code snippet properties
       changed.has("codeSnippetHighlight") ||
       changed.has("codeSnippetShowLessText") ||
@@ -417,11 +524,16 @@ class CDSAIChatMarkdown extends LitElement {
         // rendered when the markdown is updated (likely by streaming, but possibly by an edit somewhere in the
         // middle). It takes the current tokenTree as an argument for quick diffing to avoid re-creating parts
         // of the tree.
-        nextTokenTree = markdownToTokenTree(
+        const parsed = markdownToTokenTree(
           markdownContent,
           previousTreeForDiff,
-          !this.removeHTML,
+          {
+            removeHtml: this.removeHTML,
+            markdownItPlugins: this.markdownItPlugins,
+          },
         );
+        nextTokenTree = parsed.tree;
+        this.markdownItInstance = parsed.md;
         this.needsReparse = false;
       }
 
@@ -442,34 +554,47 @@ class CDSAIChatMarkdown extends LitElement {
         this.isStreamingTableLoadingMode = true;
       }
 
+      // Render-and-stash helper. Each invocation produces a fresh batch of
+      // renderer-slot descriptors; the `updated()` reconcile then invokes
+      // the consumer's `customRenderers` callbacks for each descriptor and
+      // adopts the returned `HTMLElement` as a light-DOM slot host.
+      const renderAndDispatch = (tree: TokenTree): void => {
+        const { template, batch } = renderMarkdownTree(tree, {
+          sanitize: this.sanitizeHTML,
+          streaming: this.streaming,
+          // Code snippet properties
+          codeSnippetHighlight: this.codeSnippetHighlight,
+          codeSnippetShowLessText: this.codeSnippetShowLessText,
+          codeSnippetShowMoreText: this.codeSnippetShowMoreText,
+          codeSnippetCopyButtonTooltipContent:
+            this.codeSnippetCopyButtonTooltipContent,
+          codeSnippetGetLineCountText: this.codeSnippetGetLineCountText,
+          codeSnippetAriaLabelReadOnly: this.codeSnippetAriaLabelReadOnly,
+          codeSnippetAriaLabelEditable: this.codeSnippetAriaLabelEditable,
+          // Table properties
+          tableFilterPlaceholderText: this.tableFilterPlaceholderText,
+          tablePreviousPageText: this.tablePreviousPageText,
+          tableNextPageText: this.tableNextPageText,
+          tableItemsPerPageText: this.tableItemsPerPageText,
+          tableDownloadLabelText: this.tableDownloadLabelText,
+          tableLocale: this.tableLocale,
+          tableGetPaginationSupplementalText:
+            this.tableGetPaginationSupplementalText,
+          tableGetPaginationStatusText: this.tableGetPaginationStatusText,
+          // Custom-renderer hooks
+          customRenderers: this.customRenderers,
+          md: this.markdownItInstance,
+        });
+        this.renderedContent = template;
+        this.latestRendererDescriptors = batch;
+      };
+
       if (this.streaming && this.isStreamingTableLoadingMode) {
         if (!this.hasRenderedStreamingTableLoadingFrame) {
           if (nextTokenTree !== this.tokenTree) {
             this.tokenTree = nextTokenTree;
           }
-          this.renderedContent = renderTokenTree(nextTokenTree, {
-            sanitize: this.sanitizeHTML,
-            streaming: this.streaming,
-            // Code snippet properties
-            codeSnippetHighlight: this.codeSnippetHighlight,
-            codeSnippetShowLessText: this.codeSnippetShowLessText,
-            codeSnippetShowMoreText: this.codeSnippetShowMoreText,
-            codeSnippetCopyButtonTooltipContent:
-              this.codeSnippetCopyButtonTooltipContent,
-            codeSnippetGetLineCountText: this.codeSnippetGetLineCountText,
-            codeSnippetAriaLabelReadOnly: this.codeSnippetAriaLabelReadOnly,
-            codeSnippetAriaLabelEditable: this.codeSnippetAriaLabelEditable,
-            // Table properties
-            tableFilterPlaceholderText: this.tableFilterPlaceholderText,
-            tablePreviousPageText: this.tablePreviousPageText,
-            tableNextPageText: this.tableNextPageText,
-            tableItemsPerPageText: this.tableItemsPerPageText,
-            tableDownloadLabelText: this.tableDownloadLabelText,
-            tableLocale: this.tableLocale,
-            tableGetPaginationSupplementalText:
-              this.tableGetPaginationSupplementalText,
-            tableGetPaginationStatusText: this.tableGetPaginationStatusText,
-          });
+          renderAndDispatch(nextTokenTree);
           this.hasRenderedStreamingTableLoadingFrame = true;
           this.stagedStreamingTokenTree = null;
         } else {
@@ -487,31 +612,9 @@ class CDSAIChatMarkdown extends LitElement {
 
       // Next we take that tree and transform it into Lit content to be rendered into the template.
       // this.renderedContent is what is rendered in the template directly.
-      this.renderedContent = renderTokenTree(renderTree, {
-        sanitize: this.sanitizeHTML,
-        streaming: this.streaming,
-        // Code snippet properties
-        codeSnippetHighlight: this.codeSnippetHighlight,
-        codeSnippetShowLessText: this.codeSnippetShowLessText,
-        codeSnippetShowMoreText: this.codeSnippetShowMoreText,
-        codeSnippetCopyButtonTooltipContent:
-          this.codeSnippetCopyButtonTooltipContent,
-        codeSnippetGetLineCountText: this.codeSnippetGetLineCountText,
-        codeSnippetAriaLabelReadOnly: this.codeSnippetAriaLabelReadOnly,
-        codeSnippetAriaLabelEditable: this.codeSnippetAriaLabelEditable,
-        // Table properties
-        tableFilterPlaceholderText: this.tableFilterPlaceholderText,
-        tablePreviousPageText: this.tablePreviousPageText,
-        tableNextPageText: this.tableNextPageText,
-        tableItemsPerPageText: this.tableItemsPerPageText,
-        tableDownloadLabelText: this.tableDownloadLabelText,
-        tableLocale: this.tableLocale,
-        tableGetPaginationSupplementalText:
-          this.tableGetPaginationSupplementalText,
-        tableGetPaginationStatusText: this.tableGetPaginationStatusText,
-      });
+      renderAndDispatch(renderTree);
     } catch (error) {
-      consoleError("Failed to parse markdown", error);
+      console.error(`${CONSOLE_PREFIX} Failed to parse markdown`, error);
     }
   };
 
@@ -558,11 +661,13 @@ class CDSAIChatMarkdown extends LitElement {
       await this.renderTask;
     }
 
-    // If a Light DOM mutation is being processed, wait for it and any subsequent render
-    if (this.lightDomMutationPromise) {
-      await this.lightDomMutationPromise;
+    // Drain any in-flight Light DOM mutation microtasks and their resulting
+    // renders. Each iteration yields the event loop so newly enqueued
+    // mutations can settle; the counter goes back to zero once everything
+    // has flushed.
+    while (this.pendingLightDomMutations > 0) {
+      await Promise.resolve();
 
-      // Then flush and wait for any render it triggered
       const postMutationFlush = (
         this.scheduleRender as {
           flush?: () => Promise<void> | void;
@@ -579,6 +684,171 @@ class CDSAIChatMarkdown extends LitElement {
     }
 
     return result;
+  }
+
+  protected updated(changed: PropertyValues<this>) {
+    super.updated(changed);
+    this.reconcileCustomRendererHosts();
+  }
+
+  /**
+   * Invoke the consumer's `customRenderers` callbacks once per descriptor and
+   * adopt their returned `HTMLElement` as a `<span slot="…">` (for inline
+   * plugin tokens) or `<div slot="…">` (block tokens and consumer renderers)
+   * light-DOM child. Hosts persist across renders so a consumer returning the
+   * same element reference produces no DOM churn; hosts whose slot names
+   * dropped out of the latest descriptor batch are removed.
+   *
+   * @internal
+   */
+  private reconcileCustomRendererHosts() {
+    const renderers = this.customRenderers;
+    const descriptors = this.latestRendererDescriptors;
+    const wanted = new Set<string>();
+
+    for (const descriptor of descriptors) {
+      if (descriptor.kind === "pluginFallback") {
+        wanted.add(descriptor.slotName);
+
+        // Offer the slot to a chat-container ancestor first. The chain
+        // appends the host to its OWN light DOM (page DOM at the top of the
+        // chain) so external CSS (e.g. a KaTeX stylesheet on the host page)
+        // reaches the plugin output. If a listener calls preventDefault, it
+        // has taken over hosting and we skip the local appendChild path.
+        const alreadyDelegated = this.delegatedPluginSlots.has(
+          descriptor.slotName,
+        );
+        if (!alreadyDelegated && !this.slotHosts.has(descriptor.slotName)) {
+          const mountEvent = new CustomEvent(
+            "cds-aichat-markdown-plugin-host-mount",
+            {
+              bubbles: true,
+              composed: true,
+              cancelable: true,
+              detail: {
+                slotName: descriptor.slotName,
+                html: descriptor.html,
+                isInline: descriptor.isInline,
+              },
+            },
+          );
+          this.dispatchEvent(mountEvent);
+          if (mountEvent.defaultPrevented) {
+            this.delegatedPluginSlots.add(descriptor.slotName);
+          }
+        } else if (alreadyDelegated) {
+          // The chain owns this slot; push HTML updates through a second
+          // event so streaming chunks reach the page-level host element.
+          this.dispatchEvent(
+            new CustomEvent("cds-aichat-markdown-plugin-host-update", {
+              bubbles: true,
+              composed: true,
+              detail: {
+                slotName: descriptor.slotName,
+                html: descriptor.html,
+              },
+            }),
+          );
+        }
+
+        if (this.delegatedPluginSlots.has(descriptor.slotName)) {
+          continue;
+        }
+
+        // Fallback: no outer listener took over (standalone usage, e.g.
+        // storybook). Adopt the host as our own light-DOM child, matching
+        // the pre-event behavior so existing tests/stories keep working.
+        let host = this.slotHosts.get(descriptor.slotName);
+        if (!host) {
+          const tag = descriptor.isInline ? "span" : "div";
+          host = document.createElement(tag);
+          host.setAttribute("slot", descriptor.slotName);
+          // Shadow-DOM `.cds-aichat-markdown-stack > *:not(:first-child)`
+          // doesn't reach slot-projected content; apply the same spacing
+          // inline (block hosts only — inline spans flow with text).
+          if (!descriptor.isInline) {
+            host.style.marginBlockStart = "1rem";
+          }
+          this.slotHosts.set(descriptor.slotName, host);
+          this.appendChild(host);
+        }
+        // Only rewrite innerHTML when the plugin output actually changed;
+        // streaming re-renders frequently land here with the same HTML.
+        if (host.innerHTML !== descriptor.html) {
+          host.innerHTML = descriptor.html;
+        }
+        continue;
+      }
+
+      const callback = renderers?.[descriptor.kind];
+      if (!callback) {
+        continue;
+      }
+      let result: HTMLElement | null;
+      try {
+        result = (
+          callback as (
+            args: Parameters<NonNullable<typeof callback>>[0],
+          ) => HTMLElement | null
+        )({
+          ...descriptor.data,
+          token: descriptor.token,
+          node: descriptor.node,
+          slotName: descriptor.slotName,
+        });
+      } catch (error) {
+        console.error(
+          `[carbon-ai-chat-components] customRenderers.${descriptor.kind} threw`,
+          error,
+        );
+        continue;
+      }
+      if (result == null) {
+        const existing = this.slotHosts.get(descriptor.slotName);
+        if (existing) {
+          existing.remove();
+          this.slotHosts.delete(descriptor.slotName);
+        }
+        continue;
+      }
+      wanted.add(descriptor.slotName);
+      let host = this.slotHosts.get(descriptor.slotName);
+      if (!host) {
+        host = document.createElement("div");
+        host.setAttribute("slot", descriptor.slotName);
+        // Match the spacing applied to direct children of
+        // `.cds-aichat-markdown-stack`; shadow CSS doesn't reach
+        // slot-projected light-DOM hosts, so we apply it inline.
+        host.style.marginBlockStart = "1rem";
+        this.slotHosts.set(descriptor.slotName, host);
+        this.appendChild(host);
+      }
+      if (host.firstChild !== result || host.childNodes.length !== 1) {
+        host.replaceChildren(result);
+      }
+    }
+
+    for (const [slotName, host] of this.slotHosts) {
+      if (!wanted.has(slotName)) {
+        host.remove();
+        this.slotHosts.delete(slotName);
+      }
+    }
+
+    // Tell any delegating chat container to drop hosts whose descriptor
+    // disappeared (e.g. a streaming chunk removed a math node).
+    for (const slotName of this.delegatedPluginSlots) {
+      if (!wanted.has(slotName)) {
+        this.dispatchEvent(
+          new CustomEvent("cds-aichat-markdown-plugin-host-unmount", {
+            bubbles: true,
+            composed: true,
+            detail: { slotName },
+          }),
+        );
+        this.delegatedPluginSlots.delete(slotName);
+      }
+    }
   }
 
   protected render() {

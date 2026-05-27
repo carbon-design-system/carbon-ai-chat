@@ -7,6 +7,25 @@
  *  @license
  */
 
+/**
+ * The parse/diff layer between raw markdown source and the renderer. Parses with markdown-it (built-in plugins plus any caller-supplied `markdownItPlugins`), builds a nested {@link TokenTree}, and diffs it against the previous tree so streaming updates can reuse stable subtrees.
+ *
+ * ### Why diff
+ *
+ * `diffTokenTree` reuses old nodes by `key` whenever the key matches. This is what lets `./markdown-renderer.ts`'s use of Lit's `repeat` directive keep DOM stable during streaming: each incoming chunk re-parses the full source, but matched keys reuse the prior subtree, so only the genuinely new tail differs.
+ *
+ * ### Why `cachedHtml`
+ *
+ * For the leaf token types in {@link PLUGIN_DELEGABLE_TOKEN_TYPES}, when a user plugin's renderer rule produces the HTML (via `./utils/plugin-fallback.ts`), the result is cached on the `TokenTree` node and carried forward by `diffTokenTree` whenever the underlying token's `content` / `attrs` / `info` are unchanged. A stable earlier-in-document fence/image/etc. therefore isn't re-rendered through the plugin's rule on every streaming chunk. The cache is tagged with the `MarkdownIt` instance that produced it; a plugin swap (which builds a fresh instance) invalidates the cache on read.
+ *
+ * The block comment on {@link PLUGIN_DELEGABLE_TOKEN_TYPES} explains why only those four token types are eligible for delegation.
+ *
+ * ### Related files
+ *
+ * - `./markdown-renderer.ts` — consumes the `TokenTree` and produces a Lit `TemplateResult`.
+ * - `./utils/plugin-fallback.ts` — reads `cachedHtml` and {@link getPluginOverriddenRules} to drive the delegated-render flow.
+ */
+
 import MarkdownIt, { Token } from "markdown-it";
 
 import { markdownItAttrs } from "./plugins/markdown-it-attrs";
@@ -23,48 +42,179 @@ export interface TokenTree {
   token: Partial<Token>;
   /** Child nodes for nested content */
   children: TokenTree[];
+  /**
+   * Cached HTML produced by `md.renderer.render()` for leaf tokens whose
+   * renderer rule was overridden by a user plugin. Tagged with the
+   * `MarkdownIt` instance that produced it so a plugin swap (which builds a
+   * fresh instance) invalidates the cache on read. Inherited across
+   * {@link diffTokenTree} when the token's content and attrs are unchanged so
+   * the plugin's rule isn't re-invoked on every streaming chunk. Only
+   * populated for token types in {@link PLUGIN_DELEGABLE_TOKEN_TYPES}.
+   * @internal
+   */
+  cachedHtml?: { md: MarkdownIt; html: string };
 }
 
 /**
- * Pre-configured markdown-it instance that allows HTML content.
- * Uses CommonMark preset for GitHub Flavored Markdown compatibility.
+ * Token types whose renderer rule, when overridden by a user-supplied
+ * markdown-it plugin, will be honored — instead of the native Lit dispatch.
+ * All four are leaf tokens (`nesting === 0`) so the slice handed to
+ * `md.renderer.render()` is a single token and the rendered HTML can be
+ * safely cached on the {@link TokenTree} node.
+ *
+ * Container tokens (paragraph_open, heading_open, list_*_open, table_open)
+ * are intentionally excluded: delegating them would erase Carbon custom
+ * elements (cds-unordered-list, cds-list-item, cds-aichat-table) and break
+ * streaming-friendly per-child diffing for the subtree. Link tokens are
+ * excluded because the native `<a>` dispatch injects `target="_blank"` for
+ * chat-link safety.
+ *
+ * @internal
  */
-const htmlMarkdown = new MarkdownIt("commonmark", {
-  html: true,
-  breaks: true,
-  linkify: true,
-})
-  .enable("table")
-  .enable("strikethrough")
-  .enable("linkify")
-  .use(markdownItAttrs)
-  .use(markdownItHighlight)
-  .use(markdownItTaskLists);
+export const PLUGIN_DELEGABLE_TOKEN_TYPES: ReadonlySet<string> = new Set([
+  "fence",
+  "image",
+  "code_inline",
+  "html_block",
+]);
 
 /**
- * Pre-configured markdown-it instance that strips HTML content.
- * Same features as htmlMarkdown but with HTML disabled for security.
+ * A markdown-it plugin reference. Either a bare plugin function or a
+ * `[plugin, options]` / `[plugin, ...params]` tuple matching
+ * `MarkdownIt.use(...)`.
+ *
+ * @experimental
  */
-const noHtmlMarkdown = new MarkdownIt("commonmark", {
-  html: false,
-  breaks: true,
-  linkify: true,
-})
-  .enable("table")
-  .enable("strikethrough")
-  .enable("linkify")
-  .use(markdownItAttrs)
-  .use(markdownItHighlight)
-  .use(markdownItTaskLists);
+export type MarkdownItPlugin =
+  | MarkdownIt.PluginSimple
+  | [MarkdownIt.PluginWithOptions<unknown>, unknown]
+  | [MarkdownIt.PluginWithParams, ...unknown[]];
+
+// Per-instance set of renderer-rule keys that user plugins overrode (or
+// added) relative to the snapshot taken after our built-in plugins ran.
+// WeakMap so cleanup follows the MarkdownIt instance's lifetime.
+const pluginOverriddenRulesByMd = new WeakMap<
+  MarkdownIt,
+  ReadonlySet<string>
+>();
+
+const EMPTY_RULE_SET: ReadonlySet<string> = new Set<string>();
+
+/**
+ * Returns the set of renderer-rule keys that user-supplied plugins overrode
+ * (or freshly added) on the given markdown-it instance, relative to the
+ * baseline established after our built-in plugins (markdownItAttrs,
+ * markdownItHighlight, markdownItTaskLists) ran. The renderer uses this to
+ * decide which token types to route through `md.renderer.render()` instead
+ * of native Lit dispatch. Returns an empty set for instances we didn't build.
+ *
+ * @internal
+ */
+export function getPluginOverriddenRules(md: MarkdownIt): ReadonlySet<string> {
+  return pluginOverriddenRulesByMd.get(md) ?? EMPTY_RULE_SET;
+}
+
+/**
+ * Builds a new markdown-it instance with the built-in plugins and any user-supplied
+ * plugins applied on top. `options.html` selects whether raw HTML is parsed as HTML
+ * (`true`, the default) or neutralized to inert escaped text (`false`, used when
+ * {@link CDSAIChatMarkdown.removeHTML} is set). Both variants are built through this
+ * same path so plugin application and overridden-rule snapshotting stay identical.
+ *
+ * Snapshots `md.renderer.rules` after the built-in plugins but before the user
+ * plugins, then records the keys whose function reference changed (or whose
+ * key was added) into {@link pluginOverriddenRulesByMd}.
+ */
+function createMarkdownIt(
+  plugins?: MarkdownItPlugin[],
+  options: { html?: boolean } = {},
+): MarkdownIt {
+  const md = new MarkdownIt("commonmark", {
+    html: options.html ?? true,
+    breaks: true,
+    linkify: true,
+  })
+    .enable("table")
+    .enable("strikethrough")
+    .enable("linkify")
+    .use(markdownItAttrs)
+    .use(markdownItHighlight)
+    .use(markdownItTaskLists);
+
+  const baselineRules: Record<string, unknown> = {
+    ...(md.renderer.rules as Record<string, unknown>),
+  };
+
+  for (const plugin of plugins ?? []) {
+    if (Array.isArray(plugin)) {
+      const [fn, ...args] = plugin;
+      (md as MarkdownIt).use(fn as MarkdownIt.PluginWithParams, ...args);
+    } else {
+      md.use(plugin);
+    }
+  }
+
+  const currentRules = md.renderer.rules as Record<string, unknown>;
+  const overridden = new Set<string>();
+  const allKeys = new Set<string>([
+    ...Object.keys(baselineRules),
+    ...Object.keys(currentRules),
+  ]);
+  for (const key of allKeys) {
+    if (currentRules[key] !== baselineRules[key]) {
+      overridden.add(key);
+    }
+  }
+  pluginOverriddenRulesByMd.set(md, overridden);
+
+  return md;
+}
+
+// Each plugin identity caches both an html-enabled and an html-disabled instance,
+// built lazily on first use. `removeHTML` selects the no-html variant.
+interface MarkdownItVariants {
+  html?: MarkdownIt;
+  noHtml?: MarkdownIt;
+}
+
+// Cache for the no-plugins default instances.
+const defaultMarkdownIt: MarkdownItVariants = {};
+
+// Cache keyed by plugin-array identity. WeakMap so plugin arrays that go out of
+// scope can be collected.
+const markdownItCache = new WeakMap<MarkdownItPlugin[], MarkdownItVariants>();
+
+/**
+ * Returns a (cached) markdown-it instance for the given plugin set, choosing the
+ * html-enabled variant or the html-disabled (HTML-neutralizing) variant based on
+ * `removeHtml`. Calling with the same `plugins` reference and `removeHtml` returns
+ * the same instance.
+ */
+export function getMarkdownIt(
+  plugins?: MarkdownItPlugin[],
+  removeHtml = false,
+): MarkdownIt {
+  const variants =
+    !plugins || plugins.length === 0
+      ? defaultMarkdownIt
+      : (markdownItCache.get(plugins) ??
+        (() => {
+          const created: MarkdownItVariants = {};
+          markdownItCache.set(plugins, created);
+          return created;
+        })());
+
+  const slot = removeHtml ? "noHtml" : "html";
+  if (!variants[slot]) {
+    variants[slot] = createMarkdownIt(plugins, { html: !removeHtml });
+  }
+  return variants[slot] as MarkdownIt;
+}
 
 // markdown-it treats a closing HTML tag and the next markdown line (ie. </div>\n##Heading) as one HTML
 // block when there is no blank line between them. Insert an extra newline so the
 // following markdown is parsed as markdown, not swallowed into the HTML token.
-function normalizeHtmlBlockBoundaries(markdown: string, allowHtml: boolean) {
-  if (!allowHtml) {
-    return markdown;
-  }
-
+function normalizeHtmlBlockBoundaries(markdown: string): string {
   return markdown.replace(
     /(^|\n)(\s*<\/\s*[A-Za-z][\w:-]*\s*>)(\r?\n)(?=\S)/g,
     "$1$2$3$3",
@@ -76,12 +226,8 @@ function normalizeHtmlBlockBoundaries(markdown: string, allowHtml: boolean) {
 // is re-parsed as markdown.
 function splitHtmlBlockTrailingMarkdown(
   tokens: Token[],
-  allowHtml: boolean,
+  md: MarkdownIt,
 ): Token[] {
-  if (!allowHtml) {
-    return tokens;
-  }
-
   return tokens.flatMap((token) => {
     if (token.type !== "html_block") {
       return [token];
@@ -105,29 +251,28 @@ function splitHtmlBlockTrailingMarkdown(
 
     return [
       htmlToken,
-      ...markdownToMarkdownItTokens(
-        `${leadingWhitespace}${trailingMarkdown}`,
-        allowHtml,
-      ),
+      ...md.parse(`${leadingWhitespace}${trailingMarkdown}`, {}),
     ];
   });
 }
 
 /**
- * Parses markdown text into a flat array of markdown-it tokens.
+ * Parses markdown text into a flat array of markdown-it tokens using the given instance.
+ *
+ * When `removeHtml` is set, `md` is the html-disabled instance: raw HTML is
+ * neutralized to inert escaped text (content preserved) and there are no HTML
+ * blocks to normalize or split, so the boundary fixups are skipped.
  */
-export function markdownToMarkdownItTokens(
+function parseMarkdown(
   fullText: string,
-  allowHtml = true,
+  md: MarkdownIt,
+  removeHtml: boolean,
 ): Token[] {
-  const normalizedText = normalizeHtmlBlockBoundaries(fullText, allowHtml);
-
-  return allowHtml
-    ? splitHtmlBlockTrailingMarkdown(
-        htmlMarkdown.parse(normalizedText, {}),
-        true,
-      )
-    : noHtmlMarkdown.parse(normalizedText, {});
+  if (removeHtml) {
+    return md.parse(fullText, {});
+  }
+  const normalizedText = normalizeHtmlBlockBoundaries(fullText);
+  return splitHtmlBlockTrailingMarkdown(md.parse(normalizedText, {}), md);
 }
 
 /**
@@ -202,6 +347,27 @@ export function buildTokenTree(tokens: Token[]): TokenTree {
   return root;
 }
 
+function attrsEqual(
+  a: Token["attrs"] | undefined,
+  b: Token["attrs"] | undefined,
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i][0] !== b[i][0] || a[i][1] !== b[i][1]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Compares two TokenTree structures and creates a new tree that reuses
  * unchanged nodes from the old tree.
@@ -225,6 +391,24 @@ export function diffTokenTree(
     children: [],
   };
 
+  // Carry forward the rendered-HTML cache for leaf tokens delegated to the
+  // markdown-it renderer. Skip when the underlying token content, attrs, or
+  // info changed (info is the fence's language string and drives the rendered
+  // output for plugins like markdown-it-mermaid / syntax highlighters).
+  if (
+    oldTree.cachedHtml !== undefined &&
+    typeof newTree.token.type === "string" &&
+    PLUGIN_DELEGABLE_TOKEN_TYPES.has(newTree.token.type) &&
+    oldTree.token.content === newTree.token.content &&
+    oldTree.token.info === newTree.token.info &&
+    attrsEqual(
+      oldTree.token.attrs ?? undefined,
+      newTree.token.attrs ?? undefined,
+    )
+  ) {
+    merged.cachedHtml = oldTree.cachedHtml;
+  }
+
   // Create lookup map of old children by key for efficient comparison
   const oldChildrenByKey = new Map(
     oldTree.children.map((child) => [child.key, child]),
@@ -247,19 +431,30 @@ export function diffTokenTree(
 }
 
 /**
- * Converts markdown into a tree with keys on it for Lit.
+ * Result of {@link markdownToTokenTree}. Returns the parsed tree plus the
+ * markdown-it instance used to produce it so the renderer can fall back to
+ * `md.renderer.render()` for plugin-introduced tokens. The set of
+ * plugin-overridden rules is read from the per-instance WeakMap via
+ * {@link getPluginOverriddenRules} as needed.
+ */
+export interface MarkdownToTokenTreeResult {
+  tree: TokenTree;
+  md: MarkdownIt;
+}
+
+/**
+ * Converts markdown into a tree with keys on it for Lit. The returned `md` is the
+ * (cached) markdown-it instance keyed by `markdownItPlugins` identity and the
+ * `removeHtml` flag (html-enabled vs html-neutralizing variant).
  */
 export function markdownToTokenTree(
   markdown: string,
-  lastTree?: TokenTree,
-  allowHtml = true,
-): TokenTree {
-  // Parse markdown into flat token array
-  const tokens = markdownToMarkdownItTokens(markdown, allowHtml);
-
-  // Build hierarchical tree structure
-  const tree = buildTokenTree(tokens);
-
-  // Optimize by reusing unchanged parts of previous tree
-  return diffTokenTree(lastTree, tree);
+  lastTree: TokenTree | undefined,
+  opts: { removeHtml?: boolean; markdownItPlugins?: MarkdownItPlugin[] } = {},
+): MarkdownToTokenTreeResult {
+  const removeHtml = opts.removeHtml ?? false;
+  const md = getMarkdownIt(opts.markdownItPlugins, removeHtml);
+  const tokens = parseMarkdown(markdown, md, removeHtml);
+  const tree = diffTokenTree(lastTree, buildTokenTree(tokens));
+  return { tree, md };
 }

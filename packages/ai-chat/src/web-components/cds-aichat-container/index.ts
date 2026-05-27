@@ -31,6 +31,7 @@ import {
 import type {
   RenderCustomMessageFooterState,
   RenderUserDefinedState,
+  WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
 } from "../../types/component/ChatContainer";
@@ -104,6 +105,9 @@ class ChatContainer extends FlattenedConfigElement {
   @property({ attribute: false })
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
 
+  // markdown is declared on the FlattenedConfigElement base; the attributes
+  // interface narrows its type.
+
   /**
    * The existing array of slot names for all user_defined components.
    */
@@ -121,6 +125,22 @@ class ChatContainer extends FlattenedConfigElement {
    */
   @state()
   _writeableElementSlots: string[] = [];
+
+  /**
+   * Active slot names for markdown-plugin output hosted at this element.
+   * Populated when this element takes over from the markdown element by
+   * accepting the host-mount event; drained when the matching unmount
+   * event fires.
+   */
+  @state()
+  _pluginSlotNames: string[] = [];
+
+  /**
+   * Page-level host elements created for plugin-output slots, keyed by slot
+   * name. Created in this element's outer light DOM so consumer-loaded
+   * stylesheets (e.g. KaTeX) reach the rendered HTML normally.
+   */
+  private _pluginHosts: Map<string, HTMLElement> = new Map();
 
   /**
    * The chat instance.
@@ -350,6 +370,134 @@ class ChatContainer extends FlattenedConfigElement {
     }
   }
 
+  /**
+   * True when an outer chat element (cds-aichat-custom-element) further up
+   * the composed path will catch the host-mount event. When true, this
+   * element only forwards the slot through its render template and lets the
+   * outer element create the page-level host. When false, this element is
+   * outermost and must create the host itself.
+   */
+  private hasOuterChatHandler(event: Event): boolean {
+    const path = event.composedPath();
+    const myIndex = path.indexOf(this);
+    if (myIndex < 0) {
+      return false;
+    }
+    for (let i = myIndex + 1; i < path.length; i++) {
+      const node = path[i] as Element;
+      if (
+        node?.tagName === "CDS-AICHAT-CUSTOM-ELEMENT" ||
+        node?.tagName === "CDS-AICHAT-REACT"
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private handlePluginHostMount = (event: Event) => {
+    const detail = (
+      event as CustomEvent<{
+        slotName: string;
+        html: string;
+        isInline: boolean;
+      }>
+    ).detail;
+    if (!detail?.slotName) {
+      return;
+    }
+    // Track the slot regardless of who owns hosting so our render forwarder
+    // projects the page-level content into cds-aichat-internal's slot.
+    if (!this._pluginSlotNames.includes(detail.slotName)) {
+      this._pluginSlotNames = [...this._pluginSlotNames, detail.slotName];
+    }
+    if (this.hasOuterChatHandler(event)) {
+      // An outer chat element will create the page-level host; just forward.
+      return;
+    }
+    event.preventDefault();
+    let host = this._pluginHosts.get(detail.slotName);
+    if (!host) {
+      host = document.createElement(detail.isInline ? "span" : "div");
+      host.setAttribute("slot", detail.slotName);
+      // Match `.cds-aichat-markdown-stack > *:not(:first-child)` spacing;
+      // shadow CSS doesn't reach this host (it lives in this element's
+      // outer light DOM), so apply it inline. Inline output flows with
+      // text and gets no extra spacing.
+      if (!detail.isInline) {
+        host.style.marginBlockStart = "1rem";
+      }
+      this._pluginHosts.set(detail.slotName, host);
+      this.appendChild(host);
+    }
+    if (host.innerHTML !== detail.html) {
+      host.innerHTML = detail.html;
+    }
+  };
+
+  private handlePluginHostUpdate = (event: Event) => {
+    const detail = (event as CustomEvent<{ slotName: string; html: string }>)
+      .detail;
+    if (!detail?.slotName) {
+      return;
+    }
+    const host = this._pluginHosts.get(detail.slotName);
+    if (host && host.innerHTML !== detail.html) {
+      host.innerHTML = detail.html;
+    }
+  };
+
+  private handlePluginHostUnmount = (event: Event) => {
+    const detail = (event as CustomEvent<{ slotName: string }>).detail;
+    if (!detail?.slotName) {
+      return;
+    }
+    this._pluginSlotNames = this._pluginSlotNames.filter(
+      (n) => n !== detail.slotName,
+    );
+    const host = this._pluginHosts.get(detail.slotName);
+    if (host) {
+      host.remove();
+      this._pluginHosts.delete(detail.slotName);
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(
+      "cds-aichat-markdown-plugin-host-mount",
+      this.handlePluginHostMount,
+    );
+    this.addEventListener(
+      "cds-aichat-markdown-plugin-host-update",
+      this.handlePluginHostUpdate,
+    );
+    this.addEventListener(
+      "cds-aichat-markdown-plugin-host-unmount",
+      this.handlePluginHostUnmount,
+    );
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener(
+      "cds-aichat-markdown-plugin-host-mount",
+      this.handlePluginHostMount,
+    );
+    this.removeEventListener(
+      "cds-aichat-markdown-plugin-host-update",
+      this.handlePluginHostUpdate,
+    );
+    this.removeEventListener(
+      "cds-aichat-markdown-plugin-host-unmount",
+      this.handlePluginHostUnmount,
+    );
+    for (const host of this._pluginHosts.values()) {
+      host.remove();
+    }
+    this._pluginHosts.clear();
+    super.disconnectedCallback();
+  }
+
   onBeforeRenderOverride = async (instance: ChatInstance) => {
     this._instance = instance;
 
@@ -460,6 +608,7 @@ class ChatContainer extends FlattenedConfigElement {
       .onAfterRender=${this.onAfterRender}
       .onBeforeRender=${this.onBeforeRenderOverride}
       .element=${this.element}
+      .markdown=${this.markdown as WCMarkdown | undefined}
     >
       ${this._writeableElementSlots.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
@@ -474,6 +623,9 @@ class ChatContainer extends FlattenedConfigElement {
         : this._customFooterSlotNames.map(
             (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
           )}
+      ${this._pluginSlotNames.map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
+      )}
     </cds-aichat-internal>`;
   }
 }
@@ -491,7 +643,15 @@ declare global {
  *
  * @category Web component
  */
-interface CdsAiChatContainerAttributes extends PublicConfig {
+interface CdsAiChatContainerAttributes extends Omit<PublicConfig, "markdown"> {
+  /**
+   * Markdown rendering customization. Extends the framework-neutral
+   * `PublicConfig.markdown` with web-component `customRenderers`.
+   *
+   * @experimental
+   */
+  markdown?: WCMarkdown;
+
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.

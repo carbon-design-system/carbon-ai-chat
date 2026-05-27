@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,14 +7,17 @@
  *  @license
  */
 
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
+
 import { useIntl } from "../../hooks/useIntl";
 import { useSelector } from "../../hooks/useSelector";
 
-import { default as Markdown } from "@carbon/ai-chat-components/es/react/markdown.js";
+import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+
 import { useShouldSanitizeHTML } from "../../hooks/useShouldSanitizeHTML";
 import { AppState } from "../../../types/state/AppState";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
+import { MarkdownConfigContext } from "../../contexts/MarkdownConfigContext";
 
 interface MarkdownWithDefaultsProps {
   /**
@@ -65,51 +68,34 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
     doSanitize = overrideSanitize;
   }
 
-  // Get localization data for markdown components
   const languagePack = useLanguagePack();
   const { formatMessage } = useIntl();
   const locale = useSelector(
     (state: AppState) => state.config.public.locale || "en",
   );
+  const markdownConfig = useContext(MarkdownConfigContext);
 
-  // Memoize string functions to prevent unnecessary re-renders
   const getPaginationSupplementalText = useMemo(
     () =>
-      ({ count }: { count: number }) => {
-        return formatMessage(
+      ({ count }: { count: number }) =>
+        formatMessage(
           { id: "table_paginationSupplementalText" },
-          {
-            pagesCount: count,
-          },
-        );
-      },
+          { pagesCount: count },
+        ),
     [formatMessage],
   );
 
   const getPaginationStatusText = useMemo(
     () =>
-      ({
-        start,
-        end,
-        count,
-      }: {
-        start: number;
-        end: number;
-        count: number;
-      }) => {
-        return formatMessage(
-          { id: "table_paginationStatus" },
-          { start, end, count },
-        );
-      },
+      ({ start, end, count }: { start: number; end: number; count: number }) =>
+        formatMessage({ id: "table_paginationStatus" }, { start, end, count }),
     [formatMessage],
   );
 
   const getLineCountText = useMemo(
     () =>
-      ({ count }: { count: number }) => {
-        return formatMessage({ id: "codeSnippet_lineCount" }, { count });
-      },
+      ({ count }: { count: number }) =>
+        formatMessage({ id: "codeSnippet_lineCount" }, { count }),
     [formatMessage],
   );
 
@@ -119,6 +105,8 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
       sanitizeHTML={doSanitize}
       streaming={streaming}
       removeHTML={removeHTML}
+      markdownItPlugins={markdownConfig?.markdownItPlugins}
+      customRenderers={markdownConfig?.customRenderers}
       // Code snippet properties
       codeSnippetHighlight={highlight}
       codeSnippetShowLessText={languagePack.codeSnippet_showLessText}
@@ -172,5 +160,3 @@ const MarkdownWithDefaultsExport = React.memo(
 
 export { MarkdownWithDefaultsExport as MarkdownWithDefaults };
 export default MarkdownWithDefaultsExport;
-
-// Made with Bob

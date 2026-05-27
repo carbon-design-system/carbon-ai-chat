@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -28,6 +28,7 @@ import type {
   ServiceDeskFactoryParameters,
   ServiceDeskPublicConfig,
 } from "../../types/config/ServiceDeskConfig";
+import type { MarkdownConfigContextValue } from "../../chat/contexts/MarkdownConfigContext";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -82,6 +83,17 @@ class ChatContainerInternal extends LitElement {
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
 
+  /**
+   * Merged markdown config (framework-neutral `markdownItPlugins` plus
+   * layer-specific `customRenderers`). Forwarded to the React app via
+   * `MarkdownConfigContext` so {@link MarkdownWithDefaults} can portal
+   * consumer overrides into the rendered markdown components.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  markdown?: MarkdownConfigContextValue;
+
   firstUpdated() {
     if (this.config) {
       this.renderReactApp();
@@ -98,7 +110,8 @@ class ChatContainerInternal extends LitElement {
         changedProperties.has("serviceDesk") ||
         changedProperties.has("onBeforeRender") ||
         changedProperties.has("onAfterRender") ||
-        changedProperties.has("element"))
+        changedProperties.has("element") ||
+        changedProperties.has("markdown"))
     ) {
       this.renderReactApp();
     }
@@ -127,6 +140,7 @@ class ChatContainerInternal extends LitElement {
         onAfterRender={this.onAfterRender}
         container={container}
         element={this.element}
+        markdown={this.markdown}
       />,
     );
   }

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -44,6 +44,10 @@ import {
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
+import {
+  MarkdownConfigContext,
+  type MarkdownConfigContextValue,
+} from "./contexts/MarkdownConfigContext";
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -70,6 +74,14 @@ interface AppProps {
   renderUserDefinedResponse?: RenderUserDefinedResponse;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
+  /**
+   * Merged markdown config provided through {@link MarkdownConfigContext} for
+   * deep consumers. Accepts either the React-flavor (`ChatContainerProps`) or
+   * the web-component flavor (`WCMarkdown`) thanks to the permissive
+   * {@link MarkdownConfigContextValue} type.
+   * @experimental
+   */
+  markdown?: MarkdownConfigContextValue;
   container: HTMLElement;
   element?: HTMLElement;
   setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
@@ -95,6 +107,7 @@ export function ChatAppEntry({
   renderUserDefinedResponse,
   renderCustomMessageFooter,
   renderWriteableElements,
+  markdown,
   container,
   setParentInstance,
   element,
@@ -340,39 +353,41 @@ export function ChatAppEntry({
         <ServiceManagerProvider serviceManager={serviceManager}>
           <IntlProvider intl={serviceManager.intl}>
             <LanguagePackProvider>
-              <AriaAnnouncerProvider>
-                <AppShell
-                  serviceManager={serviceManager}
-                  hostElement={serviceManager.customHostElement}
-                  renderWriteableElements={renderWriteableElements}
-                />
-                {renderUserDefinedResponse && (
-                  <UserDefinedResponsePortalsContainer
-                    chatInstance={instance}
-                    renderUserDefinedResponse={renderUserDefinedResponse}
-                    userDefinedResponseEventsBySlot={
-                      userDefinedResponseEventsBySlot
-                    }
-                    chatWrapper={chatWrapper}
+              <MarkdownConfigContext.Provider value={markdown}>
+                <AriaAnnouncerProvider>
+                  <AppShell
+                    serviceManager={serviceManager}
+                    hostElement={serviceManager.customHostElement}
+                    renderWriteableElements={renderWriteableElements}
                   />
-                )}
+                  {renderUserDefinedResponse && (
+                    <UserDefinedResponsePortalsContainer
+                      chatInstance={instance}
+                      renderUserDefinedResponse={renderUserDefinedResponse}
+                      userDefinedResponseEventsBySlot={
+                        userDefinedResponseEventsBySlot
+                      }
+                      chatWrapper={chatWrapper}
+                    />
+                  )}
 
-                {renderCustomMessageFooter && (
-                  <CustomFooterPortalsContainer
-                    chatInstance={instance}
-                    renderCustomMessageFooter={renderCustomMessageFooter}
-                    customFooterEventsBySlot={customFooterSlotsByName}
-                    chatWrapper={chatWrapper}
-                  />
-                )}
+                  {renderCustomMessageFooter && (
+                    <CustomFooterPortalsContainer
+                      chatInstance={instance}
+                      renderCustomMessageFooter={renderCustomMessageFooter}
+                      customFooterEventsBySlot={customFooterSlotsByName}
+                      chatWrapper={chatWrapper}
+                    />
+                  )}
 
-                {renderWriteableElements && (
-                  <WriteableElementsPortalsContainer
-                    chatInstance={instance}
-                    renderResponseMap={renderWriteableElements}
-                  />
-                )}
-              </AriaAnnouncerProvider>
+                  {renderWriteableElements && (
+                    <WriteableElementsPortalsContainer
+                      chatInstance={instance}
+                      renderResponseMap={renderWriteableElements}
+                    />
+                  )}
+                </AriaAnnouncerProvider>
+              </MarkdownConfigContext.Provider>
             </LanguagePackProvider>
           </IntlProvider>
         </ServiceManagerProvider>
