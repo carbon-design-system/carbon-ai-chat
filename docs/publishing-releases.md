@@ -330,3 +330,7 @@ If you run into an error saying a tag already exists, that usually means the a p
 Delete the git tags by going to the [tags page on GitHub](https://github.com/carbon-design-system/carbon-ai-chat/tags) and select the `Delete tag` option in next to all the appropriate tags. Then re-run the workflow.
 
 ![Screenshot of tag page on GitHub](https://github.com/user-attachments/assets/c1c58e29-711a-4f14-81cf-9bb752be2b18)
+
+### Checks are stuck on pending
+
+Sometimes when the actions bot runs a workflow that creates a pull request the checks can get stuck in a `pending` state that never seems to resolve. If this happens you can simply push an empty commit to the pull request to manually force the checks to re-run `git commit --allow-empty -m "chore: trigger ci" && git push`.
