@@ -85,6 +85,11 @@ export default {
       table: { category: "events" },
       description: "Fires when the panel is closed without submitting.",
     },
+    maxLength: {
+      control: "number",
+      description:
+        "The maximum number of characters allowed in the feedback text area.",
+    },
   },
 };
 
@@ -118,6 +123,7 @@ const renderFeedback = (args, options) => {
         onClose={() => {
           handleClose?.();
         }}
+        maxLength={args.maxLength}
       />
     </div>
   );
@@ -135,6 +141,7 @@ export const Default = {
     showBody: true,
     onSubmit: undefined,
     onClose: undefined,
+    maxLength: 1000,
   },
   render: (args) =>
     renderFeedback(args, {
@@ -162,6 +169,7 @@ export const WithCategories = {
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
+    maxLength: 1000,
   },
   render: (args) =>
     renderFeedback(args, {
@@ -196,6 +204,7 @@ export const WithDisclaimer = {
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
+    maxLength: 1000,
   },
   render: (args) =>
     renderFeedback(args, {
@@ -221,6 +230,7 @@ export const ReadOnly = {
     title: "Your feedback",
     showTextArea: true,
     showBody: false,
+    maxLength: 1000,
   },
   render: (args) =>
     renderFeedback(args, {
