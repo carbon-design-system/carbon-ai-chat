@@ -98,8 +98,8 @@ export class ResizeObserverManager {
     const messagesMaxWidth = this.getMessagesMaxWidth();
 
     const updateAtMaxWidth = (hostWidth: number) => {
-      // When host is less than max-width, input-and-messages is "at max width" (filling container)
-      const isAtMaxWidth = hostWidth < messagesMaxWidth;
+      // When host is less than or equal to max-width, input-and-messages is "at max width" (filling container)
+      const isAtMaxWidth = hostWidth <= messagesMaxWidth;
       onWidthChange({ isAtMaxWidth, currentWidth: hostWidth });
     };
 
