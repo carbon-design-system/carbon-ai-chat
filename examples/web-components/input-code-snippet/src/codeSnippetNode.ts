@@ -100,14 +100,16 @@ const impl = Node.create({
     ];
   },
 
-  // The triple-backtick trigger. When the user finishes typing ``` at the
-  // start of an empty line, replace the matched range with an empty
-  // `codeSnippetBlock`. The closing fence is implicit — it's added by
-  // `getRawText` at send time via `attrs.value`.
+  // The triple-backtick trigger. When the user finishes typing ``` anywhere
+  // in the paragraph, replace just the three backticks with an empty
+  // `codeSnippetBlock`; any preceding text stays in its paragraph and
+  // ProseMirror splits the block to make room for the inserted atom. The
+  // closing fence is implicit — it's added by `getRawText` at send time via
+  // `attrs.value`.
   addInputRules() {
     return [
       new InputRule({
-        find: /^```$/,
+        find: /```$/,
         handler: ({ range, chain }) => {
           chain()
             .deleteRange(range)
