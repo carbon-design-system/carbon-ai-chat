@@ -17,16 +17,13 @@ import "@carbon/web-components/es/components/textarea/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Close16 from "@carbon/icons/es/close/16.js";
-import { html, LitElement, PropertyValues } from "lit";
+import { html, LitElement, nothing, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./feedback.scss?lit";
-
-// The maximum number of characters the user is allowed to type into the text area.
-const MAX_TEXT_COUNT = 1000;
 
 /**
  * The component for displaying a panel requesting feedback from a user.
@@ -65,6 +62,12 @@ class CDSAIChatFeedback extends LitElement {
    */
   @property({ type: Object, attribute: false, reflect: true })
   initialValues?: FeedbackInitialValues;
+
+  /**
+   * The maximum number of characters allowed in the feedback text area.
+   */
+  @property({ type: Number, attribute: "max-length", reflect: true })
+  maxLength?: number;
 
   /**
    * The title to display in the popup. A default value will be used if no value is provided here.
@@ -310,7 +313,7 @@ class CDSAIChatFeedback extends LitElement {
                     ?disabled=${this.isReadonly}
                     placeholder="${this.placeholder}"
                     rows="3"
-                    max-count="${MAX_TEXT_COUNT}"
+                    max-count="${this.maxLength ?? nothing}"
                     @input=${this._handleTextInput}
                   ></cds-textarea>
                 </div>`

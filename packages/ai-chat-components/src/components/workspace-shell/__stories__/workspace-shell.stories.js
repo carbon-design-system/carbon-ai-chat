@@ -122,7 +122,7 @@ export default {
       <style>
         ${styles}
       </style>
-      ${story()}
+      <div class="workspace-story-container">${story()}</div>
     `,
   ],
 };
