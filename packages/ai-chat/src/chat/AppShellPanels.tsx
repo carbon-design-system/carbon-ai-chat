@@ -219,7 +219,13 @@ export const AppShellPanels = React.memo(function AppShellPanels({
             ? true
             : false
         }
-        showChatHeader={!isLegacyCustomPanel}
+        showChatHeader={
+          !isLegacyCustomPanel &&
+          "showChatHeader" in customPanelState.options &&
+          customPanelState.options.showChatHeader
+            ? true
+            : false
+        }
         animationOnOpen={
           customPanelState.options.disableAnimation
             ? "none"

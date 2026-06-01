@@ -129,6 +129,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
   @state() accessor _aiEnabled: boolean = false;
   @state() accessor _showFrame: boolean = false;
   @state() accessor _fullWidth: boolean = false;
+  @state() accessor _showChatHeader: boolean = false;
 
   private readonly _panelExamples: PanelControlExample[] = [
     {
@@ -326,6 +327,9 @@ export class DemoChatInstanceSwitcher extends LitElement {
       if (this._fullWidth) {
         options.fullWidth = true;
       }
+      if (this._showChatHeader) {
+        options.showChatHeader = true;
+      }
 
       // Generate dynamic panel content
       const panelBody = this._generatePanelBody(options);
@@ -370,6 +374,11 @@ export class DemoChatInstanceSwitcher extends LitElement {
     if (options.fullWidth) {
       optionsList.push(
         `<li><code>fullWidth</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.showChatHeader) {
+      optionsList.push(
+        `<li><code>showChatHeader</code>: <strong>true</strong></li>`,
       );
     }
 
@@ -607,6 +616,15 @@ export class DemoChatInstanceSwitcher extends LitElement {
                   this._fullWidth = e.target.checked;
                 }}
                 label-text="Full width layout"
+              >
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._showChatHeader}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._showChatHeader = e.target.checked;
+                }}
+                label-text="Show chat header"
               >
               </cds-checkbox>
             </div>
