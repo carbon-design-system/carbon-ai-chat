@@ -780,6 +780,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     const {
       id: feedbackID,
       is_on,
+      max_length = 1000,
       show_positive_details = true,
       show_negative_details = true,
       show_text_area = true,
@@ -919,6 +920,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           }`}
           isOpen={isOpen}
           isReadonly={isFeedbackSubmitted}
+          maxLength={max_length}
           onClose={() => onFeedbackClicked(isPositive)}
           onSubmit={(event: CustomEvent<FeedbackSubmitDetails>) =>
             onSubmit(isPositive, event.detail)

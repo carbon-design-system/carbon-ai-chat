@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -8,6 +8,7 @@
  */
 
 .workspace-story-container {
+  display: flex;
   block-size: 90vh;
 }
 
@@ -18,5 +19,5 @@
 
 // Ensure workspace shell has defined height for proper grid layout in storybook
 cds-aichat-workspace-shell {
-  block-size: 600px;
+  flex: 1;
 }
