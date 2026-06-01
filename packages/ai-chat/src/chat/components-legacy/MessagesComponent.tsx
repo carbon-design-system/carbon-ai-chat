@@ -1108,6 +1108,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * Renders the agent banner that appears at the top of the messages list when connecting to an agent.
    */
   private renderHumanAgentBanner() {
+    this.requestHumanAgentBannerFocus();
     return (
       <HumanAgentBannerContainer
         bannerRef={this.agentBannerRef}
