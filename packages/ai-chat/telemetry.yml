@@ -9,36 +9,15 @@ collect:
       allowedAttributeNames:
         # General
         - element
-        - strings
         # cds-aichat-container
-        - ai-disabled
-        - ai-enabled
-        - assistant-name
-        - assistantAvatarUrl
-        - debug
-        - disable-custom-element-mobile-enhancements
-        - disclaimer
-        - expose-service-manager-for-testing
-        - header
-        - history
-        - homescreen
-        - inject-carbon-theme
-        - input
-        - is-readonly
-        - launcher
-        - layout
-        - locale
-        - messaging
-        - namespace
-        - open-chat-by-default
-        - service-desk
-        - should-sanitize-html
-        - should-take-focus-if-opens-automatically
+        - onViewChange
+        - onViewPreChange
         # cds-aichat-internal
         - config
         - onAfterRender
         - onBeforeRender
         - serviceDesk
+        - strings
         # cds-aichat-stop-streaming-button
         - disabled
         - label
