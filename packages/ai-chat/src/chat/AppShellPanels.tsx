@@ -303,7 +303,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                 >
                   <div className="cds-aichat--panel-header-content">
                     <PanelHeader
-                      title={`**${panelTitle}**`}
+                      title={panelTitle}
                       labelBackButton={languagePack.general_returnToAssistant}
                       backButtonType={
                         "backButtonType" in customPanelState.options
@@ -323,7 +323,6 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                           customPanelState.options.hideBackButton
                         )
                       }
-                      backButtonPosition="start"
                     />
                   </div>
                 </div>
