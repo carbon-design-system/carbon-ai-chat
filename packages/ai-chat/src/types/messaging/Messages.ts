@@ -793,6 +793,12 @@ export interface GenericItemMessageFeedbackOptions {
   id?: string;
 
   /**
+   * The maximum number of characters allowed in the feedback text area.
+   * defaults to 1000.
+   */
+  max_length?: number;
+
+  /**
    * Indicates if the user should be asked for additional detailed information when providing positive feedback. This
    * defaults to true.
    */
