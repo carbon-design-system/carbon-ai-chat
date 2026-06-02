@@ -79,6 +79,11 @@ export default {
       control: "boolean",
       description: "Show the body text (defaults to false)",
     },
+    maxLength: {
+      control: "number",
+      description:
+        "The maximum number of characters allowed in the feedback text area.",
+    },
   },
 };
 
@@ -92,6 +97,7 @@ export const Default = {
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
+    maxLength: 1000,
   },
   render: (args) => html`
     <div style="padding: 1rem; max-width: 24rem;">
@@ -114,6 +120,7 @@ export const Default = {
         @feedback-close=${() => {
           console.log("Feedback closed");
         }}
+        max-length=${args.maxLength}
       >
       </cds-aichat-feedback>
     </div>
@@ -131,6 +138,7 @@ export const WithCategories = {
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
+    maxLength: 1000,
   },
   render: (args) => html`
     <div style="padding: 1rem; max-width: 24rem;">
@@ -155,6 +163,7 @@ export const WithCategories = {
         @feedback-close=${() => {
           console.log("Feedback closed");
         }}
+        max-length=${args.maxLength}
       >
       </cds-aichat-feedback>
     </div>
@@ -175,6 +184,7 @@ export const WithDisclaimer = {
       "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
     disclaimerCheckbox:
       "I agree to IBM collecting information related to my feedback.",
+    maxLength: 1000,
   },
   render: (args) => html`
     <div style="padding: 1rem; max-width: 24rem;">
@@ -200,6 +210,7 @@ export const WithDisclaimer = {
         @feedback-close=${() => {
           console.log("Feedback closed");
         }}
+        max-length=${args.maxLength}
       >
       </cds-aichat-feedback>
     </div>
@@ -213,6 +224,7 @@ export const ReadOnly = {
     title: "Your feedback",
     showTextArea: true,
     showBody: false,
+    maxLength: 1000,
   },
   render: (args) => html`
     <div style="padding: 1rem; max-width: 24rem;">
@@ -227,6 +239,7 @@ export const ReadOnly = {
           text: "The response was inaccurate and didn't address my question properly. It also included irrelevant information.",
           selectedCategories: ["Inaccurate", "Not relevant"],
         }}
+        max-length=${args.maxLength}
       >
       </cds-aichat-feedback>
     </div>
