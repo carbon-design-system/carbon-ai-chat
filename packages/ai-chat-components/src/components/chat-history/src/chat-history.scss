@@ -279,8 +279,7 @@
   visibility: hidden;
 }
 
-:host(#{$prefix}-history-panel-menu[expanded])
-  :host(#{$prefix}-history-panel-item[selected])
+:host(#{$prefix}-history-panel-item[selected][parent-menu-expanded])
   #{$cds-prefix}-overflow-menu {
   visibility: visible;
 }
