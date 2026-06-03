@@ -350,9 +350,6 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     if (parentMenu) {
       this._parentMenu = parentMenu as HTMLElement;
 
-      // Set initial value from the parent menu's expanded property
-      this.parentMenuExpanded = (parentMenu as any).expanded !== false;
-
       // Listen for toggle events from the parent menu
       this._parentMenuToggleListener = ((event: CustomEvent) => {
         this.parentMenuExpanded = event.detail.expanded;
@@ -379,6 +376,15 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
         "cds-side-nav-menu-toggled",
         this._parentMenuToggleListener,
       );
+    }
+  }
+
+  firstUpdated() {
+    if (this._parentMenu) {
+      const expandedValue = (this._parentMenu as any).expanded;
+      if (expandedValue !== undefined) {
+        this.parentMenuExpanded = expandedValue;
+      }
     }
   }
 
