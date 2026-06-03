@@ -86,6 +86,7 @@ const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   fullWidth: false,
   backButtonType: "minimize",
   showChatHeader: false,
+  openFromSide: false,
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 

@@ -10,6 +10,7 @@
 import React, { useMemo } from "react";
 
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
+import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
 import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
 import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
 import IconButton from "../carbon/IconButton";
@@ -19,10 +20,12 @@ import { isDirectionRTL } from "../../utils/domUtils";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 
 const ChevronDown = carbonIconToReact(ChevronDown16);
+const ChevronLeft = carbonIconToReact(ChevronLeft16);
 const CloseLarge = carbonIconToReact(CloseLarge16);
 
 interface PanelHeaderProps {
   title?: string;
+  openFromSide?: boolean;
   showBackButton?: boolean;
   labelBackButton?: string;
   backButtonType?: "minimize" | "close";
@@ -36,29 +39,49 @@ interface PanelHeaderProps {
  */
 function PanelHeader({
   title,
+  openFromSide,
   showBackButton = true,
   labelBackButton,
   backButtonType = "minimize",
   backButtonPosition = "end",
   onClickBack,
 }: PanelHeaderProps) {
+  const { backButtonIcon, BackButtonIcon } = useMemo(() => {
+    const icons = {
+      close: { iconDescriptor: CloseLarge16, IconComponent: CloseLarge },
+      side: { iconDescriptor: ChevronLeft16, IconComponent: ChevronLeft },
+      down: { iconDescriptor: ChevronDown16, IconComponent: ChevronDown },
+    };
+
+    const iconKey =
+      backButtonType === "close" ? "close" : openFromSide ? "side" : "down";
+    const selected = icons[iconKey];
+
+    return {
+      backButtonIcon: selected.iconDescriptor,
+      BackButtonIcon: selected.IconComponent,
+    };
+  }, [backButtonType, openFromSide]);
+
   const toolbarActions = useMemo(() => {
-    return showBackButton && backButtonPosition !== "start"
-      ? [
-          {
-            text: labelBackButton ?? "",
-            icon: backButtonType === "close" ? CloseLarge16 : ChevronDown16,
-            size: "md",
-            onClick: () => onClickBack?.(),
-          },
-        ]
-      : [];
+    if (!showBackButton || backButtonPosition === "start") {
+      return [];
+    }
+
+    return [
+      {
+        text: labelBackButton ?? "",
+        icon: backButtonIcon,
+        size: "md",
+        onClick: () => onClickBack?.(),
+      },
+    ];
   }, [
-    backButtonType,
     labelBackButton,
     onClickBack,
     showBackButton,
     backButtonPosition,
+    backButtonIcon,
   ]);
 
   const tooltipAlign = isDirectionRTL() ? "bottom-end" : "bottom-start";
@@ -78,11 +101,7 @@ function PanelHeader({
               leaveDelayMs={0}
               onClick={() => onClickBack?.()}
             >
-              {backButtonType === "close" ? (
-                <CloseLarge slot="icon" />
-              ) : (
-                <ChevronDown slot="icon" />
-              )}
+              <BackButtonIcon slot="icon" />
               {labelBackButton && (
                 <span slot="tooltip-content">{labelBackButton}</span>
               )}

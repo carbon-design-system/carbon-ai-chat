@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -183,6 +183,28 @@ describe("ChatInstance.customPanels", () => {
       expect(options.disableAnimation).toBe(true);
       expect(options.hidePanelHeader).toBe(false);
       expect(options.hideBackButton).toBe(false);
+    });
+
+    it("should open panel with openFromSide option", async () => {
+      const config = createBaseConfig();
+      const { instance, store } =
+        await renderChatAndGetInstanceWithStore(config);
+      const panel = instance.customPanels.getPanel();
+
+      const defaultPanelOptions: DefaultCustomPanelConfigOptions = {
+        title: "Side Panel",
+        openFromSide: true,
+      };
+
+      panel.open(defaultPanelOptions);
+
+      const state = store.getState();
+      expect(state.customPanelState.isOpen).toBe(true);
+      expect(state.customPanelState.options.title).toBe("Side Panel");
+      expect(
+        (state.customPanelState.options as DefaultCustomPanelConfigOptions)
+          .openFromSide,
+      ).toBe(true);
     });
 
     it("should honor deprecated hideCloseButton option as override", async () => {
