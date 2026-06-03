@@ -37,7 +37,6 @@ import { ChatInstance, PanelType } from "@carbon/ai-chat";
 
 interface HistoryExampleProps {
   instance: ChatInstance;
-  parentStateText: string;
   isMobile: boolean;
 }
 
@@ -82,7 +81,6 @@ const loadChat = async (event: CustomEvent, instance: ChatInstance) => {
 
 function HistoryWriteableElementExample({
   instance,
-  parentStateText: _parentStateText,
   isMobile,
 }: HistoryExampleProps) {
   const historyShellRef = useRef<HTMLElement | null>(null);
