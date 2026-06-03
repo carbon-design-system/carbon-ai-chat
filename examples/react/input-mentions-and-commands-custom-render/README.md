@@ -7,7 +7,7 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 - Replacing the default mention chip with a custom inline element via `mention.renderCustomToken`, returning a `Tooltip`-wrapped Carbon `Tag`.
 - Mixing custom and default token rendering across the two slots — only `input.mention` sets `renderCustomToken`, so commands fall back to the built-in chip.
 - Using Carbon React's `Tooltip` with `autoAlign` so the popover escapes the editor's scroll-overflow clipping by positioning relative to the viewport.
-- Persisting selections via `instance.input.updateStructuredData` (same flow as the non-custom example) so the custom rendering does not change the structured-data wire format.
+- Persisting selections via `instance.input.updateStructuredData` (same flow as the non-custom example) so the custom rendering does not change the structured-data wire format, with a symmetric `onRemove` that drops a chip's field when it is deleted before sending.
 
 ## When to use this pattern
 
@@ -30,10 +30,11 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
 | `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
 | `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
+| `mention.onRemove` / `command.onRemove` | config prop                 | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
 | `Tag`                                   | `@carbon/react` component   | Visual chip used inside the custom token renderer.                       |
 | `Tooltip`                               | `@carbon/react` component   | Hover affordance wrapping the custom mention chip.                       |
-| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData`   | instance method             | Appends mention/command picks to the outgoing message's structured data. |
+| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | instance method             | Adds and removes mention/command picks on the message's structured data. |
 | `layout.showFrame`                      | config prop                 | Hides the default frame so the chat fills the host.                      |
 | `openChatByDefault`                     | config prop                 | Mounts straight into the conversation, no launcher.                      |
 | `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |

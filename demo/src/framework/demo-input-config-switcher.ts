@@ -349,10 +349,10 @@ export class DemoInputConfigSwitcher extends LitElement {
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
             >Enable input field</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
             >Disable input field</cds-dropdown-item
           >
         </cds-dropdown>

@@ -12,14 +12,17 @@
  *
  * Demonstrates: configuring `input.mention` for picking team members
  * anywhere in the message and `input.command` for slash commands
- * constrained to the start of the line, then forwarding picks to the
- * structured-data sidecar via `onSelect` and `updateStructuredData`.
+ * constrained to the start of the line, then keeping the structured-data
+ * sidecar in sync with the editor via the `onSelect` / `onRemove` pair and
+ * `updateStructuredData` — so deleting a chip before sending also drops its
+ * field.
  *
  * APIs exercised:
  *   - `ChatCustomElement`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
+ *   - `mention.onSelect` / `mention.onRemove` (and the command equivalents)
  *   - `instance.input.updateStructuredData`
  *
  * Start reading at: `App()` and the `input` config block.
@@ -81,6 +84,27 @@ function App() {
               ],
             }));
           },
+          // Symmetric cleanup: when the user deletes a mention chip before
+          // sending, drop the matching sidecar field so it does not leak into
+          // structured_data. Remove one instance (not all by id) so duplicate
+          // mentions stay balanced, and return prev untouched when nothing
+          // matched to preserve the reference.
+          onRemove: (item: SuggestionItem) => {
+            instanceRef.current?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) => field.type === "mention" && field.id === item.id,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
+          },
         },
         // `/` for slash commands constrained to the start of the line.
         command: {
@@ -103,6 +127,24 @@ function App() {
                 },
               ],
             }));
+          },
+          // Mirror the mention cleanup so a deleted command chip also leaves
+          // structured_data, removing a single matching field.
+          onRemove: (item: SuggestionItem) => {
+            instanceRef.current?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) => field.type === "command" && field.id === item.id,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
           },
         },
       },

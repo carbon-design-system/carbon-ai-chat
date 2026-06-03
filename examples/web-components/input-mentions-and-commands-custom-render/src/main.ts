@@ -22,6 +22,8 @@
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
  *   - `mention.renderCustomToken` for chip rendering
+ *   - `mention.onSelect` / `mention.onRemove` keep the structured-data sidecar
+ *     in sync as chips are added and deleted
  *
  * Start reading at: the `renderCustomToken` callback below.
  */
@@ -131,6 +133,27 @@ export class Demo extends LitElement {
               ],
             }));
           },
+          // Symmetric cleanup: deleting a mention chip before sending removes
+          // its sidecar field so it does not leak into structured_data. Match
+          // the `mention_`-prefixed id from insert, drop a single instance so
+          // duplicates stay balanced, and return prev untouched when no match.
+          onRemove: (item: SuggestionItem) => {
+            this.instance?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) =>
+                  field.type === "mention" && field.id === `mention_${item.id}`,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
+          },
           // Replaces the default chip with a definition tooltip so hovering a mention reveals the user's role.
           renderCustomToken: (item: SuggestionItem) => createMentionToken(item),
         },
@@ -152,6 +175,26 @@ export class Demo extends LitElement {
                 },
               ],
             }));
+          },
+          // Mirror the mention cleanup so a deleted command chip also leaves
+          // structured_data, matching the `command_`-prefixed id and removing
+          // a single field.
+          onRemove: (item: SuggestionItem) => {
+            this.instance?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) =>
+                  field.type === "command" && field.id === `command_${item.id}`,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
           },
           // Commands intentionally omit renderCustomToken to keep the default chip and contrast with mentions.
         },

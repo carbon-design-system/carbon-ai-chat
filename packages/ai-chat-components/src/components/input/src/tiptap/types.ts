@@ -102,6 +102,23 @@ export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
 
   /** Replace the visual element rendered inside the token chip. */
   renderCustomToken?: (item: SuggestionItem) => HTMLElement | ReactNode;
+
+  /**
+   * Called when a previously-inserted token for this trigger is removed from
+   * the input by a user edit (backspace, delete, cut, select-all, undo, ...).
+   * The mirror of {@link BaseSuggestionConfig}'s `onSelect`: fires once per
+   * removed node instance, so deleting one of two identical chips fires
+   * exactly once. Use it to keep host-owned structured data in sync with the
+   * editor.
+   *
+   * The item is reconstructed from the node's stored attributes (`id`,
+   * `label`, `value`, plus any custom fields preserved in `data`);
+   * presentation-only fields (`icon`, `avatar`, `description`, `disabled`) are
+   * not retained on the node and are absent. Programmatic removals (via
+   * `getEditor()`/`updateContent`) are host-origin and do NOT fire `onRemove`,
+   * symmetric with `onSelect` not firing on programmatic inserts.
+   */
+  onRemove?: (item: SuggestionItem) => void;
 }
 
 /**

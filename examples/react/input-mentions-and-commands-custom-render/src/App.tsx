@@ -21,6 +21,8 @@
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
  *   - `mention.renderCustomToken` for chip rendering
+ *   - `mention.onSelect` / `mention.onRemove` keep the structured-data sidecar
+ *     in sync as chips are added and deleted
  *
  * Start reading at: `App()` and the `renderCustomToken` callback.
  */
@@ -92,6 +94,26 @@ function App() {
               ],
             }));
           },
+          // symmetric cleanup: deleting a mention chip before sending
+          // removes its sidecar field so it does not leak into
+          // structured_data. drop a single instance so duplicates stay
+          // balanced; return prev untouched when nothing matched.
+          onRemove: (item: SuggestionItem) => {
+            instanceRef.current?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) => field.type === "mention" && field.id === item.id,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
+          },
           // replace the default mention chip with a Carbon Tag
           // wrapped in a Tooltip — this is the entire point of the
           // example. autoAlign uses floating-ui with strategy:'fixed'
@@ -130,6 +152,24 @@ function App() {
                 },
               ],
             }));
+          },
+          // mirror the mention cleanup so a deleted command chip also
+          // leaves structured_data, removing a single matching field.
+          onRemove: (item: SuggestionItem) => {
+            instanceRef.current?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) => field.type === "command" && field.id === item.id,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
           },
           // intentionally omit renderCustomToken so commands
           // keep the default chip — this contrast with the mention

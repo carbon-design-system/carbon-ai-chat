@@ -448,8 +448,9 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 | `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
 | `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
 | `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
-| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData`   | method         | Appends mention/command picks to the outgoing message's structured data. |
+| `mention.onRemove` / `command.onRemove` | property       | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
+| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | method         | Adds and removes mention/command picks on the message's structured data. |
 | `.layout` (`layout.showFrame`)          | property       | Hides the default frame so the chat fills the host.                      |
 | `.openChatByDefault`                    | property       | Mounts straight into the conversation, no launcher.                      |
 | `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
@@ -480,8 +481,9 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
 | `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
 | `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
-| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect`.                      |
-| `instance.input.updateStructuredData`   | method         | Appends mention/command picks to the outgoing message's structured data. |
+| `mention.onRemove` / `command.onRemove` | property       | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
+| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | method         | Adds and removes mention/command picks on the message's structured data. |
 | `.layout` (`layout.showFrame`)          | property       | Hides the default frame so the chat fills the host.                      |
 | `.openChatByDefault`                    | property       | Mounts straight into the conversation, no launcher.                      |
 | `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |

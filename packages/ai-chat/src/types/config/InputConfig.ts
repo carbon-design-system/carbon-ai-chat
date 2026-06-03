@@ -37,7 +37,8 @@ export type BaseSuggestionConfig = _BaseSuggestionConfig;
  * Trigger-character-driven suggestion config consumed by
  * {@link InputConfig.mention} and {@link InputConfig.command}. Adds the
  * trigger character, an optional `triggerPosition`, an optional schema-node
- * `name` override, and a custom-token renderer on top of
+ * `name` override, a custom-token renderer, and an `onRemove` callback (the
+ * mirror of `onSelect`, fired when a token is deleted) on top of
  * {@link BaseSuggestionConfig}.
  *
  * @category Config

@@ -12,14 +12,17 @@
  *
  * Demonstrates: configuring `input.mention` for `@`-picking team members
  * anywhere in the message and `input.command` for `/`-commands constrained
- * to the start of the line, then forwarding picks to the structured-data
- * sidecar via `onSelect` and `updateStructuredData`.
+ * to the start of the line, then keeping the structured-data sidecar in sync
+ * with the editor via the `onSelect` / `onRemove` pair and
+ * `updateStructuredData` — so deleting a chip before sending also drops its
+ * field.
  *
  * APIs exercised:
  *   - `<cds-aichat-custom-element>`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.mention` + `PublicConfig.input.command`
+ *   - `mention.onSelect` / `mention.onRemove` (and the command equivalents)
  *
  * Start reading at: the `Demo` element below.
  */
@@ -91,6 +94,28 @@ export class Demo extends LitElement {
               ],
             }));
           },
+          // Symmetric cleanup: when the user deletes a mention chip before
+          // sending, drop the matching sidecar field so it does not leak into
+          // structured_data. Match the same `mention_`-prefixed id used on
+          // insert, remove one instance so duplicates stay balanced, and
+          // return prev untouched when nothing matched.
+          onRemove: (item: SuggestionItem) => {
+            this.instance?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) =>
+                  field.type === "mention" && field.id === `mention_${item.id}`,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
+          },
         },
         // `/`-command slot — constrained to the start of a line so a stray
         // `/` mid-sentence (e.g. URLs) does not open the picker. Static array
@@ -113,6 +138,26 @@ export class Demo extends LitElement {
                 },
               ],
             }));
+          },
+          // Mirror the mention cleanup so a deleted command chip also leaves
+          // structured_data, matching the `command_`-prefixed id and removing
+          // a single field.
+          onRemove: (item: SuggestionItem) => {
+            this.instance?.input.updateStructuredData((prev) => {
+              if (!prev?.fields) {
+                return prev;
+              }
+              const index = prev.fields.findIndex(
+                (field) =>
+                  field.type === "command" && field.id === `command_${item.id}`,
+              );
+              if (index === -1) {
+                return prev;
+              }
+              const fields = [...prev.fields];
+              fields.splice(index, 1);
+              return { ...prev, fields };
+            });
           },
         },
       },
