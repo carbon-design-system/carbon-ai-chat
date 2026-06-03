@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,7 +9,8 @@
 
 import Button, { BUTTON_KIND } from "../carbon/Button";
 import FocusTrap from "focus-trap-react";
-import React, { Component, KeyboardEvent } from "react";
+import React, { Component, createRef, KeyboardEvent, RefObject } from "react";
+import type CarbonButtonElement from "@carbon/web-components/es/components/button/button.js";
 
 import { ModalPortal } from "./ModalPortal";
 import { HasServiceManager } from "../../hocs/withServiceManager";
@@ -67,6 +68,7 @@ class ConfirmModal extends Component<
   CdsAichatConfirmModalState
 > {
   private focusTimer?: NodeJS.Timeout;
+  private noButtonRef: RefObject<CarbonButtonElement>;
 
   /**
    * The callback that is called when the user clicks the yes button confirming that they do want to end the chat.
@@ -97,12 +99,26 @@ class ConfirmModal extends Component<
     this.state = {
       focusTrapActive: false,
     };
+    this.noButtonRef = createRef<CarbonButtonElement>();
   }
   componentDidMount(): void {
     customElements.whenDefined("cds-button").then(() => {
       this.setState({ focusTrapActive: true });
       const timer = setTimeout(() => {
         try {
+          // Try using the ref first
+          if (this.noButtonRef.current) {
+            const innerButton =
+              this.noButtonRef.current.shadowRoot?.querySelector(
+                "button",
+              ) as HTMLElement;
+            if (innerButton && innerButton.offsetParent !== null) {
+              innerButton.focus();
+              return;
+            }
+          }
+
+          // Fallback to DOM traversal if ref doesn't work
           const aiChat = document.querySelector("cds-aichat-react");
           const layer = aiChat?.shadowRoot?.querySelector("cds-layer");
           const buttonNo = layer?.querySelector(
@@ -166,6 +182,7 @@ class ConfirmModal extends Component<
               </div>
               <div className="cds-aichat--confirm-modal__button-container">
                 <Button
+                  ref={this.noButtonRef}
                   className="cds-aichat--confirm-modal__no-button"
                   kind={BUTTON_KIND.SECONDARY}
                   onClick={this.onNoClick}
