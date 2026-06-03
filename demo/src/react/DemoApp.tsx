@@ -144,6 +144,18 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
    */
   const historyIsMobile =
     instance?.getState().customPanels.history.isMobile ?? false;
+
+  // Memoize history panel separately to prevent rerenders when stateText changes
+  const historyPanelElement = useMemo(
+    () => (
+      <HistoryWriteableElementExample
+        instance={instance as ChatInstance}
+        isMobile={historyIsMobile}
+      />
+    ),
+    [instance, historyIsMobile],
+  );
+
   const allWriteableElements = useMemo(
     () => ({
       headerBottomElement: (
@@ -215,15 +227,9 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           parentStateText={stateText}
         />
       ),
-      historyPanelElement: (
-        <HistoryWriteableElementExample
-          instance={instance as ChatInstance}
-          parentStateText={stateText}
-          isMobile={historyIsMobile}
-        />
-      ),
+      historyPanelElement,
     }),
-    [instance, historyIsMobile, stateText],
+    [instance, historyPanelElement, stateText],
   );
 
   /**

@@ -140,7 +140,7 @@ export default {
         ),
         "custom 1": (
           <div slot="fixed-actions">
-            <Button onclick={action("onClick")} size="md">
+            <Button onClick={action("onClick")} size="md">
               test
             </Button>
           </div>
