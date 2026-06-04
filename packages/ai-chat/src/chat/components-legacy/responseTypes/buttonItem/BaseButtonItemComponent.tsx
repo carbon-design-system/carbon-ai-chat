@@ -135,7 +135,7 @@ function BaseButtonItemComponent({
     kind: isStandard
       ? (buttonKind as BUTTON_KIND)
       : (buttonKind as CHAT_BUTTON_KIND),
-    onclick,
+    onClick,
     rel: url ? "noopener noreferrer" : undefined,
     size: isStandard ? (size as BUTTON_SIZE) : (size as CHAT_BUTTON_SIZE),
     target: linkTarget,

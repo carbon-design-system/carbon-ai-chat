@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -32,6 +32,44 @@ import typescript from "@rollup/plugin-typescript";
 const packageJson = JSON.parse(readFileSync("./package.json"));
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const watchMode = process.argv.includes("--watch");
+
+let currentWatcher;
+let postBuildInFlight = Promise.resolve();
+
+function showDeathBanner(kind, err) {
+  const RED = "\x1b[41;1;37m";
+  const RESET = "\x1b[0m";
+  const lines = [
+    "",
+    `${RED}================================================================${RESET}`,
+    `${RED}  [ai-chat-components] WATCH DIED (${kind})${" ".repeat(Math.max(0, 41 - kind.length))}${RESET}`,
+    `${RED}  es/ output is now STALE. concurrently will restart shortly.   ${RESET}`,
+    `${RED}================================================================${RESET}`,
+    err?.stack || String(err),
+    "",
+  ];
+  process.stderr.write(lines.join("\n") + "\n");
+}
+
+if (watchMode) {
+  process.on("unhandledRejection", (reason) => {
+    showDeathBanner("unhandledRejection", reason);
+    process.exit(1);
+  });
+  process.on("uncaughtException", (err) => {
+    showDeathBanner("uncaughtException", err);
+    process.exit(1);
+  });
+  process.on("SIGINT", () => {
+    currentWatcher?.close();
+    process.exit(0);
+  });
+  process.on("SIGTERM", () => {
+    showDeathBanner("SIGTERM", new Error("process killed externally"));
+    currentWatcher?.close();
+    process.exit(1);
+  });
+}
 
 async function build() {
   const esInputs = await globby([
@@ -68,7 +106,7 @@ async function build() {
     );
 
     if (watchMode) {
-      const watcher = watch({
+      currentWatcher = watch({
         ...cwcInputConfig,
         output: {
           dir: outputDirectory,
@@ -81,13 +119,23 @@ async function build() {
         },
       });
 
-      watcher.on("event", (event) => {
+      currentWatcher.on("event", (event) => {
         if (event.code === "START") {
           console.log("Building ai-chat-components...");
         } else if (event.code === "END") {
           console.log("Build complete");
+          postBuildInFlight = postBuildInFlight
+            .catch(() => {})
+            .then(() => postBuild())
+            .catch((err) => {
+              showDeathBanner("postBuild", err);
+              process.exit(1);
+            });
         } else if (event.code === "ERROR") {
           console.error("Build error:", event.error);
+        } else if (event.code === "FATAL") {
+          showDeathBanner("rollup FATAL", event.error);
+          process.exit(1);
         }
       });
     } else {
@@ -102,9 +150,10 @@ async function build() {
         exports: "named",
         sourcemap: true,
       });
+
+      await postBuild();
     }
   }
-  await postBuild();
 }
 
 const banner = `/**
