@@ -128,7 +128,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * Maximum rows to show when collapsed.
    * Set to 0 along with maxExpandedNumberOfRows to enable fill-container mode.
    */
-  @property({ attribute: "max-collapsed-number-of-rows" })
+  @property({ type: Number, attribute: "max-collapsed-number-of-rows" })
   maxCollapsedNumberOfRows = 15;
 
   /**
@@ -136,15 +136,15 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * Set to 0 along with maxCollapsedNumberOfRows to enable fill-container mode,
    * where the component fills its container's height with a scrollbar.
    */
-  @property({ attribute: "max-expanded-number-of-rows" })
+  @property({ type: Number, attribute: "max-expanded-number-of-rows" })
   maxExpandedNumberOfRows = 0;
 
   /** Minimum rows to show when collapsed. */
-  @property({ attribute: "min-collapsed-number-of-rows" })
+  @property({ type: Number, attribute: "min-collapsed-number-of-rows" })
   minCollapsedNumberOfRows = 3;
 
   /** Minimum rows to show when expanded. */
-  @property({ attribute: "min-expanded-number-of-rows" })
+  @property({ type: Number, attribute: "min-expanded-number-of-rows" })
   minExpandedNumberOfRows = 16;
 
   /** Label for the “show less” control. */
@@ -937,7 +937,12 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     const containerClasses = {
       [`${prefix}--snippet-container`]: true,
       [`${prefix}--snippet--codemirror`]: true,
-      [`${prefix}--snippet-container--collapsed`]: !expandedCode,
+      // Fill mode shows no expand affordance, so it is never a "collapsed"
+      // state. Applying `--collapsed` here would clip with `overflow-y: hidden`
+      // (it is defined later in the stylesheet and wins by source order),
+      // defeating fill mode's `overflow-y: auto` scroll.
+      [`${prefix}--snippet-container--collapsed`]:
+        !expandedCode && !this._isFillMode,
       [`${prefix}--snippet-container--fill-mode`]: this._isFillMode,
     };
 

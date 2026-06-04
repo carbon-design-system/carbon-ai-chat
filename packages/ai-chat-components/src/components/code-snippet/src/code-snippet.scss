@@ -152,6 +152,10 @@
 
 .#{$prefix}--snippet-container--fill-mode {
   block-size: 100%;
+  // Own the clamp explicitly so fill mode (a 0/0 row config) scrolls inside
+  // its host rather than depending on the base container's `var()` fallback,
+  // which defaults to `none` to let grow mode (Infinity rows) expand freely.
+  max-block-size: 100%;
   overflow-y: auto;
 }
 
