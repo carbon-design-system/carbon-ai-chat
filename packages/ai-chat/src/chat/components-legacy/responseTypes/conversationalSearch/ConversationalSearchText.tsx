@@ -10,7 +10,7 @@
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
 
-import React, { useEffect, useState } from "react";
+import React, { KeyboardEvent, useEffect, useState } from "react";
 
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
@@ -90,6 +90,12 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
     setHtml(processedText);
   }, [text, highlightCitation, showCitationsToggle, streamingState]);
 
+  const onKeyDownHandler = (evt: KeyboardEvent) => {
+    if (evt.key === "Enter" || evt.key === " ") {
+      onToggleCitations();
+    }
+  };
+
   return (
     <div className="cds-aichat--conversational-search-text">
       <MarkdownWithDefaults
@@ -104,7 +110,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
             <OperationalTag
               id={toggleID}
               onClick={onToggleCitations}
-              onKeyDown={onToggleCitations}
+              onKeyDown={onKeyDownHandler}
               aria-expanded={citationsOpen}
               text={languagePack.conversationalSearch_citationsLabel}
               aria-label={languagePack.conversationalSearch_toggleCitations}
