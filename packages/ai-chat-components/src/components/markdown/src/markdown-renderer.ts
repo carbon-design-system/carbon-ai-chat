@@ -457,7 +457,7 @@ function renderWithStaticTag(
       const { checked, disabled, ...otherAttrs } = attrs;
       const isChecked = checked === "true";
       const isDisabled =
-        disabled === undefined ? true : disabled === "" || disabled === "true";
+        disabled === undefined ? false : disabled === "" || disabled === "true";
 
       return html`<cds-checkbox
         ?checked=${isChecked}
