@@ -312,19 +312,20 @@ class CDSAIChatToolbar extends LitElement {
                         .filter(Boolean)
                         .join(" ")}"
                     >
-                      ${this.titleText
-                        ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
-                            >${this.titleText}</span
-                          >`
-                        : nothing}
-                      ${this.titleText && this.nameText ? html`` : nothing}
-                      ${this.nameText
-                        ? html`<span
-                            class="${blockClass}__name"
-                            data-testid=${PageObjectId.HEADER_NAME}
-                            >${this.nameText}</span
-                          >`
-                        : nothing}
+                      <div class="${blockClass}__title-text">
+                        ${this.titleText
+                          ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
+                              >${this.titleText}</span
+                            >`
+                          : nothing}
+                        ${this.nameText
+                          ? html`<span
+                              class="${blockClass}__name"
+                              data-testid=${PageObjectId.HEADER_NAME}
+                              >${this.nameText}</span
+                            >`
+                          : nothing}
+                      </div>
                     </cds-aichat-truncated-text>
                   `
                 : nothing}

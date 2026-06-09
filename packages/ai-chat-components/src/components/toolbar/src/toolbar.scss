@@ -69,6 +69,14 @@ $block-class: #{$prefix}-toolbar;
     padding-inline: layout.$spacing-04;
   }
 
+  .#{$block-class}__title-text {
+    display: block;
+    overflow: hidden;
+    inline-size: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   // Style for name text - this needs to be at the host level to style slotted content
   .#{$block-class}__name {
     font-weight: bold;
@@ -85,6 +93,7 @@ $block-class: #{$prefix}-toolbar;
   .#{$block-class}__start,
   .#{$block-class}__end {
     display: flex;
+    flex: 1;
     min-inline-size: 0;
   }
 
