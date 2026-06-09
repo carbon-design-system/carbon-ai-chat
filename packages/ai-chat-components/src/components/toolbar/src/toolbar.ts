@@ -304,14 +304,7 @@ class CDSAIChatToolbar extends LitElement {
             <slot name="title">
               ${this.titleText || this.nameText
                 ? html`
-                    <cds-aichat-truncated-text
-                      lines="1"
-                      type="tooltip"
-                      align=${this.isRTL ? "bottom-end" : "bottom-start"}
-                      value="${[this.titleText, this.nameText]
-                        .filter(Boolean)
-                        .join(" ")}"
-                    >
+                    <div>
                       <div class="${blockClass}__title-text">
                         ${this.titleText
                           ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
@@ -326,7 +319,7 @@ class CDSAIChatToolbar extends LitElement {
                             >`
                           : nothing}
                       </div>
-                    </cds-aichat-truncated-text>
+                    </div>
                   `
                 : nothing}
             </slot>
