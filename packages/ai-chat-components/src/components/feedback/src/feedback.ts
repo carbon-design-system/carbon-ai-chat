@@ -288,6 +288,16 @@ class CDSAIChatFeedback extends LitElement {
       return;
     }
 
+    // In compact mode, single-click submits immediately (except for "Other")
+    if (this.compact && category !== "Other") {
+      // Clear all selections and select only this category
+      this._selectedCategories = new Set([category]);
+      this._showOtherInput = false;
+      // Submit immediately
+      this._handleSubmit();
+      return;
+    }
+
     const nextSelection = new Set(this._selectedCategories);
 
     // Handle "Other" button specially in compact mode
@@ -303,53 +313,15 @@ class CDSAIChatFeedback extends LitElement {
         this._showOtherInput = true;
       }
     } else {
-      // Standard multi-select behavior for regular categories
+      // Standard multi-select behavior for regular categories (non-compact mode)
       if (nextSelection.has(category)) {
         nextSelection.delete(category);
       } else {
         nextSelection.add(category);
       }
-
-      // In compact mode, deselect "Other" and hide input when selecting regular categories
-      if (this.compact) {
-        nextSelection.delete("Other");
-        this._showOtherInput = false;
-      }
     }
 
     this._selectedCategories = nextSelection;
-  }
-
-  /**
-   * Called when a category button is double-clicked in compact mode.
-   */
-  _handleCategoryDoubleClick(event: MouseEvent) {
-    if (this.isReadonly || !this.compact) {
-      return;
-    }
-
-    const button = event.currentTarget as HTMLElement | null;
-    const category = button?.getAttribute("data-content");
-    if (!category) {
-      return;
-    }
-
-    // Don't submit on double-click of "Other" button
-    if (category === "Other") {
-      return;
-    }
-
-    // Ensure the category is selected
-    if (!this._selectedCategories.has(category)) {
-      const nextSelection = new Set(this._selectedCategories);
-      nextSelection.add(category);
-      nextSelection.delete("Other");
-      this._selectedCategories = nextSelection;
-      this._showOtherInput = false;
-    }
-
-    // Submit the feedback
-    this._handleSubmit();
   }
 
   /**
@@ -463,9 +435,6 @@ class CDSAIChatFeedback extends LitElement {
                           ?selected=${this._selectedCategories.has(value)}
                           ?disabled=${this.isReadonly}
                           @click=${this._handleCategoryClick}
-                          @dblclick=${this.compact
-                            ? this._handleCategoryDoubleClick
-                            : null}
                           @keydown=${this.compact
                             ? this._handleCategoryKeyDown
                             : null}
@@ -474,8 +443,7 @@ class CDSAIChatFeedback extends LitElement {
                   </div>
                   ${this.compact && !this._showOtherInput
                     ? html`<div class="${prefix}--helper-text">
-                        Double-click a category to submit, or Select and press
-                        ENTER/RETURN
+                        Single-click a category to submit your feedback
                       </div>`
                     : ""}
                 </div>`
