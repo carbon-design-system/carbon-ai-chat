@@ -217,6 +217,38 @@ export const WithDisclaimer = {
   `,
 };
 
+export const CompactFeedback = {
+  args: {
+    isOpen: true,
+    isReadonly: false,
+    showTextArea: false,
+    showBody: false,
+  },
+  render: (args) => html`
+    <div style="padding: 1rem; max-width: 24rem;">
+      <cds-aichat-feedback
+        ?is-open=${args.isOpen}
+        ?is-readonly=${args.isReadonly}
+        .showTextArea=${args.showTextArea}
+        ?show-body=${args.showBody}
+        .compact=${true}
+        .categories=${negativeCategories}
+        @feedback-submit=${(event) => {
+          const details = event.detail;
+          console.log("compact feedback submitted:", details);
+          alert(
+            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+          );
+        }}
+        @feedback-close=${() => {
+          console.log("Feedback closed");
+        }}
+      >
+      </cds-aichat-feedback>
+    </div>
+  `,
+};
+
 export const ReadOnly = {
   args: {
     isOpen: true,

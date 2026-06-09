@@ -46,6 +46,7 @@ import {
   doTextWithReasoningStepsStreaming,
   doTextWithReasoningTraceStreaming,
   doTextWithWatsonAgentProfile,
+  doTextWithCompactFeedback,
 } from "./doText";
 import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
 import { doSystemMessage } from "./doSystemMessage";
@@ -117,6 +118,8 @@ const RESPONSE_MAP: Record<
   "text with feedback": (instance) => doTextWithFeedback(instance),
   "text with feedback (stream)": (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),
+  "text with compact feedback": (instance) =>
+    doTextWithCompactFeedback(instance),
   "text with custom footer": (instance) => doTextWithCustomFooter(instance),
   "text from watsonx agent": (instance) =>
     doTextWithWatsonAgentProfile(instance),

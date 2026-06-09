@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -976,6 +976,25 @@ async function doTextStreamingEarlyResolve(
   }
 }
 
+function doTextWithCompactFeedback(instance: ChatInstance) {
+  const compactFeedbackText =
+    "We'd love to hear your thoughts on Carbon! This versatile element forms the backbone of all organic chemistry and is essential for life as we know it. How do you feel about this fundamental building block of matter? Please use the feedback buttons below to share your opinion.";
+
+  const feedback: any = {
+    is_on: true,
+    id: crypto.randomUUID(),
+    show_positive_details: true,
+    show_negative_details: true,
+    use_compact_feedback: true, // Custom flag to indicate we want CompactFeedback component
+    categories: {
+      negative: ["Not informative", "Too technical", "Don't like the topic"],
+      positive: ["Very helpful", "Interesting", "Good explanation"],
+    },
+  };
+
+  doText(instance, compactFeedbackText, undefined, undefined, feedback);
+}
+
 export {
   doTextChainOfThoughtStreaming,
   doTextChainOfThought,
@@ -994,4 +1013,5 @@ export {
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
   doTextWithCustomFooter,
+  doTextWithCompactFeedback,
 };

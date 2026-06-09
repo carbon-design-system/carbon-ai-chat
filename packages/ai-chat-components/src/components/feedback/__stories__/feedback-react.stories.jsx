@@ -112,6 +112,7 @@ const renderFeedback = (args, options) => {
         primaryLabel={args.primaryLabel}
         showTextArea={args.showTextArea}
         showBody={args.showBody}
+        compact={options?.compact}
         categories={options?.categories}
         disclaimer={args.disclaimer}
         disclaimerCheckbox={args.disclaimerCheckbox}
@@ -211,6 +212,33 @@ export const WithDisclaimer = {
       categories: positiveCategories,
       onSubmit: (details) => {
         console.log("Feedback submitted:", details);
+        if (typeof window !== "undefined") {
+          window.alert(
+            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+          );
+        }
+      },
+      onClose: () => {
+        console.log("Feedback closed");
+      },
+    }),
+};
+
+export const CompactFeedback = {
+  args: {
+    isOpen: true,
+    isReadonly: false,
+    showTextArea: false,
+    showBody: false,
+  },
+  render: (args) =>
+    renderFeedback(args, {
+      description:
+        "Compact Feedback provides a simple, single-line feedback interface.",
+      compact: true,
+      categories: negativeCategories,
+      onSubmit: (details) => {
+        console.log("compact feedback submitted:", details);
         if (typeof window !== "undefined") {
           window.alert(
             `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,

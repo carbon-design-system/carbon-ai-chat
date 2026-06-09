@@ -17,13 +17,16 @@ import "@carbon/web-components/es/components/textarea/index.js";
 
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import Close16 from "@carbon/icons/es/close/16.js";
-import { html, LitElement, nothing, PropertyValues } from "lit";
+import { html, LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { carbonElement } from "../../../globals/decorators/index.js";
 import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./feedback.scss?lit";
+
+// The maximum number of characters the user is allowed to type into the text area.
+const MAX_TEXT_COUNT = 1000;
 
 /**
  * The component for displaying a panel requesting feedback from a user.
@@ -131,6 +134,12 @@ class CDSAIChatFeedback extends LitElement {
   showBody = false;
 
   /**
+   * Enables Compact mode with no border, compact spacing, single-line categories, and "Other" button with conditional textarea.
+   */
+  @property({ type: Boolean, attribute: "compact", reflect: true })
+  compact = false;
+
+  /**
    * Internal saved text values for feedback.
    *
    * @internal
@@ -151,6 +160,22 @@ class CDSAIChatFeedback extends LitElement {
    */
   @state()
   _isSubmitDisabled = false;
+
+  /**
+   * Indicates if the "Other" textarea should be shown (Compact mode only).
+   *
+   * @internal
+   */
+  @state()
+  _showOtherInput = false;
+
+  /**
+   * Indicates if the "Other" textarea has a validation error (Compact mode only).
+   *
+   * @internal
+   */
+  @state()
+  _textareaError = false;
 
   /**
    * Called when the properties of the component have changed.
@@ -191,6 +216,28 @@ class CDSAIChatFeedback extends LitElement {
    */
   _handleTextInput(event: InputEvent) {
     this._textInput = (event.currentTarget as HTMLTextAreaElement).value;
+    // Clear error when user starts typing
+    if (this._textareaError && this._textInput.trim()) {
+      this._textareaError = false;
+    }
+  }
+
+  /**
+   * Called when the user presses a key in the textarea (Compact mode).
+   */
+  _handleTextKeyDown(event: KeyboardEvent) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+
+      // Validate that textarea is not empty
+      if (!this._textInput.trim()) {
+        this._textareaError = true;
+        return;
+      }
+
+      this._textareaError = false;
+      this._handleSubmit();
+    }
   }
 
   /**
@@ -207,6 +254,12 @@ class CDSAIChatFeedback extends LitElement {
         composed: true,
       }),
     );
+
+    // In compact mode, clear the textarea content after submission
+    if (this.compact) {
+      this._textInput = "";
+      this._textareaError = false;
+    }
   }
 
   /**
@@ -236,13 +289,110 @@ class CDSAIChatFeedback extends LitElement {
     }
 
     const nextSelection = new Set(this._selectedCategories);
-    if (nextSelection.has(category)) {
-      nextSelection.delete(category);
+
+    // Handle "Other" button specially in compact mode
+    if (this.compact && category === "Other") {
+      if (nextSelection.has("Other")) {
+        // Deselecting "Other"
+        nextSelection.delete("Other");
+        this._showOtherInput = false;
+      } else {
+        // Selecting "Other" - clear all other categories first
+        nextSelection.clear();
+        nextSelection.add("Other");
+        this._showOtherInput = true;
+      }
     } else {
-      nextSelection.add(category);
+      // Standard multi-select behavior for regular categories
+      if (nextSelection.has(category)) {
+        nextSelection.delete(category);
+      } else {
+        nextSelection.add(category);
+      }
+
+      // In compact mode, deselect "Other" and hide input when selecting regular categories
+      if (this.compact) {
+        nextSelection.delete("Other");
+        this._showOtherInput = false;
+      }
     }
 
     this._selectedCategories = nextSelection;
+  }
+
+  /**
+   * Called when a category button is double-clicked in compact mode.
+   */
+  _handleCategoryDoubleClick(event: MouseEvent) {
+    if (this.isReadonly || !this.compact) {
+      return;
+    }
+
+    const button = event.currentTarget as HTMLElement | null;
+    const category = button?.getAttribute("data-content");
+    if (!category) {
+      return;
+    }
+
+    // Don't submit on double-click of "Other" button
+    if (category === "Other") {
+      return;
+    }
+
+    // Ensure the category is selected
+    if (!this._selectedCategories.has(category)) {
+      const nextSelection = new Set(this._selectedCategories);
+      nextSelection.add(category);
+      nextSelection.delete("Other");
+      this._selectedCategories = nextSelection;
+      this._showOtherInput = false;
+    }
+
+    // Submit the feedback
+    this._handleSubmit();
+  }
+
+  /**
+   * Called when a key is pressed on a category button (compact mode only).
+   * Prevents Enter key from activating the "Other" button.
+   */
+  _handleCategoryKeyDown(event: KeyboardEvent) {
+    if (!this.compact) {
+      return;
+    }
+
+    const target = event.currentTarget as HTMLElement;
+    const category = target.getAttribute("data-content");
+
+    // Prevent Enter key from activating "Other" button
+    if (event.key === "Enter" && category === "Other") {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  /**
+   * Called when a key is pressed in compact mode (for Enter key submission).
+   */
+  _handleCompactKeyDown(event: KeyboardEvent) {
+    if (this.isReadonly || !this.compact) {
+      return;
+    }
+
+    // Submit on Enter key if categories are selected and "Other" input is not showing
+    if (event.key === "Enter" && !event.shiftKey && !this._showOtherInput) {
+      // Don't submit if "Other" is the only selected category (prevent activating "Other" button)
+      if (
+        this._selectedCategories.size > 0 &&
+        !this._selectedCategories.has("Other")
+      ) {
+        event.preventDefault();
+        this._handleSubmit();
+      } else if (this._selectedCategories.has("Other")) {
+        // Prevent Enter from clicking the "Other" button
+        event.preventDefault();
+      }
+    }
   }
 
   /**
@@ -256,39 +406,54 @@ class CDSAIChatFeedback extends LitElement {
     const containerClasses = {
       [`${prefix}--container`]: true,
       [`${prefix}--is-closed`]: !this.isOpen,
+      [`${prefix}--compact`]: this.compact,
     };
 
+    // In compact mode: show only first 3 categories plus "Other"
+    const categoriesToShow =
+      this.compact && this.categories?.length
+        ? [...this.categories.slice(0, 3), "Other"]
+        : this.categories;
+
     return html`<div class="${classMap(containerClasses)}">
-      <div class="${prefix}--close" data-rounded="top-right">
-        <cds-icon-button
-          size="lg"
-          align="top-right"
-          kind="ghost"
-          ?disabled=${this.isReadonly}
-          @click=${this._handleCancel}
-        >
-          <span slot="icon">${iconLoader(Close16)}</span>
-          <span slot="tooltip-content">Close</span>
-        </cds-icon-button>
-      </div>
-      <div class="${prefix}--title-row">
-        <div class="${prefix}--title">${this.title}</div>
-      </div>
+      ${!this.compact
+        ? html`<div class="${prefix}--close" data-rounded="top-right">
+            <cds-icon-button
+              size="lg"
+              align="top-right"
+              kind="ghost"
+              ?disabled=${this.isReadonly}
+              @click=${this._handleCancel}
+            >
+              <span slot="icon">${iconLoader(Close16)}</span>
+              <span slot="tooltip-content">Close</span>
+            </cds-icon-button>
+          </div>`
+        : ""}
+      ${!this.compact
+        ? html`<div class="${prefix}--title-row">
+            <div class="${prefix}--title">${this.title}</div>
+          </div>`
+        : ""}
       <div class="${prefix}--body">
         <div class="${prefix}--body-content">
           <div class="${prefix}--prompt-categories">
-            ${this.showBody
+            ${this.showBody && !this.compact
               ? html`<div class="${prefix}--prompt">${this.body}</div>`
               : ""}
-            ${this.categories?.length
-              ? html`<div class="${prefix}--categories">
+            ${categoriesToShow?.length
+              ? html`<div
+                  class="${prefix}--categories"
+                  @keydown=${this.compact ? this._handleCompactKeyDown : null}
+                  tabindex="${this.compact ? "0" : "-1"}"
+                >
                   <div
-                    class="${prefix}--tag-list-container"
+                    class="${prefix}--tag-list-container ${prefix}--tag-list-compact-container"
                     role="group"
                     aria-label="${this.categoriesLabel ||
                     "Feedback categories"}"
                   >
-                    ${this.categories.map(
+                    ${categoriesToShow.map(
                       (value) =>
                         html`<cds-selectable-tag
                           class="${prefix}--tag-list-button"
@@ -298,28 +463,52 @@ class CDSAIChatFeedback extends LitElement {
                           ?selected=${this._selectedCategories.has(value)}
                           ?disabled=${this.isReadonly}
                           @click=${this._handleCategoryClick}
+                          @dblclick=${this.compact
+                            ? this._handleCategoryDoubleClick
+                            : null}
+                          @keydown=${this.compact
+                            ? this._handleCategoryKeyDown
+                            : null}
                         ></cds-selectable-tag>`,
                     )}
                   </div>
+                  ${this.compact && !this._showOtherInput
+                    ? html`<div class="${prefix}--helper-text">
+                        Double-click a category to submit, or Select and press
+                        ENTER/RETURN
+                      </div>`
+                    : ""}
                 </div>`
               : ""}
           </div>
           <div class="${prefix}--feedback-text">
-            ${this.showTextArea
+            ${this.showTextArea || (this.compact && this._showOtherInput)
               ? html`<div class="${prefix}--feedback-input">
                   <cds-textarea
                     id="${this.id}-text-area"
                     value="${this._textInput}"
                     class="${prefix}--feedback-text-area"
                     ?disabled=${this.isReadonly}
-                    placeholder="${this.placeholder}"
+                    ?invalid=${this._textareaError}
+                    placeholder="${this.compact
+                      ? "Type your feedback and Press ENTER/RETURN."
+                      : this.placeholder}"
                     rows="3"
-                    max-count="${this.maxLength ?? nothing}"
+                    max-count="${MAX_TEXT_COUNT}"
                     @input=${this._handleTextInput}
+                    @keydown=${this.compact ? this._handleTextKeyDown : null}
                   ></cds-textarea>
+                  ${this._textareaError && this.compact
+                    ? html`<div
+                        class="${prefix}--feedback-error"
+                        style="color: #da1e28; font-size: 0.75rem; margin-top: 0.25rem;"
+                      >
+                        Feedback text is required
+                      </div>`
+                    : ""}
                 </div>`
               : ""}
-            ${this.disclaimer
+            ${this.disclaimer && !this.compact
               ? html`<div class="${prefix}--disclaimer">
                   <cds-aichat-markdown
                     .markdown=${this.disclaimer}
@@ -327,7 +516,7 @@ class CDSAIChatFeedback extends LitElement {
                 </div>`
               : ""}
           </div>
-          ${this.disclaimerCheckbox
+          ${this.disclaimerCheckbox && !this.compact
             ? html`<cds-checkbox
                 class="${prefix}--disclaimer-checkbox"
                 ?disabled=${this.isReadonly}
@@ -337,18 +526,20 @@ class CDSAIChatFeedback extends LitElement {
               </cds-checkbox>`
             : ""}
         </div>
-        <div class="${prefix}--buttons">
-          <div class="${prefix}--submit" data-rounded="bottom-right">
-            <cds-button
-              ?disabled=${this.isReadonly || this._isSubmitDisabled}
-              size="lg"
-              kind="primary"
-              @click=${this._handleSubmit}
-            >
-              ${this.primaryLabel || "Submit"}
-            </cds-button>
-          </div>
-        </div>
+        ${!this.compact
+          ? html`<div class="${prefix}--buttons">
+              <div class="${prefix}--submit" data-rounded="bottom-right">
+                <cds-button
+                  ?disabled=${this.isReadonly || this._isSubmitDisabled}
+                  size="lg"
+                  kind="primary"
+                  @click=${this._handleSubmit}
+                >
+                  ${this.primaryLabel || "Submit"}
+                </cds-button>
+              </div>
+            </div>`
+          : ""}
       </div>
     </div>`;
   }

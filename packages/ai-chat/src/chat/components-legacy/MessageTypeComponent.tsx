@@ -910,6 +910,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         filteredCategories = categories?.negative;
       }
 
+      // Check if we should use compact mode
+      const useCompact = (feedbackOptions as any).use_compact_feedback;
+
       return (
         <Feedback
           class={`${prefix}--feedback-details-${
@@ -930,8 +933,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               ? feedbackInitialValues
               : null
           }
-          showTextArea={show_text_area}
-          showBody={show_prompt}
+          compact={useCompact}
+          showTextArea={!useCompact && show_text_area}
+          showBody={!useCompact && show_prompt}
           title={title || languagePack.feedback_defaultTitle}
           body={prompt || languagePack.feedback_defaultPrompt}
           categories={filteredCategories}
