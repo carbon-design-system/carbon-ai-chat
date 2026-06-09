@@ -85,7 +85,6 @@ $block-class: #{$prefix}-toolbar;
   .#{$block-class}__start,
   .#{$block-class}__end {
     display: flex;
-    flex: 1;
     min-inline-size: 0;
   }
 
