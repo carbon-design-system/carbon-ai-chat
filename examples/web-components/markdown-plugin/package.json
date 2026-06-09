@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-markdown-plugin",
-  "version": "1.14.0-rc.0",
+  "version": "1.15.0-rc.0",
   "private": true,
   "type": "module",
   "description": "Extends the chat's markdown rendering with a markdown-it plugin (KaTeX) via the cds-aichat-custom-element .markdown property.",
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.14.0-rc.0",
+    "@carbon/ai-chat": "^1.15.0-rc.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.54.0",
     "@vscode/markdown-it-katex": "^1.1.2",
