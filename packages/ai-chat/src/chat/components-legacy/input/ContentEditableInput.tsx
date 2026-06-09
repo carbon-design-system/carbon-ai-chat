@@ -212,6 +212,13 @@ const ContentEditableInput = forwardRef<
     const lastNonCollapsedRangeRef = useRef<Range | null>(null);
 
     /**
+     * Counter to force re-render of the auto-resize effect when Enter is pressed.
+     * Some browsers don't fire onInput when only a <br> tag is inserted (Shift+Enter),
+     * so we need to manually trigger the height recalculation.
+     */
+    const [forceResizeCounter, setForceResizeCounter] = React.useState(0);
+
+    /**
      * Reads the current text from the DOM, enforces maxLength, and emits onChange.
      *
      * **Why read from DOM instead of tracking in state?**
@@ -272,6 +279,28 @@ const ContentEditableInput = forwardRef<
         lastNonCollapsedRangeRef.current = range.cloneRange();
       }
     }, []);
+
+    /**
+     * Handles keydown events to detect Enter key presses.
+     * When Enter is pressed (with or without Shift), we schedule a forced resize
+     * because some browsers don't fire onInput when only a <br> tag is inserted.
+     */
+    const handleKeyDown = useCallback(
+      (event: KeyboardEvent<HTMLDivElement>) => {
+        // Call the parent's onKeyDown handler first
+        onKeyDown?.(event);
+
+        // If Enter key is pressed (with or without Shift), force a resize check
+        // after the browser has had time to insert the <br> tag
+        if (event.key === "Enter" && !event.defaultPrevented) {
+          // Use setTimeout to ensure the DOM has been updated with the new line
+          setTimeout(() => {
+            setForceResizeCounter((prev) => prev + 1);
+          }, 0);
+        }
+      },
+      [onKeyDown],
+    );
 
     /**
      * Handles native paste events to enforce plain text only pasting.
@@ -428,10 +457,10 @@ const ContentEditableInput = forwardRef<
       const editor = editorRef.current;
       const sizerHeight = sizerRef.current.scrollHeight;
       applyDynamicStyles(editor, "editor-autoresize", {
-        "overflow-y": sizerHeight > MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
+        "overflow-y": sizerHeight >= MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
       });
       return () => clearDynamicStyles(editor, "editor-autoresize");
-    }, [autoSize, displayValue]);
+    }, [autoSize, displayValue, forceResizeCounter]);
 
     /**
      * Syncs external displayValue changes to the DOM without interfering with user input.
@@ -527,7 +556,7 @@ const ContentEditableInput = forwardRef<
           onBlur={onBlur}
           onFocus={onFocus}
           onInput={emitChangeFromDom}
-          onKeyDown={onKeyDown}
+          onKeyDown={handleKeyDown}
           role="textbox"
           tabIndex={disabled ? -1 : 0}
           spellCheck={true}
