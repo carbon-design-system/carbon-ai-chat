@@ -304,22 +304,28 @@ class CDSAIChatToolbar extends LitElement {
             <slot name="title">
               ${this.titleText || this.nameText
                 ? html`
-                    <div>
-                      <div class="${blockClass}__title-text">
-                        ${this.titleText
-                          ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
-                              >${this.titleText}</span
-                            >`
-                          : nothing}
-                        ${this.nameText
-                          ? html`<span
-                              class="${blockClass}__name"
-                              data-testid=${PageObjectId.HEADER_NAME}
-                              >${this.nameText}</span
-                            >`
-                          : nothing}
-                      </div>
-                    </div>
+                    <cds-aichat-truncated-text
+                      lines="1"
+                      type="tooltip"
+                      align=${this.isRTL ? "bottom-end" : "bottom-start"}
+                      value="${[this.titleText, this.nameText]
+                        .filter(Boolean)
+                        .join(" ")}"
+                    >
+                      ${this.titleText
+                        ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
+                            >${this.titleText}</span
+                          >`
+                        : nothing}
+                      ${this.titleText && this.nameText ? html`` : nothing}
+                      ${this.nameText
+                        ? html`<span
+                            class="${blockClass}__name"
+                            data-testid=${PageObjectId.HEADER_NAME}
+                            >${this.nameText}</span
+                          >`
+                        : nothing}
+                    </cds-aichat-truncated-text>
                   `
                 : nothing}
             </slot>
