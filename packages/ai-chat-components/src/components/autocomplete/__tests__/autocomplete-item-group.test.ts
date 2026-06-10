@@ -61,6 +61,24 @@ describe("cds-aichat-autocomplete-item-group", () => {
     expect(items?.length).to.equal(3);
   });
 
+  it("should pass enableSendButton to all items", async () => {
+    const el = await fixture<AutocompleteItemGroupElement>(html`
+      <cds-aichat-autocomplete-item-group
+        title="Test Group"
+        .items="${mockItems}"
+        .enableSendButton="${false}"
+      ></cds-aichat-autocomplete-item-group>
+    `);
+
+    const items = el.shadowRoot?.querySelectorAll(
+      "cds-aichat-autocomplete-item",
+    );
+    expect(items?.length).to.equal(3);
+    items?.forEach((item) => {
+      expect(item.hasAttribute("enable-send-button")).to.be.false;
+    });
+  });
+
   it("should not render title when empty", async () => {
     const el = await fixture<AutocompleteItemGroupElement>(html`
       <cds-aichat-autocomplete-item-group
@@ -129,5 +147,3 @@ describe("cds-aichat-autocomplete-item-group", () => {
     expect(items?.[1]?.hasAttribute("focused")).to.be.true;
   });
 });
-
-// Made with Bob

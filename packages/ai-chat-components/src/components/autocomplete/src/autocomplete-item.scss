@@ -9,6 +9,7 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/utilities/focus-outline" as *;
 
 $block-class: #{$prefix}-autocomplete-item;
 
@@ -21,6 +22,7 @@ $block-class: #{$prefix}-autocomplete-item;
     border: none;
     background: none;
     color: inherit;
+    cursor: pointer;
     font: inherit;
     inline-size: 100%;
     min-block-size: layout.$spacing-08;
@@ -31,32 +33,57 @@ $block-class: #{$prefix}-autocomplete-item;
     &:hover {
       background: theme.$background-hover;
     }
+
+    &:focus {
+      @include focus-outline("outline");
+    }
   }
 
   .#{$block-class}--content {
     display: flex;
     flex: 1;
-    flex-direction: row;
-    cursor: pointer;
-    gap: layout.$spacing-01;
+    align-items: center;
+    gap: layout.$spacing-03;
     padding-block: 11px;
     padding-inline: layout.$spacing-05;
   }
 
+  .#{$block-class}--text {
+    display: flex;
+    flex-direction: column;
+    gap: layout.$spacing-01;
+  }
+
   .#{$block-class}--label {
     @include type.type-style("body-compact-01");
+  }
 
+  .#{$block-class}--label-typed {
+    color: theme.$text-helper;
+  }
+
+  .#{$block-class}--label-remainder {
     color: theme.$text-primary;
   }
 
   .#{$block-class}--description {
-    @include type.type-style("label-01");
+    @include type.type-style("helper-text-01");
 
-    color: theme.$text-secondary;
+    color: theme.$text-helper;
   }
 
   .#{$block-class}--send-button {
     visibility: hidden;
+
+    &:hover {
+      background: theme.$background-active;
+    }
+  }
+
+  // When item has description or avatar, add margin spacing after send button
+  &:has(.#{$block-class}--description) .#{$block-class}--send-button,
+  &:has(.#{$block-class}--avatar) .#{$block-class}--send-button {
+    margin-inline-end: layout.$spacing-05;
   }
 
   &:has(.#{$block-class}:hover) .#{$block-class}--send-button,
@@ -65,17 +92,18 @@ $block-class: #{$prefix}-autocomplete-item;
     visibility: visible;
   }
 
-  &:has(.#{$block-class}:hover) ::after {
-    display: none;
-  }
-
-  ::after {
+  &::after {
     position: absolute;
+    z-index: -1;
     display: block;
     background: theme.$border-subtle-00;
     block-size: 1px;
     content: "";
     inset-block-end: 0;
     inset-inline: layout.$spacing-05;
+  }
+
+  &:has(.#{$block-class}:hover)::after {
+    display: none;
   }
 }

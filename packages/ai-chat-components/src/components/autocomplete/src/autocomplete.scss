@@ -6,6 +6,7 @@
  */
 
 @use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
@@ -13,17 +14,30 @@
 $block-class: #{$prefix}-autocomplete;
 
 :host {
+  @include rounded-modifiers;
+  --cds-aichat-border-radius-start-start: #{layout.$spacing-03};
+  --cds-aichat-border-radius-start-end: #{layout.$spacing-03};
+  --cds-aichat-border-radius-end-start: #{layout.$spacing-03};
+  --cds-aichat-border-radius-end-end: #{layout.$spacing-03};
+  --cds-aichat-autocomplete-max-height: none;
+
   .#{$block-class} {
+    display: flex;
+    flex-direction: column;
     border: 1px solid theme.$chat-prompt-border-start;
-    border-radius: 4px;
+    border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+    border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+    border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+    border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
+    max-block-size: var(--cds-aichat-autocomplete-max-height);
   }
 
   .#{$block-class}--header {
     display: flex;
-    flex-direction: row;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
-    border-block-end: 1px solid theme.$chat-prompt-border-start;
+    border-block-end: 1px solid theme.$border-subtle-00;
     gap: layout.$spacing-05;
     padding-block: layout.$spacing-02;
     padding-inline-end: layout.$spacing-03;
@@ -37,7 +51,13 @@ $block-class: #{$prefix}-autocomplete;
   }
 
   .#{$block-class}--items {
-    max-block-size: 288px;
+    flex: 1 1 auto;
+    min-block-size: 0;
     overflow-y: auto;
   }
+}
+
+:host([attached]) {
+  --cds-aichat-border-radius-end-start: 0;
+  --cds-aichat-border-radius-end-end: 0;
 }

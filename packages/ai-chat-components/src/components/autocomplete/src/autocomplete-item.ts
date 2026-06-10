@@ -60,6 +60,12 @@ class AutocompleteItemElement extends LitElement {
    */
   @state() private isRTL = false;
 
+  /**
+   * Whether to render the send button.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
+  enableSendButton = true;
+
   private _handleSendClick(event: Event) {
     event.stopPropagation();
     if (this.item.disabled) {
@@ -72,6 +78,36 @@ class AutocompleteItemElement extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  /**
+   * Render the avatar if provided
+   */
+  private _renderAvatar() {
+    if (!this.item.avatar) {
+      return null;
+    }
+
+    const avatar = this.item.avatar;
+
+    // String URL - render as image
+    if (typeof avatar === "string") {
+      return html`
+        <div class="${blockClass}--avatar">
+          <img src="${avatar}" alt="" class="${blockClass}--avatar-image" />
+        </div>
+      `;
+    }
+
+    // CarbonIcon - render using iconLoader
+    // React components are not supported in web components
+    if (typeof avatar !== "function") {
+      return html`
+        <div class="${blockClass}--avatar">${iconLoader(avatar)}</div>
+      `;
+    }
+
+    return null;
   }
 
   /**
@@ -103,34 +139,41 @@ class AutocompleteItemElement extends LitElement {
     return html`
       <button class="${blockClass}" role="option">
         <div class="${blockClass}--content">
-          <div class="${blockClass}--label">
-            ${typed
-              ? html`<span class="${blockClass}--label-typed">${typed}</span>`
-              : ""}${remainder
-              ? html`<span class="${blockClass}--label-remainder"
-                  >${remainder}</span
-                >`
-              : ""}
+          ${this._renderAvatar()}
+          <div class="${blockClass}--text">
+            <div class="${blockClass}--label">
+              ${typed
+                ? html`<span class="${blockClass}--label-typed">${typed}</span>`
+                : ""}${remainder
+                ? html`<span class="${blockClass}--label-remainder"
+                    >${remainder}</span
+                  >`
+                : ""}
+            </div>
+            ${this.item.description
+              ? html`
+                  <div class="${blockClass}--description">
+                    ${this.item.description}
+                  </div>
+                `
+              : null}
           </div>
-          ${this.item.description
-            ? html`
-                <div class="${blockClass}--description">
-                  ${this.item.description}
-                </div>
-              `
-            : null}
         </div>
-        <cds-icon-button
-          class="${blockClass}--send-button"
-          kind="ghost"
-          size="md"
-          align="${this.isRTL ? "top-start" : "top-end"}"
-          @click="${this._handleSendClick}"
-          aria-label="Send ${this.item.label}"
-        >
-          ${iconLoader(Send16, { slot: "icon" })}
-          <span slot="tooltip-content">Send message</span>
-        </cds-icon-button>
+        ${this.enableSendButton
+          ? html`
+              <cds-icon-button
+                class="${blockClass}--send-button"
+                kind="ghost"
+                size="md"
+                align="${this.isRTL ? "top-start" : "top-end"}"
+                @click="${this._handleSendClick}"
+                aria-label="Send ${this.item.label}"
+              >
+                ${iconLoader(Send16, { slot: "icon" })}
+                <span slot="tooltip-content">Send message</span>
+              </cds-icon-button>
+            `
+          : null}
       </button>
     `;
   }

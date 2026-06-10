@@ -91,8 +91,21 @@ class AutocompleteElement extends LitElement {
   /**
    * The current text in the input (used to highlight the typed portion in items)
    */
-  @property({ type: String, attribute: false })
+  @property({ type: String, attribute: "input-text", reflect: true })
   inputText = "";
+
+  /**
+   * Whether to render the send button inside autocomplete items.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
+  enableSendButton = true;
+
+  /**
+   * Whether the autocomplete is attached to another element (e.g., an input field).
+   * When true, the bottom corners will not be rounded.
+   */
+  @property({ type: Boolean, reflect: true })
+  attached = true;
 
   /**
    * Whether the component is in RTL mode.
@@ -301,12 +314,12 @@ class AutocompleteElement extends LitElement {
                 <cds-icon-button
                   class="${blockClass}--header-close"
                   kind="ghost"
-                  align="${this.isRTL ? "right" : "left"}"
-                  aria-label="Close"
+                  align="${this.isRTL ? "top-left" : "top-right"}"
                   size="sm"
                   @click="${this._handleHeaderCloseClick}"
                 >
-                  ${iconLoader(Close16, { slot: "icon" })}
+                  <span slot="icon">${iconLoader(Close16)}</span>
+                  <span slot="tooltip-content">Close</span>
                 </cds-icon-button>
               </div>
             `
@@ -323,6 +336,7 @@ class AutocompleteElement extends LitElement {
                 .index="${itemIndex}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
+                .enableSendButton="${this.enableSendButton}"
                 @click="${() => this._handleItemClick(item, itemIndex)}"
                 @mouseenter="${() => this._handleItemHover(itemIndex)}"
                 @cds-aichat-autocomplete-item-send="${(e: Event) =>
@@ -346,6 +360,7 @@ class AutocompleteElement extends LitElement {
                 .startIndex="${groupStartIndex}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
+                .enableSendButton="${this.enableSendButton}"
                 @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
                   const item = e.detail.item;
                   const index = e.detail.index;

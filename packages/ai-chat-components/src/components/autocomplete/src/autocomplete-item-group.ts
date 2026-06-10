@@ -70,6 +70,12 @@ class AutocompleteItemGroupElement extends LitElement {
    */
   @state() private isRTL = false;
 
+  /**
+   * Whether to render the send button for items in this group.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
+  enableSendButton = true;
+
   private _handleItemClick(item: SuggestionItem, index: number) {
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-item-click", {
@@ -123,6 +129,7 @@ class AutocompleteItemGroupElement extends LitElement {
                 .index="${this.startIndex + index}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
+                .enableSendButton="${this.enableSendButton}"
                 @click="${() => this._handleItemClick(item, index)}"
                 @mouseenter="${() => this._handleItemHover(index)}"
                 @cds-aichat-autocomplete-item-send="${(e: Event) =>
@@ -143,5 +150,3 @@ declare global {
 }
 
 export default AutocompleteItemGroupElement;
-
-// Made with Bob

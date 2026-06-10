@@ -8,6 +8,7 @@
  */
 import "../index";
 import { html } from "lit";
+import { BeeAvatarIcon } from "./bee-avatar-icon.js";
 
 const suggestionGroups = [
   {
@@ -17,6 +18,8 @@ const suggestionGroups = [
       {
         id: "suggestion-1",
         label: "How do I get started with the platform?",
+        description: "Learn the basics of using our platform",
+        avatar: BeeAvatarIcon,
         disabled: false,
       },
       {
@@ -67,11 +70,12 @@ export default {
 export const Default = {
   render: () => html`
     <cds-aichat-autocomplete
+      style="--cds-aichat-autocomplete-max-height: 328px;"
       .groups=${suggestionGroups}
+      attached
+      enable-send-button
       .headerConfig=${{ showHeader: true, title: "Prompt suggestions" }}
-      inputText="How do"
+      input-text="How do I"
     ></cds-aichat-autocomplete>
   `,
 };
-
-// Made with Bob
