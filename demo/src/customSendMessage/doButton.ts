@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -80,7 +80,7 @@ function doButton(instance: ChatInstance) {
           kind: CHAT_BUTTON_KIND.PRIMARY,
           button_type: ButtonItemType.URL,
           label: "Add a button that is a link",
-          url: "https://carbon-ai-chat-components.netlify.app/?path=/docs/components-chat-button--docs",
+          url: "https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html?path=/docs/components-chat-button--overview",
         },
       ],
     },
