@@ -428,7 +428,7 @@ const ContentEditableInput = forwardRef<
       const editor = editorRef.current;
       const sizerHeight = sizerRef.current.scrollHeight;
       applyDynamicStyles(editor, "editor-autoresize", {
-        "overflow-y": sizerHeight > MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
+        "overflow-y": sizerHeight >= MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
       });
       return () => clearDynamicStyles(editor, "editor-autoresize");
     }, [autoSize, displayValue]);
