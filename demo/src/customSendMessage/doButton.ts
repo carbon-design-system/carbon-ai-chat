@@ -80,7 +80,7 @@ function doButton(instance: ChatInstance) {
           kind: CHAT_BUTTON_KIND.PRIMARY,
           button_type: ButtonItemType.URL,
           label: "Add a button that is a link",
-          url: "https://carbon-ai-chat-components.netlify.app/?path=/docs/components-chat-button--overview",
+          url: "https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html?path=/docs/components-chat-button--overview",
         },
       ],
     },
