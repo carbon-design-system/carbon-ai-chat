@@ -1,4 +1,4 @@
-/**
+/*
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -184,13 +184,13 @@ class AutocompleteElement extends LitElement {
       case "ArrowDown":
         event.preventDefault();
         this._focusedIndex = Math.min(this._focusedIndex + 1, totalItems - 1);
-        this._scrollToFocusedItem();
+        this._focusItemAtIndex(this._focusedIndex);
         break;
 
       case "ArrowUp":
         event.preventDefault();
         this._focusedIndex = Math.max(this._focusedIndex - 1, 0);
-        this._scrollToFocusedItem();
+        this._focusItemAtIndex(this._focusedIndex);
         break;
 
       case "Enter": {
@@ -233,7 +233,7 @@ class AutocompleteElement extends LitElement {
     }
   };
 
-  private _scrollToFocusedItem() {
+  private _focusItemAtIndex(index: number) {
     this.requestUpdate();
     this.updateComplete.then(() => {
       const items = this.shadowRoot?.querySelectorAll(
@@ -241,8 +241,14 @@ class AutocompleteElement extends LitElement {
       );
       if (items) {
         const itemArray = Array.from(items);
-        if (itemArray[this._focusedIndex]) {
-          itemArray[this._focusedIndex].scrollIntoView({ block: "nearest" });
+        const targetItem = itemArray[index];
+        if (targetItem) {
+          // Focus the button element inside the autocomplete-item
+          const button = targetItem.shadowRoot?.querySelector("button");
+          if (button) {
+            button.focus();
+            targetItem.scrollIntoView({ block: "nearest" });
+          }
         }
       }
     });
@@ -277,10 +283,6 @@ class AutocompleteElement extends LitElement {
   private _handleItemClick(item: SuggestionItem, index: number) {
     this._focusedIndex = index;
     this._selectItem(item);
-  }
-
-  private _handleItemHover(index: number) {
-    this._focusedIndex = index;
   }
 
   private _handleHeaderCloseClick(event: Event) {
@@ -327,18 +329,20 @@ class AutocompleteElement extends LitElement {
 
         <div class="${blockClass}--items">
           <!-- Render flat items first -->
-          ${this.items.map((item) => {
+          ${this.items.map((item, idx) => {
             const itemIndex = currentIndex++;
+            const isFirstItem = !this.headerConfig?.showHeader && idx === 0;
+            const isLastItem = this.groups.length === 0 && idx === this.items.length - 1;
             return html`
               <cds-aichat-autocomplete-item
                 .item="${item}"
-                .focused="${this._focusedIndex === itemIndex}"
                 .index="${itemIndex}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
+                ?data-first-item="${isFirstItem}"
+                ?data-last-item="${isLastItem}"
                 @click="${() => this._handleItemClick(item, itemIndex)}"
-                @mouseenter="${() => this._handleItemHover(itemIndex)}"
                 @cds-aichat-autocomplete-item-send="${(e: Event) =>
                   this._handleSendClick(item, e)}"
               ></cds-aichat-autocomplete-item>
@@ -346,28 +350,23 @@ class AutocompleteElement extends LitElement {
           })}
 
           <!-- Render grouped items -->
-          ${this.groups.map((group) => {
+          ${this.groups.map((group, groupIdx) => {
             const groupStartIndex = currentIndex;
             currentIndex += group.items.length;
+            const isLastGroup = groupIdx === this.groups.length - 1;
             return html`
               <cds-aichat-autocomplete-item-group
                 .title="${group.title}"
                 .items="${group.items}"
-                .focusedIndex="${this._focusedIndex >= groupStartIndex &&
-                this._focusedIndex < currentIndex
-                  ? this._focusedIndex - groupStartIndex
-                  : -1}"
                 .startIndex="${groupStartIndex}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
+                ?data-last-group="${isLastGroup}"
                 @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
                   const item = e.detail.item;
                   const index = e.detail.index;
                   this._handleItemClick(item, index);
-                }}"
-                @cds-aichat-autocomplete-item-hover="${(e: CustomEvent) => {
-                  this._handleItemHover(e.detail.index);
                 }}"
                 @cds-aichat-autocomplete-item-send="${(e: CustomEvent) => {
                   this._handleSendClick(e.detail.item, e);

@@ -45,13 +45,6 @@ class AutocompleteItemGroupElement extends LitElement {
   items: SuggestionItem[] = [];
 
   /**
-   * The index of the focused item within this group
-   * @internal
-   */
-  @property({ type: Number, attribute: false })
-  focusedIndex = -1;
-
-  /**
    * The starting index of this group in the overall autocomplete list
    * @internal
    */
@@ -76,20 +69,17 @@ class AutocompleteItemGroupElement extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
   enableSendButton = true;
 
+  /**
+   * Whether this is the last group in the autocomplete list.
+   * @internal
+   */
+  @property({ type: Boolean, reflect: true, attribute: "data-last-group" })
+  dataLastGroup = false;
+
   private _handleItemClick(item: SuggestionItem, index: number) {
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-item-click", {
         detail: { item, index: this.startIndex + index },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  private _handleItemHover(index: number) {
-    this.dispatchEvent(
-      new CustomEvent("cds-aichat-autocomplete-item-hover", {
-        detail: { index: this.startIndex + index },
         bubbles: true,
         composed: true,
       }),
@@ -122,20 +112,22 @@ class AutocompleteItemGroupElement extends LitElement {
           : null}
         <div class="${blockClass}--items">
           ${this.items.map(
-            (item, index) => html`
-              <cds-aichat-autocomplete-item
-                .item="${item}"
-                .focused="${this.focusedIndex === index}"
-                .index="${this.startIndex + index}"
-                .inputText="${this.inputText}"
-                .isRTL="${this.isRTL}"
-                .enableSendButton="${this.enableSendButton}"
-                @click="${() => this._handleItemClick(item, index)}"
-                @mouseenter="${() => this._handleItemHover(index)}"
-                @cds-aichat-autocomplete-item-send="${(e: Event) =>
-                  this._handleSendClick(item, index, e)}"
-              ></cds-aichat-autocomplete-item>
-            `,
+            (item, index) => {
+              const isLastItem = this.dataLastGroup && index === this.items.length - 1;
+              return html`
+                <cds-aichat-autocomplete-item
+                  .item="${item}"
+                  .index="${this.startIndex + index}"
+                  .inputText="${this.inputText}"
+                  .isRTL="${this.isRTL}"
+                  .enableSendButton="${this.enableSendButton}"
+                  ?data-last-item="${isLastItem}"
+                  @click="${() => this._handleItemClick(item, index)}"
+                  @cds-aichat-autocomplete-item-send="${(e: Event) =>
+                    this._handleSendClick(item, index, e)}"
+                ></cds-aichat-autocomplete-item>
+              `;
+            },
           )}
         </div>
       </div>

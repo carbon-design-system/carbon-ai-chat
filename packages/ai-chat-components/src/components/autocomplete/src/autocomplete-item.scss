@@ -6,6 +6,7 @@
  */
 
 @use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
@@ -38,6 +39,22 @@ $block-class: #{$prefix}-autocomplete-item;
       @include focus-outline("outline");
     }
   }
+}
+
+// Apply rounded corners only when this item is the first visible item in the
+// autocomplete list, not merely the first child within a subgroup.
+:host([data-first-item]) .#{$block-class} {
+  border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
+  border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
+}
+
+// Apply rounded corners to last item
+:host(:last-child) .#{$block-class} {
+  border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
+  border-end-end-radius: var(--#{$prefix}-border-radius-end-end, 0);
+}
+
+:host {
 
   .#{$block-class}--content {
     display: flex;
@@ -59,7 +76,7 @@ $block-class: #{$prefix}-autocomplete-item;
   }
 
   .#{$block-class}--label-typed {
-    color: theme.$text-helper;
+    color: theme.$text-placeholder;
   }
 
   .#{$block-class}--label-remainder {
@@ -106,4 +123,8 @@ $block-class: #{$prefix}-autocomplete-item;
   &:has(.#{$block-class}:hover)::after {
     display: none;
   }
+}
+
+:host([data-last-item])::after {
+  display: none;
 }
