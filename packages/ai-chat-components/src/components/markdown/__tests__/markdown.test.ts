@@ -1522,3 +1522,179 @@ HTTP: http://example.com
     });
   });
 });
+
+describe("cds-aichat-markdown thematic break (hr) rendering", () => {
+  const HR_DOC = `Intro paragraph.
+
+- one
+- two
+
+---
+
+## After break`;
+
+  // Successive snapshots simulating streaming: a paragraph, then the thematic
+  // break appears, then content after it. The break is always preceded by a
+  // (non-heading) paragraph, so its settled top gap is spacing-05 (1rem).
+  const HR_PREFIXES = [
+    "Para A.\n\nPara B.\n\n",
+    "Para A.\n\nPara B.\n\n---",
+    "Para A.\n\nPara B.\n\n---\n\n## After break",
+    "Para A.\n\nPara B.\n\n---\n\n## After break\n\nPara C.",
+  ];
+
+  const getStack = (el: MarkdownElementInstance) =>
+    el.shadowRoot?.querySelector(".cds-aichat-markdown-stack") ?? null;
+
+  it("renders `---` as a real <hr> directly in the markdown stack (not a plugin-fallback slot host)", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown .markdown=${HR_DOC}></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    const stack = getStack(el);
+    expect(stack, "markdown stack should exist").to.not.equal(null);
+
+    const hr = stack?.querySelector("hr");
+    expect(hr, "a real <hr> should be rendered in the stack").to.not.equal(
+      null,
+    );
+
+    // The regression routed `hr` through the plugin-fallback path, which emits
+    // a <slot> placeholder and a light-DOM `<div slot=…>` host. Guard against
+    // that: no fallback slot/host should exist for the thematic break.
+    expect(
+      stack?.querySelector('slot[name^="cds-aichat-markdown-renderer-"]'),
+      "hr must not render via a fallback <slot>",
+    ).to.equal(null);
+    expect(
+      el.querySelector('[slot^="cds-aichat-markdown-renderer-pluginFallback"]'),
+      "hr must not create a light-DOM fallback host",
+    ).to.equal(null);
+  });
+
+  it("keeps the <hr> a stable stack child with steady top spacing across streaming ticks", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${HR_PREFIXES[0]}
+      ></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    for (const prefix of HR_PREFIXES) {
+      el.markdown = prefix;
+      await el.updateComplete;
+
+      const stack = getStack(el);
+      const hr = stack?.querySelector("hr") as HTMLElement | null;
+
+      // Whenever the parse yields a thematic break it must be a real <hr> in
+      // the stack — never a torn-down/re-added fallback host (the source of the
+      // "margin goes away and comes back" hop).
+      expect(
+        el.querySelector(
+          '[slot^="cds-aichat-markdown-renderer-pluginFallback"]',
+        ),
+        `no fallback host should exist for prefix: ${JSON.stringify(prefix)}`,
+      ).to.equal(null);
+
+      if (hr) {
+        // hr follows a (non-heading) list, so it gets the default inter-block
+        // gap (spacing-05 = 1rem = 16px) — and that value must not flip.
+        const marginTop = getComputedStyle(hr).marginBlockStart;
+        expect(
+          marginTop,
+          `hr top margin should be the settled 16px, got ${marginTop}`,
+        ).to.equal("16px");
+      }
+    }
+  });
+
+  it("preserves element identity for blocks above the streaming frontier (stable repeat key)", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${"Para A.\n\nPara B.\n\n---\n"}
+      ></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    const firstHr = getStack(el)?.querySelector("hr") ?? null;
+    expect(firstHr).to.not.equal(null);
+
+    // Append more content after the hr (as streaming would). The hr's start
+    // line is unchanged, so its repeat key is stable and Lit must reuse the
+    // same DOM node rather than remounting it.
+    el.markdown = "Para A.\n\nPara B.\n\n---\n\n## After break\n\nMore text.";
+    await el.updateComplete;
+
+    const secondHr = getStack(el)?.querySelector("hr") ?? null;
+    expect(secondHr).to.not.equal(null);
+    expect(secondHr, "hr element should be reused, not remounted").to.equal(
+      firstHr,
+    );
+  });
+
+  // Inline plugin (à la markdown-it-emoji): a `nesting=0` inline leaf rendered
+  // through the fallback path as a `<span slot=…>` host. Guards that the
+  // `.cds-aichat-markdown-stack > slot { display: block }` rule (added so block
+  // fallback hosts get stack spacing) does NOT affect inline plugin output:
+  // inline fallback slots live inside the paragraph, never as a direct child of
+  // the stack, so the child-combinator rule can't match them.
+  function inlineEmojiPlugin(md: any) {
+    md.inline.ruler.before(
+      "text",
+      "cds_test_emoji",
+      (state: any, silent: boolean) => {
+        if (!state.src.slice(state.pos).startsWith(":smile:")) {
+          return false;
+        }
+        if (!silent) {
+          const token = state.push("cds_test_emoji", "", 0);
+          token.content = "😀";
+        }
+        state.pos += ":smile:".length;
+        return true;
+      },
+    );
+    md.renderer.rules.cds_test_emoji = () =>
+      `<span class="cds-test-emoji">😀</span>`;
+  }
+
+  it("does not make inline plugin-fallback slots display:block", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdownItPlugins=${[inlineEmojiPlugin]}
+        .markdown=${"Hi :smile: there"}
+      ></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    // The inline plugin output is hosted in a light-DOM <span slot=…> (inline),
+    // not a <div>.
+    const host = el.querySelector(
+      '[slot^="cds-aichat-markdown-renderer-pluginFallback"]',
+    );
+    expect(host, "inline fallback host should exist").to.not.equal(null);
+    expect(host?.tagName, "inline host should be a <span>").to.equal("SPAN");
+
+    // The slot placeholder sits inside the paragraph, never as a direct child
+    // of the markdown stack, so `> slot { display: block }` cannot match it.
+    const slot = el.shadowRoot?.querySelector(
+      'slot[name^="cds-aichat-markdown-renderer-pluginFallback"]',
+    ) as HTMLSlotElement | null;
+    expect(slot, "inline fallback slot should exist").to.not.equal(null);
+    expect(
+      slot?.parentElement?.tagName,
+      "inline fallback slot must be nested in the paragraph, not the stack",
+    ).to.equal("P");
+    expect(
+      getStack(el)?.contains(slot ?? null) &&
+        slot?.parentElement?.classList.contains("cds-aichat-markdown-stack"),
+      "inline slot must not be a direct child of the stack",
+    ).to.not.equal(true);
+    expect(
+      getComputedStyle(slot as Element).display,
+      "inline fallback slot should stay display:contents (inline flow), not block",
+    ).to.equal("contents");
+  });
+});

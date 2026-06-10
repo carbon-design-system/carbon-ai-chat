@@ -40,6 +40,8 @@ const NATIVELY_HANDLED_TOKEN_TYPES = new Set<string>([
   "html_inline",
   "html_container",
   "inline",
+  "hr",
+  "thematic_break",
 ]);
 
 // HTML tags whose paired open/close (or self-contained leaf) is rendered by
@@ -49,6 +51,7 @@ const NATIVELY_HANDLED_TAGS = new Set<string>([
   "p",
   "blockquote",
   "pre",
+  "hr",
   "h1",
   "h2",
   "h3",

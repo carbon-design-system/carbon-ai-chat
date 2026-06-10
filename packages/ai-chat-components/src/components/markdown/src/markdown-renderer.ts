@@ -97,9 +97,14 @@ function renderChildTokenTrees(
   return html`${repeat(
     normalizedChildren,
     (child, index) => {
-      // Generate stable key that doesn't depend on line positions
-      // This prevents unnecessary re-renders during streaming
-      const stableKey = `${index}:${child.token.type}:${child.token.tag}`;
+      // Key by start line + type + tag rather than array index so blocks keep
+      // a stable identity when earlier siblings transiently merge/split during
+      // streaming re-parses (which would otherwise re-key and remount later
+      // blocks — e.g. remounting a code snippet and reloading its editor). We
+      // use `token.map?.[0]` (start line, like `slotNameFor`) rather than the
+      // node's `key`/`generateKey`, whose embedded end line advances every tick.
+      const startLine = child.token.map?.[0] ?? index;
+      const stableKey = `${startLine}:${child.token.type}:${child.token.tag}`;
 
       if (child.token.type?.includes("table")) {
         return `table-${stableKey}`;
@@ -383,6 +388,9 @@ function renderWithStaticTag(
 
     case "pre":
       return html`<pre ${spread(attrs)}>${content}</pre>`;
+
+    case "hr":
+      return html`<hr ${spread(attrs)} />`;
 
     // Headings
     case "h1":

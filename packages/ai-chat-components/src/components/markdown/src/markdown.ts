@@ -763,12 +763,6 @@ class CDSAIChatMarkdown extends LitElement {
           const tag = descriptor.isInline ? "span" : "div";
           host = document.createElement(tag);
           host.setAttribute("slot", descriptor.slotName);
-          // Shadow-DOM `.cds-aichat-markdown-stack > *:not(:first-child)`
-          // doesn't reach slot-projected content; apply the same spacing
-          // inline (block hosts only — inline spans flow with text).
-          if (!descriptor.isInline) {
-            host.style.marginBlockStart = "1rem";
-          }
           this.slotHosts.set(descriptor.slotName, host);
           this.appendChild(host);
         }
@@ -816,10 +810,6 @@ class CDSAIChatMarkdown extends LitElement {
       if (!host) {
         host = document.createElement("div");
         host.setAttribute("slot", descriptor.slotName);
-        // Match the spacing applied to direct children of
-        // `.cds-aichat-markdown-stack`; shadow CSS doesn't reach
-        // slot-projected light-DOM hosts, so we apply it inline.
-        host.style.marginBlockStart = "1rem";
         this.slotHosts.set(descriptor.slotName, host);
         this.appendChild(host);
       }
