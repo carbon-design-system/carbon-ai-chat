@@ -49,8 +49,6 @@ const flatSuggestions = [
   },
 ];
 
-// Suggestion groups with avatars and descriptions
-// Using the same avatar icons from avatar-icons.js as the web components story
 const suggestionGroupsWithAvatars = [
   {
     id: "group-1",
