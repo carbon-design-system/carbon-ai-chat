@@ -74,6 +74,7 @@ class AutocompleteItemElement extends LitElement {
 
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-item-send", {
+        detail: { index: this.index },
         bubbles: true,
         composed: true,
       }),

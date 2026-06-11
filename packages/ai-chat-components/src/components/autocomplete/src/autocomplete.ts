@@ -24,11 +24,11 @@ import "./autocomplete-item-group.js";
 import type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../input/src/types.js";
+} from "../../input/src/tiptap/types.js";
 export type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../input/src/types.js";
+} from "../../input/src/tiptap/types.js";
 
 const blockClass = `${prefix}-autocomplete`;
 
@@ -195,9 +195,56 @@ class AutocompleteElement extends LitElement {
 
       case "Enter": {
         event.preventDefault();
-        const item = this._getItemAtIndex(this._focusedIndex);
-        if (item) {
-          this._selectItem(item);
+
+        // Find which autocomplete-item contains the currently focused element
+        const items = this.shadowRoot?.querySelectorAll(
+          "cds-aichat-autocomplete-item",
+        );
+        if (items) {
+          const itemArray = Array.from(items);
+          let focusedItemIndex = -1;
+          let isSendButtonFocused = false;
+
+          // Check each item to see if it contains the focused element
+          for (let i = 0; i < itemArray.length; i++) {
+            const item = itemArray[i];
+            const itemShadowRoot = item.shadowRoot;
+            if (itemShadowRoot) {
+              const activeElement = itemShadowRoot.activeElement;
+              if (activeElement) {
+                focusedItemIndex = i;
+                // Check if the focused element is the send button
+                isSendButtonFocused =
+                  activeElement.tagName === "CDS-ICON-BUTTON";
+                break;
+              }
+            }
+          }
+
+          if (focusedItemIndex >= 0) {
+            // Update _focusedIndex to match the item that has focus
+            this._focusedIndex = focusedItemIndex;
+            const item = this._getItemAtIndex(focusedItemIndex);
+
+            if (item && !item.disabled) {
+              if (isSendButtonFocused) {
+                // Send button is focused - trigger send action
+                this.dispatchEvent(
+                  new CustomEvent<AutocompleteSendEventDetail>(
+                    "cds-aichat-autocomplete-send",
+                    {
+                      detail: { text: item.label },
+                      bubbles: true,
+                      composed: true,
+                    },
+                  ),
+                );
+              } else {
+                // Item button is focused - trigger select action
+                this._selectItem(item);
+              }
+            }
+          }
         }
         break;
       }
@@ -209,9 +256,20 @@ class AutocompleteElement extends LitElement {
     }
   };
 
-  private _handleSendClick(item: SuggestionItem, event: Event) {
+  private _handleSendClick(event: CustomEvent) {
     event.stopPropagation();
-    if (item.disabled) {
+    const index = event.detail?.index;
+
+    if (index === undefined) {
+      return;
+    }
+
+    // Update focused index to match the item whose send button was clicked
+    this._focusedIndex = index;
+
+    const item = this._getItemAtIndex(index);
+
+    if (!item || item.disabled) {
       return;
     }
 
@@ -280,9 +338,12 @@ class AutocompleteElement extends LitElement {
     );
   }
 
-  private _handleItemClick(item: SuggestionItem, index: number) {
+  private _handleItemClick(index: number) {
     this._focusedIndex = index;
-    this._selectItem(item);
+    const item = this._getItemAtIndex(index);
+    if (item) {
+      this._selectItem(item);
+    }
   }
 
   private _handleHeaderCloseClick(event: Event) {
@@ -332,7 +393,8 @@ class AutocompleteElement extends LitElement {
           ${this.items.map((item, idx) => {
             const itemIndex = currentIndex++;
             const isFirstItem = !this.headerConfig?.showHeader && idx === 0;
-            const isLastItem = this.groups.length === 0 && idx === this.items.length - 1;
+            const isLastItem =
+              this.groups.length === 0 && idx === this.items.length - 1;
             return html`
               <cds-aichat-autocomplete-item
                 .item="${item}"
@@ -342,9 +404,8 @@ class AutocompleteElement extends LitElement {
                 .enableSendButton="${this.enableSendButton}"
                 ?data-first-item="${isFirstItem}"
                 ?data-last-item="${isLastItem}"
-                @click="${() => this._handleItemClick(item, itemIndex)}"
-                @cds-aichat-autocomplete-item-send="${(e: Event) =>
-                  this._handleSendClick(item, e)}"
+                @click="${() => this._handleItemClick(itemIndex)}"
+                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item>
             `;
           })}
@@ -364,13 +425,10 @@ class AutocompleteElement extends LitElement {
                 .enableSendButton="${this.enableSendButton}"
                 ?data-last-group="${isLastGroup}"
                 @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
-                  const item = e.detail.item;
                   const index = e.detail.index;
-                  this._handleItemClick(item, index);
+                  this._handleItemClick(index);
                 }}"
-                @cds-aichat-autocomplete-item-send="${(e: CustomEvent) => {
-                  this._handleSendClick(e.detail.item, e);
-                }}"
+                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item-group>
             `;
           })}

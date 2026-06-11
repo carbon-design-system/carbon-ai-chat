@@ -25,6 +25,7 @@ $block-class: #{$prefix}-autocomplete;
     display: flex;
     flex-direction: column;
     border: 1px solid theme.$chat-prompt-border-start;
+    background: theme.$chat-prompt-background;
     border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
     border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
     border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);

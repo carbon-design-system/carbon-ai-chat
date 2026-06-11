@@ -1,0 +1,96 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as AutocompleteStories from "./autocomplete-react.stories";
+
+<Meta of={AutocompleteStories} />
+
+# Autocomplete
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/autocomplete) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+
+## Table of Contents
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+Use `CDSAIChatAutocomplete` to display contextual suggestions for user input in chat applications. The component supports both flat suggestion lists and grouped suggestions with optional avatars and descriptions.
+
+The autocomplete component includes support for:
+- **Flat Suggestions** - Simple list of suggestion items
+- **Grouped Suggestions** - Organized suggestions with category headers
+- **Rich Content** - Support for avatars and descriptions
+- **Send Button** - Optional send button for each suggestion
+- **Header** - Optional header with custom title
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import CDSAIChatAutocomplete from "@carbon/ai-chat-components/es/react/autocomplete";
+
+function MyComponent() {
+  const ref = React.useRef(null);
+  
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.items = [
+        { id: "1", label: "When is the best time to eat?" },
+        { id: "2", label: "When is the sun rising today?" }
+      ];
+      ref.current.attached = true;
+      ref.current.enableSendButton = true;
+    }
+  }, []);
+
+  return <CDSAIChatAutocomplete ref={ref} />;
+}
+```
+
+### Using grouped suggestions
+
+The autocomplete supports organizing suggestions into groups:
+
+```jsx
+React.useEffect(() => {
+  if (ref.current) {
+    ref.current.groups = [
+      {
+        id: "group-1",
+        title: "Domain A",
+        items: [
+          {
+            id: "suggestion-1",
+            label: "Summarize",
+            description: "Describe selected data"
+          }
+        ]
+      }
+    ];
+  }
+}, []);
+```
+
+## Component API
+
+<ArgTypes of={AutocompleteStories.Default} />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/autocomplete/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["autocomplete"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

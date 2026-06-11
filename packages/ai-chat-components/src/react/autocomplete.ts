@@ -22,6 +22,7 @@ const CDSAIChatAutocomplete = withWebComponentBridge(
     react: React,
     events: {
       onSelect: "cds-aichat-autocomplete-select",
+      onSend: "cds-aichat-autocomplete-send",
       onDismiss: "cds-aichat-autocomplete-dismiss",
     },
   }),

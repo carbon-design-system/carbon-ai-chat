@@ -113,20 +113,26 @@ export default {
       control: "boolean",
       description: "Whether to enable the send button",
     },
+    attached: {
+      control: "boolean",
+      description:
+        "Whether the autocomplete is attached to another element (e.g., an input field). When true, the bottom corners will not be rounded.",
+    },
   },
   args: {
     inputText: "",
     enableSendButton: true,
+    attached: true,
   },
 };
 
 export const Default = {
-  render: ({ inputText, enableSendButton }) => html`
+  render: ({ inputText, enableSendButton, attached }) => html`
     <div style="width: 320px; margin: 2rem;">
       <cds-aichat-autocomplete
         style="--cds-aichat-autocomplete-max-height: 328px;"
         .items=${flatSuggestions}
-        attached
+        ?attached=${attached}
         ?enable-send-button=${enableSendButton}
         input-text=${inputText}
       ></cds-aichat-autocomplete>
@@ -135,12 +141,12 @@ export const Default = {
 };
 
 export const WithHeader = {
-  render: ({ inputText, enableSendButton }) => html`
+  render: ({ inputText, enableSendButton, attached }) => html`
     <div style="width: 320px; margin: 2rem;">
       <cds-aichat-autocomplete
         style="--cds-aichat-autocomplete-max-height: 328px;"
         .items=${flatSuggestions}
-        attached
+        ?attached=${attached}
         ?enable-send-button=${enableSendButton}
         .headerConfig=${{ showHeader: true, title: "Prompt suggestions" }}
         input-text=${inputText}
@@ -150,12 +156,12 @@ export const WithHeader = {
 };
 
 export const WithCategories = {
-  render: ({ inputText, enableSendButton }) => html`
+  render: ({ inputText, enableSendButton, attached }) => html`
     <div style="width: 320px; margin: 2rem;">
       <cds-aichat-autocomplete
         style="--cds-aichat-autocomplete-max-height: 328px;"
         .groups=${suggestionGroupsWithAvatars}
-        attached
+        ?attached=${attached}
         ?enable-send-button=${enableSendButton}
         input-text=${inputText}
       ></cds-aichat-autocomplete>
@@ -164,14 +170,17 @@ export const WithCategories = {
 };
 
 export const Detached = {
-  render: ({ inputText, enableSendButton }) => html`
+  args: {
+    attached: false,
+  },
+  render: ({ inputText, enableSendButton, attached }) => html`
     <div style="width: 671px; margin: 2rem;">
       <cds-aichat-autocomplete
         style="--cds-aichat-autocomplete-max-height: 328px;"
         .items=${flatSuggestions}
         ?enable-send-button=${enableSendButton}
         input-text=${inputText}
-        .attached=${false}
+        ?attached=${attached}
       ></cds-aichat-autocomplete>
     </div>
   `,

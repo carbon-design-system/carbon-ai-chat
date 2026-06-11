@@ -29,4 +29,3 @@ export const BookAvatarIcon = createAvatarIcon(Book16);
 export const ChartLineAvatarIcon = createAvatarIcon(ChartLine16);
 export const DatabaseAvatarIcon = createAvatarIcon(Database16);
 export const HelpAvatarIcon = createAvatarIcon(Help16);
-
