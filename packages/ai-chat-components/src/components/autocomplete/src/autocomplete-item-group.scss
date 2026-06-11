@@ -1,0 +1,44 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "../../../globals/scss/vars" as *;
+
+:host {
+  display: block;
+}
+
+.#{$prefix}--autocomplete-item-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.#{$prefix}--autocomplete-item-group-title {
+  @include type.type-style("label-01");
+
+  padding: layout.$spacing-03 layout.$spacing-04;
+  color: theme.$text-secondary;
+  font-weight: 600;
+  padding-block-end: layout.$spacing-02;
+}
+
+.#{$prefix}--autocomplete-item-group-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.#{$prefix}--autocomplete-item-group:not(:last-child) {
+  .#{$prefix}--autocomplete-item-group-items {
+    cds-aichat-autocomplete-item:last-child {
+      border-block-end: 1px solid theme.$border-subtle-01;
+    }
+  }
+}
+
+// Made with Bob

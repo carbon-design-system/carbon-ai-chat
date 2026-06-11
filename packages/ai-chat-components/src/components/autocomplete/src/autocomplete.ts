@@ -9,14 +9,33 @@
 
 import { css, html, LitElement, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
+import Close16 from "@carbon/icons/es/close/16.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 
 import styles from "./autocomplete.scss?lit";
+import "./autocomplete-item.js";
+import "./autocomplete-item-group.js";
 
-import type { SuggestionItem } from "../../input/src/tiptap/types.js";
-export type { SuggestionItem } from "../../input/src/tiptap/types.js";
+import type {
+  SuggestionItem,
+  SuggestionItemGroup,
+} from "../../input/src/types.js";
+export type {
+  SuggestionItem,
+  SuggestionItemGroup,
+} from "../../input/src/types.js";
+
+/**
+ * Configuration for the autocomplete header
+ */
+export interface HeaderConfig {
+  /** Whether to show the header */
+  showHeader: boolean;
+  /** Title text to display in the header */
+  title: string;
+}
 
 /**
  * Custom event detail for autocomplete select events
@@ -26,10 +45,18 @@ export interface AutocompleteSelectEventDetail {
 }
 
 /**
+ * Custom event detail for autocomplete send events
+ */
+export interface AutocompleteSendEventDetail {
+  text: string;
+}
+
+/**
  * Autocomplete component for AI Chat input suggestions.
  *
  * @element cds-aichat-autocomplete
  * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - Fired when an item is selected
+ * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - Fired when send button is clicked for an item
  * @fires {CustomEvent} cds-aichat-autocomplete-dismiss - Fired when the autocomplete is dismissed
  */
 @carbonElement(`${prefix}-autocomplete`)
@@ -43,6 +70,24 @@ class AutocompleteElement extends LitElement {
    */
   @property({ type: Array, attribute: false })
   items: SuggestionItem[] = [];
+
+  /**
+   * Array of grouped suggestion items to display
+   */
+  @property({ type: Array, attribute: false })
+  groups: SuggestionItemGroup[] = [];
+
+  /**
+   * Optional header configuration
+   */
+  @property({ type: Object, attribute: false })
+  headerConfig?: HeaderConfig;
+
+  /**
+   * The current text in the input (used to highlight the typed portion in items)
+   */
+  @property({ type: String, attribute: false })
+  inputText = "";
 
   /**
    * Currently focused item index
@@ -69,23 +114,52 @@ class AutocompleteElement extends LitElement {
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
 
-    if (changedProperties.has("items")) {
+    if (changedProperties.has("items") || changedProperties.has("groups")) {
       this._focusedIndex = 0;
     }
   }
 
+  /**
+   * Get the total count of all items (flat items + items in groups)
+   */
+  private _getTotalItemCount(): number {
+    const flatCount = this.items.length;
+    const groupedCount = this.groups.reduce(
+      (sum, group) => sum + group.items.length,
+      0,
+    );
+    return flatCount + groupedCount;
+  }
+
+  /**
+   * Get the item at a specific index (accounting for both flat items and groups)
+   */
+  private _getItemAtIndex(index: number): SuggestionItem | null {
+    if (index < this.items.length) {
+      return this.items[index];
+    }
+
+    let currentIndex = this.items.length;
+    for (const group of this.groups) {
+      if (index < currentIndex + group.items.length) {
+        return group.items[index - currentIndex];
+      }
+      currentIndex += group.items.length;
+    }
+
+    return null;
+  }
+
   private _handleKeydown = (event: KeyboardEvent) => {
-    if (this.items.length === 0) {
+    const totalItems = this._getTotalItemCount();
+    if (totalItems === 0) {
       return;
     }
 
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
-        this._focusedIndex = Math.min(
-          this._focusedIndex + 1,
-          this.items.length - 1,
-        );
+        this._focusedIndex = Math.min(this._focusedIndex + 1, totalItems - 1);
         this._scrollToFocusedItem();
         break;
 
@@ -97,7 +171,7 @@ class AutocompleteElement extends LitElement {
 
       case "Enter": {
         event.preventDefault();
-        const item = this.items[this._focusedIndex];
+        const item = this._getItemAtIndex(this._focusedIndex);
         if (item) {
           this._selectItem(item);
         }
@@ -111,6 +185,24 @@ class AutocompleteElement extends LitElement {
     }
   };
 
+  private _handleSendClick(item: SuggestionItem, event: Event) {
+    event.stopPropagation();
+    if (item.disabled) {
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent<AutocompleteSendEventDetail>(
+        "cds-aichat-autocomplete-send",
+        {
+          detail: { text: item.label },
+          bubbles: true,
+          composed: true,
+        },
+      ),
+    );
+  }
+
   private _handleClickOutside = (event: MouseEvent) => {
     if (!this.contains(event.target as Node)) {
       this._dismiss();
@@ -120,11 +212,14 @@ class AutocompleteElement extends LitElement {
   private _scrollToFocusedItem() {
     this.requestUpdate();
     this.updateComplete.then(() => {
-      const focusedElement = this.shadowRoot?.querySelector(
-        ".cds-aichat--autocomplete-item--focused",
+      const items = this.shadowRoot?.querySelectorAll(
+        "cds-aichat-autocomplete-item",
       );
-      if (focusedElement) {
-        focusedElement.scrollIntoView({ block: "nearest" });
+      if (items) {
+        const itemArray = Array.from(items);
+        if (itemArray[this._focusedIndex]) {
+          itemArray[this._focusedIndex].scrollIntoView({ block: "nearest" });
+        }
       }
     });
   }
@@ -164,10 +259,18 @@ class AutocompleteElement extends LitElement {
     this._focusedIndex = index;
   }
 
+  private _handleHeaderCloseClick(event: Event) {
+    event.stopPropagation();
+    this._dismiss();
+  }
+
   render() {
-    if (this.items.length === 0) {
+    const totalItems = this._getTotalItemCount();
+    if (totalItems === 0) {
       return null;
     }
+
+    let currentIndex = 0;
 
     return html`
       <div
@@ -175,37 +278,69 @@ class AutocompleteElement extends LitElement {
         role="listbox"
         aria-label="Autocomplete options"
       >
-        <!-- TODO: Render item.icon (CarbonIcon) via iconLoader when autocomplete is improved -->
-        ${this.items.map(
-          (item, index) => html`
-            <div
-              class="cds-aichat--autocomplete-item ${this._focusedIndex ===
-              index
-                ? "cds-aichat--autocomplete-item--focused"
-                : ""} ${item.disabled
-                ? "cds-aichat--autocomplete-item--disabled"
-                : ""}"
-              role="option"
-              aria-selected="${this._focusedIndex === index}"
-              aria-disabled="${item.disabled || false}"
-              @click="${() => this._handleItemClick(item, index)}"
-              @mouseenter="${() => this._handleItemHover(index)}"
-            >
-              <div class="cds-aichat--autocomplete-item-content">
-                <div class="cds-aichat--autocomplete-item-label">
-                  ${item.label}
-                </div>
-                ${item.description
-                  ? html`
-                      <div class="cds-aichat--autocomplete-item-description">
-                        ${item.description}
-                      </div>
-                    `
-                  : null}
+        ${this.headerConfig?.showHeader
+          ? html`
+              <div class="cds-aichat--autocomplete-header">
+                <span class="cds-aichat--autocomplete-header-title">
+                  ${this.headerConfig.title}
+                </span>
+                <button
+                  class="cds-aichat--autocomplete-header-close"
+                  type="button"
+                  aria-label="Close"
+                  @click="${this._handleHeaderCloseClick}"
+                >
+                  ${Close16({ slot: "" })}
+                </button>
               </div>
-            </div>
-          `,
-        )}
+            `
+          : ""}
+
+        <!-- Render flat items first -->
+        ${this.items.map((item) => {
+          const itemIndex = currentIndex++;
+          return html`
+            <cds-aichat-autocomplete-item
+              .item="${item}"
+              .focused="${this._focusedIndex === itemIndex}"
+              .index="${itemIndex}"
+              .inputText="${this.inputText}"
+              @click="${() => this._handleItemClick(item, itemIndex)}"
+              @mouseenter="${() => this._handleItemHover(itemIndex)}"
+              @cds-aichat-autocomplete-item-send="${(e: Event) =>
+                this._handleSendClick(item, e)}"
+            ></cds-aichat-autocomplete-item>
+          `;
+        })}
+
+        <!-- Render grouped items -->
+        ${this.groups.map((group) => {
+          const groupStartIndex = currentIndex;
+          currentIndex += group.items.length;
+          return html`
+            <cds-aichat-autocomplete-item-group
+              .title="${group.title}"
+              .items="${group.items}"
+              .focusedIndex="${this._focusedIndex >= groupStartIndex &&
+              this._focusedIndex < currentIndex
+                ? this._focusedIndex - groupStartIndex
+                : -1}"
+              .startIndex="${groupStartIndex}"
+              .inputText="${this.inputText}"
+              @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
+                const item = e.detail.item;
+                const index = e.detail.index;
+                this._handleItemClick(item, index);
+              }}"
+              @cds-aichat-autocomplete-item-hover="${(e: CustomEvent) => {
+                this._handleItemHover(e.detail.index);
+              }}"
+              @cds-aichat-autocomplete-item-send="${(e: CustomEvent) => {
+                this._handleSendClick(e.detail.item, e);
+              }}"
+            ></cds-aichat-autocomplete-item-group>
+          `;
+        })}
       </div>
     `;
   }

@@ -1,0 +1,93 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+:host {
+  display: block;
+}
+
+.cds-aichat--autocomplete-item {
+  display: flex;
+  align-items: center;
+  padding: layout.$spacing-03 layout.$spacing-04;
+  border-block-end: 1px solid theme.$border-subtle-01;
+  cursor: pointer;
+
+  &:last-child {
+    border-block-end: none;
+  }
+
+  &:hover {
+    background: theme.$layer-hover-01;
+  }
+
+  &--focused {
+    background: theme.$layer-selected-01;
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.cds-aichat--autocomplete-item-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: layout.$spacing-01;
+}
+
+.cds-aichat--autocomplete-item-label {
+  @include type.type-style("body-compact-01");
+
+  color: theme.$text-primary;
+}
+
+.cds-aichat--autocomplete-item-description {
+  @include type.type-style("label-01");
+
+  color: theme.$text-secondary;
+}
+
+.cds-aichat--autocomplete-item-send-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: layout.$spacing-02;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: theme.$icon-primary;
+  cursor: pointer;
+  margin-inline-start: layout.$spacing-03;
+
+  &:hover {
+    background: theme.$layer-hover-01;
+  }
+
+  &:active {
+    background: theme.$layer-active-01;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  svg {
+    block-size: 16px;
+    inline-size: 16px;
+  }
+}
+
+// Made with Bob

@@ -24,47 +24,48 @@
   overflow-y: auto;
 }
 
-.cds-aichat--autocomplete-item {
+.cds-aichat--autocomplete-header {
+  position: sticky;
+  z-index: 1;
   display: flex;
   align-items: center;
-  padding: layout.$spacing-03 layout.$spacing-04;
+  justify-content: space-between;
+  padding: layout.$spacing-03 layout.$spacing-05;
+  background: theme.$layer-01;
   border-block-end: 1px solid theme.$border-subtle-01;
-  cursor: pointer;
+  inset-block-start: 0;
+}
 
-  &:last-child {
-    border-block-end: none;
-  }
+.cds-aichat--autocomplete-header-title {
+  @include type.type-style("label-01");
+
+  flex: 1;
+  color: theme.$text-secondary;
+}
+
+.cds-aichat--autocomplete-header-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  block-size: layout.$spacing-06;
+  color: theme.$icon-primary;
+  cursor: pointer;
+  inline-size: layout.$spacing-06;
 
   &:hover {
     background: theme.$layer-hover-01;
   }
 
-  &--focused {
-    background: theme.$layer-selected-01;
+  &:focus {
+    outline: 2px solid theme.$focus;
+    outline-offset: -2px;
   }
 
-  &--disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-    pointer-events: none;
+  svg {
+    block-size: 16px;
+    inline-size: 16px;
   }
-}
-
-.cds-aichat--autocomplete-item-content {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: layout.$spacing-01;
-}
-
-.cds-aichat--autocomplete-item-label {
-  @include type.type-style("body-compact-01");
-
-  color: theme.$text-primary;
-}
-
-.cds-aichat--autocomplete-item-description {
-  @include type.type-style("label-01");
-
-  color: theme.$text-secondary;
 }
