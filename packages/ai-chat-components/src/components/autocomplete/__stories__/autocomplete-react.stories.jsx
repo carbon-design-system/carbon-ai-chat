@@ -115,7 +115,8 @@ export default {
   argTypes: {
     inputText: {
       control: "text",
-      description: "The input text to display",
+      description:
+        "The current input text. Suggestion items will apply styling to indicate what user has already typed.",
     },
     enableSendButton: {
       control: "boolean",

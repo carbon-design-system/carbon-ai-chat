@@ -1,9 +1,8 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
-
 import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as AutocompleteStories from "./autocomplete-react.stories";
+import * as AutocompleteReactStories from "./autocomplete-react.stories";
 
-<Meta of={AutocompleteStories} />
+<Meta of={AutocompleteReactStories} />
 
 # Autocomplete
 
@@ -12,10 +11,11 @@ import * as AutocompleteStories from "./autocomplete-react.stories";
 
 ## Table of Contents
 - [Overview](#overview)
+- [Customization](#customization)
+- [Events](#events)
 - [Component API](#component-api)
-- [JS (via import)](#js-via-import)
-- [JS (via CDN)](#js-via-cdn)
 - [Feedback](#feedback)
+
 
 ## Overview
 
@@ -25,7 +25,7 @@ The autocomplete component includes support for:
 - **Flat Suggestions** - Simple list of suggestion items
 - **Grouped Suggestions** - Organized suggestions with category headers
 - **Rich Content** - Support for avatars and descriptions
-- **Send Button** - Optional send button for each suggestion
+- **Send Button** - Optional button to send message directly from suggestion list item
 - **Header** - Optional header with custom title
 
 ### Getting started
@@ -35,61 +35,85 @@ Here's a quick example to get you started.
 ```jsx
 import CDSAIChatAutocomplete from "@carbon/ai-chat-components/es/react/autocomplete";
 
-function MyComponent() {
-  const ref = React.useRef(null);
-  
-  React.useEffect(() => {
-    if (ref.current) {
-      ref.current.items = [
-        { id: "1", label: "When is the best time to eat?" },
-        { id: "2", label: "When is the sun rising today?" }
-      ];
-      ref.current.attached = true;
-      ref.current.enableSendButton = true;
-    }
-  }, []);
+const suggestions = [
+  {
+    id: "suggestion-1",
+    label: "When is the sun rising today?",
+  },
+  {
+    id: "suggestion-2",
+    label: "When is the sun setting today?",
+  }
+];
 
-  return <CDSAIChatAutocomplete ref={ref} />;
+function MyComponent() {
+  return (
+    <CDSAIChatAutocomplete
+      items={suggestions}
+      enableSendButton={true}
+      attached={true}
+      onSelect={(event) => {
+        console.log("Selected:", event.detail.item);
+      }}
+      onSend={(event) => {
+        console.log("Sent:", event.detail.text);
+      }}
+    />
+  );
 }
 ```
 
-### Using grouped suggestions
+## Customization
 
-The autocomplete supports organizing suggestions into groups:
+The autocomplete component accepts the following layout token:
 
-```jsx
-React.useEffect(() => {
-  if (ref.current) {
-    ref.current.groups = [
-      {
-        id: "group-1",
-        title: "Domain A",
-        items: [
-          {
-            id: "suggestion-1",
-            label: "Summarize",
-            description: "Describe selected data"
-          }
-        ]
-      }
-    ];
-  }
-}, []);
-```
+| Token | Description |
+| --- | --- |
+| `--cds-aichat-autocomplete-max-height` | Controls the maximum height of the autocomplete panel before it scrolls. |
+
+## Events
+
+The autocomplete React component emits the following custom events that you can listen for to handle user interactions:
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Prop</th>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onSelect</code></td>
+      <td><code>cds-aichat-autocomplete-select</code></td>
+      <td>Fired when a suggestion item is selected.</td>
+      <td>
+        • <code>item</code> (SuggestionItem) - The selected suggestion item
+      </td>
+    </tr>
+    <tr>
+      <td><code>onSend</code></td>
+      <td><code>cds-aichat-autocomplete-send</code></td>
+      <td>Fired when the send button is clicked for a suggestion item.</td>
+      <td>
+        • <code>text</code> (string) - The label text of the suggestion item
+      </td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td><code>cds-aichat-autocomplete-dismiss</code></td>
+      <td>Fired when the autocomplete panel is dismissed.</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Component API
 
-<ArgTypes of={AutocompleteStories.Default} />
+<ArgTypes of={AutocompleteReactStories.Default} />
 
-## JS (via import)
-
-```javascript
-import "@carbon/ai-chat-components/es/components/autocomplete/index.js";
-```
-
-
-<Markdown>{`${cdnJs(["autocomplete"])}`}</Markdown>
-<Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback
 
