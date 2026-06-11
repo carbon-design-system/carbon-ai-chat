@@ -43,12 +43,6 @@ class AutocompleteItemElement extends LitElement {
   item!: SuggestionItem;
 
   /**
-   * Whether this item is currently focused
-   */
-  @property({ type: Boolean, reflect: true })
-  focused = false;
-
-  /**
    * The index of this item in the list
    */
   @property({ type: Number })
@@ -107,14 +101,7 @@ class AutocompleteItemElement extends LitElement {
     const { typed, remainder } = this._getLabelParts();
 
     return html`
-      <div
-        class="${blockClass} ${this.focused
-          ? `${blockClass}--focused`
-          : ""} ${this.item.disabled ? `${blockClass}--disabled` : ""}"
-        role="option"
-        aria-selected="${this.focused}"
-        aria-disabled="${this.item.disabled || false}"
-      >
+      <button class="${blockClass}" role="option">
         <div class="${blockClass}--content">
           <div class="${blockClass}--label">
             ${typed
@@ -140,12 +127,11 @@ class AutocompleteItemElement extends LitElement {
           align="${this.isRTL ? "top-start" : "top-end"}"
           @click="${this._handleSendClick}"
           aria-label="Send ${this.item.label}"
-          ?disabled="${this.item.disabled}"
         >
           ${iconLoader(Send16, { slot: "icon" })}
           <span slot="tooltip-content">Send message</span>
         </cds-icon-button>
-      </div>
+      </button>
     `;
   }
 }

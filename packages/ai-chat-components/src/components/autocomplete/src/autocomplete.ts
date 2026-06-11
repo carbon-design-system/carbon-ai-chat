@@ -77,7 +77,7 @@ class AutocompleteElement extends LitElement {
   items: SuggestionItem[] = [];
 
   /**
-   * Array of grouped suggestion items to display
+   * Array of grouped suggestion items to display. These will be displayed after any provided `items`.
    */
   @property({ type: Array, attribute: false })
   groups: SuggestionItemGroup[] = [];

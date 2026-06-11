@@ -18,25 +18,18 @@ $block-class: #{$prefix}-autocomplete-item;
   .#{$block-class} {
     display: flex;
     align-items: center;
-    border-block-end: 1px solid theme.$border-subtle-01;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    inline-size: 100%;
     min-block-size: layout.$spacing-08;
-
-    &:last-child {
-      border-block-end: none;
-    }
+    padding-block: 0;
+    padding-inline: 0;
+    text-align: start;
 
     &:hover {
-      background: theme.$layer-hover-01;
-    }
-
-    &--focused {
-      background: theme.$layer-selected-01;
-    }
-
-    &--disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-      pointer-events: none;
+      background: theme.$background-hover;
     }
   }
 
@@ -55,20 +48,34 @@ $block-class: #{$prefix}-autocomplete-item;
 
     color: theme.$text-primary;
   }
-}
 
-:host(:not(:first-child))::before {
-  position: absolute;
-  display: block;
-  background: theme.$border-subtle-00;
-  block-size: 1px;
-  content: "";
-  inset-block-start: -1px;
-  inset-inline: layout.$spacing-05;
-}
+  .#{$block-class}--description {
+    @include type.type-style("label-01");
 
-.cds-aichat--autocomplete-item-description {
-  @include type.type-style("label-01");
+    color: theme.$text-secondary;
+  }
 
-  color: theme.$text-secondary;
+  .#{$block-class}--send-button {
+    visibility: hidden;
+  }
+
+  &:has(.#{$block-class}:hover) .#{$block-class}--send-button,
+  &:has(.#{$block-class}:focus) .#{$block-class}--send-button,
+  &:has(.#{$block-class}:focus-within) .#{$block-class}--send-button {
+    visibility: visible;
+  }
+
+  &:has(.#{$block-class}:hover) ::after {
+    display: none;
+  }
+
+  ::after {
+    position: absolute;
+    display: block;
+    background: theme.$border-subtle-00;
+    block-size: 1px;
+    content: "";
+    inset-block-end: 0;
+    inset-inline: layout.$spacing-05;
+  }
 }
