@@ -5,40 +5,31 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "../../../globals/scss/vars" as *;
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
-@use "../../../globals/scss/vars" as *;
+
+$block-class: #{$prefix}-autocomplete-item-group;
 
 :host {
-  display: block;
-}
+  .#{$block-class} {
+    display: flex;
+    flex-direction: column;
+  }
 
-.#{$prefix}--autocomplete-item-group {
-  display: flex;
-  flex-direction: column;
-}
+  .#{$block-class}--title {
+    @include type.type-style("label-01");
 
-.#{$prefix}--autocomplete-item-group-title {
-  @include type.type-style("label-01");
+    color: theme.$text-helper;
+    padding-block-end: layout.$spacing-02;
 
-  padding: layout.$spacing-03 layout.$spacing-04;
-  color: theme.$text-secondary;
-  font-weight: 600;
-  padding-block-end: layout.$spacing-02;
-}
+    padding-block-start: layout.$spacing-05;
+    padding-inline: layout.$spacing-05;
+  }
 
-.#{$prefix}--autocomplete-item-group-items {
-  display: flex;
-  flex-direction: column;
-}
-
-.#{$prefix}--autocomplete-item-group:not(:last-child) {
-  .#{$prefix}--autocomplete-item-group-items {
-    cds-aichat-autocomplete-item:last-child {
-      border-block-end: 1px solid theme.$border-subtle-01;
-    }
+  .#{$block-class}--items {
+    display: flex;
+    flex-direction: column;
   }
 }
-
-// Made with Bob

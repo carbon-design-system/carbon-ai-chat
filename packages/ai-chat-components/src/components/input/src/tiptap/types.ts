@@ -29,15 +29,32 @@ export interface SuggestionItem {
   value?: string;
   /** Optional description shown below the label. */
   description?: string;
-  /** Optional avatar URL for the item. */
-  avatar?: string;
   /**
-   * Either an icon from `@carbon/icons` (CarbonIcon descriptor) or a React
-   * icon component from `@carbon/icons-react`.
+   * Optional leading visual for the item.
+   *
+   * Can be:
+   * - a string URL for an avatar image
+   * - an icon from `@carbon/icons` (CarbonIcon descriptor)
+   * - a React icon component from `@carbon/icons-react`
+   *
+   * React components are automatically transformed to CarbonIcon format when
+   * rendered through the React wrapper.
    */
-  icon?: CarbonIcon | ComponentType<unknown>;
+  avatar?: string | CarbonIcon | ComponentType<any>;
   /** Whether the item is disabled and cannot be selected. */
   disabled?: boolean;
+}
+
+/**
+ * Represents a group of related suggestion items with a title.
+ */
+export interface SuggestionItemGroup {
+  /** Unique identifier for the group */
+  id: string;
+  /** Title displayed above the group */
+  title: string;
+  /** Array of suggestion items in this group */
+  items: SuggestionItem[];
 }
 
 /**

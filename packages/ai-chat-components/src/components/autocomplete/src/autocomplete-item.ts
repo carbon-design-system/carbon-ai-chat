@@ -8,7 +8,7 @@
  */
 
 import { css, html, LitElement, unsafeCSS } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
@@ -21,6 +21,8 @@ import Send16 from "@carbon/icons/es/send/16.js";
 import styles from "./autocomplete-item.scss?lit";
 
 import type { SuggestionItem } from "../../input/src/types.js";
+
+const blockClass = `${prefix}-autocomplete-item`;
 
 /**
  * Autocomplete item component for displaying individual suggestions.
@@ -57,6 +59,12 @@ class AutocompleteItemElement extends LitElement {
    */
   @property({ type: String, attribute: false })
   inputText = "";
+
+  /**
+   * Whether the component is in RTL mode.
+   * @internal
+   */
+  @state() private isRTL = false;
 
   private _handleSendClick(event: Event) {
     event.stopPropagation();
@@ -100,39 +108,36 @@ class AutocompleteItemElement extends LitElement {
 
     return html`
       <div
-        class="cds-aichat--autocomplete-item ${this.focused
-          ? "cds-aichat--autocomplete-item--focused"
-          : ""} ${this.item.disabled
-          ? "cds-aichat--autocomplete-item--disabled"
-          : ""}"
+        class="${blockClass} ${this.focused
+          ? `${blockClass}--focused`
+          : ""} ${this.item.disabled ? `${blockClass}--disabled` : ""}"
         role="option"
         aria-selected="${this.focused}"
         aria-disabled="${this.item.disabled || false}"
       >
-        <div class="cds-aichat--autocomplete-item-content">
-          <div class="cds-aichat--autocomplete-item-label">
+        <div class="${blockClass}--content">
+          <div class="${blockClass}--label">
             ${typed
-              ? html`<span class="cds-aichat--autocomplete-item-label-typed"
-                  >${typed}</span
-                >`
+              ? html`<span class="${blockClass}--label-typed">${typed}</span>`
               : ""}${remainder
-              ? html`<span class="cds-aichat--autocomplete-item-label-remainder"
+              ? html`<span class="${blockClass}--label-remainder"
                   >${remainder}</span
                 >`
               : ""}
           </div>
           ${this.item.description
             ? html`
-                <div class="cds-aichat--autocomplete-item-description">
+                <div class="${blockClass}--description">
                   ${this.item.description}
                 </div>
               `
             : null}
         </div>
         <cds-icon-button
-          class="cds-aichat--autocomplete-item-send-button"
+          class="${blockClass}--send-button"
           kind="ghost"
-          size="lg"
+          size="md"
+          align="${this.isRTL ? "top-start" : "top-end"}"
           @click="${this._handleSendClick}"
           aria-label="Send ${this.item.label}"
           ?disabled="${this.item.disabled}"

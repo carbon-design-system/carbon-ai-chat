@@ -5,67 +5,39 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "../../../globals/scss/vars" as *;
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 
+$block-class: #{$prefix}-autocomplete;
+
 :host {
-  display: block;
-}
-
-.cds-aichat--autocomplete {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid theme.$border-subtle-01;
-  border-radius: 4px;
-  background: theme.$layer-01;
-  box-shadow: 0 2px 6px var(--cds-shadow, #{theme.$shadow});
-  max-block-size: 300px;
-  overflow-y: auto;
-}
-
-.cds-aichat--autocomplete-header {
-  position: sticky;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: layout.$spacing-03 layout.$spacing-05;
-  background: theme.$layer-01;
-  border-block-end: 1px solid theme.$border-subtle-01;
-  inset-block-start: 0;
-}
-
-.cds-aichat--autocomplete-header-title {
-  @include type.type-style("label-01");
-
-  flex: 1;
-  color: theme.$text-secondary;
-}
-
-.cds-aichat--autocomplete-header-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  background: transparent;
-  block-size: layout.$spacing-06;
-  color: theme.$icon-primary;
-  cursor: pointer;
-  inline-size: layout.$spacing-06;
-
-  &:hover {
-    background: theme.$layer-hover-01;
+  .#{$block-class} {
+    border: 1px solid theme.$chat-prompt-border-start;
+    border-radius: 4px;
   }
 
-  &:focus {
-    outline: 2px solid theme.$focus;
-    outline-offset: -2px;
+  .#{$block-class}--header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-block-end: 1px solid theme.$chat-prompt-border-start;
+    gap: layout.$spacing-05;
+    padding-block: layout.$spacing-02;
+    padding-inline-end: layout.$spacing-03;
+    padding-inline-start: layout.$spacing-05;
   }
 
-  svg {
-    block-size: 16px;
-    inline-size: 16px;
+  .#{$block-class}--header-title {
+    @include type.type-style("heading-compact-01");
+
+    color: theme.$text-primary;
+  }
+
+  .#{$block-class}--items {
+    max-block-size: 288px;
+    overflow-y: auto;
   }
 }

@@ -8,15 +8,18 @@
  */
 
 import { css, html, LitElement, unsafeCSS } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 import prefix from "../../../globals/settings.js";
 
 import styles from "./autocomplete-item-group.scss?lit";
 import "./autocomplete-item.js";
 
 import type { SuggestionItem } from "../../input/src/types.js";
+
+const blockClass = `${prefix}-autocomplete-item-group`;
 
 /**
  * Autocomplete item group component for grouping related suggestions with a title.
@@ -61,6 +64,12 @@ class AutocompleteItemGroupElement extends LitElement {
   @property({ type: String, attribute: false })
   inputText = "";
 
+  /**
+   * Whether the component is in RTL mode.
+   * @internal
+   */
+  @state() private isRTL = false;
+
   private _handleItemClick(item: SuggestionItem, index: number) {
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-item-click", {
@@ -97,20 +106,15 @@ class AutocompleteItemGroupElement extends LitElement {
       return null;
     }
 
+    // Detect RTL mode from document direction
+    this.isRTL = isDirectionRTL();
+
     return html`
-      <div
-        class="${prefix}--autocomplete-item-group"
-        role="group"
-        aria-label="${this.title}"
-      >
+      <div class="${blockClass}" role="group" aria-label="${this.title}">
         ${this.title
-          ? html`
-              <div class="${prefix}--autocomplete-item-group-title">
-                ${this.title}
-              </div>
-            `
+          ? html` <div class="${blockClass}--title">${this.title}</div> `
           : null}
-        <div class="${prefix}--autocomplete-item-group-items">
+        <div class="${blockClass}--items">
           ${this.items.map(
             (item, index) => html`
               <cds-aichat-autocomplete-item
@@ -118,6 +122,7 @@ class AutocompleteItemGroupElement extends LitElement {
                 .focused="${this.focusedIndex === index}"
                 .index="${this.startIndex + index}"
                 .inputText="${this.inputText}"
+                .isRTL="${this.isRTL}"
                 @click="${() => this._handleItemClick(item, index)}"
                 @mouseenter="${() => this._handleItemHover(index)}"
                 @cds-aichat-autocomplete-item-send="${(e: Event) =>

@@ -5,50 +5,66 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "../../../globals/scss/vars" as *;
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "@carbon/styles/scss/type";
 
+$block-class: #{$prefix}-autocomplete-item;
+
 :host {
+  position: relative;
+
+  .#{$block-class} {
+    display: flex;
+    align-items: center;
+    border-block-end: 1px solid theme.$border-subtle-01;
+    min-block-size: layout.$spacing-08;
+
+    &:last-child {
+      border-block-end: none;
+    }
+
+    &:hover {
+      background: theme.$layer-hover-01;
+    }
+
+    &--focused {
+      background: theme.$layer-selected-01;
+    }
+
+    &--disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+
+  .#{$block-class}--content {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    cursor: pointer;
+    gap: layout.$spacing-01;
+    padding-block: 11px;
+    padding-inline: layout.$spacing-05;
+  }
+
+  .#{$block-class}--label {
+    @include type.type-style("body-compact-01");
+
+    color: theme.$text-primary;
+  }
+}
+
+:host(:not(:first-child))::before {
+  position: absolute;
   display: block;
-}
-
-.cds-aichat--autocomplete-item {
-  display: flex;
-  align-items: center;
-  border-block-end: 1px solid theme.$border-subtle-01;
-
-  &:last-child {
-    border-block-end: none;
-  }
-
-  &:hover {
-    background: theme.$layer-hover-01;
-  }
-
-  &--focused {
-    background: theme.$layer-selected-01;
-  }
-
-  &--disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-    pointer-events: none;
-  }
-}
-
-.cds-aichat--autocomplete-item-content {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  cursor: pointer;
-  gap: layout.$spacing-01;
-}
-
-.cds-aichat--autocomplete-item-label {
-  @include type.type-style("body-compact-01");
-
-  color: theme.$text-primary;
+  background: theme.$border-subtle-00;
+  block-size: 1px;
+  content: "";
+  inset-block-start: -1px;
+  inset-inline: layout.$spacing-05;
 }
 
 .cds-aichat--autocomplete-item-description {
@@ -56,36 +72,3 @@
 
   color: theme.$text-secondary;
 }
-
-.cds-aichat--autocomplete-item-send-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: theme.$icon-primary;
-  cursor: pointer;
-  margin-inline-start: layout.$spacing-03;
-
-  &:hover {
-    background: theme.$layer-hover-01;
-  }
-
-  &:active {
-    background: theme.$layer-active-01;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  svg {
-    block-size: 16px;
-    inline-size: 16px;
-  }
-}
-
-// Made with Bob

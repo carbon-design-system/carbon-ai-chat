@@ -11,8 +11,10 @@ import { css, html, LitElement, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import Close16 from "@carbon/icons/es/close/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import "@carbon/web-components/es/components/icon-button/index.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 import prefix from "../../../globals/settings.js";
 
 import styles from "./autocomplete.scss?lit";
@@ -27,6 +29,8 @@ export type {
   SuggestionItem,
   SuggestionItemGroup,
 } from "../../input/src/types.js";
+
+const blockClass = `${prefix}-autocomplete`;
 
 /**
  * Configuration for the autocomplete header
@@ -89,6 +93,12 @@ class AutocompleteElement extends LitElement {
    */
   @property({ type: String, attribute: false })
   inputText = "";
+
+  /**
+   * Whether the component is in RTL mode.
+   * @internal
+   */
+  @state() private isRTL = false;
 
   /**
    * Currently focused item index
@@ -266,6 +276,9 @@ class AutocompleteElement extends LitElement {
   }
 
   render() {
+    // Detect RTL mode from document direction
+    this.isRTL = isDirectionRTL();
+
     const totalItems = this._getTotalItemCount();
     if (totalItems === 0) {
       return null;
@@ -275,73 +288,79 @@ class AutocompleteElement extends LitElement {
 
     return html`
       <div
-        class="cds-aichat--autocomplete"
+        class="${blockClass}"
         role="listbox"
         aria-label="Autocomplete options"
       >
         ${this.headerConfig?.showHeader
           ? html`
-              <div class="cds-aichat--autocomplete-header">
-                <span class="cds-aichat--autocomplete-header-title">
+              <div class="${blockClass}--header">
+                <span class="${blockClass}--header-title">
                   ${this.headerConfig.title}
                 </span>
-                <button
-                  class="cds-aichat--autocomplete-header-close"
-                  type="button"
+                <cds-icon-button
+                  class="${blockClass}--header-close"
+                  kind="ghost"
+                  align="${this.isRTL ? "right" : "left"}"
                   aria-label="Close"
+                  size="sm"
                   @click="${this._handleHeaderCloseClick}"
                 >
-                  ${iconLoader(Close16)}
-                </button>
+                  ${iconLoader(Close16, { slot: "icon" })}
+                </cds-icon-button>
               </div>
             `
           : ""}
 
-        <!-- Render flat items first -->
-        ${this.items.map((item) => {
-          const itemIndex = currentIndex++;
-          return html`
-            <cds-aichat-autocomplete-item
-              .item="${item}"
-              .focused="${this._focusedIndex === itemIndex}"
-              .index="${itemIndex}"
-              .inputText="${this.inputText}"
-              @click="${() => this._handleItemClick(item, itemIndex)}"
-              @mouseenter="${() => this._handleItemHover(itemIndex)}"
-              @cds-aichat-autocomplete-item-send="${(e: Event) =>
-                this._handleSendClick(item, e)}"
-            ></cds-aichat-autocomplete-item>
-          `;
-        })}
+        <div class="${blockClass}--items">
+          <!-- Render flat items first -->
+          ${this.items.map((item) => {
+            const itemIndex = currentIndex++;
+            return html`
+              <cds-aichat-autocomplete-item
+                .item="${item}"
+                .focused="${this._focusedIndex === itemIndex}"
+                .index="${itemIndex}"
+                .inputText="${this.inputText}"
+                .isRTL="${this.isRTL}"
+                @click="${() => this._handleItemClick(item, itemIndex)}"
+                @mouseenter="${() => this._handleItemHover(itemIndex)}"
+                @cds-aichat-autocomplete-item-send="${(e: Event) =>
+                  this._handleSendClick(item, e)}"
+              ></cds-aichat-autocomplete-item>
+            `;
+          })}
 
-        <!-- Render grouped items -->
-        ${this.groups.map((group) => {
-          const groupStartIndex = currentIndex;
-          currentIndex += group.items.length;
-          return html`
-            <cds-aichat-autocomplete-item-group
-              .title="${group.title}"
-              .items="${group.items}"
-              .focusedIndex="${this._focusedIndex >= groupStartIndex &&
-              this._focusedIndex < currentIndex
-                ? this._focusedIndex - groupStartIndex
-                : -1}"
-              .startIndex="${groupStartIndex}"
-              .inputText="${this.inputText}"
-              @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
-                const item = e.detail.item;
-                const index = e.detail.index;
-                this._handleItemClick(item, index);
-              }}"
-              @cds-aichat-autocomplete-item-hover="${(e: CustomEvent) => {
-                this._handleItemHover(e.detail.index);
-              }}"
-              @cds-aichat-autocomplete-item-send="${(e: CustomEvent) => {
-                this._handleSendClick(e.detail.item, e);
-              }}"
-            ></cds-aichat-autocomplete-item-group>
-          `;
-        })}
+          <!-- Render grouped items -->
+          ${this.groups.map((group) => {
+            const groupStartIndex = currentIndex;
+            currentIndex += group.items.length;
+            return html`
+              <cds-aichat-autocomplete-item-group
+                .title="${group.title}"
+                .items="${group.items}"
+                .focusedIndex="${this._focusedIndex >= groupStartIndex &&
+                this._focusedIndex < currentIndex
+                  ? this._focusedIndex - groupStartIndex
+                  : -1}"
+                .startIndex="${groupStartIndex}"
+                .inputText="${this.inputText}"
+                .isRTL="${this.isRTL}"
+                @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
+                  const item = e.detail.item;
+                  const index = e.detail.index;
+                  this._handleItemClick(item, index);
+                }}"
+                @cds-aichat-autocomplete-item-hover="${(e: CustomEvent) => {
+                  this._handleItemHover(e.detail.index);
+                }}"
+                @cds-aichat-autocomplete-item-send="${(e: CustomEvent) => {
+                  this._handleSendClick(e.detail.item, e);
+                }}"
+              ></cds-aichat-autocomplete-item-group>
+            `;
+          })}
+        </div>
       </div>
     `;
   }
