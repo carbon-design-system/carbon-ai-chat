@@ -10,6 +10,7 @@
 import { css, html, LitElement, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import Close16 from "@carbon/icons/es/close/16.js";
+import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
@@ -290,7 +291,7 @@ class AutocompleteElement extends LitElement {
                   aria-label="Close"
                   @click="${this._handleHeaderCloseClick}"
                 >
-                  ${Close16({ slot: "" })}
+                  ${iconLoader(Close16)}
                 </button>
               </div>
             `

@@ -9,31 +9,48 @@
 import "../index";
 import { html } from "lit";
 
-const suggestionItems = [
+const suggestionGroups = [
   {
-    id: "suggestion-1",
-    label: "What are the key features of this product?",
-    disabled: false,
+    id: "group-1",
+    title: "Getting Started",
+    items: [
+      {
+        id: "suggestion-1",
+        label: "How do I get started with the platform?",
+        disabled: false,
+      },
+      {
+        id: "suggestion-2",
+        label: "How do I create my first project?",
+        disabled: false,
+      },
+      {
+        id: "suggestion-3",
+        label: "How do I configure my settings?",
+        disabled: false,
+      },
+    ],
   },
   {
-    id: "suggestion-2",
-    label: "How do I get started with the platform?",
-    disabled: false,
-  },
-  {
-    id: "suggestion-3",
-    label: "Can you explain the pricing model?",
-    disabled: false,
-  },
-  {
-    id: "suggestion-4",
-    label: "What integrations are available?",
-    disabled: false,
-  },
-  {
-    id: "suggestion-5",
-    label: "How do I contact support?",
-    disabled: false,
+    id: "group-2",
+    title: "Features & Support",
+    items: [
+      {
+        id: "suggestion-4",
+        label: "How do I access advanced features?",
+        disabled: false,
+      },
+      {
+        id: "suggestion-5",
+        label: "How do I contact support?",
+        disabled: false,
+      },
+      {
+        id: "suggestion-6",
+        label: "How do I integrate with other tools?",
+        disabled: false,
+      },
+    ],
   },
 ];
 
@@ -50,8 +67,9 @@ export default {
 export const Default = {
   render: () => html`
     <cds-aichat-autocomplete
-      .items=${suggestionItems}
-      inputText=""
+      .groups=${suggestionGroups}
+      .headerConfig=${{ showHeader: true, title: "Prompt suggestions" }}
+      inputText="How do"
     ></cds-aichat-autocomplete>
   `,
 };
