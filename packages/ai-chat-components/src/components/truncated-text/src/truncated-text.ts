@@ -103,7 +103,7 @@ class CDSAIChatTruncatedText extends LitElement {
 
   private _syncTruncatedVars() {
     setVarsForSelector(this._truncatedSelector, {
-      "--line-clamp-value": String(this.lines),
+      "--line-clamp-value": this.lines === 0 ? "none" : String(this.lines),
       "--max-height-value": this._maxHeight || "none",
     });
   }
