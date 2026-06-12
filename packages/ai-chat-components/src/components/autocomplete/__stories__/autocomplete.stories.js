@@ -8,6 +8,7 @@
  */
 import "../index";
 import { html } from "lit";
+import { action } from "storybook/actions";
 import {
   BookAvatarIcon,
   ChartLineAvatarIcon,
@@ -101,6 +102,37 @@ const suggestionGroupsWithAvatars = [
   },
 ];
 
+/**
+ * Filter suggestion items based on query string (case-insensitive).
+ * Returns all items if query is empty.
+ */
+const filterSuggestions = (items, query) => {
+  if (!query) {
+    return items;
+  }
+  const lower = query.toLowerCase();
+  return items.filter((item) => item.label.toLowerCase().includes(lower));
+};
+
+/**
+ * Filter suggestion groups based on query string (case-insensitive).
+ * Returns groups with filtered items, excluding empty groups.
+ */
+const filterSuggestionGroups = (groups, query) => {
+  if (!query) {
+    return groups;
+  }
+  const lower = query.toLowerCase();
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        item.label.toLowerCase().includes(lower),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
+};
+
 export default {
   title: "Preview/Autocomplete",
   component: "cds-aichat-autocomplete",
@@ -127,61 +159,108 @@ export default {
 };
 
 export const Default = {
-  render: ({ inputText, enableSendButton, attached }) => html`
-    <div style="width: 320px; margin: 2rem;">
-      <cds-aichat-autocomplete
-        style="--cds-aichat-autocomplete-max-height: 328px;"
-        .items=${flatSuggestions}
-        ?attached=${attached}
-        ?enable-send-button=${enableSendButton}
-        input-text=${inputText}
-      ></cds-aichat-autocomplete>
-    </div>
-  `,
+  render: ({ inputText, enableSendButton, attached }) => {
+    const query = inputText || "";
+    const filteredItems = filterSuggestions(flatSuggestions, query);
+
+    return html`
+      <div style="width: 320px; margin: 2rem;">
+        <cds-aichat-autocomplete
+          style="--cds-aichat-autocomplete-max-height: 328px;"
+          .items=${filteredItems}
+          ?attached=${attached}
+          ?enable-send-button=${enableSendButton}
+          input-text=${inputText}
+          @cds-aichat-autocomplete-select=${(e) =>
+            action("cds-aichat-autocomplete-select")(e.detail)}
+          @cds-aichat-autocomplete-send=${(e) =>
+            action("cds-aichat-autocomplete-send")(e.detail)}
+          @cds-aichat-autocomplete-dismiss=${() =>
+            action("cds-aichat-autocomplete-dismiss")()}
+        ></cds-aichat-autocomplete>
+      </div>
+    `;
+  },
 };
 
 export const WithHeader = {
-  render: ({ inputText, enableSendButton, attached }) => html`
-    <div style="width: 320px; margin: 2rem;">
-      <cds-aichat-autocomplete
-        style="--cds-aichat-autocomplete-max-height: 328px;"
-        .items=${flatSuggestions}
-        ?attached=${attached}
-        ?enable-send-button=${enableSendButton}
-        .headerConfig=${{ showHeader: true, title: "Prompt suggestions" }}
-        input-text=${inputText}
-      ></cds-aichat-autocomplete>
-    </div>
-  `,
+  render: ({ inputText, enableSendButton, attached }) => {
+    const query = inputText || "";
+    const filteredItems = filterSuggestions(flatSuggestions, query);
+
+    return html`
+      <div style="width: 320px; margin: 2rem;">
+        <cds-aichat-autocomplete
+          style="--cds-aichat-autocomplete-max-height: 328px;"
+          .items=${filteredItems}
+          ?attached=${attached}
+          ?enable-send-button=${enableSendButton}
+          .headerConfig=${{ showHeader: true, title: "Prompt suggestions" }}
+          input-text=${inputText}
+          @cds-aichat-autocomplete-select=${(e) =>
+            action("cds-aichat-autocomplete-select")(e.detail)}
+          @cds-aichat-autocomplete-send=${(e) =>
+            action("cds-aichat-autocomplete-send")(e.detail)}
+          @cds-aichat-autocomplete-dismiss=${() =>
+            action("cds-aichat-autocomplete-dismiss")()}
+        ></cds-aichat-autocomplete>
+      </div>
+    `;
+  },
 };
 
 export const WithCategories = {
-  render: ({ inputText, enableSendButton, attached }) => html`
-    <div style="width: 320px; margin: 2rem;">
-      <cds-aichat-autocomplete
-        style="--cds-aichat-autocomplete-max-height: 328px;"
-        .groups=${suggestionGroupsWithAvatars}
-        ?attached=${attached}
-        ?enable-send-button=${enableSendButton}
-        input-text=${inputText}
-      ></cds-aichat-autocomplete>
-    </div>
-  `,
+  render: ({ inputText, enableSendButton, attached }) => {
+    const query = inputText || "";
+    const filteredGroups = filterSuggestionGroups(
+      suggestionGroupsWithAvatars,
+      query,
+    );
+
+    return html`
+      <div style="width: 320px; margin: 2rem;">
+        <cds-aichat-autocomplete
+          style="--cds-aichat-autocomplete-max-height: 328px;"
+          .groups=${filteredGroups}
+          ?attached=${attached}
+          ?enable-send-button=${enableSendButton}
+          input-text=${inputText}
+          @cds-aichat-autocomplete-select=${(e) =>
+            action("cds-aichat-autocomplete-select")(e.detail)}
+          @cds-aichat-autocomplete-send=${(e) =>
+            action("cds-aichat-autocomplete-send")(e.detail)}
+          @cds-aichat-autocomplete-dismiss=${() =>
+            action("cds-aichat-autocomplete-dismiss")()}
+        ></cds-aichat-autocomplete>
+      </div>
+    `;
+  },
 };
 
 export const Detached = {
   args: {
     attached: false,
   },
-  render: ({ inputText, enableSendButton, attached }) => html`
-    <div style="width: 671px; margin: 2rem;">
-      <cds-aichat-autocomplete
-        style="--cds-aichat-autocomplete-max-height: 328px;"
-        .items=${flatSuggestions}
-        ?enable-send-button=${enableSendButton}
-        input-text=${inputText}
-        ?attached=${attached}
-      ></cds-aichat-autocomplete>
-    </div>
-  `,
+  render: ({ inputText, enableSendButton, attached }) => {
+    const query = inputText || "";
+    const filteredItems = filterSuggestions(flatSuggestions, query);
+
+    return html`
+      <div style="width: 671px; margin: 2rem;">
+        <cds-aichat-autocomplete
+          style="--cds-aichat-autocomplete-max-height: 328px;"
+          .items=${filteredItems}
+          ?enable-send-button=${enableSendButton}
+          input-text=${inputText}
+          ?attached=${attached}
+          @cds-aichat-autocomplete-select=${(e) =>
+            action("cds-aichat-autocomplete-select")(e.detail)}
+          @cds-aichat-autocomplete-send=${(e) =>
+            action("cds-aichat-autocomplete-send")(e.detail)}
+          @cds-aichat-autocomplete-dismiss=${() =>
+            action("cds-aichat-autocomplete-dismiss")()}
+        ></cds-aichat-autocomplete>
+      </div>
+    `;
+  },
 };

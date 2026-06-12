@@ -41,7 +41,7 @@ describe("cds-aichat-autocomplete-item-group", () => {
 
     expect(el).to.exist;
     const titleElement = el.shadowRoot?.querySelector(
-      ".cds-aichat-autocomplete-item-group--title",
+      ".cds-aichat-autocomplete-item-group__title",
     );
     expect(titleElement).to.exist;
     expect(titleElement?.textContent?.trim()).to.equal("Test Group");
@@ -87,7 +87,7 @@ describe("cds-aichat-autocomplete-item-group", () => {
     `);
 
     const titleElement = el.shadowRoot?.querySelector(
-      ".cds-aichat--autocomplete-item-group-title",
+      ".cds-aichat-autocomplete-item-group__title",
     );
     expect(titleElement).to.not.exist;
   });
@@ -101,34 +101,8 @@ describe("cds-aichat-autocomplete-item-group", () => {
     `);
 
     const groupElement = el.shadowRoot?.querySelector(
-      ".cds-aichat--autocomplete-item-group",
+      ".cds-aichat-autocomplete-item-group",
     );
     expect(groupElement).to.not.exist;
-  });
-
-  it("should emit click event when item is clicked", async () => {
-    const el = await fixture<AutocompleteItemGroupElement>(html`
-      <cds-aichat-autocomplete-item-group
-        title="Test Group"
-        .items="${mockItems}"
-        .startIndex="${5}"
-      ></cds-aichat-autocomplete-item-group>
-    `);
-
-    let eventDetail: any = null;
-    el.addEventListener("cds-aichat-autocomplete-item-click", (e: Event) => {
-      eventDetail = (e as CustomEvent).detail;
-    });
-
-    const firstItem = el.shadowRoot?.querySelector(
-      "cds-aichat-autocomplete-item",
-    );
-    firstItem?.dispatchEvent(new Event("click", { bubbles: true }));
-
-    await el.updateComplete;
-
-    expect(eventDetail).to.exist;
-    expect(eventDetail.item).to.deep.equal(mockItems[0]);
-    expect(eventDetail.index).to.equal(5);
   });
 });

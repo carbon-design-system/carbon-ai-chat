@@ -1,4 +1,4 @@
-/*
+/**
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -89,7 +89,7 @@ class AutocompleteElement extends LitElement {
   headerConfig?: HeaderConfig;
 
   /**
-   * The current text in the input (used to highlight the typed portion in items)
+   * The current text in the input (used to apply styling to indicate what user has already typed)
    */
   @property({ type: String, attribute: "input-text", reflect: true })
   inputText = "";
@@ -226,7 +226,7 @@ class AutocompleteElement extends LitElement {
             this._focusedIndex = focusedItemIndex;
             const item = this._getItemAtIndex(focusedItemIndex);
 
-            if (item && !item.disabled) {
+            if (item) {
               if (isSendButtonFocused) {
                 // Send button is focused - trigger send action
                 this.dispatchEvent(
@@ -269,7 +269,7 @@ class AutocompleteElement extends LitElement {
 
     const item = this._getItemAtIndex(index);
 
-    if (!item || item.disabled) {
+    if (!item) {
       return;
     }
 
@@ -313,10 +313,6 @@ class AutocompleteElement extends LitElement {
   }
 
   private _selectItem(item: SuggestionItem) {
-    if (item.disabled) {
-      return;
-    }
-
     this.dispatchEvent(
       new CustomEvent<AutocompleteSelectEventDetail>(
         "cds-aichat-autocomplete-select",
@@ -346,6 +342,14 @@ class AutocompleteElement extends LitElement {
     }
   }
 
+  private _handleGroupItemClick(event: CustomEvent) {
+    event.stopPropagation();
+    const index = event.detail?.index;
+    if (index !== undefined) {
+      this._handleItemClick(index);
+    }
+  }
+
   private _handleHeaderCloseClick(event: Event) {
     event.stopPropagation();
     this._dismiss();
@@ -370,12 +374,12 @@ class AutocompleteElement extends LitElement {
       >
         ${this.headerConfig?.showHeader
           ? html`
-              <div class="${blockClass}--header">
-                <span class="${blockClass}--header-title">
+              <div class="${blockClass}__header">
+                <span class="${blockClass}__title">
                   ${this.headerConfig.title}
                 </span>
                 <cds-icon-button
-                  class="${blockClass}--header-close"
+                  class="${blockClass}__close"
                   kind="ghost"
                   align="${this.isRTL ? "top-left" : "top-right"}"
                   size="sm"
@@ -388,7 +392,7 @@ class AutocompleteElement extends LitElement {
             `
           : ""}
 
-        <div class="${blockClass}--items">
+        <div class="${blockClass}__items">
           <!-- Render flat items first -->
           ${this.items.map((item, idx) => {
             const itemIndex = currentIndex++;
@@ -402,8 +406,8 @@ class AutocompleteElement extends LitElement {
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
-                ?data-first-item="${isFirstItem}"
-                ?data-last-item="${isLastItem}"
+                ?first-item="${isFirstItem}"
+                ?last-item="${isLastItem}"
                 @click="${() => this._handleItemClick(itemIndex)}"
                 @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item>
@@ -423,11 +427,9 @@ class AutocompleteElement extends LitElement {
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
-                ?data-last-group="${isLastGroup}"
-                @cds-aichat-autocomplete-item-click="${(e: CustomEvent) => {
-                  const index = e.detail.index;
-                  this._handleItemClick(index);
-                }}"
+                ?last-group="${isLastGroup}"
+                @cds-aichat-autocomplete-item-click="${this
+                  ._handleGroupItemClick}"
                 @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item-group>
             `;

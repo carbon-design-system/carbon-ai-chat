@@ -100,11 +100,11 @@ describe("cds-aichat-autocomplete", () => {
     `);
 
     const header = el.shadowRoot?.querySelector(
-      ".cds-aichat-autocomplete--header",
+      ".cds-aichat-autocomplete__header",
     );
     expect(header).to.exist;
     const title = el.shadowRoot?.querySelector(
-      ".cds-aichat-autocomplete--header-title",
+      ".cds-aichat-autocomplete__title",
     );
     expect(title?.textContent?.trim()).to.equal("Test Header");
   });
@@ -118,7 +118,7 @@ describe("cds-aichat-autocomplete", () => {
     `);
 
     const header = el.shadowRoot?.querySelector(
-      ".cds-aichat-autocomplete--header",
+      ".cds-aichat-autocomplete__header",
     );
     expect(header).to.not.exist;
   });
@@ -167,7 +167,7 @@ describe("cds-aichat-autocomplete", () => {
     });
 
     const closeButton = el.shadowRoot?.querySelector(
-      ".cds-aichat-autocomplete--header-close",
+      ".cds-aichat-autocomplete__close",
     );
     (closeButton as HTMLElement)?.click();
 
@@ -203,5 +203,3 @@ describe("cds-aichat-autocomplete", () => {
     expect(el.inputText).to.equal("test");
   });
 });
-
-// Made with Bob

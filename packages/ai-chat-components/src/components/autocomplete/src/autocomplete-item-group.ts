@@ -58,12 +58,6 @@ class AutocompleteItemGroupElement extends LitElement {
   inputText = "";
 
   /**
-   * Whether the component is in RTL mode.
-   * @internal
-   */
-  @state() private isRTL = false;
-
-  /**
    * Whether to render the send button for items in this group.
    */
   @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
@@ -74,23 +68,28 @@ class AutocompleteItemGroupElement extends LitElement {
    * @internal
    */
   @property({ type: Boolean, reflect: true, attribute: "data-last-group" })
-  dataLastGroup = false;
+  lastGroup = false;
 
-  private _handleItemClick(index: number) {
-    const item = this.items[index];
-    this.dispatchEvent(
-      new CustomEvent("cds-aichat-autocomplete-item-click", {
-        detail: { item, index: this.startIndex + index },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
+  /**
+   * Whether the component is in RTL mode.
+   * @internal
+   */
+  @state() private isRTL = false;
 
-  private _handleSendClick(event: CustomEvent) {
-    event.stopPropagation();
-    // The event already contains the index from autocomplete-item
-    // Just let it bubble up to the parent autocomplete component
+  private _handleItemClick(event: Event) {
+    // Get the index from the autocomplete-item element
+    const target = event.currentTarget as any;
+    const index = target.index;
+    if (index !== undefined) {
+      // Re-dispatch as a click event that will bubble to the parent autocomplete
+      this.dispatchEvent(
+        new CustomEvent("cds-aichat-autocomplete-item-click", {
+          detail: { index },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
   }
 
   render() {
@@ -104,12 +103,12 @@ class AutocompleteItemGroupElement extends LitElement {
     return html`
       <div class="${blockClass}" role="group" aria-label="${this.title}">
         ${this.title
-          ? html` <div class="${blockClass}--title">${this.title}</div> `
+          ? html` <div class="${blockClass}__title">${this.title}</div> `
           : null}
-        <div class="${blockClass}--items">
+        <div class="${blockClass}__items">
           ${this.items.map((item, index) => {
             const isLastItem =
-              this.dataLastGroup && index === this.items.length - 1;
+              this.lastGroup && index === this.items.length - 1;
             return html`
               <cds-aichat-autocomplete-item
                 .item="${item}"
@@ -117,9 +116,8 @@ class AutocompleteItemGroupElement extends LitElement {
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
-                ?data-last-item="${isLastItem}"
-                @click="${() => this._handleItemClick(index)}"
-                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
+                ?last-item="${isLastItem}"
+                @click="${this._handleItemClick}"
               ></cds-aichat-autocomplete-item>
             `;
           })}

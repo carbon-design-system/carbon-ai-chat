@@ -40,7 +40,7 @@ $block-class: #{$prefix}-autocomplete-item;
     }
   }
 
-  .#{$block-class}--content {
+  .#{$block-class}__content {
     display: flex;
     flex: 1;
     align-items: center;
@@ -49,31 +49,31 @@ $block-class: #{$prefix}-autocomplete-item;
     padding-inline: layout.$spacing-05;
   }
 
-  .#{$block-class}--text {
+  .#{$block-class}__text {
     display: flex;
     flex-direction: column;
     gap: layout.$spacing-01;
   }
 
-  .#{$block-class}--label {
+  .#{$block-class}__label {
     @include type.type-style("body-compact-01");
   }
 
-  .#{$block-class}--label-typed {
+  .#{$block-class}__label-typed {
     color: theme.$text-placeholder;
   }
 
-  .#{$block-class}--label-remainder {
+  .#{$block-class}__label-remainder {
     color: theme.$text-primary;
   }
 
-  .#{$block-class}--description {
+  .#{$block-class}__description {
     @include type.type-style("helper-text-01");
 
     color: theme.$text-helper;
   }
 
-  .#{$block-class}--send-button {
+  .#{$block-class}__send {
     z-index: 1;
     visibility: hidden;
 
@@ -83,14 +83,14 @@ $block-class: #{$prefix}-autocomplete-item;
   }
 
   // When item has description or avatar, add margin spacing after send button
-  &:has(.#{$block-class}--description) .#{$block-class}--send-button,
-  &:has(.#{$block-class}--avatar) .#{$block-class}--send-button {
+  &:has(.#{$block-class}__description) .#{$block-class}__send,
+  &:has(.#{$block-class}__avatar) .#{$block-class}__send {
     margin-inline-end: layout.$spacing-05;
   }
 
-  &:has(.#{$block-class}:hover) .#{$block-class}--send-button,
-  &:has(.#{$block-class}:focus) .#{$block-class}--send-button,
-  &:has(.#{$block-class}:focus-within) .#{$block-class}--send-button {
+  &:has(.#{$block-class}:hover) .#{$block-class}__send,
+  &:has(.#{$block-class}:focus) .#{$block-class}__send,
+  &:has(.#{$block-class}:focus-within) .#{$block-class}__send {
     visibility: visible;
   }
 
@@ -112,7 +112,7 @@ $block-class: #{$prefix}-autocomplete-item;
 
 // Apply rounded corners only when this item is the first visible item in the
 // autocomplete list, not merely the first child within a subgroup.
-:host([data-first-item]) .#{$block-class} {
+:host([first-item]) .#{$block-class} {
   border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
   border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 }
@@ -123,6 +123,6 @@ $block-class: #{$prefix}-autocomplete-item;
   border-end-start-radius: var(--#{$prefix}-border-radius-end-start, 0);
 }
 
-:host([data-last-item])::after {
+:host([last-item])::after {
   display: none;
 }

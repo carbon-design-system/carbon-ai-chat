@@ -25,7 +25,7 @@ import type { SuggestionItem } from "../../input/src/types.js";
 const blockClass = `${prefix}-autocomplete-item`;
 
 /**
- * Autocomplete item component for displaying individual suggestions.
+ * Autocomplete item component for displaying an individual suggestion.
  *
  * @element cds-aichat-autocomplete-item
  * @fires {CustomEvent} cds-aichat-autocomplete-item-send - Fired when the send button is clicked
@@ -49,7 +49,7 @@ class AutocompleteItemElement extends LitElement {
   index = 0;
 
   /**
-   * The current text in the input (used to highlight the typed portion)
+   * The current text in the input (used to apply styling to indicate what user has already typed)
    */
   @property({ type: String, attribute: false })
   inputText = "";
@@ -68,9 +68,6 @@ class AutocompleteItemElement extends LitElement {
 
   private _handleSendClick(event: Event) {
     event.stopPropagation();
-    if (this.item.disabled) {
-      return;
-    }
 
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-item-send", {
@@ -79,6 +76,31 @@ class AutocompleteItemElement extends LitElement {
         composed: true,
       }),
     );
+  }
+
+  private _handleKeydown(event: KeyboardEvent) {
+    if (event.key === "Enter") {
+      // Check if the send button has focus
+      const sendButton = this.shadowRoot?.querySelector(
+        "cds-icon-button",
+      ) as any;
+      if (sendButton && this.shadowRoot?.activeElement === sendButton) {
+        // Send button has focus - let it handle the Enter key
+        return;
+      }
+      // Main button has focus - trigger click event
+      event.preventDefault();
+      const button = event.currentTarget as HTMLElement;
+      button.click();
+    }
+  }
+
+  private _handleSendKeydown(event: KeyboardEvent) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+      this._handleSendClick(event);
+    }
   }
 
   /**
@@ -94,17 +116,16 @@ class AutocompleteItemElement extends LitElement {
     // String URL - render as image
     if (typeof avatar === "string") {
       return html`
-        <div class="${blockClass}--avatar">
-          <img src="${avatar}" alt="" class="${blockClass}--avatar-image" />
+        <div class="${blockClass}__avatar">
+          <img src="${avatar}" alt="" />
         </div>
       `;
     }
 
     // CarbonIcon - render using iconLoader
-    // React components are not supported in web components
     if (typeof avatar !== "function") {
       return html`
-        <div class="${blockClass}--avatar">${iconLoader(avatar)}</div>
+        <div class="${blockClass}__avatar">${iconLoader(avatar)}</div>
       `;
     }
 
@@ -138,22 +159,26 @@ class AutocompleteItemElement extends LitElement {
     const { typed, remainder } = this._getLabelParts();
 
     return html`
-      <button class="${blockClass}" role="option">
-        <div class="${blockClass}--content">
+      <button
+        class="${blockClass}"
+        role="option"
+        @keydown="${this._handleKeydown}"
+      >
+        <div class="${blockClass}__content">
           ${this._renderAvatar()}
-          <div class="${blockClass}--text">
-            <div class="${blockClass}--label">
+          <div class="${blockClass}__text">
+            <div class="${blockClass}__label">
               ${typed
-                ? html`<span class="${blockClass}--label-typed">${typed}</span>`
+                ? html`<span class="${blockClass}__label-typed">${typed}</span>`
                 : ""}${remainder
-                ? html`<span class="${blockClass}--label-remainder"
+                ? html`<span class="${blockClass}__label-remainder"
                     >${remainder}</span
                   >`
                 : ""}
             </div>
             ${this.item.description
               ? html`
-                  <div class="${blockClass}--description">
+                  <div class="${blockClass}__description">
                     ${this.item.description}
                   </div>
                 `
@@ -163,11 +188,12 @@ class AutocompleteItemElement extends LitElement {
         ${this.enableSendButton
           ? html`
               <cds-icon-button
-                class="${blockClass}--send-button"
+                class="${blockClass}__send"
                 kind="ghost"
                 size="md"
                 align="${this.isRTL ? "top-start" : "top-end"}"
                 @click="${this._handleSendClick}"
+                @keydown="${this._handleSendKeydown}"
                 aria-label="Send ${this.item.label}"
               >
                 ${iconLoader(Send16, { slot: "icon" })}

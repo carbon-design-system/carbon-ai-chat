@@ -33,7 +33,7 @@ $block-class: #{$prefix}-autocomplete;
     max-block-size: var(--cds-aichat-autocomplete-max-height);
   }
 
-  .#{$block-class}--header {
+  .#{$block-class}__header {
     display: flex;
     flex-shrink: 0;
     align-items: center;
@@ -45,13 +45,13 @@ $block-class: #{$prefix}-autocomplete;
     padding-inline-start: layout.$spacing-05;
   }
 
-  .#{$block-class}--header-title {
+  .#{$block-class}__title {
     @include type.type-style("heading-compact-01");
 
     color: theme.$text-primary;
   }
 
-  .#{$block-class}--items {
+  .#{$block-class}__items {
     flex: 1 1 auto;
     min-block-size: 0;
     overflow-y: auto;

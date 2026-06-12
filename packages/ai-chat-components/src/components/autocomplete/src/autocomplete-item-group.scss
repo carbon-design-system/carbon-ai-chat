@@ -18,7 +18,7 @@ $block-class: #{$prefix}-autocomplete-item-group;
     flex-direction: column;
   }
 
-  .#{$block-class}--title {
+  .#{$block-class}__title {
     @include type.type-style("label-01");
 
     color: theme.$text-helper;
@@ -28,7 +28,7 @@ $block-class: #{$prefix}-autocomplete-item-group;
     padding-inline: layout.$spacing-05;
   }
 
-  .#{$block-class}--items {
+  .#{$block-class}__items {
     display: flex;
     flex-direction: column;
   }

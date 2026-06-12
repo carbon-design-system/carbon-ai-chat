@@ -7,7 +7,8 @@
  *
  *  @license
  */
-import React from "react";
+import React, { useMemo } from "react";
+import { action } from "storybook/actions";
 import CDSAIChatAutocomplete from "../../../react/autocomplete";
 import {
   Default as DefaultWC,
@@ -107,7 +108,38 @@ const suggestionGroupsWithAvatars = [
 ];
 
 const Wrapper = ({ width, children }) => {
-  return <div style={{ width, margin: "2rem" }}>{children}</div>;
+  return <div style={{ width }}>{children}</div>;
+};
+
+/**
+ * Filter suggestion items based on query string (case-insensitive).
+ * Returns all items if query is empty.
+ */
+const filterSuggestions = (items, query) => {
+  if (!query) {
+    return items;
+  }
+  const lower = query.toLowerCase();
+  return items.filter((item) => item.label.toLowerCase().includes(lower));
+};
+
+/**
+ * Filter suggestion groups based on query string (case-insensitive).
+ * Returns groups with filtered items, excluding empty groups.
+ */
+const filterSuggestionGroups = (groups, query) => {
+  if (!query) {
+    return groups;
+  }
+  const lower = query.toLowerCase();
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        item.label.toLowerCase().includes(lower),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 };
 
 export default {
@@ -137,21 +169,23 @@ export default {
 
 export const Default = {
   render: (args) => {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
-      if (ref.current) {
-        ref.current.items = flatSuggestions;
-        ref.current.inputText = args.inputText || "";
-        ref.current.attached = args.attached ?? true;
-        ref.current.enableSendButton = args.enableSendButton ?? true;
-      }
-    }, [args.inputText, args.attached, args.enableSendButton]);
+    const query = args.inputText || "";
+    const filteredItems = React.useMemo(
+      () => filterSuggestions(flatSuggestions, query),
+      [query],
+    );
 
     return (
       <Wrapper width="320px">
         <CDSAIChatAutocomplete
-          ref={ref}
+          items={filteredItems}
+          inputText={query}
+          attached={args.attached ?? true}
+          enableSendButton={args.enableSendButton ?? true}
           style={{ "--cds-aichat-autocomplete-max-height": "328px" }}
+          onSelect={(e) => action("cds-aichat-autocomplete-select")(e.detail)}
+          onSend={(e) => action("cds-aichat-autocomplete-send")(e.detail)}
+          onDismiss={() => action("cds-aichat-autocomplete-dismiss")()}
         />
       </Wrapper>
     );
@@ -160,25 +194,27 @@ export const Default = {
 
 export const WithHeader = {
   render: (args) => {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
-      if (ref.current) {
-        ref.current.items = flatSuggestions;
-        ref.current.headerConfig = {
-          showHeader: true,
-          title: "Prompt suggestions",
-        };
-        ref.current.inputText = args.inputText || "";
-        ref.current.attached = args.attached ?? true;
-        ref.current.enableSendButton = args.enableSendButton ?? true;
-      }
-    }, [args.inputText, args.attached, args.enableSendButton]);
+    const query = args.inputText || "";
+    const filteredItems = React.useMemo(
+      () => filterSuggestions(flatSuggestions, query),
+      [query],
+    );
 
     return (
       <Wrapper width="320px">
         <CDSAIChatAutocomplete
-          ref={ref}
+          items={filteredItems}
+          headerConfig={{
+            showHeader: true,
+            title: "Prompt suggestions",
+          }}
+          inputText={query}
+          attached={args.attached ?? true}
+          enableSendButton={args.enableSendButton ?? true}
           style={{ "--cds-aichat-autocomplete-max-height": "328px" }}
+          onSelect={(e) => action("cds-aichat-autocomplete-select")(e.detail)}
+          onSend={(e) => action("cds-aichat-autocomplete-send")(e.detail)}
+          onDismiss={() => action("cds-aichat-autocomplete-dismiss")()}
         />
       </Wrapper>
     );
@@ -187,21 +223,23 @@ export const WithHeader = {
 
 export const WithCategories = {
   render: (args) => {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
-      if (ref.current) {
-        ref.current.groups = suggestionGroupsWithAvatars;
-        ref.current.inputText = args.inputText || "";
-        ref.current.attached = args.attached ?? true;
-        ref.current.enableSendButton = args.enableSendButton ?? true;
-      }
-    }, [args.inputText, args.attached, args.enableSendButton]);
+    const query = args.inputText || "";
+    const filteredGroups = React.useMemo(
+      () => filterSuggestionGroups(suggestionGroupsWithAvatars, query),
+      [query],
+    );
 
     return (
       <Wrapper width="320px">
         <CDSAIChatAutocomplete
-          ref={ref}
+          groups={filteredGroups}
+          inputText={query}
+          attached={args.attached ?? true}
+          enableSendButton={args.enableSendButton ?? true}
           style={{ "--cds-aichat-autocomplete-max-height": "328px" }}
+          onSelect={(e) => action("cds-aichat-autocomplete-select")(e.detail)}
+          onSend={(e) => action("cds-aichat-autocomplete-send")(e.detail)}
+          onDismiss={() => action("cds-aichat-autocomplete-dismiss")()}
         />
       </Wrapper>
     );
@@ -213,21 +251,23 @@ export const Detached = {
     attached: false,
   },
   render: (args) => {
-    const ref = React.useRef(null);
-    React.useEffect(() => {
-      if (ref.current) {
-        ref.current.items = flatSuggestions;
-        ref.current.inputText = args.inputText || "";
-        ref.current.attached = args.attached ?? false;
-        ref.current.enableSendButton = args.enableSendButton ?? true;
-      }
-    }, [args.inputText, args.attached, args.enableSendButton]);
+    const query = args.inputText || "";
+    const filteredItems = React.useMemo(
+      () => filterSuggestions(flatSuggestions, query),
+      [query],
+    );
 
     return (
       <Wrapper width="671px">
         <CDSAIChatAutocomplete
-          ref={ref}
+          items={filteredItems}
+          inputText={query}
+          attached={args.attached ?? false}
+          enableSendButton={args.enableSendButton ?? true}
           style={{ "--cds-aichat-autocomplete-max-height": "328px" }}
+          onSelect={(e) => action("cds-aichat-autocomplete-select")(e.detail)}
+          onSend={(e) => action("cds-aichat-autocomplete-send")(e.detail)}
+          onDismiss={() => action("cds-aichat-autocomplete-dismiss")()}
         />
       </Wrapper>
     );
