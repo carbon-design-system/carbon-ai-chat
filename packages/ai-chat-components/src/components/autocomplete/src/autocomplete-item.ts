@@ -80,16 +80,9 @@ class AutocompleteItemElement extends LitElement {
 
   private _handleKeydown(event: KeyboardEvent) {
     if (event.key === "Enter") {
-      // Check if the send button has focus
-      const sendButton = this.shadowRoot?.querySelector(
-        "cds-icon-button",
-      ) as any;
-      if (sendButton && this.shadowRoot?.activeElement === sendButton) {
-        // Send button has focus - let it handle the Enter key
-        return;
-      }
-      // Main button has focus - trigger click event
       event.preventDefault();
+      event.stopPropagation();
+
       const button = event.currentTarget as HTMLElement;
       button.click();
     }
@@ -99,6 +92,7 @@ class AutocompleteItemElement extends LitElement {
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
+
       this._handleSendClick(event);
     }
   }

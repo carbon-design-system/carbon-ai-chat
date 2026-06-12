@@ -25,6 +25,7 @@ const blockClass = `${prefix}-autocomplete-item-group`;
  * Autocomplete item group component for grouping related suggestions with a title.
  *
  * @element cds-aichat-autocomplete-item-group
+ * @fires {CustomEvent} cds-aichat-autocomplete-item-click - Fired when an item in the group is clicked
  */
 @carbonElement(`${prefix}-autocomplete-item-group`)
 class AutocompleteItemGroupElement extends LitElement {
@@ -77,11 +78,9 @@ class AutocompleteItemGroupElement extends LitElement {
   @state() private isRTL = false;
 
   private _handleItemClick(event: Event) {
-    // Get the index from the autocomplete-item element
     const target = event.currentTarget as any;
     const index = target.index;
     if (index !== undefined) {
-      // Re-dispatch as a click event that will bubble to the parent autocomplete
       this.dispatchEvent(
         new CustomEvent("cds-aichat-autocomplete-item-click", {
           detail: { index },
