@@ -87,6 +87,7 @@ collect:
         - copy-button-tooltip-content
         - copy-text
         - default-language
+        - detect-language
         - editable
         - fold-collapse-label
         - fold-expand-label
@@ -108,6 +109,7 @@ collect:
         - disclaimer-checkbox
         - is-open
         - is-readonly
+        - max-length
         - onfeedback-close
         - onfeedback-submit
         - primary-label
@@ -144,6 +146,7 @@ collect:
         # cds-aichat-history-panel-item
         - onhistory-item-menu-action
         - overflow-menu-label
+        - parent-menu-expanded
         - rename
         - selected
         # cds-aichat-history-panel-item-input
@@ -173,6 +176,9 @@ collect:
         - code-snippet-show-less-text
         - code-snippet-show-more-text
         - markdown
+        - oncds-aichat-markdown-plugin-host-mount
+        - oncds-aichat-markdown-plugin-host-unmount
+        - oncds-aichat-markdown-plugin-host-update
         - remove-html
         - sanitize-html
         - streaming
