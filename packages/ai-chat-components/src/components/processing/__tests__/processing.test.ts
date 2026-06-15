@@ -1,6 +1,6 @@
 // cspell:words CDSAIChatProcessing aichat
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -30,6 +30,18 @@ describe("aichat processing", function () {
     expect(el.shadowRoot?.querySelector(".dots")).to.exist;
   });
 
+  it("should fall back to linear--no-loop when loop is unset", async () => {
+    const el = await fixture<CDSAIChatProcessing>(
+      html`<cds-aichat-processing></cds-aichat-processing>`,
+    );
+
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector(".linear--no-loop")).to.exist;
+    expect(el.shadowRoot?.querySelector(".linear:not(.linear--no-loop)")).to.not
+      .exist;
+  });
+
   it("should render with loop property", async () => {
     const el = await fixture<CDSAIChatProcessing>(
       html`<cds-aichat-processing loop></cds-aichat-processing>`,
@@ -40,13 +52,27 @@ describe("aichat processing", function () {
     expect(linearClass).to.exist;
   });
 
-  it("should render with quickLoad property", async () => {
+  it("should compose quickLoad with the non-looping variant by default", async () => {
     const el = await fixture<CDSAIChatProcessing>(
       html`<cds-aichat-processing quick-load></cds-aichat-processing>`,
     );
 
+    await el.updateComplete;
+
     expect(el.quickLoad).to.be.true;
-    const quickLoadClass = el.shadowRoot?.querySelector(".quick-load");
-    expect(quickLoadClass).to.exist;
+    const inner = el.shadowRoot?.querySelector(".quick-load");
+    expect(inner).to.exist;
+    expect(inner?.classList.contains("linear--no-loop")).to.be.true;
+  });
+
+  it("should compose quickLoad with the looping variant", async () => {
+    const el = await fixture<CDSAIChatProcessing>(
+      html`<cds-aichat-processing loop quick-load></cds-aichat-processing>`,
+    );
+
+    await el.updateComplete;
+
+    const inner = el.shadowRoot?.querySelector(".quick-load");
+    expect(inner?.classList.contains("linear")).to.be.true;
   });
 });
