@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -236,6 +236,13 @@ export interface DefaultCustomPanelConfigOptions {
   backButtonType?: "minimize" | "close";
 
   /**
+   * Controls the position of the back button in the panel header.
+   * Use "start" to position it at the beginning in the navigation slot,
+   * or "end" to position it at the end in the toolbar actions.
+   */
+  backButtonPosition?: "start" | "end";
+
+  /**
    * Shows the AI gradient background on your panel. Can be used with in concert with showFrame.
    */
   aiEnabled?: boolean;
@@ -250,6 +257,17 @@ export interface DefaultCustomPanelConfigOptions {
    * width slot, set fullWidth to true.
    */
   fullWidth?: boolean;
+
+  /**
+   * Make the main chat header visible while the panel is open.
+   */
+  showChatHeader?: boolean;
+
+  /**
+   * When true, the panel will slide in/out from the side instead of from the bottom.
+   * By default, panels animate from the bottom.
+   */
+  openFromSide?: boolean;
 }
 /**
  * Options supported by the workspace custom panel implementation.

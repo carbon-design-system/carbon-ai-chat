@@ -125,10 +125,13 @@ export class DemoChatInstanceSwitcher extends LitElement {
   // Panel configuration state
   @state() accessor _hideBackButton: boolean = false;
   @state() accessor _backButtonType: "minimize" | "close" = "minimize";
+  @state() accessor _backButtonPosition: "start" | "end" = "end";
   @state() accessor _disableAnimation: boolean = false;
   @state() accessor _aiEnabled: boolean = false;
   @state() accessor _showFrame: boolean = false;
   @state() accessor _fullWidth: boolean = false;
+  @state() accessor _showChatHeader: boolean = false;
+  @state() accessor _openFromSide: boolean = false;
 
   private readonly _panelExamples: PanelControlExample[] = [
     {
@@ -309,6 +312,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
       const options: any = {
         title: "Custom Panel Configuration",
         backButtonType: this._backButtonType,
+        backButtonPosition: this._backButtonPosition,
       };
 
       if (this._hideBackButton) {
@@ -325,6 +329,12 @@ export class DemoChatInstanceSwitcher extends LitElement {
       }
       if (this._fullWidth) {
         options.fullWidth = true;
+      }
+      if (this._showChatHeader) {
+        options.showChatHeader = true;
+      }
+      if (this._openFromSide) {
+        options.openFromSide = true;
       }
 
       // Generate dynamic panel content
@@ -352,6 +362,11 @@ export class DemoChatInstanceSwitcher extends LitElement {
         `<li><code>backButtonType</code>: <strong>"${options.backButtonType}"</strong></li>`,
       );
     }
+    if (options.backButtonPosition) {
+      optionsList.push(
+        `<li><code>backButtonPosition</code>: <strong>"${options.backButtonPosition}"</strong></li>`,
+      );
+    }
     if (options.disableAnimation) {
       optionsList.push(
         `<li><code>disableAnimation</code>: <strong>true</strong></li>`,
@@ -370,6 +385,16 @@ export class DemoChatInstanceSwitcher extends LitElement {
     if (options.fullWidth) {
       optionsList.push(
         `<li><code>fullWidth</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.showChatHeader) {
+      optionsList.push(
+        `<li><code>showChatHeader</code>: <strong>true</strong></li>`,
+      );
+    }
+    if (options.openFromSide) {
+      optionsList.push(
+        `<li><code>openFromSide</code>: <strong>true</strong></li>`,
       );
     }
 
@@ -607,6 +632,34 @@ export class DemoChatInstanceSwitcher extends LitElement {
                   this._fullWidth = e.target.checked;
                 }}
                 label-text="Full width layout"
+              >
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._showChatHeader}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._showChatHeader = e.target.checked;
+                }}
+                label-text="Show chat header"
+              >
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._openFromSide}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._openFromSide = e.target.checked;
+                }}
+                label-text="Open from side"
+              >
+              </cds-checkbox>
+
+              <cds-checkbox
+                ?checked=${this._backButtonPosition === "start"}
+                ?disabled=${this._hideBackButton}
+                @cds-checkbox-changed=${(e: any) => {
+                  this._backButtonPosition = e.target.checked ? "start" : "end";
+                }}
+                label-text="Position back button at start"
               >
               </cds-checkbox>
             </div>
