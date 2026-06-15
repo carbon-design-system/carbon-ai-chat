@@ -511,19 +511,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       return;
     }
 
-    const markdownElements = Array.from(
-      targetElem.querySelectorAll(`${prefix}-markdown`),
-    );
+    const markdownElement = targetElem.querySelector(`${prefix}-markdown`);
 
-    if (!markdownElements.length) {
+    if (!markdownElement) {
       return;
     }
 
-    await Promise.all(
-      markdownElements.map((element) =>
-        element.updateComplete?.catch((): undefined => undefined),
-      ),
-    );
+    await markdownElement.updateComplete?.catch((): undefined => undefined);
 
     await new Promise<void>((resolve): void => {
       requestAnimationFrame(() => resolve());
