@@ -13,10 +13,9 @@ import { property, state } from "lit/decorators.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 
-import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Send16 from "@carbon/icons/es/send/16.js";
+import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
 
 import styles from "./autocomplete-item.scss?lit";
 
@@ -190,7 +189,7 @@ class AutocompleteItemElement extends LitElement {
                 @keydown="${this._handleSendKeydown}"
                 aria-label="Send ${this.item.label}"
               >
-                ${iconLoader(Send16, { slot: "icon" })}
+                ${iconLoader(SendFilled16, { slot: "icon" })}
                 <span slot="tooltip-content">Send message</span>
               </cds-icon-button>
             `

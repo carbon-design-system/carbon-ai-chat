@@ -9,8 +9,6 @@
 
 import { css, html, LitElement, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import "@carbon/web-components/es/components/icon-button/index.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
@@ -350,11 +348,6 @@ class AutocompleteElement extends LitElement {
     }
   }
 
-  private _handleHeaderCloseClick(event: Event) {
-    event.stopPropagation();
-    this._dismiss();
-  }
-
   render() {
     // Detect RTL mode from document direction
     this.isRTL = isDirectionRTL();
@@ -378,16 +371,6 @@ class AutocompleteElement extends LitElement {
                 <span class="${blockClass}__title">
                   ${this.headerConfig.title}
                 </span>
-                <cds-icon-button
-                  class="${blockClass}__close"
-                  kind="ghost"
-                  align="${this.isRTL ? "top-left" : "top-right"}"
-                  size="sm"
-                  @click="${this._handleHeaderCloseClick}"
-                >
-                  <span slot="icon">${iconLoader(Close16)}</span>
-                  <span slot="tooltip-content">Close</span>
-                </cds-icon-button>
               </div>
             `
           : ""}
