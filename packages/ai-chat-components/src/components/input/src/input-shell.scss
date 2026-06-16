@@ -150,6 +150,11 @@
   inset-inline-start: 0;
 }
 
+// Add gap when autocomplete is not attached (fullscreen layout)
+::slotted([slot="autocomplete-content"]:not([attached])) {
+  inset-block-end: calc(100% + #{layout.$spacing-03});
+}
+
 // -----------------------------------------------------------
 // Field messaging slot (inline error / status content beneath
 // the autocomplete row — char-count exceeded, etc.)

@@ -29,6 +29,8 @@ import {
   selectInputState,
   selectIsInputToHumanAgent,
 } from "../../store/selectors";
+import { ChatWidthBreakpoint, AppState } from "../../../types/state/AppState";
+import { useSelector } from "../../hooks/useSelector";
 import { BusEventType } from "../../../types/events/eventBusTypes";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
@@ -226,6 +228,12 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const languagePack = useLanguagePack();
   const intl = useIntl();
   const store = serviceManager.store;
+
+  // Get chat width breakpoint and height to determine autocomplete settings
+  const chatWidthBreakpoint = useSelector(
+    (state: AppState) => state.chatWidthBreakpoint,
+  );
+  const chatHeight = useSelector((state: AppState) => state.chatHeight);
 
   const {
     mention,
@@ -486,6 +494,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     starters: normalizedStarters,
     promptLineRef,
     isSendDisabled: isSendDisabledFromConfig,
+    attached: chatWidthBreakpoint !== ChatWidthBreakpoint.WIDE,
+    maxHeight: `${Math.floor(chatHeight * 0.4)}px`,
     onStarterSelected: (text) => {
       // Reflect the inserted text into local state so send-gating reads it,
       // then run the same send path used elsewhere.

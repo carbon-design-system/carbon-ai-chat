@@ -45,6 +45,10 @@ export interface UseChatAutocompleteOptions {
   isSendDisabled?: boolean;
   /** Fired after a starter is selected and inserted (used to trigger send). */
   onStarterSelected?: (text: string) => void;
+  /** Whether the autocomplete is attached to the input (affects corner rounding). */
+  attached?: boolean;
+  /** Maximum height for the autocomplete popover */
+  maxHeight?: string;
 }
 
 export interface UseChatAutocompleteResult {
@@ -70,6 +74,8 @@ export function useChatAutocomplete(
     promptLineRef,
     isSendDisabled,
     onStarterSelected,
+    attached = true,
+    maxHeight,
   } = options;
 
   const [state, setState] = React.useState<AutocompleteControllerState>({
@@ -140,9 +146,16 @@ export function useChatAutocomplete(
 
   // Register / unregister the rendered list element with the controller so
   // arrow / Enter / Escape on the editor DOM get forwarded to it.
-  const setListElement = React.useCallback((el: HTMLElement | null) => {
-    controllerRef.current?.setListElement(el);
-  }, []);
+  // Also set the max-height CSS variable if provided.
+  const setListElement = React.useCallback(
+    (el: HTMLElement | null) => {
+      controllerRef.current?.setListElement(el);
+      if (el && maxHeight) {
+        el.style.setProperty("--cds-aichat-autocomplete-max-height", maxHeight);
+      }
+    },
+    [maxHeight],
+  );
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
     if (!state.trigger || state.items.length === 0) {
@@ -180,13 +193,14 @@ export function useChatAutocomplete(
         ref={setListElement}
         slot="autocomplete-content"
         items={state.items}
+        attached={attached}
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
         }
         onDismiss={dismiss}
       />
     );
-  }, [state, handleSelect, dismiss, setListElement]);
+  }, [state, handleSelect, dismiss, setListElement, attached]);
 
   return { onTriggerChange, autocompleteContent };
 }
