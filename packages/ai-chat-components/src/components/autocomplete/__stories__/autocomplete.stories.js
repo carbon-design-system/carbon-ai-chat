@@ -164,7 +164,7 @@ export const Default = {
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
     return html`
-      <div style="width: 320px; margin: 2rem;">
+      <div style="width: 320px;">
         <cds-aichat-autocomplete
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .items=${filteredItems}
@@ -189,7 +189,7 @@ export const WithHeader = {
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
     return html`
-      <div style="width: 320px; margin: 2rem;">
+      <div style="width: 320px;">
         <cds-aichat-autocomplete
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .items=${filteredItems}
@@ -218,7 +218,7 @@ export const WithCategories = {
     );
 
     return html`
-      <div style="width: 320px; margin: 2rem;">
+      <div style="width: 320px;">
         <cds-aichat-autocomplete
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .groups=${filteredGroups}
@@ -246,7 +246,7 @@ export const Detached = {
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
     return html`
-      <div style="width: 671px; margin: 2rem;">
+      <div style="width: 671px;">
         <cds-aichat-autocomplete
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .items=${filteredItems}

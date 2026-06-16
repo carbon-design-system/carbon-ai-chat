@@ -100,7 +100,7 @@ class AutocompleteItemGroupElement extends LitElement {
     this.isRTL = isDirectionRTL();
 
     return html`
-      <div class="${blockClass}" role="group" aria-label="${this.title}">
+      <div class="${blockClass}" role="listbox" aria-label="${this.title}">
         ${this.title
           ? html` <div class="${blockClass}__title">${this.title}</div> `
           : null}

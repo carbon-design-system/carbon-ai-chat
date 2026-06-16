@@ -136,8 +136,8 @@ class AutocompleteElement extends LitElement {
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
 
-    if (changedProperties.has("items") || changedProperties.has("groups")) {
-      this._focusedIndex = 0;
+    if (!this.hasAttribute("tabindex")) {
+      this.setAttribute("tabindex", "-1");
     }
   }
 
@@ -191,61 +191,17 @@ class AutocompleteElement extends LitElement {
         this._focusItemAtIndex(this._focusedIndex);
         break;
 
-      case "Enter": {
+      case "Home":
         event.preventDefault();
-
-        // Find which autocomplete-item contains the currently focused element
-        const items = this.shadowRoot?.querySelectorAll(
-          "cds-aichat-autocomplete-item",
-        );
-        if (items) {
-          const itemArray = Array.from(items);
-          let focusedItemIndex = -1;
-          let isSendButtonFocused = false;
-
-          // Check each item to see if it contains the focused element
-          for (let i = 0; i < itemArray.length; i++) {
-            const item = itemArray[i];
-            const itemShadowRoot = item.shadowRoot;
-            if (itemShadowRoot) {
-              const activeElement = itemShadowRoot.activeElement;
-              if (activeElement) {
-                focusedItemIndex = i;
-                // Check if the focused element is the send button
-                isSendButtonFocused =
-                  activeElement.tagName === "CDS-ICON-BUTTON";
-                break;
-              }
-            }
-          }
-
-          if (focusedItemIndex >= 0) {
-            // Update _focusedIndex to match the item that has focus
-            this._focusedIndex = focusedItemIndex;
-            const item = this._getItemAtIndex(focusedItemIndex);
-
-            if (item) {
-              if (isSendButtonFocused) {
-                // Send button is focused - trigger send action
-                this.dispatchEvent(
-                  new CustomEvent<AutocompleteSendEventDetail>(
-                    "cds-aichat-autocomplete-send",
-                    {
-                      detail: { text: item.label },
-                      bubbles: true,
-                      composed: true,
-                    },
-                  ),
-                );
-              } else {
-                // Item button is focused - trigger select action
-                this._selectItem(item);
-              }
-            }
-          }
-        }
+        this._focusedIndex = 0;
+        this._focusItemAtIndex(this._focusedIndex);
         break;
-      }
+
+      case "End":
+        event.preventDefault();
+        this._focusedIndex = totalItems - 1;
+        this._focusItemAtIndex(this._focusedIndex);
+        break;
 
       case "Escape":
         event.preventDefault();
@@ -292,19 +248,33 @@ class AutocompleteElement extends LitElement {
   private _focusItemAtIndex(index: number) {
     this.requestUpdate();
     this.updateComplete.then(() => {
-      const items = this.shadowRoot?.querySelectorAll(
-        "cds-aichat-autocomplete-item",
+      const itemsContainer = this.shadowRoot?.querySelector(
+        `.${blockClass}__items`,
       );
-      if (items) {
-        const itemArray = Array.from(items);
-        const targetItem = itemArray[index];
-        if (targetItem) {
-          // Focus the button element inside the autocomplete-item
-          const button = targetItem.shadowRoot?.querySelector("button");
-          if (button) {
-            button.focus();
-            targetItem.scrollIntoView({ block: "nearest" });
+      const itemArray =
+        Array.from(itemsContainer?.children ?? []).flatMap((child) => {
+          if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM") {
+            return [child];
           }
+
+          if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM-GROUP") {
+            return Array.from(
+              child.shadowRoot?.querySelectorAll(
+                "cds-aichat-autocomplete-item",
+              ) ?? [],
+            );
+          }
+
+          return [];
+        }) ?? [];
+
+      const targetItem = itemArray[index] as HTMLElement | undefined;
+      if (targetItem) {
+        const itemElement =
+          targetItem.shadowRoot?.querySelector(`[role="option"]`);
+        if (itemElement) {
+          (itemElement as HTMLElement).focus();
+          targetItem.scrollIntoView({ block: "nearest" });
         }
       }
     });

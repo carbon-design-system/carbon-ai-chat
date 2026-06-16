@@ -152,9 +152,10 @@ class AutocompleteItemElement extends LitElement {
     const { typed, remainder } = this._getLabelParts();
 
     return html`
-      <button
+      <div
         class="${blockClass}"
         role="option"
+        tabindex="0"
         @keydown="${this._handleKeydown}"
       >
         <div class="${blockClass}__content">
@@ -194,7 +195,7 @@ class AutocompleteItemElement extends LitElement {
               </cds-icon-button>
             `
           : null}
-      </button>
+      </div>
     `;
   }
 }
