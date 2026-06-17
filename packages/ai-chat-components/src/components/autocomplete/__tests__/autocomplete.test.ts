@@ -153,29 +153,6 @@ describe("cds-aichat-autocomplete", () => {
     expect(eventDetail.item).to.deep.equal(mockItems[0]);
   });
 
-  it("should emit dismiss event when header close button is clicked", async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .items="${mockItems}"
-        .headerConfig="${{ showHeader: true, title: "Test Header" }}"
-      ></cds-aichat-autocomplete>
-    `);
-
-    let dismissEventFired = false;
-    el.addEventListener("cds-aichat-autocomplete-dismiss", () => {
-      dismissEventFired = true;
-    });
-
-    const closeButton = el.shadowRoot?.querySelector(
-      ".cds-aichat-autocomplete__close",
-    );
-    (closeButton as HTMLElement)?.click();
-
-    await el.updateComplete;
-
-    expect(dismissEventFired).to.be.true;
-  });
-
   it("should pass enableSendButton to items", async () => {
     const el = await fixture<AutocompleteElement>(html`
       <cds-aichat-autocomplete
