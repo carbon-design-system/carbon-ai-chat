@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,8 +12,8 @@ import type CDSButton from "@carbon/web-components/es/components/button/button.j
 
 import Button from "../carbon/Button";
 import { ChatBubble } from "../../components-legacy/ChatBubble";
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useSelector } from "../../hooks/useSelector";
+import { shallowEqual } from "../../store/appStore";
 import { PageObjectId } from "../../../testing/PageObjectId";
 import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
 import { CarbonTheme } from "../../../types/config/PublicConfig";
@@ -35,16 +35,29 @@ const DisclaimerPanel = ({
   disclaimerAcceptButtonRef,
   onAcceptDisclaimer,
 }: DisclaimerPanelProps): DisclaimerPanelContent => {
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      disclaimer_icon_label: state.languagePack.disclaimer_icon_label,
+      disclaimer_title: state.languagePack.disclaimer_title,
+      disclaimer_acceptance_label:
+        state.languagePack.disclaimer_acceptance_label,
+      disclaimer_accept: state.languagePack.disclaimer_accept,
+    }),
+    shallowEqual,
+  );
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint,
   );
-  const { derivedCarbonTheme } = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults,
+
+  const derivedCarbonTheme = useSelector(
+    (state: AppState) =>
+      state.config.derived.themeWithDefaults.derivedCarbonTheme,
   );
+
   const isOpen = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow,
   );
+
   const isDarkTheme =
     derivedCarbonTheme === CarbonTheme.G90 ||
     derivedCarbonTheme === CarbonTheme.G100;

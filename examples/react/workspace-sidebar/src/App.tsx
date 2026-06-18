@@ -42,11 +42,13 @@ const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 /**
- * It is preferable to create your configuration object outside of your React functions. You can also make use of
- * useCallback or useMemo if you need to put it inside.
+ * Define your config outside your React component, or wrap it in useMemo /
+ * useCallback if it must live inside.
  *
- * Either way, this will prevent you from spinning up a new config object over and over. Carbon AI Chat will run
- * a diff on the config object and if it is not deeply equal, the chat will be re-started.
+ * Carbon AI Chat applies config changes in place — a new config object does not
+ * restart the chat or your conversation. But a fresh reference on every render
+ * makes the chat re-render more than it needs to, and makes any effect you key
+ * on the config run every render. Keep the reference stable.
  */
 const config: PublicConfig = {
   messaging: {

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,7 +9,6 @@
 
 import {
   HeaderConfig,
-  LanguagePack,
   LayoutConfig,
   PublicConfig,
 } from "../config/PublicConfig";
@@ -42,11 +41,6 @@ interface AppConfig {
      * Complete theme state with defaults applied and corners computed based on layout/device.
      */
     themeWithDefaults: ThemeState;
-
-    /**
-     * Passed strings merged with defaults.
-     */
-    languagePack: LanguagePack;
 
     /**
      * Passed header merged with defaults.

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,7 +14,7 @@ import { useSelector } from "../../../hooks/useSelector";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import actions from "../../../store/actions";
-import { selectInputState } from "../../../store/selectors";
+import { selectInputIsReadonly } from "../../../store/selectors";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { ButtonItem } from "../../../../types/messaging/Messages";
 import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
@@ -39,9 +39,9 @@ function ButtonItemShowPanelComponent({
 }: ButtonItemShowPanelComponentProps) {
   const serviceManager = useServiceManager();
   const { image_url, alt_text, label, kind, size, is } = localMessageItem.item;
-  const inputState = useSelector(selectInputState);
+  const isInputReadonly = useSelector(selectInputIsReadonly);
   const ArrowRight = carbonIconToReact(ArrowRight16);
-  const isDisabled = inputState.isReadonly;
+  const isDisabled = isInputReadonly;
 
   /**
    * Once the button is clicked, render the panel content and update the message history to remember the panel being.

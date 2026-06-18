@@ -20,11 +20,12 @@ import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
 import { useCarbonTheme } from "../../hooks/useCarbonTheme";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import { LanguagePack } from "../../../types/config/PublicConfig";
+import { AppState } from "../../../types/state/AppState";
 import { useIntl } from "../../hooks/useIntl";
+import { useSelector } from "../../hooks/useSelector";
+import { shallowEqual } from "../../store/appStore";
 
 interface CatastrophicErrorPanelProps {
-  assistantName: string;
-  languagePack: LanguagePack;
   title?: string;
   bodyText?: string;
   onRestart: () => void;
@@ -32,8 +33,6 @@ interface CatastrophicErrorPanelProps {
 }
 
 const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
-  assistantName,
-  languagePack,
   title,
   bodyText,
   onRestart,
@@ -41,6 +40,17 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
 }) => {
   const intl = useIntl();
   const { isDarkTheme } = useCarbonTheme();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      errors_somethingWrong: state.languagePack.errors_somethingWrong,
+      buttons_restart: state.languagePack.buttons_restart,
+      buttons_retry: state.languagePack.buttons_retry,
+    }),
+    shallowEqual,
+  );
+  const assistantName = useSelector(
+    (state: AppState) => state.config.public.assistantName,
+  );
 
   const errorTitle = useMemo(
     () => title ?? languagePack.errors_somethingWrong,

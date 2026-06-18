@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -265,20 +265,10 @@ describe("Config Theme", () => {
         "g10",
       );
 
-      // Simulate dynamic config update (e.g., toggling aiEnabled)
+      // Simulate dynamic config update (e.g., toggling aiEnabled).
       await applyConfigChangesDynamically(
-        {
-          themingChanged: true,
-          namespaceChanged: false,
-          messagingChanged: false,
-          layoutChanged: false,
-          humanAgentFactoryChanged: false,
-          headerChanged: false,
-          disclaimerChanged: false,
-          homescreenChanged: false,
-          lightweightUIChanged: false,
-        },
-        { aiEnabled: false }, // New config
+        { aiEnabled: true }, // previous
+        { aiEnabled: false }, // next
         serviceManager,
       );
 

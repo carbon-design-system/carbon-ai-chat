@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,8 +11,8 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { useSelector } from "../../hooks/useSelector";
 
 import { useEffectDidUpdate } from "../../hooks/useEffectDidUpdate";
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
+import { shallowEqual } from "../../store/appStore";
 import actions from "../../store/actions";
 import { IS_PHONE } from "../../utils/browserUtils";
 import { TIME_TO_ENTRANCE_ANIMATION_START } from "../../../types/config/LauncherConfig";
@@ -27,7 +27,16 @@ import { PageObjectId } from "../../../testing/PageObjectId";
 
 function LauncherContainer() {
   const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      launcher_mobileGreeting: state.languagePack.launcher_mobileGreeting,
+      launcher_desktopGreeting: state.languagePack.launcher_desktopGreeting,
+      launcher_ariaIsExpanded: state.languagePack.launcher_ariaIsExpanded,
+      launcher_isClosed: state.languagePack.launcher_isClosed,
+      launcher_isOpen: state.languagePack.launcher_isOpen,
+    }),
+    shallowEqual,
+  );
   const launcherRef = useRef<LauncherHandle | null>(null);
   const autoExtendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasScheduledAutoExtendRef = useRef(false);
@@ -37,12 +46,30 @@ function LauncherContainer() {
     launcherIsExpanded,
     launcherShouldStartCallToActionCounterIfEnabled,
     showUnreadIndicator,
-  } = useSelector((state: AppState) => state.persistedToBrowserStorage);
+  } = useSelector(
+    (state: AppState) => ({
+      viewState: state.persistedToBrowserStorage.viewState,
+      launcherIsExpanded: state.persistedToBrowserStorage.launcherIsExpanded,
+      launcherShouldStartCallToActionCounterIfEnabled:
+        state.persistedToBrowserStorage
+          .launcherShouldStartCallToActionCounterIfEnabled,
+      showUnreadIndicator: state.persistedToBrowserStorage.showUnreadIndicator,
+    }),
+    shallowEqual,
+  );
   const unreadMessageCount = useSelector(
     (state: AppState) => state.humanAgentState.numUnreadMessages,
   );
-  const { launcher, themeWithDefaults } = useSelector(
-    (state: AppState) => state.config.derived,
+  // Select the launcher sub-object and the aiEnabled primitive separately rather
+  // than the whole `derived` object: after config-reference reconciliation the
+  // `launcher` reference is stable when unchanged, and `aiEnabled` is a
+  // primitive — so neither re-renders on unrelated config changes (e.g. theme,
+  // header, layout).
+  const launcher = useSelector(
+    (state: AppState) => state.config.derived.launcher,
+  );
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
   );
 
   const { launcher: isLauncherVisible, mainWindow: isMainWindowOpen } =
@@ -63,7 +90,6 @@ function LauncherContainer() {
     (IS_PHONE
       ? languagePack.launcher_mobileGreeting
       : languagePack.launcher_desktopGreeting);
-  const aiEnabled = themeWithDefaults.aiEnabled;
   const launcherAvatarUrl = launcherConfig?.avatarUrlOverride;
 
   const clearAutoExtendTimeout = useCallback(() => {

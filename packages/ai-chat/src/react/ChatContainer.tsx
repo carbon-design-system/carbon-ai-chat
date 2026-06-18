@@ -24,7 +24,11 @@ import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/
 import { ChatContainerProps } from "../types/component/ChatContainer";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { BusEventType } from "../types/events/eventBusTypes";
-import { PublicConfig } from "../types/config/PublicConfig";
+import {
+  FLATTENED_PUBLIC_CONFIG_FIELDS,
+  FlattenedConfigSource,
+  resolveFlattenedConfig,
+} from "../web-components/shared/flattenedPublicConfig";
 import { isBrowser } from "../chat/utils/browserUtils";
 
 /**
@@ -81,99 +85,43 @@ function ChatContainer(
     onAfterRender,
     onViewChange,
     onViewPreChange,
-    strings,
-    serviceDeskFactory,
-    serviceDesk,
     renderUserDefinedResponse,
     renderCustomMessageFooter,
     renderWriteableElements,
     element,
-    // Flattened PublicConfig properties
-    onError,
-    openChatByDefault,
-    disclaimer,
-    disableCustomElementMobileEnhancements,
-    debug,
-    exposeServiceManagerForTesting,
-    injectCarbonTheme,
-    aiEnabled,
-    shouldTakeFocusIfOpensAutomatically,
-    namespace,
-    shouldSanitizeHTML,
-    header,
-    history,
-    layout,
-    messaging,
-    isReadonly,
-    persistFeedback,
-    assistantName,
-    assistantAvatarUrl,
-    locale,
-    homescreen,
-    launcher,
-    input,
-    keyboardShortcuts,
-    upload,
-    markdown,
-    ...domProps
+    // Everything else is either a flattened PublicConfig field (folded into
+    // `config` below) or an arbitrary DOM attribute forwarded to the host.
+    ...rest
   } = props;
-  // Reconstruct PublicConfig from flattened props
+
+  // Reconstruct the PublicConfig from the flattened props using the same shared
+  // table + folder the web components use (`resolveFlattenedConfig` driven by
+  // `FLATTENED_PUBLIC_CONFIG_FIELDS`), so the two surfaces cannot drift. Every
+  // flattened field — including `strings`, `markdown`, `serviceDesk`, and
+  // `serviceDeskFactory` — is folded into `config` here, so `ChatAppEntry`
+  // receives a single effective `config` with no separate side-channel props.
+  const flattenedSource = rest as unknown as FlattenedConfigSource;
   const config = useMemo(
-    (): PublicConfig => ({
-      onError,
-      openChatByDefault,
-      disclaimer,
-      disableCustomElementMobileEnhancements,
-      debug,
-      exposeServiceManagerForTesting,
-      injectCarbonTheme,
-      aiEnabled,
-      shouldTakeFocusIfOpensAutomatically,
-      namespace,
-      shouldSanitizeHTML,
-      header,
-      history,
-      layout,
-      messaging,
-      isReadonly,
-      persistFeedback,
-      assistantName,
-      assistantAvatarUrl,
-      locale,
-      homescreen,
-      launcher,
-      input,
-      keyboardShortcuts,
-      upload,
-    }),
-    [
-      onError,
-      openChatByDefault,
-      disclaimer,
-      disableCustomElementMobileEnhancements,
-      debug,
-      exposeServiceManagerForTesting,
-      injectCarbonTheme,
-      aiEnabled,
-      shouldTakeFocusIfOpensAutomatically,
-      namespace,
-      shouldSanitizeHTML,
-      header,
-      history,
-      layout,
-      messaging,
-      isReadonly,
-      persistFeedback,
-      assistantName,
-      assistantAvatarUrl,
-      locale,
-      homescreen,
-      launcher,
-      input,
-      keyboardShortcuts,
-      upload,
-    ],
+    () => resolveFlattenedConfig(flattenedSource),
+    // The dependency list is derived from the shared field table, so it can
+    // never drift from the set of fields folded above (the old hand-written
+    // list did). Each value is compared by identity, so the memo recomputes
+    // only when a real config field changes — preserving `config` referential
+    // stability across unrelated host re-renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    FLATTENED_PUBLIC_CONFIG_FIELDS.map(
+      (field) => (rest as Record<string, unknown>)[field.name],
+    ),
   );
+
+  // DOM pass-through props are whatever remains after removing the flattened
+  // config fields (forwarded via `config`) — e.g. `className`, `id`, `style`,
+  // `aria-*`. Driven by the same table so a newly-added config field can never
+  // leak onto the host element.
+  const domProps: Record<string, unknown> = { ...flattenedSource };
+  for (const field of FLATTENED_PUBLIC_CONFIG_FIELDS) {
+    delete domProps[field.name];
+  }
 
   const wrapperRef = useRef(null); // Ref for the React wrapper component
   const [wrapper, setWrapper] = useState(null);
@@ -419,19 +367,18 @@ function ChatContainer(
 
   return (
     <>
-      <ReactChatContainer ref={wrapperRef} {...domProps} />
+      <ReactChatContainer
+        ref={wrapperRef}
+        {...(domProps as HTMLAttributes<HTMLElement>)}
+      />
       {container &&
         createPortal(
           <ChatAppEntry
             key="stable-chat-instance"
             config={config}
-            strings={strings}
-            serviceDeskFactory={serviceDeskFactory}
-            serviceDesk={serviceDesk}
             renderUserDefinedResponse={renderUserDefinedResponse}
             renderCustomMessageFooter={renderCustomMessageFooter}
             renderWriteableElements={renderWriteableElements}
-            markdown={markdown}
             onBeforeRender={onBeforeRenderOverride}
             onAfterRender={onAfterRender}
             container={container}

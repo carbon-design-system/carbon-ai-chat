@@ -8,7 +8,10 @@
  */
 
 import { createAppStore } from "../../../src/chat/store/appStore";
-import { createAppConfig } from "../../../src/chat/store/doCreateStore";
+import {
+  buildLanguagePack,
+  createAppConfig,
+} from "../../../src/chat/store/doCreateStore";
 import actions from "../../../src/chat/store/actions";
 import { reducers } from "../../../src/chat/store/reducers";
 import { AppState } from "../../../src/types/state/AppState";
@@ -44,6 +47,7 @@ function createInitialAppState(): AppState {
   const config = createAppConfig({});
   return {
     config,
+    languagePack: buildLanguagePack(config.public.strings),
     allMessageItemsByID: {},
     allMessagesByID: {},
     targetViewState: VIEW_STATE_ALL_CLOSED,
