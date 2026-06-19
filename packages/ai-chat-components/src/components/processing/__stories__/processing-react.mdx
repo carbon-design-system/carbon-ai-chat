@@ -1,12 +1,16 @@
-import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
 import * as ProcessingReactStories from "./processing-react.stories.jsx";
 
-<Meta of={ProcessingReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ProcessingReactStories}
+  parameters={{
+    previewTabs: { "storybook/docs/panel": { title: "Overview" } },
+  }}
+/>
 
 # Processing
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/processing) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
@@ -14,10 +18,9 @@ import * as ProcessingReactStories from "./processing-react.stories.jsx";
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
-
 ## Overview
 
-Use `<Processing>` to show a compact AI loading indicator in React while work completes. Choose between the quick-load pulse or a looping linear animation depending on how long your task might take.
+Use `<Processing>` to show a compact AI loading indicator in React while work completes. By default the dots wait ~1s before animating in, so quick operations don't flash an indicator; pass `quickLoad` to skip that delay and show them immediately. Use `loop` for ongoing work, or let it play once when you don't need it to loop.
 
 ### Getting started
 
@@ -26,12 +29,12 @@ Here's a quick example to get you started.
 ```jsx
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
 
-function LoadingState() {
-  return <Processing quickLoad />;
-}
-
 function LinearProgress() {
   return <Processing loop />;
+}
+
+function InstantProgress() {
+  return <Processing loop quickLoad />;
 }
 ```
 
@@ -41,8 +44,8 @@ function LinearProgress() {
 
 #### Props
 
-- `quickLoad`: Enables the quick load animation.
-- `loop`: Enables the continuous linear animation.
+- `loop`: Enables the continuous linear animation. When omitted, the animation plays once.
+- `quickLoad`: Removes the ~1s entry delay so the dots appear immediately. Composes with `loop`.
 
 ## Feedback
 

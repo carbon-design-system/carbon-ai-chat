@@ -165,3 +165,22 @@ function collect(
 export function projectRawValue(editor: Editor): string {
   return getRawText(editor.getJSON());
 }
+
+/**
+ * Build a paragraph-per-line JSONContent doc from a plain-text string — the
+ * inverse of {@link getRawText} for plain text (`getRawText(textToDoc(s)) === s`).
+ * Used to seed the rich editor losslessly from the textarea's value when the
+ * prompt-line upgrades from textarea to Tiptap mode.
+ */
+export function textToDoc(text: string): JSONContent {
+  return {
+    type: "doc",
+    content: text
+      .split("\n")
+      .map((line) =>
+        line
+          ? { type: "paragraph", content: [{ type: "text", text: line }] }
+          : { type: "paragraph" },
+      ),
+  };
+}

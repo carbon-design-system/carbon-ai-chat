@@ -126,6 +126,8 @@ export {
   CancellationReason,
   ChatInstanceMessaging,
   CustomSendMessageOptions,
+  MessageState,
+  UpsertMessageUpdater,
 } from "./types/config/MessagingConfig";
 
 export { PublicConfig } from "./types/config/PublicConfig";
@@ -175,6 +177,7 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
+  textToDoc,
 } from "./types/utilities/inputUtils";
 
 export { DeepPartial } from "../src/types/utilities/DeepPartial";
@@ -263,6 +266,8 @@ export {
   HumanAgentMessageType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
   ReasoningSteps,
   ReasoningStep,
   ReasoningStepOpenState,
@@ -298,12 +303,29 @@ export {
 } from "./types/config/LauncherConfig";
 
 export {
+  ChatContainerPropsMarkdown,
+  CustomMarkdownRenderers,
+  MarkdownCustomRenderers,
+  MarkdownRendererCodeBlockArgs,
+  MarkdownRendererCodeBlockData,
+  MarkdownRendererTableArgs,
+  MarkdownRendererTableData,
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
+  TokenTree,
+  WCCustomMarkdownRenderers,
+  WCMarkdown,
+  WCRenderCustomMessageFooter,
+  WCRenderUserDefinedResponse,
 } from "./types/component/ChatContainer";
+
+export type {
+  MarkdownItPlugin,
+  PublicConfigMarkdown,
+} from "./types/config/PublicConfig";
 
 // Export type-only interfaces for web component attributes without importing the implementations
 export type { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-container/index";

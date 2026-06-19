@@ -7,14 +7,7 @@
  *  @license
  */
 
-import React, {
-  forwardRef,
-  Ref,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { forwardRef, Ref, useMemo, useRef, useState } from "react";
 import InputShell from "@carbon/ai-chat-components/es/react/input-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
@@ -25,10 +18,7 @@ import type { PromptLineElement } from "@carbon/ai-chat-components/es/components
 import { useChatAutocomplete } from "@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import actions from "../../store/actions";
-import {
-  selectInputState,
-  selectIsInputToHumanAgent,
-} from "../../store/selectors";
+import { selectIsInputToHumanAgent } from "../../store/selectors";
 import { ChatWidthBreakpoint, AppState } from "../../../types/state/AppState";
 import { useSelector } from "../../hooks/useSelector";
 import { BusEventType } from "../../../types/events/eventBusTypes";
@@ -36,7 +26,9 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useIntl } from "../../hooks/useIntl";
 import { useInputConfig } from "../../hooks/useInputConfig";
-import { useInputExtensions } from "../../hooks/useInputExtensions";
+import { useRichSurface } from "./useRichSurface";
+import { useInputValueSync } from "./useInputValueSync";
+import { useInputImperativeHandle } from "./useInputImperativeHandle";
 import { PageObjectId } from "../../../testing/PageObjectId";
 import { consoleError } from "../../utils/miscUtils";
 import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
@@ -167,8 +159,6 @@ interface InputFunctions {
   /**
    * Replace the entire input content. Throws if the editor is not currently
    * rendered.
-   *
-   * @experimental
    */
   setContent: (
     next: JSONContent | string | ((prev: JSONContent) => JSONContent),
@@ -177,8 +167,6 @@ interface InputFunctions {
   /**
    * Insert content at the cursor or at `options.at` (a PM document offset).
    * Throws if the editor is not currently rendered.
-   *
-   * @experimental
    */
   insertContent: (
     content: JSONContent | string,
@@ -187,11 +175,15 @@ interface InputFunctions {
 
   /**
    * Probe-style access to the live Tiptap editor. Returns `null` when the
-   * editor is not mounted.
-   *
-   * @experimental
+   * editor is not mounted. Never triggers a load.
    */
   getEditor: () => Editor | null;
+
+  /**
+   * Loads Tiptap on demand (upgrading the textarea in place), then resolves
+   * with the live editor. Rejects when the input surface is not mounted.
+   */
+  ensureEditor: () => Promise<Editor>;
 }
 
 /**
@@ -245,13 +237,18 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     menuOptions,
   } = useInputConfig();
 
+  // Surface mode (textarea "lite" vs rich Tiptap) + sticky latch + the curated
+  // extension list. `latchRich` is threaded into the imperative `ensureEditor`
+  // so the element's own on-demand upgrade keeps React passing `rich`/`extensions`.
   const {
+    useRichEditor,
+    extensions,
     normalizedMention,
     normalizedCommand,
     normalizedAutocomplete,
     normalizedStarters,
-    extensions,
-  } = useInputExtensions({
+    latchRich,
+  } = useRichSurface({
     mention,
     command,
     autocomplete,
@@ -262,76 +259,31 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   // Track if we've announced the keyboard shortcut to avoid repeating it
   const [hasAnnouncedShortcut, setHasAnnouncedShortcut] = useState(false);
 
-  // Get tracked input state from Redux if enabled
-  const trackedInputState = trackInputState
-    ? selectInputState(store.getState())
-    : null;
-
-  // Local state for input value (rawValue only — JSONContent doc is internal).
-  const [rawInputValue, setRawInputValue] = useState(
-    trackedInputState?.rawValue ?? "",
-  );
-
-  const rawInputValueRef = useRef(rawInputValue);
-  rawInputValueRef.current = rawInputValue;
-
-  // Snapshot of the editor's last-known JSONContent. The send path forwards this verbatim so the
-  // user message bubble can render structurally (mention chips, custom nodes).
-  const displayContentRef = useRef<JSONContent | null>(null);
-
   const promptLineRef = useRef<PromptLineElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Subscribe to Redux state changes if tracking is enabled
-  useEffect(() => {
-    if (!trackInputState) {
-      return undefined;
-    }
-
-    const unsubscribe = store.subscribe(() => {
-      const nextInputState = selectInputState(store.getState());
-      const nextRawValue = nextInputState.rawValue ?? "";
-
-      if (nextRawValue !== rawInputValueRef.current) {
-        setRawInputValue(nextRawValue);
-        // Push the Redux-driven value into the editor to keep them aligned.
-        const promptLine = promptLineRef.current;
-        if (promptLine) {
-          const editor = promptLine.getEditor();
-          if (editor && editor.getText() !== nextRawValue) {
-            promptLine.setContent(nextRawValue);
-          }
-        }
-      }
-    });
-
-    return unsubscribe;
-  }, [store, trackInputState]);
-
-  const overMaxLength = rawInputValue.length > maxInputChars;
-
-  /**
-   * Handle input value changes from the prompt-line. Dispatches to Redux if
-   * tracking is enabled. `content` is Tiptap JSONContent.
-   */
-  const handleInputChange = (
-    event: CustomEvent<{ rawValue: string; content?: JSONContent }>,
-  ) => {
-    const { rawValue, content } = event.detail;
-
-    setRawInputValue(rawValue);
-    displayContentRef.current = content ?? null;
-
-    if (trackInputState) {
-      const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
-      store.dispatch(
-        actions.updateInputState(
-          { rawValue, content: content ?? { type: "doc", content: [] } },
-          isInputToHumanAgent,
-        ),
-      );
-    }
-  };
+  // Local value (rawValue) + Redux mirror (when tracking) + the send path.
+  // `setRawInputValue`/`rawInputValueRef` are exposed for the autocomplete
+  // starter path below.
+  const {
+    rawInputValue,
+    rawInputValueRef,
+    setRawInputValue,
+    overMaxLength,
+    effectiveDisableSend,
+    handleInputChange,
+    sendCurrentValue,
+    handleSendControlSend,
+    handlePromptSendIntent,
+  } = useInputValueSync({
+    serviceManager,
+    promptLineRef,
+    trackInputState,
+    maxInputChars,
+    disableSend,
+    isSendDisabledFromConfig,
+    onSendInput,
+  });
 
   const hasValidInput = useMemo(
     () =>
@@ -341,54 +293,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         !pendingUploads.every((u) => u.isError)),
     [rawInputValue, pendingUploads],
   );
-
-  const effectiveDisableSend =
-    disableSend || isSendDisabledFromConfig || overMaxLength;
-
-  /**
-   * Send the current input value - clears the editor and dispatches to Redux
-   * if tracking is enabled.
-   *
-   * Order matters here. We clear Redux BEFORE onSendInput so the store
-   * subscriber (see useEffect above) can never observe Redux holding the old
-   * value while React state is "". onSendInput dispatches downstream actions
-   * (sendWithCatch, etc.) — in React 17 those run through unbatched renders
-   * whose layout effects can synchronously fire the subscriber, which would
-   * otherwise revert React state back to the just-sent text. We also call
-   * promptLineRef.current?.clearContent() to imperatively reset the Tiptap doc
-   * in case the prop-driven sync (rawValue → setExternalRawValue) is delayed
-   * by @lit/react's native-event scheduling. See issue #1382.
-   */
-  const sendCurrentValue = () => {
-    const text = rawInputValueRef.current;
-    if (!text.trim()) {
-      return;
-    }
-    if (effectiveDisableSend) {
-      return;
-    }
-    onSendInput(text, displayContentRef.current ?? undefined);
-
-    setRawInputValue("");
-    displayContentRef.current = null;
-    promptLineRef.current?.clearContent();
-
-    if (trackInputState) {
-      const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
-      store.dispatch(
-        actions.updateInputState({ rawValue: "" }, isInputToHumanAgent),
-      );
-    }
-  };
-
-  const handleSendControlSend = () => {
-    sendCurrentValue();
-  };
-
-  const handlePromptSendIntent = (event: CustomEvent) => {
-    event.stopPropagation();
-    sendCurrentValue();
-  };
 
   /**
    * Handle input focus - announces keyboard shortcut on first focus if enabled,
@@ -505,44 +409,12 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     },
   });
 
-  const inputFunctions = useMemo<InputFunctions>(
-    () => ({
-      requestFocus: () => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          return false;
-        }
-        promptLine.focus();
-        return true;
-      },
-      hasFocus: () => promptLineRef.current?.getEditor()?.isFocused ?? false,
-      setContent: (next) => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          throw new Error("Input is not currently rendered");
-        }
-        promptLine.setContent(next);
-      },
-      insertContent: (content, options) => {
-        const promptLine = promptLineRef.current;
-        if (!promptLine) {
-          throw new Error("Input is not currently rendered");
-        }
-        promptLine.insertContent(content, options);
-      },
-      getEditor: () => promptLineRef.current?.getEditor() ?? null,
-    }),
-    [],
-  );
-
-  React.useImperativeHandle(ref, () => inputFunctions, [inputFunctions]);
-
-  useEffect(() => {
-    serviceManager.setInputFunctionsRef(inputFunctions);
-    return () => {
-      serviceManager.setInputFunctionsRef(null);
-    };
-  }, [serviceManager, inputFunctions]);
+  useInputImperativeHandle({
+    ref,
+    promptLineRef,
+    serviceManager,
+    latchRich,
+  });
 
   const effectiveMenuOptions = useMemo<InputMenuOption[] | undefined>(() => {
     if (!menuOptions) {
@@ -580,6 +452,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       <PromptLine
         slot="editor"
         ref={promptLineRef}
+        rich={useRichEditor}
+        // Always hand the element its extension list. The curated trigger
+        // features (mention / command / autocomplete / starters) only populate
+        // it in rich mode; host `tiptap.extensions` force rich (see
+        // resolvePromptLineMode), so when present the element mounts rich with
+        // them installed. The element treats `extensions` as staged config, not
+        // a rich-mode trigger — `rich` alone drives the surface. Enter-to-send
+        // lives in the element's own base bundle for both surfaces.
         extensions={extensions}
         disabled={disableInput}
         placeholder={editorPlaceholder}

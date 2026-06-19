@@ -29,6 +29,8 @@ function ensurePmContentStyleRules(): void {
     "font-weight": "var(--cds-body-01-font-weight, 400)",
     "letter-spacing": "var(--cds-body-01-letter-spacing, 0.16px)",
     "line-height": "var(--cds-body-01-line-height, 1.42857)",
+    "max-height": "157px",
+    "overflow-y": "auto",
   });
   // Tiptap renders block content into real <p> tags inside the light-DOM
   // contenteditable. Neutralize the user-agent / host paragraph margin so

@@ -48,6 +48,7 @@ function MessagesTypingIndicator({
                 <Processing
                   className="cds-aichat--processing-component"
                   loop
+                  quickLoad
                   carbonTheme={carbonTheme}
                   aria-label={processingLabel}
                 />{" "}

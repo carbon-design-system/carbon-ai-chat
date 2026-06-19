@@ -8,7 +8,9 @@
  */
 
 import "../src/markdown";
-import { html, LitElement } from "lit";
+import "@carbon/web-components/es/components/data-table/index.js";
+import { html, render, LitElement } from "lit";
+import markdownItKatex from "@vscode/markdown-it-katex";
 
 const comprehensiveMarkdown = `# Markdown Rendering Demo
 
@@ -166,34 +168,13 @@ Regular markdown works fine:
 
 > Markdown blockquote`;
 
-const checkboxMarkdown = `# Checkbox Examples
-
-This demonstrates the custom checkbox rendering in markdown.
-
-## Task Lists
-
-- [x] Completed task
-- [ ] Incomplete task
-- [x] Another completed task
-- [ ] Another incomplete task
-
-## Custom Checkboxes
-
-You can also use custom checkbox syntax:
-
-<cds-checkbox checked="true">This checkbox is checked</cds-checkbox>
-
-<cds-checkbox checked="false">This checkbox is unchecked</cds-checkbox>
-
-<cds-checkbox checked="true" disabled="true">This checkbox is checked and disabled</cds-checkbox>
-
-<cds-checkbox checked="false" disabled="false">This checkbox is unchecked and enabled</cds-checkbox>`;
-
 class StreamingDemo extends LitElement {
   static properties = {
     streamedContent: { type: String },
     streaming: { type: Boolean },
     isComplete: { type: Boolean },
+    source: { attribute: false },
+    customRenderers: { attribute: false },
   };
 
   constructor() {
@@ -202,6 +183,8 @@ class StreamingDemo extends LitElement {
     this.streaming = true;
     this.isComplete = false;
     this.streamInterval = null;
+    this.source = comprehensiveMarkdown;
+    this.customRenderers = undefined;
   }
 
   connectedCallback() {
@@ -226,8 +209,8 @@ class StreamingDemo extends LitElement {
     let currentChunk = "";
     let spaceCount = 0;
 
-    for (let i = 0; i < comprehensiveMarkdown.length; i++) {
-      const char = comprehensiveMarkdown[i];
+    for (let i = 0; i < this.source.length; i++) {
+      const char = this.source[i];
       currentChunk += char;
 
       if (char === " ") {
@@ -277,6 +260,7 @@ class StreamingDemo extends LitElement {
         <cds-aichat-markdown
           ?streaming=${this.streaming}
           .markdown=${this.streamedContent}
+          .customRenderers=${this.customRenderers}
         ></cds-aichat-markdown>
       </div>
     `;
@@ -419,31 +403,6 @@ export const WithHTMLSanitization = {
   `,
 };
 
-export const WithCheckboxes = {
-  args: {
-    markdown: checkboxMarkdown,
-    streaming: false,
-    sanitizeHTML: false,
-    removeHTML: false,
-    codeSnippetHighlight: false,
-  },
-  render: (args) => html`
-    <div>
-      <p style="margin-bottom: 1rem; padding: 0.5rem; background: #f4f4f4;">
-        <strong>Note:</strong> This story demonstrates checkbox rendering in
-        markdown, including task lists and custom checkbox elements.
-      </p>
-      <cds-aichat-markdown
-        ?streaming=${args.streaming}
-        ?sanitize-html=${args.sanitizeHTML}
-        ?remove-html=${args.removeHTML}
-        ?code-snippet-highlight=${args.codeSnippetHighlight}
-        .markdown=${args.markdown}
-      ></cds-aichat-markdown>
-    </div>
-  `,
-};
-
 export const WithHTMLRemoval = {
   args: {
     markdown: htmlSanitizationMarkdown,
@@ -466,5 +425,111 @@ export const WithHTMLRemoval = {
         .markdown=${args.markdown}
       ></cds-aichat-markdown>
     </div>
+  `,
+};
+
+const katexMarkdown = `Plugins can introduce new token types. This story uses [\`@vscode/markdown-it-katex\`](https://www.npmjs.com/package/@vscode/markdown-it-katex) to render LaTeX math.
+
+Inline math like $E = mc^2$ appears inside a paragraph. Block math gets its own line:
+
+$$\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}$$
+
+Plugin output is mounted into a light-DOM slot so global CSS (here, KaTeX's stylesheet loaded in the Storybook preview) styles it normally.`;
+
+const katexPlugins = [markdownItKatex];
+
+export const WithMarkdownItPlugin = {
+  args: {
+    markdown: katexMarkdown,
+  },
+  argTypes: {
+    markdown: { control: "text" },
+  },
+  render: (args) => html`
+    <div>
+      <p style="margin-bottom: 1rem; padding: 0.5rem; background: #f4f4f4;">
+        <strong>Note:</strong> Pass a \`markdownItPlugins\` array to add custom
+        rules. Plugin output is rendered into a light-DOM slot, so
+        consumer-supplied CSS (such as KaTeX's stylesheet loaded via the
+        Storybook preview) reaches it normally.
+      </p>
+      <cds-aichat-markdown
+        .markdownItPlugins=${katexPlugins}
+        .markdown=${args.markdown}
+      ></cds-aichat-markdown>
+    </div>
+  `,
+};
+
+const tableOverrideMarkdown = `Below is a markdown table. The story registers a custom renderer for tables so that a Carbon \`cds-table\` from \`@carbon/web-components\` replaces the default \`cds-aichat-table\` rendering.
+
+| Service | Status | Region |
+| --- | --- | --- |
+| API | Healthy | us-east-1 |
+| Worker | Degraded | us-east-1 |
+| Database | Healthy | us-west-2 |
+
+A paragraph after the table demonstrates the override staying mounted while normal content streams in.`;
+
+// Cache one wrapper element per slot so the renderer returns a stable
+// reference across streaming re-renders. Returning the same element lets the
+// markdown reconciler skip `replaceChildren`, and Lit's `render` diffs the
+// table contents in place instead of tearing the Carbon table down each chunk.
+const tableOverrideHosts = new Map();
+
+const tableOverrideRenderers = {
+  table: ({ headers, rows, slotName }) => {
+    // The renderer must return an HTMLElement, so render the Carbon
+    // `cds-table` template into a wrapper element with Lit's `render`.
+    let wrapper = tableOverrideHosts.get(slotName);
+    if (!wrapper) {
+      wrapper = document.createElement("div");
+      tableOverrideHosts.set(slotName, wrapper);
+    }
+    render(
+      html`
+        <cds-table>
+          <cds-table-head>
+            <cds-table-header-row>
+              ${headers.map(
+                (cell) =>
+                  html`<cds-table-header-cell
+                    >${cell.text}</cds-table-header-cell
+                  >`,
+              )}
+            </cds-table-header-row>
+          </cds-table-head>
+          <cds-table-body>
+            ${rows.map(
+              (row) => html`
+                <cds-table-row>
+                  ${row.map(
+                    (cell) =>
+                      html`<cds-table-cell>${cell.text}</cds-table-cell>`,
+                  )}
+                </cds-table-row>
+              `,
+            )}
+          </cds-table-body>
+        </cds-table>
+      `,
+      wrapper,
+    );
+    return wrapper;
+  },
+};
+
+export const WithTableOverride = {
+  args: {
+    markdown: tableOverrideMarkdown,
+  },
+  argTypes: {
+    markdown: { control: "text" },
+  },
+  render: (args) => html`
+    <streaming-markdown-demo
+      .source=${args.markdown}
+      .customRenderers=${tableOverrideRenderers}
+    ></streaming-markdown-demo>
   `,
 };

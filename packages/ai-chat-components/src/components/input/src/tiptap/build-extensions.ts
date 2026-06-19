@@ -15,13 +15,15 @@
  * without bringing the chrome along.
  *
  * Filters out `undefined` / empty configs so the returned list contains
- * exactly the extensions whose backing config was supplied.
+ * exactly the extensions whose backing config was supplied. Enter-to-send is
+ * **not** included here — `<cds-aichat-prompt-line>` bakes `carbonChatEnter`
+ * into its own base bundle, so both the textarea and rich surfaces send on
+ * Enter without this builder.
  */
 
 import type { Extension } from "@tiptap/core";
 
 import { carbonAutocomplete } from "./carbon-autocomplete.js";
-import { carbonChatEnter } from "./chat-enter.js";
 import { carbonCommand, carbonMention } from "./carbon-mention.js";
 import { carbonStarterTrigger } from "./carbon-starter-trigger.js";
 import type {
@@ -40,7 +42,7 @@ export interface BuildCarbonExtensionsConfig {
 export function buildCarbonExtensions(
   configs: BuildCarbonExtensionsConfig,
 ): Extension[] {
-  const out: Extension[] = [carbonChatEnter()];
+  const out: Extension[] = [];
   if (configs.mention) {
     out.push(carbonMention(configs.mention) as unknown as Extension);
   }

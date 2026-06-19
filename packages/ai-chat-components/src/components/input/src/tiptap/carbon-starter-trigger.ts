@@ -10,9 +10,7 @@
 /**
  * `carbonStarterTrigger` factory. Watches the editor's empty + focused +
  * editable state and emits `cds-aichat-trigger-change` with `type: "starter"`
- * via the shared `dispatchTriggerChange` helper. Mirrors the legacy
- * [../prosemirror/trigger-plugin.ts]'s synthetic STARTER trigger logic; the
- * legacy enum is gone, this extension is now the only path.
+ * via the shared `dispatchTriggerChange` helper.
  *
  * Items are stored on `extension.storage.items` so the prompt-line / shell
  * can swap the list at runtime without recreating the editor.

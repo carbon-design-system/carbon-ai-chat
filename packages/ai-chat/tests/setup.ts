@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -53,6 +53,24 @@ Object.defineProperty(window, "matchMedia", {
 // internally by ProseMirror (e.g. safariShadowSelectionRange)
 if (!document.execCommand) {
   document.execCommand = jest.fn().mockReturnValue(false);
+}
+
+// Mock elementFromPoint since it's not available in jsdom but is used
+// internally by ProseMirror/Tiptap (posAtCoords -> root.elementFromPoint).
+// Tiptap's placeholder extension viewport tracking (@tiptap/extensions >= 3.27)
+// calls this on editor mount; the editor lives in a shadow root, so patch both
+// Document and ShadowRoot. Returning null mirrors the real "no element at point"
+// case, which ProseMirror handles gracefully.
+if (!Document.prototype.elementFromPoint) {
+  Document.prototype.elementFromPoint = jest.fn().mockReturnValue(null);
+}
+if (
+  typeof ShadowRoot !== "undefined" &&
+  !ShadowRoot.prototype.elementFromPoint
+) {
+  (ShadowRoot.prototype as any).elementFromPoint = jest
+    .fn()
+    .mockReturnValue(null);
 }
 
 // Mock ResizeObserver since it's not available in jsdom

@@ -188,12 +188,12 @@ function createChatInstance({
 
       updateContent: (updater) => {
         debugLog("Called instance.input.updateContent");
-        serviceManager.actions.updateInputContent(updater);
+        return serviceManager.actions.updateInputContent(updater);
       },
 
       getEditor: () => {
         debugLog("Called instance.input.getEditor()");
-        return serviceManager.actions.getInputEditor();
+        return serviceManager.actions.ensureInputEditor();
       },
     },
 
@@ -310,6 +310,16 @@ function createChatInstance({
           consoleError("Error in addMessageChunk", error);
           throw error;
         }
+      },
+
+      upsertMessage: async (messageID, state, updater) => {
+        debugLog("Called instance.messaging.upsertMessage", messageID, state);
+        serviceManager.messageService.messageLoadingManager.end();
+        return serviceManager.messageUpsertCoordinator.upsert(
+          messageID,
+          state,
+          updater,
+        );
       },
 
       removeMessages: async (messageIDs: string[]) => {

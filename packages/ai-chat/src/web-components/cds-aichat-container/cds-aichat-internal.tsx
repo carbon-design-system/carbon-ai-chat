@@ -22,6 +22,7 @@ import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import type { RenderUserDefinedInputNode } from "../../types/component/ChatContainer";
+import type { MarkdownConfigContextValue } from "../../chat/contexts/MarkdownConfigContext";
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -74,6 +75,17 @@ class ChatContainerInternal extends LitElement {
   @property({ attribute: false })
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
+  /**
+   * Merged markdown config (framework-neutral `markdownItPlugins` plus
+   * layer-specific `customRenderers`). Forwarded to the React app via
+   * `MarkdownConfigContext` so {@link MarkdownWithDefaults} can portal
+   * consumer overrides into the rendered markdown components.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  markdown?: MarkdownConfigContextValue;
+
   firstUpdated() {
     if (this.config) {
       this.renderReactApp();
@@ -88,7 +100,8 @@ class ChatContainerInternal extends LitElement {
         changedProperties.has("onBeforeRender") ||
         changedProperties.has("onAfterRender") ||
         changedProperties.has("element") ||
-        changedProperties.has("renderUserDefinedInputNode"))
+        changedProperties.has("renderUserDefinedInputNode") ||
+        changedProperties.has("markdown"))
     ) {
       this.renderReactApp();
     }
@@ -116,6 +129,7 @@ class ChatContainerInternal extends LitElement {
         container={container}
         element={this.element}
         chatWrapper={this}
+        markdown={this.markdown}
       />,
     );
   }

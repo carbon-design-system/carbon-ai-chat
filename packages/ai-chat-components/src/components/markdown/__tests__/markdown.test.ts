@@ -747,4 +747,954 @@ HTTP: http://example.com
       expect(p?.textContent).to.equal("Some {{not closed text");
     });
   });
+
+  describe("markdownItPlugins", () => {
+    // Plugin that pretends to be `markdown-it-emoji`: adds a `nesting=0` leaf
+    // token (`smile_emoji`) and registers a renderer rule for it. Exercises the
+    // leaf-token branch of the `md.renderer.render()` fallback.
+    function smileEmojiPlugin(md: any) {
+      md.inline.ruler.before(
+        "text",
+        "smile_emoji",
+        (state: any, silent: boolean) => {
+          const src = state.src.slice(state.pos);
+          if (!src.startsWith(":smile:")) {
+            return false;
+          }
+          if (!silent) {
+            const token = state.push("smile_emoji", "", 0);
+            token.markup = ":smile:";
+            token.content = "😀";
+          }
+          state.pos += ":smile:".length;
+          return true;
+        },
+      );
+      md.renderer.rules.smile_emoji = (tokens: any[], idx: number) =>
+        `<span class="cds-test-emoji" data-emoji="${tokens[idx].content}">${tokens[idx].content}</span>`;
+    }
+
+    // Plugin that pretends to be `markdown-it-footnote`'s paired-container side:
+    // recognizes lines like `::note paragraph contents` and emits a paired
+    // `note_open`/`note_close` block with the paragraph nested inside. Exercises
+    // the paired-container branch of `sliceForFallback`.
+    function noteContainerPlugin(md: any) {
+      md.block.ruler.before(
+        "paragraph",
+        "note_container",
+        (state: any, startLine: number, endLine: number, silent: boolean) => {
+          const pos = state.bMarks[startLine] + state.tShift[startLine];
+          const max = state.eMarks[startLine];
+          const line = state.src.slice(pos, max);
+          if (!line.startsWith("::note ")) {
+            return false;
+          }
+          if (silent) {
+            return true;
+          }
+          const content = line.slice("::note ".length);
+          const openToken = state.push("note_open", "div", 1);
+          openToken.markup = "::note";
+          openToken.block = true;
+          openToken.map = [startLine, startLine + 1];
+          openToken.attrSet("class", "cds-test-note");
+          const para = state.push("paragraph_open", "p", 1);
+          para.block = true;
+          para.map = [startLine, startLine + 1];
+          const inline = state.push("inline", "", 0);
+          inline.content = content;
+          inline.map = [startLine, startLine + 1];
+          inline.children = [];
+          state.push("paragraph_close", "p", -1);
+          state.push("note_close", "div", -1);
+          state.line = startLine + 1;
+          return true;
+        },
+      );
+    }
+
+    it("applies a parse-only plugin without breaking rendering", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[]}
+          .markdown=${"Hello **world**"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const text = el.shadowRoot?.textContent?.replace(/\s+/g, " ");
+      expect(text).to.include("Hello");
+      expect(text).to.include("world");
+      const strong = el.shadowRoot?.querySelector("strong");
+      expect(strong?.textContent).to.equal("world");
+    });
+
+    it("renders unknown leaf tokens via md.renderer.render fallback", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[smileEmojiPlugin]}
+          .markdown=${"Hi :smile: there"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      // Plugin output lives in a light-DOM slot host so consumer CSS can reach it.
+      const emoji = el.querySelector(".cds-test-emoji");
+      expect(emoji, "fallback should render the plugin's HTML").to.not.equal(
+        null,
+      );
+      expect(emoji?.getAttribute("data-emoji")).to.equal("😀");
+    });
+
+    it("renders paired-container plugin output via the fallback", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[noteContainerPlugin]}
+          .markdown=${"::note Pay attention to this"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const note = el.querySelector(".cds-test-note");
+      expect(note, "fallback should render the paired container").to.not.equal(
+        null,
+      );
+      expect(note?.textContent?.trim()).to.equal("Pay attention to this");
+    });
+
+    it("neutralizes HTML when removeHTML is set without breaking plugins", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          remove-html
+          .markdownItPlugins=${[smileEmojiPlugin]}
+          .markdown=${"Hi <b>raw</b> :smile:"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      // `<b>` is escaped to inert text under html:false, so no <b> element.
+      expect(el.shadowRoot?.querySelector("b")).to.equal(null);
+      expect(el.querySelector("b")).to.equal(null);
+      // Plugin still works with HTML neutralized (now mounted in light DOM).
+      expect(el.querySelector(".cds-test-emoji")).to.not.equal(null);
+    });
+
+    it("preserves block-level HTML content when removeHTML is set", async () => {
+      // Regression: stripping html_block tokens deleted their inner content
+      // entirely. With html:false the block is inert text, content preserved.
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          remove-html
+          .markdown=${"<div>\nhello\n</div>"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+      expect(
+        root.querySelector("div.cds-aichat-markdown-html-container"),
+      ).to.equal(null);
+      expect(root.textContent).to.include("hello");
+    });
+
+    it("does not execute or strip-leak script content when removeHTML is set", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          remove-html
+          .markdown=${"before <script>alert(1)</script> after"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+      // No live <script> element; the tag is inert escaped text.
+      expect(root.querySelector("script")).to.equal(null);
+      expect(root.textContent).to.include("before");
+      expect(root.textContent).to.include("after");
+    });
+  });
+
+  describe("markdown-it renderer-rule overrides", () => {
+    // Mermaid-like wrapper: delegates non-mermaid fences back to the original.
+    function fenceWrapPlugin(md: any) {
+      const originalFence = md.renderer.rules.fence;
+      md.renderer.rules.fence = (
+        tokens: any[],
+        idx: number,
+        opts: any,
+        env: any,
+        self: any,
+      ) => {
+        const token = tokens[idx];
+        if (token.info.trim() === "mermaid") {
+          return `<div class="cds-test-mermaid">${token.content.trim()}</div>`;
+        }
+        return originalFence?.(tokens, idx, opts, env, self) ?? "";
+      };
+    }
+
+    // Replaces fence outright (no closure-captured original).
+    function fenceReplacePlugin(md: any) {
+      md.renderer.rules.fence = (tokens: any[], idx: number) =>
+        `<div class="cds-test-fence-replaced">${tokens[idx].content.trim()}</div>`;
+    }
+
+    // Image override like markdown-it-image-figures.
+    function imageFigurePlugin(md: any) {
+      md.renderer.rules.image = (tokens: any[], idx: number) => {
+        const token = tokens[idx];
+        const src =
+          token.attrs?.find(([k]: [string, string]) => k === "src")?.[1] ?? "";
+        const alt = token.content ?? "";
+        return `<figure class="cds-test-figure"><img src="${src}" alt="${alt}" /><figcaption>${alt}</figcaption></figure>`;
+      };
+    }
+
+    function codeInlineOverridePlugin(md: any) {
+      md.renderer.rules.code_inline = (tokens: any[], idx: number) =>
+        `<kbd class="cds-test-kbd">${tokens[idx].content}</kbd>`;
+    }
+
+    // Paragraph override — should be IGNORED (containers not in allow-list).
+    function paragraphOverridePlugin(md: any) {
+      md.renderer.rules.paragraph_open = () =>
+        `<section class="cds-test-section">`;
+      md.renderer.rules.paragraph_close = () => `</section>`;
+    }
+
+    it("routes fence through a closure-wrapping plugin rule", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[fenceWrapPlugin]}
+          .markdown=${"```mermaid\ngraph TD; A-->B\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const mermaid = el.querySelector(".cds-test-mermaid");
+      expect(mermaid, "plugin output should render").to.not.equal(null);
+      expect(mermaid?.textContent).to.include("graph TD");
+      // Native cds-aichat-code-snippet is bypassed for the overridden fence.
+      expect(el.shadowRoot?.querySelector("cds-aichat-code-snippet")).to.equal(
+        null,
+      );
+    });
+
+    it("routes fence through a plugin rule that replaces it outright", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[fenceReplacePlugin]}
+          .markdown=${"```ts\nconst x = 1;\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(el.querySelector(".cds-test-fence-replaced")).to.not.equal(null);
+      expect(el.shadowRoot?.querySelector("cds-aichat-code-snippet")).to.equal(
+        null,
+      );
+    });
+
+    it("customRenderers.codeBlock slot wins over a plugin fence rule", async () => {
+      const codeBlockCalls: string[] = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[fenceWrapPlugin]}
+          .customRenderers=${{
+            codeBlock: ({ slotName }: { slotName: string }) => {
+              codeBlockCalls.push(slotName);
+              const div = document.createElement("div");
+              div.className = "cds-test-codeblock-override";
+              return div;
+            },
+          }}
+          .markdown=${"```mermaid\ngraph TD; A-->B\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      // Consumer's most specific intent wins: the codeBlock callback is
+      // invoked and its element is adopted, not the plugin's mermaid HTML.
+      expect(codeBlockCalls.length).to.be.greaterThanOrEqual(1);
+      expect(
+        el.querySelector(".cds-test-codeblock-override"),
+        "codeBlock override should be adopted as a light-DOM slot host",
+      ).to.not.equal(null);
+    });
+
+    it("routes image through a plugin rule", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[imageFigurePlugin]}
+          .markdown=${"![alt text](https://example.com/x.png)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const figure = el.querySelector(".cds-test-figure");
+      expect(figure, "plugin should wrap the image in <figure>").to.not.equal(
+        null,
+      );
+      expect(figure?.querySelector("img")?.getAttribute("src")).to.equal(
+        "https://example.com/x.png",
+      );
+      expect(figure?.querySelector("figcaption")?.textContent).to.equal(
+        "alt text",
+      );
+    });
+
+    it("routes images inside table cells through a plugin rule", async () => {
+      // Spy on the image rule. The cell content is rendered inside
+      // cds-aichat-table's own shadow DOM (via .rows templates), so the most
+      // robust assertion is "the plugin rule actually fired for the cell
+      // image", which proves delegation reached into the table-cell path.
+      const imageCalls: string[] = [];
+      function spyingImagePlugin(md: any) {
+        md.renderer.rules.image = (tokens: any[], idx: number) => {
+          const token = tokens[idx];
+          const src =
+            token.attrs?.find(([k]: [string, string]) => k === "src")?.[1] ??
+            "";
+          imageCalls.push(src);
+          return `<figure class="cds-test-figure"><img src="${src}" alt="${token.content}" /></figure>`;
+        };
+      }
+      const md = `| h |\n| --- |\n| ![cell](https://example.com/cell.png) |\n\ntrailer`;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[spyingImagePlugin]}
+          .markdown=${md}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(el.shadowRoot?.querySelector("cds-aichat-table")).to.not.equal(
+        null,
+      );
+      // The delegation path reached the cell. Initial-mount throttling can
+      // fire renderTokenTree on the cell more than once before
+      // updateComplete resolves; the streaming-cache test below verifies
+      // the cache invariant on a direct top-level fence path.
+      expect(imageCalls.length).to.be.greaterThanOrEqual(1);
+      expect(new Set(imageCalls).size).to.equal(1);
+      expect(imageCalls[0]).to.equal("https://example.com/cell.png");
+    });
+
+    it("routes code_inline through a plugin rule", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[codeInlineOverridePlugin]}
+          .markdown=${"Press `enter`."}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const kbd = el.querySelector(".cds-test-kbd");
+      expect(kbd, "plugin override should render").to.not.equal(null);
+      expect(kbd?.textContent).to.equal("enter");
+    });
+
+    it("ignores plugin overrides on container tokens (paragraph_open)", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[paragraphOverridePlugin]}
+          .markdown=${"Hello world"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const root = el.shadowRoot;
+      // Container overrides are intentionally NOT honored — native <p> wins.
+      expect(root?.querySelector("p")).to.not.equal(null);
+      expect(root?.querySelector(".cds-test-section")).to.equal(null);
+    });
+
+    it("preserves sanitization on plugin-emitted HTML", async () => {
+      function unsafeFencePlugin(md: any) {
+        md.renderer.rules.fence = (tokens: any[], idx: number) =>
+          `<div class="cds-test-mermaid">${tokens[idx].content}</div><script>window.__pluginRanScript = true;</script>`;
+      }
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          sanitize-html
+          .markdownItPlugins=${[unsafeFencePlugin]}
+          .markdown=${"```mermaid\nA-->B\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(el.querySelector(".cds-test-mermaid")).to.not.equal(null);
+      // Sanitizer strips <script> from the plugin's output before it lands in
+      // the light-DOM slot host.
+      expect(el.querySelector("script")).to.equal(null);
+    });
+
+    it("removeHTML does not block plugin renderer output", async () => {
+      // removeHTML selects the html:false markdown-it variant; user plugins are
+      // applied to it identically, so plugin renderer-rule output is unaffected,
+      // matching the existing leaf-fallback behavior for new token types.
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          remove-html
+          .markdownItPlugins=${[fenceReplacePlugin]}
+          .markdown=${"```ts\nconst x = 1;\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(
+        el.querySelector(".cds-test-fence-replaced"),
+        "plugin output is emitted even when removeHTML is true",
+      ).to.not.equal(null);
+    });
+
+    it("delegates to a plugin while neutralizing block HTML with removeHTML", async () => {
+      // A fence-overriding plugin runs on the html:false variant, the block tag
+      // is inert text (no container element), and its content survives.
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          remove-html
+          .markdownItPlugins=${[fenceReplacePlugin]}
+          .markdown=${"<div>x</div>\n\n```ts\nconst y = 1;\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const root = el.shadowRoot;
+      if (!root) {
+        throw new Error("Expected shadow root to exist");
+      }
+      expect(el.querySelector(".cds-test-fence-replaced")).to.not.equal(null);
+      expect(
+        root.querySelector("div.cds-aichat-markdown-html-container"),
+      ).to.equal(null);
+      expect(root.textContent).to.include("x");
+    });
+
+    it("caches fence renders across streaming chunks for stable subtrees", async () => {
+      // Spy on the fence rule to count plugin invocations. Memoization should
+      // skip the call on chunks where the fence's content is unchanged.
+      const fenceCalls: string[] = [];
+      function spyingFencePlugin(md: any) {
+        md.renderer.rules.fence = (tokens: any[], idx: number) => {
+          fenceCalls.push(tokens[idx].content);
+          return `<div class="cds-test-mermaid">${tokens[idx].content.trim()}</div>`;
+        };
+      }
+      // Reusing the same plugins array reference across renders so the cached
+      // MarkdownIt instance (and its overridden-rules set) stays stable.
+      const plugins = [spyingFencePlugin];
+      const baseMermaid = "```mermaid\ngraph TD; A-->B\n```\n\n";
+
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          streaming
+          .markdownItPlugins=${plugins}
+          .markdown=${baseMermaid + "tail"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(fenceCalls.length, "fence rule called on first render").to.equal(
+        1,
+      );
+
+      // Extend the trailing paragraph (the fence's content + token map are
+      // unchanged because the fence sits at lines 0..2 and the new text only
+      // grows the line range of the paragraph that follows it).
+      el.markdown = baseMermaid + "tail and more and more content here";
+      await el.updateComplete;
+      expect(
+        fenceCalls.length,
+        "cached fence subtree should skip the plugin rule on the second chunk",
+      ).to.equal(1);
+    });
+
+    it("invalidates the fence cache when its content changes", async () => {
+      const fenceCalls: string[] = [];
+      function spyingFencePlugin(md: any) {
+        md.renderer.rules.fence = (tokens: any[], idx: number) => {
+          fenceCalls.push(tokens[idx].content);
+          return `<div class="cds-test-mermaid">${tokens[idx].content.trim()}</div>`;
+        };
+      }
+      const plugins = [spyingFencePlugin];
+
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${plugins}
+          .markdown=${"```mermaid\nA-->B\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(fenceCalls.length).to.equal(1);
+
+      el.markdown = "```mermaid\nA-->C\n```";
+      await el.updateComplete;
+      expect(
+        fenceCalls.length,
+        "content change must invalidate the cache and re-run the plugin",
+      ).to.equal(2);
+    });
+
+    it("invalidates the fence cache when the language (info) changes", async () => {
+      // Fence content stays the same; only the language string changes.
+      // diffTokenTree must NOT inherit the cached HTML because the rule's
+      // output depends on info (e.g. mermaid vs syntax-highlighted code).
+      const fenceCalls: Array<{ info: string; content: string }> = [];
+      function spyingFencePlugin(md: any) {
+        md.renderer.rules.fence = (tokens: any[], idx: number) => {
+          const token = tokens[idx];
+          fenceCalls.push({ info: token.info, content: token.content });
+          return `<div class="cds-test-fence" data-lang="${token.info}">${token.content.trim()}</div>`;
+        };
+      }
+      const plugins = [spyingFencePlugin];
+
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${plugins}
+          .markdown=${"```ts\nconst x = 1;\n```"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(fenceCalls.length).to.equal(1);
+      expect(fenceCalls[0].info).to.equal("ts");
+
+      el.markdown = "```js\nconst x = 1;\n```";
+      await el.updateComplete;
+      expect(
+        fenceCalls.length,
+        "language change must invalidate the cache and re-run the plugin",
+      ).to.equal(2);
+      expect(fenceCalls[1].info).to.equal("js");
+      expect(el.querySelector('.cds-test-fence[data-lang="js"]')).to.not.equal(
+        null,
+      );
+    });
+
+    it("invalidates the fence cache when the plugin array is swapped", async () => {
+      // First plugin: wraps mermaid fences in <div class="v1">.
+      function pluginV1(md: any) {
+        md.renderer.rules.fence = (tokens: any[], idx: number) =>
+          `<div class="cds-test-mermaid-a">${tokens[idx].content.trim()}</div>`;
+      }
+      // Second plugin: wraps the SAME fence content in <div class="v2">.
+      function pluginV2(md: any) {
+        md.renderer.rules.fence = (tokens: any[], idx: number) =>
+          `<div class="cds-test-mermaid-b">${tokens[idx].content.trim()}</div>`;
+      }
+
+      const fenceMarkdown = "```mermaid\nA-->B\n```\n\ntrailing paragraph";
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[pluginV1]}
+          .markdown=${fenceMarkdown}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(
+        el.querySelector(".cds-test-mermaid-a"),
+        "first plugin output renders",
+      ).to.not.equal(null);
+
+      // Swap the plugins array reference. The fence content is unchanged, so
+      // diffTokenTree would carry forward the old cache — but the cache is
+      // tagged with the prior md instance and must be re-rendered with v2.
+      el.markdownItPlugins = [pluginV2];
+      await el.updateComplete;
+      expect(
+        el.querySelector(".cds-test-mermaid-b"),
+        "second plugin output should render after swap",
+      ).to.not.equal(null);
+      expect(
+        el.querySelector(".cds-test-mermaid-a"),
+        "stale cached output from the first plugin must be invalidated",
+      ).to.equal(null);
+    });
+  });
+
+  describe("custom renderer callback API", () => {
+    const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailing paragraph so the table is not the streaming tail.`;
+
+    it("invokes the table callback with parsed data when registered", async () => {
+      const calls: Array<{
+        headers: string[];
+        rowCount: number;
+        slotName: string;
+      }> = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            table: ({
+              headers,
+              rows,
+              slotName,
+            }: {
+              headers: { text: string }[];
+              rows: unknown[][];
+              slotName: string;
+            }) => {
+              calls.push({
+                headers: headers.map((h) => h.text),
+                rowCount: rows.length,
+                slotName,
+              });
+              const div = document.createElement("div");
+              div.className = "cds-test-table-override";
+              return div;
+            },
+          }}
+          .markdown=${tableMarkdown}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+
+      expect(calls.length).to.be.greaterThanOrEqual(1);
+      const last = calls[calls.length - 1];
+      expect(last.headers).to.deep.equal(["h1", "h2"]);
+      expect(last.rowCount).to.equal(1);
+      expect(last.slotName).to.match(/^cds-aichat-markdown-renderer-table-/);
+
+      // The returned element is adopted as a light-DOM slot host.
+      expect(
+        el.querySelector(".cds-test-table-override"),
+        "callback result should be adopted as a light-DOM slot host",
+      ).to.not.equal(null);
+    });
+
+    it("re-invokes the callback after each render", async () => {
+      const calls: string[] = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            codeBlock: ({ language }: { language: string }) => {
+              calls.push(language);
+              const div = document.createElement("div");
+              return div;
+            },
+          }}
+        ></cds-aichat-markdown>`,
+      );
+      el.markdown = "```ts\nconst x = 1;\n```\n\nafter";
+      await el.updateComplete;
+      expect(calls.some((lang) => lang === "ts")).to.equal(true);
+    });
+
+    it("keeps the slot name stable when streaming chunks grow a non-tail table", async () => {
+      const partA = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\ntrailer`;
+      const partB = `| h1 | h2 |\n| --- | --- |\n| a | b |\n| c | d |\n\ntrailer`;
+      const slotNames: string[] = [];
+
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          streaming
+          .customRenderers=${{
+            table: ({ slotName }: { slotName: string }) => {
+              slotNames.push(slotName);
+              const div = document.createElement("div");
+              return div;
+            },
+          }}
+          .markdown=${partA}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const firstSlotName = slotNames[slotNames.length - 1];
+      expect(firstSlotName).to.be.a("string");
+
+      el.markdown = partB;
+      await el.updateComplete;
+      const secondSlotName = slotNames[slotNames.length - 1];
+      expect(secondSlotName, "slot name must stay stable").to.equal(
+        firstSlotName,
+      );
+    });
+
+    it("exposes streaming + loading state to the table callback", async () => {
+      const partial = `| h1 |\n| --- |\n| a |\n\ntrailer`;
+      const calls: Array<{ isStreaming: boolean; isLoading: boolean }> = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          streaming
+          .customRenderers=${{
+            table: ({
+              isStreaming,
+              isLoading,
+            }: {
+              isStreaming: boolean;
+              isLoading: boolean;
+            }) => {
+              calls.push({ isStreaming, isLoading });
+              const div = document.createElement("div");
+              return div;
+            },
+          }}
+          .markdown=${partial}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(calls.length).to.be.greaterThanOrEqual(1);
+      const last = calls[calls.length - 1];
+      expect(last.isStreaming).to.equal(true);
+      expect(typeof last.isLoading).to.equal("boolean");
+    });
+
+    it("falls back to the default renderer when the callback returns null", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ table: () => null }}
+          .markdown=${tableMarkdown}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      // No light-DOM host created; the slot's fallback (cds-aichat-table) shows.
+      expect(el.querySelector(":scope > div[slot]")).to.equal(null);
+      expect(el.shadowRoot?.querySelector("cds-aichat-table")).to.not.equal(
+        null,
+      );
+    });
+
+    it("removes slot hosts on disconnect", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            table: () => {
+              const div = document.createElement("div");
+              div.className = "cds-test-disconnect-host";
+              return div;
+            },
+          }}
+          .markdown=${tableMarkdown}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const host = el.querySelector(".cds-test-disconnect-host");
+      expect(host?.parentElement?.getAttribute("slot")).to.match(
+        /^cds-aichat-markdown-renderer-table-/,
+      );
+      el.remove();
+      expect(el.querySelector(".cds-test-disconnect-host")).to.equal(null);
+    });
+  });
+
+  describe("light DOM mutation observer ignores slotted descendants", () => {
+    it("does not reparse markdown when a slotted child's content changes", async () => {
+      let hostElement: HTMLDivElement | undefined;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            table: () => {
+              const div = document.createElement("div");
+              div.textContent = "initial override";
+              hostElement = div;
+              return div;
+            },
+          }}
+          .markdown=${"| h1 |\n| --- |\n| a |\n\ntrailer"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(hostElement, "callback should have run").to.not.equal(undefined);
+
+      const markdownBefore = el.markdown;
+      hostElement!.textContent =
+        "mutated override — should not become markdown source";
+      // Wait long enough for any MutationObserver fallout to flush.
+      await el.updateComplete;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await el.updateComplete;
+
+      expect(
+        el.markdown,
+        "slotted-child mutations must not contaminate markdown source",
+      ).to.equal(markdownBefore);
+    });
+
+    it("ignores slotted children when adopting light-DOM markdown", async () => {
+      // Author markdown via light DOM (no explicit `markdown` property).
+      const el = document.createElement(
+        "cds-aichat-markdown",
+      ) as MarkdownElementInstance;
+      el.textContent = "Hello **light** dom";
+      const host = document.createElement("div");
+      host.setAttribute("slot", "renderer-x");
+      host.textContent = "should be ignored";
+      el.appendChild(host);
+      document.body.appendChild(el);
+
+      await el.updateComplete;
+      // The slotted child contributes its text to `el.textContent` but the
+      // slot filter must drop it from the adopted markdown source.
+      expect(el.markdown).to.equal("Hello **light** dom");
+      expect(el.markdown.includes("should be ignored")).to.equal(false);
+
+      el.remove();
+    });
+  });
+});
+
+describe("cds-aichat-markdown thematic break (hr) rendering", () => {
+  const HR_DOC = `Intro paragraph.
+
+- one
+- two
+
+---
+
+## After break`;
+
+  // Successive snapshots simulating streaming: a paragraph, then the thematic
+  // break appears, then content after it. The break is always preceded by a
+  // (non-heading) paragraph, so its settled top gap is spacing-05 (1rem).
+  const HR_PREFIXES = [
+    "Para A.\n\nPara B.\n\n",
+    "Para A.\n\nPara B.\n\n---",
+    "Para A.\n\nPara B.\n\n---\n\n## After break",
+    "Para A.\n\nPara B.\n\n---\n\n## After break\n\nPara C.",
+  ];
+
+  const getStack = (el: MarkdownElementInstance) =>
+    el.shadowRoot?.querySelector(".cds-aichat-markdown-stack") ?? null;
+
+  it("renders `---` as a real <hr> directly in the markdown stack (not a plugin-fallback slot host)", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown .markdown=${HR_DOC}></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    const stack = getStack(el);
+    expect(stack, "markdown stack should exist").to.not.equal(null);
+
+    const hr = stack?.querySelector("hr");
+    expect(hr, "a real <hr> should be rendered in the stack").to.not.equal(
+      null,
+    );
+
+    // The regression routed `hr` through the plugin-fallback path, which emits
+    // a <slot> placeholder and a light-DOM `<div slot=…>` host. Guard against
+    // that: no fallback slot/host should exist for the thematic break.
+    expect(
+      stack?.querySelector('slot[name^="cds-aichat-markdown-renderer-"]'),
+      "hr must not render via a fallback <slot>",
+    ).to.equal(null);
+    expect(
+      el.querySelector('[slot^="cds-aichat-markdown-renderer-pluginFallback"]'),
+      "hr must not create a light-DOM fallback host",
+    ).to.equal(null);
+  });
+
+  it("keeps the <hr> a stable stack child with steady top spacing across streaming ticks", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${HR_PREFIXES[0]}
+      ></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    for (const prefix of HR_PREFIXES) {
+      el.markdown = prefix;
+      await el.updateComplete;
+
+      const stack = getStack(el);
+      const hr = stack?.querySelector("hr") as HTMLElement | null;
+
+      // Whenever the parse yields a thematic break it must be a real <hr> in
+      // the stack — never a torn-down/re-added fallback host (the source of the
+      // "margin goes away and comes back" hop).
+      expect(
+        el.querySelector(
+          '[slot^="cds-aichat-markdown-renderer-pluginFallback"]',
+        ),
+        `no fallback host should exist for prefix: ${JSON.stringify(prefix)}`,
+      ).to.equal(null);
+
+      if (hr) {
+        // hr follows a (non-heading) list, so it gets the default inter-block
+        // gap (spacing-05 = 1rem = 16px) — and that value must not flip.
+        const marginTop = getComputedStyle(hr).marginBlockStart;
+        expect(
+          marginTop,
+          `hr top margin should be the settled 16px, got ${marginTop}`,
+        ).to.equal("16px");
+      }
+    }
+  });
+
+  it("preserves element identity for blocks above the streaming frontier (stable repeat key)", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${"Para A.\n\nPara B.\n\n---\n"}
+      ></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    const firstHr = getStack(el)?.querySelector("hr") ?? null;
+    expect(firstHr).to.not.equal(null);
+
+    // Append more content after the hr (as streaming would). The hr's start
+    // line is unchanged, so its repeat key is stable and Lit must reuse the
+    // same DOM node rather than remounting it.
+    el.markdown = "Para A.\n\nPara B.\n\n---\n\n## After break\n\nMore text.";
+    await el.updateComplete;
+
+    const secondHr = getStack(el)?.querySelector("hr") ?? null;
+    expect(secondHr).to.not.equal(null);
+    expect(secondHr, "hr element should be reused, not remounted").to.equal(
+      firstHr,
+    );
+  });
+
+  // Inline plugin (à la markdown-it-emoji): a `nesting=0` inline leaf rendered
+  // through the fallback path as a `<span slot=…>` host. Guards that the
+  // `.cds-aichat-markdown-stack > slot { display: block }` rule (added so block
+  // fallback hosts get stack spacing) does NOT affect inline plugin output:
+  // inline fallback slots live inside the paragraph, never as a direct child of
+  // the stack, so the child-combinator rule can't match them.
+  function inlineEmojiPlugin(md: any) {
+    md.inline.ruler.before(
+      "text",
+      "cds_test_emoji",
+      (state: any, silent: boolean) => {
+        if (!state.src.slice(state.pos).startsWith(":smile:")) {
+          return false;
+        }
+        if (!silent) {
+          const token = state.push("cds_test_emoji", "", 0);
+          token.content = "😀";
+        }
+        state.pos += ":smile:".length;
+        return true;
+      },
+    );
+    md.renderer.rules.cds_test_emoji = () =>
+      `<span class="cds-test-emoji">😀</span>`;
+  }
+
+  it("does not make inline plugin-fallback slots display:block", async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdownItPlugins=${[inlineEmojiPlugin]}
+        .markdown=${"Hi :smile: there"}
+      ></cds-aichat-markdown>`,
+    );
+    await el.updateComplete;
+
+    // The inline plugin output is hosted in a light-DOM <span slot=…> (inline),
+    // not a <div>.
+    const host = el.querySelector(
+      '[slot^="cds-aichat-markdown-renderer-pluginFallback"]',
+    );
+    expect(host, "inline fallback host should exist").to.not.equal(null);
+    expect(host?.tagName, "inline host should be a <span>").to.equal("SPAN");
+
+    // The slot placeholder sits inside the paragraph, never as a direct child
+    // of the markdown stack, so `> slot { display: block }` cannot match it.
+    const slot = el.shadowRoot?.querySelector(
+      'slot[name^="cds-aichat-markdown-renderer-pluginFallback"]',
+    ) as HTMLSlotElement | null;
+    expect(slot, "inline fallback slot should exist").to.not.equal(null);
+    expect(
+      slot?.parentElement?.tagName,
+      "inline fallback slot must be nested in the paragraph, not the stack",
+    ).to.equal("P");
+    expect(
+      getStack(el)?.contains(slot ?? null) &&
+        slot?.parentElement?.classList.contains("cds-aichat-markdown-stack"),
+      "inline slot must not be a direct child of the stack",
+    ).to.not.equal(true);
+    expect(
+      getComputedStyle(slot as Element).display,
+      "inline fallback slot should stay display:contents (inline flow), not block",
+    ).to.equal("contents");
+  });
 });

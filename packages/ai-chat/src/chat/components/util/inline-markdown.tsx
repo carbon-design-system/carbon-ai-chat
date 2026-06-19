@@ -22,7 +22,7 @@
 import React, { Fragment, type ReactNode } from "react";
 import type { Token } from "markdown-it";
 
-import { markdownToMarkdownItTokens } from "@carbon/ai-chat-components/es/globals/utils/markdown/index.js";
+import { markdownToMarkdownItTokens } from "@carbon/ai-chat-components/es/components/markdown/index.js";
 
 /**
  * Render a single line / paragraph of inline markdown into React children.

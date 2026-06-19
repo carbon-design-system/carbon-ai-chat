@@ -17,17 +17,15 @@ import type { Editor, JSONContent } from "@tiptap/core";
  */
 export interface ChatInstanceInput {
   /**
-   * @deprecated Use {@link ChatInstanceInput.updateContent} instead. The
-   * equivalent updater on a plain-text-only document is:
+   * @deprecated Use {@link ChatInstanceInput.updateContent} instead, which now
+   * covers every case this method does — including writes before the input is
+   * mounted. The equivalent plain-text updater, using {@link getRawText} and
+   * {@link textToDoc}, is:
    *
    * ```ts
-   * instance.input.updateContent((prev) => ({
-   *   type: "doc",
-   *   content: [{
-   *     type: "paragraph",
-   *     content: [{ type: "text", text: updater(getRawText(prev)) }],
-   *   }],
-   * }));
+   * instance.input.updateContent((prev) =>
+   *   textToDoc(updater(getRawText(prev))),
+   * );
    * ```
    *
    * Throws if the editor doc contains any node type other than
@@ -41,12 +39,22 @@ export interface ChatInstanceInput {
    * Replace the entire input content with the result of an updater that
    * receives the current Tiptap JSONContent doc and returns the next.
    *
-   * Throws "Input is not currently rendered" when called before the
-   * input is mounted.
+   * The updater is synchronous, but the returned promise reflects when the
+   * content has actually been applied. If the input is showing the lightweight
+   * textarea and the updater returns a doc with non-text nodes or marked text,
+   * the rich editor is loaded on demand (upgrading the surface in place,
+   * preserving the caret and focus) and the promise resolves once the rich
+   * content is applied. Plain-text writes — and writes when the rich editor is
+   * already mounted — apply immediately and the promise resolves on the same
+   * tick.
+   *
+   * While the input is hidden or not yet mounted, a plain-text result is staged
+   * as the pending value and seeds the field when it renders; a result with
+   * non-text content throws, because there is no surface to upgrade.
    *
    * @example
    * ```ts
-   * instance.input.updateContent(() => ({
+   * await instance.input.updateContent(() => ({
    *   type: "doc",
    *   content: [{
    *     type: "paragraph",
@@ -59,11 +67,14 @@ export interface ChatInstanceInput {
    * ```
    *
    * For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
-   * escape hatch: `instance.input.getEditor()?.commands.insertContent(...)`.
+   * escape hatch:
+   * `(await instance.input.getEditor()).commands.insertContent(...)`.
    *
    * @experimental
    */
-  updateContent: (updater: (previous: JSONContent) => JSONContent) => void;
+  updateContent: (
+    updater: (previous: JSONContent) => JSONContent,
+  ) => Promise<void>;
 
   /**
    * Updates the pending structured data that will be merged into the next outgoing {@link MessageRequest}
@@ -103,12 +114,23 @@ export interface ChatInstanceInput {
   ) => void;
 
   /**
-   * Returns the live Tiptap `Editor` instance, or `null` when the
-   * input is not currently rendered. Probe semantics — safe to call
-   * repeatedly; never throws.
+   * Loads the rich Tiptap editor on demand and resolves with the live
+   * `Editor`. Chats that don't configure an advanced input feature
+   * ({@link InputConfig.mention} / {@link InputConfig.command} /
+   * {@link InputConfig.autocomplete} / {@link InputConfig.starters} /
+   * {@link InputConfig.tiptap}) render a lightweight textarea and ship no
+   * Tiptap; the first call to this method dynamically imports the editor and
+   * upgrades that textarea in place — already-typed text, the caret, and focus
+   * carry over. The upgrade is one-way for the life of the session: once the
+   * rich editor loads it stays loaded.
    *
-   * Sole escape hatch from the curated public surface. Use it for direct
-   * Tiptap operations the facade doesn't cover:
+   * Rejects with `"Input is not currently rendered"` when there is no input
+   * surface to upgrade (for example the input is hidden via
+   * {@link InputConfig.isVisible} or the chat is closed). Concurrent calls
+   * share a single upgrade and resolve with the same instance.
+   *
+   * Sole escape hatch from the curated public surface. Use the resolved editor
+   * for direct Tiptap operations the facade doesn't cover:
    * - `editor.commands.*` for imperative actions (focus, blur,
    *   clearContent, setTextSelection, selectAll, undo, redo, insertContent
    *   for cursor-position insertion, plus everything else Tiptap exposes —
@@ -123,20 +145,28 @@ export interface ChatInstanceInput {
    * - `editor.extensionStorage` for per-extension state
    * - `editor.on(...)` for low-level event subscriptions
    *
-   * **Working with `getEditor()` from React** — two patterns:
+   * @example
+   * ```ts
+   * const editor = await instance.input.getEditor();
+   * editor.commands.focus();
+   * ```
    *
-   * 1. **Don't capture in state.** `useState(getEditor())` retains a
-   *    stale reference after recreate; the editor is destroyed when
-   *    `tiptap.extensions` (or any chat-domain config) changes. Call
-   *    `getEditor()` inside handlers, or use a `useEffect` keyed on the
+   * **Working with the resolved editor from React** — two patterns:
+   *
+   * 1. **Don't capture in state.** Holding the resolved editor in `useState`
+   *    retains a stale reference after recreate; the editor is destroyed when
+   *    `tiptap.extensions` (or any chat-domain config) changes. Re-await
+   *    `getEditor()` inside handlers, or in a `useEffect` keyed on the
    *    configs that trigger recreate:
    *    ```ts
    *    useEffect(() => {
-   *      const editor = chat.instance.input.getEditor();
-   *      if (!editor) return;
-   *      const handler = () => { ... };
-   *      editor.on("update", handler);
-   *      return () => editor.off("update", handler);
+   *      let off: (() => void) | undefined;
+   *      chat.instance.input.getEditor().then((editor) => {
+   *        const handler = () => { ... };
+   *        editor.on("update", handler);
+   *        off = () => editor.off("update", handler);
+   *      });
+   *      return () => off?.();
    *    }, [extensions, mention, command]);
    *    ```
    *
@@ -146,12 +176,7 @@ export interface ChatInstanceInput {
    *    re-creates the editor on every host render, losing selection
    *    mid-edit.
    *
-   * Hosts wanting a throw-on-unmount contract write the three-line guard
-   * themselves: `const ed = instance.input.getEditor(); if (!ed) throw
-   * new Error("input not mounted"); ed.commands.focus();`. No Carbon
-   * helper.
-   *
    * @experimental
    */
-  getEditor: () => Editor | null;
+  getEditor: () => Promise<Editor>;
 }

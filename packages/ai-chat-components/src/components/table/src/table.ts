@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -136,6 +136,9 @@ class CDSAIChatTable extends LitElement {
 
   set defaultPageSize(value: number) {
     this._defaultPageSize = value;
+    if (!this._rowsPerPageChanged) {
+      this._currentPageSize = value;
+    }
   }
 
   /**

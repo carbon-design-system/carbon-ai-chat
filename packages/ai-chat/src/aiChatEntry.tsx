@@ -132,6 +132,8 @@ export {
   CancellationReason,
   ChatInstanceMessaging,
   CustomSendMessageOptions,
+  MessageState,
+  UpsertMessageUpdater,
 } from "./types/config/MessagingConfig";
 
 export { PublicConfig } from "./types/config/PublicConfig";
@@ -187,6 +189,7 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
+  textToDoc,
   renderTokenChip,
   renderInLightDom,
 } from "./types/utilities/inputUtils";
@@ -278,6 +281,8 @@ export {
   HumanAgentMessageType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
   ReasoningSteps,
   ReasoningStep,
   ReasoningStepOpenState,
@@ -317,17 +322,32 @@ export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-contai
 export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
 
 export {
+  ChatContainerPropsMarkdown,
+  CustomMarkdownRenderers,
+  MarkdownCustomRenderers,
+  MarkdownRendererCodeBlockArgs,
+  MarkdownRendererCodeBlockData,
+  MarkdownRendererTableArgs,
+  MarkdownRendererTableData,
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
+  TokenTree,
+  WCCustomMarkdownRenderers,
+  WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
   RenderUserDefinedInputNode,
   RenderUserDefinedInputNodeState,
   WCRenderUserDefinedInputNode,
 } from "./types/component/ChatContainer";
+
+export type {
+  MarkdownItPlugin,
+  PublicConfigMarkdown,
+} from "./types/config/PublicConfig";
 
 export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
 

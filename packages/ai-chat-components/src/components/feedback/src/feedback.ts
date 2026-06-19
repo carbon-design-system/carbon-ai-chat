@@ -294,6 +294,7 @@ class CDSAIChatFeedback extends LitElement {
                           class="${prefix}--tag-list-button"
                           size="md"
                           text="${value}"
+                          data-content="${value}"
                           ?selected=${this._selectedCategories.has(value)}
                           ?disabled=${this.isReadonly}
                           @click=${this._handleCategoryClick}

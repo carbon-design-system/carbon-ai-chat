@@ -39,6 +39,9 @@ import { isBrowser } from "./utils/browserUtils";
 
 import { detectConfigChanges } from "./utils/configChangeDetection";
 import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
+import { resolvePromptLineMode } from "./components/input/promptLineMode";
+import { preloadBuildCarbonExtensions } from "./components/input/buildExtensionsLoader";
+import { preloadPromptLineRich } from "@carbon/ai-chat-components/es/components/input/src/prompt-line-rich-loader.js";
 
 import {
   RenderUserDefinedState,
@@ -47,6 +50,10 @@ import {
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
+import {
+  MarkdownConfigContext,
+  type MarkdownConfigContextValue,
+} from "./contexts/MarkdownConfigContext";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
 import { Dimension } from "../types/utilities/Dimension";
@@ -65,6 +72,14 @@ interface AppProps {
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
+  /**
+   * Merged markdown config provided through {@link MarkdownConfigContext} for
+   * deep consumers. Accepts either the React-flavor (`ChatContainerProps`) or
+   * the web-component flavor (`WCMarkdown`) thanks to the permissive
+   * {@link MarkdownConfigContextValue} type.
+   * @experimental
+   */
+  markdown?: MarkdownConfigContextValue;
   container: HTMLElement;
   element?: HTMLElement;
   setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
@@ -86,6 +101,7 @@ export function ChatAppEntry({
   renderUserDefinedInputNode,
   renderCustomMessageFooter,
   renderWriteableElements,
+  markdown,
   container,
   setParentInstance,
   element,
@@ -148,6 +164,18 @@ export function ChatAppEntry({
 
         if (onBeforeRender) {
           await onBeforeRender(instance);
+        }
+
+        // Warm the Tiptap chunks before the first render commits so a chat
+        // configured for the rich editor mounts it directly (no textarea→editor
+        // flash) and the prompt-line is present before hydration completes and
+        // before `onAfterRender` resolves. Lite chats skip this and never
+        // download Tiptap.
+        if (resolvePromptLineMode(publicConfig.input) === "rich") {
+          await Promise.all([
+            preloadPromptLineRich(),
+            preloadBuildCarbonExtensions(),
+          ]);
         }
 
         setServiceManager(serviceManager);
@@ -271,49 +299,51 @@ export function ChatAppEntry({
         <ServiceManagerProvider serviceManager={serviceManager}>
           <IntlProvider intl={serviceManager.intl}>
             <LanguagePackProvider>
-              <AriaAnnouncerProvider>
-                <AppShell
-                  serviceManager={serviceManager}
-                  hostElement={serviceManager.customHostElement}
-                  renderWriteableElements={renderWriteableElements}
-                />
-                {renderUserDefinedResponse && (
-                  <UserDefinedResponsePortalsContainer
-                    chatInstance={instance}
-                    renderUserDefinedResponse={renderUserDefinedResponse}
-                    userDefinedResponseEventsBySlot={
-                      userDefinedResponseEventsBySlot
-                    }
-                    chatWrapper={chatWrapper}
+              <MarkdownConfigContext.Provider value={markdown}>
+                <AriaAnnouncerProvider>
+                  <AppShell
+                    serviceManager={serviceManager}
+                    hostElement={serviceManager.customHostElement}
+                    renderWriteableElements={renderWriteableElements}
                   />
-                )}
+                  {renderUserDefinedResponse && (
+                    <UserDefinedResponsePortalsContainer
+                      chatInstance={instance}
+                      renderUserDefinedResponse={renderUserDefinedResponse}
+                      userDefinedResponseEventsBySlot={
+                        userDefinedResponseEventsBySlot
+                      }
+                      chatWrapper={chatWrapper}
+                    />
+                  )}
 
-                {renderCustomMessageFooter && (
-                  <CustomFooterPortalsContainer
-                    chatInstance={instance}
-                    renderCustomMessageFooter={renderCustomMessageFooter}
-                    customFooterEventsBySlot={customFooterSlotsByName}
-                    chatWrapper={chatWrapper}
-                  />
-                )}
+                  {renderCustomMessageFooter && (
+                    <CustomFooterPortalsContainer
+                      chatInstance={instance}
+                      renderCustomMessageFooter={renderCustomMessageFooter}
+                      customFooterEventsBySlot={customFooterSlotsByName}
+                      chatWrapper={chatWrapper}
+                    />
+                  )}
 
-                {renderWriteableElements && (
-                  <WriteableElementsPortalsContainer
-                    chatInstance={instance}
-                    renderResponseMap={renderWriteableElements}
-                  />
-                )}
+                  {renderWriteableElements && (
+                    <WriteableElementsPortalsContainer
+                      chatInstance={instance}
+                      renderResponseMap={renderWriteableElements}
+                    />
+                  )}
 
-                <LightDomPortalsContainer chatWrapper={chatWrapper} />
+                  <LightDomPortalsContainer chatWrapper={chatWrapper} />
 
-                {renderUserDefinedInputNode && (
-                  <InputNodePortalsContainer
-                    chatInstance={instance}
-                    renderUserDefinedInputNode={renderUserDefinedInputNode}
-                    chatWrapper={chatWrapper}
-                  />
-                )}
-              </AriaAnnouncerProvider>
+                  {renderUserDefinedInputNode && (
+                    <InputNodePortalsContainer
+                      chatInstance={instance}
+                      renderUserDefinedInputNode={renderUserDefinedInputNode}
+                      chatWrapper={chatWrapper}
+                    />
+                  )}
+                </AriaAnnouncerProvider>
+              </MarkdownConfigContext.Provider>
             </LanguagePackProvider>
           </IntlProvider>
         </ServiceManagerProvider>

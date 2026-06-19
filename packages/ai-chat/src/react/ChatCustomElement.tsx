@@ -184,6 +184,7 @@ function ChatCustomElement(
     input,
     keyboardShortcuts,
     upload,
+    markdown,
     ...domProps
   } = props;
 
@@ -264,6 +265,7 @@ function ChatCustomElement(
           input={input}
           keyboardShortcuts={keyboardShortcuts}
           upload={upload}
+          markdown={markdown}
           // Other ChatContainer props
           strings={strings}
           serviceDeskFactory={serviceDeskFactory}

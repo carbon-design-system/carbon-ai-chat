@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -156,6 +156,26 @@
   }
 }
 
+/*
+  QUICK LOAD: shift the whole sequence ~1s earlier so the dots appear
+  immediately instead of waiting out the entry delay. Only the animation-delay
+  is overridden, so this composes with both .linear and .linear--no-loop.
+*/
+
+.quick-load {
+  .dot--left {
+    animation-delay: 0ms, 0ms, 1000ms, 1000ms;
+  }
+
+  .dot--center {
+    animation-delay: 167ms, 167ms, 1167ms, 1167ms;
+  }
+
+  .dot--right {
+    animation-delay: 334ms, 334ms, 1334ms, 1334ms;
+  }
+}
+
 [dir="rtl"] .linear {
   .dot--left {
     animation-delay: 1334ms, 1334ms, 2334ms, 2334ms, 7334ms, 7334ms;
@@ -181,6 +201,20 @@
 
   .dot--right {
     animation-delay: 1000ms, 1000ms, 2000ms, 2000ms;
+  }
+}
+
+[dir="rtl"] .quick-load {
+  .dot--left {
+    animation-delay: 334ms, 334ms, 1334ms, 1334ms;
+  }
+
+  .dot--center {
+    animation-delay: 167ms, 167ms, 1167ms, 1167ms;
+  }
+
+  .dot--right {
+    animation-delay: 0ms, 0ms, 1000ms, 1000ms;
   }
 }
 

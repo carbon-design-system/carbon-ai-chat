@@ -92,6 +92,13 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   @property({ type: Boolean, reflect: true, attribute: "show-actions" })
   showActions = false;
 
+  /**
+   * `true` if the parent menu is expanded.
+   * This is automatically set based on the parent history-panel-menu's expanded attribute.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "parent-menu-expanded" })
+  parentMenuExpanded = true;
+
   @query(`${prefix}-history-panel-item-input`) input!: HTMLElement;
 
   @query("cds-overflow-menu") overflowMenu!: HTMLElement;
@@ -120,6 +127,16 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * MutationObserver to watch for changes to parent panel's always-show-actions attribute
    */
   private _parentObserver?: MutationObserver;
+
+  /**
+   * Event listener for parent menu toggle events
+   */
+  private _parentMenuToggleListener?: EventListener;
+
+  /**
+   * Reference to parent menu element
+   */
+  private _parentMenu?: HTMLElement;
 
   /**
    *
@@ -327,6 +344,22 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
         attributeFilter: ["show-actions"],
       });
     }
+
+    // Track parent menu's expanded state
+    const parentMenu = this.closest(`${prefix}-history-panel-menu`);
+    if (parentMenu) {
+      this._parentMenu = parentMenu as HTMLElement;
+
+      // Listen for toggle events from the parent menu
+      this._parentMenuToggleListener = ((event: CustomEvent) => {
+        this.parentMenuExpanded = event.detail.expanded;
+      }) as EventListener;
+
+      parentMenu.addEventListener(
+        "cds-side-nav-menu-toggled",
+        this._parentMenuToggleListener,
+      );
+    }
   }
 
   disconnectedCallback() {
@@ -336,6 +369,23 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
 
     super.disconnectedCallback();
     this._parentObserver?.disconnect();
+
+    // Remove event listener from parent menu
+    if (this._parentMenu && this._parentMenuToggleListener) {
+      this._parentMenu.removeEventListener(
+        "cds-side-nav-menu-toggled",
+        this._parentMenuToggleListener,
+      );
+    }
+  }
+
+  firstUpdated() {
+    if (this._parentMenu) {
+      const expandedValue = (this._parentMenu as any).expanded;
+      if (expandedValue !== undefined) {
+        this.parentMenuExpanded = expandedValue;
+      }
+    }
   }
 
   updated(changedProperties: Map<string, any>) {

@@ -1,0 +1,54 @@
+<!--
+  Copyright IBM Corp. 2025, 2026
+
+  This source code is licensed under the Apache-2.0 license found in the
+  LICENSE file in the root directory of this source tree.
+ -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <title>@carbon/ai-chat - web components - markdown plugin (KaTeX)</title>
+    <!--
+      KaTeX stylesheet. The markdown-it-katex plugin emits unstyled
+      <span class="katex"> output; without this stylesheet, math renders as
+      raw characters. Loaded via CDN to keep the example's npm footprint
+      small. The chat container projects plugin output into a light-DOM slot
+      host appended directly to <cds-aichat-custom-element> below — i.e.
+      page light DOM — so this stylesheet reaches it.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://1.www.s81c.com/common/carbon/plex/sans.css"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      cds-aichat-custom-element.chat-custom-element {
+        display: block;
+        height: 100vh;
+        width: 100vw;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Mounted directly in page light DOM (no wrapping custom element) so
+      plugin-output slot hosts the chat appends here remain reachable by
+      page-level stylesheets like the KaTeX one above. main.ts assigns the
+      config object properties on this element once the script loads.
+    -->
+    <cds-aichat-custom-element
+      class="chat-custom-element"
+    ></cds-aichat-custom-element>
+  </body>
+</html>

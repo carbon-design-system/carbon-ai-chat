@@ -77,6 +77,7 @@ const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
 const UPDATE_PERSISTED_STATE = "UPDATE_PERSISTED_STATE";
 const SET_HOME_SCREEN_IS_OPEN = "SET_HOME_SCREEN_IS_OPEN";
 const UPDATE_MESSAGE = "UPDATE_MESSAGE";
+const UPSERT_MESSAGE = "UPSERT_MESSAGE";
 const SET_LAUNCHER_MINIMIZED = "SET_LAUNCHER_MINIMIZED";
 const CLOSE_IFRAME_PANEL = "CLOSE_IFRAME_PANEL";
 const OPEN_IFRAME_CONTENT = "OPEN_IFRAME_CONTENT";
@@ -205,6 +206,16 @@ const actions = {
 
   updateMessage(message: Message) {
     return { type: UPDATE_MESSAGE, message };
+  },
+
+  /**
+   * Replaces or inserts the given assistant {@link MessageResponse} in the store, keyed
+   * by `message.id`. The reducer preserves position in the message ordering and reuses
+   * existing `LocalMessageItem` references for items deep-equal to their predecessor so
+   * components that subscribe to unchanged siblings do not re-render.
+   */
+  upsertMessage(message: Message) {
+    return { type: UPSERT_MESSAGE, message };
   },
 
   messageSetOptionSelected(messageID: string, sentMessage: MessageRequest) {
@@ -724,6 +735,7 @@ export {
   SET_HOME_SCREEN_IS_OPEN,
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   UPDATE_MESSAGE,
+  UPSERT_MESSAGE,
   SET_LAUNCHER_PROPERTY,
   SET_LAUNCHER_MINIMIZED,
   CLOSE_IFRAME_PANEL,

@@ -25,24 +25,29 @@ describe("ChatInstance.input.getEditor", () => {
     expect(typeof instance.input.getEditor).toBe("function");
   });
 
-  it("never throws when called", async () => {
+  it("returns a promise (loads Tiptap on demand)", async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    expect(() => instance.input.getEditor()).not.toThrow();
+    const result = instance.input.getEditor();
+    expect(typeof (result as Promise<unknown>).then).toBe("function");
+    // Don't leave a rejection unhandled if the rich runtime can't mount under
+    // jsdom — the live-upgrade behavior is covered by the prompt-line
+    // web-component test, which runs in a real browser.
+    result.catch((): void => undefined);
   });
 
-  it("returns either an Editor instance or null (probe semantics)", async () => {
+  it("resolves with a live Tiptap Editor, upgrading the surface", async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    const editor = instance.input.getEditor();
-    expect(editor === null || typeof editor === "object").toBe(true);
-    if (editor) {
-      // When mounted, the Tiptap Editor exposes commands and a view.
-      expect(typeof editor.commands).toBe("object");
-      expect(editor.view).toBeDefined();
-    }
+    const editor = await instance.input.getEditor();
+    expect(typeof editor.commands).toBe("object");
+    expect(editor.view).toBeDefined();
+
+    // The upgrade is one-way: a second call resolves the same instance.
+    const again = await instance.input.getEditor();
+    expect(again).toBe(editor);
   });
 
   it("does NOT expose the removed instance.input.commands namespace", async () => {

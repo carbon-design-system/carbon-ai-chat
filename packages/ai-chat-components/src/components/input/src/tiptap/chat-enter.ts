@@ -10,9 +10,9 @@
 /**
  * `carbonChatEnter` — Tiptap extension that binds plain `Enter` to fire
  * `cds-aichat-prompt-send-intent`, matching the legacy chat UX where Enter
- * sends and Mod-Enter inserts a newline. The prompt-line itself only binds
- * Mod-Enter; chat composers layer this extension in on top to flip the
- * default.
+ * sends and Mod-Enter inserts a newline. `<cds-aichat-prompt-line>` installs
+ * it in its base bundle (both surfaces send on Enter); it stays a standalone
+ * extension so hosts composing their own editor can opt in the same way.
  */
 
 import { Extension } from "@tiptap/core";

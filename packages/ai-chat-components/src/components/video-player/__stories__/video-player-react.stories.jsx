@@ -13,7 +13,7 @@ import Card from "../../../react/card";
 import "./video-player-react.stories.css";
 
 export default {
-  title: "Preview/Video player (React)",
+  title: "Preview/Video player",
   component: VideoPlayer,
   args: {
     source: "https://www.youtube.com/watch?v=eZ1NizUx9U4",

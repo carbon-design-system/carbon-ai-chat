@@ -48,8 +48,22 @@ import {
   MinimizeButtonIconType,
 } from "../../types/config/HeaderConfig";
 import { LayoutConfig } from "../../types/config/LayoutConfig";
-import { LocalMessageUIState } from "../../types/messaging/LocalMessageItem";
-import { Message } from "../../types/messaging/Messages";
+import {
+  LocalMessageItem,
+  LocalMessageUIState,
+} from "../../types/messaging/LocalMessageItem";
+import {
+  GenericItem,
+  Message,
+  MessageResponse,
+} from "../../types/messaging/Messages";
+import ObjectMap from "../../types/utilities/ObjectMap";
+import {
+  createLocalMessageItemsForNestedMessageItems,
+  outputItemToLocalItem,
+} from "../schema/outputItemToLocalItem";
+import { isResponseWithNestedItems, streamItemID } from "../utils/messageUtils";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 /**
  * Miscellaneous utilities to help in reducers.
@@ -85,6 +99,8 @@ const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   disableAnimation: false,
   fullWidth: false,
   backButtonType: "minimize",
+  showChatHeader: false,
+  openFromSide: false,
 };
 deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 
@@ -390,6 +406,200 @@ function applyLocalMessageUIState<
 }
 
 /**
+ * Walks the nested local-item IDs referenced by `localItem` (body, footer, items,
+ * gridLocalMessageItemIDs) and adds every reachable local-item ID to `out`.
+ */
+function collectNestedLocalIDs(
+  localItem: LocalMessageItem | undefined,
+  byID: ObjectMap<LocalMessageItem>,
+  out: Set<string>,
+) {
+  if (!localItem) {
+    return;
+  }
+  const id = localItem.ui_state.id;
+  if (out.has(id)) {
+    return;
+  }
+  out.add(id);
+  const ui = localItem.ui_state;
+  const walk = (childID: string) =>
+    collectNestedLocalIDs(byID[childID], byID, out);
+  ui.bodyLocalMessageItemIDs?.forEach(walk);
+  ui.footerLocalMessageItemIDs?.forEach(walk);
+  ui.itemsLocalMessageItemIDs?.forEach(walk);
+  ui.gridLocalMessageItemIDs?.forEach((row) =>
+    row.forEach((cell) => cell.forEach(walk)),
+  );
+}
+
+/**
+ * Rebuilds the {@link LocalMessageItem} entries for a single upserted message while
+ * preserving:
+ *
+ * 1. **ID stability** — a new item that matches a previous item by `streaming_metadata.id`
+ *    (preferred) or by index (fallback) reuses the previous `ui_state.id`. This keeps
+ *    React keys and user-defined slot names stable across upserts.
+ * 2. **Reference stability** — if the new item is deep-equal to the previously stored
+ *    `LocalMessageItem.item`, the existing `LocalMessageItem` reference is reused
+ *    verbatim. Components subscribed to that item via `useSelector` see no diff and
+ *    skip re-rendering. This matches the pattern in `[STREAMING_ADD_CHUNK]` and is
+ *    critical when only one item in `output.generic[]` actually changes between calls.
+ *
+ * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes;
+ * orphaned nested items are pruned.
+ */
+function rebuildLocalItemsForUpsert(
+  state: AppState,
+  message: MessageResponse,
+): {
+  newLocalItemsByID: ObjectMap<LocalMessageItem>;
+  newLocalIDsForMessage: string[];
+} {
+  const messageID = message.id;
+  const newLocalItemsByID: ObjectMap<LocalMessageItem> = {
+    ...state.allMessageItemsByID,
+  };
+
+  // Capture the previous top-level local items for this message in order.
+  const prevTopLevelLocalIDs: string[] = [];
+  for (const localID of state.assistantMessageState.localMessageIDs) {
+    const localItem = state.allMessageItemsByID[localID];
+    if (localItem && localItem.fullMessageID === messageID) {
+      prevTopLevelLocalIDs.push(localID);
+    }
+  }
+  const prevTopLevelItems = prevTopLevelLocalIDs.map(
+    (id) => state.allMessageItemsByID[id],
+  );
+
+  const generic: GenericItem[] = message.output?.generic ?? [];
+  const newLocalIDsForMessage: string[] = [];
+
+  generic.forEach((item, index) => {
+    if (!item) {
+      return;
+    }
+
+    // Resolve the previous local item to match against:
+    // 1. Streaming-id match (preferred).
+    // 2. Positional fallback when the previous item at this index had no streaming id.
+    const streamId = streamItemID(messageID, item);
+    let matchedPrev: LocalMessageItem | undefined;
+    if (streamId && state.allMessageItemsByID[streamId]) {
+      const candidate = state.allMessageItemsByID[streamId];
+      if (candidate.fullMessageID === messageID) {
+        matchedPrev = candidate;
+      }
+    }
+    if (!matchedPrev) {
+      const positional = prevTopLevelItems[index];
+      if (
+        positional &&
+        !streamItemID(messageID, positional.item) &&
+        !streamId
+      ) {
+        matchedPrev = positional;
+      }
+    }
+
+    let localID: string;
+    let localItem: LocalMessageItem;
+
+    if (matchedPrev && isEqual(matchedPrev.item, item)) {
+      // Reference-stable path: deep-equal to the prior item, keep the exact object so
+      // selectors comparing by `===` see no change.
+      //
+      // Cross-file invariant: `MessageUpsertCoordinator.snapshotLocalItemRefs` /
+      // `fanOutChangedSlots` rely on this `===`-preservation to dedupe
+      // `USER_DEFINED_RESPONSE` fan-out after dispatch. Don't rebuild a fresh
+      // `LocalMessageItem` here when the item is unchanged.
+      localID = matchedPrev.ui_state.id;
+      localItem = matchedPrev;
+    } else {
+      // Build a fresh local item but preserve the resolved ID so React keys and slot
+      // names remain stable.
+      localID = matchedPrev?.ui_state.id ?? streamId ?? uuid();
+      localItem = outputItemToLocalItem(item, message, false);
+      localItem.ui_state.id = localID;
+      localItem.fullMessageID = messageID;
+
+      if (isResponseWithNestedItems(localItem.item)) {
+        const nestedLocalItems: LocalMessageItem[] = [];
+        createLocalMessageItemsForNestedMessageItems(
+          localItem,
+          message,
+          false,
+          nestedLocalItems,
+          true,
+        );
+        for (const nested of nestedLocalItems) {
+          newLocalItemsByID[nested.ui_state.id] = nested;
+        }
+      }
+    }
+
+    newLocalIDsForMessage.push(localID);
+    newLocalItemsByID[localID] = localItem;
+  });
+
+  // Compute the set of all local-item IDs still reachable from the rebuilt top-level
+  // items (including nested via body/footer/items/grid). Anything else previously
+  // attached to this message is orphaned and gets pruned.
+  const stillReferenced = new Set<string>();
+  for (const localID of newLocalIDsForMessage) {
+    collectNestedLocalIDs(
+      newLocalItemsByID[localID],
+      newLocalItemsByID,
+      stillReferenced,
+    );
+  }
+  for (const [localID, candidate] of Object.entries(
+    state.allMessageItemsByID,
+  )) {
+    if (
+      candidate &&
+      candidate.fullMessageID === messageID &&
+      !stillReferenced.has(localID)
+    ) {
+      delete newLocalItemsByID[localID];
+    }
+  }
+
+  return { newLocalItemsByID, newLocalIDsForMessage };
+}
+
+/**
+ * Computes where the new top-level local IDs for `messageID` should be spliced back
+ * into `localMessageIDs`. Splits the previous ID list into "other" IDs and the
+ * index inside that filtered list at which the message's block previously started.
+ * When the message is brand new, `insertPoint` is `otherLocalIDs.length` (append).
+ */
+function computeLocalIDInsertionPoint(
+  prevLocalMessageIDs: string[],
+  allMessageItemsByID: ObjectMap<LocalMessageItem>,
+  messageID: string,
+): { otherLocalIDs: string[]; insertPoint: number } {
+  const otherLocalIDs: string[] = [];
+  let insertPoint = -1;
+  for (const localID of prevLocalMessageIDs) {
+    const item = allMessageItemsByID[localID];
+    const belongsToMessage = !!(item && item.fullMessageID === messageID);
+    if (belongsToMessage) {
+      if (insertPoint === -1) {
+        insertPoint = otherLocalIDs.length;
+      }
+    } else {
+      otherLocalIDs.push(localID);
+    }
+  }
+  if (insertPoint === -1) {
+    insertPoint = otherLocalIDs.length;
+  }
+  return { otherLocalIDs, insertPoint };
+}
+
+/**
  * Adds the given full message to the redux store. This will add it global to the global map as well as add the
  * id to the specific chat type.
  */
@@ -440,4 +650,6 @@ export {
   handleViewStateChange,
   applyFullMessage,
   applyLocalMessageUIState,
+  computeLocalIDInsertionPoint,
+  rebuildLocalItemsForUpsert,
 };

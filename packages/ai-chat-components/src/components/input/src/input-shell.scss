@@ -132,11 +132,10 @@
 ::slotted([slot="editor"]) {
   position: relative;
   z-index: 2;
+  overflow: visible;
   flex: 1 0;
   inline-size: 100%;
-  max-block-size: 157px;
   min-block-size: 0;
-  overflow-y: auto;
 }
 
 // -----------------------------------------------------------

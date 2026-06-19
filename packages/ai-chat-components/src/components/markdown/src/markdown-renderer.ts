@@ -7,116 +7,82 @@
  *  @license
  */
 
+/**
+ * Walks a `TokenTree` and emits a Lit `TemplateResult` plus a batch of {@link MarkdownRendererSlotDescriptor} records the markdown element consumes during its `updated()` reconcile. External callers should go through {@link renderMarkdownTree} so the batch isn't accidentally dropped.
+ *
+ * ### Dispatch precedence
+ *
+ * Per token, in order:
+ *
+ * 1. **Consumer override** — `options.customRenderers?.[kind]` for `kind` in `{ table, codeBlock }`. The renderer emits a named `<slot>` placeholder and records a descriptor; the markdown element's `updated()` invokes the consumer callback later.
+ * 2. **Plugin-overridden rule** — `shouldDelegateToPluginRule(token, md)` is true when a user-supplied markdown-it plugin overrode the renderer rule for one of the curated leaf tokens in `PLUGIN_DELEGABLE_TOKEN_TYPES` (`fence`, `image`, `code_inline`, `html_block`). The token routes through `renderFallback` and surfaces as a `pluginFallback` descriptor.
+ * 3. **Native Lit dispatch** — the hand-written `renderWithStaticTag` switch. Kept flat (rather than a tag-to-renderer map) so the per-tag exceptions — task-list passthrough, Carbon `cds-unordered-list` / `cds-ordered-list` wrappers, automatic `target="_blank"` on `<a>`, image plugin delegation — stay easy to grep.
+ * 4. **Unknown plugin-introduced token** — anything not natively handled falls through to `renderFallback`, so plugins that register `md.renderer.rules[type]` (footnote, deflist, custom containers, emoji) just work.
+ *
+ * ### Slot contract
+ *
+ * {@link MarkdownRendererSlotDescriptor} (defined in `./markdown-renderer-types.ts`) is the bridge between this module and `./markdown.ts`. This module appends descriptors via `recordCustomRender`; the markdown element's `reconcileCustomRendererHosts` consumes them, invokes consumer callbacks (or adopts plugin-fallback HTML) and attaches the result as a light-DOM `<div slot="…">` host (or `<span>` for inline plugin output).
+ */
+
 import DOMPurify from "dompurify";
-import { html, nothing, render, TemplateResult } from "lit";
+import { html, TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import {
-  Directive,
-  ElementPart,
-  Part,
-  PartInfo,
-  PartType,
-  directive,
-} from "lit/directive.js";
 import { Token } from "markdown-it";
 import "@carbon/web-components/es/components/list/index.js";
 import "@carbon/web-components/es/components/checkbox/index.js";
-import "../../../components/code-snippet/index.js";
-import "../../../components/card/index.js";
-import "../../../components/table/index.js";
-import { defaultLineCountText } from "../../../components/code-snippet/src/formatters.js";
+import "../../code-snippet/index.js";
+import "../../card/index.js";
+import "../../table/index.js";
+import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
 
-import type {
-  TableCellContent,
-  TableRowContent,
-} from "../../../components/table/src/table.js";
-import { extractTableData } from "../../../components/markdown/src/utils/table-helpers.js";
-import type { TableCellData } from "../../../components/markdown/src/utils/table-helpers.js";
+import { renderTable } from "./utils/table-helpers.js";
 import {
   combineConsecutiveHtmlInline,
   combineSplitHtmlBlocks,
-  HTML_CONTAINER_SLOT,
-} from "../../../components/markdown/src/utils/html-helpers.js";
-import type { TokenTree } from "./markdown-token-tree.js";
+} from "./utils/html-helpers.js";
+import {
+  htmlContainer,
+  sanitizeHtmlContent,
+  spread,
+} from "./utils/lit-directives.js";
+import {
+  isNativelyHandled,
+  renderFallback,
+  shouldDelegateToPluginRule,
+} from "./utils/plugin-fallback.js";
+import { type TokenTree } from "./markdown-token-tree.js";
+import type {
+  MarkdownRendererSlotDescriptor,
+  RenderTokenTreeOptions,
+} from "./markdown-renderer-types.js";
 
-// Generic attribute spread for Lit templates
-class SpreadAttrs extends Directive {
-  render(_attrs: Record<string, unknown>) {
-    return nothing;
-  }
-  update(part: any, [attrs]: [Record<string, unknown>]) {
-    const el = part.element as Element;
-    for (const [k, v] of Object.entries(attrs ?? {})) {
-      if (v === false || v === null || v === undefined) {
-        el.removeAttribute(k);
-      } else if (v === true) {
-        el.setAttribute(k, "");
-      } else {
-        el.setAttribute(k, String(v));
-      }
-    }
-    return nothing;
-  }
+// Re-export types so existing imports of these from this module keep working.
+export type {
+  MarkdownCustomRenderers,
+  MarkdownRendererCodeBlockArgs,
+  MarkdownRendererCodeBlockData,
+  MarkdownRendererSlotDescriptor,
+  MarkdownRendererTableArgs,
+  MarkdownRendererTableData,
+  RenderTokenTreeOptions,
+} from "./markdown-renderer-types.js";
+
+/**
+ * Stable, parent-scoped slot name for an overridable token. Uses `startLine`
+ * (not the full `token.map`) so the name doesn't change when the token's
+ * `endLine` advances during streaming. The `currentIndex` from the parent
+ * context disambiguates siblings on the same start line (rare but possible).
+ */
+function slotNameFor(
+  kind: "table" | "codeBlock",
+  token: Token,
+  options: RenderTokenTreeOptions,
+): string {
+  const startLine = token.map?.[0] ?? 0;
+  const index = options.context?.currentIndex ?? 0;
+  return `cds-aichat-markdown-renderer-${kind}-${startLine}-${index}`;
 }
-const spread = directive(SpreadAttrs);
-
-const sanitizeHtmlContent = (content: string) =>
-  DOMPurify.sanitize(content, {
-    ADD_ATTR: ["data-aichat-markdown"],
-    CUSTOM_ELEMENT_HANDLING: {
-      tagNameCheck: () => true, // Allow custom elements
-      attributeNameCheck: () => true,
-      allowCustomizedBuiltInElements: true,
-    },
-  });
-
-class HtmlContainer extends Directive {
-  private slotElement: HTMLElement | null = null;
-  private lastOpeningHtml = "";
-
-  constructor(partInfo: PartInfo) {
-    super(partInfo);
-    if (partInfo.type !== PartType.ELEMENT) {
-      throw new Error("HtmlContainer must be used on an element");
-    }
-  }
-
-  render(
-    _openingHtml: string,
-    _childTemplate: TemplateResult,
-    _sanitize: boolean,
-  ) {
-    return nothing;
-  }
-
-  update(
-    part: Part,
-    [openingHtml, childTemplate, sanitize]: [string, TemplateResult, boolean],
-  ) {
-    const host = (part as ElementPart).element as HTMLElement;
-
-    if (!this.slotElement || this.lastOpeningHtml !== openingHtml) {
-      this.lastOpeningHtml = openingHtml;
-      let content = `${openingHtml}${HTML_CONTAINER_SLOT}`;
-      if (sanitize && content) {
-        content = sanitizeHtmlContent(content);
-      }
-
-      const fragment = document.createRange().createContextualFragment(content);
-      host.replaceChildren(...Array.from(fragment.childNodes));
-      this.slotElement = host.querySelector("[data-aichat-markdown]");
-    }
-
-    if (this.slotElement) {
-      render(childTemplate, this.slotElement);
-    }
-
-    return nothing;
-  }
-}
-
-const htmlContainer = directive(HtmlContainer);
 
 function renderChildTokenTrees(
   children: TokenTree[],
@@ -131,9 +97,14 @@ function renderChildTokenTrees(
   return html`${repeat(
     normalizedChildren,
     (child, index) => {
-      // Generate stable key that doesn't depend on line positions
-      // This prevents unnecessary re-renders during streaming
-      const stableKey = `${index}:${child.token.type}:${child.token.tag}`;
+      // Key by start line + type + tag rather than array index so blocks keep
+      // a stable identity when earlier siblings transiently merge/split during
+      // streaming re-parses (which would otherwise re-key and remount later
+      // blocks — e.g. remounting a code snippet and reloading its editor). We
+      // use `token.map?.[0]` (start line, like `slotNameFor`) rather than the
+      // node's `key`/`generateKey`, whose embedded end line advances every tick.
+      const startLine = child.token.map?.[0] ?? index;
+      const stableKey = `${startLine}:${child.token.type}:${child.token.tag}`;
 
       if (child.token.type?.includes("table")) {
         return `table-${stableKey}`;
@@ -157,80 +128,33 @@ function renderChildTokenTrees(
 }
 
 /**
- * Configuration options for rendering TokenTrees into HTML.
+ * Top-level entry: renders a markdown token tree to a Lit `TemplateResult`
+ * and returns the batch of custom-renderer slot descriptors collected along
+ * the way. Callers receive both pieces in one call so the batch can't be
+ * accidentally dropped.
  */
-export interface RenderTokenTreeOptions {
-  /** Whether to sanitize HTML content using DOMPurify */
-  sanitize: boolean;
-
-  /** Whether content is being streamed (affects loading states) */
-  streaming?: boolean;
-
-  /** Context information for nested rendering */
-  context?: {
-    /** Whether we're currently inside a table header */
-    isInThead?: boolean;
-    /** All children of the parent node */
-    parentChildren?: TokenTree[];
-    /** Current index in parent's children array */
-    currentIndex?: number;
-  };
-
-  // Code snippet properties
-  /** Whether to enable syntax highlighting in code blocks */
-  codeSnippetHighlight?: boolean;
-  /** Feedback text shown after copying */
-  codeSnippetFeedback?: string;
-  /** Text for show less button */
-  codeSnippetShowLessText?: string;
-  /** Text for show more button */
-  codeSnippetShowMoreText?: string;
-  /** Tooltip text for copy button */
-  codeSnippetCopyButtonTooltipContent?: string;
-  /** Function to get formatted line count text */
-  codeSnippetGetLineCountText?: ({ count }: { count: number }) => string;
-  /** Aria-label for code snippets when in read-only mode */
-  codeSnippetAriaLabelReadOnly?: string;
-  /** Aria-label for code snippets when in editable mode */
-  codeSnippetAriaLabelEditable?: string;
-
-  // Table properties
-  /** Placeholder text for table filter input */
-  tableFilterPlaceholderText?: string;
-  /** Text for previous page button tooltip */
-  tablePreviousPageText?: string;
-  /** Text for next page button tooltip */
-  tableNextPageText?: string;
-  /** Text for items per page label */
-  tableItemsPerPageText?: string;
-  /**
-   * The text used for the download button's accessible label.
-   */
-  tableDownloadLabelText?: string;
-  /** Locale for table sorting and formatting */
-  tableLocale?: string;
-  /** Function to get supplemental pagination text */
-  tableGetPaginationSupplementalText?: ({ count }: { count: number }) => string;
-  /** Function to get pagination status text */
-  tableGetPaginationStatusText?: ({
-    start,
-    end,
-    count,
-  }: {
-    start: number;
-    end: number;
-    count: number;
-  }) => string;
-
-  /**
-   * Force markdown tables to render in loading mode.
-   * Useful for freezing streaming table visuals until stream completion.
-   */
-  forceTableLoading?: boolean;
+export function renderMarkdownTree(
+  node: TokenTree,
+  options: RenderTokenTreeOptions,
+): {
+  template: TemplateResult;
+  batch: MarkdownRendererSlotDescriptor[];
+} {
+  const batch: MarkdownRendererSlotDescriptor[] = [];
+  let pluginSlotIndex = 0;
+  const template = renderTokenTree(node, {
+    ...options,
+    recordCustomRender: (descriptor) => batch.push(descriptor),
+    pluginSlotCounter: { next: () => pluginSlotIndex++ },
+  });
+  return { template, batch };
 }
 
 /**
  * Converts TokenTree to Lit TemplateResult.
+ *
+ * Recursive renderer; external callers should use {@link renderMarkdownTree}
+ * which collects the slot-descriptor batch.
  */
 export function renderTokenTree(
   node: TokenTree,
@@ -241,6 +165,22 @@ export function renderTokenTree(
 
   // Handle raw HTML blocks and inline HTML
   if (token.type === "html_block" || token.type === "html_inline") {
+    // Plugin-overridden html_block rules (rare but supported) — route through
+    // the plugin's renderer before our default unsafeHTML pass-through.
+    if (
+      token.type === "html_block" &&
+      shouldDelegateToPluginRule(token, options.md) &&
+      options.md
+    ) {
+      return renderFallback(
+        token as Token,
+        node,
+        options.md,
+        sanitize,
+        options,
+      );
+    }
+
     let content = token.content || "";
 
     // Apply HTML sanitization if requested
@@ -269,6 +209,15 @@ export function renderTokenTree(
 
   // Handle inline code spans
   if (token.type === "code_inline") {
+    if (shouldDelegateToPluginRule(token, options.md) && options.md) {
+      return renderFallback(
+        token as Token,
+        node,
+        options.md,
+        sanitize,
+        options,
+      );
+    }
     return html`<code>${token.content}</code>`;
   }
 
@@ -285,12 +234,13 @@ export function renderTokenTree(
       codeSnippetAriaLabelEditable,
     } = options;
 
-    return html`<cds-aichat-card is-flush>
+    const defaultTemplate = html`<cds-aichat-card is-flush>
       <div slot="body">
         <cds-aichat-code-snippet
           data-rounded
           .language=${language}
           .highlight=${codeSnippetHighlight}
+          .detectLanguage=${true}
           .showLessText=${codeSnippetShowLessText}
           .showMoreText=${codeSnippetShowMoreText}
           .copyButtonTooltipContent=${codeSnippetCopyButtonTooltipContent}
@@ -301,6 +251,36 @@ export function renderTokenTree(
         ></cds-aichat-code-snippet>
       </div>
     </cds-aichat-card>`;
+
+    if (options.customRenderers?.codeBlock) {
+      const slotName = slotNameFor("codeBlock", token as Token, options);
+      options.recordCustomRender?.({
+        slotName,
+        kind: "codeBlock",
+        token: token as Token,
+        node,
+        data: {
+          language,
+          code: token.content ?? "",
+          isStreaming: !!options.streaming,
+        },
+      });
+      return html`<slot name=${slotName}>${defaultTemplate}</slot>`;
+    }
+
+    // Honor user-plugin `fence` overrides (markdown-it-mermaid, syntax
+    // highlighters, etc.). customRenderer slot above wins when set.
+    if (shouldDelegateToPluginRule(token, options.md) && options.md) {
+      return renderFallback(
+        token as Token,
+        node,
+        options.md,
+        sanitize,
+        options,
+      );
+    }
+
+    return defaultTemplate;
   }
 
   // Handle structural elements (paragraphs, headings, lists, etc.)
@@ -345,6 +325,13 @@ export function renderTokenTree(
     content = html`${children[0].token.content}`;
   } else {
     content = renderChildTokenTrees(children, options, childContext);
+  }
+
+  // Unknown plugin-introduced tokens (no tag we recognize) — defer to
+  // markdown-it's renderer so plugins that register md.renderer.rules[type]
+  // (footnote, emoji, deflist, container, etc.) just work.
+  if (!tag && options.md && !isNativelyHandled(token)) {
+    return renderFallback(token as Token, node, options.md, sanitize, options);
   }
 
   // Handle tokens without HTML tags (just return content)
@@ -402,6 +389,9 @@ function renderWithStaticTag(
     case "pre":
       return html`<pre ${spread(attrs)}>${content}</pre>`;
 
+    case "hr":
+      return html`<hr ${spread(attrs)} />`;
+
     // Headings
     case "h1":
       return html`<h1 ${spread(attrs)}>${content}</h1>`;
@@ -457,7 +447,7 @@ function renderWithStaticTag(
       const { checked, disabled, ...otherAttrs } = attrs;
       const isChecked = checked === "true";
       const isDisabled =
-        disabled === undefined ? true : disabled === "" || disabled === "true";
+        disabled === undefined ? false : disabled === "" || disabled === "true";
 
       return html`<cds-checkbox
         ?checked=${isChecked}
@@ -518,110 +508,53 @@ function renderWithStaticTag(
       }
       return html`<a ${spread(attrs)}>${content}</a>`;
 
+    // Self-closing image. Plugin-introduced wrappers (e.g. image-figures)
+    // route through `shouldDelegateToPluginRule` before falling back to a
+    // plain `<img>` element.
+    case "img":
+      if (node && options.md && shouldDelegateToPluginRule(token, options.md)) {
+        return renderFallback(
+          token,
+          node,
+          options.md,
+          options.sanitize,
+          options,
+        );
+      }
+      return html`<img ${spread(attrs)} />`;
+
     // Tables with Carbon component and streaming support
     case "table": {
       if (!node) {
         return html`<div>Error: Missing table data</div>`;
       }
-
-      const {
-        streaming,
-        forceTableLoading,
-        context: parentContext,
-        tableFilterPlaceholderText,
-        tablePreviousPageText,
-        tableNextPageText,
-        tableItemsPerPageText,
-        tableDownloadLabelText,
-        tableLocale,
-        tableGetPaginationSupplementalText,
-        tableGetPaginationStatusText,
-      } = options;
-
-      // Determine if we should show loading state during streaming
-      let isLoading = Boolean(forceTableLoading);
-      if (
-        !isLoading &&
-        streaming &&
-        parentContext?.parentChildren &&
-        parentContext?.currentIndex !== undefined
-      ) {
-        const { parentChildren, currentIndex } = parentContext;
-        const hasNodesAfterTable = currentIndex < parentChildren.length - 1;
-        isLoading = !hasNodesAfterTable;
-      }
-
-      const renderCellTokens = (tokens: TokenTree[], contextOverrides = {}) => {
-        // Same as block/inline rendering: merge split raw HTML (e.g. `<a>…</a>`)
-        // so each cell is not rendered as separate unsafeHTML + text chunks.
-        const normalizedTokens = combineConsecutiveHtmlInline(tokens);
-        return html`${repeat(
-          normalizedTokens,
-          (child, index) =>
-            `cell-${index}:${child.token.type}:${child.token.tag}`,
-          (child, index) =>
-            renderTokenTree(child, {
-              ...options,
-              context: {
-                ...options.context,
-                ...contextOverrides,
-                parentChildren: normalizedTokens,
-                currentIndex: index,
-              },
-            }),
-        )}`;
-      };
-
-      const createCellContent = (
-        cell: TableCellData,
-        contextOverrides?: Record<string, unknown>,
-      ): TableCellContent => ({
-        text: cell.text,
-        template: cell.tokens
-          ? renderCellTokens(cell.tokens, contextOverrides)
-          : null,
-      });
-
-      // Only extract and process table data when not loading to avoid unnecessary work.
-      // During loading, the table shows a skeleton and doesn't need the actual data.
-      let headers: TableCellContent[] = [];
-      let tableRows: TableRowContent[] = [];
-
-      if (!isLoading) {
-        const extractedData = extractTableData(node);
-        headers = extractedData.headers.map((cell) =>
-          createCellContent(cell, { isInThead: true }),
-        );
-        tableRows = extractedData.rows.map((row) => ({
-          cells: row.map((cell) => createCellContent(cell)),
-        }));
-      }
-
-      // Always return the same structure to allow Lit to reuse the table element.
-      // When isLoading is true, the table component will show a skeleton state.
-      // When isLoading is false, it will show the actual data.
-      // This prevents recreating the table element and preserves its internal state.
-      return html`<div class="cds-aichat-table--square">
-        <cds-aichat-table
-          data-rounded
-          .headers=${headers}
-          .rows=${tableRows}
-          .loading=${isLoading}
-          .filterPlaceholderText=${tableFilterPlaceholderText}
-          .previousPageText=${tablePreviousPageText}
-          .nextPageText=${tableNextPageText}
-          .itemsPerPageText=${tableItemsPerPageText}
-          .downloadLabelText=${tableDownloadLabelText}
-          .locale=${tableLocale}
-          .getPaginationSupplementalText=${tableGetPaginationSupplementalText}
-          .getPaginationStatusText=${tableGetPaginationStatusText}
-          ...=${attrs}
-        ></cds-aichat-table>
-      </div>`;
+      const slotName = options.customRenderers?.table
+        ? slotNameFor("table", token, options)
+        : undefined;
+      return renderTable(
+        token,
+        node,
+        attrs,
+        options,
+        renderTokenTree,
+        slotName,
+      );
     }
 
-    // Fallback for unknown tags
+    // Fallback for unknown tags. If we have the markdown-it instance available,
+    // defer to its renderer for plugin-introduced container tags (footnote_block,
+    // dl/dt/dd from deflist, custom containers, etc.). Otherwise fall back to
+    // a generic <div>.
     default:
+      if (options.md && node && !isNativelyHandled(token)) {
+        return renderFallback(
+          token,
+          node,
+          options.md,
+          options.sanitize,
+          options,
+        );
+      }
       return html`<div ${spread(attrs)}>${content}</div>`;
   }
 }

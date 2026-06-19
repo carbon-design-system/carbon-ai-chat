@@ -29,6 +29,7 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
+  textToDoc,
   projectRawValue,
 } from "./json-utils.js";
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,6 +7,7 @@
  *  @license
  */
 
+import isEqual from "lodash-es/isEqual.js";
 import merge from "lodash-es/merge.js";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { isBrowser } from "../utils/browserUtils";
@@ -96,6 +97,7 @@ import {
   UPDATE_LOCAL_MESSAGE_ITEM,
   UPDATE_STRUCTURED_DATA,
   UPDATE_MESSAGE,
+  UPSERT_MESSAGE,
   UPDATE_PERSISTED_STATE,
   UPDATE_THEME_STATE,
   RESET_IS_HYDRATING_COUNTER,
@@ -109,6 +111,8 @@ import {
   applyAssistantMessageState,
   applyFullMessage,
   applyLocalMessageUIState,
+  computeLocalIDInsertionPoint,
+  rebuildLocalItemsForUpsert,
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
@@ -471,6 +475,69 @@ const reducers: { [key: string]: ReducerType } = {
       allMessagesByID: {
         ...state.allMessagesByID,
         [message.id]: message,
+      },
+    };
+  },
+
+  [UPSERT_MESSAGE]: (
+    state: AppState,
+    action: { message: Message },
+  ): AppState => {
+    const { message } = action;
+    const messageID = message.id;
+
+    if (!isResponse(message)) {
+      return state;
+    }
+
+    const messageResponse = message;
+
+    const { newLocalItemsByID, newLocalIDsForMessage } =
+      rebuildLocalItemsForUpsert(state, messageResponse);
+
+    // Splice the new ordered IDs back into localMessageIDs at the same position the
+    // existing block occupied. Brand-new messages append.
+    const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
+      state.assistantMessageState.localMessageIDs,
+      state.allMessageItemsByID,
+      messageID,
+    );
+    const newLocalMessageIDs = [
+      ...otherLocalIDs.slice(0, insertPoint),
+      ...newLocalIDsForMessage,
+      ...otherLocalIDs.slice(insertPoint),
+    ];
+
+    // Preserve the `allMessagesByID[messageID]` reference when nothing actually
+    // changed — React selectors that subscribe to the whole `Message` compare by
+    // `===` and would otherwise re-render on every upsert.
+    const prevMessage = state.allMessagesByID[messageID];
+    const everyLocalItemReused = newLocalIDsForMessage.every((localID) => {
+      const prev = state.allMessageItemsByID[localID];
+      return prev !== undefined && newLocalItemsByID[localID] === prev;
+    });
+    let nextMessageRef: Message = messageResponse;
+    if (prevMessage && everyLocalItemReused && isEqual(prevMessage, message)) {
+      nextMessageRef = prevMessage;
+    }
+
+    let nextMessageIDs = state.assistantMessageState.messageIDs;
+    if (!prevMessage) {
+      nextMessageIDs = [...nextMessageIDs, messageID];
+    }
+
+    return {
+      ...state,
+      allMessagesByID: {
+        ...state.allMessagesByID,
+        [messageID]: nextMessageRef,
+      },
+      allMessageItemsByID: newLocalItemsByID,
+      assistantMessageState: {
+        ...state.assistantMessageState,
+        messageIDs: nextMessageIDs,
+        localMessageIDs: newLocalMessageIDs,
+        activeResponseId: messageID,
       },
     };
   },

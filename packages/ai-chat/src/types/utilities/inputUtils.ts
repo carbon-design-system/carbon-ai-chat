@@ -32,6 +32,7 @@ import {
   mapNodes as _mapNodes,
   findNodesByType as _findNodesByType,
   getRawText as _getRawText,
+  textToDoc as _textToDoc,
   renderTokenChip as _renderTokenChip,
   renderInLightDom as _renderInLightDom,
 } from "@carbon/ai-chat-components/es/components/input/index.js";
@@ -104,7 +105,7 @@ export const buildCarbonExtensions = _buildCarbonExtensions;
  * Tag a Tiptap transaction as host-originated so the value-sync extension
  * (and any other origin-aware reader) can suppress its own change-event
  * emission for the round-trip. Use when dispatching transactions via
- * `getEditor()?.view.dispatch(tr)` to opt out of the change loop.
+ * `(await getEditor()).view.dispatch(tr)` to opt out of the change loop.
  *
  * @category Utilities
  */
@@ -145,6 +146,18 @@ export const findNodesByType = _findNodesByType;
  * @category Utilities
  */
 export const getRawText = _getRawText;
+
+/**
+ * Build a Tiptap `JSONContent` doc from a plain-text string — one paragraph
+ * per line. The inverse of {@link getRawText} for plain text, so
+ * `getRawText(textToDoc(s)) === s`. Useful when migrating from the deprecated
+ * {@link ChatInstanceInput.updateRawValue} to
+ * {@link ChatInstanceInput.updateContent}:
+ * `updateContent((prev) => textToDoc(updater(getRawText(prev))))`.
+ *
+ * @category Utilities
+ */
+export const textToDoc = _textToDoc;
 
 // ---------------------------------------------------------------------------
 // Light-DOM portal helpers.

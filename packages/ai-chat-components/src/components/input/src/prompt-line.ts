@@ -9,76 +9,53 @@
 
 /**
  * `<cds-aichat-prompt-line>` — the editing-surface layer of the chat input
- * stack. Owns a Tiptap `Editor` mounted on a slot-projected light-DOM host so
- * page-level CSS / portal-driven custom token renderers reach the
- * contenteditable.
+ * stack.
  *
- * Designed for **chat composers building their own chrome**: the prompt-line
- * has no chat-domain framing (no `mention`/`command`/`autocomplete` props).
- * The single extension-injection knob is `extensions: Extension[]`. Composers
- * wanting chat-domain behavior call the carbon factories
- * (`carbonMention` / `carbonCommand` / `carbonAutocomplete`) and pass the
- * results through.
+ * It renders a lightweight `<textarea>` by default and **never statically
+ * imports `@tiptap/*`**, so chats that don't use advanced input features ship
+ * no Tiptap. When the `rich` property is set (or host `extensions` are
+ * supplied), the element dynamically imports a Tiptap runtime and upgrades the
+ * surface in place — text, caret, and focus carry over because the textarea
+ * holds plain text. The upgrade is **sticky**: once rich, the element stays
+ * rich for the rest of its life.
  *
- * The prompt-line internally always installs a small Carbon bundle: schema
- * (`Document` + `Paragraph` + `Text` + `HardBreak`), value-sync (emits
- * `cds-aichat-prompt-change`), typing-indicator, plain-text paste, keymap
- * (`Mod-Enter` → `cds-aichat-prompt-send-intent`), placeholder, and
- * undo/redo. These bake-ins are **chat-shaped opinion** — non-chat hosts
- * wanting Tiptap inside Lit should compose their own element against
- * `@tiptap/core` directly.
+ * Both modes expose the same imperative API (`getEditor`, `setContent`,
+ * `insertContent`, …) and emit the same events, so the React wrapper and
+ * `@carbon/ai-chat`'s `Input` are mode-agnostic. `getEditor()` returns `null`
+ * in textarea mode (it's a probe — it never triggers a load); call
+ * `ensureEditor()` to force the upgrade and resolve with the live editor.
+ *
+ * The Carbon Tiptap bundle the rich editor installs — schema, value-sync,
+ * typing-indicator, plain-text paste, keymap (`Mod-Enter`/`Enter` →
+ * `cds-aichat-prompt-send-intent`), placeholder, undo/redo — lives in
+ * [./prompt-line-rich-runtime.ts]. Non-chat hosts wanting Tiptap inside Lit
+ * should compose their own element against `@tiptap/core` directly.
  *
  * @element cds-aichat-prompt-line
  *
  * @experimental
  */
 
-import { Editor, type Extension, type JSONContent } from "@tiptap/core";
-import DocumentNode from "@tiptap/extension-document";
-import HardBreakNode from "@tiptap/extension-hard-break";
-import ParagraphNode from "@tiptap/extension-paragraph";
-import TextNode from "@tiptap/extension-text";
+import type { Editor, Extension, JSONContent } from "@tiptap/core";
 import { css, html, LitElement, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
-import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
+import { adoptOnRoot } from "../../shared/dynamic-css-var-sheet.js";
 import {
-  adoptOnRoot,
-  setVarsForSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
-import { applyEditorStyles } from "./tiptap/editor-styles.js";
+  type PromptLineController,
+  type PromptLineControllerInit,
+  type SetContentUpdater,
+  TextareaController,
+} from "./prompt-line-controller.js";
 import {
-  HISTORY_DEFAULTS,
-  Keymap,
-  PlainTextPaste,
-  Placeholder,
-  TypingIndicator,
-  UndoRedo,
-  ValueSync,
-} from "./tiptap/index.js";
-import { setHostOriginMeta } from "./tiptap/origin-meta.js";
+  getRichRuntimeIfLoaded,
+  loadRichRuntime,
+} from "./prompt-line-rich-loader.js";
+import { getRawText } from "./tiptap/json-utils.js";
 
 import styles from "./prompt-line.scss?lit";
-
-const PM_KEYBOARD_FOCUS_CLASS = "cds-aichat--input-pm-content--keyboard-focus";
-
-// Install the keyboard-focus outline rule on whichever root the prompt-line
-// ends up adopted into.
-let keyboardFocusRuleInstalled = false;
-function ensureKeyboardFocusRule(): void {
-  if (keyboardFocusRuleInstalled) {
-    return;
-  }
-  setVarsForSelector(`.${PM_KEYBOARD_FOCUS_CLASS}`, { outline: "revert" });
-  keyboardFocusRuleInstalled = true;
-}
-
-/**
- * Updater shape accepted by `setContent` for reduce-style edits.
- */
-type SetContentUpdater = (prev: JSONContent) => JSONContent;
 
 @carbonElement(`${prefix}-prompt-line`)
 export class PromptLineElement extends LitElement {
@@ -87,100 +64,147 @@ export class PromptLineElement extends LitElement {
   `;
 
   /**
-   * Host-supplied Tiptap extensions appended to the carbon bundle. Mutating
-   * this array (reference change) recreates the editor with content and
-   * selection preserved. Memoize on the host side — every reference change
-   * tears down and rebuilds the editor.
+   * Host-supplied Tiptap extensions, appended to the carbon bundle when the
+   * rich editor mounts. These are *staged*, not a rich-mode trigger: setting
+   * them while in textarea mode does not load Tiptap. Select rich explicitly
+   * with `rich` or call `ensureEditor()`; the upgrade mounts with these
+   * already installed. Memoize on the host side — a reference change recreates
+   * a live editor.
    */
   @property({ type: Array, attribute: false })
   extensions: Extension[] = [];
 
   /**
    * Initial / current content. Accepts Tiptap-native JSONContent or a plain
-   * string (treated as a single-paragraph). Updates after mount route through
-   * `editor.commands.setContent` with a host-origin meta tag.
+   * string. In textarea mode JSONContent is flattened to plain text.
    */
   @property({ type: Object, attribute: false })
   content?: JSONContent | string;
 
-  /** Disables editing. The editor remains mounted but non-editable. */
+  /**
+   * Selects the rich Tiptap editor. The element lazy-loads Tiptap and upgrades
+   * the textarea in place; the upgrade is sticky (clearing `rich` later keeps
+   * the editor). Defaults to the textarea.
+   */
+  @property({ type: Boolean, reflect: true })
+  rich = false;
+
+  /** Disables editing. The surface stays mounted but non-editable. */
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
-  /** Placeholder text shown when the editor is empty. */
+  /** Placeholder text shown when the surface is empty. */
   @property({ type: String })
   placeholder = "";
 
-  /** Accessible label for the editor's textbox role. */
+  /** Accessible label for the editing surface. */
   @property({ type: String, attribute: "aria-label", reflect: true })
   override ariaLabel = "";
 
-  /** Test id, applied to the inner ProseMirror contenteditable. */
+  /** Test id, applied to the inner editable element. */
   @property({ type: String, attribute: "test-id" })
   testId = "";
 
-  /** Focus the editor on mount. */
+  /** Focus the surface on mount. */
   @property({ type: Boolean })
   override autofocus = false;
 
-  private _editor: Editor | null = null;
+  private _controller: PromptLineController | null = null;
+  private _mode: "textarea" | "rich" = "textarea";
   private _editorHost: HTMLElement | null = null;
   private _lastExtensionsRef: Extension[] | null = null;
-  private _focusFromMouse = false;
-
-  // Mirror testId onto the inner ProseMirror contenteditable (not the host
-  // wrapper) so Playwright's editable-action helpers (`.fill()`, etc.) accept
-  // it. `view.dom` is replaced on each `_recreateEditor`, so re-apply.
-  private _applyTestIdToEditorDom(): void {
-    const editorDom = this._editor?.view.dom as HTMLElement | undefined;
-    if (!editorDom) {
-      return;
-    }
-    if (this.testId) {
-      editorDom.setAttribute("data-testid", this.testId);
-    } else {
-      editorDom.removeAttribute("data-testid");
-    }
-  }
+  /** Sticky latch — once rich is wanted it never reverts. */
+  private _richLatched = false;
+  private _upgrading = false;
+  private _isComposing = false;
+  private _pendingUpgrade = false;
+  /**
+   * Shared promise for in-flight `ensureEditor()` callers. Created lazily on the
+   * first `ensureEditor()` call that needs an upgrade, settled once the rich
+   * editor is mounted (`_swapToRich`) or the upgrade can't complete.
+   */
+  private _richReady: Promise<Editor> | null = null;
+  private _resolveRichReady: ((editor: Editor) => void) | null = null;
+  private _rejectRichReady: ((reason: Error) => void) | null = null;
 
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
 
   override firstUpdated(): void {
-    this._mountEditor();
+    const host = this._mountEditorHost();
+    this._lastExtensionsRef = this.extensions;
+    this._richLatched = this._wantsRich();
+
+    const warmRuntime = this._richLatched ? getRichRuntimeIfLoaded() : null;
+    if (warmRuntime) {
+      // Runtime already loaded (e.g. preloaded at boot) — mount rich directly,
+      // no textarea flash.
+      this._mode = "rich";
+      this._controller = warmRuntime.createRichController();
+      this._controller.mount(host, this._makeInit());
+    } else {
+      this._mode = "textarea";
+      this._controller = new TextareaController();
+      this._controller.mount(host, this._makeInit());
+      if (this._richLatched) {
+        void this._upgradeToRich();
+      }
+    }
+
+    if (this.autofocus) {
+      // Defer so consumer listeners are attached first.
+      Promise.resolve().then(() => this._controller?.focus());
+    }
   }
 
   override updated(changed: Map<string | number | symbol, unknown>): void {
+    if (!this._controller) {
+      return;
+    }
+    if (
+      (changed.has("rich") || changed.has("extensions")) &&
+      this._wantsRich()
+    ) {
+      this._richLatched = true;
+      if (this._mode === "textarea") {
+        void this._upgradeToRich();
+      }
+    }
     if (
       changed.has("extensions") &&
       this.extensions !== this._lastExtensionsRef
     ) {
-      this._recreateEditor();
+      this._lastExtensionsRef = this.extensions;
+      if (this._mode === "rich") {
+        this._controller.setExtensions(this.extensions);
+      }
     }
-    if (changed.has("disabled") && this._editor) {
-      this._editor.setEditable(!this.disabled);
+    if (changed.has("disabled")) {
+      this._controller.setEditable(!this.disabled);
     }
-    if (changed.has("content") && this._editor && !changed.has("extensions")) {
-      // External content prop change after mount — route through setContent
-      // (host-origin tagged so value-sync's storage flag flips).
-      this._applyContent(this.content);
+    if (changed.has("content") && !changed.has("extensions")) {
+      this._controller.setContent(this.content ?? "");
+    }
+    if (changed.has("placeholder")) {
+      this._controller.setPlaceholder(this.placeholder);
     }
     if (changed.has("testId")) {
-      this._applyTestIdToEditorDom();
+      this._controller.setTestId(this.testId);
     }
-    if (changed.has("ariaLabel") && this._editorHost) {
-      if (this.ariaLabel) {
-        this._editorHost.setAttribute("aria-label", this.ariaLabel);
-      } else {
-        this._editorHost.removeAttribute("aria-label");
-      }
+    if (changed.has("ariaLabel")) {
+      this._controller.setAriaLabel(this.ariaLabel);
     }
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._destroyEditor();
+    this._failRichReady(new Error("Input is not currently rendered"));
+    this._controller?.destroy();
+    this._controller = null;
+    this._editorHost?.remove();
+    this._editorHost = null;
+    this._lastExtensionsRef = null;
   }
 
   override render() {
@@ -192,253 +216,246 @@ export class PromptLineElement extends LitElement {
   }
 
   // ---------------------------------------------------------------------------
-  // Public methods
+  // Public methods (delegate to the active controller)
   // ---------------------------------------------------------------------------
 
-  /** Returns the live Tiptap editor, or `null` if unmounted. */
+  /** Returns the live Tiptap editor, or `null` in textarea mode. */
   getEditor(): Editor | null {
-    return this._editor;
+    return this._controller?.getEditor() ?? null;
+  }
+
+  /**
+   * Lazily load Tiptap (if not already loaded), upgrade the textarea to the
+   * rich editor in place, and resolve with the live editor. Resolves
+   * immediately when already rich. Rejects when the surface isn't mounted or
+   * the runtime can't load (SSR). Concurrent callers share one in-flight
+   * upgrade.
+   */
+  ensureEditor(): Promise<Editor> {
+    if (this._mode === "rich") {
+      const editor = this._controller?.getEditor();
+      if (editor) {
+        return Promise.resolve(editor);
+      }
+    }
+    // Connected but not yet rendered, or already torn down — nothing to upgrade.
+    if (!this._editorHost || !this._controller) {
+      return Promise.reject(new Error("Input is not currently rendered"));
+    }
+    this._richLatched = true;
+    if (!this._richReady) {
+      this._richReady = new Promise<Editor>((resolve, reject) => {
+        this._resolveRichReady = resolve;
+        this._rejectRichReady = reject;
+      });
+    }
+    void this._upgradeToRich();
+    return this._richReady;
+  }
+
+  /**
+   * Current plain-text value. Works in both modes (in rich mode this mirrors
+   * `getEditor()?.getText()`), so callers don't need to branch on `getEditor()`
+   * being `null`.
+   */
+  getValue(): string {
+    return this._controller?.getValue() ?? "";
   }
 
   override focus(): void {
-    this._focusFromMouse = true;
-    this._editor?.commands.focus();
+    this._controller?.focus();
   }
 
   override blur(): void {
-    this._editor?.commands.blur();
+    this._controller?.blur();
+  }
+
+  /** Returns `true` if the editing surface currently holds focus. */
+  hasFocus(): boolean {
+    return this._controller?.hasFocus() ?? false;
   }
 
   clearContent(): void {
-    if (!this._editor) {
-      return;
-    }
-    this._editor.commands.clearContent(true);
+    this._controller?.clearContent();
   }
 
   setContent(next: JSONContent | string | SetContentUpdater): void {
-    if (!this._editor) {
-      return;
-    }
-    if (typeof next === "function") {
-      const prev = this._editor.getJSON();
-      const nextContent = (next as SetContentUpdater)(prev);
-      this._dispatchSetContent(nextContent);
-      return;
-    }
-    this._dispatchSetContent(next);
+    this._controller?.setContent(next);
   }
 
   insertContent(
     content: JSONContent | string,
     opts: { at?: number } = {},
   ): void {
-    if (!this._editor) {
-      return;
-    }
-    if (typeof opts.at === "number") {
-      this._editor.commands.insertContentAt(opts.at, content);
-      return;
-    }
-    this._editor.commands.insertContent(content);
+    this._controller?.insertContent(content, opts);
   }
 
   setTextSelection(pos: number | { from: number; to: number }): void {
-    this._editor?.commands.setTextSelection(pos);
+    this._controller?.setTextSelection(pos);
   }
 
   selectAll(): void {
-    this._editor?.commands.selectAll();
+    this._controller?.selectAll();
   }
 
   undo(): boolean {
-    return Boolean(this._editor?.commands.undo());
+    return this._controller?.undo() ?? false;
   }
 
   redo(): boolean {
-    return Boolean(this._editor?.commands.redo());
+    return this._controller?.redo() ?? false;
   }
 
   // ---------------------------------------------------------------------------
   // Internals
   // ---------------------------------------------------------------------------
 
-  private _mountEditor(): void {
+  private _wantsRich(): boolean {
+    return this._richLatched || this.rich;
+  }
+
+  private _mountEditorHost(): HTMLElement {
     const host = document.createElement("div");
     host.setAttribute("slot", "editor");
     host.dataset.aichatEditorHost = "";
-    host.setAttribute("role", "textbox");
-    host.setAttribute("aria-multiline", "true");
-    host.setAttribute("spellcheck", "true");
-    if (this.ariaLabel) {
-      host.setAttribute("aria-label", this.ariaLabel);
-    }
-
-    // Pointer/touch interactions before focus flag the next focus event as
-    // mouse-driven so we suppress the keyboard-focus outline.
-    const setMouseFlag = () => {
-      this._focusFromMouse = true;
-    };
-    host.addEventListener("pointerdown", setMouseFlag);
-    host.addEventListener("mousedown", setMouseFlag);
-    host.addEventListener("touchstart", setMouseFlag);
-
     this.appendChild(host);
     this._editorHost = host;
 
-    // Adopt the dynamic stylesheet on whichever root the prompt-line lives in.
+    // Defer an upgrade requested mid-IME-composition so we don't tear the
+    // field out from under the user.
+    host.addEventListener("compositionstart", this._onCompositionStart);
+    host.addEventListener("compositionend", this._onCompositionEnd);
+
     const root = host.getRootNode();
     if (root instanceof ShadowRoot || root instanceof Document) {
       adoptOnRoot(root);
     }
-    ensureKeyboardFocusRule();
+    return host;
+  }
 
-    this._lastExtensionsRef = this.extensions;
-    this._editor = this._createEditor(host, this.content);
-    this._wireEditorEvents(this._editor);
-    applyEditorStyles(this._editor.view.dom as HTMLElement, IS_PHONE);
-    this._applyTestIdToEditorDom();
-    this._editor.setEditable(!this.disabled);
+  private _onCompositionStart = (): void => {
+    this._isComposing = true;
+  };
 
-    if (this.autofocus) {
-      // Defer to next microtask so the consumer's listeners are attached.
-      Promise.resolve().then(() => this._editor?.commands.focus());
+  private _onCompositionEnd = (): void => {
+    this._isComposing = false;
+    if (this._pendingUpgrade) {
+      this._pendingUpgrade = false;
+      void this._upgradeToRich();
+    }
+  };
+
+  /** Build the controller init from current props (rich seed by default). */
+  private _makeInit(valueOverride?: string): PromptLineControllerInit {
+    const value =
+      valueOverride ??
+      (typeof this.content === "string"
+        ? this.content
+        : this.content
+          ? getRawText(this.content)
+          : "");
+    return {
+      value,
+      // On an upgrade we seed losslessly from the textarea's plain text, so
+      // the structured `content` prop is only used for the initial mount.
+      content: valueOverride === undefined ? this.content : undefined,
+      placeholder: this.placeholder,
+      disabled: this.disabled,
+      ariaLabel: this.ariaLabel,
+      testId: this.testId,
+      extensions: this.extensions,
+    };
+  }
+
+  /** Resolve any pending `ensureEditor()` callers with the live editor. */
+  private _settleRichReady(): void {
+    const editor = this._controller?.getEditor();
+    if (editor && this._resolveRichReady) {
+      this._resolveRichReady(editor);
+      this._resolveRichReady = null;
+      this._rejectRichReady = null;
     }
   }
 
-  private _createEditor(
-    element: HTMLElement,
-    content: JSONContent | string | undefined,
-  ): Editor {
-    const baseExtensions: Extension[] = [
-      // Schema baseline.
-      DocumentNode as unknown as Extension,
-      ParagraphNode as unknown as Extension,
-      TextNode as unknown as Extension,
-      HardBreakNode as unknown as Extension,
-      // Behavior bundle.
-      UndoRedo.configure({ ...HISTORY_DEFAULTS }),
-      Placeholder.configure({ placeholder: this.placeholder }),
-      PlainTextPaste,
-      Keymap,
-      ValueSync,
-      TypingIndicator,
-    ];
-    return new Editor({
-      element,
-      extensions: [...baseExtensions, ...this.extensions],
-      content: content ?? undefined,
-      autofocus: false,
-      injectCSS: false,
-    });
+  /**
+   * Reject any pending `ensureEditor()` callers and clear the shared promise so
+   * a later call can retry.
+   */
+  private _failRichReady(reason: Error): void {
+    if (this._rejectRichReady) {
+      this._rejectRichReady(reason);
+    }
+    this._resolveRichReady = null;
+    this._rejectRichReady = null;
+    this._richReady = null;
   }
 
-  private _wireEditorEvents(editor: Editor): void {
-    editor.on("focus", () => {
-      const wasMouseFocus = this._focusFromMouse;
-      this._focusFromMouse = false;
-      if (!wasMouseFocus) {
-        editor.view.dom.classList.add(PM_KEYBOARD_FOCUS_CLASS);
+  /** Lazily load Tiptap and swap the textarea for the rich editor in place. */
+  private async _upgradeToRich(): Promise<void> {
+    if (this._mode === "rich" || this._upgrading) {
+      return;
+    }
+    this._upgrading = true;
+    try {
+      const module = getRichRuntimeIfLoaded() ?? (await loadRichRuntime());
+      // Bail if disconnected or runtime unavailable (SSR). The `_upgrading`
+      // latch already prevents a concurrent upgrade.
+      if (!module || !this._editorHost || !this._controller) {
+        this._failRichReady(
+          new Error(
+            module
+              ? "Input is not currently rendered"
+              : "Input editor runtime is unavailable",
+          ),
+        );
+        return;
       }
-      this.dispatchEvent(
-        new CustomEvent("cds-aichat-prompt-focus", {
-          bubbles: true,
-          composed: true,
-        }),
+      if (this._isComposing) {
+        // Defer until composition ends; `_richReady` stays pending and settles
+        // when `_onCompositionEnd` re-runs the upgrade.
+        this._pendingUpgrade = true;
+        return;
+      }
+      this._swapToRich(module.createRichController());
+    } catch (error) {
+      // A failed runtime load or mount must reject pending `ensureEditor()`
+      // callers rather than leave them hanging.
+      this._failRichReady(
+        error instanceof Error ? error : new Error(String(error)),
       );
-    });
-    editor.on("blur", () => {
-      editor.view.dom.classList.remove(PM_KEYBOARD_FOCUS_CLASS);
-      this.dispatchEvent(
-        new CustomEvent("cds-aichat-prompt-blur", {
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    });
-
-    // Forward keydown events for hosts wanting raw-key access. ValueSync /
-    // TypingIndicator emit their own events; we don't re-dispatch update
-    // here.
-    editor.view.dom.addEventListener("keydown", (event) => {
-      this.dispatchEvent(
-        new CustomEvent("cds-aichat-prompt-keydown", {
-          detail: { originalEvent: event },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    });
+    } finally {
+      this._upgrading = false;
+    }
   }
 
-  private _recreateEditor(): void {
-    if (!this._editorHost) {
-      this._lastExtensionsRef = this.extensions;
+  private _swapToRich(rich: PromptLineController): void {
+    const previous = this._controller;
+    const host = this._editorHost;
+    if (!previous || !host) {
       return;
     }
-    const previousJson = this._editor?.getJSON();
-    const previousSelection = this._editor
-      ? {
-          from: this._editor.state.selection.from,
-          to: this._editor.state.selection.to,
-        }
-      : null;
-    const wasFocused = this._editor?.isFocused ?? false;
-    this._editor?.destroy();
-    this._editor = null;
+    const value = previous.getValue();
+    const selection = previous.getSelection();
+    const hadFocus = previous.hasFocus();
 
-    this._lastExtensionsRef = this.extensions;
-    this._editor = this._createEditor(
-      this._editorHost,
-      previousJson ?? this.content,
-    );
-    this._wireEditorEvents(this._editor);
-    applyEditorStyles(this._editor.view.dom as HTMLElement, IS_PHONE);
-    this._applyTestIdToEditorDom();
-    this._editor.setEditable(!this.disabled);
-    if (previousSelection) {
-      // Best-effort selection restore: clamp to the new doc's boundaries.
-      const { size } = this._editor.state.doc.content;
-      const from = Math.min(previousSelection.from, size);
-      const to = Math.min(previousSelection.to, size);
-      this._editor.commands.setTextSelection({ from, to });
-    }
-    if (wasFocused) {
-      this._editor.commands.focus();
-    }
-  }
+    previous.destroy();
+    this._controller = rich;
+    this._mode = "rich";
+    rich.mount(host, this._makeInit(value));
 
-  private _applyContent(content: JSONContent | string | undefined): void {
-    if (!this._editor) {
-      return;
+    // Map plain-text caret offsets into the seeded doc. `textToDoc` makes one
+    // paragraph per line, so a position costs +1 for the doc/first-paragraph
+    // start plus +1 for every newline before it (each opens a new paragraph).
+    const toDocPos = (offset: number): number =>
+      offset + 1 + (value.slice(0, offset).split("\n").length - 1);
+    rich.setTextSelection({
+      from: toDocPos(selection.from),
+      to: toDocPos(selection.to),
+    });
+    if (hadFocus) {
+      rich.focus();
     }
-    this._dispatchSetContent(content ?? "");
-  }
-
-  private _dispatchSetContent(content: JSONContent | string): void {
-    const editor = this._editor;
-    if (!editor) {
-      return;
-    }
-    // Chain a no-op command that meta-tags the accumulator tr as
-    // host-origin, then setContent on the same tr so downstream readers
-    // (typing-indicator, value-sync's storage flag) recognize the update.
-    editor
-      .chain()
-      .command(({ tr }) => {
-        setHostOriginMeta(tr);
-        return true;
-      })
-      .setContent(content, { emitUpdate: true })
-      .run();
-  }
-
-  private _destroyEditor(): void {
-    this._editor?.destroy();
-    this._editor = null;
-    this._editorHost?.remove();
-    this._editorHost = null;
-    this._lastExtensionsRef = null;
+    this._settleRichReady();
   }
 }
 

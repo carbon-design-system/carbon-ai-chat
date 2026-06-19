@@ -11,6 +11,7 @@ import { ChatActionsImpl } from "./ChatActionsImpl";
 import { EventBus } from "../events/EventBus";
 import { HistoryService } from "./HistoryService";
 import { createCustomPanelManager } from "./CustomPanelManager";
+import { MessageUpsertCoordinator } from "./MessageUpsertCoordinator";
 import MessageService from "./MessageService";
 import { NamespaceService } from "./NamespaceService";
 import { ServiceManager } from "./ServiceManager";
@@ -47,6 +48,9 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
+  serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
+    serviceManager,
+  );
   serviceManager.messageService = new MessageService(
     serviceManager,
     publicConfig,

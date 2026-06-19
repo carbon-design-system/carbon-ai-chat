@@ -343,6 +343,25 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     _prevState: MessagesState,
     snapshot: number | null,
   ): void {
+    // Check if human agent banner just became visible
+    const oldDisplayState = selectHumanAgentDisplayState(
+      oldProps as unknown as AppState,
+    );
+    const newDisplayState = selectHumanAgentDisplayState(
+      this.props as unknown as AppState,
+    );
+
+    // Request focus when banner transitions from hidden to visible
+    if (
+      !oldDisplayState.isConnectingOrConnected &&
+      newDisplayState.isConnectingOrConnected
+    ) {
+      // Use requestAnimationFrame to ensure the banner has rendered
+      requestAnimationFrame(() => {
+        this.requestHumanAgentBannerFocus();
+      });
+    }
+
     const newItems = this.props.localMessageItems;
     const oldItems = oldProps.localMessageItems;
 

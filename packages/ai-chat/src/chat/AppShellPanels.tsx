@@ -219,16 +219,34 @@ export const AppShellPanels = React.memo(function AppShellPanels({
             ? true
             : false
         }
-        showChatHeader={!isLegacyCustomPanel}
+        showChatHeader={
+          !isLegacyCustomPanel &&
+          "showChatHeader" in customPanelState.options &&
+          customPanelState.options.showChatHeader
+            ? true
+            : false
+        }
         animationOnOpen={
           customPanelState.options.disableAnimation
             ? "none"
-            : "slide-in-from-bottom"
+            : "openFromSide" in customPanelState.options &&
+                customPanelState.options.openFromSide
+              ? "slide-in-from-start"
+              : "slide-in-from-bottom"
         }
         animationOnClose={
           customPanelState.options.disableAnimation
             ? "none"
-            : "slide-out-to-bottom"
+            : "openFromSide" in customPanelState.options &&
+                customPanelState.options.openFromSide
+              ? "slide-out-to-start"
+              : "slide-out-to-bottom"
+        }
+        openFromSide={
+          "openFromSide" in customPanelState.options &&
+          customPanelState.options.openFromSide
+            ? true
+            : false
         }
         onOpenStart={() => {
           serviceManager.eventBus.fire(
@@ -303,6 +321,15 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                         "backButtonType" in customPanelState.options
                           ? customPanelState.options.backButtonType
                           : undefined
+                      }
+                      backButtonPosition={
+                        "backButtonPosition" in customPanelState.options
+                          ? customPanelState.options.backButtonPosition
+                          : undefined
+                      }
+                      openFromSide={
+                        "openFromSide" in customPanelState.options &&
+                        customPanelState.options.openFromSide
                       }
                       onClickBack={() => {
                         serviceManager.store.dispatch(

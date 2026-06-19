@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -96,10 +96,10 @@
     "@lezer/highlight": "^1.1.6",
     "@lit/react": "^1.0.8",
     "csv-stringify": "^6.5.2",
-    "dompurify": "^3.4.0",
+    "dompurify": "^3.4.9",
     "lit": "^3.1.0",
     "lodash-es": "^4.18.1",
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^14.2.0",
     "program-language-detector": "^0.0.12",
     "tslib": "^2.6.3"
   },
@@ -145,6 +145,7 @@
     "@types/mocha": "^10.0.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vscode/markdown-it-katex": "^1.1.2",
     "@web/dev-server": "0.4.6",
     "@web/dev-server-esbuild": "1.0.5",
     "@web/test-runner": "0.19.0",

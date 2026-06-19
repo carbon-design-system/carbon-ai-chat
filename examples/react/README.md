@@ -653,6 +653,51 @@ Connects `ChatCustomElement` to IBM watsonx.ai for real streaming text generatio
 
 </details>
 
+### [Markdown override (code snippet, hide detected language label)](./markdown-override/README.md)
+
+`ChatCustomElement` configured with `markdown.customRenderers.codeBlock` so every fenced code block renders through a `cds-aichat-code-snippet` whose `detectLanguage` property is explicitly set to `false` — overriding the markdown component's default of `true`. Bare fences no longer show the detected language label in the snippet header; explicit fence languages still display their label.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-markdown-override`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                    | Package / kind                     | Role in this example                                                                     |
+| ----------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ChatCustomElement`                       | `@carbon/ai-chat` component        | Mounts the chat into a fullscreen host element.                                          |
+| `PublicConfig`                            | `@carbon/ai-chat` type             | Types the config object passed to `ChatCustomElement`.                                   |
+| `ChatContainerPropsMarkdown`              | `@carbon/ai-chat` type             | Shape of the `markdown` prop.                                                            |
+| `MarkdownRendererCodeBlockArgs`           | `@carbon/ai-chat` type             | Argument shape for the codeBlock renderer (`language`, `code`, …).                       |
+| `markdown.customRenderers.codeBlock`      | config prop                        | Replaces the default fenced-code renderer with a JSX wrapper.                            |
+| `Card` (`cds-aichat-card`)                | `@carbon/ai-chat-components` React | Wraps the snippet to match the default Carbon shell.                                     |
+| `CodeSnippet` (`cds-aichat-code-snippet`) | `@carbon/ai-chat-components` React | Renders the code; receives `detectLanguage={false}` to hide the detected language label. |
+| `messaging.customSendMessage`             | config prop                        | Mock backend that emits two contrasting fences in every reply.                           |
+| `layout.showFrame`                        | config prop                        | Disables the built-in frame so the host owns the layout.                                 |
+| `openChatByDefault`                       | config prop                        | Mounts straight into the conversation, no launcher.                                      |
+
+</details>
+
+### [Markdown plugin (KaTeX)](./markdown-plugin/README.md)
+
+`ChatCustomElement` configured with `markdown.markdownItPlugins` so `@vscode/markdown-it-katex` extends the renderer with LaTeX math tokens.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-markdown-plugin`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                        | Package / kind              | Role in this example                                            |
+| ----------------------------- | --------------------------- | --------------------------------------------------------------- |
+| `ChatCustomElement`           | `@carbon/ai-chat` component | Mounts the chat into a fullscreen host element.                 |
+| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.          |
+| `MarkdownItPlugin`            | `@carbon/ai-chat` type      | Element shape of the `markdownItPlugins` array.                 |
+| `markdown.markdownItPlugins`  | config prop                 | Registers `@vscode/markdown-it-katex` with the chat's renderer. |
+| `messaging.customSendMessage` | config prop                 | Mock backend that emits markdown with KaTeX math.               |
+| `layout.showFrame`            | config prop                 | Disables the built-in frame so the host owns the layout.        |
+| `openChatByDefault`           | config prop                 | Mounts straight into the conversation, no launcher.             |
+
+</details>
+
 ### [Reasoning steps](./reasoning-steps/README.md)
 
 Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the default behavior) and a single long-form `reasoning.content` trace — picked from a dropdown on the welcome message.
@@ -764,6 +809,34 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 | `@testing-library/react`                      | test util                   | `render`, `act`, `waitFor`.                                   |
 | `@testing-library/jest-dom`                   | test util                   | DOM matchers.                                                 |
 | `jest-environment-jsdom`                      | jest env                    | Default Jest DOM environment (no shadow-DOM support).         |
+
+</details>
+
+### [Upsert message user defined](./upsert-message-user-defined/README.md)
+
+Progressively updates a `user_defined` steps-card widget inside a single assistant message using `ChatInstance.messaging.upsertMessage`, and pops a Carbon toast (with a "View message" action wired to `instance.scrollToMessage`) when the run completes.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-user-defined`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                                     | Package / kind                              | Role in this example                                                            |
+| ---------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| `ChatCustomElement`                                        | `@carbon/ai-chat` component                 | Mounts the chat into a host element you style.                                  |
+| `PublicConfig`                                             | `@carbon/ai-chat` type                      | Types the config passed to `ChatCustomElement`.                                 |
+| `messaging.customSendMessage`                              | config prop                                 | Mock back end: branches on the post-back trigger string and runs the long task. |
+| `messaging.upsertMessage`                                  | `ChatInstance` method                       | Inserts and progressively updates the steps-card message.                       |
+| `MessageState.COMPLETE`                                    | `@carbon/ai-chat` enum                      | Marks the message complete on the very first upsert so input stays usable.      |
+| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK` | `@carbon/ai-chat` enums                     | Welcome-message button that posts the trigger string back to start a run.       |
+| `MessageResponseTypes.USER_DEFINED`                        | `@carbon/ai-chat` enum                      | Payload carrying the steps-card data updated each upsert.                       |
+| `renderUserDefinedResponse`                                | `ChatContainer` prop                        | Renders the `user_defined` payload as the `StepsCard` widget.                   |
+| `onBeforeRender`                                           | `ChatContainer` prop                        | Captures the `ChatInstance` for the toast action.                               |
+| `instance.scrollToMessage`                                 | `ChatInstance` method                       | Toast action target — scrolls the chat back to the finished message.            |
+| `layout.showFrame`                                         | config prop                                 | Disables the built-in frame for the fullscreen baseline.                        |
+| `openChatByDefault`                                        | config prop                                 | Opens the chat on mount.                                                        |
+| `Card` / `CardFooter` / `CardSteps` / `Toolbar`            | `@carbon/ai-chat-components` React wrappers | Carbon storybook `WithSteps` composition rendered as the user_defined widget.   |
+| `ActionableNotification`                                   | `@carbon/react` component                   | Out-of-chat completion toast with a built-in action button.                     |
 
 </details>
 
@@ -895,6 +968,38 @@ Same workspace payloads as `workspace`, but the chat is mounted inside a collaps
 | `openChatByDefault`                                                                              | prop                        | Opens chat on load.                         |
 | `AiLaunch20`                                                                                     | `@carbon/icons-react`       | Sidebar launcher icon.                      |
 | `@carbon/ai-chat/css/chat-sidebar-layout.css`                                                    | stylesheet                  | Provides the `cds-aichat-sidebar*` classes. |
+
+</details>
+
+### [Workspace table markdown override](./workspace-table-markdown-override/README.md)
+
+`ChatCustomElement` configured with `markdown.customRenderers.table` so every markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a Carbon Maximize icon button that opens the workspace panel and renders the same data inside a full-size `<cds-aichat-table>` whose pagination page size adapts to the workspace's height.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-workspace-table-markdown-override`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                | Package / kind                     | Role in this example                                                            |
+| ------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| `ChatCustomElement`                   | `@carbon/ai-chat` component        | Mounts the chat into a fullscreen host element.                                 |
+| `PublicConfig`                        | `@carbon/ai-chat` type             | Types the config object passed to `ChatCustomElement`.                          |
+| `ChatContainerPropsMarkdown`          | `@carbon/ai-chat` type             | Shape of the `markdown` prop.                                                   |
+| `MarkdownRendererTableArgs`           | `@carbon/ai-chat` type             | Argument shape for the table renderer (`headers`, `rows`, `slotName`, …).       |
+| `markdown.customRenderers.table`      | config prop                        | Replaces the default markdown table renderer with a card+toolbar JSX wrapper.   |
+| `ChatInstance.customPanels`           | `@carbon/ai-chat` API              | Access to the chat's panel manager.                                             |
+| `CustomPanels.getPanel`               | `@carbon/ai-chat` API              | Returns a `CustomPanelInstance` for the requested panel type.                   |
+| `PanelType.WORKSPACE`                 | `@carbon/ai-chat` enum             | Selects the workspace panel.                                                    |
+| `CustomPanelInstance.open` / `.close` | `@carbon/ai-chat` API              | Opens / closes the workspace; `open` takes `WorkspaceCustomPanelConfigOptions`. |
+| `renderWriteableElements`             | `ChatCustomElement` prop           | Slot for rendering custom content into the workspace panel.                     |
+| `BusEventType.WORKSPACE_CLOSE`        | `@carbon/ai-chat` event            | Fires when the panel closes — used to clear workspace state.                    |
+| `Card` (`cds-aichat-card`)            | `@carbon/ai-chat-components` React | Wraps the inline table; `isFlush` removes the default padding.                  |
+| `Toolbar` (`cds-aichat-toolbar`)      | `@carbon/ai-chat-components` React | Renders the card header with title + right-aligned actions.                     |
+| `WorkspaceShell`, `Body`              | `@carbon/ai-chat-components` React | Standard workspace-panel chrome around the full-size table.                     |
+| `Maximize`                            | `@carbon/icons-react`              | Icon for the toolbar's "Open in workspace" action.                              |
+| `<cds-aichat-table>`                  | `@carbon/ai-chat-components`       | Renders the full-size table inside the workspace.                               |
+| `defaultPageSize`                     | `<cds-aichat-table>` property      | Set to the row count so the pagination bar is suppressed and all rows render.   |
+| `messaging.customSendMessage`         | config prop                        | Mock backend that emits a 24-row order table.                                   |
 
 </details>
 

@@ -14,9 +14,10 @@
  *   whether to honor (re-dispatch as `cds-aichat-input-send`) or gate
  *   (`isSendDisabled` per PLAN.md decision 19).
  * - `Escape` → blur the editor.
- * - Plain `Enter` falls through to Tiptap defaults (paragraph split). Hosts
- *   wanting "Enter sends, Shift-Enter newlines" wire that at the shell layer
- *   in PR 3.
+ * - Plain `Enter` is not bound here. `<cds-aichat-prompt-line>` adds
+ *   `carbonChatEnter` to its base bundle for "Enter sends, Shift-Enter
+ *   newlines"; this extension stays Enter-agnostic so it can be reused on its
+ *   own.
  *
  * Undo / redo come from the `UndoRedo` extension. ArrowUp / ArrowDown /
  * Enter / Escape forwarding to the active autocomplete list is **not** done

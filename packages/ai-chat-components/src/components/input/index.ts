@@ -15,6 +15,13 @@ import "./src/autocomplete-controller.js";
 
 export { default as InputShellElement } from "./src/input-shell.js";
 export { default as PromptLineElement } from "./src/prompt-line.js";
+// Warms the Tiptap runtime chunk so a host (e.g. `@carbon/ai-chat`) can ensure
+// the prompt-line mounts in rich mode on first paint, no textarea→editor flash.
+export { preloadPromptLineRich } from "./src/prompt-line-rich-loader.js";
+export type {
+  PromptLineController,
+  PromptLineControllerInit,
+} from "./src/prompt-line-controller.js";
 export { default as InputSendControlElement } from "./src/send-control.js";
 export { default as StopStreamingButton } from "./src/stop-streaming-button.js";
 export {
@@ -40,6 +47,7 @@ export {
   mapNodes,
   findNodesByType,
   getRawText,
+  textToDoc,
   renderTokenChip,
   renderInLightDom,
   LIGHT_DOM_PORTAL_EVENT,

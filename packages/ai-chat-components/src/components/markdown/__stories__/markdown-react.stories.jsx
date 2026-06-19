@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2026
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,6 +15,15 @@ import React, {
   useRef,
   useState,
 } from "react";
+import markdownItKatex from "@vscode/markdown-it-katex";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@carbon/react";
 
 import Markdown from "../../../react/markdown";
 
@@ -172,29 +181,6 @@ Regular markdown works fine:
 
 > Markdown blockquote`;
 
-const checkboxMarkdown = `# Checkbox Examples
-
-This demonstrates the custom checkbox rendering in markdown.
-
-## Task Lists
-
-- [x] Completed task
-- [ ] Incomplete task
-- [x] Another completed task
-- [ ] Another incomplete task
-
-## Custom Checkboxes
-
-You can also use custom checkbox syntax:
-
-<cds-checkbox checked="true">This checkbox is checked</cds-checkbox>
-
-<cds-checkbox checked="false">This checkbox is unchecked</cds-checkbox>
-
-<cds-checkbox checked="true" disabled="true">This checkbox is checked and disabled</cds-checkbox>
-
-<cds-checkbox checked="false" disabled="false">This checkbox is unchecked and enabled</cds-checkbox>`;
-
 const chunkMarkdownBySpaces = (markdown) => {
   const chunks = [];
   let currentChunk = "";
@@ -221,15 +207,15 @@ const chunkMarkdownBySpaces = (markdown) => {
   return chunks;
 };
 
-const StreamingMarkdownDemo = () => {
+const StreamingMarkdownDemo = ({
+  source = comprehensiveMarkdown,
+  customRenderers,
+}) => {
   const [streamedContent, setStreamedContent] = useState("");
   const [streaming, setStreaming] = useState(true);
   const intervalRef = useRef(null);
 
-  const chunks = useMemo(
-    () => chunkMarkdownBySpaces(comprehensiveMarkdown),
-    [],
-  );
+  const chunks = useMemo(() => chunkMarkdownBySpaces(source), [source]);
 
   const clearExistingInterval = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -280,7 +266,11 @@ const StreamingMarkdownDemo = () => {
           Restart Streaming
         </button>
       </div>
-      <Markdown streaming={streaming} markdown={streamedContent} />
+      <Markdown
+        streaming={streaming}
+        markdown={streamedContent}
+        customRenderers={customRenderers}
+      />
     </div>
   );
 };
@@ -400,31 +390,6 @@ export const WithHTMLSanitization = {
   ),
 };
 
-export const WithCheckboxes = {
-  args: {
-    markdown: checkboxMarkdown,
-    streaming: false,
-    sanitizeHTML: false,
-    removeHTML: false,
-    codeSnippetHighlight: false,
-  },
-  render: (args) => (
-    <div>
-      <p
-        style={{
-          marginBottom: "1rem",
-          padding: "0.5rem",
-          background: "#f4f4f4",
-        }}
-      >
-        <strong>Note:</strong> This story demonstrates checkbox rendering in
-        markdown, including task lists and custom checkbox elements.
-      </p>
-      <Markdown {...args} markdown={args.markdown} />
-    </div>
-  ),
-};
-
 export const WithHTMLRemoval = {
   args: {
     markdown: htmlSanitizationMarkdown,
@@ -445,4 +410,98 @@ export const WithHTMLRemoval = {
       <Markdown {...args} markdown={args.markdown} />
     </div>
   ),
+};
+
+const katexMarkdown = `Plugins can introduce new token types. This story uses [\`@vscode/markdown-it-katex\`](https://www.npmjs.com/package/@vscode/markdown-it-katex) to render LaTeX math.
+
+Inline math like $E = mc^2$ appears inside a paragraph. Block math gets its own line:
+
+$$\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}$$
+
+Plugin output is mounted into a light-DOM slot so global CSS (here, KaTeX's stylesheet loaded in the Storybook preview) styles it normally.`;
+
+export const WithMarkdownItPlugin = {
+  args: {
+    markdown: katexMarkdown,
+  },
+  argTypes: {
+    markdown: { control: "text" },
+  },
+  render: (args) => {
+    const plugins = useMemo(() => [markdownItKatex], []);
+    return (
+      <div>
+        <p
+          style={{
+            marginBottom: "1rem",
+            padding: "0.5rem",
+            background: "#f4f4f4",
+          }}
+        >
+          <strong>Note:</strong> Pass a <code>markdownItPlugins</code> array to
+          add custom rules. Plugin output is rendered into a light-DOM slot, so
+          consumer-supplied CSS (such as KaTeX's stylesheet loaded via the
+          Storybook preview) reaches it normally.
+        </p>
+        <Markdown
+          {...args}
+          markdownItPlugins={plugins}
+          markdown={args.markdown}
+        />
+      </div>
+    );
+  },
+};
+
+const tableOverrideMarkdown = `Below is a markdown table. The story registers a custom renderer for tables so that a Carbon \`DataTable\` from \`@carbon/react\` replaces the default \`cds-aichat-table\` rendering.
+
+| Service | Status | Region |
+| --- | --- | --- |
+| API | Healthy | us-east-1 |
+| Worker | Degraded | us-east-1 |
+| Database | Healthy | us-west-2 |
+
+A paragraph after the table demonstrates the override staying mounted while normal content streams in.`;
+
+export const WithTableOverride = {
+  args: {
+    markdown: tableOverrideMarkdown,
+  },
+  argTypes: {
+    markdown: { control: "text" },
+  },
+  render: (args) => {
+    const customRenderers = useMemo(
+      () => ({
+        table: ({ headers, rows }) => (
+          <Table>
+            <TableHead>
+              <TableRow>
+                {headers.map((cell, i) => (
+                  <TableHeader key={i}>{cell.text}</TableHeader>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row, ri) => (
+                <TableRow key={ri}>
+                  {row.map((cell, ci) => (
+                    <TableCell key={ci}>{cell.text}</TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ),
+      }),
+      [],
+    );
+
+    return (
+      <StreamingMarkdownDemo
+        source={args.markdown}
+        customRenderers={customRenderers}
+      />
+    );
+  },
 };

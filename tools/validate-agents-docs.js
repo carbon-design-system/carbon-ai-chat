@@ -353,12 +353,12 @@ function discoverAgentsFiles() {
 
       const targetPath = path.resolve(fileDir, urlWithoutAnchor);
       const relativePath = path.relative(REPO_ROOT, targetPath);
+      const basename = path.basename(relativePath);
 
       if (
         fs.existsSync(targetPath) &&
-        (relativePath === "AGENTS.md" ||
-          relativePath.startsWith("AGENTS_") ||
-          relativePath.endsWith("/AGENTS.md"))
+        (basename === "AGENTS.md" ||
+          (basename.startsWith("AGENTS_") && basename.endsWith(".md")))
       ) {
         queue.push(relativePath);
       }

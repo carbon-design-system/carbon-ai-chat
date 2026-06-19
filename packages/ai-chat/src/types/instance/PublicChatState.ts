@@ -43,7 +43,7 @@ export interface PublicInputState {
    * Whether the input editor currently has focus. Mirrors the
    * `cds-aichat-input-focus` / `cds-aichat-input-blur` web component
    * events; for hosts that prefer DOM events or the live editor handle,
-   * those remain available (`instance.input.getEditor()?.isFocused`).
+   * those remain available (`(await instance.input.getEditor()).isFocused`).
    *
    * Toggles in the same dispatch pass as the underlying focus event, so
    * subscribing via {@link BusEventType.STATE_CHANGE} fires once per
