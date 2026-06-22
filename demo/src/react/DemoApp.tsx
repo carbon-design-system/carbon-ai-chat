@@ -140,7 +140,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   );
 
   /**
-   * You can return a React element for each writeable element.
+   * You can return a React element for each slot.
    */
   const historyIsMobile =
     instance?.getState().customPanels.history.isMobile ?? false;
@@ -233,7 +233,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   );
 
   /**
-   * Determines which writeable elements to render based on settings and config.
+   * Determines which slots to render based on settings and config.
    * - If writeableElements is true: show all elements
    * - If writeableElements is false AND homescreen is custom: show only home screen specific elements
    * - Otherwise: show no elements

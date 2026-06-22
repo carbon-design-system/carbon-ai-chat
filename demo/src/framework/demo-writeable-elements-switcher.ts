@@ -37,15 +37,11 @@ export class DemoWriteableElementsSwitcher extends LitElement {
   render() {
     return html`<cds-dropdown
       value="${this.settings.writeableElements}"
-      title-text="Writeable element visibility"
+      title-text="Slot visibility"
       @cds-dropdown-selected=${this.dropdownSelected}
     >
-      <cds-dropdown-item value="false"
-        >Hide writeable elements</cds-dropdown-item
-      >
-      <cds-dropdown-item value="true"
-        >Show writeable elements</cds-dropdown-item
-      >
+      <cds-dropdown-item value="false">Hide slots</cds-dropdown-item>
+      <cds-dropdown-item value="true">Show slots</cds-dropdown-item>
     </cds-dropdown>`;
   }
 }

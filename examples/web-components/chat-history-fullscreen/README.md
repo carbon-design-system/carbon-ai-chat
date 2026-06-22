@@ -7,7 +7,7 @@ Fullscreen chat driven by `<cds-aichat-custom-element>` that exposes a custom hi
 - Mounting `<cds-aichat-custom-element>` at 100vw/100vh as a fullscreen shell with `layout.showFrame: false` and `openChatByDefault: true`.
 - Enabling the built-in history feature with `history.isOn: true`.
 - Supplying `customLoadHistory` alongside `customSendMessage` in `messaging`.
-- Rendering a custom history panel into the `historyPanelElement` writeable-element slot via `<history-writeable-element-example>`.
+- Rendering a custom history panel into the `historyPanelElement` slot via `<history-writeable-element-example>`.
 - Reacting to `history-panel-load-chat` events on the host element to `clearConversation()` and `insertHistory()`.
 - Tracking `customPanels.history.isMobile` through the `STATE_CHANGE` bus event to adapt the slot UI.
 
@@ -31,7 +31,7 @@ Fullscreen chat driven by `<cds-aichat-custom-element>` that exposes a custom hi
 | `BusEventType.STATE_CHANGE`            | event          | Tracks `customPanels.history.isMobile`.                   |
 | `instance.messaging.clearConversation` | method         | Resets the current conversation before inserting history. |
 | `instance.messaging.insertHistory`     | method         | Rehydrates the chat with loaded history.                  |
-| `historyPanelElement`                  | slot           | Writeable-element slot hosting the custom history panel.  |
+| `historyPanelElement`                  | slot           | Slot hosting the custom history panel.                    |
 | `history-panel-load-chat`              | custom event   | Listened for on the host element to drive the loader.     |
 
 ## Chat history configuration
@@ -121,10 +121,11 @@ instance.customPanels.getPanel(PanelType.HISTORY)?.close();
 // To open the history panel
 instance.customPanels.getPanel(PanelType.HISTORY)?.open();
 
-// To toggle the history panel
+// To toggle the history panel. Read the open state from instance.getState();
+// the panel instance does not expose an isOpen property.
 const historyPanel = instance.customPanels.getPanel(PanelType.HISTORY);
-if (historyPanel?.isOpen) {
-  historyPanel.close();
+if (instance.getState().customPanels.history.isOpen) {
+  historyPanel?.close();
 } else {
   historyPanel?.open();
 }
@@ -132,7 +133,7 @@ if (historyPanel?.isOpen) {
 
 #### Complete example with external control
 
-See [`history-writeable-element-example.ts`](../../../demo/src/web-components/history-writeable-element-example.ts) for a full implementation. Key patterns:
+See [`history-writeable-element-example.ts`](./src/history-writeable-element-example.ts) for a full implementation. Key patterns:
 
 ```javascript
 // 1. Configure history in config object

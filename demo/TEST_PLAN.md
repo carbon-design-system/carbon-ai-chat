@@ -15,7 +15,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Theme switching, layout config, direction switching (LTR/RTL)
 - Header, launcher, homescreen configuration
 - Chat instance controls (focus, scroll, input visibility, restart)
-- Writeable elements, layout frame/content width settings
+- Slots, layout frame/content width settings
 
 #### setChatConfig Testing (Use `window.setChatConfig()`)
 

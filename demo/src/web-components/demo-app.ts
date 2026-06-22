@@ -378,10 +378,10 @@ export class DemoApp extends LitElement {
   }
 
   /**
-   * You only need to provide slots for the writable elements you want to use. In this demo, we fill them all with big
+   * You only need to provide the slots you want to use. In this demo, we fill them all with big
    * green boxes.
    *
-   * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom writeable element.
+   * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom slot.
    */
   renderWriteableElementSlots() {
     const ALWAYS_RENDER_KEYS = [

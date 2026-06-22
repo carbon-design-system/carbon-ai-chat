@@ -67,9 +67,9 @@ Key replacements:
 - `updateMainHeaderAvatar()` -> no replacement (functionality removed)
 - `instance.elements` -> no replacement (functionality removed)
 
-**Note:** The `elements` API provided direct DOM access to input fields and the main window. This functionality is being replaced with the ability to pass custom header and footer components instead of controlling everything via DOM access. Custom component support will be added in a future version.
+> **Note:** The `elements` API provided direct DOM access to input fields and the main window. This functionality is being replaced with the ability to pass custom header and footer components instead of controlling everything via DOM access. Custom component support will be added in a future version.
 
-**Note:** The `addClassName`/`removeClassName` methods were used to manually control MainWindow visibility in custom elements. MainWindow now handles its own visibility consistently in both floating and custom element modes, so external className manipulation is no longer needed.
+> **Note:** The `addClassName`/`removeClassName` methods were used to manually control MainWindow visibility in custom elements. MainWindow now handles its own visibility consistently in both floating and custom element modes, so external className manipulation is no longer needed.
 
 ## Migration Examples
 
@@ -149,7 +149,7 @@ const config = {
 
 ### `es-custom` folder
 
-**Note:** You only need to import from the `es-custom` folder if you are facing component registry issues. This usually happens when using the `@carbon/ai-chat` package alongside `carbon-angular-components` where the component names clash with the underlying subcomponents from `@carbon/web-components`. If importing from the top-level, change the import to `@carbon/ai-chat/es-custom`.
+> **Note:** You only need to import from the `es-custom` folder if you are facing component registry issues. This usually happens when using the `@carbon/ai-chat` package alongside `carbon-angular-components` where the component names clash with the underlying subcomponents from `@carbon/web-components`. If importing from the top-level, change the import to `@carbon/ai-chat/es-custom`.
 
 If not using alongside `carbon-angular-components`, resume importing from the `es` folder and using the `cds-aichat` prefix.
 

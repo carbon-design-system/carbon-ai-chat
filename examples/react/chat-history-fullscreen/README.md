@@ -7,7 +7,7 @@
 - Hosting the chat in a full-screen `ChatCustomElement` with `layout.showFrame: false` and a max-width custom property.
 - Enabling the built-in history panel via `history.isOn: true`.
 - Reacting to `STATE_CHANGE` events to track `customPanels.history.isMobile` for responsive history UI.
-- Rendering a custom history list into the `historyPanelElement` writeable element.
+- Rendering a custom history list into the `historyPanelElement` slot.
 - Swapping conversations using `instance.messaging.clearConversation()` and `instance.messaging.insertHistory()`.
 
 ## When to use this pattern

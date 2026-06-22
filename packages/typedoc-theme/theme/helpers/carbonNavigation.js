@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -98,6 +98,8 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
           title: item.text,
           expanded,
         },
+        // The accordion is itself a page. Label its self-link "Overview" so it
+        // doesn't repeat the accordion title (which is `item.text`).
         JSX.createElement(
           "cds-side-nav-menu-item",
           {
@@ -105,7 +107,7 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
             active: isActive ? "" : undefined,
             "aria-current": isActive ? "page" : undefined,
           },
-          item.text,
+          "Overview",
         ),
         ...children,
       );
@@ -128,6 +130,8 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
         title: item.text,
         expanded,
       },
+      // The accordion is itself a page. Label its self-link "Overview" so it
+      // doesn't repeat the accordion title (which is `item.text`).
       JSX.createElement(
         "cds-side-nav-menu-item",
         {
@@ -135,7 +139,7 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
           active: isActive ? "" : undefined,
           "aria-current": isActive ? "page" : undefined,
         },
-        item.text,
+        "Overview",
       ),
       ...children,
     );

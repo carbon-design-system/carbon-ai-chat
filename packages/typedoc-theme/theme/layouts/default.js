@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -272,6 +272,29 @@ export const defaultLayout = (context, template, props) => {
       JSX.createElement("script", {
         type: "module",
         src: "https://1.www.s81c.com/common/carbon/web-components/tag/latest/dropdown.min.js",
+      }),
+      // cds-table + cds-table-* children, used for Markdown tables.
+      JSX.createElement("script", {
+        type: "module",
+        src: "https://1.www.s81c.com/common/carbon/web-components/tag/latest/data-table.min.js",
+      }),
+      // cds-ordered-list / cds-unordered-list / cds-list-item, used for Markdown lists.
+      JSX.createElement("script", {
+        type: "module",
+        src: "https://1.www.s81c.com/common/carbon/web-components/tag/latest/list.min.js",
+      }),
+      // cds-aichat-code-snippet, used for fenced code blocks. Served from the
+      // vendored ai-chat-components bundle (copied into assets/ by carbonThemePlugin.js)
+      // rather than a CDN: the published copy lacks CORS headers, and CDN re-bundlers
+      // duplicate @codemirror/state and break the editor. Same-origin loading avoids
+      // both. The bundle lazily imports its sibling runtime/language chunks by relative
+      // path, which resolve against this URL. See the upstream CDN-hosting tracking issue.
+      JSX.createElement("script", {
+        type: "module",
+        src: context.relativeURL(
+          "assets/ai-chat-components/code-snippet.min.js",
+          true,
+        ),
       }),
       JSX.createElement("script", {
         defer: true,

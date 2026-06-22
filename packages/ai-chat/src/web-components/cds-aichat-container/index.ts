@@ -54,12 +54,25 @@ class ChatContainer extends FlattenedConfigElement {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
+   *
+   * Use it to capture the {@link ChatInstance} so you can call instance methods later.
+   *
+   * @example
+   * ```ts
+   * const onBeforeRender = (instance: ChatInstance) => {
+   *   this.instance = instance;
+   * };
+   * // <cds-aichat-container .onBeforeRender=${onBeforeRender}></cds-aichat-container>
+   * ```
    */
   @property({ attribute: false })
   onBeforeRender: (instance: ChatInstance) => Promise<void> | void;
 
   /**
    * This function is called after the render function of Carbon AI Chat is called.
+   *
+   * Like `onBeforeRender`, it receives the {@link ChatInstance}; use it when you need the instance only after the
+   * first render has completed.
    */
   @property({ attribute: false })
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;

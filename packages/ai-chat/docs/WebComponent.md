@@ -4,81 +4,64 @@ title: Using as a Web component
 
 ### Overview
 
-Carbon AI chat exports two web components.
+Carbon AI Chat exports two web components.
 
-To use the `float` layout, refer to `cds-aichat-container`. If you want to use a custom size, such as rendering in a sidebar, full-screen mode, or nested within your UI, refer to `cds-aichat-custom-element`.
+{@link CdsAiChatCustomElementAttributes | cds-aichat-custom-element} renders the chat into an element you size and place — a sidebar, full-screen mode, or content nested in your UI — and is the most common choice. {@link CdsAiChatContainerAttributes | cds-aichat-container} is a convenience component that renders the classic floating widget (a corner launcher and a window that opens on click) by applying the [float layout classes](./Layout.md#floating-layout) for you.
+
+You don't need {@link CdsAiChatContainerAttributes | cds-aichat-container} for a float layout. Those classes are exported, so you can apply them to {@link CdsAiChatCustomElementAttributes | cds-aichat-custom-element} yourself and get the same floating widget — see [Float layout](#float-layout). Reach for {@link CdsAiChatContainerAttributes | cds-aichat-container} only when you'd rather skip that wiring.
+
+You receive the {@link ChatInstance} from {@link CdsAiChatContainerAttributes.onBeforeRender}, which you need before any slotted content.
+
+> **Note**: This page covers only what's specific to web components. For theming, layout, slotting your own content, and the rest of the configuration shared across every framework, see [UI customization](./Customization.md).
 
 ### Installation
 
 Install by using `npm`:
 
-```bash
-npm install @carbon/ai-chat
-```
+`npm install @carbon/ai-chat`
 
 Or using `yarn`:
 
-```bash
-yarn add @carbon/ai-chat
-```
+`yarn add @carbon/ai-chat`
 
-_Be sure to check for required peerDependencies._
+> **Note**: Install the required `peerDependencies`. See the [peer dependency changes](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/peer-dependency-changes.md) for a history of additions, removals, and version updates across releases.
 
 #### Basic example
 
-Render this component in your application, and provide the configuration options for the Carbon AI Chat as a prop.
+Render this component, give it a class that sizes it, and pass your configuration as props.
 
 ```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
 
-import { html, LitElement } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
 @customElement("my-app")
 export class MyApp extends LitElement {
+  static styles = css`
+    .fullscreen {
+      block-size: 100vh;
+      inline-size: 100%;
+    }
+  `;
   render() {
-    return html`<cds-aichat-container
-      .debug=${true}
-      .aiEnabled=${true}
+    return html`<cds-aichat-custom-element
+      class="fullscreen"
       .header=${{ title: "My Assistant" }}
-      .launcher=${{ isOn: true }}
     />`;
   }
 }
 ```
 
-### Using cds-aichat-container
-
-The `cds-aichat-container` component loads and renders an instance of the Carbon AI Chat when it mounts and deletes that instance when unmounted. If option changes occur in the Carbon AI Chat configuration, it also deletes the previous Carbon AI Chat and creates a new one with the new configuration.
-
-See {@link CdsAiChatContainerAttributes} for an explanation of the various accepted properties and attributes.
-
-#### AI theme toggle
-
-`ai-enabled` is on by default when not specified. To disable the AI theme in plain HTML, either:
-
-- Use `ai-disabled`:
-  `<cds-aichat-container ai-disabled></cds-aichat-container>`
-- Or set a falsey string on `ai-enabled`:
-  `<cds-aichat-container ai-enabled="false"></cds-aichat-container>`
-
-Accepted falsey strings for `ai-enabled` are `"false"`, `"0"`, `"off"`, and `"no"` (case‑insensitive). If present and not one of those values, the AI theme is enabled.
-
-#### Using cds-aichat-custom-element
+### Using cds-aichat-custom-element
 
 This library provides the component `cds-aichat-custom-element`, which you can use to render the Carbon AI Chat inside a custom element. Use this if you need to change the location where the Carbon AI Chat renders.
 
-The custom element should be sized using external CSS (see example below). The default behavior is to set the element's dimensions to 0x0, so that it doesn't take up space while keeping any fixed-positioned launcher visible.
+Size the custom element using external CSS (see example below). The default behavior sets the element's dimensions to 0x0, so it doesn't take up space while keeping any fixed-positioned launcher visible.
 
-**Note:** The custom element must remain visible if you want to use the built-in Carbon AI Chat launcher, which is also contained in your custom element.
+> **Note:** The custom element must remain visible if you want to use the built-in Carbon AI Chat launcher, which is also contained in your custom element.
 
-If you don't want these behaviors, then provide your own `onViewChange` prop to `cds-aichat-custom-element` and provide your own logic for controlling the visibility of the Carbon AI Chat. If you want custom animations when the Carbon AI Chat opens and closes, use this mechanism to do that.
-
-**For advanced view change handling:** You can also listen for {@link BusEventType.VIEW_PRE_CHANGE} and {@link BusEventType.VIEW_CHANGE} events directly. These events fire in sequence (PRE_CHANGE -> view state update -> CHANGE), and both are awaited, making async handlers ideal for animations. See the event type documentation for complete details on timing and usage.
-
-Just be aware that the `onViewChange` default behavior will still run if you don't replace that function with your own.
-
-`onViewChange` and `onViewPreChange` are also available on `cds-aichat-container` as opt-in observation hooks — useful for analytics or mirroring the chat's open state into your own UI. Because the float container has no wrapping element to size, there is no default visibility behavior on the container: the callbacks simply fire when provided.
+If you want different open/close behavior — say, to animate the chat in and out — provide the {@link CdsAiChatCustomElementAttributes.onViewPreChange} and {@link CdsAiChatCustomElementAttributes.onViewChange} properties. {@link CdsAiChatCustomElementAttributes.onViewPreChange} runs before the view changes and is awaited, so you can update your CSS classes and let an animation finish before the chat shell is hidden. {@link CdsAiChatCustomElementAttributes.onViewChange} runs once the change completes; provide it to replace the default 0x0 sizing.
 
 See {@link CdsAiChatCustomElementAttributes} for an explanation of the various accepted properties and attributes.
 
@@ -108,67 +91,33 @@ export class MyApp extends LitElement {
 }
 ```
 
-#### Using alongside `carbon-angular-components`
+#### Float layout
 
-If you are using `@carbon/ai-chat` in your Angular application along with `carbon-angular-components`, you may run into component registry errors as the underlying `@carbon/web-components` subcomponents utilize the same naming structure as components in `carbon-angular-components`. In order to avoid this, import from the `es-custom` build folder rather than `es`. This build folder creates a separate prefix for all the Web Components. If you're looking to import items the top-level, use the `@carbon/ai-chat/es-custom` import path.
+The float layout pins the chat to the corner of the page as a launcher button that opens a floating window — the widget {@link CdsAiChatContainerAttributes | cds-aichat-container} renders for you. To get that same layout on your own `cds-aichat-custom-element` instead, import `@carbon/ai-chat/css/chat-float-layout.css` and apply the `cds-aichat-float--*` classes to the element, driven by the chat's view-change events. See [Float layout classes](./Layout.md#floating-layout) for the class list, and the [custom-element-as-float example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float) for the full pattern. To skip this wiring, use {@link CdsAiChatContainerAttributes | cds-aichat-container}.
 
-```javascript
-import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
-import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-custom-element/index.js";
-import { PublicConfig } from '@carbon/ai-chat/es-custom';
+### Using cds-aichat-container
 
-...
+{@link CdsAiChatContainerAttributes | cds-aichat-container} renders the floating widget for you — it applies the [float layout classes](./Layout.md#floating-layout) and has no element to size. Reach for it when you want the classic corner launcher and pop-over window with no layout work.
 
-render() {
-  return html`
-    <cds-custom-aichat-container ....> </cds-custom-aichat-container>
-    <cds-custom-aichat-custom-element ....> </cds-custom-aichat-custom-element>
-  `;
-}
-```
+The `cds-aichat-container` component creates the chat instance when it mounts and destroys it when it unmounts. Configuration changes apply in place — the chat observes property changes and updates without recreating the instance.
+
+`onViewChange` and `onViewPreChange` are also available on `cds-aichat-container` as opt-in observation hooks — useful for analytics or mirroring the chat's open state into your own UI. Because the float container has no wrapping element to size, there is no default visibility behavior on the container: the callbacks simply fire when provided.
+
+See {@link CdsAiChatContainerAttributes} for an explanation of the various accepted properties and attributes.
 
 ### Accessing instance methods
 
-You can use the {@link CdsAiChatContainerAttributes.onBeforeRender} or {@link CdsAiChatContainerAttributes.onAfterRender} props to access the Carbon AI Chat's instance if you need to call instance methods later. This example renders a button that toggles the Carbon AI Chat open and only renders after the instance becomes available. Refer to the following example.
-
-```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-
-import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
-import { type ChatInstance } from "@carbon/ai-chat";
-
-const config = {
-  // Your configuration object.
-};
-
-@customElement("my-app")
-export class MyApp extends LitElement {
-  @state()
-  _instance: ChatInstance;
-
-  onBeforeRender = (instance: ChatInstance) => {
-    this._instance = instance;
-    // Do whatever you want to do with the instance.
-  };
-
-  render() {
-    return html`<cds-aichat-container
-        .onBeforeRender=${this.onBeforeRender}
-        .header=${{ title: "My Assistant" }}
-        .launcher=${{ isOn: true }}
-      />${this._instance ? "<span>Instance loaded</span>" : ""}`;
-  }
-}
-```
+Capture the {@link ChatInstance} from {@link CdsAiChatContainerAttributes.onBeforeRender} (or {@link CdsAiChatContainerAttributes.onAfterRender}) when you need to call instance methods later. See those props for an example.
 
 ### User defined responses
 
-This component is capable of managing `user_defined` responses. The recommended approach is to use the `renderUserDefinedResponse` callback property, which handles all event listening, slot tracking, streaming state, and element lifecycle for you.
+For what `user_defined` responses are and how they're styled, see [Customizing responses](./Responses.md).
 
-#### Using the `renderUserDefinedResponse` callback
+Render `user_defined` responses with the {@link CdsAiChatContainerAttributes.renderUserDefinedResponse} callback property. It handles event listening, slot tracking, streaming state, and element lifecycle for you.
 
-Provide a callback that receives the accumulated state for a user_defined response and returns an `HTMLElement` (or `null`). The library manages everything else.
+#### Using the renderUserDefinedResponse callback
+
+Provide a callback that receives the accumulated {@link RenderUserDefinedState} for a `user_defined` response and returns an `HTMLElement` (or `null`). The callback reads the {@link UserDefinedItem} from that state. The library manages everything else.
 
 ```typescript
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
@@ -259,151 +208,13 @@ renderUserDefinedCallback = (
 };
 ```
 
-The `partialItems` come back as an array of every chunk received. They are _not_ concatenated for you. Some consumers pass in stringified JSON or JSON that needs to be passed through an optimistic JSON parser, so we leave concatenation to your use case. If you are streaming via `addMessageChunk`, be sure to include `streaming_metadata.response_id` for the message and `streaming_metadata.id` for each item so chunks correlate correctly.
+See [the streaming model](./Responses.md#streaming-and-updates) for how `partialItems` and chunk correlation work.
 
-#### Legacy: Manual event handling
+For fine-grained control, you can instead subscribe to {@link BusEventType.USER_DEFINED_RESPONSE} and {@link BusEventType.CHUNK_USER_DEFINED_RESPONSE} directly and manage the slots yourself. The [chat-history-float example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/chat-history-float) uses this approach.
 
-If you need fine-grained control over event handling and slot management, you can use the legacy event-based approach. Listen for {@link BusEventType.USER_DEFINED_RESPONSE} and {@link BusEventType.CHUNK_USER_DEFINED_RESPONSE} events, maintain your own slot map, and render slotted content manually.
+### Slots
 
-```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-import "@carbon/web-components/es/components/ai-skeleton/index.js";
-
-import {
-  BusEventType,
-  type BusEventUserDefinedResponse,
-  type ChatInstance,
-  type GenericItem,
-  type MessageResponse,
-  type PublicConfig,
-  type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-
-import { customSendMessage } from "./customSendMessage";
-
-interface UserDefinedSlotsMap {
-  [key: string]: UserDefinedSlot;
-}
-
-interface UserDefinedSlot {
-  streaming: boolean;
-  message?: GenericItem;
-  fullMessage?: MessageResponse;
-  messageItem?: DeepPartial<GenericItem>;
-  partialItems?: GenericItem[];
-}
-
-const config: PublicConfig = {
-  messaging: {
-    customSendMessage,
-  },
-};
-
-@customElement("my-app")
-export class Demo extends LitElement {
-  @state()
-  accessor instance!: ChatInstance;
-
-  @state()
-  accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
-
-  onBeforeRender = (instance: ChatInstance) => {
-    this.instance = instance;
-    instance.on({
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
-    instance.on({
-      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
-  };
-
-  userDefinedHandler = (event: BusEventUserDefinedResponse) => {
-    const { data } = event;
-    const existingSlot = this.userDefinedSlotsMap[data.slot];
-    const isStreaming = Boolean(data.chunk);
-
-    if (isStreaming && data.messageItem) {
-      const existingPartialItems = existingSlot?.partialItems || [];
-      const newPartialItems = [...existingPartialItems, data.messageItem];
-      this.userDefinedSlotsMap[data.slot] = {
-        streaming: Boolean(newPartialItems.length),
-        message: data.message,
-        fullMessage: data.fullMessage,
-        messageItem: data.messageItem,
-        partialItems: newPartialItems,
-      };
-    } else {
-      this.userDefinedSlotsMap[data.slot] = {
-        streaming: Boolean(existingSlot?.partialItems?.length),
-        message: data.message,
-        fullMessage: data.fullMessage,
-        messageItem: data.messageItem,
-        partialItems: existingSlot?.partialItems,
-      };
-    }
-    this.requestUpdate();
-  };
-
-  renderUserDefinedSlots() {
-    return Object.keys(this.userDefinedSlotsMap).map((slot) => {
-      return this.userDefinedSlotsMap[slot].streaming
-        ? this.renderUserDefinedChunk(slot)
-        : this.renderUserDefinedResponse(slot);
-    });
-  }
-
-  renderUserDefinedResponse(slot: keyof UserDefinedSlotsMap) {
-    const { message } = this.userDefinedSlotsMap[slot];
-    const userDefinedMessage = message as UserDefinedItem;
-    switch (userDefinedMessage.user_defined?.user_defined_type) {
-      case "my_unique_identifier":
-        return html`<div slot=${slot}>
-          ${userDefinedMessage.user_defined.text as string}
-        </div>`;
-      default:
-        return null;
-    }
-  }
-
-  renderUserDefinedChunk(slot: keyof UserDefinedSlotsMap) {
-    const { partialItems } = this.userDefinedSlotsMap[slot];
-    if (partialItems && partialItems.length > 0) {
-      switch (partialItems[0].user_defined?.user_defined_type) {
-        case "my_unique_identifier": {
-          const text = partialItems
-            .map((item) => item.user_defined?.text)
-            .join("");
-          return html`<div slot=${slot}>${text}</div>`;
-        }
-        default:
-          return html`<div slot=${slot}>
-            <cds-ai-skeleton-text></cds-ai-skeleton-text>
-          </div>`;
-      }
-    }
-    return html`<div slot=${slot}>
-      <cds-ai-skeleton-text></cds-ai-skeleton-text>
-    </div>`;
-  }
-
-  render() {
-    return html`
-      <h1>Welcome!</h1>
-      <cds-aichat-container
-        .onBeforeRender=${this.onBeforeRender}
-        .messaging=${config.messaging}
-        >${this.renderUserDefinedSlots()}</cds-aichat-container
-      >
-    `;
-  }
-}
-```
-
-### Writeable Elements
+See [Slots](./WriteableElements.md) for the slot concept and the available {@link WriteableElementName} slots.
 
 The web components will also take elements with a slot attribute matching {@link WriteableElementName} as slot items.
 
@@ -426,245 +237,23 @@ export class MyApp extends LitElement {
 }
 ```
 
-### Custom Message Footer
+### Custom message footer
 
-This component is capable of managing custom message footers — extra content rendered beneath an assistant message. The recommended approach is to use the `renderCustomMessageFooter` callback property, which handles all event listening, slot tracking, and element lifecycle for you.
+For the custom footer concept — the `custom_footer_slot`, the {@link BusEventType.CUSTOM_FOOTER_SLOT} event, and `additionalData` — see [Custom message footer](./CustomMessageFooter.md).
 
-The Carbon AI Chat fires a {@link BusEventType.CUSTOM_FOOTER_SLOT} event when it receives a message from your custom backend with `custom_footer_slot` configured. The event carries an `additional_data` object where you can pass in custom data needed to render the footer.
-
-The examples below share a `custom-footer-example` component for the footer UI:
+Render a footer with the {@link CdsAiChatContainerAttributes.renderCustomMessageFooter} callback (also available on `cds-aichat-custom-element`). It receives the {@link RenderCustomMessageFooterState} and returns an `HTMLElement`:
 
 ```typescript
-import { GenericItem } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Copy16 from "@carbon/icons/es/copy/16.js";
-import Export16 from "@carbon/icons/es/export/16.js";
-
-@customElement("custom-footer-example")
-class CustomFooterExample extends LitElement {
-  @property({ type: Object })
-  accessor messageItem!: GenericItem;
-
-  @property({ type: Object })
-  accessor additionalData: Record<string, unknown> | undefined = undefined;
-
-  private handleCopy = () => {
-    let textToCopy = "";
-    if (
-      "text" in this.messageItem &&
-      typeof this.messageItem.text === "string"
-    ) {
-      textToCopy = this.messageItem.text;
-    }
-
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy);
-    }
-  };
-
-  private handleShare = () => {
-    const url = this.additionalData?.custom_action_url as string;
-    if (url) {
-      window.open(url, "_blank");
-    }
-  };
-
-  render() {
-    return html`
-      <div class="custom-footer-actions">
-        ${this.additionalData?.allow_copy
-          ? html`
-              <cds-icon-button
-                class="custom-footer-button"
-                align="top-left"
-                kind="ghost"
-                role="button"
-                size="sm"
-                @click=${this.handleCopy}
-              >
-                <span slot="icon">${iconLoader(Copy16)}</span>
-                <span slot="tooltip-content">Copy</span>
-              </cds-icon-button>
-            `
-          : null}
-        ${this.additionalData?.custom_action_url
-          ? html`
-              <cds-icon-button
-                class="custom-footer-button"
-                align="top-left"
-                kind="ghost"
-                role="button"
-                size="sm"
-                @click=${this.handleShare}
-              >
-                <span slot="icon">${iconLoader(Export16)}</span>
-                <span slot="tooltip-content">Share</span>
-              </cds-icon-button>
-            `
-          : null}
-      </div>
-    `;
-  }
-}
-
-export default CustomFooterExample;
-```
-
-#### Using the `renderCustomMessageFooter` callback
-
-Provide a callback that receives the accumulated state for a custom footer slot and returns an `HTMLElement` (or `null`). The library subscribes to the footer event, tracks each slot, and manages the rendered elements for you.
-
-```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-
-import {
-  type ChatInstance,
-  type PublicConfig,
-  type RenderCustomMessageFooterState,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-
-// The side-effect import registers the <custom-footer-example> custom element;
-// the `import type` only supplies the class for typing the created element.
-import "./custom-footer-example";
-import type CustomFooterExample from "./custom-footer-example";
-import { customSendMessage } from "./customSendMessage";
-
-const config: PublicConfig = {
-  messaging: {
-    customSendMessage,
-  },
+renderCustomMessageFooter = (state, instance) => {
+  const footer = document.createElement("custom-footer-example");
+  footer.messageItem = state.messageItem;
+  footer.additionalData = state.additionalData;
+  return footer;
 };
-
-@customElement("my-app")
-export class Demo extends LitElement {
-  @state()
-  accessor instance!: ChatInstance;
-
-  onBeforeRender = (instance: ChatInstance) => {
-    this.instance = instance;
-  };
-
-  renderCustomMessageFooterCallback = (
-    state: RenderCustomMessageFooterState,
-    instance: ChatInstance,
-  ): HTMLElement | null => {
-    const footer = document.createElement("custom-footer-example");
-    (footer as CustomFooterExample).messageItem = state.messageItem;
-    (footer as CustomFooterExample).additionalData = state.additionalData;
-    return footer;
-  };
-
-  render() {
-    return html`
-      <h1>Welcome!</h1>
-      <cds-aichat-container
-        .onBeforeRender=${this.onBeforeRender}
-        .messaging=${config.messaging}
-        .renderCustomMessageFooter=${this.renderCustomMessageFooterCallback}
-      ></cds-aichat-container>
-    `;
-  }
-}
 ```
 
-#### Legacy: Manual event handling
+For the full footer element and the mock backend that attaches the slot, see the [custom message footer example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/messages-custom-footer). For fine-grained control, subscribe to {@link BusEventType.CUSTOM_FOOTER_SLOT} directly and manage slots yourself.
 
-If you need fine-grained control over event handling and slot management, you can subscribe to the {@link BusEventType.CUSTOM_FOOTER_SLOT} event directly, maintain your own slot map, and render slotted content manually.
+### Related
 
-```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-import "./custom-footer-example";
-
-import {
-  BusEventType,
-  type PublicConfig,
-  type ChatInstance,
-  type GenericItem,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-import { customSendMessage } from "./customSendMessage";
-
-const config: PublicConfig = {
-  messaging: {
-    customSendMessage,
-  },
-};
-
-interface CustomFooterSlotsMap {
-  [key: string]: CustomFooterSlot;
-}
-
-interface CustomFooterSlot {
-  messageItem: GenericItem;
-  additionalData?: Record<string, unknown>;
-}
-
-@customElement("my-app")
-export class Demo extends LitElement {
-  @state()
-  accessor instance!: ChatInstance;
-
-  @state()
-  accessor customFooterSlotsMap: CustomFooterSlotsMap = {};
-
-  onBeforeRender = (instance: ChatInstance) => {
-    this.instance = instance;
-    this.instance.on({
-      type: BusEventType.CUSTOM_FOOTER_SLOT,
-      handler: this.customFooterHandler,
-    });
-  };
-
-  /**
-   * Each custom footer event is tied to a slot deeply rendered with-in AI chat that is generated at runtime.
-   * Here we make sure we store all these slots along with their relevant data in order to be able to dynamically
-   * render the content to be slotted when this.renderCustomFooterSlots() is called in the render function.
-   */
-  customFooterHandler = (event: any) => {
-    const { data } = event;
-
-    this.customFooterSlotsMap[data.slotName] = {
-      messageItem: data.messageItem,
-      additionalData: data.additionalData,
-    };
-
-    this.requestUpdate();
-  };
-
-  /**
-   * This renders each of the slots that were generated by the AI chat.
-   */
-  renderCustomFooterSlots() {
-    const customFooterSlotsKeyArray = Object.keys(this.customFooterSlotsMap);
-
-    return customFooterSlotsKeyArray.map((slotName) => {
-      const { messageItem, additionalData } =
-        this.customFooterSlotsMap[slotName];
-
-      return html`<div slot=${slotName}>
-        <custom-footer-example
-          .messageItem=${messageItem}
-          .additionalData=${additionalData}
-        ></custom-footer-example>
-      </div>`;
-    });
-  }
-
-  render() {
-    return html`
-      <h1>Welcome!</h1>
-      <cds-aichat-container
-        .onBeforeRender=${this.onBeforeRender}
-        .messaging=${config.messaging}
-        >${this.renderCustomFooterSlots()}</cds-aichat-container
-      >
-    `;
-  }
-}
-```
+- [UI customization](./Customization.md) — theme the chat, control its layout, and inject your own content into slots, panels, responses, and footers.

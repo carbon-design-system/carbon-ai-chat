@@ -862,7 +862,11 @@ export interface GenericItemMessageFeedbackOptions {
  */
 export interface GenericItemCustomFooterSlotOptions {
   /**
-   * Unique identifier for this footer slot. Used to match with the render function.
+   * Identifier for this footer slot, passed to the `renderCustomMessageFooter` render function.
+   *
+   * This value **must be unique to this message** — every message that shows a footer needs its own
+   * `slot_name`. Reusing the same value across messages collapses them onto a single slot, so only the first
+   * message's footer renders. A per-message counter or UUID works well, e.g. `` `copy_footer_${id}` ``.
    */
   slot_name: string;
 

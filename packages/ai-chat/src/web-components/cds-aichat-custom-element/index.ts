@@ -94,12 +94,25 @@ class ChatCustomElement extends FlattenedConfigElement {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
+   *
+   * Use it to capture the {@link ChatInstance} so you can call instance methods later.
+   *
+   * @example
+   * ```ts
+   * const onBeforeRender = (instance: ChatInstance) => {
+   *   this.instance = instance;
+   * };
+   * // <cds-aichat-custom-element .onBeforeRender=${onBeforeRender}></cds-aichat-custom-element>
+   * ```
    */
   @property({ attribute: false })
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
    * This function is called after the render function of Carbon AI Chat is called.
+   *
+   * Like `onBeforeRender`, it receives the {@link ChatInstance}; use it when you need the instance only after the
+   * first render has completed.
    */
   @property({ attribute: false })
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
@@ -415,6 +428,16 @@ interface CdsAiChatCustomElementAttributes extends Omit<
    * This function is called after the render function of Carbon AI Chat is called.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * Called before a view change (the chat opening or closing) and awaited before the change proceeds. Use it to update
+   * this element's CSS classes and run open/close animations to completion before the chat shell's inner contents are
+   * hidden. A common pattern is to use this when the chat is closing and `onViewChange` when it opens.
+   *
+   * Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the
+   * callback will not be updated.
+   */
+  onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
 
   /**
    * An optional listener for "view:change" events. Such a listener is required when using a custom element in order

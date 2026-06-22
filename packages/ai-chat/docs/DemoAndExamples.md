@@ -2,20 +2,25 @@
 title: Demo and Examples
 ---
 
-## Demo
+### Overview
 
-You can see a [demo of the Carbon AI Chat](../../demo/index.html) and view the [source code of the demo](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/demo).
+See Carbon AI Chat running, then read the code. This page links the live demo, where you can try the chat hands-on, and the runnable React and web component example projects you can copy into your own app.
 
-The demo showcases the full featured chat interface with most available customization options and response types.
+### Demo
 
-## Examples
+Open the [live demo](../../demo/index.html) to explore Carbon AI Chat in your browser, or read its [source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/demo). The demo renders the full chat interface and lets you switch configuration options, layouts, and response types on the fly, so you can see how each setting looks and behaves before you wire it into your app.
 
-### React Examples
+### Examples
 
-The [React examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react) demonstrate various integration patterns and features, including basic integration, watsonx.ai streaming, custom elements, history loading, and other features.
+#### React examples
 
-### Web Component Examples
+The [React examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react) show integration patterns and features, including basic integration, custom elements, and history loading.
 
-The [web component examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components) mirror the React examples but use Lit-based web components. These include basic integration, watsonx.ai streaming, custom element patterns, history loading, and more.
+#### Web component examples
 
-All web component examples follow the same patterns as React but use native web component APIs and Lit for templating.
+The [web component examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components) mirror the React examples but use native web component APIs and Lit for templating. These include basic integration, custom element patterns, and history loading.
+
+### Related
+
+- [Using with React](./React.md) — set up the chat in a React app.
+- [Using as a Web component](./WebComponent.md) — set up the chat as a web component.

@@ -348,12 +348,30 @@ interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
   /**
    * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
+   *
+   * Use it to capture the {@link ChatInstance} so you can call instance methods later.
+   *
+   * @example
+   * ```tsx
+   * function App() {
+   *   const [instance, setInstance] = useState<ChatInstance | null>(null);
+   *   return (
+   *     <ChatContainer
+   *       onBeforeRender={(chat) => setInstance(chat)}
+   *       messaging={messaging}
+   *     />
+   *   );
+   * }
+   * ```
    */
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
    * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
    * which will cause Carbon AI Chat to wait for it before rendering.
+   *
+   * Like {@link ChatContainerProps.onBeforeRender}, it receives the {@link ChatInstance}; use it when you need the
+   * instance only after the first render has completed.
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
 

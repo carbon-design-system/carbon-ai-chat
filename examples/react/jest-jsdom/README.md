@@ -16,15 +16,15 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Package / kind              | Role in this example                                          |
-| --------------------------------------------- | --------------------------- | ------------------------------------------------------------- |
-| `ChatContainer`                               | `@carbon/ai-chat` component | Mounted under test.                                           |
-| `messaging.customSendMessage`                 | config prop                 | Inline no-op mock.                                            |
-| `renderWriteableElements.headerBottomElement` | component prop              | React node inserted into the header bottom writeable element. |
-| `data-testid`                                 | component prop              | Passed through to the root element for querying.              |
-| `@testing-library/react`                      | test util                   | `render`, `act`, `waitFor`.                                   |
-| `@testing-library/jest-dom`                   | test util                   | DOM matchers.                                                 |
-| `jest-environment-jsdom`                      | jest env                    | Default Jest DOM environment (no shadow-DOM support).         |
+| Symbol                                        | Package / kind              | Role in this example                                  |
+| --------------------------------------------- | --------------------------- | ----------------------------------------------------- |
+| `ChatContainer`                               | `@carbon/ai-chat` component | Mounted under test.                                   |
+| `messaging.customSendMessage`                 | config prop                 | Inline no-op mock.                                    |
+| `renderWriteableElements.headerBottomElement` | component prop              | React node inserted into the header bottom slot.      |
+| `data-testid`                                 | component prop              | Passed through to the root element for querying.      |
+| `@testing-library/react`                      | test util                   | `render`, `act`, `waitFor`.                           |
+| `@testing-library/jest-dom`                   | test util                   | DOM matchers.                                         |
+| `jest-environment-jsdom`                      | jest env                    | Default Jest DOM environment (no shadow-DOM support). |
 
 ## Run it
 

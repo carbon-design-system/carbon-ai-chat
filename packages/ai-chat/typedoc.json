@@ -18,8 +18,9 @@
         "./docs/WebComponent.md",
         "./docs/Angular.md",
         "./docs/Customization.md",
-        "./docs/CustomServiceDesks.md",
         "./docs/CustomServer.md",
+        "./docs/CustomServiceDesks.md",
+        "./docs/Internationalization.md",
         "./docs/DemoAndExamples.md",
         "./docs/Migration-1.0.0.md"
     ],

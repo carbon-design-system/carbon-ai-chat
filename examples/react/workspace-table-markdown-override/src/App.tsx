@@ -129,7 +129,7 @@ function App() {
   );
 
   // Only built when there is workspace data — `null` means the panel is
-  // closed and nothing should render in the writeable-elements slot.
+  // closed and nothing should render in the slot.
   const renderWriteableElements = useMemo(() => {
     if (!workspaceData || !instanceRef.current) {
       return undefined;

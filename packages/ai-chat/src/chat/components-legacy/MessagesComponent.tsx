@@ -303,7 +303,22 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           // Always adjust spacer — keeps scrollHeight stable regardless of scroll position.
           // Inverse delta: content grows (+delta) → spacer shrinks (-delta)
           //                content shrinks (-delta) → spacer grows (+delta)
-          this.domSpacerHeight = Math.max(0, this.domSpacerHeight - delta);
+          // Cap growth at the minimum needed to keep pinnedScrollTop reachable —
+          // otherwise post-stream below-viewport shrinkage (e.g., typing indicator
+          // collapsing after a long response finishes) blindly inflates the spacer.
+          const deltaCompensated = Math.max(0, this.domSpacerHeight - delta);
+          const contentHeightWithoutSpacer =
+            scrollElement.scrollHeight - this.domSpacerHeight;
+          const minSpacerForPin = Math.max(
+            0,
+            this.pinnedScrollTop +
+              scrollElement.clientHeight -
+              contentHeightWithoutSpacer,
+          );
+          this.domSpacerHeight = Math.min(
+            deltaCompensated,
+            Math.max(this.domSpacerHeight, minSpacerForPin),
+          );
           applySpacerDeficit(spacerElem, this.domSpacerHeight);
 
           // Restore scrollTop if user is near the pin, or if browser capped scrollTop.

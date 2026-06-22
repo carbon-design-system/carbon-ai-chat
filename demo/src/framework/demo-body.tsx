@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -597,7 +597,7 @@ export class DemoBody extends LitElement {
                       class="config-section__title"
                       id="writeable-elements-heading"
                     >
-                      Writeable Elements
+                      Slots
                     </div>
                     <demo-writeable-elements-switcher
                       .settings=${this.settings}

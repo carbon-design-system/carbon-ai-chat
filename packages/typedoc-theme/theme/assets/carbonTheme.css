@@ -26,8 +26,37 @@ cds-modal:not(:defined),
 cds-modal-header:not(:defined),
 cds-modal-heading:not(:defined),
 cds-modal-close-button:not(:defined),
-cds-modal-body:not(:defined) {
+cds-modal-body:not(:defined),
+cds-table:not(:defined),
+cds-table-head:not(:defined),
+cds-table-header-row:not(:defined),
+cds-table-header-cell:not(:defined),
+cds-table-body:not(:defined),
+cds-table-row:not(:defined),
+cds-table-cell:not(:defined),
+cds-ordered-list:not(:defined),
+cds-unordered-list:not(:defined),
+cds-list-item:not(:defined) {
   visibility: hidden;
+}
+
+/*
+ * Code snippets are NOT hidden until defined: the raw source is slotted as text,
+ * so it stays visible and selectable even if the component never hydrates (CDN/JS
+ * failure). Reserve space to soften layout shift while CodeMirror loads.
+ */
+cds-aichat-code-snippet:not(:defined) {
+  display: block;
+  min-height: 2rem;
+  white-space: pre;
+  font-family: var(--cds-code-01-font-family, monospace);
+}
+
+/* Breathing room above each fenced code block, applied in both the
+ * pre-hydration and hydrated states so the spacing doesn't shift on load. */
+cds-aichat-code-snippet {
+  display: block;
+  margin-top: 1rem;
 }
 
 /* Hide main content until key UI shell components are ready */
@@ -563,6 +592,24 @@ code.tsd-tag-example {
   input::placeholder {
     color: var(--cds-text-placeholder, #a8a8a8);
   }
+}
+
+/* Blockquote styling ported from cds-aichat-markdown (markdown.scss) so docs
+ * match the in-chat rendering: a subtle left rule + indent, with tuned spacing
+ * between stacked children. */
+.carbon-main-content blockquote {
+  border-inline-start: 2px solid var(--cds-border-subtle-00, #e0e0e0);
+  padding-inline-start: var(--cds-spacing-03, 0.5rem);
+  margin-block-start: var(--cds-spacing-05, 1rem);
+  margin-inline-start: 0;
+}
+
+.carbon-main-content blockquote > *:not(:first-child) {
+  margin-block-start: var(--cds-spacing-05, 1rem);
+}
+
+.carbon-main-content blockquote > :is(h1, h2, h3, h4, h5, h6) + *:not(:first-child) {
+  margin-block-start: var(--cds-spacing-03, 0.5rem);
 }
 
 /* Carbon-style list styling scoped to main content */

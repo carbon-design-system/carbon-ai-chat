@@ -55,7 +55,7 @@ Symbols scheduled for removal. Include the replacement and target major: `@depre
 - **State purpose, not shape.** The signature shows the shape; JSDoc explains what it _means_ and when to use it.
 - **Document units and semantics of primitives.** `timeout: number` is useless without "milliseconds". `id: string` is useless without "must be unique across X".
 - **Complete sentences, ending in periods.** No note-form, no internal jargon, no ticket refs, no TODOs.
-- **Match the tone of existing types** ([messaging/Messages.ts](messaging/Messages.ts), [instance/ChatInstance.ts](instance/ChatInstance.ts)).
+- **Match the tone of existing types** ([messaging/Messages.ts](messaging/Messages.ts), [instance/ChatInstance.ts](instance/ChatInstance.ts)). JSDoc is product copy — follow [../../../../AGENTS_TONE.md](../../../../AGENTS_TONE.md) for voice and word economy.
 
 ## Cross-linking
 
@@ -149,5 +149,6 @@ When you change anything under [.](.) (or a type in `@carbon/ai-chat-components`
 ## Related Guidance
 
 - **Parent guidance**: [packages/ai-chat/AGENTS.md](../../AGENTS.md)
+- **Voice and tone**: [AGENTS_TONE.md](../../../../AGENTS_TONE.md) - Voice and word economy for all public copy
 - **Store patterns**: [../chat/store/AGENTS.md](../chat/store/AGENTS.md) - For action/state types
 - **Documentation**: [../docs/AGENTS.md](../docs/AGENTS.md) - For public API docs

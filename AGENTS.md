@@ -15,6 +15,7 @@ This file provides guidance to agents when working with code in this repository.
 - If you are not Bob, don't read `.bob/` (IBM Bob mode rules — not general guidance).
 - **Code reviews** (user-requested or self-review before marking a task done) follow the rubric in [AGENTS_CODE_REVIEW.md](AGENTS_CODE_REVIEW.md).
 - **Writing a PR description**: when asked to draft or write up a PR, follow [AGENTS_PR.md](AGENTS_PR.md).
+- **Writing developer-facing copy** (README, JSDoc, Storybook MDX, `packages/ai-chat/docs/`): follow [AGENTS_TONE.md](AGENTS_TONE.md) for voice and word economy.
 
 ## Repository layout
 

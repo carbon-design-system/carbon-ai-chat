@@ -1,19 +1,19 @@
 # Chat History (Float)
 
-`ChatContainer` with the history feature enabled, using the writeable `historyPanelElement` slot to render a custom conversation picker in the default float layout.
+`ChatContainer` with the history feature enabled, using the `historyPanelElement` slot to render a custom conversation picker in the default float layout.
 
 ## What this example shows
 
 - Turning on the built-in history panel via `history.isOn: true`.
 - Wiring `customLoadHistory` alongside `customSendMessage` under `messaging`.
-- Rendering a custom history panel UI into the `historyPanelElement` writeable element.
+- Rendering a custom history panel UI into the `historyPanelElement` slot.
 - Using `instance.messaging.clearConversation()` + `instance.messaging.insertHistory()` to swap conversations from the UI.
 - Rendering user-defined responses via `renderUserDefinedResponse`.
 
 ## When to use this pattern
 
 - You want a floating chat widget that lets users browse and restore past conversations.
-- You need a reference for mounting React content inside a chat writeable element slot.
+- You need a reference for mounting React content inside a chat slot.
 - You need an example of programmatic conversation replacement through `ChatInstance`.
 
 ## APIs and props demonstrated

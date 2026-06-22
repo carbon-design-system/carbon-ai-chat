@@ -31,7 +31,7 @@ import AiLaunch20 from "@carbon/icons-react/es/AiLaunch.js";
 
 // These functions hook up to your back-end.
 import { customSendMessage } from "./customSendMessage";
-// Workspace writeable element components
+// Workspace slot components
 import { InventoryReportExample } from "./InventoryReportExample";
 import { InventoryStatusExample } from "./InventoryStatusExample";
 import { OutstandingOrdersExample } from "./OutstandingOrdersExample";
