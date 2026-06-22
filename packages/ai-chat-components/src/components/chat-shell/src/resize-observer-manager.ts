@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -98,8 +98,8 @@ export class ResizeObserverManager {
     const messagesMaxWidth = this.getMessagesMaxWidth();
 
     const updateAtMaxWidth = (hostWidth: number) => {
-      // When host is less than max-width, input-and-messages is "at max width" (filling container)
-      const isAtMaxWidth = hostWidth < messagesMaxWidth;
+      // When host is less than or equal to max-width, input-and-messages is "at max width" (filling container)
+      const isAtMaxWidth = hostWidth <= messagesMaxWidth;
       onWidthChange({ isAtMaxWidth, currentWidth: hostWidth });
     };
 
