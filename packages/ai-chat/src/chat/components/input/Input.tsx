@@ -12,6 +12,7 @@ import InputShell from "@carbon/ai-chat-components/es/react/input-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
 import PromptLine from "@carbon/ai-chat-components/es/react/prompt-line.js";
+import ErrorMessage from "@carbon/ai-chat-components/es/react/error-message.js";
 import type { FileUpload } from "@carbon/ai-chat-components/es/components/input/src/types.js";
 import { FileStatusValue } from "@carbon/ai-chat-components/es/components/input/src/types.js";
 import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/input/index.js";
@@ -490,7 +491,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
       {charCountMessage && (
         <div slot="field-messaging" role="status" aria-live="polite">
-          {charCountMessage}
+          <ErrorMessage fullscreen expandable message={charCountMessage}></ErrorMessage>
         </div>
       )}
 

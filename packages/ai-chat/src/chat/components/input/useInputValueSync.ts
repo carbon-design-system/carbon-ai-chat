@@ -116,7 +116,7 @@ function useInputValueSync({
   }, [store, trackInputState]);
 
   // const overMaxLength = rawInputValue.length > maxInputChars;
-  const overMaxLength = rawInputValue.length > 10; // TODO: remove. only for testing purposes 
+  const overMaxLength = rawInputValue.length > 10; // TODO: remove. only for testing purposes
 
   const effectiveDisableSend =
     disableSend || isSendDisabledFromConfig || overMaxLength;
