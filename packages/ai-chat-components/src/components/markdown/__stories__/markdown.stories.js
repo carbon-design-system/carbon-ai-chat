@@ -10,7 +10,14 @@
 import "../src/markdown";
 import "@carbon/web-components/es/components/data-table/index.js";
 import { html, render, LitElement } from "lit";
-import markdownItKatex from "@vscode/markdown-it-katex";
+// `@vscode/markdown-it-katex` is a CommonJS module that assigns the plugin to
+// `exports.default` without an `__esModule` marker. Under Vite's interop the
+// default import resolves to the whole module namespace (`{ default: fn }`)
+// rather than the function, so unwrap `.default` before handing it to
+// `markdownItPlugins`, which expects plugin functions.
+import markdownItKatexModule from "@vscode/markdown-it-katex";
+
+const markdownItKatex = markdownItKatexModule.default ?? markdownItKatexModule;
 
 const comprehensiveMarkdown = `# Markdown Rendering Demo
 
