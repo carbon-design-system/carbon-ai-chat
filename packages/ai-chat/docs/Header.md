@@ -4,7 +4,7 @@ title: Header
 
 ## Overview
 
-The header is the bar across the top of the chat. It is on by default; configure it through {@link PublicConfig.header} with a {@link HeaderConfig}. Set {@link HeaderConfig.isOn} to `false` to drop it entirely — useful for a fullscreen or embedded chat that reuses your application's own header.
+The header is the bar across the top of the chat. It is displayed by default and can be configured through {@link PublicConfig.header} with a {@link HeaderConfig}. To remove the header entirely, set {@link HeaderConfig.isOn} to `false`. This is useful for a fullscreen or embedded chat that reuses your application's own header.
 
 ```ts
 import type { PublicConfig } from "@carbon/ai-chat";
@@ -19,7 +19,7 @@ const config: PublicConfig = {
 
 ## Title and name
 
-Set {@link HeaderConfig.title} for the header title and {@link HeaderConfig.name} for the name shown after it.
+Set {@link HeaderConfig.title} for the header title and {@link HeaderConfig.name} for the **bolded** name shown directly after it.
 
 ## Built-in buttons
 
