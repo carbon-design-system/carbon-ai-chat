@@ -115,7 +115,8 @@ function useInputValueSync({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, trackInputState]);
 
-  const overMaxLength = rawInputValue.length > maxInputChars;
+  // const overMaxLength = rawInputValue.length > maxInputChars;
+  const overMaxLength = rawInputValue.length > 10; // TODO: remove. only for testing purposes 
 
   const effectiveDisableSend =
     disableSend || isSendDisabledFromConfig || overMaxLength;

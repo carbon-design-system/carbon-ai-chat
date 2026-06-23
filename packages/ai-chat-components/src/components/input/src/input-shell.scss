@@ -69,6 +69,11 @@
   border-radius: layout.$spacing-03;
 }
 
+// Error state
+:host([has-error]) .#{$prefix}--input-container {
+  border: 1px solid theme.$support-error;
+}
+
 // Message actions visible — reduce start padding
 .#{$prefix}--input-container--has-message-actions {
   padding-inline-start: layout.$spacing-03;
