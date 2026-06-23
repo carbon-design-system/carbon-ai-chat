@@ -412,7 +412,8 @@ class ChatContainer extends FlattenedConfigElement {
     const detail = (
       event as CustomEvent<{
         slotName: string;
-        html: string;
+        html?: string;
+        element?: HTMLElement;
         isInline: boolean;
       }>
     ).detail;
@@ -426,9 +427,27 @@ class ChatContainer extends FlattenedConfigElement {
     }
     if (this.hasOuterChatHandler(event)) {
       // An outer chat element will create the page-level host; just forward.
+      // This applies to the live-element path too: appending here would land
+      // the node in this element's light DOM (inside the outer chat element's
+      // shadow root), where global CSS still wouldn't reach it.
       return;
     }
     event.preventDefault();
+    // Custom-renderer hosts (table/codeBlock) forward a live element — the
+    // markdown element keeps ownership of its content; we only relocate the
+    // node into our outer light DOM so the consumer's global CSS reaches it.
+    // Plugin fallbacks forward an HTML string instead.
+    if (detail.element) {
+      const element = detail.element;
+      element.setAttribute("slot", detail.slotName);
+      if (!detail.isInline) {
+        element.style.marginBlockStart = "1rem";
+      }
+      if (element.parentElement !== this) {
+        this.appendChild(element);
+      }
+      return;
+    }
     let host = this._pluginHosts.get(detail.slotName);
     if (!host) {
       host = document.createElement(detail.isInline ? "span" : "div");
@@ -443,8 +462,8 @@ class ChatContainer extends FlattenedConfigElement {
       this._pluginHosts.set(detail.slotName, host);
       this.appendChild(host);
     }
-    if (host.innerHTML !== detail.html) {
-      host.innerHTML = detail.html;
+    if (host.innerHTML !== (detail.html ?? "")) {
+      host.innerHTML = detail.html ?? "";
     }
   };
 

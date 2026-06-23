@@ -227,7 +227,8 @@ class ChatCustomElement extends FlattenedConfigElement {
     const detail = (
       event as CustomEvent<{
         slotName: string;
-        html: string;
+        html?: string;
+        element?: HTMLElement;
         isInline: boolean;
       }>
     ).detail;
@@ -241,6 +242,21 @@ class ChatCustomElement extends FlattenedConfigElement {
     // shadow chain; there is no further chat ancestor to defer to. Take
     // hosting unconditionally.
     event.preventDefault();
+    // Custom-renderer hosts (table/codeBlock) forward a live element — the
+    // markdown element keeps ownership of its content; we only relocate the
+    // node into our outer light DOM so the consumer's global CSS reaches it.
+    // Plugin fallbacks forward an HTML string instead.
+    if (detail.element) {
+      const element = detail.element;
+      element.setAttribute("slot", detail.slotName);
+      if (!detail.isInline) {
+        element.style.marginBlockStart = "1rem";
+      }
+      if (element.parentElement !== this) {
+        this.appendChild(element);
+      }
+      return;
+    }
     let host = this._pluginHosts.get(detail.slotName);
     if (!host) {
       host = document.createElement(detail.isInline ? "span" : "div");
@@ -255,8 +271,8 @@ class ChatCustomElement extends FlattenedConfigElement {
       this._pluginHosts.set(detail.slotName, host);
       this.appendChild(host);
     }
-    if (host.innerHTML !== detail.html) {
-      host.innerHTML = detail.html;
+    if (host.innerHTML !== (detail.html ?? "")) {
+      host.innerHTML = detail.html ?? "";
     }
   };
 
