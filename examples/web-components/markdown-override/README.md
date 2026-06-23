@@ -1,12 +1,12 @@
-# Markdown override (code snippet, hide detected language label)
+# Markdown override (code snippet + table)
 
-`<cds-aichat-custom-element>` mounted directly in page light DOM and configured with `markdown.customRenderers.codeBlock` so every fenced code block renders through a `cds-aichat-code-snippet` whose `detectLanguage` property is explicitly set to `false` — overriding the markdown component's default of `true`. Bare fences no longer show the detected language label in the snippet header; explicit fence languages still display their label.
+`<cds-aichat-custom-element>` mounted directly in page light DOM and configured with `markdown.customRenderers` to replace two element renderers: `codeBlock` (every fenced code block renders through a `cds-aichat-code-snippet` with `detectLanguage` set to `false`) and `table` (every markdown table renders through a Carbon `cds-table` from `@carbon/web-components`).
 
 ## What this example shows
 
-- Setting `markdown` as a JS property on `<cds-aichat-custom-element>` and supplying a `customRenderers.codeBlock` callback that returns an `HTMLElement`.
-- Caching the rendered `cds-aichat-card` host by `slotName` so streaming re-renders update the same DOM nodes instead of replacing them.
-- Setting `detectLanguage = false` on `cds-aichat-code-snippet` to override the markdown component's default and hide the auto-detected language label.
+- Setting `markdown` as a JS property on `<cds-aichat-custom-element>` and supplying `customRenderers.codeBlock` / `customRenderers.table` callbacks that return an `HTMLElement`.
+- Caching the rendered host by `slotName` (the `cds-aichat-card` for code, a `cds-table` wrapper rendered with Lit for tables) so streaming re-renders update the same DOM nodes instead of replacing them.
+- Setting `detectLanguage = false` on `cds-aichat-code-snippet` to hide the auto-detected language label.
 - Mounting `<cds-aichat-custom-element>` directly in `index.html` (no wrapping custom element) for consistency with the rest of the markdown-extensibility examples.
 
 ## When to use this pattern
@@ -24,11 +24,13 @@
 | `WCMarkdown`                         | `@carbon/ai-chat` type        | Shape of the value bound to `.markdown`.                                   |
 | `WCCustomMarkdownRenderers`          | `@carbon/ai-chat` type        | Shape of `markdown.customRenderers`.                                       |
 | `markdown.customRenderers.codeBlock` | config field                  | Replaces the default fenced-code renderer.                                 |
+| `markdown.customRenderers.table`     | config field                  | Replaces the default table renderer with a Carbon `cds-table`.             |
 | `MarkdownRendererCodeBlockArgs`      | `@carbon/ai-chat` type        | Argument shape passed to the callback (`language`, `code`, `slotName`, …). |
+| `MarkdownRendererTableArgs`          | `@carbon/ai-chat` type        | Argument shape for the table callback (`headers`, `rows`, `slotName`, …).  |
 | `<cds-aichat-card>` (`is-flush`)     | custom element                | Wraps the snippet to match the default Carbon shell.                       |
 | `<cds-aichat-code-snippet>`          | custom element                | Renders the code; receives `detectLanguage`, `language`, `highlight`.      |
-| `.detectLanguage`                    | property                      | Set to `false` here to hide the auto-detected language label.              |
-| `messaging.customSendMessage`        | property                      | Mock backend that emits two contrasting fences in every reply.             |
+| `<cds-table>` and friends            | `@carbon/web-components`      | The data table the `table` override renders with Lit.                      |
+| `messaging.customSendMessage`        | property                      | Mock backend that emits two contrasting fences and a table in every reply. |
 
 ## Run it
 
