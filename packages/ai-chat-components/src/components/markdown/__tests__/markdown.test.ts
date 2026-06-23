@@ -1467,6 +1467,181 @@ HTTP: http://example.com
     });
   });
 
+  describe("link / image attribute transforms", () => {
+    it("link callback rewrites href and target", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            link: ({ href }: { href: string }) => ({
+              href: `${href}?utm_source=test`,
+              target: "_self",
+            }),
+          }}
+          .markdown=${"[link](https://example.com)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector("a");
+      expect(link?.getAttribute("href")).to.equal(
+        "https://example.com?utm_source=test",
+      );
+      expect(link?.getAttribute("target")).to.equal("_self");
+    });
+
+    it("link callback returning null keeps the default target=_blank", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ link: () => null }}
+          .markdown=${"[link](https://example.com)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector("a");
+      expect(link?.getAttribute("href")).to.equal("https://example.com");
+      expect(link?.getAttribute("target")).to.equal("_blank");
+    });
+
+    it("passes link text + href to the callback and still renders rich children", async () => {
+      const seen: Array<{ href: string; text: string }> = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            link: (args: { href: string; text: string }) => {
+              seen.push({ href: args.href, text: args.text });
+              return null;
+            },
+          }}
+          .markdown=${"[**bold** link](https://example.com)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      expect(seen.length).to.be.greaterThanOrEqual(1);
+      expect(seen[0].href).to.equal("https://example.com");
+      expect(seen[0].text).to.equal("bold link");
+      // The framework still renders the inline children of the link.
+      expect(el.shadowRoot?.querySelector("a strong")).to.not.equal(null);
+    });
+
+    it("re-sanitizes consumer-added link attributes when sanitize-html is set", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          sanitize-html
+          .customRenderers=${{
+            link: () => ({
+              attributes: { onclick: "alert(1)", "data-safe": "ok" },
+            }),
+          }}
+          .markdown=${"[link](https://example.com)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector("a");
+      expect(link?.hasAttribute("onclick"), "unsafe attr stripped").to.equal(
+        false,
+      );
+      expect(link?.getAttribute("data-safe")).to.equal("ok");
+    });
+
+    it("image callback rewrites src", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            image: ({ src }: { src: string }) => ({
+              src: `https://cdn.example.com/${src}`,
+            }),
+          }}
+          .markdown=${"![alt](logo.png)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const img = el.shadowRoot?.querySelector("img");
+      expect(img?.getAttribute("src")).to.equal(
+        "https://cdn.example.com/logo.png",
+      );
+    });
+
+    it("image callback returning null keeps the original src", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ image: () => null }}
+          .markdown=${"![alt](logo.png)"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const img = el.shadowRoot?.querySelector("img");
+      expect(img?.getAttribute("src")).to.equal("logo.png");
+    });
+  });
+
+  describe("checklist behavior hook", () => {
+    const dispatchToggle = (checkbox: Element, checked: boolean) =>
+      checkbox.dispatchEvent(
+        new CustomEvent("cds-checkbox-changed", {
+          detail: { checked },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+    it("onToggle fires with the item id, label, and new checked state", async () => {
+      const toggles: Array<{ id: string; label: string; checked: boolean }> =
+        [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            checklist: {
+              onToggle: (args: {
+                id: string;
+                label: string;
+                checked: boolean;
+              }) => toggles.push(args),
+            },
+          }}
+          .markdown=${"- [ ] First\n- [x] Second"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const checkbox = el.shadowRoot?.querySelector("cds-checkbox");
+      expect(checkbox, "task-list checkbox rendered").to.not.equal(null);
+
+      dispatchToggle(checkbox as Element, true);
+      expect(toggles.length).to.equal(1);
+      expect(toggles[0].checked).to.equal(true);
+      expect(toggles[0].id).to.be.a("string");
+      expect(toggles[0].label).to.include("First");
+    });
+
+    it("getChecked overrides the markdown-parsed checked state", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            checklist: {
+              onToggle: () => {},
+              getChecked: () => true,
+            },
+          }}
+          .markdown=${"- [ ] Unchecked in source"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const checkbox = el.shadowRoot?.querySelector("cds-checkbox");
+      expect(checkbox?.hasAttribute("checked")).to.equal(true);
+    });
+
+    it("ignores checkbox toggles when no checklist renderer is configured", async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdown=${"- [ ] First"}
+        ></cds-aichat-markdown>`,
+      );
+      await el.updateComplete;
+      const checkbox = el.shadowRoot?.querySelector("cds-checkbox");
+      // No handler registered — dispatching must not throw.
+      dispatchToggle(checkbox as Element, true);
+      expect(checkbox).to.not.equal(null);
+    });
+  });
+
   describe("light DOM mutation observer ignores slotted descendants", () => {
     it("does not reparse markdown when a slotted child's content changes", async () => {
       let hostElement: HTMLDivElement | undefined;

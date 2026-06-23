@@ -11,8 +11,15 @@ import "./src/markdown.js";
 export { default, CDSAIChatMarkdown } from "./src/markdown.js";
 export type {
   MarkdownCustomRenderers,
+  MarkdownRendererChecklist,
+  MarkdownRendererChecklistItemArgs,
+  MarkdownRendererChecklistToggleArgs,
   MarkdownRendererCodeBlockArgs,
   MarkdownRendererCodeBlockData,
+  MarkdownRendererImageArgs,
+  MarkdownRendererImageResult,
+  MarkdownRendererLinkArgs,
+  MarkdownRendererLinkResult,
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
 } from "./src/markdown-renderer-types.js";

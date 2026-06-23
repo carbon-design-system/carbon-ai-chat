@@ -8,22 +8,38 @@
  */
 
 import React, { type ReactNode } from "react";
+import type {
+  MarkdownRendererChecklist,
+  MarkdownRendererImageArgs,
+  MarkdownRendererImageResult,
+  MarkdownRendererLinkArgs,
+  MarkdownRendererLinkResult,
+} from "@carbon/ai-chat-components/es/components/markdown/index.js";
 
 import type { MarkdownItPlugin } from "../../types/config/PublicConfig";
 
 /**
- * Permissive context value used by `MarkdownWithDefaults`. Accepts callbacks
- * returning either a `ReactNode` (set by the React `ChatContainer` from
+ * Permissive context value used by `MarkdownWithDefaults`. The element
+ * replacements (`table`, `codeBlock`) accept callbacks returning either a
+ * `ReactNode` (set by the React `ChatContainer` from
  * `ChatContainerPropsMarkdown.customRenderers`) or an `HTMLElement | null`
  * (set by `cds-aichat-container` / `cds-aichat-custom-element` from
- * `WCMarkdown.customRenderers`). The component dispatches based on the
- * runtime return type.
+ * `WCMarkdown.customRenderers`); the component dispatches based on the runtime
+ * return type. The attribute transforms (`link`, `image`) and the `checklist`
+ * hook are framework-neutral, so they carry their precise types unchanged.
  */
 export interface MarkdownConfigContextValue {
   markdownItPlugins?: MarkdownItPlugin[];
   customRenderers?: {
     table?: (args: unknown) => ReactNode | HTMLElement | null;
     codeBlock?: (args: unknown) => ReactNode | HTMLElement | null;
+    link?: (
+      args: MarkdownRendererLinkArgs,
+    ) => MarkdownRendererLinkResult | null;
+    image?: (
+      args: MarkdownRendererImageArgs,
+    ) => MarkdownRendererImageResult | null;
+    checklist?: MarkdownRendererChecklist;
   };
 }
 

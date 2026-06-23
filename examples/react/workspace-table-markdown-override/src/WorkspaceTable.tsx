@@ -19,14 +19,14 @@
  * Start reading at `WorkspaceTable()`.
  */
 
-import "@carbon/ai-chat-components/es/components/table/index.js";
 import { type ChatInstance, PanelType } from "@carbon/ai-chat";
+import Table from "@carbon/ai-chat-components/es/react/table";
 import WorkspaceShell, {
   WorkspaceShellBody,
 } from "@carbon/ai-chat-components/es/react/workspace-shell";
 import Toolbar from "@carbon/ai-chat-components/es/react/toolbar";
 import { Close } from "@carbon/icons-react";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 
 import { type TableData } from "./tableData";
 
@@ -36,31 +36,14 @@ interface WorkspaceTableProps {
 }
 
 function WorkspaceTable({ instance, data }: WorkspaceTableProps) {
-  // `cds-aichat-table` exposes `headers` / `rows` / `defaultPageSize` as JS
-  // properties (not attributes), so we set them imperatively after mount.
-  const tableRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!tableRef.current) {
-      return;
-    }
-    const node = tableRef.current as unknown as {
-      headers: { text: string }[];
-      rows: { cells: { text: string }[] }[];
-      defaultPageSize: number;
-    };
-    node.headers = data.headers.map((text) => ({ text }));
-    node.rows = data.rows.map((cells) => ({
-      cells: cells.map((text) => ({ text })),
-    }));
-    // Setting defaultPageSize to the row count suppresses the pagination
-    // bar (the table only renders it when rows.length > currentPageSize).
-    node.defaultPageSize = data.rows.length;
-  }, [data]);
-
   const close = () => {
     instance.customPanels?.getPanel(PanelType.WORKSPACE).close();
   };
+
+  const headers = data.headers.map((text) => ({ text }));
+  const rows = data.rows.map((cells) => ({
+    cells: cells.map((text) => ({ text })),
+  }));
 
   return (
     <WorkspaceShell>
@@ -71,8 +54,13 @@ function WorkspaceTable({ instance, data }: WorkspaceTableProps) {
         <div slot="title">{data.title}</div>
       </Toolbar>
       <WorkspaceShellBody>
-        {/* @ts-expect-error — cds-aichat-table is a web component, not a React type */}
-        <cds-aichat-table ref={tableRef} />
+        {/* `defaultPageSize` of the row count suppresses the pagination bar
+            (the table only renders it when rows.length > currentPageSize). */}
+        <Table
+          headers={headers}
+          rows={rows}
+          defaultPageSize={data.rows.length}
+        />
       </WorkspaceShellBody>
     </WorkspaceShell>
   );
