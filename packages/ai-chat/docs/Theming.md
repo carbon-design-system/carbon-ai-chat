@@ -36,16 +36,18 @@ See [React](./React.md) and [web components](./WebComponent.md) for how config r
 
 ## Override specific colors
 
-The chat exposes two layers of CSS custom properties you can override from your own stylesheet:
+The chat exposes two layers of CSS custom properties:
 
 - `--cds-aichat-*` tokens style the chat's own shell and launcher.
 - The underlying Carbon `--cds-*` tokens style the Carbon components rendered inside the chat — buttons, links, inputs, and surfaces.
 
-Custom properties inherit through the chat's shadow boundary, so setting them on a host element flows into the chat:
+### Override with your own CSS
+
+The simplest way to recolor (or resize) the chat is to set these custom properties on a host element. They inherit through the chat's shadow boundary, so the chat picks them up:
 
 ```css
 .my-host {
-  /* Chat shell token */
+  /* Chat shell tokens */
   --cds-aichat-launcher-color-background: #1a1a2e;
   /* Carbon component tokens */
   --cds-link-primary: #1a1a2e;
@@ -53,7 +55,29 @@ Custom properties inherit through the chat's shadow boundary, so setting them on
 }
 ```
 
-The chat picks up your `--cds-*` overrides whenever it inherits its theme from the page — the default, or when your site uses Carbon. If you force a theme with `injectCarbonTheme`, the chat supplies its own Carbon tokens, so recolor the shell with the `--cds-aichat-*` tokens instead (or override `--cds-*` in inherit mode).
+The `--cds-aichat-*` shell tokens are overridable this way in every theme mode. The Carbon `--cds-*` tokens are overridable this way whenever the chat inherits its theme — the default, or when your site uses Carbon.
+
+### Override under a forced theme
+
+If you force a theme with {@link PublicConfig.injectCarbonTheme}, the chat supplies its own Carbon `--cds-*` tokens, so page-level `--cds-*` overrides no longer reach the Carbon components. Set them through {@link LayoutConfig.customProperties} instead — the chat injects these inside its own DOM, so they win over the forced theme. A bare key sets a `--cds-aichat-*` shell token; a key prefixed with `$` sets a Carbon `--cds-*` token (`$`-prefixed values must be hexadecimal colors):
+
+```tsx
+import { ChatContainer, CarbonTheme } from "@carbon/ai-chat";
+import type { PublicConfig } from "@carbon/ai-chat";
+
+const config: PublicConfig = {
+  injectCarbonTheme: CarbonTheme.G100,
+  layout: {
+    customProperties: {
+      // Chat shell token -> --cds-aichat-launcher-color-background
+      "launcher-color-background": "#1a1a2e",
+      // Carbon component tokens -> --cds-button-primary / --cds-link-primary
+      "$button-primary": "#1a1a2e",
+      "$link-primary": "#1a1a2e",
+    },
+  },
+};
+```
 
 [Layout](./Layout.md) documents the `--cds-aichat-*` sizing and placement tokens and how to set them through {@link LayoutConfig.customProperties}; [Launcher](./Launcher.md) documents the launcher and unread-indicator tokens.
 

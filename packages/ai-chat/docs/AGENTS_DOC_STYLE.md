@@ -89,8 +89,6 @@ function App() {
 }
 ```
 
-A **single** shell command goes in inline single backticks, not a fenced block — `` `npm install @carbon/ai-chat` ``, not a ` ```bash ` block. Reserve fenced blocks for multi-line scripts or command sequences. See the install sections of [React.md](./React.md) and [WebComponent.md](./WebComponent.md) for the pattern.
-
 All examples must be tested. Follow the validation checklist in [AGENTS.md](AGENTS.md) → _Code examples in docs_.
 
 ## Admonitions

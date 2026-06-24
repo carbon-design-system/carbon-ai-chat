@@ -52,11 +52,20 @@ cds-aichat-code-snippet:not(:defined) {
   font-family: var(--cds-code-01-font-family, monospace);
 }
 
-/* Breathing room above each fenced code block, applied in both the
- * pre-hydration and hydrated states so the spacing doesn't shift on load. */
-cds-aichat-code-snippet {
-  display: block;
+/* Breathing room above each fenced code block. The `.cds--tile` class (from
+ * @carbon/styles) already sets display:block; we only add the top margin. We
+ * use the class rather than the <cds-tile> web component because that
+ * component's updated() lifecycle rewrites the first <a> inside the tile with
+ * extra <br>s, which mangles the link-heavy signature blocks. */
+.cds--tile {
   margin-top: 1rem;
+}
+
+/* Signature tiles (see theme/assets/signatureCards.js) hold a single-line
+ * TypeDoc signature, so drop the tile's default min-block-size (4rem) and let
+ * it hug the content. Scoped so fenced-code tiles keep theirs. */
+.carbon-main-content .carbon-signature-tile {
+  min-block-size: 0;
 }
 
 /* Hide main content until key UI shell components are ready */
@@ -123,8 +132,10 @@ h6 {
 }
 
 p {
-  font-size: var(--cds-body-01, 1rem);
-  line-height: 1.5;
+  font-size: var(--cds-body-02-font-size, 1rem);
+  font-weight: var(--cds-body-02-font-weight, 400);
+  letter-spacing: var(--cds-body-02-letter-spacing, 0);
+  line-height: var(--cds-body-02-line-height, 1.5);
   color: var(--cds-text-primary, #161616);
   margin: var(--cds-spacing-04, 0.75rem) 0 0 0;
 }
@@ -158,6 +169,23 @@ a:hover {
   display: flex;
 }
 
+.tsd-signature {
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
+  font-size: var(--cds-code-01-font-size, 0.875rem);
+  font-weight: var(--cds-code-01-font-weight, 400);
+  letter-spacing: var(--cds-code-01-letter-spacing, 0.16px);
+  line-height: var(--cds-code-01-line-height, 1.5);
+}
+
+/* TypeDoc lays out long signatures across multiple lines with <br/> + non-
+ * breaking-space indentation. The generic .tsd-anchor-link flex rule above
+ * would make the signature a flex row — where <br/> is inert — collapsing the
+ * whole signature onto one line. Keep signature blocks block-level so the line
+ * breaks render. (The permalink icon still flows inline at the end.) */
+.tsd-signature.tsd-anchor-link {
+  display: block;
+}
+
 a:visited {
   color: var(--cds-link-visited, #8a3ffc);
 }
@@ -168,38 +196,34 @@ a:focus {
 }
 
 .carbon-main-content {
-  padding: var(--cds-spacing-09, 4rem) var(--cds-spacing-09, 4rem)
-    var(--cds-spacing-09, 4rem)
-    calc(
-      var(--cds-shell-side-nav-width, 16rem) + var(--cds-spacing-09, 4rem)
-    );
+  /* Offset for the fixed UI Shell side nav. Horizontal gutters, max-width, and
+     centering come from the nested Carbon css-grid (.carbon-hero /
+     .carbon-page-shell), so we add no inline padding here — that would
+     double-pad the grid. Mirrors the Carbon design site's offset-container +
+     nested-grid pattern. */
+  margin-inline-start: var(--cds-shell-side-nav-width, 16rem);
+  padding-block: var(--cds-spacing-09, 4rem);
+  padding-inline: 0;
+  /* Fill the viewport so the gray (cds--g10) zone reaches the bottom on short
+     pages. main-content starts at the top (behind the fixed header), so the
+     full viewport height applies; box-sizing is border-box, so this adds no
+     scrollbar. dvh keeps it correct under mobile browser chrome. */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-/* Apply Carbon pre styles to TypeDoc signatures */
-pre, .tsd-signature {
-  background-color: var(--cds-layer-01, #f4f4f4);
-  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
-  border-radius: var(--cds-border-radius, 0);
-  color: var(--cds-text-primary, #161616);
-  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', Courier, monospace);
-  font-size: var(--cds-code-01-font-size, 0.75rem);
-  font-weight: var(--cds-code-01-font-weight, 400);
-  letter-spacing: var(--cds-code-01-letter-spacing, 0.32px);
-  line-height: var(--cds-code-01-line-height, 1.25);
-  overflow-x: auto;
-  padding: var(--cds-spacing-03, 0.5rem);
-  white-space: pre;
-
-  button {
-    display: none;
-  }
+/* Hero region scaffold: present in the DOM but hidden until a future task
+   populates it (title / summary / links / decorative image). See
+   theme/layouts/default.js (.carbon-hero). */
+.carbon-hero {
+  display: none;
 }
 
 pre, code {
   background-color: var(--cds-layer-01, #f4f4f4);
 }
 
-pre, div.tsd-signature, .tsd-member-group, .tsd-comment {
+pre, .tsd-member-group, .tsd-comment {
   margin: var(--cds-spacing-05, 1rem) 0;
 }
 
@@ -210,24 +234,24 @@ cds-breadcrumb {
 /* Carbon styling for core TypeDoc elements */
 .tsd-summary {
   color: var(--cds-text-secondary, #525252);
-  font-size: var(--cds-body-compact-01-font-size, 0.875rem);
-  line-height: var(--cds-body-compact-01-line-height, 1.29);
+  font-size: var(--cds-body-02-font-size, 1rem);
+  font-weight: var(--cds-body-02-font-weight, 400);
+  letter-spacing: var(--cds-body-02-letter-spacing, 0);
+  line-height: var(--cds-body-02-line-height, 1.5);
   margin: var(--cds-spacing-03, 0.5rem) 0;
 }
 
 .tsd-type-declaration {
-  margin: var(--cds-spacing-03, 0.5rem) 0;
-  padding: var(--cds-spacing-03, 0.5rem);
-  background-color: var(--cds-layer-01);
+  /* The wrapping .cds--tile (see theme/assets/signatureCards.js) now provides
+     the container surface, so keep this block plain inside the tile. */
+  margin: 0;
 }
 
 /* Carbon Accordion-style for TypeDoc details/summary elements */
 details.tsd-accordion {
-  border-block-start: 1px solid var(--cds-border-subtle, #e0e0e0);
   display: block;
   overflow: visible;
-  transition: border-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-  margin: 0;
+  margin: 1rem 0 0 0;
 }
 
 details.tsd-accordion:last-child {
@@ -341,10 +365,10 @@ details.tsd-accordion > .tsd-accordion-details {
 /* Content inside accordions */
 details.tsd-accordion .tsd-accordion-details > p,
 details.tsd-accordion section > p {
-  font-size: var(--cds-body-01-font-size, 0.875rem);
-  font-weight: var(--cds-body-01-font-weight, 400);
-  letter-spacing: var(--cds-body-01-letter-spacing, 0.16px);
-  line-height: var(--cds-body-01-line-height, 1.42857);
+  font-size: var(--cds-body-02-font-size, 1rem);
+  font-weight: var(--cds-body-02-font-weight, 400);
+  letter-spacing: var(--cds-body-02-letter-spacing, 0);
+  line-height: var(--cds-body-02-line-height, 1.5);
 }
 
 /* Carbon Tag styling for TypeDoc tags */
@@ -464,17 +488,12 @@ code.tsd-tag-since {
   color: var(--cds-tag-color-blue, #161616);
 }
 
-/* Example tags - green variant for examples */
-.tsd-tag-example,
-code.tsd-tag-example {
-  background-color: var(--cds-tag-background-green, #a7f0ba);
-  color: var(--cds-tag-color-green, #161616);
-}
-
 .tsd-description {
   color: var(--cds-text-primary, #161616);
-  font-size: var(--cds-body-01-font-size, 0.875rem);
-  line-height: var(--cds-body-01-line-height, 1.43);
+  font-size: var(--cds-body-02-font-size, 1rem);
+  font-weight: var(--cds-body-02-font-weight, 400);
+  letter-spacing: var(--cds-body-02-letter-spacing, 0);
+  line-height: var(--cds-body-02-line-height, 1.5);
   margin: var(--cds-spacing-05, 1rem) 0;
 }
 
@@ -509,8 +528,10 @@ code.tsd-tag-example {
 
 .tsd-comment {
   color: var(--cds-text-primary, #161616);
-  font-size: var(--cds-body-01-font-size, 0.875rem);
-  line-height: var(--cds-body-01-line-height, 1.43);
+  font-size: var(--cds-body-02-font-size, 1rem);
+  font-weight: var(--cds-body-02-font-weight, 400);
+  letter-spacing: var(--cds-body-02-letter-spacing, 0);
+  line-height: var(--cds-body-02-line-height, 1.5);
 }
 
 .tsd-comment-tag {
@@ -620,78 +641,12 @@ code.tsd-tag-example {
   margin-block-start: var(--cds-spacing-03, 0.5rem);
 }
 
-/* Carbon-style list styling scoped to main content */
-.carbon-main-content ul,
-.carbon-main-content ol {
-  color: var(--cds-text-primary, #161616);
-  font-size: var(--cds-body-01-font-size, 0.875rem);
-  font-weight: var(--cds-body-01-font-weight, 400);
-  line-height: var(--cds-body-01-line-height, 1.43);
-  margin: var(--cds-spacing-05, 1rem) 0;
-  padding-left: var(--cds-spacing-06, 1.5rem);
-}
-
-.carbon-main-content ul {
-  list-style-type: none;
-}
-
-.carbon-main-content ul li {
-  position: relative;
-  margin: var(--cds-spacing-03, 0.5rem) 0;
-  padding-left: var(--cds-spacing-04, 0.75rem);
-}
-
-.carbon-main-content ul li::before {
-  content: "•";
-  color: var(--cds-text-secondary, #525252);
-  font-size: 1rem;
-  font-weight: 600;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-.carbon-main-content ol {
-  list-style-type: decimal;
-  counter-reset: list-counter;
-}
-
-.carbon-main-content ol li {
-  margin: var(--cds-spacing-03, 0.5rem) 0;
-  padding-left: var(--cds-spacing-02, 0.25rem);
-  counter-increment: list-counter;
-}
-
-.carbon-main-content ol li::marker {
-  color: var(--cds-text-secondary, #525252);
-  font-weight: 600;
-}
-
-/* Nested list styles */
-.carbon-main-content ul ul,
-.carbon-main-content ol ol,
-.carbon-main-content ul ol,
-.carbon-main-content ol ul {
-  margin: var(--cds-spacing-02, 0.25rem) 0;
-  padding-left: var(--cds-spacing-05, 1rem);
-}
-
-.carbon-main-content ul ul li::before {
-  content: "◦";
-  font-size: 0.875rem;
-}
-
-.carbon-main-content ul ul ul li::before {
-  content: "▪";
-  font-size: 0.75rem;
-}
-
 /* Accessible code highlighting colors based on highlight.js a11y-light theme */
 /* Force override of TypeDoc's default highlight colors with higher specificity */
 :root,
 html,
 body,
-.cds-theme-zone-white {
+.cds--white {
   /* Override TypeDoc's highlight colors with a11y-light theme colors for accessibility */
   --light-hl-0: #7928a1 !important;  /* Keywords/selectors (purple) - from hljs-keyword */
   --light-hl-1: #545454 !important;  /* Default text - from hljs base color */
@@ -786,16 +741,11 @@ body,
 .hl-18, pre .hl-18, code .hl-18 { color: #d91e18 !important; } /* Warnings - red */
 .hl-19, pre .hl-19, code .hl-19 { color: #696969 !important; } /* Secondary text - light gray */
 
-/* Ensure code backgrounds use Carbon layer color */
-pre, code, .tsd-signature {
-  background: var(--code-background) !important;
-}
-
 /* Override TypeDoc signature and kind colors with accessible alternatives */
 :root,
 html,
 body,
-.cds-theme-zone-white {
+.cds--white {
   /* TypeDoc signature colors - using a11y-light theme colors */
   --light-color-text-aside: #696969 !important;           /* Comments color from a11y-light */
   --color-text-aside: #696969 !important;
@@ -906,6 +856,7 @@ cds-side-nav cds-side-nav-items {
 
 @media screen and (max-width: 1055px) {
   .carbon-main-content {
-    padding: var(--cds-spacing-09, 4rem);
+    /* Side nav overlays at this width, so drop the offset. */
+    margin-inline-start: 0;
   }
 }

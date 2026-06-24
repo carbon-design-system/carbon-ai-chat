@@ -18,11 +18,15 @@ You receive the {@link ChatInstance} from {@link CdsAiChatContainerAttributes.on
 
 Install by using `npm`:
 
-`npm install @carbon/ai-chat`
+```
+npm install @carbon/ai-chat
+```
 
 Or using `yarn`:
 
-`yarn add @carbon/ai-chat`
+```
+yarn add @carbon/ai-chat
+```
 
 > **Note**: Install the required `peerDependencies`. See the [peer dependency changes](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/peer-dependency-changes.md) for a history of additions, removals, and version updates across releases.
 

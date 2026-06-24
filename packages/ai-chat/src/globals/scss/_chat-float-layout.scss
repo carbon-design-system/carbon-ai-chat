@@ -34,7 +34,22 @@
 
 // Application layout variables (only used in this file)
 $max-height: get-var("max-height", 640px);
-$min-height: get-var("min-height", 150px);
+// WCAG 2.1 reflow (320x256): keep the widget at least 150px tall, otherwise the
+// lower of 256px-from-top or the space above the bottom offset. This default
+// lives here (not on the container) so a host override of --cds-aichat-min-height
+// can still win; see AppShellStyles.scss.
+$min-height: get-var(
+  "min-height",
+  max(
+    150px,
+    calc(
+      min(256px, 100vh) - var(
+          --cds-aichat-bottom-position,
+          #{layout.$spacing-09}
+        )
+    )
+  )
+);
 $width: get-var("width", 380px);
 $height: get-var("height", calc(100vh - (2 * #{layout.$spacing-07})));
 

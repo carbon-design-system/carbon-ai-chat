@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -29,7 +29,6 @@ Chat custom css properties
 */
 
 @use "@carbon/colors";
-@use "@carbon/styles/scss/components/button/tokens";
 
 // Import shared tokens from @carbon/ai-chat-components
 // These are the public configurable tokens that are shared across both packages
@@ -41,60 +40,21 @@ Chat custom css properties
   color: theme.$text-primary;
   inline-size: 100%;
 
-  /* **************************************************************************************************************** */
-
-  /* Shared tokens from @carbon/ai-chat-components */
-  /* These are imported and will be available as CSS custom properties */
-  /* See @carbon/ai-chat-components/scss/_custom-properties.scss for the full list */
-
-  /* **************************************************************************************************************** */
-
-  /* Container-specific properties (ChatContainer floating widget) */
-
-  /* Application sizing and positioning */
-  --cds-aichat-max-height: 640px;
-
-  /* WCAG 2.1 states that the widget must be usable at 320x256 (or the equivalent from zoom happening) https://www.w3.org/WAI/WCAG21/Understanding/reflow.html
-  We make sure the min-height at least 150px (to show at least the header/footer and one line of text) and is the lower of 256px minus the spacing from the bottom of the view port or 100vh - the bottom position. */
-  --cds-aichat-min-height: max(
-    150px,
-    calc(min(256px, 100vh) - var(--cds-aichat-bottom-position))
-  );
-
-  /* Container positioning */
-  --cds-aichat-bottom-position: #{layout.$spacing-09};
-  --cds-aichat-right-position: #{layout.$spacing-07};
-  --cds-aichat-top-position: auto;
-  --cds-aichat-left-position: auto;
-
-  /* Container sizing */
-  /* The smaller of 380px or the available width of the screen. This is to account for zoom levels pushing us to 320px. */
-  --cds-aichat-width: min(380px, var(--cds-aichat-max-width));
-  --cds-aichat-height: calc(100vh - (2 * #{layout.$spacing-07}));
-
-  /* Container z-index */
-  --cds-aichat-z-index: 99999;
-
-  /* **************************************************************************************************************** */
-
-  /* Launcher properties (ChatContainer-specific) */
-  /* These properties control the floating launcher button appearance and behavior */
-
-  /* Launcher sizing and positioning */
-  --cds-aichat-launcher-default-size: 56px;
-  --cds-aichat-launcher-position-bottom: #{layout.$spacing-09};
-  --cds-aichat-launcher-position-right: #{layout.$spacing-07};
-  --cds-aichat-launcher-extended-width: 280px;
-
-  /* Launcher colors */
-  --cds-aichat-launcher-color-background: #{tokens.$button-primary};
-  --cds-aichat-launcher-color-avatar: #{theme.$text-on-color};
-  --cds-aichat-launcher-color-focus-border: #{theme.$text-on-color};
-  --cds-aichat-launcher-mobile-color-text: #{theme.$text-on-color};
-
-  /* Unread indicator colors */
-  --cds-aichat-unread-indicator-color-background: #{theme.$support-error};
-  --cds-aichat-unread-indicator-color-text: #{theme.$text-on-color};
+  /*
+   * The chat's themeable --cds-aichat-* tokens (sizing, positioning, launcher,
+   * and unread-indicator colors) are intentionally NOT declared on this wrapper.
+   * Each consumer reads them with a built-in default through the
+   * `get-var(name, default)` helper, e.g. `var(--cds-aichat-width, 380px)`.
+   *
+   * Keeping the defaults in the consumer fallback — instead of declaring them
+   * here — lets a host page (or `layout.customProperties`) override any token by
+   * setting the matching --cds-aichat-* property. A value declared on this
+   * wrapper would shadow the inherited host value and silently win.
+   *
+   * Contextual overrides are the deliberate exception: the phone and
+   * rounded-corner blocks below still declare tokens so those modes win over a
+   * host value.
+   */
 }
 
 .cds-aichat--container--render .cds-aichat--widget--rounded {

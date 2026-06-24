@@ -296,14 +296,14 @@ export const defaultLayout = (context, template, props) => {
           true,
         ),
       }),
-      JSX.createElement("script", {
+      /*JSX.createElement("script", {
         defer: true,
         src: context.relativeURL("assets/carbonSearchModal.js", true),
       }),
       JSX.createElement("script", {
         defer: true,
         src: context.relativeURL("assets/carbonSearch.js", true),
-      }),
+      }),*/
       JSX.createElement("script", {
         defer: true,
         src: context.relativeURL("assets/redirectToOverview.js", true),
@@ -320,15 +320,19 @@ export const defaultLayout = (context, template, props) => {
         defer: true,
         src: context.relativeURL("assets/versionDropdown.js", true),
       }),
+      JSX.createElement("script", {
+        defer: true,
+        src: context.relativeURL("assets/sideNavFocus.js", true),
+      }),
+      JSX.createElement("script", {
+        defer: true,
+        src: context.relativeURL("assets/signatureCards.js", true),
+      }),
       context.hook("head.end", context),
     ),
     JSX.createElement(
       "body",
-      // `cds-theme-zone-white` (CDN web-components themes.css) defines core
-      // tokens like --cds-text-primary but NOT the --cds-syntax-* tokens the
-      // code-snippet highlighter reads. `cds--white` (vendored @carbon/styles)
-      // supplies those, so both classes are needed for syntax highlighting.
-      { class: "cds-theme-zone-white cds--white" },
+      { class: "cds--white" },
       context.hook("body.begin", context),
       // Carbon UI Shell header
       JSX.createElement(
@@ -349,7 +353,7 @@ export const defaultLayout = (context, template, props) => {
         JSX.createElement(
           "div",
           { class: "cds--header__global" },
-          JSX.createElement(
+          /*JSX.createElement(
             "cds-header-global-action",
             {
               "aria-label": "Search",
@@ -371,7 +375,7 @@ export const defaultLayout = (context, template, props) => {
                 d: "M29 27.5859l-7.5521-7.5521a11.0177 11.0177 0 1 0-1.4141 1.4141L27.5859 29ZM4 13a9 9 0 1 1 9 9A9.01 9.01 0 0 1 4 13Z",
               }),
             ),
-          ),
+          ),*/
         ),
       ),
       JSX.createElement(
@@ -392,12 +396,50 @@ export const defaultLayout = (context, template, props) => {
       // Main content container for Carbon UI Shell
       JSX.createElement(
         "div",
-        { class: "carbon-main-content" },
+        { class: "carbon-main-content cds--g10" },
         context.hook("content.begin", context),
-        renderPageTitle(context, props),
-        template(props),
-        context.hook("content.end", context),
-        context.footer(),
+        // Hero region (Carbon "page-header" analog). Scaffolded now but hidden
+        // via CSS (.carbon-hero { display: none }); a future task will populate
+        // it (title / summary / links / decorative image) and reveal it. Mirrors
+        // the Carbon design site grid: content col-span-8 + aside col-start-13
+        // col-span-4, collapsing to full width below xlg.
+        JSX.createElement(
+          "div",
+          { class: "carbon-hero cds--css-grid cds--css-grid--start" },
+          JSX.createElement("div", {
+            class:
+              "carbon-hero__content cds--css-grid-column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-12 cds--xlg:col-span-8",
+          }),
+          JSX.createElement("div", {
+            class:
+              "carbon-hero__aside cds--css-grid-column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-start-13 cds--xlg:col-span-4",
+          }),
+        ),
+        // Page shell grid: the body content column plus a reserved (empty)
+        // in-page navigation column. The 12+4 split engages at xlg; below xlg the
+        // nav column collapses (col-span-0 -> display:none) and the content goes
+        // full width (col-span-16), matching the Carbon design site.
+        JSX.createElement(
+          "div",
+          { class: "carbon-page-shell cds--css-grid cds--css-grid--start" },
+          JSX.createElement(
+            "div",
+            {
+              class:
+                "carbon-content-column cds--css-grid-column cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-12",
+            },
+            renderPageTitle(context, props),
+            template(props),
+            context.hook("content.end", context),
+            context.footer(),
+          ),
+          // Reserved in-page navigation column. Intentionally empty for now; a
+          // future task fills it (e.g. context.pageNavigation(props) sticky TOC).
+          JSX.createElement("div", {
+            class:
+              "carbon-nav-column cds--css-grid-column cds--sm:col-span-0 cds--md:col-span-0 cds--lg:col-span-0 cds--xlg:col-span-4",
+          }),
+        ),
       ),
       // Carbon modal used to host TypeDoc search UI
       JSX.createElement(

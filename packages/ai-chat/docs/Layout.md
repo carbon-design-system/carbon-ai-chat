@@ -27,13 +27,13 @@ Size and place the chat by overriding its `--cds-aichat-*` custom properties in 
 
 These shared tokens apply to both the floating and custom-element layouts:
 
-| Token                              | Default | Description                                    |
-| ---------------------------------- | ------- | ---------------------------------------------- |
-| `--cds-aichat-messages-max-width`  | `672px` | Maximum width for message content area         |
-| `--cds-aichat-messages-min-width`  | `320px` | Minimum width for message content area         |
-| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel              |
-| `--cds-aichat-history-width`       | `320px` | Width of the history / conversation list panel |
-| `--cds-aichat-card-max-width`      | `424px` | Maximum width for card components              |
+| Token                              | Default | Description                                                   |
+| ---------------------------------- | ------- | ------------------------------------------------------------- |
+| `--cds-aichat-messages-max-width`  | `672px` | Maximum width for message content area, including prompt line |
+| `--cds-aichat-messages-min-width`  | `320px` | Minimum width for message content area, including prompt line |
+| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel                             |
+| `--cds-aichat-history-width`       | `320px` | Width of the history / conversation list panel                |
+| `--cds-aichat-card-max-width`      | `424px` | Maximum width for card components                             |
 
 You can also set these tokens from config through {@link LayoutConfig.customProperties} (keys come from {@link LayoutCustomProperties}) if you'd rather keep them out of a stylesheet.
 

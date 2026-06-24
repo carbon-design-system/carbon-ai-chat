@@ -16,13 +16,15 @@ import { promises as fs, cpSync } from "fs";
 const require = createRequire(import.meta.url);
 
 const CARBON_ASSETS = [
-  "carbonSearch.js",
-  "carbonSearchModal.js",
+  /*"carbonSearch.js",
+  "carbonSearchModal.js",*/
   "redirectToOverview.js",
   "carbonTheme.css",
   "cookiePreferences.js",
   "versionDropdown.js",
   "experimentalToPreview.js",
+  "sideNavFocus.js",
+  "signatureCards.js",
 ];
 
 export function load(app) {

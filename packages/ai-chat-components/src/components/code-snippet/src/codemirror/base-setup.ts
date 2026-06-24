@@ -1,5 +1,5 @@
 /*
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -30,6 +30,8 @@ export interface BaseCodeMirrorSetupOptions {
   foldCollapseLabel?: string;
   foldExpandLabel?: string;
   enableDiffDecorator?: boolean;
+  hideLineNumbers?: boolean;
+  hideFold?: boolean;
 }
 
 /**
@@ -37,6 +39,10 @@ export interface BaseCodeMirrorSetupOptions {
  *  - keep the layout oriented (gutters, folding)
  *  - preserve indentation and basic syntax cues
  *  - avoid heavier behaviors like search, autocomplete, multi-caret history
+ *
+ * `hideLineNumbers` drops the line-number gutter and `hideFold` drops the
+ * folding affordances (gutter, marker key handler, and fold keymap) so callers
+ * can render a leaner surface for short, static snippets.
  */
 export function baseCodeMirrorSetup(
   options: BaseCodeMirrorSetupOptions = {},
@@ -45,20 +51,26 @@ export function baseCodeMirrorSetup(
     foldCollapseLabel = "Collapse code block",
     foldExpandLabel = "Expand code block",
     enableDiffDecorator = false,
+    hideLineNumbers = false,
+    hideFold = false,
   } = options;
 
   return [
     // Line number column for navigation and copy context
-    lineNumbers(),
-    // Event handler for keyboard accessibility on fold markers
-    carbonFoldMarkerKeyHandler(),
-    // Folding gutter affordances with Carbon chevron icon
-    foldGutter({
-      markerDOM: createCarbonFoldMarker({
-        collapseLabel: foldCollapseLabel,
-        expandLabel: foldExpandLabel,
-      }),
-    }),
+    ...(hideLineNumbers ? [] : [lineNumbers()]),
+    // Folding affordances: keyboard handler + Carbon chevron gutter. Dropped
+    // together when folding is hidden so no open/close control survives.
+    ...(hideFold
+      ? []
+      : [
+          carbonFoldMarkerKeyHandler(),
+          foldGutter({
+            markerDOM: createCarbonFoldMarker({
+              collapseLabel: foldCollapseLabel,
+              expandLabel: foldExpandLabel,
+            }),
+          }),
+        ]),
     // Selection rendering that respects multiple carets
     drawSelection(),
     // Maintain indentation on new lines
@@ -73,7 +85,7 @@ export function baseCodeMirrorSetup(
     keymap.of([
       ...closeBracketsKeymap,
       ...defaultKeymap,
-      ...foldKeymap,
+      ...(hideFold ? [] : foldKeymap),
       ...lintKeymap,
     ]),
     // Conditionally add diff line decorator for diff language
