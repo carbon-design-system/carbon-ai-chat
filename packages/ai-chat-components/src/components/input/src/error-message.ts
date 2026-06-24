@@ -10,6 +10,7 @@
 import { css, html, LitElement, TemplateResult, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 
+import "@carbon/web-components/es/components/icon-button/index.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import WarningFilled16 from "@carbon/icons/es/warning--filled/16.js";
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
@@ -23,7 +24,7 @@ import styles from "./error-message.scss?lit";
 const blockClass = `${prefix}-error-message`;
 
 /**
- * Error message component for AI Chat input.
+ * Error message component for AI Chat prompt line.
  *
  * @element cds-aichat-error-message
  */
@@ -34,7 +35,7 @@ class ErrorMessage extends LitElement {
   `;
 
   /**
-   * The error message to display.
+   * The error message text to display.
    */
   @property({ type: String, attribute: "message" })
   message = "";
@@ -52,29 +53,58 @@ class ErrorMessage extends LitElement {
   fullscreen = false;
 
   /**
-   * Whether the error message is currently expanded
+   * Whether the error message is currently expanded.
    * @internal
    */
-  @state() private isExpanded = false;
+  @state() private _isExpanded = false;
+
+  /**
+   * Toggles the expanded state to show more or less of the error message.
+   */
+  private _handleClickExpanded() {
+    this._isExpanded = !this._isExpanded;
+  }
 
   render() {
     const warningIcon = html`<span class="${blockClass}__icon">
       ${iconLoader(WarningFilled16)}
     </span>`;
 
-    let chevronIcon: TemplateResult | null = null;
+    let expandButton: TemplateResult | null = null;
     if (this.expandable) {
-      const icon = this.isExpanded ? ChevronUp16 : ChevronDown16;
-      chevronIcon = html`<span class="${blockClass}__chevron">
-        ${iconLoader(icon)}
-      </span>`;
+      const icon = this._isExpanded ? ChevronUp16 : ChevronDown16;
+      const label = `${this._isExpanded ? "Condense" : "Expand"} error message`;
+
+      expandButton = html`<cds-icon-button
+        class="${blockClass}__chevron"
+        kind="ghost"
+        size="sm"
+        aria-label="${label}"
+        @click="${this._handleClickExpanded}"
+      >
+        ${iconLoader(icon, { slot: "icon" })}
+        <span slot="tooltip-content">${label}</span>
+      </cds-icon-button>`;
     }
 
     return html`
       <div class="${blockClass}">
-        ${!this.fullscreen && warningIcon}
-        <span class="${blockClass}__text">${this.message}</span>
-        ${this.fullscreen && warningIcon} ${chevronIcon}
+        <div
+          class="${blockClass}__icon-and-text${!this.expandable
+            ? ` ${blockClass}__icon-and-text--no-expand`
+            : ""}"
+        >
+          ${this.fullscreen ? null : warningIcon}
+          <div
+            class="${blockClass}__text${this._isExpanded
+              ? ` ${blockClass}__text--expanded`
+              : ""}"
+          >
+            ${this.message}
+          </div>
+          ${this.fullscreen ? warningIcon : null}
+        </div>
+        ${expandButton}
       </div>
     `;
   }
