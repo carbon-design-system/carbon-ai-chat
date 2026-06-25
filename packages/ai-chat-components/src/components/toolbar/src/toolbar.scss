@@ -34,31 +34,16 @@ $block-class: #{$prefix}-toolbar;
     min-block-size: layout.$spacing-08;
     min-inline-size: 0;
 
-    // Suppress custom elements until styles are loaded
-    #{$cds-prefix}-button:not(:defined),
-    #{$cds-prefix}-overflow-menu:not(:defined) {
-      display: none;
-    }
-
     &-overflow-icon {
       // Web components ghost icon only button bug override
       align-self: unset;
       color: theme.$icon-primary;
-    }
-
-    [data-floating-menu-container] {
-      position: relative;
-    }
-
-    [data-hidden]:not([data-fixed]) {
-      display: none;
     }
   }
 
   .#{$block-class}__navigation {
     display: flex;
     align-items: center;
-    margin-block: auto;
   }
 
   .#{$block-class}__title {
@@ -85,17 +70,19 @@ $block-class: #{$prefix}-toolbar;
   .#{$block-class}__start,
   .#{$block-class}__end {
     display: flex;
-    flex: 1;
+    flex: 1 0 50%;
     min-inline-size: 0;
   }
 
-  .#{$block-class}__start {
-    flex-grow: 1;
+  .#{$block-class}__end {
+    position: relative;
   }
 
-  .#{$block-class}__end {
-    flex-shrink: 1;
+  .#{$block-class}__actions-container {
+    display: flex;
+    flex: 1;
     justify-content: end;
+    min-inline-size: 0;
   }
 
   ::slotted([slot="navigation"]) {
