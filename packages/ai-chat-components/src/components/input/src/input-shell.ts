@@ -56,7 +56,7 @@ class InputShellElement extends LitElement {
   
   /** Whether the prompt line is in an error state */
   @property({ type: Boolean, reflect: true, attribute: "has-error" })
-  hasError = true;
+  hasError = false;
 
   @state()
   private _hasMessageActions = false;

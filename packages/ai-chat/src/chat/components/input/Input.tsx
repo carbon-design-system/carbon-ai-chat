@@ -8,6 +8,7 @@
  */
 
 import React, { forwardRef, Ref, useMemo, useRef, useState } from "react";
+import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
 import InputShell from "@carbon/ai-chat-components/es/react/input-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
@@ -144,6 +145,24 @@ interface InputProps {
    * Whether the input container should have rounded corners (at wider breakpoints).
    */
   rounded?: boolean;
+
+  /**
+   * Error configuration for displaying an error message in the input field.
+   */
+  error?: {
+    /**
+     * The error title to display.
+     */
+    title: string;
+    /**
+     * The error description to display.
+     */
+    description?: string;
+    /**
+     * Whether the error message container should be collapsible.
+     */
+    collapsible?: boolean;
+  };
 }
 
 /**
@@ -218,12 +237,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     maxInputChars = 10000,
     trackInputState = false,
     rounded,
+    error,
   } = props;
 
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const intl = useIntl();
   const store = serviceManager.store;
+  const hasErrorProp = error !== undefined;
 
   // Get chat width breakpoint and height to determine autocomplete settings
   const chatWidthBreakpoint = useSelector(
@@ -289,6 +310,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     disableSend,
     isSendDisabledFromConfig,
     onSendInput,
+    hasErrorProp,
   });
 
   const hasValidInput = useMemo(
@@ -445,6 +467,53 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     expanded,
   ]);
 
+  /**
+   * Renders the error message component if an error is provided.
+   */
+  const renderErrorMessage = () => {
+    if (overMaxLength) {
+      const errorText = intl.formatMessage(
+        { id: "input_maxCharCountExceeded" },
+        { max: maxInputChars, current: rawInputValue.length },
+      );
+      return (
+        <div slot="field-messaging">
+          <AnnounceOnMountComponent
+            announceOnce={`Error: Max character count exceeded. ${errorText}`}
+          >
+            <ErrorMessage
+              fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+              title="Error: Max character count exceeded"
+              description={errorText}
+              collapsible={true}
+            />
+          </AnnounceOnMountComponent>
+        </div>
+      );
+    }
+
+    if (!hasErrorProp) {
+      return null;
+    }
+
+    const announcement = error.description
+      ? `${error.title}. ${error.description}`
+      : error.title;
+
+    return (
+      <div slot="field-messaging">
+        <AnnounceOnMountComponent announceOnce={announcement}>
+          <ErrorMessage
+            fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+            title={error.title}
+            description={error?.description}
+            collapsible={error?.collapsible}
+          />
+        </AnnounceOnMountComponent>
+      </div>
+    );
+  };
+
   if (!isInputVisible) {
     return null;
   }
@@ -454,15 +523,11 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     placeholder ||
     (disableInput ? undefined : languagePack.input_placeholder) ||
     "";
-  const charCountMessage = overMaxLength
-    ? intl.formatMessage(
-        { id: "input_maxCharCountExceeded" },
-        { max: maxInputChars, current: rawInputValue.length },
-      )
-    : null;
+
+  const hasError = hasErrorProp || overMaxLength;
 
   return (
-    <InputShell rounded={rounded} expanded={expanded}>
+    <InputShell rounded={rounded} expanded={expanded} hasError={hasError}>
       <PromptLine
         slot="editor"
         ref={promptLineRef}
@@ -489,15 +554,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
       {autocompleteContent}
 
-      {charCountMessage && (
-        <div slot="field-messaging" role="status" aria-live="polite">
-          <ErrorMessage
-            fullscreen
-            expandable
-            message={charCountMessage}
-          ></ErrorMessage>
-        </div>
-      )}
+      {renderErrorMessage()}
 
       {(showUploadButton || effectiveActions) && (
         <div slot="message-actions">

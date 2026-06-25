@@ -7,7 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, TemplateResult, unsafeCSS } from "lit";
+import {
+  css,
+  html,
+  LitElement,
+  PropertyValues,
+  TemplateResult,
+  unsafeCSS,
+} from "lit";
 import { property, state } from "lit/decorators.js";
 
 import "@carbon/web-components/es/components/icon-button/index.js";
@@ -35,16 +42,22 @@ class ErrorMessage extends LitElement {
   `;
 
   /**
-   * The error message text to display.
+   * The error title text to display.
    */
-  @property({ type: String, attribute: "message" })
-  message = "";
+  @property({ type: String, attribute: "title" })
+  title = "";
 
   /**
-   * Whether the error message is expandable.
+   * The error description text to display.
    */
-  @property({ type: Boolean, attribute: "expandable" })
-  expandable = false;
+  @property({ type: String, attribute: "description" })
+  description = "";
+
+  /**
+   * Whether the error message is collapsible.
+   */
+  @property({ type: Boolean, attribute: "collapsible" })
+  collapsible = false;
 
   /**
    * Whether the error message is in fullscreen layout.
@@ -56,7 +69,14 @@ class ErrorMessage extends LitElement {
    * Whether the error message is currently expanded.
    * @internal
    */
-  @state() private _isExpanded = false;
+  @state() private _isExpanded = true;
+
+  protected updated(changedProps: PropertyValues) {
+    super.updated(changedProps);
+    if (changedProps.has("collapsible")) {
+      this._isExpanded = !this.collapsible;
+    }
+  }
 
   /**
    * Toggles the expanded state to show more or less of the error message.
@@ -66,23 +86,26 @@ class ErrorMessage extends LitElement {
   }
 
   render() {
-    const warningIcon = html`<span class="${blockClass}__icon">
+    const warningIcon = html`<span class="${blockClass}__warning-icon">
       ${iconLoader(WarningFilled16)}
     </span>`;
 
+    const hasChevron = this.collapsible && this.description;
+
     let expandButton: TemplateResult | null = null;
-    if (this.expandable) {
+    if (hasChevron) {
       const icon = this._isExpanded ? ChevronUp16 : ChevronDown16;
-      const label = `${this._isExpanded ? "Condense" : "Expand"} error message`;
+      const label = `${this._isExpanded ? "Collapse" : "Expand"} error message`;
 
       expandButton = html`<cds-icon-button
         class="${blockClass}__chevron"
         kind="ghost"
         size="sm"
+        align="top-end"
         aria-label="${label}"
         @click="${this._handleClickExpanded}"
       >
-        ${iconLoader(icon, { slot: "icon" })}
+        ${iconLoader(icon, { slot: "icon", focusable: "true", tabindex: "-1" })}
         <span slot="tooltip-content">${label}</span>
       </cds-icon-button>`;
     }
@@ -90,8 +113,8 @@ class ErrorMessage extends LitElement {
     return html`
       <div class="${blockClass}">
         <div
-          class="${blockClass}__icon-and-text${!this.expandable
-            ? ` ${blockClass}__icon-and-text--no-expand`
+          class="${blockClass}__warning-icon-and-text${!hasChevron
+            ? ` ${blockClass}__warning-icon-and-text--no-chevron`
             : ""}"
         >
           ${this.fullscreen ? null : warningIcon}
@@ -100,7 +123,8 @@ class ErrorMessage extends LitElement {
               ? ` ${blockClass}__text--expanded`
               : ""}"
           >
-            ${this.message}
+            ${this.title}<br />
+            ${this._isExpanded ? this.description : ""}
           </div>
           ${this.fullscreen ? warningIcon : null}
         </div>

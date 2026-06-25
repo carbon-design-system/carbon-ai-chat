@@ -8,6 +8,7 @@
  */
 
 import "@carbon/web-components/es/components/dropdown/index.js";
+import "@carbon/web-components/es/components/checkbox/index.js";
 
 import { InputConfig, PublicConfig, ToolbarAction } from "@carbon/ai-chat";
 import Document16 from "@carbon/icons/es/document/16.js";
@@ -328,6 +329,31 @@ export class DemoInputConfigSwitcher extends LitElement {
     }
   }
 
+  private _handleErrorCheckbox(event: Event) {
+    const customEvent = event as CustomEvent;
+    const checked = customEvent.detail.checked as boolean;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (checked) {
+        next.error = {
+          title: "Error: title goes here",
+          description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+            cillum dolore eu fugiat nulla pariatur.`,
+          collapsible: true,
+        };
+      } else {
+        delete next.error;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
   render() {
     const input = this.config?.input;
 
@@ -454,6 +480,14 @@ export class DemoInputConfigSwitcher extends LitElement {
             >Disable expanded layout</cds-dropdown-item
           >
         </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-checkbox
+          ?checked="${this.config?.input?.error !== undefined}"
+          label-text="Show prompt line error"
+          @cds-checkbox-changed=${this._handleErrorCheckbox}
+        ></cds-checkbox>
       </div>
     `;
   }
