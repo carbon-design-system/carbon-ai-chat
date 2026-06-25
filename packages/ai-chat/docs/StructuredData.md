@@ -8,8 +8,8 @@ Sometimes a user's message needs to carry more than text — a form selection, a
 
 It is request-side only: it travels on {@link MessageInput.structured_data} in the {@link MessageRequest} your {@link PublicConfigMessaging.customSendMessage} function receives, and is never part of a {@link MessageResponse}. Two sources populate it, and they merge into one payload:
 
-1. **The host sets it** — push fields into the pending input with {@link ChatInstanceInput.updateStructuredData}.
-2. **File uploads contribute it** — when {@link PublicConfig.upload} is enabled, each file's {@link UploadConfig.onFileUpload} handler returns a fragment that is merged in.
+- **The host sets it** — push fields into the pending input with {@link ChatInstanceInput.updateStructuredData}.
+- **File uploads contribute it** — when {@link PublicConfig.upload} is enabled, each file's {@link UploadConfig.onFileUpload} handler returns a fragment that is merged in.
 
 > This API is experimental. Its shape may still change.
 

@@ -20,7 +20,7 @@ Customize the chat UI at three levels, from quickest to deepest:
 - **Restyle** — inherit or inject a Carbon theme and override the chat's CSS custom-property tokens for color, sizing, and placement.
 - **Inject your own content** — render your own markup into slots, overlay panels, message responses, and footers.
 
-The inject-your-own-content areas render through your framework, so they need the {@link ChatInstance} and the APIs differ between [React](./React.md) and the [web component](./WebComponent.md).
+The inject-your-own-content areas render through your framework using the {@link ChatInstance}, so their APIs differ between [React](./React.md) and the [web component](./WebComponent.md). Be sure to refer to the documentation for your framework for implementation differences.
 
 Pick the area you want to customize:
 

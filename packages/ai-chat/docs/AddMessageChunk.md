@@ -6,9 +6,9 @@ title: Adding messages (legacy)
 
 Stream a response onto the screen as your assistant produces it with {@link ChatInstanceMessaging.addMessageChunk}. The examples below call `instance.messaging`, so you need a {@link ChatInstance} first — get one from the `onBeforeRender` prop. It uses three types of chunks ({@link StreamChunk}) to progressively build and finalize a message response:
 
-1. **Partial item chunks** — incremental updates to an individual item.
-2. **Complete item chunks** — finalize one item while others keep streaming.
-3. **Final response chunks** — the authoritative final state for the whole message.
+- **Partial item chunks** — incremental updates to an individual item.
+- **Complete item chunks** — finalize one item while others keep streaming.
+- **Final response chunks** — the authoritative final state for the whole message.
 
 For one-shot, non-streaming inserts use {@link ChatInstanceMessaging.addMessage} instead; your assistant can return responses in either format and switch between them. To accumulate state in your app and apply it with one call per update, see [Adding messages (experimental)](./UpsertMessage.md). It also covers regenerate and optimistic updates.
 
@@ -125,10 +125,7 @@ await instance.messaging.addMessageChunk({
 
 ## Typical streaming flow
 
-1. Generate a unique `response_id` for the message
-2. Loop through your streaming source, sending partial item chunks for each update
-3. (Optional) Send complete item chunks when individual items are finalized
-4. Send a final response chunk with the complete message
+Generate a unique `response_id` for the message, then loop through your streaming source, sending a partial item chunk for each update. Optionally send complete item chunks as individual items are finalized. Finish with a final response chunk carrying the complete message.
 
 The Carbon AI Chat appends partial text updates at draw time (for {@link TextItem} and {@link ConversationalSearchItem}), renders streaming text, and transitions to the final state when the final response chunk arrives.
 

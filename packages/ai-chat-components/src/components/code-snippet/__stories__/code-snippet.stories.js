@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -28,6 +28,8 @@ const renderSnippet = (args, code) => {
       ?disabled=${args.disabled}
       ?hide-copy-button=${args.hideCopyButton}
       ?hide-header=${args.hideHeader}
+      ?hide-line-numbers=${args.hideLineNumbers}
+      ?hide-fold=${args.hideFold}
       max-collapsed-number-of-rows=${ifDefined(args.maxCollapsedNumberOfRows)}
       max-expanded-number-of-rows=${ifDefined(args.maxExpandedNumberOfRows)}
       min-collapsed-number-of-rows=${ifDefined(args.minCollapsedNumberOfRows)}
@@ -78,6 +80,8 @@ export const Default = {
     editable: false,
     disabled: false,
     hideCopyButton: false,
+    hideLineNumbers: false,
+    hideFold: false,
     maxCollapsedNumberOfRows: 15,
     showMoreText: "Show more",
     showLessText: "Show less",
@@ -343,6 +347,8 @@ export const FullHeightMode = {
     editable: true,
     disabled: false,
     hideCopyButton: false,
+    hideLineNumbers: false,
+    hideFold: false,
     maxCollapsedNumberOfRows: 0,
     maxExpandedNumberOfRows: 0,
   },
@@ -356,6 +362,8 @@ export const FullHeightMode = {
         ?highlight=${args.highlight}
         ?disabled=${args.disabled}
         ?hide-copy-button=${args.hideCopyButton}
+        ?hide-line-numbers=${args.hideLineNumbers}
+        ?hide-fold=${args.hideFold}
         max-collapsed-number-of-rows=${args.maxCollapsedNumberOfRows}
         max-expanded-number-of-rows=${args.maxExpandedNumberOfRows}
       >

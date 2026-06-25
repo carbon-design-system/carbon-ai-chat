@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -84,9 +84,11 @@ export function createCarbonTheme() {
       borderLeftColor: "var(--cds-text-primary, #161616)",
     },
 
-    // Gutters
+    // Gutters. Match the snippet surface (chat-shell-background) so the gutter
+    // and code area read as one surface. The disabled state overrides both to
+    // $layer in code-snippet.scss (:host([disabled])), keeping them matched.
     ".cm-gutters": {
-      backgroundColor: "var(--cds-background, #ffffff)",
+      backgroundColor: "var(--cds-chat-shell-background, #ffffff)",
       color: "var(--cds-text-helper, #6f6f6f)",
       border: "none",
     },
@@ -107,7 +109,7 @@ export function createCarbonTheme() {
 
     ".cm-scroller": {
       maxBlockSize: "var(--cds-snippet-max-height, 16rem)",
-      minBlockSize: "var(--cds-snippet-min-height, 3rem)",
+      minBlockSize: "var(--cds-snippet-min-height, auto)",
     },
 
     // Fold gutter / caret icons

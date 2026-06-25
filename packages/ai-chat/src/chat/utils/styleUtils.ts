@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -211,7 +211,7 @@ function mergeCSSVariables(
     // Variables starting with "$" are carbon theme tokens and should all be colors
     if (key.startsWith("$") && !value.match(HEXADECIMAL_REGEX)) {
       console.warn(
-        `${WA_CONSOLE_PREFIX} You tried to call "updateCSSVariables" with an invalid value for "${key}": "${publicVars[key]}". You must use hexadecimal values for colors.`,
+        `${WA_CONSOLE_PREFIX} Invalid value for "layout.customProperties" key "${key}": "${publicVars[key]}". Carbon theme tokens (keys starting with "$") must use hexadecimal color values.`,
       );
       // Delete color values that are not in hexadecimal format to ensure we can use them in methods in ./colors.
       delete result[key];

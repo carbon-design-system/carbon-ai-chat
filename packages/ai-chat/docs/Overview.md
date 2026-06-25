@@ -22,13 +22,13 @@ See the [React](./React.md), [web component](./WebComponent.md) and [Angular](./
 
 Each component accepts {@link PublicConfig}'s options as props that control how the chat looks and behaves before your users see it. Set where the chat renders along with its size, frame, and corners ({@link LayoutConfig}); which surfaces appear — the {@link LauncherConfig launcher} (IBM's or your own), {@link HeaderConfig header}, {@link HomeScreenConfig home screen}, and {@link InputConfig input}; how the chat reaches your server ({@link PublicConfigMessaging}); and its theme, language, and assistant identity. See {@link PublicConfig} for every option.
 
-### Instance methods
+## Instance methods
 
 You get the {@link ChatInstance} from the {@link ChatContainerProps.onBeforeRender} callback, which the chat calls with the instance before it renders. Each instance provides imperative runtime methods your website can call any time after the instance is available. These methods aren't attributes or props — they affect internal or shared chat state.
 
 Use the instance to add, update, and remove messages ({@link ChatInstanceMessaging}); open, close, or switch the chat view ({@link ChatInstance.changeView}); read or seed the input field ({@link ChatInstanceInput}); subscribe to events ({@link EventHandlers.on}); hand off to a human agent ({@link ChatInstanceServiceDeskActions}); and render your own content into the chat's slots ({@link WriteableElements}). See {@link ChatInstance} for the full API.
 
-### Events
+## Events
 
 The Carbon AI Chat fires {@link BusEvent events} throughout its life cycle. Subscribe with {@link EventHandlers.on} to react to messages received ({@link BusEventType.RECEIVE}), the chat opening or closing ({@link BusEventType.VIEW_CHANGE}), user feedback ({@link BusEventType.FEEDBACK}), and human-agent handoff. Many events also fire in a `pre:` form the chat awaits before it acts ({@link BusEventType.PRE_SEND}), so a handler can inspect, change, or cancel what happens next. See {@link BusEvent} for every event.
 
