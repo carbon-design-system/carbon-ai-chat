@@ -45,7 +45,7 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 // Button click posts back this exact string; `customSendMessage` branches on it
 // to decide whether to start a scenario or reply with the welcome message.
-const START_TRIGGER = "__upsert_demo_start__";
+const START_TRIGGER = "Show me the upsert demo";
 
 // Five steps and ~21s total runtime exercise progressive updates over a realistic duration.
 const STEP_TIMINGS_MS = [6000, 2000, 1000, 8000, 4000];
