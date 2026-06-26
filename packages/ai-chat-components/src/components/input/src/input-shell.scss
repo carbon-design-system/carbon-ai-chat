@@ -198,6 +198,7 @@
   flex: 0 1;
   align-self: flex-start;
   gap: layout.$spacing-03;
+  margin-block-start: layout.$spacing-04;
 }
 
 // -----------------------------------------------------------
@@ -276,8 +277,8 @@
   // end on its own.
   flex: 0 0 auto;
   order: 3;
-  margin-inline-start: auto;
   margin-block-start: layout.$spacing-04;
+  margin-inline-start: auto;
 }
 
 // With real actions the actions track (flex: 1 1 0) grows to fill the row and

@@ -189,11 +189,12 @@ export interface InputConfig {
    * @experimental
    */
   expanded?: boolean;
-  menuOptions?: InputMenuOption[];
 
   /**
    * Error configuration for displaying an error message in the input field.
    * When provided, an error message will be displayed in the prompt line.
+   *
+   * @experimental
    */
   error?: {
     /**
