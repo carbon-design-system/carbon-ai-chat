@@ -71,6 +71,8 @@ class FileUploadsElement extends LitElement {
               .iconDescription="${upload.status === "uploading"
                 ? this.uploadingFileLabel
                 : this.removeFileLabel}"
+              .errorSubject="${upload.errorMessage || ""}"
+              ?invalid="${upload.isError}"
               @cds-file-uploader-item-deleted="${() =>
                 this._handleFileRemove(upload.id)}"
             >

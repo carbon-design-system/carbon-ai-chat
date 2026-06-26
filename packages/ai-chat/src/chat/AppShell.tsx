@@ -402,6 +402,8 @@ function AppShell({
           u.status === "uploading"
             ? FileStatusValue.UPLOADING
             : FileStatusValue.EDIT,
+        isError: u.status === "error",
+        errorMessage: u.errorMessage,
       })),
     [inputState.pendingUploads],
   );
