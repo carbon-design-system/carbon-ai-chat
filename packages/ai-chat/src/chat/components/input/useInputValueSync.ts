@@ -124,7 +124,7 @@ function useInputValueSync({
   const overMaxLength = rawInputValue.length > maxInputChars;
 
   const effectiveDisableSend =
-    disableSend || isSendDisabledFromConfig || hasErrorProp;
+    disableSend || isSendDisabledFromConfig || overMaxLength || hasErrorProp;
 
   /**
    * Handle input value changes from the prompt-line. Dispatches to Redux if
