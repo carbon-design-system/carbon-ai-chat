@@ -811,7 +811,34 @@ class CDSAIChatMarkdown extends LitElement {
         host = document.createElement("div");
         host.setAttribute("slot", descriptor.slotName);
         this.slotHosts.set(descriptor.slotName, host);
-        this.appendChild(host);
+
+        // Offer the host to a chat-container ancestor so it lives in page
+        // light DOM, where consumer-loaded global CSS (e.g. `@carbon/styles`
+        // for a returned `@carbon/react` component) can reach it — the markdown
+        // element's own light DOM sits inside the chat's shadow root, where it
+        // cannot. Mirrors the plugin-fallback path above, but forwards the live
+        // host element instead of an HTML string; the markdown element keeps
+        // ownership of the host's content across renders. If no ancestor takes
+        // over (standalone usage, e.g. storybook), host it locally.
+        const mountEvent = new CustomEvent(
+          "cds-aichat-markdown-plugin-host-mount",
+          {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail: {
+              slotName: descriptor.slotName,
+              element: host,
+              isInline: false,
+            },
+          },
+        );
+        this.dispatchEvent(mountEvent);
+        if (mountEvent.defaultPrevented) {
+          this.delegatedPluginSlots.add(descriptor.slotName);
+        } else {
+          this.appendChild(host);
+        }
       }
       if (host.firstChild !== result || host.childNodes.length !== 1) {
         host.replaceChildren(result);

@@ -62,19 +62,31 @@ export function applyCarbonRules(parser) {
   // Both max-row attributes are 0 to put the snippet in fill-container mode: it
   // renders every line in full and never shows the "Show more"/"Show less"
   // button, which suits static docs where collapsing code adds no value.
+  // `hide-line-numbers` drops the line-number gutter and `hide-fold` drops the
+  // fold gutter (no collapse/expand control) for cleaner inline prose snippets.
   rules.fence = (tokens, idx) => {
     const token = tokens[idx];
     const lang = (token.info || "").trim().split(/\s+/)[0] || "";
     const code = escapeText(token.content.replace(/\n$/, ""));
-    return `<cds-aichat-code-snippet language="${lang}" highlight max-collapsed-number-of-rows="0" max-expanded-number-of-rows="0">${code}</cds-aichat-code-snippet>`;
+    return `<div class="cds--tile"><cds-aichat-code-snippet hide-header hide-line-numbers hide-fold language="${lang}" highlight max-collapsed-number-of-rows="0" max-expanded-number-of-rows="0">${code}</cds-aichat-code-snippet></div>`;
   };
 
   // Lists. cds-unordered-list auto-detects nesting at runtime via
   // closest(cds-list-item); cds-ordered-list does not, but nested ordered lists
   // are rare in the docs. Add explicit `nested` handling later if needed.
-  rules.bullet_list_open = () => "<cds-unordered-list>";
+  // The `isExpressive` flag renders list items at Carbon body-02 (16px) to match
+  // the surrounding prose; the components otherwise default to body-01 (14px) on
+  // their shadow-DOM wrapper, which page CSS can't override for slotted items.
+  // We set both attribute spellings on purpose: the boolean property has no
+  // explicit `attribute:` in the CDN's current `/tag/latest/` build, so Lit
+  // observes the lowercased `isexpressive`, while newer builds pin it to
+  // `is-expressive`. Emitting both keeps lists at body-02 across either, which
+  // matters because the floating CDN tag can roll forward without notice.
+  rules.bullet_list_open = () =>
+    "<cds-unordered-list isexpressive is-expressive>";
   rules.bullet_list_close = () => "</cds-unordered-list>";
-  rules.ordered_list_open = () => "<cds-ordered-list>";
+  rules.ordered_list_open = () =>
+    "<cds-ordered-list isexpressive is-expressive>";
   rules.ordered_list_close = () => "</cds-ordered-list>";
   rules.list_item_open = () => "<cds-list-item>";
   rules.list_item_close = () => "</cds-list-item>";

@@ -31,7 +31,7 @@ To hide the default greeting and starters and supply your own markup instead, se
 
 ## Returning to the home screen
 
-By default users can reopen the home screen after sending a message. Set {@link HomeScreenConfig.disableReturn} to `true` to keep them in the conversation once it starts.
+By default users can navigate back to the home screen after sending a message. Set {@link HomeScreenConfig.disableReturn} to `true` to keep them in the conversation once it starts.
 
 ## Related
 

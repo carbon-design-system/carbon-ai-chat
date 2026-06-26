@@ -587,16 +587,32 @@ export interface LayoutConfig {
   corners?: CornersType | PerCornerConfig;
 
   /**
-   * CSS variable overrides for the chat UI. This is a convienience method, you may also set these properties via CSS.
+   * CSS custom property overrides for the chat UI. This is a convenience method; you may also set
+   * these properties via CSS. Unlike page-level CSS, these overrides are injected inside the chat
+   * and win even when a theme is forced with {@link PublicConfig.injectCarbonTheme}.
    *
-   * Keys correspond to values from `LayoutCustomProperties` (e.g. `LayoutCustomProperties.height`),
-   * which map to the underlying `--cds-aichat-…` custom properties.
-   * Values are raw CSS values such as `"420px"`, `"9999"`, etc.
+   * Two token layers are supported, distinguished by the key:
+   *
+   * - **Chat shell tokens** — a value from `LayoutCustomProperties` (e.g. `"width"` or
+   *   `"launcher-color-background"`) maps to the matching `--cds-aichat-…` custom property.
+   * - **Carbon theme tokens** — any Carbon token name prefixed with `$` (e.g. `"$button-primary"`)
+   *   maps to the matching `--cds-…` custom property (`--cds-button-primary`). Use this to recolor
+   *   the Carbon components rendered inside the chat. `$`-prefixed values must be hexadecimal colors.
+   *
+   * Values are raw CSS values such as `"420px"`, `"9999"`, or `"#1a1a2e"`.
    *
    * Example:
-   * { height: "560px", width: "420px" }
+   * ```ts
+   * {
+   *   width: "420px",
+   *   "launcher-color-background": "#1a1a2e",
+   *   "$button-primary": "#1a1a2e",
+   * }
+   * ```
    */
-  customProperties?: Partial<Record<LayoutCustomProperties, string>>;
+  customProperties?: Partial<
+    Record<LayoutCustomProperties | `$${string}`, string>
+  >;
 }
 
 /**

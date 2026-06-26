@@ -1,12 +1,11 @@
-# Markdown override (code snippet, hide detected language label)
+# Markdown override (code snippet + table)
 
-`ChatCustomElement` configured with `markdown.customRenderers.codeBlock` so every fenced code block renders through a `cds-aichat-code-snippet` whose `detectLanguage` property is explicitly set to `false` — overriding the markdown component's default of `true`. Bare fences no longer show the detected language label in the snippet header; explicit fence languages still display their label.
+`ChatCustomElement` configured with `markdown.customRenderers` to replace two element renderers: `codeBlock` (every fenced code block renders through a `cds-aichat-code-snippet` with `detectLanguage` set to `false`) and `table` (every markdown table renders through a Carbon `DataTable` from `@carbon/react`).
 
 ## What this example shows
 
-- Replacing the default code-block renderer with a `customRenderers.codeBlock` callback that returns JSX.
-- Setting `detectLanguage={false}` on `cds-aichat-code-snippet` to override the markdown component's default and hide the auto-detected language label.
-- Wrapping the snippet in `<Card isFlush>` to match the default Carbon shell.
+- Replacing the default code-block renderer with a `customRenderers.codeBlock` callback that returns JSX, and setting `detectLanguage={false}` on `cds-aichat-code-snippet` to hide the auto-detected language label.
+- Replacing the default table renderer with a `customRenderers.table` callback that returns a Carbon `DataTable`. The returned element is forwarded into **page light DOM**, so the page's global `@carbon/styles` CSS reaches it — inside the chat's shadow root it would render unstyled.
 - Memoizing the `markdown` config with `useMemo` so renderer identity is stable across renders.
 
 ## When to use this pattern
@@ -23,10 +22,13 @@
 | `PublicConfig`                            | `@carbon/ai-chat` type             | Types the config object passed to `ChatCustomElement`.                                   |
 | `ChatContainerPropsMarkdown`              | `@carbon/ai-chat` type             | Shape of the `markdown` prop.                                                            |
 | `MarkdownRendererCodeBlockArgs`           | `@carbon/ai-chat` type             | Argument shape for the codeBlock renderer (`language`, `code`, …).                       |
+| `MarkdownRendererTableArgs`               | `@carbon/ai-chat` type             | Argument shape for the table renderer (`headers`, `rows`, …).                            |
 | `markdown.customRenderers.codeBlock`      | config prop                        | Replaces the default fenced-code renderer with a JSX wrapper.                            |
+| `markdown.customRenderers.table`          | config prop                        | Replaces the default table renderer with a Carbon `DataTable`.                           |
 | `Card` (`cds-aichat-card`)                | `@carbon/ai-chat-components` React | Wraps the snippet to match the default Carbon shell.                                     |
 | `CodeSnippet` (`cds-aichat-code-snippet`) | `@carbon/ai-chat-components` React | Renders the code; receives `detectLanguage={false}` to hide the detected language label. |
-| `messaging.customSendMessage`             | config prop                        | Mock backend that emits two contrasting fences in every reply.                           |
+| `Table` and friends                       | `@carbon/react`                    | The data table the `table` override renders.                                             |
+| `messaging.customSendMessage`             | config prop                        | Mock backend that emits two contrasting fences and a table in every reply.               |
 | `layout.showFrame`                        | config prop                        | Disables the built-in frame so the host owns the layout.                                 |
 | `openChatByDefault`                       | config prop                        | Mounts straight into the conversation, no launcher.                                      |
 

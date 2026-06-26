@@ -4,13 +4,13 @@ title: Slots
 
 ## Overview
 
-Render your own content into slots around the chat — a custom footer, header, or panel content.
+You may render custom content inside of various slots throughout the chat, such as the chat footer, above the prompt line, and panel content.
 
 ## Writing to a slot
 
-Write your own content into slots around the chat. You write to them as portals from your application with frameworks such as React, Angular, Vue, or a web component. {@link WriteableElementName} lists the available slots.
+Write to slots as portals from your application with frameworks such as [React](./React.md), [Angular](./Angular.md), Vue, or [web components](./WebComponent.md). See {@link WriteableElementName} for a list of available slots.
 
-These examples use the {@link ChatInstance} (`instance`); see [React](./React.md) or [web components](./WebComponent.md) for how to get it.
+Access slots via {@link ChatInstance.writeableElements}.
 
 ### Align rounded corners
 

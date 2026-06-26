@@ -41,7 +41,14 @@
 .#{$prefix}--snippet {
   display: block;
   padding: 0;
-  background: theme.$background;
+  // Use the chat-shell surface token rather than $background. $background tracks
+  // the page canvas (e.g. gray #f4f4f4 in g10), so the snippet rendered gray
+  // when placed outside a card / on a non-white layer. $chat-shell-background is
+  // a single, layer-independent surface (white in white/g10, #262626 in
+  // g90/g100), so the snippet stays consistent and matches the card it usually
+  // lives in. (Longer term neither card nor snippet should key off this token
+  // for their surface — tracked separately.)
+  background: theme.$chat-shell-background;
   font-family: inherit;
   max-inline-size: 100%;
 
@@ -82,6 +89,13 @@
   .#{$prefix}--snippet {
     background-color: theme.$layer;
     color: theme.$text-disabled;
+  }
+
+  // Keep the gutter the same color as the disabled surface. The enabled gutter
+  // uses chat-shell-background (see codemirror/theme.ts); override it here so the
+  // disabled snippet reads as one flat $layer surface.
+  .cm-gutters {
+    background-color: theme.$layer;
   }
 
   .#{$prefix}--snippet-container {

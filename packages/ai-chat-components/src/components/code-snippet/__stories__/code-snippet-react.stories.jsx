@@ -1,3 +1,12 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
 import React, {
   useCallback,
@@ -20,6 +29,8 @@ const renderSnippet = (args, code) => {
     editable,
     disabled,
     hideCopyButton,
+    hideLineNumbers,
+    hideFold,
     maxCollapsedNumberOfRows,
     maxExpandedNumberOfRows,
     minCollapsedNumberOfRows,
@@ -38,6 +49,8 @@ const renderSnippet = (args, code) => {
     editable,
     disabled,
     hideCopyButton,
+    hideLineNumbers,
+    hideFold,
   };
 
   if (typeof maxCollapsedNumberOfRows !== "undefined") {
@@ -91,6 +104,8 @@ const StreamingDemo = (args) => {
     editable,
     disabled,
     hideCopyButton,
+    hideLineNumbers,
+    hideFold,
     language,
     defaultLanguage,
     maxCollapsedNumberOfRows,
@@ -139,6 +154,8 @@ const StreamingDemo = (args) => {
     editable,
     disabled,
     hideCopyButton,
+    hideLineNumbers,
+    hideFold,
   };
 
   if (typeof language !== "undefined") {
@@ -231,6 +248,8 @@ export const Default = {
     editable: false,
     disabled: false,
     hideCopyButton: false,
+    hideLineNumbers: false,
+    hideFold: false,
     maxCollapsedNumberOfRows: 15,
     showMoreText: "Show more",
     showLessText: "Show less",

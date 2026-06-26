@@ -8,17 +8,17 @@
  */
 
 /**
- * Example: Carbon AI Chat — Markdown override (code snippet, hide detected
- * language label).
+ * Example: Carbon AI Chat — Markdown override (code snippet + table).
  *
- * Demonstrates the `markdown.customRenderers.codeBlock` hook by replacing
- * the default fenced-code renderer with a `cds-aichat-code-snippet` whose
- * `detectLanguage` property is explicitly set to `false` — overriding the
- * markdown component's default of `true`. The result:
- *   - Fences with an explicit language (` ```python `) show the "Python"
- *     label as usual (explicit `language` always renders its label).
- *   - Fences with no language hint (` ``` `) render with no language label
- *     in the snippet header — only the line count.
+ * Demonstrates two `markdown.customRenderers` element-replacement hooks:
+ *   - `codeBlock` — render fenced code through a `cds-aichat-code-snippet`
+ *     with `detectLanguage` set to `false` (a bare fence shows only the line
+ *     count, no detected-language label).
+ *   - `table` — render markdown tables through a Carbon `DataTable` from
+ *     `@carbon/react` instead of the default `cds-aichat-table`. The returned
+ *     element is forwarded into page light DOM, so the page's global
+ *     `@carbon/styles` CSS reaches it (inside the chat's shadow root it would
+ *     not).
  *
  * Start reading at `App()` and the `useMemo`'d `customRenderers` object.
  */
@@ -27,10 +27,19 @@ import {
   ChatCustomElement,
   type ChatContainerPropsMarkdown,
   type MarkdownRendererCodeBlockArgs,
+  type MarkdownRendererTableArgs,
   type PublicConfig,
 } from "@carbon/ai-chat";
 import Card from "@carbon/ai-chat-components/es/react/card";
 import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@carbon/react";
 import React, { useMemo } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -66,6 +75,29 @@ function App() {
               />
             </div>
           </Card>
+        ),
+        // Render markdown tables through a Carbon DataTable instead of the
+        // default cds-aichat-table. The returned element is forwarded into
+        // page light DOM, so the page's global `@carbon/styles` CSS styles it.
+        table: ({ headers, rows }: MarkdownRendererTableArgs) => (
+          <Table>
+            <TableHead>
+              <TableRow>
+                {headers.map((cell, i) => (
+                  <TableHeader key={i}>{cell.text}</TableHeader>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row, ri) => (
+                <TableRow key={ri}>
+                  {row.map((cell, ci) => (
+                    <TableCell key={ci}>{cell.text}</TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         ),
       },
     }),

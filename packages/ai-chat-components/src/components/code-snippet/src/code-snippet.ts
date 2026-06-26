@@ -130,11 +130,22 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
   @property({ type: Boolean, reflect: true, attribute: "hide-header" })
   hideHeader = false;
 
+  /** Hide the line-number gutter in the editor. */
+  @property({ type: Boolean, reflect: true, attribute: "hide-line-numbers" })
+  hideLineNumbers = false;
+
+  /**
+   * Hide the fold gutter, removing the ability to collapse and expand code
+   * blocks (the fold keyboard shortcuts are dropped along with the gutter).
+   */
+  @property({ type: Boolean, reflect: true, attribute: "hide-fold" })
+  hideFold = false;
+
   /**
    * Maximum rows to show when collapsed.
    * Set to 0 along with maxExpandedNumberOfRows to enable fill-container mode.
    */
-  @property({ attribute: "max-collapsed-number-of-rows" })
+  @property({ type: Number, attribute: "max-collapsed-number-of-rows" })
   maxCollapsedNumberOfRows = 15;
 
   /**
@@ -142,15 +153,15 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    * Set to 0 along with maxCollapsedNumberOfRows to enable fill-container mode,
    * where the component fills its container's height with a scrollbar.
    */
-  @property({ attribute: "max-expanded-number-of-rows" })
+  @property({ type: Number, attribute: "max-expanded-number-of-rows" })
   maxExpandedNumberOfRows = 0;
 
   /** Minimum rows to show when collapsed. */
-  @property({ attribute: "min-collapsed-number-of-rows" })
+  @property({ type: Number, attribute: "min-collapsed-number-of-rows" })
   minCollapsedNumberOfRows = 3;
 
   /** Minimum rows to show when expanded. */
-  @property({ attribute: "min-expanded-number-of-rows" })
+  @property({ type: Number, attribute: "min-expanded-number-of-rows" })
   minExpandedNumberOfRows = 16;
 
   /** Label for the “show less” control. */
@@ -518,7 +529,11 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     const readOnlyCompartment = this.readOnlyCompartment;
     const contentAttributesCompartment = this.contentAttributesCompartment;
 
-    const needsRecreate = !this.editorView || changedProperties.has("editable");
+    const needsRecreate =
+      !this.editorView ||
+      changedProperties.has("editable") ||
+      changedProperties.has("hideLineNumbers") ||
+      changedProperties.has("hideFold");
 
     if (needsRecreate) {
       // Prevent creating multiple editors simultaneously
@@ -643,6 +658,8 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
         setupOptions: {
           foldCollapseLabel: this.foldCollapseLabel,
           foldExpandLabel: this.foldExpandLabel,
+          hideLineNumbers: this.hideLineNumbers,
+          hideFold: this.hideFold,
         },
       });
     } finally {

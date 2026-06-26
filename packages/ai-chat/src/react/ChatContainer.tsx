@@ -277,7 +277,8 @@ function ChatContainer(
       const detail = (
         event as CustomEvent<{
           slotName: string;
-          html: string;
+          html?: string;
+          element?: HTMLElement;
           isInline: boolean;
         }>
       ).detail;
@@ -285,6 +286,21 @@ function ChatContainer(
         return;
       }
       event.preventDefault();
+      // Custom-renderer hosts (table/codeBlock) forward a live element — the
+      // markdown element keeps ownership of its content; we only relocate the
+      // node into page light DOM so the consumer's global CSS reaches it.
+      // Plugin fallbacks forward an HTML string instead.
+      if (detail.element) {
+        const element = detail.element;
+        element.setAttribute("slot", detail.slotName);
+        if (!detail.isInline) {
+          element.style.marginBlockStart = "1rem";
+        }
+        if (element.parentElement !== wrapper) {
+          wrapper.appendChild(element);
+        }
+        return;
+      }
       let host = hosts.get(detail.slotName);
       if (!host) {
         host = document.createElement(detail.isInline ? "span" : "div");
@@ -299,8 +315,8 @@ function ChatContainer(
         hosts.set(detail.slotName, host);
         wrapper.appendChild(host);
       }
-      if (host.innerHTML !== detail.html) {
-        host.innerHTML = detail.html;
+      if (host.innerHTML !== (detail.html ?? "")) {
+        host.innerHTML = detail.html ?? "";
       }
     };
     const handleUpdate = (event: Event) => {
