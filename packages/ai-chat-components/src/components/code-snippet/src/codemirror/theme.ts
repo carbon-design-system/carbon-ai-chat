@@ -109,7 +109,7 @@ export function createCarbonTheme() {
       letterSpacing: "var(--cds-code-01-letter-spacing, 0.16px)",
       lineHeight: "var(--cds-code-01-line-height, 1.5)",
       maxBlockSize: "var(--cds-snippet-max-height, 16rem)",
-      minBlockSize: "var(--cds-snippet-min-height, 3rem)",
+      minBlockSize: "var(--cds-snippet-min-height, auto)",
     },
 
     // Fold gutter / caret icons
