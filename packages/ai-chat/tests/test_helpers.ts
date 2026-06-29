@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -8,7 +8,7 @@
  */
 
 import React from "react";
-import { render, waitFor } from "@testing-library/react";
+import { cleanup, render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../src/react/ChatContainer";
 import { PublicConfig } from "../src/types/config/PublicConfig";
 import { ChatContainerProps } from "../src/types/component/ChatContainer";
@@ -143,8 +143,11 @@ export const setupBeforeEach = () => {
 
 /**
  * Standard afterEach cleanup for tests.
- * Clears the document body to ensure clean DOM between tests.
+ * Unmounts rendered React trees (running effect/component cleanup) before
+ * clearing the DOM, so jsdom/Lit/timer state does not accumulate across the
+ * many specs sharing a Jest worker.
  */
 export const setupAfterEach = () => {
+  cleanup();
   document.body.innerHTML = "";
 };
