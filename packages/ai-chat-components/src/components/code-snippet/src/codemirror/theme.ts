@@ -109,7 +109,7 @@ export function createCarbonTheme() {
 
     ".cm-scroller": {
       maxBlockSize: "var(--cds-snippet-max-height, 16rem)",
-      minBlockSize: "var(--cds-snippet-min-height, auto)",
+      minBlockSize: "var(--cds-snippet-min-height, 3rem)",
     },
 
     // Fold gutter / caret icons
