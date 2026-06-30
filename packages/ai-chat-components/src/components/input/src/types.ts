@@ -25,16 +25,34 @@ export type {
 } from "./tiptap/types.js";
 
 /**
- * Possible status values for a file upload.
+ * Possible status values for a file upload. `SUCCESS` and `COMPLETE` both mean
+ * the upload finished without error, but they are not interchangeable: `SUCCESS`
+ * is the transient state shown the moment an upload succeeds (a brief checkmark),
+ * while `COMPLETE` is the settled, persisted terminal state.
  */
 export enum FileStatusValue {
-  /** Upload has completed processing. */
+  /**
+   * Settled terminal state for a finished upload, with no progress or success
+   * affordance shown. This is the value persisted to session history, so a
+   * reloaded message renders in this quiet state rather than re-showing the
+   * transient `SUCCESS` checkmark.
+   */
   COMPLETE = "complete",
-  /** File is in an editable state. */
+  /**
+   * The file is staged in the input area and can still be edited or removed
+   * before the message is sent.
+   */
   EDIT = "edit",
-  /** File is currently being uploaded. */
+  /**
+   * The file is actively uploading; a progress or loading affordance is shown.
+   */
   UPLOADING = "uploading",
-  /** Upload finished successfully. */
+  /**
+   * Transient state shown the moment an upload finishes successfully, for example
+   * a checkmark surfaced briefly to confirm success. It is later recorded as
+   * `COMPLETE` in session history, so the affordance does not persist across
+   * reloads. Distinct from `COMPLETE`, which is the quiet settled state.
+   */
   SUCCESS = "success",
 }
 

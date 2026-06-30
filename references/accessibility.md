@@ -29,7 +29,16 @@ Both back ends share the same manager class — fixes propagate to both consumer
 ### Politeness levels
 
 - `polite` — status changes, content updates, anything the user benefits from hearing but shouldn't have interrupted. Default choice.
-- `assertive` — errors that block user progress (see [`audio-player`](../packages/ai-chat-components/src/components/audio-player/src/audio-player.ts), [`video-player`](../packages/ai-chat-components/src/components/video-player/src/video-player.ts) error states). Interrupts whatever the screen reader was reading, so use sparingly.
+- `assertive` — errors that block user progress (e.g. a rejected file upload, or the [`audio-player`](../packages/ai-chat-components/src/components/audio-player/src/audio-player.ts) / [`video-player`](../packages/ai-chat-components/src/components/video-player/src/video-player.ts) error states). Interrupts whatever the screen reader was reading, so use sparingly.
+
+The shared [`AriaAnnouncerManager`](../packages/ai-chat-components/src/globals/utils/aria-announcer-manager.ts) carries both: `connect(politeRegions, assertiveRegions?)` and `announce(text, "polite" | "assertive")` (default polite; assertive falls back to polite when no assertive regions are connected). In `@carbon/ai-chat`, dispatch `actions.announceMessage({ messageID, messageValues, assertive: true })` (or pass `assertive: true` to `useAriaAnnouncer()`); the React announcer routes it into a dedicated `aria-live="assertive"` region. Two assertive patterns coexist and are both fine — the manager-driven hidden region above (fixed-markup `aria-live`, no `role`), and the standalone persistent `role="alert"` panes in `audio-player` / `video-player`. Don't combine `role="alert"` with `aria-live="assertive"` on the same node (see ARIA pitfalls below).
+
+### Where announcements live (component vs `@carbon/ai-chat`)
+
+When a piece of UI changes state, decide who owns the announcement by which surface changed:
+
+- **A component owns the announcement when it owns the changing UI.** A self-contained element that renders a transient list or status (e.g. [`file-uploads`](../packages/ai-chat-components/src/components/file-uploads/src/file-uploads.ts)) should announce its own added / uploading / success / failure / removed transitions via `AriaAnnouncerManager`, by diffing its reactive props in `updated()`. This keeps one announcement source for every consumer of the component and co-locates it with the visual change. Render the live regions unconditionally (independent of whether the list is empty) so the last item's removal still announces, and announce user-initiated removals from the event handler rather than the diff (the diff also fires when the list clears for unrelated reasons).
+- **`@carbon/ai-chat` owns the announcement when the state lives in the app, not the component** — post-send / message-list status, cross-cutting flows, or anything the component never sees. Dispatch `actions.announceMessage(...)` from the service or use `useAriaAnnouncer()` in React. The file-upload flow is the worked example: the input-area chips announce from the `file-uploads` component, the human-agent post-send success/failure announce from `HumanAgentServiceImpl`, and validation rejections (which block the user, before any chip exists) announce assertively from the React selection gate.
 
 ### ARIA pitfalls to avoid
 

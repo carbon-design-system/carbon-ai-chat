@@ -11,7 +11,6 @@ import { createComponent } from "@lit/react";
 import React from "react";
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import { MENU_SIZE } from "@carbon/web-components/es/components/menu/defs.js";
 import CarbonMenuElement from "@carbon/web-components/es/components/menu/menu.js";
 const Menu = createComponent({
   tagName: "cds-menu",
@@ -24,4 +23,3 @@ const Menu = createComponent({
 });
 
 export default Menu;
-export { MENU_SIZE };

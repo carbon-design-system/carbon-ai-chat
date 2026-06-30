@@ -27,6 +27,8 @@ import { BusEventType } from "../../../types/events/eventBusTypes";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useIntl } from "../../hooks/useIntl";
+import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
+import { validateFileSelection } from "../../utils/fileUploadValidation";
 import { useInputConfig } from "../../hooks/useInputConfig";
 import { useRichSurface } from "./useRichSurface";
 import { useInputValueSync } from "./useInputValueSync";
@@ -48,6 +50,9 @@ import { WriteableElementName } from "../../../types/instance/WriteableElements"
 import PromptLineWriteableSlot from "./PromptLineWriteableSlot";
 
 const AddIcon = carbonIconToReact(Add16);
+
+/** Shared empty fallback so `<FileUploads>` always receives an array. */
+const EMPTY_UPLOADS: FileUpload[] = [];
 
 /**
  * Props for Input - the Redux-connected container component.
@@ -105,6 +110,18 @@ interface InputProps {
    * Indicates if the user should be allowed to choose multiple files to upload.
    */
   allowMultipleFileUploads?: boolean;
+
+  /**
+   * Maximum size in bytes for a single uploaded file. Files exceeding this are
+   * rejected before upload. When undefined, there is no size limit.
+   */
+  maxFileSizeBytes?: number;
+
+  /**
+   * Maximum number of files that may be attached at once. When undefined, there
+   * is no limit.
+   */
+  maxFiles?: number;
 
   /**
    * A list of pending file uploads to display in the input area.
@@ -229,6 +246,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     disableUploadButton,
     allowedFileUploadTypes,
     allowMultipleFileUploads,
+    maxFileSizeBytes,
+    maxFiles,
     pendingUploads,
     onFilesSelectedForUpload,
     onRemoveFile: onRemoveFileProp,
@@ -243,8 +262,32 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const serviceManager = useServiceManager();
   const languagePack = useLanguagePack();
   const intl = useIntl();
+  const ariaAnnouncer = useAriaAnnouncer();
   const store = serviceManager.store;
   const hasErrorProp = error !== undefined;
+
+  // Locale-aware announcement formatters for batched file changes. The
+  // `file-uploads` component coalesces same-frame adds/uploads into a single
+  // counted announcement and calls these; intl handles the (locale-specific)
+  // pluralization that the component can't do on its own.
+  const getFilesAddedText = useMemo(
+    () =>
+      ({ count }: { count: number }) =>
+        intl.formatMessage(
+          { id: "fileSharing_ariaAnnounceFilesAdded" },
+          { count },
+        ),
+    [intl],
+  );
+  const getFilesUploadingText = useMemo(
+    () =>
+      ({ count }: { count: number }) =>
+        intl.formatMessage(
+          { id: "fileSharing_ariaAnnounceFilesUploading" },
+          { count },
+        ),
+    [intl],
+  );
 
   // Get chat width breakpoint and height to determine autocomplete settings
   const chatWidthBreakpoint = useSelector(
@@ -382,17 +425,42 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target;
     const files = Array.from(input.files || []);
+    // Reset early so re-selecting the same file fires `change` again, even if
+    // every file is rejected below.
+    input.value = "";
     if (files.length === 0) {
       return;
     }
 
-    const fileUploads: FileUpload[] = files.map((file) => ({
+    const { accepted, rejections } = validateFileSelection(
+      files,
+      pendingUploads?.length ?? 0,
+      {
+        accept: allowedFileUploadTypes,
+        maxFileSizeBytes,
+        maxFiles,
+      },
+    );
+
+    // Validation failures block the user, so announce them assertively.
+    for (const rejection of rejections) {
+      ariaAnnouncer({
+        messageID: rejection.messageID,
+        messageValues: rejection.messageValues,
+        assertive: true,
+      });
+    }
+
+    if (accepted.length === 0) {
+      return;
+    }
+
+    const fileUploads: FileUpload[] = accepted.map((file) => ({
       id: uuid(),
       status: FileStatusValue.EDIT,
       file,
     }));
     onFilesSelectedForUpload?.(fileUploads);
-    input.value = "";
   };
 
   /**
@@ -617,13 +685,22 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         />
       )}
 
-      {/* File uploads — pending file status display */}
-      {pendingUploads && pendingUploads.length > 0 && (
+      {/*
+        File uploads — pending file status display. Rendered whenever uploading
+        is available (even with no files) so the component's live regions stay
+        mounted and the last file's removal still announces.
+      */}
+      {showUploadButton && (
         <FileUploads
           slot="file-uploads"
-          uploads={pendingUploads}
+          uploads={pendingUploads || EMPTY_UPLOADS}
           removeFileLabel={languagePack.fileSharing_removeButtonTitle}
           uploadingFileLabel={languagePack.fileSharing_statusUploading}
+          getFilesAddedText={getFilesAddedText}
+          getFilesUploadingText={getFilesUploadingText}
+          fileRemovedLabel={languagePack.fileSharing_ariaAnnounceFileRemoved}
+          uploadSuccessLabel={languagePack.fileSharing_ariaAnnounceSuccess}
+          uploadFailureLabel={languagePack.fileSharing_uploadFailed}
           onFileRemove={handleRemoveFile}
         />
       )}

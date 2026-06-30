@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -1281,6 +1281,16 @@ class ServiceDeskCallbackImpl<
           ),
         );
         partialMessage.history.error_state = MessageErrorState.FAILED;
+
+        // Announce the failure for screen-reader users — the inline error message
+        // below is rendered but not announced on its own (the status icon
+        // deliberately carries no aria-label to avoid the message live region
+        // double-reading), mirroring the success announcement above.
+        store.dispatch(
+          actions.announceMessage({
+            messageID: "fileSharing_uploadFailed",
+          }),
+        );
 
         if (errorMessage) {
           // Generate an inline error message to show the error to the user.

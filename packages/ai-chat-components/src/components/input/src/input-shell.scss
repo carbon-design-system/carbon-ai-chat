@@ -179,7 +179,11 @@
 // -----------------------------------------------------------
 // File uploads slot
 // -----------------------------------------------------------
-::slotted([slot="file-uploads"]) {
+// Only lay out / space the slot once it actually has files. The element stays
+// slotted (with only its hidden live regions) while empty so screen-reader
+// announcements survive removal of the last file; gating on `has-uploads`
+// keeps it from adding spacing when there is nothing to show.
+::slotted([slot="file-uploads"][has-uploads]) {
   display: flex;
   flex-basis: 100%;
   flex-wrap: wrap;

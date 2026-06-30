@@ -21,34 +21,46 @@ import VisuallyHidden from "../util/VisuallyHidden";
  * announcements throughout the React app, and adapts the shared
  * `AriaAnnouncerManager` to React-specific inputs (intl messages, DOM nodes).
  *
- * Three regions are connected (vs. two in `chat-shell`) because in earlier
- * testing FF + JAWS occasionally re-read entire region contents on append;
- * rotating across three rather than two ensures there's always a fresh
- * region for the next announcement. The rotation, dual-clear, and 250 ms
- * NVDA debounce are all owned by the shared manager.
+ * Three polite regions are connected (vs. two in `chat-shell`) because in
+ * earlier testing FF + JAWS occasionally re-read entire region contents on
+ * append; rotating across three rather than two ensures there's always a fresh
+ * region for the next announcement. Two additional assertive regions back
+ * blocking-error announcements (`AnnounceMessage.assertive`). The rotation,
+ * dual-clear, and 250 ms NVDA debounce are all owned by the shared manager.
  */
 class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
   private ref1 = React.createRef<HTMLDivElement>();
   private ref2 = React.createRef<HTMLDivElement>();
   private ref3 = React.createRef<HTMLDivElement>();
+  private ref4 = React.createRef<HTMLDivElement>();
+  private ref5 = React.createRef<HTMLDivElement>();
 
   private manager = new AriaAnnouncerManager();
 
   /**
-   * Raw values queued from the current tick. Nodes stay as nodes here so
+   * Polite raw values queued from the current tick. Nodes stay as nodes here so
    * that `nodeToText` runs after the synchronous call stack drains —
    * legacy callers (e.g. `MessageComponent`) hand us a ref whose Lit
    * descendants populate via the event bus on the same tick.
    */
   private pendingValues: (Node | string)[] = [];
 
+  /**
+   * Assertive values queued from the current tick. Assertive announcements only
+   * ever come from resolved intl strings, so this queue holds strings.
+   */
+  private pendingAssertiveValues: string[] = [];
+
   componentDidMount(): void {
-    const refs = [
+    const politeRefs = [
       this.ref1.current,
       this.ref2.current,
       this.ref3.current,
     ].filter((el): el is HTMLDivElement => el !== null);
-    this.manager.connect(refs);
+    const assertiveRefs = [this.ref4.current, this.ref5.current].filter(
+      (el): el is HTMLDivElement => el !== null,
+    );
+    this.manager.connect(politeRefs, assertiveRefs);
   }
 
   componentWillUnmount(): void {
@@ -59,7 +71,8 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
    * Resolve the React-specific input shapes (intl message, DOM node) to a
    * string, then forward to the shared manager. Multiple calls in the same
    * tick are coalesced; nodes are converted in a microtask so synchronous
-   * event-bus listeners have a chance to populate them first.
+   * event-bus listeners have a chance to populate them first. Raw strings and
+   * nodes are always polite; an `AnnounceMessage` may opt into assertive.
    */
   public announceValue(value: Node | AnnounceMessage | string) {
     if (!value) {
@@ -67,20 +80,30 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
     }
 
     if (typeof value === "string" || hasNodeType(value)) {
-      this.queueRawValue(value);
+      this.queueRawValue(value, false);
     } else if (value.messageID) {
       this.queueRawValue(
         this.props.intl.formatMessage(
           { id: value.messageID },
           value.messageValues,
         ),
+        Boolean(value.assertive),
       );
     } else {
-      this.queueRawValue(value.messageText);
+      this.queueRawValue(value.messageText, Boolean(value.assertive));
     }
   }
 
-  private queueRawValue(value: Node | string) {
+  private queueRawValue(value: Node | string, assertive: boolean) {
+    if (assertive) {
+      const wasEmpty = this.pendingAssertiveValues.length === 0;
+      this.pendingAssertiveValues.push(value as string);
+      if (wasEmpty) {
+        Promise.resolve().then(this.flushPendingAssertiveValues);
+      }
+      return;
+    }
+
     const wasEmpty = this.pendingValues.length === 0;
     this.pendingValues.push(value);
     if (wasEmpty) {
@@ -103,7 +126,17 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
 
     const text = parts.join(" ");
     if (text) {
-      this.manager.announce(text);
+      this.manager.announce(text, "polite");
+    }
+  };
+
+  private flushPendingAssertiveValues = () => {
+    const queue = this.pendingAssertiveValues;
+    this.pendingAssertiveValues = [];
+
+    const text = queue.filter(Boolean).join(" ");
+    if (text) {
+      this.manager.announce(text, "assertive");
     }
   };
 
@@ -117,6 +150,8 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
         <div ref={this.ref1} aria-live="polite" />
         <div ref={this.ref2} aria-live="polite" />
         <div ref={this.ref3} aria-live="polite" />
+        <div ref={this.ref4} aria-live="assertive" />
+        <div ref={this.ref5} aria-live="assertive" />
       </VisuallyHidden>
     );
   }

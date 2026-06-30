@@ -130,3 +130,66 @@ describe("AriaAnnouncerManager", function () {
     expect(regions[1].textContent).to.equal("");
   });
 });
+
+describe("AriaAnnouncerManager – politeness", function () {
+  let polite: HTMLDivElement[];
+  let assertive: HTMLDivElement[];
+  let manager: AriaAnnouncerManager;
+
+  afterEach(() => {
+    manager?.disconnect();
+    [...(polite ?? []), ...(assertive ?? [])].forEach((r) => r.remove());
+  });
+
+  it("routes assertive messages to assertive regions only", async () => {
+    polite = [makeRegion()];
+    assertive = [makeRegion()];
+    manager = new AriaAnnouncerManager();
+    manager.connect(polite, assertive);
+
+    manager.announce("blocking", "assertive");
+    await wait(WAIT_MS);
+
+    expect(assertive[0].textContent).to.equal("blocking");
+    expect(polite[0].textContent).to.equal("");
+  });
+
+  it("defaults to polite", async () => {
+    polite = [makeRegion()];
+    assertive = [makeRegion()];
+    manager = new AriaAnnouncerManager();
+    manager.connect(polite, assertive);
+
+    manager.announce("status");
+    await wait(WAIT_MS);
+
+    expect(polite[0].textContent).to.equal("status");
+    expect(assertive[0].textContent).to.equal("");
+  });
+
+  it("falls back to polite when no assertive regions are connected", async () => {
+    polite = [makeRegion()];
+    assertive = [];
+    manager = new AriaAnnouncerManager();
+    manager.connect(polite);
+
+    manager.announce("oops", "assertive");
+    await wait(WAIT_MS);
+
+    expect(polite[0].textContent).to.equal("oops");
+  });
+
+  it("keeps the polite and assertive channels independent", async () => {
+    polite = [makeRegion()];
+    assertive = [makeRegion()];
+    manager = new AriaAnnouncerManager();
+    manager.connect(polite, assertive);
+
+    manager.announce("p", "polite");
+    manager.announce("a", "assertive");
+    await wait(WAIT_MS);
+
+    expect(polite[0].textContent).to.equal("p");
+    expect(assertive[0].textContent).to.equal("a");
+  });
+});

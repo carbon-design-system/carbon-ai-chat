@@ -28,4 +28,16 @@ export interface FileUploadCapabilities {
    * field for the file input element.
    */
   allowedFileUploadTypes: string;
+
+  /**
+   * The maximum size, in bytes, allowed for a single uploaded file. Files larger than this are rejected before
+   * upload and the user is told why. When omitted, no size limit is enforced.
+   */
+  maxFileSizeBytes?: number;
+
+  /**
+   * The maximum number of files that may be attached at once. Selecting more than this rejects the extras and
+   * tells the user. When omitted, no count limit is enforced.
+   */
+  maxFiles?: number;
 }
