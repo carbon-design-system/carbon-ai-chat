@@ -55,10 +55,12 @@
   padding-inline: layout.$spacing-05 layout.$spacing-03;
 }
 
-// Focus outline — uses :focus-within so no JS class toggle needed.
+// Focus outline for non-expanded state — uses :focus-within so no JS class toggle needed.
 // Kept adjacent to the base rule (ahead of higher-specificity :host variants)
 // so stylelint's no-descending-specificity rule is satisfied.
-.#{$prefix}--input-container:focus-within {
+.#{$prefix}--input-container:not(
+    .#{$prefix}--input-container--expanded
+  ):focus-within {
   outline-color: theme.$focus;
 }
 
@@ -236,7 +238,16 @@
 .#{$prefix}--input-container--expanded .#{$prefix}--input-text-area {
   flex-basis: 100%;
   order: 1;
+  border-radius: 4px;
   margin-block-end: 0;
+  outline: button.$button-border-width solid transparent;
+  outline-offset: -2px;
+}
+
+// Focus outline for expanded state — only on text area
+.#{$prefix}--input-container--expanded
+  .#{$prefix}--input-text-area:focus-within {
+  outline-color: theme.$focus;
 }
 
 .#{$prefix}--input-container--expanded ::slotted([slot="message-actions"]) {
