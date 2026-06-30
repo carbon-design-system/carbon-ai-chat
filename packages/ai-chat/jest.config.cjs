@@ -53,4 +53,9 @@ module.exports = {
   testTimeout: 10000,
   modulePathIgnorePatterns: ["<rootDir>/dist/"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
+  // Recycle a worker once it exceeds this between tests, before accumulated
+  // jsdom/Lit/timer state can crash it (SIGSEGV). Cap concurrent workers so
+  // peak combined memory stays bounded on both CI runners and local machines.
+  workerIdleMemoryLimit: "512MB",
+  maxWorkers: "50%",
 };

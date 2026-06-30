@@ -61,7 +61,6 @@ export enum PanelType {
    *
    * On small screens, the panel behaves like `DEFAULT`.
    *
-   * @experimental
    */
   WORKSPACE = "workspace",
 
@@ -71,7 +70,6 @@ export enum PanelType {
    * The history panel only appears in the chat panel when
    * config.history.isMobile is true.
    *
-   * @experimental
    */
   HISTORY = "history",
 }

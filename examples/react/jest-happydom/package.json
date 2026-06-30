@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-jest-happydom",
   "private": true,
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Jest testing example for @carbon/ai-chat React components using happy-dom.",
   "scripts": {
     "test": "jest",

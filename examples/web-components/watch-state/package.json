@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-watch-state",
-  "version": "0.18.0",
+  "version": "1.16.0",
   "private": true,
   "type": "module",
   "description": "An example showing how to watch ChatInstance state changes as a web component.",
