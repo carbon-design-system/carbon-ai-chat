@@ -75,6 +75,22 @@ jobs:
             git push origin
           fi
 
+      # Regenerate the committed API symbol index (docs/api/) so it tracks the
+      # API being released. Runs for every RC and full release (not dry runs),
+      # mirroring the telemetry step above. `docs:api` sets WRITE_API_INDEX so
+      # the otherwise-inert plugin writes; commit only if something changed.
+      - name: Update API symbol index
+        if: github.event.inputs.dry-run == 'false'
+        run: |
+          npm run docs:api --workspace=@carbon/ai-chat
+          if [ -z "$(git status --porcelain -- packages/ai-chat/docs/api)" ]; then
+            echo "API symbol index is unchanged, skipping commit."
+          else
+            git add packages/ai-chat/docs/api
+            git commit -m "chore(docs): update API symbol index"
+            git push origin
+          fi
+
       - name: Set NPM token
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.CARBON_BOT_NPM_TOKEN }}" >> .npmrc
