@@ -16,19 +16,23 @@ import { css, LitElement, PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
+import isEqual from "lodash-es/isEqual.js";
 
 import ChatAppEntry from "../../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LanguagePack } from "../../types/config/PublicConfig";
-import type {
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
-  ServiceDeskPublicConfig,
-} from "../../types/config/ServiceDeskConfig";
-import type { MarkdownConfigContextValue } from "../../chat/contexts/MarkdownConfigContext";
+
+/**
+ * Structural `hasChanged` for object properties: Lit defaults to identity, which
+ * would re-render the React app whenever the host (or `cds-aichat-container`'s
+ * `resolvedConfig` getter, which rebuilds a fresh object each render) hands us a
+ * new reference with unchanged content. Comparing by value keeps the React
+ * reconciliation pass for genuine changes only. Functions inside are compared by
+ * reference (lodash `isEqual` semantics), so a changed callback still counts.
+ */
+const deepChanged = (value: unknown, previous: unknown): boolean =>
+  !isEqual(value, previous);
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -46,22 +50,8 @@ class ChatContainerInternal extends LitElement {
    * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
    * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
    */
-  @property({ type: Object })
+  @property({ type: Object, hasChanged: deepChanged })
   config: PublicConfig;
-
-  /** Optional partial language pack overrides */
-  @property({ type: Object })
-  strings?: DeepPartial<LanguagePack>;
-
-  /** A factory for the {@link ServiceDesk} integration. */
-  @property({ attribute: false })
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-
-  /** Public configuration for the service desk integration. */
-  @property({ type: Object })
-  serviceDesk?: ServiceDeskPublicConfig;
 
   /**
    * The optional HTML element to mount the chat to.
@@ -83,17 +73,6 @@ class ChatContainerInternal extends LitElement {
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
 
-  /**
-   * Merged markdown config (framework-neutral `markdownItPlugins` plus
-   * layer-specific `customRenderers`). Forwarded to the React app via
-   * `MarkdownConfigContext` so {@link MarkdownWithDefaults} can portal
-   * consumer overrides into the rendered markdown components.
-   *
-   * @experimental
-   */
-  @property({ attribute: false })
-  markdown?: MarkdownConfigContextValue;
-
   firstUpdated() {
     if (this.config) {
       this.renderReactApp();
@@ -101,18 +80,12 @@ class ChatContainerInternal extends LitElement {
   }
 
   updated(changedProperties: PropertyValues) {
-    // Re-render React app when config or other properties change
-    if (
-      this.config &&
-      (changedProperties.has("config") ||
-        changedProperties.has("strings") ||
-        changedProperties.has("serviceDeskFactory") ||
-        changedProperties.has("serviceDesk") ||
-        changedProperties.has("onBeforeRender") ||
-        changedProperties.has("onAfterRender") ||
-        changedProperties.has("element") ||
-        changedProperties.has("markdown"))
-    ) {
+    // Re-render the React app when any reactive property changes. Every reactive
+    // property on this host is forwarded to `ChatAppEntry`, so deriving the
+    // trigger from the live `changedProperties` set — rather than a
+    // hand-maintained list of names — means a newly-added forwarded prop can't be
+    // silently dropped from the re-render path.
+    if (this.config && changedProperties.size > 0) {
       this.renderReactApp();
     }
   }
@@ -133,14 +106,10 @@ class ChatContainerInternal extends LitElement {
     this.root.render(
       <ChatAppEntry
         config={this.config}
-        strings={this.strings}
-        serviceDeskFactory={this.serviceDeskFactory}
-        serviceDesk={this.serviceDesk}
         onBeforeRender={this.onBeforeRender}
         onAfterRender={this.onAfterRender}
         container={container}
         element={this.element}
-        markdown={this.markdown}
       />,
     );
   }

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -44,11 +44,11 @@ const createServiceManagerStub = (customSendMessage = jest.fn()) => {
             messageLoadingIndicatorTimeoutSecs: 0,
           },
         },
-        derived: {
-          languagePack: {
-            errors_singleMessage: "error",
-          },
-        },
+        derived: {},
+      },
+      languagePack: {
+        errors_singleMessage: "error",
+        messages_requestCancelled: "Request cancelled",
       },
       assistantMessageState: { messageIDs: [] as string[] },
       assistantInputState: {

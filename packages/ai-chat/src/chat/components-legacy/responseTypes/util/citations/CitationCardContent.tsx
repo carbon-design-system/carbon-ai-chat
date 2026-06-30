@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,12 +12,14 @@ import Maximize16 from "@carbon/icons/es/maximize/16.js";
 import { carbonIconToReact } from "../../../../utils/carbonIcon";
 import React, { useLayoutEffect, useRef } from "react";
 
-import { useLanguagePack } from "../../../../hooks/useLanguagePack";
+import { useSelector } from "../../../../hooks/useSelector";
 import { useWindowSize } from "../../../../hooks/useWindowSize";
+import { shallowEqual } from "../../../../store/appStore";
 import {
   ConversationalSearchItemCitation,
   SearchResult,
 } from "../../../../../types/messaging/Messages";
+import { AppState } from "../../../../../types/state/AppState";
 
 enum CitationType {
   /**
@@ -88,7 +90,13 @@ function CitationCardContent({
   setIsExpandable,
   isExpandable,
 }: CitationCardContentProps) {
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      conversationalSearch_viewSourceDocument:
+        state.languagePack.conversationalSearch_viewSourceDocument,
+    }),
+    shallowEqual,
+  );
   const { width } = useWindowSize();
   const { conversationalSearch_viewSourceDocument } = languagePack;
   const ref = useRef<HTMLDivElement>(null);

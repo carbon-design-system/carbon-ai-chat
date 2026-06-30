@@ -87,5 +87,7 @@ packages/ai-chat-components/scss
 .bob
 .claude
 
+.playwright-mcp
+
 # PR description draft (per-PR throwaway, see AGENTS_PR.md)
 /PR.md

@@ -82,6 +82,24 @@ describe("resolveFlattenedConfig", () => {
     expect(resolveFlattenedConfig({ history }).history).toBe(history);
   });
 
+  describe("previously React-divergent fields fold into config", () => {
+    // strings, markdown, serviceDesk, and serviceDeskFactory used to be held out
+    // of the React `config` and passed to the core as side-channel props. They
+    // must now fold into `config` on both surfaces (via this shared function) so
+    // the two reconstructions cannot drift again.
+    it.each(["strings", "markdown", "serviceDesk", "serviceDeskFactory"])(
+      "folds %s into the resolved config",
+      (name) => {
+        const sentinel = sentinelFor(name);
+        expect(
+          resolveFlattenedConfig(
+            sourceWith(name as keyof PublicConfig, sentinel),
+          )[name as keyof PublicConfig],
+        ).toBe(sentinel);
+      },
+    );
+  });
+
   it("layers flattened fields over the base config object", () => {
     const base: PublicConfig = { namespace: "from-config", debug: false };
     const resolved = resolveFlattenedConfig({ config: base, debug: true });

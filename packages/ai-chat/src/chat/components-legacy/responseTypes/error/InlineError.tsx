@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,12 +9,19 @@
 
 import React from "react";
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
 import { ErrorIcon } from "../../ErrorIcon";
 import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
+import { AppState } from "../../../../types/state/AppState";
 
 export function InlineError({ text }: { text?: string }) {
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      errors_generalContent: state.languagePack.errors_generalContent,
+    }),
+    shallowEqual,
+  );
   return (
     <div className="cds-aichat--inline-error">
       <div className="cds-aichat--inline-error--icon-holder">

@@ -640,7 +640,6 @@ class ChatContainer extends FlattenedConfigElement {
       .onAfterRender=${this.onAfterRender}
       .onBeforeRender=${this.onBeforeRenderOverride}
       .element=${this.element}
-      .markdown=${this.markdown as WCMarkdown | undefined}
     >
       ${this._writeableElementSlots.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
