@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-markdown-override",
-  "version": "1.16.0-rc.1",
+  "version": "1.16.0",
   "private": true,
   "type": "module",
   "description": "Overrides the default markdown code-block renderer with a cds-aichat-code-snippet whose detectLanguage flag is set to false, suppressing the auto-detected language label in the snippet header for bare fences.",
@@ -12,8 +12,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.16.0-rc.1",
-    "@carbon/ai-chat-components": "^1.6.0-rc.1",
+    "@carbon/ai-chat": "^1.16.0",
+    "@carbon/ai-chat-components": "^1.6.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.54.0",
     "lit": "^3.1.0",
