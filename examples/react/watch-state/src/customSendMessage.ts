@@ -1,10 +1,25 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock backend for the watch-state example.
+ *
+ * Demonstrates: serving a static welcome response and a canned reply so the
+ * host UI has chat traffic to drive view transitions between the homescreen
+ * and the chat view, which the `BusEventType.STATE_CHANGE` listener mirrors.
+ *
+ * APIs exercised:
+ *   - `customSendMessage` (PublicConfig.messaging hook)
+ *   - `instance.messaging.addMessage`
+ *   - `MessageResponseTypes.TEXT`
+ *
+ * Start reading at: the `customSendMessage` function below.
  */
 
 import {
@@ -16,17 +31,17 @@ import {
 
 const WELCOME_TEXT = `Welcome! This example demonstrates watching ChatInstance state changes.
 
-Try sending a message to see the chat view, or click the home icon to see the homescreen view.
+Try sending a message to see the chat view, or click the home icon to see the homescreen view.`;
 
-Type "user_defined" or select the starter to see the custom response.`;
-
+// Replace with a real production implementation.
 async function customSendMessage(
   request: MessageRequest,
-  requestOptions: CustomSendMessageOptions,
+  _requestOptions: CustomSendMessageOptions,
   instance: ChatInstance,
 ) {
   const inputText = (request.input.text || "").trim().toLowerCase();
 
+  // Empty input fires on chat open; respond with the welcome copy.
   if (!inputText) {
     instance.messaging.addMessage({
       output: {
@@ -38,36 +53,19 @@ async function customSendMessage(
         ],
       },
     });
-  } else {
-    switch (inputText) {
-      case "show me a user_defined response":
-        instance.messaging.addMessage({
-          output: {
-            generic: [
-              {
-                response_type: MessageResponseTypes.USER_DEFINED,
-                user_defined: {
-                  user_defined_type: "my_unique_identifier",
-                  text: "Some text from your back-end.",
-                },
-              },
-            ],
-          },
-        });
-        break;
-      default:
-        instance.messaging.addMessage({
-          output: {
-            generic: [
-              {
-                response_type: MessageResponseTypes.TEXT,
-                text: "That is super great.",
-              },
-            ],
-          },
-        });
-    }
+    return;
   }
+
+  instance.messaging.addMessage({
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.TEXT,
+          text: "That is super great.",
+        },
+      ],
+    },
+  });
 }
 
 export { customSendMessage };

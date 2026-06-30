@@ -1,4 +1,4 @@
-# Custom Element (Lazy Load)
+# Custom element / Lazy load
 
 Code-split `ChatCustomElement` with a `ChatShell` overlay that covers both bundle download and chat initialization, producing a seamless full-screen loading experience.
 

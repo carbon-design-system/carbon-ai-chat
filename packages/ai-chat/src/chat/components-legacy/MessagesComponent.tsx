@@ -14,12 +14,12 @@ import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
-import LatestWelcomeNodes from "./LatestWelcomeNodes";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
 import { MessagesTypingIndicator } from "./MessagesTypingIndicator";
 import { MessagesView } from "./MessagesView";
 import { SystemMessage } from "./SystemMessage";
+import WriteableElement from "../components/util/WriteableElement";
 import {
   HasServiceManager,
   withServiceManager,
@@ -65,8 +65,8 @@ import MessageComponent, {
   MoveFocusType,
 } from "./MessageComponent";
 import { Message } from "../../types/messaging/Messages";
-import { LanguagePack } from "../../types/config/PublicConfig";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
 import { carbonIconToReact } from "../utils/carbonIcon";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
@@ -1154,16 +1154,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     if (showBeforeWelcomeNodeElement) {
       return (
-        <LatestWelcomeNodes
-          welcomeNodeBeforeElement={
-            serviceManager.writeableElements[
-              WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT
-            ]
-          }
-          key={messageItemID}
-        >
+        <Fragment key={messageItemID}>
+          <WriteableElement
+            slotName={WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT}
+            id={`welcomeNodeBeforeElement${serviceManager.namespace.suffix}`}
+          />
           {message}
-        </LatestWelcomeNodes>
+        </Fragment>
       );
     }
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -22,6 +22,7 @@ import type { ServiceManager } from "../services/ServiceManager";
 import type { InputState } from "../../types/state/AppState";
 import type { SendOptions } from "../../types/instance/ChatInstance";
 import type { MessagesComponentClass } from "../components-legacy/MessagesComponent";
+import type { JSONContent } from "@tiptap/core";
 
 interface UseInputCallbacksProps {
   serviceManager: ServiceManager;
@@ -40,6 +41,7 @@ interface UseInputCallbacksReturn {
     text: string,
     source: MessageSendSource,
     options?: SendOptions,
+    displayContent?: JSONContent,
   ) => Promise<void>;
   onRestart: () => Promise<void>;
   onClose: () => Promise<void>;
@@ -63,7 +65,12 @@ export function useInputCallbacks({
   humanAgentFileUploadInProgress,
 }: UseInputCallbacksProps): UseInputCallbacksReturn {
   const onSendInput = useCallback(
-    async (text: string, source: MessageSendSource, options?: SendOptions) => {
+    async (
+      text: string,
+      source: MessageSendSource,
+      options?: SendOptions,
+      displayContent?: JSONContent,
+    ) => {
       // Read fresh state at call time — avoids closing over a stale render snapshot
       const currentState = serviceManager.store.getState();
       const isInputToHumanAgent = selectIsInputToHumanAgent(currentState);
@@ -72,7 +79,10 @@ export function useInputCallbacks({
       if (isInputToHumanAgent) {
         serviceManager.humanAgentService.sendMessageToAgent(text, files);
       } else {
-        const messageRequest = createMessageRequestForText(text);
+        const messageRequest = createMessageRequestForText(
+          text,
+          displayContent,
+        );
         serviceManager.actions.sendWithCatch(messageRequest, source, {
           ...options,
           // When the user sends with no text (e.g. file-only), mark the message
@@ -179,5 +189,3 @@ export function useInputCallbacks({
     showUploadButtonDisabled,
   };
 }
-
-// Made with Bob

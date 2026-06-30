@@ -227,7 +227,7 @@ For a runnable version, see the [workspace example](https://github.com/carbon-de
 
 Carbon AI Chat exports as an ES module and does not include a CJS build. Please refer to the [Jest documentation](https://jestjs.io/docs/code-transformation) for information about transforming ESM to CJS for Jest using `babel-jest` or `ts-jest`.
 
-See [jsdom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/jest-jsdom) and [happydom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/jest-happydom).
+See [jsdom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/tests-jest-jsdom) and [happydom examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/tests-jest-happydom).
 
 ## Custom message footer
 

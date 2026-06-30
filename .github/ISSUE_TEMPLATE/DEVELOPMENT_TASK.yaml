@@ -1,0 +1,45 @@
+name: Development task 🛠️
+description: A unit of internal development work, often a sub-issue of an epic
+title: '[Task]: '
+type: 'task'
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: "Why this work matters. If this is a sub-issue, link the parent epic."
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: "What this task delivers — the change that exists when it's done."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: "The conditions that must hold before this can be closed, as a checkbox list."
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: public-api-contract
+    attributes:
+      label: Public API / contract
+      description: "If this introduces or changes public API — anything exported from packages/ai-chat/src/aiChatEntry.tsx or serverEntry.ts — define the TypeScript contract here up front: both the data types (interfaces / type aliases) and the method signatures introduced."
+      render: typescript
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: "What this task deliberately does not cover."
+  - type: textarea
+    id: related
+    attributes:
+      label: Related
+      description: "Parent epic, sibling issues, PRs, designs."

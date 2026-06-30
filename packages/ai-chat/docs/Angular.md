@@ -74,7 +74,7 @@ import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index
 export class AppComponent {}
 ```
 
-The components, properties, and types are identical to the regular build — only the import paths and the `cds-custom-aichat-*` tag names change, and types come from `@carbon/ai-chat/es-custom`. See the [1.0.0 migration notes](./Migration-1.0.0.md#es-custom-folder) for details.
+The components, properties, and types are identical to the regular build — only the import paths and the `cds-custom-aichat-*` tag names change, and types come from `@carbon/ai-chat/es-custom`.
 
 ## Related
 

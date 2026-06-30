@@ -1,10 +1,25 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock customSendMessage handler for the lazy-load float example.
+ *
+ * Demonstrates: a fully client-side stand-in for a real back-end so the
+ * lazy-loaded chat surface has something to render. Supports a streaming
+ * path, a static text path, and a welcome fallback.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.messaging.addMessage`
+ *   - `ChatInstance.messaging.addMessageChunk` (StreamChunk)
+ *   - `CustomSendMessageOptions.signal` for cancellation
+ *
+ * Start reading at: the `customSendMessage` export at the bottom.
  */
 
 import {
@@ -14,6 +29,7 @@ import {
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -82,19 +98,22 @@ print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 
 const WORD_DELAY = 40;
 
+// Replace with a real production implementation.
 async function doFakeTextStreaming(
   instance: ChatInstance,
   signal?: AbortSignal,
 ) {
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = TEXT.split(" ");
   let isCanceled = false;
   const timeouts: number[] = [];
 
-  // Listen to abort signal (handles both stop button and restart/clear)
+  // The abort signal fires for both the stop button and a restart/clear, so a
+  // single handler covers user-cancel and instance-teardown cases.
   const abortHandler = () => {
     isCanceled = true;
-    // Clear all pending timeouts
+    // Pending word emissions are scheduled via setTimeout; clearing them
+    // prevents addMessageChunk from running after cancellation.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener("abort", abortHandler);
@@ -149,7 +168,9 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker
+      // Emit a final chunk flagged with stream_stopped so the chat renders the
+      // partial transcript with the stopped-stream affordance instead of a
+      // success state.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
@@ -170,11 +191,14 @@ async function doFakeTextStreaming(
   }
 }
 
+// Replace with a real production implementation.
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
   instance: ChatInstance,
 ) {
+  // An empty input string is the chat's hello sentinel — surface the welcome
+  // copy that lists the canned commands the user can try.
   if (request.input.text === "") {
     instance.messaging.addMessage({
       output: {

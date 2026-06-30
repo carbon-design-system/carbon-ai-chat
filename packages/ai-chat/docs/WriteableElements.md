@@ -10,6 +10,8 @@ You may render custom content inside of various slots throughout the chat, such 
 
 Write to slots as portals from your application with frameworks such as [React](./React.md), [Angular](./Angular.md), Vue, or [web components](./WebComponent.md). See {@link WriteableElementName} for a list of available slots.
 
+Some slots are layout-specific. {@link WriteableElementName.PROMPT_LINE_ACTIONS_END} only renders when the input uses the expanded layout ({@link InputConfig.expanded}); content written to it is not shown in the default (compact) layout.
+
 Access slots via {@link ChatInstance.writeableElements}.
 
 ### Align rounded corners

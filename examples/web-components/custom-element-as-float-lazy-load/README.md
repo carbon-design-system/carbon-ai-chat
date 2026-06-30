@@ -1,4 +1,4 @@
-# Custom Element as Float (Lazy Load)
+# Custom element / As float (lazy load)
 
 Floating-widget replica of `<cds-aichat-custom-element>` whose bundle is dynamically imported on first launcher click, with `<cds-aichat-shell>` acting as a crossfade fallback.
 

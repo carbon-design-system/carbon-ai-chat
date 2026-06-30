@@ -41,7 +41,7 @@ import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
 import {
   HeaderConfig,
   MinimizeButtonIconType,
-} from "../../../types/config/PublicConfig";
+} from "../../../types/config/HeaderConfig";
 import { AppState } from "../../../types/state/AppState";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
 import { PageObjectId } from "../../../testing/PageObjectId";

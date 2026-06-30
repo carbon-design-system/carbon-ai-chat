@@ -21,11 +21,12 @@ import {
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/defs.js";
 import {
-  CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE,
+  CHAT_BUTTON_KIND as _CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
+import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
 import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
+import type { JSONContent } from "@tiptap/core";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -178,6 +179,8 @@ type StructuredFieldType =
   | "date"
   | "datetime"
   | "file"
+  | "mention"
+  | "command"
   | "unknown";
 
 /**
@@ -357,6 +360,20 @@ interface MessageInput extends BaseMessageInput {
    * @experimental
    */
   structured_data?: StructuredData;
+
+  /**
+   * TipTap JSONContent captured when the user sent the message. When present,
+   * the user message bubble renders structurally; mention / command / custom
+   * nodes render via their respective renderers. Absent on plain-text /
+   * legacy messages — the bubble falls back to `text`.
+   *
+   * Snapshot semantics: this reflects what the user typed at send time. If a
+   * `pre:send` handler rewrites `input.text`, `display_content` does NOT
+   * auto-update.
+   *
+   * @experimental
+   */
+  display_content?: JSONContent;
 }
 
 /**
@@ -681,11 +698,14 @@ export interface ItemStreamingMetadata {
 }
 
 /**
- * Status of the chain of thought step.
+ * The processing status of a single chain-of-thought step, surfaced on
+ * {@link ChainOfThoughtStep.status}. An icon reflecting this status is rendered
+ * in the chain-of-thought view; when omitted, the UI assumes success.
  *
  * @category Messaging
  */
-export { ChainOfThoughtStepStatus };
+export const ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
+export type ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
 
 /**
  * A chain of thought step is meant to show tool calls and other steps made by your agent
@@ -1740,6 +1760,25 @@ enum ButtonItemKind {
    */
   LINK = "link",
 }
+
+/**
+ * The Carbon AI-chat button style applied to {@link ButtonItem.kind}. Selects
+ * the visual treatment (primary, secondary, tertiary, ...) for buttons rendered
+ * by the chat.
+ *
+ * @category Messaging
+ */
+export const CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
+export type CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
+
+/**
+ * The Carbon AI-chat button size applied to {@link ButtonItem.size}. Selects the
+ * height and padding scale for buttons rendered by the chat.
+ *
+ * @category Messaging
+ */
+export const CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
+export type CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
 
 /**
  * This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.

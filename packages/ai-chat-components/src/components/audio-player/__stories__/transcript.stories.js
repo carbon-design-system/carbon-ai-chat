@@ -158,5 +158,3 @@ export const MultipleLanguages = {
     `;
   },
 };
-
-// Made with Bob

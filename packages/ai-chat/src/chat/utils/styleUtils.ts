@@ -16,7 +16,7 @@ import { ThemeState } from "../../types/state/AppState";
 import ObjectMap from "../../types/utilities/ObjectMap";
 import { adjustLightness } from "./colors";
 import { WA_CONSOLE_PREFIX } from "./constants";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
 import { WhiteLabelTheme } from "../../types/config/WhiteLabelTheme";
 
 enum CarbonThemeClassNames {

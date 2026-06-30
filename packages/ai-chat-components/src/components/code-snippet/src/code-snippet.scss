@@ -23,6 +23,12 @@
 :host-context([data-theme="g10"]),
 :host-context([storybook-carbon-theme="g10"]),
 :host {
+  // Without this the custom element is inline by default. In text-flow
+  // contexts (e.g. a contenteditable) the host then picks up the parent's
+  // line-height as phantom inline-box height, leaving leading above/below
+  // the snippet.
+  display: block;
+
   @include rounded-modifiers;
 
   // Automatically output all syntax-* tokens from the Carbon $white theme
@@ -51,6 +57,10 @@
   background: theme.$chat-shell-background;
   font-family: inherit;
   max-inline-size: 100%;
+  // Insulate from inherited `white-space: pre-wrap` (e.g. contenteditable
+  // hosts). Without this, indented newlines in the Lit template render as
+  // line boxes between block children, leaving a gap above/below the editor.
+  white-space: normal;
 
   @include rounded-self;
 
@@ -127,8 +137,11 @@
 .#{$prefix}--snippet-container {
   position: relative;
   order: 1;
-  max-block-size: var(--cds-snippet-max-height, 100%);
-  min-block-size: var(--cds-snippet-min-height, 100%);
+  // Default to "grow with content, no internal scroll". Pixel clamps are
+  // applied per-instance by `buildContainerStyles` (driven by the
+  // `*NumberOfRows` properties); fill-mode overrides separately below.
+  max-block-size: var(--cds-snippet-max-height, none);
+  min-block-size: var(--cds-snippet-min-height, auto);
   overflow-y: auto;
   pointer-events: auto;
   transition: max-height motion.$duration-moderate-01
@@ -153,6 +166,10 @@
 
 .#{$prefix}--snippet-container--fill-mode {
   block-size: 100%;
+  // Own the clamp explicitly so fill mode (a 0/0 row config) scrolls inside
+  // its host rather than depending on the base container's `var()` fallback,
+  // which defaults to `none` to let grow mode (Infinity rows) expand freely.
+  max-block-size: 100%;
   overflow-y: auto;
 }
 

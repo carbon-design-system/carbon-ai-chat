@@ -7,6 +7,25 @@
  *  @license
  */
 
+/**
+ * Workspace component for the workspace-sidebar example (sql_editor).
+ *
+ * Demonstrates: rendering inside the `workspacePanelElement` WriteableElement
+ * slot with an editable `CodeSnippet` filling the available height. Receives
+ * `workspaceId` and `additionalData` props from the originating message and
+ * calls `instance.customPanels.getPanel(PanelType.WORKSPACE).close()` from
+ * Close / Cancel actions to dismiss the panel.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.customPanels.getPanel`
+ *   - `PanelType.WORKSPACE`
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody` / `WorkspaceShellFooter`
+ *   - `Toolbar`
+ *   - `CodeSnippet`
+ *
+ * Start reading at: `SqlEditorExample`.
+ */
+
 import "./WorkspaceWriteableElementExample.css";
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
@@ -25,6 +44,7 @@ interface SqlEditorExampleProps {
   additionalData?: any;
 }
 
+// Replace with a real production implementation.
 const SQL_CONTENT = `-- Order Analytics Report
 -- Analyzes purchasing patterns and outstanding orders
 
@@ -108,6 +128,7 @@ export function SqlEditorExample({
   const [_hasChanges, setHasChanges] = useState(false);
 
   const handleClose = () => {
+    // customPanels.getPanel(PanelType.WORKSPACE): resolved on demand here because the close handler is the only consumer.
     const panel = instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   };
@@ -214,5 +235,3 @@ export function SqlEditorExample({
     </WorkspaceShell>
   );
 }
-
-// Made with Bob

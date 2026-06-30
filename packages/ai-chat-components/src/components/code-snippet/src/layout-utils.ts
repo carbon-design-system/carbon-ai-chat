@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -47,22 +47,30 @@ export function buildContainerStyles({
     return properties;
   }
 
-  // Existing row-based logic
+  // Existing row-based logic. `Infinity` opts into "grow with content" —
+  // the relevant clamp is dropped so the snippet fits its content with no
+  // internal scrollbar. Pair `maxCollapsedNumberOfRows: Infinity` and
+  // `maxExpandedNumberOfRows: Infinity` (and optionally `min*=0`) to embed
+  // the snippet inside another scrollable surface.
   if (expanded) {
-    if (maxExpanded > 0) {
+    if (maxExpanded === Infinity) {
+      properties["--cds-snippet-max-height"] = "none";
+    } else if (maxExpanded > 0) {
       properties["--cds-snippet-max-height"] = `${maxExpanded * rowHeight}px`;
     } else {
       // Remove the default CodeMirror max height so expanded snippets can grow to fit content
       properties["--cds-snippet-max-height"] = "none";
     }
-    if (minExpanded > 0) {
+    if (minExpanded > 0 && minExpanded !== Infinity) {
       properties["--cds-snippet-min-height"] = `${minExpanded * rowHeight}px`;
     }
   } else {
-    if (maxCollapsed > 0) {
+    if (maxCollapsed === Infinity) {
+      properties["--cds-snippet-max-height"] = "none";
+    } else if (maxCollapsed > 0) {
       properties["--cds-snippet-max-height"] = `${maxCollapsed * rowHeight}px`;
     }
-    if (minCollapsed > 0) {
+    if (minCollapsed > 0 && minCollapsed !== Infinity) {
       properties["--cds-snippet-min-height"] = `${minCollapsed * rowHeight}px`;
     }
   }
@@ -90,9 +98,12 @@ export function evaluateShowMoreButton({
   shouldShowButton: boolean;
   shouldCollapse: boolean;
 } {
-  // Hide button in fill-container mode
+  // Hide button in fill-container mode or in unbounded grow mode — in both
+  // cases the snippet either fills its host or fits its content and there is
+  // no max to expand past, so the show-more affordance has nothing to do.
   const isFillMode = maxCollapsed === 0 && maxExpanded === 0;
-  if (isFillMode) {
+  const isGrowMode = maxCollapsed === Infinity || maxExpanded === Infinity;
+  if (isFillMode || isGrowMode) {
     return { shouldShowButton: false, shouldCollapse: false };
   }
 

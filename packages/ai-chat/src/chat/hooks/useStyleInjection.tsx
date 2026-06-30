@@ -115,5 +115,3 @@ export function useStyleInjection({
     cssVariableOverrideStylesheet,
   ]);
 }
-
-// Made with Bob

@@ -19,7 +19,8 @@ import {
 } from "../../types/messaging/LocalMessageItem";
 import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
-import { uuid, UUIDType } from "./lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import type { JSONContent } from "@tiptap/core";
 import {
   HumanAgentMessageType,
   ButtonItem,
@@ -79,7 +80,7 @@ function addDefaultsToMessage<T extends MessageResponse | MessageRequest>(
   fullMessage: T,
 ): T {
   if (!fullMessage.id) {
-    fullMessage.id = uuid(UUIDType.MESSAGE);
+    fullMessage.id = uuid();
   }
   if (!fullMessage.thread_id) {
     fullMessage.thread_id = THREAD_ID_MAIN;
@@ -192,7 +193,7 @@ function createMessageRequestForChoice(
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
   const messageRequest: MessageRequest = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: THREAD_ID_MAIN,
     ...cloneDeep(choice.value),
   };
@@ -218,7 +219,7 @@ function createMessageRequestForButtonItemOption(
 ) {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   const messageRequest: MessageRequest = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: THREAD_ID_MAIN,
     input: null,
   };
@@ -242,7 +243,7 @@ function createMessageRequestForButtonItemOption(
  */
 function createWelcomeRequest(): MessageRequest {
   return addDefaultsToMessage<MessageRequest>({
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     input: {
       text: "",
     },
@@ -257,8 +258,15 @@ function createWelcomeRequest(): MessageRequest {
 /**
  * Generates a {@link MessageRequest} for the given text message sent by the user. This is used for generating the
  * request to send to the server when the user has typed something into the input field.
+ *
+ * When the user sent the message via the TipTap-backed prompt-line, pass the editor's JSONContent as
+ * `displayContent` so the user bubble can render structurally (mention chips, custom nodes). Programmatic
+ * sends omit it and the bubble falls back to plain text.
  */
-function createMessageRequestForText(text: string): MessageRequest {
+function createMessageRequestForText(
+  text: string,
+  displayContent?: JSONContent,
+): MessageRequest {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
   return addDefaultsToMessage<MessageRequest>({
@@ -266,6 +274,7 @@ function createMessageRequestForText(text: string): MessageRequest {
       // The assistant will choke if we send it text with line breaks in it, so we have to remove them first.
       text,
       message_type: MessageInputType.TEXT,
+      ...(displayContent ? { display_content: displayContent } : {}),
     },
   });
 }
@@ -317,7 +326,7 @@ function createMessageResponseForText(
     text,
   };
   const messageResponse: MessageResponse = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: threadID,
     output: {
       generic: [textItem],

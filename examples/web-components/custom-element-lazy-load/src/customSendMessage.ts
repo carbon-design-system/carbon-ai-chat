@@ -1,10 +1,25 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
+ */
+
+/**
+ * Mock customSendMessage handler for the lazy-load custom-element demo.
+ *
+ * Demonstrates: a client-only stand-in for a real back-end so the lazy
+ * loading example can render bot replies (including streamed chunks)
+ * without external services.
+ *
+ * APIs exercised:
+ *   - PublicConfig.messaging.customSendMessage
+ *   - ChatInstance.messaging.addMessage
+ *   - ChatInstance.messaging.addMessageChunk (streaming)
+ *
+ * Start reading at: the exported customSendMessage function at the bottom.
  */
 
 import {
@@ -14,6 +29,7 @@ import {
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -86,15 +102,16 @@ async function doFakeTextStreaming(
   instance: ChatInstance,
   signal?: AbortSignal,
 ) {
-  const responseID = crypto.randomUUID();
+  // Replace with a real production implementation.
+  const responseID = uuid();
   const words = TEXT.split(" ");
   let isCanceled = false;
   const timeouts: number[] = [];
 
-  // Listen to abort signal (handles both stop button and restart/clear)
+  // The signal fires on both the stop button and a restart/clear action, so a single handler covers both cases.
   const abortHandler = () => {
     isCanceled = true;
-    // Clear all pending timeouts
+    // Pending timers must be cleared so cancelled streams stop emitting chunks immediately.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener("abort", abortHandler);
@@ -149,7 +166,7 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker
+      // The stream_stopped marker tells the chat the partial text shown so far is the final state for this cancelled response.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
@@ -175,7 +192,9 @@ async function customSendMessage(
   requestOptions: CustomSendMessageOptions,
   instance: ChatInstance,
 ) {
+  // Replace with a real production implementation.
   if (request.input.text === "") {
+    // An empty input text indicates the initial welcome turn, not a user-typed message, so the canned welcome content is returned.
     instance.messaging.addMessage({
       output: {
         generic: [

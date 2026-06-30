@@ -6,6 +6,22 @@
  *
  *  @license
  */
+
+/**
+ * Workspace component for the workspace example (excess inventory report).
+ *
+ * Demonstrates: the `workspacePanelElement` writeable element receiving
+ * `workspaceId` and `additional_data` from a PREVIEW_CARD click, then closing
+ * itself via `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`.
+ *
+ * APIs exercised:
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody` / `WorkspaceShellFooter`
+ *   - `Toolbar`, `CodeSnippet`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `InventoryReportExample()`.
+ */
+
 import "./WorkspaceWriteableElementExample.css";
 import WorkspaceShell, {
   WorkspaceShellHeader,
@@ -182,6 +198,7 @@ function InventoryReportExample({
     },
   ];
 
+  // instance.customPanels.getPanel(PanelType.WORKSPACE) returns the active workspace panel handle so close affordances can dismiss it.
   const panel = instance?.customPanels?.getPanel(PanelType.WORKSPACE);
 
   const handleWorkspaceFooterClick = (event: any) => {

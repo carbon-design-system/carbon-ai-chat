@@ -151,6 +151,7 @@ function ChatCustomElement(
     onBeforeRender,
     onAfterRender,
     renderUserDefinedResponse,
+    renderUserDefinedInputNode,
     renderCustomMessageFooter,
     renderWriteableElements,
     className,
@@ -272,6 +273,7 @@ function ChatCustomElement(
           onBeforeRender={onBeforeRenderOverride}
           onAfterRender={onAfterRender}
           renderUserDefinedResponse={renderUserDefinedResponse}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
           renderCustomMessageFooter={renderCustomMessageFooter}
           renderWriteableElements={renderWriteableElements}
           element={containerRef.current}

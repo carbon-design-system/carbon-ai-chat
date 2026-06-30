@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -18,7 +18,8 @@ import {
   PerCornerConfig,
   ResolvedCornerConfig,
 } from "../../types/config/CornersType";
-import { LanguagePack, PublicConfig } from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import { AppStore, createAppStore } from "./appStore";
@@ -41,8 +42,8 @@ import {
   VIEW_STATE_MAIN_WINDOW_OPEN,
   DEFAULT_HEADER,
 } from "./reducerUtils";
-import { enLanguagePack } from "../../types/config/PublicConfig";
-import { LayoutConfig } from "../../types/config/PublicConfig";
+import { enLanguagePack } from "../../types/config/LanguagePack";
+import { LayoutConfig } from "../../types/config/LayoutConfig";
 
 /**
  * Deep merge helper that:

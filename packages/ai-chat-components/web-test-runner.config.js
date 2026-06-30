@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -30,6 +30,14 @@ const tsconfigFile = path.resolve(__dirname, "tsconfig.json");
 
 export default {
   files: ["src/**/*.test.ts"],
+  // Mocha's default 2s per-test timeout is too tight for this suite on Chromium
+  // under full parallel load — async DOM work and lazy `import()`s (e.g. Tiptap
+  // in prompt-line, see #1578) can approach 2s cold. Give every test headroom.
+  testFramework: {
+    config: {
+      timeout: "10000",
+    },
+  },
   // https://modern-web.dev/docs/test-runner/cli-and-configuration/#test-runner-html
   testRunnerHtml: (testFramework) =>
     `<!DOCTYPE html>

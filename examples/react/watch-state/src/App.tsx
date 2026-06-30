@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,23 +7,44 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Watch state
+ *
+ * Demonstrates: subscribing to `BusEventType.STATE_CHANGE` to mirror chat
+ * state into the host UI. This example tracks
+ * `homeScreenState.isHomeScreenOpen` and reflects it in a status panel that
+ * sits next to the floating chat launcher — the panel is the primary host
+ * surface so state transitions are observable as the user opens the chat.
+ *
+ * APIs exercised:
+ *   - `ChatContainer`
+ *   - `BusEventType.STATE_CHANGE`
+ *   - `instance.getState()` for the initial snapshot
+ *   - `PublicConfig.homescreen` (drives view transitions used in the demo)
+ *
+ * Start reading at: `App()` then the `STATE_CHANGE` handler in
+ * `onBeforeRender`.
+ */
+
 import {
+  BusEvent,
+  BusEventStateChange,
   BusEventType,
   ChatContainer,
   ChatInstance,
   PublicConfig,
 } from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
 import "@carbon/styles/css/styles.css";
 
 const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
+  // Enable the homescreen so toggling between it and the chat view produces the STATE_CHANGE traffic this example watches.
   homescreen: {
     isOn: true,
     greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
@@ -33,7 +54,6 @@ const config: PublicConfig = {
         { label: "What can you help me with?" },
         { label: "Tell me about state management" },
         { label: "How do I use the STATE_CHANGE event?" },
-        { label: "Show me a user_defined response" },
       ],
     },
   },
@@ -41,58 +61,35 @@ const config: PublicConfig = {
 
 function App() {
   const [isHomescreenVisible, setIsHomescreenVisible] = useState(true);
-  const [activeResponseId, setActiveResponseId] = useState<string | null>(null);
 
   function onBeforeRender(instance: ChatInstance) {
-    // Get initial state
+    // Seed the host UI with the current snapshot before any STATE_CHANGE events fire.
     const initialState = instance.getState();
     setIsHomescreenVisible(initialState.homeScreenState.isHomeScreenOpen);
-    setActiveResponseId(initialState.activeResponseId ?? null);
 
-    // Listen for STATE_CHANGE events
+    // Subscribe to BusEventType.STATE_CHANGE to mirror chat state into host React state as it changes.
     instance.on({
       type: BusEventType.STATE_CHANGE,
-      handler: (event: any) => {
-        const isHomescreen = event.newState.homeScreenState.isHomeScreenOpen;
-        if (
-          event.previousState?.homeScreenState.isHomeScreenOpen !==
-          event.newState.homeScreenState.isHomeScreenOpen
-        ) {
+      handler: (event: BusEvent) => {
+        const { previousState, newState } = event as BusEventStateChange;
+        const isHomescreen = newState.homeScreenState.isHomeScreenOpen;
+        // STATE_CHANGE fires for every slice of state; gate on the field we care about to avoid redundant React renders.
+        if (previousState?.homeScreenState.isHomeScreenOpen !== isHomescreen) {
           setIsHomescreenVisible(isHomescreen);
         }
-
-        if (
-          event.previousState?.activeResponseId !==
-          event.newState?.activeResponseId
-        ) {
-          setActiveResponseId(event.newState.activeResponseId ?? null);
-        }
-        console.log(
-          "View changed via STATE_CHANGE event:",
-          isHomescreen ? "Homescreen" : "Chat View",
-        );
       },
     });
   }
 
-  const renderUserDefinedResponse = useMemo(
-    () => renderUserDefinedResponseFactory(activeResponseId),
-    [activeResponseId],
-  );
-
   return (
-    <div>
-      <div>
+    <>
+      <div className="watch-state-host">
         <h4>Current View State (via getState()):</h4>
         <p>{isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
         <p>Watching state via STATE_CHANGE event</p>
       </div>
-      <ChatContainer
-        {...config}
-        onBeforeRender={onBeforeRender}
-        renderUserDefinedResponse={renderUserDefinedResponse}
-      />
-    </div>
+      <ChatContainer {...config} onBeforeRender={onBeforeRender} />
+    </>
   );
 }
 

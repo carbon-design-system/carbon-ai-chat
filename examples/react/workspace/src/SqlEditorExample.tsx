@@ -7,6 +7,21 @@
  *  @license
  */
 
+/**
+ * Workspace component for the workspace example (SQL query editor).
+ *
+ * Demonstrates: the `workspacePanelElement` writeable element hosting an
+ * editable `CodeSnippet` in fill-height mode; footer Save/Cancel actions show
+ * how a workspace dismisses itself via `customPanels.getPanel(PanelType.WORKSPACE).close()`.
+ *
+ * APIs exercised:
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody` / `WorkspaceShellFooter`
+ *   - `Toolbar`, `CodeSnippet`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `SqlEditorExample()`.
+ */
+
 import "./WorkspaceWriteableElementExample.css";
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
@@ -108,6 +123,7 @@ export function SqlEditorExample({
   const [_hasChanges, setHasChanges] = useState(false);
 
   const handleClose = () => {
+    // instance.customPanels.getPanel(PanelType.WORKSPACE) returns the active workspace panel handle so the close toolbar action can dismiss it.
     const panel = instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   };
@@ -214,5 +230,3 @@ export function SqlEditorExample({
     </WorkspaceShell>
   );
 }
-
-// Made with Bob

@@ -19,7 +19,7 @@ import { ErrorMessage } from "../../components-legacy/ErrorMessage";
 import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
 import { useCarbonTheme } from "../../hooks/useCarbonTheme";
 import { carbonIconToReact } from "../../utils/carbonIcon";
-import { LanguagePack } from "../../../types/config/PublicConfig";
+import { LanguagePack } from "../../../types/config/LanguagePack";
 import { useIntl } from "../../hooks/useIntl";
 
 interface CatastrophicErrorPanelProps {

@@ -6,6 +6,22 @@
  *
  *  @license
  */
+
+/**
+ * Workspace component for the workspace example (current inventory status).
+ *
+ * Demonstrates: the `workspacePanelElement` writeable element rendering a
+ * minimal "hello world" view that surfaces the `workspaceId` and
+ * `additional_data` payload forwarded from the originating PREVIEW_CARD.
+ *
+ * APIs exercised:
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody` / `WorkspaceShellFooter`
+ *   - `Toolbar`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `InventoryStatusExample()`.
+ */
+
 import "./WorkspaceWriteableElementExample.css";
 import WorkspaceShell, {
   WorkspaceShellHeader,
@@ -69,6 +85,7 @@ function InventoryStatusExample({
     },
   ]);
 
+  // instance.customPanels.getPanel(PanelType.WORKSPACE) returns the active workspace panel handle so the close toolbar action can dismiss it.
   const panel = instance?.customPanels?.getPanel(PanelType.WORKSPACE);
 
   const handleWorkspaceFooterClick = (event: any) => {
@@ -156,5 +173,3 @@ function InventoryStatusExample({
 }
 
 export { InventoryStatusExample };
-
-// Made with Bob

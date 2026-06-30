@@ -7,6 +7,23 @@
  *  @license
  */
 
+/**
+ * InventoryReportExample workspace component.
+ *
+ * Demonstrates: the `workspacePanelElement` slot rendered when
+ * `additionalData.type === "inventory_report"`. Receives `workspaceId` and
+ * `additionalData` from the WORKSPACE_OPEN payload (or the preview-card
+ * maximize flow) and shows how a toolbar Close action calls back into
+ * `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *   - `<cds-aichat-workspace-shell>` and its header/body/footer slots
+ *   - `<cds-aichat-toolbar>` actions array
+ *
+ * Start reading at: `handleClose` and the `toolbarActions` array.
+ */
+
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@carbon/web-components/es/components/button/index.js";
@@ -69,6 +86,7 @@ class InventoryReportExample extends LitElement {
   @property({ type: Object })
   accessor additionalData: any = null;
 
+  // Replace with a real production implementation; these alerts stand in for actual toolbar handlers.
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
@@ -133,6 +151,7 @@ class InventoryReportExample extends LitElement {
   ];
 
   handleClose() {
+    // getPanel(PanelType.WORKSPACE) returns the workspace handle so the workspace can dismiss itself from inside the slot.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
@@ -141,11 +160,13 @@ class InventoryReportExample extends LitElement {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
       case "evaluate":
+        // Replace with a real production implementation; alert stands in for an evaluate-plan workflow.
         alert(
           `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
         );
         break;
       case "run":
+        // Replace with a real production implementation; alert stands in for a run-plan workflow.
         alert(
           `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
         );

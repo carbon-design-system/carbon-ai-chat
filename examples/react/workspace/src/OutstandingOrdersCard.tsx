@@ -7,6 +7,20 @@
  *  @license
  */
 
+/**
+ * User-defined response card for the workspace example.
+ *
+ * Demonstrates: a USER_DEFINED card rendered inline in the message stream that
+ * exposes a Maximize action; its `onMaximize` callback is what `App.tsx` uses
+ * to call `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
+ *
+ * APIs exercised:
+ *   - `Card`
+ *   - `Toolbar`
+ *
+ * Start reading at: `OutstandingOrdersCard()` and the `handleMaximize` action.
+ */
+
 import React, { useState } from "react";
 import Card from "@carbon/ai-chat-components/es/react/card.js";
 import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
@@ -70,5 +84,3 @@ export function OutstandingOrdersCard({
     </Card>
   );
 }
-
-// Made with Bob

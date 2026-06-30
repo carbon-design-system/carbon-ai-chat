@@ -27,7 +27,7 @@ This page is the entry point. Depending on what you are building, continue to:
 
 The Carbon AI Chat takes custom messaging server configuration as part of its {@link PublicConfig}. You must provide a {@link PublicConfigMessaging.customSendMessage} function that the Carbon AI Chat calls any time the user sends a message. It also gets called when you use {@link ChatInstance.send}.
 
-For more information, see [the examples page](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic/src/customSendMessage.ts).
+For more information, see [the examples page](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic-float/src/customSendMessage.ts).
 
 In this function, the Carbon AI Chat passes three parameters:
 

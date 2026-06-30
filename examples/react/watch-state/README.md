@@ -1,13 +1,12 @@
-# Watch State
+# Watch state
 
 Shows how to observe `ChatInstance` state externally by reading `instance.getState()` once and then subscribing to `BusEventType.STATE_CHANGE` to keep a parent React component in sync.
 
 ## What this example shows
 
 - Calling `instance.getState()` in `onBeforeRender` to seed local React state.
-- Subscribing to `BusEventType.STATE_CHANGE` and reacting to changes in `homeScreenState.isHomeScreenOpen` and `activeResponseId`.
+- Subscribing to `BusEventType.STATE_CHANGE` and reacting to changes in `homeScreenState.isHomeScreenOpen`.
 - Rendering the current view ("Homescreen" vs "Chat View") outside the chat UI.
-- Passing `activeResponseId` into a `renderUserDefinedResponseFactory` so user-defined responses can adapt to active-response state.
 - A `homescreen` config block with starter buttons to drive view transitions.
 
 ## When to use this pattern
@@ -17,17 +16,15 @@ Shows how to observe `ChatInstance` state externally by reading `instance.getSta
 
 ## APIs and props demonstrated
 
-| Symbol                                                            | Package / kind              | Role in this example                                        |
-| ----------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------- |
-| `ChatContainer`                                                   | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
-| `PublicConfig`                                                    | `@carbon/ai-chat` type      | Config shape (includes `homescreen`).                       |
-| `ChatInstance`                                                    | `@carbon/ai-chat` type      | Provided in `onBeforeRender`.                               |
-| `BusEventType.STATE_CHANGE`                                       | `@carbon/ai-chat` enum      | Event subscribed to.                                        |
-| `instance.getState()` / `instance.on`                             | `ChatInstance` API          | Snapshot + subscription.                                    |
-| `homescreen.isOn` / `homescreen.greeting` / `homescreen.starters` | config                      | Starter buttons that trigger state transitions.             |
-| `customSendMessage`                                               | `messaging` prop            | Echoes text and emits a `user_defined` response on request. |
-| `renderUserDefinedResponse`                                       | prop                        | Factory rebuilt per `activeResponseId` via `useMemo`.       |
-| `MessageResponseTypes.USER_DEFINED`                               | `@carbon/ai-chat`           | Emitted by the mock backend.                                |
+| Symbol                                                            | Package / kind              | Role in this example                            |
+| ----------------------------------------------------------------- | --------------------------- | ----------------------------------------------- |
+| `ChatContainer`                                                   | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher.         |
+| `PublicConfig`                                                    | `@carbon/ai-chat` type      | Config shape (includes `homescreen`).           |
+| `ChatInstance`                                                    | `@carbon/ai-chat` type      | Provided in `onBeforeRender`.                   |
+| `BusEventType.STATE_CHANGE`                                       | `@carbon/ai-chat` enum      | Event subscribed to.                            |
+| `instance.getState()` / `instance.on`                             | `ChatInstance` API          | Snapshot + subscription.                        |
+| `homescreen.isOn` / `homescreen.greeting` / `homescreen.starters` | config                      | Starter buttons that trigger state transitions. |
+| `customSendMessage`                                               | `messaging` prop            | Echoes a generic response back to the chat.     |
 
 ## Run it
 

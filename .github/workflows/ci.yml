@@ -105,6 +105,8 @@ jobs:
         run: npm ci --prefer-offline
       - name: Validate agents files
         run: npm run validate:agents
+      - name: Verify example READMEs
+        run: npm run verify:example-readmes
 
   chromatic-wc-storybook:
     if:

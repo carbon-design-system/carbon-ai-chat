@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,7 +12,7 @@ import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import { IS_MOBILE } from "../utils/browserUtils";
 import { doFocusRef } from "../utils/domUtils";
 import { consoleError } from "../utils/miscUtils";
-import type { InputFunctions } from "../components-legacy/input/Input";
+import type { InputFunctions } from "../components/input/Input";
 import type { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 
 interface UseFocusManagerProps {
@@ -66,7 +66,7 @@ export function useFocusManager({
           responsePanelRef.current?.requestFocus();
         } else if (inputRef.current) {
           // Focus main input for both homescreen and messages view
-          inputRef.current.takeFocus();
+          inputRef.current.requestFocus();
         }
       }
     } catch (error) {
@@ -89,5 +89,3 @@ export function useFocusManager({
 
   return requestFocus;
 }
-
-// Made with Bob

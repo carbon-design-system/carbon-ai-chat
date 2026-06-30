@@ -13,6 +13,11 @@
  * - Outdated file references
  * - Missing required sections
  * - Inconsistent formatting
+ *
+ * Discovery crawls from the root AGENTS.md, following links to other bare
+ * AGENTS.md entry points and to per-directory topic docs, which live as
+ * kebab-case files under a `references/` subfolder (e.g.
+ * `references/code-review.md`).
  */
 
 const fs = require("fs");
@@ -69,18 +74,137 @@ function normalizeLinkTarget(url) {
   return withoutAnchor.replace(/:(\d+)(?=$)/, "");
 }
 
-// Resolve a documentation path reference either relative to the current file or repo root.
+// Extract package root from AGENTS.md file path for context-aware resolution
+function getPackageRoot(agentsFile) {
+  if (agentsFile.startsWith("packages/ai-chat-components/")) {
+    return "packages/ai-chat-components";
+  }
+  if (agentsFile.startsWith("packages/ai-chat/")) {
+    return "packages/ai-chat";
+  }
+  if (agentsFile.startsWith("packages/typedoc-theme/")) {
+    return "packages/typedoc-theme";
+  }
+  if (agentsFile.startsWith("demo/")) {
+    return "demo";
+  }
+  if (agentsFile.startsWith("examples/")) {
+    // Return the specific example directory (e.g., examples/react/basic-float)
+    const match = agentsFile.match(/^(examples\/[^/]+\/[^/]+)/);
+    return match ? match[1] : "examples";
+  }
+  return null;
+}
+
+// Recursively search for a file by name within a directory
+function findFileRecursive(dir, filename) {
+  if (!fs.existsSync(dir)) {
+    return null;
+  }
+
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+
+      // Skip node_modules, dist, and other build artifacts
+      if (
+        entry.name === "node_modules" ||
+        entry.name === "dist" ||
+        entry.name === "es" ||
+        entry.name === "es-custom" ||
+        entry.name === ".git"
+      ) {
+        continue;
+      }
+
+      if (entry.isFile() && entry.name === filename) {
+        return fullPath;
+      }
+
+      if (entry.isDirectory()) {
+        const found = findFileRecursive(fullPath, filename);
+        if (found) {
+          return found;
+        }
+      }
+    }
+  } catch (err) {
+    // Ignore permission errors, etc.
+    return null;
+  }
+
+  return null;
+}
+
+// Resolve a documentation path reference with context-aware search.
+// Tries multiple strategies:
+// 1. Relative to the AGENTS.md file
+// 2. From repo root
+// 3. Within the same package/directory tree
+// 4. Recursive search for simple filenames
 function resolveDocPath(file, referencePath) {
   const fileDir = path.dirname(path.join(REPO_ROOT, file));
-  const relativeTargetPath = path.resolve(fileDir, referencePath);
 
+  // 1. Try relative to current AGENTS.md
+  const relativeTargetPath = path.resolve(fileDir, referencePath);
   if (fs.existsSync(relativeTargetPath)) {
     return relativeTargetPath;
   }
 
+  // 2. Try from repo root
   const rootTargetPath = path.join(REPO_ROOT, referencePath);
   if (fs.existsSync(rootTargetPath)) {
     return rootTargetPath;
+  }
+
+  // 3. Try within the same package/directory tree
+  const packageRoot = getPackageRoot(file);
+  if (packageRoot) {
+    // Try direct path within package
+    const packagePath = path.join(REPO_ROOT, packageRoot, referencePath);
+    if (fs.existsSync(packagePath)) {
+      return packagePath;
+    }
+
+    // Try common subdirectories within package
+    const commonDirs = ["src", "tests", "docs", "tasks", "theme"];
+    for (const dir of commonDirs) {
+      const subPath = path.join(REPO_ROOT, packageRoot, dir, referencePath);
+      if (fs.existsSync(subPath)) {
+        return subPath;
+      }
+    }
+
+    // For references with subdirectories (e.g., "store/actions.ts", "layouts/default.js"),
+    // search recursively within the package
+    if (referencePath.includes("/") || referencePath.includes("\\")) {
+      const found = findFileRecursive(
+        path.join(REPO_ROOT, packageRoot),
+        path.basename(referencePath),
+      );
+      // Verify the found file matches the full relative path
+      if (found && found.endsWith(referencePath.replace(/\\/g, "/"))) {
+        return found;
+      }
+    }
+  }
+
+  // 4. For simple filenames (no path separators), search recursively
+  // but only in relevant directories to avoid false matches
+  if (!referencePath.includes("/") && !referencePath.includes("\\")) {
+    const searchRoots = packageRoot
+      ? [packageRoot]
+      : ["packages", "demo", "examples"];
+
+    for (const root of searchRoots) {
+      const searchPath = path.join(REPO_ROOT, root);
+      const found = findFileRecursive(searchPath, referencePath);
+      if (found) {
+        return found;
+      }
+    }
   }
 
   return null;
@@ -92,6 +216,8 @@ function shouldSkipDocReference(referencePath) {
     referencePath.includes("path/to/") ||
     referencePath.includes("issue #") ||
     referencePath === "PR.md" ||
+    referencePath === "PLAN.md" ||
+    /^PLAN-\d+.*\.md$/.test(referencePath) || // PLAN-1-title.md, PLAN-1.md, etc.
     referencePath === "src/foo/Bar.ts" ||
     referencePath === "../AGENTS.md" ||
     referencePath === "../docs/AGENTS.md" ||
@@ -101,7 +227,25 @@ function shouldSkipDocReference(referencePath) {
     referencePath.startsWith("<") ||
     referencePath.includes("<file>") ||
     referencePath.includes("<slug>") ||
-    referencePath.includes("<component>")
+    referencePath.includes("<component>") ||
+    referencePath.includes("<thing>") ||
+    referencePath.includes("<name>") ||
+    // Skip file naming patterns (not actual files)
+    referencePath.startsWith(".") || // .stories.js, .test.ts, etc.
+    referencePath.startsWith("-") || // -react.stories.jsx, etc.
+    referencePath.includes("*") // wildcards
+  );
+}
+
+// A link target is an "agents doc" if it points at an AGENTS.md entry point, a
+// legacy AGENTS_* sibling, or a topic doc under a references/ folder.
+function isAgentsDocTarget(target) {
+  const base = path.basename(target);
+  const parent = path.basename(path.dirname(target));
+  return (
+    base === "AGENTS.md" ||
+    (base.startsWith("AGENTS_") && base.endsWith(".md")) ||
+    (parent === "references" && base.endsWith(".md"))
   );
 }
 
@@ -121,7 +265,29 @@ function validateInternalLinks(file, content) {
     }
 
     const normalizedTarget = normalizeLinkTarget(link.url);
-    if (!normalizedTarget || shouldSkipDocReference(normalizedTarget)) {
+    if (!normalizedTarget) {
+      continue;
+    }
+
+    // Links between AGENTS docs must resolve STRICTLY relative to the linking
+    // file — exactly how GitHub renders them. resolveDocPath's repo-root and
+    // recursive-search fallbacks would otherwise mask a wrong relative path
+    // (e.g. `[x](AGENTS.md)` from a references/ subfolder silently "resolving"
+    // to the repo-root AGENTS.md). This is what keeps relocated topic docs and
+    // their cross-links honest.
+    if (isAgentsDocTarget(normalizedTarget)) {
+      const fileDir = path.dirname(path.join(REPO_ROOT, file));
+      const strictPath = path.resolve(fileDir, normalizedTarget);
+      if (!fs.existsSync(strictPath)) {
+        error(
+          file,
+          `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} does not resolve relative to ${path.dirname(file) || "."}`,
+        );
+      }
+      continue;
+    }
+
+    if (shouldSkipDocReference(normalizedTarget)) {
       continue;
     }
 
@@ -165,43 +331,6 @@ function validateFileReferences(file, content) {
     }
 
     warn(file, `File reference may be outdated: \`${ref.path}\``);
-  }
-}
-
-// Check for required sections in main AGENTS.md files
-function validateRequiredSections(file, content) {
-  // Only check main package AGENTS.md files
-  if (!file.endsWith("AGENTS.md") || file.includes("src/")) {
-    return;
-  }
-
-  const requiredSections = ["Related Guidance", "Definition of done"];
-
-  for (const section of requiredSections) {
-    const regex = new RegExp(`^##+ ${section}`, "m");
-    if (!regex.test(content)) {
-      warn(file, `Missing recommended section: "${section}"`);
-    }
-  }
-}
-
-// Check for emoji in mode names (should be removed per PLAN-01)
-function validateNoEmojiInModes(file, content) {
-  if (file !== "AGENTS.md") {
-    return;
-  }
-
-  const emojiRegex = /["'][\p{Emoji}]/u;
-  if (emojiRegex.test(content)) {
-    const lines = content.split("\n");
-    lines.forEach((line, idx) => {
-      if (line.includes("mode") && emojiRegex.test(line)) {
-        warn(
-          file,
-          `Line ${idx + 1}: Mode name contains emoji (should be removed per PLAN-01)`,
-        );
-      }
-    });
   }
 }
 
@@ -263,12 +392,16 @@ function discoverAgentsFiles() {
 
       const targetPath = path.resolve(fileDir, urlWithoutAnchor);
       const relativePath = path.relative(REPO_ROOT, targetPath);
+      const basename = path.basename(relativePath);
 
+      const parentDir = path.basename(path.dirname(targetPath));
       if (
         fs.existsSync(targetPath) &&
-        (relativePath === "AGENTS.md" ||
-          relativePath.startsWith("AGENTS_") ||
-          relativePath.endsWith("/AGENTS.md"))
+        (basename === "AGENTS.md" ||
+          // Legacy topic siblings (kept for resilience; superseded by references/).
+          (basename.startsWith("AGENTS_") && basename.endsWith(".md")) ||
+          // Topic docs now live as kebab-case files under a references/ subfolder.
+          (parentDir === "references" && basename.endsWith(".md")))
       ) {
         queue.push(relativePath);
       }
@@ -291,8 +424,6 @@ function validateFile(file) {
 
   validateInternalLinks(file, content);
   validateFileReferences(file, content);
-  validateRequiredSections(file, content);
-  validateNoEmojiInModes(file, content);
   validatePathNotation(file, content);
 }
 

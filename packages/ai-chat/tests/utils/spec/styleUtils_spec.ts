@@ -11,7 +11,7 @@ import {
   convertCSSVariablesToString,
   mergeCSSVariables,
 } from "../../../src/chat/utils/styleUtils";
-import { CarbonTheme } from "../../../src/types/config/PublicConfig";
+import { CarbonTheme } from "../../../src/types/config/CarbonTheme";
 
 describe("styleUtils", () => {
   describe("convertCSSVariablesToString", () => {

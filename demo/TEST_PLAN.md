@@ -16,6 +16,9 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Header, launcher, homescreen configuration
 - Chat instance controls (focus, scroll, input visibility, restart)
 - Slots, layout frame/content width settings
+- Writeable elements, layout frame/content width settings
+- Input "Expanded layout" toggle: editor fills its own full-width row; message actions + send control drop to a second row (actions to the start, send to the end); with the "Additional actions menu" enabled the `input.actions` render inline as icon buttons instead of in the "+" popover, and collapse into a "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow the window / use a small layout to verify; confirm the hidden actions are reachable and fire from the menu). Verify non-expanded is unchanged and that toggling live reflows correctly (incl. RTL).
+- Writeable element `promptLineActionsEnd`: its slotted content (the green swatch in the demo) appears only when the input "Expanded layout" toggle is on; it is absent in the default compact layout.
 
 #### setChatConfig Testing (Use `window.setChatConfig()`)
 

@@ -14,6 +14,7 @@ import prefix from "../../../globals/settings.js";
 import commonStyles from "../../../globals/scss/common.scss?lit";
 import styles from "./markdown.scss?lit";
 import throttle from "lodash-es/throttle.js";
+import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
 
 import MarkdownIt from "markdown-it";
 
@@ -325,6 +326,11 @@ class CDSAIChatMarkdown extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.hasConnected = true;
+
+    if (IS_PHONE) {
+      this.setAttribute("phone", "");
+    }
+
     this.adoptLightDomMarkdown();
 
     // Ensure we parse and render on initial mount, even if markdown was set before connection

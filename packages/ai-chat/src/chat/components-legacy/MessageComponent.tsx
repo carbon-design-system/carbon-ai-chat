@@ -96,9 +96,9 @@ import {
   ResponseUserProfile,
   UserType,
 } from "../../types/messaging/Messages";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { ResponseUserAvatar } from "./ResponseUserAvatar";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
 import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import {
   hasReasoningContent,

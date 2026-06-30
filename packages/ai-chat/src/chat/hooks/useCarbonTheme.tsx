@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,7 +9,7 @@
 
 import { useSelector } from "./useSelector";
 import { AppState } from "../../types/state/AppState";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { CarbonTheme } from "../../types/config/CarbonTheme";
 
 /**
  * Custom hook to get the current Carbon theme and determine if it's a dark theme.
