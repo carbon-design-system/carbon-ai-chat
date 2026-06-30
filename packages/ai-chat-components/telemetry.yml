@@ -92,7 +92,9 @@ collect:
         - fold-collapse-label
         - fold-expand-label
         - hide-copy-button
+        - hide-fold
         - hide-header
+        - hide-line-numbers
         - highlight
         - max-collapsed-number-of-rows
         - max-expanded-number-of-rows
