@@ -15,7 +15,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import markdownItKatex from "@vscode/markdown-it-katex";
+// `@vscode/markdown-it-katex` is a CommonJS module that assigns the plugin to
+// `exports.default` without an `__esModule` marker. Under Vite's interop the
+// default import resolves to the whole module namespace (`{ default: fn }`)
+// rather than the function, so unwrap `.default` before handing it to
+// `markdownItPlugins`, which expects plugin functions.
+import markdownItKatexModule from "@vscode/markdown-it-katex";
 import {
   Table,
   TableBody,
@@ -428,7 +433,10 @@ export const WithMarkdownItPlugin = {
     markdown: { control: "text" },
   },
   render: (args) => {
-    const plugins = useMemo(() => [markdownItKatex], []);
+    const plugins = useMemo(
+      () => [markdownItKatexModule.default ?? markdownItKatexModule],
+      [],
+    );
     return (
       <div>
         <p

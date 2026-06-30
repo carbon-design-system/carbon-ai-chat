@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-chat-history-float",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "private": true,
   "type": "module",
   "description": "An example using @carbon/ai-chat web component chat history feature with float layout",

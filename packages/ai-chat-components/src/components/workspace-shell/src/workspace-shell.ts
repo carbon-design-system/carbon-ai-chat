@@ -33,10 +33,8 @@ class CDSAIChatWorkspaceShell extends LitElement {
   /**
    * Enable automatic header collapsible behavior based on available space.
    * When true, the header will automatically become collapsible when the
-   * body would have less space than the header. This prop is currently experimental
-   * and is subject to future changes.
+   * body would have less space than the header.
    *
-   * @experimental
    */
   @property({ type: Boolean, attribute: "auto-collapsible-header" })
   autoCollapsibleHeader = false;
