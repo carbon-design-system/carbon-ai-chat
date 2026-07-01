@@ -12,7 +12,6 @@ import throttle from "lodash-es/throttle.js";
 import React, { Fragment, PureComponent, ReactNode } from "react";
 import { useSelector } from "../hooks/useSelector";
 import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
@@ -36,67 +35,73 @@ import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { IS_MOBILE } from "../utils/browserUtils";
 import { WriteableElementName } from "../utils/constants";
-import { doScrollElement, getScrollBottom } from "../utils/domUtils";
+import { applyDynamicStyles } from "../utils/cspStyleUtils";
 import { formatShortcutForDisplay } from "../utils/keyboardUtils";
 import { arrayLastValue } from "../utils/lang/arrayUtils";
-import { isResponse, getMessageIDForUserInput } from "../utils/messageUtils";
+import {
+  isRequest,
+  isResponse,
+  getMessageIDForUserInput,
+} from "../utils/messageUtils";
 import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../types/config/ShortcutConfig";
 import {
-  applySafariScrollAnchoringRestore,
-  applySpacerDeficit,
-  cleanupMessageResizeObserver,
-  createMessageResizeObserver,
-  getMessageArrayChangeFlags,
-  getStreamingTransition,
-  hasMessagesOutOfView,
-  hasNewNonStreamingResponse,
-  pinMessageAndScroll,
-  recalculatePinnedMessageSpacer,
-  resolveAutoScrollAction,
-  resolvePublicSpacerReconciliationAction,
-  resolveStreamEndAction,
-  updateObservedMessages as updateObservedMessagesUtil,
-  type MessageResizeObserverState,
+  MessagesScrollController,
+  type PortableMessage,
+  type ScrollHost,
 } from "../utils/messagesAutoScrollController";
 import { buildRenderableMessageMetadata } from "../utils/messagesRenderUtils";
-import { consoleError, debugLog } from "../utils/miscUtils";
+import { consoleError } from "../utils/miscUtils";
 import MessageComponent, {
   MessageClass,
   MoveFocusType,
 } from "./MessageComponent";
-import { Message } from "../../types/messaging/Messages";
+import { Message, MessageRequest } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
-const DEBUG_AUTO_SCROLL = false;
-const STREAM_END_NEAR_PIN_THRESHOLD_PX = 60;
-const SCROLL_DOWN_THRESHOLD_PX = 60;
-
-/**
- * Throttle timeouts for different auto-scroll operations.
- * Each has different performance requirements based on its purpose.
- */
-
-/**
- * Window resize handler throttle - recalculates layout when browser window is resized.
- * User-initiated window resizing doesn't need sub-frame precision.
- */
-const WINDOW_RESIZE_THROTTLE_MS = 200;
-
-/**
- * General auto-scroll operations throttle - triggered by message updates.
- * Balance between responsiveness and avoiding excessive scroll calculations.
- */
-const AUTO_SCROLL_THROTTLE_MS = 150;
-
 /**
  * Scroll notification UI throttle - updates the "scroll to bottom" button visibility.
  * Visual indicator update doesn't need to be frame-perfect.
  */
 const SCROLL_NOTIFICATION_THROTTLE_MS = 200;
+
+/**
+ * Write `min-block-size` for the bottom spacer via the shared dynamic
+ * stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
+ */
+function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
+  applyDynamicStyles(spacerElem, "spacer", {
+    "min-block-size": `${deficit}px`,
+  });
+}
+
+/**
+ * Determines if a message qualifies as a scroll target (pin target).
+ *
+ * Rules:
+ * - A MessageRequest always qualifies.
+ * - A MessageResponse qualifies only if its corresponding request had `history.silent = true`,
+ *   meaning no visible user bubble was shown and the response is the right element to pin.
+ */
+function shouldScrollToMessage(
+  message: Message,
+  allMessagesByID: Record<string, Message>,
+): boolean {
+  if (isResponse(message)) {
+    const messageRequest = allMessagesByID[
+      message?.request_id
+    ] as MessageRequest;
+
+    // If the request for this response was silent, scroll to the response instead of where
+    // the silent user message would be.
+    return Boolean(messageRequest?.history?.silent);
+  }
+
+  return isRequest(message);
+}
 
 /**
  * The type of the function used for scrolling elements inside the scroll panel into view.
@@ -201,18 +206,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   };
 
   /**
-   * The observer used to monitor for changes in the scroll panel size.
-   */
-  private scrollPanelObserver: ResizeObserver;
-
-  /**
-   * State for the message resize observer that detects async content loading.
-   * This detects when async content (images, audio, video, user-defined) loads
-   * and changes the message height, allowing us to recalculate the spacer.
-   */
-  private messageResizeObserverState: MessageResizeObserverState | null = null;
-
-  /**
    * A registry of references to the child {@link MessageComponent} instances. The keys of the map are the IDs of
    * each message item and the value is the ref to the component.
    */
@@ -239,106 +232,63 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   public agentBannerRef = React.createRef<HasRequestFocus>();
 
   /**
-   * The message component most recently pinned to the top of the visible scroll area.
-   * Updated when pinning/re-pinning chooses a different target.
-   */
-  private pinnedMessageComponent: MessageClass | null = null;
-
-  /**
-   * The scrollTop value set at the moment of the last pin. Compared against the current
-   * scrollTop at stream end to detect whether the user scrolled away from the pin during
-   * streaming. In the standard "message added, then chunks stream" flow, this is set before
-   * stream-end handling runs, so it is a stable baseline for the near-pin/away-from-pin check.
-   */
-  private pinnedScrollTop = 0;
-
-  /**
-   * The spacer height that is actually written to the DOM. Used by checkMessagesOutOfView
-   * to prevent the scroll-to-bottom button from appearing for blank spacer space.
-   */
-  private domSpacerHeight = 0;
-
-  /**
    * Spacer element at the bottom of the messages list. We set this element's
    * min-block-size attribute in order to ensure the request message is brought to the
    * top of the chat.
    */
   private bottomSpacerRef = React.createRef<HTMLDivElement>();
 
-  componentDidMount(): void {
-    // Use requestAnimationFrame to avoid ResizeObserver loop errors
-    this.scrollPanelObserver = new ResizeObserver(() => {
-      requestAnimationFrame(() => {
-        this.onResize();
-      });
-    });
-    this.scrollPanelObserver.observe(
-      this.messagesContainerWithScrollingRef.current,
-    );
+  /**
+   * The framework-agnostic scroll/spacer engine. This host implements
+   * {@link ScrollHost} and delegates all scroll behavior to the controller.
+   */
+  private scroll: MessagesScrollController = new MessagesScrollController(
+    this.createScrollHost(),
+  );
 
-    // Create message resize observer for async content loading and streaming size changes
-    // Uses a two-layer approach:
-    // 1. ResizeObserver (baseline) - Delta-based tracking for general size changes
-    // 2. requestAnimationFrame loop - Activated during CSS animations for frame-by-frame compensation
-    this.messageResizeObserverState = createMessageResizeObserver({
-      onSignificantResize: (delta: number) => {
-        // Apply delta-based spacer adjustment to maintain visual position when content size changes.
-        // Delta is positive when content grows, negative when it shrinks.
-        // The spacer must adjust by the inverse: when content grows, spacer shrinks (and vice versa).
-        const scrollElement = this.messagesContainerWithScrollingRef.current;
+  /**
+   * Builds the {@link ScrollHost} adapter the controller uses to read/write the DOM
+   * without knowing about React. Semantic booleans (`isPinnable`/`isStreaming`/
+   * `isResponse`) are computed here from `LocalMessageItem`/`allMessagesByID`.
+   */
+  private createScrollHost(): ScrollHost {
+    return {
+      getScrollContainer: () => this.messagesContainerWithScrollingRef.current,
+      getSpacer: () => this.bottomSpacerRef.current,
+      setSpacerHeight: (px: number) => {
         const spacerElem = this.bottomSpacerRef.current;
-
-        if (scrollElement && spacerElem && this.pinnedMessageComponent) {
-          // Detect if scrollTop was capped by the browser due to scrollHeight reduction.
-          // When content shrinks significantly (e.g., large reasoning trace collapse) and
-          // scrollHeight drops below pinnedScrollTop + clientHeight, the browser caps
-          // scrollTop to scrollHeight - clientHeight. This looks like the user scrolled
-          // away but is actually browser-initiated.
-          const maxScrollTop =
-            scrollElement.scrollHeight - scrollElement.clientHeight;
-          const wasBrowserCapped =
-            scrollElement.scrollTop >= maxScrollTop - 2 &&
-            scrollElement.scrollTop < this.pinnedScrollTop;
-
-          // Always adjust spacer — keeps scrollHeight stable regardless of scroll position.
-          // Inverse delta: content grows (+delta) → spacer shrinks (-delta)
-          //                content shrinks (-delta) → spacer grows (+delta)
-          // Cap growth at the minimum needed to keep pinnedScrollTop reachable —
-          // otherwise post-stream below-viewport shrinkage (e.g., typing indicator
-          // collapsing after a long response finishes) blindly inflates the spacer.
-          const deltaCompensated = Math.max(0, this.domSpacerHeight - delta);
-          const contentHeightWithoutSpacer =
-            scrollElement.scrollHeight - this.domSpacerHeight;
-          const minSpacerForPin = Math.max(
-            0,
-            this.pinnedScrollTop +
-              scrollElement.clientHeight -
-              contentHeightWithoutSpacer,
-          );
-          this.domSpacerHeight = Math.min(
-            deltaCompensated,
-            Math.max(this.domSpacerHeight, minSpacerForPin),
-          );
-          applySpacerDeficit(spacerElem, this.domSpacerHeight);
-
-          // Restore scrollTop if user is near the pin, or if browser capped scrollTop.
-          const scrollDelta = Math.abs(
-            scrollElement.scrollTop - this.pinnedScrollTop,
-          );
-          const hasScrolledAway = scrollDelta > 50;
-          if (!hasScrolledAway || wasBrowserCapped) {
-            scrollElement.scrollTop = this.pinnedScrollTop;
-          }
+        if (spacerElem) {
+          applySpacerDeficit(spacerElem, px);
         }
       },
-      hasPinnedMessage: () => {
-        return this.pinnedMessageComponent !== null;
-      },
-      significantChangeThreshold: 2, // Low threshold to catch reasoning step animations
-    });
+      getMessages: () => this.getPortableMessages(),
+      onScrollGeometryChanged: () => this.renderScrollDownNotification(),
+    };
+  }
 
-    // Start observing current messages
-    this.updateObservedMessages();
+  /**
+   * Maps the current `localMessageItems` to the framework-neutral
+   * {@link PortableMessage}[] the controller consumes, in document order.
+   */
+  private getPortableMessages(): PortableMessage[] {
+    const { localMessageItems, allMessagesByID } = this.props;
+    return localMessageItems.map((item) => {
+      const fullMessage = allMessagesByID[item.fullMessageID];
+      const streamingState = item.ui_state.streamingState;
+      return {
+        id: item.ui_state.id,
+        element: this.messageRefs.get(item.ui_state.id)?.ref?.current ?? null,
+        isPinnable: fullMessage
+          ? shouldScrollToMessage(fullMessage, allMessagesByID)
+          : false,
+        isStreaming: Boolean(streamingState && !streamingState.isDone),
+        isResponse: Boolean(fullMessage && isResponse(fullMessage)),
+      };
+    });
+  }
+
+  componentDidMount(): void {
+    this.scroll.connect();
   }
 
   /**
@@ -378,469 +328,44 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       });
     }
 
-    const newItems = this.props.localMessageItems;
-    const oldItems = oldProps.localMessageItems;
-
-    // countChanged means a new message, itemsChanged means an actual message item changed (streaming, likely)
-    const { countChanged, itemsChanged } = getMessageArrayChangeFlags({
-      oldItems,
-      newItems,
-    });
-
-    // No structural or reference change means no scroll maintenance needed.
-    if (!countChanged && !itemsChanged) {
-      return;
-    }
-
-    this.renderScrollDownNotification();
-
-    // Update observed messages when the message array changes
-    if (itemsChanged) {
-      this.updateObservedMessages();
-    }
-
-    if (countChanged) {
-      this.handleCountChanged();
-      return;
-    }
-
-    // Array reference changed but count is the same. In this codebase, that means
-    // in-place evolution (typically streaming chunks or item-level state updates).
-    // Only perform spacer maintenance if we have a pinned message.
-    if (!this.pinnedMessageComponent) {
-      return;
-    }
-
-    const { isCurrentlyStreaming, wasStreaming } = getStreamingTransition({
-      oldItems,
-      newItems,
-    });
-
-    if (isCurrentlyStreaming) {
-      this.handleStreamingUpdate(snapshot);
-    } else if (wasStreaming) {
-      this.handleStreamEndUpdate(snapshot);
-    }
+    // Delegate all scroll/spacer maintenance to the controller. It reads the
+    // latest messages from this host and compares against its own baseline. The
+    // pre-commit snapshot feeds the Safari scroll-anchoring restore.
+    this.scroll.onHostUpdated(snapshot);
   }
 
   componentWillUnmount(): void {
-    // Remove the listeners and observers we added previously.
-    if (this.scrollPanelObserver) {
-      this.scrollPanelObserver.disconnect();
-    }
-    if (this.messageResizeObserverState) {
-      cleanupMessageResizeObserver(this.messageResizeObserverState);
-      this.messageResizeObserverState = null;
-    }
-    this.doAutoScrollThrottled.cancel();
+    this.scroll.disconnect();
     this.renderScrollDownNotification.cancel();
   }
 
   /**
    * This will run internal auto-scroll to ensure proper scrolling behavior when the window is resized.
    */
-  public onResize = throttle(
-    () => {
-      // Resize can invalidate both "scroll down" visibility and pin geometry.
-      this.renderScrollDownNotification();
-      this.doAutoScrollInternal();
-    },
-    WINDOW_RESIZE_THROTTLE_MS,
-    { leading: true, trailing: true },
-  );
-
-  /**
-   * Updates which message elements are being observed by the messageResizeObserver.
-   * Called when messages are added, removed, or the message array changes.
-   *
-   * Now observes ALL messages including streaming ones. ResizeObserver handles
-   * both streaming content growth and animated size changes (like reasoning steps
-   * collapsing) smoothly without manual timing intervention.
-   */
-  private updateObservedMessages(): void {
-    if (!this.messageResizeObserverState) {
-      return;
-    }
-
-    // Get all current message elements (including streaming messages)
-    const messageElements: HTMLElement[] = [];
-    this.messageRefs.forEach((messageComponent) => {
-      const element = messageComponent.ref?.current;
-      if (element) {
-        messageElements.push(element);
-      }
-    });
-
-    // Update observations using utility function
-    updateObservedMessagesUtil(
-      this.messageResizeObserverState,
-      messageElements,
-    );
-  }
-
-  /**
-   * Pin a message to the top of the visible scroll area and scroll to it instantly.
-   * Runs synchronously inside a requestAnimationFrame — must only be called from within one.
-   *
-   * @param messageComponent - The MessageClass instance to pin
-   * @param scrollElement - The scrollable container element
-   */
-  /**
-   * Starts observing the streaming message for DOM mutations. Called when streaming begins.
-   * Only starts observing once reasoning steps are complete and actual content is streaming.
-   * This avoids jumps from reasoning step animations.
-   */
-
-  private executePinAndScroll(
-    messageComponent: MessageClass,
-    scrollElement: HTMLElement,
-  ): void {
-    const result = pinMessageAndScroll({
-      messageComponent,
-      scrollElement,
-      spacerElem: this.bottomSpacerRef.current,
-    });
-    if (!result) {
-      return;
-    }
-
-    // Keep component-level tracking aligned with the DOM writes performed by the controller.
-    this.domSpacerHeight = result.currentSpacerHeight;
-    this.pinnedMessageComponent = result.pinnedMessageComponent;
-    this.pinnedScrollTop = result.scrollTop;
-
-    debugAutoScroll(
-      `[autoScroll] Pinned message, scrollTop=${result.scrollTop}, spacer=${result.currentSpacerHeight}px`,
-    );
-  }
-
-  /**
-   * Waits for nested markdown component to finish rendering before measuring
-   * the message for pinning and scrolling.
-   */
-  private async waitForMessageComponentLayout(
-    messageComponent: MessageClass,
-  ): Promise<void> {
-    const targetElem = messageComponent?.ref?.current;
-    if (!targetElem) {
-      return;
-    }
-
-    const markdownElement = targetElem.querySelector(`${prefix}-markdown`);
-
-    if (!markdownElement) {
-      return;
-    }
-
-    await markdownElement.updateComplete?.catch((): undefined => undefined);
-
-    await new Promise<void>((resolve): void => {
-      requestAnimationFrame(() => resolve());
-    });
-  }
-
-  /**
-   * Recalculate the spacer height for the currently pinned message without touching scrollTop.
-   * Used when content below the pin changes (resize, non-streaming response, streaming done).
-   * Runs synchronously inside a requestAnimationFrame — must only be called from within one.
-   *
-   * @param scrollElement - The scrollable container element
-   */
-  private executeRecalculateSpacer(scrollElement: HTMLElement): void {
-    const result = recalculatePinnedMessageSpacer({
-      pinnedMessageComponent: this.pinnedMessageComponent,
-      scrollElement,
-      spacerElem: this.bottomSpacerRef.current,
-    });
-    if (result === null) {
-      return;
-    }
-    this.domSpacerHeight = result.deficit;
-  }
-
-  private async executeResolvedAutoScrollAction(
-    options: AutoScrollOptions,
-    scrollElement: HTMLElement,
-  ): Promise<void> {
-    const action = resolveAutoScrollAction({
-      allMessagesByID: this.props.allMessagesByID,
-      localMessageItems: this.props.localMessageItems,
-      messageRefs: this.messageRefs,
-      options,
-      pinnedMessageComponent: this.pinnedMessageComponent,
-      scrollElement,
-    });
-
-    switch (action.type) {
-      case "scroll_to_top":
-        doScrollElement(scrollElement, action.scrollTop, 0);
-        return;
-      case "scroll_to_bottom": {
-        // During streaming `scrollHeight` includes the blank spacer, so
-        // `scrollHeight - offsetHeight` points into blank spacer territory.
-        // Subtract domSpacerHeight to land at the bottom of real content.
-        const isStreaming = this.props.localMessageItems.some(
-          (item) =>
-            item.ui_state.streamingState &&
-            !item.ui_state.streamingState.isDone,
-        );
-        const scrollTop = isStreaming
-          ? Math.max(0, action.scrollTop - this.domSpacerHeight)
-          : action.scrollTop;
-        doScrollElement(
-          scrollElement,
-          scrollTop,
-          0,
-          action.preferAnimate && !isStreaming,
-        );
-        return;
-      }
-      case "reset_to_top":
-        // No messages — scroll to top so the browser doesn't restore a stale position.
-        scrollElement.scrollTop = 0;
-        return;
-      case "pin_message":
-        await this.waitForMessageComponentLayout(action.messageComponent);
-        if (!scrollElement.isConnected) {
-          return;
-        }
-        this.executePinAndScroll(action.messageComponent, scrollElement);
-        return;
-      case "recalculate_spacer":
-        this.executeRecalculateSpacer(scrollElement);
-        return;
-      default:
-        return;
-    }
-  }
-
-  private reconcileSpacerAfterPublicDoAutoScroll(
-    scrollElement: HTMLElement,
-  ): void {
-    const reconciliationAction = resolvePublicSpacerReconciliationAction({
-      pinnedMessageComponent: this.pinnedMessageComponent,
-    });
-    if (reconciliationAction.type === "noop") {
-      return;
-    }
-
-    const savedScrollTop = scrollElement.scrollTop;
-    this.executeRecalculateSpacer(scrollElement);
-    if (scrollElement.scrollTop < savedScrollTop) {
-      scrollElement.scrollTop = savedScrollTop;
-    }
+  public onResize = (): void => {
+    // Resize can invalidate both "scroll down" visibility and pin geometry.
     this.renderScrollDownNotification();
-  }
-
-  /**
-   * Handles updates when the message count changes (messages added or removed).
-   *
-   * This method:
-   * 1. Re-runs the auto-scroll policy to pin a new target or maintain the current pin
-   * 2. Checks for new non-streaming responses that may need deferred spacer recalculation
-   * 3. Schedules a throttled recalculation if needed
-   *
-   * @private
-   */
-  private handleCountChanged(): void {
-    // Message list length changed (add/remove). Re-run auto-scroll policy so we either
-    // pin a new target, maintain the current pin, or reset for empty state.
-    this.doAutoScrollInternal();
-
-    // For non-streaming MessageResponse items added via addMessage(), the initial pin
-    // calculation may occur before response content is fully rendered, resulting in an
-    // oversized spacer. Schedule a deferred recalculation to correct the spacer after
-    // layout settles. Only do this for responses, as requests are the pinned targets
-    // themselves and don't affect spacer calculation the same way.
-    const hasNewResponse = hasNewNonStreamingResponse(
-      this.props.localMessageItems,
-      this.props.allMessagesByID,
-    );
-
-    if (hasNewResponse) {
-      // Use the same throttled approach as streaming to recalculate after content settles.
-      // This is more reliable than trying to time rAF perfectly.
-      this.doAutoScrollThrottled();
-    }
-  }
-
-  /**
-   * Handles scroll position maintenance during active streaming.
-   *
-   * Safari's scroll anchoring can decrease scrollTop during streaming updates.
-   * This method applies a fix to restore the user's intended scroll position.
-   *
-   * Note: ResizeObserver handles all size changes during streaming, including
-   * reasoning steps collapsing with CSS animations. The observer fires continuously
-   * during transitions, keeping the spacer synchronized.
-   *
-   * @param snapshot - The scroll position captured before the update
-   * @private
-   */
-  private handleStreamingUpdate(snapshot: number | null): void {
-    // Prevent Safari's scroll anchoring from decreasing scrollTop during streaming.
-    const el = this.messagesContainerWithScrollingRef.current;
-    if (!el) {
-      return;
-    }
-
-    const restoreTarget = applySafariScrollAnchoringRestore(
-      el.scrollTop,
-      snapshot,
-    );
-
-    if (restoreTarget !== null) {
-      el.scrollTop = restoreTarget;
-    }
-  }
-
-  /**
-   * Handles the transition when streaming completes.
-   *
-   * This method:
-   * 1. Applies Safari scroll anchoring fix for the final stream commit
-   * 2. Schedules a requestAnimationFrame to determine the final scroll action
-   * 3. Either re-pins and scrolls to the message, or preserves the user's position
-   *
-   * @param snapshot - The scroll position captured before the update
-   * @private
-   */
-  private handleStreamEndUpdate(snapshot: number | null): void {
-    // Safari fires scroll anchoring during the final stream commit (same as mid-stream
-    // commits). Apply the directional restore here too so the rAF's position check sees
-    // the user's actual scrollTop, not the anchoring-adjusted one.
-    const scrollElement = this.messagesContainerWithScrollingRef.current;
-    if (!scrollElement) {
-      return;
-    }
-
-    const restoreTarget = applySafariScrollAnchoringRestore(
-      scrollElement.scrollTop,
-      snapshot,
-    );
-
-    if (restoreTarget !== null) {
-      scrollElement.scrollTop = restoreTarget;
-    }
-
-    // Schedule the stream-end scroll action
-    this.executeStreamEndScrollAction(snapshot);
-  }
-
-  /**
-   * Executes the final scroll action after streaming completes.
-   *
-   * This method runs in a requestAnimationFrame to ensure DOM/layout has settled.
-   * It determines whether to re-pin and scroll to the message, or preserve the
-   * user's scroll position if they scrolled away during streaming.
-   *
-   * @param snapshot - The scroll position captured before the final stream commit
-   * @private
-   */
-  private executeStreamEndScrollAction(snapshot: number | null): void {
-    requestAnimationFrame(() => {
-      const scrollElement = this.messagesContainerWithScrollingRef.current;
-      if (!scrollElement || !this.pinnedMessageComponent) {
-        return;
-      }
-
-      // Use the pre-commit snapshot as the stream-end decision baseline. Safari can
-      // adjust scrollTop during the final commit (not always in one direction), and
-      // using post-commit scrollTop here can misclassify "near pin" vs "away from pin".
-      const scrollTopForDecision = snapshot ?? scrollElement.scrollTop;
-
-      const streamEndAction = resolveStreamEndAction({
-        nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
-        pinnedScrollTop: this.pinnedScrollTop,
-        scrollTop: scrollTopForDecision,
-      });
-
-      if (streamEndAction === "re_pin_and_scroll") {
-        this.executePinAndScroll(this.pinnedMessageComponent, scrollElement);
-      } else {
-        // Preserve the user's pre-commit position when they are away from pin.
-        // Zero the spacer directly.
-        const savedScrollTop = scrollTopForDecision;
-        const spacerElem = this.bottomSpacerRef.current;
-        if (spacerElem) {
-          applySpacerDeficit(spacerElem, 0);
-        }
-        this.domSpacerHeight = 0;
-        if (scrollElement.scrollTop < savedScrollTop) {
-          scrollElement.scrollTop = savedScrollTop;
-        }
-      }
-    });
-  }
-
-  private scheduleAutoScroll = (
-    options: AutoScrollOptions = {},
-    includePublicSpacerReconciliation = false,
-  ) => {
-    requestAnimationFrame(() => {
-      void (async () => {
-        // Execute after DOM/layout settles for the current frame so measurements
-        // (scrollHeight, rects) match what the user can actually see.
-        const scrollElement = this.messagesContainerWithScrollingRef.current;
-        if (!scrollElement) {
-          return;
-        }
-
-        await this.executeResolvedAutoScrollAction(options, scrollElement);
-        if (includePublicSpacerReconciliation) {
-          this.reconcileSpacerAfterPublicDoAutoScroll(scrollElement);
-        }
-      })();
-    });
-  };
-
-  /**
-   * Internal auto-scroll path used by component lifecycle and internal handlers.
-   * This preserves historical behavior and does not run the public spacer-reconciliation pass.
-   */
-  private doAutoScrollInternal = (options: AutoScrollOptions = {}) => {
-    try {
-      this.scheduleAutoScroll(options, false);
-    } catch (error) {
-      // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
-      consoleError("An error occurred while attempting to scroll.", error);
-    }
+    this.scroll.onContainerResize();
   };
 
   /**
    * Public auto-scroll entry point exposed through ChatInstance/AppShell.
-   * In addition to normal auto-scroll resolution, this always runs a spacer
-   * reconciliation pass so external callers get up-to-date pin/spacer geometry.
+   * Thin pass-through to the controller.
    */
-  public doAutoScroll = (options: AutoScrollOptions = {}) => {
-    try {
-      this.scheduleAutoScroll(options, true);
-    } catch (error) {
-      // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
-      consoleError("An error occurred while attempting to scroll.", error);
-    }
+  public doAutoScroll = (options: AutoScrollOptions = {}): void => {
+    this.scroll.doAutoScroll(options);
   };
-
-  /**
-   * Throttled auto-scroll method for automatic scroll operations (e.g., message updates).
-   * This is throttled to prevent excessive scrolling during rapid updates.
-   */
-  public doAutoScrollThrottled = throttle(
-    this.doAutoScrollInternal,
-    AUTO_SCROLL_THROTTLE_MS,
-    { leading: true, trailing: true },
-  );
 
   /**
    * Returns the current scrollBottom value for the message scroll panel.
    */
-  public getContainerScrollBottom = () => {
-    return getScrollBottom(this.messagesContainerWithScrollingRef?.current);
+  public getContainerScrollBottom = (): number => {
+    return this.scroll.getContainerScrollBottom();
   };
 
   /**
    * Scrolls the given element into view so that it is fully visible. If the element is already visible, then no
-   * scrolling will be done.
+   * scrolling will be done. Thin pass-through to the controller.
    *
    * @param element The element to scroll into view.
    * @param paddingTop An additional pixel value that will over scroll by this amount to give a little padding between
@@ -854,45 +379,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     paddingTop = 8,
     paddingBottom = 8,
     animate = false,
-  ) => {
-    const scrollElement = this.messagesContainerWithScrollingRef.current;
-
-    if (!scrollElement) {
-      return;
-    }
-
-    const scrollRect = scrollElement.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-
-    // The distance the top and bottom of the element is from the top of the message list.
-    const topDistanceFromTop =
-      elementRect.top - scrollRect.top + scrollElement.scrollTop - paddingTop;
-    const bottomDistanceFromTop =
-      elementRect.bottom -
-      scrollRect.top +
-      scrollElement.scrollTop +
-      paddingBottom;
-    const elementHeight = element.offsetHeight + paddingTop + paddingBottom;
-
-    if (
-      topDistanceFromTop < scrollElement.scrollTop ||
-      elementHeight > scrollElement.offsetHeight
-    ) {
-      // The top of the element is above the fold or the element doesn't fully fit. Scroll it so its top is at the top
-      // of the scroll panel.
-      doScrollElement(scrollElement, topDistanceFromTop, 0);
-    } else if (
-      bottomDistanceFromTop >
-      scrollElement.scrollTop + scrollElement.offsetHeight
-    ) {
-      // The bottom of the element is below the fold. Scroll it so its bottom is at the bottom of the scroll panel.
-      doScrollElement(
-        scrollElement,
-        bottomDistanceFromTop - scrollElement.offsetHeight,
-        0,
-        animate,
-      );
-    }
+  ): void => {
+    this.scroll.scrollElementIntoView(
+      element,
+      paddingTop,
+      paddingBottom,
+      animate,
+    );
   };
 
   /**
@@ -943,7 +436,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   public doScrollToMessage(messageID: string, animate = false) {
     try {
-      // Find the component that has the message we want to scroll to.
+      // Resolve the (full) message id to the first matching row's element (this host
+      // owns the id → element mapping), then delegate the actual scroll to the controller.
       const { localMessageItems } = this.props;
       let panelComponent: MessageClass;
       for (let index = 0; index <= localMessageItems.length; index++) {
@@ -955,17 +449,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       }
 
       if (panelComponent) {
-        const scrollElement = this.messagesContainerWithScrollingRef.current;
-
-        if (!scrollElement) {
-          return;
-        }
-
-        // Scroll to the top of the message.
-        const setScrollTop = panelComponent.ref.current.offsetTop;
-
-        // Do the scrolling.
-        doScrollElement(scrollElement, setScrollTop, 0, animate);
+        this.scroll.doScrollToMessageElement(
+          panelComponent.ref.current,
+          animate,
+        );
       }
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
@@ -976,24 +463,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   /**
    * Calculates if there are any messages at the bottom out of the scroll view of the container.
    * The result determines if the user should be told if they need to scroll down to view more
-   * messages or not.
+   * messages or not. Thin pass-through to the controller's scroll-to-bottom decision.
    */
   public checkMessagesOutOfView() {
-    const scrollElement = this.messagesContainerWithScrollingRef.current;
-
-    if (!scrollElement) {
-      return false;
-    }
-
-    // Subtract the real DOM spacer height to get the effective scroll height.
-    // This prevents the scroll-to-bottom button from appearing for blank spacer space.
-    return hasMessagesOutOfView({
-      clientHeight: scrollElement.clientHeight,
-      domSpacerHeight: this.domSpacerHeight,
-      scrollHeight: scrollElement.scrollHeight,
-      scrollTop: scrollElement.scrollTop,
-      thresholdPx: SCROLL_DOWN_THRESHOLD_PX,
-    });
+    return this.scroll.isScrolledAwayFromBottom();
   }
 
   /**
@@ -1397,7 +870,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         <MessagesScrollToBottomButton
           ariaLabel={languagePack.messages_scrollMoreButton}
           onClick={() =>
-            this.doAutoScrollInternal({
+            this.scroll.doAutoScrollInternal({
               scrollToBottom: 0,
               preferAnimate: true,
             })
@@ -1427,12 +900,6 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollHandleHasFocus={scrollHandleHasFocus}
       />
     );
-  }
-}
-
-function debugAutoScroll(message: string, ...args: any[]) {
-  if (DEBUG_AUTO_SCROLL) {
-    debugLog(message, ...args);
   }
 }
 

@@ -8,7 +8,10 @@
  */
 
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { GenericItem } from "../../types/messaging/Messages";
+import {
+  GenericItem,
+  ReasoningStepOpenState,
+} from "../../types/messaging/Messages";
 
 /**
  * Returns true when reasoning content is something the UI should render.
@@ -48,4 +51,49 @@ function synthesizeReasoningLocalMessageItem(
   };
 }
 
-export { hasReasoningContent, synthesizeReasoningLocalMessageItem };
+/**
+ * Resolves whether the reasoning container (the parent panel that wraps the steps) should render open.
+ *
+ * Inputs:
+ *  - `manualReasoningOpen`: the user's open/closed override, recorded when they toggle a host-controlled
+ *    panel (one with an explicit container `open_state`).
+ *  - `autoReasoningContainerOpen`: the auto-mode open state the component manages when the host does not
+ *    control the panel.
+ *  - `containerOpenState`: the host-supplied `reasoning.open_state` for this render, if any.
+ *
+ * The subtlety this guards: a host can drive a message through `open_state` while it streams (controlled
+ * mode) and then drop `open_state` on a later snapshot (auto mode). The `manualReasoningOpen` override only
+ * makes sense while the panel is host-controlled — if the message has flipped to auto mode, a stale manual
+ * value must not pin the panel open or closed, otherwise the user can no longer collapse/expand it. So the
+ * manual override is honored only when an explicit container `open_state` is still present; otherwise we
+ * fall through to the auto state.
+ */
+function resolveReasoningContainerOpen({
+  manualReasoningOpen,
+  autoReasoningContainerOpen,
+  containerOpenState,
+}: {
+  manualReasoningOpen?: boolean;
+  autoReasoningContainerOpen?: boolean;
+  containerOpenState?: ReasoningStepOpenState;
+}): boolean {
+  const hasExplicitContainerState =
+    typeof containerOpenState !== "undefined" &&
+    containerOpenState !== ReasoningStepOpenState.DEFAULT;
+
+  if (hasExplicitContainerState && typeof manualReasoningOpen === "boolean") {
+    return manualReasoningOpen;
+  }
+
+  if (hasExplicitContainerState) {
+    return containerOpenState === ReasoningStepOpenState.OPEN;
+  }
+
+  return autoReasoningContainerOpen ?? true;
+}
+
+export {
+  hasReasoningContent,
+  resolveReasoningContainerOpen,
+  synthesizeReasoningLocalMessageItem,
+};

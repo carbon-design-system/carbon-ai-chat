@@ -420,16 +420,23 @@ interface ChatActions {
   restartConversation: () => Promise<void>;
 
   /**
-   * Recalculates the chat's scroll position and spacer after an external layout change.
+   * Re-pins the last qualifying message to the top of the viewport and recalculates the
+   * scroll spacer.
    *
-   * Call this after your custom response component finishes rendering, loads media, or
-   * otherwise changes height in a way the chat cannot detect automatically (e.g. after
-   * injecting content via {@link WriteableElements}). The chat will re-pin the last
-   * qualifying message to the top of the viewport and adjust the spacer accordingly.
+   * Most of the time you do NOT need to call this for a `user_defined` response, even one
+   * that renders asynchronously: the chat observes each message's size and reconciles the
+   * spacer automatically when in-message content (including your `user_defined` component,
+   * whether standalone or nested inside a reasoning step) changes height. Call this only when
+   * you want the chat to actively re-pin/reveal your content, or as a safety net when a height
+   * change cannot be observed — e.g. content rendered OUTSIDE the message subtree (a portal,
+   * or a `fixed`/`absolute` overlay), content injected via {@link WriteableElements}, or a
+   * message that grows while it is off-screen / not the last message and therefore has no
+   * active pin.
    *
-   * To scroll to the very bottom of the message list instead, pass `{ scrollToBottom: 0 }`.
-   * The spacer reconciliation pass still runs after explicit top/bottom overrides so pin
-   * geometry remains accurate for subsequent updates.
+   * With no options, the last qualifying message is re-pinned to the top and the spacer is
+   * adjusted. To scroll to the very bottom of the message list instead, pass
+   * `{ scrollToBottom: 0 }`. The spacer reconciliation pass still runs after explicit
+   * top/bottom overrides so pin geometry remains accurate for subsequent updates.
    *
    * @param options Optional overrides for scroll behavior. See {@link AutoScrollOptions}.
    */

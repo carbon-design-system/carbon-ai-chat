@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -304,13 +304,22 @@ export async function runControlledReasoningScenario(
 
   instance.updateIsMessageLoadingCounter("decrease");
 
+  // Keep asserting the parent `open_state: CLOSE` on the final snapshot too, so
+  // the message stays in controlled mode at completion. Dropping it would flip
+  // the panel to auto mode and desync its open/closed state after the user has
+  // toggled it mid-stream.
   await streamText(
     instance,
     responseID,
     scenarios["Controlled reasoning steps"].text,
     signal,
     undefined,
-    { reasoning: { steps: collectedSteps } },
+    {
+      reasoning: {
+        open_state: ReasoningStepOpenState.CLOSE,
+        steps: collectedSteps,
+      },
+    },
   );
 }
 

@@ -350,6 +350,13 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
   /**
    * @internal
+   * Ensures the one-time `document.fonts.ready` re-measure is scheduled only once,
+   * even though `createEditor` may run repeatedly during streaming.
+   */
+  private _fontSettleScheduled = false;
+
+  /**
+   * @internal
    * Computed property to detect fill-container mode
    */
   private get _isFillMode(): boolean {
@@ -668,12 +675,51 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
 
     this._lineCount = this.editorView.state.doc.lines;
 
-    // Check height after editor renders
+    // Check height after editor renders, then announce that this snippet's async
+    // render has settled so a surrounding scroll manager can recalculate geometry.
     requestAnimationFrame(() => {
       this._checkShowMoreButton();
+      this.emitRenderSettled();
     });
 
+    // IBM Plex Mono is a web font that can arrive after first paint and reflow the code,
+    // changing height. Re-measure and re-announce once fonts are ready.
+    this.scheduleFontSettle();
+
     languageController.handleStreamingLanguageDetection();
+  }
+
+  /**
+   * Announces that this snippet's async render (CodeMirror init and/or font load) has
+   * settled, so a host scroll manager can recalculate scroll geometry against the final
+   * height. Composed + bubbling so it crosses the shadow boundary up to the message list.
+   */
+  private emitRenderSettled() {
+    this.dispatchEvent(
+      new CustomEvent("code-snippet-render-end", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  /**
+   * IBM Plex Mono is delivered as a web font and can arrive after first paint, reflowing
+   * the code. Once fonts are ready, re-measure and re-announce a settled render. Scheduled
+   * at most once per element to avoid piling up handlers across streaming re-renders.
+   */
+  private scheduleFontSettle() {
+    if (this._fontSettleScheduled || !document.fonts?.ready) {
+      return;
+    }
+    this._fontSettleScheduled = true;
+    document.fonts.ready.then(() => {
+      if (!this.editorView) {
+        return;
+      }
+      this._checkShowMoreButton();
+      this.emitRenderSettled();
+    });
   }
 
   /**
