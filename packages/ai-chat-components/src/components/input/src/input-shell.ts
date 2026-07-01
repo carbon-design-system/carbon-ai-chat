@@ -83,6 +83,21 @@ class InputShellElement extends LitElement {
       [`${prefix}--input-container--expanded`]: this.expanded,
     };
 
+    // In expanded mode, render text-area before message-actions to match visual order
+
+    const textAreaContent = html`
+      <div class="${prefix}--input-text-area">
+        <slot name="editor"></slot>
+      </div>
+    `;
+
+    const messageActionsContent = html`
+      <slot
+        name="message-actions"
+        @slotchange=${this._handleMessageActionsSlotChange}
+      ></slot>
+    `;
+
     return html`
       <div class="${prefix}--input-shell">
         <div class=${classMap(containerClasses)}>
@@ -94,13 +109,8 @@ class InputShellElement extends LitElement {
             <slot name="field-messaging"></slot>
           </div>
           <div class="${prefix}--input-text-and-actions">
-            <slot
-              name="message-actions"
-              @slotchange=${this._handleMessageActionsSlotChange}
-            ></slot>
-            <div class="${prefix}--input-text-area">
-              <slot name="editor"></slot>
-            </div>
+            ${this.expanded ? textAreaContent : messageActionsContent}
+            ${this.expanded ? messageActionsContent : textAreaContent}
           </div>
           <div class="${prefix}--input-send-control-container">
             <slot name="send-control"></slot>
