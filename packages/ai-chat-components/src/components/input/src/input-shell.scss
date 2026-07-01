@@ -103,7 +103,6 @@
   display: flex;
   flex: 1 0;
   align-items: center;
-  gap: layout.$spacing-03;
 }
 
 :host(:not([expanded])) ::slotted([slot="message-actions"]) {
@@ -233,11 +232,11 @@
 
 .#{$prefix}--input-container--expanded .#{$prefix}--input-text-and-actions {
   display: contents;
+  gap: layout.$spacing-03;
 }
 
 .#{$prefix}--input-container--expanded .#{$prefix}--input-text-area {
   flex-basis: 100%;
-  order: 1;
   border-radius: 4px;
   margin-block-end: 0;
   outline: button.$button-border-width solid transparent;
@@ -248,10 +247,6 @@
 .#{$prefix}--input-container--expanded
   .#{$prefix}--input-text-area:focus-within {
   outline-color: theme.$focus;
-}
-
-.#{$prefix}--input-container--expanded ::slotted([slot="message-actions"]) {
-  order: 2;
 }
 
 // The actions track takes the row's free space next to the send control (the
@@ -277,7 +272,6 @@
   // the row, so `margin-inline-start: auto` pushes the send control to the inline
   // end on its own.
   flex: 0 0 auto;
-  order: 3;
   margin-block: layout.$spacing-03;
   margin-inline-start: auto;
 }

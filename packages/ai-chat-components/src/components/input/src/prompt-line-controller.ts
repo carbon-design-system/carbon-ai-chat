@@ -221,6 +221,7 @@ export class TextareaController implements PromptLineController {
     textarea.classList.toggle(TA_PHONE_CLASS, IS_PHONE);
     textarea.setAttribute("rows", "1");
     textarea.setAttribute("spellcheck", "true");
+    textarea.setAttribute("tabindex", "0");
     textarea.placeholder = init.placeholder;
     textarea.value = init.value;
     textarea.readOnly = init.disabled;

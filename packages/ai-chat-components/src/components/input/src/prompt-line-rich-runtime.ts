@@ -86,6 +86,7 @@ class RichController implements PromptLineController {
     host.setAttribute("role", "textbox");
     host.setAttribute("aria-multiline", "true");
     host.setAttribute("spellcheck", "true");
+    host.setAttribute("tabindex", "0");
     if (init.ariaLabel) {
       host.setAttribute("aria-label", init.ariaLabel);
     }
