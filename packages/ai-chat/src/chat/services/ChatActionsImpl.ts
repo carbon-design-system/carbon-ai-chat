@@ -2062,7 +2062,12 @@ class ChatActionsImpl {
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
 
-    this.serviceManager.userSessionStorageService.clearSession();
+    // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
+    // below flows to its onStateChange callback like any other change.
+    const { persistedState } = store.getState().config.public;
+    if (!persistedState?.initialState && !persistedState?.onStateChange) {
+      this.serviceManager.userSessionStorageService.clearSession();
+    }
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(

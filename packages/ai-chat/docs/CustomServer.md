@@ -6,6 +6,7 @@ children:
   - ./UpsertMessage.md
   - ./StructuredData.md
   - ./CustomHistory.md
+  - ./StatePersistence.md
 ---
 
 ## Overview
@@ -22,6 +23,7 @@ This page is the entry point. Depending on what you are building, continue to:
 - [Adding messages (experimental)](./UpsertMessage.md) — the preferred, experimental insert-or-update-by-ID flow.
 - [Structured data](./StructuredData.md) — send typed fields and uploaded files alongside the user's text.
 - [Conversation history](./CustomHistory.md) — loading and restoring previous conversations.
+- [Session state persistence](./StatePersistence.md) — own where the chat's session and UI state is stored.
 
 ## Connecting your server
 

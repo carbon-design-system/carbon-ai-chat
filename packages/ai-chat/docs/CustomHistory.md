@@ -195,5 +195,6 @@ instance.on({
 - [chat-history-fullscreen example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/chat-history-fullscreen) — a fullscreen web-component layout with a custom history panel.
 - [Slots](./WriteableElements.md) — render your own content into the history panel slot.
 - [Message format](./MessageFormat.md) — the request/response shapes history items wrap.
+- [Session state persistence](./StatePersistence.md) — own where the chat's session and UI state (views, disclaimer, human-agent connection) is stored, separately from conversation messages.
 - [Adding messages (legacy)](./AddMessageChunk.md) — getting live responses onscreen.
 - [Adding messages (experimental)](./UpsertMessage.md) — revising a message after it renders.

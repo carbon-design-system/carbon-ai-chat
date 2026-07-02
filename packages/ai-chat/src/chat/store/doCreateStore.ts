@@ -45,6 +45,7 @@ import {
 } from "./reducerUtils";
 import { enLanguagePack } from "../../types/config/PublicConfig";
 import { LayoutConfig } from "../../types/config/PublicConfig";
+import { fromPersistableState } from "./persistenceUtils";
 
 /**
  * Deep merge helper that:
@@ -289,9 +290,17 @@ function doCreateStore(
 
   const initialState: AppState = createInitialState(config);
 
-  // Go pre-fill the launcher state from session storage if it exists.
-  const sessionStorageState =
-    serviceManager.userSessionStorageService?.loadSession();
+  // When the host owns persistence (config.persistedState), boot from its initialState instead of
+  // sessionStorage. Otherwise, pre-fill from session storage if a saved session exists.
+  const persistedStateConfig = config.public.persistedState;
+  const externallyPersisted = Boolean(
+    persistedStateConfig?.initialState || persistedStateConfig?.onStateChange,
+  );
+  const sessionStorageState = externallyPersisted
+    ? persistedStateConfig?.initialState
+      ? fromPersistableState(persistedStateConfig.initialState)
+      : null
+    : serviceManager.userSessionStorageService?.loadSession();
 
   if (sessionStorageState) {
     // Use the viewState from session storage as the targetViewState. Note, this overwrites the value that was set for
