@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,18 +7,19 @@
  *  @license
  */
 
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import cx from "classnames";
-import AISkeletonPlaceholder from "../../../components/carbon/AISkeletonPlaceholder";
-import SkeletonPlaceholder from "../../../components/carbon/SkeletonPlaceholder";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import cx from 'classnames';
+import AISkeletonPlaceholder from '../../../components/carbon/AISkeletonPlaceholder';
+import SkeletonPlaceholder from '../../../components/carbon/SkeletonPlaceholder';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { HasClassName } from "../../../../types/utilities/HasClassName";
-import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnouncement";
-import { getURLHostName } from "../../../utils/browserUtils";
-import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
-import InlineError from "../error/InlineError";
-import { TextHolderTile } from "../util/TextHolderTile";
+import { HasClassName } from '../../../../types/utilities/HasClassName';
+import { HasNeedsAnnouncement } from '../../../../types/utilities/HasNeedsAnnouncement';
+import { getURLHostName } from '../../../utils/browserUtils';
+import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
+import InlineError from '../error/InlineError';
+import { TextBlock } from '../../../components/util/TextBlock/TextBlock';
+import { TextHolderTile } from '../util/TextHolderTile';
 
 interface ImageProps extends HasNeedsAnnouncement, HasClassName {
   source: string;
@@ -101,9 +102,9 @@ function Image(props: ImageProps) {
   return (
     <Card
       ref={rootRef}
-      className={cx("cds-aichat--image", {
-        "cds-aichat--image__text-and-icon": hasText && Boolean(renderIcon),
-        "cds-aichat--image__icon-only":
+      className={cx('cds-aichat--image', {
+        'cds-aichat--image__text-and-icon': hasText && Boolean(renderIcon),
+        'cds-aichat--image__icon-only':
           !hideIconAndTitle && !title && !description && Boolean(renderIcon),
       })}
     >
@@ -118,21 +119,30 @@ function Image(props: ImageProps) {
       </div>
       <div slot="body">
         {hasText && (
-          <TextHolderTile
-            title={title}
-            description={description}
-            displayURL={displayURL}
-            urlHostName={displayURL && getURLHostName(displayURL)}
-            hideTitle={hideIconAndTitle}
-          />
+          <>
+            <TextHolderTile
+              title={title}
+              description={description}
+              displayURL={displayURL}
+              urlHostName={displayURL && getURLHostName(displayURL)}
+              hideTitle={hideIconAndTitle}
+            />
+            <TextBlock
+              title={title}
+              description={description}
+              displayURL={displayURL}
+              urlHostName={displayURL && getURLHostName(displayURL)}
+              hideTitle={hideIconAndTitle}
+            />
+          </>
         )}
         {Boolean(Icon) && (
           <Icon
             className={cx(
-              "cds-aichat--image__icon",
-              "cds-aichat--direction-has-reversible-svg",
+              'cds-aichat--image__icon',
+              'cds-aichat--direction-has-reversible-svg',
               {
-                "cds-aichat--image__icon--link": displayURL,
+                'cds-aichat--image__icon--link': displayURL,
               },
             )}
           />
@@ -166,7 +176,7 @@ function ImageOnly({
   inline,
 }: ImageOnlyProps) {
   const [isImageHidden, setIsImageHidden] = useState(false);
-  const imageAlt = altText || title || description || "";
+  const imageAlt = altText || title || description || '';
   const hasText = Boolean(title || description || displayURL);
 
   /**
@@ -206,9 +216,9 @@ function ImageOnly({
         ))}
       {!isError && !isImageHidden && source && (
         <img
-          className={cx("cds-aichat--image__image", {
+          className={cx('cds-aichat--image__image', {
             [className]: className,
-            "cds-aichat--image__image--loaded": isLoaded,
+            'cds-aichat--image__image--loaded': isLoaded,
           })}
           src={source}
           alt={imageAlt}

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,12 +15,13 @@ import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { useCounter } from "../../../hooks/useCounter";
 import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
 import { doScrollElementIntoView } from "../../../utils/domUtils";
-import Metablock from "../util/Metablock";
 import {
   MessageInput,
   SingleOption,
 } from "../../../../types/messaging/Messages";
 import { DROPDOWN_SIZE } from "@carbon/web-components/es/components/dropdown/defs.js";
+import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
+import Metablock from "../util/Metablock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -117,6 +118,13 @@ function SelectComponent(props: SelectProps) {
         description={description}
         id={`cds-aichat--select-uuid-${id}-label`}
         removeHTML={removeHTML}
+      />
+      <TextBlock
+        title={title}
+        description={description}
+        id={`cds-aichat--select-uuid-${id}-label`}
+        removeHTML={removeHTML}
+        renderMode="markdown"
       />
       <div
         className={cx("cds-aichat--select-holder", {

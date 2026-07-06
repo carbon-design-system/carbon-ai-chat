@@ -7,16 +7,17 @@
  *  @license
  */
 
-import { VideoPlayer } from "@carbon/ai-chat-components/es/react/video-player.js";
-import { AudioPlayer } from "@carbon/ai-chat-components/es/react/audio-player.js";
-import { Transcript } from "@carbon/ai-chat-components/es/react/transcript.js";
-import React from "react";
+import { VideoPlayer } from '@carbon/ai-chat-components/es/react/video-player.js';
+import { AudioPlayer } from '@carbon/ai-chat-components/es/react/audio-player.js';
+import { Transcript } from '@carbon/ai-chat-components/es/react/transcript.js';
+import React from 'react';
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { VideoComponentConfig } from "../video/VideoComponent";
-import { MessageResponseTypes } from "../../../../types/messaging/Messages";
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import { TextHolderTile } from "./TextHolderTile";
+import { useLanguagePack } from '../../../hooks/useLanguagePack';
+import { VideoComponentConfig } from '../video/VideoComponent';
+import { MessageResponseTypes } from '../../../../types/messaging/Messages';
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import { TextHolderTile } from './TextHolderTile';
+import { TextBlock } from '../../../components/util/TextBlock/TextBlock';
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between
@@ -72,7 +73,7 @@ interface MediaPlayerContentConfig {
     src: string;
     language: string;
     label: string;
-    kind?: "subtitles" | "captions" | "descriptions";
+    kind?: 'subtitles' | 'captions' | 'descriptions';
     default?: boolean;
   }>;
 
@@ -172,11 +173,18 @@ function MediaPlayerComponent({
           </div>
           <div slot="body">
             {(title || description) && (
-              <TextHolderTile
-                title={title}
-                description={description}
-                hideTitle={hideIconAndTitle}
-              />
+              <>
+                <TextHolderTile
+                  title={title}
+                  description={description}
+                  hideTitle={hideIconAndTitle}
+                />
+                <TextBlock
+                  title={title}
+                  description={description}
+                  hideTitle={hideIconAndTitle}
+                />
+              </>
             )}
             {transcript && (
               <Transcript

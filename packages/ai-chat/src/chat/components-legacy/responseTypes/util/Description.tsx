@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasClassName } from "../../../../types/utilities/HasClassName";
-import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
+import { HasClassName } from '../../../../types/utilities/HasClassName';
+import { MarkdownWithDefaults } from '../../../components/util/MarkdownWithDefaults';
 
 interface DescriptionProps extends HasClassName {
   text: string;

@@ -9,71 +9,71 @@
 
 /* eslint-disable react/no-array-index-key */
 
-import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { carbonIconToReact } from "./../utils/carbonIcon";
+import Attachment16 from '@carbon/icons/es/attachment/16.js';
+import { carbonIconToReact } from './../utils/carbonIcon';
 import React, {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-} from "react";
-import { useIntl } from "../hooks/useIntl";
-import { useSelector } from "../hooks/useSelector";
-import { shallowEqual } from "../store/appStore";
+} from 'react';
+import { useIntl } from '../hooks/useIntl';
+import { useSelector } from '../hooks/useSelector';
+import { shallowEqual } from '../store/appStore';
 
 import {
   BusEventFeedback,
   BusEventType,
   FeedbackInteractionType,
-} from "../../types/events/eventBusTypes";
-import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+} from '../../types/events/eventBusTypes';
+import FeedbackButtons from '@carbon/ai-chat-components/es/react/feedback-buttons.js';
 import Feedback, {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
-} from "@carbon/ai-chat-components/es/react/feedback.js";
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { ResponseStopped } from "./ResponseStopped";
-import { SystemMessage } from "./SystemMessage";
-import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
-import { AudioComponent } from "./responseTypes/audio/AudioComponent";
-import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
-import { CardItemComponent } from "./responseTypes/card/CardItemComponent";
-import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
-import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
-import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
-import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
-import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
-import InlineError from "./responseTypes/error/InlineError";
-import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
-import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
-import { Image } from "./responseTypes/image/Image";
-import { OptionComponent } from "./responseTypes/options/OptionComponent";
-import { StreamingRichText } from "./responseTypes/util/StreamingRichText";
-import { VideoComponent } from "./responseTypes/video/VideoComponent";
-import { useLanguagePack } from "../hooks/useLanguagePack";
-import { useUUID } from "../hooks/useUUID";
-import actions from "../store/actions";
-import { selectHumanAgentDisplayState } from "../store/selectors";
-import { AppState } from "../../types/state/AppState";
+} from '@carbon/ai-chat-components/es/react/feedback.js';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { ResponseStopped } from './ResponseStopped';
+import { SystemMessage } from './SystemMessage';
+import { ConnectToHumanAgent } from './responseTypes/humanAgent/ConnectToHumanAgent';
+import { AudioComponent } from './responseTypes/audio/AudioComponent';
+import { ButtonItemComponent } from './responseTypes/buttonItem/ButtonItemComponent';
+import { CardItemComponent } from './responseTypes/card/CardItemComponent';
+import { PreviewCardComponent } from './responseTypes/previewCard/PreviewCardComponent';
+import { CarouselItemComponent } from './responseTypes/carousel/CarouselItemComponent';
+import { ConversationalSearch } from './responseTypes/conversationalSearch/ConversationalSearch';
+import UserDefinedResponse from './responseTypes/custom/UserDefinedResponse';
+import CustomFooterSlot from './responseTypes/custom/CustomFooterSlot';
+import { DatePickerComponent } from './responseTypes/datePicker/DatePickerComponent';
+import InlineError from './responseTypes/error/InlineError';
+import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
+import { IFrameMessage } from './responseTypes/iframe/IFrameMessage';
+import { Image } from './responseTypes/image/Image';
+import { OptionComponent } from './responseTypes/options/OptionComponent';
+import { StreamingRichText } from './responseTypes/util/StreamingRichText';
+import { VideoComponent } from './responseTypes/video/VideoComponent';
+import { useLanguagePack } from '../hooks/useLanguagePack';
+import { useUUID } from '../hooks/useUUID';
+import actions from '../store/actions';
+import { selectHumanAgentDisplayState } from '../store/selectors';
+import { AppState } from '../../types/state/AppState';
 import {
   LocalMessageItem,
   MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
-import { MessageTypeComponentProps } from "../../types/messaging/MessageTypeComponentProps";
+} from '../../types/messaging/LocalMessageItem';
+import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
 import {
   getMediaDimensions,
   isRequest,
   isResponse,
   isTextItem,
   renderAsUserDefinedMessage,
-} from "../utils/messageUtils";
-import { parseUnknownDataToMarkdown } from "../utils/parseUnknownDataToMarkdown";
-import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
-import ChainOfThoughtStep from "@carbon/ai-chat-components/es/react/chain-of-thought-step.js";
-import ChainOfThoughtToggle from "@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js";
-import ToolCallData from "@carbon/ai-chat-components/es/react/tool-call-data.js";
+} from '../utils/messageUtils';
+import { parseUnknownDataToMarkdown } from '../utils/parseUnknownDataToMarkdown';
+import ChainOfThought from '@carbon/ai-chat-components/es/react/chain-of-thought.js';
+import ChainOfThoughtStep from '@carbon/ai-chat-components/es/react/chain-of-thought-step.js';
+import ChainOfThoughtToggle from '@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js';
+import ToolCallData from '@carbon/ai-chat-components/es/react/tool-call-data.js';
 import {
   AudioItem,
   ButtonItem,
@@ -101,10 +101,10 @@ import {
   UserType,
   VideoItem,
   PreviewCardItem,
-} from "../../types/messaging/Messages";
-import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
-import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
-import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
+} from '../../types/messaging/Messages';
+import { MarkdownWithDefaults } from '../components/util/MarkdownWithDefaults';
+import type { CDSAIChatChainOfThought } from '@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js';
+import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
 
 /**
  * This component renders a specific message component based on a message's type.
@@ -656,7 +656,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     stepTitle: string;
   }) {
     return formatMessage(
-      { id: "chainOfThought_stepTitle" },
+      { id: 'chainOfThought_stepTitle' },
       { stepNumber, stepTitle },
     );
   }
@@ -711,7 +711,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             const stepNumber = index + 1;
             const labelText = formatStepLabelText({
               stepNumber,
-              stepTitle: step.title || step.tool_name || "",
+              stepTitle: step.title || step.tool_name || '',
             });
             const requestMarkdown = parseUnknownDataToMarkdown(
               step.request?.args,
@@ -723,8 +723,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             return (
               <ChainOfThoughtStep
                 key={step.title || step.tool_name || index}
-                title={step.title || step.tool_name || ""}
-                status={step.status || "success"}
+                title={step.title || step.tool_name || ''}
+                status={step.status || 'success'}
                 stepNumber={stepNumber}
                 labelText={labelText}
                 statusSucceededLabelText={
@@ -913,10 +913,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return (
         <Feedback
           class={`${prefix}--feedback-details-${
-            isPositive ? "positive" : "negative"
+            isPositive ? 'positive' : 'negative'
           }`}
           id={`${feedbackPanelID}-feedback-${
-            isPositive ? "positive" : "negative"
+            isPositive ? 'positive' : 'negative'
           }`}
           isOpen={isOpen}
           isReadonly={isFeedbackSubmitted}

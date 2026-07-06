@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -28,6 +28,7 @@ import {
   SingleOption,
 } from "../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../types/events/eventBusTypes";
+import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -125,6 +126,12 @@ class OptionComponent extends Component<OptionProps> {
           title={title}
           description={description}
           removeHTML={removeHTML}
+        />
+        <TextBlock
+          title={title}
+          description={description}
+          removeHTML={removeHTML}
+          renderMode="markdown"
         />
         <div className="cds-aichat--button-holder">
           <ul>
