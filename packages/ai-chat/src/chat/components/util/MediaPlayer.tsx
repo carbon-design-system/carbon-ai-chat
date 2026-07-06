@@ -12,11 +12,11 @@ import { AudioPlayer } from "@carbon/ai-chat-components/es/react/audio-player.js
 import { Transcript } from "@carbon/ai-chat-components/es/react/transcript.js";
 import React from "react";
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
-import { VideoComponentConfig } from "../video/VideoComponent";
-import { MessageResponseTypes } from "../../../../types/messaging/Messages";
+import { useLanguagePack } from "../../hooks/useLanguagePack";
+import { VideoComponentConfig } from "../../components-legacy/responseTypes/video/VideoComponent";
+import { MessageResponseTypes } from "../../../types/messaging/Messages";
 import Card from "@carbon/ai-chat-components/es/react/card.js";
-import { TextHolderTile } from "./TextHolderTile";
+import { TextHolderTile } from "../../components-legacy/responseTypes/util/TextHolderTile";
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between

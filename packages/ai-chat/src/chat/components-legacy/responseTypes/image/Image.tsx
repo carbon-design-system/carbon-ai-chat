@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,7 +17,7 @@ import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnouncement";
 import { getURLHostName } from "../../../utils/browserUtils";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
-import InlineError from "../error/InlineError";
+import InlineError from "../../../components/util/InlineError";
 import { TextHolderTile } from "../util/TextHolderTile";
 
 interface ImageProps extends HasNeedsAnnouncement, HasClassName {
