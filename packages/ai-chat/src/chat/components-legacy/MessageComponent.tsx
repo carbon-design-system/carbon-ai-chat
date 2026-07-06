@@ -232,6 +232,11 @@ interface MessageProps
   hideFeedback: boolean;
 
   /**
+   * Toggle the chat avatar
+   */
+  hideAvatar: boolean;
+
+  /**
    * Indicates if this message should permit the user to provide new feedback. The property has no effect if
    * {@link hideFeedback} is false.
    */
@@ -480,6 +485,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       assistantAvatarUrl,
       useAITheme,
       carbonTheme,
+      hideAvatar,
     } = this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
@@ -605,7 +611,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         key={`${message.id}-avatar-line`}
       >
         {avatar && (
-          <div className={`cds-aichat--message__avatar ${iconClassName}`}>
+          <div
+            className={`cds-aichat--message__avatar ${iconClassName} ${hideAvatar && "cds-aichat--message__avatar--hidden"}`}
+          >
             {avatar}
           </div>
         )}

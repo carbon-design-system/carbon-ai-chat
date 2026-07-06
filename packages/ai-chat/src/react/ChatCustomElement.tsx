@@ -175,6 +175,7 @@ function ChatCustomElement(
     messaging,
     isReadonly,
     persistFeedback,
+    hideAvatar,
     assistantName,
     assistantAvatarUrl,
     locale,
@@ -256,6 +257,7 @@ function ChatCustomElement(
           messaging={messaging}
           isReadonly={isReadonly}
           persistFeedback={persistFeedback}
+          hideAvatar={hideAvatar}
           assistantName={assistantName}
           assistantAvatarUrl={assistantAvatarUrl}
           locale={locale}

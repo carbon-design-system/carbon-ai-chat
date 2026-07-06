@@ -1078,7 +1078,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       requestInputFocus,
       persistedToBrowserStorage,
       config: {
-        public: { assistantName, assistantAvatarUrl },
+        public: { assistantName, assistantAvatarUrl, hideAvatar },
         derived: { languagePack },
       },
       messageState,
@@ -1140,6 +1140,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         disableUserInputs={inputState.isReadonly}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
+        hideAvatar={hideAvatar}
         requestMoveFocus={this.requestMoveFocus}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
