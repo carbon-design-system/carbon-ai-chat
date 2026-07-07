@@ -29,7 +29,7 @@
     "@babel/preset-react": "^7.25.9",
     "@babel/preset-typescript": "^7.26.0",
     "babel-loader": "^9.2.1",
-    "concurrently": "^9.2.0",
+    "concurrently": "^10.0.3",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "dotenv-webpack": "^8.1.1",
