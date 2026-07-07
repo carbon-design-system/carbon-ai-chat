@@ -532,7 +532,12 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const hasError = hasErrorProp || overMaxLength;
 
   return (
-    <InputShell rounded={rounded} expanded={expanded} hasError={hasError}>
+    <InputShell
+      rounded={rounded}
+      expanded={expanded}
+      hasError={hasError}
+      disabled={disableInput}
+    >
       <PromptLine
         slot="editor"
         ref={promptLineRef}

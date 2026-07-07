@@ -44,7 +44,6 @@
   flex-wrap: wrap;
   align-items: center;
   background-color: theme.$chat-prompt-background;
-  border-block-start: button.$button-outline-width solid theme.$border-subtle-01;
   border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
   border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
   color: theme.$text-primary;
@@ -53,6 +52,14 @@
   outline: button.$button-border-width solid transparent;
   outline-offset: -2px;
   padding-inline: layout.$spacing-05 layout.$spacing-03;
+}
+
+:host(:not([disabled])) .#{$prefix}--input-container {
+  border-block-end: 1px solid theme.$border-strong;
+}
+
+.#{$prefix}--input-container:focus-within {
+  box-shadow: 0 4px 8px 0 theme.$ai-drop-shadow;
 }
 
 // Focus outline for non-expanded state — uses :focus-within so no JS class toggle needed.
@@ -66,7 +73,6 @@
 
 // Rounded container when at max width
 :host([rounded]) .#{$prefix}--input-container {
-  border: button.$button-outline-width solid theme.$border-subtle-00;
   border-radius: layout.$spacing-03;
 }
 
@@ -243,9 +249,14 @@
   outline-offset: -2px;
 }
 
-// Focus outline for expanded state — only on text area
+// Focus outline for expanded state — only on text area, and only when focus
+// arrived via keyboard navigation. `input-shell` listens for
+// `cds-aichat-prompt-focus` and reads `event.detail.keyboard`; the rich runtime
+// sets that flag when no pointer/touch event preceded the focus. The shell
+// toggles `--keyboard-focus` on the shadow-DOM text-area node, which this rule
+// targets directly.
 .#{$prefix}--input-container--expanded
-  .#{$prefix}--input-text-area:focus-within {
+  .#{$prefix}--input-text-area--keyboard-focus {
   outline-color: theme.$focus;
 }
 
