@@ -634,10 +634,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         className="cds-aichat--message__avatar-line"
         key={`${message.id}-avatar-line`}
       >
-        {avatar && (
-          <div
-            className={`cds-aichat--message__avatar ${iconClassName} ${hideAvatar && "cds-aichat--message__avatar--hidden"}`}
-          >
+        {avatar && !hideAvatar && (
+          <div className={`cds-aichat--message__avatar ${iconClassName}`}>
             {avatar}
           </div>
         )}
@@ -1208,6 +1206,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       isLastMessageItem,
       hideFeedback,
       allowNewFeedback,
+      hideAvatar,
     } = this.props;
 
     // Guard against undefined message during RESTART_CONVERSATION transitions
@@ -1292,6 +1291,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             "cds-aichat--message--has-focus": this.state.focusHandleHasFocus,
             "cds-aichat--message--option-response-without-title-or-description":
               isOptionResponseWithoutTitleOrDescription,
+            "cds-aichat--message--hide-avatar": hideAvatar,
           },
         )}
         ref={this.ref}
