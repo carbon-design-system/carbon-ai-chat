@@ -15,6 +15,7 @@ $block-class: #{$prefix}-error-message;
 .#{$block-class} {
   position: relative;
   display: flex;
+  box-sizing: border-box;
   align-items: flex-start;
   gap: layout.$spacing-03;
   inline-size: 100%;
@@ -29,6 +30,20 @@ $block-class: #{$prefix}-error-message;
     inline-size: calc(100% + #{layout.$spacing-05} + #{layout.$spacing-03});
     inset-block-end: 0;
     inset-inline-start: calc(-1 * #{layout.$spacing-05});
+  }
+}
+
+// In expanded mode or when the prompt line has message actions, the
+// container's inline start padding is $spacing-03 (not $spacing-05), so
+// the error message padding and separator line must be adjusted to match.
+:host([actions-layout]) {
+  .#{$block-class} {
+    padding-inline-start: layout.$spacing-03;
+
+    &::after {
+      inline-size: calc(100% + #{layout.$spacing-03} + #{layout.$spacing-03});
+      inset-inline-start: calc(-1 * #{layout.$spacing-03});
+    }
   }
 }
 
