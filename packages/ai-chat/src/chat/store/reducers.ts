@@ -220,13 +220,21 @@ const reducers: { [key: string]: ReducerType } = {
     }
 
     const { config, ...rest } = partialState;
-    const nextState = merge({}, state, rest);
+    // `merge({}, state, rest)` deep-clones the whole tree, which hands every
+    // slice a fresh reference. When the caller only updates `config` (e.g.
+    // applyConfigChangesDynamically dispatches `{ config }` on any config
+    // change), that would churn unrelated slices like `assistantInputState`
+    // and force avoidable re-renders. Only pay for the deep clone/merge when
+    // there are non-config slices to merge; otherwise shallow-copy so unchanged
+    // slices keep their references.
+    const nextState =
+      Object.keys(rest).length > 0 ? merge({}, state, rest) : { ...state };
 
     // Handle config separately because callers sometimes pass a completely rebuilt AppConfig (for example after
     // recomputing derived fields based on a new PublicConfig). A blind deep merge would blend the new tree with the
-    // previous one, leaving behind stale nested values like the old language pack. By detecting a full config payload
-    // and replacing it wholesale we ensure each update starts from a clean AppConfig while still allowing partial
-    // updates (e.g. `config: { derived: { languagePack: ... } }`) to merge as before.
+    // previous one, leaving behind stale nested values. By detecting a full config payload and replacing it wholesale
+    // we ensure each update starts from a clean AppConfig while still allowing partial config updates (e.g.
+    // `config: { derived: { header: ... } }`) to merge as before.
     if (config !== undefined) {
       if (config && Object.prototype.hasOwnProperty.call(config, "public")) {
         nextState.config = config as AppState["config"];

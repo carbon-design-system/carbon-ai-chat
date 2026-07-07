@@ -22,6 +22,7 @@ import { BodyMessageComponents } from "./components-legacy/responseTypes/util/Bo
 import { FooterButtonComponents } from "./components-legacy/responseTypes/util/FooterButtonComponents";
 import { MessageTypeComponent } from "./components-legacy/MessageTypeComponent";
 import { Header } from "./components/header/Header";
+import { useSelector } from "./hooks/useSelector";
 import actions from "./store/actions";
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "./store/reducerUtils";
 import type {
@@ -33,12 +34,12 @@ import type { AppState } from "../types/state/AppState";
 import type { HasRequestFocus } from "../types/utilities/HasRequestFocus";
 import type { MessageTypeComponentProps } from "../types/messaging/MessageTypeComponentProps";
 import { HasServiceManager } from "./hocs/withServiceManager";
-import HasLanguagePack from "../types/utilities/HasLanguagePack";
+import { shallowEqual } from "./store/appStore";
 import { BusEventType } from "../types/events/eventBusTypes";
 import WriteableElement from "./components/util/WriteableElement";
 import { PageObjectId } from "../testing/PageObjectId";
 
-interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
+interface AppShellPanelsProps extends HasServiceManager {
   isHydratingComplete: boolean;
   shouldShowHydrationPanel: boolean;
   onPanelOpenStart: (isPanel: boolean) => void;
@@ -52,7 +53,6 @@ interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   customPanelState: AppState["customPanelState"];
   customPanelRef: React.RefObject<HasRequestFocus | null>;
   historyPanelState: AppState["historyPanelState"];
-  publicConfig: AppState["config"]["public"];
   showDisclaimer: boolean;
   disclaimerRef: React.RefObject<CDSButton | null>;
   onAcceptDisclaimer: () => void;
@@ -64,10 +64,8 @@ interface AppShellPanelsProps extends HasServiceManager, HasLanguagePack {
   viewSourcePanelState: AppState["viewSourcePanelState"];
   viewSourcePanelRef: React.RefObject<HasRequestFocus | null>;
   allMessagesByID: AppState["allMessagesByID"];
-  inputState: AppState["assistantInputState"];
-  config: AppState["config"];
+  isInputReadonly: boolean;
   catastrophicErrorPanelState: AppState["catastrophicErrorPanelState"];
-  assistantName: string;
 }
 
 function isCustomPanelConfigOptions(
@@ -88,7 +86,6 @@ function isCustomPanelConfigOptions(
  */
 export const AppShellPanels = React.memo(function AppShellPanels({
   serviceManager,
-  languagePack,
   isHydratingComplete,
   shouldShowHydrationPanel,
   onPanelOpenStart,
@@ -102,7 +99,6 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   customPanelState,
   customPanelRef,
   historyPanelState,
-  publicConfig,
   showDisclaimer,
   disclaimerRef,
   onAcceptDisclaimer,
@@ -114,15 +110,46 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   viewSourcePanelState,
   viewSourcePanelRef,
   allMessagesByID,
-  inputState,
-  config,
+  isInputReadonly,
   catastrophicErrorPanelState,
-  assistantName,
 }: AppShellPanelsProps) {
+  // Only the panel aria labels this host renders — a narrow bag (shallowEqual)
+  // so editing an unrelated string doesn't re-render every panel. Bag keys match
+  // the `languagePack.<key>` read sites below verbatim.
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      aria_catastrophicErrorPanel:
+        state.languagePack.aria_catastrophicErrorPanel,
+      aria_customPanel: state.languagePack.aria_customPanel,
+      aria_disclaimerPanel: state.languagePack.aria_disclaimerPanel,
+      aria_hydrationPanel: state.languagePack.aria_hydrationPanel,
+      aria_iframePanel: state.languagePack.aria_iframePanel,
+      aria_responsePanel: state.languagePack.aria_responsePanel,
+      aria_viewSourcePanel: state.languagePack.aria_viewSourcePanel,
+      general_returnToAssistant: state.languagePack.general_returnToAssistant,
+    }),
+    shallowEqual,
+  );
+
+  // Narrow config selections: each stays referentially stable across unrelated
+  // config changes (reconcileAppConfigReferences preserves the `disclaimer`
+  // sub-object reference; the rest are primitives), so this memoized panel host
+  // re-renders only when one of these specific values changes — not on every
+  // config field change the way selecting whole `config`/`publicConfig` did.
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.public.aiEnabled,
+  );
+  const disclaimer = useSelector(
+    (state: AppState) => state.config.public.disclaimer,
+  );
+  const historyIsOn = useSelector(
+    (state: AppState) => state.config.public.history?.isOn,
+  );
+
   // Call DisclaimerPanel hook at component level (not inside render)
-  const disclaimerContent = publicConfig.disclaimer?.isOn
+  const disclaimerContent = disclaimer?.isOn
     ? DisclaimerPanel({
-        disclaimerHTML: publicConfig.disclaimer?.disclaimerHTML,
+        disclaimerHTML: disclaimer?.disclaimerHTML,
         disclaimerAcceptButtonRef: disclaimerRef,
         onAcceptDisclaimer: onAcceptDisclaimer,
       })
@@ -157,15 +184,13 @@ export const AppShellPanels = React.memo(function AppShellPanels({
       <ChatPanel
         panelAriaLabel={languagePack.aria_catastrophicErrorPanel}
         open={Boolean(catastrophicErrorPanelState?.isOpen)}
-        aiEnabled={config.public.aiEnabled ? true : false}
+        aiEnabled={aiEnabled ? true : false}
         priority={100}
         fullWidth={false}
         showChatHeader={true}
       >
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <CatastrophicErrorPanel
-            assistantName={assistantName}
-            languagePack={languagePack}
             title={catastrophicErrorPanelState?.title}
             bodyText={catastrophicErrorPanelState?.bodyText}
             hideRetryButton={catastrophicErrorPanelState?.hideRetryButton}
@@ -177,7 +202,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         panelAriaLabel={languagePack.aria_hydrationPanel}
         open={shouldShowHydrationPanel}
         priority={90}
-        aiEnabled={config.public.aiEnabled ? true : false}
+        aiEnabled={aiEnabled ? true : false}
         fullWidth={false}
         showChatHeader={true}
         animationOnOpen="fade-in"
@@ -190,10 +215,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         }}
       >
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
-          <HydrationPanel
-            isHydrated={isHydratingComplete}
-            languagePack={languagePack}
-          />
+          <HydrationPanel isHydrated={isHydratingComplete} />
         </div>
       </ChatPanel>
 
@@ -364,7 +386,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
           panelAriaLabel={languagePack.aria_disclaimerPanel}
           open={showDisclaimer}
           priority={80}
-          aiEnabled={config.public.aiEnabled ? true : false}
+          aiEnabled={aiEnabled ? true : false}
           fullWidth={true}
           showChatHeader={true}
           animationOnOpen="fade-in"
@@ -408,7 +430,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         aiEnabled={
           (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
             .ai_enabled === undefined
-            ? config.public.aiEnabled
+            ? aiEnabled
             : (responsePanelState.localMessageItem?.item as ButtonItem)?.panel
                 .ai_enabled
         }
@@ -465,10 +487,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                       responsePanelState.localMessageItem?.fullMessageID
                     ] as MessageResponse
                   }
-                  languagePack={languagePack}
                   requestInputFocus={requestFocus}
-                  disableUserInputs={inputState.isReadonly}
-                  config={config}
+                  disableUserInputs={isInputReadonly}
                   isMessageForInput={responsePanelState.isMessageForInput}
                   scrollElementIntoView={() => {
                     /* no-op; shell handles layout */
@@ -490,10 +510,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                       responsePanelState.localMessageItem?.fullMessageID
                     ] as MessageResponse
                   }
-                  languagePack={languagePack}
                   requestInputFocus={requestFocus}
-                  disableUserInputs={inputState.isReadonly}
-                  config={config}
+                  disableUserInputs={isInputReadonly}
                   isMessageForInput={responsePanelState.isMessageForInput}
                   scrollElementIntoView={() => {
                     /* no-op; shell handles layout */
@@ -522,7 +540,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         showFrame={true}
         fullWidth={false}
         showChatHeader={true}
-        aiEnabled={config.public.aiEnabled ? true : false}
+        aiEnabled={aiEnabled ? true : false}
         animationOnOpen="slide-in-from-bottom"
         animationOnClose="slide-out-to-bottom"
         onOpenStart={() => onPanelOpenStart(true)}
@@ -558,7 +576,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         showFrame={true}
         fullWidth={false}
         showChatHeader={true}
-        aiEnabled={config.public.aiEnabled ? true : false}
+        aiEnabled={aiEnabled ? true : false}
         animationOnOpen="slide-in-from-bottom"
         animationOnClose="slide-out-to-bottom"
         onOpenStart={() => onPanelOpenStart(true)}
@@ -588,14 +606,14 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         />
       </ChatPanel>
 
-      {publicConfig.history?.isOn && historyPanelState.isMobile && (
+      {historyIsOn && historyPanelState.isMobile && (
         <ChatPanel
           open={historyPanelState.isOpen}
           priority={3}
           fullWidth={true}
           bodyNoPadding={true}
           noScroll={true}
-          aiEnabled={config.public.aiEnabled ? true : false}
+          aiEnabled={aiEnabled ? true : false}
           animationOnOpen="slide-in-from-start"
           animationOnClose="slide-out-to-start"
           onOpenStart={() => onPanelOpenStart(true)}

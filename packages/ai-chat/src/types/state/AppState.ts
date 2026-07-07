@@ -20,6 +20,7 @@ import type { StructuredData } from "../messaging/Messages";
 
 import type { FileUploadCapabilities } from "../instance/ChatInstance";
 import type { CornersType } from "../../chat/utils/constants";
+import type { MarkdownConfig } from "../config/MarkdownConfig";
 import type { AppConfig } from "./AppConfig";
 import type { CarbonTheme } from "../config/PublicConfig";
 import type { LocalMessageItem } from "../messaging/LocalMessageItem";
@@ -75,6 +76,20 @@ interface AppState extends AppStateMessages {
    * as the remote config provided by the tooling.
    */
   config: AppConfig;
+
+  /**
+   * The active language pack: the `enLanguagePack` defaults merged with any host-provided `strings` overrides. Kept in
+   * its own top-level slice (rather than under `config.derived`) so that changing a string updates only language-pack
+   * consumers and never churns the rest of the config tree. Updated via `setAppStateValue("languagePack", ...)`.
+   */
+  languagePack: LanguagePack;
+
+  /**
+   * Host-provided markdown config (custom renderers + markdown-it plugins). Kept in its own top-level slice and read
+   * with `useSelector` by the deep `MarkdownWithDefaults` consumer, instead of a global context provider. Set from the
+   * `markdown` prop in `ChatAppEntry` via `setAppStateValue("markdownConfig", ...)`; `undefined` when the host omits it.
+   */
+  markdownConfig?: MarkdownConfig;
 
   /**
    * An ARIA message to be announced to the user. This will be announced whenever the message text changes.
@@ -265,21 +280,22 @@ interface InputState extends FileUploadCapabilities {
   displayValue: string;
 
   /**
-   * Indicates if the input field is configured to be visible. This is only interpreted as the custom setting defined
-   * by the host page if it turns off the field. The value of this may be overridden if the user is connected to an
-   * agent where the field will automatically become visible and then hidden again when the agent chat has ended.
+   * Runtime override for input-field visibility. `null` means "no override":
+   * the effective value comes from `PublicConfig.input.isVisible` for the
+   * assistant input (read via `selectInputFieldVisible`), or defaults to
+   * visible for the human-agent input. A non-null value (set by the deprecated
+   * `instance.updateInputFieldVisibility`, or by the human-agent flow on its own
+   * input slice) wins over config.
    */
-  fieldVisible: boolean;
+  fieldVisible: boolean | null;
 
   /**
-   * Indicates if the input field should be disabled.
+   * Runtime override for the whole-chat read-only state. `null` means "no
+   * override": the effective value comes from `PublicConfig.isReadonly` for the
+   * assistant input (read via `selectInputIsReadonly`). The human-agent flow
+   * sets this on its own input slice to lock input while disconnected.
    */
-  isDisabled: boolean;
-
-  /**
-   * Indicates if the input field should be made readonly.
-   */
-  isReadonly: boolean;
+  isReadonly: boolean | null;
 
   /**
    * The current set of file attachments selected to be uploaded.

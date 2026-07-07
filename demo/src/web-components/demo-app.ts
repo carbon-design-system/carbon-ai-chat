@@ -165,6 +165,14 @@ export class DemoApp extends LitElement {
   private _interval?: ReturnType<typeof setInterval>;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
+    // Mirrors DemoApp.tsx: continuously updates parent state to exercise live
+    // host-state propagation. Skipped via `?disableParentStateTimer` so the
+    // chat's render performance can be profiled without this constant noise.
+    if (
+      new URLSearchParams(window.location.search).has("disableParentStateTimer")
+    ) {
+      return;
+    }
     this._interval = setInterval(() => {
       this.valueFromParent = Date.now().toString();
     }, 1500);

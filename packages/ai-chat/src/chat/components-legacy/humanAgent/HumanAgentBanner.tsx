@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -21,7 +21,6 @@ import React, {
 import { useSelector } from "../../hooks/useSelector";
 import { shallowEqual } from "../../store/appStore";
 
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { selectHumanAgentDisplayState } from "../../store/selectors";
 import { AppState } from "../../../types/state/AppState";
@@ -50,7 +49,19 @@ function HumanAgentBanner(
   ref: RefObject<HasRequestFocus | null>,
 ) {
   const { onButtonClick } = props;
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      agent_connecting: state.languagePack.agent_connecting,
+      agent_connectWaiting: state.languagePack.agent_connectWaiting,
+      agent_connectButtonCancel: state.languagePack.agent_connectButtonCancel,
+      agent_noName: state.languagePack.agent_noName,
+      agent_connectedButtonEndChat:
+        state.languagePack.agent_connectedButtonEndChat,
+      agent_sharingStopSharingButton:
+        state.languagePack.agent_sharingStopSharingButton,
+    }),
+    shallowEqual,
+  );
   const serviceManager = useServiceManager();
   const persistedHumanAgentState = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
@@ -89,7 +100,6 @@ function HumanAgentBanner(
     avatar = (
       <ResponseUserAvatar
         responseUserProfile={responseUserProfile}
-        languagePack={languagePack}
         width="24px"
         height="24px"
       />

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -25,14 +25,10 @@ const storage: Storage = IS_SESSION_STORAGE()
   : mockStorage;
 
 class UserSessionStorageService {
-  private prefix: string;
   private serviceManager: ServiceManager;
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
-    this.prefix = `CARBON_CHAT_SESSION${
-      this.serviceManager?.namespace?.suffix || ""
-    }`;
   }
 
   /**
@@ -82,10 +78,13 @@ class UserSessionStorageService {
   }
 
   /**
-   * Returns the sessionStorage key for the session id for the given user.
+   * Returns the sessionStorage key for the session id for the given user. The
+   * key is derived from the current namespace on each access (rather than cached
+   * at construction) so that a runtime namespace change moves the session to the
+   * correct bucket.
    */
   getSessionKey() {
-    return this.prefix;
+    return `CARBON_CHAT_SESSION${this.serviceManager?.namespace?.suffix || ""}`;
   }
 }
 

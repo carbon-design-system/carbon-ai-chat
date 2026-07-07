@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,7 +13,7 @@ import React, { useCallback } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
-import { selectInputState } from "../../../store/selectors";
+import { selectInputIsReadonly } from "../../../store/selectors";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
   ButtonItem,
@@ -37,9 +37,9 @@ function ButtonItemCustomEventComponent({
   const messageItem = localMessageItem.item;
   const { ui_state } = localMessageItem;
   const { image_url, alt_text, label, kind, value, size, is } = messageItem;
-  const inputState = useSelector(selectInputState);
+  const isInputReadonly = useSelector(selectInputIsReadonly);
   const isDisabled =
-    Boolean(value && ui_state.optionSelected) || inputState.isReadonly;
+    Boolean(value && ui_state.optionSelected) || isInputReadonly;
   const TouchInteraction = carbonIconToReact(TouchInteraction16);
 
   const onClickHandler = useCallback(async () => {

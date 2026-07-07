@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -10,9 +10,9 @@
 import React from "react";
 import { useSelector } from "../../hooks/useSelector";
 
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../types/state/AppState";
+import { shallowEqual } from "../../store/appStore";
 import { ConfirmModal, ConfirmModalButtonProps } from "./ConfirmModal";
 
 interface EndHumanAgentChatModalProps extends ConfirmModalButtonProps {
@@ -33,10 +33,30 @@ interface EndHumanAgentChatModalProps extends ConfirmModalButtonProps {
  */
 function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
   const { onConfirm, onCancel, title, message } = props;
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      agent_endChat: state.languagePack.agent_endChat,
+      agent_confirmCancelRequestTitle:
+        state.languagePack.agent_confirmCancelRequestTitle,
+      agent_confirmEndChat: state.languagePack.agent_confirmEndChat,
+      agent_confirmCancelRequestMessage:
+        state.languagePack.agent_confirmCancelRequestMessage,
+      agent_confirmEndChatNo: state.languagePack.agent_confirmEndChatNo,
+      agent_confirmEndSuspendedYes:
+        state.languagePack.agent_confirmEndSuspendedYes,
+      agent_confirmEndChatYes: state.languagePack.agent_confirmEndChatYes,
+      agent_confirmCancelRequestYes:
+        state.languagePack.agent_confirmCancelRequestYes,
+    }),
+    shallowEqual,
+  );
   const serviceManager = useServiceManager();
   const { isConnected, isSuspended } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
+    (state: AppState) => ({
+      isConnected: state.persistedToBrowserStorage.humanAgentState.isConnected,
+      isSuspended: state.persistedToBrowserStorage.humanAgentState.isSuspended,
+    }),
+    shallowEqual,
   );
 
   const useTitle =

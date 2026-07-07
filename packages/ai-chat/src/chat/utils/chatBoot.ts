@@ -120,8 +120,7 @@ export async function initServiceManagerAndInstance(options: {
   );
 
   // Load language and locale
-  const languagePack =
-    serviceManager.store.getState().config.derived.languagePack;
+  const languagePack = serviceManager.store.getState().languagePack;
   const localePack = await loadLocale(
     serviceManager.store.getState().config.public.locale || "en",
   );

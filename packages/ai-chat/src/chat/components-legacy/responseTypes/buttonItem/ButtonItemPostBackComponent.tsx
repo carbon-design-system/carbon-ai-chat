@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,7 +13,7 @@ import React, { useCallback } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
 import { useServiceManager } from "../../../hooks/useServiceManager";
-import { selectInputState } from "../../../store/selectors";
+import { selectInputIsReadonly } from "../../../store/selectors";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { WA_CONSOLE_PREFIX } from "../../../utils/constants";
@@ -47,11 +47,9 @@ function ButtonItemPostBackComponent({
   const messageItem = localMessageItem.item;
   const { ui_state, fullMessageID } = localMessageItem;
   const { image_url, alt_text, label, kind, size, is } = messageItem;
-  const inputState = useSelector(selectInputState);
+  const isInputReadonly = useSelector(selectInputIsReadonly);
   const isDisabled =
-    !isMessageForInput ||
-    Boolean(ui_state.optionSelected) ||
-    inputState.isReadonly;
+    !isMessageForInput || Boolean(ui_state.optionSelected) || isInputReadonly;
 
   const onClickHandler = useCallback(() => {
     const isInputAvailable = Boolean(messageItem.value?.input?.text || label);

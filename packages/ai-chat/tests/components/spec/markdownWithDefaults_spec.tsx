@@ -7,33 +7,15 @@
  *  @license
  */
 
-import React from "react";
+import React, { ReactElement } from "react";
 import { render } from "@testing-library/react";
 
-// Mock all hooks the component reads so the test doesn't need the full
-// provider stack (store / intl / language pack).
+// Mock the hooks that need provider context (intl) or are orthogonal to this
+// spec (sanitize). Language pack, locale, and the markdown config come from a
+// REAL store via `useSelector` so this spec exercises the `markdownConfig` slice
+// that replaced the old MarkdownConfigContext.
 jest.mock("../../../src/chat/hooks/useIntl", () => ({
   useIntl: () => ({ formatMessage: () => "" }),
-}));
-jest.mock("../../../src/chat/hooks/useSelector", () => ({
-  useSelector: () => "en",
-}));
-jest.mock("../../../src/chat/hooks/useLanguagePack", () => ({
-  useLanguagePack: () => ({
-    codeSnippet_showLessText: "",
-    codeSnippet_showMoreText: "",
-    codeSnippet_tooltipContent: "",
-    codeSnippet_ariaLabelReadOnly: "",
-    codeSnippet_ariaLabelEditable: "",
-    codeSnippet_lineCount: "",
-    table_filterPlaceholder: "",
-    table_previousPage: "",
-    table_nextPage: "",
-    table_itemsPerPage: "",
-    table_downloadButton: "",
-    table_paginationSupplementalText: "",
-    table_paginationStatusText: "",
-  }),
 }));
 jest.mock("../../../src/chat/hooks/useShouldSanitizeHTML", () => ({
   useShouldSanitizeHTML: () => false,
@@ -41,8 +23,8 @@ jest.mock("../../../src/chat/hooks/useShouldSanitizeHTML", () => ({
 
 // Capture props the bridge component receives so we can assert on the
 // pass-through. `customRenderers` reaches the components-package's React
-// `Markdown` (covered by web-component tests), this spec just verifies the
-// chat-app wiring forwards the context value through.
+// `Markdown` (covered by web-component tests); this spec just verifies the
+// chat-app wiring forwards the markdown config through.
 const capturedProps: Array<Record<string, unknown>> = [];
 jest.mock("@carbon/ai-chat-components/es/react/markdown.js", () => ({
   __esModule: true,
@@ -52,8 +34,19 @@ jest.mock("@carbon/ai-chat-components/es/react/markdown.js", () => ({
   },
 }));
 
-import { MarkdownConfigContext } from "../../../src/chat/contexts/MarkdownConfigContext";
+import { StoreProvider } from "../../../src/chat/providers/StoreProvider";
+import actions from "../../../src/chat/store/actions";
+import { MarkdownConfig } from "../../../src/types/config/MarkdownConfig";
 import { MarkdownWithDefaults } from "../../../src/chat/components/util/MarkdownWithDefaults";
+import { makeConfigStore } from "../../test_helpers";
+
+function renderWithStore(ui: ReactElement, markdownConfig?: MarkdownConfig) {
+  const store = makeConfigStore({});
+  if (markdownConfig !== undefined) {
+    store.dispatch(actions.setAppStateValue("markdownConfig", markdownConfig));
+  }
+  return render(<StoreProvider store={store}>{ui}</StoreProvider>);
+}
 
 beforeEach(() => {
   capturedProps.length = 0;
@@ -61,36 +54,32 @@ beforeEach(() => {
 
 describe("MarkdownWithDefaults", () => {
   it("forwards markdown source to the underlying Markdown component", () => {
-    render(<MarkdownWithDefaults text="# Hello" />);
+    renderWithStore(<MarkdownWithDefaults text="# Hello" />);
     expect(capturedProps).toHaveLength(1);
     expect(capturedProps[0].markdown).toBe("# Hello");
   });
 
-  it("forwards customRenderers from MarkdownConfigContext", () => {
+  it("forwards customRenderers from the markdownConfig slice", () => {
     const renderers = {
       table: () => <span>react override</span>,
       codeBlock: (): null => null,
     };
-    render(
-      <MarkdownConfigContext.Provider value={{ customRenderers: renderers }}>
-        <MarkdownWithDefaults text="# Hello" />
-      </MarkdownConfigContext.Provider>,
-    );
+    renderWithStore(<MarkdownWithDefaults text="# Hello" />, {
+      customRenderers: renderers,
+    });
     expect(capturedProps[0].customRenderers).toBe(renderers);
   });
 
-  it("forwards markdownItPlugins from MarkdownConfigContext", () => {
+  it("forwards markdownItPlugins from the markdownConfig slice", () => {
     const plugins = [() => {}];
-    render(
-      <MarkdownConfigContext.Provider value={{ markdownItPlugins: plugins }}>
-        <MarkdownWithDefaults text="# Hello" />
-      </MarkdownConfigContext.Provider>,
-    );
+    renderWithStore(<MarkdownWithDefaults text="# Hello" />, {
+      markdownItPlugins: plugins,
+    });
     expect(capturedProps[0].markdownItPlugins).toBe(plugins);
   });
 
-  it("passes undefined customRenderers when no context provider is set", () => {
-    render(<MarkdownWithDefaults text="# Hello" />);
+  it("passes undefined customRenderers when no markdownConfig is set", () => {
+    renderWithStore(<MarkdownWithDefaults text="# Hello" />);
     expect(capturedProps[0].customRenderers).toBeUndefined();
   });
 });
