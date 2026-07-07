@@ -21,7 +21,6 @@ import {
 } from "../../../../types/messaging/Messages";
 import { DROPDOWN_SIZE } from "@carbon/web-components/es/components/dropdown/defs.js";
 import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
-import Metablock from "../util/Metablock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -113,12 +112,6 @@ function SelectComponent(props: SelectProps) {
 
   return (
     <div ref={rootRef}>
-      <Metablock
-        title={title}
-        description={description}
-        id={`cds-aichat--select-uuid-${id}-label`}
-        removeHTML={removeHTML}
-      />
       <TextBlock
         title={title}
         description={description}

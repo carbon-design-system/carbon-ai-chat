@@ -20,7 +20,6 @@ import {
   createMessageRequestForChoice,
   getOptionType,
 } from "../../../utils/messageUtils";
-import Metablock from "../util/Metablock";
 import SelectComponent from "./SelectComponent";
 import {
   Message,
@@ -122,11 +121,6 @@ class OptionComponent extends Component<OptionProps> {
 
     return type === "button" ? (
       <>
-        <Metablock
-          title={title}
-          description={description}
-          removeHTML={removeHTML}
-        />
         <TextBlock
           title={title}
           description={description}

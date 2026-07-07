@@ -12,9 +12,12 @@
 // Base container
 .cds-aichat--text-block {
   display: flex;
-  // padding: layout.$spacing-05;
   color: theme.$text-primary;
   min-block-size: initial;
+
+  &--tile {
+    padding: layout.$spacing-05;
+  }
 }
 
 // Wrapper for text content
