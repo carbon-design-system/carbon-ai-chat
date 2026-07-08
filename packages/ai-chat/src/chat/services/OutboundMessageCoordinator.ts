@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -67,8 +67,7 @@ class OutboundMessageCoordinator {
    */
   private addErrorMessage() {
     const { store } = this.serviceManager;
-    const errorMessage =
-      store.getState().config.derived.languagePack.errors_singleMessage;
+    const errorMessage = store.getState().languagePack.errors_singleMessage;
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(errorMessage);
     store.dispatch(
@@ -150,8 +149,7 @@ class OutboundMessageCoordinator {
    * Creates a system message to indicate cancellation.
    */
   createCancellationSystemMessage() {
-    const { languagePack } =
-      this.serviceManager.store.getState().config.derived;
+    const { languagePack } = this.serviceManager.store.getState();
 
     const systemMessageItem: SystemMessageItem = {
       response_type: MessageResponseTypes.SYSTEM,

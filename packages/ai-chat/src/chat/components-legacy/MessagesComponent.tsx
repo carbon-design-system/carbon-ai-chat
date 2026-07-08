@@ -26,7 +26,7 @@ import {
 } from "../hocs/withServiceManager";
 import {
   selectHumanAgentDisplayState,
-  selectInputState,
+  selectInputIsReadonly,
 } from "../store/selectors";
 import { AppState, ChatMessagesState } from "../../types/state/AppState";
 import { shallowEqual } from "../store/appStore";
@@ -67,6 +67,7 @@ import MessageComponent, {
 import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
+import { ChatShortcutConfig } from "../../types/config/ShortcutConfig";
 import { carbonIconToReact } from "../utils/carbonIcon";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
@@ -144,26 +145,41 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
   locale: string;
 
   /**
-   * Indicates if the AI theme should be used.
-   */
-  useAITheme: boolean;
-
-  /**
    * Indicates which CarbonTheme is in use.
    */
   carbonTheme: CarbonTheme;
 }
 
 /**
- * Only the AppState slices that MessagesComponent actually reads.
- * Keeping this narrow avoids re-renders caused by unrelated state changes.
+ * The only language-pack strings MessagesComponent reads as props. Narrowing to
+ * these (instead of the whole `languagePack` slice) keeps this PureComponent from
+ * re-rendering on any unrelated string change — every other scroll-handle variant
+ * is resolved through `intl.formatMessage` by id, not through these props.
+ */
+type MessagesLanguagePackStrings = Pick<
+  LanguagePack,
+  | "messages_scrollHandle"
+  | "messages_scrollHandleEnd"
+  | "messages_processingLabel"
+  | "messages_scrollMoreButton"
+>;
+
+/**
+ * Only the AppState slices and derived values that MessagesComponent actually
+ * reads. Narrowing the config to specific fields lets reconciliation keep their
+ * references stable across unrelated config changes, so this heavy component
+ * doesn't re-render on every config update.
  */
 interface MessagesInjectedState {
-  config: AppState["config"];
   allMessagesByID: AppState["allMessagesByID"];
   humanAgentState: AppState["humanAgentState"];
   persistedToBrowserStorage: AppState["persistedToBrowserStorage"];
-  assistantInputState: AppState["assistantInputState"];
+  /** Effective whole-chat read-only state (override or config). */
+  isInputReadonly: boolean;
+  disclaimerIsOn: boolean | undefined;
+  persistFeedback: boolean | undefined;
+  languagePack: MessagesLanguagePackStrings;
+  keyboardShortcutConfig: ChatShortcutConfig | undefined;
 }
 
 interface MessagesProps extends MessagesOwnProps, MessagesInjectedState {}
@@ -360,12 +376,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     snapshot: number | null,
   ): void {
     // Check if human agent banner just became visible
-    const oldDisplayState = selectHumanAgentDisplayState(
-      oldProps as unknown as AppState,
-    );
-    const newDisplayState = selectHumanAgentDisplayState(
-      this.props as unknown as AppState,
-    );
+    const oldDisplayState = selectHumanAgentDisplayState(oldProps);
+    const newDisplayState = selectHumanAgentDisplayState(this.props);
 
     // Request focus when banner transitions from hidden to visible
     if (
@@ -1074,29 +1086,23 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   ) {
     const {
       serviceManager,
-      config,
       requestInputFocus,
       persistedToBrowserStorage,
-      config: {
-        public: { assistantName, assistantAvatarUrl },
-        derived: { languagePack },
-      },
+      assistantName,
+      assistantAvatarUrl,
+      isInputReadonly,
+      disclaimerIsOn,
+      persistFeedback,
+      locale,
       messageState,
-      carbonTheme,
-      useAITheme,
     } = this.props;
 
-    const propsAsState = this.props as unknown as AppState;
-    const inputState = selectInputState(propsAsState);
-    const { isHumanAgentTyping } = selectHumanAgentDisplayState(propsAsState);
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { isMessageLoadingCounter } = messageState;
     const { disclaimersAccepted } = persistedToBrowserStorage;
 
     // If there is a disclaimer, messages should only be rendered once it's accepted.
-    if (
-      config.public.disclaimer?.isOn &&
-      !disclaimersAccepted[window.location.hostname]
-    ) {
+    if (disclaimerIsOn && !disclaimersAccepted[window.location.hostname]) {
       return null;
     }
 
@@ -1113,13 +1119,11 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     // Allow for feedback to persist if configured to otherwise user can only
     // provide feedback on the last message.
     const allowNewFeedback =
-      config.public.persistFeedback ||
-      localMessage.fullMessageID === lastMessageID;
+      persistFeedback || localMessage.fullMessageID === lastMessageID;
 
     const messageItemID = localMessage.ui_state.id;
     const message = (
       <MessageComponent
-        intl={this.props.intl}
         ref={(component: MessageClass) => {
           if (component) {
             this.messageRefs.set(messageItemID, component);
@@ -1128,25 +1132,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           }
         }}
         className={className}
-        config={config}
         localMessageItem={localMessage}
         message={fullMessage}
-        languagePack={languagePack}
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
         messagesIndex={messagesIndex}
         assistantName={assistantName}
         assistantAvatarUrl={assistantAvatarUrl}
-        disableUserInputs={inputState.isReadonly}
+        disableUserInputs={isInputReadonly}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
         requestMoveFocus={this.requestMoveFocus}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
         isLastMessageItem={isLastMessageItem}
-        locale={config.public.locale || "en"}
-        carbonTheme={carbonTheme}
-        useAITheme={useAITheme}
+        locale={locale || "en"}
         allowNewFeedback={allowNewFeedback}
         hideFeedback={false}
       />
@@ -1239,20 +1239,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * @param atTop Indicates if we're rendering the scroll handle at the top or bottom of the scroll panel.
    */
   private renderScrollHandle(atTop: boolean) {
-    const { languagePack } = this.props.config.derived;
-    const { intl, config } = this.props;
+    const { intl, languagePack, keyboardShortcutConfig } = this.props;
 
     let labelKey: keyof LanguagePack;
     let ariaLabel: string;
 
     if (IS_MOBILE) {
-      labelKey = atTop ? "messages_scrollHandle" : "messages_scrollHandleEnd";
-      ariaLabel = languagePack[labelKey] || languagePack.messages_scrollHandle;
+      ariaLabel =
+        (atTop
+          ? languagePack.messages_scrollHandle
+          : languagePack.messages_scrollHandleEnd) ||
+        languagePack.messages_scrollHandle;
     } else {
       // Get the keyboard shortcut configuration
       const shortcutConfig =
-        config.public.keyboardShortcuts?.messageFocusToggle ||
-        DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
+        keyboardShortcutConfig || DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
 
       // Check if shortcuts are enabled (default to true if not specified)
       const shortcutsEnabled = shortcutConfig.is_on !== false;
@@ -1347,14 +1348,10 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       messageState,
       intl,
       assistantName,
-      config: {
-        derived: { languagePack },
-      },
+      languagePack,
     } = this.props;
     const { isMessageLoadingCounter, isMessageLoadingText } = messageState;
-    const { isHumanAgentTyping } = selectHumanAgentDisplayState(
-      this.props as unknown as AppState,
-    );
+    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = getMessageIDForUserInput(
@@ -1436,13 +1433,34 @@ function debugAutoScroll(message: string, ...args: any[]) {
   }
 }
 
-// Module-level selector — only the slices MessagesComponent actually reads.
-const selectMessagesState = (state: AppState): MessagesInjectedState => ({
-  config: state.config,
+// Module-level selector — only the slices/derived values MessagesComponent
+// actually reads. With shallowEqual the whole config tree no longer pulls this
+// component into every config-change re-render; each narrow field's
+// reconciled reference / primitive value is compared instead.
+const selectMessagesState = (
+  state: AppState,
+): Omit<MessagesInjectedState, "languagePack"> => ({
   allMessagesByID: state.allMessagesByID,
   humanAgentState: state.humanAgentState,
   persistedToBrowserStorage: state.persistedToBrowserStorage,
-  assistantInputState: state.assistantInputState,
+  isInputReadonly: selectInputIsReadonly(state),
+  disclaimerIsOn: state.config.public.disclaimer?.isOn,
+  persistFeedback: state.config.public.persistFeedback,
+  keyboardShortcutConfig:
+    state.config.public.keyboardShortcuts?.messageFocusToggle,
+});
+
+// Selected separately (with its own shallowEqual) rather than folded into
+// `selectMessagesState`: a nested fresh object inside that bag would fail its
+// shallowEqual by reference on every commit. As its own narrow bag it changes
+// only when one of these four strings changes.
+const selectMessagesStrings = (
+  state: AppState,
+): MessagesLanguagePackStrings => ({
+  messages_scrollHandle: state.languagePack.messages_scrollHandle,
+  messages_scrollHandleEnd: state.languagePack.messages_scrollHandleEnd,
+  messages_processingLabel: state.languagePack.messages_processingLabel,
+  messages_scrollMoreButton: state.languagePack.messages_scrollMoreButton,
 });
 
 // Functional wrapper to supply the narrow state slice via hooks
@@ -1451,8 +1469,14 @@ const MessagesStateInjector = React.forwardRef<
   MessagesOwnProps
 >((props, ref) => {
   const state = useSelector(selectMessagesState, shallowEqual);
+  const languagePack = useSelector(selectMessagesStrings, shallowEqual);
   return (
-    <MessagesComponent ref={ref} {...(props as MessagesOwnProps)} {...state} />
+    <MessagesComponent
+      ref={ref}
+      {...(props as MessagesOwnProps)}
+      {...state}
+      languagePack={languagePack}
+    />
   );
 });
 
@@ -1461,4 +1485,5 @@ export default withServiceManager(MessagesStateInjector);
 export {
   MessagesComponent as MessagesComponentClass,
   ScrollElementIntoViewFunction,
+  selectMessagesState,
 };

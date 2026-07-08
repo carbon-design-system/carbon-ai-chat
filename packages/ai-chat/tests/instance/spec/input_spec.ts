@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,6 +13,10 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from "../../test_helpers";
+import {
+  selectInputFieldVisible,
+  selectInputIsReadonly,
+} from "../../../src/chat/store/selectors";
 
 describe("ChatInstance.input", () => {
   beforeEach(setupBeforeEach);
@@ -48,7 +52,8 @@ describe("PublicConfig.input", () => {
     };
 
     const { store } = await renderChatAndGetInstanceWithStore(config);
-    expect(store.getState().assistantInputState.fieldVisible).toBe(false);
+    // Effective value is derived from config (not mirrored into state).
+    expect(selectInputFieldVisible(store.getState())).toBe(false);
   });
 
   it("respects isReadonly", async () => {
@@ -56,6 +61,6 @@ describe("PublicConfig.input", () => {
     config.isReadonly = true;
 
     const { store } = await renderChatAndGetInstanceWithStore(config);
-    expect(store.getState().assistantInputState.isReadonly).toBe(true);
+    expect(selectInputIsReadonly(store.getState())).toBe(true);
   });
 });

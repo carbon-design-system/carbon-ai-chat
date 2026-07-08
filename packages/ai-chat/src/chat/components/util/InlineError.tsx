@@ -9,12 +9,19 @@
 
 import React from "react";
 
-import { useLanguagePack } from "../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
 import { ErrorIcon } from "./ErrorIcon";
 import { MarkdownWithDefaults } from "./MarkdownWithDefaults";
+import { AppState } from "../../../../types/state/AppState";
 
 export function InlineError({ text }: { text?: string }) {
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      errors_generalContent: state.languagePack.errors_generalContent,
+    }),
+    shallowEqual,
+  );
   return (
     <div className="cds-aichat--inline-error">
       <div className="cds-aichat--inline-error--icon-holder">

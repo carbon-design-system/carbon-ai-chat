@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type {
   MarkdownRendererChecklist,
   MarkdownRendererImageArgs,
@@ -16,19 +16,23 @@ import type {
   MarkdownRendererLinkResult,
 } from "@carbon/ai-chat-components/es/components/markdown/index.js";
 
-import type { MarkdownItPlugin } from "../../types/config/PublicConfig";
+import type { MarkdownItPlugin } from "./PublicConfig";
 
 /**
- * Permissive context value used by `MarkdownWithDefaults`. The element
+ * Resolved markdown config consumed by `MarkdownWithDefaults`. The element
  * replacements (`table`, `codeBlock`) accept callbacks returning either a
  * `ReactNode` (set by the React `ChatContainer` from
- * `ChatContainerPropsMarkdown.customRenderers`) or an `HTMLElement | null`
- * (set by `cds-aichat-container` / `cds-aichat-custom-element` from
+ * `ChatContainerPropsMarkdown.customRenderers`) or an `HTMLElement | null` (set
+ * by `cds-aichat-container` / `cds-aichat-custom-element` from
  * `WCMarkdown.customRenderers`); the component dispatches based on the runtime
  * return type. The attribute transforms (`link`, `image`) and the `checklist`
  * hook are framework-neutral, so they carry their precise types unchanged.
+ *
+ * Carried through the store as the `markdownConfig` slice — set from the
+ * `markdown` prop in `ChatAppEntry` and read with `useSelector` — so it reaches
+ * the deep `MarkdownWithDefaults` consumer without a global context provider.
  */
-export interface MarkdownConfigContextValue {
+export interface MarkdownConfig {
   markdownItPlugins?: MarkdownItPlugin[];
   customRenderers?: {
     table?: (args: unknown) => ReactNode | HTMLElement | null;
@@ -42,15 +46,3 @@ export interface MarkdownConfigContextValue {
     checklist?: MarkdownRendererChecklist;
   };
 }
-
-/**
- * Provides the merged `markdown` config to deep consumers like
- * `MarkdownWithDefaults`. The shell sets the value once from
- * `ChatContainerProps.markdown` (React) or `cds-aichat-container.markdown`
- * (web component); consumers read it with `useContext(MarkdownConfigContext)`.
- */
-const MarkdownConfigContext = React.createContext<
-  MarkdownConfigContextValue | undefined
->(undefined);
-
-export { MarkdownConfigContext };

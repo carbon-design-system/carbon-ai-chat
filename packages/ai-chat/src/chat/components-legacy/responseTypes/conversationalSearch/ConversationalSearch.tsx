@@ -10,7 +10,9 @@
 import React, { Suspense, useMemo, useRef, useState } from "react";
 
 import { ScrollElementIntoViewFunction } from "../../MessagesComponent";
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
+import { AppState } from "../../../../types/state/AppState";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
 import InlineError from "../../../components/util/InlineError";
@@ -47,7 +49,15 @@ function ConversationalSearch({
   const [selectedCitationIndex, setSelectedCitationIndex] = useState<number>(0);
   const [citationsOpen, setCitationsOpen] = useState(false);
   const scrollIntoViewArea = useRef<HTMLDivElement>(undefined);
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      carousel_nextNavButton: state.languagePack.carousel_nextNavButton,
+      carousel_prevNavButton: state.languagePack.carousel_prevNavButton,
+      conversationalSearch_streamingIncomplete:
+        state.languagePack.conversationalSearch_streamingIncomplete,
+    }),
+    shallowEqual,
+  );
 
   const messageItem = localMessageItem.item;
 

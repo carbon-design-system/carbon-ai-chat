@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React, { useContext, useMemo } from "react";
+import React, { useMemo } from "react";
 
 import { useIntl } from "../../hooks/useIntl";
 import { useSelector } from "../../hooks/useSelector";
@@ -16,8 +16,7 @@ import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 
 import { useShouldSanitizeHTML } from "../../hooks/useShouldSanitizeHTML";
 import { AppState } from "../../../types/state/AppState";
-import { useLanguagePack } from "../../hooks/useLanguagePack";
-import { MarkdownConfigContext } from "../../contexts/MarkdownConfigContext";
+import { shallowEqual } from "../../store/appStore";
 
 interface MarkdownWithDefaultsProps {
   /**
@@ -68,12 +67,30 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
     doSanitize = overrideSanitize;
   }
 
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      codeSnippet_showLessText: state.languagePack.codeSnippet_showLessText,
+      codeSnippet_showMoreText: state.languagePack.codeSnippet_showMoreText,
+      codeSnippet_tooltipContent: state.languagePack.codeSnippet_tooltipContent,
+      codeSnippet_ariaLabelReadOnly:
+        state.languagePack.codeSnippet_ariaLabelReadOnly,
+      codeSnippet_ariaLabelEditable:
+        state.languagePack.codeSnippet_ariaLabelEditable,
+      table_filterPlaceholder: state.languagePack.table_filterPlaceholder,
+      table_previousPage: state.languagePack.table_previousPage,
+      table_nextPage: state.languagePack.table_nextPage,
+      table_itemsPerPage: state.languagePack.table_itemsPerPage,
+      table_downloadButton: state.languagePack.table_downloadButton,
+    }),
+    shallowEqual,
+  );
   const { formatMessage } = useIntl();
   const locale = useSelector(
     (state: AppState) => state.config.public.locale || "en",
   );
-  const markdownConfig = useContext(MarkdownConfigContext);
+  // Host markdown config, read from its own store slice (set in ChatAppEntry)
+  // rather than a global context provider.
+  const markdownConfig = useSelector((state: AppState) => state.markdownConfig);
 
   const getPaginationSupplementalText = useMemo(
     () =>

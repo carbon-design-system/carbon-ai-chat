@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,25 +16,19 @@ import { carbonIconToReact } from "../../utils/carbonIcon";
 import cx from "classnames";
 import React from "react";
 import { useSelector } from "../../hooks/useSelector";
+import { shallowEqual } from "../../store/appStore";
 
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../types/state/AppState";
 
 import { WriteableElementName } from "../../utils/constants";
 import WriteableElement from "../util/WriteableElement";
-import { HomeScreenConfig } from "../../../types/config/HomeScreenConfig";
 import { MessageSendSource } from "../../../types/events/eventBusTypes";
 import { SendOptions } from "../../../types/instance/ChatInstance";
 import { PageObjectId } from "../../../testing/PageObjectId";
 
 interface HomeScreenProps {
   isHydrated: boolean;
-
-  /**
-   * Active config for home screen derived from combining remote and local config.
-   */
-  homescreen: HomeScreenConfig;
 
   /**
    * The callback function to fire when the user has clicked a starter button which gets the starter object passed into
@@ -53,16 +47,30 @@ interface HomeScreenProps {
 }
 
 function HomeScreenComponent({
-  homescreen,
   onSendInput,
   isHydrated,
   onToggleHomeScreen,
 }: HomeScreenProps) {
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      homeScreen_ariaHomeScreenContent:
+        state.languagePack.homeScreen_ariaHomeScreenContent,
+      homeScreen_returnToAssistant:
+        state.languagePack.homeScreen_returnToAssistant,
+    }),
+    shallowEqual,
+  );
   const serviceManager = useServiceManager();
 
-  const { showBackToAssistant } = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.homeScreenState,
+  // Active home-screen config (derived/combined config). Selected here instead of
+  // threaded from AppShell so HomeScreen owns its own data dependency.
+  const homescreen = useSelector(
+    (state: AppState) => state.config.public.homescreen,
+  );
+
+  const showBackToAssistant = useSelector(
+    (state: AppState) =>
+      state.persistedToBrowserStorage.homeScreenState.showBackToAssistant,
   );
 
   const ArrowRight = carbonIconToReact(ArrowRight16);

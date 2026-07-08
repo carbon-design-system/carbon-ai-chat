@@ -8,14 +8,23 @@
  */
 
 import React from "react";
-import { cleanup, render, waitFor } from "@testing-library/react";
+import { cleanup, render, waitFor, act } from "@testing-library/react";
 import { ChatContainer } from "../src/react/ChatContainer";
 import { PublicConfig } from "../src/types/config/PublicConfig";
 import { ChatContainerProps } from "../src/types/component/ChatContainer";
 import { ChatInstance } from "../src/types/instance/ChatInstance";
-import type { AppStore } from "../src/chat/store/appStore";
+import { createAppStore, type AppStore } from "../src/chat/store/appStore";
 import { AppState } from "../src/types/state/AppState";
 import { ServiceManager } from "../src/chat/services/ServiceManager";
+import { reducers } from "../src/chat/store/reducers";
+import actions from "../src/chat/store/actions";
+import isEqual from "lodash-es/isEqual.js";
+import {
+  buildLanguagePack,
+  createAppConfig,
+  createInitialState,
+  reconcileAppConfigReferences,
+} from "../src/chat/store/doCreateStore";
 
 // ============================================================================
 // Configuration helpers
@@ -128,6 +137,61 @@ export const renderChatAndGetInstanceWithStore = async (
     serviceManager,
   };
 };
+
+// ============================================================================
+// Store / config-change re-render harness
+// ============================================================================
+
+/** The real root reducer (mirrors `reducerFunction` in doCreateStore). */
+const rootReducer = (
+  state: AppState,
+  action: { type: string; [key: string]: unknown } | undefined,
+): AppState =>
+  action && reducers[action.type]
+    ? reducers[action.type](state, action)
+    : state;
+
+/**
+ * Builds a real store seeded from a PublicConfig, exactly the way doCreateStore
+ * does. Use with {@link applyConfigChange} to drive runtime config updates in
+ * re-render tests.
+ */
+export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
+  return createAppStore<AppState>(
+    rootReducer as never,
+    createInitialState(createAppConfig(config)),
+  );
+}
+
+/**
+ * Applies a runtime config change the way `applyConfigChangesDynamically` does:
+ * rebuild the AppConfig, reconcile references against the stored config, then
+ * dispatch the wholesale `changeState({ config })`. Reference reconciliation is
+ * what lets narrowed selectors skip re-rendering on unrelated changes.
+ */
+export function applyConfigChange(
+  store: AppStore<AppState>,
+  nextConfig: PublicConfig,
+): void {
+  const prevConfig = store.getState().config;
+  const next = createAppConfig(nextConfig);
+  const reconciled = reconcileAppConfigReferences(prevConfig, next);
+  act(() => {
+    store.dispatch(actions.changeState({ config: reconciled }));
+    // Mirror applyConfigChangesDynamically: the language pack lives in its own
+    // slice, so a config-provided `strings` change is synced separately (and
+    // only when `strings` actually changed, so unrelated config edits don't
+    // churn it).
+    if (!isEqual(prevConfig.public.strings, nextConfig.strings)) {
+      const nextLanguagePack = buildLanguagePack(nextConfig.strings);
+      if (!isEqual(store.getState().languagePack, nextLanguagePack)) {
+        store.dispatch(
+          actions.setAppStateValue("languagePack", nextLanguagePack),
+        );
+      }
+    }
+  });
+}
 
 // ============================================================================
 // Setup helpers

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,32 +13,26 @@ import Loading from "../carbon/Loading";
 import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
 import { MountChildrenOnDelay } from "../util/MountChildrenOnDelay";
 import type { AppState } from "../../../types/state/AppState";
-
-type LanguagePack = AppState["config"]["derived"]["languagePack"];
+import { useSelector } from "../../hooks/useSelector";
 
 interface HydrationPanelProps {
   isHydrated: boolean;
-  languagePack: LanguagePack;
 }
 
-const HydrationPanel: React.FC<HydrationPanelProps> = ({
-  isHydrated,
-  languagePack,
-}) => {
+const HydrationPanel: React.FC<HydrationPanelProps> = ({ isHydrated }) => {
+  // Select only the one string this panel renders, so it never re-renders for an
+  // unrelated language-pack change.
+  const ariaWindowLoading = useSelector(
+    (state: AppState) => state.languagePack.window_ariaWindowLoading,
+  );
   return (
     <div className="cds-aichat--hydrating-container">
       <div className="cds-aichat--hydrating cds-aichat--panel-content">
         <MountChildrenOnDelay delay={400}>
           {!isHydrated && (
-            <AnnounceOnMountComponent
-              announceOnce={languagePack.window_ariaWindowLoading}
-            />
+            <AnnounceOnMountComponent announceOnce={ariaWindowLoading} />
           )}
-          <Loading
-            active
-            overlay={false}
-            assistiveText={languagePack.window_ariaWindowLoading}
-          />
+          <Loading active overlay={false} assistiveText={ariaWindowLoading} />
         </MountChildrenOnDelay>
       </div>
     </div>

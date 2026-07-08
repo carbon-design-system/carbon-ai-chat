@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,7 +12,8 @@ import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
 import React, { useState } from "react";
 import cx from "classnames";
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { AppState } from "../../../../types/state/AppState";
 import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
 
 interface TranscriptComponentProps {
@@ -42,7 +43,9 @@ function TranscriptComponent({
   language,
 }: TranscriptComponentProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { media_transcript_label } = useLanguagePack();
+  const media_transcript_label = useSelector(
+    (state: AppState) => state.languagePack.media_transcript_label,
+  );
 
   const ChevronDown = carbonIconToReact(ChevronDown16);
   const ChevronUp = carbonIconToReact(ChevronUp16);

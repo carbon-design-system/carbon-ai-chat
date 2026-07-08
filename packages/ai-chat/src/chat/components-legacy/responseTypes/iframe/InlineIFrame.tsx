@@ -10,7 +10,7 @@
 import React, { useCallback, useState, useLayoutEffect, useRef } from "react";
 
 import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
 import {
   applyDynamicStyles,
   clearDynamicStyles,
@@ -20,6 +20,7 @@ import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
 import InlineError from "../../../components/util/InlineError";
 import { IFrameComponent } from "./IFrameComponent";
 import { IFrameItem } from "../../../../types/messaging/Messages";
+import { AppState } from "../../../../types/state/AppState";
 
 interface InlineIframeProps {
   /**
@@ -33,7 +34,9 @@ interface InlineIframeProps {
  */
 function InlineIFrame({ messageItem }: InlineIframeProps) {
   const ariaAnnouncer = useAriaAnnouncer();
-  const { errors_iframeSource } = useLanguagePack();
+  const errors_iframeSource = useSelector(
+    (state: AppState) => state.languagePack.errors_iframeSource,
+  );
   const [isError, setIsError] = useState(false);
   const { source, title } = messageItem;
   const baseHeight = getMediaDimensions(messageItem)?.base_height;

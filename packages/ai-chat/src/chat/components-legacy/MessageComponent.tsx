@@ -58,10 +58,13 @@ function ImageWithFallback({
 import { HasAriaAnnouncer, withAriaAnnouncer } from "../hocs/withAriaAnnouncer";
 import { HasServiceManager } from "../hocs/withServiceManager";
 import actions from "../store/actions";
-import { AppConfig } from "../../types/state/AppConfig";
 import { HasClassName } from "../../types/utilities/HasClassName";
 import HasIntl from "../../types/utilities/HasIntl";
-import HasLanguagePack from "../../types/utilities/HasLanguagePack";
+import { useSelector } from "../hooks/useSelector";
+import { shallowEqual } from "../store/appStore";
+import { useIntl } from "../hooks/useIntl";
+import { useCarbonTheme } from "../hooks/useCarbonTheme";
+import { AppState } from "../../types/state/AppState";
 import {
   LocalMessageItem,
   MessageErrorState,
@@ -136,13 +139,37 @@ enum MoveFocusType {
   INPUT = 5,
 }
 
+/**
+ * The exact set of language-pack strings MessageComponent renders. Selected as a
+ * narrow bag (with `shallowEqual` at the injector) so the PureComponent
+ * re-renders only when one of THESE strings changes — not on any language-pack
+ * edit.
+ */
+const selectMessageLanguagePackStrings = (state: AppState) => ({
+  agent_ariaGenericAssistantAvatar:
+    state.languagePack.agent_ariaGenericAssistantAvatar,
+  agent_ariaGenericAvatar: state.languagePack.agent_ariaGenericAvatar,
+  agent_ariaHumanAgentAvatar: state.languagePack.agent_ariaHumanAgentAvatar,
+  errors_singleMessage: state.languagePack.errors_singleMessage,
+  fileSharing_statusUploading: state.languagePack.fileSharing_statusUploading,
+  messages_focusHandle: state.languagePack.messages_focusHandle,
+  messages_youSaid: state.languagePack.messages_youSaid,
+  reasoningSteps_mainLabelClosed:
+    state.languagePack.reasoningSteps_mainLabelClosed,
+  reasoningSteps_mainLabelOpen: state.languagePack.reasoningSteps_mainLabelOpen,
+});
+
+type MessageLanguagePackStrings = ReturnType<
+  typeof selectMessageLanguagePackStrings
+>;
+
 interface MessageProps
-  extends
-    HasIntl,
-    HasServiceManager,
-    HasLanguagePack,
-    HasClassName,
-    HasAriaAnnouncer {
+  extends HasIntl, HasServiceManager, HasClassName, HasAriaAnnouncer {
+  /**
+   * The narrow set of language-pack strings this component renders, injected by
+   * its connector via a `shallowEqual` selector.
+   */
+  languagePack: MessageLanguagePackStrings;
   /**
    * The local message item that is part of the original message.
    */
@@ -152,8 +179,6 @@ interface MessageProps
    * The original message that came from the assistant.
    */
   message: Message;
-
-  config: AppConfig;
 
   /**
    * A callback function that will request that focus be moved to the main input field.
@@ -515,7 +540,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             url={responseUserProfile?.profile_picture_url}
             alt={
               fromHumanAgent
-                ? languagePack.agent_ariaResponseUserAvatar
+                ? languagePack.agent_ariaHumanAgentAvatar
                 : languagePack.agent_ariaGenericAvatar
             }
             fallback={<IconHolder icon={<Headset />} />}
@@ -547,7 +572,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           avatar = (
             <ResponseUserAvatar
               responseUserProfile={responseUserProfile}
-              languagePack={languagePack}
               width="24px"
               height="24px"
             />
@@ -770,12 +794,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     const {
       serviceManager,
-      languagePack,
       requestInputFocus,
       message,
       disableUserInputs,
       isMessageForInput,
-      config,
       scrollElementIntoView,
       hideFeedback,
     } = this.props;
@@ -791,13 +813,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         <MessageTypeComponent
           key={stableId}
           serviceManager={serviceManager}
-          languagePack={languagePack}
           requestInputFocus={requestInputFocus}
           message={localItem}
           originalMessage={message}
           disableUserInputs={disableUserInputs}
           isMessageForInput={isMessageForInput}
-          config={config}
           scrollElementIntoView={scrollElementIntoView}
           showChainOfThought={false}
           hideFeedback={hideFeedback}
@@ -1166,7 +1186,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     const {
       serviceManager,
-      config,
       localMessageItem,
       message,
       languagePack,
@@ -1207,13 +1226,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const messageComponent = (
       <MessageTypeComponent
         serviceManager={serviceManager}
-        languagePack={languagePack}
         requestInputFocus={requestInputFocus}
         message={localMessageItem}
         originalMessage={message}
         disableUserInputs={disableUserInputs}
         isMessageForInput={isMessageForInput}
-        config={config}
         scrollElementIntoView={scrollElementIntoView}
         showChainOfThought={isLastMessageItem}
         hideFeedback={hideFeedback}
@@ -1446,5 +1463,44 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
   }
 }
 
-export default withAriaAnnouncer(MessageComponent);
+/**
+ * Connects the (Pure)class `MessageComponent` to the store/context for the values
+ * it must not receive as churning threaded props: a narrow language-pack bag
+ * (`shallowEqual`, so the PureComponent only re-renders when one of its strings
+ * changes), the intl formatter, and the two theme primitives. `serviceManager`,
+ * `locale`, message data and callbacks stay threaded from `MessagesComponent`.
+ * The ref is forwarded so `MessagesComponent` still receives the class instance.
+ */
+type MessageConnectorProps = Omit<
+  MessageProps,
+  "languagePack" | "intl" | "useAITheme" | "carbonTheme"
+>;
+
+const MessageComponentConnector = React.forwardRef<
+  MessageComponent,
+  MessageConnectorProps
+>((props, ref) => {
+  const languagePack = useSelector(
+    selectMessageLanguagePackStrings,
+    shallowEqual,
+  );
+  const intl = useIntl();
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
+  const { carbonTheme } = useCarbonTheme();
+  return (
+    <MessageComponent
+      {...(props as unknown as MessageProps)}
+      ref={ref}
+      languagePack={languagePack}
+      intl={intl}
+      useAITheme={aiEnabled}
+      carbonTheme={carbonTheme}
+    />
+  );
+});
+MessageComponentConnector.displayName = "MessageComponentConnector";
+
+export default withAriaAnnouncer(MessageComponentConnector);
 export { MessageComponent as MessageClass, MoveFocusType };

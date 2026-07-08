@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -19,11 +19,13 @@ import React, { ReactNode, useState } from "react";
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { HumanAgentsOnlineStatus } from "../../../services/haa/HumanAgentService";
 import {
+  AppState,
   HumanAgentDisplayState,
   HumanAgentState,
 } from "../../../../types/state/AppState";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
 import { PersistedHumanAgentState } from "../../../../types/state/PersistedHumanAgentState";
-import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { AvailabilityMessage } from "../../humanAgent/AvailabilityMessage";
@@ -38,7 +40,7 @@ const Headset = carbonIconToReact(Headset16);
 const HelpDesk = carbonIconToReact(HelpDesk16);
 const Logout = carbonIconToReact(Logout16);
 interface RealConnectToHumanAgentProps
-  extends HasLanguagePack, HasServiceManager, HasRequestFocus {
+  extends HasServiceManager, HasRequestFocus {
   /**
    * Indicates if the "start chat" button should be disabled.
    */
@@ -78,9 +80,30 @@ interface RealConnectToHumanAgentProps
  * This is the "real" component that is displayed to users as opposed to the "preview" component that is displayed
  * for users using the preview link.
  */
+const selectRealConnectStrings = (state: AppState) => ({
+  agent_cardButtonChatEnded: state.languagePack.agent_cardButtonChatEnded,
+  agent_cardButtonChatRequested:
+    state.languagePack.agent_cardButtonChatRequested,
+  agent_cardButtonConnected: state.languagePack.agent_cardButtonConnected,
+  agent_cardMessageChatEnded: state.languagePack.agent_cardMessageChatEnded,
+  agent_cardMessageConnected: state.languagePack.agent_cardMessageConnected,
+  agent_chatTitle: state.languagePack.agent_chatTitle,
+  agent_confirmSuspendedEndChatMessage:
+    state.languagePack.agent_confirmSuspendedEndChatMessage,
+  agent_confirmSuspendedEndChatTitle:
+    state.languagePack.agent_confirmSuspendedEndChatTitle,
+  agent_connectWaiting: state.languagePack.agent_connectWaiting,
+  agent_startChat: state.languagePack.agent_startChat,
+  agent_suspendedWarning: state.languagePack.agent_suspendedWarning,
+  default_agent_availableMessage:
+    state.languagePack.default_agent_availableMessage,
+  default_agent_unavailableMessage:
+    state.languagePack.default_agent_unavailableMessage,
+});
+
 function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
+  const languagePack = useSelector(selectRealConnectStrings, shallowEqual);
   const {
-    languagePack,
     localMessage,
     originalMessage,
     disableUserInputs,

@@ -21,6 +21,7 @@ import { doCreateStore } from "../store/doCreateStore";
 import {
   copyToSessionStorage,
   fireStateChangeEvent,
+  refreshLocalizationOnChange,
 } from "../store/subscriptions";
 import { AppConfig } from "../../types/state/AppConfig";
 import { WriteableElementName } from "../utils/constants";
@@ -57,6 +58,10 @@ function createServiceManager(appConfig: AppConfig) {
   );
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   serviceManager.store.subscribe(fireStateChangeEvent(serviceManager));
+  // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
+  // strings or locale change. Boot's `setIntl` below seeds the formatter before
+  // first paint (no dispatch fires during boot, so this subscription can't).
+  serviceManager.store.subscribe(refreshLocalizationOnChange(serviceManager));
 
   // Subscribe to theme changes to start/stop the theme watcher as needed
   let currentOriginalTheme =
@@ -85,7 +90,7 @@ function createServiceManager(appConfig: AppConfig) {
   setIntl(
     serviceManager,
     serviceManager.store.getState().config.public.locale || "en",
-    serviceManager.store.getState().config.derived.languagePack,
+    serviceManager.store.getState().languagePack,
   );
 
   // Create all custom elements for Deb.

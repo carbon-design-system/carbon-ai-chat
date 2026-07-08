@@ -17,10 +17,12 @@ import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
 } from "../../../../types/messaging/Messages";
+import { AppState } from "../../../../types/state/AppState";
 import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
 import { useCounter } from "../../../hooks/useCounter";
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
 import { useServiceManager } from "../../../hooks/useServiceManager";
+import { shallowEqual } from "../../../store/appStore";
 import OperationalTag from "../../../components/carbon/OperationalTag";
 import { carbonIconToReact } from "../../../utils/carbonIcon";
 
@@ -70,7 +72,15 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
     searchItem,
     showCitationsToggle,
   } = props;
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      conversationalSearch_citationsLabel:
+        state.languagePack.conversationalSearch_citationsLabel,
+      conversationalSearch_toggleCitations:
+        state.languagePack.conversationalSearch_toggleCitations,
+    }),
+    shallowEqual,
+  );
   const serviceManager = useServiceManager();
   const { streamingState } = searchItem.ui_state;
   const toggleID = `cds-aichat--conversational-search-text-${useCounter()}${
