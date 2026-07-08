@@ -14,13 +14,13 @@
  * service manager. This component attaches that host element in to the React tree.
  */
 
-import React from 'react';
+import React from "react";
 
-import { HasServiceManager } from '../../../hocs/withServiceManager';
-import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
-import { AppState } from '../../../../types/state/AppState';
-import InlineError from '../../../components/util/InlineError';
+import { HasServiceManager } from "../../../hocs/withServiceManager";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
+import { AppState } from "../../../../types/state/AppState";
+import InlineError from "../../../components/util/InlineError";
 
 interface UserDefinedResponseProps extends HasServiceManager {
   /**
