@@ -8,7 +8,7 @@
  */
 
 /**
- * Layout-only smoke tests for `<cds-aichat-input-shell>`. The shell is
+ * Layout-only smoke tests for `<cds-aichat-prompt-line-shell>`. The shell is
  * pure chrome — five named slots, the `rounded` reflection, and a
  * `--has-message-actions` class toggled by the `message-actions` slot's
  * occupancy. Editor / autocomplete / send-gating behaviors are covered by
@@ -17,13 +17,13 @@
 
 import { expect, fixture, html } from "@open-wc/testing";
 
-import "../input-shell.js";
-import type InputShellElement from "../input-shell.js";
+import "../prompt-line-shell.js";
+import type PromptLineShellElement from "../prompt-line-shell.js";
 
-describe("<cds-aichat-input-shell>", () => {
+describe("<cds-aichat-prompt-line-shell>", () => {
   it("renders the layout chrome with named slots", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 
@@ -40,8 +40,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("does not render a fallback prompt-line in the editor slot", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 
@@ -50,8 +50,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("reflects the `rounded` boolean property to attribute", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
     expect(el.hasAttribute("rounded")).to.equal(false);
@@ -62,8 +62,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("reflects the `expanded` boolean property to attribute", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
     expect(el.hasAttribute("expanded")).to.equal(false);
@@ -74,8 +74,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("toggles the `--expanded` container class with the `expanded` property", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 
@@ -100,8 +100,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("toggles the `--has-message-actions` class when message-actions slot is filled", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 
@@ -139,8 +139,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("ignores writeable passthrough slots when toggling `--has-message-actions`", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 
@@ -177,8 +177,8 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("reconciles a stale `--has-message-actions` against the settled assignment on the next render", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell></cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell></cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 
@@ -212,12 +212,12 @@ describe("<cds-aichat-input-shell>", () => {
   });
 
   it("renders consumer-slotted children inside their named slots", async () => {
-    const el: InputShellElement = await fixture(html`
-      <cds-aichat-input-shell>
+    const el: PromptLineShellElement = await fixture(html`
+      <cds-aichat-prompt-line-shell>
         <div slot="editor" id="my-editor"></div>
         <div slot="send-control" id="my-send"></div>
         <div slot="field-messaging" id="my-msg"></div>
-      </cds-aichat-input-shell>
+      </cds-aichat-prompt-line-shell>
     `);
     await el.updateComplete;
 

@@ -10,23 +10,23 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import InputShellElement from "../components/input/src/input-shell.js";
+import PromptLineShellElement from "../components/prompt-line/src/prompt-line-shell.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
 /**
- * React wrapper for `<cds-aichat-input-shell>`. The shell is layout-only —
+ * React wrapper for `<cds-aichat-prompt-line-shell>`. The shell is layout-only —
  * named slots plus the `rounded` flag — so this wrapper carries no event
  * mappings or prop transformations. Consumers compose `<PromptLine>`,
  * autocomplete content, file-uploads, send-control, etc. into the named
  * slots themselves.
  */
-const InputShell = withWebComponentBridge(
+const PromptLineShell = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-input-shell",
-    elementClass: InputShellElement,
+    tagName: "cds-aichat-prompt-line-shell",
+    elementClass: PromptLineShellElement,
     react: React,
     events: {},
   }),
 );
 
-export default InputShell;
+export default PromptLineShell;

@@ -125,7 +125,7 @@ function EditableSnippet({
         highlight
         hideHeader
         // Sizing: `Infinity` on both row maxes disables the snippet's internal
-        // scrollbar so the chat input shell's own `overflow-y: auto` is the
+        // scrollbar so the prompt-line shell's own `overflow-y: auto` is the
         // only scroll surface. `5` on the row mins floors the empty editor at
         // ~80px — a comfortable multi-line code area, not a one-line field.
         // (The component models a row at 16px, shorter than CodeMirror's

@@ -31,7 +31,7 @@ import PlayFilledAlt16 from "@carbon/icons/es/play--filled--alt/16.js";
 import type {
   FileUpload,
   FileRemoveEventDetail,
-} from "../../input/src/types.js";
+} from "../../prompt-line/src/types.js";
 
 import styles from "./file-upload-item.scss?lit";
 

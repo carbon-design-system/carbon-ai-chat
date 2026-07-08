@@ -434,7 +434,7 @@ React example that rehydrates a conversation containing multiple `user_defined` 
 
 ### [Input / Code snippet](./input-code-snippet/README.md)
 
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the input shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-code-snippet`
 

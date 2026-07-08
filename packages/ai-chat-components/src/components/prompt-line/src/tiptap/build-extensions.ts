@@ -9,7 +9,7 @@
 
 /**
  * Pure helper: translate the chat-domain configs surfaced on
- * `<cds-aichat-input-shell>` (and `InputConfig`) into a curated Tiptap
+ * `<cds-aichat-prompt-line-shell>` (and `InputConfig`) into a curated Tiptap
  * extension list. Used by the shell's render logic and exposed publicly so
  * direct `<cds-aichat-prompt-line>` consumers can call the same builder
  * without bringing the chrome along.

@@ -14,7 +14,7 @@ import { classMap } from "lit/directives/class-map.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 
-import styles from "./input-shell.scss?lit";
+import styles from "./prompt-line-shell.scss?lit";
 
 /**
  * Layout-only composer chrome for the chat input. The shell defines five
@@ -32,10 +32,10 @@ import styles from "./input-shell.scss?lit";
  *   autocomplete row (e.g. char-count exceeded message).
  * - `send-control` — send / stop-streaming button.
  *
- * @element cds-aichat-input-shell
+ * @element cds-aichat-prompt-line-shell
  */
-@carbonElement(`${prefix}-input-shell`)
-class InputShellElement extends LitElement {
+@carbonElement(`${prefix}-prompt-line-shell`)
+class PromptLineShellElement extends LitElement {
   static styles = css`
     ${unsafeCSS(styles)}
   `;
@@ -58,7 +58,7 @@ class InputShellElement extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: "has-error" })
   hasError = false;
 
-  /** Whether the input shell is disabled. */
+  /** Whether the prompt-line shell is disabled. */
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
@@ -149,7 +149,7 @@ class InputShellElement extends LitElement {
     `;
 
     return html`
-      <div class="${prefix}--input-shell">
+      <div class="${prefix}--prompt-line-shell">
         <div class=${classMap(containerClasses)}>
           <div class=${classMap(uploadsRowClasses)}>
             <slot
@@ -248,8 +248,8 @@ class InputShellElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-input-shell": InputShellElement;
+    "cds-aichat-prompt-line-shell": PromptLineShellElement;
   }
 }
 
-export default InputShellElement;
+export default PromptLineShellElement;

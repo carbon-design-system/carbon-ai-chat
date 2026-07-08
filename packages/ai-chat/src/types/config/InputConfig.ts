@@ -19,7 +19,7 @@ import type {
   AutocompleteConfig as _AutocompleteConfig,
   SuggestionItem as _SuggestionItem,
   CustomListProps as _CustomListProps,
-} from "@carbon/ai-chat-components/es/components/input/index.js";
+} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 import type { ToolbarAction } from "./HeaderConfig";
 
 /**

@@ -351,7 +351,7 @@ Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFac
 
 ### [Input / Code snippet](./input-code-snippet/README.md)
 
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the input shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-code-snippet`
 
