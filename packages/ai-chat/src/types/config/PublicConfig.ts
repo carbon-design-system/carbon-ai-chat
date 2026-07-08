@@ -174,6 +174,11 @@ export interface PublicConfig {
   persistFeedback?: boolean;
 
   /**
+   * Toggles the chat avatar on and off
+   */
+  hideAvatar?: boolean;
+
+  /**
    * Sets the name of the assistant. Defaults to "watsonx". Used in screen reader announcements and error messages.
    */
   assistantName?: string;

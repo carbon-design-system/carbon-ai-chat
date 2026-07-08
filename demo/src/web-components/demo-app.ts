@@ -505,6 +505,7 @@ export class DemoApp extends LitElement {
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
             .persistFeedback=${this.config.persistFeedback ?? undefined}
+            .hideAvatar=${this.config.hideAvatar ?? undefined}
             .assistantName=${this.config.assistantName}
             .assistantAvatarUrl=${this.config.assistantAvatarUrl}
             locale=${this.config.locale}
@@ -541,6 +542,7 @@ export class DemoApp extends LitElement {
             .messaging=${this.config.messaging}
             .isReadonly=${this.config.isReadonly ?? undefined}
             .persistFeedback=${this.config.persistFeedback ?? undefined}
+            .hideAvatar=${this.config.hideAvatar ?? undefined}
             .assistantName=${this.config.assistantName}
             .assistantAvatarUrl=${this.config.assistantAvatarUrl}
             locale=${this.config.locale}
@@ -585,6 +587,7 @@ export class DemoApp extends LitElement {
             .onBeforeRender=${this.onBeforeRender}
             .serviceDeskFactory=${serviceDeskFactory}
             .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+            .hideAvatar=${this.config.hideAvatar ?? undefined}
             >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
           >`
         : html``}
