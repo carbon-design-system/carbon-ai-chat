@@ -66,11 +66,15 @@
 // drop shadow appear above the shell instead of below.
 :host(:not([rounded]):not([disabled])) .#{$prefix}--input-container--expanded {
   border-block-end: none;
-  border-block-start: 1px solid theme.$border-subtle;
 
   &:focus-within {
     box-shadow: 0 -4px 8px 0 theme.$ai-drop-shadow;
   }
+}
+
+:host(:not([rounded]):not([disabled]):not([has-error]):not([has-file-uploads]))
+  .#{$prefix}--input-container--expanded {
+  border-block-start: 1px solid theme.$border-subtle;
 }
 
 .#{$prefix}--input-container:focus-within {
@@ -94,6 +98,13 @@
 // Error state
 :host([has-error]) .#{$prefix}--input-container {
   border: 1px solid theme.$support-error;
+}
+
+// Non-rounded shell with file uploads — round the top corners to visually
+// contain the upload chips.
+:host(:not([rounded])[has-file-uploads]) .#{$prefix}--input-container {
+  border-start-end-radius: layout.$spacing-03;
+  border-start-start-radius: layout.$spacing-03;
 }
 
 // Message actions visible — reduce start padding

@@ -215,6 +215,7 @@ class InputShellElement extends LitElement {
       `slot[name="file-uploads"]`,
     ) as HTMLSlotElement | null;
     this._hasFileUploads = slot ? slot.assignedElements().length > 0 : false;
+    this.toggleAttribute("has-file-uploads", this._hasFileUploads);
   }
 }
 
