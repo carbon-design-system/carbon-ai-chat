@@ -109,8 +109,20 @@
 // the row break.
 // -----------------------------------------------------------
 .#{$prefix}--input-uploads-and-autocomplete {
+  position: relative;
+  box-sizing: border-box;
   flex-basis: 100%;
-  inline-size: 100%;
+}
+
+.#{$prefix}--input-uploads-and-autocomplete--has-uploads::after {
+  position: absolute;
+  display: block;
+  background: theme.$border-subtle-00;
+  block-size: 1px;
+  content: "";
+  inline-size: calc(100% + #{layout.$spacing-05} + #{layout.$spacing-03});
+  inset-block-end: 0;
+  inset-inline-start: calc(-1 * #{layout.$spacing-03});
 }
 
 // -----------------------------------------------------------
@@ -218,6 +230,7 @@
   flex-wrap: wrap;
   inline-size: 100%;
   margin-block-start: layout.$spacing-03;
+  margin-inline-start: layout.$spacing-03;
   max-block-size: 200px;
   overflow-x: hidden;
   overflow-y: auto;

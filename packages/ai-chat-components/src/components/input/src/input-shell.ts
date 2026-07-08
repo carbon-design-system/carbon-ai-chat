@@ -66,6 +66,9 @@ class InputShellElement extends LitElement {
   private _hasMessageActions = false;
 
   @state()
+  private _hasFileUploads = false;
+
+  @state()
   private _editorKeyboardFocus = false;
 
   override connectedCallback(): void {
@@ -104,6 +107,7 @@ class InputShellElement extends LitElement {
     // Deriving here (rather than snapshotting in the handler) re-reads the
     // settled assignment each render, so the occupancy can't latch.
     this._updateHasMessageActions();
+    this._updateHasFileUploads();
   }
 
   override render() {
@@ -112,6 +116,12 @@ class InputShellElement extends LitElement {
       [`${prefix}--input-container--has-message-actions`]:
         this._hasMessageActions,
       [`${prefix}--input-container--expanded`]: this.expanded,
+    };
+
+    const uploadsRowClasses = {
+      [`${prefix}--input-uploads-and-autocomplete`]: true,
+      [`${prefix}--input-uploads-and-autocomplete--has-uploads`]:
+        this._hasFileUploads,
     };
 
     const textAreaClasses = {
@@ -137,8 +147,11 @@ class InputShellElement extends LitElement {
     return html`
       <div class="${prefix}--input-shell">
         <div class=${classMap(containerClasses)}>
-          <div class="${prefix}--input-uploads-and-autocomplete">
-            <slot name="file-uploads"></slot>
+          <div class=${classMap(uploadsRowClasses)}>
+            <slot
+              name="file-uploads"
+              @slotchange=${this._handleFileUploadsSlotChange}
+            ></slot>
             <slot name="autocomplete-content"></slot>
           </div>
           <div class="${prefix}--field-messaging-container">
@@ -175,6 +188,10 @@ class InputShellElement extends LitElement {
     this.requestUpdate();
   };
 
+  private _handleFileUploadsSlotChange = (): void => {
+    this.requestUpdate();
+  };
+
   /**
    * Derives `_hasMessageActions` from the `message-actions` slot's current
    * occupancy. Consumers may project a writeable passthrough
@@ -191,6 +208,13 @@ class InputShellElement extends LitElement {
           .assignedElements()
           .some((element) => !element.hasAttribute("data-prompt-line-slot"))
       : false;
+  }
+
+  private _updateHasFileUploads(): void {
+    const slot = this.renderRoot?.querySelector(
+      `slot[name="file-uploads"]`,
+    ) as HTMLSlotElement | null;
+    this._hasFileUploads = slot ? slot.assignedElements().length > 0 : false;
   }
 }
 
