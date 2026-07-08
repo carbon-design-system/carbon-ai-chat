@@ -23,7 +23,6 @@ import { matchesShortcut } from "./utils/keyboardUtils";
 import { getDeepActiveElement } from "./utils/domUtils";
 import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../types/config/ShortcutConfig";
 
-import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import AppShellErrorBoundary from "./AppShellErrorBoundary";
 import { LauncherContainer } from "./components-legacy/launcher/LauncherContainer";
 import { InputFunctions } from "./components/input/Input";
@@ -61,7 +60,10 @@ import { ModalPortalRootProvider } from "./providers/ModalPortalRootProvider";
 import actions from "./store/actions";
 import {
   selectHumanAgentDisplayState,
-  selectInputState,
+  selectInputIsReadonly,
+  selectInputFieldVisible,
+  selectInputUploadAndStreamingFields,
+  selectLanguagePack,
 } from "./store/selectors";
 import { shallowEqual } from "./store/appStore";
 import { consoleError, createDidCatchErrorData } from "./utils/miscUtils";
@@ -114,7 +116,20 @@ const WIDTH_BREAKPOINT_WIDE = "cds-aichat--wide-width";
 
 // Module-level selectors — stable references so useSelector can use Object.is
 // to skip re-renders when the slice hasn't changed.
-const selectConfig = (state: AppState) => state.config;
+//
+// Config is read field-by-field rather than as the whole `state.config` object:
+// `reconcileObjectReferences` (config changes) and the `UPDATE_THEME_STATE`
+// spread keep each unchanged sub-object's reference stable, so a change to one
+// config field (e.g. a theme switch) only fires the selector that reads it,
+// instead of re-rendering AppShell for any config change at all.
+const selectThemeWithDefaults = (state: AppState) =>
+  state.config.derived.themeWithDefaults;
+const selectLayoutConfig = (state: AppState) => state.config.derived.layout;
+const selectLauncherConfig = (state: AppState) => state.config.derived.launcher;
+const selectCssVariableOverrides = (state: AppState) =>
+  state.config.derived.cssVariableOverrides;
+const selectHeaderConfig = (state: AppState) => state.config.derived.header;
+const selectPublicConfig = (state: AppState) => state.config.public;
 const selectPersistedToBrowserStorage = (state: AppState) =>
   state.persistedToBrowserStorage;
 const selectIsHydrated = (state: AppState) => state.isHydrated;
@@ -141,7 +156,14 @@ const selectChatWidthBreakpoint = (state: AppState) =>
 
 interface AppShellProps extends HasServiceManager {
   hostElement?: Element;
-  renderWriteableElements?: RenderWriteableElementResponse;
+  /**
+   * Value-stable signal of which writeable-element slots have host content,
+   * computed in `ChatAppEntry`. AppShell never receives the raw
+   * `renderWriteableElements` map so that a host re-render (new node values) does
+   * not break `React.memo(AppShell)`. `undefined` means the host omitted the map
+   * entirely (render all default elements); see {@link AppShellWriteableElements}.
+   */
+  writeableElementsPresentKeys?: string;
 }
 
 /**
@@ -164,10 +186,18 @@ export interface MainWindowFunctions extends HasRequestFocus, HasDoAutoScroll {
   getMessagesScrollBottom(): number;
 }
 
+/**
+ * The store-driven application shell. This is the heavy, memoized boundary of
+ * the chat: it must depend only on `serviceManager`, store-derived values (via
+ * `useSelector`), and stable derived signals. It must never receive raw host
+ * render-props — those break `React.memo(AppShell)` whenever a host re-renders
+ * with new prop identities. See `ChatAppEntry` for the boundary contract and
+ * where host render-props are routed instead (isolated portal siblings).
+ */
 function AppShell({
   hostElement,
   serviceManager,
-  renderWriteableElements,
+  writeableElementsPresentKeys,
 }: AppShellProps) {
   const intl = useIntl();
   const ariaAnnouncer = useAriaAnnouncer();
@@ -177,7 +207,6 @@ function AppShell({
     serviceManager.ariaAnnouncer = ariaAnnouncer;
   }, [serviceManager, ariaAnnouncer]);
 
-  const config = useSelector(selectConfig);
   const persistedToBrowserStorage = useSelector(
     selectPersistedToBrowserStorage,
   );
@@ -198,17 +227,13 @@ function AppShell({
   const responsePanelState = useSelector(selectResponsePanelState);
   const chatWidthBreakpoint = useSelector(selectChatWidthBreakpoint);
 
-  const {
-    derived: {
-      themeWithDefaults: theme,
-      layout,
-      languagePack,
-      launcher,
-      cssVariableOverrides,
-      header,
-    },
-    public: publicConfig,
-  } = config;
+  const languagePack = useSelector(selectLanguagePack);
+  const theme = useSelector(selectThemeWithDefaults);
+  const layout = useSelector(selectLayoutConfig);
+  const launcher = useSelector(selectLauncherConfig);
+  const cssVariableOverrides = useSelector(selectCssVariableOverrides);
+  const header = useSelector(selectHeaderConfig);
+  const publicConfig = useSelector(selectPublicConfig);
   const namespaceName = serviceManager.namespace.originalName;
   const languageKey = namespaceName
     ? "window_ariaChatRegionNamespace"
@@ -251,8 +276,16 @@ function AppShell({
     [],
   );
   const useCustomHostElement = Boolean(hostElement);
-  const headerDisplayName = header?.name;
-  const inputState = useSelector(selectInputState);
+  // Narrow subscription to just the fields AppShell consumes from the active
+  // input slice: file-upload + stop-streaming-button. With `shallowEqual`, this
+  // avoids re-rendering on every keystroke (rawValue/displayValue updates).
+  const inputFields = useSelector(
+    selectInputUploadAndStreamingFields,
+    shallowEqual,
+  );
+  // Effective input flags derived from config + runtime override.
+  const isInputReadonly = useSelector(selectInputIsReadonly);
+  const isInputFieldVisible = useSelector(selectInputFieldVisible);
   const agentDisplayState = useSelector(
     selectHumanAgentDisplayState,
     shallowEqual,
@@ -356,7 +389,6 @@ function AppShell({
     showUploadButtonDisabled,
   } = useInputCallbacks({
     serviceManager,
-    inputState,
     agentDisplayState,
     isHydrated,
     messagesRef,
@@ -375,7 +407,7 @@ function AppShell({
     serviceManager,
     inputRef,
     isConnectingOrConnected: agentDisplayState.isConnectingOrConnected,
-    allowMultipleFileUploads: inputState.allowMultipleFileUploads,
+    allowMultipleFileUploads: inputFields.allowMultipleFileUploads,
     requestInputFocus,
   });
 
@@ -395,7 +427,7 @@ function AppShell({
   // PendingUpload uses status "uploading" | "complete" | "error"; FileUpload uses FileStatusValue.
   const assistantPendingUploadsForDisplay: FileUpload[] = useMemo(
     () =>
-      inputState.pendingUploads.map((u: PendingUpload) => ({
+      inputFields.pendingUploads.map((u: PendingUpload) => ({
         id: u.id,
         file: u.file,
         status:
@@ -405,7 +437,7 @@ function AppShell({
         isError: u.status === "error",
         errorMessage: u.errorMessage,
       })),
-    [inputState.pendingUploads],
+    [inputFields.pendingUploads],
   );
 
   // Disable the assistant upload button when the max number of files has been reached.
@@ -413,13 +445,13 @@ function AppShell({
   const assistantUploadButtonDisabled =
     isAssistantUploadEnabled &&
     uploadConfig?.maxFiles !== undefined &&
-    inputState.pendingUploads.length >= uploadConfig.maxFiles;
+    inputFields.pendingUploads.length >= uploadConfig.maxFiles;
 
   // Derive InputConfig.error
   const inputError = useMemo(() => {
     // check file and pending uploads first
-    const fileWithError = inputState.files.find((f) => f.isError);
-    const pendingUploadWithError = inputState.pendingUploads.find(
+    const fileWithError = inputFields.files.find((f) => f.isError);
+    const pendingUploadWithError = inputFields.pendingUploads.find(
       (u) => u.status === "error",
     );
 
@@ -435,14 +467,18 @@ function AppShell({
 
     // Fall back to config-provided error if no file upload errors
     return publicConfig.input?.error;
-  }, [inputState.files, inputState.pendingUploads, publicConfig.input?.error]);
+  }, [
+    inputFields.files,
+    inputFields.pendingUploads,
+    publicConfig.input?.error,
+  ]);
 
   // Disable the human-agent upload button once its (optional) max number of files
   // is reached, on top of the existing connection/streaming gating.
   const humanAgentUploadButtonDisabled =
     showUploadButtonDisabled ||
-    (inputState.maxFiles !== undefined &&
-      inputState.files.length >= inputState.maxFiles);
+    (inputFields.maxFiles !== undefined &&
+      inputFields.files.length >= inputFields.maxFiles);
 
   // Panel callbacks
   const {
@@ -485,12 +521,12 @@ function AppShell({
             serviceManager.store.dispatch(actions.setHistoryPanelOpen(true));
           },
         },
-        ...(config.derived.header?.menuOptions || []),
+        ...(header?.menuOptions || []),
       ],
     };
   }, [
     historyPanelState.isMobile,
-    config.derived.header,
+    header,
     serviceManager,
     languagePack.history_new_chat,
     languagePack.history_view_chats,
@@ -784,7 +820,7 @@ function AppShell({
               showWorkspace={workspacePanelState.isOpen}
               workspaceLocation={workspacePanelState.options.preferredLocation}
               showHistory={
-                (config.public.history?.isOn ?? false) &&
+                (publicConfig.history?.isOn ?? false) &&
                 historyPanelState.isOpen
               }
               workspaceAriaLabel={languagePack.aria_workspaceRegion}
@@ -806,8 +842,6 @@ function AppShell({
             >
               <AppShellPanels
                 serviceManager={serviceManager}
-                languagePack={languagePack}
-                assistantName={publicConfig.assistantName}
                 isHydratingComplete={isHydratingComplete}
                 shouldShowHydrationPanel={shouldShowHydrationPanel}
                 onPanelOpenStart={onPanelOpenStart}
@@ -820,7 +854,6 @@ function AppShell({
                 isHomeScreenActive={showHomeScreen}
                 customPanelState={customPanelState}
                 customPanelRef={customPanelRef}
-                publicConfig={publicConfig}
                 showDisclaimer={showDisclaimer}
                 disclaimerRef={disclaimerRef}
                 onAcceptDisclaimer={onAcceptDisclaimer}
@@ -833,17 +866,15 @@ function AppShell({
                 viewSourcePanelState={viewSourcePanelState}
                 viewSourcePanelRef={viewSourcePanelRef}
                 allMessagesByID={allMessagesByID}
-                inputState={inputState}
-                config={config}
+                isInputReadonly={isInputReadonly}
                 catastrophicErrorPanelState={catastrophicErrorPanelState}
               />
 
-              {(config.derived.header?.isOn || headerConfigOverride?.isOn) && (
+              {(header?.isOn || headerConfigOverride?.isOn) && (
                 <div slot="header">
                   <Header
                     onClose={onClose}
                     onRestart={onRestart}
-                    headerDisplayName={headerDisplayName}
                     onToggleHomeScreen={onToggleHomeScreen}
                     isHomeScreenActive={showHomeScreen}
                     headerConfigOverride={headerConfigOverride}
@@ -854,7 +885,7 @@ function AppShell({
               <AppShellWriteableElements
                 serviceManager={serviceManager}
                 showHomeScreen={showHomeScreen}
-                renderWriteableElements={renderWriteableElements}
+                writeableElementsPresentKeys={writeableElementsPresentKeys}
               />
 
               <div
@@ -865,7 +896,6 @@ function AppShell({
                 {showHomeScreen ? (
                   <HomeScreen
                     isHydrated={true}
-                    homescreen={publicConfig.homescreen}
                     onSendInput={onSendInput}
                     onToggleHomeScreen={onToggleHomeScreen}
                   />
@@ -883,7 +913,6 @@ function AppShell({
                     intl={intl}
                     onEndHumanAgentChat={showConfirmEndChat}
                     locale={publicConfig.locale || "en"}
-                    useAITheme={theme.aiEnabled}
                     carbonTheme={theme.derivedCarbonTheme}
                   />
                 )}
@@ -894,50 +923,50 @@ function AppShell({
                   ref={inputRef}
                   disableInput={shouldDisableInput()}
                   disableSend={shouldDisableSend()}
-                  isInputVisible={inputState.fieldVisible}
+                  isInputVisible={isInputFieldVisible}
                   onSendInput={onSendInputFromInput}
                   onUserTyping={onUserTyping}
                   showUploadButton={
-                    inputState.allowFileUploads || isAssistantUploadEnabled
+                    inputFields.allowFileUploads || isAssistantUploadEnabled
                   }
                   disableUploadButton={
-                    inputState.allowFileUploads
+                    inputFields.allowFileUploads
                       ? humanAgentUploadButtonDisabled
                       : assistantUploadButtonDisabled
                   }
                   allowedFileUploadTypes={
-                    inputState.allowFileUploads
-                      ? inputState.allowedFileUploadTypes
+                    inputFields.allowFileUploads
+                      ? inputFields.allowedFileUploadTypes
                       : uploadConfig?.accept
                   }
                   allowMultipleFileUploads={
-                    inputState.allowFileUploads
-                      ? inputState.allowMultipleFileUploads
+                    inputFields.allowFileUploads
+                      ? inputFields.allowMultipleFileUploads
                       : uploadConfig?.maxFiles === undefined ||
                         uploadConfig.maxFiles > 1
                   }
                   maxFileSizeBytes={
-                    inputState.allowFileUploads
-                      ? inputState.maxFileSizeBytes
+                    inputFields.allowFileUploads
+                      ? inputFields.maxFileSizeBytes
                       : uploadConfig?.maxFileSizeBytes
                   }
                   maxFiles={
-                    inputState.allowFileUploads
-                      ? inputState.maxFiles
+                    inputFields.allowFileUploads
+                      ? inputFields.maxFiles
                       : uploadConfig?.maxFiles
                   }
                   pendingUploads={
-                    inputState.allowFileUploads
-                      ? inputState.files
+                    inputFields.allowFileUploads
+                      ? inputFields.files
                       : assistantPendingUploadsForDisplay
                   }
                   onFilesSelectedForUpload={
-                    inputState.allowFileUploads
+                    inputFields.allowFileUploads
                       ? onFilesSelectedForUpload
                       : onAssistantFilesSelectedForUpload
                   }
                   onRemoveFile={
-                    isAssistantUploadEnabled && !inputState.allowFileUploads
+                    isAssistantUploadEnabled && !inputFields.allowFileUploads
                       ? onRemoveAssistantUpload
                       : undefined
                   }
@@ -945,12 +974,12 @@ function AppShell({
                     languagePack[agentDisplayState.inputPlaceholderKey]
                   }
                   isStopStreamingButtonVisible={
-                    inputState.stopStreamingButtonState.isVisible
+                    inputFields.stopStreamingButtonState.isVisible
                   }
                   isStopStreamingButtonDisabled={
-                    inputState.stopStreamingButtonState.isDisabled
+                    inputFields.stopStreamingButtonState.isDisabled
                   }
-                  maxInputChars={config.public.input?.maxInputCharacters}
+                  maxInputChars={publicConfig.input?.maxInputCharacters}
                   trackInputState
                   rounded={
                     chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&

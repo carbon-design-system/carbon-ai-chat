@@ -73,7 +73,13 @@ function markdownItTaskLists(md: MarkdownIt) {
         1,
       );
       checkboxOpenToken.content = "";
-      checkboxOpenToken.attrs = [["checked", checked ? "true" : "false"]];
+      // Stamp the list item's source line as a stable identity so a consumer
+      // `checklist` renderer can correlate toggles across re-renders/streaming.
+      const itemLine = listItemToken.map?.[0];
+      checkboxOpenToken.attrs = [
+        ["checked", checked ? "true" : "false"],
+        ["data-cds-aichat-checklist-id", String(itemLine ?? "")],
+      ];
 
       const checkboxCloseToken: Token = new state.Token(
         "task_checkbox_close",

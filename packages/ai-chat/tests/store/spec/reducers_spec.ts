@@ -8,7 +8,10 @@
  */
 
 import { createAppStore } from "../../../src/chat/store/appStore";
-import { createAppConfig } from "../../../src/chat/store/doCreateStore";
+import {
+  buildLanguagePack,
+  createAppConfig,
+} from "../../../src/chat/store/doCreateStore";
 import actions from "../../../src/chat/store/actions";
 import { reducers } from "../../../src/chat/store/reducers";
 import { AppState } from "../../../src/types/state/AppState";
@@ -46,6 +49,7 @@ function createInitialAppState(): AppState {
 
   return {
     config,
+    languagePack: buildLanguagePack(config.public.strings),
     allMessageItemsByID: {},
     allMessagesByID: {},
     targetViewState: VIEW_STATE_ALL_CLOSED,
@@ -337,6 +341,57 @@ describe("Store Reducers", () => {
       expect(updatedState.config.public).not.toBe(
         (initialState as AppState).config.public,
       );
+    });
+
+    it("preserves every non-config slice reference when only config changes", () => {
+      const before = store.getState() as AppState;
+
+      // A config-only dispatch must take the shallow-copy path so unrelated
+      // slices keep their references (the old unconditional deep merge cloned the
+      // whole tree and churned every slice, forcing avoidable re-renders).
+      store.dispatch(
+        actions.changeState({
+          config: {
+            public: {
+              debug: !before.config.public.debug,
+            },
+          },
+        }),
+      );
+
+      const after = store.getState() as AppState;
+
+      // Config changed...
+      expect(after.config).not.toBe(before.config);
+
+      // ...but every non-config slice keeps its identity.
+      expect(after.assistantInputState).toBe(before.assistantInputState);
+      expect(after.humanAgentState).toBe(before.humanAgentState);
+      expect(after.persistedToBrowserStorage).toBe(
+        before.persistedToBrowserStorage,
+      );
+      expect(after.assistantMessageState).toBe(before.assistantMessageState);
+      expect(after.allMessagesByID).toBe(before.allMessagesByID);
+      expect(after.allMessageItemsByID).toBe(before.allMessageItemsByID);
+      expect(after.customPanelState).toBe(before.customPanelState);
+      expect(after.responsePanelState).toBe(before.responsePanelState);
+    });
+
+    it("still deep-merges a non-config slice update", () => {
+      const before = store.getState() as AppState;
+
+      store.dispatch(
+        actions.changeState({
+          assistantInputState: { isReadonly: true },
+        }),
+      );
+
+      const after = store.getState() as AppState;
+      // The targeted slice is updated (positive case, so the config-only
+      // shallow-copy branch is not the only path that runs) and the deep merge
+      // applies the change correctly.
+      expect(after.assistantInputState).not.toBe(before.assistantInputState);
+      expect(after.assistantInputState.isReadonly).toBe(true);
     });
   });
 

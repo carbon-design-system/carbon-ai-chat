@@ -31,7 +31,7 @@ ID rules:
 - A returned message whose `id` differs from `messageID` throws a `TypeError`.
 - Returning `null`/`undefined`, or a non-assistant message (a request or a human-agent message), throws a `TypeError`.
 
-## The `state` argument
+## The state argument
 
 The second argument is a {@link MessageState} describing the lifecycle the chat records for this message after it applies the upsert:
 

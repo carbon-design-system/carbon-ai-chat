@@ -8,25 +8,23 @@
  */
 
 /**
- * Example: Carbon AI Chat — Markdown override (code snippet + table), web
- * components flavor.
+ * Example: Carbon AI Chat — Markdown overrides, web components flavor.
  *
- * Demonstrates two `WCCustomMarkdownRenderers` element-replacement hooks:
- *   - `codeBlock` — render fenced code through a `cds-aichat-code-snippet`
- *     with `detectLanguage` set to `false` (a bare fence shows only the line
- *     count, no detected-language label).
- *   - `table` — render markdown tables through a Carbon `cds-table` from
- *     `@carbon/web-components`, rendered into a cached wrapper with Lit's
- *     `render`.
+ * Demonstrates the five `WCCustomMarkdownRenderers` hooks together:
+ *   - `codeBlock` — element replacement: render fenced code through a
+ *     `cds-aichat-code-snippet` with `detectLanguage` set to `false`. The
+ *     renderer reuses cached element references (keyed by `slotName`) so the
+ *     markdown element does not thrash the DOM during streaming re-renders.
+ *   - `table` — element replacement: render markdown tables through a Carbon
+ *     `cds-table` (rendered with Lit) instead of the default `cds-aichat-table`.
+ *   - `link` — attribute transform: append a `utm_source` query param and
+ *     force anchors to open in the same tab (`target="_self"`).
+ *   - `image` — attribute transform: resolve a custom `app-image:` reference
+ *     to a real `src` and make the image clickable (alert on click).
+ *   - `checklist` — behavior hook: make task-list checkboxes actionable, log
+ *     toggles, and persist state via `getChecked`.
  *
- * The chat element is declared in `index.html` directly in page light DOM
- * (no `<my-app>` wrapper) for consistency with the rest of the
- * markdown-extensibility examples.
- *
- * Per the API contract, both renderers reuse the same element references
- * across calls (cached by `slotName`) so the markdown component does not
- * thrash the DOM during streaming re-renders.
- *
+ * The chat element is declared in `index.html` directly in page light DOM.
  * Start reading at the `el.markdown = ...` assignment below.
  */
 
@@ -39,6 +37,8 @@ import { html, render } from "lit";
 
 import {
   type MarkdownRendererCodeBlockArgs,
+  type MarkdownRendererImageArgs,
+  type MarkdownRendererLinkArgs,
   type MarkdownRendererTableArgs,
   type WCMarkdown,
 } from "@carbon/ai-chat";
@@ -49,17 +49,27 @@ import { customSendMessage } from "./customSendMessage";
 // update the same DOM nodes in place instead of creating new ones each pass.
 // The markdown element re-invokes the callback on every reconcile; returning
 // the same reference is the documented way to avoid DOM churn.
-const renderedHosts = new Map<string, HTMLElement>();
+const codeBlockHosts = new Map<string, HTMLElement>();
 const tableHosts = new Map<string, HTMLElement>();
+
+// Checklist state, persisted across re-renders and fed back via `getChecked`.
+const checklistState = new Map<string, boolean>();
+
+// The image the `image` override resolves the markdown's `app-image:lions`
+// reference to — the same photo the demo site uses for its "image" utterance.
+const DEMO_IMAGE =
+  "https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg";
 
 const MARKDOWN_CONFIG: WCMarkdown = {
   customRenderers: {
+    // Element replacement — render fenced code without a detected-language
+    // label, reusing cached hosts to avoid DOM churn while streaming.
     codeBlock: ({
       language,
       code,
       slotName,
     }: MarkdownRendererCodeBlockArgs) => {
-      let card = renderedHosts.get(slotName);
+      let card = codeBlockHosts.get(slotName);
       let snippet: HTMLElement | null = null;
       if (!card) {
         card = document.createElement("cds-aichat-card");
@@ -70,7 +80,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
         snippet.setAttribute("data-rounded", "");
         wrap.appendChild(snippet);
         card.appendChild(wrap);
-        renderedHosts.set(slotName, card);
+        codeBlockHosts.set(slotName, card);
       } else {
         snippet = card.querySelector("cds-aichat-code-snippet");
       }
@@ -85,9 +95,10 @@ const MARKDOWN_CONFIG: WCMarkdown = {
       }
       return card;
     },
-    // Render markdown tables through a Carbon `cds-table`. The renderer must
-    // return an HTMLElement, so render the `cds-table` template into a cached
-    // wrapper with Lit's `render` (stable across streaming re-renders).
+    // Element replacement — render markdown tables through a Carbon `cds-table`.
+    // The renderer must return an HTMLElement, so render the `cds-table`
+    // template into a cached wrapper with Lit's `render` (stable across
+    // streaming re-renders).
     table: ({ headers, rows, slotName }: MarkdownRendererTableArgs) => {
       let wrapper = tableHosts.get(slotName);
       if (!wrapper) {
@@ -124,6 +135,48 @@ const MARKDOWN_CONFIG: WCMarkdown = {
         wrapper,
       );
       return wrapper;
+    },
+    // Attribute transform — rewrite the href and keep navigation in the same tab.
+    link: ({ href }: MarkdownRendererLinkArgs) => {
+      try {
+        const url = new URL(href);
+        url.searchParams.set("utm_source", "ai-chat");
+        return {
+          href: url.toString(),
+          target: "_self",
+          rel: "noopener noreferrer",
+        };
+      } catch {
+        return null;
+      }
+    },
+    // Attribute transform — resolve a custom image reference to a real src and
+    // make the image clickable. The inline `onclick` works because this example
+    // does not enable HTML sanitization; a sanitized/CSP setup would instead
+    // delegate a click listener on the host.
+    image: ({ src, attributes }: MarkdownRendererImageArgs) => {
+      if (src.startsWith("app-image:")) {
+        return {
+          src: DEMO_IMAGE,
+          attributes: {
+            ...attributes,
+            style:
+              "cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;",
+            title: "Click me",
+            onclick: "alert('You clicked the image!')",
+          },
+        };
+      }
+      return null;
+    },
+    // Behavior hook — persist toggles and reflect them back on re-render.
+    checklist: {
+      getChecked: ({ id, checked }) =>
+        checklistState.has(id) ? checklistState.get(id) : checked,
+      onToggle: ({ id, label, checked }) => {
+        checklistState.set(id, checked);
+        console.log(`[checklist] "${label}" → ${checked ? "done" : "todo"}`);
+      },
     },
   },
 };

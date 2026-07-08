@@ -46,7 +46,7 @@ Read-only access to design frames. Use to pull frame metadata, component names, 
 2. Call Carbon MCP `code_search` with `filters.component_type` set per the table.
 3. Author in the matching package following its existing patterns: [packages/ai-chat/AGENTS.md](../packages/ai-chat/AGENTS.md) or [packages/ai-chat-components/AGENTS.md](../packages/ai-chat-components/AGENTS.md).
 4. Apply accessibility from [accessibility.md](accessibility.md) — Figma frames rarely encode live-region or focus-order requirements.
-5. Verify per the per-area gate in [root AGENTS.md Definition of done](../AGENTS.md#definition-of-done).
+5. Verify per the per-area gate in [definition-of-done.md](definition-of-done.md).
 
 ## Code Connect
 

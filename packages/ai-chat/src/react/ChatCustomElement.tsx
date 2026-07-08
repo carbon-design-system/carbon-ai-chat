@@ -22,6 +22,7 @@ import {
   BusEventViewPreChange,
 } from "../types/events/eventBusTypes";
 import { ChatContainer, ChatContainerProps } from "./ChatContainer";
+import { FLATTENED_PUBLIC_CONFIG_FIELDS } from "../web-components/shared/flattenedPublicConfig";
 import { isBrowser } from "../chat/utils/browserUtils";
 
 /**
@@ -145,48 +146,35 @@ function ChatCustomElement(
     Omit<HTMLAttributes<HTMLDivElement>, keyof ChatCustomElementProps>,
 ) {
   const {
-    strings,
-    serviceDeskFactory,
-    serviceDesk,
     onBeforeRender,
     onAfterRender,
+    onViewChange,
+    onViewPreChange,
     renderUserDefinedResponse,
     renderUserDefinedInputNode,
     renderCustomMessageFooter,
     renderWriteableElements,
     className,
     id,
-    onViewChange,
-    onViewPreChange,
-    // Flattened PublicConfig properties
-    onError,
-    openChatByDefault,
-    disclaimer,
-    disableCustomElementMobileEnhancements,
-    debug,
-    exposeServiceManagerForTesting,
-    injectCarbonTheme,
-    aiEnabled,
-    shouldTakeFocusIfOpensAutomatically,
-    namespace,
-    shouldSanitizeHTML,
-    header,
-    history,
-    layout,
-    messaging,
-    isReadonly,
-    persistFeedback,
-    assistantName,
-    assistantAvatarUrl,
-    locale,
-    homescreen,
-    launcher,
-    input,
-    keyboardShortcuts,
-    upload,
-    markdown,
-    ...domProps
+    // Everything else is either a flattened PublicConfig field (forwarded to
+    // ChatContainer) or an arbitrary DOM attribute (forwarded to the wrapper
+    // element). They are split below using the shared field table, so no config
+    // field is ever hand-listed here.
+    ...rest
   } = props;
+
+  // Pull the flattened config fields out of `rest` using the single shared
+  // table, leaving only the pass-through DOM attributes for the wrapper element.
+  // ChatContainer reconstructs the PublicConfig from these flattened props
+  // itself, so both surfaces share one field list and cannot drift.
+  const configProps: Record<string, unknown> = {};
+  const wrapperDomProps: Record<string, unknown> = { ...rest };
+  for (const field of FLATTENED_PUBLIC_CONFIG_FIELDS) {
+    if (field.name in rest) {
+      configProps[field.name] = (rest as Record<string, unknown>)[field.name];
+      delete wrapperDomProps[field.name];
+    }
+  }
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [elementReady, setElementReady] = useState(false);
@@ -232,44 +220,17 @@ function ChatCustomElement(
   );
 
   return (
-    <div className={className} id={id} ref={containerRef} {...domProps}>
+    <div
+      className={className}
+      id={id}
+      ref={containerRef}
+      {...(wrapperDomProps as HTMLAttributes<HTMLDivElement>)}
+    >
       {elementReady && containerRef.current && (
         <ChatContainer
-          // Flattened PublicConfig properties
-          onError={onError}
-          openChatByDefault={openChatByDefault}
-          disclaimer={disclaimer}
-          disableCustomElementMobileEnhancements={
-            disableCustomElementMobileEnhancements
-          }
-          debug={debug}
-          exposeServiceManagerForTesting={exposeServiceManagerForTesting}
-          injectCarbonTheme={injectCarbonTheme}
-          aiEnabled={aiEnabled}
-          shouldTakeFocusIfOpensAutomatically={
-            shouldTakeFocusIfOpensAutomatically
-          }
-          namespace={namespace}
-          shouldSanitizeHTML={shouldSanitizeHTML}
-          header={header}
-          history={history}
-          layout={layout}
-          messaging={messaging}
-          isReadonly={isReadonly}
-          persistFeedback={persistFeedback}
-          assistantName={assistantName}
-          assistantAvatarUrl={assistantAvatarUrl}
-          locale={locale}
-          homescreen={homescreen}
-          launcher={launcher}
-          input={input}
-          keyboardShortcuts={keyboardShortcuts}
-          upload={upload}
-          markdown={markdown}
-          // Other ChatContainer props
-          strings={strings}
-          serviceDeskFactory={serviceDeskFactory}
-          serviceDesk={serviceDesk}
+          // Flattened PublicConfig fields, split from the shared field table.
+          {...(configProps as ChatContainerProps)}
+          // ChatContainer-specific props (not part of PublicConfig).
           onBeforeRender={onBeforeRenderOverride}
           onAfterRender={onAfterRender}
           renderUserDefinedResponse={renderUserDefinedResponse}

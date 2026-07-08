@@ -19,8 +19,6 @@ import React, {
   useState,
 } from "react";
 import { useIntl } from "../hooks/useIntl";
-import { useSelector } from "../hooks/useSelector";
-import { shallowEqual } from "../store/appStore";
 
 import {
   BusEventFeedback,
@@ -51,11 +49,11 @@ import { Image } from "./responseTypes/image/Image";
 import { OptionComponent } from "./responseTypes/options/OptionComponent";
 import { StreamingRichText } from "./responseTypes/util/StreamingRichText";
 import { VideoComponent } from "./responseTypes/video/VideoComponent";
-import { useLanguagePack } from "../hooks/useLanguagePack";
+import { useSelector } from "../hooks/useSelector";
+import { shallowEqual } from "../store/appStore";
+import { AppState } from "../../types/state/AppState";
 import { useUUID } from "../hooks/useUUID";
 import actions from "../store/actions";
-import { selectHumanAgentDisplayState } from "../store/selectors";
-import { AppState } from "../../types/state/AppState";
 import {
   LocalMessageItem,
   MessageErrorState,
@@ -107,6 +105,35 @@ import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/comp
 import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
 
 /**
+ * The exact language-pack strings MessageTypeComponent renders. Selected as a
+ * narrow bag (with `shallowEqual`) so the per-message component re-renders only
+ * when one of these strings changes — not on any language-pack edit.
+ */
+const selectMessageTypeStrings = (state: AppState) => ({
+  chainOfThought_explainabilityLabel:
+    state.languagePack.chainOfThought_explainabilityLabel,
+  chainOfThought_inputLabel: state.languagePack.chainOfThought_inputLabel,
+  chainOfThought_outputLabel: state.languagePack.chainOfThought_outputLabel,
+  chainOfThought_statusFailedLabel:
+    state.languagePack.chainOfThought_statusFailedLabel,
+  chainOfThought_statusProcessingLabel:
+    state.languagePack.chainOfThought_statusProcessingLabel,
+  chainOfThought_statusSucceededLabel:
+    state.languagePack.chainOfThought_statusSucceededLabel,
+  chainOfThought_toolLabel: state.languagePack.chainOfThought_toolLabel,
+  errors_imageSource: state.languagePack.errors_imageSource,
+  feedback_categoriesLabel: state.languagePack.feedback_categoriesLabel,
+  feedback_defaultPlaceholder: state.languagePack.feedback_defaultPlaceholder,
+  feedback_defaultPrompt: state.languagePack.feedback_defaultPrompt,
+  feedback_defaultTitle: state.languagePack.feedback_defaultTitle,
+  feedback_negativeLabel: state.languagePack.feedback_negativeLabel,
+  feedback_positiveLabel: state.languagePack.feedback_positiveLabel,
+  feedback_submitLabel: state.languagePack.feedback_submitLabel,
+  fileSharing_fileIcon: state.languagePack.fileSharing_fileIcon,
+  messages_responseStopped: state.languagePack.messages_responseStopped,
+});
+
+/**
  * This component renders a specific message component based on a message's type.
  */
 function MessageTypeComponent(props: MessageTypeComponentProps) {
@@ -119,19 +146,12 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   } = props;
 
   const { formatMessage } = useIntl();
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(selectMessageTypeStrings, shallowEqual);
+  const aiEnabled = useSelector(
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+  );
   const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const chainOfThoughtRef = useRef<CDSAIChatChainOfThought>(null);
-  const agentDisplayState = useSelector(
-    selectHumanAgentDisplayState,
-    shallowEqual,
-  );
-  const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState,
-  );
-  const persistedHumanAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
-  );
   const feedbackID = message.item.message_item_options?.feedback?.id;
   const chainOfThoughtPanelId = useUUID();
   const feedbackPanelID = useUUID();
@@ -239,7 +259,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           {isFile && (
             <Attachment
               className="cds-aichat--sent-file-icon"
-              aria-label={props.languagePack.fileSharing_fileIcon}
+              aria-label={languagePack.fileSharing_fileIcon}
             />
           )}
           {/* The use of the heading role here is a compromise to enable the use of the
@@ -416,7 +436,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     originalMessage: Message,
   ) {
     const {
-      languagePack,
       requestInputFocus,
       serviceManager,
       disableUserInputs,
@@ -428,7 +447,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       <OptionComponent
         localMessage={message}
         originalMessage={originalMessage}
-        languagePack={languagePack}
         disableUserInputs={disableUserInputs || !isMessageForInput}
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
@@ -438,10 +456,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   function renderImage(message: LocalMessageItem<ImageItem>) {
-    const { languagePack, serviceManager } = props;
-    const { aiEnabled } =
-      serviceManager.store.getState().config.derived.themeWithDefaults;
-
     return (
       <Image
         imageError={languagePack.errors_imageSource}
@@ -528,24 +542,13 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     message: LocalMessageItem,
     originalMessage: MessageResponse,
   ) {
-    const {
-      languagePack,
-      config,
-      serviceManager,
-      disableUserInputs,
-      isMessageForInput,
-    } = props;
+    const { serviceManager, disableUserInputs, isMessageForInput } = props;
 
     return (
       <ConnectToHumanAgent
         localMessage={message}
         originalMessage={originalMessage}
-        languagePack={languagePack}
-        config={config}
         serviceManager={serviceManager}
-        humanAgentState={humanAgentState}
-        agentDisplayState={agentDisplayState}
-        persistedHumanAgentState={persistedHumanAgentState}
         disableUserInputs={disableUserInputs || !isMessageForInput}
         requestFocus={props.requestInputFocus}
       />

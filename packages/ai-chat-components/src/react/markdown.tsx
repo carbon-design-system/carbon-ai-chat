@@ -66,9 +66,12 @@ ForwardedBaseMarkdown.displayName = "BaseMarkdown";
 const BaseMarkdown = withWebComponentBridge(ForwardedBaseMarkdown);
 
 /**
- * React-flavored variant of {@link MarkdownCustomRenderers}: each callback
- * may return a `ReactNode` (portaled into a light-DOM slot host) in addition
- * to the framework-neutral `HTMLElement | null`.
+ * React-flavored variant of {@link MarkdownCustomRenderers}. The element
+ * replacements (`table`, `codeBlock`) may additionally return a `ReactNode`
+ * (portaled into a light-DOM slot host) on top of the framework-neutral
+ * `HTMLElement | null`. The attribute transforms (`link`, `image`) and the
+ * `checklist` behavior hook return plain data, so they keep the base
+ * signatures unchanged.
  */
 export interface MarkdownReactCustomRenderers {
   /**
@@ -87,6 +90,12 @@ export interface MarkdownReactCustomRenderers {
   codeBlock?: (
     args: MarkdownRendererCodeBlockArgs,
   ) => ReactNode | HTMLElement | null;
+  /** Transform how links render. See {@link MarkdownCustomRenderers.link}. */
+  link?: MarkdownCustomRenderers["link"];
+  /** Transform how images render. See {@link MarkdownCustomRenderers.image}. */
+  image?: MarkdownCustomRenderers["image"];
+  /** Make task-list checkboxes actionable. See {@link MarkdownCustomRenderers.checklist}. */
+  checklist?: MarkdownCustomRenderers["checklist"];
 }
 
 type BaseMarkdownProps = Omit<
@@ -254,6 +263,17 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
     }
     if (customRenderers.codeBlock) {
       out.codeBlock = bridge(customRenderers.codeBlock);
+    }
+    // Attribute transforms / behavior hook return plain data (not DOM), so
+    // they skip the portal bridge and pass straight through.
+    if (customRenderers.link) {
+      out.link = customRenderers.link;
+    }
+    if (customRenderers.image) {
+      out.image = customRenderers.image;
+    }
+    if (customRenderers.checklist) {
+      out.checklist = customRenderers.checklist;
     }
     return out;
   }, [customRenderers, setPortalForSlot]);

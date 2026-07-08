@@ -8,17 +8,18 @@
  */
 
 /**
- * Mock backend for the markdown-override example. Every reply contains two
- * fenced code blocks (so the `detectLanguage` override is visible at a glance)
- * plus a markdown table (rendered through a Carbon `DataTable` by the `table`
- * override):
+ * Mock backend for the markdown-override example. The reply exercises every
+ * `markdown.customRenderers` hook so each override is visible at a glance:
  *
- *   1. A fence tagged ` ```python ` — the header shows "Python" as usual
- *      because the explicit `language` always renders its label.
- *   2. An untagged fence — with `detectLanguage` set to `false`, the
- *      snippet header omits the detected language label and shows only
- *      the line count.
- *   3. A markdown table — replaced by a Carbon `DataTable`.
+ *   1. `codeBlock` — a bare fence renders with `detectLanguage` set to
+ *      `false`, so the snippet header shows only the line count.
+ *   2. `table` — the markdown table renders through a Carbon data table.
+ *   3. `link` — the anchor's `href` gains a `utm_source` query param and is
+ *      forced to open in the same tab (`target="_self"`).
+ *   4. `image` — a custom `app-image:` reference resolves to a real source and
+ *      the image is clickable (alert on click).
+ *   5. `checklist` — the task list becomes actionable; toggles are logged and
+ *      persisted via `getChecked`.
  */
 
 import {
@@ -28,33 +29,46 @@ import {
   MessageResponseTypes,
 } from "@carbon/ai-chat";
 
-const REPLY = `This example overrides the default fenced-code renderer with a \`cds-aichat-code-snippet\` whose new \`detectLanguage\` flag is explicitly set to \`false\` — overriding the markdown component's default of \`true\`.
+const REPLY = `This example wires up five \`markdown.customRenderers\` hooks at once.
 
-First, a fence with an explicit language hint — the header shows "Python" as usual and the code is highlighted:
+### Code block
 
-\`\`\`python
-def greet(name):
-    print(f"Hello, {name}!")
-
-greet("World")
-\`\`\`
-
-Now the same code, fenced without a language. With \`detectLanguage\` set to \`false\`, the snippet header omits the detected label and shows only the line count:
+The \`codeBlock\` hook swaps the default fenced-code renderer for a \`cds-aichat-code-snippet\` with \`detectLanguage\` set to \`false\`, so a bare fence shows only the line count — no detected-language label:
 
 \`\`\`
 def greet(name):
     print(f"Hello, {name}!")
-
-greet("World")
 \`\`\`
 
-The reply also includes a markdown table, rendered through a Carbon \`DataTable\` by the \`table\` custom renderer:
+### Table
+
+The \`table\` hook renders markdown tables through a Carbon \`DataTable\` instead of the default \`cds-aichat-table\`:
 
 | Service | Status | Region |
 | --- | --- | --- |
 | API | Healthy | us-east-1 |
 | Worker | Degraded | us-east-1 |
 | Database | Healthy | us-west-2 |
+
+### Link
+
+The \`link\` hook rewrites anchors — here it appends a \`utm_source\` query param and keeps navigation in the same tab (\`target="_self"\`). Hover to see the rewritten URL:
+
+[Carbon Design System](https://carbondesignsystem.com)
+
+### Image
+
+The \`image\` hook resolves a custom \`app-image:\` reference to a real source and makes the image clickable — click it for an alert:
+
+![Two lions](app-image:lions)
+
+### Checklist
+
+The \`checklist\` hook makes task lists actionable. Toggle a box and watch the console; the state is persisted via \`getChecked\` so it survives re-renders:
+
+- [ ] Review the design
+- [x] Wire up the API
+- [ ] Ship it
 `;
 
 async function customSendMessage(

@@ -37,6 +37,7 @@ import "./demo-direction-switcher";
 import "./demo-chat-version-switcher";
 import "./demo-keyboard-shortcut-switcher";
 import "@carbon/web-components/es/components/button/index.js";
+import "./demo-chat-avatar-switcher";
 
 const { defaultConfig, defaultSettings } = getSettings();
 
@@ -698,6 +699,18 @@ export class DemoBody extends LitElement {
                     <demo-chat-feedback-switcher
                       .config=${this.config}
                     ></demo-chat-feedback-switcher>
+                  </div>
+                  <div
+                    class="config-section"
+                    role="group"
+                    aria-labelledby="avatar-heading"
+                  >
+                    <div class="config-section__title" id="avatar-heading">
+                      Avatar
+                    </div>
+                    <demo-chat-avatar-switcher
+                      .config=${this.config}
+                    ></demo-chat-avatar-switcher>
                   </div>
                   <div
                     class="config-section"

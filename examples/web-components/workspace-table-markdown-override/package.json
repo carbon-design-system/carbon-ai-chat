@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-workspace-table-markdown-override",
-  "version": "1.16.0",
+  "version": "1.17.0-rc.0",
   "private": true,
   "type": "module",
   "description": "Overrides the markdown table renderer with a card-wrapped preview and an 'Open in workspace' icon button that displays the full table in a workspace panel.",
@@ -12,8 +12,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.16.0",
-    "@carbon/ai-chat-components": "^1.6.0",
+    "@carbon/ai-chat": "^1.17.0-rc.0",
+    "@carbon/ai-chat-components": "^1.7.0-rc.0",
     "@carbon/icons": "^11.40.0",
     "@carbon/react": "^1.68.0",
     "@carbon/web-components": "^2.54.0",

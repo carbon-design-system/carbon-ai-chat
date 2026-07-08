@@ -24,7 +24,10 @@ Connects the chat to IBM watsonx.ai via a local Express proxy that streams token
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisites:**
+
+- **Node.js v22 or higher** — required by `concurrently` v10.
+- **Build the core packages first** — examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
 
 Copy `.env.example` to `.env` and fill in your `WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_URL`, and optional `WATSONX_MODEL_ID` before starting.
 

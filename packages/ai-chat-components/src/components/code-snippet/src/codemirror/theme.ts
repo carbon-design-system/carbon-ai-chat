@@ -70,11 +70,6 @@ export function makeScrollerFocusable() {
 export function createCarbonTheme() {
   return EditorView.theme({
     ".cm-editor": {
-      fontFamily: "var(--cds-code-01-font-family, 'IBM Plex Mono', monospace)",
-      fontSize: "var(--cds-code-01-font-size, 0.875rem)",
-      fontWeight: "var(--cds-code-01-font-weight, 400)",
-      letterSpacing: "var(--cds-code-01-letter-spacing, 0.16px)",
-      lineHeight: "var(--cds-code-01-line-height, 1.5)",
       background: "var(--cds-layer, #ffffff)",
       color: "var(--cds-text-primary, #161616)",
     },
@@ -113,8 +108,13 @@ export function createCarbonTheme() {
     // should inherit those bounds rather than fight them with its own
     // independent floor/ceiling.
     ".cm-scroller": {
-      maxBlockSize: "var(--cds-snippet-max-height)",
-      minBlockSize: "var(--cds-snippet-min-height)",
+      fontFamily: "var(--cds-code-01-font-family, 'IBM Plex Mono', monospace)",
+      fontSize: "var(--cds-code-01-font-size, 0.875rem)",
+      fontWeight: "var(--cds-code-01-font-weight, 400)",
+      letterSpacing: "var(--cds-code-01-letter-spacing, 0.16px)",
+      lineHeight: "var(--cds-code-01-line-height, 1.5)",
+      maxBlockSize: "var(--cds-snippet-max-height, 16rem)",
+      minBlockSize: "var(--cds-snippet-min-height, auto)",
     },
 
     // Fold gutter / caret icons

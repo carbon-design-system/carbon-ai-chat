@@ -9,24 +9,27 @@
 
 import { useCallback, useMemo } from "react";
 import actions from "../store/actions";
+import { useSelector } from "./useSelector";
 import {
   selectIsInputToHumanAgent,
   selectInputState,
+  selectInputIsReadonly,
+  selectInputIsDisabled,
 } from "../store/selectors";
+import { shallowEqual } from "../store/appStore";
 import { createMessageRequestForText } from "../utils/messageUtils";
 import {
   BusEventType,
   MessageSendSource,
 } from "../../types/events/eventBusTypes";
 import type { ServiceManager } from "../services/ServiceManager";
-import type { InputState } from "../../types/state/AppState";
+import type { AppState } from "../../types/state/AppState";
 import type { SendOptions } from "../../types/instance/ChatInstance";
 import type { MessagesComponentClass } from "../components-legacy/MessagesComponent";
 import type { JSONContent } from "@tiptap/core";
 
 interface UseInputCallbacksProps {
   serviceManager: ServiceManager;
-  inputState: InputState;
   agentDisplayState: {
     isConnectingOrConnected: boolean;
     disableInput: boolean;
@@ -58,7 +61,6 @@ interface UseInputCallbacksReturn {
  */
 export function useInputCallbacks({
   serviceManager,
-  inputState,
   agentDisplayState,
   isHydrated,
   messagesRef,
@@ -151,31 +153,33 @@ export function useInputCallbacks({
     }
   }, [agentDisplayState, messagesRef]);
 
+  // Effective values derived from config + runtime override (see selectors).
+  const isInputReadonly = useSelector(selectInputIsReadonly);
+  const isInputDisabled = useSelector(selectInputIsDisabled);
+
   const shouldDisableInput = useCallback(() => {
-    return (
-      inputState.isReadonly ||
-      inputState.isDisabled ||
-      agentDisplayState.disableInput
-    );
-  }, [
-    inputState.isReadonly,
-    inputState.isDisabled,
-    agentDisplayState.disableInput,
-  ]);
+    return isInputReadonly || isInputDisabled || agentDisplayState.disableInput;
+  }, [isInputReadonly, isInputDisabled, agentDisplayState.disableInput]);
 
   const shouldDisableSend = useCallback(() => {
     return shouldDisableInput() || !isHydrated;
   }, [shouldDisableInput, isHydrated]);
 
+  // One subscription with shallowEqual: a keystroke (rawValue/displayValue
+  // update) does not change either field, so this skips re-rendering then.
+  const { files, allowMultipleFileUploads } = useSelector((state: AppState) => {
+    const slice = selectInputState(state);
+    return {
+      files: slice.files,
+      allowMultipleFileUploads: slice.allowMultipleFileUploads,
+    };
+  }, shallowEqual);
+
   const showUploadButtonDisabled = useMemo(() => {
-    const numFiles = inputState.files?.length ?? 0;
+    const numFiles = files?.length ?? 0;
     const anyCurrentFiles = numFiles > 0 || humanAgentFileUploadInProgress;
-    return anyCurrentFiles && !inputState.allowMultipleFileUploads;
-  }, [
-    inputState.files,
-    inputState.allowMultipleFileUploads,
-    humanAgentFileUploadInProgress,
-  ]);
+    return anyCurrentFiles && !allowMultipleFileUploads;
+  }, [files, allowMultipleFileUploads, humanAgentFileUploadInProgress]);
 
   return {
     onSendInput,

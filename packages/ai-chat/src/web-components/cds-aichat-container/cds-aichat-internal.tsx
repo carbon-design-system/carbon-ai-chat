@@ -16,13 +16,24 @@ import { css, LitElement, PropertyValues } from "lit";
 import { property } from "lit/decorators.js";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
+import isEqual from "lodash-es/isEqual.js";
 
 import ChatAppEntry from "../../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import type { RenderUserDefinedInputNode } from "../../types/component/ChatContainer";
-import type { MarkdownConfigContextValue } from "../../chat/contexts/MarkdownConfigContext";
+
+/**
+ * Structural `hasChanged` for object properties: Lit defaults to identity, which
+ * would re-render the React app whenever the host (or `cds-aichat-container`'s
+ * `resolvedConfig` getter, which rebuilds a fresh object each render) hands us a
+ * new reference with unchanged content. Comparing by value keeps the React
+ * reconciliation pass for genuine changes only. Functions inside are compared by
+ * reference (lodash `isEqual` semantics), so a changed callback still counts.
+ */
+const deepChanged = (value: unknown, previous: unknown): boolean =>
+  !isEqual(value, previous);
 
 @carbonElement("cds-aichat-internal")
 class ChatContainerInternal extends LitElement {
@@ -44,7 +55,7 @@ class ChatContainerInternal extends LitElement {
    * they live on `PublicConfig` and are populated by the parent web component's
    * `resolvedConfig` getter.
    */
-  @property({ type: Object })
+  @property({ type: Object, hasChanged: deepChanged })
   config: PublicConfig;
 
   /**
@@ -75,17 +86,6 @@ class ChatContainerInternal extends LitElement {
   @property({ attribute: false })
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
-  /**
-   * Merged markdown config (framework-neutral `markdownItPlugins` plus
-   * layer-specific `customRenderers`). Forwarded to the React app via
-   * `MarkdownConfigContext` so {@link MarkdownWithDefaults} can portal
-   * consumer overrides into the rendered markdown components.
-   *
-   * @experimental
-   */
-  @property({ attribute: false })
-  markdown?: MarkdownConfigContextValue;
-
   firstUpdated() {
     if (this.config) {
       this.renderReactApp();
@@ -93,16 +93,12 @@ class ChatContainerInternal extends LitElement {
   }
 
   updated(changedProperties: PropertyValues) {
-    // Re-render React app when config or other properties change
-    if (
-      this.config &&
-      (changedProperties.has("config") ||
-        changedProperties.has("onBeforeRender") ||
-        changedProperties.has("onAfterRender") ||
-        changedProperties.has("element") ||
-        changedProperties.has("renderUserDefinedInputNode") ||
-        changedProperties.has("markdown"))
-    ) {
+    // Re-render the React app when any reactive property changes. Every reactive
+    // property on this host is forwarded to `ChatAppEntry`, so deriving the
+    // trigger from the live `changedProperties` set — rather than a
+    // hand-maintained list of names — means a newly-added forwarded prop can't be
+    // silently dropped from the re-render path.
+    if (this.config && changedProperties.size > 0) {
       this.renderReactApp();
     }
   }
@@ -129,7 +125,6 @@ class ChatContainerInternal extends LitElement {
         container={container}
         element={this.element}
         chatWrapper={this}
-        markdown={this.markdown}
       />,
     );
   }

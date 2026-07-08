@@ -65,7 +65,7 @@ npx jest -t "pattern"
 
 ## Definition of done
 
-See root [AGENTS.md](../../AGENTS.md#definition-of-done) for the gate. Additionally: if you changed anything under `src/types/`, `aiChatEntry.tsx`, or `serverEntry.ts`, verify a consumer (`demo/` or an example) still builds against the new artifacts.
+See [definition-of-done.md](../../references/definition-of-done.md) for the gate. Additionally: if you changed anything under `src/types/`, `aiChatEntry.tsx`, or `serverEntry.ts`, verify a consumer (`demo/` or an example) still builds against the new artifacts.
 
 ## Authoring rules
 

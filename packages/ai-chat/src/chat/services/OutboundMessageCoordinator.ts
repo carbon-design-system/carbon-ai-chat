@@ -65,8 +65,7 @@ class OutboundMessageCoordinator {
    */
   private addErrorMessage() {
     const { store } = this.serviceManager;
-    const errorMessage =
-      store.getState().config.derived.languagePack.errors_singleMessage;
+    const errorMessage = store.getState().languagePack.errors_singleMessage;
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(errorMessage);
     store.dispatch(
@@ -148,8 +147,7 @@ class OutboundMessageCoordinator {
    * Creates a system message to indicate cancellation.
    */
   createCancellationSystemMessage() {
-    const { languagePack } =
-      this.serviceManager.store.getState().config.derived;
+    const { languagePack } = this.serviceManager.store.getState();
 
     const systemMessageItem: SystemMessageItem = {
       response_type: MessageResponseTypes.SYSTEM,

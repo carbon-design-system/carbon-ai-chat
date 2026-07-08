@@ -10,8 +10,15 @@
 import { type ReactNode } from "react";
 import type {
   MarkdownCustomRenderers as _MarkdownCustomRenderers,
+  MarkdownRendererChecklist as _MarkdownRendererChecklist,
+  MarkdownRendererChecklistItemArgs as _MarkdownRendererChecklistItemArgs,
+  MarkdownRendererChecklistToggleArgs as _MarkdownRendererChecklistToggleArgs,
   MarkdownRendererCodeBlockArgs as _MarkdownRendererCodeBlockArgs,
   MarkdownRendererCodeBlockData as _MarkdownRendererCodeBlockData,
+  MarkdownRendererImageArgs as _MarkdownRendererImageArgs,
+  MarkdownRendererImageResult as _MarkdownRendererImageResult,
+  MarkdownRendererLinkArgs as _MarkdownRendererLinkArgs,
+  MarkdownRendererLinkResult as _MarkdownRendererLinkResult,
   MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
   MarkdownRendererTableData as _MarkdownRendererTableData,
   TokenTree as _TokenTree,
@@ -272,6 +279,73 @@ export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
 export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
 
 /**
+ * Argument passed to a {@link CustomMarkdownRenderers.link} /
+ * {@link WCCustomMarkdownRenderers.link} callback — the parsed link data
+ * (href, title, text, attributes) plus the source token and node.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
+
+/**
+ * Attribute overrides returned by a link renderer callback (`href`, `target`,
+ * `rel`, extra `attributes`). Return `null` to keep the defaults.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
+
+/**
+ * Argument passed to an {@link CustomMarkdownRenderers.image} /
+ * {@link WCCustomMarkdownRenderers.image} callback — the parsed image data
+ * (src, alt, title, attributes) plus the source token and node.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
+
+/**
+ * Attribute overrides returned by an image renderer callback (`src`, extra
+ * `attributes`). Return `null` to keep the defaults.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
+
+/**
+ * Behavior hook that makes task-list checkboxes actionable — `onToggle` plus
+ * an optional `getChecked` source-of-truth. See {@link MarkdownRendererChecklist}.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
+
+/**
+ * Render-time identity + state for a checklist item, passed to
+ * `checklist.getChecked`.
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererChecklistItemArgs =
+  _MarkdownRendererChecklistItemArgs;
+
+/**
+ * Payload passed to `checklist.onToggle` when a task-list checkbox is toggled
+ * (item identity + new checked state).
+ *
+ * @category Messaging
+ * @experimental
+ */
+export type MarkdownRendererChecklistToggleArgs =
+  _MarkdownRendererChecklistToggleArgs;
+
+/**
  * Framework-neutral per-element renderer overrides accepted by the
  * underlying `cds-aichat-markdown` element. The React variant
  * {@link CustomMarkdownRenderers} and the web-component variant
@@ -312,6 +386,25 @@ interface CustomMarkdownRenderers {
    * snippet renderer.
    */
   codeBlock?: (args: MarkdownRendererCodeBlockArgs) => ReactNode;
+  /**
+   * Transform how links render — return attribute overrides (`href`, `target`,
+   * `rel`, extra `attributes`) or `null` to keep the defaults. Unlike
+   * `table`/`codeBlock` this is an attribute transform, not an element
+   * replacement, so its signature matches the web-component layer.
+   */
+  link?: (args: MarkdownRendererLinkArgs) => MarkdownRendererLinkResult | null;
+  /**
+   * Transform how images render — return attribute overrides (`src`, extra
+   * `attributes`) or `null` to keep the defaults.
+   */
+  image?: (
+    args: MarkdownRendererImageArgs,
+  ) => MarkdownRendererImageResult | null;
+  /**
+   * Make task-list checkboxes actionable so the host can persist and react to
+   * checklist state. See {@link MarkdownRendererChecklist}.
+   */
+  checklist?: MarkdownRendererChecklist;
 }
 
 /**
@@ -338,6 +431,24 @@ interface WCCustomMarkdownRenderers {
    * snippet renderer.
    */
   codeBlock?: (args: MarkdownRendererCodeBlockArgs) => HTMLElement | null;
+  /**
+   * Transform how links render — return attribute overrides (`href`, `target`,
+   * `rel`, extra `attributes`) or `null` to keep the defaults. Same signature
+   * as the React layer (attribute transform, not an element replacement).
+   */
+  link?: (args: MarkdownRendererLinkArgs) => MarkdownRendererLinkResult | null;
+  /**
+   * Transform how images render — return attribute overrides (`src`, extra
+   * `attributes`) or `null` to keep the defaults.
+   */
+  image?: (
+    args: MarkdownRendererImageArgs,
+  ) => MarkdownRendererImageResult | null;
+  /**
+   * Make task-list checkboxes actionable so the host can persist and react to
+   * checklist state. See {@link MarkdownRendererChecklist}.
+   */
+  checklist?: MarkdownRendererChecklist;
 }
 
 /**

@@ -10,7 +10,11 @@ Customize what the chat renders for each response type. The chat supports many r
 
 Style `text` responses to match your theme, using Markdown or HTML returned from your assistant. For supported Markdown syntax and HTML content handling, see {@link TextItem}.
 
-You can extend how Markdown is parsed and rendered through the {@link PublicConfigMarkdown `markdown`} config. Use {@link PublicConfigMarkdown.markdownItPlugins `markdownItPlugins`} to register [markdown-it](https://github.com/markdown-it/markdown-it) plugins after the built-ins, adding token types the renderer does not understand out of the box — math, diagrams, custom embeds. Use {@link CustomMarkdownRenderers `customRenderers`} to replace how specific elements draw — for example, render every fenced code block or table through your own component instead of the default Carbon one. Renderers return your own React node (or `HTMLElement` for web components), or `null` to fall back to the default.
+You can extend how Markdown is parsed and rendered through the {@link PublicConfigMarkdown `markdown`} config. Use {@link PublicConfigMarkdown.markdownItPlugins `markdownItPlugins`} to register [markdown-it](https://github.com/markdown-it/markdown-it) plugins after the built-ins, adding token types the renderer does not understand out of the box — math, diagrams, custom embeds. Use {@link CustomMarkdownRenderers `customRenderers`} to customize how specific elements draw. There are three kinds of override:
+
+- **Element replacements** — `table` and `codeBlock` render through your own component instead of the default Carbon one. Return your own React node (or `HTMLElement` for web components), or `null` to fall back to the default.
+- **Attribute transforms** — `link` and `image` keep the framework rendering the element and its children (and the link `target="_blank"` safety default) while you rewrite attributes. Edit a link's `href`, `target`, or `rel`, add context-aware query params, or resolve an image `src` to an authenticated CDN URL. Return the overrides, or `null` to keep the defaults.
+- **Behavior hook** — `checklist` makes task-list checkboxes actionable. Provide an `onToggle` callback to persist and react to toggles, and an optional `getChecked` source-of-truth so a persisted state survives streaming re-renders.
 
 For working setups, see the `markdown-plugin`, `markdown-override`, and `workspace-table-markdown-override` projects under [examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples).
 

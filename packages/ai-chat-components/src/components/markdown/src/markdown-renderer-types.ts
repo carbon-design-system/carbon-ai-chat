@@ -98,13 +98,165 @@ export interface MarkdownRendererCodeBlockArgs extends MarkdownRendererCodeBlock
 }
 
 /**
+ * Argument passed to a markdown link (anchor) custom renderer callback. The
+ * callback returns attribute overrides rather than a replacement element — the
+ * framework still renders the `<a>` and its rich inline children, and still
+ * applies the `target="_blank"` safety default unless the callback overrides
+ * `target`.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererLinkArgs {
+  /** Resolved `href` of the link (may be a linkified bare URL). */
+  href: string;
+  /** The link's `title` attribute, when present. */
+  title?: string;
+  /**
+   * Plain text of the link's rendered children, a convenience for
+   * context-aware rewrites. The rich children render regardless of this value.
+   */
+  text: string;
+  /** The link's parsed attributes (post-sanitize), as a plain object. */
+  attributes: Record<string, string>;
+  /** The markdown-it `link_open` `Token`. */
+  token: Readonly<Token>;
+  /** The full token-tree node, including descendants. */
+  node: Readonly<TokenTree>;
+}
+
+/**
+ * Attribute overrides returned by a {@link MarkdownCustomRenderers.link}
+ * callback. Any field left `undefined` keeps the framework default; returning
+ * `null` from the callback skips the override entirely.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererLinkResult {
+  /** Replacement `href`. */
+  href?: string;
+  /** Replacement `target` (e.g. `"_self"`). Overrides the `_blank` default. */
+  target?: string;
+  /** Replacement `rel`. */
+  rel?: string;
+  /**
+   * Extra attributes merged over the link's existing ones. Re-sanitized when
+   * the element has HTML sanitization enabled.
+   */
+  attributes?: Record<string, string>;
+}
+
+/**
+ * Argument passed to a markdown image custom renderer callback. Like the link
+ * callback it returns attribute overrides — the framework still renders the
+ * `<img>`.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererImageArgs {
+  /** Resolved `src` of the image. */
+  src: string;
+  /** The image's `alt` text, when present. */
+  alt?: string;
+  /** The image's `title` attribute, when present. */
+  title?: string;
+  /** The image's parsed attributes (post-sanitize), as a plain object. */
+  attributes: Record<string, string>;
+  /** The markdown-it `image` `Token`. */
+  token: Readonly<Token>;
+  /** The full token-tree node. */
+  node: Readonly<TokenTree>;
+}
+
+/**
+ * Attribute overrides returned by a {@link MarkdownCustomRenderers.image}
+ * callback. Fields left `undefined` keep the framework default; returning
+ * `null` skips the override.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererImageResult {
+  /** Replacement `src`. */
+  src?: string;
+  /**
+   * Extra attributes merged over the image's existing ones. Re-sanitized when
+   * the element has HTML sanitization enabled.
+   */
+  attributes?: Record<string, string>;
+}
+
+/**
+ * Identity + parsed state for one task-list checklist item, passed to the
+ * {@link MarkdownRendererChecklist.getChecked} source-of-truth callback at
+ * render time.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererChecklistItemArgs {
+  /**
+   * Stable identity for the item — the source line of its list item. Stable
+   * across re-renders while earlier lines don't shift.
+   */
+  id: string;
+  /** The item's text. */
+  label: string;
+  /** The checkbox state parsed from the markdown (`[x]` / `[ ]`). */
+  checked: boolean;
+  /** The markdown-it checkbox `Token`. */
+  token: Readonly<Token>;
+  /** The full token-tree node. */
+  node: Readonly<TokenTree>;
+}
+
+/**
+ * Payload passed to {@link MarkdownRendererChecklist.onToggle} when a user
+ * toggles a task-list checkbox. Carries the item identity and the new state.
+ * The markdown-it token/node are intentionally omitted — they are not
+ * available at DOM-event time; use {@link MarkdownRendererChecklistItemArgs}
+ * (via `getChecked`) when you need them.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererChecklistToggleArgs {
+  /** Same identity as {@link MarkdownRendererChecklistItemArgs.id}. */
+  id: string;
+  /** The item's text. */
+  label: string;
+  /** The new checkbox state after the toggle. */
+  checked: boolean;
+}
+
+/**
+ * Behavior hook for task-list checkboxes. Unlike the other renderers it does
+ * not replace any DOM — it makes the rendered `cds-checkbox` actionable so a
+ * host can persist and react to checklist state.
+ *
+ * @category Messaging
+ */
+export interface MarkdownRendererChecklist {
+  /**
+   * Invoked when a task-list checkbox is toggled. Providing this callback is
+   * what wires the checkboxes for interaction.
+   */
+  onToggle: (args: MarkdownRendererChecklistToggleArgs) => void;
+  /**
+   * Optional source-of-truth for the checked state, consulted on every render.
+   * Return a boolean to override the markdown-parsed state (so a persisted
+   * toggle survives streaming re-renders), or `undefined` to keep it.
+   */
+  getChecked?: (args: MarkdownRendererChecklistItemArgs) => boolean | undefined;
+}
+
+/**
  * Per-element custom renderer callbacks accepted by the markdown element.
- * Each callback returns an `HTMLElement` to use in place of the default
- * Carbon rendering, or `null` to fall back to the default. Returned elements
- * are adopted as light-DOM children of the markdown element (wrapped in a
- * `<div slot="…">` host so the consumer's element is not mutated) and
- * projected through a named shadow-DOM `<slot>`. External CSS continues to
- * apply normally.
+ *
+ * `table` and `codeBlock` are **element replacements**: the callback returns an
+ * `HTMLElement` adopted as a light-DOM child (wrapped in a `<div slot="…">`
+ * host so the consumer's element is not mutated) and projected through a named
+ * shadow-DOM `<slot>`; return `null` to fall back to the default Carbon
+ * rendering. `link` and `image` are **attribute transforms** — the framework
+ * still renders the element and its children and returns overrides synchronously
+ * (no slot host). `checklist` is a **behavior hook** that makes task-list
+ * checkboxes actionable. External CSS continues to apply normally.
  *
  * @category Messaging
  */
@@ -113,6 +265,26 @@ export interface MarkdownCustomRenderers {
   table?: (args: MarkdownRendererTableArgs) => HTMLElement | null;
   /** Override the default `cds-aichat-code-snippet` rendering. */
   codeBlock?: (args: MarkdownRendererCodeBlockArgs) => HTMLElement | null;
+  /**
+   * Transform how links render. Receives the parsed link data and returns
+   * attribute overrides (`href`, `target`, `rel`, extra `attributes`), or
+   * `null` to keep the defaults. The framework renders the `<a>` and its
+   * children either way and keeps the `target="_blank"` safety default unless
+   * overridden.
+   */
+  link?: (args: MarkdownRendererLinkArgs) => MarkdownRendererLinkResult | null;
+  /**
+   * Transform how images render. Receives the parsed image data and returns
+   * attribute overrides (`src`, extra `attributes`), or `null` to keep the
+   * defaults.
+   */
+  image?: (
+    args: MarkdownRendererImageArgs,
+  ) => MarkdownRendererImageResult | null;
+  /**
+   * Make task-list checkboxes actionable. See {@link MarkdownRendererChecklist}.
+   */
+  checklist?: MarkdownRendererChecklist;
 }
 
 /**
@@ -233,10 +405,11 @@ export interface RenderTokenTreeOptions {
   forceTableLoading?: boolean;
 
   /**
-   * Consumer-supplied callbacks. Each key whose callback is present causes
-   * the renderer to emit a named `<slot>` placeholder for that kind; the
-   * callback itself is invoked later by the markdown element's `updated()`
-   * lifecycle.
+   * Consumer-supplied callbacks. For `table`/`codeBlock` a present callback
+   * causes the renderer to emit a named `<slot>` placeholder for that kind,
+   * invoked later by the markdown element's `updated()` lifecycle. `link` and
+   * `image` callbacks run synchronously during the render pass (attribute
+   * transforms, no slot); `checklist` wires a toggle listener on the element.
    */
   customRenderers?: MarkdownCustomRenderers;
 

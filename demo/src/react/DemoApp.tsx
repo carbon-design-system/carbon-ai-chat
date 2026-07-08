@@ -69,6 +69,16 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const isSidebarLayout = settings.layout === "sidebar";
 
   useEffect(() => {
+    // This demo continuously updates parent state to exercise live host-state
+    // propagation into writeable elements / user-defined responses. It also adds
+    // constant noise when profiling the chat's render performance, so it can be
+    // turned off with the `?disableParentStateTimer` query param.
+    if (
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).has("disableParentStateTimer")
+    ) {
+      return undefined;
+    }
     const id = setInterval(() => setStateText(Date.now().toString()), 2000);
     return () => clearInterval(id);
   }, []);

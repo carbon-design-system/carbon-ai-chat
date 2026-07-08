@@ -44,7 +44,6 @@
   flex-wrap: wrap;
   align-items: center;
   background-color: theme.$chat-prompt-background;
-  border-block-start: button.$button-outline-width solid theme.$border-subtle-01;
   border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
   border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
   color: theme.$text-primary;
@@ -52,20 +51,43 @@
   min-block-size: 0;
   outline: button.$button-border-width solid transparent;
   outline-offset: -2px;
-  padding-block-end: layout.$spacing-04;
   padding-inline: layout.$spacing-05 layout.$spacing-03;
 }
 
-// Focus outline — uses :focus-within so no JS class toggle needed.
+:host(:not([disabled])) .#{$prefix}--input-container--expanded {
+  border-block-end: 1px solid theme.$border-strong;
+
+  &:focus-within {
+    box-shadow: 0 4px 8px 0 theme.$ai-drop-shadow;
+  }
+}
+
+// When prompt line is not in fullscreen layout (rounded), the enabled state border and
+// drop shadow appear above the shell instead of below.
+:host(:not([rounded]):not([disabled])) .#{$prefix}--input-container--expanded {
+  border-block-end: none;
+  border-block-start: 1px solid theme.$border-subtle;
+
+  &:focus-within {
+    box-shadow: 0 -4px 8px 0 theme.$ai-drop-shadow;
+  }
+}
+
+.#{$prefix}--input-container:focus-within {
+  box-shadow: 0 4px 8px 0 theme.$ai-drop-shadow;
+}
+
+// Focus outline for non-expanded state — uses :focus-within so no JS class toggle needed.
 // Kept adjacent to the base rule (ahead of higher-specificity :host variants)
 // so stylelint's no-descending-specificity rule is satisfied.
-.#{$prefix}--input-container:focus-within {
+.#{$prefix}--input-container:not(
+    .#{$prefix}--input-container--expanded
+  ):focus-within {
   outline-color: theme.$focus;
 }
 
 // Rounded container when at max width
 :host([rounded]) .#{$prefix}--input-container {
-  border: button.$button-outline-width solid theme.$border-subtle-00;
   border-radius: layout.$spacing-03;
 }
 
@@ -102,12 +124,14 @@
   display: flex;
   flex: 1 0;
   align-items: center;
-  gap: layout.$spacing-03;
-  margin-block-start: layout.$spacing-04;
 }
 
-::slotted([slot="message-actions"]) {
+:host(:not([expanded])) ::slotted([slot="message-actions"]) {
   align-self: flex-start;
+  // !important required to override global CSS reset (common.scss) that sets
+  // margin: 0 on all divs including slotted elements
+  // stylelint-disable-next-line declaration-no-important
+  margin-block-start: layout.$spacing-04 !important;
 }
 
 // Lay the real action container's buttons out in a row with consistent
@@ -131,10 +155,15 @@
 // -----------------------------------------------------------
 .#{$prefix}--input-text-area {
   position: relative;
-  display: inline-block;
+  display: flex;
+  box-sizing: border-box;
   flex: 1 0;
+  align-items: center;
   inline-size: 100%;
-  min-block-size: 0;
+  margin-block: layout.$spacing-03;
+  min-block-size: layout.$spacing-08;
+  padding-block: layout.$spacing-03;
+  padding-inline: layout.$spacing-03;
 }
 
 // -----------------------------------------------------------
@@ -228,33 +257,26 @@
 
 .#{$prefix}--input-container--expanded .#{$prefix}--input-text-and-actions {
   display: contents;
+  gap: layout.$spacing-03;
 }
 
 .#{$prefix}--input-container--expanded .#{$prefix}--input-text-area {
-  // Flex centering keeps a single line vertically centered within the
-  // restored min-height below (matching the non-expanded row alignment).
-  display: flex;
-  // Contain the `padding-inline` below within the full-width basis; otherwise
-  // (content-box, no shadow-DOM reset) it adds on top of `flex-basis: 100%` and
-  // the editor row overflows the container's inline-end edge.
-  box-sizing: border-box;
   flex-basis: 100%;
-  align-items: center;
-  order: 1;
-  // Separate the editor from the actions/send row beneath it.
-  margin-block-end: layout.$spacing-03;
-  // On its own row the editor no longer shares the control row, so it loses
-  // the min-height the `sm` controls used to set; restore that floor.
-  min-block-size: layout.$spacing-07;
-  // The `sm` action and send buttons below center their 16px icon in a 32px
-  // box, insetting the SVG by `$spacing-03`. Inset the editor by the same
-  // amount so the text caret (start) and the editor's end line up with the
-  // button SVGs rather than the buttons' outer edges.
-  padding-inline: layout.$spacing-03;
+  border-radius: layout.$spacing-02;
+  margin-block-end: 0;
+  outline: button.$button-border-width solid transparent;
+  outline-offset: -2px;
 }
 
-.#{$prefix}--input-container--expanded ::slotted([slot="message-actions"]) {
-  order: 2;
+// Focus outline for expanded state — only on text area, and only when focus
+// arrived via keyboard navigation. `input-shell` listens for
+// `cds-aichat-prompt-focus` and reads `event.detail.keyboard`; the rich runtime
+// sets that flag when no pointer/touch event preceded the focus. The shell
+// toggles `--keyboard-focus` on the shadow-DOM text-area node, which this rule
+// targets directly.
+.#{$prefix}--input-container--expanded
+  .#{$prefix}--input-text-area--keyboard-focus {
+  outline-color: theme.$focus;
 }
 
 // The actions track takes the row's free space next to the send control (the
@@ -280,8 +302,7 @@
   // the row, so `margin-inline-start: auto` pushes the send control to the inline
   // end on its own.
   flex: 0 0 auto;
-  order: 3;
-  margin-block-start: layout.$spacing-04;
+  margin-block: layout.$spacing-03;
   margin-inline-start: auto;
 }
 

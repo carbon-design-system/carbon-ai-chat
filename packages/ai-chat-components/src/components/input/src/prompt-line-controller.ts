@@ -202,6 +202,8 @@ export class TextareaController implements PromptLineController {
   private _wrap: HTMLDivElement | null = null;
   private _textarea: HTMLTextAreaElement | null = null;
   private _mirror: HTMLDivElement | null = null;
+  private _host: HTMLElement | null = null;
+  private _focusFromMouse = false;
 
   private _isTyping = false;
   private _typingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -221,6 +223,7 @@ export class TextareaController implements PromptLineController {
     textarea.classList.toggle(TA_PHONE_CLASS, IS_PHONE);
     textarea.setAttribute("rows", "1");
     textarea.setAttribute("spellcheck", "true");
+    textarea.setAttribute("tabindex", "0");
     textarea.placeholder = init.placeholder;
     textarea.value = init.value;
     textarea.readOnly = init.disabled;
@@ -243,11 +246,18 @@ export class TextareaController implements PromptLineController {
     this._wrap = wrap;
     this._textarea = textarea;
     this._mirror = mirror;
+    this._host = host;
 
     textarea.addEventListener("input", this._onInput);
     textarea.addEventListener("keydown", this._onKeydown);
     textarea.addEventListener("focus", this._onFocus);
     textarea.addEventListener("blur", this._onBlur);
+
+    // Pointer/touch before focus marks the next focus as mouse-driven so we
+    // suppress the keyboard-focus outline.
+    host.addEventListener("pointerdown", this._setMouseFlag);
+    host.addEventListener("mousedown", this._setMouseFlag);
+    host.addEventListener("touchstart", this._setMouseFlag);
 
     this._syncMirror();
   }
@@ -260,6 +270,12 @@ export class TextareaController implements PromptLineController {
       ta.removeEventListener("keydown", this._onKeydown);
       ta.removeEventListener("focus", this._onFocus);
       ta.removeEventListener("blur", this._onBlur);
+    }
+    const host = this._host;
+    if (host) {
+      host.removeEventListener("pointerdown", this._setMouseFlag);
+      host.removeEventListener("mousedown", this._setMouseFlag);
+      host.removeEventListener("touchstart", this._setMouseFlag);
     }
     this._wrap?.remove();
     this._wrap = null;
@@ -310,6 +326,7 @@ export class TextareaController implements PromptLineController {
   }
 
   focus(): void {
+    this._focusFromMouse = true;
     this._textarea?.focus();
   }
 
@@ -441,8 +458,14 @@ export class TextareaController implements PromptLineController {
     }
   };
 
+  private _setMouseFlag = (): void => {
+    this._focusFromMouse = true;
+  };
+
   private _onFocus = (): void => {
-    this._dispatch("cds-aichat-prompt-focus");
+    const wasMouseFocus = this._focusFromMouse;
+    this._focusFromMouse = false;
+    this._dispatch("cds-aichat-prompt-focus", { keyboard: !wasMouseFocus });
   };
 
   private _onBlur = (): void => {

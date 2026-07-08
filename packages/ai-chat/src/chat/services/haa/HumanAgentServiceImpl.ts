@@ -718,7 +718,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   private async handleHumanAgentJoinedTimeout() {
     // Display an error to the user.
     const message =
-      this.serviceManager.store.getState().config.derived.languagePack
+      this.serviceManager.store.getState().languagePack
         .errors_noHumanAgentsJoined;
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(message);
@@ -1202,8 +1202,7 @@ class ServiceDeskCallbackImpl<
       }
       case ErrorType.CONNECTING: {
         // If we can't connect, display an inline error message on the bot view.
-        const { languagePack } =
-          this.serviceManager.store.getState().config.derived;
+        const { languagePack } = this.serviceManager.store.getState();
         const message =
           errorInfo.messageToUser || languagePack.errors_connectingToHumanAgent;
         const { originalMessage, localMessage } =

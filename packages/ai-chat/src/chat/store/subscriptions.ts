@@ -15,6 +15,7 @@ import { ServiceManager } from "../services/ServiceManager";
 import { BusEventType } from "../../types/events/eventBusTypes";
 import { PublicChatState } from "../../types/instance/PublicChatState";
 import isEqual from "lodash-es/isEqual.js";
+import { refreshLocalization } from "../utils/intlUtils";
 
 /**
  * Copies persistedToBrowserStorage to the session history.
@@ -62,4 +63,45 @@ function fireStateChangeEvent(serviceManager: ServiceManager) {
   };
 }
 
-export { copyToSessionStorage, fireStateChangeEvent };
+/**
+ * Rebuilds the i18n formatter whenever the active strings or locale change. The
+ * `languagePack` slice and `serviceManager.intl` are two sinks for the same
+ * strings; deriving `intl` here from the slice (rather than rebuilding it at each
+ * dispatch site) makes the slice the single source of truth, so no update path —
+ * the separate `strings` prop, `config.strings`, or a runtime locale change — can
+ * leave `formatMessage`/`useIntl` consumers stale. A locale change additionally
+ * reloads the dayjs locale data (async).
+ */
+function refreshLocalizationOnChange(serviceManager: ServiceManager) {
+  let previousLanguagePack = serviceManager.store.getState().languagePack;
+  let previousLocale = serviceManager.store.getState().config.public.locale;
+
+  return () => {
+    const state = serviceManager.store.getState();
+    const { languagePack } = state;
+    const locale = state.config.public.locale;
+
+    // Compare the pack by value, not reference: an unrelated `changeState` that
+    // carries a non-config slice deep-clones the whole tree (see the CHANGE_STATE
+    // reducer), handing `languagePack` a fresh reference with identical content.
+    // The cheap reference check short-circuits the deep compare for the common
+    // case where the reference is preserved.
+    const languageChanged =
+      previousLanguagePack !== languagePack &&
+      !isEqual(previousLanguagePack, languagePack);
+    const localeChanged = previousLocale !== locale;
+
+    previousLanguagePack = languagePack;
+    previousLocale = locale;
+
+    if (languageChanged || localeChanged) {
+      void refreshLocalization(serviceManager, { localeChanged });
+    }
+  };
+}
+
+export {
+  copyToSessionStorage,
+  fireStateChangeEvent,
+  refreshLocalizationOnChange,
+};

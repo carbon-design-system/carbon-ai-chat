@@ -13,6 +13,8 @@ import { Extension } from "@tiptap/core";
 import "../prompt-line.js";
 import { PROMPT_LINE_MAX_BLOCK_SIZE } from "../prompt-line-constants.js";
 import type PromptLineElement from "../prompt-line.js";
+import { carbonMention } from "../tiptap/carbon-mention.js";
+import type { SuggestionItem } from "../tiptap/types.js";
 
 async function makePromptLine(
   attrs: Partial<{
@@ -267,6 +269,38 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
     await el.updateComplete;
     await Promise.resolve();
     expect(el.getEditor()).to.not.equal(null);
+  });
+
+  // Regression: clearContent() is the post-send wipe. It must be a host-origin
+  // (programmatic) edit so the carbon-mention/command removal plugin stays
+  // silent — otherwise sending strips the just-captured mention/command fields
+  // from the host's structured_data sidecar before the message is built. See
+  // issue #1619.
+  it("does NOT fire a mention onRemove when clearContent() wipes the doc", async () => {
+    const removed: SuggestionItem[] = [];
+    const el = await makePromptLine();
+    el.extensions = [
+      carbonMention({
+        trigger: "@",
+        items: [{ id: "u1", label: "Alice" }],
+        onRemove: (item) => removed.push(item),
+      }),
+    ];
+    el.rich = true;
+    await waitForRich(el);
+
+    // Insert a mention chip programmatically (does not fire onSelect/onRemove).
+    el.getEditor()!.commands.insertContent({
+      type: "mention",
+      attrs: { id: "u1", label: "Alice", value: "u1", data: null },
+    });
+    await Promise.resolve();
+
+    el.clearContent();
+    await Promise.resolve();
+
+    expect(removed).to.have.lengthOf(0);
+    expect(el.getEditor()!.getText()).to.equal("");
   });
 });
 

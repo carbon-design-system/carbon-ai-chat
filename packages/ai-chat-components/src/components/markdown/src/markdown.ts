@@ -333,6 +333,14 @@ class CDSAIChatMarkdown extends LitElement {
 
     this.adoptLightDomMarkdown();
 
+    // Task-list checkbox toggles bubble (composed) out of the rendered
+    // `cds-checkbox` elements; one delegated listener forwards them to a
+    // consumer `checklist.onToggle`.
+    this.addEventListener(
+      "cds-checkbox-changed",
+      this.handleChecklistToggle as EventListener,
+    );
+
     // Ensure we parse and render on initial mount, even if markdown was set before connection
     this.needsReparse = true;
     this.scheduleRender();
@@ -340,6 +348,10 @@ class CDSAIChatMarkdown extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener(
+      "cds-checkbox-changed",
+      this.handleChecklistToggle as EventListener,
+    );
     this.stopObservingLightDom();
     // Tear down any adopted slot hosts so they don't leak across re-connect.
     for (const host of this.slotHosts.values()) {
@@ -359,6 +371,37 @@ class CDSAIChatMarkdown extends LitElement {
     this.delegatedPluginSlots.clear();
     this.latestRendererDescriptors = [];
   }
+
+  /**
+   * Delegated handler for `cds-checkbox-changed` from rendered task-list
+   * checkboxes. Resolves the toggled checkbox via the composed event path (a
+   * host listener would otherwise see a retargeted `event.target`), reads the
+   * identity stamped by the task-list plugin, and forwards the new state to a
+   * consumer `checklist.onToggle`.
+   */
+  private handleChecklistToggle = (event: Event): void => {
+    const onToggle = this.customRenderers?.checklist?.onToggle;
+    if (!onToggle) {
+      return;
+    }
+    const checkbox = event
+      .composedPath()
+      .find(
+        (target): target is HTMLElement =>
+          target instanceof HTMLElement &&
+          target.tagName.toLowerCase() === "cds-checkbox",
+      );
+    const id = checkbox?.getAttribute("data-cds-aichat-checklist-id");
+    if (!checkbox || id == null) {
+      // Not a stamped task-list checkbox — ignore unrelated cds-checkboxes.
+      return;
+    }
+    const checked = !!(event as CustomEvent<{ checked?: boolean }>).detail
+      ?.checked;
+    const label =
+      checkbox.closest("cds-list-item, li")?.textContent?.trim() ?? "";
+    onToggle({ id, label, checked });
+  };
 
   private adoptLightDomMarkdown() {
     // Backward compatibility: treat static light-DOM text as initial markdown

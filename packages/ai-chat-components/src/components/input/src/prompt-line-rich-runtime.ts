@@ -86,6 +86,7 @@ class RichController implements PromptLineController {
     host.setAttribute("role", "textbox");
     host.setAttribute("aria-multiline", "true");
     host.setAttribute("spellcheck", "true");
+    host.setAttribute("tabindex", "0");
     if (init.ariaLabel) {
       host.setAttribute("aria-label", init.ariaLabel);
     }
@@ -153,7 +154,23 @@ class RichController implements PromptLineController {
   }
 
   clearContent(): void {
-    this._editor?.commands.clearContent(true);
+    const editor = this._editor;
+    if (!editor) {
+      return;
+    }
+    // Tag the clear as host-origin so the carbon-mention/command removal plugin
+    // treats the post-send wipe as programmatic (not a user edit) and skips
+    // firing `onRemove`. Otherwise a send would strip the just-captured
+    // mention/command fields from the host's structured_data sidecar before
+    // `doSend` merges them. Mirrors `_dispatchSetContent`.
+    editor
+      .chain()
+      .command(({ tr }) => {
+        setHostOriginMeta(tr);
+        return true;
+      })
+      .clearContent(true)
+      .run();
   }
 
   getEditor(): Editor | null {
@@ -270,7 +287,7 @@ class RichController implements PromptLineController {
       if (!wasMouseFocus) {
         editor.view.dom.classList.add(PM_KEYBOARD_FOCUS_CLASS);
       }
-      this._dispatch("cds-aichat-prompt-focus");
+      this._dispatch("cds-aichat-prompt-focus", { keyboard: !wasMouseFocus });
     });
     editor.on("blur", () => {
       editor.view.dom.classList.remove(PM_KEYBOARD_FOCUS_CLASS);

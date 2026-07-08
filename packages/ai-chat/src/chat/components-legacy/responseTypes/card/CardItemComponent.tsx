@@ -12,10 +12,8 @@ import cx from "classnames";
 import React from "react";
 
 import { useSelector } from "../../../hooks/useSelector";
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { selectInputState } from "../../../store/selectors";
-import { AppState } from "../../../../types/state/AppState";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { THROW_ERROR } from "../../../utils/constants";
@@ -63,8 +61,6 @@ function CardItemComponent(props: CardItemComponentProps) {
   } = props;
   const item = localMessageItem.item as CardItem;
   const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
-  const appConfig = useSelector((state: AppState) => state.config);
   const inputState = useSelector(selectInputState);
 
   return (
@@ -82,10 +78,8 @@ function CardItemComponent(props: CardItemComponentProps) {
         <BodyMessageComponents
           message={localMessageItem}
           originalMessage={fullMessage}
-          languagePack={languagePack}
           requestInputFocus={requestFocus}
           disableUserInputs={inputState.isReadonly}
-          config={appConfig}
           isMessageForInput={isMessageForInput}
           scrollElementIntoView={THROW_ERROR}
           serviceManager={serviceManager}
@@ -99,10 +93,8 @@ function CardItemComponent(props: CardItemComponentProps) {
         <FooterButtonComponents
           message={localMessageItem}
           originalMessage={fullMessage}
-          languagePack={languagePack}
           requestInputFocus={requestFocus}
           disableUserInputs={inputState.isReadonly}
-          config={appConfig}
           isMessageForInput={isMessageForInput}
           scrollElementIntoView={THROW_ERROR}
           serviceManager={serviceManager}

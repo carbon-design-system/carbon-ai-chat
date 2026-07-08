@@ -265,21 +265,10 @@ describe("Config Theme", () => {
         "g10",
       );
 
-      // Simulate dynamic config update (e.g., toggling aiEnabled)
+      // Simulate dynamic config update (e.g., toggling aiEnabled).
       await applyConfigChangesDynamically(
-        {
-          themingChanged: true,
-          namespaceChanged: false,
-          messagingChanged: false,
-          layoutChanged: false,
-          humanAgentFactoryChanged: false,
-          headerChanged: false,
-          disclaimerChanged: false,
-          homescreenChanged: false,
-          lightweightUIChanged: false,
-          languagePackChanged: false,
-        },
-        { aiEnabled: false }, // New config
+        { aiEnabled: true }, // previous
+        { aiEnabled: false }, // next
         serviceManager,
       );
 

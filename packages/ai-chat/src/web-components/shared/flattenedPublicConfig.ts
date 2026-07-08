@@ -119,6 +119,10 @@ export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
     options: { type: Boolean, attribute: "persist-feedback" },
   },
   {
+    name: "hideAvatar",
+    options: { type: Boolean, attribute: "hide-avatar" },
+  },
+  {
     name: "assistantName",
     options: { type: String, attribute: "assistant-name" },
   },

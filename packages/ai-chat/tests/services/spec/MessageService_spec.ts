@@ -47,11 +47,11 @@ const createServiceManagerStub = (
             messageLoadingIndicatorTimeoutSecs: 0,
           },
         },
-        derived: {
-          languagePack: {
-            errors_singleMessage: "error",
-          },
-        },
+        derived: {},
+      },
+      languagePack: {
+        errors_singleMessage: "error",
+        messages_requestCancelled: "Request cancelled",
       },
       assistantMessageState: { messageIDs: [] as string[] },
       assistantInputState: {

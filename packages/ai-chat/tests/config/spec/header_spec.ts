@@ -15,7 +15,6 @@ import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
 import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
 import { doCreateStore } from "../../../src/chat/store/doCreateStore";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 import { NamespaceService } from "../../../src/chat/services/NamespaceService";
@@ -215,28 +214,17 @@ describe("Config Header", () => {
         },
       };
 
-      const changes = detectConfigChanges(previousConfig, newConfig);
-      expect(changes.headerChanged).toBe(true);
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+      await applyConfigChangesDynamically(
+        previousConfig,
+        newConfig,
+        serviceManager,
+      );
 
       const state: AppState = serviceManager.store.getState();
       expect(state.config.public.header?.title).toBe("New Header");
       expect(state.config.public.header?.hideMinimizeButton).toBe(true);
       expect(state.config.public.header?.showRestartButton).toBe(true);
       expect(state.config.public.header?.showAiLabel).toBe(false);
-    });
-
-    it("should detect no changes when header config is identical", async () => {
-      const config: PublicConfig = {
-        header: {
-          title: "Same Header",
-          hideMinimizeButton: true,
-        },
-      };
-
-      const changes = detectConfigChanges(config, config);
-      expect(changes.headerChanged).toBe(false);
     });
   });
 });

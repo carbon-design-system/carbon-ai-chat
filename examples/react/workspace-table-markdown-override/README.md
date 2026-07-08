@@ -1,6 +1,6 @@
 # Workspace table markdown override
 
-`ChatCustomElement` configured with `markdown.customRenderers.table` so every markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a Carbon Maximize icon button that opens the workspace panel and renders the same data inside a full-size `<cds-aichat-table>` whose pagination page size adapts to the workspace's height.
+`ChatCustomElement` configured with `markdown.customRenderers.table` so every markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a Carbon Maximize icon button that opens the workspace panel and renders the same data inside a full-size `Table` (the React wrapper for `cds-aichat-table`) whose pagination page size adapts to the workspace's height.
 
 ## What this example shows
 
@@ -35,8 +35,8 @@
 | `Toolbar` (`cds-aichat-toolbar`)      | `@carbon/ai-chat-components` React | Renders the card header with title + right-aligned actions.                     |
 | `WorkspaceShell`, `Body`              | `@carbon/ai-chat-components` React | Standard workspace-panel chrome around the full-size table.                     |
 | `Maximize`                            | `@carbon/icons-react`              | Icon for the toolbar's "Open in workspace" action.                              |
-| `<cds-aichat-table>`                  | `@carbon/ai-chat-components`       | Renders the full-size table inside the workspace.                               |
-| `defaultPageSize`                     | `<cds-aichat-table>` property      | Set to the row count so the pagination bar is suppressed and all rows render.   |
+| `Table` (`cds-aichat-table`)          | `@carbon/ai-chat-components` React | Renders the full-size table inside the workspace.                               |
+| `defaultPageSize`                     | `Table` prop                       | Set to the row count so the pagination bar is suppressed and all rows render.   |
 | `messaging.customSendMessage`         | config prop                        | Mock backend that emits a 24-row order table.                                   |
 
 ## Run it

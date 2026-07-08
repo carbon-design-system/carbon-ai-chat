@@ -12,9 +12,11 @@ import { AudioPlayer } from "@carbon/ai-chat-components/es/react/audio-player.js
 import { Transcript } from "@carbon/ai-chat-components/es/react/transcript.js";
 import React from "react";
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
 import { VideoComponentConfig } from "../video/VideoComponent";
 import { MessageResponseTypes } from "../../../../types/messaging/Messages";
+import { AppState } from "../../../../types/state/AppState";
 import Card from "@carbon/ai-chat-components/es/react/card.js";
 import { TextHolderTile } from "./TextHolderTile";
 
@@ -131,7 +133,32 @@ function MediaPlayerComponent({
     media_videoPlayer_loadingLabel,
     media_videoPlayer_readyLabel,
     media_videoPlayer_errorLabel,
-  } = useLanguagePack();
+  } = useSelector(
+    (state: AppState) => ({
+      errors_audioSource: state.languagePack.errors_audioSource,
+      errors_videoSource: state.languagePack.errors_videoSource,
+      media_transcript_label: state.languagePack.media_transcript_label,
+      media_transcript_show: state.languagePack.media_transcript_show,
+      media_transcript_hide: state.languagePack.media_transcript_hide,
+      media_audioPlayer_loading: state.languagePack.media_audioPlayer_loading,
+      media_audioPlayer_ready: state.languagePack.media_audioPlayer_ready,
+      media_audioPlayer_loadingLabel:
+        state.languagePack.media_audioPlayer_loadingLabel,
+      media_audioPlayer_readyLabel:
+        state.languagePack.media_audioPlayer_readyLabel,
+      media_audioPlayer_errorLabel:
+        state.languagePack.media_audioPlayer_errorLabel,
+      media_videoPlayer_loading: state.languagePack.media_videoPlayer_loading,
+      media_videoPlayer_ready: state.languagePack.media_videoPlayer_ready,
+      media_videoPlayer_loadingLabel:
+        state.languagePack.media_videoPlayer_loadingLabel,
+      media_videoPlayer_readyLabel:
+        state.languagePack.media_videoPlayer_readyLabel,
+      media_videoPlayer_errorLabel:
+        state.languagePack.media_videoPlayer_errorLabel,
+    }),
+    shallowEqual,
+  );
 
   const handleTranscriptToggle = React.useCallback(
     (event: CustomEvent<{ expanded: boolean }>) => {

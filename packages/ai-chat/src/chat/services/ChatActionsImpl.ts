@@ -846,8 +846,7 @@ class ChatActionsImpl {
 
     // Announce that the message is being sent for screen reader users
     if (this.serviceManager.ariaAnnouncer) {
-      const languagePack =
-        this.serviceManager.store.getState().config.derived.languagePack;
+      const languagePack = this.serviceManager.store.getState().languagePack;
       this.serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
     }
 
@@ -1029,8 +1028,7 @@ class ChatActionsImpl {
       return;
     }
 
-    const { languagePack } =
-      this.serviceManager.store.getState().config.derived;
+    const { languagePack } = this.serviceManager.store.getState();
 
     if (isResponse(message as any)) {
       // Even though processMessageResponse is an async function we do not await it in case a pause response type is

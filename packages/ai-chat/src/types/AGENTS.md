@@ -153,7 +153,16 @@ This is a **review gate**, not a build gate — TypeDoc validates `invalidLink` 
 
 Write the block to the shared criteria in [code-examples.md](../../references/code-examples.md): self-contained, minimal, realistically-typed values, one titled `@example` per distinct case, show what comes back, model the production-safe pattern. `{@link}` targets inside an example _are_ build-validated, so they must resolve.
 
-## Worked examples
+## Prop stability
+
+The chat re-render hardening assumes most config/render props are referentially stable across host renders. When a prop's identity matters — because the chat compares it by reference, or rebuilds something from it — say so in its JSDoc so a consumer knows to memoize it. Two cases:
+
+- **Compared by reference** (a change of identity is treated as a real change): e.g. `serviceDeskFactory`. Document that the consumer must pass a stable reference (module-level function or `useCallback`) and what an unstable one costs.
+- **Rebuilt from on change** (a new identity reruns expensive work even with equal content): e.g. `markdownItPlugins`. Document that the value should be memoized.
+
+Props the framework already diffs by value (`config`, `strings`, `markdown`) tolerate inline objects, but a fresh identity every render still costs a no-op reconciliation pass; in `debug` mode the chat warns once per such prop. Object/array props that feed expensive work should still carry a "memoize this" note.
+
+## Examples
 
 ### Good — top-level type
 

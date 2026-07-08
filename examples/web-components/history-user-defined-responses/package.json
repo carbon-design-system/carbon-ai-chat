@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-history-user-defined-responses",
-  "version": "1.16.0",
+  "version": "1.17.0-rc.0",
   "private": true,
   "type": "module",
   "description": "Web components example demonstrating renderUserDefinedResponse and activeResponseId tracking across multiple user_defined cards rehydrated from customLoadHistory.",
@@ -12,8 +12,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.16.0",
-    "@carbon/ai-chat-components": "^1.6.0",
+    "@carbon/ai-chat": "^1.17.0-rc.0",
+    "@carbon/ai-chat-components": "^1.7.0-rc.0",
     "@carbon/web-components": "^2.54.0",
     "lit": "^3.1.0",
     "react": "^19.0.0",

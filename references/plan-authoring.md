@@ -50,7 +50,7 @@ The execution detail for one step. Written so an agent loading cold can implemen
 - **Scope** — one paragraph: what this step does and what it explicitly does not. Resist the urge to repeat `PLAN.md` context here.
 - **Files touched** — concrete paths the executor will create / edit / delete. Vague plans produce drift; specific paths force you to verify the codebase as you draft.
 - **Implementation steps** — ordered list. Each step short enough that a reasonable executor can complete it without further design questions. Cite file paths and line numbers for any claim about existing code.
-- **Validation** — how to know the step is correct: which tests to add, which existing tests must still pass, which manual checks (browser smoke, type-check, build) are required. Refer to the relevant gate in [AGENTS.md](../AGENTS.md#definition-of-done).
+- **Validation** — how to know the step is correct: which tests to add, which existing tests must still pass, which manual checks (browser smoke, type-check, build) are required. Refer to the relevant gate in [definition-of-done.md](definition-of-done.md).
 - **Risk / open questions** — anything you're not sure about. Better to flag uncertainty than bury it.
 
 ## Style

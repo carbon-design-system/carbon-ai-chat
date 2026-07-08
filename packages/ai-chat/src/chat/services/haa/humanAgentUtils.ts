@@ -230,7 +230,7 @@ async function addAssistantReturnMessage(
   serviceManager: ServiceManager,
 ) {
   const botReturn = createAssistantReturnMessage(
-    serviceManager.store.getState().config.derived.languagePack,
+    serviceManager.store.getState().languagePack,
   );
   if (botReturn) {
     const initialRestartCount = serviceManager.restartCount;

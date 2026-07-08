@@ -56,11 +56,11 @@ describe("Config Strings", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       // Overridden key reflects custom string
-      expect(state.config.derived.languagePack.input_placeholder).toBe(
+      expect(state.languagePack.input_placeholder).toBe(
         strings.input_placeholder,
       );
       // Unspecified keys retain defaults
-      expect(state.config.derived.languagePack.launcher_isOpen).toBe(
+      expect(state.languagePack.launcher_isOpen).toBe(
         enLanguagePack.launcher_isOpen,
       );
     });
@@ -92,14 +92,10 @@ describe("Config Strings", () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.derived.languagePack.input_placeholder).toBe(
-        "Start here",
-      );
-      expect(state.config.derived.languagePack.launcher_isOpen).toBe(
-        "Open chat",
-      );
+      expect(state.languagePack.input_placeholder).toBe("Start here");
+      expect(state.languagePack.launcher_isOpen).toBe("Open chat");
       // Another key not overridden remains default
-      expect(state.config.derived.languagePack.window_ariaWindowOpened).toBe(
+      expect(state.languagePack.window_ariaWindowOpened).toBe(
         enLanguagePack.window_ariaWindowOpened,
       );
     });
@@ -137,9 +133,9 @@ describe("Config Strings", () => {
       const store = (capturedInstance as any).serviceManager.store;
 
       // Verify initial override
-      expect(
-        store.getState().config.derived.languagePack.input_placeholder,
-      ).toBe(initialStrings.input_placeholder);
+      expect(store.getState().languagePack.input_placeholder).toBe(
+        initialStrings.input_placeholder,
+      );
 
       // Rerender with updated strings
       rerender(
@@ -152,9 +148,62 @@ describe("Config Strings", () => {
 
       await waitFor(
         () => {
-          expect(
-            store.getState().config.derived.languagePack.input_placeholder,
-          ).toBe(updatedStrings.input_placeholder);
+          expect(store.getState().languagePack.input_placeholder).toBe(
+            updatedStrings.input_placeholder,
+          );
+        },
+        { timeout: 5000 },
+      );
+    });
+
+    it("should revert a string to its default when removed from the strings prop", async () => {
+      const initialStrings = {
+        input_placeholder: "Custom value",
+      } as Partial<typeof enLanguagePack>;
+
+      // Same prop, with the override removed — the key must fall back to default.
+      const clearedStrings = {} as Partial<typeof enLanguagePack>;
+
+      const props: Partial<ChatContainerProps> = {
+        ...createBaseProps(),
+        strings: initialStrings,
+      };
+
+      let capturedInstance: any = null;
+      const onBeforeRender = jest.fn((instance) => {
+        capturedInstance = instance;
+      });
+
+      const { rerender } = render(
+        React.createElement(ChatContainer, { ...props, onBeforeRender }),
+      );
+
+      await waitFor(
+        () => {
+          expect(capturedInstance).not.toBeNull();
+        },
+        { timeout: 5000 },
+      );
+
+      const store = (capturedInstance as any).serviceManager.store;
+
+      expect(store.getState().languagePack.input_placeholder).toBe(
+        "Custom value",
+      );
+
+      rerender(
+        React.createElement(ChatContainer, {
+          ...props,
+          strings: clearedStrings,
+          onBeforeRender,
+        }),
+      );
+
+      await waitFor(
+        () => {
+          expect(store.getState().languagePack.input_placeholder).toBe(
+            enLanguagePack.input_placeholder,
+          );
         },
         { timeout: 5000 },
       );
@@ -188,21 +237,21 @@ describe("Config Strings", () => {
       const state: AppState = store.getState();
 
       // Only this string should be overridden
-      expect(state.config.derived.languagePack.input_placeholder).toBe(
+      expect(state.languagePack.input_placeholder).toBe(
         "Custom placeholder only",
       );
 
       // All other strings should remain defaults
-      expect(state.config.derived.languagePack.launcher_isOpen).toBe(
+      expect(state.languagePack.launcher_isOpen).toBe(
         enLanguagePack.launcher_isOpen,
       );
-      expect(state.config.derived.languagePack.launcher_isClosed).toBe(
+      expect(state.languagePack.launcher_isClosed).toBe(
         enLanguagePack.launcher_isClosed,
       );
-      expect(state.config.derived.languagePack.window_ariaWindowOpened).toBe(
+      expect(state.languagePack.window_ariaWindowOpened).toBe(
         enLanguagePack.window_ariaWindowOpened,
       );
-      expect(state.config.derived.languagePack.window_ariaWindowClosed).toBe(
+      expect(state.languagePack.window_ariaWindowClosed).toBe(
         enLanguagePack.window_ariaWindowClosed,
       );
     });
@@ -236,21 +285,17 @@ describe("Config Strings", () => {
       const state: AppState = store.getState();
 
       // These two strings should be overridden
-      expect(state.config.derived.languagePack.input_placeholder).toBe(
-        "Custom input text",
-      );
-      expect(state.config.derived.languagePack.launcher_isOpen).toBe(
-        "Custom launcher text",
-      );
+      expect(state.languagePack.input_placeholder).toBe("Custom input text");
+      expect(state.languagePack.launcher_isOpen).toBe("Custom launcher text");
 
       // All other strings should remain defaults
-      expect(state.config.derived.languagePack.launcher_isClosed).toBe(
+      expect(state.languagePack.launcher_isClosed).toBe(
         enLanguagePack.launcher_isClosed,
       );
-      expect(state.config.derived.languagePack.window_ariaWindowOpened).toBe(
+      expect(state.languagePack.window_ariaWindowOpened).toBe(
         enLanguagePack.window_ariaWindowOpened,
       );
-      expect(state.config.derived.languagePack.window_ariaWindowClosed).toBe(
+      expect(state.languagePack.window_ariaWindowClosed).toBe(
         enLanguagePack.window_ariaWindowClosed,
       );
     });
@@ -281,13 +326,13 @@ describe("Config Strings", () => {
       const state: AppState = store.getState();
 
       // All strings should remain defaults
-      expect(state.config.derived.languagePack.input_placeholder).toBe(
+      expect(state.languagePack.input_placeholder).toBe(
         enLanguagePack.input_placeholder,
       );
-      expect(state.config.derived.languagePack.launcher_isOpen).toBe(
+      expect(state.languagePack.launcher_isOpen).toBe(
         enLanguagePack.launcher_isOpen,
       );
-      expect(state.config.derived.languagePack.launcher_isClosed).toBe(
+      expect(state.languagePack.launcher_isClosed).toBe(
         enLanguagePack.launcher_isClosed,
       );
     });
@@ -315,7 +360,7 @@ describe("Config Strings", () => {
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       // Spot check a known default value
-      expect(state.config.derived.languagePack.input_placeholder).toBe(
+      expect(state.languagePack.input_placeholder).toBe(
         enLanguagePack.input_placeholder,
       );
     });

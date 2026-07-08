@@ -60,6 +60,12 @@ class ErrorMessage extends LitElement {
   collapsible = false;
 
   /**
+   * Whether the prompt line has alternate layout for expanded mode and/or message actions.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "actions-layout" })
+  actionsLayout = false;
+
+  /**
    * Whether the error message is in fullscreen layout.
    */
   @property({ type: Boolean, attribute: "fullscreen" })

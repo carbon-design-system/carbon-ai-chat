@@ -4,6 +4,17 @@ Guidance that applies to both [react/](react/) and [web-components/](web-compone
 
 > **Prerequisite**: packages must be built first. See root [AGENTS.md](../AGENTS.md) — examples resolve deps through `dist/es/`.
 
+## Running an example
+
+Build the packages first, then from the repo root start any single example by its workspace name (override the default port 3000 with `PORT=`):
+
+```bash
+npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
+PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
+```
+
+When `npm run aiChat:start` is running in another terminal, example webpack servers hot-reload on package rebuilds.
+
 ## Adding a new example
 
 1. **Pick a base and copy it.** Each flavor lists its canonical scaffolds in its own `AGENTS.md`. Both include webpack config, `tsconfig.json`, HTML entry, and `package.json`. Rename the folder to `<slug>` and update the workspace name to the flavor's naming pattern.

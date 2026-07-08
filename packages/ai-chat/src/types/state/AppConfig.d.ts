@@ -9,7 +9,6 @@
 
 import { PublicConfig } from "../config/PublicConfig";
 import { HeaderConfig } from "../config/HeaderConfig";
-import { LanguagePack } from "../config/LanguagePack";
 import { LayoutConfig } from "../config/LayoutConfig";
 import { ThemeState } from "./AppState";
 import ObjectMap from "../utilities/ObjectMap";
@@ -40,11 +39,6 @@ interface AppConfig {
      * Complete theme state with defaults applied and corners computed based on layout/device.
      */
     themeWithDefaults: ThemeState;
-
-    /**
-     * Passed strings merged with defaults.
-     */
-    languagePack: LanguagePack;
 
     /**
      * Passed header merged with defaults.

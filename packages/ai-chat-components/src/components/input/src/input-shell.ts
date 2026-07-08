@@ -58,8 +58,39 @@ class InputShellElement extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: "has-error" })
   hasError = false;
 
+  /** Whether the input shell is disabled. */
+  @property({ type: Boolean, reflect: true })
+  disabled = false;
+
   @state()
   private _hasMessageActions = false;
+
+  @state()
+  private _editorKeyboardFocus = false;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener(
+      "cds-aichat-prompt-focus",
+      this._handlePromptFocus as EventListener,
+    );
+    this.addEventListener(
+      "cds-aichat-prompt-blur",
+      this._handlePromptBlur as EventListener,
+    );
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      "cds-aichat-prompt-focus",
+      this._handlePromptFocus as EventListener,
+    );
+    this.removeEventListener(
+      "cds-aichat-prompt-blur",
+      this._handlePromptBlur as EventListener,
+    );
+  }
 
   override willUpdate(changedProperties: PropertyValues): void {
     super.willUpdate(changedProperties);
@@ -83,6 +114,26 @@ class InputShellElement extends LitElement {
       [`${prefix}--input-container--expanded`]: this.expanded,
     };
 
+    const textAreaClasses = {
+      [`${prefix}--input-text-area`]: true,
+      [`${prefix}--input-text-area--keyboard-focus`]: this._editorKeyboardFocus,
+    };
+
+    // In expanded mode, render text-area before message-actions to match visual order
+
+    const textAreaContent = html`
+      <div class=${classMap(textAreaClasses)}>
+        <slot name="editor"></slot>
+      </div>
+    `;
+
+    const messageActionsContent = html`
+      <slot
+        name="message-actions"
+        @slotchange=${this._handleMessageActionsSlotChange}
+      ></slot>
+    `;
+
     return html`
       <div class="${prefix}--input-shell">
         <div class=${classMap(containerClasses)}>
@@ -94,13 +145,8 @@ class InputShellElement extends LitElement {
             <slot name="field-messaging"></slot>
           </div>
           <div class="${prefix}--input-text-and-actions">
-            <slot
-              name="message-actions"
-              @slotchange=${this._handleMessageActionsSlotChange}
-            ></slot>
-            <div class="${prefix}--input-text-area">
-              <slot name="editor"></slot>
-            </div>
+            ${this.expanded ? textAreaContent : messageActionsContent}
+            ${this.expanded ? messageActionsContent : textAreaContent}
           </div>
           <div class="${prefix}--input-send-control-container">
             <slot name="send-control"></slot>
@@ -109,6 +155,18 @@ class InputShellElement extends LitElement {
       </div>
     `;
   }
+
+  private _handlePromptFocus = (event: CustomEvent): void => {
+    // Both the textarea controller and the rich runtime pass `{ keyboard: true }`
+    // in the event detail when focus arrived via keyboard navigation (no preceding
+    // pointer/touch event).
+    this._editorKeyboardFocus =
+      (event.detail as { keyboard?: boolean })?.keyboard === true;
+  };
+
+  private _handlePromptBlur = (): void => {
+    this._editorKeyboardFocus = false;
+  };
 
   private _handleMessageActionsSlotChange = (): void => {
     // Request an update so `willUpdate()` re-derives occupancy from the settled

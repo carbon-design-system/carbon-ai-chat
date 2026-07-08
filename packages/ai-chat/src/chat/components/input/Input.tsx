@@ -20,12 +20,14 @@ import type { PromptLineElement } from "@carbon/ai-chat-components/es/components
 import { useChatAutocomplete } from "@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import actions from "../../store/actions";
-import { selectIsInputToHumanAgent } from "../../store/selectors";
+import {
+  selectIsInputToHumanAgent,
+  selectLanguagePack,
+} from "../../store/selectors";
 import { ChatWidthBreakpoint, AppState } from "../../../types/state/AppState";
 import { useSelector } from "../../hooks/useSelector";
 import { BusEventType } from "../../../types/events/eventBusTypes";
 import { useServiceManager } from "../../hooks/useServiceManager";
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useIntl } from "../../hooks/useIntl";
 import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
 import { validateFileSelection } from "../../utils/fileUploadValidation";
@@ -260,7 +262,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   } = props;
 
   const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(selectLanguagePack);
   const intl = useIntl();
   const ariaAnnouncer = useAriaAnnouncer();
   const store = serviceManager.store;
@@ -539,6 +541,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    * Renders the error message component if an error is provided.
    */
   const renderErrorMessage = () => {
+    // Whether the prompt line has alternate layout for expanded mode and/or message actions
+    const actionsLayout = expanded || showUploadButton || effectiveActions;
+
     if (overMaxLength) {
       const errorText = intl.formatMessage(
         { id: "input_maxCharCountExceeded" },
@@ -551,6 +556,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           >
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+              actionsLayout={actionsLayout}
               title="Error: Max character count exceeded"
               description={errorText}
               collapsible={true}
@@ -573,6 +579,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         <AnnounceOnMountComponent announceOnce={announcement}>
           <ErrorMessage
             fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+            actionsLayout={actionsLayout}
             title={error.title}
             description={error?.description}
             collapsible={error?.collapsible}
@@ -595,7 +602,12 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const hasError = hasErrorProp || overMaxLength;
 
   return (
-    <InputShell rounded={rounded} expanded={expanded} hasError={hasError}>
+    <InputShell
+      rounded={rounded}
+      expanded={expanded}
+      hasError={hasError}
+      disabled={disableInput}
+    >
       <PromptLine
         slot="editor"
         ref={promptLineRef}

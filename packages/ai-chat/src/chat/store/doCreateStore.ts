@@ -8,6 +8,7 @@
  */
 
 import cloneDeep from "lodash-es/cloneDeep.js";
+import isEqual from "lodash-es/isEqual.js";
 import mergeWith from "lodash-es/mergeWith.js";
 import { ServiceManager } from "../services/ServiceManager";
 import { AppConfig } from "../../types/state/AppConfig";
@@ -20,6 +21,7 @@ import {
 } from "../../types/config/CornersType";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { LanguagePack } from "../../types/config/LanguagePack";
+import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
 import { AppStore, createAppStore } from "./appStore";
@@ -96,13 +98,11 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
     {},
     {
       header: DEFAULT_HEADER,
-      languagePack: enLanguagePack,
       layout: DEFAULT_LAYOUT_STATE,
       launcher: DEFAULT_LAUNCHER,
     },
     {
       header: publicConfig.header,
-      languagePack: publicConfig.strings,
       layout: publicConfig.layout,
       launcher: publicConfig.launcher,
     },
@@ -114,36 +114,121 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
       cssVariableOverrides,
       themeWithDefaults,
       header: derived.header,
-      languagePack: derived.languagePack as LanguagePack,
       layout: derived.layout,
       launcher: derived.launcher,
     },
   };
 }
 
+/**
+ * Builds the active language pack: the `enLanguagePack` defaults overlaid with
+ * any host-provided `strings`. The language pack is a flat key→string map, so a
+ * shallow overlay is sufficient (and matches the dynamic-update path). Lives in
+ * its own `AppState.languagePack` slice so a string change never churns the
+ * config tree. Shared by boot, the dynamic `strings` effect, and the dynamic
+ * config path so they all merge identically.
+ */
+function buildLanguagePack(
+  strings?: DeepPartial<LanguagePack> | undefined,
+): LanguagePack {
+  return { ...enLanguagePack, ...(strings ?? {}) } as LanguagePack;
+}
+
+/**
+ * Shallow-reconciles `next` against `prev` one level deep: any own key whose
+ * value is deep-equal to the previous value reuses the previous reference. If
+ * every key ends up reused and the key set is unchanged, the previous object is
+ * returned wholesale so its reference survives too.
+ *
+ * Functions are compared by reference (lodash `isEqual` semantics), so a field
+ * carrying a changed callback is treated as changed.
+ *
+ * Comparison is by value, not identity: two distinct but deep-equal instances
+ * (a `Date`, `Map`, `Set`, or class instance with equal contents) are treated as
+ * unchanged and the previous reference is reused. That is fine for the current
+ * config shape (plain data + functions); if a field is ever added whose identity
+ * matters beyond its value, it must not rely on this for change detection.
+ *
+ * Workload: called only on a runtime config replace (rare), with `prev`/`next`
+ * being the `public` and `derived` slots of `AppConfig` — tens of keys at the
+ * top level. The per-key `isEqual` deep walk is acceptable at that scale; if a
+ * field is ever added whose sub-tree is large (e.g. a big lookup table), revisit.
+ */
+function reconcileObjectReferences<T extends object>(prev: T, next: T): T {
+  if (!prev || prev === next) {
+    return next;
+  }
+
+  const nextKeys = Object.keys(next);
+  const prevKeys = Object.keys(prev);
+  let allReused = nextKeys.length === prevKeys.length;
+
+  const result: Record<string, unknown> = {};
+  for (const key of nextKeys) {
+    const nextValue = (next as Record<string, unknown>)[key];
+    const prevValue = (prev as Record<string, unknown>)[key];
+    if (
+      Object.prototype.hasOwnProperty.call(prev, key) &&
+      isEqual(prevValue, nextValue)
+    ) {
+      result[key] = prevValue;
+    } else {
+      result[key] = nextValue;
+      allReused = false;
+    }
+  }
+
+  return allReused ? prev : (result as T);
+}
+
+/**
+ * Preserves object references for the parts of `next` that are value-equal to
+ * `prev`, so a config change that only touches one field (e.g. toggling
+ * `input.isDisabled`) does not hand every `config.public.*` / `config.derived.*`
+ * sub-object — nor the `public` / `derived` / top-level `config` objects
+ * themselves — a fresh reference. Selectors that read an unchanged sub-object
+ * then keep their identity and skip re-rendering.
+ *
+ * `createAppConfig` always rebuilds the whole tree, so call this on its output
+ * (against the previously stored `AppConfig`) before dispatching the replace.
+ * At boot there is no previous config; pass `null` and `next` is returned as-is.
+ */
+function reconcileAppConfigReferences(
+  prev: AppConfig | null | undefined,
+  next: AppConfig,
+): AppConfig {
+  if (!prev) {
+    return next;
+  }
+
+  const publicConfig = reconcileObjectReferences(prev.public, next.public);
+  const derived = reconcileObjectReferences(prev.derived, next.derived);
+
+  if (publicConfig === prev.public && derived === prev.derived) {
+    return prev;
+  }
+
+  return { public: publicConfig, derived };
+}
+
 function createInitialState(config: AppConfig): AppState {
-  const inputConfig = config.public.input;
-  const assistantInputState = {
-    ...DEFAULT_INPUT_STATE,
-  };
+  // Input config (isVisible/isDisabled/isReadonly) is intentionally NOT mirrored
+  // into state at boot. Those values are derived from config at read time via
+  // the selectInput* selectors; assistantInputState only carries runtime
+  // overrides, which start unset (null).
+  const assistantInputState = { ...DEFAULT_INPUT_STATE };
 
   const persistedToBrowserStorage = cloneDeep(DEFAULT_PERSISTED_TO_BROWSER);
-
-  if (typeof inputConfig?.isVisible === "boolean") {
-    assistantInputState.fieldVisible = inputConfig.isVisible;
-  }
-
-  if (typeof inputConfig?.isDisabled === "boolean") {
-    assistantInputState.isDisabled = inputConfig.isDisabled;
-  }
-
-  if (typeof config.public.isReadonly === "boolean") {
-    assistantInputState.isReadonly = config.public.isReadonly;
-  }
 
   const initialState: AppState = {
     // Config with derived values
     config,
+
+    // Active language pack (defaults + host `strings`), kept off the config tree.
+    languagePack: buildLanguagePack(config.public.strings),
+
+    // Host markdown config; set from the `markdown` prop in ChatAppEntry.
+    markdownConfig: undefined,
 
     // Messaging state
     ...DEFAULT_MESSAGE_STATE,
@@ -353,4 +438,10 @@ function reducerFunction(
     : state;
 }
 
-export { doCreateStore, createAppConfig, createInitialState };
+export {
+  doCreateStore,
+  createAppConfig,
+  buildLanguagePack,
+  reconcileAppConfigReferences,
+  createInitialState,
+};

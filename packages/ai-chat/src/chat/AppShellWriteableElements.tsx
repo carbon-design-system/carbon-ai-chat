@@ -11,14 +11,19 @@ import React, { useMemo } from "react";
 
 import WriteableElement from "./components/util/WriteableElement";
 import { WriteableElementName } from "../types/instance/WriteableElements";
-import { RenderWriteableElementResponse } from "../types/component/ChatContainer";
 import { HasServiceManager } from "./hocs/withServiceManager";
 import { useSelector } from "./hooks/useSelector";
 import { AppState } from "../types/state/AppState";
 
 interface AppShellWriteableElementsProps extends HasServiceManager {
   showHomeScreen: boolean;
-  renderWriteableElements?: RenderWriteableElementResponse;
+  /**
+   * Value-stable, space-separated, sorted list of writeable-element slot names
+   * the host supplied content for (see `ChatAppEntry`). `undefined` means the
+   * host omitted the map entirely — render all default elements (back-compat);
+   * an empty string means a map was provided with no content — render none.
+   */
+  writeableElementsPresentKeys?: string;
 }
 
 /**
@@ -93,12 +98,26 @@ export const AppShellWriteableElements = React.memo(
   function AppShellWriteableElements({
     serviceManager,
     showHomeScreen,
-    renderWriteableElements,
+    writeableElementsPresentKeys,
   }: AppShellWriteableElementsProps) {
     const suffix = serviceManager.namespace.suffix;
     const hasContentMaxWidth = useSelector(
       (state: AppState) =>
         state.config.derived.header.hasContentMaxWidth ?? false,
+    );
+
+    // `null` => host omitted the map entirely (render all, back-compat). A Set
+    // (possibly empty) => only render slots the host supplied content for.
+    const presentKeySet = useMemo(
+      () =>
+        writeableElementsPresentKeys === undefined
+          ? null
+          : new Set(
+              writeableElementsPresentKeys
+                ? writeableElementsPresentKeys.split(" ")
+                : [],
+            ),
+      [writeableElementsPresentKeys],
     );
 
     const elements = useMemo(
@@ -120,16 +139,14 @@ export const AppShellWriteableElements = React.memo(
             className,
           };
         }).filter((element) => {
-          // Only render the element if content exists in renderWriteableElements
-          // If renderWriteableElements is not provided, render all elements (backward compatibility)
-          if (!renderWriteableElements) {
+          // Only render the element if the host supplied content for its slot.
+          // `null` (host omitted the map) renders all elements (back-compat).
+          if (presentKeySet === null) {
             return true;
           }
-          return !!renderWriteableElements[
-            element.slotName as WriteableElementName
-          ];
+          return presentKeySet.has(element.slotName);
         }),
-      [showHomeScreen, suffix, renderWriteableElements, hasContentMaxWidth],
+      [showHomeScreen, suffix, presentKeySet, hasContentMaxWidth],
     );
 
     return (
