@@ -326,6 +326,7 @@ export class TextareaController implements PromptLineController {
   }
 
   focus(): void {
+    this._focusFromMouse = true;
     this._textarea?.focus();
   }
 
