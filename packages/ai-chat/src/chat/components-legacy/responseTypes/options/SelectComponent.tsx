@@ -13,7 +13,9 @@ import React, { useRef, useState } from "react";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
 import { useCounter } from "../../../hooks/useCounter";
-import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
+import { AppState } from "../../../../types/state/AppState";
 import { doScrollElementIntoView } from "../../../utils/domUtils";
 import {
   MessageInput,
@@ -30,7 +32,7 @@ type SelectionEvent = CustomEvent<{
   item: { textContent: string; value: string };
 }>;
 
-interface SelectProps extends HasLanguagePack, HasServiceManager {
+interface SelectProps extends HasServiceManager {
   title: string;
   description: string;
   options: SingleOption[];
@@ -56,11 +58,18 @@ function SelectComponent(props: SelectProps) {
     description,
     options,
     onChange,
-    languagePack,
     disableUserInputs,
     serviceManager,
     removeHTML,
   } = props;
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      options_select: state.languagePack.options_select,
+      options_ariaOptionsDisabled:
+        state.languagePack.options_ariaOptionsDisabled,
+    }),
+    shallowEqual,
+  );
 
   const [isBeingOpened, setIsBeingOpened] = useState(false);
   const rootRef = useRef<HTMLDivElement>(undefined);

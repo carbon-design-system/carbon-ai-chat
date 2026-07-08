@@ -14,7 +14,7 @@
  *
  * Per token, in order:
  *
- * 1. **Consumer override** — `options.customRenderers?.[kind]` for `kind` in `{ table, codeBlock }`. The renderer emits a named `<slot>` placeholder and records a descriptor; the markdown element's `updated()` invokes the consumer callback later.
+ * 1. **Consumer override** — `options.customRenderers`. For `table`/`codeBlock` the renderer emits a named `<slot>` placeholder and records a descriptor; the markdown element's `updated()` invokes the consumer callback later. For `link`/`image` the callback runs synchronously here as an attribute transform (no slot, no descriptor); `checklist` adjusts the rendered `cds-checkbox` (its toggles are delivered by a listener on the markdown element).
  * 2. **Plugin-overridden rule** — `shouldDelegateToPluginRule(token, md)` is true when a user-supplied markdown-it plugin overrode the renderer rule for one of the curated leaf tokens in `PLUGIN_DELEGABLE_TOKEN_TYPES` (`fence`, `image`, `code_inline`, `html_block`). The token routes through `renderFallback` and surfaces as a `pluginFallback` descriptor.
  * 3. **Native Lit dispatch** — the hand-written `renderWithStaticTag` switch. Kept flat (rather than a tag-to-renderer map) so the per-tag exceptions — task-list passthrough, Carbon `cds-unordered-list` / `cds-ordered-list` wrappers, automatic `target="_blank"` on `<a>`, image plugin delegation — stay easy to grep.
  * 4. **Unknown plugin-introduced token** — anything not natively handled falls through to `renderFallback`, so plugins that register `md.renderer.rules[type]` (footnote, deflist, custom containers, emoji) just work.
@@ -60,8 +60,15 @@ import type {
 // Re-export types so existing imports of these from this module keep working.
 export type {
   MarkdownCustomRenderers,
+  MarkdownRendererChecklist,
+  MarkdownRendererChecklistItemArgs,
+  MarkdownRendererChecklistToggleArgs,
   MarkdownRendererCodeBlockArgs,
   MarkdownRendererCodeBlockData,
+  MarkdownRendererImageArgs,
+  MarkdownRendererImageResult,
+  MarkdownRendererLinkArgs,
+  MarkdownRendererLinkResult,
   MarkdownRendererSlotDescriptor,
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
@@ -82,6 +89,38 @@ function slotNameFor(
   const startLine = token.map?.[0] ?? 0;
   const index = options.context?.currentIndex ?? 0;
   return `cds-aichat-markdown-renderer-${kind}-${startLine}-${index}`;
+}
+
+/**
+ * Drops attributes DOMPurify considers unsafe (event handlers, `javascript:`
+ * URLs, etc.) from a plain attr object. Used both for the parsed token attrs
+ * and for attributes a consumer `link`/`image` renderer merges in — the latter
+ * bypass the token-attr pass, so they must be re-checked here.
+ */
+function sanitizeAttrs(attrs: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(attrs).filter(([key, value]) => {
+      // Use DOMPurify to check if attribute is safe
+      const fragment = DOMPurify.sanitize(`<a ${key}="${value}">`, {
+        RETURN_DOM: true,
+      });
+      const element = fragment.firstChild as Element | null;
+      return element?.getAttribute(key) !== null;
+    }),
+  );
+}
+
+/**
+ * Concatenates the plain-text content of a node's descendants. A lossy
+ * convenience for consumer `link`/`checklist` callbacks that want the visible
+ * text; the rich children still render through the normal dispatch.
+ */
+function extractText(node: TokenTree): string {
+  const { token, children } = node;
+  if (children && children.length > 0) {
+    return children.map(extractText).join("");
+  }
+  return token.content ?? "";
 }
 
 function renderChildTokenTrees(
@@ -299,16 +338,7 @@ export function renderTokenTree(
   let attrs = rawAttrs;
   const isCustomElement = !!token.tag && token.tag.includes("-");
   if (sanitize && !isCustomElement) {
-    attrs = Object.fromEntries(
-      Object.entries(rawAttrs).filter(([key, value]) => {
-        // Use DOMPurify to check if attribute is safe
-        const fragment = DOMPurify.sanitize(`<a ${key}="${value}">`, {
-          RETURN_DOM: true,
-        });
-        const element = fragment.firstChild as Element | null;
-        return element?.getAttribute(key) !== null;
-      }),
-    );
+    attrs = sanitizeAttrs(rawAttrs);
   }
 
   // Set up context for child rendering
@@ -445,9 +475,30 @@ function renderWithStaticTag(
 
     case "cds-checkbox": {
       const { checked, disabled, ...otherAttrs } = attrs;
-      const isChecked = checked === "true";
-      const isDisabled =
-        disabled === undefined ? false : disabled === "" || disabled === "true";
+      let isChecked = checked === "true";
+
+      // A configured `checklist` renderer can supply the checked state
+      // (so a persisted toggle survives streaming re-renders) and makes the
+      // boxes interactive.
+      const checklist = options.customRenderers?.checklist;
+      if (checklist?.getChecked && node) {
+        const override = checklist.getChecked({
+          id: otherAttrs["data-cds-aichat-checklist-id"] ?? "",
+          label: extractText(node),
+          checked: isChecked,
+          token,
+          node,
+        });
+        if (typeof override === "boolean") {
+          isChecked = override;
+        }
+      }
+
+      const isDisabled = checklist
+        ? false
+        : disabled === undefined
+          ? false
+          : disabled === "" || disabled === "true";
 
       return html`<cds-checkbox
         ?checked=${isChecked}
@@ -501,17 +552,71 @@ function renderWithStaticTag(
     case "q":
       return html`<q ${spread(attrs)}>${content}</q>`;
 
-    // Links with automatic target="_blank"
-    case "a":
-      if (!attrs.target) {
-        attrs.target = "_blank";
+    // Links: optional consumer attribute transform, then automatic
+    // target="_blank" safety default.
+    case "a": {
+      let linkAttrs: Record<string, string> = attrs;
+      const linkRenderer = options.customRenderers?.link;
+      if (linkRenderer && node) {
+        const result = linkRenderer({
+          href: attrs.href ?? "",
+          title: attrs.title,
+          text: extractText(node),
+          attributes: { ...attrs },
+          token,
+          node,
+        });
+        if (result) {
+          linkAttrs = { ...attrs, ...(result.attributes ?? {}) };
+          if (result.href !== undefined) {
+            linkAttrs.href = result.href;
+          }
+          if (result.target !== undefined) {
+            linkAttrs.target = result.target;
+          }
+          if (result.rel !== undefined) {
+            linkAttrs.rel = result.rel;
+          }
+          // Consumer-supplied attributes bypass the token-attr sanitize pass
+          // above, so re-check them here.
+          if (options.sanitize) {
+            linkAttrs = sanitizeAttrs(linkAttrs);
+          }
+        }
       }
-      return html`<a ${spread(attrs)}>${content}</a>`;
+      if (!linkAttrs.target) {
+        linkAttrs.target = "_blank";
+      }
+      return html`<a ${spread(linkAttrs)}>${content}</a>`;
+    }
 
-    // Self-closing image. Plugin-introduced wrappers (e.g. image-figures)
-    // route through `shouldDelegateToPluginRule` before falling back to a
-    // plain `<img>` element.
-    case "img":
+    // Self-closing image. A consumer `image` transform wins first (mirroring
+    // how `codeBlock` wins over plugin `fence` rules); otherwise
+    // plugin-introduced wrappers (e.g. image-figures) route through
+    // `shouldDelegateToPluginRule` before falling back to a plain `<img>`.
+    case "img": {
+      const imageRenderer = options.customRenderers?.image;
+      if (imageRenderer && node) {
+        let imgAttrs: Record<string, string> = attrs;
+        const result = imageRenderer({
+          src: attrs.src ?? "",
+          alt: attrs.alt,
+          title: attrs.title,
+          attributes: { ...attrs },
+          token,
+          node,
+        });
+        if (result) {
+          imgAttrs = { ...attrs, ...(result.attributes ?? {}) };
+          if (result.src !== undefined) {
+            imgAttrs.src = result.src;
+          }
+          if (options.sanitize) {
+            imgAttrs = sanitizeAttrs(imgAttrs);
+          }
+        }
+        return html`<img ${spread(imgAttrs)} />`;
+      }
       if (node && options.md && shouldDelegateToPluginRule(token, options.md)) {
         return renderFallback(
           token,
@@ -522,6 +627,7 @@ function renderWithStaticTag(
         );
       }
       return html`<img ${spread(attrs)} />`;
+    }
 
     // Tables with Carbon component and streaming support
     case "table": {

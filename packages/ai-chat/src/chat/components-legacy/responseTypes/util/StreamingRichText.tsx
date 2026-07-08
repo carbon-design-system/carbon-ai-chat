@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,7 +9,9 @@
 
 import React from "react";
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
+import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
+import { AppState } from "../../../../types/state/AppState";
 import { LocalMessageItemStreamingState } from "../../../../types/messaging/LocalMessageItem";
 import InlineError from "../error/InlineError";
 import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
@@ -44,7 +46,13 @@ interface StreamingRichTextProps {
 function StreamingRichText(props: StreamingRichTextProps) {
   const { text, streamingState, removeHTML, isStreamingError } = props;
 
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      conversationalSearch_streamingIncomplete:
+        state.languagePack.conversationalSearch_streamingIncomplete,
+    }),
+    shallowEqual,
+  );
 
   let textToUse;
   if (streamingState && !streamingState.isDone) {

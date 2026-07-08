@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,15 +9,12 @@
 
 import { ScrollElementIntoViewFunction } from "../../chat/components-legacy/MessagesComponent";
 import { HasServiceManager } from "../../chat/hocs/withServiceManager";
-import { AppConfig } from "../state/AppConfig";
 import { HasDisplayOverride } from "../utilities/HasDisplayOverride";
-import { LanguagePack } from "./LanguagePack";
 import { LocalMessageItem } from "./LocalMessageItem";
 import { Message } from "./Messages";
 
 interface MessageContextValues extends HasServiceManager, HasDisplayOverride {
   originalMessage: Message;
-  languagePack: LanguagePack;
 
   /**
    * A callback function that will request that focus be moved to the main input field.
@@ -28,11 +25,6 @@ interface MessageContextValues extends HasServiceManager, HasDisplayOverride {
    * Indicates if any user input controls should be shown but disabled.
    */
   disableUserInputs: boolean;
-
-  /**
-   * The configuration for the widget.
-   */
-  config: AppConfig;
 
   /**
    * Indicates if this message is part the most recent message response that allows for input.

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,7 +13,6 @@ import React from "react";
 import { useIntl } from "../../../hooks/useIntl";
 import { useSelector } from "../../../hooks/useSelector";
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import actions from "../../../store/actions";
 import { AppState } from "../../../../types/state/AppState";
@@ -41,7 +40,9 @@ function IFramePreviewCardComponent({
   );
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
-  const { iframe_ariaImageAltText } = useLanguagePack();
+  const iframe_ariaImageAltText = useSelector(
+    (state: AppState) => state.languagePack.iframe_ariaImageAltText,
+  );
   const { formatMessage } = useIntl();
   const iframeAriaClickPreviewCardMessage = formatMessage(
     { id: "iframe_ariaClickPreviewCard" },

@@ -13,7 +13,6 @@ import { repeat } from "lit/directives/repeat.js";
 import "@carbon/web-components/es/components/button/index.js";
 import "@carbon/web-components/es/components/overflow-menu/index.js";
 import { OVERFLOW_MENU_SIZE } from "@carbon/web-components/es/components/overflow-menu/defs.js";
-import { createOverflowHandler } from "@carbon/utilities";
 import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import prefix from "../../../globals/settings.js";
@@ -66,11 +65,6 @@ export interface Action extends BaseOverflowMenuItem {
  */
 @carbonElement(blockClass)
 class CDSAIChatToolbar extends LitElement {
-  /** Hidden actions rendered in the overflow menu.
-   *  @internal
-   */
-  @state() private hiddenItems: Action[] = [];
-
   /** Whether the component is in RTL mode.
    *  @internal
    */
@@ -94,100 +88,89 @@ class CDSAIChatToolbar extends LitElement {
    *  @internal
    */
   @query(`.${blockClass}__end`) private container!: HTMLElement;
+  @query(`.${blockClass}__actions-container`)
+  private actionsContainer!: HTMLElement;
 
-  @state() private measuring = true;
+  @state() private containerWidth = 0;
 
-  private overflowHandler?: { disconnect: () => void };
-  private visibilityObserver?: ResizeObserver;
+  private resizeObserver?: ResizeObserver;
 
   private static readonly OVERFLOW_MENU_LABEL = "Options";
 
   connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleToolbarKeydown);
-    if (this.overflow) {
-      this.toggleAttribute("data-measuring", true);
-    }
-  }
-
-  firstUpdated() {
-    if (!this.overflow) {
-      return;
-    }
-    this.updateComplete.then(() => {
-      this.setupOverflowHandler();
-      this.removeAttribute("data-measuring");
-    });
-  }
-
-  updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has("actions") || changedProps.has("overflow")) {
-      this.updateComplete
-        .then(() => {
-          this.hiddenItems = [];
-        })
-        .then(() => {
-          // Use double requestAnimationFrame to ensure the browser has painted
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              this.setupOverflowHandler();
-            });
-          });
-        })
-        .then(() => {
-          this.measuring = false;
-        });
-    }
-  }
-
-  private setupOverflowHandler() {
-    if (!this.container || !this.overflow) {
-      return;
-    }
-
-    const containerWidth = Math.round(
-      this.container.getBoundingClientRect().width,
-    );
-
-    if (containerWidth === 0) {
-      // Disconnect any existing observer before creating a new one
-      this.visibilityObserver?.disconnect();
-      this.visibilityObserver = new ResizeObserver(() => {
-        const width = Math.round(this.container.getBoundingClientRect().width);
-        if (width > 0) {
-          this.visibilityObserver?.disconnect();
-          this.visibilityObserver = undefined;
-          // Use requestAnimationFrame to avoid ResizeObserver loop errors
-          requestAnimationFrame(() => {
-            this.setupOverflowHandler();
-          });
-        }
-      });
-      this.visibilityObserver.observe(this.container);
-      return;
-    }
-
-    this.overflowHandler?.disconnect();
-    this.visibilityObserver?.disconnect();
-    this.visibilityObserver = undefined;
-
-    this.overflowHandler = createOverflowHandler({
-      container: this.container,
-      dimension: "width",
-      onChange: (visibleItems: HTMLElement[]) => {
-        this.hiddenItems = this.actions.filter(
-          (_, i) => i >= visibleItems.length && !_.fixed,
-        );
-      },
-    });
   }
 
   disconnectedCallback() {
-    this.overflowHandler?.disconnect();
-    this.visibilityObserver?.disconnect();
-    this.visibilityObserver = undefined;
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
     this.removeEventListener("keydown", this._handleToolbarKeydown);
     super.disconnectedCallback();
+  }
+
+  firstUpdated() {
+    if (this.overflow) {
+      this.setupResizeObserver();
+    }
+  }
+
+  private sortActions() {
+    return [...this.actions].sort((a, b) => {
+      if (a.fixed && !b.fixed) {
+        return -1;
+      }
+      if (!a.fixed && b.fixed) {
+        return 1;
+      }
+      return 0;
+    });
+  }
+
+  private setupResizeObserver() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      if (width !== this.containerWidth) {
+        this.containerWidth = width;
+      }
+    });
+    this.resizeObserver.observe(this.container);
+  }
+
+  private getActions() {
+    if (!this.container || this.container.getBoundingClientRect().width === 0) {
+      return {
+        visibleActions: [],
+        hiddenActions: [],
+      };
+    }
+    const containerWidth =
+      this.actionsContainer.getBoundingClientRect().width - 40; // subtract 40 to account for size of overflow menu button
+    const children = this.actionsContainer.children;
+    let currentWidth = 0;
+    const visibleChildren: Element[] = [];
+    const hiddenChildren: Element[] = [];
+    for (const el of children) {
+      const elWidth = el.getBoundingClientRect().width;
+      const newWidth = currentWidth + elWidth;
+      const widthCheck = newWidth < containerWidth;
+      if (widthCheck) {
+        currentWidth = newWidth;
+        visibleChildren.push(el);
+      } else {
+        hiddenChildren.push(el);
+      }
+    }
+    const idx = visibleChildren.length;
+    const sortedActions = this.sortActions();
+    const visibleActions = sortedActions.slice(0, idx);
+    const hiddenActions = sortedActions.slice(idx);
+
+    return {
+      visibleActions,
+      hiddenActions,
+    };
   }
 
   /**
@@ -281,17 +264,10 @@ class CDSAIChatToolbar extends LitElement {
   }
 
   render() {
-    const { fixedActions, nonFixedActions } = this.actions.reduce(
-      (acc, action) => {
-        action.fixed
-          ? acc.fixedActions.push(action)
-          : acc.nonFixedActions.push(action);
-        return acc;
-      },
-      { fixedActions: [] as Action[], nonFixedActions: [] as Action[] },
-    );
-
-    const showOverflowMenu = this.measuring || this.hiddenItems.length > 0;
+    const { hiddenActions, visibleActions } = this.getActions();
+    const showOverflowMenu = hiddenActions.length > 0;
+    const showInitialActions =
+      visibleActions.length === 0 && hiddenActions.length === 0;
 
     return html`
       <div data-rounded="top" class=${blockClass}>
@@ -331,27 +307,24 @@ class CDSAIChatToolbar extends LitElement {
             </slot>
           </div>
         </div>
-
-        <div data-fixed class="${blockClass}__end" data-rounded="top-right">
-          <div data-fixed class="${blockClass}__fixed-actions">
-            <slot name="fixed-actions"></slot>
-          </div>
-
-          <div data-fixed><slot name="decorator"></slot></div>
-
-          ${repeat(
-            nonFixedActions,
-            (action) => action.text,
-            this.renderIconButton,
-          )}
-          ${showOverflowMenu
-            ? html`
-                <div data-floating-menu-container>
+        <div
+          class="${blockClass}__end"
+          data-rounded="top-right"
+          data-floating-menu-container
+        >
+          <div class="${blockClass}__actions-container">
+            ${repeat(
+              showInitialActions ? this.actions : visibleActions,
+              (action) => action.text,
+              this.renderIconButton,
+            )}
+            ${showOverflowMenu
+              ? html`
                   <cds-overflow-menu
                     size=${this.getOverflowMenuSize()}
                     align=${this.isRTL ? "bottom-start" : "bottom-end"}
                     data-offset
-                    ?data-hidden=${this.hiddenItems.length === 0}
+                    ?data-hidden=${hiddenActions.length === 0}
                     kind="ghost"
                     close-on-activation
                     enter-delay-ms="0"
@@ -366,7 +339,7 @@ class CDSAIChatToolbar extends LitElement {
                     >
                     <cds-overflow-menu-body ?flipped=${!this.isRTL}>
                       ${repeat(
-                        this.hiddenItems,
+                        hiddenActions,
                         (item) => item.text,
                         (item) => html`
                           <cds-overflow-menu-item
@@ -388,14 +361,15 @@ class CDSAIChatToolbar extends LitElement {
                       )}
                     </cds-overflow-menu-body>
                   </cds-overflow-menu>
-                </div>
-              `
-            : nothing}
-          ${repeat(
-            fixedActions,
-            (action) => action.text,
-            this.renderIconButton,
-          )}
+                `
+              : nothing}
+          </div>
+          <div data-fixed class="${blockClass}__fixed-actions">
+            <slot name="fixed-actions"></slot>
+          </div>
+          <div class="${blockClass}__decorator-container">
+            <slot name="decorator"></slot>
+          </div>
         </div>
       </div>
     `;

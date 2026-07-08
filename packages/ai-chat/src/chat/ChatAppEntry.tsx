@@ -8,12 +8,17 @@
  */
 
 import isEqual from "lodash-es/isEqual.js";
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { StoreProvider } from "./providers/StoreProvider";
 import { WindowSizeProvider } from "./providers/WindowSizeProvider";
 import { ServiceManagerProvider } from "./providers/ServiceManagerProvider";
 import { IntlProvider } from "./providers/IntlProvider";
-import { LanguagePackProvider } from "./providers/LanguagePackProvider";
 import { AriaAnnouncerProvider } from "./providers/AriaAnnouncerProvider";
 import { ServiceManager } from "./services/ServiceManager";
 import {
@@ -32,10 +37,9 @@ import { WriteableElementsPortalsContainer } from "./components/WriteableElement
 
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";
-import { consoleError } from "./utils/miscUtils";
+import { consoleError, consoleWarn } from "./utils/miscUtils";
 import { isBrowser } from "./utils/browserUtils";
 
-import { detectConfigChanges } from "./utils/configChangeDetection";
 import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
 
 import {
@@ -44,21 +48,9 @@ import {
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
-import {
-  MarkdownConfigContext,
-  type MarkdownConfigContextValue,
-} from "./contexts/MarkdownConfigContext";
-import type {
-  ServiceDesk,
-  ServiceDeskFactoryParameters,
-  ServiceDeskPublicConfig,
-} from "../types/config/ServiceDeskConfig";
 import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
-import { enLanguagePack, LanguagePack } from "../types/config/PublicConfig";
-import { DeepPartial } from "../types/utilities/DeepPartial";
 import { Dimension } from "../types/utilities/Dimension";
-import { setIntl } from "./utils/intlUtils";
 import AppShell from "./AppShell";
 
 /**
@@ -67,29 +59,23 @@ import AppShell from "./AppShell";
  * and handling dynamic updates when the public config changes.
  */
 interface AppProps {
+  /**
+   * The single effective config. Both surfaces reconstruct this from their
+   * flattened inputs through the shared `resolveFlattenedConfig`, folding every
+   * field — `strings`, `markdown`, `serviceDesk`, and `serviceDeskFactory`
+   * included — so the core has exactly one config channel and no side-channel
+   * props.
+   */
   config: PublicConfig;
-  strings?: DeepPartial<LanguagePack>;
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
-  /**
-   * Merged markdown config provided through {@link MarkdownConfigContext} for
-   * deep consumers. Accepts either the React-flavor (`ChatContainerProps`) or
-   * the web-component flavor (`WCMarkdown`) thanks to the permissive
-   * {@link MarkdownConfigContextValue} type.
-   * @experimental
-   */
-  markdown?: MarkdownConfigContextValue;
   container: HTMLElement;
   element?: HTMLElement;
   setParentInstance?: React.Dispatch<React.SetStateAction<ChatInstance>>;
   chatWrapper?: HTMLElement;
-  serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
-  ) => Promise<ServiceDesk>;
-  serviceDesk?: ServiceDeskPublicConfig;
 }
 
 /**
@@ -98,22 +84,28 @@ interface AppProps {
  * without a hard reboot. If a change affects the human agent service while a
  * chat is active/connecting, the current human agent chat is ended quietly and
  * the service is recreated.
+ *
+ * Re-render boundary (important): the store-driven heavy tree (`AppShell` and
+ * everything it renders) must never receive raw host render-props. Hosts that
+ * pass live state rebuild those props with new identities on every render, which
+ * would break `React.memo(AppShell)` and re-render the whole chat. Instead,
+ * `AppShell` gets only `serviceManager`, store-derived values, and stable derived
+ * signals computed here (e.g. `writeableElementsPresentKeys`). The raw host
+ * render-props (`renderUserDefinedResponse`, `renderCustomMessageFooter`, and the
+ * `renderWriteableElements` node map) flow only to their isolated, individually
+ * memoized portal siblings of `AppShell` below — those re-render independently.
  */
 export function ChatAppEntry({
   config,
-  strings,
   onBeforeRender,
   onAfterRender,
   renderUserDefinedResponse,
   renderCustomMessageFooter,
   renderWriteableElements,
-  markdown,
   container,
   setParentInstance,
   element,
   chatWrapper,
-  serviceDeskFactory,
-  serviceDesk,
 }: AppProps) {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [serviceManager, setServiceManager] = useState<ServiceManager | null>(
@@ -139,6 +131,33 @@ export function ChatAppEntry({
 
   const previousConfigRef = useRef<PublicConfig | null>(null);
 
+  // Tracks which props we've already warned about so a host that re-creates an
+  // object prop every render gets the diagnostic once, not on every commit.
+  const unstablePropsWarnedRef = useRef<Set<string>>(new Set());
+
+  /**
+   * Dev-only diagnostic: a heavy object prop changed identity but its content is
+   * unchanged, meaning the host is re-creating it every render and paying for
+   * avoidable reconciliation. Gated behind `config.debug` and emitted once per
+   * prop. See the prop-stability contract in `src/types/AGENTS.md`.
+   */
+  const warnUnstableProp = useCallback(
+    (name: string) => {
+      if (!serviceManager?.store.getState().config.public.debug) {
+        return;
+      }
+      if (unstablePropsWarnedRef.current.has(name)) {
+        return;
+      }
+      unstablePropsWarnedRef.current.add(name);
+      consoleWarn(
+        `The \`${name}\` prop changed identity without changing content. Memoize it ` +
+          `(e.g. useMemo / useCallback) so it does not trigger avoidable work on every render.`,
+      );
+    },
+    [serviceManager],
+  );
+
   /**
    * On mount, fully initialize services and the chat instance, then render.
    */
@@ -150,14 +169,11 @@ export function ChatAppEntry({
      */
     const initializeChat = async () => {
       try {
-        // Merge top-level service desk props into an effective config used internally
+        // `config` is already the single effective config — both surfaces folded
+        // every flattened field (strings, markdown, serviceDesk,
+        // serviceDeskFactory) into it via `resolveFlattenedConfig` before this
+        // point, so the merge with defaults is all that's left.
         const publicConfig = mergePublicConfig(config);
-        if (serviceDeskFactory) {
-          publicConfig.serviceDeskFactory = serviceDeskFactory;
-        }
-        if (serviceDesk) {
-          publicConfig.serviceDesk = serviceDesk;
-        }
         // Seed the previous config immediately to avoid dynamic updates during boot.
         previousConfigRef.current = publicConfig;
 
@@ -168,20 +184,15 @@ export function ChatAppEntry({
             customHostElement: element,
           });
 
-        // Apply strings overrides before initial render, if provided
-        if (strings && Object.keys(strings).length) {
-          const merged: LanguagePack = {
-            ...enLanguagePack,
-            ...strings,
-          };
-          const locale =
-            serviceManager.store.getState().config.public.locale || "en";
-          setIntl(serviceManager, locale, merged);
-          // Keep Redux language pack in sync so selectors/components read overrides
+        // Set the host markdown config before first paint so the initial
+        // markdown render already has its custom renderers / plugins. `markdown`
+        // lives in its own `markdownConfig` slice (not read from the config
+        // tree), so lift it off `config` here. Read from the original `config`
+        // prop, not `publicConfig`, to keep the consumer's plugin/renderer
+        // references stable for the slice's `isEqual` guard.
+        if (config.markdown) {
           serviceManager.store.dispatch(
-            appActions.changeState({
-              config: { derived: { languagePack: merged } },
-            }),
+            appActions.setAppStateValue("markdownConfig", config.markdown),
           );
         }
 
@@ -224,14 +235,10 @@ export function ChatAppEntry({
       return;
     }
 
-    // Build effective configs that include top-level service desk props for change detection.
+    // `config` already carries every field (strings/markdown/serviceDesk/
+    // serviceDeskFactory folded in by both surfaces), so the merged config is
+    // the whole change-detection input — no side-channel props to reconcile.
     const nextEffective = mergePublicConfig(config);
-    if (serviceDeskFactory) {
-      nextEffective.serviceDeskFactory = serviceDeskFactory;
-    }
-    if (serviceDesk) {
-      nextEffective.serviceDesk = serviceDesk;
-    }
 
     const previousEffective = previousConfigRef.current;
     if (!previousEffective) {
@@ -241,16 +248,18 @@ export function ChatAppEntry({
     }
 
     if (isEqual(previousEffective, nextEffective)) {
+      // The effect re-ran (a `config`/`strings`/`serviceDesk` prop changed
+      // identity) but nothing actually changed — surface the churn in debug mode.
+      warnUnstableProp("config");
       return;
     }
 
-    const configChanges = detectConfigChanges(previousEffective, nextEffective);
     const currentServiceManager = serviceManager;
 
     const handleDynamicUpdate = async () => {
       try {
         await applyConfigChangesDynamically(
-          configChanges,
+          previousEffective,
           nextEffective,
           currentServiceManager,
         );
@@ -262,32 +271,34 @@ export function ChatAppEntry({
     previousConfigRef.current = nextEffective;
   }, [
     config,
-    serviceDeskFactory,
-    serviceDesk,
     instance,
     serviceManager,
     beforeRenderComplete,
+    warnUnstableProp,
   ]);
 
-  // Dynamically apply strings overrides on prop change
+  // Keep the markdownConfig slice in sync with `config.markdown`. The markdown
+  // config is stored in its own slice rather than read off the config tree, so
+  // it is lifted here. Guarded by isEqual so a host passing an inline object
+  // (new identity, same content) does not churn the slice and re-render every
+  // markdown message.
+  const markdown = config.markdown;
   useEffect(() => {
     if (!serviceManager) {
       return;
     }
-    const overrides = strings as DeepPartial<LanguagePack> | undefined;
-    if (overrides) {
-      const merged: LanguagePack = { ...enLanguagePack, ...overrides };
-      const locale =
-        serviceManager.store.getState().config.public.locale || "en";
-      setIntl(serviceManager, locale, merged);
-      // Update Redux language pack so state reflects overrides
-      serviceManager.store.dispatch(
-        appActions.changeState({
-          config: { derived: { languagePack: merged } },
-        }),
-      );
+    const current = serviceManager.store.getState().markdownConfig;
+    if (isEqual(current, markdown)) {
+      // A new `markdown` identity with unchanged content — diagnose the churn.
+      if (markdown !== undefined && markdown !== current) {
+        warnUnstableProp("markdown");
+      }
+      return;
     }
-  }, [strings, serviceManager]);
+    serviceManager.store.dispatch(
+      appActions.setAppStateValue("markdownConfig", markdown),
+    );
+  }, [markdown, serviceManager, warnUnstableProp]);
 
   /**
    * Defers the `onAfterRender` callback until after the initial render commits
@@ -343,6 +354,27 @@ export function ChatAppEntry({
     };
   });
 
+  // Stable signal of which writeable-element slots have content. A host that
+  // passes live state typically rebuilds the `renderWriteableElements` map every
+  // render with new node *values*; the SET of present keys, however, is stable.
+  // AppShell only needs to know which slots to render placeholders for, so we
+  // hand it this value-stable string (sorted => order-independent) instead of
+  // the churning map. That keeps React.memo(AppShell) intact across host
+  // re-renders; the live nodes still flow to WriteableElementsPortalsContainer
+  // below. `undefined` (host omitted the map) preserves "render all" back-compat.
+  // A space separator is safe: writeable-element slot names are identifiers.
+  const writeableElementsPresentKeys = useMemo(
+    () =>
+      renderWriteableElements
+        ? Object.entries(renderWriteableElements)
+            .filter(([, node]) => node != null)
+            .map(([key]) => key)
+            .sort()
+            .join(" ")
+        : undefined,
+    [renderWriteableElements],
+  );
+
   if (!(serviceManager && instance && beforeRenderComplete)) {
     return null;
   }
@@ -352,43 +384,39 @@ export function ChatAppEntry({
       <WindowSizeProvider windowSize={windowSize}>
         <ServiceManagerProvider serviceManager={serviceManager}>
           <IntlProvider intl={serviceManager.intl}>
-            <LanguagePackProvider>
-              <MarkdownConfigContext.Provider value={markdown}>
-                <AriaAnnouncerProvider>
-                  <AppShell
-                    serviceManager={serviceManager}
-                    hostElement={serviceManager.customHostElement}
-                    renderWriteableElements={renderWriteableElements}
-                  />
-                  {renderUserDefinedResponse && (
-                    <UserDefinedResponsePortalsContainer
-                      chatInstance={instance}
-                      renderUserDefinedResponse={renderUserDefinedResponse}
-                      userDefinedResponseEventsBySlot={
-                        userDefinedResponseEventsBySlot
-                      }
-                      chatWrapper={chatWrapper}
-                    />
-                  )}
+            <AriaAnnouncerProvider>
+              <AppShell
+                serviceManager={serviceManager}
+                hostElement={serviceManager.customHostElement}
+                writeableElementsPresentKeys={writeableElementsPresentKeys}
+              />
+              {renderUserDefinedResponse && (
+                <UserDefinedResponsePortalsContainer
+                  chatInstance={instance}
+                  renderUserDefinedResponse={renderUserDefinedResponse}
+                  userDefinedResponseEventsBySlot={
+                    userDefinedResponseEventsBySlot
+                  }
+                  chatWrapper={chatWrapper}
+                />
+              )}
 
-                  {renderCustomMessageFooter && (
-                    <CustomFooterPortalsContainer
-                      chatInstance={instance}
-                      renderCustomMessageFooter={renderCustomMessageFooter}
-                      customFooterEventsBySlot={customFooterSlotsByName}
-                      chatWrapper={chatWrapper}
-                    />
-                  )}
+              {renderCustomMessageFooter && (
+                <CustomFooterPortalsContainer
+                  chatInstance={instance}
+                  renderCustomMessageFooter={renderCustomMessageFooter}
+                  customFooterEventsBySlot={customFooterSlotsByName}
+                  chatWrapper={chatWrapper}
+                />
+              )}
 
-                  {renderWriteableElements && (
-                    <WriteableElementsPortalsContainer
-                      chatInstance={instance}
-                      renderResponseMap={renderWriteableElements}
-                    />
-                  )}
-                </AriaAnnouncerProvider>
-              </MarkdownConfigContext.Provider>
-            </LanguagePackProvider>
+              {renderWriteableElements && (
+                <WriteableElementsPortalsContainer
+                  chatInstance={instance}
+                  renderResponseMap={renderWriteableElements}
+                />
+              )}
+            </AriaAnnouncerProvider>
           </IntlProvider>
         </ServiceManagerProvider>
       </WindowSizeProvider>

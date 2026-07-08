@@ -391,7 +391,6 @@ class ChatCustomElement extends FlattenedConfigElement {
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
-        .markdown=${this.markdown as WCMarkdown | undefined}
       >
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
