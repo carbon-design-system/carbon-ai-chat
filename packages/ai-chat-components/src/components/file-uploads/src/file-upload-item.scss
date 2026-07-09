@@ -49,6 +49,8 @@ cds-file-uploader-item {
   background: #00000099;
   block-size: layout.$spacing-04;
   inline-size: layout.$spacing-05;
+  inset-block-end: layout.$spacing-01;
+  inset-inline-end: 0;
   inset-inline-start: layout.$spacing-02;
   pointer-events: none;
 
