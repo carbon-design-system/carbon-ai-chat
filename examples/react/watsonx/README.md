@@ -29,7 +29,10 @@ Connects `ChatContainer` to IBM watsonx.ai for real streaming text generation, u
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisites:**
+
+- **Node.js v22 or higher** — required by `concurrently` v10.
+- **Build the core packages first** — examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
 
 This example additionally requires an IBM Cloud API key, a watsonx.ai project ID, and a populated `.env` (`WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_URL`, optionally `WATSONX_MODEL_ID`). See the IBM Cloud and watsonx.ai consoles to obtain these values.
 

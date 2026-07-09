@@ -17,7 +17,7 @@ import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContaine
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
-import { MessagesTypingIndicator } from "./MessagesTypingIndicator";
+import { ProcessingWithText } from "../components/util/ProcessingWithText";
 import { MessagesView } from "./MessagesView";
 import { SystemMessage } from "./SystemMessage";
 import {
@@ -178,6 +178,7 @@ interface MessagesInjectedState {
   isInputReadonly: boolean;
   disclaimerIsOn: boolean | undefined;
   persistFeedback: boolean | undefined;
+  hideAvatar: boolean | undefined;
   languagePack: MessagesLanguagePackStrings;
   keyboardShortcutConfig: ChatShortcutConfig | undefined;
 }
@@ -1095,6 +1096,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       persistFeedback,
       locale,
       messageState,
+      hideAvatar,
     } = this.props;
 
     const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
@@ -1142,6 +1144,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         disableUserInputs={isInputReadonly}
         isMessageForInput={isMessageForInput}
         showAvatarLine={isFirstMessageItem}
+        hideAvatar={hideAvatar}
         requestMoveFocus={this.requestMoveFocus}
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
@@ -1376,7 +1379,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const isTypingVisible =
       Boolean(isMessageLoadingCounter) || isHumanAgentTyping;
     const typingIndicator = (
-      <MessagesTypingIndicator
+      <ProcessingWithText
         carbonTheme={this.props.carbonTheme}
         index={localMessageItems.length}
         isTypingMessage={isTypingMessage}
@@ -1446,6 +1449,7 @@ const selectMessagesState = (
   isInputReadonly: selectInputIsReadonly(state),
   disclaimerIsOn: state.config.public.disclaimer?.isOn,
   persistFeedback: state.config.public.persistFeedback,
+  hideAvatar: state.config.public.hideAvatar,
   keyboardShortcutConfig:
     state.config.public.keyboardShortcuts?.messageFocusToggle,
 });
