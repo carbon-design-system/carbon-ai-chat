@@ -63,6 +63,7 @@ const REACTIVE_BACKBONE_FIELDS = new Set<string>([
   "layout",
   "isReadonly",
   "persistFeedback",
+  "hideAvatar",
   "assistantName",
   "assistantAvatarUrl",
   "input",

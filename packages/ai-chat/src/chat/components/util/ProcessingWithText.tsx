@@ -10,10 +10,10 @@
 import cx from "classnames";
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
 import React from "react";
-import { AriaLiveMessage } from "../components/aria/AriaLiveMessage";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { AriaLiveMessage } from "../aria/AriaLiveMessage";
+import { CarbonTheme } from "../../../types/config/PublicConfig";
 
-interface MessagesTypingIndicatorProps {
+interface ProcessingWithTextProps {
   carbonTheme: CarbonTheme;
   index: number;
   isTypingMessage?: string;
@@ -22,14 +22,14 @@ interface MessagesTypingIndicatorProps {
   statusMessage?: string;
 }
 
-function MessagesTypingIndicator({
+function ProcessingWithText({
   carbonTheme,
   index,
   isTypingMessage,
   isVisible,
   processingLabel,
   statusMessage,
-}: MessagesTypingIndicatorProps) {
+}: ProcessingWithTextProps) {
   return (
     <div
       className={cx(
@@ -64,4 +64,4 @@ function MessagesTypingIndicator({
   );
 }
 
-export { MessagesTypingIndicator };
+export { ProcessingWithText };

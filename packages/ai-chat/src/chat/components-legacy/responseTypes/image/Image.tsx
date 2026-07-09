@@ -17,7 +17,7 @@ import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnouncement";
 import { getURLHostName } from "../../../utils/browserUtils";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
-import InlineError from "../error/InlineError";
+import InlineError from "../../../components/util/InlineError";
 import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
 
 interface ImageProps extends HasNeedsAnnouncement, HasClassName {
