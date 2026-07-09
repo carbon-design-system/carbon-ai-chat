@@ -64,7 +64,7 @@ class FileUploadItemElement extends LitElement {
   /** The File instance the current object URL was created for. */
   private _objectURLFile: File | null = null;
 
-  private _getOrCreateObjectURL(): string {
+  private _getOrCreateObjectURL(): string | null {
     if (this.upload && this._objectURLFile !== this.upload.file) {
       if (this._objectURL) {
         URL.revokeObjectURL(this._objectURL);
@@ -72,7 +72,7 @@ class FileUploadItemElement extends LitElement {
       this._objectURL = URL.createObjectURL(this.upload.file);
       this._objectURLFile = this.upload.file;
     }
-    return this._objectURL!;
+    return this._objectURL;
   }
 
   private _hasMediaPreview(): boolean {
@@ -119,10 +119,15 @@ class FileUploadItemElement extends LitElement {
 
     // Image preview
     if (type.startsWith("image/")) {
+      const url = this._getOrCreateObjectURL();
+      if (!url) {
+        return;
+      }
+
       return html`<span class="${prefix}-file-upload-item__preview-wrapper"
         ><img
           class="${prefix}-file-upload-item__preview"
-          src="${this._getOrCreateObjectURL()}"
+          src="${url}"
           width="36"
           height="36"
           alt=""
@@ -136,7 +141,7 @@ class FileUploadItemElement extends LitElement {
       const openVideo = () => {
         const newWindow = window.open("", "_blank", "width=800,height=600");
 
-        if (!newWindow) {
+        if (!url || !newWindow) {
           return;
         }
 
