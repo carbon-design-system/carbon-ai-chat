@@ -17,12 +17,12 @@ import { useSelector } from "../../../hooks/useSelector";
 import { shallowEqual } from "../../../store/appStore";
 import { AppState } from "../../../../types/state/AppState";
 import { doScrollElementIntoView } from "../../../utils/domUtils";
-import Metablock from "../util/Metablock";
 import {
   MessageInput,
   SingleOption,
 } from "../../../../types/messaging/Messages";
 import { DROPDOWN_SIZE } from "@carbon/web-components/es/components/dropdown/defs.js";
+import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -121,11 +121,12 @@ function SelectComponent(props: SelectProps) {
 
   return (
     <div ref={rootRef}>
-      <Metablock
+      <TextBlock
         title={title}
         description={description}
         id={`cds-aichat--select-uuid-${id}-label`}
         removeHTML={removeHTML}
+        renderMode="markdown"
       />
       <div
         className={cx("cds-aichat--select-holder", {
