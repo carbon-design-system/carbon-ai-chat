@@ -9,7 +9,7 @@
 
 import React from "react";
 
-import { uuid } from "../utils/lang/uuid";
+import { uuid } from "../../utils/lang/uuid";
 
 interface ErrorMessageProps {
   /**
@@ -175,5 +175,3 @@ function ErrorMessage({ theme }: ErrorMessageProps) {
 }
 
 export { ErrorMessage };
-
-// Made with Bob

@@ -9,7 +9,7 @@
 
 import React from "react";
 
-import { uuid } from "../utils/lang/uuid";
+import { uuid } from "../../utils/lang/uuid";
 
 interface ChatBubbleProps {
   /**
@@ -273,5 +273,3 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
 }
 
 export { ChatBubble };
-
-// Made with Bob
