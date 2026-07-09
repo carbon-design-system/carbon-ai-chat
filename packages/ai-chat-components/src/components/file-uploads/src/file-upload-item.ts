@@ -135,9 +135,11 @@ class FileUploadItemElement extends LitElement {
       const url = this._getOrCreateObjectURL();
       const openVideo = () => {
         const newWindow = window.open("", "_blank", "width=800,height=600");
+
         if (!newWindow) {
           return;
         }
+
         const style = newWindow.document.createElement("style");
         style.textContent =
           "* { margin: 0; padding: 0; background: #000 } video { display: block; width: 100%; height: 100vh; object-fit: contain }";
@@ -149,6 +151,7 @@ class FileUploadItemElement extends LitElement {
         newWindow.document.head.appendChild(style);
         newWindow.document.body.appendChild(video);
       };
+
       return html`<button
         class="${prefix}-file-upload-item__preview-wrapper ${prefix}-file-upload-item__video-preview-wrapper"
         type="button"
@@ -237,6 +240,7 @@ class FileUploadItemElement extends LitElement {
     if (!this.upload) {
       return;
     }
+
     this.dispatchEvent(
       new CustomEvent<FileRemoveEventDetail>("cds-aichat-file-remove", {
         detail: { fileId: this.upload.id },
