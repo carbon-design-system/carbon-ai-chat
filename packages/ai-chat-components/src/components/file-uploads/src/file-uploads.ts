@@ -20,14 +20,9 @@ import { property } from "lit/decorators.js";
 import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
+import type { FileUpload } from "../../input/src/types.js";
 
-import "@carbon/web-components/es/components/file-uploader/index.js";
-
-import type {
-  FileUpload,
-  FileRemoveEventDetail,
-} from "../../input/src/types.js";
-
+import "./file-upload-item.js";
 import styles from "./file-uploads.scss?lit";
 
 /** Minimal per-file state captured between renders to diff status transitions. */

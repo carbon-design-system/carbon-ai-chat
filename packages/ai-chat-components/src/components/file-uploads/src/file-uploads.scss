@@ -32,10 +32,7 @@
   overflow-x: auto;
   overflow-y: hidden;
 
-  cds-file-uploader-item {
+  cds-aichat-file-upload-item {
     flex-shrink: 0;
-    border-radius: layout.$spacing-03;
-    margin-block-end: layout.$spacing-03;
-    margin-inline-end: layout.$spacing-03;
   }
 }
