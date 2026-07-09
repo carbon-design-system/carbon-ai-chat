@@ -159,17 +159,21 @@ describe("file-uploads", () => {
     await setUploads(el, [makeUpload("a", FileStatusValue.EDIT)]);
     clearRegions(el);
 
-    const item = el.renderRoot.querySelector("cds-file-uploader-item")!;
+    // file-uploads renders <cds-aichat-file-upload-item> elements, not
+    // <cds-file-uploader-item> directly. Simulate the remove event that
+    // file-upload-item fires after the user clicks the inner delete button.
+    const item = el.renderRoot.querySelector("cds-aichat-file-upload-item")!;
     setTimeout(() =>
       item.dispatchEvent(
-        new CustomEvent("cds-file-uploader-item-deleted", {
+        new CustomEvent("cds-aichat-file-remove", {
+          detail: { fileId: "testId" },
           bubbles: true,
           composed: true,
         }),
       ),
     );
     const event = await oneEvent(el, "cds-aichat-file-remove");
-    expect(event.detail.fileId).to.equal("a");
+    expect(event.detail.fileId).to.equal("testId");
 
     await aTimeout(ANNOUNCE_DELAY);
     expect(liveText(el)).to.contain("File removed.");

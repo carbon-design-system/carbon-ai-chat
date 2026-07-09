@@ -127,6 +127,7 @@
 
 .#{$prefix}--input-uploads-and-autocomplete--has-uploads::after {
   position: absolute;
+  z-index: -1;
   display: block;
   background: theme.$border-subtle-00;
   block-size: 1px;
