@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -10,7 +10,6 @@
 @use "input/imports" as input;
 @use "launcher/imports" as launcher;
 @use "responseTypes/imports" as responseTypes;
-@use "ErrorIcon" as ErrorIcon;
 @use "ResponseStopped" as ResponseStopped;
 @use "SystemMessage" as SystemMessage;
 @use "MessageComponent";

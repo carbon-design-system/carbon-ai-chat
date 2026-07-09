@@ -43,7 +43,7 @@ import { ConversationalSearch } from "./responseTypes/conversationalSearch/Conve
 import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
 import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
-import InlineError from "./responseTypes/error/InlineError";
+import InlineError from "../components/util/InlineError";
 import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
 import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
 import { Image } from "./responseTypes/image/Image";

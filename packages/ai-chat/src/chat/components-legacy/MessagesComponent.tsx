@@ -17,7 +17,7 @@ import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContaine
 import LatestWelcomeNodes from "./LatestWelcomeNodes";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
-import { MessagesTypingIndicator } from "./MessagesTypingIndicator";
+import { ProcessingWithText } from "../components/util/ProcessingWithText";
 import { MessagesView } from "./MessagesView";
 import { SystemMessage } from "./SystemMessage";
 import {
@@ -1379,7 +1379,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const isTypingVisible =
       Boolean(isMessageLoadingCounter) || isHumanAgentTyping;
     const typingIndicator = (
-      <MessagesTypingIndicator
+      <ProcessingWithText
         carbonTheme={this.props.carbonTheme}
         index={localMessageItems.length}
         isTypingMessage={isTypingMessage}
