@@ -71,6 +71,9 @@ class InputShellElement extends LitElement {
   @state()
   private _editorKeyboardFocus = false;
 
+  /** Watches the slotted file-uploads element for `has-uploads` attribute changes. */
+  private _fileUploadsObserver: MutationObserver | null = null;
+
   override connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener(
@@ -93,6 +96,7 @@ class InputShellElement extends LitElement {
       "cds-aichat-prompt-blur",
       this._handlePromptBlur as EventListener,
     );
+    this._fileUploadsObserver?.disconnect();
   }
 
   override willUpdate(changedProperties: PropertyValues): void {
@@ -189,6 +193,25 @@ class InputShellElement extends LitElement {
   };
 
   private _handleFileUploadsSlotChange = (): void => {
+    // Reconnect the MutationObserver to whatever element is now slotted so we
+    // re-render when its `has-uploads` attribute changes (which doesn't fire a
+    // slotchange event).
+    this._fileUploadsObserver?.disconnect();
+    const slot = this.renderRoot?.querySelector(
+      `slot[name="file-uploads"]`,
+    ) as HTMLSlotElement | null;
+    const el = slot?.assignedElements()[0];
+    if (el) {
+      if (!this._fileUploadsObserver) {
+        this._fileUploadsObserver = new MutationObserver(() =>
+          this.requestUpdate(),
+        );
+      }
+      this._fileUploadsObserver.observe(el, {
+        attributes: true,
+        attributeFilter: ["has-uploads"],
+      });
+    }
     this.requestUpdate();
   };
 
@@ -214,7 +237,11 @@ class InputShellElement extends LitElement {
     const slot = this.renderRoot?.querySelector(
       `slot[name="file-uploads"]`,
     ) as HTMLSlotElement | null;
-    this._hasFileUploads = slot ? slot.assignedElements().length > 0 : false;
+
+    this._hasFileUploads = slot
+      ? slot.assignedElements().some((el) => el.hasAttribute("has-uploads"))
+      : false;
+
     this.toggleAttribute("has-file-uploads", this._hasFileUploads);
   }
 }
