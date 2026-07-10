@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -8,18 +8,18 @@
  */
 
 import React, { Suspense } from "react";
-import { useSelector } from "../../../hooks/useSelector";
+import { useSelector } from "../../hooks/useSelector.js";
 
-import { AppState } from "../../../../types/state/AppState";
-import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { AppState } from "../../../types/state/AppState.js";
+import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus.js";
+import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem.js";
 
-import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
-import { CardItemComponent } from "../card/CardItemComponent";
+import { SkeletonPlaceholder } from "../util/SkeletonPicker.js";
+import { CardItemComponent } from "./CardItemComponent.js";
 import {
   CarouselItem,
   MessageResponse,
-} from "../../../../types/messaging/Messages";
+} from "../../../types/messaging/Messages.js";
 
 interface CarouselItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<CarouselItem>;

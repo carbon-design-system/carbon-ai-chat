@@ -7,7 +7,3 @@
 
 @use "../../../../globals/scss/chat-theme";
 @use "Carousel";
-
-.carousel-container {
-  max-inline-size: chat-theme.$card-max-width;
-}
