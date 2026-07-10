@@ -303,10 +303,7 @@ export class AutocompleteController {
       editor
         .chain()
         .focus()
-        .insertContentAt(range, [
-          { type: "text", text },
-          { type: "text", text: " " },
-        ])
+        .insertContentAt(range, [{ type: "text", text }])
         .run();
       this._autocomplete?.onSelect?.(item);
     }
