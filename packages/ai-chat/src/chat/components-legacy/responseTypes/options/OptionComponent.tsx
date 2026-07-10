@@ -19,7 +19,6 @@ import {
   createMessageRequestForChoice,
   getOptionType,
 } from "../../../utils/messageUtils";
-import Metablock from "../util/Metablock";
 import SelectComponent from "./SelectComponent";
 import {
   Message,
@@ -27,6 +26,7 @@ import {
   SingleOption,
 } from "../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../types/events/eventBusTypes";
+import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -115,10 +115,11 @@ class OptionComponent extends Component<OptionProps> {
 
     return type === "button" ? (
       <>
-        <Metablock
+        <TextBlock
           title={title}
           description={description}
           removeHTML={removeHTML}
+          renderMode="markdown"
         />
         <div className="cds-aichat--button-holder">
           <ul>

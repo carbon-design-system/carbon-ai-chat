@@ -18,7 +18,7 @@ import { HasNeedsAnnouncement } from "../../../../types/utilities/HasNeedsAnnoun
 import { getURLHostName } from "../../../utils/browserUtils";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
 import InlineError from "../../../components/util/InlineError";
-import { TextHolderTile } from "../util/TextHolderTile";
+import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
 
 interface ImageProps extends HasNeedsAnnouncement, HasClassName {
   source: string;
@@ -118,7 +118,8 @@ function Image(props: ImageProps) {
       </div>
       <div slot="body">
         {hasText && (
-          <TextHolderTile
+          <TextBlock
+            isInTile
             title={title}
             description={description}
             displayURL={displayURL}

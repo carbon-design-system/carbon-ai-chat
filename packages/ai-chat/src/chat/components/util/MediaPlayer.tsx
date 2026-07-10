@@ -18,7 +18,7 @@ import { VideoComponentConfig } from "../messages/VideoComponent";
 import { MessageResponseTypes } from "../../../types/messaging/Messages";
 import { AppState } from "../../../types/state/AppState";
 import Card from "@carbon/ai-chat-components/es/react/card.js";
-import { TextHolderTile } from "../../components-legacy/responseTypes/util/TextHolderTile";
+import { TextBlock } from "../../components/util/TextBlock/TextBlock";
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between
@@ -199,7 +199,8 @@ function MediaPlayerComponent({
           </div>
           <div slot="body">
             {(title || description) && (
-              <TextHolderTile
+              <TextBlock
+                isInTile
                 title={title}
                 description={description}
                 hideTitle={hideIconAndTitle}
@@ -243,7 +244,8 @@ function MediaPlayerComponent({
           </div>
           <div slot="body">
             {(title || description) && (
-              <TextHolderTile
+              <TextBlock
+                isInTile
                 title={title}
                 description={description}
                 hideTitle={hideIconAndTitle}
