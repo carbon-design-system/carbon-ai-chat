@@ -48,7 +48,7 @@ import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
 import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
 import { Image } from "./responseTypes/image/Image";
 import { OptionComponent } from "./responseTypes/options/OptionComponent";
-import { StreamingRichText } from "./responseTypes/util/StreamingRichText";
+import { MarkdownWithErrorHandling } from "../components/util/MarkdownWithErrorHandling";
 import { VideoComponent } from "./responseTypes/video/VideoComponent";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
@@ -403,7 +403,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     originalMessage?: MessageResponse,
   ) {
     return (
-      <StreamingRichText
+      <MarkdownWithErrorHandling
         text={localMessageItem.item.text}
         streamingState={localMessageItem.ui_state.streamingState}
         isStreamingError={

@@ -9,15 +9,15 @@
 
 import React from "react";
 
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { AppState } from "../../../../types/state/AppState";
-import { LocalMessageItemStreamingState } from "../../../../types/messaging/LocalMessageItem";
-import InlineError from "../../../components/util/InlineError";
-import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
-import { TextItem } from "../../../../types/messaging/Messages";
+import { useSelector } from "../../hooks/useSelector";
+import { shallowEqual } from "../../store/appStore";
+import { AppState } from "../../../types/state/AppState";
+import { LocalMessageItemStreamingState } from "../../../types/messaging/LocalMessageItem";
+import InlineError from "./InlineError";
+import { MarkdownWithDefaults } from "./MarkdownWithDefaults";
+import { TextItem } from "../../../types/messaging/Messages";
 
-interface StreamingRichTextProps {
+interface MarkdownWithErrorHandlingProps {
   /**
    * The full text of the item to render. This is used once the streaming is done.
    */
@@ -43,7 +43,7 @@ interface StreamingRichTextProps {
  * This item renders some text that may contain rich content. This component also supports the display of text as it
  * is streaming in chunks (currently only TextItem chunks are supported).
  */
-function StreamingRichText(props: StreamingRichTextProps) {
+function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
   const { text, streamingState, removeHTML, isStreamingError } = props;
 
   const languagePack = useSelector(
@@ -79,4 +79,4 @@ function StreamingRichText(props: StreamingRichTextProps) {
   );
 }
 
-export { StreamingRichText };
+export { MarkdownWithErrorHandling };
