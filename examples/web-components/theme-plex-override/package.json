@@ -1,9 +1,9 @@
 {
-  "name": "@carbon/ai-chat-examples-web-components-plex-override",
+  "name": "@carbon/ai-chat-examples-web-components-theme-plex-override",
   "version": "1.17.0-rc.0",
   "private": true,
   "type": "module",
-  "description": "A @carbon/ai-chat as a web component example that demonstrates how to override the plex font.",
+  "description": "A @carbon/ai-chat as a web component example that demonstrates how to override the carbon theme plex font.",
   "scripts": {
     "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js"

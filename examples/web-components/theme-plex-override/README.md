@@ -1,6 +1,6 @@
-# Plex override
+# Theme Plex override
 
-A lit example that's based off of the `Basic` example. The primary purpose of this example is to demonstrate how you can overwrite the Plex font that typically comes with Carbon applications.
+A lit example that's based off of the `Basic` example. The primary purpose of this example is to demonstrate how you can overwrite the Plex font that comes pre-installed on applications using a Carbon theme.
 
 ## Run it
 
@@ -13,7 +13,7 @@ npm install
 npm run build --workspace=@carbon/ai-chat-components
 npm run build --workspace=@carbon/ai-chat
 
-npm run start --workspace=@carbon/ai-chat-examples-web-plex-override
+npm run start --workspace=@carbon/ai-chat-examples-web-theme-plex-override
 ```
 
 See [../README.md](../README.md) for the full setup walkthrough.
