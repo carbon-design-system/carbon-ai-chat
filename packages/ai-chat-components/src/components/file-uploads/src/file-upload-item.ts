@@ -11,6 +11,7 @@ import { css, html, LitElement, nothing, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import { isBrowser } from "../../../globals/utils/browser-utils.js";
 import prefix from "../../../globals/settings.js";
 
 import "@carbon/web-components/es/components/file-uploader/index.js";
@@ -121,7 +122,7 @@ class FileUploadItemElement extends LitElement {
     if (type.startsWith("image/")) {
       const url = this._getOrCreateObjectURL();
       if (!url) {
-        return;
+        return nothing;
       }
 
       return html`<span class="${prefix}-file-upload-item__preview-wrapper"
@@ -138,10 +139,16 @@ class FileUploadItemElement extends LitElement {
     // Video preview
     if (type.startsWith("video/")) {
       const url = this._getOrCreateObjectURL();
-      const openVideo = () => {
-        const newWindow = window.open("", "_blank", "width=800,height=600");
+      if (!url) {
+        return nothing;
+      }
 
-        if (!url || !newWindow) {
+      const openVideo = () => {
+        const newWindow = isBrowser()
+          ? window.open("", "_blank", "width=800,height=600")
+          : null;
+
+        if (!newWindow) {
           return;
         }
 
@@ -152,7 +159,7 @@ class FileUploadItemElement extends LitElement {
         video.src = url;
         video.controls = true;
         video.autoplay = true;
-        newWindow.document.title = this.upload!.file.name;
+        newWindow.document.title = name;
         newWindow.document.head.appendChild(style);
         newWindow.document.body.appendChild(video);
       };
