@@ -10,10 +10,13 @@ A `PR.md` file at the repo root, populated from [.github/PULL_REQUEST_TEMPLATE.m
 
 Brevity is the goal. The reviewer is busy and the diff is the source of truth — the description points at what's non-obvious, it does not narrate the diff. Default to the shortest version that still conveys the change; err on the side of cutting.
 
+Write it like the docs: follow [tone.md](tone.md), including the grade 9 reading level. A description should read like a note to a busy teammate, not a technical manual.
+
 - Sentence fragments over full sentences. Cut filler: "this PR", "in order to", "as well as", "note that", restated context.
 - One idea per line. Don't stack parenthetical asides inside a bullet.
 - Say each thing once. Don't repeat a change across Short description, Changelog, and Testing.
 - Omit empty or trivial sections rather than padding them (no "None" placeholders).
+- Check the reading level before handing back: `npm run reading-level -- PR.md`. If it reads above grade 9, split long sentences and cut clauses.
 
 ## Workflow
 

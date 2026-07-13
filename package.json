@@ -42,6 +42,7 @@
     "validate:agents": "node tools/validate-agents-docs.js",
     "verify:example-readmes": "node scripts/verify-example-readmes.mjs",
     "repair:example-readmes": "node scripts/repair-example-readmes.mjs",
+    "reading-level": "node scripts/reading-level.mjs",
     "postinstall": "husky"
   },
   "devDependencies": {
@@ -72,7 +73,8 @@
     "prettier": "^3.0.0",
     "prettier-config-carbon": "^0.12.0",
     "stylelint": "^17.0.0",
-    "stylelint-config-carbon": "^1.22.0"
+    "stylelint-config-carbon": "^1.22.0",
+    "text-readability": "^1.1.0"
   },
   "commitlint": {
     "extends": [

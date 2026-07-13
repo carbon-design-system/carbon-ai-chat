@@ -8,6 +8,10 @@ We mirror the voice of [carbondesignsystem.com](https://carbondesignsystem.com/g
 
 Write the fewest words that convey the idea. Every word a reader skips is a word you should have cut. Your primary audience is mid-level front-end developers. If you can explain a concept with code instead of prose, prefer code.
 
+Write so a developer gets it on the first read. Aim for a grade 9 reading level — plain enough that no one slows down or re-reads. The levers are short sentences (aim for 12 words or fewer, one idea each) and common words, both covered in Word economy below. One habit matters most for API docs: name each symbol once with a `{@link}`, then use plain words. Repeating a dotted name like `InputConfig.updateStructuredData` is what pushes a page toward a graduate reading level.
+
+Measure any doc with `npm run reading-level -- <file>`. It reports the Flesch-Kincaid grade. Keep docs at grade 9 or below.
+
 ## Voice — constant
 
 Voice is who we are; it never changes. Carbon's voice:
