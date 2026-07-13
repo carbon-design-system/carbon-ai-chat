@@ -197,7 +197,8 @@
 :host(#{$prefix}-history-panel-item[rename]) {
   display: flex;
   align-items: center;
-  block-size: convert.rem(40px);
+  min-block-size: convert.rem(40px);
+  padding-block: layout.$spacing-02;
 }
 
 :host(#{$prefix}-history-panel-item[selected]) {
@@ -221,11 +222,52 @@
 
   .#{$prefix}--history-panel-item--rename__input {
     display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    outline: layout.$spacing-01 solid theme.$focus;
+
+    input {
+      padding-inline-start: layout.$spacing-05;
+    }
+  }
+
+  .#{$prefix}--history-panel-item--rename__input-row {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     block-size: layout.$spacing-07;
-    inline-size: 100%;
-    outline: layout.$spacing-01 solid theme.$focus;
+  }
+
+  .#{$prefix}--history-panel-item--rename__input--invalid {
+    outline: layout.$spacing-01 solid theme.$support-error;
+
+    .#{$prefix}--history-panel-item-input__invalid-message-container {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: layout.$spacing-05;
+      padding-block-end: layout.$spacing-03;
+      padding-inline-start: layout.$spacing-05;
+
+      .#{$prefix}__invalid-message-text {
+        @include type.type-style("body-compact-01");
+
+        flex-grow: 1;
+        color: theme.$support-error;
+      }
+
+      .#{$prefix}__warning-icon {
+        display: flex;
+        flex: 0 0 layout.$spacing-07;
+        flex-direction: column;
+        align-items: center;
+        justify-content: start;
+
+        svg {
+          fill: theme.$support-error;
+        }
+      }
+    }
   }
 
   input {

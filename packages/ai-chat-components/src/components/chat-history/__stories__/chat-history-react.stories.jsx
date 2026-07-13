@@ -113,6 +113,7 @@ export const Default = {
     );
     const [showDeletePanel, setShowDeletePanel] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const itemRefs = useRef({});
     const [pinnedItems, setPinnedItems] = useState(
       pinnedHistoryItems.map((item) => ({ ...item, rename: false })),
     );
@@ -296,9 +297,24 @@ export const Default = {
       setItemToDelete(null);
     }, [itemToDelete]);
 
+    const handleRenameChange = useCallback((event) => {
+      const { itemId, value } = event.detail;
+      const item = itemRefs.current[itemId];
+      if (item) {
+        const invalid = value.length > 75;
+        item.renameInvalid = invalid;
+        item.renameInvalidMessage = invalid ? "Title cannot exceed 75 characters." : "";
+      }
+    }, []);
+
     const handleRenameSave = useCallback((event) => {
       const itemId = event.detail.itemId;
       if (itemId) {
+        const item = itemRefs.current[itemId];
+        if (item) {
+          item.renameInvalid = false;
+          item.renameInvalidMessage = "";
+        }
         setPinnedItems((prev) =>
           prev.map((chat) =>
             chat.id === itemId
@@ -416,6 +432,7 @@ export const Default = {
                       {pinnedItems.map((item) => (
                         <HistoryPanelItem
                           key={item.id}
+                          ref={(el) => { itemRefs.current[item.id] = el; }}
                           id={item.id}
                           name={item.name}
                           selected={item.selected}
@@ -424,6 +441,7 @@ export const Default = {
                           actions={pinnedHistoryItemActions}
                           onMenuAction={handleHistoryItemAction}
                           onSelected={handleSelectChat}
+                          onRenameChange={handleRenameChange}
                           onRenameSave={handleRenameSave}
                         />
                       ))}
@@ -441,6 +459,7 @@ export const Default = {
                         {item.chats.map((chat) => (
                           <HistoryPanelItem
                             key={chat.id}
+                            ref={(el) => { itemRefs.current[chat.id] = el; }}
                             id={chat.id}
                             name={chat.name}
                             selected={chat.selected}
@@ -449,6 +468,7 @@ export const Default = {
                             actions={historyItemActions}
                             onMenuAction={handleHistoryItemAction}
                             onSelected={handleSelectChat}
+                            onRenameChange={handleRenameChange}
                             onRenameSave={handleRenameSave}
                           />
                         ))}
