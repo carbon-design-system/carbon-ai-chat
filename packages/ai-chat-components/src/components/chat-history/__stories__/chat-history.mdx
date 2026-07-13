@@ -224,7 +224,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 <script>
   // Listen for history item actions
-  document.addEventListener('history-item-action', (event) => {
+  document.addEventListener('history-item-menu-action', (event) => {
     console.log('Action:', event.detail.action);
     console.log('Item ID:', event.detail.itemId);
     console.log('Item Name:', event.detail.itemName);
@@ -294,7 +294,7 @@ The chat history components emit several custom events that you can listen for t
       </td>
     </tr>
     <tr>
-      <td><code>history-item-action</code></td>
+      <td><code>history-item-menu-action</code></td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
         • <code>action</code> (string) - The text of the action clicked<br/>
@@ -337,7 +337,7 @@ document.addEventListener('history-item-selected', (event) => {
 });
 
 // Listen for item actions
-document.addEventListener('history-item-action', (event) => {
+document.addEventListener('history-item-menu-action', (event) => {
   const { action, itemId, itemName, element } = event.detail;
 
   switch(action) {
@@ -384,7 +384,7 @@ import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/
 import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
 
 // Listen for pin action
-document.addEventListener('history-item-action', (event) => {
+document.addEventListener('history-item-menu-action', (event) => {
   const { action, itemId } = event.detail;
 
   if (action === 'Pin') {

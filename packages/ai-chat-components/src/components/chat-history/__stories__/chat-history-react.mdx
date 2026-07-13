@@ -178,7 +178,7 @@ The chat history React components emit several custom events that you can listen
     </tr>
     <tr>
       <td><code>onMenuAction</code></td>
-      <td><code>history-item-action</code></td>
+      <td><code>history-item-menu-action</code></td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
         • <code>action</code> (string) - The text of the action clicked<br/>
@@ -195,6 +195,21 @@ The chat history React components emit several custom events that you can listen
         • <code>value</code> (string) - The current input value<br/>
         • <code>itemId</code> (string) - The ID of the item being renamed
       </td>
+    </tr>
+    <tr>
+      <td><code>onRenameSave</code></td>
+      <td><code>history-panel-item-input-save</code></td>
+      <td>Bubbles up from the inner input when the user saves the rename. The save button and Enter key are disabled while the input is invalid.</td>
+      <td>
+        • <code>newName</code> (string) - The new name entered<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td><code>onRenameCancel</code></td>
+      <td><code>history-panel-item-input-cancel</code></td>
+      <td>Bubbles up from the inner input when the user cancels renaming (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>None</td>
     </tr>
   </tbody>
 </table>
