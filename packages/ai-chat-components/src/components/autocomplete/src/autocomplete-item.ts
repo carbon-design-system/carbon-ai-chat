@@ -65,6 +65,9 @@ class AutocompleteItemElement extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
   enableSendButton = true;
 
+  @property({ type: Boolean, reflect: true, attribute: "selected" })
+  selected = false;
+
   private _handleSendClick(event: Event) {
     event.stopPropagation();
 
@@ -150,13 +153,14 @@ class AutocompleteItemElement extends LitElement {
 
   render() {
     const { typed, remainder } = this._getLabelParts();
+    console.log("selected?", this.selected, this.item, this.index);
 
     return html`
-      <div
+      <li
         class="${blockClass}"
         role="option"
-        tabindex="0"
         @keydown="${this._handleKeydown}"
+        aria-selected=${this.selected}
       >
         <div class="${blockClass}__content">
           ${this._renderAvatar()}
@@ -195,7 +199,7 @@ class AutocompleteItemElement extends LitElement {
               </cds-icon-button>
             `
           : null}
-      </div>
+      </li>
     `;
   }
 }

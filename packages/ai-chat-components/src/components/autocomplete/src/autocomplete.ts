@@ -120,9 +120,6 @@ class AutocompleteElement extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    if (!this.hasAttribute("tabindex")) {
-      this.setAttribute("tabindex", "0");
-    }
     this.addEventListener("keydown", this._handleKeydown);
     document.addEventListener("click", this._handleClickOutside);
   }
@@ -135,10 +132,6 @@ class AutocompleteElement extends LitElement {
 
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
-
-    if (!this.hasAttribute("tabindex")) {
-      this.setAttribute("tabindex", "-1");
-    }
   }
 
   /**
@@ -183,12 +176,14 @@ class AutocompleteElement extends LitElement {
         event.preventDefault();
         this._focusedIndex = Math.min(this._focusedIndex + 1, totalItems - 1);
         this._focusItemAtIndex(this._focusedIndex);
+        console.log("down", this._focusedIndex);
         break;
 
       case "ArrowUp":
         event.preventDefault();
         this._focusedIndex = Math.max(this._focusedIndex - 1, 0);
         this._focusItemAtIndex(this._focusedIndex);
+        console.log("up", this._focusedIndex);
         break;
 
       case "Home":
@@ -241,7 +236,7 @@ class AutocompleteElement extends LitElement {
 
   private _handleClickOutside = (event: MouseEvent) => {
     if (!this.contains(event.target as Node)) {
-      this._dismiss();
+      // this._dismiss();
     }
   };
 
@@ -273,7 +268,8 @@ class AutocompleteElement extends LitElement {
         const itemElement =
           targetItem.shadowRoot?.querySelector(`[role="option"]`);
         if (itemElement) {
-          (itemElement as HTMLElement).focus();
+          // (itemElement as HTMLElement).focus();
+          itemElement.toggleAttribute("aria-selected", true);
           targetItem.scrollIntoView({ block: "nearest" });
         }
       }
@@ -345,7 +341,7 @@ class AutocompleteElement extends LitElement {
             `
           : ""}
 
-        <div class="${blockClass}__items">
+        <ul class="${blockClass}__items" aria-label="todo">
           <!-- Render flat items first -->
           ${this.items.map((item, idx) => {
             const itemIndex = currentIndex++;
@@ -354,6 +350,7 @@ class AutocompleteElement extends LitElement {
               this.groups.length === 0 && idx === this.items.length - 1;
             return html`
               <cds-aichat-autocomplete-item
+                .selected="${idx === this._focusedIndex}"
                 .item="${item}"
                 .index="${itemIndex}"
                 .inputText="${this.inputText}"
@@ -387,7 +384,7 @@ class AutocompleteElement extends LitElement {
               ></cds-aichat-autocomplete-item-group>
             `;
           })}
-        </div>
+        </ul>
       </div>
     `;
   }

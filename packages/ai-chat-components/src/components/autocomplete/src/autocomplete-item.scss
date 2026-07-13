@@ -37,6 +37,11 @@ $block-class: #{$prefix}-autocomplete-item;
     &:focus {
       @include focus-outline("outline");
     }
+
+    &[aria-selected="true"] {
+      /* stylelint-disable-next-line color-named, declaration-no-important */
+      background: red !important;
+    }
   }
 
   .#{$block-class}__content {

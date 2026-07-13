@@ -53,6 +53,7 @@ $block-class: #{$prefix}-autocomplete;
 
   .#{$block-class}__items {
     flex: 1 1 auto;
+    padding: 0;
     min-block-size: 0;
     overflow-y: auto;
   }
