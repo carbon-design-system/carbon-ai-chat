@@ -511,9 +511,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       useAITheme,
       carbonTheme,
       hideAvatar,
+      locale,
     } = this.props;
 
-    const timestamp = timestampToTimeString(message.history.timestamp);
+    const timestamp = timestampToTimeString(message.history.timestamp, locale);
 
     let label;
     let actorName;
