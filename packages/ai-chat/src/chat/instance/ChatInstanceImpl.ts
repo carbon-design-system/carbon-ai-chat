@@ -358,6 +358,11 @@ function createChatInstance({
       debugLog("Called instance.destroySession", keepOpenState);
       return serviceManager.actions.destroySession(keepOpenState);
     },
+
+    destroy: () => {
+      debugLog("Called instance.destroy");
+      serviceManager.actions.unloadServices();
+    },
   };
 
   // Add serviceManager for testing if the flag is enabled (exclude instance to avoid circular reference)

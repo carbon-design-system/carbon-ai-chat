@@ -289,6 +289,109 @@ describe("MessageService", () => {
     expect((messageService as any).queue.current).toBeNull();
   });
 
+  describe("dispose", () => {
+    it("disarms the loading-manager timers and settles pending sends", async () => {
+      const customSendMessage = jest.fn(
+        () => new Promise<void>(() => undefined), // never resolves, ignores the abort signal
+      );
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 30,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const endSpy = jest.spyOn(messageService.messageLoadingManager, "end");
+
+      const currentPromise = resolvablePromise<void>();
+      const waitingPromise = resolvablePromise<void>();
+      (messageService as any).queue.current = {
+        localMessageID: "local-current",
+        message: createMessage("m-current"),
+        sendMessagePromise: currentPromise,
+        requestOptions: {},
+        timeFirstRequest: 0,
+        timeLastRequest: 0,
+        trackData: { numErrors: 0, lastRequestTime: 0, totalRequestTime: 0 },
+        isProcessed: false,
+        source: MessageSendSource.MESSAGE_INPUT,
+        sendMessageController: new AbortController(),
+      };
+      (messageService as any).queue.waiting = [
+        {
+          localMessageID: "local-waiting",
+          message: createMessage("m-waiting"),
+          sendMessagePromise: waitingPromise,
+          requestOptions: {},
+          timeFirstRequest: 0,
+          timeLastRequest: 0,
+          trackData: { numErrors: 0, lastRequestTime: 0, totalRequestTime: 0 },
+          isProcessed: false,
+          source: MessageSendSource.MESSAGE_INPUT,
+          sendMessageController: new AbortController(),
+        },
+      ];
+      const controller = new AbortController();
+      (messageService as any).messageAbortControllers.set(
+        "m-current",
+        controller,
+      );
+
+      const currentItem = (messageService as any).queue.current;
+      const waitingItem = (messageService as any).queue.waiting[0];
+
+      messageService.dispose();
+
+      // Timers cleared (so a stale onMaxAttempt can't fire into the disposed chat), in-flight
+      // requests aborted, queue drained, and both pending send() promises settled.
+      expect(endSpy).toHaveBeenCalled();
+      expect(controller.signal.aborted).toBe(true);
+      expect((messageService as any).queue.current).toBeNull();
+      expect((messageService as any).queue.waiting).toHaveLength(0);
+      await expect(currentPromise).resolves.toBeUndefined();
+      await expect(waitingPromise).resolves.toBeUndefined();
+
+      // Both items are marked processed so a continuation suspended mid-send (awaiting a
+      // pre:send handler, or a customSendMessage rejection landing after this abort) exits at
+      // its isProcessed guard instead of resuming the pipeline on the disposed chat.
+      expect(currentItem.isProcessed).toBe(true);
+      expect(waitingItem.isProcessed).toBe(true);
+    });
+
+    it("refuses to send once the manager is disposed", async () => {
+      const customSendMessage = jest.fn().mockResolvedValue(undefined);
+      const serviceManager = createServiceManagerStub(customSendMessage);
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage,
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      (serviceManager as any).disposed = true;
+
+      await expect(
+        messageService.send(
+          createMessage("m-after-dispose"),
+          MessageSendSource.MESSAGE_INPUT,
+          "local-after-dispose",
+          { silent: false },
+        ),
+      ).resolves.toBeUndefined();
+
+      // Nothing was queued and no request left for the network — a post-teardown continuation
+      // (e.g. a hydration that was awaiting the consumer's customLoadHistory) cannot register a
+      // new AbortController that dispose() already cleared and could never cancel.
+      expect(customSendMessage).not.toHaveBeenCalled();
+      expect((messageService as any).queue.waiting).toHaveLength(0);
+      expect((messageService as any).queue.current).toBeNull();
+      expect((messageService as any).messageAbortControllers.size).toBe(0);
+    });
+  });
+
   describe("Message cancellation with system messages", () => {
     it("creates system message when cancelling before streaming starts", async () => {
       const customSendMessage = jest.fn().mockImplementation(

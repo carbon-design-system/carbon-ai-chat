@@ -382,12 +382,16 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * programmatically from an instance method.
    * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
    * @param showAssistantReturnMessage Indicates if the chat should show the "bot return" message.
+   * @param options Optional settings for how the chat is ended.
+   * @param options.forceEnd When true, skips the cancellable pre:endChat event so the chat always
+   * ends. Used by service teardown, where a host listener must not be able to veto the disconnect.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
   public async endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage = true,
     showAssistantReturnMessage = true,
+    options: { forceEnd?: boolean } = {},
   ): Promise<void> {
     if (!this.chatStarted || !this.serviceDesk) {
       // Already ended or no service desk.
@@ -396,7 +400,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
     const { isConnected } = this.persistedHumanAgentState();
     let event: BusEventHumanAgentPreEndChat;
-    if (isConnected) {
+    if (isConnected && !options.forceEnd) {
       event = await this.firePreEndChat(false);
       if (event.cancelEndChat) {
         return;

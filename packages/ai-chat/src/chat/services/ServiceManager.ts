@@ -154,6 +154,19 @@ class ServiceManager {
   restartCount = 0;
 
   /**
+   * Unsubscribe handles for the store subscriptions registered in `loadServices`. Captured so that
+   * `ChatActionsImpl.unloadServices` can tear them down on disposal; a disposed instance leaves zero
+   * live store listeners.
+   */
+  storeUnsubscribers: Array<() => void> = [];
+
+  /**
+   * Set once this service manager has been disposed via `unloadServices`. Guards against
+   * double-teardown so disposal is idempotent.
+   */
+  disposed = false;
+
+  /**
    * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available
    * both here and through the React IntlProvider that makes it available to components via useIntl() hook.
    * This replaces the previous react-intl IntlShape.

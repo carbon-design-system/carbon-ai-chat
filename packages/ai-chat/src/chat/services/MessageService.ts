@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -614,6 +614,12 @@ class MessageService {
     localMessageID?: string,
     requestOptions?: SendOptions,
   ): Promise<MessageResponse | any> {
+    if (this.serviceManager.disposed) {
+      // A continuation that survived teardown (e.g. a hydration that was awaiting the consumer's
+      // customLoadHistory) is trying to send on the disposed chat. Its AbortController would be
+      // registered in a map dispose() already cleared, so nothing could ever cancel it.
+      return Promise.resolve();
+    }
     message.history.timestamp = message.history.timestamp || Date.now();
 
     // The messageService does different things based off the message type so lets make sure one exists.
@@ -658,6 +664,42 @@ class MessageService {
         false,
         reason,
       );
+      this.clearCurrentQueueItem();
+    }
+  }
+
+  /**
+   * Aborts any in-flight or queued message requests and drops their AbortControllers. Called from
+   * the service teardown (`ChatActionsImpl.unloadServices`) so a disposed chat leaves no dangling
+   * network requests. Safe to call more than once.
+   */
+  public dispose(): void {
+    // Disarm the loading-manager timers: a host customSendMessage that ignores the AbortSignal
+    // would otherwise leave onMaxAttempt armed to fire a cancellation into the disposed chat.
+    this.messageLoadingManager.end();
+    this.messageAbortControllers.forEach((controller) => {
+      try {
+        controller.abort();
+      } catch {
+        // The controller may already be aborted.
+      }
+    });
+    this.messageAbortControllers.clear();
+    // Mark every pending request processed — the same flag every cancellation path sets — so a
+    // continuation suspended mid-send (awaiting a pre:send handler, or a customSendMessage whose
+    // rejection lands after this abort) exits at its isProcessed guard instead of resuming the
+    // pipeline: dispatching into the disposed store, re-arming the loading timers just disarmed
+    // above, or invoking customSendMessage/config.onError after teardown.
+    // Settle pending send() promises the way cancellation does (resolve, not reject) so consumer
+    // awaits don't hang forever on a disposed chat.
+    this.queue.waiting.forEach((item) => {
+      item.isProcessed = true;
+      item.sendMessagePromise.doResolve();
+    });
+    this.queue.waiting.length = 0;
+    if (this.queue.current) {
+      this.queue.current.isProcessed = true;
+      this.queue.current.sendMessagePromise.doResolve();
       this.clearCurrentQueueItem();
     }
   }

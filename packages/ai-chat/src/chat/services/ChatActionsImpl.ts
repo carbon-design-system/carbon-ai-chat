@@ -230,7 +230,7 @@ class ChatActionsImpl {
       this.hydrating = false;
     }
 
-    if (fireReady) {
+    if (fireReady && !this.serviceManager.disposed) {
       await this.serviceManager.fire({ type: BusEventType.CHAT_READY });
     }
   }
@@ -264,6 +264,14 @@ class ChatActionsImpl {
     if (!this.alreadyHydrated) {
       history = await this.serviceManager.historyService.loadHistory();
 
+      if (serviceManager.disposed) {
+        // The chat was torn down while the consumer's customLoadHistory was pending. Stop here:
+        // the continuation would otherwise initialize the human agent service (invoking the
+        // consumer's serviceDeskFactory on a destroyed chat), send the welcome request, or
+        // reconnect a service desk that nothing would ever end.
+        return;
+      }
+
       if (
         serviceManager.humanAgentService &&
         !serviceManager.humanAgentService.hasInitialized
@@ -272,6 +280,9 @@ class ChatActionsImpl {
         // initialize the human agent service.
         debugLog("Initializing the human agent service");
         await serviceManager.humanAgentService.initialize();
+        if (serviceManager.disposed) {
+          return;
+        }
       } else {
         debugLog("No service desk integrations present");
       }
@@ -324,6 +335,12 @@ class ChatActionsImpl {
       if (history.latestPanelLocalMessageItem) {
         this.openResponsePanel(history.latestPanelLocalMessageItem, true);
       }
+    }
+
+    if (serviceManager.disposed) {
+      // Torn down while the welcome request or the user-defined-response elements were pending —
+      // do not reconnect the service desk or dispatch into the disposed store.
+      return;
     }
 
     // After both history and welcome are loaded indicate we've got everything.
@@ -664,12 +681,19 @@ class ChatActionsImpl {
       if (!ignoreHydration) {
         await this.hydrationPromise;
       }
+      if (this.serviceManager.disposed) {
+        // Torn down while awaiting hydration — do not send on the disposed chat.
+        return;
+      }
       await this.doSend(messageRequest, source, options);
     } else {
       // If no hydration has started, then we need to start the hydration and use this message as the alternate for
       // the welcome node.
       this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
       await this.hydrateChat(messageRequest, source, options);
+      if (this.serviceManager.disposed) {
+        return;
+      }
       await this.doSend(messageRequest, source, options);
     }
   }
@@ -1035,7 +1059,8 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      MessageResponse | undefined;
+      | MessageResponse
+      | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile
@@ -1081,7 +1106,8 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      MessageResponse | undefined;
+      | MessageResponse
+      | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile
@@ -2068,6 +2094,75 @@ class ChatActionsImpl {
         newPersistedToBrowserStorage,
       ),
     );
+  }
+
+  /**
+   * Tears down the services and subscriptions created for this instance and marks the service
+   * manager disposed. This is the disposal half of the lifecycle: it silently ends any active
+   * human-agent chat, unsubscribes the store listeners registered in `loadServices`, clears the
+   * event bus, stops the theme watcher, disposes the message service, and clears the upsert
+   * coordinator. Distinct from `destroySession`, which only clears the conversation/session.
+   *
+   * Safe to call more than once, and must not throw even if the instance was only partially
+   * initialized.
+   */
+  unloadServices() {
+    const { serviceManager } = this;
+    if (!serviceManager || serviceManager.disposed) {
+      return;
+    }
+    serviceManager.disposed = true;
+
+    const safe = (fn: () => void) => {
+      try {
+        fn();
+      } catch {
+        // Disposal must never throw; ignore teardown errors.
+      }
+    };
+
+    // Silently end any active human-agent chat (no user-facing "agent ended" message),
+    // mirroring the restart teardown. Fire-and-forget so disposal stays synchronous. `forceEnd`
+    // skips the cancellable pre:endChat event: a host listener gating disconnects behind a
+    // confirmation dialog must not be able to veto teardown and strand a live agent socket on a
+    // disposed chat.
+    safe(() => {
+      const state = serviceManager.store?.getState();
+      const isConnecting = state?.humanAgentState?.isConnecting;
+      const isConnected =
+        state?.persistedToBrowserStorage?.humanAgentState?.isConnected;
+      if (isConnecting || isConnected) {
+        serviceManager.humanAgentService
+          ?.endChat(true, false, false, { forceEnd: true })
+          ?.catch(() => {});
+      }
+    });
+
+    // Abort any in-flight file uploads so a disposed chat leaves no dangling upload requests.
+    this.uploadAbortControllers?.forEach((controller) =>
+      safe(() => controller.abort()),
+    );
+    this.uploadAbortControllers?.clear();
+
+    // Unsubscribe the store listeners registered in loadServices.
+    serviceManager.storeUnsubscribers?.forEach((unsubscribe) =>
+      safe(() => unsubscribe?.()),
+    );
+    serviceManager.storeUnsubscribers = [];
+
+    // Tear down the remaining services.
+    safe(() => serviceManager.eventBus?.clear());
+    safe(() => serviceManager.themeWatcherService?.stopWatching());
+    safe(() => serviceManager.messageService?.dispose());
+    safe(() => serviceManager.messageUpsertCoordinator?.clearAll());
+
+    // Drop cross-references so nothing keeps the disposed graph alive.
+    serviceManager.instance = undefined;
+    serviceManager.mainWindow = undefined;
+    serviceManager.appWindow = undefined;
+    serviceManager.inputComponent = undefined;
+    serviceManager.container = undefined;
+    serviceManager.customHostElement = undefined;
   }
 
   /**

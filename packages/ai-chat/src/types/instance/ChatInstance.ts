@@ -479,6 +479,19 @@ interface ChatActions {
    * chat is open.
    */
   destroySession: (keepOpenState?: boolean) => Promise<void>;
+
+  /**
+   * Disposes this chat instance and tears down all of its services immediately: the store
+   * subscriptions, the event bus, the theme watcher, any in-flight message requests, and any
+   * active human-agent connection. Call this when the chat is being removed for good. Unlike
+   * {@link ChatInstance.destroySession}, which only clears the current conversation, `destroy`
+   * releases the instance itself; the instance must not be used afterward.
+   *
+   * @example
+   * // Tear the chat down completely when your application removes it for good.
+   * chatInstance.destroy();
+   */
+  destroy: () => void;
 }
 
 /**
