@@ -44,13 +44,13 @@ See [Examples smoke tests](references/playwright.md) for instructions on creatin
 
 **Title-naming rule**: a README's `# H1` title mirrors the slug's prefix family so related examples cluster visually in the aggregator.
 
-| Slug pattern                                                                                             | Title format                                                                 | Example                                                      |
-| -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Shares a prefix with 3+ siblings (`custom-element-*`, `history-*`, `input-*`, `frameworks-*`, `tests-*`) | `<Prefix> / <Variant>` (capitalize prefix; sentence-case variant)            | `input-typeahead` → `Input / Typeahead`                      |
-| Canonical baseline (`basic-*`)                                                                           | `Basic / <Variant>`                                                          | `basic-float` → `Basic / Float`                              |
-| Pure variant of one base (e.g. `reasoning-steps-controlled` of `reasoning-steps`)                        | `<Base name> (<variant>)`                                                    | `workspace-sidebar` → `Workspace (sidebar)`                  |
-| Stands alone (no shared prefix family)                                                                   | Flat sentence case                                                           | `feedback` → `Feedback`                                      |
-| Sub-variant of a slash-family entry                                                                      | Keep the slash, append the variant in parens (avoid stacking a second slash) | `input-typeahead-custom` → `Input / Typeahead (custom list)` |
+| Slug pattern                                                                                                   | Title format                                                                 | Example                                                                  |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Shares a prefix with 3+ siblings (`custom-element-*`, `history-*`, `prompt-line-*`, `frameworks-*`, `tests-*`) | `<Prefix> / <Variant>` (capitalize prefix; sentence-case variant)            | `prompt-line-typeahead` → `Prompt line / Typeahead`                      |
+| Canonical baseline (`basic-*`)                                                                                 | `Basic / <Variant>`                                                          | `basic-float` → `Basic / Float`                                          |
+| Pure variant of one base (e.g. `reasoning-steps-controlled` of `reasoning-steps`)                              | `<Base name> (<variant>)`                                                    | `workspace-sidebar` → `Workspace (sidebar)`                              |
+| Stands alone (no shared prefix family)                                                                         | Flat sentence case                                                           | `feedback` → `Feedback`                                                  |
+| Sub-variant of a slash-family entry                                                                            | Keep the slash, append the variant in parens (avoid stacking a second slash) | `prompt-line-typeahead-custom` → `Prompt line / Typeahead (custom list)` |
 
 Capitalize a slug-family prefix the first time you introduce a new family, even when the slug is a singleton today, if you anticipate siblings (e.g. `Integrations / watsonx.ai`).
 
