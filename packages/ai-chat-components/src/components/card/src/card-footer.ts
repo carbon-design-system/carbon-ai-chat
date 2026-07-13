@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -117,17 +117,19 @@ class CardFooter extends LitElement {
                   @click=${() => this.handleAction(action)}
                 >
                   ${action.label}
-                  ${action.icon
-                    ? iconLoader(
-                        action.icon,
-                        !action.isViewing
-                          ? {
-                              slot: "icon",
-                              class: `${prefix}-card-footer__action-icon`,
-                            }
-                          : undefined,
-                      )
-                    : nothing}
+                  ${
+                    action.icon
+                      ? iconLoader(
+                          action.icon,
+                          !action.isViewing
+                            ? {
+                                slot: "icon",
+                                class: `${prefix}-card-footer__action-icon`,
+                              }
+                            : undefined,
+                        )
+                      : nothing
+                  }
                 </cds-button> `,
             )}
           </div>
@@ -150,9 +152,11 @@ class CardFooter extends LitElement {
                   ?disabled=${action.disabled}
                   @click=${() => this.handleAction(action)}
                 >
-                  ${action.icon
-                    ? iconLoader(action.icon, { slot: "icon" })
-                    : nothing}
+                  ${
+                    action.icon
+                      ? iconLoader(action.icon, { slot: "icon" })
+                      : nothing
+                  }
                   <span slot="tooltip-content">${action.tooltipText}</span>
                 </cds-icon-button> `,
             )}

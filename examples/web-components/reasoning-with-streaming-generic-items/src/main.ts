@@ -69,8 +69,7 @@ export class Demo extends LitElement {
   renderUserDefinedSlots() {
     return Object.entries(this.slotsBySlotName).map(([slot, data]) => {
       const payload = data.message.user_defined as
-        | ReasoningSummaryPayload
-        | undefined;
+        ReasoningSummaryPayload | undefined;
       if (payload?.user_defined_type !== "reasoning_summary") {
         return null;
       }
@@ -79,13 +78,15 @@ export class Demo extends LitElement {
           <div class="reasoning-summary">
             <div class="reasoning-summary__eyebrow">Step summary</div>
             <div class="reasoning-summary__body">${payload.summary}</div>
-            ${payload.citations && payload.citations.length
-              ? html`<ul class="reasoning-summary__citations">
-                  ${payload.citations.map(
-                    (citation) => html`<li>${citation}</li>`,
-                  )}
-                </ul>`
-              : null}
+            ${
+              payload.citations && payload.citations.length
+                ? html`<ul class="reasoning-summary__citations">
+                    ${payload.citations.map(
+                      (citation) => html`<li>${citation}</li>`,
+                    )}
+                  </ul>`
+                : null
+            }
           </div>
         </div>
       `;

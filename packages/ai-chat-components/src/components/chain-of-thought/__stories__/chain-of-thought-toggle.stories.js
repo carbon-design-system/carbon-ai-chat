@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -99,24 +99,30 @@ class ChainOfThoughtToggleDemo extends LitElement {
                 ?open=${step.open}
               >
                 <cds-aichat-tool-call-data tool-name=${step.toolName ?? ""}>
-                  ${step.description
-                    ? html`<cds-aichat-markdown
-                        slot="description"
-                        .markdown=${step.description}
-                      ></cds-aichat-markdown>`
-                    : nothing}
-                  ${step.input
-                    ? html`<cds-aichat-markdown
-                        slot="input"
-                        .markdown=${step.input}
-                      ></cds-aichat-markdown>`
-                    : nothing}
-                  ${step.output
-                    ? html`<cds-aichat-markdown
-                        slot="output"
-                        .markdown=${step.output}
-                      ></cds-aichat-markdown>`
-                    : nothing}
+                  ${
+                    step.description
+                      ? html`<cds-aichat-markdown
+                          slot="description"
+                          .markdown=${step.description}
+                        ></cds-aichat-markdown>`
+                      : nothing
+                  }
+                  ${
+                    step.input
+                      ? html`<cds-aichat-markdown
+                          slot="input"
+                          .markdown=${step.input}
+                        ></cds-aichat-markdown>`
+                      : nothing
+                  }
+                  ${
+                    step.output
+                      ? html`<cds-aichat-markdown
+                          slot="output"
+                          .markdown=${step.output}
+                        ></cds-aichat-markdown>`
+                      : nothing
+                  }
                 </cds-aichat-tool-call-data>
               </cds-aichat-chain-of-thought-step>
             `,

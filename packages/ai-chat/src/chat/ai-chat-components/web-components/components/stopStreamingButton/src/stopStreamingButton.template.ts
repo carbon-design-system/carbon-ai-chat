@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -37,9 +37,9 @@ export function stopStreamingButtonTemplate({
     >
       <span slot="icon">
         <span
-          class="${prefix}--stop-icon ${disabled
-            ? "${prefix}--stop-icon--disabled"
-            : ""}"
+          class="${prefix}--stop-icon ${
+            disabled ? "${prefix}--stop-icon--disabled" : ""
+          }"
           >${iconLoader(StopFilled16)}</span
         >
       </span>

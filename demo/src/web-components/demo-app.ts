@@ -491,20 +491,20 @@ export class DemoApp extends LitElement {
               .openChatByDefault=${this.config.openChatByDefault ?? undefined}
               .disclaimer=${this.config.disclaimer}
               .disableCustomElementMobileEnhancements=${
-              this.config.disableCustomElementMobileEnhancements ?? undefined
-            }
+                this.config.disableCustomElementMobileEnhancements ?? undefined
+              }
               .debug=${this.config.debug ?? undefined}
               .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
               .aiEnabled=${this.config.aiEnabled ?? undefined}
               .shouldTakeFocusIfOpensAutomatically=${
-              this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
-            }
+                this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
+              }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
               .header=${{
-              ...this.config.header,
-              hideDefaultAiLabelContent: true,
-            }}
+                ...this.config.header,
+                hideDefaultAiLabelContent: true,
+              }}
               .layout=${this.config.layout}
               .messaging=${this.config.messaging}
               .isReadonly=${this.config.isReadonly ?? undefined}
@@ -532,20 +532,20 @@ export class DemoApp extends LitElement {
               .openChatByDefault=${this.config.openChatByDefault ?? undefined}
               .disclaimer=${this.config.disclaimer}
               .disableCustomElementMobileEnhancements=${
-              this.config.disableCustomElementMobileEnhancements ?? undefined
-            }
+                this.config.disableCustomElementMobileEnhancements ?? undefined
+              }
               .debug=${this.config.debug ?? undefined}
               .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
               .aiEnabled=${this.config.aiEnabled ?? undefined}
               .shouldTakeFocusIfOpensAutomatically=${
-              this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
-            }
+                this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
+              }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
               .header=${{
-              ...this.config.header,
-              hideDefaultAiLabelContent: true,
-            }}
+                ...this.config.header,
+                hideDefaultAiLabelContent: true,
+              }}
               .layout=${this.config.layout}
               .messaging=${this.config.messaging}
               .isReadonly=${this.config.isReadonly ?? undefined}
@@ -574,20 +574,20 @@ export class DemoApp extends LitElement {
               .openChatByDefault=${this.config.openChatByDefault ?? undefined}
               .disclaimer=${this.config.disclaimer}
               .disableCustomElementMobileEnhancements=${
-              this.config.disableCustomElementMobileEnhancements ?? undefined
-            }
+                this.config.disableCustomElementMobileEnhancements ?? undefined
+              }
               .debug=${this.config.debug ?? undefined}
               .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
               .aiEnabled=${this.config.aiEnabled ?? undefined}
               .shouldTakeFocusIfOpensAutomatically=${
-              this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
-            }
+                this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
+              }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
               .header=${{
-              ...this.config.header,
-              hideDefaultAiLabelContent: true,
-            }}
+                ...this.config.header,
+                hideDefaultAiLabelContent: true,
+              }}
               .layout=${this.config.layout}
               .messaging=${this.config.messaging}
               .isReadonly=${this.config.isReadonly ?? undefined}

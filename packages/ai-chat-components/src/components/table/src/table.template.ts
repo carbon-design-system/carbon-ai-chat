@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -44,13 +44,15 @@ function tableTemplate(tableElement: CDSAIChatTable) {
 
     return html`<cds-table-toolbar slot="toolbar">
       <cds-table-toolbar-content>
-        ${allowTableFiltering
-          ? html`<cds-table-toolbar-search
-              persistent
-              placeholder=${filterPlaceholderText}
-              aria-label=${filterPlaceholderText}
-            ></cds-table-toolbar-search>`
-          : ""}
+        ${
+          allowTableFiltering
+            ? html`<cds-table-toolbar-search
+                persistent
+                placeholder=${filterPlaceholderText}
+                aria-label=${filterPlaceholderText}
+              ></cds-table-toolbar-search>`
+            : ""
+        }
         <cds-icon-button
           @click=${handleDownload}
           align=${tooltipPosition}
@@ -105,14 +107,18 @@ function tableTemplate(tableElement: CDSAIChatTable) {
     use-zebra-styles
     @cds-table-filtered=${handleFilterEvent}
   >
-    ${tableTitle &&
-    html`<cds-table-header-title slot="title"
-      >${tableTitle}</cds-table-header-title
-    >`}
-    ${tableDescription &&
-    html`<cds-table-header-description slot="description"
-      >${tableDescription}</cds-table-header-description
-    >`}
+    ${
+      tableTitle &&
+      html`<cds-table-header-title slot="title"
+        >${tableTitle}</cds-table-header-title
+      >`
+    }
+    ${
+      tableDescription &&
+      html`<cds-table-header-description slot="description"
+        >${tableDescription}</cds-table-header-description
+      >`
+    }
     ${toolbarElement()} ${headersElement()} ${rowsElement()}
   </cds-table>`;
 }
