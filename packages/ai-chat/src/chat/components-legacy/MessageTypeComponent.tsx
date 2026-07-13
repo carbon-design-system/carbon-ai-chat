@@ -40,7 +40,7 @@ import { CardItemComponent } from "./responseTypes/card/CardItemComponent";
 import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
+import UserDefinedResponse from "../components/UserDefinedResponse";
 import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
 import InlineError from "../components/util/InlineError";

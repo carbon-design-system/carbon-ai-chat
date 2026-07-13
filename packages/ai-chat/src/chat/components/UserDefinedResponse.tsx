@@ -16,11 +16,11 @@
 
 import React from "react";
 
-import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { AppState } from "../../../../types/state/AppState";
-import InlineError from "../../../components/util/InlineError";
+import { HasServiceManager } from "../hocs/withServiceManager";
+import { useSelector } from "../hooks/useSelector";
+import { shallowEqual } from "../store/appStore";
+import { AppState } from "../../types/state/AppState";
+import InlineError from "./util/InlineError";
 
 interface UserDefinedResponseProps extends HasServiceManager {
   /**
