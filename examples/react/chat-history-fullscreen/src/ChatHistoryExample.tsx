@@ -82,6 +82,7 @@ function ChatHistoryExample({
   );
   const [showDeletePanel, setShowDeletePanel] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const itemRefs = useRef<Record<string, any>>({});
   const [pinnedItems, setPinnedItems] = useState<resultItem[]>(
     pinnedHistoryItems.map((item) => ({ ...item, rename: false })),
   );
@@ -253,6 +254,18 @@ function ChatHistoryExample({
     setItemToDelete(null);
   }, [itemToDelete]);
 
+  const handleRenameChange = useCallback((event: CustomEvent) => {
+    const { itemId, value } = event.detail;
+    const item = itemRefs.current[itemId];
+    if (item) {
+      const invalid = value.length > 75;
+      item.renameInvalid = invalid;
+      item.renameInvalidMessage = invalid
+        ? "Title cannot exceed 75 characters."
+        : "";
+    }
+  }, []);
+
   // Handle rename chat save
   const handleRenameSave = useCallback((event: CustomEvent) => {
     const itemId = event.detail.itemId;
@@ -407,6 +420,9 @@ function ChatHistoryExample({
                   {pinnedItems.map((item) => (
                     <HistoryPanelItem
                       key={item.id}
+                      ref={(el: HTMLElement) => {
+                        itemRefs.current[item.id] = el;
+                      }}
                       id={item.id}
                       name={item.name}
                       selected={item.selected}
@@ -414,6 +430,7 @@ function ChatHistoryExample({
                       actions={pinnedHistoryItemActions}
                       onMenuAction={handleHistoryItemAction}
                       onSelected={handleSelectChat}
+                      onRenameChange={handleRenameChange}
                       onRenameSave={handleRenameSave}
                     />
                   ))}
@@ -428,6 +445,9 @@ function ChatHistoryExample({
                     {item.chats.map((chat) => (
                       <HistoryPanelItem
                         key={chat.id}
+                        ref={(el: HTMLElement) => {
+                          itemRefs.current[chat.id] = el;
+                        }}
                         id={chat.id}
                         name={chat.name}
                         selected={chat.selected}
@@ -435,6 +455,7 @@ function ChatHistoryExample({
                         actions={historyItemActions}
                         onMenuAction={handleHistoryItemAction}
                         onSelected={handleSelectChat}
+                        onRenameChange={handleRenameChange}
                         onRenameSave={handleRenameSave}
                       />
                     ))}

@@ -303,18 +303,15 @@ export const Default = {
       if (item) {
         const invalid = value.length > 75;
         item.renameInvalid = invalid;
-        item.renameInvalidMessage = invalid ? "Title cannot exceed 75 characters." : "";
+        item.renameInvalidMessage = invalid
+          ? "Title cannot exceed 75 characters."
+          : "";
       }
     }, []);
 
     const handleRenameSave = useCallback((event) => {
       const itemId = event.detail.itemId;
       if (itemId) {
-        const item = itemRefs.current[itemId];
-        if (item) {
-          item.renameInvalid = false;
-          item.renameInvalidMessage = "";
-        }
         setPinnedItems((prev) =>
           prev.map((chat) =>
             chat.id === itemId
@@ -432,7 +429,9 @@ export const Default = {
                       {pinnedItems.map((item) => (
                         <HistoryPanelItem
                           key={item.id}
-                          ref={(el) => { itemRefs.current[item.id] = el; }}
+                          ref={(el) => {
+                            itemRefs.current[item.id] = el;
+                          }}
                           id={item.id}
                           name={item.name}
                           selected={item.selected}
@@ -459,7 +458,9 @@ export const Default = {
                         {item.chats.map((chat) => (
                           <HistoryPanelItem
                             key={chat.id}
-                            ref={(el) => { itemRefs.current[chat.id] = el; }}
+                            ref={(el) => {
+                              itemRefs.current[chat.id] = el;
+                            }}
                             id={chat.id}
                             name={chat.name}
                             selected={chat.selected}

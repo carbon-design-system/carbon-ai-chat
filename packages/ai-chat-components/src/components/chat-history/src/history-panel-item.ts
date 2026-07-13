@@ -416,12 +416,16 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     if (this.input) {
       this.input.addEventListener("history-panel-item-input-cancel", () => {
         this.rename = false;
+        this.renameInvalid = false;
+        this.renameInvalidMessage = "";
       });
 
       this.input.addEventListener("history-panel-item-input-save", (event) => {
         const newName = (event as CustomEvent).detail.newName;
         this.name = newName;
         this.rename = false;
+        this.renameInvalid = false;
+        this.renameInvalidMessage = "";
       });
     }
   }

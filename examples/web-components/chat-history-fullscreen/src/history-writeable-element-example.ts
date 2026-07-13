@@ -274,6 +274,42 @@ export class HistoryWriteableElementExample extends LitElement {
     this.requestUpdate();
   };
 
+  // Handle rename chat change
+  _handleRenameChange = (event: CustomEvent) => {
+    const { itemId, value } = event.detail;
+
+    if (itemId) {
+      const invalid = value.length > 75;
+
+      this.pinnedItems = this.pinnedItems.map((chat) =>
+        chat.id === itemId
+          ? {
+              ...chat,
+              renameInvalid: invalid,
+              renameInvalidMessage: invalid
+                ? "Title cannot exceed 75 characters."
+                : "",
+            }
+          : chat,
+      );
+
+      this.regularItems = this.regularItems.map((section) => ({
+        ...section,
+        chats: section.chats.map((chat) =>
+          chat.id === itemId
+            ? {
+                ...chat,
+                renameInvalid: invalid,
+                renameInvalidMessage: invalid
+                  ? "Title cannot exceed 75 characters."
+                  : "",
+              }
+            : chat,
+        ),
+      }));
+    }
+  };
+
   // Handle rename chat save
   _handleRenameSave = (event: CustomEvent) => {
     const itemId = event.detail.itemId;
@@ -450,10 +486,15 @@ export class HistoryWriteableElementExample extends LitElement {
                             name=${chat.name}
                             ?selected=${chat.selected}
                             ?rename=${chat.rename}
+                            ?rename-invalid=${chat.renameInvalid}
+                            rename-invalid-message=${chat.renameInvalidMessage ??
+                            ""}
                             .actions=${pinnedHistoryItemActions}
                             @history-item-selected=${this._handleSelectChat}
                             @history-item-menu-action=${this
                               ._handleHistoryItemAction}
+                            @history-panel-item-input-change=${this
+                              ._handleRenameChange}
                             @history-panel-item-input-save=${this
                               ._handleRenameSave}
                           ></cds-aichat-history-panel-item>
@@ -474,10 +515,15 @@ export class HistoryWriteableElementExample extends LitElement {
                                 name=${chat.name}
                                 ?selected=${chat.selected}
                                 ?rename=${chat.rename}
+                                ?rename-invalid=${chat.renameInvalid}
+                                rename-invalid-message=${chat.renameInvalidMessage ??
+                                ""}
                                 .actions=${historyItemActions}
                                 @history-item-selected=${this._handleSelectChat}
                                 @history-item-menu-action=${this
                                   ._handleHistoryItemAction}
+                                @history-panel-item-input-change=${this
+                                  ._handleRenameChange}
                                 @history-panel-item-input-save=${this
                                   ._handleRenameSave}
                               ></cds-aichat-history-panel-item>
