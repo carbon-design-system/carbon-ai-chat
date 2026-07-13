@@ -15,7 +15,7 @@ import ReasoningStepComponent from "@carbon/ai-chat-components/es/react/reasonin
 import ReasoningStepsToggle from "@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js";
 import type CDSAIChatReasoningSteps from "@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps.js";
 import { type ReasoningStepsToggleEventDetail } from "@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps-toggle.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
+import { carbonIconToReact } from "../utils-react/carbonIcon";
 import Loading from "../components/carbon/Loading";
 import cx from "classnames";
 import React, { KeyboardEvent, PureComponent } from "react";

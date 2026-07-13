@@ -8,7 +8,7 @@
  */
 
 import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 import cx from "classnames";
 import React from "react";
 

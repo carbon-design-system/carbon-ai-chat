@@ -10,11 +10,12 @@
 import Button from "../../components/carbon/Button";
 import Send16 from "@carbon/icons/es/send/16.js";
 import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
 import { matchesShortcut } from "../../utils/keyboardUtils";
 import { getDeepActiveElement } from "../../utils/domUtils";
 import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../../types/config/ShortcutConfig";
+import type { InputFunctions } from "../../utils/viewHandles.js";
 import FileUploaderItem, {
   FILE_UPLOADER_ITEM_SIZE,
 } from "../../components/carbon/FileUploaderItem";
@@ -179,28 +180,6 @@ interface InputProps extends HasServiceManager {
    * When enabled, the component will publish raw/display values to the store and respond to external updates.
    */
   trackInputState?: boolean;
-}
-
-interface InputFunctions {
-  /**
-   * Instructs the text area to take focus.
-   * @deprecated Use requestFocus() instead for consistency with focus management pattern
-   */
-  takeFocus: () => void;
-
-  /**
-   * Requests focus on the input field.
-   * Follows the generic focus management pattern for web components.
-   * @returns {boolean} True if focus was successfully set, false otherwise
-   */
-  requestFocus: () => boolean;
-
-  /**
-   * Returns true if the input field currently has focus.
-   * Encapsulates internal focus detection logic.
-   * @returns {boolean} True if the input field has focus
-   */
-  hasFocus: () => boolean;
 }
 
 function Input(props: InputProps, ref: Ref<InputFunctions>) {
@@ -744,4 +723,5 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 }
 
 const InputExport = React.memo(forwardRef(Input));
-export { InputExport as Input, InputFunctions };
+export { InputExport as Input };
+export type { InputFunctions };

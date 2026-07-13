@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,12 +11,19 @@
  * Miscellaneous utilities that don't fit anywhere else.
  */
 
-import { ErrorInfo } from "react";
-
 import { FileUpload } from "../../types/config/ServiceDeskConfig";
 import { FileStatusValue, WA_CONSOLE_PREFIX } from "./constants";
 import { resolveOrTimeout } from "./lang/promiseUtils";
 import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
+
+/**
+ * The subset of React's `ErrorInfo` that {@link createDidCatchErrorData} actually reads. Declared
+ * structurally so this util stays free of a React import; React's `ErrorInfo` is assignable to it,
+ * so error-boundary callers pass through unchanged.
+ */
+interface RenderErrorInfo {
+  componentStack?: string | null;
+}
 
 /**
  * A global flag to indicate if we want to show debug messages in the browser console. This is generally set from
@@ -106,7 +113,7 @@ async function safeFetchTextWithTimeout(response: Response): Promise<string> {
 function createDidCatchErrorData(
   component: string,
   error: Error,
-  errorInfo: ErrorInfo,
+  errorInfo: RenderErrorInfo,
   isCatastrophicError?: boolean,
 ): OnErrorData {
   return {

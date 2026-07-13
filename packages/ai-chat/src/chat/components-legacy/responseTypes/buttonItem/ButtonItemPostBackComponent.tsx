@@ -8,7 +8,7 @@
  */
 
 import Send16 from "@carbon/icons/es/send/16.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { carbonIconToReact } from "../../../utils-react/carbonIcon";
 import React, { useCallback } from "react";
 import { useSelector } from "../../../hooks/useSelector";
 

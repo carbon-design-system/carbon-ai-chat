@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,7 +9,7 @@
 
 import Launch16 from "@carbon/icons/es/launch/16.js";
 import Link from "../../../components/carbon/Link";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { carbonIconToReact } from "../../../utils-react/carbonIcon";
 import React from "react";
 
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";

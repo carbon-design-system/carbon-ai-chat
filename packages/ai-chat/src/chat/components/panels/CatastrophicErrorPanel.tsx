@@ -18,7 +18,7 @@ import ChatButton, {
 import { ErrorMessage } from "../../components-legacy/ErrorMessage";
 import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
 import { useCarbonTheme } from "../../hooks/useCarbonTheme";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 import { LanguagePack } from "../../../types/config/PublicConfig";
 import { AppState } from "../../../types/state/AppState";
 import { useIntl } from "../../hooks/useIntl";

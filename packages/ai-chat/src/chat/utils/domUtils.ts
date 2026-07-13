@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,9 +9,29 @@
 
 import { compute } from "compute-scroll-into-view";
 import { memoizeFunction } from "./memoizerUtils";
-import { KeyboardEvent as ReactKeyboardEvent, RefObject } from "react";
 import { tabbable } from "tabbable";
 import { setVarsForSelector } from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+
+/**
+ * A minimal ref shape — structurally identical to React's `RefObject<HTMLElement | null>` for the
+ * fields `doFocusRef` reads. Declared here so this util stays free of a React import.
+ */
+interface ElementRef {
+  current: HTMLElement | null;
+}
+
+/**
+ * The subset of a keyboard event read by {@link isEnterKey} / {@link hasModifiers}. Both the DOM
+ * `KeyboardEvent` and React's synthetic keyboard event satisfy this, so callers pass either.
+ */
+interface StructuralKeyboardEvent {
+  key: string;
+  keyCode: number;
+  shiftKey: boolean;
+  altKey: boolean;
+  metaKey: boolean;
+  ctrlKey: boolean;
+}
 
 let scrollbarMeasureRuleInstalled = false;
 
@@ -140,11 +160,7 @@ function doFocus(element: HTMLElement | SVGElement, preventScroll = false) {
  * @param defer Indicates if the focus should be executed now or if it should be deferred to another event loop.
  * @param preventScroll Indicates if scrolling should be prevented as a result of the focus change.
  */
-function doFocusRef(
-  ref: RefObject<HTMLElement | null>,
-  defer = false,
-  preventScroll = false,
-) {
+function doFocusRef(ref: ElementRef, defer = false, preventScroll = false) {
   if (ref) {
     if (defer) {
       setTimeout(() => {
@@ -231,7 +247,7 @@ function focusOnFirstFocusableElement(parentElement: HTMLElement) {
  * time. This function supports both the built-in typescript KeyboardEvent type and the React version (which is
  * missing some properties).
  */
-function isEnterKey(event: ReactKeyboardEvent | KeyboardEvent) {
+function isEnterKey(event: StructuralKeyboardEvent | KeyboardEvent) {
   if (event.key === "Enter" && !hasModifiers(event)) {
     // Users using IMEs could be making a word selection when they hit enter. This check will prevent the user’s
     // message from being sent prematurely.
@@ -243,7 +259,7 @@ function isEnterKey(event: ReactKeyboardEvent | KeyboardEvent) {
 /**
  * Determines if the given keyboard event has any modifier keys pressed.
  */
-function hasModifiers(event: ReactKeyboardEvent | KeyboardEvent) {
+function hasModifiers(event: StructuralKeyboardEvent | KeyboardEvent) {
   return event.shiftKey || event.altKey || event.metaKey || event.ctrlKey;
 }
 

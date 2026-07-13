@@ -9,7 +9,7 @@
 
 import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
 import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { carbonIconToReact } from "../../../utils-react/carbonIcon";
 import React, { useState } from "react";
 import cx from "classnames";
 import { useSelector } from "../../../hooks/useSelector";

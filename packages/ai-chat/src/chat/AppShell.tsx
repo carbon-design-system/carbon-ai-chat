@@ -91,11 +91,9 @@ import {
   ChatWidthBreakpoint,
   PendingUpload,
 } from "../types/state/AppState";
-import {
-  AutoScrollOptions,
-  HasDoAutoScroll,
-} from "../types/utilities/HasDoAutoScroll";
+import { AutoScrollOptions } from "../types/utilities/HasDoAutoScroll";
 import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
+import { MainWindowFunctions } from "./utils/viewHandles.js";
 import { MessageSendSource, BusEventType } from "../types/events/eventBusTypes";
 import { CarbonTheme } from "../types/config/PublicConfig";
 import { FileStatusValue } from "./utils/constants";
@@ -165,25 +163,8 @@ interface AppShellProps extends HasServiceManager {
   writeableElementsPresentKeys?: string;
 }
 
-/**
- * These are the public imperative functions that are available on the MainWindow component. This interface is
- * declared here to avoid taking a dependency on a specific React component implementation elsewhere.
- */
-export interface MainWindowFunctions extends HasRequestFocus, HasDoAutoScroll {
-  /**
-   * Scrolls to the (full) message with the given ID. Since there may be multiple message items in a given
-   * message, this will scroll the first message to the top of the message window.
-   *
-   * @param messageID The (full) message ID to scroll to.
-   * @param animate Whether or not the scroll should be animated. Defaults to true.
-   */
-  doScrollToMessage(messageID: string, animate?: boolean): void;
-
-  /**
-   * Returns the current scrollBottom value for the message scroll panel.
-   */
-  getMessagesScrollBottom(): number;
-}
+// Re-exported from `utils/viewHandles.ts` so existing `AppShell` importers are unaffected.
+export type { MainWindowFunctions };
 
 /**
  * The store-driven application shell. This is the heavy, memoized boundary of

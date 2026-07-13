@@ -18,12 +18,10 @@ import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../config/ServiceDeskConfig";
 import {
   BUTTON_KIND,
+  BUTTON_KIND as CHAT_BUTTON_KIND,
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/defs.js";
-import {
-  CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import { CHAT_BUTTON_SIZE } from "@carbon/ai-chat-components/es/components/chat-button/defs.js";
 import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
 import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
 
@@ -652,7 +650,9 @@ export enum HumanAgentMessageType {
  * @category Messaging
  */
 export type Message =
-  MessageRequest<MessageInput> | MessageRequest<EventInput> | MessageResponse;
+  | MessageRequest<MessageInput>
+  | MessageRequest<EventInput>
+  | MessageResponse;
 
 /**
  * @category Messaging

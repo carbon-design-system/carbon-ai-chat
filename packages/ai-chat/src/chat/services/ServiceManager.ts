@@ -9,7 +9,11 @@
 
 import type { AppStore } from "../store/appStore";
 import { IntlShape } from "../utils/i18n";
-import { AriaAnnouncerFunctionType } from "../contexts/AriaAnnouncerContext";
+import {
+  AriaAnnouncerFunctionType,
+  InputFunctions,
+  MainWindowFunctions,
+} from "../utils/viewHandles.js";
 
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
@@ -26,10 +30,8 @@ import {
   WriteableElements,
 } from "../../types/instance/ChatInstance";
 import { BusEvent } from "../../types/events/eventBusTypes";
-import { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import type { InputFunctions } from "../components-legacy/input/Input";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;

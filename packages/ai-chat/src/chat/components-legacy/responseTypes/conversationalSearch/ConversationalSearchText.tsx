@@ -24,7 +24,7 @@ import { useSelector } from "../../../hooks/useSelector";
 import { useServiceManager } from "../../../hooks/useServiceManager";
 import { shallowEqual } from "../../../store/appStore";
 import OperationalTag from "../../../components/carbon/OperationalTag";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { carbonIconToReact } from "../../../utils-react/carbonIcon";
 
 const ChevronDown = carbonIconToReact(ChevronDown16);
 const ChevronUp = carbonIconToReact(ChevronUp16);

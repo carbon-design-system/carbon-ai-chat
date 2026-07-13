@@ -10,7 +10,7 @@
 /* eslint-disable react/no-array-index-key */
 
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { carbonIconToReact } from "./../utils/carbonIcon";
+import { carbonIconToReact } from "./../utils-react/carbonIcon";
 import React, {
   useCallback,
   useEffect,

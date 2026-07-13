@@ -68,7 +68,7 @@ import { Message } from "../../types/messaging/Messages";
 import { LanguagePack } from "../../types/config/PublicConfig";
 import { CarbonTheme } from "../../types/config/PublicConfig";
 import { ChatShortcutConfig } from "../../types/config/ShortcutConfig";
-import { carbonIconToReact } from "../utils/carbonIcon";
+import { carbonIconToReact } from "../utils-react/carbonIcon";
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 

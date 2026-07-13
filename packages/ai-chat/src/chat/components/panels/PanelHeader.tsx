@@ -17,7 +17,7 @@ import IconButton from "../carbon/IconButton";
 import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
 import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
 import { isDirectionRTL } from "../../utils/domUtils";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 
 const ChevronDown = carbonIconToReact(ChevronDown16);
 const ChevronLeft = carbonIconToReact(ChevronLeft16);

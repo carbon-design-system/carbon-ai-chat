@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,7 +11,7 @@ import CDSButton from "@carbon/web-components/es/components/button/button.js";
 import AiLaunch24 from "@carbon/icons/es/ai-launch/24.js";
 import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
 import Close16 from "@carbon/icons/es/close/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 import cx from "classnames";
 import React, {
   RefObject,
