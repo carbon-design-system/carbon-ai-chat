@@ -16,7 +16,7 @@
 
 import { ServiceManager } from "../services/ServiceManager";
 import actions from "../store/actions";
-import { selectInputState } from "../store/selectors";
+import { selectInputIsReadonly } from "../store/selectors";
 import {
   CatastrophicErrorPanelState,
   ViewState,
@@ -83,7 +83,7 @@ function createChatInstance({
 
     send: async (message: MessageRequest | string, options?: SendOptions) => {
       debugLog("Called instance.send", message, options);
-      if (selectInputState(serviceManager.store.getState()).isReadonly) {
+      if (selectInputIsReadonly(serviceManager.store.getState())) {
         throw new Error("You are unable to send messages in read only mode.");
       }
       return serviceManager.actions.send(

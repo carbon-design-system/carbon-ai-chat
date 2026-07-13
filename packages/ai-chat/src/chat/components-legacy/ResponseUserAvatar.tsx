@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,11 +15,12 @@ import UserAvatar32 from "@carbon/icons/es/user--avatar/32.js";
 import { carbonIconToReact } from "../utils/carbonIcon";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import HasLanguagePack from "../../types/utilities/HasLanguagePack";
 import { ResponseUserProfile } from "../../types/messaging/Messages";
 import { applyDynamicStyles, clearDynamicStyles } from "../utils/cspStyleUtils";
+import { useSelector } from "../hooks/useSelector";
+import { AppState } from "../../types/state/AppState";
 
-interface ResponseUserAvatarProps extends HasLanguagePack {
+interface ResponseUserAvatarProps {
   /**
    * Profile information about a specific agent.
    */
@@ -39,7 +40,12 @@ interface ResponseUserAvatarProps extends HasLanguagePack {
 const UserAvatar = carbonIconToReact(UserAvatar32);
 
 function ResponseUserAvatar(props: ResponseUserAvatarProps) {
-  const { responseUserProfile, languagePack, width, height } = props;
+  const { responseUserProfile, width, height } = props;
+  // Subscribe only to the single string this avatar renders, so it re-renders
+  // only when that string changes — not on any language-pack edit.
+  const agentAriaHumanAgentAvatar = useSelector(
+    (state: AppState) => state.languagePack.agent_ariaHumanAgentAvatar,
+  );
   const agentName = responseUserProfile?.nickname;
   const avatarUrl = responseUserProfile?.profile_picture_url;
   // Indicates if the avatar for a human agent failed to load.
@@ -69,7 +75,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
     component = (
       <img
         src={avatarUrl}
-        alt={languagePack.agent_ariaResponseUserAvatar}
+        alt={agentAriaHumanAgentAvatar}
         onError={() => setHasError(true)}
       />
     );
@@ -81,7 +87,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
     // We're only accepting ASCII (and extended ASCII) because proper browser detection for Latin characters is lacking.
     component = (
       <div
-        aria-label={languagePack.agent_ariaResponseUserAvatar}
+        aria-label={agentAriaHumanAgentAvatar}
         className="cds-aichat--response-user-avatar__circle"
         ref={avatarRef}
       >
@@ -96,7 +102,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
       <UserAvatar
         width={width ? Number(width.replace("px", "")) : undefined}
         height={height ? Number(height.replace("px", "")) : undefined}
-        aria-label={languagePack.agent_ariaResponseUserAvatar}
+        aria-label={agentAriaHumanAgentAvatar}
       />
     );
   }

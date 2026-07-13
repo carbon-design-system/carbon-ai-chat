@@ -1,6 +1,6 @@
 /* eslint-disable */
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -18,6 +18,7 @@ import { PanelType } from "../../../../types/instance/apiTypes";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { AppState } from "../../../../types/state/AppState";
 import { useSelector } from "../../../hooks/useSelector";
+import { shallowEqual } from "../../../store/appStore";
 import {
   PreviewCardItem,
   MessageResponse,
@@ -40,7 +41,11 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
 
   const serviceManager = useServiceManager();
   const { isOpen, workspaceID } = useSelector(
-    (state: AppState) => state.workspacePanelState,
+    (state: AppState) => ({
+      isOpen: state.workspacePanelState.isOpen,
+      workspaceID: state.workspacePanelState.workspaceID,
+    }),
+    shallowEqual,
   );
   const panel = serviceManager.instance.customPanels.getPanel(
     PanelType.WORKSPACE,

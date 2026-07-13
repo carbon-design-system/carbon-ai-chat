@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -10,10 +10,8 @@
 import React from "react";
 import { useSelector } from "../hooks/useSelector";
 
-import { useLanguagePack } from "../hooks/useLanguagePack";
 import { useServiceManager } from "../hooks/useServiceManager";
-import { selectInputState } from "../store/selectors";
-import { AppState } from "../../types/state/AppState";
+import { selectInputIsReadonly } from "../store/selectors";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { THROW_ERROR } from "../utils/constants";
@@ -48,9 +46,7 @@ function BodyWithFooterComponent({
   renderMessageComponent,
 }: BodyWithFooterComponentProps) {
   const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
-  const appConfig = useSelector((state: AppState) => state.config);
-  const inputState = useSelector(selectInputState);
+  const isInputReadonly = useSelector(selectInputIsReadonly);
 
   return (
     <>
@@ -58,10 +54,8 @@ function BodyWithFooterComponent({
         <BodyMessageComponents
           message={localMessageItem}
           originalMessage={fullMessage}
-          languagePack={languagePack}
           requestInputFocus={requestFocus}
-          disableUserInputs={inputState.isReadonly}
-          config={appConfig}
+          disableUserInputs={isInputReadonly}
           isMessageForInput={isMessageForInput}
           scrollElementIntoView={THROW_ERROR}
           serviceManager={serviceManager}
@@ -75,10 +69,8 @@ function BodyWithFooterComponent({
         <FooterButtonComponents
           message={localMessageItem}
           originalMessage={fullMessage}
-          languagePack={languagePack}
           requestInputFocus={requestFocus}
-          disableUserInputs={inputState.isReadonly}
-          config={appConfig}
+          disableUserInputs={isInputReadonly}
           isMessageForInput={isMessageForInput}
           scrollElementIntoView={THROW_ERROR}
           serviceManager={serviceManager}

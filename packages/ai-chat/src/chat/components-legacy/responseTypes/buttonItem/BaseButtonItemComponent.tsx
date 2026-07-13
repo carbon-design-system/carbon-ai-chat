@@ -15,7 +15,6 @@ import cx from "classnames";
 import React from "react";
 import { useSelector } from "../../../hooks/useSelector";
 
-import { useLanguagePack } from "../../../hooks/useLanguagePack";
 import { AppState } from "../../../../types/state/AppState";
 import { HasClassName } from "../../../../types/utilities/HasClassName";
 import { ClickableImage } from "../util/ClickableImage";
@@ -100,7 +99,9 @@ function BaseButtonItemComponent({
   altText,
   onClick,
 }: BaseButtonComponentProps) {
-  const { errors_imageSource } = useLanguagePack();
+  const errors_imageSource = useSelector(
+    (state: AppState) => state.languagePack.errors_imageSource,
+  );
   const aiEnabled = useSelector(
     (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
   );

@@ -107,6 +107,11 @@ export interface PublicConfig {
    *
    * If it is changed in the middle of a conversation (you should obviously avoid this) the conversation with the
    * human agent will be disconnected.
+   *
+   * This factory is compared by reference. Provide a stable reference (for example
+   * a module-level function or a memoized `useCallback`); a new function identity
+   * on every render is treated as a change and, while an agent chat is active, tears
+   * down and rebuilds the service desk connection.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters,
@@ -167,6 +172,11 @@ export interface PublicConfig {
    * Allows for feedback to persist in all messages, not just the latest message.
    */
   persistFeedback?: boolean;
+
+  /**
+   * Toggles the chat avatar on and off
+   */
+  hideAvatar?: boolean;
 
   /**
    * Sets the name of the assistant. Defaults to "watsonx". Used in screen reader announcements and error messages.

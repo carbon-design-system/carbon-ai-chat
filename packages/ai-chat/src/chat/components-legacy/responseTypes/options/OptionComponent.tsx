@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,13 +14,11 @@ import ChatButton, {
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
 
 import { HasServiceManager } from "../../../hocs/withServiceManager";
-import HasLanguagePack from "../../../../types/utilities/HasLanguagePack";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import {
   createMessageRequestForChoice,
   getOptionType,
 } from "../../../utils/messageUtils";
-import Metablock from "../util/Metablock";
 import SelectComponent from "./SelectComponent";
 import {
   Message,
@@ -28,12 +26,13 @@ import {
   SingleOption,
 } from "../../../../types/messaging/Messages";
 import { MessageSendSource } from "../../../../types/events/eventBusTypes";
+import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
 }
 
-interface OptionProps extends HasServiceManager, HasLanguagePack {
+interface OptionProps extends HasServiceManager {
   /**
    * The message to display the options for.
    */
@@ -108,23 +107,19 @@ class OptionComponent extends Component<OptionProps> {
   };
 
   render() {
-    const {
-      localMessage,
-      languagePack,
-      disableUserInputs,
-      serviceManager,
-      removeHTML,
-    } = this.props;
+    const { localMessage, disableUserInputs, serviceManager, removeHTML } =
+      this.props;
     const { options, title, description, preference } = localMessage.item;
     const { optionSelected } = localMessage.ui_state;
     const type = getOptionType(preference, options.length);
 
     return type === "button" ? (
       <>
-        <Metablock
+        <TextBlock
           title={title}
           description={description}
           removeHTML={removeHTML}
+          renderMode="markdown"
         />
         <div className="cds-aichat--button-holder">
           <ul>
@@ -155,7 +150,6 @@ class OptionComponent extends Component<OptionProps> {
     ) : (
       <SelectComponent
         serviceManager={serviceManager}
-        languagePack={languagePack}
         title={title}
         description={description}
         options={options}

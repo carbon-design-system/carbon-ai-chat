@@ -391,22 +391,25 @@ class ChatCustomElement extends FlattenedConfigElement {
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
-        .markdown=${this.markdown as WCMarkdown | undefined}
       >
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
         )}
-        ${this.renderUserDefinedResponse
-          ? null
-          : this._userDefinedSlotNames.map(
-              (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
-            )}
-        ${this.renderCustomMessageFooter
-          ? null
-          : this._customFooterSlotNames.map(
-              (slot) =>
-                html`<div slot=${slot}><slot name=${slot}></slot></div>`,
-            )}
+        ${
+          this.renderUserDefinedResponse
+            ? null
+            : this._userDefinedSlotNames.map(
+                (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
+              )
+        }
+        ${
+          this.renderCustomMessageFooter
+            ? null
+            : this._customFooterSlotNames.map(
+                (slot) =>
+                  html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+              )
+        }
         ${this._pluginSlotNames.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
         )}

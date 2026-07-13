@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,10 +14,10 @@ import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
 import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
 import { doCreateStore } from "../../../src/chat/store/doCreateStore";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 import { NamespaceService } from "../../../src/chat/services/NamespaceService";
+import { UserSessionStorageService } from "../../../src/chat/services/UserSessionStorageService";
 import { PublicConfig } from "../../../src/types/config/PublicConfig";
 
 describe("Config Namespace", () => {
@@ -179,13 +179,37 @@ describe("Config Namespace", () => {
 
         serviceManager.namespace = new NamespaceService("new-namespace");
 
-        const changes = detectConfigChanges(previousConfig, newConfig);
-        expect(changes.namespaceChanged).toBe(true);
-
-        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+        await applyConfigChangesDynamically(
+          previousConfig,
+          newConfig,
+          serviceManager,
+        );
 
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.namespace).toBe("new-namespace");
+      });
+
+      it("derives the session-storage key from the live namespace on each access", () => {
+        // No namespace suffix -> base key.
+        serviceManager.namespace = new NamespaceService();
+        const sessionStorageService = new UserSessionStorageService(
+          serviceManager,
+        );
+        expect(sessionStorageService.getSessionKey()).toBe(
+          "CARBON_CHAT_SESSION",
+        );
+
+        // A runtime namespace swap must move the bucket WITHOUT reconstructing
+        // the service (the key is derived per access, not cached at construction).
+        serviceManager.namespace = new NamespaceService("tenant-a");
+        expect(sessionStorageService.getSessionKey()).toBe(
+          "CARBON_CHAT_SESSION--tenant-a",
+        );
+
+        serviceManager.namespace = new NamespaceService("tenant-b");
+        expect(sessionStorageService.getSessionKey()).toBe(
+          "CARBON_CHAT_SESSION--tenant-b",
+        );
       });
     });
   });

@@ -31,7 +31,6 @@ import { AISlug } from "../../components/carbon/AISlug";
 import WriteableElement from "../../components/util/WriteableElement";
 import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
-import { useLanguagePack } from "../../hooks/useLanguagePack";
 import { useSelector } from "../../hooks/useSelector";
 import { useServiceManager } from "../../hooks/useServiceManager";
 import { shallowEqual } from "../../store/appStore";
@@ -73,11 +72,6 @@ interface HeaderProps {
   onToggleHomeScreen: () => void;
 
   /**
-   * The name of the bot to display.
-   */
-  headerDisplayName?: string;
-
-  /**
    * Indicates if the homescreen is currently active/visible.
    */
   isHomeScreenActive?: boolean;
@@ -93,22 +87,39 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     onClose,
     onRestart,
     onToggleHomeScreen,
-    headerDisplayName,
     isHomeScreenActive,
     headerConfigOverride,
   } = props;
   const serviceManager = useServiceManager();
-  const languagePack = useLanguagePack();
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      homeScreen_returnToHome: state.languagePack.homeScreen_returnToHome,
+      launcher_isOpen: state.languagePack.launcher_isOpen,
+      header_overflowMenu_options:
+        state.languagePack.header_overflowMenu_options,
+      components_overflow_ariaLabel:
+        state.languagePack.components_overflow_ariaLabel,
+      buttons_restart: state.languagePack.buttons_restart,
+      ai_slug_label: state.languagePack.ai_slug_label,
+      ai_slug_title: state.languagePack.ai_slug_title,
+      ai_slug_description: state.languagePack.ai_slug_description,
+      homeScreen_overflowMenuHomeScreen:
+        state.languagePack.homeScreen_overflowMenuHomeScreen,
+    }),
+    shallowEqual,
+  );
   const homeScreenIsOn = useSelector((state: AppState) => {
     const homescreen = state.config.public.homescreen;
     return homescreen?.isOn && !homescreen?.disableReturn;
   });
-  const derivedPublicConfig = useSelector(
-    (state: AppState) => state.config.derived,
+
+  const derivedHeaderConfig = useSelector(
+    (state: AppState) => state.config.derived.header,
   );
+
   const mergedHeaderConfig = useMemo(() => {
     if (!headerConfigOverride) {
-      return derivedPublicConfig.header;
+      return derivedHeaderConfig;
     }
 
     const filteredOverrides = Object.entries(headerConfigOverride).reduce(
@@ -122,10 +133,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     );
 
     return {
-      ...derivedPublicConfig.header,
+      ...derivedHeaderConfig,
       ...filteredOverrides,
     };
-  }, [derivedPublicConfig.header, headerConfigOverride]);
+  }, [derivedHeaderConfig, headerConfigOverride]);
 
   const customMenuOptions = mergedHeaderConfig.menuOptions;
 
@@ -151,8 +162,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     headerConfig?.minimizeButtonIconType ?? MinimizeButtonIconType.MINIMIZE;
   const hideCloseButton = headerConfig?.hideMinimizeButton ?? false;
   const headerTitle = headerConfig?.title ?? undefined;
-  const chatHeaderDisplayName =
-    headerConfig?.name || headerDisplayName || undefined;
+  const chatHeaderDisplayName = headerConfig?.name || undefined;
   const backButtonLabel = languagePack.homeScreen_returnToHome;
   const closeButtonLabel = languagePack.launcher_isOpen;
   const overflowMenuTooltip = languagePack.header_overflowMenu_options;

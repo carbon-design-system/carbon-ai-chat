@@ -2,6 +2,7 @@
     "plugin": [
         "./docs/typedoc/moduleNamePlugin.js",
         "./docs/typedoc/demoteValidationWarningsPlugin.js",
+        "./docs/typedoc/apiIndexPlugin.js",
         "@carbon/typedoc-theme"
     ],
     "theme": "carbon",

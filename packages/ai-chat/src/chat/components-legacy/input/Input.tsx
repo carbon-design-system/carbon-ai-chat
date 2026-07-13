@@ -34,13 +34,15 @@ import React, {
 import { StopStreamingButton } from "../../ai-chat-components/react/components/stopStreamingButton/StopStreamingButton";
 import { HasServiceManager } from "../../hocs/withServiceManager";
 import { useCounter } from "../../hooks/useCounter";
+import { useSelector } from "../../hooks/useSelector";
 import actions from "../../store/actions";
 import {
   selectInputState,
   selectIsInputToHumanAgent,
 } from "../../store/selectors";
+import { shallowEqual } from "../../store/appStore";
 import { FileUpload } from "../../../types/config/ServiceDeskConfig";
-import HasLanguagePack from "../../../types/utilities/HasLanguagePack";
+import { AppState } from "../../../types/state/AppState";
 import { IS_MOBILE } from "../../utils/browserUtils";
 import { FileStatusValue } from "../../utils/constants";
 import { isEnterKey, isDirectionRTL } from "../../utils/domUtils";
@@ -76,7 +78,7 @@ const STOP_TYPING_PERIOD = 5000;
  */
 const INPUT_MAX_CHARS = 10000;
 
-interface InputProps extends HasServiceManager, HasLanguagePack {
+interface InputProps extends HasServiceManager {
   /**
    * Indicates if the input field should be disabled (the user cannot type anything). This will also hide any value
    * that may already be set in the field.
@@ -217,12 +219,29 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onSendInput,
     serviceManager,
     onUserTyping,
-    languagePack,
     isStopStreamingButtonVisible,
     isStopStreamingButtonDisabled,
     maxInputChars,
     trackInputState = false,
   } = props;
+
+  // This input's own strings — a narrow bag (shallowEqual) so an unrelated
+  // string edit doesn't re-render the input. Covers the 5 destructured below
+  // plus the 2 the file-uploader item helper reads.
+  const languagePack = useSelector(
+    (state: AppState) => ({
+      input_buttonLabel: state.languagePack.input_buttonLabel,
+      input_placeholder: state.languagePack.input_placeholder,
+      input_ariaLabel: state.languagePack.input_ariaLabel,
+      input_uploadButtonLabel: state.languagePack.input_uploadButtonLabel,
+      input_stopResponse: state.languagePack.input_stopResponse,
+      fileSharing_statusUploading:
+        state.languagePack.fileSharing_statusUploading,
+      fileSharing_removeButtonTitle:
+        state.languagePack.fileSharing_removeButtonTitle,
+    }),
+    shallowEqual,
+  );
 
   const store = serviceManager.store;
   const inputID = `${serviceManager.namespace.suffix}-${useCounter()}`;

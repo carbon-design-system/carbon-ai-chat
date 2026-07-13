@@ -632,8 +632,7 @@ class ChatActionsImpl {
 
     // Announce that the message is being sent for screen reader users
     if (this.serviceManager.ariaAnnouncer) {
-      const languagePack =
-        this.serviceManager.store.getState().config.derived.languagePack;
+      const languagePack = this.serviceManager.store.getState().languagePack;
       this.serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
     }
 
@@ -815,8 +814,7 @@ class ChatActionsImpl {
       return;
     }
 
-    const { languagePack } =
-      this.serviceManager.store.getState().config.derived;
+    const { languagePack } = this.serviceManager.store.getState();
 
     if (isResponse(message as any)) {
       // Even though processMessageResponse is an async function we do not await it in case a pause response type is
@@ -1037,8 +1035,7 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      | MessageResponse
-      | undefined;
+      MessageResponse | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile
@@ -1084,8 +1081,7 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      | MessageResponse
-      | undefined;
+      MessageResponse | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile

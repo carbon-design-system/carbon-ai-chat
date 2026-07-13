@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,7 +14,6 @@ import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { createBaseTestProps, mockCustomSendMessage } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
 import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
 import { doCreateStore } from "../../../src/chat/store/doCreateStore";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 import { NamespaceService } from "../../../src/chat/services/NamespaceService";
@@ -200,10 +199,11 @@ describe("Config Messaging", () => {
           },
         };
 
-        const changes = detectConfigChanges(previousConfig, newConfig);
-        expect(changes.messagingChanged).toBe(true);
-
-        await applyConfigChangesDynamically(changes, newConfig, serviceManager);
+        await applyConfigChangesDynamically(
+          previousConfig,
+          newConfig,
+          serviceManager,
+        );
 
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.messaging?.messageTimeoutSecs).toBe(60);

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -8,7 +8,7 @@
  */
 
 import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { detectConfigChanges } from "../../../src/chat/utils/configChangeDetection";
+import { selectInputIsReadonly } from "../../../src/chat/store/selectors";
 import { createAppStore } from "../../../src/chat/store/appStore";
 import {
   createAppConfig,
@@ -20,6 +20,7 @@ import { AppState } from "../../../src/types/state/AppState";
 import {
   PublicConfig,
   enLanguagePack,
+  CarbonTheme,
 } from "../../../src/types/config/PublicConfig";
 
 // Mock ServiceManager for testing
@@ -73,12 +74,11 @@ describe("Dynamic Config Updates", () => {
         },
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
       expect(updatedState.config.public.debug).toBe(true);
@@ -114,13 +114,8 @@ describe("Dynamic Config Updates", () => {
         },
       };
 
-      const changes = detectConfigChanges(
-        initialStateWithFullHeader.config.public,
-        newConfig,
-      );
-
       await applyConfigChangesDynamically(
-        changes,
+        initialStateWithFullHeader.config.public,
         newConfig,
         serviceManagerWithFullHeader,
       );
@@ -146,12 +141,11 @@ describe("Dynamic Config Updates", () => {
         },
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
       const header = updatedState.config.derived.header;
@@ -172,17 +166,16 @@ describe("Dynamic Config Updates", () => {
         strings: stringOverrides,
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
 
       expect(updatedState.config.public.strings).toEqual(stringOverrides);
-      const languagePack = updatedState.config.derived.languagePack;
+      const languagePack = updatedState.languagePack;
       expect(languagePack.input_placeholder).toBe(
         stringOverrides.input_placeholder,
       );
@@ -194,6 +187,13 @@ describe("Dynamic Config Updates", () => {
       );
     });
 
+    // Note: rebuilding `serviceManager.intl` from a strings/locale change is now
+    // owned by the `refreshLocalizationOnChange` store subscription (wired in
+    // loadServices), not by `applyConfigChangesDynamically`. End-to-end coverage
+    // that `formatMessage`/`useIntl` consumers and the dayjs locale track a
+    // runtime change lives in the booted integration tests in
+    // `tests/config/spec/strings_spec.ts`.
+
     it("should handle homescreen changes and update homescreen state", async () => {
       const newConfig: PublicConfig = {
         homescreen: {
@@ -202,12 +202,11 @@ describe("Dynamic Config Updates", () => {
         },
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
 
@@ -248,13 +247,8 @@ describe("Dynamic Config Updates", () => {
         homescreen: { isOn: false },
       };
 
-      const changes = detectConfigChanges(
-        stateWithHomescreenOpen.config.public,
-        newConfig,
-      );
-
       await applyConfigChangesDynamically(
-        changes,
+        stateWithHomescreenOpen.config.public,
         newConfig,
         serviceManagerWithHomescreen,
       );
@@ -276,20 +270,20 @@ describe("Dynamic Config Updates", () => {
         isReadonly: true,
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
 
       // Config should be updated
       expect(updatedState.config.public.isReadonly).toBe(true);
 
-      // Bot input state should reflect readonly change
-      expect(updatedState.assistantInputState.isReadonly).toBe(true);
+      // Effective readonly is derived from config (not mirrored into state).
+      expect(updatedState.assistantInputState.isReadonly).toBeNull();
+      expect(selectInputIsReadonly(updatedState)).toBe(true);
     });
 
     it("should preserve derived theme properties correctly", async () => {
@@ -309,13 +303,8 @@ describe("Dynamic Config Updates", () => {
         debug: true, // Lightweight change that doesn't affect theme
       };
 
-      const changes = detectConfigChanges(
-        initialStateWithInherit.config.public,
-        newConfig,
-      );
-
       await applyConfigChangesDynamically(
-        changes,
+        initialStateWithInherit.config.public,
         newConfig,
         serviceManagerWithInherit,
       );
@@ -331,6 +320,46 @@ describe("Dynamic Config Updates", () => {
       ).toBe(originalDerivedTheme);
     });
 
+    it("should NOT carry forward the previously resolved theme on explicit → inherit transition", async () => {
+      // Start with explicit G90 theme. derivedCarbonTheme === G90 here.
+      const initialStateExplicit = createInitialAppState({
+        injectCarbonTheme: CarbonTheme.G90,
+      });
+      const serviceManagerExplicit =
+        createMockServiceManager(initialStateExplicit);
+
+      expect(
+        initialStateExplicit.config.derived.themeWithDefaults
+          .originalCarbonTheme,
+      ).toBe(CarbonTheme.G90);
+      expect(
+        initialStateExplicit.config.derived.themeWithDefaults
+          .derivedCarbonTheme,
+      ).toBe(CarbonTheme.G90);
+
+      // Transition to inherit mode by setting injectCarbonTheme back to null.
+      const newConfig: PublicConfig = { injectCarbonTheme: null };
+      await applyConfigChangesDynamically(
+        initialStateExplicit.config.public,
+        newConfig,
+        serviceManagerExplicit,
+      );
+
+      const updatedState = serviceManagerExplicit.store.getState();
+
+      // The carry-forward must NOT fire on explicit → inherit, so the previous
+      // explicit G90 must not linger as the derived theme. It is the
+      // freshly-built null from createAppConfig; ThemeWatcherService — kicked
+      // off by the originalCarbonTheme flip via loadServices.ts — then resolves
+      // the actual host theme.
+      expect(
+        updatedState.config.derived.themeWithDefaults.originalCarbonTheme,
+      ).toBeNull();
+      expect(
+        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme,
+      ).toBeNull();
+    });
+
     it("should handle messaging timeout updates", async () => {
       // Mock message service for testing
       const mockMessageService = {
@@ -344,12 +373,11 @@ describe("Dynamic Config Updates", () => {
         },
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
 
@@ -373,12 +401,11 @@ describe("Dynamic Config Updates", () => {
         },
       };
 
-      const changes = detectConfigChanges(
+      await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
+        serviceManager,
       );
-
-      await applyConfigChangesDynamically(changes, newConfig, serviceManager);
 
       const updatedState = serviceManager.store.getState();
 
@@ -393,14 +420,48 @@ describe("Dynamic Config Updates", () => {
         "Multi-Change Greeting",
       );
 
-      // State changes should be applied
-      expect((updatedState as AppState).assistantInputState.isReadonly).toBe(
-        true,
-      );
+      // Effective readonly derives from config; homescreen state is applied.
+      expect(selectInputIsReadonly(updatedState as AppState)).toBe(true);
       expect(
         (updatedState as AppState).persistedToBrowserStorage.homeScreenState
           .isHomeScreenOpen,
       ).toBe(true);
+    });
+
+    describe("disclaimer invalidation", () => {
+      it("clears the recorded acceptance for the current hostname when the disclaimer content changes", async () => {
+        const hostname = window.location.hostname;
+
+        const stateWithAcceptance = createInitialAppState({
+          disclaimer: { isOn: true, disclaimerHTML: "<p>Original</p>" },
+        });
+        stateWithAcceptance.persistedToBrowserStorage = {
+          ...stateWithAcceptance.persistedToBrowserStorage,
+          disclaimersAccepted: {
+            [hostname]: true,
+            "other-host.example": true,
+          },
+        };
+        const sm = createMockServiceManager(stateWithAcceptance);
+
+        const newConfig: PublicConfig = {
+          disclaimer: { isOn: true, disclaimerHTML: "<p>Updated</p>" },
+        };
+        await applyConfigChangesDynamically(
+          stateWithAcceptance.config.public,
+          newConfig,
+          sm,
+        );
+
+        const accepted =
+          sm.store.getState().persistedToBrowserStorage.disclaimersAccepted;
+        // This hostname must re-accept the new disclaimer. Acceptance is a truthy
+        // read, and the value is set false (not deleted) so it survives the
+        // reducer's deep merge of persistedToBrowserStorage.
+        expect(accepted[hostname]).toBeFalsy();
+        // ...but acceptance for other hostnames is untouched.
+        expect(accepted["other-host.example"]).toBe(true);
+      });
     });
 
     describe("error handling", () => {
@@ -409,14 +470,9 @@ describe("Dynamic Config Updates", () => {
           header: null as any,
         };
 
-        const changes = detectConfigChanges(
-          initialState.config.public,
-          newConfig,
-        );
-
         expect(async () => {
           await applyConfigChangesDynamically(
-            changes,
+            initialState.config.public,
             newConfig,
             serviceManager,
           );
