@@ -1035,8 +1035,7 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      | MessageResponse
-      | undefined;
+      MessageResponse | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile
@@ -1082,8 +1081,7 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      | MessageResponse
-      | undefined;
+      MessageResponse | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile

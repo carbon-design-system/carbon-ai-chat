@@ -208,9 +208,7 @@ render() {
 **React:**
 
 ```tsx
-const [config, setConfig] = useState({
-  /* initial config */
-});
+const [config, setConfig] = useState({/* initial config */});
 const switchLanguage = () => setConfig((c) => ({ ...c, locale: "fr" }));
 return <ChatContainer {...config} />;
 ```

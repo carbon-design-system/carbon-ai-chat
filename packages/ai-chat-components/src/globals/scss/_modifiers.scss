@@ -1,5 +1,5 @@
 /* 
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *  
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -70,22 +70,14 @@ $rounded-host-map: (
     start-start,
     start-end,
   ),
-  top-left: (
-    start-start,
-  ),
-  top-right: (
-    start-end,
-  ),
+  top-left: (start-start),
+  top-right: (start-end),
   bottom: (
     end-start,
     end-end,
   ),
-  bottom-left: (
-    end-start,
-  ),
-  bottom-right: (
-    end-end,
-  ),
+  bottom-left: (end-start),
+  bottom-right: (end-end),
 );
 
 @mixin rounded-host-positions {
@@ -114,40 +106,24 @@ $rounded-host-map: (
 /* ----- NON-STACKED CHILDREN ROUNDING ----- */
 $non-stacked-map: (
   top: (
-    first: (
-      start-start,
-    ),
-    last: (
-      start-end,
-    ),
+    first: (start-start),
+    last: (start-end),
   ),
   top-left: (
-    first: (
-      start-start,
-    ),
+    first: (start-start),
   ),
   top-right: (
-    last: (
-      start-end,
-    ),
+    last: (start-end),
   ),
   bottom: (
-    first: (
-      end-start,
-    ),
-    last: (
-      end-end,
-    ),
+    first: (end-start),
+    last: (end-end),
   ),
   bottom-left: (
-    first: (
-      end-start,
-    ),
+    first: (end-start),
   ),
   bottom-right: (
-    last: (
-      end-end,
-    ),
+    last: (end-end),
   ),
 );
 
@@ -170,14 +146,10 @@ $stacked-map: (
     ),
   ),
   top-right: (
-    first: (
-      start-end,
-    ),
+    first: (start-end),
   ),
   top-left: (
-    first: (
-      start-start,
-    ),
+    first: (start-start),
   ),
   bottom: (
     last: (
@@ -186,14 +158,10 @@ $stacked-map: (
     ),
   ),
   bottom-right: (
-    last: (
-      end-end,
-    ),
+    last: (end-end),
   ),
   bottom-left: (
-    last: (
-      end-start,
-    ),
+    last: (end-start),
   ),
 );
 

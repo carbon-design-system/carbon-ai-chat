@@ -280,9 +280,11 @@ class CDSAIChatReasoningStep extends LitElement {
 
     return html`
       <div class=${classes}>
-        ${this.hasBodyContent
-          ? this.renderInteractiveHeader()
-          : this.renderStaticHeader()}
+        ${
+          this.hasBodyContent
+            ? this.renderInteractiveHeader()
+            : this.renderStaticHeader()
+        }
         ${this.renderPanel()}
       </div>
     `;

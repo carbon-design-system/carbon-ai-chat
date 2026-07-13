@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "1.7.0-rc.0",
+  "version": "1.7.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -53,7 +53,7 @@
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.106.0",
     "@carbon/utilities": "^0.21.0",
-    "@carbon/web-components": "^2.54.0",
+    "@carbon/web-components": "^2.58.1",
     "@codemirror/autocomplete": "^6.20.0",
     "@codemirror/commands": "^6.10.1",
     "@codemirror/lang-angular": "^0.1.4",

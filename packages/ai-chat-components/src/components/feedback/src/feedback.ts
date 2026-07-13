@@ -277,65 +277,76 @@ class CDSAIChatFeedback extends LitElement {
       <div class="${prefix}--body">
         <div class="${prefix}--body-content">
           <div class="${prefix}--prompt-categories">
-            ${this.showBody
-              ? html`<div class="${prefix}--prompt">${this.body}</div>`
-              : ""}
-            ${this.categories?.length
-              ? html`<div class="${prefix}--categories">
-                  <div
-                    class="${prefix}--tag-list-container"
-                    role="group"
-                    aria-label="${this.categoriesLabel ||
-                    "Feedback categories"}"
-                  >
-                    ${this.categories.map(
-                      (value) =>
-                        html`<cds-selectable-tag
-                          class="${prefix}--tag-list-button"
-                          size="md"
-                          text="${value}"
-                          data-content="${value}"
-                          ?selected=${this._selectedCategories.has(value)}
-                          ?disabled=${this.isReadonly}
-                          @click=${this._handleCategoryClick}
-                        ></cds-selectable-tag>`,
-                    )}
-                  </div>
-                </div>`
-              : ""}
+            ${
+              this.showBody
+                ? html`<div class="${prefix}--prompt">${this.body}</div>`
+                : ""
+            }
+            ${
+              this.categories?.length
+                ? html`<div class="${prefix}--categories">
+                    <div
+                      class="${prefix}--tag-list-container"
+                      role="group"
+                      aria-label="${
+                        this.categoriesLabel || "Feedback categories"
+                      }"
+                    >
+                      ${this.categories.map(
+                        (value) =>
+                          html`<cds-selectable-tag
+                            class="${prefix}--tag-list-button"
+                            size="md"
+                            text="${value}"
+                            data-content="${value}"
+                            ?selected=${this._selectedCategories.has(value)}
+                            ?disabled=${this.isReadonly}
+                            @click=${this._handleCategoryClick}
+                          ></cds-selectable-tag>`,
+                      )}
+                    </div>
+                  </div>`
+                : ""
+            }
           </div>
           <div class="${prefix}--feedback-text">
-            ${this.showTextArea
-              ? html`<div class="${prefix}--feedback-input">
-                  <cds-textarea
-                    id="${this.id}-text-area"
-                    value="${this._textInput}"
-                    class="${prefix}--feedback-text-area"
-                    ?disabled=${this.isReadonly}
-                    placeholder="${this.placeholder}"
-                    rows="3"
-                    max-count="${this.maxLength ?? nothing}"
-                    @input=${this._handleTextInput}
-                  ></cds-textarea>
-                </div>`
-              : ""}
-            ${this.disclaimer
-              ? html`<div class="${prefix}--disclaimer">
-                  <cds-aichat-markdown
-                    .markdown=${this.disclaimer}
-                  ></cds-aichat-markdown>
-                </div>`
-              : ""}
+            ${
+              this.showTextArea
+                ? html`<div class="${prefix}--feedback-input">
+                    <cds-textarea
+                      id="${this.id}-text-area"
+                      value="${this._textInput}"
+                      class="${prefix}--feedback-text-area"
+                      ?disabled=${this.isReadonly}
+                      placeholder="${this.placeholder}"
+                      rows="3"
+                      max-count="${this.maxLength ?? nothing}"
+                      @input=${this._handleTextInput}
+                    ></cds-textarea>
+                  </div>`
+                : ""
+            }
+            ${
+              this.disclaimer
+                ? html`<div class="${prefix}--disclaimer">
+                    <cds-aichat-markdown
+                      .markdown=${this.disclaimer}
+                    ></cds-aichat-markdown>
+                  </div>`
+                : ""
+            }
           </div>
-          ${this.disclaimerCheckbox
-            ? html`<cds-checkbox
-                class="${prefix}--disclaimer-checkbox"
-                ?disabled=${this.isReadonly}
-                @cds-checkbox-changed=${this._handleDisclaimerCheckboxChange}
-                label-text=${this.disclaimerCheckbox}
-              >
-              </cds-checkbox>`
-            : ""}
+          ${
+            this.disclaimerCheckbox
+              ? html`<cds-checkbox
+                  class="${prefix}--disclaimer-checkbox"
+                  ?disabled=${this.isReadonly}
+                  @cds-checkbox-changed=${this._handleDisclaimerCheckboxChange}
+                  label-text=${this.disclaimerCheckbox}
+                >
+                </cds-checkbox>`
+              : ""
+          }
         </div>
         <div class="${prefix}--buttons">
           <div class="${prefix}--submit" data-rounded="bottom-right">

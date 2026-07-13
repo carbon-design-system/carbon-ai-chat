@@ -652,9 +652,7 @@ export enum HumanAgentMessageType {
  * @category Messaging
  */
 export type Message =
-  | MessageRequest<MessageInput>
-  | MessageRequest<EventInput>
-  | MessageResponse;
+  MessageRequest<MessageInput> | MessageRequest<EventInput> | MessageResponse;
 
 /**
  * @category Messaging

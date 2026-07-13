@@ -387,18 +387,20 @@ class AudioPlayer extends LitElement {
         role="region"
         aria-label=${this.ariaLabel}
       >
-        ${this.statusMessage
-          ? html`
-              <div
-                class="${prefix}--audio-player__status"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                ${this.statusMessage}
-              </div>
-            `
-          : ""}
+        ${
+          this.statusMessage
+            ? html`
+                <div
+                  class="${prefix}--audio-player__status"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  ${this.statusMessage}
+                </div>
+              `
+            : ""
+        }
         <div
           class="${classMap({
             [`${prefix}--audio-player__container`]: true,

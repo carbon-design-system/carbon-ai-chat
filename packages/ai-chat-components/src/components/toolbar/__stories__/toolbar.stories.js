@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -208,23 +208,25 @@ export const Default = {
       ${fixedActions}
 
       <!-- AI Label slot -->
-      ${aiLabel
-        ? html` <cds-ai-label
-            size="2xs"
-            autoalign
-            alignment="bottom"
-            slot="decorator"
-          >
-            <div slot="body-text">
-              <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
-              <div>
-                IBM watsonx is powered by the latest AI models to intelligently
-                process conversations and provide help whenever and wherever you
-                may need it.
+      ${
+        aiLabel
+          ? html` <cds-ai-label
+              size="2xs"
+              autoalign
+              alignment="bottom"
+              slot="decorator"
+            >
+              <div slot="body-text">
+                <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+                <div>
+                  IBM watsonx is powered by the latest AI models to
+                  intelligently process conversations and provide help whenever
+                  and wherever you may need it.
+                </div>
               </div>
-            </div>
-          </cds-ai-label>`
-        : ""}
+            </cds-ai-label>`
+          : ""
+      }
     </cds-aichat-toolbar>
   `,
 };

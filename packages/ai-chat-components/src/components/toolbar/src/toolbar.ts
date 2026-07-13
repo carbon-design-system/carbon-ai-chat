@@ -278,32 +278,39 @@ class CDSAIChatToolbar extends LitElement {
 
           <div data-fixed class="${blockClass}__title">
             <slot name="title">
-              ${this.titleText || this.nameText
-                ? html`
-                    <cds-aichat-truncated-text
-                      lines="1"
-                      type="tooltip"
-                      align=${this.isRTL ? "bottom-end" : "bottom-start"}
-                      value="${[this.titleText, this.nameText]
-                        .filter(Boolean)
-                        .join(" ")}"
-                    >
-                      ${this.titleText
-                        ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
-                            >${this.titleText}</span
-                          >`
-                        : nothing}
-                      ${this.titleText && this.nameText ? html`` : nothing}
-                      ${this.nameText
-                        ? html`<span
-                            class="${blockClass}__name"
-                            data-testid=${PageObjectId.HEADER_NAME}
-                            >${this.nameText}</span
-                          >`
-                        : nothing}
-                    </cds-aichat-truncated-text>
-                  `
-                : nothing}
+              ${
+                this.titleText || this.nameText
+                  ? html`
+                      <cds-aichat-truncated-text
+                        lines="1"
+                        type="tooltip"
+                        align=${this.isRTL ? "bottom-end" : "bottom-start"}
+                        value="${[this.titleText, this.nameText]
+                          .filter(Boolean)
+                          .join(" ")}"
+                      >
+                        ${
+                          this.titleText
+                            ? html`<span
+                                data-testid=${PageObjectId.HEADER_TITLE}
+                                >${this.titleText}</span
+                              >`
+                            : nothing
+                        }
+                        ${this.titleText && this.nameText ? html`` : nothing}
+                        ${
+                          this.nameText
+                            ? html`<span
+                                class="${blockClass}__name"
+                                data-testid=${PageObjectId.HEADER_NAME}
+                                >${this.nameText}</span
+                              >`
+                            : nothing
+                        }
+                      </cds-aichat-truncated-text>
+                    `
+                  : nothing
+              }
             </slot>
           </div>
         </div>
@@ -318,51 +325,54 @@ class CDSAIChatToolbar extends LitElement {
               (action) => action.text,
               this.renderIconButton,
             )}
-            ${showOverflowMenu
-              ? html`
-                  <cds-overflow-menu
-                    size=${this.getOverflowMenuSize()}
-                    align=${this.isRTL ? "bottom-start" : "bottom-end"}
-                    data-offset
-                    ?data-hidden=${hiddenActions.length === 0}
-                    kind="ghost"
-                    close-on-activation
-                    enter-delay-ms="0"
-                    leave-delay-ms="0"
-                  >
-                    ${iconLoader(OverflowMenuVertical16, {
-                      class: `${blockClass}-overflow-icon`,
-                      slot: "icon",
-                    })}
-                    <span slot="tooltip-content"
-                      >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+            ${
+              showOverflowMenu
+                ? html`
+                    <cds-overflow-menu
+                      size=${this.getOverflowMenuSize()}
+                      align=${this.isRTL ? "bottom-start" : "bottom-end"}
+                      data-offset
+                      ?data-hidden=${hiddenActions.length === 0}
+                      kind="ghost"
+                      close-on-activation
+                      enter-delay-ms="0"
+                      leave-delay-ms="0"
                     >
-                    <cds-overflow-menu-body ?flipped=${!this.isRTL}>
-                      ${repeat(
-                        hiddenActions,
-                        (item) => item.text,
-                        (item) => html`
-                          <cds-overflow-menu-item
-                            @click=${item.onClick}
-                            href=${item.href || nothing}
-                            target=${item.href
-                              ? item.target || "_self"
-                              : nothing}
-                            ?disabled=${item.disabled}
-                            ?danger=${item.danger}
-                            danger-description=${item.dangerDescription ||
-                            nothing}
-                            ?divider=${item.divider}
-                            data-testid=${item.testId || nothing}
-                          >
-                            ${item.text}
-                          </cds-overflow-menu-item>
-                        `,
-                      )}
-                    </cds-overflow-menu-body>
-                  </cds-overflow-menu>
-                `
-              : nothing}
+                      ${iconLoader(OverflowMenuVertical16, {
+                        class: `${blockClass}-overflow-icon`,
+                        slot: "icon",
+                      })}
+                      <span slot="tooltip-content"
+                        >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
+                      >
+                      <cds-overflow-menu-body ?flipped=${!this.isRTL}>
+                        ${repeat(
+                          hiddenActions,
+                          (item) => item.text,
+                          (item) => html`
+                            <cds-overflow-menu-item
+                              @click=${item.onClick}
+                              href=${item.href || nothing}
+                              target=${
+                                item.href ? item.target || "_self" : nothing
+                              }
+                              ?disabled=${item.disabled}
+                              ?danger=${item.danger}
+                              danger-description=${
+                                item.dangerDescription || nothing
+                              }
+                              ?divider=${item.divider}
+                              data-testid=${item.testId || nothing}
+                            >
+                              ${item.text}
+                            </cds-overflow-menu-item>
+                          `,
+                        )}
+                      </cds-overflow-menu-body>
+                    </cds-overflow-menu>
+                  `
+                : nothing
+            }
           </div>
           <div data-fixed class="${blockClass}__fixed-actions">
             <slot name="fixed-actions"></slot>

@@ -466,8 +466,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                     title={
                       (
                         responsePanelState.localMessageItem?.item as
-                          | ButtonItem
-                          | undefined
+                          ButtonItem | undefined
                       )?.panel?.title
                     }
                     labelBackButton={languagePack.general_returnToAssistant}
