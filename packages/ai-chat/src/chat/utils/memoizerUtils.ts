@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -97,7 +97,7 @@ function isUnmappingEqual<V>(
   }
 
   // Check each value one by one.
-  for (let index = 0; index <= keys1.length; index++) {
+  for (let index = 0; index < keys1.length; index++) {
     const key1 = keys1[index];
     const key2 = keys2[index];
 
