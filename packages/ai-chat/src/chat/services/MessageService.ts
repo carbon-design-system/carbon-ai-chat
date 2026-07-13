@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -796,7 +796,7 @@ class MessageService {
           });
         }
       } else if (pendingRequest.isStreaming) {
-        // If we're cancelling during streaming, the ResponseStopped component will handle
+        // If we're cancelling during streaming, SystemMessage (responseStopped) will handle
         // displaying the "Response stopped" message via the stream_stopped metadata flag.
         // We don't need to create a system message here.
         // Mark as processed and advance the queue

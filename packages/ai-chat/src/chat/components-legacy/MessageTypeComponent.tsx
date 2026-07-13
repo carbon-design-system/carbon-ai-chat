@@ -31,8 +31,7 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from "@carbon/ai-chat-components/es/react/feedback.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { ResponseStopped } from "./ResponseStopped";
-import { SystemMessage } from "./SystemMessage";
+import { SystemMessage } from "../components/SystemMessage.js";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "./responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
@@ -218,7 +217,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return (
         <>
           {response}
-          {isResponseStopped && <ResponseStopped />}
+          {isResponseStopped && <SystemMessage responseStopped />}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
           {renderFeedbackAndCustomFooter(localMessageItem, message)}

@@ -8,6 +8,8 @@
  */
 
 import React from "react";
+import { useSelector } from "../hooks/useSelector";
+import { AppState } from "../../types/state/AppState";
 import {
   Message,
   MessageResponseTypes,
@@ -17,11 +19,15 @@ import {
 import { isResponse } from "../utils/messageUtils";
 
 interface SystemMessageProps {
-  message: Message;
+  message?: Message;
   /**
    * If true, renders as standalone (no bubble). If false, renders inline within a message bubble.
    */
   standalone?: boolean;
+  /**
+   * If true, renders the "response stopped" indicator instead of a system message.
+   */
+  responseStopped?: boolean;
 }
 
 /**
@@ -29,8 +35,24 @@ interface SystemMessageProps {
  * outside of message bubble)
  * or inline (within a message bubble).
  */
-function SystemMessage({ message, standalone = true }: SystemMessageProps) {
-  if (!isResponse(message)) {
+function SystemMessage({
+  message,
+  standalone = true,
+  responseStopped = false,
+}: SystemMessageProps) {
+  const messages_responseStopped = useSelector(
+    (state: AppState) => state.languagePack.messages_responseStopped,
+  );
+
+  if (responseStopped) {
+    return (
+      <div className="cds-aichat--response-stopped">
+        {messages_responseStopped}
+      </div>
+    );
+  }
+
+  if (!message || !isResponse(message)) {
     return null;
   }
 
