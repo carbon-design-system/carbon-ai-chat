@@ -289,21 +289,21 @@ class CDSAIChatFeedback extends LitElement {
                       class="${prefix}--tag-list-container"
                       role="group"
                       aria-label="${
-                      this.categoriesLabel || "Feedback categories"
-                    }"
+                        this.categoriesLabel || "Feedback categories"
+                      }"
                     >
                       ${this.categories.map(
-                      (value) =>
-                        html`<cds-selectable-tag
-                          class="${prefix}--tag-list-button"
-                          size="md"
-                          text="${value}"
-                          data-content="${value}"
-                          ?selected=${this._selectedCategories.has(value)}
-                          ?disabled=${this.isReadonly}
-                          @click=${this._handleCategoryClick}
-                        ></cds-selectable-tag>`,
-                    )}
+                        (value) =>
+                          html`<cds-selectable-tag
+                            class="${prefix}--tag-list-button"
+                            size="md"
+                            text="${value}"
+                            data-content="${value}"
+                            ?selected=${this._selectedCategories.has(value)}
+                            ?disabled=${this.isReadonly}
+                            @click=${this._handleCategoryClick}
+                          ></cds-selectable-tag>`,
+                      )}
                     </div>
                   </div>`
                 : ""

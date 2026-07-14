@@ -430,18 +430,18 @@ export class HistoryWriteableElementExample extends LitElement {
                       >
                         ${iconLoader(Search16, { slot: "title-icon" })}
                         ${this.searchResults.map(
-                        (result) => html`
-                          <cds-aichat-history-search-item
-                            id=${result.id}
-                            date=${result.lastUpdated}
-                            @history-search-item-selected=${
+                          (result) => html`
+                            <cds-aichat-history-search-item
+                              id=${result.id}
+                              date=${result.lastUpdated}
+                              @history-search-item-selected=${
                               this._handleSelectChat
                             }
-                          >
-                            ${result.name}
-                          </cds-aichat-history-search-item>
-                        `,
-                      )}
+                            >
+                              ${result.name}
+                            </cds-aichat-history-search-item>
+                          `,
+                        )}
                       </cds-aichat-history-panel-menu>
                     `
                   : ""
@@ -452,32 +452,32 @@ export class HistoryWriteableElementExample extends LitElement {
                       <cds-aichat-history-panel-menu expanded title="Pinned">
                         ${iconLoader(PinFilled16, { slot: "title-icon" })}
                         ${this.pinnedItems.map(
-                        (chat) => html`
-                          <cds-aichat-history-panel-item
-                            id=${chat.id}
-                            name=${chat.name}
-                            ?selected=${chat.selected}
-                            ?rename=${chat.rename}
-                            .actions=${pinnedHistoryItemActions}
-                            @history-item-selected=${this._handleSelectChat}
-                            @history-item-menu-action=${
+                          (chat) => html`
+                            <cds-aichat-history-panel-item
+                              id=${chat.id}
+                              name=${chat.name}
+                              ?selected=${chat.selected}
+                              ?rename=${chat.rename}
+                              .actions=${pinnedHistoryItemActions}
+                              @history-item-selected=${this._handleSelectChat}
+                              @history-item-menu-action=${
                               this._handleHistoryItemAction
                             }
-                            @history-panel-item-input-save=${
+                              @history-panel-item-input-save=${
                               this._handleRenameSave
                             }
-                          ></cds-aichat-history-panel-item>
-                        `,
-                      )}
+                            ></cds-aichat-history-panel-item>
+                          `,
+                        )}
                       </cds-aichat-history-panel-menu>
                       ${this.regularItems.map(
-                      (section) => html`
-                        <cds-aichat-history-panel-menu
-                          expanded
-                          title=${section.section}
-                        >
-                          ${iconLoader(Search16, { slot: "title-icon" })}
-                          ${section.chats.map(
+                        (section) => html`
+                          <cds-aichat-history-panel-menu
+                            expanded
+                            title=${section.section}
+                          >
+                            ${iconLoader(Search16, { slot: "title-icon" })}
+                            ${section.chats.map(
                             (chat) => html`
                               <cds-aichat-history-panel-item
                                 id=${chat.id}
@@ -495,9 +495,9 @@ export class HistoryWriteableElementExample extends LitElement {
                               ></cds-aichat-history-panel-item>
                             `,
                           )}
-                        </cds-aichat-history-panel-menu>
-                      `,
-                    )}
+                          </cds-aichat-history-panel-menu>
+                        `,
+                      )}
                     `
                   : ""
               }

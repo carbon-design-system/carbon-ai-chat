@@ -89,7 +89,7 @@ export const Small = {
                     size="md"
                     .actions=${previewCardFooterPresets[args.footerActions]}
                     @cds-aichat-card-footer-action=${(e) =>
-                    action("action")(e.detail)}
+                      action("action")(e.detail)}
                   ></cds-aichat-card-footer>
                 `
               : ""
@@ -152,7 +152,7 @@ export const Default = {
                     size="md"
                     .actions=${previewCardFooterPresets[args.footerActions]}
                     @cds-aichat-card-footer-action=${(e) =>
-                    action("action")(e.detail)}
+                      action("action")(e.detail)}
                   ></cds-aichat-card-footer>
                 `
               : ""
@@ -240,7 +240,7 @@ export const WithToolbar = {
                     size="md"
                     .actions=${previewCardFooterPresets[args.footerActions]}
                     @cds-aichat-card-footer-action=${(e) =>
-                    action("action")(e.detail)}
+                      action("action")(e.detail)}
                   ></cds-aichat-card-footer>
                 `
               : ""

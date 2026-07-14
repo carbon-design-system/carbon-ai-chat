@@ -770,14 +770,14 @@ export class DemoBody extends LitElement {
                     </div>
                   </cds-accordion-item>
                   ${
-                  this.chatInstance
-                    ? html`<cds-accordion-item title="Chat instance methods">
-                        <demo-chat-instance-switcher
-                          .chatInstance=${this.chatInstance}
-                        ></demo-chat-instance-switcher>
-                      </cds-accordion-item>`
-                    : null
-                }
+                    this.chatInstance
+                      ? html`<cds-accordion-item title="Chat instance methods">
+                          <demo-chat-instance-switcher
+                            .chatInstance=${this.chatInstance}
+                          ></demo-chat-instance-switcher>
+                        </cds-accordion-item>`
+                      : null
+                  }
                 </cds-accordion>
               </aside>`
             : ""
@@ -796,8 +796,8 @@ export class DemoBody extends LitElement {
                 .config=${this.config}
                 .settings=${this.settings}
                 .onChatInstanceReady=${(instance: ChatInstance) => {
-                this._setChatInstance(instance);
-              }}
+                  this._setChatInstance(instance);
+                }}
               />`
             : html``
         }

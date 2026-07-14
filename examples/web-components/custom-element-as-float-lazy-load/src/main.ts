@@ -191,35 +191,35 @@ export class Demo extends LitElement {
         this._phase !== "idle"
           ? html`
               ${
-              this._chatLoaded
-                ? html`
-                    <cds-aichat-custom-element
-                      class=${this._getFloatClass()}
-                      .messaging=${config.messaging}
-                      .launcher=${config.launcher}
-                      .onAfterRender=${this._onAfterRender}
-                      .onViewChange=${this._onViewChange}
-                      @animationend=${this._onAnimationEnd}
-                    ></cds-aichat-custom-element>
-                  `
-                : nothing
-            }
+                this._chatLoaded
+                  ? html`
+                      <cds-aichat-custom-element
+                        class=${this._getFloatClass()}
+                        .messaging=${config.messaging}
+                        .launcher=${config.launcher}
+                        .onAfterRender=${this._onAfterRender}
+                        .onViewChange=${this._onViewChange}
+                        @animationend=${this._onAnimationEnd}
+                      ></cds-aichat-custom-element>
+                    `
+                  : nothing
+              }
 
               <!-- cds-aichat-shell sits at the same fixed position as cds-aichat-custom-element,
                  covering it during both loading phases. Once onAfterRender fires and changeView
                  resolves, _chatReady flips and the shell fades out then unmounts. -->
               ${
-              !this._chatReady
-                ? html`
-                    <cds-aichat-shell
-                      class="cds-aichat-float--open"
-                      show-frame
-                      ai-enabled
-                      corner-all="round"
-                    ></cds-aichat-shell>
-                  `
-                : nothing
-            }
+                !this._chatReady
+                  ? html`
+                      <cds-aichat-shell
+                        class="cds-aichat-float--open"
+                        show-frame
+                        ai-enabled
+                        corner-all="round"
+                      ></cds-aichat-shell>
+                    `
+                  : nothing
+              }
             `
           : nothing
       }

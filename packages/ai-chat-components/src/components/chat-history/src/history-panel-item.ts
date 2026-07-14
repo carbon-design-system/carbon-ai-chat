@@ -436,23 +436,23 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                   @keydown=${handleMenuTriggerKeyDown}
                 >
                   ${iconLoader(OverflowMenuVertical16, {
-                  class: `${prefix}--overflow-menu__icon`,
-                  slot: "icon",
-                })}
+                    class: `${prefix}--overflow-menu__icon`,
+                    slot: "icon",
+                  })}
                   <span slot="tooltip-content">${overflowMenuLabel}</span>
                   <cds-overflow-menu-body flipped>
                     ${repeat(
-                    actions,
-                    (action) => action.text,
-                    (action) =>
-                      html`<cds-overflow-menu-item
-                        ?danger=${action.delete}
-                        ?divider=${action.divider}
-                        @click=${handleMenuItemClick}
-                        @keydown=${handleMenuItemKeyDown}
-                        >${action.text}${action.icon}</cds-overflow-menu-item
-                      >`,
-                  )}
+                      actions,
+                      (action) => action.text,
+                      (action) =>
+                        html`<cds-overflow-menu-item
+                          ?danger=${action.delete}
+                          ?divider=${action.divider}
+                          @click=${handleMenuItemClick}
+                          @keydown=${handleMenuItemKeyDown}
+                          >${action.text}${action.icon}</cds-overflow-menu-item
+                        >`,
+                    )}
                   </cds-overflow-menu-body>
                 </cds-overflow-menu>
               </slot>

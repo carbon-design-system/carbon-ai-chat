@@ -82,8 +82,8 @@ export class Demo extends LitElement {
               payload.citations && payload.citations.length
                 ? html`<ul class="reasoning-summary__citations">
                     ${payload.citations.map(
-                    (citation) => html`<li>${citation}</li>`,
-                  )}
+                      (citation) => html`<li>${citation}</li>`,
+                    )}
                   </ul>`
                 : null
             }

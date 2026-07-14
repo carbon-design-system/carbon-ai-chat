@@ -369,8 +369,8 @@ class ChatHistoryDemo extends LitElement {
                         title="Search results"
                       >
                         ${iconLoader(Search16, {
-                        slot: "title-icon",
-                      })}
+                          slot: "title-icon",
+                        })}
                         <cds-aichat-history-search-item disabled>
                           No available chats
                         </cds-aichat-history-search-item>
@@ -386,17 +386,17 @@ class ChatHistoryDemo extends LitElement {
                         title="Search results"
                       >
                         ${iconLoader(Search16, {
-                        slot: "title-icon",
-                      })}
+                          slot: "title-icon",
+                        })}
                         ${this.searchResults.map(
-                        (result) => html`
-                          <cds-aichat-history-search-item
-                            name="${result.name}"
-                            date="${result.lastUpdated}"
-                          >
-                          </cds-aichat-history-search-item>
-                        `,
-                      )}
+                          (result) => html`
+                            <cds-aichat-history-search-item
+                              name="${result.name}"
+                              date="${result.lastUpdated}"
+                            >
+                            </cds-aichat-history-search-item>
+                          `,
+                        )}
                       </cds-aichat-history-panel-menu>
                     `
                   : ""
@@ -405,43 +405,43 @@ class ChatHistoryDemo extends LitElement {
                 !showSearchResults && !noSearchResults
                   ? html`
                       ${
-                      this.pinnedItems.length > 0
-                        ? html`
-                            <cds-aichat-history-panel-menu
-                              expanded
-                              title="Pinned"
-                            >
-                              ${iconLoader(PinFilled16, {
-                              slot: "title-icon",
-                            })}
-                              ${this.pinnedItems.map(
-                              (item) => html`
-                                <cds-aichat-history-panel-item
-                                  id="${item.id}"
-                                  name="${item.name}"
-                                  ?selected=${item.selected}
-                                  ?rename=${item.rename}
-                                  overflow-menu-label="${
+                        this.pinnedItems.length > 0
+                          ? html`
+                              <cds-aichat-history-panel-menu
+                                expanded
+                                title="Pinned"
+                              >
+                                ${iconLoader(PinFilled16, {
+                                slot: "title-icon",
+                              })}
+                                ${this.pinnedItems.map(
+                                (item) => html`
+                                  <cds-aichat-history-panel-item
+                                    id="${item.id}"
+                                    name="${item.name}"
+                                    ?selected=${item.selected}
+                                    ?rename=${item.rename}
+                                    overflow-menu-label="${
                                     this.overflowMenuLabel
                                   }"
-                                  .actions=${pinnedHistoryItemActions}
-                                ></cds-aichat-history-panel-item>
-                              `,
-                            )}
-                            </cds-aichat-history-panel-menu>
-                          `
-                        : ""
-                    }
+                                    .actions=${pinnedHistoryItemActions}
+                                  ></cds-aichat-history-panel-item>
+                                `,
+                              )}
+                              </cds-aichat-history-panel-menu>
+                            `
+                          : ""
+                      }
                       ${this.regularItems
-                      .filter((item) => item.chats.length > 0)
-                      .map(
-                        (item) => html`
-                          <cds-aichat-history-panel-menu
-                            expanded
-                            title="${item.section}"
-                          >
-                            ${item.icon}
-                            ${item.chats.map(
+                        .filter((item) => item.chats.length > 0)
+                        .map(
+                          (item) => html`
+                            <cds-aichat-history-panel-menu
+                              expanded
+                              title="${item.section}"
+                            >
+                              ${item.icon}
+                              ${item.chats.map(
                               (chat) => html`
                                 <cds-aichat-history-panel-item
                                   id="${chat.id}"
@@ -454,9 +454,9 @@ class ChatHistoryDemo extends LitElement {
                                 ></cds-aichat-history-panel-item>
                               `,
                             )}
-                          </cds-aichat-history-panel-menu>
-                        `,
-                      )}
+                            </cds-aichat-history-panel-menu>
+                          `,
+                        )}
                     `
                   : ""
               }

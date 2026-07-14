@@ -191,7 +191,7 @@ export const Default = {
         html`
           <cds-aichat-workspace-shell-footer
             @cds-aichat-workspace-shell-footer-clicked=${(e) =>
-            action("action")(e.detail)}
+              action("action")(e.detail)}
             .actions=${FooterActionList[args.footerAction]}
           >
           </cds-aichat-workspace-shell-footer>

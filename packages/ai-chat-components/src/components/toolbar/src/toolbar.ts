@@ -286,26 +286,27 @@ class CDSAIChatToolbar extends LitElement {
                         type="tooltip"
                         align=${this.isRTL ? "bottom-end" : "bottom-start"}
                         value="${[this.titleText, this.nameText]
-                        .filter(Boolean)
-                        .join(" ")}"
+                          .filter(Boolean)
+                          .join(" ")}"
                       >
                         ${
-                        this.titleText
-                          ? html`<span data-testid=${PageObjectId.HEADER_TITLE}
-                              >${this.titleText}</span
-                            >`
-                          : nothing
-                      }
+                          this.titleText
+                            ? html`<span
+                                data-testid=${PageObjectId.HEADER_TITLE}
+                                >${this.titleText}</span
+                              >`
+                            : nothing
+                        }
                         ${this.titleText && this.nameText ? html`` : nothing}
                         ${
-                        this.nameText
-                          ? html`<span
-                              class="${blockClass}__name"
-                              data-testid=${PageObjectId.HEADER_NAME}
-                              >${this.nameText}</span
-                            >`
-                          : nothing
-                      }
+                          this.nameText
+                            ? html`<span
+                                class="${blockClass}__name"
+                                data-testid=${PageObjectId.HEADER_NAME}
+                                >${this.nameText}</span
+                              >`
+                            : nothing
+                        }
                       </cds-aichat-truncated-text>
                     `
                   : nothing
@@ -338,35 +339,35 @@ class CDSAIChatToolbar extends LitElement {
                       leave-delay-ms="0"
                     >
                       ${iconLoader(OverflowMenuVertical16, {
-                      class: `${blockClass}-overflow-icon`,
-                      slot: "icon",
-                    })}
+                        class: `${blockClass}-overflow-icon`,
+                        slot: "icon",
+                      })}
                       <span slot="tooltip-content"
                         >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
                       >
                       <cds-overflow-menu-body ?flipped=${!this.isRTL}>
                         ${repeat(
-                        hiddenActions,
-                        (item) => item.text,
-                        (item) => html`
-                          <cds-overflow-menu-item
-                            @click=${item.onClick}
-                            href=${item.href || nothing}
-                            target=${
+                          hiddenActions,
+                          (item) => item.text,
+                          (item) => html`
+                            <cds-overflow-menu-item
+                              @click=${item.onClick}
+                              href=${item.href || nothing}
+                              target=${
                               item.href ? item.target || "_self" : nothing
                             }
-                            ?disabled=${item.disabled}
-                            ?danger=${item.danger}
-                            danger-description=${
+                              ?disabled=${item.disabled}
+                              ?danger=${item.danger}
+                              danger-description=${
                               item.dangerDescription || nothing
                             }
-                            ?divider=${item.divider}
-                            data-testid=${item.testId || nothing}
-                          >
-                            ${item.text}
-                          </cds-overflow-menu-item>
-                        `,
-                      )}
+                              ?divider=${item.divider}
+                              data-testid=${item.testId || nothing}
+                            >
+                              ${item.text}
+                            </cds-overflow-menu-item>
+                          `,
+                        )}
                       </cds-overflow-menu-body>
                     </cds-overflow-menu>
                   `
