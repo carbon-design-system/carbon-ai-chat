@@ -174,25 +174,29 @@ export const Default = {
         subtitle-text="${args.headerSubTitle}"
       >
         ${getHeaderDescription(args.headerDescription)}
-        ${args.showHeaderAction &&
-        html`
-          <cds-button kind="tertiary" slot="header-action">
-            Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-          </cds-button>
-        `}
+        ${
+          args.showHeaderAction &&
+          html`
+            <cds-button kind="tertiary" slot="header-action">
+              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+            </cds-button>
+          `
+        }
       </cds-aichat-workspace-shell-header>
       <cds-aichat-workspace-shell-body>
         ${getBodyContent(args.bodyContent)}
       </cds-aichat-workspace-shell-body>
-      ${args.footerAction !== "None" &&
-      html`
-        <cds-aichat-workspace-shell-footer
-          @cds-aichat-workspace-shell-footer-clicked=${(e) =>
-            action("action")(e.detail)}
-          .actions=${FooterActionList[args.footerAction]}
-        >
-        </cds-aichat-workspace-shell-footer>
-      `}
+      ${
+        args.footerAction !== "None" &&
+        html`
+          <cds-aichat-workspace-shell-footer
+            @cds-aichat-workspace-shell-footer-clicked=${(e) =>
+              action("action")(e.detail)}
+            .actions=${FooterActionList[args.footerAction]}
+          >
+          </cds-aichat-workspace-shell-footer>
+        `
+      }
     </cds-aichat-workspace-shell>`;
   },
 };

@@ -173,19 +173,21 @@ export class Demo extends LitElement {
     return html`
       <header class="app-header">
         <h1 class="app-header__title">Custom Element Sidebar Example</h1>
-        ${this.instance
-          ? html`
-              <button
-                type="button"
-                class="app-header__button"
-                @click=${this.handleHeaderButtonClick}
-                ?disabled=${this.clickInProgress}
-                aria-label="Toggle AI Chat"
-              >
-                ${iconLoader(AiLaunch20)}
-              </button>
-            `
-          : ""}
+        ${
+          this.instance
+            ? html`
+                <button
+                  type="button"
+                  class="app-header__button"
+                  @click=${this.handleHeaderButtonClick}
+                  ?disabled=${this.clickInProgress}
+                  aria-label="Toggle AI Chat"
+                >
+                  ${iconLoader(AiLaunch20)}
+                </button>
+              `
+            : ""
+        }
       </header>
       <div class=${this.getSidebarClassName()}>
         <cds-aichat-custom-element

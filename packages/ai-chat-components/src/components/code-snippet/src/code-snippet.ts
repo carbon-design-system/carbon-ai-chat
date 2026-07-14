@@ -929,21 +929,27 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       (this.detectLanguage || !!this.language);
     return html`
       <div slot="title" data-rounded="top" class="${prefix}--snippet__meta">
-        ${showLanguageLabel
-          ? html`<div class="${prefix}--snippet__language">
-              ${this._detectedLanguage}
-            </div>`
-          : ""}
-        ${showLanguageLabel && this._lineCount
-          ? html`<div class="${prefix}--snippet__header-separator">
-              &mdash;
-            </div>`
-          : ""}
-        ${this._lineCount
-          ? html`<div class="${prefix}--snippet__linecount">
-              ${this.getLineCountText({ count: this._lineCount })}
-            </div>`
-          : ""}
+        ${
+          showLanguageLabel
+            ? html`<div class="${prefix}--snippet__language">
+                ${this._detectedLanguage}
+              </div>`
+            : ""
+        }
+        ${
+          showLanguageLabel && this._lineCount
+            ? html`<div class="${prefix}--snippet__header-separator">
+                &mdash;
+              </div>`
+            : ""
+        }
+        ${
+          this._lineCount
+            ? html`<div class="${prefix}--snippet__linecount">
+                ${this.getLineCountText({ count: this._lineCount })}
+              </div>`
+            : ""
+        }
       </div>
     `;
   }
@@ -975,54 +981,63 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     };
 
     return html`<div class="${prefix}--snippet">
-      ${!this.hideHeader
-        ? html`
-            <cds-aichat-toolbar
-              class="${prefix}--snippet__header"
-              .actions=${this._getToolbarActions()}
-              ?overflow=${this.overflow}
-            >
-              ${this.renderTitle()}
-              <slot name="fixed-actions" slot="fixed-actions"></slot>
-              <slot name="decorator" slot="decorator"></slot>
-            </cds-aichat-toolbar>
-          `
-        : nothing}
+      ${
+        !this.hideHeader
+          ? html`
+              <cds-aichat-toolbar
+                class="${prefix}--snippet__header"
+                .actions=${this._getToolbarActions()}
+                ?overflow=${this.overflow}
+              >
+                ${this.renderTitle()}
+                <slot name="fixed-actions" slot="fixed-actions"></slot>
+                <slot name="decorator" slot="decorator"></slot>
+              </cds-aichat-toolbar>
+            `
+          : nothing
+      }
 
       <div
         class="${classMap(containerClasses)}"
         data-rounded="bottom"
-        ${this.editable
-          ? `aria-label="${this.ariaLabelEditable}" aria-readonly="false" aria-multiline="true"`
-          : `aria-label="${this._slottedContent || "code-snippet"}"`}
+        ${
+          this.editable
+            ? `aria-label="${this.ariaLabelEditable}" aria-readonly="false" aria-multiline="true"`
+            : `aria-label="${this._slottedContent || "code-snippet"}"`
+        }
         ${ref(this.snippetContainer)}
       >
         <div class="${prefix}--code-editor" ${ref(this.editorContainer)}></div>
         ${this.renderEditorFallback()}
       </div>
 
-      ${shouldShowMoreLessBtn
-        ? html`
-            <div class="${prefix}--snippet__footer" data-rounded="bottom-right">
-              <cds-button
-                kind="ghost"
-                size="sm"
-                button-class-name="${prefix}--snippet-btn--expand"
-                ?disabled=${disabled}
-                @click=${() => this._handleClickExpanded()}
+      ${
+        shouldShowMoreLessBtn
+          ? html`
+              <div
+                class="${prefix}--snippet__footer"
+                data-rounded="bottom-right"
               >
-                <span class="${prefix}--snippet-btn--text">
-                  ${expandCodeBtnText}
-                </span>
-                ${iconLoader(ChevronDown16, {
+                <cds-button
+                  kind="ghost"
+                  size="sm"
+                  button-class-name="${prefix}--snippet-btn--expand"
+                  ?disabled=${disabled}
+                  @click=${() => this._handleClickExpanded()}
+                >
+                  <span class="${prefix}--snippet-btn--text">
+                    ${expandCodeBtnText}
+                  </span>
+                  ${iconLoader(ChevronDown16, {
                   class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
                   role: "img",
                   slot: "icon",
                 })}
-              </cds-button>
-            </div>
-          `
-        : nothing}
+                </cds-button>
+              </div>
+            `
+          : nothing
+      }
       <div class="${prefix}--visually-hidden">
         <slot
           ${ref(this.contentSlot)}

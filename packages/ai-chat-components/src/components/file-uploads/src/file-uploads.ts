@@ -210,10 +210,11 @@ class FileUploadsElement extends LitElement {
     return html`
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
-      ${this.uploads && this.uploads.length > 0
-        ? html`
-            <div class="${prefix}--file-uploads-container">
-              ${this.uploads.map(
+      ${
+        this.uploads && this.uploads.length > 0
+          ? html`
+              <div class="${prefix}--file-uploads-container">
+                ${this.uploads.map(
                 (upload) => html`
                   <cds-aichat-file-upload-item
                     .upload="${upload}"
@@ -223,9 +224,10 @@ class FileUploadsElement extends LitElement {
                   ></cds-aichat-file-upload-item>
                 `,
               )}
-            </div>
-          `
-        : nothing}
+              </div>
+            `
+          : nothing
+      }
     `;
   }
 }

@@ -131,23 +131,25 @@ export const Default = {
           .actions=${actions}
         >
           ${args.fixedActions}
-          ${args.aiLabel
-            ? html` <cds-ai-label
-                size="2xs"
-                autoalign
-                alignment="bottom"
-                slot="decorator"
-              >
-                <div slot="body-text">
-                  <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
-                  <div>
-                    IBM watsonx is powered by the latest AI models to
-                    intelligently process conversations and provide help
-                    whenever and wherever you may need it.
+          ${
+            args.aiLabel
+              ? html` <cds-ai-label
+                  size="2xs"
+                  autoalign
+                  alignment="bottom"
+                  slot="decorator"
+                >
+                  <div slot="body-text">
+                    <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+                    <div>
+                      IBM watsonx is powered by the latest AI models to
+                      intelligently process conversations and provide help
+                      whenever and wherever you may need it.
+                    </div>
                   </div>
-                </div>
-              </cds-ai-label>`
-            : ""}
+                </cds-ai-label>`
+              : ""
+          }
         </cds-aichat-chat-header>
         <div slot="messages" class="messages slot-sample">Messages</div>
         <div slot="input" class="input slot-sample">Input</div>
@@ -197,23 +199,25 @@ export const WithOverflowNavigation = {
           .navigationOverflowItems=${sampleOverflowItems}
         >
           ${args.fixedActions}
-          ${args.aiLabel
-            ? html` <cds-ai-label
-                size="2xs"
-                autoalign
-                alignment="bottom"
-                slot="decorator"
-              >
-                <div slot="body-text">
-                  <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
-                  <div>
-                    IBM watsonx is powered by the latest AI models to
-                    intelligently process conversations and provide help
-                    whenever and wherever you may need it.
+          ${
+            args.aiLabel
+              ? html` <cds-ai-label
+                  size="2xs"
+                  autoalign
+                  alignment="bottom"
+                  slot="decorator"
+                >
+                  <div slot="body-text">
+                    <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+                    <div>
+                      IBM watsonx is powered by the latest AI models to
+                      intelligently process conversations and provide help
+                      whenever and wherever you may need it.
+                    </div>
                   </div>
-                </div>
-              </cds-ai-label>`
-            : ""}
+                </cds-ai-label>`
+              : ""
+          }
         </cds-aichat-chat-header>
         <div slot="messages" class="messages slot-sample">Messages</div>
         <div slot="input" class="input slot-sample">Input</div>
@@ -267,23 +271,25 @@ export const WithFocusManagement = {
               console.log("Back clicked")}
           >
             ${args.fixedActions}
-            ${args.aiLabel
-              ? html` <cds-ai-label
-                  size="2xs"
-                  autoalign
-                  alignment="bottom"
-                  slot="decorator"
-                >
-                  <div slot="body-text">
-                    <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
-                    <div>
-                      IBM watsonx is powered by the latest AI models to
-                      intelligently process conversations and provide help
-                      whenever and wherever you may need it.
+            ${
+              args.aiLabel
+                ? html` <cds-ai-label
+                    size="2xs"
+                    autoalign
+                    alignment="bottom"
+                    slot="decorator"
+                  >
+                    <div slot="body-text">
+                      <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
+                      <div>
+                        IBM watsonx is powered by the latest AI models to
+                        intelligently process conversations and provide help
+                        whenever and wherever you may need it.
+                      </div>
                     </div>
-                  </div>
-                </cds-ai-label>`
-              : ""}
+                  </cds-ai-label>`
+                : ""
+            }
           </cds-aichat-chat-header>
           <div slot="messages" class="messages slot-sample">Messages</div>
           <div slot="input" class="input slot-sample">Input</div>

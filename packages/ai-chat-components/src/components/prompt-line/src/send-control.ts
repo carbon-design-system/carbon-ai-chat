@@ -126,17 +126,19 @@ class InputSendControlElement extends LitElement {
         type="${BUTTON_TYPE.BUTTON}"
         ?disabled="${showDisabledSend}"
         tooltip-text="${this.buttonLabel}"
-        tooltip-alignment="${isRTL
-          ? BUTTON_TOOLTIP_ALIGNMENT.START
-          : BUTTON_TOOLTIP_ALIGNMENT.END}"
+        tooltip-alignment="${
+          isRTL ? BUTTON_TOOLTIP_ALIGNMENT.START : BUTTON_TOOLTIP_ALIGNMENT.END
+        }"
         tooltip-position="${BUTTON_TOOLTIP_POSITION.TOP}"
         @click="${this._handleSendClick}"
         aria-label="${this.buttonLabel}"
         data-testid="${ifDefined(this.testId)}"
       >
-        ${this.hasValidInput
-          ? iconLoader(SendFilled16, { slot: "icon" })
-          : iconLoader(Send16, { slot: "icon" })}
+        ${
+          this.hasValidInput
+            ? iconLoader(SendFilled16, { slot: "icon" })
+            : iconLoader(Send16, { slot: "icon" })
+        }
       </cds-button>
     `;
   }

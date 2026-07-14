@@ -797,8 +797,8 @@ class MessageService {
           });
         }
       } else if (pendingRequest.isStreaming) {
-        // If we're cancelling during streaming, MessageTypeComponent renders the
-        // "Response stopped" message via the stream_stopped metadata flag.
+        // If we're cancelling during streaming, SystemMessage (responseStopped) will handle
+        // displaying the "Response stopped" message via the stream_stopped metadata flag.
         // We don't need to create a system message here.
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();

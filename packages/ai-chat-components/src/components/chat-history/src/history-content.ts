@@ -53,11 +53,13 @@ class CDSAIChatHistoryContent extends LitElement {
 
     return html`
       <div class="${prefix}--history-content__container" aria-live="polite">
-        ${shouldDisplay
-          ? html`<span class="${prefix}--history-content__results-count">
-              ${displayText}
-            </span>`
-          : ""}
+        ${
+          shouldDisplay
+            ? html`<span class="${prefix}--history-content__results-count">
+                ${displayText}
+              </span>`
+            : ""
+        }
       </div>
       <slot></slot>
     `;

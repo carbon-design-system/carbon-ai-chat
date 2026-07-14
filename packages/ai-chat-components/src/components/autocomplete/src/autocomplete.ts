@@ -335,15 +335,17 @@ class AutocompleteElement extends LitElement {
         role="listbox"
         aria-label="Autocomplete options"
       >
-        ${this.headerConfig?.showHeader
-          ? html`
-              <div class="${blockClass}__header">
-                <span class="${blockClass}__title">
-                  ${this.headerConfig.title}
-                </span>
-              </div>
-            `
-          : ""}
+        ${
+          this.headerConfig?.showHeader
+            ? html`
+                <div class="${blockClass}__header">
+                  <span class="${blockClass}__title">
+                    ${this.headerConfig.title}
+                  </span>
+                </div>
+              `
+            : ""
+        }
 
         <div class="${blockClass}__items">
           <!-- Render flat items first -->
@@ -381,8 +383,9 @@ class AutocompleteElement extends LitElement {
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
                 ?last-group="${isLastGroup}"
-                @cds-aichat-autocomplete-item-click="${this
-                  ._handleGroupItemClick}"
+                @cds-aichat-autocomplete-item-click="${
+                  this._handleGroupItemClick
+                }"
                 @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item-group>
             `;

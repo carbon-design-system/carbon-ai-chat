@@ -1,0 +1,107 @@
+/* 
+ *  Copyright IBM Corp. 2026
+ *  
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+// Base container
+.cds-aichat--text-block {
+  display: flex;
+  color: theme.$text-primary;
+  min-block-size: initial;
+
+  &--tile {
+    padding: layout.$spacing-05;
+  }
+}
+
+// Wrapper for text content
+.cds-aichat--text-block__wrapper {
+  flex: 1 1;
+  align-self: center;
+}
+
+// Title styling
+.cds-aichat--text-block__title {
+  @include type.type-style("body-02");
+
+  font-weight: 400;
+  min-block-size: unset;
+}
+
+// Description styling
+.cds-aichat--text-block__description {
+  @include type.type-style("caption-01");
+
+  color: theme.$text-secondary;
+  min-block-size: unset;
+
+  &-margin {
+    margin-block-start: layout.$spacing-02;
+  }
+}
+
+// URL styling
+.cds-aichat--text-block__url {
+  @include type.type-style("caption-01");
+
+  color: theme.$link-primary;
+  min-block-size: unset;
+
+  &-margin {
+    margin-block-start: layout.$spacing-05;
+  }
+}
+
+// Spacing utilities
+.cds-aichat--text-block__description--with-title {
+  margin-block-start: layout.$spacing-01;
+}
+
+.cds-aichat--text-block__url--with-content {
+  margin-block-start: layout.$spacing-05;
+}
+
+// Markdown mode uses body-01 for both title and description
+.cds-aichat--text-block--markdown .cds-aichat--text-block__title,
+.cds-aichat--text-block--markdown .cds-aichat--text-block__description {
+  @include type.type-style("body-01");
+}
+
+// Spacing for markdown mode (from Metablock)
+.cds-aichat--text-block--markdown .cds-aichat--text-block__description {
+  margin-block-start: layout.$spacing-03;
+}
+
+// Line clamping for title (2 lines)
+@supports (-webkit-line-clamp: 2) {
+  .cds-aichat--text-block__title {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+  }
+}
+
+// Line clamping for description (3 lines)
+@supports (-webkit-line-clamp: 3) {
+  .cds-aichat--text-block__description {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    white-space: normal;
+  }
+}
+
+// RTL support
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--text-block__title,
+.cds-aichat--container--render[dir="rtl"] .cds-aichat--text-block__description {
+  text-align: end;
+}

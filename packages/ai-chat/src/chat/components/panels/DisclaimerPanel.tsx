@@ -11,7 +11,7 @@ import React, { useEffect, useMemo } from "react";
 import type CDSButton from "@carbon/web-components/es/components/button/button.js";
 
 import Button from "../carbon/Button";
-import { ChatBubble } from "../../components-legacy/ChatBubble";
+import { ChatBubble } from "./ChatBubble";
 import { useSelector } from "../../hooks/useSelector";
 import { shallowEqual } from "../../store/appStore";
 import { PageObjectId } from "../../../testing/PageObjectId";

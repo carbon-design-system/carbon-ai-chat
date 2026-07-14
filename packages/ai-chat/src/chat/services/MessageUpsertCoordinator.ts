@@ -292,7 +292,7 @@ class MessageUpsertCoordinator {
       stateAfter.assistantMessageState.localMessageIDs
         .map((id) => stateAfter.allMessageItemsByID[id])
         .filter((item) => item && item.fullMessageID === messageID)
-        .map((item) => item!.ui_state.id);
+        .map((item) => item.ui_state.id);
 
     for (const localID of topLevelLocalItemIDs) {
       const localItem = stateAfter.allMessageItemsByID[localID];

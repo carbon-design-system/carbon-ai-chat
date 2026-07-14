@@ -1249,8 +1249,7 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      | MessageResponse
-      | undefined;
+      MessageResponse | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile
@@ -1296,8 +1295,7 @@ class ChatActionsImpl {
 
     // If not in chunk, try to get from stored message (fallback)
     const message = store.getState().allMessagesByID[messageID] as
-      | MessageResponse
-      | undefined;
+      MessageResponse | undefined;
 
     // Create a temporary message object with the profile from chunk if available
     const messageWithProfile: MessageResponse | undefined = chunkProfile
@@ -2007,14 +2005,26 @@ class ChatActionsImpl {
     let newViewState = constructViewState(newView, store.getState());
 
     if (!isEqual(newViewState, viewState) || forceViewChange) {
+      // Snapshot what was actually requested before any view:pre:change/view:change listener gets a
+      // chance to mutate newViewState (in place or by replacement) via the event payload.
+      const requestedMainWindow = newViewState.mainWindow;
+
       // If the newViewState is different from the current viewState, or the viewChange is being forced to happen, fire
       // the view:change events and change which views are visible.
       await this.fireViewChangeEventsAndChangeView(newViewState, reason);
 
       // Check and see if the chat should be hydrated.
       newViewState = store.getState().persistedToBrowserStorage.viewState;
+
+      // A host's view:pre:change/view:change handler may force the main window open (for example by
+      // mutating event.newViewState.mainWindow) even when the caller didn't request it and passed
+      // tryHydrating false (the deferred-hydration cold-boot path). Hydrate anyway in that case, or
+      // customSendMessage/customLoadHistory would never run for the newly-visible window.
+      const hostForcedMainWindowOpen =
+        newViewState.mainWindow && !requestedMainWindow;
+
       if (
-        tryHydrating &&
+        (tryHydrating || hostForcedMainWindowOpen) &&
         newViewState.mainWindow &&
         !store.getState().isHydrated
       ) {
@@ -2276,7 +2286,12 @@ class ChatActionsImpl {
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
 
-    this.serviceManager.userSessionStorageService.clearSession();
+    // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
+    // below flows to its onStateChange callback like any other change.
+    const { persistedState } = store.getState().config.public;
+    if (!persistedState?.initialState && !persistedState?.onStateChange) {
+      this.serviceManager.userSessionStorageService.clearSession();
+    }
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(

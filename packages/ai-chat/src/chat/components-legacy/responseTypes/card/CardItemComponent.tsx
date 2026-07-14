@@ -17,8 +17,8 @@ import { selectInputState } from "../../../store/selectors";
 import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { THROW_ERROR } from "../../../utils/constants";
-import { BodyMessageComponents } from "../util/BodyMessageComponents";
-import { FooterButtonComponents } from "../util/FooterButtonComponents";
+import { BodyMessageComponents } from "../../../components/BodyMessageComponents";
+import { FooterButtonComponents } from "../../../components/FooterButtonComponents";
 import {
   CardItem,
   MessageResponse,

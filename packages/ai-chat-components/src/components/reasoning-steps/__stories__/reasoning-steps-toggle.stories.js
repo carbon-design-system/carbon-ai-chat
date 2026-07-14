@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -75,22 +75,27 @@ class ReasoningStepsToggleDemo extends LitElement {
           .closedLabelText=${this.closedLabelText}
           @reasoning-steps-toggle=${this._handleToggle}
         ></cds-aichat-reasoning-steps-toggle>
-        ${this.open
-          ? html`
-              <cds-aichat-reasoning-steps id=${this.panelId} .open=${this.open}>
-                ${this.steps?.map(
-                  (step) => html`
-                    <cds-aichat-reasoning-step
-                      title=${step.title}
-                      ?open=${step.open}
-                    >
-                      ${step.body ?? nothing}
-                    </cds-aichat-reasoning-step>
-                  `,
-                )}
-              </cds-aichat-reasoning-steps>
-            `
-          : nothing}
+        ${
+          this.open
+            ? html`
+                <cds-aichat-reasoning-steps
+                  id=${this.panelId}
+                  .open=${this.open}
+                >
+                  ${this.steps?.map(
+                    (step) => html`
+                      <cds-aichat-reasoning-step
+                        title=${step.title}
+                        ?open=${step.open}
+                      >
+                        ${step.body ?? nothing}
+                      </cds-aichat-reasoning-step>
+                    `,
+                  )}
+                </cds-aichat-reasoning-steps>
+              `
+            : nothing
+        }
       </div>
     `;
   }
