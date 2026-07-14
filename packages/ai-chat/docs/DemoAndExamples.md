@@ -1,5 +1,5 @@
 ---
-title: Demo and Examples
+title: Demo and examples
 ---
 
 ## Overview
