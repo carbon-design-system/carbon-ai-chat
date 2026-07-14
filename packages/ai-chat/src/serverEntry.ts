@@ -110,6 +110,11 @@ export {
 export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
 
 export {
+  PersistableState,
+  PersistedStateConfig,
+} from "./types/config/PersistedStateConfig";
+
+export {
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,

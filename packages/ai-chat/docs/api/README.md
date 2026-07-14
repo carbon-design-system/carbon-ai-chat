@@ -21,12 +21,8 @@ Both come from one extraction pass, so they never disagree.
   "baseUrl": "https://chat.carbondesignsystem.com/version/v1.15.0/docs/", // pinned to that tag
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
-    "HistoryItem": {
-      /* record */
-    },
-    "HistoryItem.time": {
-      /* record */
-    },
+    "HistoryItem": {/* record */},
+    "HistoryItem.time": {/* record */},
   },
 }
 ```

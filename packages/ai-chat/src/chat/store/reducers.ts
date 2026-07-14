@@ -1268,8 +1268,7 @@ const reducers: { [key: string]: ReducerType } = {
       isInputToHumanAgent,
     }: {
       structuredData:
-        | import("../../types/messaging/Messages").StructuredData
-        | undefined;
+        import("../../types/messaging/Messages").StructuredData | undefined;
       isInputToHumanAgent: boolean;
     },
   ) => {

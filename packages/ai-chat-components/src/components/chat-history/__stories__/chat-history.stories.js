@@ -352,114 +352,126 @@ class ChatHistoryDemo extends LitElement {
         </cds-aichat-history-toolbar>
         <cds-aichat-history-content
           results-label="Results"
-          results-count="${showSearchResults || noSearchResults
-            ? this.searchTotalCount
-            : ""}"
+          results-count="${
+            showSearchResults || noSearchResults ? this.searchTotalCount : ""
+          }"
         >
           <cds-aichat-history-panel
             ?show-actions=${this.showActions}
             aria-label="Chat history"
           >
             <cds-aichat-history-panel-items>
-              ${noSearchResults
-                ? html`
-                    <cds-aichat-history-panel-menu
-                      expanded
-                      title="Search results"
-                    >
-                      ${iconLoader(Search16, {
-                        slot: "title-icon",
-                      })}
-                      <cds-aichat-history-search-item disabled>
-                        No available chats
-                      </cds-aichat-history-search-item>
-                    </cds-aichat-history-panel-menu>
-                  `
-                : ""}
-              ${showSearchResults
-                ? html`
-                    <cds-aichat-history-panel-menu
-                      expanded
-                      title="Search results"
-                    >
-                      ${iconLoader(Search16, {
-                        slot: "title-icon",
-                      })}
-                      ${this.searchResults.map(
-                        (result) => html`
-                          <cds-aichat-history-search-item
-                            name="${result.name}"
-                            date="${result.lastUpdated}"
-                          >
-                          </cds-aichat-history-search-item>
-                        `,
-                      )}
-                    </cds-aichat-history-panel-menu>
-                  `
-                : ""}
-              ${!showSearchResults && !noSearchResults
-                ? html`
-                    ${this.pinnedItems.length > 0
-                      ? html`
-                          <cds-aichat-history-panel-menu
-                            expanded
-                            title="Pinned"
-                          >
-                            ${iconLoader(PinFilled16, {
-                              slot: "title-icon",
-                            })}
-                            ${this.pinnedItems.map(
-                              (item) => html`
-                                <cds-aichat-history-panel-item
-                                  id="${item.id}"
-                                  name="${item.name}"
-                                  ?selected=${item.selected}
-                                  ?rename=${item.rename}
-                                  overflow-menu-label="${this
-                                    .overflowMenuLabel}"
-                                  .actions=${pinnedHistoryItemActions}
-                                ></cds-aichat-history-panel-item>
-                              `,
-                            )}
-                          </cds-aichat-history-panel-menu>
-                        `
-                      : ""}
-                    ${this.regularItems
-                      .filter((item) => item.chats.length > 0)
-                      .map(
-                        (item) => html`
-                          <cds-aichat-history-panel-menu
-                            expanded
-                            title="${item.section}"
-                          >
-                            ${item.icon}
-                            ${item.chats.map(
-                              (chat) => html`
-                                <cds-aichat-history-panel-item
-                                  id="${chat.id}"
-                                  name="${chat.name}"
-                                  ?selected=${chat.selected}
-                                  overflow-menu-label="${this
-                                    .overflowMenuLabel}"
-                                  .actions=${historyItemActions}
-                                ></cds-aichat-history-panel-item>
-                              `,
-                            )}
-                          </cds-aichat-history-panel-menu>
-                        `,
-                      )}
-                  `
-                : ""}
+              ${
+                noSearchResults
+                  ? html`
+                      <cds-aichat-history-panel-menu
+                        expanded
+                        title="Search results"
+                      >
+                        ${iconLoader(Search16, {
+                          slot: "title-icon",
+                        })}
+                        <cds-aichat-history-search-item disabled>
+                          No available chats
+                        </cds-aichat-history-search-item>
+                      </cds-aichat-history-panel-menu>
+                    `
+                  : ""
+              }
+              ${
+                showSearchResults
+                  ? html`
+                      <cds-aichat-history-panel-menu
+                        expanded
+                        title="Search results"
+                      >
+                        ${iconLoader(Search16, {
+                          slot: "title-icon",
+                        })}
+                        ${this.searchResults.map(
+                          (result) => html`
+                            <cds-aichat-history-search-item
+                              name="${result.name}"
+                              date="${result.lastUpdated}"
+                            >
+                            </cds-aichat-history-search-item>
+                          `,
+                        )}
+                      </cds-aichat-history-panel-menu>
+                    `
+                  : ""
+              }
+              ${
+                !showSearchResults && !noSearchResults
+                  ? html`
+                      ${
+                        this.pinnedItems.length > 0
+                          ? html`
+                              <cds-aichat-history-panel-menu
+                                expanded
+                                title="Pinned"
+                              >
+                                ${iconLoader(PinFilled16, {
+                                  slot: "title-icon",
+                                })}
+                                ${this.pinnedItems.map(
+                                  (item) => html`
+                                    <cds-aichat-history-panel-item
+                                      id="${item.id}"
+                                      name="${item.name}"
+                                      ?selected=${item.selected}
+                                      ?rename=${item.rename}
+                                      overflow-menu-label="${
+                                        this.overflowMenuLabel
+                                      }"
+                                      .actions=${pinnedHistoryItemActions}
+                                    ></cds-aichat-history-panel-item>
+                                  `,
+                                )}
+                              </cds-aichat-history-panel-menu>
+                            `
+                          : ""
+                      }
+                      ${this.regularItems
+                        .filter((item) => item.chats.length > 0)
+                        .map(
+                          (item) => html`
+                            <cds-aichat-history-panel-menu
+                              expanded
+                              title="${item.section}"
+                            >
+                              ${item.icon}
+                              ${item.chats.map(
+                                (chat) => html`
+                                  <cds-aichat-history-panel-item
+                                    id="${chat.id}"
+                                    name="${chat.name}"
+                                    ?selected=${chat.selected}
+                                    overflow-menu-label="${
+                                      this.overflowMenuLabel
+                                    }"
+                                    .actions=${historyItemActions}
+                                  ></cds-aichat-history-panel-item>
+                                `,
+                              )}
+                            </cds-aichat-history-panel-menu>
+                          `,
+                        )}
+                    `
+                  : ""
+              }
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
         </cds-aichat-history-content>
-        ${this.showDeletePanel
-          ? html`
-              <cds-aichat-history-delete-panel
-                item-id=${this.itemToDelete ?? ""}
-              ></cds-aichat-history-delete-panel>
-            `
-          : ""}
+        ${
+          this.showDeletePanel
+            ? html`
+                <cds-aichat-history-delete-panel
+                  item-id=${this.itemToDelete ?? ""}
+                ></cds-aichat-history-delete-panel>
+              `
+            : ""
+        }
       </cds-aichat-history-shell>
     `;
   }
