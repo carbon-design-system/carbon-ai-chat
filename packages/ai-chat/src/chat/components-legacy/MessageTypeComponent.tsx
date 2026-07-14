@@ -39,7 +39,7 @@ import { CardItemComponent } from "./responseTypes/card/CardItemComponent";
 import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
+import UserDefinedResponse from "../components/UserDefinedResponse";
 import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
 import InlineError from "../components/util/InlineError";
@@ -47,7 +47,7 @@ import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
 import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
 import { Image } from "./responseTypes/image/Image";
 import { OptionComponent } from "./responseTypes/options/OptionComponent";
-import { StreamingRichText } from "./responseTypes/util/StreamingRichText";
+import { MarkdownWithErrorHandling } from "../components/util/MarkdownWithErrorHandling";
 import { VideoComponent } from "./responseTypes/video/VideoComponent";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
@@ -402,7 +402,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     originalMessage?: MessageResponse,
   ) {
     return (
-      <StreamingRichText
+      <MarkdownWithErrorHandling
         text={localMessageItem.item.text}
         streamingState={localMessageItem.ui_state.streamingState}
         isStreamingError={

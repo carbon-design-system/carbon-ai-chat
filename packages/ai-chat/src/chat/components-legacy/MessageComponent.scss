@@ -601,17 +601,16 @@ svg.cds-aichat--sent-file-icon {
   margin-block-start: layout.$spacing-03;
 }
 
-.cds-aichat--message--hide-avatar {
-  .cds-aichat--received.cds-aichat--message-vertical-padding.cds-aichat--received--text,
-  .cds-aichat--received.cds-aichat--message-vertical-padding.cds-aichat--received--options {
-    margin-inline: 0;
-  }
+.cds-aichat--container--render
+  :where(cds-aichat-shell).cds-aichat--wide-width
+  .cds-aichat--message.cds-aichat--message--hide-avatar
+  .cds-aichat--received {
+  margin-inline-start: 1rem;
+}
 
-  .cds-aichat--message__avatar-line {
-    padding-inline: 0;
-
-    .cds-aichat--message__label {
-      padding-inline-start: 0;
-    }
-  }
+.cds-aichat--container--render
+  :where(cds-aichat-shell).cds-aichat--standard-width
+  .cds-aichat--message.cds-aichat--message--hide-avatar
+  .cds-aichat--received {
+  margin-inline-start: 1rem;
 }
