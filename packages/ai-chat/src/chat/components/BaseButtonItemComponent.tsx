@@ -13,15 +13,12 @@ import ChatButton, {
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
 import cx from "classnames";
 import React from "react";
-import { useSelector } from "../../../hooks/useSelector";
+import { useSelector } from "../hooks/useSelector";
 
-import { AppState } from "../../../../types/state/AppState";
-import { HasClassName } from "../../../../types/utilities/HasClassName";
-import { ClickableImage } from "../util/ClickableImage";
-import Button, {
-  BUTTON_KIND,
-  BUTTON_SIZE,
-} from "../../../components/carbon/Button";
+import { AppState } from "../../types/state/AppState";
+import { HasClassName } from "../../types/utilities/HasClassName";
+import { ClickableImage } from "../components-legacy/responseTypes/util/ClickableImage";
+import Button, { BUTTON_KIND, BUTTON_SIZE } from "./carbon/Button";
 
 interface BaseButtonComponentProps extends HasClassName {
   /**

@@ -34,7 +34,7 @@ import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { SystemMessage } from "../components/SystemMessage.js";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "../components/messages/AudioComponent";
-import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
+import { ButtonItemComponent } from "../components/ButtonItemComponent";
 import { CardItemComponent } from "../components/messages/CardItemComponent";
 import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
 import { CarouselItemComponent } from "../components/messages/CarouselItemComponent";
