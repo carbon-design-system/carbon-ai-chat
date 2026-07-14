@@ -31,8 +31,7 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from "@carbon/ai-chat-components/es/react/feedback.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { ResponseStopped } from "./ResponseStopped";
-import { SystemMessage } from "./SystemMessage";
+import { SystemMessage } from "../components/SystemMessage.js";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "./responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
@@ -40,7 +39,7 @@ import { CardItemComponent } from "./responseTypes/card/CardItemComponent";
 import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
 import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
+import UserDefinedResponse from "../components/UserDefinedResponse";
 import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
 import InlineError from "../components/util/InlineError";
@@ -218,7 +217,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return (
         <>
           {response}
-          {isResponseStopped && <ResponseStopped />}
+          {isResponseStopped && <SystemMessage responseStopped />}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
           {renderFeedbackAndCustomFooter(localMessageItem, message)}

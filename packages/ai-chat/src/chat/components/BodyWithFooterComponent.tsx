@@ -15,8 +15,8 @@ import { selectInputIsReadonly } from "../store/selectors";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { THROW_ERROR } from "../utils/constants";
-import { BodyMessageComponents } from "./responseTypes/util/BodyMessageComponents";
-import { FooterButtonComponents } from "./responseTypes/util/FooterButtonComponents";
+import { BodyMessageComponents } from "./BodyMessageComponents";
+import { FooterButtonComponents } from "./FooterButtonComponents";
 import { MessageResponse } from "../../types/messaging/Messages";
 import { MessageTypeComponentProps } from "../../types/messaging/MessageTypeComponentProps";
 
