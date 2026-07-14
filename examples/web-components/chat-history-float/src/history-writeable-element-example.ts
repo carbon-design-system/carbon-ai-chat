@@ -471,11 +471,11 @@ export class HistoryWriteableElementExample extends LitElement {
                                   .actions=${historyItemActions}
                                   @history-item-selected=${this._handleSelectChat}
                                   @history-item-menu-action=${
-                                  this._handleHistoryItemAction
-                                }
+                                    this._handleHistoryItemAction
+                                  }
                                   @history-panel-item-input-save=${
-                                  this._handleRenameSave
-                                }
+                                    this._handleRenameSave
+                                  }
                                 ></cds-aichat-history-panel-item>
                               `,
                             )}

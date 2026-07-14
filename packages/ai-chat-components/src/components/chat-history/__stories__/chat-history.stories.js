@@ -422,8 +422,8 @@ class ChatHistoryDemo extends LitElement {
                                       ?selected=${item.selected}
                                       ?rename=${item.rename}
                                       overflow-menu-label="${
-                                      this.overflowMenuLabel
-                                    }"
+                                        this.overflowMenuLabel
+                                      }"
                                       .actions=${pinnedHistoryItemActions}
                                     ></cds-aichat-history-panel-item>
                                   `,
@@ -448,8 +448,8 @@ class ChatHistoryDemo extends LitElement {
                                     name="${chat.name}"
                                     ?selected=${chat.selected}
                                     overflow-menu-label="${
-                                    this.overflowMenuLabel
-                                  }"
+                                      this.overflowMenuLabel
+                                    }"
                                     .actions=${historyItemActions}
                                   ></cds-aichat-history-panel-item>
                                 `,
