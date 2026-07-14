@@ -76,10 +76,7 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
             const insertText = item.value ?? item.label;
             ed.chain()
               .focus()
-              .insertContentAt(range, [
-                { type: "text", text: insertText },
-                { type: "text", text: " " },
-              ])
+              .insertContentAt(range, [{ type: "text", text: insertText }])
               .run();
             config.onSelect?.(item);
           },

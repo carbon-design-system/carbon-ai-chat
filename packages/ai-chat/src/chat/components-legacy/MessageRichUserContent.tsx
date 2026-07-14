@@ -224,6 +224,7 @@ function TokenChipMount({ node, type }: TokenChipMountProps) {
       renderTokenChip({
         attrs: (node.attrs ?? {}) as Record<string, string>,
         type,
+        context: "historical",
       }),
     [node.attrs, type],
   );

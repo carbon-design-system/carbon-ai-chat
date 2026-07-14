@@ -12,8 +12,8 @@
  * `@tiptap/extension-mention` with carbon-specific:
  * - chip rendering via `CarbonTokenNodeView` (uses the light-DOM portal
  *   handshake so React portal consumers render in light DOM).
- * - extra schema attrs (`value`, `data`) layered on top of Mention's default
- *   `id` + `label`.
+ * - extra schema attrs (`value`, `data`, `trigger`) layered on top of
+ *   Mention's default `id` + `label`.
  * - direct `cds-aichat-trigger-change` dispatch from the suggestion-render
  *   lifecycle via the shared `dispatchTriggerChange` helper.
  * - an `onRemove` callback fired when a user edit deletes a token node, the
@@ -21,7 +21,13 @@
  *
  * They share an internal builder. The two exports differ only in their
  * default schema-node name (`"mention"` vs `"command"`), the dispatched
- * trigger type, and the default chip color (handled inside the NodeView).
+ * trigger type, the default chip color (handled inside the NodeView), and
+ * the default for whether the trigger char is stored on inserted nodes —
+ * `carbonCommand` defaults to on, `carbonMention` to off, so command chips
+ * default to reading as `/summarize` while mention chips stay a bare name.
+ * Either default can be overridden per-config (`TriggerSuggestionConfig.
+ * showTriggerInChip`) or per-item (`SuggestionItem.showTriggerInChip`, which
+ * wins when set — e.g. a single `@` picker mixing people and agents).
  * Hosts compose multiple instances cleanly by passing distinct `name`
  * values — the factory threads the name through `Mention.extend({ name })`
  * to sidestep the [Tiptap stacking caveat](https://github.com/ueberdosis/tiptap/issues/2219).
@@ -58,6 +64,7 @@ function buildTriggerExtension(
         ...parent,
         value: { default: null },
         data: { default: null },
+        trigger: { default: null },
       };
     },
 
@@ -130,6 +137,15 @@ function buildTriggerExtension(
                 id: item.id,
                 label: item.label,
                 value: item.value ?? item.label,
+                // Item overrides config overrides the command/mention
+                // default (see resolveShowTriggerInChip).
+                trigger: resolveShowTriggerInChip(
+                  item,
+                  config,
+                  build.defaultName === "command",
+                )
+                  ? config.trigger
+                  : null,
                 data: stripPresentationFields(item),
               },
             },
@@ -262,6 +278,21 @@ async function resolveItems(
   );
 }
 
+/**
+ * Resolve whether a selected item's chip should be prefixed with the
+ * trigger character: the item's own {@link SuggestionItem.showTriggerInChip}
+ * wins when set, then the config's
+ * {@link TriggerSuggestionConfig.showTriggerInChip}, then the
+ * command/mention default.
+ */
+export function resolveShowTriggerInChip(
+  item: SuggestionItem,
+  config: Pick<TriggerSuggestionConfig, "showTriggerInChip">,
+  isCommand: boolean,
+): boolean {
+  return item.showTriggerInChip ?? config.showTriggerInChip ?? isCommand;
+}
+
 function stripPresentationFields(
   item: SuggestionItem,
 ): Record<string, unknown> {
@@ -272,6 +303,7 @@ function stripPresentationFields(
     avatar: _avatar,
     description: _description,
     disabled: _disabled,
+    showTriggerInChip: _showTriggerInChip,
     ...rest
   } = item;
   void _id;
@@ -280,6 +312,7 @@ function stripPresentationFields(
   void _avatar;
   void _description;
   void _disabled;
+  void _showTriggerInChip;
   return rest;
 }
 

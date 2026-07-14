@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -136,6 +136,30 @@ export class ConfigManager {
         ? {
             ...config.upload,
             onFileUpload: undefined,
+          }
+        : undefined,
+      // Strip the mention/command onSelect/onRemove callbacks (functions) so
+      // they don't appear as "[object Object]" in the URL. `items` is a
+      // required field and, for the demo's static fixtures, already plain
+      // JSON — left as-is. Re-injected by getSettings() on page load
+      // whenever a mention/command config is present.
+      input: config.input
+        ? {
+            ...config.input,
+            mention: config.input.mention
+              ? {
+                  ...config.input.mention,
+                  onSelect: undefined,
+                  onRemove: undefined,
+                }
+              : undefined,
+            command: config.input.command
+              ? {
+                  ...config.input.command,
+                  onSelect: undefined,
+                  onRemove: undefined,
+                }
+              : undefined,
           }
         : undefined,
     };

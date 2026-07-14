@@ -29,19 +29,37 @@ function ensureTokenStyleRules(): void {
     return;
   }
   setVarsForSelector(".cds-aichat--token", { "white-space": "normal" });
+  setVarsForSelector('.cds-aichat--token[data-token-context="composer"]', {
+    color: "var(--cds-tag-color-blue)",
+  });
+  setVarsForSelector(
+    '.cds-aichat--token[data-token-context="composer"]::selection',
+    { "background-color": "var(--cds-tag-background-blue)" },
+  );
+  setVarsForSelector('.cds-aichat--token[data-token-context="historical"]', {
+    color: "var(--cds-link-secondary)",
+  });
   tokenStyleRulesInstalled = true;
 }
 
 /**
  * Attributes carried by a mention/command JSONContent node. Matches the
- * Tiptap mention shape (`id`, `label`) plus the carbon-specific `value` and
- * `data` extensions added by `carbonMention`/`carbonCommand`.
+ * Tiptap mention shape (`id`, `label`) plus the carbon-specific `value`,
+ * `data`, and `trigger` extensions added by `carbonMention`/`carbonCommand`.
  */
 export interface TokenChipAttrs {
   id?: string;
   label?: string;
   value?: string;
   data?: unknown;
+  /**
+   * Trigger character to prefix onto the default chip text (e.g.
+   * `/summarize` vs `summarize`). Set at insert time by
+   * `resolveShowTriggerInChip` — defaults to command nodes only, but is
+   * overridable per-config or per-item via `TriggerSuggestionConfig`/
+   * `SuggestionItem`'s `showTriggerInChip`.
+   */
+  trigger?: string | null;
 }
 
 export interface RenderTokenChipArgs {
@@ -64,14 +82,21 @@ export interface RenderTokenChipArgs {
    * before connection.
    */
   dispatchTarget?: EventTarget;
+  /**
+   * Visual variant to render. `"composer"` is the live, being-typed token in
+   * the prompt-line editor; `"historical"` is a token inside an already-sent
+   * message in the transcript. Drives the default chip's color/highlight —
+   * see `ensureTokenStyleRules`.
+   */
+  context: "composer" | "historical";
 }
 
 export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
-  const dom = createTokenContainer(args.attrs, args.type);
+  const dom = createTokenContainer(args.attrs, args.type, args.context);
   const renderer = args.config?.renderCustomToken;
 
   if (!renderer) {
-    dom.appendChild(createDefaultChip(args.attrs, args.type));
+    dom.appendChild(createDefaultChip(args.attrs));
     return dom;
   }
 
@@ -90,12 +115,12 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
       "Error in renderCustomToken, falling back to default chip:",
       error,
     );
-    dom.appendChild(createDefaultChip(args.attrs, args.type));
+    dom.appendChild(createDefaultChip(args.attrs));
     return dom;
   }
 
   if (result == null) {
-    dom.appendChild(createDefaultChip(args.attrs, args.type));
+    dom.appendChild(createDefaultChip(args.attrs));
     return dom;
   }
 
@@ -105,7 +130,7 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
   const { container } = renderInLightDom({
     content: result,
     dispatchTarget: args.dispatchTarget ?? dom,
-    fallback: createDefaultChip(args.attrs, args.type),
+    fallback: createDefaultChip(args.attrs),
   });
   dom.appendChild(container);
 
@@ -115,6 +140,7 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
 function createTokenContainer(
   attrs: TokenChipAttrs,
   type: string,
+  context: "composer" | "historical",
 ): HTMLElement {
   ensureTokenStyleRules();
   const dom = document.createElement("span");
@@ -122,6 +148,7 @@ function createTokenContainer(
   const label = typeof attrs.label === "string" ? attrs.label : null;
   dom.setAttribute("contenteditable", "false");
   dom.setAttribute("data-token-type", type);
+  dom.setAttribute("data-token-context", context);
   dom.setAttribute("data-raw-value", value ?? label ?? "");
   dom.setAttribute("role", "img");
   dom.setAttribute("aria-label", label || value || "");
@@ -129,18 +156,11 @@ function createTokenContainer(
   return dom;
 }
 
-function createDefaultChip(attrs: TokenChipAttrs, type: string): HTMLElement {
-  const tag = document.createElement("cds-tag");
-  tag.setAttribute("size", "sm");
-  if (type === "mention") {
-    tag.setAttribute("type", "blue");
-  } else if (type === "command") {
-    tag.setAttribute("type", "gray");
-  } else {
-    tag.setAttribute("type", "blue");
-  }
+function createDefaultChip(attrs: TokenChipAttrs): HTMLElement {
+  const chip = document.createElement("span");
   const label = typeof attrs.label === "string" ? attrs.label : null;
   const value = typeof attrs.value === "string" ? attrs.value : null;
-  tag.textContent = label || value || "";
-  return tag;
+  const trigger = typeof attrs.trigger === "string" ? attrs.trigger : "";
+  chip.textContent = `${trigger}${label || value || ""}`;
+  return chip;
 }

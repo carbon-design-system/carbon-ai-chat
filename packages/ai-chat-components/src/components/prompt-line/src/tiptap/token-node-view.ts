@@ -27,7 +27,7 @@ import type { TriggerSuggestionConfig } from "./types.js";
 export interface CarbonTokenNodeViewOptions {
   /**
    * Custom renderer from the trigger-suggestion config. When omitted, the
-   * default `<cds-tag>` chip is used.
+   * default text chip is used.
    */
   renderCustomToken?: TriggerSuggestionConfig["renderCustomToken"];
 }
@@ -45,6 +45,7 @@ export class CarbonTokenNodeView implements NodeView {
       config: { renderCustomToken: options.renderCustomToken },
       type: node.type.name,
       dispatchTarget: view.dom,
+      context: "composer",
     });
   }
 

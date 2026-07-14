@@ -35,8 +35,10 @@ export type BaseSuggestionConfig = _BaseSuggestionConfig;
  * Trigger-character-driven suggestion config consumed by
  * {@link InputConfig.mention} and {@link InputConfig.command}. Adds the
  * trigger character, an optional `triggerPosition`, an optional schema-node
- * `name` override, a custom-token renderer, and an `onRemove` callback (the
- * mirror of `onSelect`, fired when a token is deleted) on top of
+ * `name` override, a custom-token renderer, an `onRemove` callback (the
+ * mirror of `onSelect`, fired when a token is deleted), and a
+ * `showTriggerInChip` default (whether selected items render as
+ * `/summarize` or a bare `summarize`, overridable per item) on top of
  * {@link BaseSuggestionConfig}.
  *
  * @category Config
@@ -56,7 +58,9 @@ export type AutocompleteConfig = _AutocompleteConfig;
  * Single list-item shape used by every Carbon suggestion surface
  * (mention, command, autocomplete, starters). Carries the id, label,
  * optional value override, optional description / avatar / icon, and a
- * disabled flag.
+ * disabled flag. `showTriggerInChip` additionally controls, per item,
+ * whether a mention/command selection renders with its trigger character —
+ * chip-less surfaces (autocomplete, starters) ignore it.
  *
  * @category Config
  */

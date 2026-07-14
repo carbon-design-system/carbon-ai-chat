@@ -43,6 +43,17 @@ export interface SuggestionItem {
   avatar?: string | CarbonIcon | ComponentType<any>;
   /** Whether the item is disabled and cannot be selected. */
   disabled?: boolean;
+  /**
+   * Whether the trigger character prefixes this item's rendered chip (e.g.
+   * `/summarize` instead of `summarize`). Only meaningful for items
+   * selected through a mention/command picker — chip-less surfaces
+   * (autocomplete, starters) ignore it. Overrides
+   * {@link TriggerSuggestionConfig.showTriggerInChip} and the built-in
+   * default (commands show their trigger, mentions don't) when set, so a
+   * single `@` picker can mix items that read as a bare name (people) with
+   * items that read as `@name` (files, agents, ...).
+   */
+  showTriggerInChip?: boolean;
 }
 
 /**
@@ -136,6 +147,14 @@ export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
    * symmetric with `onSelect` not firing on programmatic inserts.
    */
   onRemove?: (item: SuggestionItem) => void;
+
+  /**
+   * Default for whether the trigger character prefixes the rendered chip,
+   * applied to every item from this config unless the item sets its own
+   * {@link SuggestionItem.showTriggerInChip}. Defaults to `true` for
+   * `carbonCommand` and `false` for `carbonMention` when omitted.
+   */
+  showTriggerInChip?: boolean;
 }
 
 /**
