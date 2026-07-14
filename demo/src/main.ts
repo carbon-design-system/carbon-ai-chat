@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -225,25 +225,27 @@ export class Demo extends LitElement {
   render() {
     return html` <slot name="demo-header"></slot>
       <slot name="demo-body"></slot>
-      ${this.isSetChatConfigMode && !this.hasReceivedSetChatConfig
-        ? html` <div class="notification-holder">
-            <cds-actionable-notification
-              low-contrast
-              kind="error"
-              title="setChatConfig Mode - No Config Provided"
-              subtitle="You are in setChatConfig mode but no configuration has been set. Call window.setChatConfig() to provide a configuration."
-              inline
-              hide-close-button
-              data-testid="set_chat_config_notification_error"
-            >
-              <cds-actionable-notification-button
-                slot="action"
-                @click=${this._leaveSetChatConfigMode}
-                >Leave setChatConfig Mode</cds-actionable-notification-button
+      ${
+        this.isSetChatConfigMode && !this.hasReceivedSetChatConfig
+          ? html` <div class="notification-holder">
+              <cds-actionable-notification
+                low-contrast
+                kind="error"
+                title="setChatConfig Mode - No Config Provided"
+                subtitle="You are in setChatConfig mode but no configuration has been set. Call window.setChatConfig() to provide a configuration."
+                inline
+                hide-close-button
+                data-testid="set_chat_config_notification_error"
               >
-            </cds-actionable-notification>
-          </div>`
-        : ""}`;
+                <cds-actionable-notification-button
+                  slot="action"
+                  @click=${this._leaveSetChatConfigMode}
+                  >Leave setChatConfig Mode</cds-actionable-notification-button
+                >
+              </cds-actionable-notification>
+            </div>`
+          : ""
+      }`;
   }
 }
 

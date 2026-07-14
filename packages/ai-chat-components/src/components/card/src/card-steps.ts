@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -40,48 +40,54 @@ class CardSteps extends LitElement {
   render() {
     return html`
       <div class="${prefix}-card-steps">
-        ${this.steps.length > 0
-          ? repeat(
-              this.steps,
-              (step) => step.title,
-              (step) => html`
-                <div class="${prefix}-card-step">
-                  ${!step.kind
-                    ? html`${step.label}`
-                    : step.kind !== ICON_INDICATOR_KIND["IN-PROGRESS"]
-                      ? html`
-                          <div class="${prefix}-card-step-indicator">
-                            <cds-icon-indicator
-                              kind="${ifDefined(step.kind)}"
-                              size="16"
-                            ></cds-icon-indicator>
-                            ${step.label}
-                          </div>
-                        `
-                      : html`
-                          <div class="${prefix}-card-step-indicator">
-                            <cds-loading
-                              active
-                              description="Loading"
-                              assistive-text="Loading"
-                              small
-                            ></cds-loading>
-                            ${step.label}
-                          </div>
-                        `}
+        ${
+          this.steps.length > 0
+            ? repeat(
+                this.steps,
+                (step) => step.title,
+                (step) => html`
+                  <div class="${prefix}-card-step">
+                    ${
+                      !step.kind
+                        ? html`${step.label}`
+                        : step.kind !== ICON_INDICATOR_KIND["IN-PROGRESS"]
+                          ? html`
+                              <div class="${prefix}-card-step-indicator">
+                                <cds-icon-indicator
+                                  kind="${ifDefined(step.kind)}"
+                                  size="16"
+                                ></cds-icon-indicator>
+                                ${step.label}
+                              </div>
+                            `
+                          : html`
+                              <div class="${prefix}-card-step-indicator">
+                                <cds-loading
+                                  active
+                                  description="Loading"
+                                  assistive-text="Loading"
+                                  small
+                                ></cds-loading>
+                                ${step.label}
+                              </div>
+                            `
+                    }
 
-                  <div class="${prefix}-card-step-content">
-                    <p class="${prefix}-card-step-title">${step.title}</p>
-                    ${step.description
-                      ? html`<div class="${prefix}-card-step-description">
-                          ${step.description}
-                        </div>`
-                      : nothing}
+                    <div class="${prefix}-card-step-content">
+                      <p class="${prefix}-card-step-title">${step.title}</p>
+                      ${
+                        step.description
+                          ? html`<div class="${prefix}-card-step-description">
+                              ${step.description}
+                            </div>`
+                          : nothing
+                      }
+                    </div>
                   </div>
-                </div>
-              `,
-            )
-          : nothing}
+                `,
+              )
+            : nothing
+        }
       </div>
     `;
   }

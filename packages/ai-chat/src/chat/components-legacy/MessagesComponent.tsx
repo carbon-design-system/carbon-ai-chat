@@ -19,7 +19,7 @@ import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
 import { ProcessingWithText } from "../components/util/ProcessingWithText";
 import { MessagesView } from "./MessagesView";
-import { SystemMessage } from "./SystemMessage";
+import { SystemMessage } from "../components/SystemMessage.js";
 import {
   HasServiceManager,
   withServiceManager,

@@ -55,36 +55,40 @@ class CustomFooterExample extends LitElement {
   render() {
     return html`
       <div class="custom-footer-actions">
-        ${this.additionalData?.allow_copy
-          ? html`
-              <cds-icon-button
-                class="custom-footer-button"
-                align="top-left"
-                kind="ghost"
-                role="button"
-                size="sm"
-                @click=${this.handleCopy}
-              >
-                <span slot="icon">${iconLoader(Copy16)}</span>
-                <span slot="tooltip-content">Copy</span>
-              </cds-icon-button>
-            `
-          : null}
-        ${this.additionalData?.custom_action_url
-          ? html`
-              <cds-icon-button
-                class="custom-footer-button"
-                align="top-left"
-                kind="ghost"
-                role="button"
-                size="sm"
-                @click=${this.handleShare}
-              >
-                <span slot="icon">${iconLoader(Export16)}</span>
-                <span slot="tooltip-content">Share</span>
-              </cds-icon-button>
-            `
-          : null}
+        ${
+          this.additionalData?.allow_copy
+            ? html`
+                <cds-icon-button
+                  class="custom-footer-button"
+                  align="top-left"
+                  kind="ghost"
+                  role="button"
+                  size="sm"
+                  @click=${this.handleCopy}
+                >
+                  <span slot="icon">${iconLoader(Copy16)}</span>
+                  <span slot="tooltip-content">Copy</span>
+                </cds-icon-button>
+              `
+            : null
+        }
+        ${
+          this.additionalData?.custom_action_url
+            ? html`
+                <cds-icon-button
+                  class="custom-footer-button"
+                  align="top-left"
+                  kind="ghost"
+                  role="button"
+                  size="sm"
+                  @click=${this.handleShare}
+                >
+                  <span slot="icon">${iconLoader(Export16)}</span>
+                  <span slot="tooltip-content">Share</span>
+                </cds-icon-button>
+              `
+            : null
+        }
       </div>
     `;
   }

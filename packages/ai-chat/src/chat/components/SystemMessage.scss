@@ -59,3 +59,27 @@
   margin-block-start: layout.$spacing-07;
   padding-block-start: layout.$spacing-05;
 }
+
+.cds-aichat--system-message-response-stopped {
+  @include type.type-style("body-01");
+
+  color: theme.$text-secondary;
+  font-style: italic;
+  margin-block-start: layout.$spacing-05;
+  text-align: center;
+}
+
+.cds-aichat--standard-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--system-message-response-stopped,
+.cds-aichat--wide-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--system-message-response-stopped {
+  padding-inline-start: 56px;
+}
+
+.cds-aichat--narrow-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--system-message-response-stopped {
+  padding-inline-start: 16px;
+}

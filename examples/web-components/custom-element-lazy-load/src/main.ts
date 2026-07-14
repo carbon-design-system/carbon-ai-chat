@@ -62,27 +62,31 @@ export class Demo extends LitElement {
 
   render() {
     return html`
-      ${this._chatLoaded
-        ? html`
-            <cds-aichat-custom-element
-              class="chat-custom-element"
-              .messaging=${config.messaging}
-              .layout=${config.layout}
-              .openChatByDefault=${config.openChatByDefault}
-              .launcher=${config.launcher}
-              .header=${config.header}
-              .onAfterRender=${this._onAfterRender}
-            ></cds-aichat-custom-element>
-          `
-        : nothing}
-      ${!this._chatReady
-        ? html`
-            <cds-aichat-shell
-              class="chat-custom-element chat-custom-element-loading"
-              ai-enabled
-            ></cds-aichat-shell>
-          `
-        : nothing}
+      ${
+        this._chatLoaded
+          ? html`
+              <cds-aichat-custom-element
+                class="chat-custom-element"
+                .messaging=${config.messaging}
+                .layout=${config.layout}
+                .openChatByDefault=${config.openChatByDefault}
+                .launcher=${config.launcher}
+                .header=${config.header}
+                .onAfterRender=${this._onAfterRender}
+              ></cds-aichat-custom-element>
+            `
+          : nothing
+      }
+      ${
+        !this._chatReady
+          ? html`
+              <cds-aichat-shell
+                class="chat-custom-element chat-custom-element-loading"
+                ai-enabled
+              ></cds-aichat-shell>
+            `
+          : nothing
+      }
     `;
   }
 }

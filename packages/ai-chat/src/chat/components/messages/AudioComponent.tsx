@@ -9,11 +9,8 @@
 
 import React from "react";
 
-import {
-  MediaPlayer,
-  MediaPlayerContentConfig,
-} from "../../../components/util/MediaPlayer";
-import { MessageResponseTypes } from "../../../../types/messaging/Messages";
+import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer.js";
+import { MessageResponseTypes } from "../../../types/messaging/Messages.js";
 
 type AudioComponentProps = MediaPlayerContentConfig;
 

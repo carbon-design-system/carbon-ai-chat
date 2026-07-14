@@ -328,8 +328,9 @@ class InventoryReportExample extends LitElement {
 
       <cds-aichat-workspace-shell-footer
         .actions=${this.footerActions}
-        @cds-aichat-workspace-shell-footer-clicked=${this
-          .handleWorkspaceFooterClick}
+        @cds-aichat-workspace-shell-footer-clicked=${
+          this.handleWorkspaceFooterClick
+        }
       >
       </cds-aichat-workspace-shell-footer>
     </cds-aichat-workspace-shell>`;
