@@ -18,7 +18,7 @@ import { VideoComponentConfig } from "../messages/VideoComponent";
 import { MessageResponseTypes } from "../../../types/messaging/Messages";
 import { AppState } from "../../../types/state/AppState";
 import Card from "@carbon/ai-chat-components/es/react/card.js";
-import { TextBlock } from "../../components/util/TextBlock/TextBlock";
+import { TextBlock } from "./TextBlock/TextBlock";
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between

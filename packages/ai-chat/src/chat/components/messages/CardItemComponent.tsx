@@ -13,12 +13,7 @@ import React from "react";
 
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus.js";
 import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem.js";
-import { useSelector } from "../../hooks/useSelector.js";
-import { useServiceManager } from "../../hooks/useServiceManager.js";
-import { selectInputIsReadonly } from "../../store/selectors.js";
-import { THROW_ERROR } from "../../utils/constants.js";
-import { BodyMessageComponents } from "../../components-legacy/responseTypes/util/BodyMessageComponents.js";
-import { FooterButtonComponents } from "../../components-legacy/responseTypes/util/FooterButtonComponents.js";
+import { BodyWithFooterComponent } from "../../components/BodyWithFooterComponent.js";
 import {
   CardItem,
   MessageResponse,
@@ -51,17 +46,8 @@ interface CardItemComponentProps extends HasRequestFocus {
  * response types.
  */
 function CardItemComponent(props: CardItemComponentProps) {
-  const {
-    localMessageItem,
-    fullMessage,
-    isMessageForInput,
-    requestFocus,
-    renderMessageComponent,
-    ignoreMaxWidth,
-  } = props;
-  const serviceManager = useServiceManager();
-  const isInputReadonly = useSelector(selectInputIsReadonly);
-  const item = localMessageItem.item as CardItem;
+  const { ignoreMaxWidth } = props;
+  const item = props.localMessageItem.item as CardItem;
   return (
     <Card
       className={cx("cds-aichat--card-message-component", {
@@ -73,36 +59,10 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <div slot="body">
-        <BodyMessageComponents
-          message={localMessageItem}
-          originalMessage={fullMessage}
-          requestInputFocus={requestFocus}
-          disableUserInputs={isInputReadonly}
-          isMessageForInput={isMessageForInput}
-          scrollElementIntoView={THROW_ERROR}
-          serviceManager={serviceManager}
-          hideFeedback
-          showChainOfThought={false}
-          allowNewFeedback={false}
-          renderMessageComponent={renderMessageComponent}
-        />
-      </div>
-      <div slot="footer">
-        <FooterButtonComponents
-          message={localMessageItem}
-          originalMessage={fullMessage}
-          requestInputFocus={requestFocus}
-          disableUserInputs={isInputReadonly}
-          isMessageForInput={isMessageForInput}
-          scrollElementIntoView={THROW_ERROR}
-          serviceManager={serviceManager}
-          hideFeedback
-          showChainOfThought={false}
-          allowNewFeedback={false}
-          renderMessageComponent={renderMessageComponent}
-        />
-      </div>
+      <BodyWithFooterComponent
+        {...props}
+        renderMessageComponent={props.renderMessageComponent}
+      />
     </Card>
   );
 }
