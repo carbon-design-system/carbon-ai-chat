@@ -94,12 +94,14 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
     const { titleText, subTitleText, collapsible } = this;
 
     const headerContent = html`
-      ${subTitleText &&
-      html`
-        <h2 class="${prefix}-workspace-shell__header-sub-title">
-          ${subTitleText}
-        </h2>
-      `}
+      ${
+        subTitleText &&
+        html`
+          <h2 class="${prefix}-workspace-shell__header-sub-title">
+            ${subTitleText}
+          </h2>
+        `
+      }
       <slot name="header-description"></slot>
       <slot name="header-action"></slot>
     `;
@@ -110,21 +112,23 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
         <details
           class="${prefix}-workspace-shell__header-details ${prefix}-workspace-shell__header-content"
         >
-          ${titleText &&
-          html`
-            <summary class="${prefix}-workspace-shell__header-summary">
-              <h1 class="${prefix}-workspace-shell__header-title">
-                <cds-aichat-truncated-text
-                  value=${titleText}
-                  lines="1"
-                  type="tooltip"
-                ></cds-aichat-truncated-text>
-              </h1>
-              <span class="${prefix}-workspace-shell__header-chevron">
-                ${iconLoader(ChevronDown16)}
-              </span>
-            </summary>
-          `}
+          ${
+            titleText &&
+            html`
+              <summary class="${prefix}-workspace-shell__header-summary">
+                <h1 class="${prefix}-workspace-shell__header-title">
+                  <cds-aichat-truncated-text
+                    value=${titleText}
+                    lines="1"
+                    type="tooltip"
+                  ></cds-aichat-truncated-text>
+                </h1>
+                <span class="${prefix}-workspace-shell__header-chevron">
+                  ${iconLoader(ChevronDown16)}
+                </span>
+              </summary>
+            `
+          }
           <div class="${prefix}-workspace-shell__header-content">
             ${headerContent}
           </div>
@@ -135,16 +139,18 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
     // Non-collapsible: render without details/summary
     return html`
       <div class="${prefix}-workspace-shell__header-content">
-        ${titleText &&
-        html`
-          <h1 class="${prefix}-workspace-shell__header-title">
-            <cds-aichat-truncated-text
-              value=${titleText}
-              lines="1"
-              type="tooltip"
-            ></cds-aichat-truncated-text>
-          </h1>
-        `}
+        ${
+          titleText &&
+          html`
+            <h1 class="${prefix}-workspace-shell__header-title">
+              <cds-aichat-truncated-text
+                value=${titleText}
+                lines="1"
+                type="tooltip"
+              ></cds-aichat-truncated-text>
+            </h1>
+          `
+        }
         ${headerContent}
       </div>
     `;

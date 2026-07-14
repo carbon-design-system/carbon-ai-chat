@@ -174,9 +174,11 @@ export class CustomSuggestionList extends LitElement {
               }}
             >
               <span class="label">${item.label}</span>
-              ${item.description
-                ? html`<span class="desc">${item.description}</span>`
-                : nothing}
+              ${
+                item.description
+                  ? html`<span class="desc">${item.description}</span>`
+                  : nothing
+              }
             </div>
           `,
         )}

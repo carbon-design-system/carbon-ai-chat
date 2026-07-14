@@ -105,29 +105,33 @@ class Transcript extends LitElement {
         >
           <span class="${prefix}--transcript__toggle-label" aria-hidden="true">
             ${displayLabel}
-            ${this.language
-              ? html`<span class="${prefix}--transcript__language">
-                  (${this.language})
-                </span>`
-              : ""}
+            ${
+              this.language
+                ? html`<span class="${prefix}--transcript__language">
+                    (${this.language})
+                  </span>`
+                : ""
+            }
           </span>
           ${iconLoader(icon)}
         </button>
-        ${this.expanded
-          ? html`
-              <div
-                id="${this.contentId}"
-                class="${prefix}--transcript__content"
-                role="region"
-                aria-label="${displayLabel}"
-              >
-                <cds-aichat-markdown
-                  markdown=${this.text}
-                  sanitize-html
-                ></cds-aichat-markdown>
-              </div>
-            `
-          : ""}
+        ${
+          this.expanded
+            ? html`
+                <div
+                  id="${this.contentId}"
+                  class="${prefix}--transcript__content"
+                  role="region"
+                  aria-label="${displayLabel}"
+                >
+                  <cds-aichat-markdown
+                    markdown=${this.text}
+                    sanitize-html
+                  ></cds-aichat-markdown>
+                </div>
+              `
+            : ""
+        }
       </div>
     `;
   }

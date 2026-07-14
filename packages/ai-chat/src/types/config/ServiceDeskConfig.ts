@@ -442,9 +442,7 @@ export interface UserMessageErrorInfo extends BaseErrorInfo {
  * @category Service desk
  */
 export type ServiceDeskErrorInfo =
-  | ConnectingErrorInfo
-  | DisconnectedErrorInfo
-  | UserMessageErrorInfo;
+  ConnectingErrorInfo | DisconnectedErrorInfo | UserMessageErrorInfo;
 
 /**
  * Additional options that may be passed to the service desk when a chat is started.

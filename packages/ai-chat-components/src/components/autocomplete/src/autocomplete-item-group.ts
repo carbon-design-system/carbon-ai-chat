@@ -101,9 +101,11 @@ class AutocompleteItemGroupElement extends LitElement {
 
     return html`
       <div class="${blockClass}" role="listbox" aria-label="${this.title}">
-        ${this.title
-          ? html` <div class="${blockClass}__title">${this.title}</div> `
-          : null}
+        ${
+          this.title
+            ? html` <div class="${blockClass}__title">${this.title}</div> `
+            : null
+        }
         <div class="${blockClass}__items">
           ${this.items.map((item, index) => {
             const isLastItem =

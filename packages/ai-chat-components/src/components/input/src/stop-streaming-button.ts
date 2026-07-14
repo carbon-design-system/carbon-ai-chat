@@ -76,9 +76,9 @@ class StopStreamingButton extends LitElement {
       >
         <span slot="icon">
           <span
-            class="${prefix}--stop-icon ${this.disabled
-              ? `${prefix}--stop-icon--disabled`
-              : ""}"
+            class="${prefix}--stop-icon ${
+              this.disabled ? `${prefix}--stop-icon--disabled` : ""
+            }"
             >${iconLoader(StopFilled16)}</span
           >
         </span>

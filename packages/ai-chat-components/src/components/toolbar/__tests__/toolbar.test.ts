@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -12,7 +12,31 @@ import "@carbon/ai-chat-components/es/components/toolbar/index.js";
 import Toolbar, {
   Action,
 } from "@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js";
-import { actionLists } from "../__stories__/story-data";
+import {
+  Version16,
+  Download16,
+  Share16,
+  Launch16,
+  Maximize16,
+  Close16,
+} from "@carbon/icons";
+
+const actionLists: Record<string, Action[]> = {
+  "Advanced list": [
+    { text: "Version", icon: Version16, size: "md", onClick: () => {} },
+    { text: "Download", icon: Download16, size: "md", onClick: () => {} },
+    { text: "Share", icon: Share16, size: "md", onClick: () => {} },
+    { text: "Launch", icon: Launch16, size: "md", onClick: () => {} },
+    { text: "Maximize", icon: Maximize16, size: "md", onClick: () => {} },
+    {
+      text: "Close",
+      fixed: true,
+      icon: Close16,
+      size: "md",
+      onClick: () => {},
+    },
+  ],
+};
 
 /**
  * This repository uses the @web/test-runner library for testing

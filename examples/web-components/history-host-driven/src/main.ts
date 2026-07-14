@@ -91,11 +91,13 @@ export class Demo extends LitElement {
 
   render() {
     return html`
-      ${this.instance
-        ? html`<button @click=${this.injectHistory}>
-            Insert a different conversation
-          </button>`
-        : ""}
+      ${
+        this.instance
+          ? html`<button @click=${this.injectHistory}>
+              Insert a different conversation
+            </button>`
+          : ""
+      }
       <cds-aichat-custom-element
         class="chat-custom-element"
         .onBeforeRender=${this.onBeforeRender}

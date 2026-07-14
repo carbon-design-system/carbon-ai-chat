@@ -422,44 +422,48 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       [`cds--side-nav__link--current`]: selected,
     });
     return html`
-      ${!rename
-        ? html` <button class="${classes}">
-            <span part="name" class="cds--side-nav__link-text"> ${name} </span>
-            <slot name="actions">
-              <cds-overflow-menu
-                align="top-right"
-                size="sm"
-                @click=${adjustMenuPosition}
-                @keydown=${handleMenuTriggerKeyDown}
-              >
-                ${iconLoader(OverflowMenuVertical16, {
-                  class: `${prefix}--overflow-menu__icon`,
-                  slot: "icon",
-                })}
-                <span slot="tooltip-content">${overflowMenuLabel}</span>
-                <cds-overflow-menu-body flipped>
-                  ${repeat(
-                    actions,
-                    (action) => action.text,
-                    (action) =>
-                      html`<cds-overflow-menu-item
-                        ?danger=${action.delete}
-                        ?divider=${action.divider}
-                        @click=${handleMenuItemClick}
-                        @keydown=${handleMenuItemKeyDown}
-                        >${action.text}${action.icon}</cds-overflow-menu-item
-                      >`,
-                  )}
-                </cds-overflow-menu-body>
-              </cds-overflow-menu>
-            </slot>
-          </button>`
-        : html`
-            <cds-aichat-history-panel-item-input
-              value="${name}"
-              item-id="${id}"
-            ></cds-aichat-history-panel-item-input>
-          `}
+      ${
+        !rename
+          ? html` <button class="${classes}">
+              <span part="name" class="cds--side-nav__link-text">
+                ${name}
+              </span>
+              <slot name="actions">
+                <cds-overflow-menu
+                  align="top-right"
+                  size="sm"
+                  @click=${adjustMenuPosition}
+                  @keydown=${handleMenuTriggerKeyDown}
+                >
+                  ${iconLoader(OverflowMenuVertical16, {
+                    class: `${prefix}--overflow-menu__icon`,
+                    slot: "icon",
+                  })}
+                  <span slot="tooltip-content">${overflowMenuLabel}</span>
+                  <cds-overflow-menu-body flipped>
+                    ${repeat(
+                      actions,
+                      (action) => action.text,
+                      (action) =>
+                        html`<cds-overflow-menu-item
+                          ?danger=${action.delete}
+                          ?divider=${action.divider}
+                          @click=${handleMenuItemClick}
+                          @keydown=${handleMenuItemKeyDown}
+                          >${action.text}${action.icon}</cds-overflow-menu-item
+                        >`,
+                    )}
+                  </cds-overflow-menu-body>
+                </cds-overflow-menu>
+              </slot>
+            </button>`
+          : html`
+              <cds-aichat-history-panel-item-input
+                value="${name}"
+                item-id="${id}"
+              ></cds-aichat-history-panel-item-input>
+            `
+      }
     `;
   }
 

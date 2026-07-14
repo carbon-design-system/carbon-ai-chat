@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -91,10 +91,12 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         ?is-negative-open=${this._isNegativeOpen}
         ?is-positive-selected=${this._isPositiveSelected}
         ?is-negative-selected=${this._isNegativeSelected}
-        ?is-positive-disabled=${this._isNegativeSelected ||
-        this._isFeedbackSubmitted}
-        ?is-negative-disabled=${this._isPositiveSelected ||
-        this._isFeedbackSubmitted}
+        ?is-positive-disabled=${
+          this._isNegativeSelected || this._isFeedbackSubmitted
+        }
+        ?is-negative-disabled=${
+          this._isPositiveSelected || this._isFeedbackSubmitted
+        }
         positive-label=${this.positiveLabel}
         negative-label=${this.negativeLabel}
         panel-id=${this.panelId}
@@ -105,19 +107,23 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         ${this.hasPositiveDetails ? this._renderFeedbackPanel(true) : nothing}
         ${this.hasNegativeDetails ? this._renderFeedbackPanel(false) : nothing}
       </div>
-      ${this._lastSubmission
-        ? html`<p class="feedback-demo-note">
-            Last submission:
-            <strong
-              >${this._lastSubmission.isPositive
-                ? "Positive"
-                : "Negative"}</strong
-            >
-            ${this._lastSubmission.text
-              ? html`— ${this._lastSubmission.text}`
-              : nothing}
-          </p>`
-        : nothing}
+      ${
+        this._lastSubmission
+          ? html`<p class="feedback-demo-note">
+              Last submission:
+              <strong
+                >${
+                  this._lastSubmission.isPositive ? "Positive" : "Negative"
+                }</strong
+              >
+              ${
+                this._lastSubmission.text
+                  ? html`— ${this._lastSubmission.text}`
+                  : nothing
+              }
+            </p>`
+          : nothing
+      }
     `;
   }
 
@@ -138,9 +144,11 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         .categories=${categories}
         .initialValues=${this._feedbackInitialValues(isPositive)}
         title=${isPositive ? "Tell us what worked" : "Tell us what went wrong"}
-        prompt=${isPositive
-          ? "Share what made this response helpful."
-          : "Share what missed the mark so we can improve."}
+        prompt=${
+          isPositive
+            ? "Share what made this response helpful."
+            : "Share what missed the mark so we can improve."
+        }
         text-area-placeholder=${placeholder}
         cancel-label="Close"
         submit-label="Submit"

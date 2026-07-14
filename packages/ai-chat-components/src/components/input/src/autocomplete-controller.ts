@@ -437,8 +437,7 @@ export class AutocompleteController {
   }
 
   private _resolveRenderCustomList():
-    | ((props: CustomListProps) => HTMLElement | unknown)
-    | undefined {
+    ((props: CustomListProps) => HTMLElement | unknown) | undefined {
     const trigger = this._trigger;
     if (!trigger || trigger.type === "starter") {
       return undefined;

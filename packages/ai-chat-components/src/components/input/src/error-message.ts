@@ -119,15 +119,17 @@ class ErrorMessage extends LitElement {
     return html`
       <div class="${blockClass}">
         <div
-          class="${blockClass}__warning-icon-and-text${!hasChevron
-            ? ` ${blockClass}__warning-icon-and-text--no-chevron`
-            : ""}"
+          class="${blockClass}__warning-icon-and-text${
+            !hasChevron
+              ? ` ${blockClass}__warning-icon-and-text--no-chevron`
+              : ""
+          }"
         >
           ${this.fullscreen ? null : warningIcon}
           <div
-            class="${blockClass}__text${this._isExpanded
-              ? ` ${blockClass}__text--expanded`
-              : ""}"
+            class="${blockClass}__text${
+              this._isExpanded ? ` ${blockClass}__text--expanded` : ""
+            }"
           >
             ${this.title}<br />
             ${this._isExpanded ? this.description : ""}

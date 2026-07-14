@@ -14,6 +14,7 @@ import type {
   ServiceDeskPublicConfig,
 } from "./ServiceDeskConfig";
 import { LauncherConfig } from "./LauncherConfig";
+import { PersistedStateConfig } from "./PersistedStateConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import type { MarkdownItPlugin as _MarkdownItPlugin } from "@carbon/ai-chat-components/es/components/markdown/index.js";
 import type { KeyboardShortcuts } from "./ShortcutConfig";
@@ -139,6 +140,14 @@ export interface PublicConfig {
    * The config object for chat history.
    */
   history?: HistoryConfig;
+
+  /**
+   * Hands session-state persistence to the host page. By default the chat persists session state to
+   * the browser's `sessionStorage`; set this to boot from your own
+   * {@link PersistedStateConfig.initialState} and receive changes via
+   * {@link PersistedStateConfig.onStateChange} instead. See {@link PersistedStateConfig}.
+   */
+  persistedState?: PersistedStateConfig;
 
   /**
    * The config object for changing Carbon AI Chat's layout.

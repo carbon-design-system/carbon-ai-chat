@@ -690,13 +690,16 @@ class ChatContainer extends FlattenedConfigElement {
       ${this._userDefinedSlotNames.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
       )}
-      ${this.renderCustomMessageFooter
-        ? this._customFooterSlotNames.map(
-            (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
-          )
-        : this._customFooterSlotNames.map(
-            (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`,
-          )}
+      ${
+        this.renderCustomMessageFooter
+          ? this._customFooterSlotNames.map(
+              (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
+            )
+          : this._customFooterSlotNames.map(
+              (slot) =>
+                html`<div slot=${slot}><slot name=${slot}></slot></div>`,
+            )
+      }
       ${this._pluginSlotNames.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
       )}

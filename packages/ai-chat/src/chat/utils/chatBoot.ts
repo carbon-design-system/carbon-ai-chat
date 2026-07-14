@@ -298,8 +298,7 @@ export function attachCustomFooterHandler(
           message: event.data.message,
           messageItem: event.data.messageItem,
           additionalData: event.data.additionalData as
-            | Record<string, unknown>
-            | undefined,
+            Record<string, unknown> | undefined,
         },
       };
     });

@@ -32,8 +32,7 @@ interface AppShellWriteableElementsProps extends HasServiceManager {
 interface ElementConfig {
   wrapperSlot: string;
   slotName:
-    | WriteableElementName
-    | ((showHomeScreen: boolean) => WriteableElementName);
+    WriteableElementName | ((showHomeScreen: boolean) => WriteableElementName);
   idSuffix: string | ((showHomeScreen: boolean) => string);
   className: string | ((showHomeScreen: boolean) => string);
 }

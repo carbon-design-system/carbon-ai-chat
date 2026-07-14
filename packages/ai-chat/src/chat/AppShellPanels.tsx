@@ -18,8 +18,8 @@ import IFramePanel from "./components/panels/IFramePanel";
 import ViewSourcePanel from "./components/panels/ViewSourcePanel";
 import CatastrophicErrorPanel from "./components/panels/CatastrophicErrorPanel";
 import { PanelWithFocus } from "./components/panels/PanelWithFocus";
-import { BodyMessageComponents } from "./components-legacy/responseTypes/util/BodyMessageComponents";
-import { FooterButtonComponents } from "./components-legacy/responseTypes/util/FooterButtonComponents";
+import { BodyMessageComponents } from "./components/BodyMessageComponents";
+import { FooterButtonComponents } from "./components/FooterButtonComponents";
 import { MessageTypeComponent } from "./components-legacy/MessageTypeComponent";
 import { Header } from "./components/header/Header";
 import { useSelector } from "./hooks/useSelector";
@@ -466,8 +466,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                     title={
                       (
                         responsePanelState.localMessageItem?.item as
-                          | ButtonItem
-                          | undefined
+                          ButtonItem | undefined
                       )?.panel?.title
                     }
                     labelBackButton={languagePack.general_returnToAssistant}

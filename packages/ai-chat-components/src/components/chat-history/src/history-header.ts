@@ -70,17 +70,19 @@ class CDSAIChatHistoryHeader extends LitElement {
     } = this;
 
     return html`
-      ${showCloseAction
-        ? html`<cds-icon-button
-            class="${prefix}--history-header__close-button"
-            kind="ghost"
-            align="right"
-            @click=${handleCloseButtonClick}
-          >
-            ${iconLoader(ChevronLeft16, { slot: "icon" })}
-            <span slot="tooltip-content">${closeButtonLabel}</span>
-          </cds-icon-button>`
-        : nothing}
+      ${
+        showCloseAction
+          ? html`<cds-icon-button
+              class="${prefix}--history-header__close-button"
+              kind="ghost"
+              align="right"
+              @click=${handleCloseButtonClick}
+            >
+              ${iconLoader(ChevronLeft16, { slot: "icon" })}
+              <span slot="tooltip-content">${closeButtonLabel}</span>
+            </cds-icon-button>`
+          : nothing
+      }
       <span class="${prefix}--history-header__title">${headerTitle}</span>
     `;
   }
