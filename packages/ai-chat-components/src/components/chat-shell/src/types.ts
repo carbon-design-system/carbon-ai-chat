@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -21,10 +21,7 @@ export type CornerStyle = "round" | "square";
  * Corner position identifiers
  */
 export type CornerPosition =
-  | "start-start"
-  | "start-end"
-  | "end-start"
-  | "end-end";
+  "start-start" | "start-end" | "end-start" | "end-end";
 
 /**
  * Configuration for corner styles
@@ -61,9 +58,7 @@ export interface SlotContentState {
  * Keys for tracking initial state completion
  */
 export type InitialStateKey =
-  | "inputAndMessagesAtMaxWidth"
-  | "shouldRenderHistory"
-  | "hasSlotContent";
+  "inputAndMessagesAtMaxWidth" | "shouldRenderHistory" | "hasSlotContent";
 
 /**
  * State tracking for input and messages width

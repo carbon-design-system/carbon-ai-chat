@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -384,12 +384,14 @@ class CdsAiChatChatHeader extends LitElement {
           leave-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.leaveDelayMs}
           @click=${this.navigationOverflowOnClick}
         >
-          ${this.navigationOverflowIcon
-            ? iconLoader(
-                this.navigationOverflowIcon,
-                this.getOverflowIconConfig(),
-              )
-            : nothing}
+          ${
+            this.navigationOverflowIcon
+              ? iconLoader(
+                  this.navigationOverflowIcon,
+                  this.getOverflowIconConfig(),
+                )
+              : nothing
+          }
           <span slot="tooltip-content">${this.navigationOverflowLabel}</span>
           <cds-overflow-menu-body ?flipped=${this.isRTL}>
             ${this.renderOverflowMenuItems()}
@@ -433,26 +435,30 @@ class CdsAiChatChatHeader extends LitElement {
 
     return html`
       <div slot="title" class="cds-aichat-chat-header__title">
-        ${this.headerTitle
-          ? html`
-              <span
-                class="cds-aichat-chat-header__title-text"
-                data-testid=${PageObjectId.HEADER_TITLE}
-              >
-                ${this.headerTitle}
-              </span>
-            `
-          : nothing}
-        ${this.headerName
-          ? html`
-              <span
-                class="cds-aichat-chat-header__name-text"
-                data-testid=${PageObjectId.HEADER_NAME}
-              >
-                ${this.headerName}
-              </span>
-            `
-          : nothing}
+        ${
+          this.headerTitle
+            ? html`
+                <span
+                  class="cds-aichat-chat-header__title-text"
+                  data-testid=${PageObjectId.HEADER_TITLE}
+                >
+                  ${this.headerTitle}
+                </span>
+              `
+            : nothing
+        }
+        ${
+          this.headerName
+            ? html`
+                <span
+                  class="cds-aichat-chat-header__name-text"
+                  data-testid=${PageObjectId.HEADER_NAME}
+                >
+                  ${this.headerName}
+                </span>
+              `
+            : nothing
+        }
       </div>
     `;
   }

@@ -60,8 +60,7 @@
   padding-block-start: layout.$spacing-05;
 }
 
-// Response stopped indicator (absorbed from ResponseStopped.scss)
-.cds-aichat--response-stopped {
+.cds-aichat--system-message-response-stopped {
   @include type.type-style("body-01");
 
   color: theme.$text-secondary;
@@ -72,15 +71,15 @@
 
 .cds-aichat--standard-width
   .cds-aichat--conversational-search
-  + .cds-aichat--response-stopped,
+  + .cds-aichat--system-message-response-stopped,
 .cds-aichat--wide-width
   .cds-aichat--conversational-search
-  + .cds-aichat--response-stopped {
+  + .cds-aichat--system-message-response-stopped {
   padding-inline-start: 56px;
 }
 
 .cds-aichat--narrow-width
   .cds-aichat--conversational-search
-  + .cds-aichat--response-stopped {
+  + .cds-aichat--system-message-response-stopped {
   padding-inline-start: 16px;
 }

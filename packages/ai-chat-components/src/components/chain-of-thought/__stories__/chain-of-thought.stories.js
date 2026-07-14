@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -197,27 +197,33 @@ const renderStep = (step) => {
       step-number=${step.stepNumber ?? ""}
     >
       <cds-aichat-tool-call-data tool-name=${step.tool_name ?? ""}>
-        ${step.description
-          ? html`<div slot="description">
-              <cds-aichat-markdown
-                .markdown=${step.description}
-              ></cds-aichat-markdown>
-            </div>`
-          : nothing}
-        ${requestMarkdown
-          ? html`<div slot="input">
-              <cds-aichat-markdown
-                .markdown=${requestMarkdown}
-              ></cds-aichat-markdown>
-            </div>`
-          : nothing}
-        ${responseMarkdown
-          ? html`<div slot="output">
-              <cds-aichat-markdown
-                .markdown=${responseMarkdown}
-              ></cds-aichat-markdown>
-            </div>`
-          : nothing}
+        ${
+          step.description
+            ? html`<div slot="description">
+                <cds-aichat-markdown
+                  .markdown=${step.description}
+                ></cds-aichat-markdown>
+              </div>`
+            : nothing
+        }
+        ${
+          requestMarkdown
+            ? html`<div slot="input">
+                <cds-aichat-markdown
+                  .markdown=${requestMarkdown}
+                ></cds-aichat-markdown>
+              </div>`
+            : nothing
+        }
+        ${
+          responseMarkdown
+            ? html`<div slot="output">
+                <cds-aichat-markdown
+                  .markdown=${responseMarkdown}
+                ></cds-aichat-markdown>
+              </div>`
+            : nothing
+        }
       </cds-aichat-tool-call-data>
     </cds-aichat-chain-of-thought-step>
   `;

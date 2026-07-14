@@ -19,6 +19,10 @@ import {
 import { isResponse } from "../utils/messageUtils";
 
 interface SystemMessageProps {
+  /**
+   * The message to display. Optional because `responseStopped` mode renders
+   * without a message object.
+   */
   message?: Message;
   /**
    * If true, renders as standalone (no bubble). If false, renders inline within a message bubble.
@@ -46,7 +50,7 @@ function SystemMessage({
 
   if (responseStopped) {
     return (
-      <div className="cds-aichat--response-stopped">
+      <div className="cds-aichat--system-message-response-stopped">
         {messages_responseStopped}
       </div>
     );

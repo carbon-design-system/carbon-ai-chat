@@ -133,8 +133,7 @@ export class Demo extends LitElement {
     state: RenderUserDefinedState,
   ): HTMLElement | null => {
     const payload = state.messageItem?.user_defined as
-      | StepsCardPayload
-      | undefined;
+      StepsCardPayload | undefined;
     if (payload?.user_defined_type !== "steps_card") {
       return null;
     }
@@ -175,12 +174,14 @@ export class Demo extends LitElement {
         <div slot="body" class="preview-card preview-card-steps">
           <cds-aichat-card-steps .steps=${steps}></cds-aichat-card-steps>
         </div>
-        ${payload.showFooter
-          ? html`<cds-aichat-card-footer
-              size="md"
-              .actions=${[]}
-            ></cds-aichat-card-footer>`
-          : nothing}
+        ${
+          payload.showFooter
+            ? html`<cds-aichat-card-footer
+                size="md"
+                .actions=${[]}
+              ></cds-aichat-card-footer>`
+            : nothing
+        }
       </cds-aichat-card>
     `;
   }

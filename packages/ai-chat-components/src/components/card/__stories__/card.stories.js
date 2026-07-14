@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -311,12 +311,16 @@ export const CardFooter = {
       args.maxWidth,
       () => html`
         <cds-aichat-card-footer
-          style=${args["--cds-aichat-border-radius"]
-            ? "--cds-aichat-border-radius: 8px;"
-            : ""}
-          .actions=${{ ...cardFooterPresets, ...previewCardFooterPresets }[
-            args.footerActions
-          ]}
+          style=${
+            args["--cds-aichat-border-radius"]
+              ? "--cds-aichat-border-radius: 8px;"
+              : ""
+          }
+          .actions=${
+            { ...cardFooterPresets, ...previewCardFooterPresets }[
+              args.footerActions
+            ]
+          }
           size=${ifDefined(args.footerSize)}
           @cds-aichat-card-footer-action=${(e) => action("action")(e.detail)}
         ></cds-aichat-card-footer>

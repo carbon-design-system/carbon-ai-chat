@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -163,12 +163,14 @@ class CDSAIChatToolCallData extends LitElement {
             this.handleSlotChange("description", event)}
         ></slot>
       </div>
-      ${hasToolName
-        ? html`<div class="${baseClass} ${baseClass}-toolName">
-            <div class="${baseClass}-label">${this.toolLabelText}</div>
-            ${this.toolName}
-          </div>`
-        : null}
+      ${
+        hasToolName
+          ? html`<div class="${baseClass} ${baseClass}-toolName">
+              <div class="${baseClass}-label">${this.toolLabelText}</div>
+              ${this.toolName}
+            </div>`
+          : null
+      }
       <div
         class="${baseClass} ${baseClass}-input"
         ?hidden=${!this.hasInputSlot}

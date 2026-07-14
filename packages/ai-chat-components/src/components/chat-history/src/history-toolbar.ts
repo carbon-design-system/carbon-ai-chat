@@ -130,12 +130,14 @@ class CDSAIChatHistoryToolbar extends LitElement {
       searchAttributes?.["close-button-label-text"] ?? closeButtonLabelText;
 
     return html` <slot name="actions-start"></slot>
-      ${!searchOff
-        ? html`<cds-search
-            close-button-label-text=${effectiveCloseButtonLabel}
-            ${searchAttributes ? spread(searchAttributes as any) : nothing}
-          ></cds-search>`
-        : nothing}
+      ${
+        !searchOff
+          ? html`<cds-search
+              close-button-label-text=${effectiveCloseButtonLabel}
+              ${searchAttributes ? spread(searchAttributes as any) : nothing}
+            ></cds-search>`
+          : nothing
+      }
       <slot name="actions-end"></slot>
       <cds-icon-button align="top-right" @click=${handleNewChatButtonClick}>
         ${iconLoader(AddComment16, {
