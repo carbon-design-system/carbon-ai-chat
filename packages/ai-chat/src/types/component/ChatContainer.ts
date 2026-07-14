@@ -24,51 +24,16 @@ import type {
   TokenTree as _TokenTree,
 } from "@carbon/ai-chat-components/es/components/markdown/index.js";
 import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
-import { GenericItem, Message, MessageResponse } from "../messaging/Messages";
+import { GenericItem, MessageResponse } from "../messaging/Messages";
 import { PublicConfig, PublicConfigMarkdown } from "../config/PublicConfig";
-import { DeepPartial } from "../utilities/DeepPartial";
 import {
   BusEventViewChange,
   BusEventViewPreChange,
 } from "../events/eventBusTypes";
-import { MessageState } from "../config/MessagingConfig";
-
-/**
- * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
- *
- * @category React
- */
-interface RenderUserDefinedState {
-  /**
-   * The entire message object received when the entire message (not just the individual messageItem) has finished processing.
-   */
-  fullMessage?: Message;
-
-  /**
-   * The messageItem after all partial chunks are received. This will first be set to the value of the `complete_item`
-   * chunk.
-   * Once the fullMessage is resolved, this value will update to the value of the item in the fullMessage, which will
-   * be the same value unless you have done any post-processing mutations.
-   */
-  messageItem?: GenericItem;
-
-  /**
-   * An array of each user defined item partial chunk. Each chunk contains the new chunk information, they are not
-   * concatenated for you. When messageItem has been set an no more chunks are expected, this property is removed
-   * to avoid memory leaks.
-   */
-  partialItems?: DeepPartial<GenericItem>[];
-
-  /**
-   * The current {@link MessageState} of the containing message at the moment the renderer
-   * was invoked. Use this to drive in-widget streaming indicators or error treatments
-   * without inspecting the message items directly.
-   *
-   * @experimental Field is additive; its presence and semantics may evolve as the
-   * lifecycle model stabilizes.
-   */
-  state?: MessageState;
-}
+import {
+  RenderCustomMessageFooterState,
+  RenderUserDefinedState,
+} from "./slotStates";
 
 /**
  * The type of the render function that is used to render a custom footer. This function should return a
@@ -123,26 +88,6 @@ type WCRenderUserDefinedResponse = (
   state: RenderUserDefinedState,
   instance: ChatInstance,
 ) => HTMLElement | null;
-
-/**
- * The accumulated state for one custom message footer slot, passed to the
- * web component {@link WCRenderCustomMessageFooter} callback.
- *
- * @category Web component
- */
-interface RenderCustomMessageFooterState {
-  /** The unique identifier for this footer slot. */
-  slotName: string;
-
-  /** The assistant response object that contains the messageItem. */
-  message: MessageResponse;
-
-  /** The message item that the footer is attached to. */
-  messageItem: GenericItem;
-
-  /** Optional application data supplied with the footer slot. */
-  additionalData?: Record<string, unknown>;
-}
 
 /**
  * The render function used to render a custom message footer in web

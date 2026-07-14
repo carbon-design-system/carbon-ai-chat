@@ -32,6 +32,7 @@ import {
 import { BusEvent } from "../../types/events/eventBusTypes";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
+import { ChatSlotStates } from "../sdk/slotStates.js";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -167,6 +168,14 @@ class ServiceManager {
    * double-teardown so disposal is idempotent.
    */
   disposed = false;
+
+  /**
+   * Framework-agnostic slot-projection state for the user-defined-response and custom-footer portal
+   * surfaces. Created once via `attachSlotStateTracking` during boot; the value stores hang off the
+   * manager so the accumulated slot state survives a host remount — a remounting subscriber reads
+   * the current value on first `get()`.
+   */
+  slotStates?: ChatSlotStates;
 
   /**
    * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available
