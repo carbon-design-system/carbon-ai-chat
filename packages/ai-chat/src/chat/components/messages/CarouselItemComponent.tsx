@@ -8,18 +8,18 @@
  */
 
 import React, { Suspense } from "react";
-import { useSelector } from "../../hooks/useSelector.js";
+import { useSelector } from "../../hooks/useSelector";
 
-import { AppState } from "../../../types/state/AppState.js";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus.js";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem.js";
+import { AppState } from "../../../types/state/AppState";
+import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
+import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
 
-import { SkeletonPlaceholder } from "../util/SkeletonPicker.js";
-import { CardItemComponent } from "./CardItemComponent.js";
+import { SkeletonPlaceholder } from "../util/SkeletonPicker";
+import { CardItemComponent } from "./CardItemComponent";
 import {
   CarouselItem,
   MessageResponse,
-} from "../../../types/messaging/Messages.js";
+} from "../../../types/messaging/Messages";
 
 interface CarouselItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<CarouselItem>;

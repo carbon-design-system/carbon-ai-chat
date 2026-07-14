@@ -215,15 +215,15 @@ class FileUploadsElement extends LitElement {
           ? html`
               <div class="${prefix}--file-uploads-container">
                 ${this.uploads.map(
-                (upload) => html`
-                  <cds-aichat-file-upload-item
-                    .upload="${upload}"
-                    remove-file-label="${this.removeFileLabel}"
-                    uploading-file-label="${this.uploadingFileLabel}"
-                    @cds-aichat-file-remove="${this._handleFileRemove}"
-                  ></cds-aichat-file-upload-item>
-                `,
-              )}
+                  (upload) => html`
+                    <cds-aichat-file-upload-item
+                      .upload="${upload}"
+                      remove-file-label="${this.removeFileLabel}"
+                      uploading-file-label="${this.uploadingFileLabel}"
+                      @cds-aichat-file-remove="${this._handleFileRemove}"
+                    ></cds-aichat-file-upload-item>
+                  `,
+                )}
               </div>
             `
           : nothing

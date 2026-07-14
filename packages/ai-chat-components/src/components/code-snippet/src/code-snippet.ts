@@ -1029,10 +1029,10 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
                     ${expandCodeBtnText}
                   </span>
                   ${iconLoader(ChevronDown16, {
-                  class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
-                  role: "img",
-                  slot: "icon",
-                })}
+                    class: `${prefix}--icon-chevron--down ${prefix}--snippet__icon`,
+                    role: "img",
+                    slot: "icon",
+                  })}
                 </cds-button>
               </div>
             `
