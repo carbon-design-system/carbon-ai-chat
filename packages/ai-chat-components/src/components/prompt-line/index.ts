@@ -7,14 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/input-shell.js";
+import "./src/prompt-line-shell.js";
 import "./src/prompt-line.js";
 import "./src/error-message.js";
 import "./src/send-control.js";
 import "./src/stop-streaming-button.js";
 import "./src/autocomplete-controller.js";
 
-export { default as InputShellElement } from "./src/input-shell.js";
+export { default as PromptLineShellElement } from "./src/prompt-line-shell.js";
 export { default as PromptLineElement } from "./src/prompt-line.js";
 // Warms the Tiptap runtime chunk so a host (e.g. `@carbon/ai-chat`) can ensure
 // the prompt-line mounts in rich mode on first paint, no textarea→editor flash.

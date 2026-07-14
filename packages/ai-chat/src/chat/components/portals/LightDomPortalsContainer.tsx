@@ -13,7 +13,7 @@ import ReactDOM from "react-dom";
 import {
   LIGHT_DOM_PORTAL_EVENT,
   type LightDomPortalEventDetail,
-} from "@carbon/ai-chat-components/es/components/input/src/tiptap/render-in-light-dom.js";
+} from "@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js";
 
 /**
  * Tracked state for a single light-DOM portal.

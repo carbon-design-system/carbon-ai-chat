@@ -84,7 +84,7 @@ Re-declare upstream symbols at a local site you own, then re-export from [../aiC
 Write **full** consumer-facing JSDoc at the local re-declaration:
 
 ```ts
-import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 
 /**
  * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
@@ -99,7 +99,7 @@ export type AutocompleteConfig = _AutocompleteConfig;
 For runtime values, use `export const`:
 
 ```ts
-import { buildCarbonExtensions as _buildCarbonExtensions } from "@carbon/ai-chat-components/es/components/input/index.js";
+import { buildCarbonExtensions as _buildCarbonExtensions } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 
 /**
  * Translate the Carbon-curated configs surfaced on {@link InputConfig} into
@@ -222,7 +222,7 @@ Why it works: units stated, default documented, `{@link}` resolves and will fail
 ### Good — linking back to the consumer
 
 ```ts
-import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 
 /**
  * Live autocomplete config consumed by {@link InputConfig.autocomplete}.

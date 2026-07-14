@@ -19,7 +19,7 @@ import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
 
 import styles from "./autocomplete-item.scss?lit";
 
-import type { SuggestionItem } from "../../input/src/types.js";
+import type { SuggestionItem } from "../../prompt-line/src/types.js";
 
 const blockClass = `${prefix}-autocomplete-item`;
 

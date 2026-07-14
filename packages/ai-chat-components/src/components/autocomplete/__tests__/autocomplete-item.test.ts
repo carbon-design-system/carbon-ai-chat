@@ -11,7 +11,7 @@ import { html } from "lit";
 import { fixture, expect } from "@open-wc/testing";
 import "../src/autocomplete-item.js";
 import type AutocompleteItemElement from "../src/autocomplete-item.js";
-import type { SuggestionItem } from "../../input/src/types.js";
+import type { SuggestionItem } from "../../prompt-line/src/types.js";
 
 describe("cds-aichat-autocomplete-item", () => {
   const mockItem: SuggestionItem = {

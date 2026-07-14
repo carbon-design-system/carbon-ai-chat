@@ -26,7 +26,7 @@
 // -----------------------------------------------------------
 // Shell (outermost wrapper inside shadow DOM)
 // -----------------------------------------------------------
-.#{$prefix}--input-shell {
+.#{$prefix}--prompt-line-shell {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -193,7 +193,7 @@
 // -----------------------------------------------------------
 // Editor slot (ProseMirror, light DOM)
 // Inner .ProseMirror styles are applied directly via JS in
-// _initProseMirror (CSSOM) — see input-shell.ts.
+// _initProseMirror (CSSOM) — see prompt-line-shell.ts.
 // -----------------------------------------------------------
 ::slotted([slot="editor"]) {
   position: relative;
@@ -294,7 +294,7 @@
 }
 
 // Focus outline for expanded state — only on text area, and only when focus
-// arrived via keyboard navigation. `input-shell` listens for
+// arrived via keyboard navigation. `prompt-line-shell` listens for
 // `cds-aichat-prompt-focus` and reads `event.detail.keyboard`; the rich runtime
 // sets that flag when no pointer/touch event preceded the focus. The shell
 // toggles `--keyboard-focus` on the shadow-DOM text-area node, which this rule

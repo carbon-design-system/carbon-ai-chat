@@ -10,11 +10,11 @@
 /**
  * React hook for the chat-input autocomplete overlay. Thin wrapper around
  * the framework-agnostic `AutocompleteController` co-located in
- * [../../components/input/src/autocomplete-controller.ts] (which also exports
+ * [../../components/prompt-line/src/autocomplete-controller.ts] (which also exports
  * the `<cds-aichat-autocomplete-controller>` element). The controller owns
  * trigger handling, async resolution, and selection routing; this hook
  * adapts those callbacks into React state and returns a JSX node to slot
- * into `<InputShell>`.
+ * into `<PromptLineShell>`.
  */
 
 import React from "react";
@@ -22,17 +22,17 @@ import ReactDOM from "react-dom";
 import type { JSX, ReactNode, RefObject } from "react";
 
 import Autocomplete from "../autocomplete.js";
-import type PromptLineElement from "../../components/input/src/prompt-line.js";
+import type PromptLineElement from "../../components/prompt-line/src/prompt-line.js";
 import {
   AutocompleteController,
   type AutocompleteControllerState,
-} from "../../components/input/src/autocomplete-controller.js";
+} from "../../components/prompt-line/src/autocomplete-controller.js";
 import type {
   AutocompleteConfig,
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
-} from "../../components/input/src/tiptap/types.js";
+} from "../../components/prompt-line/src/tiptap/types.js";
 
 export interface UseChatAutocompleteOptions {
   mention?: TriggerSuggestionConfig;
@@ -57,7 +57,7 @@ export interface UseChatAutocompleteResult {
     event: CustomEvent<TriggerChangeEventDetail | null>,
   ) => void;
   /**
-   * JSX to render with `slot="autocomplete-content"` inside `<InputShell>`.
+   * JSX to render with `slot="autocomplete-content"` inside `<PromptLineShell>`.
    * `null` while no trigger is active.
    */
   autocompleteContent: ReactNode;

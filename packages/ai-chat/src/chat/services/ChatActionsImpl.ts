@@ -119,7 +119,7 @@ import type { Editor, JSONContent } from "@tiptap/core";
 import {
   getRawText,
   textToDoc,
-} from "@carbon/ai-chat-components/es/components/input/index.js";
+} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 
 /**
  * Module-scoped flag so the deprecation warning for `updateRawValue` is

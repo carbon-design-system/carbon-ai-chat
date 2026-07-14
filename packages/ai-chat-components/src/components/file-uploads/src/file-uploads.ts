@@ -23,7 +23,7 @@ import prefix from "../../../globals/settings.js";
 import type {
   FileUpload,
   FileRemoveEventDetail,
-} from "../../input/src/types.js";
+} from "../../prompt-line/src/types.js";
 
 import "./file-upload-item.js";
 import styles from "./file-uploads.scss?lit";

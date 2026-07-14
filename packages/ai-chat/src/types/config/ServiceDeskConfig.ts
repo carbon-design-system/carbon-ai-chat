@@ -24,7 +24,7 @@ import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities"
 import {
   FileStatusValue as _FileStatusValue,
   type FileUpload as _FileUpload,
-} from "@carbon/ai-chat-components/es/components/input/src/types.js";
+} from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
 
 /**
  * Lifecycle status for a {@link FileUpload}. Values:

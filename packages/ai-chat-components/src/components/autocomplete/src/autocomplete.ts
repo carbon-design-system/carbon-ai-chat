@@ -22,11 +22,11 @@ import "./autocomplete-item-group.js";
 import type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../input/src/tiptap/types.js";
+} from "../../prompt-line/src/tiptap/types.js";
 export type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../input/src/tiptap/types.js";
+} from "../../prompt-line/src/tiptap/types.js";
 
 const blockClass = `${prefix}-autocomplete`;
 

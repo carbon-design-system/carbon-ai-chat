@@ -9,7 +9,7 @@
 
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import type { JSONContent } from "@tiptap/core";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 
 import actions from "../../store/actions";
 import {

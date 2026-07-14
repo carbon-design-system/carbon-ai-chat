@@ -13,7 +13,7 @@ import type FileUploadsElement from "@carbon/ai-chat-components/es/components/fi
 import {
   FileStatusValue,
   type FileUpload,
-} from "@carbon/ai-chat-components/es/components/input/src/types.js";
+} from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
 
 /**
  * This repository uses the @web/test-runner library for testing

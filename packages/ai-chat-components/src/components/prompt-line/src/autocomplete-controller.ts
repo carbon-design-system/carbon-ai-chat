@@ -516,10 +516,10 @@ async function resolveConfigItems(
 
 /**
  * `<cds-aichat-autocomplete-controller>` — drops the autocomplete overlay
- * lifecycle into a `<cds-aichat-input-shell>`'s `autocomplete-content` slot.
+ * lifecycle into a `<cds-aichat-prompt-line-shell>`'s `autocomplete-content` slot.
  *
  * Listens for `cds-aichat-trigger-change` events bubbling up from the
- * enclosing input-shell (the events are `composed: true, bubbles: true`, so
+ * enclosing prompt-line-shell (the events are `composed: true, bubbles: true`, so
  * they reach here from inside the prompt-line's shadow root). Scoping the
  * listener to the shell — rather than `window` — keeps multiple
  * shell/controller pairs on the same page from cross-talking. Renders the
@@ -559,7 +559,7 @@ class AutocompleteControllerElement extends LitElement {
   private _controller: AutocompleteController | null = null;
   /**
    * Ancestor we subscribed `cds-aichat-trigger-change` on. Scoping the
-   * listener to the enclosing `<cds-aichat-input-shell>` (rather than
+   * listener to the enclosing `<cds-aichat-prompt-line-shell>` (rather than
    * `window`) keeps a second shell/controller pair on the same page from
    * receiving each other's events.
    */
@@ -592,11 +592,11 @@ class AutocompleteControllerElement extends LitElement {
         this._state = next;
       },
     });
-    // Scope to the enclosing input-shell so multiple shell/controller pairs
+    // Scope to the enclosing prompt-line-shell so multiple shell/controller pairs
     // on the same page don't cross-talk. Falls back to `this` if the
     // controller is used outside a shell — in that case the consumer
     // should make sure their prompt-line bubbles events into this element.
-    this._eventSource = this.closest("cds-aichat-input-shell") ?? this;
+    this._eventSource = this.closest("cds-aichat-prompt-line-shell") ?? this;
     this._eventSource.addEventListener(
       "cds-aichat-trigger-change",
       this._handleTriggerChange as EventListener,

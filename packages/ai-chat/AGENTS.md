@@ -59,7 +59,7 @@ npx jest -t "pattern"
 ## Gotchas
 
 - **Custom store hooks**: `useSelector` and `useDispatch` come from `src/chat/store/hooks/` — **not** `react-redux`. Import from the local store.
-- **ESM `.js` extensions in imports**: TS source uses explicit `.js` extensions on relative imports even when the file is `.ts`/`.tsx` (e.g. `import { foo } from "./bar.js"`). Jest's `moduleNameMapper` rewrites these at test time. Omitting the extension breaks the build.
+- **Relative-import extensions**: `moduleResolution` is classic `node`, so relative imports of `.ts`/`.tsx` source resolve **with or without** a trailing `.js` — extensionless is the de-facto convention across the tree, and both `npm run build` (rollup) and `tsc --noEmit` accept either. Jest's `moduleNameMapper` strips a trailing `.js` from relative imports, so tests handle both too. Keep the extension only when the target is a real built `.js` file in a dependency (e.g. `import Card from "@carbon/ai-chat-components/es/react/card.js"`) — those are actual files, not TS source.
 - **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Don't assume null safety; check explicitly or add guards.
 - **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow existing patterns. Background in [architecture.md](references/architecture.md).
 

@@ -9,9 +9,9 @@
 
 import React from "react";
 
-import { HasBaseHeight } from "../../../types/utilities/HasBaseHeight.js";
-import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer.js";
-import { MessageResponseTypes } from "../../../types/messaging/Messages.js";
+import { HasBaseHeight } from "../../../types/utilities/HasBaseHeight";
+import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer";
+import { MessageResponseTypes } from "../../../types/messaging/Messages";
 
 type VideoComponentConfig = HasBaseHeight;
 

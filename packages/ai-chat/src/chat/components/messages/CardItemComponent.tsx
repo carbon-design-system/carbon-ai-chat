@@ -11,15 +11,20 @@ import Card from "@carbon/ai-chat-components/es/react/card.js";
 import cx from "classnames";
 import React from "react";
 
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus.js";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem.js";
-import { BodyWithFooterComponent } from "../../components/BodyWithFooterComponent.js";
+import { useSelector } from "../../hooks/useSelector";
+import { useServiceManager } from "../../hooks/useServiceManager";
+import { selectInputIsReadonly } from "../../store/selectors";
+import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
+import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
+import { THROW_ERROR } from "../../utils/constants";
+import { BodyMessageComponents } from "../BodyMessageComponents";
+import { FooterButtonComponents } from "../FooterButtonComponents";
 import {
   CardItem,
   MessageResponse,
   WidthOptions,
-} from "../../../types/messaging/Messages.js";
-import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps.js";
+} from "../../../types/messaging/Messages";
+import { MessageTypeComponentProps } from "../../../types/messaging/MessageTypeComponentProps";
 
 interface CardItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem;
@@ -46,8 +51,18 @@ interface CardItemComponentProps extends HasRequestFocus {
  * response types.
  */
 function CardItemComponent(props: CardItemComponentProps) {
-  const { ignoreMaxWidth } = props;
-  const item = props.localMessageItem.item as CardItem;
+  const {
+    ignoreMaxWidth,
+    localMessageItem,
+    fullMessage,
+    isMessageForInput,
+    requestFocus,
+    renderMessageComponent,
+  } = props;
+  const item = localMessageItem.item as CardItem;
+  const serviceManager = useServiceManager();
+  const isInputReadonly = useSelector(selectInputIsReadonly);
+
   return (
     <Card
       className={cx("cds-aichat--card-message-component", {
@@ -59,10 +74,36 @@ function CardItemComponent(props: CardItemComponentProps) {
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
       })}
     >
-      <BodyWithFooterComponent
-        {...props}
-        renderMessageComponent={props.renderMessageComponent}
-      />
+      <div slot="body">
+        <BodyMessageComponents
+          message={localMessageItem}
+          originalMessage={fullMessage}
+          requestInputFocus={requestFocus}
+          disableUserInputs={isInputReadonly}
+          isMessageForInput={isMessageForInput}
+          scrollElementIntoView={THROW_ERROR}
+          serviceManager={serviceManager}
+          hideFeedback
+          showChainOfThought={false}
+          allowNewFeedback={false}
+          renderMessageComponent={renderMessageComponent}
+        />
+      </div>
+      <div slot="footer">
+        <FooterButtonComponents
+          message={localMessageItem}
+          originalMessage={fullMessage}
+          requestInputFocus={requestFocus}
+          disableUserInputs={isInputReadonly}
+          isMessageForInput={isMessageForInput}
+          scrollElementIntoView={THROW_ERROR}
+          serviceManager={serviceManager}
+          hideFeedback
+          showChainOfThought={false}
+          allowNewFeedback={false}
+          renderMessageComponent={renderMessageComponent}
+        />
+      </div>
     </Card>
   );
 }

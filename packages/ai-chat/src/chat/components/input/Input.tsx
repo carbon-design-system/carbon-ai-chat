@@ -9,14 +9,14 @@
 
 import React, { forwardRef, Ref, useMemo, useRef, useState } from "react";
 import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
-import InputShell from "@carbon/ai-chat-components/es/react/input-shell.js";
+import PromptLineShell from "@carbon/ai-chat-components/es/react/prompt-line-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
 import PromptLine from "@carbon/ai-chat-components/es/react/prompt-line.js";
 import ErrorMessage from "@carbon/ai-chat-components/es/react/error-message.js";
-import type { FileUpload } from "@carbon/ai-chat-components/es/components/input/src/types.js";
-import { FileStatusValue } from "@carbon/ai-chat-components/es/components/input/src/types.js";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { FileUpload } from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
+import { FileStatusValue } from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
+import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 import { useChatAutocomplete } from "@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import actions from "../../store/actions";
@@ -231,7 +231,7 @@ interface InputFunctions {
 /**
  * Input - Redux-connected container component for the input field.
  *
- * Slots a `<PromptLine>` editor into the layout-only `<InputShell>`, builds
+ * Slots a `<PromptLine>` editor into the layout-only `<PromptLineShell>`, builds
  * the curated Tiptap extension list from the chat-domain configs in Redux,
  * wires up the autocomplete overlay, and gates the send button. The shell
  * itself carries no chat logic — this component owns it all.
@@ -602,7 +602,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const hasError = hasErrorProp || overMaxLength;
 
   return (
-    <InputShell
+    <PromptLineShell
       rounded={rounded}
       expanded={expanded}
       hasError={hasError}
@@ -741,7 +741,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         onSend={handleSendControlSend}
         onStopStreaming={handleStopStreaming}
       />
-    </InputShell>
+    </PromptLineShell>
   );
 }
 

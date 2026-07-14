@@ -31,7 +31,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 
 import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import { renderInlineMarkdown } from "../components/util/inline-markdown";
-import { renderTokenChip } from "@carbon/ai-chat-components/es/components/input/index.js";
+import { renderTokenChip } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 import type { JSONContent } from "@tiptap/core";
 import type { MessageRequest } from "../../types/messaging/Messages";
 
