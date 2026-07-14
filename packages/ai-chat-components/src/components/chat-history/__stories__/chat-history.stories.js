@@ -412,22 +412,22 @@ class ChatHistoryDemo extends LitElement {
                                 title="Pinned"
                               >
                                 ${iconLoader(PinFilled16, {
-                                slot: "title-icon",
-                              })}
+                                  slot: "title-icon",
+                                })}
                                 ${this.pinnedItems.map(
-                                (item) => html`
-                                  <cds-aichat-history-panel-item
-                                    id="${item.id}"
-                                    name="${item.name}"
-                                    ?selected=${item.selected}
-                                    ?rename=${item.rename}
-                                    overflow-menu-label="${
-                                    this.overflowMenuLabel
-                                  }"
-                                    .actions=${pinnedHistoryItemActions}
-                                  ></cds-aichat-history-panel-item>
-                                `,
-                              )}
+                                  (item) => html`
+                                    <cds-aichat-history-panel-item
+                                      id="${item.id}"
+                                      name="${item.name}"
+                                      ?selected=${item.selected}
+                                      ?rename=${item.rename}
+                                      overflow-menu-label="${
+                                      this.overflowMenuLabel
+                                    }"
+                                      .actions=${pinnedHistoryItemActions}
+                                    ></cds-aichat-history-panel-item>
+                                  `,
+                                )}
                               </cds-aichat-history-panel-menu>
                             `
                           : ""
@@ -442,18 +442,18 @@ class ChatHistoryDemo extends LitElement {
                             >
                               ${item.icon}
                               ${item.chats.map(
-                              (chat) => html`
-                                <cds-aichat-history-panel-item
-                                  id="${chat.id}"
-                                  name="${chat.name}"
-                                  ?selected=${chat.selected}
-                                  overflow-menu-label="${
+                                (chat) => html`
+                                  <cds-aichat-history-panel-item
+                                    id="${chat.id}"
+                                    name="${chat.name}"
+                                    ?selected=${chat.selected}
+                                    overflow-menu-label="${
                                     this.overflowMenuLabel
                                   }"
-                                  .actions=${historyItemActions}
-                                ></cds-aichat-history-panel-item>
-                              `,
-                            )}
+                                    .actions=${historyItemActions}
+                                  ></cds-aichat-history-panel-item>
+                                `,
+                              )}
                             </cds-aichat-history-panel-menu>
                           `,
                         )}

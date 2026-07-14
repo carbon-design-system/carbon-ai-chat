@@ -354,13 +354,13 @@ class CDSAIChatToolbar extends LitElement {
                               @click=${item.onClick}
                               href=${item.href || nothing}
                               target=${
-                              item.href ? item.target || "_self" : nothing
-                            }
+                                item.href ? item.target || "_self" : nothing
+                              }
                               ?disabled=${item.disabled}
                               ?danger=${item.danger}
                               danger-description=${
-                              item.dangerDescription || nothing
-                            }
+                                item.dangerDescription || nothing
+                              }
                               ?divider=${item.divider}
                               data-testid=${item.testId || nothing}
                             >
