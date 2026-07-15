@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,18 @@
  *  @license
  */
 
-import { ViewState, ViewType } from "../../../src/aiChatEntry";
+import React from "react";
+import { render, waitFor } from "@testing-library/react";
+
+import {
+  BusEventType,
+  BusEventViewPreChange,
+  EventBusHandler,
+  ViewChangeReason,
+  ViewState,
+  ViewType,
+} from "../../../src/aiChatEntry";
+import { ChatContainer } from "../../../src/react/ChatContainer";
 import {
   createBaseConfig,
   renderChatAndGetInstance,
@@ -195,6 +206,90 @@ describe("ChatInstance.changeView", () => {
       const state = store.getState();
       expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
       expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    });
+  });
+
+  describe("hydration when a view:pre:change handler forces mainWindow open", () => {
+    // Regression coverage for https://github.com/carbon-design-system/carbon-ai-chat/issues/1679:
+    // a host that mutates event.newViewState.mainWindow directly inside onViewPreChange (rather than
+    // calling changeView itself) was never hydrated, so customSendMessage/customLoadHistory never ran.
+    it("hydrates when a view:pre:change handler mutates newViewState.mainWindow to true", async () => {
+      const config = createBaseConfig();
+      const { instance, store, serviceManager } =
+        await renderChatAndGetInstanceWithStore(config);
+      const hydrateSpy = jest
+        .spyOn(serviceManager.actions, "hydrateChat")
+        .mockResolvedValue(undefined);
+
+      instance.on({
+        type: BusEventType.VIEW_PRE_CHANGE,
+        handler: ((event: BusEventViewPreChange) => {
+          event.newViewState.mainWindow = true;
+        }) as EventBusHandler,
+      });
+
+      // Mirrors chatBoot.ts's deferred-hydration cold-boot call: the caller requests the window stay
+      // closed and explicitly opts out of hydration, since it expects a later, user-initiated
+      // changeView call to hydrate instead.
+      await serviceManager.actions.changeView(
+        { launcher: true, mainWindow: false },
+        { viewChangeReason: ViewChangeReason.WEB_CHAT_LOADED },
+        /* tryHydrating */ false,
+        /* forceViewChange */ true,
+      );
+
+      expect(
+        store.getState().persistedToBrowserStorage.viewState.mainWindow,
+      ).toBe(true);
+      expect(hydrateSpy).toHaveBeenCalled();
+    });
+
+    it("does not hydrate when no handler mutates newViewState during a deferred-hydration change", async () => {
+      const config = createBaseConfig();
+      const { store, serviceManager } =
+        await renderChatAndGetInstanceWithStore(config);
+      const hydrateSpy = jest
+        .spyOn(serviceManager.actions, "hydrateChat")
+        .mockResolvedValue(undefined);
+
+      await serviceManager.actions.changeView(
+        { launcher: true, mainWindow: false },
+        { viewChangeReason: ViewChangeReason.WEB_CHAT_LOADED },
+        /* tryHydrating */ false,
+        /* forceViewChange */ true,
+      );
+
+      expect(
+        store.getState().persistedToBrowserStorage.viewState.mainWindow,
+      ).toBe(false);
+      expect(hydrateSpy).not.toHaveBeenCalled();
+    });
+
+    it("calls customSendMessage and customLoadHistory when onViewPreChange forces the window open during cold boot", async () => {
+      window.sessionStorage.clear();
+
+      const customLoadHistory = jest.fn().mockResolvedValue([]);
+      const customSendMessage = jest.fn();
+
+      const config = createBaseConfig();
+      render(
+        React.createElement(ChatContainer, {
+          ...config,
+          messaging: {
+            ...config.messaging,
+            customLoadHistory,
+            customSendMessage,
+          },
+          onViewPreChange: (event) => {
+            event.newViewState.mainWindow = true;
+          },
+        }),
+      );
+
+      await waitFor(() => {
+        expect(customLoadHistory).toHaveBeenCalled();
+      });
+      expect(customSendMessage).toHaveBeenCalled();
     });
   });
 });

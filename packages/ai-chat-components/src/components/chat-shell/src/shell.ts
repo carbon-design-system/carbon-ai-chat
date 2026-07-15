@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -497,9 +497,11 @@ class CDSAIChatShell extends LitElement {
         aria-label=${this.workspaceAriaLabel}
       >
         <div
-          class=${workspaceState?.contentVisible
-            ? "workspace-content"
-            : "workspace-content workspace-content--hidden"}
+          class=${
+            workspaceState?.contentVisible
+              ? "workspace-content"
+              : "workspace-content workspace-content--hidden"
+          }
           ?inert=${!workspaceState?.contentVisible}
         >
           <slot name="workspace"></slot>
@@ -528,9 +530,11 @@ class CDSAIChatShell extends LitElement {
         show-chat-header
         body-no-padding
         animation-on-open=${animationOnOpen}
-        animation-on-close=${this.suppressWorkspacePanelCloseAnimation
-          ? "none"
-          : "slide-out-to-bottom"}
+        animation-on-close=${
+          this.suppressWorkspacePanelCloseAnimation
+            ? "none"
+            : "slide-out-to-bottom"
+        }
         @closeend=${this.handleWorkspacePanelCloseEnd}
       >
         <div slot="body" class="workspace-slot">

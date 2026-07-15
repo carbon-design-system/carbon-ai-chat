@@ -20,6 +20,7 @@ import type {
 } from "./ServiceDeskConfig";
 import { HistoryItem } from "../messaging/History";
 import { LauncherConfig } from "./LauncherConfig";
+import { PersistedStateConfig } from "./PersistedStateConfig";
 import { DeepPartial } from "../utilities/DeepPartial";
 import enLanguagePackData from "../../chat/languages/en.json";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
@@ -154,6 +155,14 @@ export interface PublicConfig {
   history?: HistoryConfig;
 
   /**
+   * Hands session-state persistence to the host page. By default the chat persists session state to
+   * the browser's `sessionStorage`; set this to boot from your own
+   * {@link PersistedStateConfig.initialState} and receive changes via
+   * {@link PersistedStateConfig.onStateChange} instead. See {@link PersistedStateConfig}.
+   */
+  persistedState?: PersistedStateConfig;
+
+  /**
    * The config object for changing Carbon AI Chat's layout.
    */
   layout?: LayoutConfig;
@@ -172,6 +181,11 @@ export interface PublicConfig {
    * Allows for feedback to persist in all messages, not just the latest message.
    */
   persistFeedback?: boolean;
+
+  /**
+   * Toggles the chat avatar on and off
+   */
+  hideAvatar?: boolean;
 
   /**
    * Sets the name of the assistant. Defaults to "watsonx". Used in screen reader announcements and error messages.

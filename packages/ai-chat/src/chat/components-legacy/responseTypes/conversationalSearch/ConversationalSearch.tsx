@@ -15,7 +15,7 @@ import { shallowEqual } from "../../../store/appStore";
 import { AppState } from "../../../../types/state/AppState";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
 import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
-import InlineError from "../error/InlineError";
+import InlineError from "../../../components/util/InlineError";
 import { CitationCard } from "../util/citations/CitationCard";
 import { ConversationalSearchText } from "./ConversationalSearchText";
 import {

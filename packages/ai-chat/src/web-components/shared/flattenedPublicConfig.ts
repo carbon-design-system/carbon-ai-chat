@@ -111,12 +111,18 @@ export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
   },
   { name: "header", options: { type: Object } },
   { name: "history", options: { type: Object } },
+  // Carries the onStateChange callback, so it is property-only (no attribute).
+  { name: "persistedState", options: { attribute: false, type: Object } },
   { name: "layout", options: { type: Object } },
   { name: "messaging", options: { type: Object } },
   { name: "isReadonly", options: { type: Boolean, attribute: "is-readonly" } },
   {
     name: "persistFeedback",
     options: { type: Boolean, attribute: "persist-feedback" },
+  },
+  {
+    name: "hideAvatar",
+    options: { type: Boolean, attribute: "hide-avatar" },
   },
   {
     name: "assistantName",

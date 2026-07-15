@@ -6,3 +6,9 @@ node_modules
 *.snap.js
 
 packages/ai-chat/tasks/**
+
+# Generated API symbol index — validated by the docs/api drift check, not prettier.
+# (The markdown embeds TypeDoc signatures / author @example code verbatim, which
+# prettier would reformat, conflicting with the byte-exact drift check.)
+packages/ai-chat/docs/api/markdown/
+packages/ai-chat/docs/api/symbol-index.json

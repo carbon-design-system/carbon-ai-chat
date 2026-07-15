@@ -161,3 +161,35 @@ describe("history panel item overflow menu positioning", () => {
     expect(overflowMenuBody.classList.contains(flippedClass)).to.be.false;
   });
 });
+
+describe("history panel item rename invalid state", () => {
+  it("passes rename-invalid and rename-invalid-message through to the input element", async () => {
+    const item = await fixture(html`
+      <cds-aichat-history-panel-item
+        id="item-1"
+        name="My chat"
+        rename
+      ></cds-aichat-history-panel-item>
+    `);
+
+    const panelItem = item as HTMLElement & {
+      renameInvalid: boolean;
+      renameInvalidMessage: string;
+      updateComplete: Promise<boolean>;
+    };
+
+    panelItem.renameInvalid = true;
+    panelItem.renameInvalidMessage = "Title cannot exceed 75 characters.";
+    await panelItem.updateComplete;
+
+    const inputEl = panelItem.shadowRoot?.querySelector(
+      "cds-aichat-history-panel-item-input",
+    ) as HTMLElement & { invalid: boolean; invalidMessage: string };
+
+    expect(inputEl).to.exist;
+    expect(inputEl.invalid).to.be.true;
+    expect(inputEl.invalidMessage).to.equal(
+      "Title cannot exceed 75 characters.",
+    );
+  });
+});

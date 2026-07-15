@@ -22,7 +22,7 @@ import React, { KeyboardEvent, PureComponent } from "react";
 
 import { nodeToText } from "../utils/domUtils";
 import { Avatar } from "./Avatar";
-import { InlineError } from "./responseTypes/error/InlineError";
+import { InlineError } from "../components/util/InlineError";
 import VisuallyHidden from "../components/util/VisuallyHidden";
 
 // Inline helper components (previously in util/IconHolder.tsx and util/ImageWithFallback.tsx)
@@ -256,6 +256,11 @@ interface MessageProps
    * Indicates if all feedback components should be hidden.
    */
   hideFeedback: boolean;
+
+  /**
+   * Toggle the chat avatar
+   */
+  hideAvatar: boolean;
 
   /**
    * Indicates if this message should permit the user to provide new feedback. The property has no effect if
@@ -506,6 +511,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       assistantAvatarUrl,
       useAITheme,
       carbonTheme,
+      hideAvatar,
     } = this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
@@ -629,7 +635,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         className="cds-aichat--message__avatar-line"
         key={`${message.id}-avatar-line`}
       >
-        {avatar && (
+        {avatar && !hideAvatar && (
           <div className={`cds-aichat--message__avatar ${iconClassName}`}>
             {avatar}
           </div>
@@ -1192,6 +1198,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       isLastMessageItem,
       hideFeedback,
       allowNewFeedback,
+      hideAvatar,
     } = this.props;
 
     // Guard against undefined message during RESTART_CONVERSATION transitions
@@ -1276,6 +1283,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             "cds-aichat--message--has-focus": this.state.focusHandleHasFocus,
             "cds-aichat--message--option-response-without-title-or-description":
               isOptionResponseWithoutTitleOrDescription,
+            "cds-aichat--message--hide-avatar": hideAvatar,
           },
         )}
         ref={this.ref}
