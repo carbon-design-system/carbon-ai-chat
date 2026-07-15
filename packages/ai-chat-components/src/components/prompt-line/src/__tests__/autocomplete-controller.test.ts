@@ -20,6 +20,7 @@ import { AutocompleteController } from "../autocomplete-controller.js";
 import type {
   AutocompleteConfig,
   CustomListProps,
+  StartersConfig,
   SuggestionItem,
   TriggerSuggestionConfig,
 } from "../tiptap/types.js";
@@ -35,10 +36,12 @@ const COMMANDS: SuggestionItem[] = [
   { id: "translate", label: "translate" },
 ];
 
-const STARTERS: SuggestionItem[] = [
-  { id: "hello", label: "Say hello" },
-  { id: "intro", label: "Introduce yourself" },
-];
+const STARTERS: StartersConfig = {
+  items: [
+    { id: "hello", label: "Say hello" },
+    { id: "intro", label: "Introduce yourself" },
+  ],
+};
 
 interface ChainStub {
   focus: () => ChainStub;
@@ -153,7 +156,7 @@ describe("AutocompleteController", () => {
       triggerOffset: 0,
     });
     await flush();
-    expect(last.length).to.equal(STARTERS.length);
+    expect(last.length).to.equal(STARTERS.items.length);
   });
 
   it("clears items when handleTriggerChange(null) is called", async () => {
@@ -270,7 +273,7 @@ describe("AutocompleteController", () => {
       triggerOffset: 0,
     });
     await flush();
-    controller.select(STARTERS[0]);
+    controller.select(STARTERS.items[0]);
     expect(editor.rawValue).to.equal("Say hello");
     // onStarterSelected receives the editor's rawValue projection — our
     // stub's `projectRawValue` will read an empty doc, so we only verify
@@ -296,7 +299,7 @@ describe("AutocompleteController", () => {
       triggerOffset: 0,
     });
     await flush();
-    controller.select(STARTERS[0]);
+    controller.select(STARTERS.items[0]);
     expect(starterFired).to.equal(false);
   });
 
