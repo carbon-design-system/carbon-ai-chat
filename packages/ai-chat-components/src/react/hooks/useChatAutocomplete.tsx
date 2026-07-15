@@ -45,6 +45,10 @@ export interface UseChatAutocompleteOptions {
   isSendDisabled?: boolean;
   /** Fired after a starter is selected and inserted (used to trigger send). */
   onStarterSelected?: (text: string) => void;
+  /**
+   * Fired when the send button inside an autocomplete suggestion item is clicked.
+   */
+  onSendItem?: (text: string) => void;
   /** Whether the autocomplete is attached to the input (affects corner rounding). */
   attached?: boolean;
   /** Maximum height for the autocomplete popover */
@@ -74,6 +78,7 @@ export function useChatAutocomplete(
     promptLineRef,
     isSendDisabled,
     onStarterSelected,
+    onSendItem,
     attached = true,
     maxHeight,
   } = options;
@@ -90,6 +95,8 @@ export function useChatAutocomplete(
   // but reading them out of refs avoids re-instantiation churn.
   const onStarterRef = React.useRef(onStarterSelected);
   onStarterRef.current = onStarterSelected;
+  const onSendItemRef = React.useRef(onSendItem);
+  onSendItemRef.current = onSendItem;
 
   if (!controllerRef.current) {
     controllerRef.current = new AutocompleteController({
@@ -138,6 +145,15 @@ export function useChatAutocomplete(
 
   const handleSelect = React.useCallback((item: SuggestionItem) => {
     controllerRef.current?.select(item);
+  }, []);
+
+  const handleSend = React.useCallback((e: CustomEvent<{ text: string }>) => {
+    const text = e.detail?.text;
+    if (!text) {
+      return;
+    }
+    controllerRef.current?.dismiss();
+    onSendItemRef.current?.(text);
   }, []);
 
   const dismiss = React.useCallback(() => {
@@ -197,10 +213,11 @@ export function useChatAutocomplete(
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
         }
+        onSend={handleSend}
         onDismiss={dismiss}
       />
     );
-  }, [state, handleSelect, dismiss, setListElement, attached]);
+  }, [state, handleSelect, handleSend, dismiss, setListElement, attached]);
 
   return { onTriggerChange, autocompleteContent };
 }
