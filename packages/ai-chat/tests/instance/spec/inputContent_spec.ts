@@ -9,7 +9,7 @@
 
 import { waitFor } from "@testing-library/react";
 import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/input/index.js";
+import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 import { Node } from "@tiptap/core";
 import type { Extension } from "@tiptap/core";
 

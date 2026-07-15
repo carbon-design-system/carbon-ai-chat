@@ -89,8 +89,9 @@ export class Demo extends LitElement {
         <history-writeable-element-example
           location=${key}
           .instance=${this.instance}
-          .isMobile=${this.instance?.getState().customPanels.history.isMobile ??
-          false}
+          .isMobile=${
+            this.instance?.getState().customPanels.history.isMobile ?? false
+          }
           @history-panel-load-chat=${this._loadChat}
         ></history-writeable-element-example>
       </div>

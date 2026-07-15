@@ -429,18 +429,20 @@ class VideoPlayer extends LitElement {
         role="region"
         aria-label=${this.ariaLabel}
       >
-        ${this.statusMessage
-          ? html`
-              <div
-                class="${prefix}--video-player__status"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                ${this.statusMessage}
-              </div>
-            `
-          : ""}
+        ${
+          this.statusMessage
+            ? html`
+                <div
+                  class="${prefix}--video-player__status"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  ${this.statusMessage}
+                </div>
+              `
+            : ""
+        }
         <div class="${prefix}--video-player__container">
           ${this.hasError ? this.renderError() : ""}
           <div

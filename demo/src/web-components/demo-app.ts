@@ -426,8 +426,9 @@ export class DemoApp extends LitElement {
               location=${key}
               .instance=${this.instance}
               .valueFromParent=${this.valueFromParent}
-              .isMobile=${this.instance?.getState().customPanels.history
-                .isMobile ?? false}
+              .isMobile=${
+                this.instance?.getState().customPanels.history.isMobile ?? false
+              }
             ></history-writeable-element-example>
           </div>`;
         default:
@@ -474,115 +475,127 @@ export class DemoApp extends LitElement {
   // Depending on which layout is setting in settings, render the right version of AI chat.
   render() {
     return html`
-      ${this.settings.layout === "float"
-        ? html`<cds-aichat-container
-            .config=${this.config}
-            .onError=${this.config.onError}
-            .openChatByDefault=${this.config.openChatByDefault ?? undefined}
-            .disclaimer=${this.config.disclaimer}
-            .disableCustomElementMobileEnhancements=${this.config
-              .disableCustomElementMobileEnhancements ?? undefined}
-            .debug=${this.config.debug ?? undefined}
-            .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
-            .aiEnabled=${this.config.aiEnabled ?? undefined}
-            .shouldTakeFocusIfOpensAutomatically=${this.config
-              .shouldTakeFocusIfOpensAutomatically ?? undefined}
-            .namespace=${this.config.namespace ?? undefined}
-            .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${{
-              ...this.config.header,
-              hideDefaultAiLabelContent: true,
-            }}
-            .layout=${this.config.layout}
-            .messaging=${this.config.messaging}
-            .isReadonly=${this.config.isReadonly ?? undefined}
-            .persistFeedback=${this.config.persistFeedback ?? undefined}
-            .hideAvatar=${this.config.hideAvatar ?? undefined}
-            .assistantName=${this.config.assistantName}
-            .assistantAvatarUrl=${this.config.assistantAvatarUrl}
-            locale=${this.config.locale}
-            .homescreen=${this.config.homescreen}
-            .launcher=${this.config.launcher}
-            .onBeforeRender=${this.onBeforeRender}
-            .serviceDeskFactory=${serviceDeskFactory}
-            .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-            >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-container
-          >`
-        : html``}
-      ${this.settings.layout === "sidebar"
-        ? html`<cds-aichat-custom-element
-            class=${this.getSideBarClassName()}
-            @transitionend=${this.handleTransitionEnd}
-            .config=${this.config}
-            .onError=${this.config.onError}
-            .openChatByDefault=${this.config.openChatByDefault ?? undefined}
-            .disclaimer=${this.config.disclaimer}
-            .disableCustomElementMobileEnhancements=${this.config
-              .disableCustomElementMobileEnhancements ?? undefined}
-            .debug=${this.config.debug ?? undefined}
-            .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
-            .aiEnabled=${this.config.aiEnabled ?? undefined}
-            .shouldTakeFocusIfOpensAutomatically=${this.config
-              .shouldTakeFocusIfOpensAutomatically ?? undefined}
-            .namespace=${this.config.namespace ?? undefined}
-            .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${{
-              ...this.config.header,
-              hideDefaultAiLabelContent: true,
-            }}
-            .layout=${this.config.layout}
-            .messaging=${this.config.messaging}
-            .isReadonly=${this.config.isReadonly ?? undefined}
-            .persistFeedback=${this.config.persistFeedback ?? undefined}
-            .hideAvatar=${this.config.hideAvatar ?? undefined}
-            .assistantName=${this.config.assistantName}
-            .assistantAvatarUrl=${this.config.assistantAvatarUrl}
-            locale=${this.config.locale}
-            .homescreen=${this.config.homescreen}
-            .launcher=${this.config.launcher}
-            .onBeforeRender=${this.onBeforeRender}
-            .onViewPreChange=${this.onViewPreChange}
-            .onViewChange=${this.onViewChange}
-            .serviceDeskFactory=${serviceDeskFactory}
-            .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-            >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
-          >`
-        : html``}
-      ${this.settings.layout === "fullscreen"
-        ? html`<cds-aichat-custom-element
-            class="fullScreen"
-            .config=${this.config}
-            .onError=${this.config.onError}
-            .openChatByDefault=${this.config.openChatByDefault ?? undefined}
-            .disclaimer=${this.config.disclaimer}
-            .disableCustomElementMobileEnhancements=${this.config
-              .disableCustomElementMobileEnhancements ?? undefined}
-            .debug=${this.config.debug ?? undefined}
-            .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
-            .aiEnabled=${this.config.aiEnabled ?? undefined}
-            .shouldTakeFocusIfOpensAutomatically=${this.config
-              .shouldTakeFocusIfOpensAutomatically ?? undefined}
-            .namespace=${this.config.namespace ?? undefined}
-            .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-            .header=${{
-              ...this.config.header,
-              hideDefaultAiLabelContent: true,
-            }}
-            .layout=${this.config.layout}
-            .messaging=${this.config.messaging}
-            .isReadonly=${this.config.isReadonly ?? undefined}
-            .assistantName=${this.config.assistantName}
-            .assistantAvatarUrl=${this.config.assistantAvatarUrl}
-            locale=${this.config.locale}
-            .homescreen=${this.config.homescreen}
-            .launcher=${this.config.launcher}
-            .onBeforeRender=${this.onBeforeRender}
-            .serviceDeskFactory=${serviceDeskFactory}
-            .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-            .hideAvatar=${this.config.hideAvatar ?? undefined}
-            >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
-          >`
-        : html``}
+      ${
+        this.settings.layout === "float"
+          ? html`<cds-aichat-container
+              .config=${this.config}
+              .onError=${this.config.onError}
+              .openChatByDefault=${this.config.openChatByDefault ?? undefined}
+              .disclaimer=${this.config.disclaimer}
+              .disableCustomElementMobileEnhancements=${
+                this.config.disableCustomElementMobileEnhancements ?? undefined
+              }
+              .debug=${this.config.debug ?? undefined}
+              .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
+              .aiEnabled=${this.config.aiEnabled ?? undefined}
+              .shouldTakeFocusIfOpensAutomatically=${
+                this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
+              }
+              .namespace=${this.config.namespace ?? undefined}
+              .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
+              .header=${{
+                ...this.config.header,
+                hideDefaultAiLabelContent: true,
+              }}
+              .layout=${this.config.layout}
+              .messaging=${this.config.messaging}
+              .isReadonly=${this.config.isReadonly ?? undefined}
+              .persistFeedback=${this.config.persistFeedback ?? undefined}
+              .hideAvatar=${this.config.hideAvatar ?? undefined}
+              .assistantName=${this.config.assistantName}
+              .assistantAvatarUrl=${this.config.assistantAvatarUrl}
+              locale=${this.config.locale}
+              .homescreen=${this.config.homescreen}
+              .launcher=${this.config.launcher}
+              .onBeforeRender=${this.onBeforeRender}
+              .serviceDeskFactory=${serviceDeskFactory}
+              .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-container
+            >`
+          : html``
+      }
+      ${
+        this.settings.layout === "sidebar"
+          ? html`<cds-aichat-custom-element
+              class=${this.getSideBarClassName()}
+              @transitionend=${this.handleTransitionEnd}
+              .config=${this.config}
+              .onError=${this.config.onError}
+              .openChatByDefault=${this.config.openChatByDefault ?? undefined}
+              .disclaimer=${this.config.disclaimer}
+              .disableCustomElementMobileEnhancements=${
+                this.config.disableCustomElementMobileEnhancements ?? undefined
+              }
+              .debug=${this.config.debug ?? undefined}
+              .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
+              .aiEnabled=${this.config.aiEnabled ?? undefined}
+              .shouldTakeFocusIfOpensAutomatically=${
+                this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
+              }
+              .namespace=${this.config.namespace ?? undefined}
+              .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
+              .header=${{
+                ...this.config.header,
+                hideDefaultAiLabelContent: true,
+              }}
+              .layout=${this.config.layout}
+              .messaging=${this.config.messaging}
+              .isReadonly=${this.config.isReadonly ?? undefined}
+              .persistFeedback=${this.config.persistFeedback ?? undefined}
+              .hideAvatar=${this.config.hideAvatar ?? undefined}
+              .assistantName=${this.config.assistantName}
+              .assistantAvatarUrl=${this.config.assistantAvatarUrl}
+              locale=${this.config.locale}
+              .homescreen=${this.config.homescreen}
+              .launcher=${this.config.launcher}
+              .onBeforeRender=${this.onBeforeRender}
+              .onViewPreChange=${this.onViewPreChange}
+              .onViewChange=${this.onViewChange}
+              .serviceDeskFactory=${serviceDeskFactory}
+              .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
+            >`
+          : html``
+      }
+      ${
+        this.settings.layout === "fullscreen"
+          ? html`<cds-aichat-custom-element
+              class="fullScreen"
+              .config=${this.config}
+              .onError=${this.config.onError}
+              .openChatByDefault=${this.config.openChatByDefault ?? undefined}
+              .disclaimer=${this.config.disclaimer}
+              .disableCustomElementMobileEnhancements=${
+                this.config.disableCustomElementMobileEnhancements ?? undefined
+              }
+              .debug=${this.config.debug ?? undefined}
+              .injectCarbonTheme=${this.config.injectCarbonTheme ?? undefined}
+              .aiEnabled=${this.config.aiEnabled ?? undefined}
+              .shouldTakeFocusIfOpensAutomatically=${
+                this.config.shouldTakeFocusIfOpensAutomatically ?? undefined
+              }
+              .namespace=${this.config.namespace ?? undefined}
+              .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
+              .header=${{
+                ...this.config.header,
+                hideDefaultAiLabelContent: true,
+              }}
+              .layout=${this.config.layout}
+              .messaging=${this.config.messaging}
+              .isReadonly=${this.config.isReadonly ?? undefined}
+              .assistantName=${this.config.assistantName}
+              .assistantAvatarUrl=${this.config.assistantAvatarUrl}
+              locale=${this.config.locale}
+              .homescreen=${this.config.homescreen}
+              .launcher=${this.config.launcher}
+              .onBeforeRender=${this.onBeforeRender}
+              .serviceDeskFactory=${serviceDeskFactory}
+              .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .hideAvatar=${this.config.hideAvatar ?? undefined}
+              >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
+            >`
+          : html``
+      }
     `;
   }
 }

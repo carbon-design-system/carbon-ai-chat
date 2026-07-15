@@ -23,11 +23,11 @@ import "./autocomplete-item-group.js";
 import type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../input/src/tiptap/types.js";
+} from "../../prompt-line/src/tiptap/types.js";
 export type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../input/src/tiptap/types.js";
+} from "../../prompt-line/src/tiptap/types.js";
 
 const blockClass = `${prefix}-autocomplete`;
 
@@ -474,8 +474,9 @@ class AutocompleteElement extends LitElement {
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
                 ?last-group="${isLastGroup}"
-                @cds-aichat-autocomplete-item-click="${this
-                  ._handleGroupItemClick}"
+                @cds-aichat-autocomplete-item-click="${
+                  this._handleGroupItemClick
+                }"
                 @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item-group>
             `;

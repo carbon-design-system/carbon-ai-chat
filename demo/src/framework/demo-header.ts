@@ -155,18 +155,20 @@ export class DemoHeader extends LitElement {
           >AI chat</cds-header-name
         >
         <div class="cds--header__global">
-          ${chatInstanceReady
-            ? html`<cds-header-global-action
-                aria-label="${this._getChatButtonLabel()}"
-                tooltip-text="${this._getChatButtonLabel()}"
-                ?disabled=${this._clickInProgress}
-                @click=${this._handleButtonClick}
-                @keydown=${this._handleButtonKeyDown}
-              >
-                ${iconLoader(AiLaunch20, { slot: "icon" })}
-                <span slot="tooltip-content">AI Chat</span>
-              </cds-header-global-action>`
-            : ""}
+          ${
+            chatInstanceReady
+              ? html`<cds-header-global-action
+                  aria-label="${this._getChatButtonLabel()}"
+                  tooltip-text="${this._getChatButtonLabel()}"
+                  ?disabled=${this._clickInProgress}
+                  @click=${this._handleButtonClick}
+                  @keydown=${this._handleButtonKeyDown}
+                >
+                  ${iconLoader(AiLaunch20, { slot: "icon" })}
+                  <span slot="tooltip-content">AI Chat</span>
+                </cds-header-global-action>`
+              : ""
+          }
           <cds-header-global-action
             aria-label="${this._getPanelButtonLabel()}"
             tooltip-text="${this._getPanelButtonLabel()}"

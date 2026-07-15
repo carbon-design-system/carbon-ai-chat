@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -147,9 +147,11 @@ class CDSAIChatFeedbackButtons extends LitElement {
         kind="ghost"
         role="button"
         ?disabled=${this.isPositiveDisabled}
-        aria-expanded="${this.isPositiveDisabled || !this.hasPositiveDetails
-          ? nothing
-          : this.isPositiveOpen}"
+        aria-expanded="${
+          this.isPositiveDisabled || !this.hasPositiveDetails
+            ? nothing
+            : this.isPositiveOpen
+        }"
         aria-pressed="${this.isPositiveSelected || nothing}"
         ?aria-controls=${feedbackPositiveControls}
         @click="${() => handleButtonClick(true)}"
@@ -170,9 +172,11 @@ class CDSAIChatFeedbackButtons extends LitElement {
         kind="ghost"
         role="button"
         ?disabled=${this.isNegativeDisabled}
-        aria-expanded="${this.isNegativeDisabled || !this.hasNegativeDetails
-          ? nothing
-          : this.isNegativeOpen}"
+        aria-expanded="${
+          this.isNegativeDisabled || !this.hasNegativeDetails
+            ? nothing
+            : this.isNegativeOpen
+        }"
         aria-pressed="${this.isNegativeSelected || nothing}"
         ?aria-controls=${feedbackNegativeControls}
         @click="${() => handleButtonClick(false)}"

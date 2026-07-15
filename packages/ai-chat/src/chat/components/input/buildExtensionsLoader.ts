@@ -17,7 +17,7 @@
  */
 
 type BuildExtensionsModule =
-  typeof import("@carbon/ai-chat-components/es/components/input/src/tiptap/build-extensions.js");
+  typeof import("@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js");
 
 type BuildCarbonExtensions = BuildExtensionsModule["buildCarbonExtensions"];
 
@@ -31,7 +31,7 @@ export function loadBuildCarbonExtensions(): Promise<BuildExtensionsModule | nul
   }
   if (!modulePromise) {
     modulePromise =
-      import("@carbon/ai-chat-components/es/components/input/src/tiptap/build-extensions.js").then(
+      import("@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js").then(
         (module) => {
           loaded = module;
           return module;

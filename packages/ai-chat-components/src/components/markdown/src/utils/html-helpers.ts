@@ -45,8 +45,7 @@ type HtmlInlineTag =
   | { kind: "closing"; tagName: string };
 
 type HtmlBlockBoundary =
-  | { kind: "opening"; tagName: string }
-  | { kind: "closing"; tagName: string };
+  { kind: "opening"; tagName: string } | { kind: "closing"; tagName: string };
 
 /** Marker element appended to opening HTML so markdown children mount inside the block. */
 export const HTML_CONTAINER_SLOT = '<div data-aichat-markdown=""></div>';

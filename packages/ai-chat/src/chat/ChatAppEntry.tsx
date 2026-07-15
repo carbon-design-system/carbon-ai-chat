@@ -45,7 +45,7 @@ import { isBrowser } from "./utils/browserUtils";
 import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
 import { resolvePromptLineMode } from "./components/input/promptLineMode";
 import { preloadBuildCarbonExtensions } from "./components/input/buildExtensionsLoader";
-import { preloadPromptLineRich } from "@carbon/ai-chat-components/es/components/input/src/prompt-line-rich-loader.js";
+import { preloadPromptLineRich } from "@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js";
 
 import {
   RenderUserDefinedState,

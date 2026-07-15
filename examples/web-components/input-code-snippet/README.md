@@ -1,6 +1,6 @@
 # Input / Code snippet
 
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the input shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
 
 ## What this example shows
 
@@ -8,7 +8,7 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 - Driving insertion with a Tiptap `InputRule` (regex `/^```$/`) so the user types three backticks and the paragraph is swapped for an empty code-snippet block.
 - Mounting `<cds-aichat-code-snippet editable highlight>` inside the node view via `renderInLightDom`, so CodeMirror and Carbon styles work even though the chat input lives inside a shadow root.
 - Wrapping the editor in a `<cds-aichat-card>` so it reads as a contained region, with an `Esc to exit code editor` hint in the card's `footer` slot — styled by Carbon's `cds--form__helper-text` class, no custom CSS.
-- Sizing the snippet to grow indefinitely (`max-collapsed-number-of-rows`, `max-expanded-number-of-rows` and `--cds-snippet-max-height: none`) so the input shell's existing `overflow-y: auto` is the only scrollbar.
+- Sizing the snippet to grow indefinitely (`max-collapsed-number-of-rows`, `max-expanded-number-of-rows` and `--cds-snippet-max-height: none`) so the prompt-line shell's existing `overflow-y: auto` is the only scrollbar.
 - Keeping `attrs.code` (raw code) and `attrs.value` (fenced markdown) in sync so the chat's `getRawText` projection emits standard ` ``` ` fences when the message is sent.
 - Exiting the block with an `Escape` keydown listener on the snippet element that inserts a paragraph after the block and focuses it.
 - Rendering a read-only `<cds-aichat-code-snippet>` inside the sent user message bubble with `renderUserDefinedInputNode`.

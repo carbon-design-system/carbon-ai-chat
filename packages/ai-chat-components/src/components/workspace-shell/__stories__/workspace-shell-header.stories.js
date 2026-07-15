@@ -78,16 +78,20 @@ export const Default = {
       subtitle-text="${args.subTitleText}"
       ?collapsible=${args.collapsible}
     >
-      ${args.descriptionType !== "none"
-        ? getHeaderDescription(args.descriptionType)
-        : ""}
-      ${args.showAction
-        ? html`
-            <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-            </cds-button>
-          `
-        : ""}
+      ${
+        args.descriptionType !== "none"
+          ? getHeaderDescription(args.descriptionType)
+          : ""
+      }
+      ${
+        args.showAction
+          ? html`
+              <cds-button kind="tertiary" slot="header-action">
+                Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              </cds-button>
+            `
+          : ""
+      }
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}
@@ -109,16 +113,20 @@ export const WithDescription = {
       subtitle-text="${args.subTitleText}"
       ?collapsible=${args.collapsible}
     >
-      ${args.descriptionType !== "none"
-        ? getHeaderDescription(args.descriptionType)
-        : ""}
-      ${args.showAction
-        ? html`
-            <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-            </cds-button>
-          `
-        : ""}
+      ${
+        args.descriptionType !== "none"
+          ? getHeaderDescription(args.descriptionType)
+          : ""
+      }
+      ${
+        args.showAction
+          ? html`
+              <cds-button kind="tertiary" slot="header-action">
+                Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              </cds-button>
+            `
+          : ""
+      }
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}
@@ -140,16 +148,20 @@ export const WithTags = {
       subtitle-text="${args.subTitleText}"
       ?collapsible=${args.collapsible}
     >
-      ${args.descriptionType !== "none"
-        ? getHeaderDescription(args.descriptionType)
-        : ""}
-      ${args.showAction
-        ? html`
-            <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-            </cds-button>
-          `
-        : ""}
+      ${
+        args.descriptionType !== "none"
+          ? getHeaderDescription(args.descriptionType)
+          : ""
+      }
+      ${
+        args.showAction
+          ? html`
+              <cds-button kind="tertiary" slot="header-action">
+                Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              </cds-button>
+            `
+          : ""
+      }
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}
@@ -171,16 +183,20 @@ export const WithAction = {
       subtitle-text="${args.subTitleText}"
       ?collapsible=${args.collapsible}
     >
-      ${args.descriptionType !== "none"
-        ? getHeaderDescription(args.descriptionType)
-        : ""}
-      ${args.showAction
-        ? html`
-            <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-            </cds-button>
-          `
-        : ""}
+      ${
+        args.descriptionType !== "none"
+          ? getHeaderDescription(args.descriptionType)
+          : ""
+      }
+      ${
+        args.showAction
+          ? html`
+              <cds-button kind="tertiary" slot="header-action">
+                Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              </cds-button>
+            `
+          : ""
+      }
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}
@@ -202,16 +218,20 @@ export const Complete = {
       subtitle-text="${args.subTitleText}"
       ?collapsible=${args.collapsible}
     >
-      ${args.descriptionType !== "none"
-        ? getHeaderDescription(args.descriptionType)
-        : ""}
-      ${args.showAction
-        ? html`
-            <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-            </cds-button>
-          `
-        : ""}
+      ${
+        args.descriptionType !== "none"
+          ? getHeaderDescription(args.descriptionType)
+          : ""
+      }
+      ${
+        args.showAction
+          ? html`
+              <cds-button kind="tertiary" slot="header-action">
+                Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              </cds-button>
+            `
+          : ""
+      }
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}
@@ -233,16 +253,20 @@ export const Collapsible = {
       subtitle-text="${args.subTitleText}"
       ?collapsible=${args.collapsible}
     >
-      ${args.descriptionType !== "none"
-        ? getHeaderDescription(args.descriptionType)
-        : ""}
-      ${args.showAction
-        ? html`
-            <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
-            </cds-button>
-          `
-        : ""}
+      ${
+        args.descriptionType !== "none"
+          ? getHeaderDescription(args.descriptionType)
+          : ""
+      }
+      ${
+        args.showAction
+          ? html`
+              <cds-button kind="tertiary" slot="header-action">
+                Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              </cds-button>
+            `
+          : ""
+      }
     </cds-aichat-workspace-shell-header>
     <cds-aichat-workspace-shell-body>
       ${getBodyContent("short")}

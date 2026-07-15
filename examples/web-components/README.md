@@ -351,7 +351,7 @@ Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFac
 
 ### [Input / Code snippet](./input-code-snippet/README.md)
 
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the input shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-code-snippet`
 
@@ -693,6 +693,32 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 | `MessageResponseOptions` / `StreamChunk`                             | `@carbon/ai-chat` types   | Chunk shape used to re-push updated `reasoning.steps` per token. |
 | `instance.messaging.addMessage` / `addMessageChunk` / `instance.on`  | `ChatInstance` API        | Emit welcome + streamed chunks; subscribe to slot events.        |
 | `CustomSendMessageOptions.signal`                                    | `@carbon/ai-chat`         | Abort signal for cancellation.                                   |
+
+</details>
+
+### [Theme Plex override](./theme-plex-override/README.md)
+
+Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace Carbon's built-in Plex font with a custom web font by configuring `@carbon/styles` at compile time.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-theme-plex-override`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                        | Package / kind            | Role in this example                                             |
+| ----------------------------- | ------------------------- | ---------------------------------------------------------------- |
+| `cds-aichat-container`        | `@carbon/ai-chat` element | Mounts the chat UI as a custom element.                          |
+| `PublicConfig`                | `@carbon/ai-chat` type    | Types the messaging config passed to the element.                |
+| `ChatInstance`                | `@carbon/ai-chat` type    | Typed reference captured in `onBeforeRender`.                    |
+| `BusEventType`                | `@carbon/ai-chat` enum    | Subscribes to `STATE_CHANGE` and `FEEDBACK`.                     |
+| `FeedbackInteractionType`     | `@carbon/ai-chat` enum    | Detects `SUBMITTED` feedback interactions.                       |
+| `messaging.customSendMessage` | element property          | Mock backend that echoes user input.                             |
+| `onBeforeRender`              | element property          | Captures the `ChatInstance` and attaches event listeners.        |
+| `renderUserDefinedResponse`   | element property          | Renders custom response content for user-defined response types. |
+| `instance.getState`           | instance method           | Reads the initial `activeResponseId`.                            |
+| `instance.on`                 | instance method           | Attaches bus event handlers.                                     |
+| `$css--font-face`             | `@carbon/styles` SCSS var | Set to `false` to suppress Plex `@font-face` generation.         |
+| `$font-families`              | `@carbon/styles` SCSS var | Overrides the `sans`, `mono`, and `serif` font-family stacks.    |
 
 </details>
 

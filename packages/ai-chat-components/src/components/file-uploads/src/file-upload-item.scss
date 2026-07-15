@@ -1,0 +1,76 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/type";
+
+$block-class: #{$prefix}-file-upload-item;
+
+:host {
+  display: block;
+  margin-inline-end: layout.$spacing-03;
+}
+
+cds-file-uploader-item {
+  @include type.type-style("body-compact-01");
+
+  border-radius: layout.$spacing-03;
+}
+
+.#{$block-class}__preview-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  border-radius: 6px;
+  block-size: 36px;
+  inline-size: 36px;
+  margin-inline-end: layout.$spacing-05;
+  vertical-align: middle;
+}
+
+.#{$block-class}__video-preview-wrapper {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.#{$block-class}__play-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #00000099;
+  block-size: layout.$spacing-04;
+  inline-size: layout.$spacing-05;
+  inset-block-end: layout.$spacing-01;
+  inset-inline-end: 0;
+  inset-inline-start: layout.$spacing-02;
+  pointer-events: none;
+
+  svg {
+    block-size: layout.$spacing-03;
+    fill: #ffffff;
+    inline-size: layout.$spacing-03;
+  }
+}
+
+.#{$block-class}__preview {
+  display: block;
+  block-size: 100%;
+  inline-size: 100%;
+  object-fit: cover;
+}
+
+.#{$block-class}__icon {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: layout.$spacing-03;
+  vertical-align: middle;
+}

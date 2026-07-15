@@ -171,20 +171,22 @@ export class Demo extends LitElement {
 
       <!-- Launcher is not rendered until onAfterRender fires, guaranteeing
            _instance is set before _handleLauncherClick can be called. -->
-      ${this._chatReady
-        ? html`
-            <cds-aichat-button
-              class=${this._getLauncherClass()}
-              has-icon-only
-              icon-description="Open chat"
-              kind="primary"
-              size="lg"
-              @click=${this._handleLauncherClick}
-            >
-              ${iconLoader(AiLaunch16, { slot: "icon" })}
-            </cds-aichat-button>
-          `
-        : nothing}
+      ${
+        this._chatReady
+          ? html`
+              <cds-aichat-button
+                class=${this._getLauncherClass()}
+                has-icon-only
+                icon-description="Open chat"
+                kind="primary"
+                size="lg"
+                @click=${this._handleLauncherClick}
+              >
+                ${iconLoader(AiLaunch16, { slot: "icon" })}
+              </cds-aichat-button>
+            `
+          : nothing
+      }
     `;
   }
 }

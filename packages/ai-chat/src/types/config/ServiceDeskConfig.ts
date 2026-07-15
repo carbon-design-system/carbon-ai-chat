@@ -24,7 +24,7 @@ import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities"
 import {
   FileStatusValue as _FileStatusValue,
   type FileUpload as _FileUpload,
-} from "@carbon/ai-chat-components/es/components/input/src/types.js";
+} from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
 
 /**
  * Lifecycle status for a {@link FileUpload}. Values:
@@ -442,9 +442,7 @@ export interface UserMessageErrorInfo extends BaseErrorInfo {
  * @category Service desk
  */
 export type ServiceDeskErrorInfo =
-  | ConnectingErrorInfo
-  | DisconnectedErrorInfo
-  | UserMessageErrorInfo;
+  ConnectingErrorInfo | DisconnectedErrorInfo | UserMessageErrorInfo;
 
 /**
  * Additional options that may be passed to the service desk when a chat is started.

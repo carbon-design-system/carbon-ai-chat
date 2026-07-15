@@ -9,7 +9,7 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
-import ErrorMessage from "../components/input/src/error-message.js";
+import ErrorMessage from "../components/prompt-line/src/error-message.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
 const CDSAIChatErrorMessage = withWebComponentBridge(
