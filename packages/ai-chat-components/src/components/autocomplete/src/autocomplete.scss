@@ -57,6 +57,17 @@ $block-class: #{$prefix}-autocomplete;
     min-block-size: 0;
     overflow-y: auto;
   }
+
+  .#{$block-class}__live-region {
+    position: absolute;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    block-size: 1px;
+    clip: rect(0, 0, 0, 0);
+    inline-size: 1px;
+    white-space: nowrap;
+  }
 }
 
 :host([attached]) {

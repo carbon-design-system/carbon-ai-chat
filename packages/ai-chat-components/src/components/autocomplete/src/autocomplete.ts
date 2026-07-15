@@ -42,6 +42,56 @@ export interface HeaderConfig {
 }
 
 /**
+ * Localized / consumer-supplied strings for the autocomplete component.
+ * All fields are required so callers explicitly provide every user-visible string.
+ */
+export interface AutocompleteI18n {
+  /** Announced when the suggestions list is empty. */
+  noSuggestions: string;
+  /**
+   * Announced when the suggestions list first opens.
+   * Receives the item count so the caller can form the full phrase.
+   *
+   * @example (count) => `${count} suggestion${count === 1 ? "" : "s"}. Use up and down arrows to move, Enter to pick, Escape to close.`
+   */
+  suggestionsAvailable: (count: number) => string;
+  /**
+   * Announced when the user moves focus to an item via arrow keys.
+   * Receives the item label, optional description, and position info.
+   *
+   * @example (label, description, position) => `${label}${description ? `, ${description}` : ""}, ${position}`
+   */
+  itemNavigation: (
+    label: string,
+    description: string | undefined,
+    position: string,
+  ) => string;
+  /**
+   * Announced when an item is selected/inserted.
+   * Receives the item label.
+   *
+   * @example (label) => `${label} inserted.`
+   */
+  itemInserted: (label: string) => string;
+  /** Announced when the suggestions list is closed/dismissed. */
+  suggestionsClosed: string;
+  /** Accessible label for the listbox element. */
+  listboxLabel: string;
+}
+
+/** Default English strings — used as the fallback value for `i18n`. */
+export const defaultAutocompleteI18n: AutocompleteI18n = {
+  noSuggestions: "No suggestions.",
+  suggestionsAvailable: (count) =>
+    `${count} suggestion${count === 1 ? "" : "s"}. Use up and down arrows to move, Enter to pick, Escape to close.`,
+  itemNavigation: (label, description, position) =>
+    `${label}${description ? `, ${description}` : ""}, ${position}`,
+  itemInserted: (label) => `${label} inserted.`,
+  suggestionsClosed: "Suggestions closed.",
+  listboxLabel: "Autocomplete options",
+};
+
+/**
  * Custom event detail for autocomplete select events
  */
 export interface AutocompleteSelectEventDetail {
@@ -88,6 +138,13 @@ class AutocompleteElement extends LitElement {
   headerConfig?: HeaderConfig;
 
   /**
+   * Localized strings for announcements and labels.
+   * Defaults to English via `defaultAutocompleteI18n`.
+   */
+  @property({ type: Object, attribute: false })
+  i18n: AutocompleteI18n = defaultAutocompleteI18n;
+
+  /**
    * The current text in the input (used to apply styling to indicate what user has already typed)
    */
   @property({ type: String, attribute: "input-text", reflect: true })
@@ -121,10 +178,6 @@ class AutocompleteElement extends LitElement {
 
   private _announcer = new AriaAnnouncerManager();
 
-  /** Polite live-region elements rendered into shadow DOM. */
-  private _politeRegion1!: HTMLDivElement;
-  private _politeRegion2!: HTMLDivElement;
-
   /**
    * Pending arrow-move announcement timer. Held-key rapid fires are collapsed:
    * only the last pending label is spoken.
@@ -152,13 +205,10 @@ class AutocompleteElement extends LitElement {
   }
 
   firstUpdated() {
-    this._politeRegion1 = this.shadowRoot!.querySelector<HTMLDivElement>(
-      `.${blockClass}__sr-region-1`,
-    )!;
-    this._politeRegion2 = this.shadowRoot!.querySelector<HTMLDivElement>(
-      `.${blockClass}__sr-region-2`,
-    )!;
-    this._announcer.connect([this._politeRegion1, this._politeRegion2]);
+    const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
+      `.${prefix}__live-regions`,
+    );
+    this._announcer.connect(Array.from(regions));
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -170,7 +220,7 @@ class AutocompleteElement extends LitElement {
     if (itemsChanged) {
       const totalItems = this._getTotalItemCount();
       if (totalItems === 0) {
-        this._announcer.announce("No suggestions.");
+        this._announcer.announce(this.i18n.noSuggestions);
         this._openAnnounced = false;
         return;
       }
@@ -178,9 +228,7 @@ class AutocompleteElement extends LitElement {
       this._focusedIndex = 0;
       if (!this._openAnnounced) {
         this._openAnnounced = true;
-        this._announcer.announce(
-          `${totalItems} suggestion${totalItems === 1 ? "" : "s"}. Use up and down arrows to move, Enter to pick, Escape to close.`,
-        );
+        this._announcer.announce(this.i18n.suggestionsAvailable(totalItems));
       }
     }
   }
@@ -278,8 +326,9 @@ class AutocompleteElement extends LitElement {
         return;
       }
       const position = `${index + 1} of ${total}`;
-      const description = item.description ? `, ${item.description}` : "";
-      this._announcer.announce(`${item.label}${description}, ${position}`);
+      this._announcer.announce(
+        this.i18n.itemNavigation(item.label, item.description, position),
+      );
     }, 50);
   }
 
@@ -349,7 +398,7 @@ class AutocompleteElement extends LitElement {
   }
 
   private _selectItem(item: SuggestionItem) {
-    this._announcer.announce(`${item.label} inserted.`);
+    this._announcer.announce(this.i18n.itemInserted(item.label));
     this.dispatchEvent(
       new CustomEvent<AutocompleteSelectEventDetail>(
         "cds-aichat-autocomplete-select",
@@ -364,7 +413,7 @@ class AutocompleteElement extends LitElement {
 
   private _dismiss() {
     this._openAnnounced = false;
-    this._announcer.announce("Suggestions closed.");
+    this._announcer.announce(this.i18n.suggestionsClosed);
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-dismiss", {
         bubbles: true,
@@ -399,16 +448,14 @@ class AutocompleteElement extends LitElement {
     // when the list empties (e.g. "No suggestions." or "Suggestions closed.").
     const liveRegions = html`
       <div
-        class="${blockClass}__sr-region-1"
+        class="${blockClass}__live-region"
         aria-live="polite"
         aria-atomic="false"
-        style="position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
       ></div>
       <div
-        class="${blockClass}__sr-region-2"
+        class="${blockClass}__live-region"
         aria-live="polite"
         aria-atomic="false"
-        style="position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
       ></div>
     `;
 
@@ -434,7 +481,7 @@ class AutocompleteElement extends LitElement {
         <ul
           class="${blockClass}__items"
           role="listbox"
-          aria-label="Autocomplete options"
+          aria-label="${this.i18n.listboxLabel}"
           id="${blockClass}-listbox"
         >
           <!-- Render flat items first -->
@@ -474,9 +521,8 @@ class AutocompleteElement extends LitElement {
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
                 ?last-group="${isLastGroup}"
-                @cds-aichat-autocomplete-item-click="${
-                  this._handleGroupItemClick
-                }"
+                @cds-aichat-autocomplete-item-click="${this
+                  ._handleGroupItemClick}"
                 @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item-group>
             `;
