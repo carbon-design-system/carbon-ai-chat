@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -9,8 +9,8 @@
 
 import React from "react";
 
-import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
+import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
 import { ButtonItemCustomEventComponent } from "./ButtonItemCustomEventComponent";
 import { ButtonItemPostBackComponent } from "./ButtonItemPostBackComponent";
 import { ButtonItemShowPanelComponent } from "./ButtonItemShowPanelComponent";
@@ -19,7 +19,7 @@ import {
   ButtonItem,
   ButtonItemType,
   MessageResponse,
-} from "../../../../types/messaging/Messages";
+} from "../../types/messaging/Messages";
 
 interface ButtonItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<ButtonItem>;

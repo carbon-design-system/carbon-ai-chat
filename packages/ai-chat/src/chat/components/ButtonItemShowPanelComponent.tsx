@@ -8,15 +8,15 @@
  */
 
 import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { carbonIconToReact } from "../utils/carbonIcon";
 import React, { useCallback } from "react";
-import { useSelector } from "../../../hooks/useSelector";
+import { useSelector } from "../hooks/useSelector";
 
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import actions from "../../../store/actions";
-import { selectInputIsReadonly } from "../../../store/selectors";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { ButtonItem } from "../../../../types/messaging/Messages";
+import { useServiceManager } from "../hooks/useServiceManager";
+import actions from "../store/actions";
+import { selectInputIsReadonly } from "../store/selectors";
+import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
+import { ButtonItem } from "../../types/messaging/Messages";
 import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
 
 interface ButtonItemShowPanelComponentProps {

@@ -50,7 +50,7 @@ jobs:
           git config --global user.name ${{ secrets.CARBON_BOT_NAME }}
 
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@v7.0.0
         with:
           node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
