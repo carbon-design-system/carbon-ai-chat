@@ -24,7 +24,7 @@ import {
   setupBeforeEach,
 } from "../../test_helpers";
 
-const PROMPT_LINE_SHELL = "cds-aichat-prompt-line-shell";
+const INPUT_SHELL = "cds-aichat-input-shell";
 const SLOT_SELECTOR = 'slot[name="promptLineActionsEnd"]';
 
 // The chat renders inside the `cds-aichat-react` shadow root, so DOM queries
@@ -60,7 +60,7 @@ describe("promptLineActionsEnd expanded gating", () => {
 
     // Wait for the input to render, then confirm the slot was never projected.
     await waitFor(() => {
-      expect(find(PROMPT_LINE_SHELL)).not.toBeNull();
+      expect(find(INPUT_SHELL)).not.toBeNull();
     });
     expect(find(SLOT_SELECTOR)).toBeNull();
   });

@@ -31,11 +31,4 @@ const IS_PHONE = IS_MOBILE && (screenWidth < 500 || screenHeight < 500);
 // Assume the phone is in portrait mode if the width is small.
 const IS_PHONE_IN_PORTRAIT_MODE = IS_PHONE && screenWidth < 500;
 
-export {
-  isBrowser,
-  IS_IOS,
-  IS_ANDROID,
-  IS_MOBILE,
-  IS_PHONE,
-  IS_PHONE_IN_PORTRAIT_MODE,
-};
+export { IS_IOS, IS_ANDROID, IS_MOBILE, IS_PHONE, IS_PHONE_IN_PORTRAIT_MODE };

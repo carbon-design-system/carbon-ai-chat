@@ -98,10 +98,7 @@ function rewrite(): void {
     sheet.replaceSync(cssText);
   }
   for (const root of fallbackRoots) {
-    const styleElement = fallbackStyleElements.get(root);
-    if (styleElement) {
-      styleElement.textContent = cssText;
-    }
+    fallbackStyleElements.get(root)!.textContent = cssText;
   }
 }
 

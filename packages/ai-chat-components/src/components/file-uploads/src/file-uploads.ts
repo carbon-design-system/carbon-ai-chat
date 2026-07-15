@@ -20,12 +20,14 @@ import { property } from "lit/decorators.js";
 import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
+
+import "@carbon/web-components/es/components/file-uploader/index.js";
+
 import type {
   FileUpload,
   FileRemoveEventDetail,
-} from "../../prompt-line/src/types.js";
+} from "../../input/src/types.js";
 
-import "./file-upload-item.js";
 import styles from "./file-uploads.scss?lit";
 
 /** Minimal per-file state captured between renders to diff status transitions. */
@@ -198,12 +200,17 @@ class FileUploadsElement extends LitElement {
     this._snapshots = this._snapshotOf(this.uploads);
   }
 
-  private _handleFileRemove(_e: CustomEvent<FileRemoveEventDetail>) {
+  private _handleFileRemove(fileId: string) {
     // Announce here rather than in the diff so we only speak on a user-initiated
     // removal, not when uploads clear on send.
     this._announcer.announce(this.fileRemovedLabel);
-    // Event was dispatched composed+bubbling from file-upload-item — it will
-    // continue to bubble to the consumer. No need to re-dispatch.
+    this.dispatchEvent(
+      new CustomEvent<FileRemoveEventDetail>("cds-aichat-file-remove", {
+        detail: { fileId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   render() {
@@ -215,12 +222,19 @@ class FileUploadsElement extends LitElement {
             <div class="${prefix}--file-uploads-container">
               ${this.uploads.map(
                 (upload) => html`
-                  <cds-aichat-file-upload-item
-                    .upload="${upload}"
-                    remove-file-label="${this.removeFileLabel}"
-                    uploading-file-label="${this.uploadingFileLabel}"
-                    @cds-aichat-file-remove="${this._handleFileRemove}"
-                  ></cds-aichat-file-upload-item>
+                  <cds-file-uploader-item
+                    size="sm"
+                    .state="${upload.status}"
+                    .iconDescription="${upload.status === "uploading"
+                      ? this.uploadingFileLabel
+                      : this.removeFileLabel}"
+                    .errorSubject="${upload.errorMessage || ""}"
+                    ?invalid="${upload.isError}"
+                    @cds-file-uploader-item-deleted="${() =>
+                      this._handleFileRemove(upload.id)}"
+                  >
+                    ${upload.file.name}
+                  </cds-file-uploader-item>
                 `,
               )}
             </div>

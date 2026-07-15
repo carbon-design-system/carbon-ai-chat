@@ -10,7 +10,7 @@
 /* eslint-disable react/no-array-index-key */
 
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
+import { carbonIconToReact } from "./../utils/carbonIcon";
 import React, {
   useCallback,
   useEffect,
@@ -31,24 +31,24 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from "@carbon/ai-chat-components/es/react/feedback.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { SystemMessage } from "../components/SystemMessage";
+import { SystemMessage } from "./SystemMessage";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
-import { AudioComponent } from "../components/messages/AudioComponent";
+import { AudioComponent } from "./responseTypes/audio/AudioComponent";
 import { ButtonItemComponent } from "./responseTypes/buttonItem/ButtonItemComponent";
-import { CardItemComponent } from "../components/messages/CardItemComponent";
+import { CardItemComponent } from "./responseTypes/card/CardItemComponent";
 import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
-import { CarouselItemComponent } from "../components/messages/CarouselItemComponent";
+import { CarouselItemComponent } from "./responseTypes/carousel/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "../components/UserDefinedResponse";
+import UserDefinedResponse from "./responseTypes/custom/UserDefinedResponse";
 import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "./responseTypes/datePicker/DatePickerComponent";
-import InlineError from "../components/util/InlineError";
+import InlineError from "./responseTypes/error/InlineError";
 import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
 import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
 import { Image } from "./responseTypes/image/Image";
 import { OptionComponent } from "./responseTypes/options/OptionComponent";
-import { MarkdownWithErrorHandling } from "../components/util/MarkdownWithErrorHandling";
-import { VideoComponent } from "../components/messages/VideoComponent";
+import { StreamingRichText } from "./responseTypes/util/StreamingRichText";
+import { VideoComponent } from "./responseTypes/video/VideoComponent";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
 import { AppState } from "../../types/state/AppState";
@@ -130,6 +130,7 @@ const selectMessageTypeStrings = (state: AppState) => ({
   feedback_positiveLabel: state.languagePack.feedback_positiveLabel,
   feedback_submitLabel: state.languagePack.feedback_submitLabel,
   fileSharing_fileIcon: state.languagePack.fileSharing_fileIcon,
+  messages_responseStopped: state.languagePack.messages_responseStopped,
 });
 
 /**
@@ -218,7 +219,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return (
         <>
           {response}
-          {isResponseStopped && <SystemMessage responseStopped />}
+          {isResponseStopped && (
+            <div className="cds-aichat--response-stopped">
+              {languagePack.messages_responseStopped}
+            </div>
+          )}
           {props.showChainOfThought &&
             renderChainOfThought(localMessageItem, message)}
           {renderFeedbackAndCustomFooter(localMessageItem, message)}
@@ -414,7 +419,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     originalMessage?: MessageResponse,
   ) {
     return (
-      <MarkdownWithErrorHandling
+      <StreamingRichText
         text={localMessageItem.item.text}
         streamingState={localMessageItem.ui_state.streamingState}
         isStreamingError={

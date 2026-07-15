@@ -21,8 +21,6 @@ module.exports = {
     "^.+\\.(js|jsx|mjs)$": [
       "babel-jest",
       {
-        babelrc: false,
-        configFile: false,
         presets: [
           [
             "@babel/preset-env",

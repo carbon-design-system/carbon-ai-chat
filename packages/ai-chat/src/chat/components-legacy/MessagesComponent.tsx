@@ -16,9 +16,9 @@ import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
-import { ProcessingWithText } from "../components/util/ProcessingWithText";
+import { MessagesTypingIndicator } from "./MessagesTypingIndicator";
 import { MessagesView } from "./MessagesView";
-import { SystemMessage } from "../components/SystemMessage";
+import { SystemMessage } from "./SystemMessage";
 import WriteableElement from "../components/util/WriteableElement";
 import {
   HasServiceManager,
@@ -1376,7 +1376,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const isTypingVisible =
       Boolean(isMessageLoadingCounter) || isHumanAgentTyping;
     const typingIndicator = (
-      <ProcessingWithText
+      <MessagesTypingIndicator
         carbonTheme={this.props.carbonTheme}
         index={localMessageItems.length}
         isTypingMessage={isTypingMessage}

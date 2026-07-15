@@ -434,7 +434,7 @@ React example that rehydrates a conversation containing multiple `user_defined` 
 
 ### [Input / Code snippet](./input-code-snippet/README.md)
 
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the input shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-code-snippet`
 
@@ -837,32 +837,6 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 | `@testing-library/react`                      | test util                   | `render`, `act`, `waitFor`.                           |
 | `@testing-library/jest-dom`                   | test util                   | DOM matchers.                                         |
 | `jest-environment-jsdom`                      | jest env                    | Default Jest DOM environment (no shadow-DOM support). |
-
-</details>
-
-### [Theme Plex override](./theme-plex-override/README.md)
-
-React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's built-in Plex font with a custom web font by configuring `@carbon/styles` at compile time.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-theme-plex-override`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                        | Package / kind              | Role in this example                                             |
-| ----------------------------- | --------------------------- | ---------------------------------------------------------------- |
-| `ChatContainer`               | `@carbon/ai-chat` component | Mounts the chat UI.                                              |
-| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.               |
-| `ChatInstance`                | `@carbon/ai-chat` type      | Typed reference captured in `onBeforeRender`.                    |
-| `BusEventType`                | `@carbon/ai-chat` enum      | Subscribes to `STATE_CHANGE` and `FEEDBACK`.                     |
-| `FeedbackInteractionType`     | `@carbon/ai-chat` enum      | Detects `SUBMITTED` feedback interactions.                       |
-| `messaging.customSendMessage` | config prop                 | Mock backend that echoes user input.                             |
-| `onBeforeRender`              | component prop              | Captures the `ChatInstance` and attaches event listeners.        |
-| `renderUserDefinedResponse`   | component prop              | Renders custom response content for user-defined response types. |
-| `instance.getState`           | instance method             | Reads the initial `activeResponseId`.                            |
-| `instance.on`                 | instance method             | Attaches bus event handlers.                                     |
-| `$css--font-face`             | `@carbon/styles` SCSS var   | Set to `false` to suppress Plex `@font-face` generation.         |
-| `$font-families`              | `@carbon/styles` SCSS var   | Overrides the `sans`, `mono`, and `serif` font-family stacks.    |
 
 </details>
 

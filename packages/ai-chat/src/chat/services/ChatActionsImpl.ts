@@ -119,7 +119,7 @@ import type { Editor, JSONContent } from "@tiptap/core";
 import {
   getRawText,
   textToDoc,
-} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+} from "@carbon/ai-chat-components/es/components/input/index.js";
 
 /**
  * Module-scoped flag so the deprecation warning for `updateRawValue` is
@@ -2007,26 +2007,14 @@ class ChatActionsImpl {
     let newViewState = constructViewState(newView, store.getState());
 
     if (!isEqual(newViewState, viewState) || forceViewChange) {
-      // Snapshot what was actually requested before any view:pre:change/view:change listener gets a
-      // chance to mutate newViewState (in place or by replacement) via the event payload.
-      const requestedMainWindow = newViewState.mainWindow;
-
       // If the newViewState is different from the current viewState, or the viewChange is being forced to happen, fire
       // the view:change events and change which views are visible.
       await this.fireViewChangeEventsAndChangeView(newViewState, reason);
 
       // Check and see if the chat should be hydrated.
       newViewState = store.getState().persistedToBrowserStorage.viewState;
-
-      // A host's view:pre:change/view:change handler may force the main window open (for example by
-      // mutating event.newViewState.mainWindow) even when the caller didn't request it and passed
-      // tryHydrating false (the deferred-hydration cold-boot path). Hydrate anyway in that case, or
-      // customSendMessage/customLoadHistory would never run for the newly-visible window.
-      const hostForcedMainWindowOpen =
-        newViewState.mainWindow && !requestedMainWindow;
-
       if (
-        (tryHydrating || hostForcedMainWindowOpen) &&
+        tryHydrating &&
         newViewState.mainWindow &&
         !store.getState().isHydrated
       ) {
@@ -2288,12 +2276,7 @@ class ChatActionsImpl {
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
 
-    // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
-    // below flows to its onStateChange callback like any other change.
-    const { persistedState } = store.getState().config.public;
-    if (!persistedState?.initialState && !persistedState?.onStateChange) {
-      this.serviceManager.userSessionStorageService.clearSession();
-    }
+    this.serviceManager.userSessionStorageService.clearSession();
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(

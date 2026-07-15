@@ -28,11 +28,11 @@
 
 .cds-aichat--file-uploads-container {
   display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
+  flex-wrap: wrap;
+  inline-size: 100%;
 
-  cds-aichat-file-upload-item {
-    flex-shrink: 0;
+  cds-file-uploader-item {
+    margin-block-end: layout.$spacing-03;
+    margin-inline-end: layout.$spacing-03;
   }
 }
