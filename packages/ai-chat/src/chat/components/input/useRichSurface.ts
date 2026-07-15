@@ -12,8 +12,8 @@ import type { Extension } from "@tiptap/core";
 
 import type {
   TriggerSuggestionConfig,
-  SuggestionItem,
   AutocompleteConfig,
+  StartersConfig,
 } from "../../../types/config/InputConfig";
 import { resolvePromptLineMode } from "./promptLineMode";
 import { useInputExtensions } from "../../hooks/useInputExtensions";
@@ -22,7 +22,7 @@ interface UseRichSurfaceArgs {
   mention: TriggerSuggestionConfig | undefined;
   command: TriggerSuggestionConfig | undefined;
   autocomplete: AutocompleteConfig | undefined;
-  starters: SuggestionItem[] | undefined;
+  starters: StartersConfig | undefined;
   hostExtensions: Extension[] | undefined;
 }
 

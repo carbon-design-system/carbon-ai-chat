@@ -15,8 +15,8 @@ import {
 import type { Extension } from "@tiptap/core";
 import type {
   TriggerSuggestionConfig,
-  SuggestionItem,
   AutocompleteConfig,
+  StartersConfig,
 } from "../../types/config/InputConfig";
 import {
   getBuildCarbonExtensionsIfLoaded,
@@ -27,7 +27,7 @@ interface UseInputExtensionsArgs {
   mention: TriggerSuggestionConfig | undefined;
   command: TriggerSuggestionConfig | undefined;
   autocomplete: AutocompleteConfig | undefined;
-  starters: SuggestionItem[] | undefined;
+  starters: StartersConfig | undefined;
   hostExtensions: Extension[] | undefined;
   /**
    * Whether the rich editor is active. The curated carbon extensions (and the

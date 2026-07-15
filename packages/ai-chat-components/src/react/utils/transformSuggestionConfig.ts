@@ -18,6 +18,7 @@
 import { transformReactIconToCarbonIcon } from "../../globals/utils/iconTransform.js";
 import type {
   AutocompleteConfig,
+  StartersConfig,
   SuggestionItem,
   TriggerSuggestionConfig,
 } from "../../components/prompt-line/src/tiptap/types.js";
@@ -67,12 +68,12 @@ export function transformSuggestionConfig<
   return { ...config, items: transformItemsField(config.items) } as T;
 }
 
-/** Returns a copy of the starter items array with icons normalized. */
+/** Returns a copy of the starter config with item icons normalized. */
 export function transformStarterItems(
-  starters: SuggestionItem[] | undefined,
-): SuggestionItem[] | undefined {
+  starters: StartersConfig | undefined,
+): StartersConfig | undefined {
   if (!starters) {
     return starters;
   }
-  return starters.map(transformItemIcon);
+  return { ...starters, items: starters.items.map(transformItemIcon) };
 }

@@ -28,7 +28,7 @@ import { carbonCommand, carbonMention } from "./carbon-mention.js";
 import { carbonStarterTrigger } from "./carbon-starter-trigger.js";
 import type {
   AutocompleteConfig,
-  SuggestionItem,
+  StartersConfig,
   TriggerSuggestionConfig,
 } from "./types.js";
 
@@ -36,7 +36,7 @@ export interface BuildCarbonExtensionsConfig {
   mention?: TriggerSuggestionConfig;
   command?: TriggerSuggestionConfig;
   autocomplete?: AutocompleteConfig;
-  starters?: SuggestionItem[];
+  starters?: StartersConfig;
 }
 
 export function buildCarbonExtensions(
@@ -52,8 +52,8 @@ export function buildCarbonExtensions(
   if (configs.autocomplete) {
     out.push(carbonAutocomplete(configs.autocomplete));
   }
-  if (configs.starters && configs.starters.length > 0) {
-    out.push(carbonStarterTrigger(configs.starters));
+  if (configs.starters?.items.length) {
+    out.push(carbonStarterTrigger(configs.starters.items));
   }
   return out;
 }

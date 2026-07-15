@@ -7,7 +7,10 @@
  *  @license
  */
 
-import type { InputConfig } from "../../../types/config/InputConfig";
+import type {
+  InputConfig,
+  StartersConfig,
+} from "../../../types/config/InputConfig";
 
 /**
  * Which prompt-line surface a given input config requires.
@@ -41,7 +44,14 @@ export function resolvePromptLineMode(
     Boolean(input?.mention) ||
     Boolean(input?.command) ||
     Boolean(input?.autocomplete) ||
-    (input?.starters?.length ?? 0) > 0 ||
+    startersHasItems(input?.starters) ||
     (input?.tiptap?.extensions?.length ?? 0) > 0;
   return hasAdvancedFeature ? "rich" : "lite";
+}
+
+function startersHasItems(starters: StartersConfig | undefined): boolean {
+  if (!starters) {
+    return false;
+  }
+  return starters.items.length > 0;
 }

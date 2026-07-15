@@ -124,12 +124,14 @@ class AutocompleteElement extends LitElement {
       this.setAttribute("tabindex", "0");
     }
     this.addEventListener("keydown", this._handleKeydown);
+    this.addEventListener("mousedown", this._handleMousedown);
     document.addEventListener("click", this._handleClickOutside);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener("keydown", this._handleKeydown);
+    this.removeEventListener("mousedown", this._handleMousedown);
     document.removeEventListener("click", this._handleClickOutside);
   }
 
@@ -238,6 +240,15 @@ class AutocompleteElement extends LitElement {
       ),
     );
   }
+
+  private _handleMousedown = (event: MouseEvent) => {
+    // Prevent the editor from losing focus when the user clicks inside the
+    // autocomplete component. Without this, mousedown transfers focus away from
+    // the editor, carbonStarterTrigger.onTransaction fires, sees
+    // editor.isFocused === false, and dismisses the list before the click event
+    // can trigger onSelect.
+    event.preventDefault();
+  };
 
   private _handleClickOutside = (event: MouseEvent) => {
     if (!this.contains(event.target as Node)) {
