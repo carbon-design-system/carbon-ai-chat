@@ -17,8 +17,7 @@
  *
  * It scores the prose a reader actually sees. Before scoring, it strips
  * what a reader does not read as sentences: YAML frontmatter, fenced code
- * blocks, and Markdown syntax. TypeDoc `{@link Foo}` links become their
- * display text, exactly as they render on the docs site.
+ * blocks, GFM tables, TypeDoc `{@link}` references, and Markdown syntax.
  *
  * Usage:
  *   node scripts/reading-level.mjs <file.md> [more.md ...]
@@ -44,9 +43,37 @@ function markdownToProse(markdown) {
   // Drop fenced code blocks — code has no reading level.
   text = text.replace(/```[\s\S]*?```/g, "");
 
-  // `{@link Target | display}` -> display; `{@link Target}` -> Target.
-  text = text.replace(/\{@link\s+[^}|]*\|\s*([^}]+)\}/g, "$1");
-  text = text.replace(/\{@link\s+([^}]+)\}/g, "$1");
+  // Drop GFM table blocks — a header row, a `|---|` delimiter row, and body
+  // rows. Removing the whole block (as with code fences) avoids merging cells
+  // into a false run-on sentence. Detection anchors on the delimiter row, so
+  // prose with a stray `|` is left alone.
+  const isTableDelimiter = (line) => {
+    if (!line.includes("|")) return false;
+    const cells = line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|");
+    return cells.length > 0 && cells.every((c) => /^\s*:?-+:?\s*$/.test(c));
+  };
+  const srcLines = text.split("\n");
+  const withoutTables = [];
+  for (let i = 0; i < srcLines.length; i++) {
+    if (
+      srcLines[i].includes("|") &&
+      i + 1 < srcLines.length &&
+      isTableDelimiter(srcLines[i + 1])
+    ) {
+      let j = i + 2; // skip header + delimiter, then contiguous body rows
+      while (j < srcLines.length && srcLines[j].includes("|")) j++;
+      i = j - 1; // for-loop `++` advances past the block
+      continue;
+    }
+    withoutTables.push(srcLines[i]);
+  }
+  text = withoutTables.join("\n");
+
+  // Drop TypeDoc `{@link ...}` references entirely — both `{@link Target}` and
+  // `{@link Target | display}`. They render as code-styled cross-reference
+  // links, and scoring their dotted targets as one long word distorts the
+  // grade. See references/tone.md.
+  text = text.replace(/\{@link\s+[^}]*\}/g, "");
 
   // `[text](url)` -> text.
   text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
@@ -56,7 +83,7 @@ function markdownToProse(markdown) {
   text = text.replace(/\*\*([^*]+)\*\*/g, "$1");
   text = text.replace(/(^|[^*])\*([^*]+)\*/g, "$1$2");
 
-  // Line-level markers: headings, list bullets, blockquotes, table pipes.
+  // Line-level markers: headings, list bullets, blockquotes.
   const lines = text.split("\n").map((line) => {
     let l = line.replace(/^\s{0,3}#{1,6}\s+/, ""); // headings
     l = l.replace(/^\s*[-*+]\s+/, ""); // bullets
