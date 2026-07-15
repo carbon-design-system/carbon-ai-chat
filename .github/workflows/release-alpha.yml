@@ -1,0 +1,176 @@
+# Publish a manual alpha release of @carbon/ai-chat and
+# @carbon/ai-chat-components from a feature integration branch (e.g.
+# feat/prompt-line).
+#
+# Alpha releases are rare, off-cadence previews handed to teams validating
+# in-progress features. Unlike the RC / stable release pipeline, this workflow:
+#   - publishes both packages to npm under the `alpha` dist-tag (never moves
+#     `latest` or `next`), each with its own independent alpha version
+#   - publishes the demo, docs, both Storybooks and the components bundle to
+#     chat.carbondesignsystem.com/tag/alpha (and components/.../tag/alpha)
+#   - creates NO git tag, GitHub release, changelog, versions.js update or PR
+#
+# It never commits or pushes: the version bumps happen only in the throwaway
+# runner checkout, so the branch it runs from is left untouched.
+#
+# Run it from the branch you want to publish: Actions -> Release alpha ->
+# "Run workflow" -> pick the feature branch. A workflow_dispatch run uses (and
+# checks out) the selected ref, so the alpha is built from that branch's code.
+name: Release alpha
+run-name: "Release alpha (${{ inputs.bump }}) dry-run:${{ inputs.dry-run }} from ${{ github.ref_name }}"
+
+concurrency:
+  group: release-alpha
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Base bump off the current stable version (the alpha previews the next minor or patch)."
+        type: choice
+        options:
+          - minor
+          - patch
+        default: minor
+      dry-run:
+        description: "Dry run? Computes versions and builds everything, but publishes nothing to npm or the CDN."
+        type: boolean
+        default: true
+
+# id-token: write enables npm provenance (both packages set
+# publishConfig.provenance). Nothing is pushed, so contents: read is enough —
+# no PAT / contents: write, unlike the RC / stable release workflow.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release-alpha:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: "0"
+
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version-file: ".nvmrc"
+          registry-url: https://registry.npmjs.org
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      # Independently compute the next alpha version for each package from what
+      # is already on npm, and expose them as $AI_CHAT_ALPHA / $COMPONENTS_ALPHA.
+      - name: Compute alpha versions
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: node scripts/compute-alpha-versions.js
+
+      # Apply the versions in the runner checkout only (no commit, no tag). Pin
+      # @carbon/ai-chat to the exact components alpha so installing
+      # @carbon/ai-chat@alpha pulls the matching components alpha, not stable.
+      - name: Apply alpha versions
+        run: |
+          npm pkg set version="$COMPONENTS_ALPHA" --workspace @carbon/ai-chat-components
+          npm pkg set version="$AI_CHAT_ALPHA" --workspace @carbon/ai-chat
+          npm pkg set "dependencies.@carbon/ai-chat-components=$COMPONENTS_ALPHA" --workspace @carbon/ai-chat
+
+      - name: Build packages, demo and docs
+        run: npm run build
+
+      - name: Build Storybooks
+        run: |
+          cd packages/ai-chat-components
+          npm run storybook:build
+          npm run storybook:react:build
+
+      - name: Set npm auth token
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.CARBON_BOT_NPM_TOKEN }}" >> .npmrc
+
+      # Publish both public packages to the `alpha` dist-tag. `npm publish`
+      # (unlike `lerna publish`) needs no clean git working tree, so the edited
+      # package.json files are published as-is with no local commit. Components
+      # first so @carbon/ai-chat's dependency resolves for early installers.
+      - name: Publish to npm (alpha dist-tag)
+        if: ${{ !inputs.dry-run }}
+        run: |
+          npm publish --workspace @carbon/ai-chat-components --tag alpha
+          npm publish --workspace @carbon/ai-chat --tag alpha
+
+      # ---- Publish the sites / Storybooks to chat.carbondesignsystem.com/tag/alpha ----
+      # Mirrors publish-chat-cdn.yml / publish-components-cdn.yml, but only the
+      # single rolling `alpha` pointer (no version/<v> copies). Real runs only.
+      - name: Upload demo to COS under the `alpha` folder
+        if: ${{ !inputs.dry-run }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "demo/dist"
+          DEST_DIR: "tag/alpha/demo"
+
+      - name: Upload typedoc to COS under the `alpha` folder
+        if: ${{ !inputs.dry-run }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat/dist/docs/carbon-tsdocs"
+          DEST_DIR: "tag/alpha/docs"
+
+      - name: Upload components to COS under the `alpha` folder
+        if: ${{ !inputs.dry-run }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat-components/dist"
+          DEST_DIR: "components/tag/alpha"
+
+      - name: Upload ai-chat-components Storybook to COS under the `alpha` folder
+        if: ${{ !inputs.dry-run }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat-components/storybook-static"
+          DEST_DIR: "components/storybook/tag/alpha"
+
+      - name: Upload ai-chat-components React Storybook to COS under the `alpha` folder
+        if: ${{ !inputs.dry-run }}
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.COMMON_COS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
+          AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
+          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
+          DEST_DIR: "components/storybook/react/tag/alpha"
