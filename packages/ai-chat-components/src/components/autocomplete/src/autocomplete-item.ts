@@ -172,29 +172,21 @@ class AutocompleteItemElement extends LitElement {
           ${this._renderAvatar()}
           <div class="${blockClass}__text">
             <div class="${blockClass}__label">
-              ${
-                typed
-                  ? html`<span class="${blockClass}__label-typed"
-                      >${typed}</span
-                    >`
-                  : ""
-              }${
-                remainder
-                  ? html`<span class="${blockClass}__label-remainder"
-                      >${remainder}</span
-                    >`
-                  : ""
-              }
+              ${typed
+                ? html`<span class="${blockClass}__label-typed">${typed}</span>`
+                : ""}${remainder
+                ? html`<span class="${blockClass}__label-remainder"
+                    >${remainder}</span
+                  >`
+                : ""}
             </div>
-            ${
-              this.item.description
-                ? html`
-                    <div class="${blockClass}__description">
-                      ${this.item.description}
-                    </div>
-                  `
-                : null
-            }
+            ${this.item.description
+              ? html`
+                  <div class="${blockClass}__description">
+                    ${this.item.description}
+                  </div>
+                `
+              : null}
           </div>
         </div>
         ${this.enableSendButton
