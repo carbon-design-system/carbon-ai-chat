@@ -374,8 +374,7 @@ class AutocompleteElement extends LitElement {
       );
       const itemArray = this._flatItemElements(itemsContainer);
       const targetItem = itemArray[this._focusedIndex] as
-        | HTMLElement
-        | undefined;
+        HTMLElement | undefined;
       if (targetItem) {
         targetItem.scrollIntoView({ block: "nearest" });
       }
@@ -468,15 +467,17 @@ class AutocompleteElement extends LitElement {
     return html`
       ${liveRegions}
       <div class="${blockClass}">
-        ${this.headerConfig?.showHeader
-          ? html`
-              <div class="${blockClass}__header">
-                <span class="${blockClass}__title">
-                  ${this.headerConfig.title}
-                </span>
-              </div>
-            `
-          : ""}
+        ${
+          this.headerConfig?.showHeader
+            ? html`
+                <div class="${blockClass}__header">
+                  <span class="${blockClass}__title">
+                    ${this.headerConfig.title}
+                  </span>
+                </div>
+              `
+            : ""
+        }
 
         <ul
           class="${blockClass}__items"
@@ -521,8 +522,9 @@ class AutocompleteElement extends LitElement {
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
                 ?last-group="${isLastGroup}"
-                @cds-aichat-autocomplete-item-click="${this
-                  ._handleGroupItemClick}"
+                @cds-aichat-autocomplete-item-click="${
+                  this._handleGroupItemClick
+                }"
                 @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
               ></cds-aichat-autocomplete-item-group>
             `;

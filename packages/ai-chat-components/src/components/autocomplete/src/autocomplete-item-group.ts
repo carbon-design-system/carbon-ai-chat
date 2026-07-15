@@ -109,9 +109,11 @@ class AutocompleteItemGroupElement extends LitElement {
 
     return html`
       <li role="group" aria-label="${this.title}" class="${blockClass}">
-        ${this.title
-          ? html` <div class="${blockClass}__title">${this.title}</div> `
-          : null}
+        ${
+          this.title
+            ? html` <div class="${blockClass}__title">${this.title}</div> `
+            : null
+        }
         <ul class="${blockClass}__items">
           ${this.items.map((item, index) => {
             const absoluteIndex = this.startIndex + index;
