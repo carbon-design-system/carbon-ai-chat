@@ -17,7 +17,7 @@ import prefix from "../../../globals/settings.js";
 import styles from "./autocomplete-item-group.scss?lit";
 import "./autocomplete-item.js";
 
-import type { SuggestionItem } from "../../input/src/types.js";
+import type { SuggestionItem } from "../../prompt-line/src/types.js";
 
 const blockClass = `${prefix}-autocomplete-item-group`;
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -8,6 +8,10 @@
 @use "@carbon/layout";
 @use "@carbon/styles/scss/theme";
 @use "../../../../globals/scss/chat-theme";
+
+.carousel-container {
+  max-inline-size: chat-theme.$card-max-width;
+}
 
 button.cds-aichat--carousel-container__navigation-button,
 .cds-aichat--carousel-container__controls {

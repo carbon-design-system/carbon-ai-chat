@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,6 +15,7 @@ import {
 
 import { doWelcomeText } from "./doText";
 import { doFileUploadResponse } from "./doFileUpload";
+import { doMentionCommandResponse } from "./doMentionCommand";
 import { RESPONSE_MAP } from "./responseMap";
 
 async function customSendMessage(
@@ -30,6 +31,16 @@ async function customSendMessage(
     );
     if (fileFields && fileFields.length > 0) {
       doFileUploadResponse(request, instance);
+    }
+
+    // If the message contains @mention or /command fields, echo them back
+    // in a text response before the standard response for the utterance.
+    const mentionOrCommandFields =
+      request.input.structured_data?.fields?.filter(
+        (f) => f.type === "mention" || f.type === "command",
+      );
+    if (mentionOrCommandFields && mentionOrCommandFields.length > 0) {
+      doMentionCommandResponse(request, instance);
     }
 
     if (request.input.text && request.input.text in RESPONSE_MAP) {

@@ -33,7 +33,7 @@ describe("PromptLineWriteableSlot", () => {
 
     const wrapper = container.querySelector("[data-prompt-line-slot]");
     expect(wrapper).not.toBeNull();
-    // Projects into the input-shell `message-actions` slot.
+    // Projects into the prompt-line-shell `message-actions` slot.
     expect(wrapper?.getAttribute("slot")).toBe("message-actions");
     // Stays a real (positioning) box for Carbon tooltip/popover anchoring.
     expect(wrapper?.hasAttribute("data-floating-menu-container")).toBe(true);

@@ -136,7 +136,7 @@ export async function sendUserMessage(
   );
 
   // The input lives inside a ProseMirror-backed web component
-  // (cds-aichat-input-shell). We can't drive it via `.value =` like a native
+  // (cds-aichat-prompt-line-shell). We can't drive it via `.value =` like a native
   // <input>; instead we simulate the change event the editor emits, which
   // updates React's input state and enables the send button.
   await act(async () => {

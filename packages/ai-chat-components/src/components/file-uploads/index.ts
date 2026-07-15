@@ -8,5 +8,7 @@
  */
 
 import "./src/file-uploads.js";
+import "./src/file-upload-item.js";
 
 export { default as FileUploadsElement } from "./src/file-uploads.js";
+export { default as FileUploadItemElement } from "./src/file-upload-item.js";

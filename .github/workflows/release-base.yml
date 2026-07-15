@@ -136,6 +136,24 @@ jobs:
         run: |
           npx lerna publish prerelease --conventional-prerelease --preid rc --pre-dist-tag next ${{ env.PUBLISH }} ${{ env.FORCE }}
 
+      # Regenerate the committed API symbol index (docs/api/) so it tracks the
+      # API being released. Runs for every RC and full release (not dry runs),
+      # after `lerna publish` above so packages/ai-chat/package.json already
+      # reflects the version being released — the index links to that exact
+      # version, not `latest`. `docs:api` sets WRITE_API_INDEX so the
+      # otherwise-inert plugin writes; commit only if something changed.
+      - name: Update API symbol index
+        if: github.event.inputs.dry-run == 'false'
+        run: |
+          npm run docs:api --workspace=@carbon/ai-chat
+          if [ -z "$(git status --porcelain -- packages/ai-chat/docs/api)" ]; then
+            echo "API symbol index is unchanged, skipping commit."
+          else
+            git add packages/ai-chat/docs/api
+            git commit -m "chore(docs): update API symbol index"
+            git push origin
+          fi
+
   # This job dispatches workflow to update the versions.js file with the latest stable version
   # and pushes the updated versions.js file up to COS.
   # This versions.js file is used to populate the version dropdown in our demo and documentation websites.

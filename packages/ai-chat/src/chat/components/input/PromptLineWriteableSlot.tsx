@@ -19,7 +19,7 @@ interface PromptLineWriteableSlotProps {
   slotName: WriteableElementName;
 
   /**
-   * The `input-shell` slot this wrapper projects into (`message-actions` or
+   * The `prompt-line-shell` slot this wrapper projects into (`message-actions` or
    * `send-control`).
    */
   wrapperSlot: string;

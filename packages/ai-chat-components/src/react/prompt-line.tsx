@@ -10,7 +10,7 @@
 import { createComponent } from "@lit/react";
 import React from "react";
 
-import PromptLineElement from "../components/input/src/prompt-line.js";
+import PromptLineElement from "../components/prompt-line/src/prompt-line.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
 /**

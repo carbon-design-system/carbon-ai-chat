@@ -24,6 +24,14 @@ import Chat16 from "@carbon/icons/es/chat/16.js";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+import {
+  mentionItems,
+  commandItems,
+  mentionOnSelect,
+  mentionOnRemove,
+  commandOnSelect,
+  commandOnRemove,
+} from "../customSendMessage/doMentionCommand";
 
 const DEMO_MENU_OPTIONS: ToolbarAction[] = [
   {
@@ -177,6 +185,59 @@ export class DemoInputConfigSwitcher extends LitElement {
         }),
       );
     }
+  }
+
+  private _mentionDropdownValue(): string {
+    return this.config?.input?.mention ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
+  private _handleMentionDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (value === DROPDOWN_TRUE) {
+        next.mention = {
+          trigger: "@",
+          items: mentionItems,
+          onSelect: mentionOnSelect,
+          onRemove: mentionOnRemove,
+        };
+      } else {
+        delete next.mention;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
+  private _commandDropdownValue(): string {
+    return this.config?.input?.command ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
+  private _handleCommandDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (value === DROPDOWN_TRUE) {
+        next.command = {
+          trigger: "/",
+          triggerPosition: "start",
+          items: commandItems,
+          onSelect: commandOnSelect,
+          onRemove: commandOnRemove,
+        };
+      } else {
+        delete next.command;
+      }
+
+      return this._normalizeInput(next);
+    });
   }
 
   private _handleBooleanDropdown(
@@ -478,6 +539,36 @@ export class DemoInputConfigSwitcher extends LitElement {
           >
           <cds-dropdown-item value="${DROPDOWN_FALSE}"
             >Disable expanded layout</cds-dropdown-item
+          >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._mentionDropdownValue()}"
+          title-text="@mentions"
+          @cds-dropdown-selected=${this._handleMentionDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable @mentions</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable @mentions</cds-dropdown-item
+          >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._commandDropdownValue()}"
+          title-text="/commands"
+          @cds-dropdown-selected=${this._handleCommandDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable /commands</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable /commands</cds-dropdown-item
           >
         </cds-dropdown>
       </div>

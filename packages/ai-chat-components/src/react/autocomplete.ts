@@ -12,7 +12,7 @@ import React from "react";
 import AutocompleteElement from "../components/autocomplete/src/autocomplete.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
 
-// TODO: Icon transformation for suggestion items is handled upstream in input-shell.tsx.
+// TODO: Icon transformation for suggestion items is handled upstream in prompt-line-shell.tsx.
 // When icon rendering is added to the autocomplete web component, no additional
 // React-side transformation is needed here.
 const CDSAIChatAutocomplete = withWebComponentBridge(

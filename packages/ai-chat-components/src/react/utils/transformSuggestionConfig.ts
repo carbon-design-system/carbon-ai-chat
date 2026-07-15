@@ -20,7 +20,7 @@ import type {
   AutocompleteConfig,
   SuggestionItem,
   TriggerSuggestionConfig,
-} from "../../components/input/src/tiptap/types.js";
+} from "../../components/prompt-line/src/tiptap/types.js";
 
 const ICON_SIZE = 16;
 

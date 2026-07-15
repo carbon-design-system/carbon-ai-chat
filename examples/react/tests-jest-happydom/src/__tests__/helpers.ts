@@ -158,7 +158,7 @@ export async function sendUserMessage(
   text: string,
 ): Promise<void> {
   // The INPUT PageObjectId is the ProseMirror contenteditable inside
-  // cds-aichat-input-shell. Driving the editor with synthetic key/composition
+  // cds-aichat-prompt-line-shell. Driving the editor with synthetic key/composition
   // events is unreliable in happy-dom (PM relies on selection APIs the shim
   // doesn't fully implement), so we instead fire the same custom events the
   // editor would emit. The shell listens on its container for both events:
@@ -183,7 +183,7 @@ export async function sendUserMessage(
     { timeout: WAIT_FOR_TIMEOUT },
   );
 
-  // The input is a ProseMirror-backed web component (cds-aichat-input-shell).
+  // The input is a ProseMirror-backed web component (cds-aichat-prompt-line-shell).
   // The editor div above lives a couple of light-DOM levels under the shell
   // host (PM wraps `view.dom` inside its own container element). Walk up
   // with `closest` to reach the shell — they share the same shadow scope
@@ -199,16 +199,16 @@ export async function sendUserMessage(
   // `instance.send(...)` (or `instance.messaging.addMessage(...)`) directly
   // — `sendUserMessage` is left in place for future tests that only need
   // to populate the input doc.
-  const inputShell = input.closest("cds-aichat-input-shell") as
+  const promptLineShell = input.closest("cds-aichat-prompt-line-shell") as
     | (HTMLElement & {
         setContent?: (segments: Array<{ type: "text"; text: string }>) => void;
       })
     | null;
-  if (typeof inputShell?.setContent !== "function") {
-    throw new Error("Input shell `setContent` not available");
+  if (typeof promptLineShell?.setContent !== "function") {
+    throw new Error("Prompt-line shell `setContent` not available");
   }
   await act(async () => {
-    inputShell.setContent!([{ type: "text", text }]);
+    promptLineShell.setContent!([{ type: "text", text }]);
     if (typeof (shadowRoot.host as any).updateComplete !== "undefined") {
       await (shadowRoot.host as any).updateComplete;
     }

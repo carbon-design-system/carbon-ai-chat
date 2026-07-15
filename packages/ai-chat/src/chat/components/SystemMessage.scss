@@ -1,0 +1,85 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+// Standalone system message (no bubble, centered between messages)
+.cds-aichat--system-message-standalone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: layout.$spacing-07 layout.$spacing-05 0 layout.$spacing-05;
+
+  &-text {
+    @include type.type-style("helper-text-01");
+
+    color: theme.$text-secondary;
+    text-align: center;
+  }
+}
+
+// Inline system message (inside message bubble)
+.cds-aichat--received,
+.cds-aichat--sent {
+  .cds-aichat--system-message-inline {
+    @include type.type-style("helper-text-01");
+
+    color: theme.$text-secondary;
+    text-align: center;
+  }
+}
+
+// Standalone system message: date style
+.cds-aichat--system-message-standalone--date {
+  &::before,
+  &::after {
+    flex: 1;
+    border-block-end: 1px solid theme.$border-subtle;
+    content: "";
+  }
+
+  &::before {
+    margin-inline-end: layout.$spacing-05;
+  }
+
+  &::after {
+    margin-inline-start: layout.$spacing-05;
+  }
+}
+
+// Standalone: agent (rule above, smaller text)
+.cds-aichat--system-message-standalone--agent {
+  border-block-start: 1px solid theme.$border-subtle;
+  margin-block-start: layout.$spacing-07;
+  padding-block-start: layout.$spacing-05;
+}
+
+.cds-aichat--system-message-response-stopped {
+  @include type.type-style("body-01");
+
+  color: theme.$text-secondary;
+  font-style: italic;
+  margin-block-start: layout.$spacing-05;
+  text-align: center;
+}
+
+.cds-aichat--standard-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--system-message-response-stopped,
+.cds-aichat--wide-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--system-message-response-stopped {
+  padding-inline-start: 56px;
+}
+
+.cds-aichat--narrow-width
+  .cds-aichat--conversational-search
+  + .cds-aichat--system-message-response-stopped {
+  padding-inline-start: 16px;
+}
