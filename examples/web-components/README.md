@@ -628,6 +628,30 @@ Render your own content beneath an assistant message — here a copy button — 
 
 </details>
 
+### [Prompt line / Conversation starters](./prompt-line-conversation-starters/README.md)
+
+`<cds-aichat-custom-element>` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` callback creates a `<cds-aichat-autocomplete>` element with a "Prompt suggestions" header above the list. Selecting a starter inserts the text and auto-sends in one action.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-conversation-starters`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                        | Kind           | Role in this example                                                                 |
+| ----------------------------- | -------------- | ------------------------------------------------------------------------------------ |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI at the fullscreen baseline.                                       |
+| `messaging.customSendMessage` | property       | Mock backend that echoes the user's message.                                         |
+| `layout.showFrame`            | property       | Hides the default frame so the chat fills the host.                                  |
+| `openChatByDefault`           | property       | Mounts straight into the conversation, no launcher.                                  |
+| `input.expanded`              | property       | Switches the prompt line to the expanded (two-row) layout.                           |
+| `input.starters`              | property       | Shows the starter list on empty-editor focus; auto-sends on selection.               |
+| `starters.items`              | property       | Static list of conversation-starter prompts.                                         |
+| `starters.renderCustomList`   | property       | Imperatively creates `<cds-aichat-autocomplete>` with a "Prompt suggestions" header. |
+| `input.actions`               | property       | Inline icon buttons rendered in the expanded actions row.                            |
+| `<cds-aichat-autocomplete>`   | custom element | Renders the starter dropdown with `headerConfig`.                                    |
+
+</details>
+
 ### [Reasoning steps](./reasoning-steps/README.md)
 
 Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the default behavior) and a single long-form `reasoning.content` trace — picked from a dropdown on the welcome message.
