@@ -38,9 +38,9 @@ $block-class: #{$prefix}-autocomplete-item;
       @include focus-outline("outline");
     }
 
-    &[aria-selected="true"] {
-      /* stylelint-disable-next-line color-named, declaration-no-important */
-      background: red !important;
+    &--active,
+    &--active:hover {
+      background: theme.$background-selected;
     }
   }
 
@@ -88,7 +88,8 @@ $block-class: #{$prefix}-autocomplete-item;
 
   &:has(.#{$block-class}:hover) .#{$block-class}__send,
   &:has(.#{$block-class}:focus) .#{$block-class}__send,
-  &:has(.#{$block-class}:focus-within) .#{$block-class}__send {
+  &:has(.#{$block-class}:focus-within) .#{$block-class}__send,
+  &:has(.#{$block-class}--active) .#{$block-class}__send {
     visibility: visible;
   }
 

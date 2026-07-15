@@ -65,8 +65,12 @@ class AutocompleteItemElement extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
   enableSendButton = true;
 
-  @property({ type: Boolean, reflect: true, attribute: "selected" })
-  selected = false;
+  /**
+   * Whether this item is the active (highlighted) option.
+   * Drives aria-selected and the visual highlight class.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "is-active" })
+  isActive = false;
 
   private _handleSendClick(event: Event) {
     event.stopPropagation();
@@ -153,14 +157,16 @@ class AutocompleteItemElement extends LitElement {
 
   render() {
     const { typed, remainder } = this._getLabelParts();
-    console.log("selected?", this.selected, this.item, this.index);
+    const id = `${this.item.id}--option`;
 
     return html`
       <li
-        class="${blockClass}"
+        class="${blockClass} ${this.isActive ? `${blockClass}--active` : ""}"
         role="option"
+        aria-selected="${this.isActive ? "true" : "false"}"
+        tabindex="-1"
         @keydown="${this._handleKeydown}"
-        aria-selected=${this.selected}
+        id="${id}"
       >
         <div class="${blockClass}__content">
           ${this._renderAvatar()}

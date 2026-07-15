@@ -14,6 +14,7 @@ import "@carbon/web-components/es/components/icon-button/index.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 import prefix from "../../../globals/settings.js";
+import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
 
 import styles from "./autocomplete.scss?lit";
 import "./autocomplete-item.js";
@@ -112,11 +113,26 @@ class AutocompleteElement extends LitElement {
   @state() private isRTL = false;
 
   /**
-   * Currently focused item index
+   * Currently active item index
    * @internal
    */
   @state()
   private _focusedIndex = 0;
+
+  private _announcer = new AriaAnnouncerManager();
+
+  /** Polite live-region elements rendered into shadow DOM. */
+  private _politeRegion1!: HTMLDivElement;
+  private _politeRegion2!: HTMLDivElement;
+
+  /**
+   * Pending arrow-move announcement timer. Held-key rapid fires are collapsed:
+   * only the last pending label is spoken.
+   */
+  private _moveAnnouncePending: number | null = null;
+
+  /** Whether the open announcement has already fired for this show. */
+  private _openAnnounced = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -128,10 +144,45 @@ class AutocompleteElement extends LitElement {
     super.disconnectedCallback();
     this.removeEventListener("keydown", this._handleKeydown);
     document.removeEventListener("click", this._handleClickOutside);
+    this._announcer.disconnect();
+    if (this._moveAnnouncePending !== null) {
+      clearTimeout(this._moveAnnouncePending);
+      this._moveAnnouncePending = null;
+    }
+  }
+
+  firstUpdated() {
+    this._politeRegion1 = this.shadowRoot!.querySelector<HTMLDivElement>(
+      `.${blockClass}__sr-region-1`,
+    )!;
+    this._politeRegion2 = this.shadowRoot!.querySelector<HTMLDivElement>(
+      `.${blockClass}__sr-region-2`,
+    )!;
+    this._announcer.connect([this._politeRegion1, this._politeRegion2]);
   }
 
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
+
+    const itemsChanged =
+      changedProperties.has("items") || changedProperties.has("groups");
+
+    if (itemsChanged) {
+      const totalItems = this._getTotalItemCount();
+      if (totalItems === 0) {
+        this._announcer.announce("No suggestions.");
+        this._openAnnounced = false;
+        return;
+      }
+      // Reset to first item and announce list opened (once per show).
+      this._focusedIndex = 0;
+      if (!this._openAnnounced) {
+        this._openAnnounced = true;
+        this._announcer.announce(
+          `${totalItems} suggestion${totalItems === 1 ? "" : "s"}. Use up and down arrows to move, Enter to pick, Escape to close.`,
+        );
+      }
+    }
   }
 
   /**
@@ -175,35 +226,62 @@ class AutocompleteElement extends LitElement {
       case "ArrowDown":
         event.preventDefault();
         this._focusedIndex = Math.min(this._focusedIndex + 1, totalItems - 1);
-        this._focusItemAtIndex(this._focusedIndex);
-        console.log("down", this._focusedIndex);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scrollActiveItemIntoView();
         break;
 
       case "ArrowUp":
         event.preventDefault();
         this._focusedIndex = Math.max(this._focusedIndex - 1, 0);
-        this._focusItemAtIndex(this._focusedIndex);
-        console.log("up", this._focusedIndex);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scrollActiveItemIntoView();
         break;
 
       case "Home":
         event.preventDefault();
         this._focusedIndex = 0;
-        this._focusItemAtIndex(this._focusedIndex);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scrollActiveItemIntoView();
         break;
 
       case "End":
         event.preventDefault();
         this._focusedIndex = totalItems - 1;
-        this._focusItemAtIndex(this._focusedIndex);
+        this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
+        this._scrollActiveItemIntoView();
         break;
 
       case "Escape":
         event.preventDefault();
         this._dismiss();
         break;
+
+      case "Enter":
+        event.preventDefault();
+        this._handleItemClick(this._focusedIndex);
+        break;
     }
   };
+
+  /**
+   * Schedule a move announcement, replacing any pending one so rapid arrow
+   * holds only speak the final position.
+   */
+  private _scheduleMoveAnnouncement(index: number, total: number): void {
+    if (this._moveAnnouncePending !== null) {
+      clearTimeout(this._moveAnnouncePending);
+    }
+    this._moveAnnouncePending = window.setTimeout(() => {
+      this._moveAnnouncePending = null;
+      const item = this._getItemAtIndex(index);
+      if (!item) {
+        return;
+      }
+      const position = `${index + 1} of ${total}`;
+      const description = item.description ? `, ${item.description}` : "";
+      this._announcer.announce(`${item.label}${description}, ${position}`);
+    }, 50);
+  }
 
   private _handleSendClick(event: CustomEvent) {
     event.stopPropagation();
@@ -240,43 +318,38 @@ class AutocompleteElement extends LitElement {
     }
   };
 
-  private _focusItemAtIndex(index: number) {
-    this.requestUpdate();
+  private _scrollActiveItemIntoView(): void {
     this.updateComplete.then(() => {
       const itemsContainer = this.shadowRoot?.querySelector(
         `.${blockClass}__items`,
       );
-      const itemArray =
-        Array.from(itemsContainer?.children ?? []).flatMap((child) => {
-          if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM") {
-            return [child];
-          }
-
-          if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM-GROUP") {
-            return Array.from(
-              child.shadowRoot?.querySelectorAll(
-                "cds-aichat-autocomplete-item",
-              ) ?? [],
-            );
-          }
-
-          return [];
-        }) ?? [];
-
-      const targetItem = itemArray[index] as HTMLElement | undefined;
+      const itemArray = this._flatItemElements(itemsContainer);
+      const targetItem = itemArray[this._focusedIndex] as
+        | HTMLElement
+        | undefined;
       if (targetItem) {
-        const itemElement =
-          targetItem.shadowRoot?.querySelector(`[role="option"]`);
-        if (itemElement) {
-          // (itemElement as HTMLElement).focus();
-          itemElement.toggleAttribute("aria-selected", true);
-          targetItem.scrollIntoView({ block: "nearest" });
-        }
+        targetItem.scrollIntoView({ block: "nearest" });
       }
     });
   }
 
+  private _flatItemElements(container: Element | null | undefined): Element[] {
+    return Array.from(container?.children ?? []).flatMap((child) => {
+      if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM") {
+        return [child];
+      }
+      if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM-GROUP") {
+        return Array.from(
+          child.shadowRoot?.querySelectorAll("cds-aichat-autocomplete-item") ??
+            [],
+        );
+      }
+      return [];
+    });
+  }
+
   private _selectItem(item: SuggestionItem) {
+    this._announcer.announce(`${item.label} inserted.`);
     this.dispatchEvent(
       new CustomEvent<AutocompleteSelectEventDetail>(
         "cds-aichat-autocomplete-select",
@@ -290,6 +363,8 @@ class AutocompleteElement extends LitElement {
   }
 
   private _dismiss() {
+    this._openAnnounced = false;
+    this._announcer.announce("Suggestions closed.");
     this.dispatchEvent(
       new CustomEvent("cds-aichat-autocomplete-dismiss", {
         bubbles: true,
@@ -319,18 +394,33 @@ class AutocompleteElement extends LitElement {
     this.isRTL = isDirectionRTL();
 
     const totalItems = this._getTotalItemCount();
+
+    // Always render the live regions so the last announcement is not lost
+    // when the list empties (e.g. "No suggestions." or "Suggestions closed.").
+    const liveRegions = html`
+      <div
+        class="${blockClass}__sr-region-1"
+        aria-live="polite"
+        aria-atomic="false"
+        style="position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
+      ></div>
+      <div
+        class="${blockClass}__sr-region-2"
+        aria-live="polite"
+        aria-atomic="false"
+        style="position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0"
+      ></div>
+    `;
+
     if (totalItems === 0) {
-      return null;
+      return liveRegions;
     }
 
     let currentIndex = 0;
 
     return html`
-      <div
-        class="${blockClass}"
-        role="listbox"
-        aria-label="Autocomplete options"
-      >
+      ${liveRegions}
+      <div class="${blockClass}">
         ${this.headerConfig?.showHeader
           ? html`
               <div class="${blockClass}__header">
@@ -341,7 +431,12 @@ class AutocompleteElement extends LitElement {
             `
           : ""}
 
-        <ul class="${blockClass}__items" aria-label="todo">
+        <ul
+          class="${blockClass}__items"
+          role="listbox"
+          aria-label="Autocomplete options"
+          id="${blockClass}-listbox"
+        >
           <!-- Render flat items first -->
           ${this.items.map((item, idx) => {
             const itemIndex = currentIndex++;
@@ -350,7 +445,7 @@ class AutocompleteElement extends LitElement {
               this.groups.length === 0 && idx === this.items.length - 1;
             return html`
               <cds-aichat-autocomplete-item
-                .selected="${idx === this._focusedIndex}"
+                .isActive="${itemIndex === this._focusedIndex}"
                 .item="${item}"
                 .index="${itemIndex}"
                 .inputText="${this.inputText}"
@@ -374,6 +469,7 @@ class AutocompleteElement extends LitElement {
                 .title="${group.title}"
                 .items="${group.items}"
                 .startIndex="${groupStartIndex}"
+                .focusedIndex="${this._focusedIndex}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"

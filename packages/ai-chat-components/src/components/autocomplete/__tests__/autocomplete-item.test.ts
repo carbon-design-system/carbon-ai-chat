@@ -42,4 +42,52 @@ describe("cds-aichat-autocomplete-item", () => {
     const sendButton = el.shadowRoot?.querySelector("cds-icon-button");
     expect(sendButton).to.not.exist;
   });
+
+  it("has role=option on the list item", async () => {
+    const el = await fixture<AutocompleteItemElement>(html`
+      <cds-aichat-autocomplete-item
+        .item="${mockItem}"
+      ></cds-aichat-autocomplete-item>
+    `);
+
+    const li = el.shadowRoot?.querySelector("li");
+    expect(li?.getAttribute("role")).to.equal("option");
+  });
+
+  it("has tabindex=-1 so focus stays in the editor", async () => {
+    const el = await fixture<AutocompleteItemElement>(html`
+      <cds-aichat-autocomplete-item
+        .item="${mockItem}"
+      ></cds-aichat-autocomplete-item>
+    `);
+
+    const li = el.shadowRoot?.querySelector("li");
+    expect(li?.getAttribute("tabindex")).to.equal("-1");
+  });
+
+  it("sets aria-selected=false when isActive is false", async () => {
+    const el = await fixture<AutocompleteItemElement>(html`
+      <cds-aichat-autocomplete-item
+        .item="${mockItem}"
+        .isActive="${false}"
+      ></cds-aichat-autocomplete-item>
+    `);
+
+    const li = el.shadowRoot?.querySelector("li");
+    expect(li?.getAttribute("aria-selected")).to.equal("false");
+  });
+
+  it("sets aria-selected=true and active class when isActive is true", async () => {
+    const el = await fixture<AutocompleteItemElement>(html`
+      <cds-aichat-autocomplete-item
+        .item="${mockItem}"
+        .isActive="${true}"
+      ></cds-aichat-autocomplete-item>
+    `);
+
+    const li = el.shadowRoot?.querySelector("li");
+    expect(li?.getAttribute("aria-selected")).to.equal("true");
+    expect(li?.classList.contains("cds-aichat-autocomplete-item--active")).to.be
+      .true;
+  });
 });

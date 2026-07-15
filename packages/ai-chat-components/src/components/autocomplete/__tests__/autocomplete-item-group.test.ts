@@ -105,4 +105,36 @@ describe("cds-aichat-autocomplete-item-group", () => {
     );
     expect(groupElement).to.not.exist;
   });
+
+  it("should use role=group (not listbox) to avoid nested listbox", async () => {
+    const el = await fixture<AutocompleteItemGroupElement>(html`
+      <cds-aichat-autocomplete-item-group
+        title="Test Group"
+        .items="${mockItems}"
+      ></cds-aichat-autocomplete-item-group>
+    `);
+
+    const groupEl = el.shadowRoot?.querySelector(
+      ".cds-aichat-autocomplete-item-group",
+    );
+    expect(groupEl?.getAttribute("role")).to.equal("group");
+    expect(groupEl?.getAttribute("aria-label")).to.equal("Test Group");
+  });
+
+  it("should mark item as active when focusedIndex matches", async () => {
+    const el = await fixture<AutocompleteItemGroupElement>(html`
+      <cds-aichat-autocomplete-item-group
+        title="Test Group"
+        .items="${mockItems}"
+        .startIndex="${0}"
+        .focusedIndex="${1}"
+      ></cds-aichat-autocomplete-item-group>
+    `);
+
+    const items = el.shadowRoot?.querySelectorAll(
+      "cds-aichat-autocomplete-item",
+    );
+    expect((items?.[1] as any)?.isActive).to.be.true;
+    expect((items?.[0] as any)?.isActive).to.be.false;
+  });
 });

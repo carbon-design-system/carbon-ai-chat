@@ -83,7 +83,7 @@ class RichController implements PromptLineController {
     this._testId = init.testId;
     this._disabled = init.disabled;
 
-    host.setAttribute("role", "combobox");
+    host.setAttribute("role", "textbox");
     host.setAttribute("aria-multiline", "true");
     host.setAttribute("spellcheck", "true");
     host.setAttribute("tabindex", "0");
