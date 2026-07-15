@@ -5,6 +5,7 @@ children:
   - ./Layout.md
   - ./Launcher.md
   - ./Header.md
+  - ./PromptLine.md
   - ./Homescreen.md
   - ./WriteableElements.md
   - ./CustomPanels.md
@@ -28,6 +29,7 @@ Pick the area you want to customize:
 - [Layout](./Layout.md) — layout modes, sizing and placement CSS custom properties, the floating layout, and corner rounding.
 - [Launcher](./Launcher.md) — configure or replace the launcher and style its tokens.
 - [Header](./Header.md) — title, buttons, menus, and the AI label in the header bar.
+- [Prompt line](./PromptLine.md) — visibility, suggestions, custom actions, file uploads, and editor extensions in the message input.
 - [Home screen](./Homescreen.md) — the optional landing view with greeting and starter prompts.
 - [Slots](./WriteableElements.md) — write your own content into slots around the chat.
 - [Custom panels](./CustomPanels.md) — open an overlay panel with your own content.

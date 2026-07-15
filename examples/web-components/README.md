@@ -349,196 +349,6 @@ Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFac
 
 </details>
 
-### [Input / Code snippet](./input-code-snippet/README.md)
-
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-code-snippet`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                               | Kind                                 | Role in this example                                                            |
-| ------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`        | custom element                       | Mounts the chat UI as a fullscreen surface.                                     |
-| `<cds-aichat-code-snippet>`          | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble.   |
-| `<cds-aichat-card>`                  | `@carbon/ai-chat-components` element | Frames the editable snippet; the exit hint sits in its `footer` slot.           |
-| `PublicConfig`                       | type                                 | Types the config bound to the element's properties.                             |
-| `WCRenderUserDefinedInputNode`       | type                                 | Types the `renderUserDefinedInputNode` callback.                                |
-| `Extension`                          | `@tiptap/core` type                  | Types the custom Tiptap node registered on the input.                           |
-| `renderInLightDom`                   | helper                               | Bridges the snippet web component into the page's light DOM.                    |
-| `.renderUserDefinedInputNode`        | property                             | Renders the custom `codeSnippetBlock` node inside the sent user message bubble. |
-| `.input` (`input.tiptap.extensions`) | property                             | Registers the host-authored `codeSnippetBlock` Tiptap node on the input.        |
-| `.layout` (`layout.showFrame`)       | property                             | Hides the default frame so the chat fills the viewport.                         |
-| `.openChatByDefault`                 | property                             | Mounts straight into the conversation, no launcher.                             |
-| `.messaging.customSendMessage`       | property                             | Mock backend; confirms whether the outgoing text contained a fenced block.      |
-| `Node.create`                        | `@tiptap/core` API                   | Authors the `codeSnippetBlock` block atom node.                                 |
-| `InputRule`                          | `@tiptap/core` API                   | Triggers the node swap when the user finishes typing three backticks.           |
-| `addKeyboardShortcuts` / keydown     | `@tiptap/core` / DOM                 | Escape exits the block to a new paragraph below.                                |
-
-</details>
-
-### [Input / Custom render](./input-custom-render/README.md)
-
-The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-custom-render`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                | Kind                | Role in this example                                                         |
-| ------------------------------------- | ------------------- | ---------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`         | custom element      | Mounts the chat UI inside the docked sidebar container.                      |
-| `<cds-clickable-tile>` / `<cds-tile>` | custom element      | Carbon tiles — the page grid, and the tile injected into the input / bubble. |
-| `PublicConfig`                        | type                | Types the config bound to the element's properties.                          |
-| `ChatInstance`                        | type                | Captured in `.onBeforeRender` so the tile handler can drive the input.       |
-| `WCRenderUserDefinedInputNode`        | type                | Types the `renderUserDefinedInputNode` callback.                             |
-| `Extension`                           | `@tiptap/core` type | Types the custom Tiptap node registered on the input.                        |
-| `renderInLightDom`                    | helper              | Bridges the node view's `<cds-tile>` into the page's light DOM.              |
-| `.renderUserDefinedInputNode`         | property            | Renders the custom `tileChip` node inside the sent user message bubble.      |
-| `.input` (`input.tiptap.extensions`)  | property            | Registers the host-authored `tileChip` Tiptap node on the input.             |
-| `instance.input.updateContent`        | method              | Clears the input and injects the clicked tile as a custom node.              |
-| `instance.input.updateStructuredData` | method              | Replaces the pending structured data with metadata describing the tile.      |
-| `.onBeforeRender`                     | property            | Captures the `ChatInstance` used by the tile-click handler.                  |
-| `.layout` (`layout.showFrame`)        | property            | Hides the default frame so the chat fills the sidebar.                       |
-| `.openChatByDefault`                  | property            | Mounts straight into the conversation, no launcher.                          |
-| `.messaging.customSendMessage`        | property            | Reads `request.input.structured_data` and echoes the submitted tile.         |
-| `Node.create`                         | `@tiptap/core` API  | Authors the custom `tileChip` inline atom node.                              |
-
-</details>
-
-### [Input / File upload](./input-file-upload/README.md)
-
-Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpload` handler that simulates a server round-trip and echoes the file metadata back in the assistant response.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-file-upload`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                        | Kind           | Role in this example                                                            |
-| ----------------------------- | -------------- | ------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI.                                                             |
-| `messaging.customSendMessage` | property       | Mock backend that echoes uploaded-file metadata.                                |
-| `upload.is_on`                | property       | Enables the attachment button.                                                  |
-| `upload.onFileUpload`         | property       | Mock upload handler returning `StructuredData` with an `ExternalFileReference`. |
-| `AbortSignal`                 | API            | Cancels in-flight uploads when a pending file is removed.                       |
-
-</details>
-
-### [Input / Mentions & commands](./input-mentions-and-commands/README.md)
-
-`<cds-aichat-custom-element>` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-mentions-and-commands`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                  | Kind           | Role in this example                                                     |
-| --------------------------------------- | -------------- | ------------------------------------------------------------------------ |
-| `<cds-aichat-custom-element>`           | custom element | Mounts the chat UI at the fullscreen baseline.                           |
-| `PublicConfig`                          | type           | Types the config bound to the element's properties.                      |
-| `ChatInstance`                          | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                        | type           | Shape of each entry returned from `items`.                               |
-| `.input` (`input.mention`)              | property       | Registers the `@`-mention trigger config on the input.                   |
-| `.input` (`input.command`)              | property       | Registers the `/`-command trigger config on the input.                   |
-| `mention.trigger` / `command.trigger`   | property       | Character (`@` or `/`) that opens the suggestion list.                   |
-| `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
-| `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
-| `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
-| `mention.onRemove` / `command.onRemove` | property       | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
-| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
-| `instance.input.updateStructuredData`   | method         | Adds and removes mention/command picks on the message's structured data. |
-| `.layout` (`layout.showFrame`)          | property       | Hides the default frame so the chat fills the host.                      |
-| `.openChatByDefault`                    | property       | Mounts straight into the conversation, no launcher.                      |
-| `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
-
-</details>
-
-### [Input / Mentions & commands (custom render)](./input-mentions-and-commands-custom-render/README.md)
-
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a `<cds-tooltip>` showing the user's description on hover. Commands keep the default chip rendering.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-mentions-and-commands-custom-render`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                  | Kind           | Role in this example                                                     |
-| --------------------------------------- | -------------- | ------------------------------------------------------------------------ |
-| `<cds-aichat-custom-element>`           | custom element | Mounts the chat UI at the fullscreen baseline.                           |
-| `<cds-tag>`                             | custom element | Visual chip used inside the custom token renderer.                       |
-| `<cds-tooltip>`                         | custom element | Hover affordance wrapping the custom mention chip.                       |
-| `PublicConfig`                          | type           | Types the config bound to the element's properties.                      |
-| `ChatInstance`                          | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                        | type           | Shape of each entry; passed to `renderCustomToken`.                      |
-| `.input` (`input.mention`)              | property       | Registers the `@`-mention trigger config on the input.                   |
-| `.input` (`input.command`)              | property       | Registers the `/`-command trigger config on the input.                   |
-| `mention.renderCustomToken`             | property       | Returns an `HTMLElement` rendered in place of the default mention chip.  |
-| `mention.trigger` / `command.trigger`   | property       | Character (`@` or `/`) that opens the suggestion list.                   |
-| `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
-| `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
-| `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
-| `mention.onRemove` / `command.onRemove` | property       | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
-| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
-| `instance.input.updateStructuredData`   | method         | Adds and removes mention/command picks on the message's structured data. |
-| `.layout` (`layout.showFrame`)          | property       | Hides the default frame so the chat fills the host.                      |
-| `.openChatByDefault`                    | property       | Mounts straight into the conversation, no launcher.                      |
-| `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
-
-</details>
-
-### [Input / Typeahead](./input-typeahead/README.md)
-
-`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-typeahead`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                          | Kind           | Role in this example                                  |
-| ------------------------------- | -------------- | ----------------------------------------------------- |
-| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.        |
-| `PublicConfig`                  | type           | Types the config bound to the element's properties.   |
-| `SuggestionItem`                | type           | Shape of each entry returned from `items`.            |
-| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.        |
-| `autocomplete.items`            | property       | Async filter that returns matching `SuggestionItem`s. |
-| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.          |
-| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.   |
-| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.   |
-| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.              |
-
-</details>
-
-### [Input / Typeahead (custom list)](./input-typeahead-custom/README.md)
-
-`<cds-aichat-custom-element>` with `input.autocomplete` whose dropdown is replaced by a fully custom Lit element supplied through `renderCustomList`.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-input-typeahead-custom`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                          | Kind           | Role in this example                                                            |
-| ------------------------------- | -------------- | ------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.                                  |
-| `<custom-suggestion-list>`      | custom element | Lit element returned from `renderCustomList`.                                   |
-| `PublicConfig`                  | type           | Types the config bound to the element's properties.                             |
-| `SuggestionItem`                | type           | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
-| `CustomListProps`               | type           | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
-| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.                                  |
-| `autocomplete.renderCustomList` | property       | Returns an `HTMLElement` that replaces the default dropdown.                    |
-| `autocomplete.items`            | property       | Async filter providing entries to the custom list.                              |
-| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.                                    |
-| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.                             |
-| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.                             |
-| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.                                        |
-
-</details>
-
 ### [Integrations / watsonx.ai](./integrations-watsonx/README.md)
 
 Connects the chat to IBM watsonx.ai via a local Express proxy that streams tokens back with `@microsoft/fetch-event-source`.
@@ -628,6 +438,35 @@ Render your own content beneath an assistant message — here a copy button — 
 
 </details>
 
+### [Prompt line / Code snippet](./prompt-line-code-snippet/README.md)
+
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-code-snippet`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                               | Kind                                 | Role in this example                                                            |
+| ------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------- |
+| `<cds-aichat-custom-element>`        | custom element                       | Mounts the chat UI as a fullscreen surface.                                     |
+| `<cds-aichat-code-snippet>`          | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble.   |
+| `<cds-aichat-card>`                  | `@carbon/ai-chat-components` element | Frames the editable snippet; the exit hint sits in its `footer` slot.           |
+| `PublicConfig`                       | type                                 | Types the config bound to the element's properties.                             |
+| `WCRenderUserDefinedInputNode`       | type                                 | Types the `renderUserDefinedInputNode` callback.                                |
+| `Extension`                          | `@tiptap/core` type                  | Types the custom Tiptap node registered on the input.                           |
+| `renderInLightDom`                   | helper                               | Bridges the snippet web component into the page's light DOM.                    |
+| `.renderUserDefinedInputNode`        | property                             | Renders the custom `codeSnippetBlock` node inside the sent user message bubble. |
+| `.input` (`input.tiptap.extensions`) | property                             | Registers the host-authored `codeSnippetBlock` Tiptap node on the input.        |
+| `.layout` (`layout.showFrame`)       | property                             | Hides the default frame so the chat fills the viewport.                         |
+| `.openChatByDefault`                 | property                             | Mounts straight into the conversation, no launcher.                             |
+| `.messaging.customSendMessage`       | property                             | Mock backend; confirms whether the outgoing text contained a fenced block.      |
+| `Node.create`                        | `@tiptap/core` API                   | Authors the `codeSnippetBlock` block atom node.                                 |
+| `InputRule`                          | `@tiptap/core` API                   | Triggers the node swap when the user finishes typing three backticks.           |
+| `addKeyboardShortcuts` / keydown     | `@tiptap/core` / DOM                 | Escape exits the block to a new paragraph below.                                |
+
+</details>
+
 ### [Prompt line / Conversation starters](./prompt-line-conversation-starters/README.md)
 
 `<cds-aichat-custom-element>` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` callback creates a `<cds-aichat-autocomplete>` element with a "Prompt suggestions" header above the list. Selecting a starter inserts the text and auto-sends in one action.
@@ -649,6 +488,167 @@ Render your own content beneath an assistant message — here a copy button — 
 | `starters.renderCustomList`   | property       | Imperatively creates `<cds-aichat-autocomplete>` with a "Prompt suggestions" header. |
 | `input.actions`               | property       | Inline icon buttons rendered in the expanded actions row.                            |
 | `<cds-aichat-autocomplete>`   | custom element | Renders the starter dropdown with `headerConfig`.                                    |
+
+</details>
+
+### [Prompt line / Custom render](./prompt-line-custom-render/README.md)
+
+The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-custom-render`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                | Kind                | Role in this example                                                         |
+| ------------------------------------- | ------------------- | ---------------------------------------------------------------------------- |
+| `<cds-aichat-custom-element>`         | custom element      | Mounts the chat UI inside the docked sidebar container.                      |
+| `<cds-clickable-tile>` / `<cds-tile>` | custom element      | Carbon tiles — the page grid, and the tile injected into the input / bubble. |
+| `PublicConfig`                        | type                | Types the config bound to the element's properties.                          |
+| `ChatInstance`                        | type                | Captured in `.onBeforeRender` so the tile handler can drive the input.       |
+| `WCRenderUserDefinedInputNode`        | type                | Types the `renderUserDefinedInputNode` callback.                             |
+| `Extension`                           | `@tiptap/core` type | Types the custom Tiptap node registered on the input.                        |
+| `renderInLightDom`                    | helper              | Bridges the node view's `<cds-tile>` into the page's light DOM.              |
+| `.renderUserDefinedInputNode`         | property            | Renders the custom `tileChip` node inside the sent user message bubble.      |
+| `.input` (`input.tiptap.extensions`)  | property            | Registers the host-authored `tileChip` Tiptap node on the input.             |
+| `instance.input.updateContent`        | method              | Clears the input and injects the clicked tile as a custom node.              |
+| `instance.input.updateStructuredData` | method              | Replaces the pending structured data with metadata describing the tile.      |
+| `.onBeforeRender`                     | property            | Captures the `ChatInstance` used by the tile-click handler.                  |
+| `.layout` (`layout.showFrame`)        | property            | Hides the default frame so the chat fills the sidebar.                       |
+| `.openChatByDefault`                  | property            | Mounts straight into the conversation, no launcher.                          |
+| `.messaging.customSendMessage`        | property            | Reads `request.input.structured_data` and echoes the submitted tile.         |
+| `Node.create`                         | `@tiptap/core` API  | Authors the custom `tileChip` inline atom node.                              |
+
+</details>
+
+### [Prompt line / File upload](./prompt-line-file-upload/README.md)
+
+Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpload` handler that simulates a server round-trip and echoes the file metadata back in the assistant response.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-file-upload`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                        | Kind           | Role in this example                                                            |
+| ----------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI.                                                             |
+| `messaging.customSendMessage` | property       | Mock backend that echoes uploaded-file metadata.                                |
+| `upload.is_on`                | property       | Enables the attachment button.                                                  |
+| `upload.onFileUpload`         | property       | Mock upload handler returning `StructuredData` with an `ExternalFileReference`. |
+| `AbortSignal`                 | API            | Cancels in-flight uploads when a pending file is removed.                       |
+
+</details>
+
+### [Prompt line / Mentions & commands](./prompt-line-mentions-and-commands/README.md)
+
+`<cds-aichat-custom-element>` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                  | Kind           | Role in this example                                                     |
+| --------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| `<cds-aichat-custom-element>`           | custom element | Mounts the chat UI at the fullscreen baseline.                           |
+| `PublicConfig`                          | type           | Types the config bound to the element's properties.                      |
+| `ChatInstance`                          | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | type           | Shape of each entry returned from `items`.                               |
+| `.input` (`input.mention`)              | property       | Registers the `@`-mention trigger config on the input.                   |
+| `.input` (`input.command`)              | property       | Registers the `/`-command trigger config on the input.                   |
+| `mention.trigger` / `command.trigger`   | property       | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
+| `mention.onRemove` / `command.onRemove` | property       | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
+| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | method         | Adds and removes mention/command picks on the message's structured data. |
+| `.layout` (`layout.showFrame`)          | property       | Hides the default frame so the chat fills the host.                      |
+| `.openChatByDefault`                    | property       | Mounts straight into the conversation, no launcher.                      |
+| `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
+
+</details>
+
+### [Prompt line / Mentions & commands (custom render)](./prompt-line-mentions-and-commands-custom-render/README.md)
+
+The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a `<cds-tooltip>` showing the user's description on hover. Commands keep the default chip rendering.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands-custom-render`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                  | Kind           | Role in this example                                                     |
+| --------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| `<cds-aichat-custom-element>`           | custom element | Mounts the chat UI at the fullscreen baseline.                           |
+| `<cds-tag>`                             | custom element | Visual chip used inside the custom token renderer.                       |
+| `<cds-tooltip>`                         | custom element | Hover affordance wrapping the custom mention chip.                       |
+| `PublicConfig`                          | type           | Types the config bound to the element's properties.                      |
+| `ChatInstance`                          | type           | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | type           | Shape of each entry; passed to `renderCustomToken`.                      |
+| `.input` (`input.mention`)              | property       | Registers the `@`-mention trigger config on the input.                   |
+| `.input` (`input.command`)              | property       | Registers the `/`-command trigger config on the input.                   |
+| `mention.renderCustomToken`             | property       | Returns an `HTMLElement` rendered in place of the default mention chip.  |
+| `mention.trigger` / `command.trigger`   | property       | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | property       | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | property       | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | property       | Hook that runs when the user picks a suggestion.                         |
+| `mention.onRemove` / `command.onRemove` | property       | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
+| `.onBeforeRender`                       | property       | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | method         | Adds and removes mention/command picks on the message's structured data. |
+| `.layout` (`layout.showFrame`)          | property       | Hides the default frame so the chat fills the host.                      |
+| `.openChatByDefault`                    | property       | Mounts straight into the conversation, no launcher.                      |
+| `.messaging.customSendMessage`          | property       | Reads `request.input.structured_data` and echoes the picks.              |
+
+</details>
+
+### [Prompt line / Typeahead](./prompt-line-typeahead/README.md)
+
+`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-typeahead`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                          | Kind           | Role in this example                                  |
+| ------------------------------- | -------------- | ----------------------------------------------------- |
+| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.        |
+| `PublicConfig`                  | type           | Types the config bound to the element's properties.   |
+| `SuggestionItem`                | type           | Shape of each entry returned from `items`.            |
+| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.        |
+| `autocomplete.items`            | property       | Async filter that returns matching `SuggestionItem`s. |
+| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.          |
+| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.   |
+| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.   |
+| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.              |
+
+</details>
+
+### [Prompt line / Typeahead (custom list)](./prompt-line-typeahead-custom/README.md)
+
+`<cds-aichat-custom-element>` with `input.autocomplete` whose dropdown is replaced by a fully custom Lit element supplied through `renderCustomList`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-typeahead-custom`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                          | Kind           | Role in this example                                                            |
+| ------------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.                                  |
+| `<custom-suggestion-list>`      | custom element | Lit element returned from `renderCustomList`.                                   |
+| `PublicConfig`                  | type           | Types the config bound to the element's properties.                             |
+| `SuggestionItem`                | type           | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
+| `CustomListProps`               | type           | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
+| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.                                  |
+| `autocomplete.renderCustomList` | property       | Returns an `HTMLElement` that replaces the default dropdown.                    |
+| `autocomplete.items`            | property       | Async filter providing entries to the custom list.                              |
+| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.                                    |
+| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.                             |
+| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.                             |
+| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.                                        |
 
 </details>
 

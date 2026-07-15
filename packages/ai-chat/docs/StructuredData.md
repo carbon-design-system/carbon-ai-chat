@@ -108,4 +108,4 @@ The value of a `file` field is a {@link FileFieldValue} — either an {@link Ext
 
 - [Message format](./MessageFormat.md) — the request and response shapes, including `input.structured_data`.
 - [Server communication](./CustomServer.md) — wire the chat to your server.
-- File upload examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/file-upload) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/file-upload).
+- File upload examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/prompt-line-file-upload) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/prompt-line-file-upload).
