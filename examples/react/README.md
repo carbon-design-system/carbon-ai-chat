@@ -556,6 +556,33 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 
 </details>
 
+### [Prompt line / Conversation starters](./prompt-line-conversation-starters/README.md)
+
+`ChatCustomElement` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` wraps `CDSAIChatAutocomplete` to add a "Prompt suggestions" header above the list. Selecting a starter inserts the text and auto-sends in one action.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-conversation-starters`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                        | Package / kind                         | Role in this example                                                                |
+| ----------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------- |
+| `ChatCustomElement`           | `@carbon/ai-chat` component            | Mounts the chat UI at the fullscreen baseline.                                      |
+| `PublicConfig`                | `@carbon/ai-chat` type                 | Types the config object passed to `ChatCustomElement`.                              |
+| `StartersConfig`              | `@carbon/ai-chat` type                 | Shape of the `input.starters` object (items + renderCustomList).                    |
+| `CustomListProps`             | `@carbon/ai-chat` type                 | Props received by the `renderCustomList` callback.                                  |
+| `input.expanded`              | config prop                            | Switches the prompt line to the expanded (two-row) layout.                          |
+| `input.starters`              | config prop                            | Shows the starter list on empty-editor focus; auto-sends on selection.              |
+| `starters.items`              | config prop                            | Static list of conversation-starter prompts.                                        |
+| `starters.renderCustomList`   | config prop                            | Replaces the built-in list UI with one that includes a "Prompt suggestions" header. |
+| `input.actions`               | config prop                            | Inline icon buttons rendered in the expanded actions row.                           |
+| `CDSAIChatAutocomplete`       | `@carbon/ai-chat-components` component | Renders the starter dropdown with `headerConfig`.                                   |
+| `layout.showFrame`            | config prop                            | Hides the default frame so the chat fills the host.                                 |
+| `openChatByDefault`           | config prop                            | Mounts straight into the conversation, no launcher.                                 |
+| `messaging.customSendMessage` | config prop                            | Mock backend echoing the user's message.                                            |
+
+</details>
+
 ### [Prompt line / Custom render](./prompt-line-custom-render/README.md)
 
 The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.

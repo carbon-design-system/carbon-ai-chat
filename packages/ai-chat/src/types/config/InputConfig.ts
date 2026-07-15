@@ -17,6 +17,7 @@ import type {
   BaseSuggestionConfig as _BaseSuggestionConfig,
   TriggerSuggestionConfig as _TriggerSuggestionConfig,
   AutocompleteConfig as _AutocompleteConfig,
+  StartersConfig as _StartersConfig,
   SuggestionItem as _SuggestionItem,
   CustomListProps as _CustomListProps,
 } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
@@ -53,6 +54,15 @@ export type TriggerSuggestionConfig = _TriggerSuggestionConfig;
  * @category Config
  */
 export type AutocompleteConfig = _AutocompleteConfig;
+
+/**
+ * Configuration for starter prompts consumed by {@link InputConfig.starters}.
+ * Extends {@link BaseSuggestionConfig} so a `renderCustomList` callback can
+ * replace the built-in suggestion list (e.g. to add a header above the items).
+ *
+ * @category Config
+ */
+export type StartersConfig = _StartersConfig;
 
 /**
  * Single list-item shape used by every Carbon suggestion surface
@@ -144,7 +154,7 @@ export interface InputConfig {
    *
    * @experimental
    */
-  starters?: SuggestionItem[];
+  starters?: StartersConfig;
 
   /**
    * Tiptap-shaped configuration. The `tiptap` namespace signals "you're

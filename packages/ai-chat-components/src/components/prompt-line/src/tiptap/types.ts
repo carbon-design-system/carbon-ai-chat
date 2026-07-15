@@ -166,6 +166,22 @@ export interface AutocompleteConfig extends BaseSuggestionConfig {
 }
 
 /**
+ * Configuration for starter prompts — shown when the editor is empty and
+ * focused. Extends {@link BaseSuggestionConfig} so consumers can supply a
+ * `renderCustomList` (e.g. to add a header above the list).
+ *
+ * `items` is required and must be a static array (starters are resolved once
+ * from storage, not re-queried per keystroke).
+ */
+export interface StartersConfig extends Pick<
+  BaseSuggestionConfig,
+  "renderCustomList"
+> {
+  /** The starter prompts to display. */
+  items: SuggestionItem[];
+}
+
+/**
  * Detail payload for the trigger-change event emitted directly by each carbon
  * factory's suggestion-render lifecycle. The shape is shared with the legacy
  * `TriggerChangeEventDetail` (see `../types.ts`) so existing listeners keep

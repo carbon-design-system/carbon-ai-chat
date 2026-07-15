@@ -59,6 +59,7 @@ export type {
   BaseSuggestionConfig,
   TriggerSuggestionConfig,
   AutocompleteConfig,
+  StartersConfig,
   SuggestionItem,
   CustomListProps,
   TriggerChangeEventDetail,

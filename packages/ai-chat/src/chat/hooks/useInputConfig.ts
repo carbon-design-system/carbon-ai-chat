@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import type { Extension } from "@tiptap/core";
 import type {
   TriggerSuggestionConfig,
-  SuggestionItem,
   AutocompleteConfig,
+  StartersConfig,
 } from "../../types/config/InputConfig";
 import type { ToolbarAction } from "../../types/config/HeaderConfig";
 import { useServiceManager } from "./useServiceManager";
@@ -21,7 +21,7 @@ interface InputConfigSlice {
   mention: TriggerSuggestionConfig | undefined;
   command: TriggerSuggestionConfig | undefined;
   autocomplete: AutocompleteConfig | undefined;
-  starters: SuggestionItem[] | undefined;
+  starters: StartersConfig | undefined;
   hostExtensions: Extension[] | undefined;
   isSendDisabledFromConfig: boolean;
   actions: ToolbarAction[] | undefined;
@@ -42,7 +42,9 @@ function useInputConfig(): InputConfigSlice {
   const [mention, setMention] = useState(() => initial?.mention);
   const [command, setCommand] = useState(() => initial?.command);
   const [autocomplete, setAutocomplete] = useState(() => initial?.autocomplete);
-  const [starters, setStarters] = useState(() => initial?.starters);
+  const [starters, setStarters] = useState<StartersConfig | undefined>(
+    () => initial?.starters,
+  );
   const [hostExtensions, setHostExtensions] = useState(
     () => initial?.tiptap?.extensions,
   );

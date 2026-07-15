@@ -20,6 +20,7 @@ import type PromptLineElement from "./prompt-line.js";
 import type {
   AutocompleteConfig,
   CustomListProps,
+  StartersConfig,
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
@@ -43,7 +44,7 @@ export interface AutocompleteControllerOptions {
   mention?: TriggerSuggestionConfig;
   command?: TriggerSuggestionConfig;
   autocomplete?: AutocompleteConfig;
-  starters?: SuggestionItem[];
+  starters?: StartersConfig;
   /** When true, starter selection inserts text without firing onStarterSelected. */
   isSendDisabled?: boolean;
   /** Called after a starter is selected and inserted; consumer triggers send. */
@@ -63,7 +64,7 @@ export class AutocompleteController {
   private _mention?: TriggerSuggestionConfig;
   private _command?: TriggerSuggestionConfig;
   private _autocomplete?: AutocompleteConfig;
-  private _starters?: SuggestionItem[];
+  private _starters?: StartersConfig;
   private _isSendDisabled: boolean;
   private _onStarterSelected?: (text: string) => void;
   private _onChange: (state: AutocompleteControllerState) => void;
@@ -435,7 +436,7 @@ export class AutocompleteController {
     trigger: TriggerChangeEventDetail,
   ): Promise<SuggestionItem[]> {
     if (trigger.type === "starter") {
-      return this._starters ?? [];
+      return this._starters?.items ?? [];
     }
     const config =
       trigger.type === "mention"
@@ -454,8 +455,11 @@ export class AutocompleteController {
   private _resolveRenderCustomList():
     ((props: CustomListProps) => HTMLElement | unknown) | undefined {
     const trigger = this._trigger;
-    if (!trigger || trigger.type === "starter") {
+    if (!trigger) {
       return undefined;
+    }
+    if (trigger.type === "starter") {
+      return this._starters?.renderCustomList;
     }
     const config =
       trigger.type === "mention"
@@ -561,8 +565,8 @@ class AutocompleteControllerElement extends LitElement {
   autocomplete?: AutocompleteConfig;
 
   /** Starter prompts shown when the editor is empty + focused + editable. */
-  @property({ type: Array, attribute: false })
-  starters?: SuggestionItem[];
+  @property({ attribute: false })
+  starters?: StartersConfig;
 
   /** When true, starter selection inserts text without firing the send event. */
   @property({ type: Boolean, attribute: "is-send-disabled" })
