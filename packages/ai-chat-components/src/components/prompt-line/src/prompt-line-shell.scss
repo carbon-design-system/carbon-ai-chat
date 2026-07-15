@@ -207,12 +207,18 @@
 // -----------------------------------------------------------
 // Autocomplete slot (light DOM, positioned above input)
 // -----------------------------------------------------------
+// The autocomplete lives inside `.--input-uploads-and-autocomplete`, which is
+// itself inset by the container's `padding-inline: layout.$spacing-03` on each
+// side, plus a `margin-inline-end: layout.$spacing-03` applied by the
+// adjacent-child rule below. Stretch back to the full container width by
+// offsetting inline-start by the start padding and widening by start padding +
+// end padding + end margin (3x $spacing-03).
 ::slotted([slot="autocomplete-content"]) {
   position: absolute;
   z-index: 10;
-  inline-size: 100%;
+  inline-size: calc(100% + #{layout.$spacing-03} * 3);
   inset-block-end: 100%;
-  inset-inline-start: 0;
+  inset-inline-start: calc(-1 * #{layout.$spacing-03});
 }
 
 // Add gap when autocomplete is not attached (fullscreen layout)
