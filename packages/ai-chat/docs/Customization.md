@@ -17,7 +17,7 @@ children:
 Customize the chat UI at three levels, from quickest to deepest:
 
 - **Configure** — set behavior and appearance through {@link PublicConfig | config} props.
-- **Restyle** — inherit or inject a Carbon theme. Override the chat's CSS custom-property tokens for color, sizing, and placement.
+- **Restyle** — inherit or inject a Carbon theme and override the chat's CSS custom-property tokens for color, sizing, and placement.
 - **Inject your own content** — render your own markup into slots, overlay panels, message responses, and footers.
 
 The inject-your-own-content areas render through your framework using the {@link ChatInstance | chat instance}. Their APIs differ between [React](./React.md) and the [web component](./WebComponent.md). Check your framework's docs.
