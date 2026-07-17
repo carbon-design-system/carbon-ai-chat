@@ -7,34 +7,67 @@
  *  @license
  */
 
+// ─── Domain-file imports ────────────────────────────────────────────────────
+import type { AppConfig } from "./AppConfig";
+import type { MarkdownConfig } from "../config/MarkdownConfig";
+import { LanguagePack } from "../config/PublicConfig";
+import type { LocalMessageItem } from "../messaging/LocalMessageItem";
+import ObjectMap from "../utilities/ObjectMap";
 import {
   type CustomPanelConfigOptions,
-  type WorkspaceCustomPanelConfigOptions,
   type ViewState,
   ViewType,
   DefaultCustomPanelConfigOptions,
 } from "../instance/apiTypes";
-import { LanguagePack } from "../config/PublicConfig";
-import { type FileUpload } from "../config/ServiceDeskConfig";
-import type { StructuredData } from "../messaging/Messages";
-
-import type { FileUploadCapabilities } from "../instance/ChatInstance";
-import type { CornersType } from "../../chat/utils/constants";
-import type { MarkdownConfig } from "../config/MarkdownConfig";
-import type { AppConfig } from "./AppConfig";
-import type { CarbonTheme } from "../config/PublicConfig";
-import type { LocalMessageItem } from "../messaging/LocalMessageItem";
-import ObjectMap from "../utilities/ObjectMap";
-import { HomeScreenState } from "../config/HomeScreenConfig";
+import { ChatMessagesState } from "./ChatMessagesState";
 import {
-  ConversationalSearchItemCitation,
-  GenericItem,
-  IFrameItem,
-  Message,
-  SearchResult,
-} from "../messaging/Messages";
-import { AgentAvailability } from "../config/ServiceDeskConfig";
-import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
+  type InputState,
+  type StopStreamingButtonState,
+  type PendingUpload,
+  PendingUploadStatus,
+} from "./InputState";
+import { AnnounceMessage } from "./AnnounceMessage";
+import { ChatWidthBreakpoint } from "./ChatWidthBreakpoint";
+import { PersistedState } from "./PersistedState";
+import { HumanAgentState, HumanAgentDisplayState } from "./HumanAgentState";
+import { ThemeState } from "./ThemeState";
+import { CatastrophicErrorPanelState } from "./panels/CatastrophicErrorPanelState";
+import { IFramePanelState } from "./panels/IFramePanelState";
+import { ViewSourcePanelState } from "./panels/ViewSourcePanelState";
+import { CustomPanelState } from "./panels/CustomPanelState";
+import { WorkspacePanelState } from "./panels/WorkspacePanelState";
+import { HistoryPanelState } from "./panels/HistoryPanelState";
+import { MessagePanelState } from "./panels/MessagePanelState";
+import type { FileUpload } from "../config/ServiceDeskConfig";
+
+// ─── Re-export domain symbols ────────────────────────────────────────────────
+// All previously-imported files continue to resolve `import { X } from "./AppState"`
+// without any changes to those 73 files.
+export type {
+  ChatMessagesState,
+  InputState,
+  StopStreamingButtonState,
+  PendingUpload,
+  AnnounceMessage,
+  PersistedState,
+  HumanAgentState,
+  HumanAgentDisplayState,
+  ThemeState,
+  CatastrophicErrorPanelState,
+  IFramePanelState,
+  ViewSourcePanelState,
+  CustomPanelState,
+  WorkspacePanelState,
+  HistoryPanelState,
+  MessagePanelState,
+  FileUpload,
+};
+export { ChatWidthBreakpoint, PendingUploadStatus };
+// Re-export instance API types that this module has always tunnelled through
+export type { ViewState, CustomPanelConfigOptions };
+export { ViewType, DefaultCustomPanelConfigOptions };
+
+// ─── AppStateMessages ────────────────────────────────────────────────────────
 
 /**
  * The message-related portion of AppState. Used for message history operations.
@@ -48,7 +81,7 @@ interface AppStateMessages {
   /**
    * This is the global map/registry of all full messages by their message IDs.
    */
-  allMessagesByID: ObjectMap<Message>;
+  allMessagesByID: ObjectMap<import("../messaging/Messages").Message>;
 
   /**
    * The state of messages when the user is interacting with the assistant.
@@ -56,15 +89,110 @@ interface AppStateMessages {
   assistantMessageState: ChatMessagesState;
 }
 
-/**
- * This contains the definitions for the redux application state.
- */
-interface AppState extends AppStateMessages {
-  /**
-   * The state of the input area when the user is interacting with an assistant (not a human agent).
-   */
-  assistantInputState: InputState;
+// ─── AppStatePanels ──────────────────────────────────────────────────────────
 
+/**
+ * The panel-visibility sub-group of AppState.
+ */
+interface AppStatePanels {
+  /**
+   * Has thrown an error that Carbon AI Chat can not recover from.
+   */
+  catastrophicErrorType?: boolean;
+
+  /**
+   * The state information of a catastrophic error panel.
+   */
+  catastrophicErrorPanelState?: CatastrophicErrorPanelState;
+
+  /**
+   * The state of the iframe panel.
+   */
+  iFramePanelState: IFramePanelState;
+
+  /**
+   * The state of the conversational search citation panel.
+   */
+  viewSourcePanelState: ViewSourcePanelState;
+
+  /**
+   * The custom panel state.
+   */
+  customPanelState: CustomPanelState;
+
+  /**
+   * The workspace panel state.
+   */
+  workspacePanelState: WorkspacePanelState;
+
+  /**
+   * The history panel state.
+   */
+  historyPanelState: HistoryPanelState;
+
+  /**
+   * The state of the panel surfaced by response types, either with or without user input.
+   */
+  responsePanelState: MessagePanelState;
+}
+
+// ─── AppStateView ─────────────────────────────────────────────────────────────
+
+/**
+ * The view and layout sub-group of AppState.
+ */
+interface AppStateView {
+  /**
+   * The current enum value for the width of the chat. Used to drive responsive design and to swap components out
+   * in different view sizes as needed.
+   */
+  chatWidthBreakpoint: ChatWidthBreakpoint;
+
+  /**
+   * The current width of the chat in pixels.
+   */
+  chatWidth: number;
+
+  /**
+   * The current height of the chat in pixels.
+   */
+  chatHeight: number;
+
+  /**
+   * Indicates if the view is currently changing. This means that a fireViewChangeEventsAndChangeView function is
+   * currently running and waiting to be resolved. This is used to stop these functions, and the events within them from
+   * firing on top of each other.
+   */
+  viewChanging: boolean;
+
+  /**
+   * Indicates that Chat.ts has finished firing actions.changeView(). This signifies to the launcher and
+   * other components that they may now begin their animations if they're visible.
+   */
+  initialViewChangeComplete: boolean;
+
+  /**
+   * Before Carbon AI Chat is loaded, the initial view state is set to everything closed (which reflects the reality of the
+   * page as Carbon AI Chat is loading). This property is the view state we want Carbon AI Chat to try to get to after it is loaded.
+   * If a previous session already exists, then this target will be set to the previous view state so we get back to
+   * where we were. If there is no session, this will be set to a default that is based on the current Carbon AI Chat
+   * config and page context (such as considering if openChatByDefault is set). After Carbon AI Chat is loaded, this value is
+   * no longer used.
+   */
+  targetViewState: ViewState;
+
+  /**
+   * Indicates if we should display a transparent background covering the non-header area of the main window.
+   */
+  showNonHeaderBackgroundCover: boolean;
+}
+
+// ─── AppStateLifecycle ───────────────────────────────────────────────────────
+
+/**
+ * The lifecycle and session sub-group of AppState.
+ */
+interface AppStateLifecycle {
   /**
    * Whether we have hydrated Carbon AI Chat. This means we have loaded session history if it exists as well as the
    * welcome node (if appropriate).
@@ -111,92 +239,14 @@ interface AppState extends AppStateMessages {
   persistedToBrowserStorage: PersistedState;
 
   /**
-   * The current enum value for the width of the chat. Used to drive responsive design and to swap components out
-   * in different view sizes as needed.
-   */
-  chatWidthBreakpoint: ChatWidthBreakpoint;
-
-  /**
-   * The current width of the chat in pixels.
-   */
-  chatWidth: number;
-
-  /**
-   * The current height of the chat in pixels.
-   */
-  chatHeight: number;
-
-  /**
-   * Has thrown an error that Carbon AI Chat can not recover from.
-   */
-  catastrophicErrorType?: boolean;
-
-  /**
-   * The state information of a catastrophic error panel.
-   */
-  catastrophicErrorPanelState?: CatastrophicErrorPanelState;
-
-  /**
-   * The state of the iframe panel.
-   */
-  iFramePanelState: IFramePanelState;
-
-  /**
-   * The state of the conversational search citation panel.
-   */
-  viewSourcePanelState: ViewSourcePanelState;
-
-  /**
-   * The custom panel state.
-   */
-  customPanelState: CustomPanelState;
-  /**
-   * The workspace panel state.
-   */
-  workspacePanelState: WorkspacePanelState;
-
-  /**
-   * The history panel state.
-   */
-  historyPanelState: HistoryPanelState;
-
-  /**
-   * The state of the panel surfaced by response types, either with or without user input.
-   */
-  responsePanelState: MessagePanelState;
-
-  /**
-   * Indicates if the view is currently changing. This means that a fireViewChangeEventsAndChangeView function is
-   * currently running and waiting to be resolved. This is used to stop these functions, and the events within them from
-   * firing on top of each other.
-   */
-  viewChanging: boolean;
-
-  /**
-   * Indicates that Chat.ts has finished firing actions.changeView(). This signifies to the launcher and
-   * other components that they may now begin their animations if they're visible.
-   */
-  initialViewChangeComplete: boolean;
-
-  /**
-   * Before Carbon AI Chat is loaded, the initial view state is set to everything closed (which reflects the reality of the
-   * page as Carbon AI Chat is loading). This property is the view state we want Carbon AI Chat to try to get to after it is loaded.
-   * If a previous session already exists, then this target will be set to the previous view state so we get back to
-   * where we were. If there is no session, this will be set to a default that is based on the current Carbon AI Chat
-   * config and page context (such as considering if openChatByDefault is set). After Carbon AI Chat is loaded, this value is
-   * no longer used.
-   */
-  targetViewState: ViewState;
-
-  /**
    * Volatile UI state related to the current human agent session. This is not persisted and is reset on reload.
    */
   humanAgentState: HumanAgentState;
 
   /**
-   * Indicates if we should display a transparent background covering the non-header area of the main window.
+   * The state of the input area when the user is interacting with an assistant (not a human agent).
    */
-  showNonHeaderBackgroundCover: boolean;
+  assistantInputState: InputState;
 
   /**
    * Indicates if a restart is currently in progress.
@@ -214,559 +264,18 @@ interface AppState extends AppStateMessages {
   isBrowserPageVisible: boolean;
 }
 
-/**
- * The status of a single pending file upload.
- *
- * - `UPLOADING` — the upload is in progress; the send button is disabled.
- * - `COMPLETE` — the upload finished successfully; `contributedData` is populated.
- * - `ERROR` — the upload failed; `errorMessage` is populated.
- *
- * @internal
- */
-export enum PendingUploadStatus {
-  UPLOADING = "uploading",
-  COMPLETE = "complete",
-  ERROR = "error",
-}
+// ─── AppState (top-level, flat runtime shape preserved) ──────────────────────
 
 /**
- * State for a single file that is being (or has been) uploaded via
- * {@link UploadConfig.onFileUpload}. The chat widget tracks one of these per
- * in-flight or completed upload and uses them to build the
- * `pendingStructuredData` attached to the outgoing message.
- *
- * @internal
+ * This contains the definitions for the redux application state.
  */
-export interface PendingUpload {
-  /**
-   * Stable unique identifier for this upload, generated by the widget.
-   */
-  id: string;
-
-  /**
-   * The original `File` object selected by the user.
-   */
-  file: File;
-
-  /**
-   * Current lifecycle status of the upload.
-   */
-  status: PendingUploadStatus;
-
-  /**
-   * The `StructuredData` returned by `onFileUpload` once the upload completes.
-   * Only populated when `status === "complete"`.
-   */
-  contributedData?: StructuredData;
-
-  /**
-   * Human-readable error message when `status === "error"`.
-   */
-  errorMessage?: string;
-}
-
-/**
- * The state of the input area where the user types messages.
- */
-interface InputState extends FileUploadCapabilities {
-  /**
-   * The canonical raw text value currently inside the input field.
-   */
-  rawValue: string;
-
-  /**
-   * The formatted/markup value currently rendered inside the input field.
-   */
-  displayValue: string;
-
-  /**
-   * Runtime override for input-field visibility. `null` means "no override":
-   * the effective value comes from `PublicConfig.input.isVisible` for the
-   * assistant input (read via `selectInputFieldVisible`), or defaults to
-   * visible for the human-agent input. A non-null value (set by the deprecated
-   * `instance.updateInputFieldVisibility`, or by the human-agent flow on its own
-   * input slice) wins over config.
-   */
-  fieldVisible: boolean | null;
-
-  /**
-   * Runtime override for the whole-chat read-only state. `null` means "no
-   * override": the effective value comes from `PublicConfig.isReadonly` for the
-   * assistant input (read via `selectInputIsReadonly`). The human-agent flow
-   * sets this on its own input slice to lock input while disconnected.
-   */
-  isReadonly: boolean | null;
-
-  /**
-   * The current set of file attachments selected to be uploaded.
-   */
-  files: FileUpload[];
-
-  /**
-   * The state of the stop streaming button to cancel streams from message responses.
-   */
-  stopStreamingButtonState: StopStreamingButtonState;
-
-  /**
-   * Structured data set directly by the host page via
-   * {@link ChatInstanceInput.updateStructuredData}.  This is the "manual" portion of
-   * `pendingStructuredData` and is kept separate so that upload contributions can be
-   * merged on top without overwriting host-page data.
-   */
-  manualStructuredData?: StructuredData;
-
-  /**
-   * In-flight and completed file uploads initiated via {@link UploadConfig.onFileUpload}.
-   * Each entry tracks the lifecycle of one file.  The widget rebuilds
-   * `pendingStructuredData` whenever this array changes.
-   */
-  pendingUploads: PendingUpload[];
-
-  /**
-   * The merged result of {@link InputState.manualStructuredData} and the
-   * `contributedData` from every completed entry in {@link InputState.pendingUploads}.
-   * This is the value that gets attached to the outgoing `MessageRequest` on send.
-   *
-   * Rebuilt automatically by the reducer whenever `manualStructuredData` or
-   * `pendingUploads` changes.
-   */
-  pendingStructuredData?: StructuredData;
-}
-
-interface StopStreamingButtonState {
-  /**
-   * Determines if the button should be visible.
-   */
-  isVisible: boolean;
-
-  /**
-   * Determine if the button should be disabled.
-   */
-  isDisabled: boolean;
-
-  /**
-   * The stream id of the current response with an active stream. It is used by message service to stop streamed
-   * responses coming from wxa.
-   */
-  currentStreamID?: string;
-}
-
-/**
- * Items stored in sessionStorage.
- *
- * @category Instance
- */
-interface PersistedState {
-  /**
-   * Indicates if this state was loaded from browser session storage or if was created as part of a new session.
-   */
-  wasLoadedFromBrowser: boolean;
-
-  /**
-   * The version of the Carbon AI Chat that this data is persisted for. If there are any breaking changes to the
-   * application state and a user reloads and gets a new version of the widget, bad things might happen so we'll
-   * just invalidate the persisted storage if we ever attempt to load an old version on Carbon AI Chat startup.
-   */
-  version: string;
-
-  /**
-   * Indicates which of the Carbon AI Chat views are visible and which are hidden.
-   */
-  viewState: ViewState;
-
-  /**
-   * Indicates if we should show an unread indicator on the launcher. This is set by
-   * {@link ChatInstance.updateAssistantUnreadIndicatorVisibility} and will display an empty circle on
-   * the launcher. This setting is overridden if there are any unread human agent messages in which case a circle
-   * with a number is displayed.
-   */
-  showUnreadIndicator: boolean;
-
-  /**
-   * Indicates if the launcher should be in the expanded state.
-   */
-  launcherIsExpanded: boolean;
-
-  /**
-   * Determines if the launcher should start a timer to show its expanded state.
-   */
-  launcherShouldStartCallToActionCounterIfEnabled: boolean;
-
-  /**
-   * If the user has received a message beyond the welcome node. We use this to mark if the chat has been interacted
-   * with. This flag is duplicated so the information is available before hydration and before the user is known.
-   * Note that this property reflects only the last user and should only be used when an approximate value is
-   * acceptable.
-   */
-  hasSentNonWelcomeMessage: boolean;
-
-  /**
-   * Map of if a disclaimer has been accepted on a given window.hostname value, keyed by hostname via
-   * {@link ObjectMap}.
-   */
-  disclaimersAccepted: ObjectMap<boolean>;
-
-  /**
-   * State of home screen.
-   */
-  homeScreenState: HomeScreenState;
-
-  /**
-   * The persisted subset of the human agent state.
-   */
-  humanAgentState: PersistedHumanAgentState;
-}
-
-/**
- * The state information for a specific instance of a chat panel that contains a list of messages.
- */
-interface ChatMessagesState {
-  /**
-   * An array of local message item ids to correctly store the order of messages.
-   */
-  localMessageIDs: string[];
-
-  /**
-   * An array of message ids to correctly store the order of messages.
-   */
-  messageIDs: string[];
-
-  /**
-   * The id of the most recently active response (including streaming).
-   */
-  activeResponseId: string | null;
-
-  /**
-   * Counter that indicates if a message is loading and a loading indicator should be displayed.
-   * If "0" then we do not show loading indicator.
-   */
-  isMessageLoadingCounter: number;
-
-  /**
-   * Optional string to display next to the loading indicator.
-   */
-  isMessageLoadingText?: string;
-
-  /**
-   * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
-   */
-  isHydratingCounter: number;
-}
-
-/**
- * The state information for a catastrophic error panel.
- *
- * @category Instance
- */
-interface CatastrophicErrorPanelState {
-  /**
-   * Whether the catastrophic error panel is currently open.
-   */
-  isOpen: boolean;
-
-  /**
-   * The error title to be displayed in the `CatastrophicErrorPanel`.
-   */
-  title?: string;
-
-  /**
-   * The error body text to be displayed in the `CatastrophicErrorPanel`. Will render markdown if provided.
-   */
-  bodyText?: string;
-
-  /**
-   * When true, the panel renders without the built-in retry button. The consumer is then responsible
-   * for closing the panel by calling `instance.updateCatastrophicErrorPanel({ isOpen: false })` once
-   * their own recovery flow completes.
-   */
-  hideRetryButton?: boolean;
-}
-
-/**
- * This piece of state contains information about any connection to a human agent system.
- */
-interface HumanAgentState {
-  /**
-   * Indicates that we are currently attempting to connect the user to an agent.
-   */
-  isConnecting: boolean;
-
-  /**
-   * Indicates that we are currently attempting to re-connect the user to an agent. This occurs when Carbon AI Chat is
-   * initially loaded and the user was previously connected to an agent.
-   */
-  isReconnecting: boolean;
-
-  /**
-   * Information about the waiting status for the user before being connected to an agent. This can contain
-   * information about the time to wait or the position in a queue. If this is null, no specific wait information is
-   * available.
-   */
-  availability?: AgentAvailability;
-
-  /**
-   * Indicates the number of messages from an agent that are unread by a user. This is only indicated if the user is
-   * on the assistant view. All agent messages are marked as read if the user switches to the agent view. This count does
-   * not include "agent joined" messages.
-   */
-  numUnreadMessages: number;
-
-  /**
-   * Indicates if there is currently a file upload in progress.
-   */
-  fileUploadInProgress: boolean;
-
-  /**
-   * The ID of the locale message that was used to start the current conversation with an agent.
-   */
-  activeLocalMessageID?: string;
-
-  /**
-   * Indicates if the modal for displaying a screen sharing requests should be shown.
-   */
-  showScreenShareRequest: boolean;
-
-  /**
-   * Indicates if the user is currently sharing their screen.
-   */
-  isScreenSharing: boolean;
-
-  /**
-   * Indicates if the agent is typing.
-   */
-  isHumanAgentTyping: boolean;
-
-  /**
-   * The state of the input field while connecting or connected to an agent.
-   */
-  inputState: InputState;
-}
-
-/**
- * The state that controls how the agent interaction appears to the user.
- */
-interface HumanAgentDisplayState {
-  /**
-   * Indicates if the user should see that they are connecting or connected to an agent.
-   */
-  isConnectingOrConnected: boolean;
-
-  /**
-   * Indicates if the input field should be disabled.
-   */
-  disableInput: boolean;
-
-  /**
-   * The language pack key to show for the placeholder text in the input field (if the default should be overridden).
-   */
-  inputPlaceholderKey: keyof LanguagePack;
-
-  /**
-   * Indicates if the agent is typing.
-   */
-  isHumanAgentTyping: boolean;
-}
-
-/**
- * This interface represents a piece of text that can be translated using a language pack. A piece of code that
- * needs to display a string from the language pack can specify the ID/Key of the message from the language pack and
- * optionally any parameters that need to be passed to the message formatter that are used inside the string. This
- * also allows a form where the text has already been translated and can be used as-is.
- */
-interface AnnounceMessage {
-  /**
-   * If the text is just specified as text that's already been calculated, that text can just be set here.
-   */
-  messageText?: string;
-
-  /**
-   * If the text is defined by a message id that corresponds to one of the messages in our language pack, that
-   * message id can be specified here. The message text will be formatted using this message id.
-   */
-  messageID?: keyof LanguagePack;
-
-  /**
-   * If the text is defined by a message id that corresponds to one of the messages in our language pack, any
-   * optional parameters that are necessary for formatting the message with the given id are specified here.
-   */
-  messageValues?: Record<string, any>;
-}
-
-/**
- * The different available widths of a Carbon AI Chat.
- */
-enum ChatWidthBreakpoint {
-  // < 360px
-  NARROW = "narrow",
-  // >= 360px
-  STANDARD = "standard",
-  // > 672 + 16 + 16px
-  WIDE = "wide",
-}
-
-interface IFramePanelState {
-  /**
-   * Indicates if the iframe panel is open.
-   */
-  isOpen: boolean;
-
-  /**
-   * The iframe message item with the content to load.
-   */
-  messageItem: IFrameItem;
-}
-
-interface ViewSourcePanelState {
-  /**
-   * Indicates if the conversational search citation panel is open.
-   */
-  isOpen: boolean;
-
-  /**
-   * A citation either from ConversationalSearch or from legacy (non-conversational) search.
-   */
-  citationItem: ConversationalSearchItemCitation;
-
-  /**
-   * If the citation is for a {@link ConversationalSearchItem} then the ExpandToPanelCard should show a search result in
-   * the panel because it has extra text and detail that could be valuable to the user.
-   */
-  relatedSearchResult?: SearchResult;
-}
-
-interface CustomPanelState {
-  /**
-   * Determines if the custom panel should be open.
-   */
-  isOpen: boolean;
-
-  /**
-   * The id of the panel that is currently in focus.
-   */
-  panelID: string;
-
-  /**
-   * Config options for the custom panels.
-   */
-  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions;
-}
-interface WorkspacePanelState {
-  /**
-   * Determines if the custom panel should be open.
-   */
-  isOpen: boolean;
-
-  /**
-   * The id of the workspace attached to this panel. Used to match with a given Preview Card.
-   */
-  workspaceID?: string;
-
-  /**
-   * The id of the panel that is currently in focus.
-   */
-  panelID: string;
-
-  /**
-   * Config options for the workspace panels.
-   */
-  options: WorkspaceCustomPanelConfigOptions;
-
-  /**
-   * The local message item that triggered the workspace panel to open.
-   */
-  localMessageItem?: LocalMessageItem;
-
-  /**
-   * The full message response that contains the message item.
-   */
-  fullMessage?: Message;
-
-  /**
-   * Additional metadata associated with the workspace.
-   */
-  additionalData?: unknown;
-}
-
-interface HistoryPanelState {
-  /**
-   * Determines if the history panel should be open.
-   */
-  isOpen: boolean;
-
-  /** Indicates if the history panel should open in chat panel. */
-  isMobile: boolean;
-}
-
-interface MessagePanelState<T extends GenericItem = GenericItem> {
-  /**
-   * Determines if the show panel is open.
-   */
-  isOpen: boolean;
-
-  /**
-   * The local message item that contains panel content to display.
-   */
-  localMessageItem: LocalMessageItem<T>;
-
-  /**
-   * Indicates if this message is part the most recent message response that allows for input. This will allow the panel
-   * to reflect the state of the chat, such as disabling buttons that shouldn't be accessible anymore.
-   */
-  isMessageForInput: boolean;
-}
-
-/**
- * The theme state.
- */
-interface ThemeState {
-  /**
-   * Enables Carbon AI theme styling. Defaults to true.
-   */
-  aiEnabled: boolean;
-
-  /**
-   * Which Carbon theme tokens are currently in effect.
-   * Null indicates the chat inherits tokens from the host page.
-   */
-  derivedCarbonTheme: CarbonTheme | null;
-
-  /**
-   * The originally selected Carbon theme tokens. Null indicates inheritance from the host page.
-   */
-  originalCarbonTheme: CarbonTheme | null;
-
-  /**
-   * The resolved corners configuration for the chat.
-   * Each corner is individually defined after normalizing the user's configuration.
-   */
-  corners: {
-    startStart: CornersType;
-    startEnd: CornersType;
-    endStart: CornersType;
-    endEnd: CornersType;
-  };
-}
+interface AppState
+  extends AppStateMessages, AppStatePanels, AppStateView, AppStateLifecycle {}
 
 export {
   AppStateMessages,
+  AppStatePanels,
+  AppStateView,
+  AppStateLifecycle,
   AppState,
-  HumanAgentDisplayState,
-  HumanAgentState,
-  CatastrophicErrorPanelState,
-  ChatMessagesState,
-  AnnounceMessage,
-  ViewState,
-  ViewType,
-  PersistedState,
-  IFramePanelState,
-  ViewSourcePanelState,
-  CustomPanelConfigOptions,
-  CustomPanelState,
-  WorkspacePanelState,
-  HistoryPanelState,
-  InputState,
-  FileUpload,
-  MessagePanelState,
-  ChatWidthBreakpoint,
-  ThemeState,
 };
