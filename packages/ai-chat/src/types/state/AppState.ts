@@ -7,87 +7,59 @@
  *  @license
  */
 
-// ─── Domain-file imports ────────────────────────────────────────────────────
-import type { AppConfig } from "./AppConfig";
-import type { MarkdownConfig } from "../config/MarkdownConfig";
-import { LanguagePack } from "../config/PublicConfig";
-import type { LocalMessageItem } from "../messaging/LocalMessageItem";
-import ObjectMap from "../utilities/ObjectMap";
-import {
-  type CustomPanelConfigOptions,
-  type ViewState,
-  ViewType,
-  DefaultCustomPanelConfigOptions,
-} from "../instance/apiTypes";
-import { ChatMessagesState } from "./ChatMessagesState";
-import {
-  type InputState,
-  type StopStreamingButtonState,
-  type PendingUpload,
-  PendingUploadStatus,
-} from "./InputState";
-import { AnnounceMessage } from "./AnnounceMessage";
-import { ChatWidthBreakpoint } from "./ChatWidthBreakpoint";
-import { PersistedState } from "./PersistedState";
-import { HumanAgentState, HumanAgentDisplayState } from "./HumanAgentState";
-import { ThemeState } from "./ThemeState";
-import { CatastrophicErrorPanelState } from "./panels/CatastrophicErrorPanelState";
-import { IFramePanelState } from "./panels/IFramePanelState";
-import { ViewSourcePanelState } from "./panels/ViewSourcePanelState";
-import { CustomPanelState } from "./panels/CustomPanelState";
-import { WorkspacePanelState } from "./panels/WorkspacePanelState";
-import { HistoryPanelState } from "./panels/HistoryPanelState";
-import { MessagePanelState } from "./panels/MessagePanelState";
-import type { FileUpload } from "../config/ServiceDeskConfig";
+// ─── Barrel re-exports ───────────────────────────────────────────────────────
+// All 73 files that `import { X } from "./types/state/AppState"` resolve here
+// without any changes to those files.
 
-// ─── Re-export domain symbols ────────────────────────────────────────────────
-// All previously-imported files continue to resolve `import { X } from "./AppState"`
-// without any changes to those 73 files.
+export type { AppStateMessages, ChatMessagesState } from "./ChatMessagesState";
 export type {
-  ChatMessagesState,
   InputState,
   StopStreamingButtonState,
   PendingUpload,
-  AnnounceMessage,
-  PersistedState,
+} from "./InputState";
+export { PendingUploadStatus } from "./InputState"; // enum (runtime value)
+export type {
   HumanAgentState,
   HumanAgentDisplayState,
-  ThemeState,
-  CatastrophicErrorPanelState,
-  IFramePanelState,
-  ViewSourcePanelState,
-  CustomPanelState,
-  WorkspacePanelState,
-  HistoryPanelState,
-  MessagePanelState,
-  FileUpload,
-};
-export { ChatWidthBreakpoint, PendingUploadStatus };
-// Re-export instance API types that this module has always tunnelled through
-export type { ViewState, CustomPanelConfigOptions };
-export { ViewType, DefaultCustomPanelConfigOptions };
+} from "./HumanAgentState";
+export type { ThemeState } from "./ThemeState";
+export type { PersistedState } from "./PersistedState"; // public — @category Instance
+export type { AnnounceMessage } from "./AnnounceMessage";
+export { ChatWidthBreakpoint } from "./ChatWidthBreakpoint"; // enum (runtime value)
+export type { IFramePanelState } from "./panels/IFramePanelState";
+export type { ViewSourcePanelState } from "./panels/ViewSourcePanelState";
+export type { CustomPanelState } from "./panels/CustomPanelState";
+export type { WorkspacePanelState } from "./panels/WorkspacePanelState";
+export type { HistoryPanelState } from "./panels/HistoryPanelState";
+export type { MessagePanelState } from "./panels/MessagePanelState";
+export type { CatastrophicErrorPanelState } from "./panels/CatastrophicErrorPanelState"; // public — @category Instance
 
-// ─── AppStateMessages ────────────────────────────────────────────────────────
+// Pass-throughs that real code imports via state/AppState — kept verbatim:
+export type { ViewState, CustomPanelConfigOptions } from "../instance/apiTypes";
+export {
+  ViewType,
+  DefaultCustomPanelConfigOptions,
+} from "../instance/apiTypes"; // enums (runtime values)
+export type { FileUpload } from "../config/ServiceDeskConfig";
 
-/**
- * The message-related portion of AppState. Used for message history operations.
- */
-interface AppStateMessages {
-  /**
-   * This is the global map/registry of all the local message items by their IDs.
-   */
-  allMessageItemsByID: ObjectMap<LocalMessageItem>;
-
-  /**
-   * This is the global map/registry of all full messages by their message IDs.
-   */
-  allMessagesByID: ObjectMap<import("../messaging/Messages").Message>;
-
-  /**
-   * The state of messages when the user is interacting with the assistant.
-   */
-  assistantMessageState: ChatMessagesState;
-}
+// ─── Local imports (used only for the interfaces defined below) ──────────────
+import type { AppConfig } from "./AppConfig";
+import type { MarkdownConfig } from "../config/MarkdownConfig";
+import { LanguagePack } from "../config/PublicConfig";
+import type { InputState } from "./InputState";
+import type { HumanAgentState } from "./HumanAgentState";
+import type { PersistedState } from "./PersistedState";
+import type { AnnounceMessage } from "./AnnounceMessage";
+import { ChatWidthBreakpoint } from "./ChatWidthBreakpoint";
+import type { AppStateMessages } from "./ChatMessagesState";
+import type { ViewState } from "../instance/apiTypes";
+import type { CatastrophicErrorPanelState } from "./panels/CatastrophicErrorPanelState";
+import type { IFramePanelState } from "./panels/IFramePanelState";
+import type { ViewSourcePanelState } from "./panels/ViewSourcePanelState";
+import type { CustomPanelState } from "./panels/CustomPanelState";
+import type { WorkspacePanelState } from "./panels/WorkspacePanelState";
+import type { HistoryPanelState } from "./panels/HistoryPanelState";
+import type { MessagePanelState } from "./panels/MessagePanelState";
 
 // ─── AppStatePanels ──────────────────────────────────────────────────────────
 
@@ -185,6 +157,24 @@ interface AppStateView {
    * Indicates if we should display a transparent background covering the non-header area of the main window.
    */
   showNonHeaderBackgroundCover: boolean;
+
+  /**
+   * Indicates if the messages list should suspend its detection of scroll events on the messages list. The message
+   * list uses a scroll listener to determine if the user has anchored the list to the bottom so that we can always
+   * stay at the bottom. However, there are a number of cases where scrolling can occur automatically when the list
+   * resizes that are not the result of the user scrolling. We want to ignore these scroll events.
+   */
+  suspendScrollDetection: boolean;
+
+  /**
+   * Indicates if the browser page is visible. This uses the Page Visibility API which needs to be taken with a
+   * grain of salt. A visibility change only occurs if the page moves in or out of being 100% visible. This occurs
+   * when you switch tabs within the same window or if you minimize/maximize a window. If you switch to a different
+   * window, this window changes visibility only if the entire window is covered.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
+   */
+  isBrowserPageVisible: boolean;
 }
 
 // ─── AppStateLifecycle ───────────────────────────────────────────────────────
@@ -198,6 +188,29 @@ interface AppStateLifecycle {
    * welcome node (if appropriate).
    */
   isHydrated: boolean;
+
+  /**
+   * Indicates if a restart is currently in progress.
+   */
+  isRestarting: boolean;
+
+  /**
+   * An ARIA message to be announced to the user. This will be announced whenever the message text changes.
+   */
+  announceMessage?: AnnounceMessage;
+}
+
+// ─── AppState (top-level, flat runtime shape preserved) ──────────────────────
+
+/**
+ * This contains the definitions for the redux application state.
+ */
+interface AppState
+  extends AppStateMessages, AppStatePanels, AppStateView, AppStateLifecycle {
+  /**
+   * The state of the input area when the user is interacting with an assistant (not a human agent).
+   */
+  assistantInputState: InputState;
 
   /**
    * The external configuration for the chat widget that includes the public config provided by the host page as well
@@ -220,62 +233,15 @@ interface AppStateLifecycle {
   markdownConfig?: MarkdownConfig;
 
   /**
-   * An ARIA message to be announced to the user. This will be announced whenever the message text changes.
+   * Volatile UI state related to the current human agent session. This is not persisted and is reset on reload.
    */
-  announceMessage?: AnnounceMessage;
-
-  /**
-   * Indicates if the messages list should suspend its detection of scroll events on the messages list. The message
-   * list uses a scroll listener to determine if the user has anchored the list to the bottom so that we can always
-   * stay at the bottom. However, there are a number of cases where scrolling can occur automatically when the list
-   * resizes that are not the result of the user scrolling. We want to ignore these scroll events.
-   */
-  suspendScrollDetection: boolean;
+  humanAgentState: HumanAgentState;
 
   /**
    * Any items stored here is also persisted to sessionStorage. This is used for things you want to maintain
    * across page reloads like "is the launcher open".
    */
   persistedToBrowserStorage: PersistedState;
-
-  /**
-   * Volatile UI state related to the current human agent session. This is not persisted and is reset on reload.
-   */
-  humanAgentState: HumanAgentState;
-
-  /**
-   * The state of the input area when the user is interacting with an assistant (not a human agent).
-   */
-  assistantInputState: InputState;
-
-  /**
-   * Indicates if a restart is currently in progress.
-   */
-  isRestarting: boolean;
-
-  /**
-   * Indicates if the browser page is visible. This uses the Page Visibility API which needs to be taken with a
-   * grain of salt. A visibility change only occurs if the page moves in or out of being 100% visible. This occurs
-   * when you switch tabs within the same window or if you minimize/maximize a window. If you switch to a different
-   * window, this window changes visibility only if the entire window is covered.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API
-   */
-  isBrowserPageVisible: boolean;
 }
 
-// ─── AppState (top-level, flat runtime shape preserved) ──────────────────────
-
-/**
- * This contains the definitions for the redux application state.
- */
-interface AppState
-  extends AppStateMessages, AppStatePanels, AppStateView, AppStateLifecycle {}
-
-export {
-  AppStateMessages,
-  AppStatePanels,
-  AppStateView,
-  AppStateLifecycle,
-  AppState,
-};
+export { AppStatePanels, AppStateView, AppStateLifecycle, AppState };

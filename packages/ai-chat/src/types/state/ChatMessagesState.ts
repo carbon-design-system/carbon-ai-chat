@@ -7,6 +7,10 @@
  *  @license
  */
 
+import type { LocalMessageItem } from "../messaging/LocalMessageItem";
+import ObjectMap from "../utilities/ObjectMap";
+import type { Message } from "../messaging/Messages";
+
 /**
  * The state information for a specific instance of a chat panel that contains a list of messages.
  */
@@ -43,4 +47,24 @@ interface ChatMessagesState {
   isHydratingCounter: number;
 }
 
-export type { ChatMessagesState };
+/**
+ * The message-related portion of AppState. Used for message history operations.
+ */
+interface AppStateMessages {
+  /**
+   * This is the global map/registry of all the local message items by their IDs.
+   */
+  allMessageItemsByID: ObjectMap<LocalMessageItem>;
+
+  /**
+   * This is the global map/registry of all full messages by their message IDs.
+   */
+  allMessagesByID: ObjectMap<Message>;
+
+  /**
+   * The state of messages when the user is interacting with the assistant.
+   */
+  assistantMessageState: ChatMessagesState;
+}
+
+export type { ChatMessagesState, AppStateMessages };
