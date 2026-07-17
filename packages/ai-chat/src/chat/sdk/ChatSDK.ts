@@ -131,10 +131,11 @@ export class ChatSDK {
   }
 
   /**
-   * Rebinds a live sdk to a new host: points it at the new container/host element. Does not
-   * re-create services, re-run localization, or touch the live connection — the manager is reused
-   * as-is. Host-container styling is the shell's job (`src/chat/boot/appBoot.ts`), run after every
-   * acquire.
+   * Binds the sdk to a host: points it at the container/host element. Called by the shell after
+   * every acquire — cold boot and reuse re-attach alike — so DOM binding stays out of the headless
+   * `acquireChatSDK`. On a re-attach it just re-points; it does not re-create services, re-run
+   * localization, or touch the live connection. Host-container styling is the shell's job
+   * (`src/chat/boot/appBoot.ts`), run around the same time.
    */
   attach(host: ChatSDKHost): void {
     this.serviceManager.container = host.container;
@@ -184,16 +185,15 @@ export class ChatSDK {
 }
 
 /**
- * Create-or-adopt: returns the cached `ChatSDK` for the namespace when reuse is on and one is
- * available, else cold-boots services and the instance. `config` is the already-merged
- * `PublicConfig` (see `src/chat/boot/appBoot.ts`'s `mergePublicConfig`).
+ * Create-or-adopt, headless: returns the cached `ChatSDK` for the namespace when reuse is on and
+ * one is available, else cold-boots services and the instance. Binds no DOM — the shell calls
+ * `sdk.attach(host)` afterwards (on both the adopt and cold-boot paths), keeping the container a
+ * view concern the headless facade never names. `config` is the already-merged `PublicConfig`
+ * (see `src/chat/boot/appBoot.ts`'s `mergePublicConfig`).
  */
 export async function acquireChatSDK(
   config: PublicConfig,
-  host: ChatSDKHost,
 ): Promise<{ sdk: ChatSDK; adopted: boolean }> {
-  const { container, customHostElement } = host;
-
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
 
@@ -205,7 +205,6 @@ export async function acquireChatSDK(
       // SAME facade: `reuseRegistration` lives on it, and a fresh wrapper would not know it is
       // registered, so `release()` would hard-unload instead of grace-releasing.
       const sdk = sdkByManager.get(cached)!;
-      sdk.attach({ container, customHostElement });
       return { sdk, adopted: true };
     }
   }
@@ -218,10 +217,6 @@ export async function acquireChatSDK(
   // failed boot must unload them before propagating — nothing else can reach a manager whose
   // acquire never returned.
   try {
-    // Set container + hosting information
-    serviceManager.container = container;
-    serviceManager.customHostElement = customHostElement;
-
     // Load language and locale
     const languagePack = serviceManager.store.getState().languagePack;
     const localePack = await loadLocale(
