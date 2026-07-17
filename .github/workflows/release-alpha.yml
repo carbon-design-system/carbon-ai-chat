@@ -55,7 +55,7 @@ jobs:
           fetch-depth: "0"
 
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: ".nvmrc"
           registry-url: https://registry.npmjs.org
@@ -107,7 +107,7 @@ jobs:
       # single rolling `alpha` pointer (no version/<v> copies). Real runs only.
       - name: Upload demo to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -121,7 +121,7 @@ jobs:
 
       - name: Upload typedoc to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -135,7 +135,7 @@ jobs:
 
       - name: Upload components to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -149,7 +149,7 @@ jobs:
 
       - name: Upload ai-chat-components Storybook to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -163,7 +163,7 @@ jobs:
 
       - name: Upload ai-chat-components React Storybook to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
