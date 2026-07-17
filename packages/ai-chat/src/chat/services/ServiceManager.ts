@@ -33,6 +33,7 @@ import { BusEvent } from "../../types/events/eventBusTypes";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { ChatSlotStates } from "../sdk/slotStates.js";
+import type { ChatSDK } from "../sdk/ChatSDK.js";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -176,6 +177,12 @@ class ServiceManager {
    * the current value on first `get()`.
    */
   slotStates?: ChatSlotStates;
+
+  /**
+   * The internal `ChatSDK` lifecycle facade wrapping this manager. Cached here (constructed once,
+   * during cold boot) so callers reach the same facade instance rather than a fresh wrapper.
+   */
+  sdk?: ChatSDK;
 
   /**
    * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available
