@@ -21,6 +21,7 @@ import {
   resolveAutoScrollAction,
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
+  resolveUserScrollAway,
   type AutoScrollAction,
   type PortableMessage,
   type ScrollHost,
@@ -587,6 +588,71 @@ describe("resolveStreamEndAction", () => {
       }),
     ).toBe("recalculate_and_preserve_scroll");
   });
+
+  it("returns preserve-scroll when the user scrolled UP away from the pin", () => {
+    // Regression guard: a one-directional check (`scrollTop <= pin + threshold`)
+    // classified any upward scroll as near-pin and yanked it back down. The
+    // symmetric distance check treats scroll-up past the threshold as "away".
+    expect(
+      resolveStreamEndAction({
+        nearPinThresholdPx: 60,
+        pinnedScrollTop: 100,
+        scrollTop: 0,
+      }),
+    ).toBe("recalculate_and_preserve_scroll");
+  });
+
+  it("re-pins when scrollTop is below the pin but the browser capped it (content shrank)", () => {
+    // scrollTop < pin, but it is already at the max reachable scrollTop → this is a
+    // browser-initiated cap from a content shrink, not a user scroll, so still re-pin.
+    expect(
+      resolveStreamEndAction({
+        nearPinThresholdPx: 60,
+        pinnedScrollTop: 100,
+        scrollTop: 40,
+        maxScrollTop: 40,
+      }),
+    ).toBe("re_pin_and_scroll");
+  });
+});
+
+describe("resolveUserScrollAway", () => {
+  it("latches TRUE for a deliberate scroll-up with room below the current position", () => {
+    // scrollTop 0 is well above pin 200 AND far from the bottom (maxScrollTop 400) → the user
+    // chose this position, so disengage auto-scroll.
+    expect(
+      resolveUserScrollAway({
+        scrollTop: 0,
+        pinnedScrollTop: 200,
+        maxScrollTop: 400,
+        thresholdPx: 50,
+      }),
+    ).toBe(true);
+  });
+
+  it("does NOT latch (returns null) for a browser cap: below the pin but pinned to the bottom", () => {
+    // scrollTop 140 is below pin 200 but equals maxScrollTop 140 (no room below) → content
+    // shrank and the browser capped scrollTop; this is not a user scroll, so leave the flag.
+    expect(
+      resolveUserScrollAway({
+        scrollTop: 140,
+        pinnedScrollTop: 200,
+        maxScrollTop: 140,
+        thresholdPx: 50,
+      }),
+    ).toBeNull();
+  });
+
+  it("clears (returns false) once the user is back at/below the pin", () => {
+    expect(
+      resolveUserScrollAway({
+        scrollTop: 210,
+        pinnedScrollTop: 200,
+        maxScrollTop: 400,
+        thresholdPx: 50,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("hasMessagesOutOfView", () => {
@@ -1059,6 +1125,82 @@ describe("MessagesScrollController", () => {
 
     // reconcileSpacerAfterLayoutSettled ran and wrote the spacer again.
     expect(h.setSpacerHeight).toHaveBeenCalled();
+
+    controller.disconnect();
+  });
+
+  it("settle reconcile: does NOT re-pin (yank down) after the user manually scrolled up", async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    const pinnable = createRealPinnableMessage("req-1", 200, 80);
+    const placeholder = createPortableMessage({ id: "ui-0" });
+
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+
+    // Pin first: the container scrolls to the pin (140) — see the pin-flow test above.
+    h.setMessages([placeholder, pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140);
+
+    // The user manually scrolls UP, above the pin.
+    h.container.scrollTop = 0;
+
+    // A new reasoning step settles and bubbles its composed event to the container.
+    h.container.dispatchEvent(
+      new CustomEvent("reasoning-animation-end", { bubbles: true }),
+    );
+    await flushFrames();
+
+    // The reconcile must preserve the user's position, not yank them back to the pin.
+    // (maxScrollTop = 1000 - 500 = 500, so scrollTop 0 is a genuine scroll-up, not a
+    // browser cap.)
+    expect(h.container.scrollTop).toBe(0);
+
+    controller.disconnect();
+  });
+
+  it("settle reconcile: a scroll-away latched by the scroll listener suppresses a re-pin resolveStreamEndAction would otherwise make", async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    const pinnable = createRealPinnableMessage("req-1", 200, 80);
+    const placeholder = createPortableMessage({ id: "ui-0" });
+
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+
+    h.setMessages([placeholder, pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140); // pin
+
+    // Scroll to 80: within resolveStreamEndAction's 60px re-pin band (|80-140|=60 → re_pin),
+    // but > 50px above the pin with room below (maxScrollTop 500) → a deliberate scroll-away.
+    h.container.scrollTop = 80;
+    h.container.dispatchEvent(new Event("scroll"));
+
+    // A reasoning step settles — without the latched flag this would re-pin to 140.
+    h.container.dispatchEvent(
+      new CustomEvent("reasoning-animation-end", { bubbles: true }),
+    );
+    await flushFrames();
+
+    expect(h.container.scrollTop).toBe(80); // preserved, not yanked to 140
 
     controller.disconnect();
   });

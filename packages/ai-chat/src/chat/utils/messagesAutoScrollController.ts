@@ -103,6 +103,12 @@ const STREAM_END_NEAR_PIN_THRESHOLD_PX = 60;
 const SCROLL_DOWN_THRESHOLD_PX = 60;
 
 /**
+ * How far above the pin the user must scroll before we treat it as a deliberate
+ * "scroll away" that disengages auto-scroll. Matches the streaming restore threshold.
+ */
+const USER_SCROLL_AWAY_THRESHOLD_PX = 50;
+
+/**
  * Window resize handler throttle - recalculates layout when browser window is resized.
  * User-initiated window resizing doesn't need sub-frame precision.
  */
@@ -423,15 +429,67 @@ function resolveStreamEndAction({
   nearPinThresholdPx,
   pinnedScrollTop,
   scrollTop,
+  maxScrollTop,
 }: {
   nearPinThresholdPx: number;
   pinnedScrollTop: number;
   scrollTop: number;
+  maxScrollTop?: number;
 }): StreamEndAction {
-  if (scrollTop <= pinnedScrollTop + nearPinThresholdPx) {
+  // Content shrank and the browser capped scrollTop below the pin — this is
+  // browser-initiated, not a user scroll, so we must still re-pin. Mirrors the
+  // `wasBrowserCapped` exception in the streaming ResizeObserver guard.
+  const wasBrowserCapped =
+    maxScrollTop !== undefined &&
+    scrollTop >= maxScrollTop - 2 &&
+    scrollTop < pinnedScrollTop;
+
+  // Symmetric distance check: a manual scroll in EITHER direction past the
+  // threshold means the user moved away from the pin, so we preserve their
+  // position instead of yanking them back. A one-directional check here would
+  // miss upward scrolls and re-pin over the top of them.
+  const scrolledAway =
+    Math.abs(scrollTop - pinnedScrollTop) > nearPinThresholdPx;
+
+  if (!scrolledAway || wasBrowserCapped) {
     return "re_pin_and_scroll";
   }
   return "recalculate_and_preserve_scroll";
+}
+
+/**
+ * Decides whether a scroll position represents a DELIBERATE user scroll away from the pin, as
+ * opposed to a browser-initiated cap (content shrank, so the browser lowered scrollTop to the
+ * max reachable value). Both lower scrollTop below the pin, but a cap parks the user exactly at
+ * `maxScrollTop` with no room below, whereas a deliberate scroll-up leaves room to scroll
+ * further down. Evaluated from a settled `scroll` event, this latches user intent so that a
+ * later mid-animation `maxScrollTop` dip (a reasoning step collapsing) cannot be misread as the
+ * user moving.
+ *
+ * @returns `true` to disengage auto-scroll (user parked above the pin with room below),
+ * `false` to (re)engage (user is at/below the pin, i.e. following), or `null` when the position
+ * is ambiguous (e.g. pinned to the bottom by a cap) and the caller should leave the flag as-is.
+ */
+function resolveUserScrollAway({
+  scrollTop,
+  pinnedScrollTop,
+  maxScrollTop,
+  thresholdPx,
+}: {
+  scrollTop: number;
+  pinnedScrollTop: number;
+  maxScrollTop: number;
+  thresholdPx: number;
+}): boolean | null {
+  const abovePin = scrollTop < pinnedScrollTop - thresholdPx;
+  const roomBelow = scrollTop < maxScrollTop - thresholdPx;
+  if (abovePin && roomBelow) {
+    return true;
+  }
+  if (scrollTop >= pinnedScrollTop - thresholdPx) {
+    return false;
+  }
+  return null;
 }
 
 function hasMessagesOutOfView({
@@ -814,6 +872,14 @@ export class MessagesScrollController {
   private domSpacerHeight = 0;
 
   /**
+   * Whether the user has deliberately scrolled away (up) from the pin. While true, every
+   * auto-scroll restore/re-pin path is suppressed so we never yank the user back down; it is
+   * set/cleared by the `scroll` listener (`handleUserScroll`) and reset when a new message is
+   * pinned. This is what makes manual scroll-up stop auto-scroll during streaming/reasoning.
+   */
+  private userScrolledAwayFromPin = false;
+
+  /**
    * Pending requestAnimationFrame id used to coalesce multiple content-layout-settled
    * events into a single spacer reconciliation per frame.
    */
@@ -887,12 +953,17 @@ export class MessagesScrollController {
             this.host.setSpacerHeight(this.domSpacerHeight);
           }
 
-          // Restore scrollTop if user is near the pin, or if browser capped scrollTop.
+          // Restore scrollTop if user is near the pin, or if browser capped scrollTop — but
+          // never once the user has deliberately scrolled away, otherwise a transient shrink
+          // (a reasoning step collapsing) would look like a browser cap and yank them back down.
           const scrollDelta = Math.abs(
             scrollElement.scrollTop - this.pinnedScrollTop,
           );
           const hasScrolledAway = scrollDelta > 50;
-          if (!hasScrolledAway || wasBrowserCapped) {
+          if (
+            !this.userScrolledAwayFromPin &&
+            (!hasScrolledAway || wasBrowserCapped)
+          ) {
             scrollElement.scrollTop = this.pinnedScrollTop;
           }
         }
@@ -920,6 +991,12 @@ export class MessagesScrollController {
       this.handleContentLayoutSettled,
     );
 
+    // Track deliberate user scroll-away so auto-scroll can disengage. Passive: we only read
+    // scroll geometry, never call preventDefault.
+    scrollContainer?.addEventListener("scroll", this.handleUserScroll, {
+      passive: true,
+    });
+
     // Seed the previous-messages baseline so the first onHostUpdated compares
     // against the state present at connect time.
     this.previousMessages = this.host.getMessages();
@@ -944,6 +1021,7 @@ export class MessagesScrollController {
       "code-snippet-render-end",
       this.handleContentLayoutSettled,
     );
+    scrollContainer?.removeEventListener("scroll", this.handleUserScroll);
     if (this.layoutSettledRafId !== null) {
       cancelAnimationFrame(this.layoutSettledRafId);
       this.layoutSettledRafId = null;
@@ -1087,6 +1165,11 @@ export class MessagesScrollController {
     this.pinnedMessageId = result.pinnedMessageId;
     this.pinnedScrollTop = result.scrollTop;
 
+    // Establishing a pin re-engages auto-scroll: a newly pinned message resets any prior
+    // scroll-away. (The re-pin restore paths are gated on this flag, so they only reach here
+    // when it is already false — this reset matters for pinning a genuinely new message.)
+    this.userScrolledAwayFromPin = false;
+
     debugAutoScroll(
       `[autoScroll] Pinned message, scrollTop=${result.scrollTop}, spacer=${result.currentSpacerHeight}px`,
     );
@@ -1105,8 +1188,7 @@ export class MessagesScrollController {
     }
 
     const markdownElement = targetElem.querySelector(`${prefix}-markdown`) as
-      | (Element & { updateComplete?: Promise<unknown> })
-      | null;
+      (Element & { updateComplete?: Promise<unknown> }) | null;
 
     if (!markdownElement) {
       return;
@@ -1142,6 +1224,29 @@ export class MessagesScrollController {
    * collapse/expand, or `code-snippet-render-end` after a code block's async render). Several
    * can settle in the same tick, so we coalesce to a single reconciliation on the next frame.
    */
+  /**
+   * `scroll` listener that latches whether the user has deliberately scrolled away (up) from the
+   * pin. Runs from a settled scroll position, so `resolveUserScrollAway` can distinguish a real
+   * scroll-up (room below the current position) from a browser cap (parked at the bottom because
+   * content shrank). Once latched, mid-animation geometry dips can't flip it, so the restore
+   * paths stay disengaged until the user returns toward the pin or a new message is pinned.
+   */
+  private handleUserScroll = (): void => {
+    const scrollElement = this.host.getScrollContainer();
+    if (!scrollElement || !this.pinnedMessageId) {
+      return;
+    }
+    const decision = resolveUserScrollAway({
+      scrollTop: scrollElement.scrollTop,
+      pinnedScrollTop: this.pinnedScrollTop,
+      maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
+      thresholdPx: USER_SCROLL_AWAY_THRESHOLD_PX,
+    });
+    if (decision !== null) {
+      this.userScrolledAwayFromPin = decision;
+    }
+  };
+
   private handleContentLayoutSettled = (): void => {
     if (this.layoutSettledRafId !== null) {
       return;
@@ -1169,10 +1274,18 @@ export class MessagesScrollController {
       return;
     }
 
+    // A deliberate scroll-away disengages re-pinning: keep the spacer correct but leave the
+    // user's position alone.
+    if (this.userScrolledAwayFromPin) {
+      this.executeRecalculateSpacer(scrollElement);
+      return;
+    }
+
     const streamEndAction = resolveStreamEndAction({
       nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
       pinnedScrollTop: this.pinnedScrollTop,
       scrollTop: scrollElement.scrollTop,
+      maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
     });
 
     if (streamEndAction === "re_pin_and_scroll") {
@@ -1355,11 +1468,16 @@ export class MessagesScrollController {
       // using post-commit scrollTop here can misclassify "near pin" vs "away from pin".
       const scrollTopForDecision = snapshot ?? scrollElement.scrollTop;
 
-      const streamEndAction = resolveStreamEndAction({
-        nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
-        pinnedScrollTop: this.pinnedScrollTop,
-        scrollTop: scrollTopForDecision,
-      });
+      // A deliberate scroll-away disengages the stream-end re-pin as well.
+      const streamEndAction: StreamEndAction = this.userScrolledAwayFromPin
+        ? "recalculate_and_preserve_scroll"
+        : resolveStreamEndAction({
+            nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
+            pinnedScrollTop: this.pinnedScrollTop,
+            scrollTop: scrollTopForDecision,
+            maxScrollTop:
+              scrollElement.scrollHeight - scrollElement.clientHeight,
+          });
 
       if (streamEndAction === "re_pin_and_scroll") {
         this.executePinAndScroll(
@@ -1593,6 +1711,7 @@ export {
   resolveAutoScrollAction,
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
+  resolveUserScrollAway,
   updateObservedMessages,
   type AutoScrollAction,
   type MessageResizeObserverState,
