@@ -15,24 +15,22 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useSyncExternalStore } from "use-sync-external-store/shim/index.js";
 import { StoreProvider } from "./providers/StoreProvider";
 import { WindowSizeProvider } from "./providers/WindowSizeProvider";
 import { ServiceManagerProvider } from "./providers/ServiceManagerProvider";
 import { IntlProvider } from "./providers/IntlProvider";
 import { AriaAnnouncerProvider } from "./providers/AriaAnnouncerProvider";
 import { ServiceManager } from "./services/ServiceManager";
+import { ChatSDK, acquireChatSDK } from "./sdk/ChatSDK";
+import type { ChatSlotStates } from "./sdk/slotStates.js";
 import {
-  attachUserDefinedResponseHandlers,
-  attachCustomFooterHandler,
-  initServiceManagerAndInstance,
+  applyBootContainerClasses,
+  maybeWarnAccidentalReboot,
   mergePublicConfig,
-  performInitialViewChange,
-} from "./utils/chatBoot";
+} from "./boot/appBoot";
 import { UserDefinedResponsePortalsContainer } from "./components/UserDefinedResponsePortalsContainer";
-import {
-  CustomFooterSlotState,
-  CustomFooterPortalsContainer,
-} from "./components/CustomFooterPortalsContainer";
+import { CustomFooterPortalsContainer } from "./components/CustomFooterPortalsContainer";
 import { WriteableElementsPortalsContainer } from "./components/WriteableElementsPortalsContainer";
 
 import { useOnMount } from "./hooks/useOnMount";
@@ -43,7 +41,7 @@ import { isBrowser } from "./utils/browserUtils";
 import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
 
 import {
-  RenderUserDefinedState,
+  OnAttachDetails,
   RenderUserDefinedResponse,
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
@@ -52,6 +50,17 @@ import { ChatInstance } from "../types/instance/ChatInstance";
 import { PublicConfig } from "../types/config/PublicConfig";
 import { Dimension } from "../types/utilities/Dimension";
 import AppShell from "./AppShell";
+
+/**
+ * Stable empty snapshot returned before the slot-state stores exist. `useSyncExternalStore`
+ * requires `getSnapshot` to return a referentially-stable value when nothing has changed, so the
+ * getter must hand back the same frozen object every call rather than a fresh `{}`.
+ */
+const EMPTY_SLOT_STATE = Object.freeze({});
+const EMPTY_SLOT_SNAPSHOT = () => EMPTY_SLOT_STATE as Record<string, never>;
+
+/** No-op subscribe used before the real store is available; returns a no-op unsubscribe. */
+const NOOP_SUBSCRIBE = () => () => {};
 
 /**
  * Props for the top-level Chat container. This component is responsible for
@@ -69,6 +78,16 @@ interface AppProps {
   config: PublicConfig;
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
+  onAttach?: (instance: ChatInstance, details: OnAttachDetails) => void;
+  /**
+   * @internal Internal-only channel used to hand the framework-agnostic slot-state stores to a
+   * Lit/WC host without widening the public `onBeforeRender` signature (which is public API on
+   * the WC surface). Unlike `onBeforeRender`, this fires unconditionally on every acquire —
+   * cold boot AND reuse re-attach — since a remounting host needs the (possibly already
+   * populated) stores immediately, mirroring how the React tree's `useSyncExternalStore` above
+   * re-subscribes on every mount.
+   */
+  onSlotStatesReady?: (slotStates: ChatSlotStates) => void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
@@ -99,6 +118,8 @@ export function ChatAppEntry({
   config,
   onBeforeRender,
   onAfterRender,
+  onAttach,
+  onSlotStatesReady,
   renderUserDefinedResponse,
   renderCustomMessageFooter,
   renderWriteableElements,
@@ -122,14 +143,29 @@ export function ChatAppEntry({
     setParentInstance?.(i);
   };
 
-  const [userDefinedResponseEventsBySlot, setUserDefinedResponseEventsBySlot] =
-    useState<Record<string, RenderUserDefinedState>>({});
-
-  const [customFooterSlotsByName, setCustomFooterSlotsByName] = useState<
-    Record<string, CustomFooterSlotState>
-  >({});
+  // Subscribe to the core's framework-agnostic slot-state value stores (owned by the
+  // ServiceManager, seeded at boot). A remounting subscriber reads the current value on first
+  // `get()`, so previously rendered portals survive a reuse re-attach with no setter repointing.
+  // The stores are absent until boot completes, so fall back to a stable empty snapshot / no-op
+  // subscribe; `useSyncExternalStore` re-subscribes when the real store appears.
+  const slotStates = serviceManager?.slotStates;
+  const userDefinedResponseEventsBySlot = useSyncExternalStore(
+    slotStates?.userDefinedBySlot.subscribe ?? NOOP_SUBSCRIBE,
+    slotStates?.userDefinedBySlot.get ?? EMPTY_SLOT_SNAPSHOT,
+  );
+  const customFooterSlotsByName = useSyncExternalStore(
+    slotStates?.customFooterBySlot.subscribe ?? NOOP_SUBSCRIBE,
+    slotStates?.customFooterBySlot.get ?? EMPTY_SLOT_SNAPSHOT,
+  );
 
   const previousConfigRef = useRef<PublicConfig | null>(null);
+
+  // Mirrors the async-set `serviceManager` state so the mount-only unmount cleanup (whose closure
+  // captured the initial null) can reach the live manager to release or dispose it.
+  const serviceManagerRef = useRef<ServiceManager | null>(null);
+
+  // Mirrors the acquired `ChatSDK` facade so the mount-only unmount cleanup can call `release()`.
+  const sdkRef = useRef<ChatSDK | null>(null);
 
   // Tracks which props we've already warned about so a host that re-creates an
   // object prop every render gets the diagnostic once, not on every commit.
@@ -159,9 +195,14 @@ export function ChatAppEntry({
   );
 
   /**
-   * On mount, fully initialize services and the chat instance, then render.
+   * On mount, fully initialize services and the chat instance, then render. The cleanup owns
+   * teardown: a `cancelled` closure flag (not a ref — StrictMode's second mount must not see the
+   * first mount's flag) covers the window where the async boot has not yet populated `sdkRef`, so
+   * an unmount mid-boot still releases the manager instead of leaking it.
    */
   useOnMount(() => {
+    let cancelled = false;
+
     /**
      * Performs the first-time bootstrap of services and the chat instance.
      * Attaches user-defined response handlers, executes lifecycle callbacks,
@@ -177,47 +218,110 @@ export function ChatAppEntry({
         // Seed the previous config immediately to avoid dynamic updates during boot.
         previousConfigRef.current = publicConfig;
 
-        const { serviceManager, instance } =
-          await initServiceManagerAndInstance({
-            publicConfig,
-            container,
-            customHostElement: element,
-          });
+        // Host-container styling is a shell concern (see src/chat/boot/appBoot.ts). Apply it
+        // before the async acquire so the container is sized during boot, not just after it.
+        applyBootContainerClasses(container, !!element);
+
+        const { sdk, adopted } = await acquireChatSDK(publicConfig, {
+          container,
+          customHostElement: element,
+        });
+        if (cancelled) {
+          // Unmounted while boot was in flight: hand the manager straight back (grace-release
+          // under reuse, dispose otherwise) and leave this mount's refs/state untouched.
+          sdk.release();
+          return;
+        }
+        sdkRef.current = sdk;
+        serviceManagerRef.current = sdk.serviceManager;
+
+        // An adopted manager normally finished the boot-once steps (initial view change,
+        // onBeforeRender/onAfterRender, markdown seed) on its original mount — but a mount that
+        // unmounted while acquire was in flight released the manager before ever running them
+        // (the `cancelled` branch above). The store's `initialViewChangeComplete` flag records
+        // whether they actually ran, so the adopter of a never-finished boot picks them up
+        // instead of skipping them forever and rendering a chat that never opened.
+        const needsBootstrap =
+          !adopted ||
+          !sdk.serviceManager.store.getState().initialViewChangeComplete;
+
+        // The accidental-remount diagnostic is likewise a shell concern; a second cold boot for a
+        // namespace means the host discarded the conversation.
+        if (!adopted) {
+          maybeWarnAccidentalReboot(publicConfig);
+        }
+
+        if (adopted) {
+          // The preserved store still holds the previous mount's config. Diff against THAT, not
+          // this mount's (already seeded above), so a config changed across the remount is applied
+          // by the dynamic-update effect instead of silently dropped.
+          previousConfigRef.current =
+            sdk.serviceManager.store.getState().config.public;
+        }
 
         // Set the host markdown config before first paint so the initial
         // markdown render already has its custom renderers / plugins. `markdown`
         // lives in its own `markdownConfig` slice (not read from the config
         // tree), so lift it off `config` here. Read from the original `config`
         // prop, not `publicConfig`, to keep the consumer's plugin/renderer
-        // references stable for the slice's `isEqual` guard.
-        if (config.markdown) {
-          serviceManager.store.dispatch(
+        // references stable for the slice's `isEqual` guard. A reused manager
+        // that finished its boot already has this seeded (a later config change
+        // applies via the effect).
+        if (needsBootstrap && config.markdown) {
+          sdk.serviceManager.store.dispatch(
             appActions.setAppStateValue("markdownConfig", config.markdown),
           );
         }
 
-        attachUserDefinedResponseHandlers(
-          instance,
-          setUserDefinedResponseEventsBySlot,
-        );
+        // Portal-slot tracking is registered once by `attachSlotStateTracking` during boot
+        // (inside `acquireChatSDK`); the value stores hang off the manager and the React tree
+        // subscribes to them via `useSyncExternalStore` above — no per-mount wiring here.
+        setInstances(sdk.instance);
 
-        attachCustomFooterHandler(instance, setCustomFooterSlotsByName);
+        // Internal-only: hand the slot-state stores to a Lit/WC host, unconditionally (unlike
+        // `onBeforeRender` below, this is not gated by `!adopted` — a reuse re-attach still needs
+        // the current store state immediately).
+        onSlotStatesReady?.(sdk.slotStates);
 
-        setInstances(instance);
+        // Hand the (same) instance to the host on every mount, flagging whether this is a
+        // reuse re-attach so consumers can run one-time setup only on the first attach.
+        onAttach?.(sdk.instance, { remount: adopted });
 
-        if (onBeforeRender) {
-          await onBeforeRender(instance);
+        // `onBeforeRender` is a boot-once first-render gate; it does not re-fire on a
+        // reuse re-attach that already completed its boot.
+        if (onBeforeRender && needsBootstrap) {
+          await onBeforeRender(sdk.instance);
+          if (cancelled) {
+            // Unmounted while the consumer's onBeforeRender was pending. The cleanup already
+            // released the manager, so stop here rather than drive the view change and
+            // hydration from a zombie boot; a released-for-reuse manager still has
+            // `initialViewChangeComplete` false, so its next adopter runs these steps.
+            return;
+          }
         }
 
-        setServiceManager(serviceManager);
+        setServiceManager(sdk.serviceManager);
         setBeforeRenderComplete(true);
-        await performInitialViewChange(serviceManager);
-        serviceManager.store.dispatch(
-          appActions.setInitialViewChangeComplete(true),
-        );
 
-        if (onAfterRender) {
-          setAfterRenderCallback(() => () => onAfterRender(instance));
+        // On a reuse re-attach of a fully booted manager the view state is already
+        // established in the preserved store, so the fresh tree renders it without
+        // re-running the initial view transition (which would re-fire the load
+        // view-change).
+        if (needsBootstrap) {
+          await sdk.runInitialViewChange();
+          sdk.serviceManager.store.dispatch(
+            appActions.setInitialViewChangeComplete(true),
+          );
+          if (cancelled) {
+            // The view change completed (and is recorded) but the host unmounted while it was
+            // in flight — skip the boot-once onAfterRender scheduling for this dead mount.
+            return;
+          }
+        }
+
+        // `onAfterRender` is boot-once, mirroring `onBeforeRender`.
+        if (onAfterRender && needsBootstrap) {
+          setAfterRenderCallback(() => () => onAfterRender(sdk.instance));
         }
       } catch (error) {
         console.error("Error initializing chat:", error);
@@ -225,6 +329,16 @@ export function ChatAppEntry({
     };
 
     initializeChat();
+
+    return () => {
+      cancelled = true;
+      // Covers the post-boot case; the mid-boot case is handled by the `cancelled` check above.
+      // With `reuseInstance`, release() hands the live manager to the registry so a remount
+      // within the grace window reuses it; otherwise it disposes immediately so the store
+      // subscriptions, event bus, theme watcher, message service, and any human-agent
+      // connection are torn down instead of leaked.
+      sdkRef.current?.release();
+    };
   });
 
   /**
@@ -328,7 +442,7 @@ export function ChatAppEntry({
   });
 
   useOnMount(() => {
-    if (!isBrowser) {
+    if (!isBrowser()) {
       return () => {};
     }
 
@@ -338,7 +452,9 @@ export function ChatAppEntry({
     window.addEventListener("resize", windowListener);
 
     const visibilityListener = () => {
-      serviceManager?.store.dispatch(
+      // Read through the ref: the closed-over `serviceManager` state was null when this
+      // mount-only effect ran.
+      serviceManagerRef.current?.store.dispatch(
         appActions.setIsBrowserPageVisible(
           document.visibilityState === "visible",
         ),
@@ -350,7 +466,6 @@ export function ChatAppEntry({
     return () => {
       window.removeEventListener("resize", windowListener);
       document.removeEventListener("visibilitychange", visibilityListener);
-      serviceManager?.themeWatcherService?.stopWatching();
     };
   });
 

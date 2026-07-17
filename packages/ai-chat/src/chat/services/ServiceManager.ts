@@ -33,7 +33,6 @@ import { BusEvent } from "../../types/events/eventBusTypes";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
 import { ChatSlotStates } from "../sdk/slotStates.js";
-import type { ChatSDK } from "../sdk/ChatSDK.js";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -179,10 +178,13 @@ class ServiceManager {
   slotStates?: ChatSlotStates;
 
   /**
-   * The internal `ChatSDK` lifecycle facade wrapping this manager. Cached here (constructed once,
-   * during cold boot) so callers reach the same facade instance rather than a fresh wrapper.
+   * Teardown hook installed by the lifecycle layer (`sdk/ChatSDK.ts`'s `acquireChatSDK`) during
+   * cold boot. `ChatInstanceImpl.destroy` calls it so the instance can trigger a full teardown —
+   * including reuse-registry eviction — without the core naming the SDK facade. Deliberately a bare
+   * `() => void` rather than a facade reference: the core must not depend on the layer built on top
+   * of it, or `sdk/` could not be lifted out as `@carbon/ai-chat/sdk` in 2.0.
    */
-  sdk?: ChatSDK;
+  onDestroy?: () => void;
 
   /**
    * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available

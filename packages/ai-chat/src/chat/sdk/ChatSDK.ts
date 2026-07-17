@@ -88,8 +88,16 @@ export interface ChatSDKHost {
 }
 
 /**
+ * The facade for a given manager. Owned here, in the lifecycle layer, rather than as a field on
+ * `ServiceManager`: the core must not name the layer built on top of it, or `sdk/` could not be
+ * lifted out as `@carbon/ai-chat/sdk` in 2.0. A reuse re-attach maps the cached manager back to its
+ * original facade through this map (see `acquireChatSDK`).
+ */
+const sdkByManager = new WeakMap<ServiceManager, ChatSDK>();
+
+/**
  * Internal lifecycle facade over a {@link ServiceManager}. One `ChatSDK` per `ServiceManager` —
- * cached on `serviceManager.sdk` so a reuse re-attach returns the same facade instance. Construct
+ * tracked in {@link sdkByManager} so a reuse re-attach returns the same facade instance. Construct
  * only via {@link acquireChatSDK}.
  */
 export class ChatSDK {
@@ -193,7 +201,10 @@ export async function acquireChatSDK(
   if (config.featureFlags?.reuseInstance) {
     const cached = acquireServiceManager(config.namespace);
     if (cached) {
-      const sdk = cached.sdk!;
+      // The registry deals in managers, so map back to the facade this layer owns. It must be the
+      // SAME facade: `reuseRegistration` lives on it, and a fresh wrapper would not know it is
+      // registered, so `release()` would hard-unload instead of grace-releasing.
+      const sdk = sdkByManager.get(cached)!;
       sdk.attach({ container, customHostElement });
       return { sdk, adopted: true };
     }
@@ -246,9 +257,13 @@ export async function acquireChatSDK(
     // so events fired during boot are still captured; the stores survive a host remount.
     attachSlotStateTracking(serviceManager);
 
-    // Cache the facade on the manager so a future reuse re-attach returns this same instance.
+    // Track the facade for this manager so a future reuse re-attach returns this same instance.
     const sdk = new ChatSDK(serviceManager);
-    serviceManager.sdk = sdk;
+    sdkByManager.set(serviceManager, sdk);
+
+    // Give the core a way to trigger a full teardown (including registry eviction) without naming
+    // this layer: `ChatInstanceImpl.destroy` calls `serviceManager.onDestroy`.
+    serviceManager.onDestroy = () => sdk.destroy();
 
     // Register the fresh manager so a future remount can reuse it when opted in, recording the
     // decision on the facade so release/destroy branch on it rather than on the live config.

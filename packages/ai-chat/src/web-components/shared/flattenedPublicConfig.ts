@@ -113,6 +113,10 @@ export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
   { name: "history", options: { type: Object } },
   { name: "layout", options: { type: Object } },
   { name: "messaging", options: { type: Object } },
+  {
+    name: "featureFlags",
+    options: { type: Object, attribute: "feature-flags" },
+  },
   { name: "isReadonly", options: { type: Boolean, attribute: "is-readonly" } },
   {
     name: "persistFeedback",

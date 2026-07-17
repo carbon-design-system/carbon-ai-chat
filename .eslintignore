@@ -7,3 +7,5 @@ node_modules
 *.snap.js
 
 packages/ai-chat/tasks/**
+storybook-static
+storybook-react-static
