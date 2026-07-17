@@ -1,8 +1,16 @@
 # API symbol index
 
-Machine-readable index of the `@carbon/ai-chat` public API, for the Carbon MCP ingestion pipeline. It lets the pipeline resolve documentation `{@link HistoryItem}` / `{@link HistoryItem.time}` references to their canonical doc pages and embed the API reference as retrievable content.
+Machine-readable index of the `@carbon/ai-chat` public API, for the Carbon MCP
+ingestion pipeline. It lets the pipeline resolve documentation
+`{@link HistoryItem}` / `{@link HistoryItem.time}` references to their canonical
+doc pages and embed the API reference as retrievable content.
 
-> **Generated — do not hand-edit.** Everything in this directory except this README is produced by [`docs/typedoc/apiIndexPlugin.js`](../typedoc/apiIndexPlugin.js). It is regenerated when cutting an RC or full release (and on demand via `npm run docs:api`), not on every build — so it reflects the released API surface. To change the output, change the plugin and run `npm run docs:api`.
+> **Generated — do not hand-edit.** Everything in this directory except this
+> README is produced by
+> [`docs/typedoc/apiIndexPlugin.js`](../typedoc/apiIndexPlugin.js). It is
+> regenerated when cutting an RC or full release (and on demand via
+> `npm run docs:api`), not on every build — so it reflects the released API
+> surface. To change the output, change the plugin and run `npm run docs:api`.
 
 ## Contents
 
@@ -27,7 +35,10 @@ Both come from one extraction pass, so they never disagree.
 }
 ```
 
-`symbols` is keyed by the **exact `{@link}` target string** an author types — the bare export name for a top-level symbol (`HistoryItem`), and `Parent.member` for a member (`HistoryItem.time`, `BusEventType.RECEIVE`). To resolve a reference, look the string up directly.
+`symbols` is keyed by the **exact `{@link}` target string** an author types —
+the bare export name for a top-level symbol (`HistoryItem`), and `Parent.member`
+for a member (`HistoryItem.time`, `BusEventType.RECEIVE`). To resolve a
+reference, look the string up directly.
 
 ### Record fields
 
@@ -54,17 +65,29 @@ Both come from one extraction pass, so they never disagree.
 
 `url` is **relative to `baseUrl`** — the full page URL is `baseUrl + url`, e.g.
 `https://chat.carbondesignsystem.com/version/v1.15.0/docs/interfaces/Type_reference.HistoryItem.html#time`.
-The `Type_reference.` filename prefix is intrinsic to how the published TypeDoc site names pages; the URLs here match the live site verbatim because they come from TypeDoc's own router.
+The `Type_reference.` filename prefix is intrinsic to how the published TypeDoc
+site names pages; the URLs here match the live site verbatim because they come
+from TypeDoc's own router.
 
 ## Versioning
 
-`baseUrl` is pinned to `version/v<version>` — the exact tag published in that release run, RC or full release alike — not `tag/latest`, which always points at the newest full release and would make every committed link go stale as soon as the next release ships. `version` is read from `packages/ai-chat/package.json` at generation time, after the release workflow's `lerna publish` step has already bumped it, so it always matches the tag `baseUrl` points at.
+`baseUrl` is pinned to `version/v<version>` — the exact tag published in that
+release run, RC or full release alike — not `tag/latest`, which always points at
+the newest full release and would make every committed link go stale as soon as
+the next release ships. `version` is read from `packages/ai-chat/package.json`
+at generation time, after the release workflow's `lerna publish` step has
+already bumped it, so it always matches the tag `baseUrl` points at.
 
 ## Regenerating
 
-This directory is **not** rewritten by an ordinary `npm run build` or the dev watch — the plugin only writes when `WRITE_API_INDEX` is set, so day-to-day builds don't churn it. It is regenerated:
+This directory is **not** rewritten by an ordinary `npm run build` or the dev
+watch — the plugin only writes when `WRITE_API_INDEX` is set, so day-to-day
+builds don't churn it. It is regenerated:
 
-- **automatically at release** — `release-base.yml` runs `npm run docs:api` for every RC and full release, after `lerna publish` bumps the version, and commits any change, so the committed index tracks the exact API surface and version just released; and
+- **automatically at release** — `release-base.yml` runs `npm run docs:api` for
+  every RC and full release, after `lerna publish` bumps the version, and
+  commits any change, so the committed index tracks the exact API surface and
+  version just released; and
 - **on demand** — to preview the effect of a JSDoc/signature change:
 
 ```bash

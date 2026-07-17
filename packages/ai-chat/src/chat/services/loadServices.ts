@@ -7,27 +7,27 @@
  *  @license
  */
 
-import { ChatActionsImpl } from "./ChatActionsImpl";
-import { EventBus } from "../events/EventBus";
-import { HistoryService } from "./HistoryService";
-import { createCustomPanelManager } from "./CustomPanelManager";
-import { MessageUpsertCoordinator } from "./MessageUpsertCoordinator";
-import MessageService from "./MessageService";
-import { NamespaceService } from "./NamespaceService";
-import { ServiceManager } from "./ServiceManager";
-import { ThemeWatcherService } from "./ThemeWatcherService";
-import { UserSessionStorageService } from "./UserSessionStorageService";
-import { doCreateStore } from "../store/doCreateStore";
+import { ChatActionsImpl } from './ChatActionsImpl';
+import { EventBus } from '../events/EventBus';
+import { HistoryService } from './HistoryService';
+import { createCustomPanelManager } from './CustomPanelManager';
+import { MessageUpsertCoordinator } from './MessageUpsertCoordinator';
+import MessageService from './MessageService';
+import { NamespaceService } from './NamespaceService';
+import { ServiceManager } from './ServiceManager';
+import { ThemeWatcherService } from './ThemeWatcherService';
+import { UserSessionStorageService } from './UserSessionStorageService';
+import { doCreateStore } from '../store/doCreateStore';
 import {
   copyToSessionStorage,
   fireStateChangeEvent,
   refreshLocalizationOnChange,
-} from "../store/subscriptions";
-import { AppConfig } from "../../types/state/AppConfig";
-import { WriteableElementName } from "../utils/constants";
-import { assertType, setEnableDebugLog } from "../utils/miscUtils";
-import { setIntl } from "../utils/intlUtils";
-import { isBrowser } from "../utils/browserUtils";
+} from '../store/subscriptions';
+import { AppConfig } from '../../types/state/AppConfig';
+import { WriteableElementName } from '../utils/constants';
+import { assertType, setEnableDebugLog } from '../utils/miscUtils';
+import { setIntl } from '../utils/intlUtils';
+import { isBrowser } from '../utils/browserUtils';
 
 type CreateServiceManagerFunction = (appConfig: AppConfig) => ServiceManager;
 
@@ -43,18 +43,18 @@ function createServiceManager(appConfig: AppConfig) {
   // Create all the services we will be using.
   serviceManager.namespace = new NamespaceService(publicConfig.namespace);
   serviceManager.userSessionStorageService = new UserSessionStorageService(
-    serviceManager,
+    serviceManager
   );
   serviceManager.actions = new ChatActionsImpl(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
-    serviceManager,
+    serviceManager
   );
   serviceManager.messageService = new MessageService(
     serviceManager,
-    publicConfig,
+    publicConfig
   );
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   serviceManager.store.subscribe(fireStateChangeEvent(serviceManager));
@@ -80,7 +80,7 @@ function createServiceManager(appConfig: AppConfig) {
   serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
   serviceManager.themeWatcherService = new ThemeWatcherService(
     serviceManager.store,
-    serviceManager.container,
+    serviceManager.container
   );
 
   // Start theme watching if initially inheriting tokens
@@ -89,8 +89,8 @@ function createServiceManager(appConfig: AppConfig) {
 
   setIntl(
     serviceManager,
-    serviceManager.store.getState().config.public.locale || "en",
-    serviceManager.store.getState().languagePack,
+    serviceManager.store.getState().config.public.locale || 'en',
+    serviceManager.store.getState().languagePack
   );
 
   // Create all custom elements for Deb.
@@ -98,33 +98,33 @@ function createServiceManager(appConfig: AppConfig) {
   if (isBrowser()) {
     serviceManager.writeableElements = {
       [WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.WELCOME_NODE_BEFORE_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.HEADER_BOTTOM_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.HEADER_FIXED_ACTIONS_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.BEFORE_INPUT_ELEMENT]:
-        document.createElement("div"),
-      [WriteableElementName.AFTER_INPUT_ELEMENT]: document.createElement("div"),
-      [WriteableElementName.FOOTER_ELEMENT]: document.createElement("div"),
+        document.createElement('div'),
+      [WriteableElementName.AFTER_INPUT_ELEMENT]: document.createElement('div'),
+      [WriteableElementName.FOOTER_ELEMENT]: document.createElement('div'),
       [WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.CUSTOM_PANEL_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.WORKSPACE_PANEL_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
       [WriteableElementName.HISTORY_PANEL_ELEMENT]:
-        document.createElement("div"),
+        document.createElement('div'),
     };
   }
 

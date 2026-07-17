@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { VIEW_STATE_ALL_CLOSED } from "../store/reducerUtils";
-import { AppState, ViewState, ViewType } from "../../types/state/AppState";
+import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
+import { AppState, ViewState, ViewType } from '../../types/state/AppState';
 
 /**
  * Take a newView, either in string format or as a partial {@link ViewState}, and combine it with the current viewState
@@ -16,7 +16,7 @@ import { AppState, ViewState, ViewType } from "../../types/state/AppState";
  */
 function constructViewState(
   newView: ViewType | Partial<ViewState>,
-  appState: AppState,
+  appState: AppState
 ): ViewState {
   const { viewState } = appState.persistedToBrowserStorage;
 
@@ -24,7 +24,7 @@ function constructViewState(
   let newViewState: ViewState;
 
   // Depending on the type of newView go through different steps to construct a new viewState.
-  if (typeof newView === "string") {
+  if (typeof newView === 'string') {
     // If the newView is of type string then set all the views to false except for the view of the provided string
     // which should be true.
     newViewState = { ...VIEW_STATE_ALL_CLOSED, [newView]: true };

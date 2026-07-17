@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { Message, MessageRequest } from "../../types/messaging/Messages";
-import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
-import { MessageClass } from "../components-legacy/MessageComponent";
-import { applyDynamicStyles } from "./cspStyleUtils";
-import { isRequest, isResponse } from "./messageUtils";
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { Message, MessageRequest } from '../../types/messaging/Messages';
+import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
+import { MessageClass } from '../components-legacy/MessageComponent';
+import { applyDynamicStyles } from './cspStyleUtils';
+import { isRequest, isResponse } from './messageUtils';
 
 /**
  * Write `min-block-size` for the bottom spacer via the shared dynamic
  * stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
  */
 function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
-  applyDynamicStyles(spacerElem, "spacer", {
-    "min-block-size": `${deficit}px`,
+  applyDynamicStyles(spacerElem, 'spacer', {
+    'min-block-size': `${deficit}px`,
   });
 }
 
@@ -97,25 +97,25 @@ const TALL_MESSAGE_THRESHOLD_RATIO = 0.25; // 1/4
 type AutoScrollAction =
   | {
       scrollTop: number;
-      type: "scroll_to_top";
+      type: 'scroll_to_top';
     }
   | {
       preferAnimate: boolean;
       scrollTop: number;
-      type: "scroll_to_bottom";
+      type: 'scroll_to_bottom';
     }
   | {
-      type: "reset_to_top";
+      type: 'reset_to_top';
     }
   | {
       messageComponent: MessageClass;
-      type: "pin_message";
+      type: 'pin_message';
     }
   | {
-      type: "recalculate_spacer";
+      type: 'recalculate_spacer';
     }
   | {
-      type: "noop";
+      type: 'noop';
     };
 
 interface ResolveAutoScrollActionParams {
@@ -154,10 +154,10 @@ interface StreamingTransition {
   wasStreaming: boolean;
 }
 
-type StreamEndAction = "re_pin_and_scroll" | "recalculate_and_preserve_scroll";
+type StreamEndAction = 're_pin_and_scroll' | 'recalculate_and_preserve_scroll';
 
 interface PublicSpacerReconciliationAction {
-  type: "noop" | "recalculate_spacer_preserve_scroll";
+  type: 'noop' | 'recalculate_spacer_preserve_scroll';
 }
 
 // ============================================================================
@@ -177,7 +177,7 @@ interface PublicSpacerReconciliationAction {
  */
 function shouldScrollToMessage(
   message: Message,
-  allMessagesByID: Record<string, Message>,
+  allMessagesByID: Record<string, Message>
 ): boolean {
   if (isResponse(message)) {
     const messageRequest = allMessagesByID[
@@ -203,7 +203,7 @@ function shouldScrollToMessage(
 function findLastScrollableMessage(
   localMessageItems: LocalMessageItem[],
   allMessagesByID: Record<string, Message>,
-  messageRefs: Map<string, MessageClass>,
+  messageRefs: Map<string, MessageClass>
 ): { messageComponent: MessageClass; index: number } | null {
   let messageIndex = localMessageItems.length - 1;
 
@@ -234,13 +234,13 @@ function findLastScrollableMessage(
 function calculateBaseScrollTop(
   targetRect: DOMRect,
   scrollerRect: DOMRect,
-  currentScrollTop: number,
+  currentScrollTop: number
 ): number {
   const targetOffsetWithinScroller =
     targetRect.top - scrollerRect.top + currentScrollTop;
   return Math.max(
     0,
-    Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
+    Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA)
   );
 }
 
@@ -256,7 +256,7 @@ function calculateBaseScrollTop(
 function adjustScrollTopForTallMessage(
   baseScrollTop: number,
   targetHeight: number,
-  scrollerHeight: number,
+  scrollerHeight: number
 ): number {
   const isVeryTall =
     targetHeight > scrollerHeight * TALL_MESSAGE_THRESHOLD_RATIO;
@@ -286,7 +286,7 @@ function calculateSpacerDeficit(
   spacerElem: HTMLElement,
   scrollElement: HTMLElement,
   scrollerRect: DOMRect,
-  finalScrollTop: number,
+  finalScrollTop: number
 ): number {
   const spacerRect = spacerElem.getBoundingClientRect();
   const spacerOffset =
@@ -299,7 +299,7 @@ function calculateSpacerDeficit(
 function hasActiveStreaming(localMessageItems: LocalMessageItem[]): boolean {
   return localMessageItems.some(
     (item) =>
-      item.ui_state.streamingState && !item.ui_state.streamingState.isDone,
+      item.ui_state.streamingState && !item.ui_state.streamingState.isDone
   );
 }
 
@@ -356,9 +356,9 @@ function resolveStreamEndAction({
   scrollTop: number;
 }): StreamEndAction {
   if (scrollTop <= pinnedScrollTop + nearPinThresholdPx) {
-    return "re_pin_and_scroll";
+    return 're_pin_and_scroll';
   }
-  return "recalculate_and_preserve_scroll";
+  return 'recalculate_and_preserve_scroll';
 }
 
 function hasMessagesOutOfView({
@@ -386,9 +386,9 @@ function resolvePublicSpacerReconciliationAction({
   pinnedMessageComponent: MessageClass | null;
 }): PublicSpacerReconciliationAction {
   if (!pinnedMessageComponent) {
-    return { type: "noop" };
+    return { type: 'noop' };
   }
-  return { type: "recalculate_spacer_preserve_scroll" };
+  return { type: 'recalculate_spacer_preserve_scroll' };
 }
 
 /**
@@ -412,12 +412,12 @@ function resolveAutoScrollAction({
   const { scrollToBottom, scrollToTop } = options;
 
   if (scrollToTop !== undefined) {
-    return { type: "scroll_to_top", scrollTop: scrollToTop };
+    return { type: 'scroll_to_top', scrollTop: scrollToTop };
   }
 
   if (scrollToBottom !== undefined) {
     return {
-      type: "scroll_to_bottom",
+      type: 'scroll_to_bottom',
       scrollTop:
         scrollElement.scrollHeight -
         scrollElement.offsetHeight -
@@ -428,29 +428,29 @@ function resolveAutoScrollAction({
 
   if (!localMessageItems.length) {
     // Without messages, clear stale browser-restored positions.
-    return { type: "reset_to_top" };
+    return { type: 'reset_to_top' };
   }
 
   const result = findLastScrollableMessage(
     localMessageItems,
     allMessagesByID,
-    messageRefs,
+    messageRefs
   );
 
   if (
     result?.messageComponent &&
     result.messageComponent !== pinnedMessageComponent
   ) {
-    return { type: "pin_message", messageComponent: result.messageComponent };
+    return { type: 'pin_message', messageComponent: result.messageComponent };
   }
 
   if (pinnedMessageComponent) {
     // Keep the current pin stable when layout changes but target has not changed.
-    return { type: "recalculate_spacer" };
+    return { type: 'recalculate_spacer' };
   }
 
   // Nothing to pin and no pinned target to maintain.
-  return { type: "noop" };
+  return { type: 'noop' };
 }
 
 function pinMessageAndScroll({
@@ -473,19 +473,19 @@ function pinMessageAndScroll({
   const baseScrollTop = calculateBaseScrollTop(
     targetRect,
     scrollerRect,
-    scrollElement.scrollTop,
+    scrollElement.scrollTop
   );
   const scrollTop = adjustScrollTopForTallMessage(
     baseScrollTop,
     targetRect.height,
-    scrollerRect.height,
+    scrollerRect.height
   );
 
   const deficit = calculateSpacerDeficit(
     spacerElem,
     scrollElement,
     scrollerRect,
-    scrollTop,
+    scrollTop
   );
 
   // Spacer must be written before setting scrollTop so the target position is reachable.
@@ -665,7 +665,7 @@ function processResizeEntries(
     significantChangeThreshold: number;
     settleTimeout: number;
     onSignificantResize: (delta: number) => void;
-  },
+  }
 ): void {
   let totalDelta = 0;
   let hasSignificantChange = false;
@@ -692,7 +692,7 @@ function processResizeEntries(
           startAnimationPolling(
             entry.target as HTMLElement,
             animationPollingState,
-            config.onSignificantResize,
+            config.onSignificantResize
           );
         }
       }
@@ -734,7 +734,7 @@ function processResizeEntries(
 function startAnimationPolling(
   element: HTMLElement,
   state: AnimationPollingState,
-  onHeightChange: (delta: number) => void,
+  onHeightChange: (delta: number) => void
 ): void {
   // Cancel any existing polling
   if (state.rafId !== null) {
@@ -754,7 +754,7 @@ function startAnimationPolling(
     }
 
     const currentHeight = Math.round(
-      state.element.getBoundingClientRect().height,
+      state.element.getBoundingClientRect().height
     );
     const delta = currentHeight - state.previousHeight;
 
@@ -787,7 +787,7 @@ function startAnimationPolling(
  * @param state - Animation polling state to cleanup
  */
 export function stopAnimationPolling(
-  state: AnimationPollingState | null,
+  state: AnimationPollingState | null
 ): void {
   if (!state) {
     return;
@@ -816,7 +816,7 @@ export function stopAnimationPolling(
  * @returns State object containing the observer and tracking maps
  */
 export function createMessageResizeObserver(
-  config: MessageResizeObserverConfig,
+  config: MessageResizeObserverConfig
 ): MessageResizeObserverState {
   const {
     onSignificantResize,
@@ -859,7 +859,7 @@ export function createMessageResizeObserver(
         significantChangeThreshold,
         settleTimeout,
         onSignificantResize,
-      },
+      }
     );
   });
 
@@ -880,7 +880,7 @@ export function createMessageResizeObserver(
  */
 export function updateObservedMessages(
   state: MessageResizeObserverState,
-  messageElements: HTMLElement[],
+  messageElements: HTMLElement[]
 ): void {
   const { observer, messageSizes } = state;
 
@@ -899,7 +899,7 @@ export function updateObservedMessages(
  * @param state - The observer state to clean up
  */
 export function cleanupMessageResizeObserver(
-  state: MessageResizeObserverState,
+  state: MessageResizeObserverState
 ): void {
   const { observer, messageSizes, settleTimers, animationPollingState } = state;
 
@@ -929,7 +929,7 @@ export function cleanupMessageResizeObserver(
  */
 function hasNewNonStreamingResponse(
   newItems: LocalMessageItem[],
-  allMessagesByID: Record<string, Message>,
+  allMessagesByID: Record<string, Message>
 ): boolean {
   return newItems.some((item) => {
     // Skip streaming items - they handle their own spacer updates
@@ -957,7 +957,7 @@ function hasNewNonStreamingResponse(
  */
 function applySafariScrollAnchoringRestore(
   currentScrollTop: number,
-  snapshot: number | null,
+  snapshot: number | null
 ): number | null {
   const restoreTarget = getAnchoringRestoreTarget({
     currentScrollTop,

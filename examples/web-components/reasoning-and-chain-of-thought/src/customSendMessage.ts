@@ -11,8 +11,8 @@ import type {
   ChatInstance,
   CustomSendMessageOptions,
   MessageRequest,
-} from "@carbon/ai-chat/dist/types/aiChatEntry.js";
-import { MessageResponseTypes, OptionItemPreference } from "@carbon/ai-chat";
+} from '@carbon/ai-chat/dist/types/aiChatEntry.js';
+import { MessageResponseTypes, OptionItemPreference } from '@carbon/ai-chat';
 import {
   scenarios,
   scenarioOptions,
@@ -21,7 +21,7 @@ import {
   runReasoningStepsScenario,
   ScenarioKey,
   runReasoningContentScenario,
-} from "./scenarios";
+} from './scenarios';
 
 const WELCOME_TEXT = `This example shows how to mock reasoning steps and chain of thought in Carbon AI Chat.
 
@@ -41,9 +41,9 @@ function sendWelcome(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.OPTION,
-          title: "Pick a reasoning demo",
+          title: 'Pick a reasoning demo',
           description:
-            "Each option shows a different mocked flow. You can edit the text for each scenario in src/scenarios.ts.",
+            'Each option shows a different mocked flow. You can edit the text for each scenario in src/scenarios.ts.',
           preference: OptionItemPreference.DROPDOWN,
           options: scenarioOptions.map((option) => ({
             label: option.label,
@@ -58,22 +58,22 @@ function sendWelcome(instance: ChatInstance) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  const trimmedText = request.input.text?.trim() ?? "";
+  const trimmedText = request.input.text?.trim() ?? '';
 
   if (isScenarioKey(trimmedText)) {
     switch (trimmedText) {
-      case "Reasoning steps":
+      case 'Reasoning steps':
         await runReasoningStepsScenario(instance, requestOptions.signal);
         return;
-      case "Controlled reasoning steps":
+      case 'Controlled reasoning steps':
         await runControlledReasoningScenario(instance, requestOptions.signal);
         return;
-      case "Reasoning content":
+      case 'Reasoning content':
         await runReasoningContentScenario(instance, requestOptions.signal);
         return;
-      case "Chain of thought":
+      case 'Chain of thought':
         await runChainOfThoughtScenario(instance, requestOptions.signal);
         return;
       default:

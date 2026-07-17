@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "jest-environment-jsdom";
-import "@testing-library/jest-dom";
+import 'jest-environment-jsdom';
+import '@testing-library/jest-dom';
 
 // Set to true to enable console output during tests for debugging
 const ENABLE_CONSOLE_LOGGING = false;
@@ -21,7 +21,7 @@ global.Symbol.for = global.Symbol.for || ((key: string) => Symbol(key));
 (globalThis as any).document = global.document;
 
 // Mock CSS template literal functions
-(global as any).__CSS_TAG_SYMBOL__ = Symbol("css-tag");
+(global as any).__CSS_TAG_SYMBOL__ = Symbol('css-tag');
 
 // Mock CSS functions that might not be available in test environment
 if (!global.CSSStyleSheet) {
@@ -35,7 +35,7 @@ if (!global.CSSStyleSheet) {
 }
 
 // Mock window.matchMedia since it's not available in jsdom
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -58,7 +58,7 @@ Object.defineProperty(window, "matchMedia", {
 
 // Suppress console output during tests unless debugging
 if (!ENABLE_CONSOLE_LOGGING) {
-  const consoleMethods = ["log", "warn", "error", "info", "debug"] as const;
+  const consoleMethods = ['log', 'warn', 'error', 'info', 'debug'] as const;
 
   consoleMethods.forEach((method) => {
     const original = console[method];

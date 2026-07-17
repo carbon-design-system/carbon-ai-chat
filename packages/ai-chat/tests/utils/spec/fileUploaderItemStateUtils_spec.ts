@@ -7,69 +7,69 @@
  *  @license
  */
 
-import { FILE_UPLOADER_ITEM_STATE } from "@carbon/web-components/es/components/file-uploader/defs.js";
+import { FILE_UPLOADER_ITEM_STATE } from '@carbon/web-components/es/components/file-uploader/defs.js';
 import {
   getFileUploaderItemDisplayProps,
   getFileUploaderItemState,
-} from "../../../src/chat/components-legacy/input/fileUploaderItemStateUtils";
+} from '../../../src/chat/components-legacy/input/fileUploaderItemStateUtils';
 import {
   FileStatusValue,
   FileUpload,
-} from "../../../src/types/config/ServiceDeskConfig";
+} from '../../../src/types/config/ServiceDeskConfig';
 
 function makeFileUpload(overrides: Partial<FileUpload> = {}): FileUpload {
   return {
-    id: "upload-1",
-    file: new File(["content"], "test.pdf", { type: "application/pdf" }),
+    id: 'upload-1',
+    file: new File(['content'], 'test.pdf', { type: 'application/pdf' }),
     status: FileStatusValue.EDIT,
     ...overrides,
   };
 }
 
 const languagePack = {
-  fileSharing_removeButtonTitle: "Remove file",
-  fileSharing_statusUploading: "Uploading file",
+  fileSharing_removeButtonTitle: 'Remove file',
+  fileSharing_statusUploading: 'Uploading file',
 };
 
-describe("fileUploaderItemStateUtils", () => {
-  it("maps uploading + non-error to UPLOADING state", () => {
+describe('fileUploaderItemStateUtils', () => {
+  it('maps uploading + non-error to UPLOADING state', () => {
     const upload = makeFileUpload({ status: FileStatusValue.UPLOADING });
 
     expect(getFileUploaderItemState(upload)).toBe(
-      FILE_UPLOADER_ITEM_STATE.UPLOADING,
+      FILE_UPLOADER_ITEM_STATE.UPLOADING
     );
   });
 
-  it("maps complete + non-error to EDIT state", () => {
+  it('maps complete + non-error to EDIT state', () => {
     const upload = makeFileUpload({ status: FileStatusValue.COMPLETE });
 
     expect(getFileUploaderItemState(upload)).toBe(
-      FILE_UPLOADER_ITEM_STATE.EDIT,
+      FILE_UPLOADER_ITEM_STATE.EDIT
     );
   });
 
-  it("maps error uploads to EDIT state regardless of status", () => {
+  it('maps error uploads to EDIT state regardless of status', () => {
     const upload = makeFileUpload({
       status: FileStatusValue.UPLOADING,
       isError: true,
     });
 
     expect(getFileUploaderItemState(upload)).toBe(
-      FILE_UPLOADER_ITEM_STATE.EDIT,
+      FILE_UPLOADER_ITEM_STATE.EDIT
     );
   });
 
-  it("maps unknown statuses to EDIT state", () => {
+  it('maps unknown statuses to EDIT state', () => {
     const upload = makeFileUpload({
-      status: "unknown-status" as FileStatusValue,
+      status: 'unknown-status' as FileStatusValue,
     });
 
     expect(getFileUploaderItemState(upload)).toBe(
-      FILE_UPLOADER_ITEM_STATE.EDIT,
+      FILE_UPLOADER_ITEM_STATE.EDIT
     );
   });
 
-  it("uses uploading assistive text only while uploading", () => {
+  it('uses uploading assistive text only while uploading', () => {
     const uploadingUpload = makeFileUpload({
       status: FileStatusValue.UPLOADING,
     });
@@ -77,11 +77,11 @@ describe("fileUploaderItemStateUtils", () => {
 
     expect(
       getFileUploaderItemDisplayProps(uploadingUpload, languagePack)
-        .iconDescription,
+        .iconDescription
     ).toBe(languagePack.fileSharing_statusUploading);
     expect(
       getFileUploaderItemDisplayProps(completeUpload, languagePack)
-        .iconDescription,
+        .iconDescription
     ).toBe(languagePack.fileSharing_removeButtonTitle);
   });
 });

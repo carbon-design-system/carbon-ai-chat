@@ -7,25 +7,25 @@
  *  @license
  */
 
-import { isNil } from "lodash-es";
+import { isNil } from 'lodash-es';
 
-describe("langUtils", () => {
-  describe("isNil", () => {
-    it("should return true for null", () => {
+describe('langUtils', () => {
+  describe('isNil', () => {
+    it('should return true for null', () => {
       expect(isNil(null)).toBe(true);
     });
 
-    it("should return true for undefined", () => {
+    it('should return true for undefined', () => {
       expect(isNil(undefined)).toBe(true);
     });
 
-    it("should return false for non-nil values", () => {
+    it('should return false for non-nil values', () => {
       expect(isNil(0)).toBe(false);
-      expect(isNil("")).toBe(false);
+      expect(isNil('')).toBe(false);
       expect(isNil(false)).toBe(false);
       expect(isNil([])).toBe(false);
       expect(isNil({})).toBe(false);
-      expect(isNil("test")).toBe(false);
+      expect(isNil('test')).toBe(false);
       expect(isNil(42)).toBe(false);
     });
   });

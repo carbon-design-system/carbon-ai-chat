@@ -12,7 +12,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome! This example demonstrates watching ChatInstance state changes.
 
@@ -25,9 +25,9 @@ Type "history" if you'd like to see how you would load history.`;
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -39,18 +39,18 @@ async function customSendMessage(
       },
     });
   } else {
-    const inputText = (request.input.text || "").trim().toLowerCase();
+    const inputText = (request.input.text || '').trim().toLowerCase();
 
     switch (inputText) {
-      case "show me a user_defined response":
+      case 'show me a user_defined response':
         instance.messaging.addMessage({
           output: {
             generic: [
               {
                 response_type: MessageResponseTypes.USER_DEFINED,
                 user_defined: {
-                  user_defined_type: "my_unique_identifier",
-                  text: "Some text from your back-end.",
+                  user_defined_type: 'my_unique_identifier',
+                  text: 'Some text from your back-end.',
                 },
               },
             ],
@@ -63,7 +63,7 @@ async function customSendMessage(
             generic: [
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "That is super great!",
+                text: 'That is super great!',
               },
             ],
           },

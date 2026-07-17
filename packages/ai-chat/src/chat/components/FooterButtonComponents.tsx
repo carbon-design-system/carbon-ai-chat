@@ -7,18 +7,18 @@
  *  @license
  */
 
-import cx from "classnames";
-import React from "react";
-import { useSelector } from "../hooks/useSelector";
+import cx from 'classnames';
+import React from 'react';
+import { useSelector } from '../hooks/useSelector';
 
-import { AppState } from "../../types/state/AppState";
-import { MessageTypeComponentProps } from "../../types/messaging/MessageTypeComponentProps";
+import { AppState } from '../../types/state/AppState';
+import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
 
 interface FooterButtonComponentsProps extends MessageTypeComponentProps {
   renderMessageComponent: (
     props: MessageTypeComponentProps & {
       isNestedMessageItem: boolean;
-    },
+    }
   ) => React.ReactNode;
 }
 
@@ -28,14 +28,14 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
  */
 function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID,
+    (state: AppState) => state.allMessageItemsByID
   );
   const buttonComponents =
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
       nestedLocalMessage.item = {
         ...nestedLocalMessage.item,
-        is: "standard-button",
+        is: 'standard-button',
       };
       return (
         <React.Fragment key={nestedMessageID}>
@@ -52,10 +52,9 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
 
   return totalButtons ? (
     <div
-      className={cx("cds-aichat--footer-button-components", {
-        "cds-aichat--footer-button-components--column": isColumnList,
-      })}
-    >
+      className={cx('cds-aichat--footer-button-components', {
+        'cds-aichat--footer-button-components--column': isColumnList,
+      })}>
       {buttonComponents}
     </div>
   ) : null;

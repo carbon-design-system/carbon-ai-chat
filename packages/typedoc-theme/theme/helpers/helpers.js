@@ -9,7 +9,7 @@ import {
   DeclarationReflection,
   ProjectReflection,
   SignatureReflection,
-} from "typedoc";
+} from 'typedoc';
 
 /**
  * Merge CSS class names while dropping falsy entries.
@@ -17,10 +17,10 @@ import {
 export function classNames(names, extraCss) {
   const css = Object.keys(names)
     .filter((key) => names[key])
-    .concat(extraCss || "")
-    .join(" ")
+    .concat(extraCss || '')
+    .join(' ')
     .trim()
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, ' ');
 
   return css.length ? css : undefined;
 }
@@ -41,7 +41,7 @@ export function hasTypeParameters(reflection) {
  * Return the display name including version (if present).
  */
 export function getDisplayName(reflection) {
-  let version = "";
+  let version = '';
 
   if (
     (reflection instanceof DeclarationReflection ||

@@ -19,36 +19,36 @@
  * This is the deterministic counterpart to a live browser render trace.
  */
 
-import React, { ReactElement } from "react";
-import { render, act } from "@testing-library/react";
+import React, { ReactElement } from 'react';
+import { render, act } from '@testing-library/react';
 
-import { StoreProvider } from "../../../src/chat/providers/StoreProvider";
-import { useSelector } from "../../../src/chat/hooks/useSelector";
-import { useShouldSanitizeHTML } from "../../../src/chat/hooks/useShouldSanitizeHTML";
-import { selectMessagesState } from "../../../src/chat/components-legacy/MessagesComponent";
+import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
+import { useSelector } from '../../../src/chat/hooks/useSelector';
+import { useShouldSanitizeHTML } from '../../../src/chat/hooks/useShouldSanitizeHTML';
+import { selectMessagesState } from '../../../src/chat/components-legacy/MessagesComponent';
 import {
   selectInputIsDisabled,
   selectInputUploadAndStreamingFields,
-} from "../../../src/chat/store/selectors";
-import actions from "../../../src/chat/store/actions";
-import { shallowEqual } from "../../../src/chat/store/appStore";
-import { AppState } from "../../../src/types/state/AppState";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { makeConfigStore, applyConfigChange } from "../../test_helpers";
+} from '../../../src/chat/store/selectors';
+import actions from '../../../src/chat/store/actions';
+import { shallowEqual } from '../../../src/chat/store/appStore';
+import { AppState } from '../../../src/types/state/AppState';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { makeConfigStore, applyConfigChange } from '../../test_helpers';
 
 /** Build a store seeded from config, using the shared harness. */
 const makeStore = makeConfigStore;
 
 const BASE_CONFIG: PublicConfig = {
-  header: { name: "Assistant" },
+  header: { name: 'Assistant' },
   layout: { showFrame: true },
   launcher: { isOn: true },
   input: { isDisabled: false },
   shouldSanitizeHTML: true,
 } as PublicConfig;
 
-describe("config-change re-render counts", () => {
-  it("a single input.isDisabled toggle re-renders only the input-flag consumer", () => {
+describe('config-change re-render counts', () => {
+  it('a single input.isDisabled toggle re-renders only the input-flag consumer', () => {
     const store = makeStore(BASE_CONFIG);
     const counts = {
       header: 0,
@@ -84,7 +84,7 @@ describe("config-change re-render counts", () => {
         <LanguagePackProbe />
         <SanitizeProbe />
         <InputDisabledProbe />
-      </StoreProvider>,
+      </StoreProvider>
     );
 
     // Baseline: each probe rendered once on mount.
@@ -110,7 +110,7 @@ describe("config-change re-render counts", () => {
     expect(counts.sanitize).toBe(1);
   });
 
-  it("a function-prop reference change re-renders nothing (churn immunity)", () => {
+  it('a function-prop reference change re-renders nothing (churn immunity)', () => {
     const store = makeStore({ ...BASE_CONFIG, onError: () => undefined });
     const counts = {
       header: 0,
@@ -146,7 +146,7 @@ describe("config-change re-render counts", () => {
         <LanguagePackProbe />
         <SanitizeProbe />
         <InputDisabledProbe />
-      </StoreProvider>,
+      </StoreProvider>
     );
 
     expect(counts).toEqual({
@@ -169,7 +169,7 @@ describe("config-change re-render counts", () => {
     });
   });
 
-  it("a header change re-renders the header consumer but not the others", () => {
+  it('a header change re-renders the header consumer but not the others', () => {
     const store = makeStore(BASE_CONFIG);
     const counts = { header: 0, languagePack: 0, inputDisabled: 0 };
 
@@ -194,12 +194,12 @@ describe("config-change re-render counts", () => {
         <HeaderProbe />
         <LanguagePackProbe />
         <InputDisabledProbe />
-      </StoreProvider>,
+      </StoreProvider>
     );
 
     applyConfigChange(store, {
       ...BASE_CONFIG,
-      header: { name: "Renamed" },
+      header: { name: 'Renamed' },
     });
 
     expect(counts.header).toBe(2);
@@ -211,7 +211,7 @@ describe("config-change re-render counts", () => {
   // replaced the whole-pack `useLanguagePack()` context). It must NOT re-render on
   // an unrelated config change, and must re-render only when the string it reads
   // actually changes — not when some other string changes.
-  it("a single-string languagePack subscriber re-renders only when that string changes", () => {
+  it('a single-string languagePack subscriber re-renders only when that string changes', () => {
     const store = makeStore(BASE_CONFIG);
     let consumerRenders = 0;
 
@@ -224,21 +224,21 @@ describe("config-change re-render counts", () => {
     render(
       <StoreProvider store={store}>
         <SingleStringConsumer />
-      </StoreProvider>,
+      </StoreProvider>
     );
     expect(consumerRenders).toBe(1);
 
     // Unrelated config change does NOT re-render it.
-    applyConfigChange(store, { ...BASE_CONFIG, header: { name: "Renamed" } });
+    applyConfigChange(store, { ...BASE_CONFIG, header: { name: 'Renamed' } });
     expect(consumerRenders).toBe(1);
 
     // Changing a DIFFERENT string does NOT re-render it (granularity win).
     act(() => {
       store.dispatch(
-        actions.setAppStateValue("languagePack", {
+        actions.setAppStateValue('languagePack', {
           ...store.getState().languagePack,
-          ai_slug_title: "Other",
-        }),
+          ai_slug_title: 'Other',
+        })
       );
     });
     expect(consumerRenders).toBe(1);
@@ -246,10 +246,10 @@ describe("config-change re-render counts", () => {
     // Changing the string it actually reads DOES re-render it.
     act(() => {
       store.dispatch(
-        actions.setAppStateValue("languagePack", {
+        actions.setAppStateValue('languagePack', {
           ...store.getState().languagePack,
-          ai_slug_label: "Custom",
-        }),
+          ai_slug_label: 'Custom',
+        })
       );
     });
     expect(consumerRenders).toBe(2);
@@ -278,7 +278,7 @@ describe("config-change re-render counts", () => {
     render(
       <StoreProvider store={store}>
         <MessagesBagProbe />
-      </StoreProvider>,
+      </StoreProvider>
     );
     expect(messagesBagRenders).toBe(1);
 
@@ -286,7 +286,7 @@ describe("config-change re-render counts", () => {
     // untouched, so shallowEqual returns true and the probe does NOT re-render.
     applyConfigChange(store, {
       ...BASE_CONFIG,
-      header: { name: "Renamed" },
+      header: { name: 'Renamed' },
     });
     expect(messagesBagRenders).toBe(1);
 
@@ -303,7 +303,7 @@ describe("config-change re-render counts", () => {
   // the active input slice (via selectInputUploadAndStreamingFields +
   // shallowEqual) rather than the whole slice. A `rawValue` / `displayValue`
   // update dispatched on every keystroke must NOT re-render that subscriber.
-  it("a rawValue/displayValue update does NOT re-render selectInputUploadAndStreamingFields subscribers", () => {
+  it('a rawValue/displayValue update does NOT re-render selectInputUploadAndStreamingFields subscribers', () => {
     const store = makeStore(BASE_CONFIG);
     let uploadProbeRenders = 0;
 
@@ -316,19 +316,19 @@ describe("config-change re-render counts", () => {
     render(
       <StoreProvider store={store}>
         <UploadFieldsProbe />
-      </StoreProvider>,
+      </StoreProvider>
     );
     expect(uploadProbeRenders).toBe(1);
 
     // Simulate Input.tsx writing the value on each keystroke.
     act(() => {
       store.dispatch(
-        actions.updateInputState({ rawValue: "h", displayValue: "h" }, false),
+        actions.updateInputState({ rawValue: 'h', displayValue: 'h' }, false)
       );
     });
     act(() => {
       store.dispatch(
-        actions.updateInputState({ rawValue: "hi", displayValue: "hi" }, false),
+        actions.updateInputState({ rawValue: 'hi', displayValue: 'hi' }, false)
       );
     });
 
@@ -340,7 +340,7 @@ describe("config-change re-render counts", () => {
     // Sanity: when a tracked field DOES change, the probe re-renders.
     act(() => {
       store.dispatch(
-        actions.updateInputState({ allowFileUploads: true }, false),
+        actions.updateInputState({ allowFileUploads: true }, false)
       );
     });
     expect(uploadProbeRenders).toBe(2);

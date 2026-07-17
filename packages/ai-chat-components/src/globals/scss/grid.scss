@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/grid";
+@use '@carbon/grid';
 
 // Emit the css-grid styles
 @include grid.css-grid();

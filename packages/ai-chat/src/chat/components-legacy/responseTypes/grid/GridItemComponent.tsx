@@ -7,20 +7,20 @@
  *  @license
  */
 
-import cx from "classnames";
-import React from "react";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import cx from 'classnames';
+import React from 'react';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   GridItem,
   MessageResponse,
   WidthOptions,
-} from "../../../../types/messaging/Messages";
-import { MessageTypeComponentProps } from "../../../../types/messaging/MessageTypeComponentProps";
-import { GridItemCell } from "./GridItemCell";
+} from '../../../../types/messaging/Messages';
+import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
+import { GridItemCell } from './GridItemCell';
 
 // This regex is for validating a number (1) or pixel value (10px) which are the only valid width values for a column.
 const VALID_COLUMN_WIDTH_REGEX = /^[0-9]*(px)?$/;
-const DEFAULT_COLUMN_WIDTH = "1";
+const DEFAULT_COLUMN_WIDTH = '1';
 
 /**
  * This component renders the grid response type. It will handle creating the rows/columns and renders the response
@@ -39,12 +39,11 @@ function GridItemComponent({
 
   return (
     <div
-      className={cx("cds-aichat--grid", {
-        "cds-aichat--max-width-small": max_width === WidthOptions.SMALL,
-        "cds-aichat--max-width-medium": max_width === WidthOptions.MEDIUM,
-        "cds-aichat--max-width-large": max_width === WidthOptions.LARGE,
-      })}
-    >
+      className={cx('cds-aichat--grid', {
+        'cds-aichat--max-width-small': max_width === WidthOptions.SMALL,
+        'cds-aichat--max-width-medium': max_width === WidthOptions.MEDIUM,
+        'cds-aichat--max-width-large': max_width === WidthOptions.LARGE,
+      })}>
       {localMessageItem.ui_state.gridLocalMessageItemIDs.map(
         (row, rowIndex) => (
           <div key={`row-${rowIndex}`} className="cds-aichat--grid__row">
@@ -56,7 +55,7 @@ function GridItemComponent({
               let isPixelValue;
 
               if (columnWidthString.match(VALID_COLUMN_WIDTH_REGEX)) {
-                isPixelValue = columnWidthString.endsWith("px");
+                isPixelValue = columnWidthString.endsWith('px');
               } else {
                 columnWidthString = DEFAULT_COLUMN_WIDTH;
                 isPixelValue = false;
@@ -78,7 +77,7 @@ function GridItemComponent({
               );
             })}
           </div>
-        ),
+        )
       )}
     </div>
   );

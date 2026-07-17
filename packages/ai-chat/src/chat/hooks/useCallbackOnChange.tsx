@@ -7,10 +7,10 @@
  *  @license
  */
 
-import debounce from "lodash-es/debounce.js";
-import { useMemo } from "react";
+import debounce from 'lodash-es/debounce.js';
+import { useMemo } from 'react';
 
-import { usePrevious } from "./usePrevious";
+import { usePrevious } from './usePrevious';
 
 /**
  * This hooks will observe the given value and will call the given function when the chunks have changed.

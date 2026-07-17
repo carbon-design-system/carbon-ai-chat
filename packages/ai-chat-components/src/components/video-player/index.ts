@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/video-player.js";
+import './src/video-player.js';
 
-export { default as VideoPlayer } from "./src/video-player.js";
+export { default as VideoPlayer } from './src/video-player.js';
 
 // Made with Bob

@@ -18,9 +18,9 @@
  * - react-redux: https://github.com/reduxjs/react-redux (License: https://github.com/reduxjs/react-redux/blob/master/LICENSE.md)
  */
 
-import React, { ReactNode, useMemo, type JSX } from "react";
-import type { AppStore, UnknownAction } from "../store/appStore";
-import { StoreContext } from "../contexts/StoreContext";
+import React, { ReactNode, useMemo, type JSX } from 'react';
+import type { AppStore, UnknownAction } from '../store/appStore';
+import { StoreContext } from '../contexts/StoreContext';
 
 export interface StoreProviderProps<
   RootState,
@@ -38,7 +38,7 @@ export function StoreProvider<
 >({ store, children }: StoreProviderProps<RootState, ActionType>): JSX.Element {
   const value = useMemo(
     () => store as AppStore<unknown, UnknownAction>,
-    [store],
+    [store]
   );
   return (
     <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

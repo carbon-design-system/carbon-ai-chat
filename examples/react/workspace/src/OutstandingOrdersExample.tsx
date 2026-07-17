@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React, { useState } from "react";
-import { ChatInstance, PanelType } from "@carbon/ai-chat";
+import React, { useState } from 'react';
+import { ChatInstance, PanelType } from '@carbon/ai-chat';
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
-} from "@carbon/ai-chat-components/es/react/workspace-shell.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
-import Close16 from "@carbon/icons-react/es/Close.js";
+} from '@carbon/ai-chat-components/es/react/workspace-shell.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
+import Close16 from '@carbon/icons-react/es/Close.js';
 import {
   Table,
   TableHead,
@@ -23,8 +23,8 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-} from "@carbon/react";
-import "./OutstandingOrdersExample.css";
+} from '@carbon/react';
+import './OutstandingOrdersExample.css';
 
 interface OutstandingOrdersExampleProps {
   location: string;
@@ -39,7 +39,7 @@ export function OutstandingOrdersExample({
   workspaceId,
   additionalData,
 }: OutstandingOrdersExampleProps) {
-  console.log("OutstandingOrdersExample rendered", {
+  console.log('OutstandingOrdersExample rendered', {
     location,
     workspaceId,
     additionalData,
@@ -56,8 +56,8 @@ export function OutstandingOrdersExample({
 
   const [toolbarActions] = useState([
     {
-      id: "close",
-      text: "Close",
+      id: 'close',
+      text: 'Close',
       fixed: true,
       icon: Close16,
       onClick: handleClose,
@@ -73,8 +73,7 @@ export function OutstandingOrdersExample({
       </Toolbar>
       <WorkspaceShellHeader
         titleText="Outstanding Orders"
-        subTitleText={`Total: ${orders.length} orders`}
-      >
+        subTitleText={`Total: ${orders.length} orders`}>
         <div slot="header-description">
           View and manage all outstanding orders. This workspace displays the
           complete order list with details including customer information,
@@ -84,8 +83,7 @@ export function OutstandingOrdersExample({
       <WorkspaceShellBody>
         <TableContainer
           title="Order Details"
-          description="Complete list of all outstanding orders."
-        >
+          description="Complete list of all outstanding orders.">
           <Table size="md" useZebraStyles>
             <TableHead>
               <TableRow>

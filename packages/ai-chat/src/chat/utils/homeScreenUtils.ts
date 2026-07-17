@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
+import { HomeScreenConfig } from '../../types/config/HomeScreenConfig';
 
 /**
  * Returns a copy of the given config, but removes any starters that are empty.
@@ -20,7 +20,7 @@ function withoutEmptyStarters(config: HomeScreenConfig): HomeScreenConfig {
       starters: {
         ...config.starters,
         buttons: config.starters.buttons.filter((button) =>
-          Boolean(button.label?.trim()),
+          Boolean(button.label?.trim())
         ),
       },
     };

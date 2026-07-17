@@ -10,35 +10,35 @@
 import {
   createLocalMessageForInlineError,
   outputItemToLocalItem,
-} from "../schema/outputItemToLocalItem";
-import actions from "../store/actions";
-import { MessageLoadingManager } from "../utils/messageServiceUtils";
-import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
+} from '../schema/outputItemToLocalItem';
+import actions from '../store/actions';
+import { MessageLoadingManager } from '../utils/messageServiceUtils';
+import { MessageErrorState } from '../../types/messaging/LocalMessageItem';
 import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
   SystemMessageItem,
-} from "../../types/messaging/Messages";
-import { CustomSendMessageOptions } from "../../types/config/MessagingConfig";
+} from '../../types/messaging/Messages';
+import { CustomSendMessageOptions } from '../../types/config/MessagingConfig';
 import {
   OnErrorType,
   PublicConfigMessaging,
-} from "../../types/config/PublicConfig";
-import { ServiceManager } from "./ServiceManager";
-import { PendingMessageRequest } from "./MessageService";
-import cloneDeep from "lodash-es/cloneDeep.js";
-import { consoleError, debugLog } from "../utils/miscUtils";
-import { BusEventSend, BusEventType } from "../../types/events/eventBusTypes";
-import { ChatInstance } from "../../types/instance/ChatInstance";
-import { resetStopStreamingButton } from "../utils/streamingUtils";
-import { addDefaultsToMessage } from "../utils/messageUtils";
+} from '../../types/config/PublicConfig';
+import { ServiceManager } from './ServiceManager';
+import { PendingMessageRequest } from './MessageService';
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import { consoleError, debugLog } from '../utils/miscUtils';
+import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
+import { ChatInstance } from '../../types/instance/ChatInstance';
+import { resetStopStreamingButton } from '../utils/streamingUtils';
+import { addDefaultsToMessage } from '../utils/messageUtils';
 
 type CustomSendMessageFn = (
   message: MessageRequest<any>,
   options: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => void | Promise<void>;
 
 /**
@@ -51,15 +51,15 @@ class OutboundMessageCoordinator {
     private messageLoadingManager: MessageLoadingManager,
     private setMessageErrorState: (
       pendingRequest: PendingMessageRequest,
-      errorState: MessageErrorState,
+      errorState: MessageErrorState
     ) => void,
     private getCurrent: () => PendingMessageRequest | null,
     private moveToNextQueueItem: () => void,
     private processSuccess: (
       current: PendingMessageRequest,
-      received?: MessageResponse,
+      received?: MessageResponse
     ) => Promise<void>,
-    private getMessagingConfig: () => PublicConfigMessaging,
+    private getMessagingConfig: () => PublicConfigMessaging
   ) {}
 
   /**
@@ -71,7 +71,7 @@ class OutboundMessageCoordinator {
     const { originalMessage, localMessage } =
       createLocalMessageForInlineError(errorMessage);
     store.dispatch(
-      actions.addLocalMessageItem(localMessage, originalMessage, true),
+      actions.addLocalMessageItem(localMessage, originalMessage, true)
     );
   }
 
@@ -81,7 +81,7 @@ class OutboundMessageCoordinator {
    */
   async processError(
     pendingRequest: PendingMessageRequest,
-    resultText: string,
+    resultText: string
   ) {
     const { timeFirstRequest, timeLastRequest, isProcessed, requestOptions } =
       pendingRequest;
@@ -101,7 +101,7 @@ class OutboundMessageCoordinator {
 
     this.serviceManager.actions.errorOccurred({
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
-      message: "An error occurred sending a message",
+      message: 'An error occurred sending a message',
       otherData: resultText,
     });
 
@@ -116,7 +116,7 @@ class OutboundMessageCoordinator {
    */
   rejectFinalErrorOnMessage(
     pendingRequest: PendingMessageRequest,
-    resultText = "An undefined error occurred trying to send your message.",
+    resultText = 'An undefined error occurred trying to send your message.'
   ) {
     const { sendMessagePromise } = pendingRequest;
 
@@ -172,11 +172,11 @@ class OutboundMessageCoordinator {
     const localMessageItem = outputItemToLocalItem(
       systemMessageItem,
       systemMessage,
-      false, // isLatestWelcomeNode
+      false // isLatestWelcomeNode
     );
 
     this.serviceManager.store.dispatch(
-      actions.addLocalMessageItem(localMessageItem, systemMessage, true),
+      actions.addLocalMessageItem(localMessageItem, systemMessage, true)
     );
   }
 
@@ -215,7 +215,7 @@ class OutboundMessageCoordinator {
   async send(
     current: PendingMessageRequest,
     customSendMessage: CustomSendMessageFn,
-    startLoading: (() => void) | null,
+    startLoading: (() => void) | null
   ) {
     current.timeLastRequest = Date.now();
 
@@ -230,7 +230,7 @@ class OutboundMessageCoordinator {
       current.message = message;
       this.serviceManager.store.dispatch(actions.updateMessage(message));
       // AbortController was already created when message was added to queue
-      debugLog("Called customSendMessage", message);
+      debugLog('Called customSendMessage', message);
       const busEventSend: BusEventSend = {
         type: BusEventType.SEND,
         data: message,
@@ -261,16 +261,16 @@ class OutboundMessageCoordinator {
             silent: current.requestOptions.silent,
             busEventSend: busEventSend,
           },
-          this.serviceManager.instance,
-        ),
+          this.serviceManager.instance
+        )
       );
       await this.processSuccess(current, null);
     } catch (error) {
-      consoleError("An error occurred while sending a message", error);
+      consoleError('An error occurred while sending a message', error);
       const resultText =
         (error &&
-          (typeof error === "string" ? error : JSON.stringify(error))) ||
-        "There was an unidentified error.";
+          (typeof error === 'string' ? error : JSON.stringify(error))) ||
+        'There was an unidentified error.';
       this.processError(current, resultText);
     } finally {
       // Loading manager is ended via processSuccess/reject handlers.

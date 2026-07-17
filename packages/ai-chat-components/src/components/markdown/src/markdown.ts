@@ -7,33 +7,33 @@
  *  @license
  */
 
-import { html, LitElement, PropertyValues, TemplateResult } from "lit";
-import { property, state } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./markdown.scss?lit";
-import throttle from "lodash-es/throttle.js";
+import { html, LitElement, PropertyValues, TemplateResult } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './markdown.scss?lit';
+import throttle from 'lodash-es/throttle.js';
 
-import MarkdownIt from "markdown-it";
+import MarkdownIt from 'markdown-it';
 
 import {
   markdownToTokenTree,
   type MarkdownItPlugin,
   type TokenTree,
-} from "./markdown-token-tree.js";
+} from './markdown-token-tree.js';
 import {
   renderMarkdownTree,
   type MarkdownCustomRenderers,
   type MarkdownRendererSlotDescriptor,
-} from "./markdown-renderer.js";
+} from './markdown-renderer.js';
 import {
   hasLikelyPartialTableTail,
   hasNodeAfterTable,
   hasTrailingTableToken,
-} from "./utils/streaming-table.js";
+} from './utils/streaming-table.js';
 
-const CONSOLE_PREFIX = "[carbon-ai-chat-components]";
+const CONSOLE_PREFIX = '[carbon-ai-chat-components]';
 
 /**
  * True if `node` is inside (or is) a light-DOM element with a `slot` attribute
@@ -44,7 +44,7 @@ const CONSOLE_PREFIX = "[carbon-ai-chat-components]";
 function isInsidePortalHost(node: Node, boundary: Node): boolean {
   let cur: Node | null = node;
   while (cur && cur !== boundary) {
-    if (cur instanceof Element && cur.hasAttribute("slot")) {
+    if (cur instanceof Element && cur.hasAttribute('slot')) {
       return true;
     }
     cur = cur.parentNode;
@@ -58,15 +58,15 @@ function isInsidePortalHost(node: Node, boundary: Node): boolean {
  * don't contaminate the parsed markdown source.
  */
 function readLightDomMarkdownSource(element: Element): string {
-  let out = "";
+  let out = '';
   for (const child of Array.from(element.childNodes)) {
-    if (child instanceof Element && child.hasAttribute("slot")) {
+    if (child instanceof Element && child.hasAttribute('slot')) {
       continue;
     }
     if (child.nodeType === Node.TEXT_NODE) {
-      out += child.nodeValue ?? "";
+      out += child.nodeValue ?? '';
     } else if (child instanceof Element) {
-      out += child.textContent ?? "";
+      out += child.textContent ?? '';
     }
   }
   return out.trim();
@@ -108,20 +108,20 @@ class CDSAIChatMarkdown extends LitElement {
   /**
    * Sanitize any HTML included in the markdown. e.g. remove script tags, onclick handlers, etc.
    */
-  @property({ type: Boolean, attribute: "sanitize-html" })
+  @property({ type: Boolean, attribute: 'sanitize-html' })
   sanitizeHTML = false;
 
   /**
    * Remove all HTML from included markdown.
    */
-  @property({ type: Boolean, attribute: "remove-html" })
+  @property({ type: Boolean, attribute: 'remove-html' })
   removeHTML = false;
 
   /**
    * Internal storage for markdown content.
    * @internal
    */
-  private _markdown = "";
+  private _markdown = '';
 
   /**
    * Flag to temporarily allow internal markdown updates without marking as explicitly set.
@@ -147,72 +147,72 @@ class CDSAIChatMarkdown extends LitElement {
       this.stopObservingLightDom();
     }
 
-    this.requestUpdate("markdown", oldValue);
+    this.requestUpdate('markdown', oldValue);
   }
 
   /**
    * If you are actively streaming, setting this to true can help prevent needless UI thrashing when writing
    * complex components (like a sortable and filterable table).
    */
-  @property({ type: Boolean, attribute: "streaming" })
+  @property({ type: Boolean, attribute: 'streaming' })
   streaming = false;
 
   // Code snippet properties
   /** Enable syntax highlighting for any code fence blocks. */
-  @property({ type: Boolean, attribute: "code-snippet-highlight" })
+  @property({ type: Boolean, attribute: 'code-snippet-highlight' })
   codeSnippetHighlight = true;
 
   /** Label for collapsing long code blocks. */
-  @property({ type: String, attribute: "code-snippet-show-less-text" })
-  codeSnippetShowLessText = "Show less";
+  @property({ type: String, attribute: 'code-snippet-show-less-text' })
+  codeSnippetShowLessText = 'Show less';
 
   /** Label for expanding long code blocks. */
-  @property({ type: String, attribute: "code-snippet-show-more-text" })
-  codeSnippetShowMoreText = "Show more";
+  @property({ type: String, attribute: 'code-snippet-show-more-text' })
+  codeSnippetShowMoreText = 'Show more';
 
   /** Tooltip content for the copy action on code blocks. */
   @property({
     type: String,
-    attribute: "code-snippet-copy-button-tooltip-content",
+    attribute: 'code-snippet-copy-button-tooltip-content',
   })
-  codeSnippetCopyButtonTooltipContent = "Copy code";
+  codeSnippetCopyButtonTooltipContent = 'Copy code';
 
   /** Formatter for the code block line count. */
   @property({ type: Object, attribute: false })
   codeSnippetGetLineCountText?: ({ count }: { count: number }) => string;
 
   /** Aria-label for code snippets when in read-only mode. */
-  @property({ type: String, attribute: "code-snippet-aria-label-readonly" })
-  codeSnippetAriaLabelReadOnly = "Code snippet";
+  @property({ type: String, attribute: 'code-snippet-aria-label-readonly' })
+  codeSnippetAriaLabelReadOnly = 'Code snippet';
 
   /** Aria-label for code snippets when in editable mode. */
-  @property({ type: String, attribute: "code-snippet-aria-label-editable" })
-  codeSnippetAriaLabelEditable = "Code editor";
+  @property({ type: String, attribute: 'code-snippet-aria-label-editable' })
+  codeSnippetAriaLabelEditable = 'Code editor';
 
   // Table properties
   /** Placeholder text for table filters. */
-  @property({ type: String, attribute: "table-filter-placeholder-text" })
-  tableFilterPlaceholderText = "Filter table...";
+  @property({ type: String, attribute: 'table-filter-placeholder-text' })
+  tableFilterPlaceholderText = 'Filter table...';
 
   /** Label for the previous page control in tables. */
-  @property({ type: String, attribute: "table-previous-page-text" })
-  tablePreviousPageText = "Previous page";
+  @property({ type: String, attribute: 'table-previous-page-text' })
+  tablePreviousPageText = 'Previous page';
 
   /** Label for the next page control in tables. */
-  @property({ type: String, attribute: "table-next-page-text" })
-  tableNextPageText = "Next page";
+  @property({ type: String, attribute: 'table-next-page-text' })
+  tableNextPageText = 'Next page';
 
   /** Label for the items-per-page control in tables. */
-  @property({ type: String, attribute: "table-items-per-page-text" })
-  tableItemsPerPageText = "Items per page:";
+  @property({ type: String, attribute: 'table-items-per-page-text' })
+  tableItemsPerPageText = 'Items per page:';
 
   /** Label for download of CSV of table data. */
-  @property({ type: String, attribute: "table-download-label-text" })
-  tableDownloadLabelText = "Download table data";
+  @property({ type: String, attribute: 'table-download-label-text' })
+  tableDownloadLabelText = 'Download table data';
 
   /** Locale used for table pagination and formatting. */
-  @property({ type: String, attribute: "table-locale" })
-  tableLocale = "en";
+  @property({ type: String, attribute: 'table-locale' })
+  tableLocale = 'en';
 
   /** Optional formatter for supplemental pagination text. */
   @property({ type: Object, attribute: false })
@@ -331,8 +331,8 @@ class CDSAIChatMarkdown extends LitElement {
     // `cds-checkbox` elements; one delegated listener forwards them to a
     // consumer `checklist.onToggle`.
     this.addEventListener(
-      "cds-checkbox-changed",
-      this.handleChecklistToggle as EventListener,
+      'cds-checkbox-changed',
+      this.handleChecklistToggle as EventListener
     );
 
     // Ensure we parse and render on initial mount, even if markdown was set before connection
@@ -343,8 +343,8 @@ class CDSAIChatMarkdown extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener(
-      "cds-checkbox-changed",
-      this.handleChecklistToggle as EventListener,
+      'cds-checkbox-changed',
+      this.handleChecklistToggle as EventListener
     );
     this.stopObservingLightDom();
     // Tear down any adopted slot hosts so they don't leak across re-connect.
@@ -355,11 +355,11 @@ class CDSAIChatMarkdown extends LitElement {
     // Ask any delegating chat container to drop its hosts too.
     for (const slotName of this.delegatedPluginSlots) {
       this.dispatchEvent(
-        new CustomEvent("cds-aichat-markdown-plugin-host-unmount", {
+        new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
           bubbles: true,
           composed: true,
           detail: { slotName },
-        }),
+        })
       );
     }
     this.delegatedPluginSlots.clear();
@@ -383,9 +383,9 @@ class CDSAIChatMarkdown extends LitElement {
       .find(
         (target): target is HTMLElement =>
           target instanceof HTMLElement &&
-          target.tagName.toLowerCase() === "cds-checkbox",
+          target.tagName.toLowerCase() === 'cds-checkbox'
       );
-    const id = checkbox?.getAttribute("data-cds-aichat-checklist-id");
+    const id = checkbox?.getAttribute('data-cds-aichat-checklist-id');
     if (!checkbox || id == null) {
       // Not a stamped task-list checkbox — ignore unrelated cds-checkboxes.
       return;
@@ -393,7 +393,7 @@ class CDSAIChatMarkdown extends LitElement {
     const checked = !!(event as CustomEvent<{ checked?: boolean }>).detail
       ?.checked;
     const label =
-      checkbox.closest("cds-list-item, li")?.textContent?.trim() ?? "";
+      checkbox.closest('cds-list-item, li')?.textContent?.trim() ?? '';
     onToggle({ id, label, checked });
   };
 
@@ -426,7 +426,7 @@ class CDSAIChatMarkdown extends LitElement {
         // child with a `slot` attribute) are noise from the consumer's
         // overrides re-rendering — they don't change the markdown source.
         const relevant = records.filter(
-          (record) => !isInsidePortalHost(record.target, this),
+          (record) => !isInsidePortalHost(record.target, this)
         );
         if (relevant.length === 0) {
           return;
@@ -474,9 +474,9 @@ class CDSAIChatMarkdown extends LitElement {
     const isInitialRender = !this.hasConnected && this.markdown;
 
     if (
-      changed.has("removeHTML") ||
-      changed.has("markdown") ||
-      changed.has("markdownItPlugins") ||
+      changed.has('removeHTML') ||
+      changed.has('markdown') ||
+      changed.has('markdownItPlugins') ||
       isInitialRender
     ) {
       // Properties that affect token tree structure require full reparse
@@ -492,26 +492,26 @@ class CDSAIChatMarkdown extends LitElement {
       // - string properties: change translated strings in rendered output
       // - streaming: affects loading states in rendered output
       // - customRenderers: only changes which tokens emit a slot
-      changed.has("sanitizeHTML") ||
-      changed.has("streaming") ||
-      changed.has("customRenderers") ||
+      changed.has('sanitizeHTML') ||
+      changed.has('streaming') ||
+      changed.has('customRenderers') ||
       // Code snippet properties
-      changed.has("codeSnippetHighlight") ||
-      changed.has("codeSnippetShowLessText") ||
-      changed.has("codeSnippetShowMoreText") ||
-      changed.has("codeSnippetCopyButtonTooltipContent") ||
-      changed.has("codeSnippetGetLineCountText") ||
-      changed.has("codeSnippetAriaLabelReadOnly") ||
-      changed.has("codeSnippetAriaLabelEditable") ||
+      changed.has('codeSnippetHighlight') ||
+      changed.has('codeSnippetShowLessText') ||
+      changed.has('codeSnippetShowMoreText') ||
+      changed.has('codeSnippetCopyButtonTooltipContent') ||
+      changed.has('codeSnippetGetLineCountText') ||
+      changed.has('codeSnippetAriaLabelReadOnly') ||
+      changed.has('codeSnippetAriaLabelEditable') ||
       // Table properties
-      changed.has("tableFilterPlaceholderText") ||
-      changed.has("tablePreviousPageText") ||
-      changed.has("tableNextPageText") ||
-      changed.has("tableItemsPerPageText") ||
-      changed.has("tableDownloadLabelText") ||
-      changed.has("tableLocale") ||
-      changed.has("tableGetPaginationSupplementalText") ||
-      changed.has("tableGetPaginationStatusText")
+      changed.has('tableFilterPlaceholderText') ||
+      changed.has('tablePreviousPageText') ||
+      changed.has('tableNextPageText') ||
+      changed.has('tableItemsPerPageText') ||
+      changed.has('tableDownloadLabelText') ||
+      changed.has('tableLocale') ||
+      changed.has('tableGetPaginationSupplementalText') ||
+      changed.has('tableGetPaginationStatusText')
     ) {
       this.scheduleRender();
     }
@@ -522,20 +522,20 @@ class CDSAIChatMarkdown extends LitElement {
    */
   @state()
   tokenTree: TokenTree = {
-    key: "root",
+    key: 'root',
     token: {
-      type: "root",
-      tag: "",
+      type: 'root',
+      tag: '',
       nesting: 0,
       level: 0,
-      content: "",
+      content: '',
       attrs: null,
       children: null,
-      markup: "",
+      markup: '',
       block: true,
       hidden: false,
       map: null,
-      info: "",
+      info: '',
       meta: null,
     },
     children: [],
@@ -556,7 +556,7 @@ class CDSAIChatMarkdown extends LitElement {
    */
   private renderMarkdown = async () => {
     try {
-      const markdownContent = this.markdown ?? "";
+      const markdownContent = this.markdown ?? '';
       const previousTreeForDiff =
         this.stagedStreamingTokenTree ?? this.tokenTree;
       let nextTokenTree = previousTreeForDiff;
@@ -573,7 +573,7 @@ class CDSAIChatMarkdown extends LitElement {
           {
             removeHtml: this.removeHTML,
             markdownItPlugins: this.markdownItPlugins,
-          },
+          }
         );
         nextTokenTree = parsed.tree;
         this.markdownItInstance = parsed.md;
@@ -679,7 +679,7 @@ class CDSAIChatMarkdown extends LitElement {
       return trackedTask;
     },
     100,
-    { leading: true, trailing: true },
+    { leading: true, trailing: true }
   );
 
   protected async getUpdateComplete(): Promise<boolean> {
@@ -750,7 +750,7 @@ class CDSAIChatMarkdown extends LitElement {
     const wanted = new Set<string>();
 
     for (const descriptor of descriptors) {
-      if (descriptor.kind === "pluginFallback") {
+      if (descriptor.kind === 'pluginFallback') {
         wanted.add(descriptor.slotName);
 
         // Offer the slot to a chat-container ancestor first. The chain
@@ -759,11 +759,11 @@ class CDSAIChatMarkdown extends LitElement {
         // reaches the plugin output. If a listener calls preventDefault, it
         // has taken over hosting and we skip the local appendChild path.
         const alreadyDelegated = this.delegatedPluginSlots.has(
-          descriptor.slotName,
+          descriptor.slotName
         );
         if (!alreadyDelegated && !this.slotHosts.has(descriptor.slotName)) {
           const mountEvent = new CustomEvent(
-            "cds-aichat-markdown-plugin-host-mount",
+            'cds-aichat-markdown-plugin-host-mount',
             {
               bubbles: true,
               composed: true,
@@ -773,7 +773,7 @@ class CDSAIChatMarkdown extends LitElement {
                 html: descriptor.html,
                 isInline: descriptor.isInline,
               },
-            },
+            }
           );
           this.dispatchEvent(mountEvent);
           if (mountEvent.defaultPrevented) {
@@ -783,14 +783,14 @@ class CDSAIChatMarkdown extends LitElement {
           // The chain owns this slot; push HTML updates through a second
           // event so streaming chunks reach the page-level host element.
           this.dispatchEvent(
-            new CustomEvent("cds-aichat-markdown-plugin-host-update", {
+            new CustomEvent('cds-aichat-markdown-plugin-host-update', {
               bubbles: true,
               composed: true,
               detail: {
                 slotName: descriptor.slotName,
                 html: descriptor.html,
               },
-            }),
+            })
           );
         }
 
@@ -803,9 +803,9 @@ class CDSAIChatMarkdown extends LitElement {
         // the pre-event behavior so existing tests/stories keep working.
         let host = this.slotHosts.get(descriptor.slotName);
         if (!host) {
-          const tag = descriptor.isInline ? "span" : "div";
+          const tag = descriptor.isInline ? 'span' : 'div';
           host = document.createElement(tag);
-          host.setAttribute("slot", descriptor.slotName);
+          host.setAttribute('slot', descriptor.slotName);
           this.slotHosts.set(descriptor.slotName, host);
           this.appendChild(host);
         }
@@ -825,7 +825,7 @@ class CDSAIChatMarkdown extends LitElement {
       try {
         result = (
           callback as (
-            args: Parameters<NonNullable<typeof callback>>[0],
+            args: Parameters<NonNullable<typeof callback>>[0]
           ) => HTMLElement | null
         )({
           ...descriptor.data,
@@ -836,7 +836,7 @@ class CDSAIChatMarkdown extends LitElement {
       } catch (error) {
         console.error(
           `[carbon-ai-chat-components] customRenderers.${descriptor.kind} threw`,
-          error,
+          error
         );
         continue;
       }
@@ -851,8 +851,8 @@ class CDSAIChatMarkdown extends LitElement {
       wanted.add(descriptor.slotName);
       let host = this.slotHosts.get(descriptor.slotName);
       if (!host) {
-        host = document.createElement("div");
-        host.setAttribute("slot", descriptor.slotName);
+        host = document.createElement('div');
+        host.setAttribute('slot', descriptor.slotName);
         this.slotHosts.set(descriptor.slotName, host);
 
         // Offer the host to a chat-container ancestor so it lives in page
@@ -864,7 +864,7 @@ class CDSAIChatMarkdown extends LitElement {
         // ownership of the host's content across renders. If no ancestor takes
         // over (standalone usage, e.g. storybook), host it locally.
         const mountEvent = new CustomEvent(
-          "cds-aichat-markdown-plugin-host-mount",
+          'cds-aichat-markdown-plugin-host-mount',
           {
             bubbles: true,
             composed: true,
@@ -874,7 +874,7 @@ class CDSAIChatMarkdown extends LitElement {
               element: host,
               isInline: false,
             },
-          },
+          }
         );
         this.dispatchEvent(mountEvent);
         if (mountEvent.defaultPrevented) {
@@ -900,11 +900,11 @@ class CDSAIChatMarkdown extends LitElement {
     for (const slotName of this.delegatedPluginSlots) {
       if (!wanted.has(slotName)) {
         this.dispatchEvent(
-          new CustomEvent("cds-aichat-markdown-plugin-host-unmount", {
+          new CustomEvent('cds-aichat-markdown-plugin-host-unmount', {
             bubbles: true,
             composed: true,
             detail: { slotName },
-          }),
+          })
         );
         this.delegatedPluginSlots.delete(slotName);
       }
@@ -921,7 +921,7 @@ class CDSAIChatMarkdown extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-markdown": CDSAIChatMarkdown;
+    'cds-aichat-markdown': CDSAIChatMarkdown;
   }
 }
 

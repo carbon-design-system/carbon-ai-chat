@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { ChatContainer, ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import React, { useState } from "react";
-import { createRoot } from "react-dom/client";
+import { ChatContainer, ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 // This function returns a React component for user defined responses.
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
-import { Button } from "@carbon/react";
-import "@carbon/styles/css/styles.css";
+import { renderUserDefinedResponse } from './renderUserDefinedResponse';
+import { Button } from '@carbon/react';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -56,6 +56,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

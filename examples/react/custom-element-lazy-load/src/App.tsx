@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { PublicConfig } from "@carbon/ai-chat";
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import React, { Suspense, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { PublicConfig } from '@carbon/ai-chat';
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import React, { Suspense, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 // Adding a fake 3000ms timeout here to make the lazy loading behavior obvious when running on localhost.
 // That timeout should be removed in a real implementation.
 const LazyChatCustomElement = React.lazy(() =>
   new Promise((resolve) => setTimeout(resolve, 3000)).then(() =>
-    import("@carbon/ai-chat").then((m) => ({ default: m.ChatCustomElement })),
-  ),
+    import('@carbon/ai-chat').then((m) => ({ default: m.ChatCustomElement }))
+  )
 );
 
 const config: PublicConfig = {
@@ -71,6 +71,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

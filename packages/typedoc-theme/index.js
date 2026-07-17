@@ -5,4 +5,4 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-export { load, default } from "./carbonThemePlugin.js";
+export { load, default } from './carbonThemePlugin.js';

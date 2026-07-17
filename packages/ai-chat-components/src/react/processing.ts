@@ -7,19 +7,19 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatProcessing from "../components/processing/src/processing.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import CDSAIChatProcessing from '../components/processing/src/processing.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const Processing = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-processing",
+    tagName: 'cds-aichat-processing',
     elementClass: CDSAIChatProcessing,
     react: React,
-  }),
+  })
 );
 
 export default Processing;

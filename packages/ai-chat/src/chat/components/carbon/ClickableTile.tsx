@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonClickableTileElement from "@carbon/web-components/es/components/tile/clickable-tile.js";
+import CarbonClickableTileElement from '@carbon/web-components/es/components/tile/clickable-tile.js';
 
 const ClickableTile = createComponent({
-  tagName: "cds-clickable-tile",
+  tagName: 'cds-clickable-tile',
   elementClass: CarbonClickableTileElement,
   react: React,
 });

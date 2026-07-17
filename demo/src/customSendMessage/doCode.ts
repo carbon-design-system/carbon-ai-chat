@@ -11,10 +11,10 @@ import {
   ChatInstance,
   CustomSendMessageOptions,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { CODE } from "./constants";
-import { doTextStreaming } from "./doText";
+import { CODE } from './constants';
+import { doTextStreaming } from './doText';
 
 function doCode(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -31,7 +31,7 @@ function doCode(instance: ChatInstance) {
 
 function doCodeStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions,
+  requestOptions?: CustomSendMessageOptions
 ) {
   doTextStreaming(
     instance,
@@ -42,7 +42,7 @@ function doCodeStreaming(
     undefined,
     undefined,
     undefined,
-    requestOptions,
+    requestOptions
   );
 }
 

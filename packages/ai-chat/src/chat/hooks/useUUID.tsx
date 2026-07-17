@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { useRef } from "react";
+import { useRef } from 'react';
 
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid, UUIDType } from '../utils/lang/uuid';
 
 /**
  * A hook that returns a UUID that lives for the life of the component.

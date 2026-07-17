@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/utilities/focus-outline" as *;
-@use "@carbon/styles/scss/motion";
-@use "../../../globals/scss/modifiers" as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
+@use '@carbon/styles/scss/motion';
+@use '../../../globals/scss/modifiers' as *;
 
 :host {
   @include rounded-modifiers;
@@ -18,7 +18,7 @@
 
 // Apply rounded corners to the container when data-rounded is set
 :host([data-rounded]),
-:host([data-rounded=""]) {
+:host([data-rounded='']) {
   overflow: hidden;
 
   @include rounded-self;

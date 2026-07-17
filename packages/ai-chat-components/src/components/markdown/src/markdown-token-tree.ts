@@ -26,11 +26,11 @@
  * - `./utils/plugin-fallback.ts` — reads `cachedHtml` and {@link getPluginOverriddenRules} to drive the delegated-render flow.
  */
 
-import MarkdownIt, { Token } from "markdown-it";
+import MarkdownIt, { Token } from 'markdown-it';
 
-import { markdownItAttrs } from "./plugins/markdown-it-attrs";
-import { markdownItHighlight } from "./plugins/markdown-it-highlight";
-import { markdownItTaskLists } from "./plugins/markdown-it-task-lists";
+import { markdownItAttrs } from './plugins/markdown-it-attrs';
+import { markdownItHighlight } from './plugins/markdown-it-highlight';
+import { markdownItTaskLists } from './plugins/markdown-it-task-lists';
 
 /**
  * Represents a node in the token tree structure.
@@ -72,10 +72,10 @@ export interface TokenTree {
  * @internal
  */
 export const PLUGIN_DELEGABLE_TOKEN_TYPES: ReadonlySet<string> = new Set([
-  "fence",
-  "image",
-  "code_inline",
-  "html_block",
+  'fence',
+  'image',
+  'code_inline',
+  'html_block',
 ]);
 
 /**
@@ -127,16 +127,16 @@ export function getPluginOverriddenRules(md: MarkdownIt): ReadonlySet<string> {
  */
 function createMarkdownIt(
   plugins?: MarkdownItPlugin[],
-  options: { html?: boolean } = {},
+  options: { html?: boolean } = {}
 ): MarkdownIt {
-  const md = new MarkdownIt("commonmark", {
+  const md = new MarkdownIt('commonmark', {
     html: options.html ?? true,
     breaks: true,
     linkify: true,
   })
-    .enable("table")
-    .enable("strikethrough")
-    .enable("linkify")
+    .enable('table')
+    .enable('strikethrough')
+    .enable('linkify')
     .use(markdownItAttrs)
     .use(markdownItHighlight)
     .use(markdownItTaskLists);
@@ -192,7 +192,7 @@ const markdownItCache = new WeakMap<MarkdownItPlugin[], MarkdownItVariants>();
  */
 export function getMarkdownIt(
   plugins?: MarkdownItPlugin[],
-  removeHtml = false,
+  removeHtml = false
 ): MarkdownIt {
   const variants =
     !plugins || plugins.length === 0
@@ -204,7 +204,7 @@ export function getMarkdownIt(
           return created;
         })());
 
-  const slot = removeHtml ? "noHtml" : "html";
+  const slot = removeHtml ? 'noHtml' : 'html';
   if (!variants[slot]) {
     variants[slot] = createMarkdownIt(plugins, { html: !removeHtml });
   }
@@ -217,7 +217,7 @@ export function getMarkdownIt(
 function normalizeHtmlBlockBoundaries(markdown: string): string {
   return markdown.replace(
     /(^|\n)(\s*<\/\s*[A-Za-z][\w:-]*\s*>)(\r?\n)(?=\S)/g,
-    "$1$2$3$3",
+    '$1$2$3$3'
   );
 }
 
@@ -226,15 +226,15 @@ function normalizeHtmlBlockBoundaries(markdown: string): string {
 // is re-parsed as markdown.
 function splitHtmlBlockTrailingMarkdown(
   tokens: Token[],
-  md: MarkdownIt,
+  md: MarkdownIt
 ): Token[] {
   return tokens.flatMap((token) => {
-    if (token.type !== "html_block") {
+    if (token.type !== 'html_block') {
       return [token];
     }
 
     const trailingMarkdownMatch = token.content.match(
-      /^(\s*<\/\s*[A-Za-z][\w:-]*\s*>)(\s*\n)([\s\S]*\S[\s\S]*)$/,
+      /^(\s*<\/\s*[A-Za-z][\w:-]*\s*>)(\s*\n)([\s\S]*\S[\s\S]*)$/
     );
 
     if (!trailingMarkdownMatch) {
@@ -266,7 +266,7 @@ function splitHtmlBlockTrailingMarkdown(
 function parseMarkdown(
   fullText: string,
   md: MarkdownIt,
-  removeHtml: boolean,
+  removeHtml: boolean
 ): Token[] {
   if (removeHtml) {
     return md.parse(fullText, {});
@@ -283,7 +283,7 @@ function parseMarkdown(
  * efficient DOM updates.
  */
 function generateKey(token: Token): string {
-  const map = token.map ? token.map.join("-") : "";
+  const map = token.map ? token.map.join('-') : '';
   return `${token.type}:${token.tag}:${map}`;
 }
 
@@ -293,20 +293,20 @@ function generateKey(token: Token): string {
 export function buildTokenTree(tokens: Token[]): TokenTree {
   // Create the root node that will contain all top-level content
   const root: TokenTree = {
-    key: "root",
+    key: 'root',
     token: {
-      type: "root",
-      tag: "",
+      type: 'root',
+      tag: '',
       nesting: 0,
       level: 0,
-      content: "",
+      content: '',
       attrs: null,
       children: null,
-      markup: "",
+      markup: '',
       block: true,
       hidden: false,
       map: null,
-      info: "",
+      info: '',
       meta: null,
     },
     children: [],
@@ -325,7 +325,7 @@ export function buildTokenTree(tokens: Token[]): TokenTree {
 
     // Handle inline tokens that contain their own child tokens
     // (e.g., a paragraph containing bold, italic, and text tokens)
-    if (token.type === "inline" && token.children?.length) {
+    if (token.type === 'inline' && token.children?.length) {
       node.children = buildTokenTree(token.children).children;
     }
 
@@ -348,8 +348,8 @@ export function buildTokenTree(tokens: Token[]): TokenTree {
 }
 
 function attrsEqual(
-  a: Token["attrs"] | undefined,
-  b: Token["attrs"] | undefined,
+  a: Token['attrs'] | undefined,
+  b: Token['attrs'] | undefined
 ): boolean {
   if (a === b) {
     return true;
@@ -377,7 +377,7 @@ function attrsEqual(
  */
 export function diffTokenTree(
   oldTree: TokenTree | undefined,
-  newTree: TokenTree,
+  newTree: TokenTree
 ): TokenTree {
   // If keys don't match, the entire subtree changed - use new tree
   if (!oldTree || oldTree.key !== newTree.key) {
@@ -397,13 +397,13 @@ export function diffTokenTree(
   // output for plugins like markdown-it-mermaid / syntax highlighters).
   if (
     oldTree.cachedHtml !== undefined &&
-    typeof newTree.token.type === "string" &&
+    typeof newTree.token.type === 'string' &&
     PLUGIN_DELEGABLE_TOKEN_TYPES.has(newTree.token.type) &&
     oldTree.token.content === newTree.token.content &&
     oldTree.token.info === newTree.token.info &&
     attrsEqual(
       oldTree.token.attrs ?? undefined,
-      newTree.token.attrs ?? undefined,
+      newTree.token.attrs ?? undefined
     )
   ) {
     merged.cachedHtml = oldTree.cachedHtml;
@@ -411,7 +411,7 @@ export function diffTokenTree(
 
   // Create lookup map of old children by key for efficient comparison
   const oldChildrenByKey = new Map(
-    oldTree.children.map((child) => [child.key, child]),
+    oldTree.children.map((child) => [child.key, child])
   );
 
   // Process each new child, reusing old ones where possible
@@ -450,7 +450,7 @@ export interface MarkdownToTokenTreeResult {
 export function markdownToTokenTree(
   markdown: string,
   lastTree: TokenTree | undefined,
-  opts: { removeHtml?: boolean; markdownItPlugins?: MarkdownItPlugin[] } = {},
+  opts: { removeHtml?: boolean; markdownItPlugins?: MarkdownItPlugin[] } = {}
 ): MarkdownToTokenTreeResult {
   const removeHtml = opts.removeHtml ?? false;
   const md = getMarkdownIt(opts.markdownItPlugins, removeHtml);

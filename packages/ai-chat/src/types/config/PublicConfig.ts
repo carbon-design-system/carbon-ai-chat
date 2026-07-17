@@ -7,25 +7,25 @@
  *  @license
  */
 
-import { ChatInstance } from "../instance/ChatInstance";
-import { CustomSendMessageOptions } from "./MessagingConfig";
-import { MessageRequest, StructuredData } from "../messaging/Messages";
-import { CornersType, PerCornerConfig } from "./CornersType";
-import { HomeScreenConfig } from "./HomeScreenConfig";
-import type { LayoutCustomProperties } from "./LayoutCustomProperties";
+import { ChatInstance } from '../instance/ChatInstance';
+import { CustomSendMessageOptions } from './MessagingConfig';
+import { MessageRequest, StructuredData } from '../messaging/Messages';
+import { CornersType, PerCornerConfig } from './CornersType';
+import { HomeScreenConfig } from './HomeScreenConfig';
+import type { LayoutCustomProperties } from './LayoutCustomProperties';
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
   ServiceDeskPublicConfig,
-} from "./ServiceDeskConfig";
-import { HistoryItem } from "../messaging/History";
-import { LauncherConfig } from "./LauncherConfig";
-import { PersistedStateConfig } from "./PersistedStateConfig";
-import { DeepPartial } from "../utilities/DeepPartial";
-import enLanguagePackData from "../../chat/languages/en.json";
-import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
-import type { MarkdownItPlugin as _MarkdownItPlugin } from "@carbon/ai-chat-components/es/components/markdown/index.js";
-import type { KeyboardShortcuts } from "./ShortcutConfig";
+} from './ServiceDeskConfig';
+import { HistoryItem } from '../messaging/History';
+import { LauncherConfig } from './LauncherConfig';
+import { PersistedStateConfig } from './PersistedStateConfig';
+import { DeepPartial } from '../utilities/DeepPartial';
+import enLanguagePackData from '../../chat/languages/en.json';
+import type { ToolbarAction } from '@carbon/ai-chat-components/es/react/toolbar.js';
+import type { MarkdownItPlugin as _MarkdownItPlugin } from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import type { KeyboardShortcuts } from './ShortcutConfig';
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -115,7 +115,7 @@ export interface PublicConfig {
    * down and rebuilds the service desk connection.
    */
   serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
+    parameters: ServiceDeskFactoryParameters
   ) => Promise<ServiceDesk>;
 
   /**
@@ -333,27 +333,27 @@ export enum MinimizeButtonIconType {
   /**
    * This shows an "X" icon.
    */
-  CLOSE = "close",
+  CLOSE = 'close',
 
   /**
    * This shows a "-" icon.
    */
-  MINIMIZE = "minimize",
+  MINIMIZE = 'minimize',
 
   /**
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
-  SIDE_PANEL_LEFT = "side-panel-left",
+  SIDE_PANEL_LEFT = 'side-panel-left',
 
   /**
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
-  SIDE_PANEL_RIGHT = "side-panel-right",
+  SIDE_PANEL_RIGHT = 'side-panel-right',
 
   /**
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
-  SIDE_PANEL_DOWN = "side-panel-down",
+  SIDE_PANEL_DOWN = 'side-panel-down',
 }
 
 /**
@@ -433,7 +433,7 @@ export interface UploadConfig {
    */
   onFileUpload?: (
     file: File,
-    abortSignal: AbortSignal,
+    abortSignal: AbortSignal
   ) => Promise<StructuredData>;
 }
 
@@ -678,7 +678,7 @@ export interface PublicConfigMessaging {
   customSendMessage?: (
     request: MessageRequest,
     requestOptions: CustomSendMessageOptions,
-    instance: ChatInstance,
+    instance: ChatInstance
   ) => Promise<void> | void;
 
   /**
@@ -736,19 +736,19 @@ export enum CarbonTheme {
   /**
    * Injects Carbon white theme tokens.
    */
-  WHITE = "white",
+  WHITE = 'white',
   /**
    * Injects Carbon Gray 10 theme tokens.
    */
-  G10 = "g10",
+  G10 = 'g10',
   /**
    * Injects Carbon Gray 90 theme tokens.
    */
-  G90 = "g90",
+  G90 = 'g90',
   /**
    * Injects Carbon Gray 100 theme tokens.
    */
-  G100 = "g100",
+  G100 = 'g100',
 }
 
 /**
@@ -761,24 +761,24 @@ export enum OnErrorType {
    * Indicates an error sending a message to the assistant. This error is only generated after all retries have
    * failed and the system has given up.
    */
-  MESSAGE_COMMUNICATION = "MESSAGE_COMMUNICATION",
+  MESSAGE_COMMUNICATION = 'MESSAGE_COMMUNICATION',
 
   /**
    * This indicates an error in one of the components that occurs as part of rendering the UI.
    */
-  RENDER = "RENDER",
+  RENDER = 'RENDER',
 
   /**
    * This indicates a known error with the configuration for a service desk. Fired when a connect_to_agent
    * response type is received, but none is configured.
    */
-  INTEGRATION_ERROR = "INTEGRATION_ERROR",
+  INTEGRATION_ERROR = 'INTEGRATION_ERROR',
 
   /**
    * This indicates that some error occurred while trying to hydrate the chat. This will prevent the chat from
    * functioning.
    */
-  HYDRATION = "HYDRATION",
+  HYDRATION = 'HYDRATION',
 }
 
 /**

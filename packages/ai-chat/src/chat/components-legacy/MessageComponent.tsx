@@ -7,23 +7,23 @@
  *  @license
  */
 
-import ChatBot32 from "@carbon/icons/es/chat-bot/32.js";
-import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
-import Headset32 from "@carbon/icons/es/headset/32.js";
-import ReasoningStepsComponent from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
-import ReasoningStepComponent from "@carbon/ai-chat-components/es/react/reasoning-step.js";
-import ReasoningStepsToggle from "@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js";
-import type CDSAIChatReasoningSteps from "@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps.js";
-import { type ReasoningStepsToggleEventDetail } from "@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps-toggle.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
-import Loading from "../components/carbon/Loading";
-import cx from "classnames";
-import React, { KeyboardEvent, PureComponent } from "react";
+import ChatBot32 from '@carbon/icons/es/chat-bot/32.js';
+import CheckmarkFilled16 from '@carbon/icons/es/checkmark--filled/16.js';
+import Headset32 from '@carbon/icons/es/headset/32.js';
+import ReasoningStepsComponent from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
+import ReasoningStepComponent from '@carbon/ai-chat-components/es/react/reasoning-step.js';
+import ReasoningStepsToggle from '@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js';
+import type CDSAIChatReasoningSteps from '@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps.js';
+import { type ReasoningStepsToggleEventDetail } from '@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps-toggle.js';
+import { carbonIconToReact } from '../utils/carbonIcon';
+import Loading from '../components/carbon/Loading';
+import cx from 'classnames';
+import React, { KeyboardEvent, PureComponent } from 'react';
 
-import { nodeToText } from "../utils/domUtils";
-import { Avatar } from "./Avatar";
-import { InlineError } from "../components/util/InlineError";
-import VisuallyHidden from "../components/util/VisuallyHidden";
+import { nodeToText } from '../utils/domUtils';
+import { Avatar } from './Avatar';
+import { InlineError } from '../components/util/InlineError';
+import VisuallyHidden from '../components/util/VisuallyHidden';
 
 // Inline helper components (previously in util/IconHolder.tsx and util/ImageWithFallback.tsx)
 function IconHolder({ icon }: { icon: React.ReactNode }) {
@@ -55,22 +55,22 @@ function ImageWithFallback({
     </div>
   );
 }
-import { HasAriaAnnouncer, withAriaAnnouncer } from "../hocs/withAriaAnnouncer";
-import { HasServiceManager } from "../hocs/withServiceManager";
-import actions from "../store/actions";
-import { HasClassName } from "../../types/utilities/HasClassName";
-import HasIntl from "../../types/utilities/HasIntl";
-import { useSelector } from "../hooks/useSelector";
-import { shallowEqual } from "../store/appStore";
-import { useIntl } from "../hooks/useIntl";
-import { useCarbonTheme } from "../hooks/useCarbonTheme";
-import { AppState } from "../../types/state/AppState";
+import { HasAriaAnnouncer, withAriaAnnouncer } from '../hocs/withAriaAnnouncer';
+import { HasServiceManager } from '../hocs/withServiceManager';
+import actions from '../store/actions';
+import { HasClassName } from '../../types/utilities/HasClassName';
+import HasIntl from '../../types/utilities/HasIntl';
+import { useSelector } from '../hooks/useSelector';
+import { shallowEqual } from '../store/appStore';
+import { useIntl } from '../hooks/useIntl';
+import { useCarbonTheme } from '../hooks/useCarbonTheme';
+import { AppState } from '../../types/state/AppState';
 import {
   LocalMessageItem,
   MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
-import { FileStatusValue } from "../utils/constants";
-import { doFocusRef } from "../utils/domUtils";
+} from '../../types/messaging/LocalMessageItem';
+import { FileStatusValue } from '../utils/constants';
+import { doFocusRef } from '../utils/domUtils';
 import {
   getSpeakerName,
   isConnectToHumanAgent,
@@ -80,12 +80,12 @@ import {
   isResponse,
   isSingleItemCarousel,
   renderAsUserDefinedMessage,
-} from "../utils/messageUtils";
-import { messageHasDisplayableContent } from "../utils/streamingUtils";
-import { createDidCatchErrorData } from "../utils/miscUtils";
-import { timestampToTimeString } from "../utils/timeUtils";
-import { type ScrollElementIntoViewFunction } from "./MessagesComponent";
-import { MessageTypeComponent } from "./MessageTypeComponent";
+} from '../utils/messageUtils';
+import { messageHasDisplayableContent } from '../utils/streamingUtils';
+import { createDidCatchErrorData } from '../utils/miscUtils';
+import { timestampToTimeString } from '../utils/timeUtils';
+import { type ScrollElementIntoViewFunction } from './MessagesComponent';
+import { MessageTypeComponent } from './MessageTypeComponent';
 import {
   GenericItem,
   HumanAgentMessageType,
@@ -98,15 +98,15 @@ import {
   ReasoningSteps as ReasoningStepsData,
   ResponseUserProfile,
   UserType,
-} from "../../types/messaging/Messages";
-import { LanguagePack } from "../../types/config/PublicConfig";
-import { ResponseUserAvatar } from "./ResponseUserAvatar";
-import { CarbonTheme } from "../../types/config/PublicConfig";
-import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
+} from '../../types/messaging/Messages';
+import { LanguagePack } from '../../types/config/PublicConfig';
+import { ResponseUserAvatar } from './ResponseUserAvatar';
+import { CarbonTheme } from '../../types/config/PublicConfig';
+import { MarkdownWithDefaults } from '../components/util/MarkdownWithDefaults';
 import {
   hasReasoningContent,
   synthesizeReasoningLocalMessageItem,
-} from "../utils/reasoningContent";
+} from '../utils/reasoningContent';
 
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
@@ -206,7 +206,7 @@ interface MessageProps
    */
   requestMoveFocus: (
     moveFocusType: MoveFocusType,
-    currentMessageIndex: number,
+    currentMessageIndex: number
   ) => void;
 
   /**
@@ -357,11 +357,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       // For the human agent view, we only want to say "agent said" for messages that are text. The status messages
       // do not need this announcement.
       if (localMessageItem.item.response_type === MessageResponseTypes.TEXT) {
-        messageId = "messages_agentSaid";
+        messageId = 'messages_agentSaid';
         this.isAgent = true;
       }
     } else {
-      messageId = "messages_assistantSaid";
+      messageId = 'messages_assistantSaid';
       this.isAgent = false;
     }
     return messageId
@@ -370,16 +370,16 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           {
             assistantName: getSpeakerName(
               message as MessageResponse,
-              assistantName,
+              assistantName
             ),
-          },
+          }
         )
       : null;
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.props.serviceManager.actions.errorOccurred(
-      createDidCatchErrorData("Message", error, errorInfo),
+      createDidCatchErrorData('Message', error, errorInfo)
     );
     this.setState({ didRenderErrorOccur: true });
   }
@@ -389,7 +389,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     if (uiState.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id),
+        actions.setMessageWasAnnounced(uiState.id)
       );
     }
     this.syncAutoReasoningState();
@@ -402,7 +402,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     if (uiState.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id),
+        actions.setMessageWasAnnounced(uiState.id)
       );
     }
     this.syncAutoReasoningState();
@@ -433,7 +433,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     if (!handle) {
       return;
     }
-    this.props.ariaAnnouncer(handle.getAttribute("aria-label"));
+    this.props.ariaAnnouncer(handle.getAttribute('aria-label'));
   }
 
   /**
@@ -450,21 +450,21 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const whoAnnouncement = isRequest(message)
       ? languagePack.messages_youSaid
       : intl.formatMessage(
-          { id: "messages_assistantSaid" },
+          { id: 'messages_assistantSaid' },
           {
             assistantName: getSpeakerName(
               message as MessageResponse,
-              assistantName,
+              assistantName
             ),
-          },
+          }
         );
 
     const strings: string[] = [whoAnnouncement];
     nodeToText(this.messageRef.current, strings);
 
-    const ariaLabel = strings.join(" ");
+    const ariaLabel = strings.join(' ');
 
-    this.focusHandleRef.current.setAttribute("aria-label", ariaLabel);
+    this.focusHandleRef.current.setAttribute('aria-label', ariaLabel);
 
     doFocusRef(this.focusHandleRef, true);
   }
@@ -478,10 +478,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     return (
       <div
         className={`cds-aichat--message cds-aichat--message--inline-error cds-aichat--message-${messagesIndex} ${
-          this.props.className || ""
+          this.props.className || ''
         }`}
-        ref={this.ref}
-      >
+        ref={this.ref}>
         <div className="cds-aichat--message--padding">
           <div className="cds-aichat--assistant-message">
             <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
@@ -501,7 +500,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    */
   private renderAvatarLine(
     localMessageItem: LocalMessageItem,
-    message: Message,
+    message: Message
   ) {
     let avatar;
     const {
@@ -517,7 +516,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     let label;
     let actorName;
-    let iconClassName = "";
+    let iconClassName = '';
     let reasoning;
 
     if (isResponse(message)) {
@@ -525,8 +524,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       const agentMessageType = localMessageItem.item.agent_message_type;
       const responseUserProfile: ResponseUserProfile = message.message_options
         ?.response_user_profile || {
-        id: "watsonx",
-        nickname: "watsonx",
+        id: 'watsonx',
+        nickname: 'watsonx',
         user_type: UserType.WATSONX,
       };
 
@@ -552,11 +551,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             fallback={<IconHolder icon={<Headset />} />}
           />
         );
-        iconClassName = "cds-aichat--message__avatar--agent";
-        actorName = responseUserProfile?.nickname || "";
+        iconClassName = 'cds-aichat--message__avatar--agent';
+        actorName = responseUserProfile?.nickname || '';
       } else {
         actorName =
-          responseUserProfile?.nickname === "watsonx" && assistantName
+          responseUserProfile?.nickname === 'watsonx' && assistantName
             ? assistantName
             : responseUserProfile?.nickname;
 
@@ -584,17 +583,17 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           );
         }
 
-        iconClassName = "cds-aichat--message__avatar--assistant";
+        iconClassName = 'cds-aichat--message__avatar--assistant';
       }
 
       label = (
         <span data-cds-aichat-exclude-node-read>
           {this.props.intl.formatMessage(
-            { id: "message_labelAssistant" },
+            { id: 'message_labelAssistant' },
             {
               timestamp,
               actorName,
-            },
+            }
           )}
         </span>
       );
@@ -622,8 +621,8 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       label = (
         <span>
           {this.props.intl.formatMessage(
-            { id: "message_labelYou" },
-            { timestamp },
+            { id: 'message_labelYou' },
+            { timestamp }
           )}
         </span>
       );
@@ -632,8 +631,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     return (
       <div
         className="cds-aichat--message__avatar-line"
-        key={`${message.id}-avatar-line`}
-      >
+        key={`${message.id}-avatar-line`}>
         {avatar && !hideAvatar && (
           <div className={`cds-aichat--message__avatar ${iconClassName}`}>
             {avatar}
@@ -660,7 +658,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     if (errorState === MessageErrorState.FAILED) {
       element = <InlineError text={languagePack.errors_singleMessage} />;
-      className = "cds-aichat--message-error-failed";
+      className = 'cds-aichat--message-error-failed';
       showBelowMessage = true;
     } else if (fileStatus === FileStatusValue.UPLOADING) {
       element = (
@@ -671,14 +669,14 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           assistiveText={languagePack.fileSharing_statusUploading}
         />
       );
-      className = "cds-aichat--message-status-file-uploading";
-    } else if (fileStatus === "success") {
+      className = 'cds-aichat--message-status-file-uploading';
+    } else if (fileStatus === 'success') {
       element = (
         <CheckmarkFilled
           aria-label={languagePack.fileSharing_statusUploading}
         />
       );
-      className = "cds-aichat--message-status-file-success";
+      className = 'cds-aichat--message-status-file-success';
     }
 
     // We probably should include an aria-label here but since we explicit announce state changes in the message
@@ -699,7 +697,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   private renderReasoningSteps(
     reasoning?: ReasoningStepsData,
-    streaming?: boolean,
+    streaming?: boolean
   ) {
     const steps = reasoning?.steps;
 
@@ -715,24 +713,22 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     return (
       <div
-        className={cx("cds-aichat--message__reasoning-steps", {
-          "cds-aichat--message__reasoning-steps--open": containerOpen,
-        })}
-      >
+        className={cx('cds-aichat--message__reasoning-steps', {
+          'cds-aichat--message__reasoning-steps--open': containerOpen,
+        })}>
         <ReasoningStepsComponent
           controlled
           id={this.getReasoningContainerId()}
           open={containerOpen}
           onToggle={
             isAutoControlled ? this.handleAutoReasoningToggle : undefined
-          }
-        >
+          }>
           {hasContent &&
-            this.renderReasoningContent(reasoning?.content, streaming, "intro")}
+            this.renderReasoningContent(reasoning?.content, streaming, 'intro')}
           {(steps ?? []).map((step: ReasoningStepData, index: number) => {
             const stepOpenState = step.open_state;
             const hasExplicitStepState =
-              typeof stepOpenState !== "undefined" &&
+              typeof stepOpenState !== 'undefined' &&
               stepOpenState !== ReasoningStepOpenState.DEFAULT;
             const autoState = this.state.autoReasoningStepOpenStates[index];
             const isUserControlled =
@@ -741,14 +737,14 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
               hasExplicitStepState && !isUserControlled
                 ? stepOpenState === ReasoningStepOpenState.OPEN
                 : isAutoControlled || isUserControlled
-                  ? typeof autoState === "boolean"
+                  ? typeof autoState === 'boolean'
                     ? autoState
                     : index === steps.length - 1
                       ? containerOpen
                       : false
                   : containerOpen && index === steps.length - 1;
             const stepToggleHandler = (
-              event: CustomEvent<{ open: boolean }>,
+              event: CustomEvent<{ open: boolean }>
             ) => {
               this.handleUserControlReasoningStep(index);
               this.handleAutoReasoningStepToggle(index, event);
@@ -758,7 +754,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
               ? this.renderReasoningContent(
                   step.content,
                   streaming,
-                  `step-${index}`,
+                  `step-${index}`
                 )
               : null;
 
@@ -768,8 +764,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                 title={step.title}
                 open={stepOpen}
                 controlled
-                onToggle={stepToggleHandler}
-              >
+                onToggle={stepToggleHandler}>
                 {stepContent}
               </ReasoningStepComponent>
             );
@@ -782,9 +777,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   private renderReasoningContent(
     content: string | GenericItem[] | undefined,
     streaming: boolean | undefined,
-    slotKey: string,
+    slotKey: string
   ) {
-    if (typeof content === "string") {
+    if (typeof content === 'string') {
       return (
         <MarkdownWithDefaults
           text={content}
@@ -813,7 +808,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       const localItem = synthesizeReasoningLocalMessageItem(
         item,
         message.id,
-        stableId,
+        stableId
       );
       return (
         <MessageTypeComponent
@@ -853,7 +848,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     const fireForArray = (
       content: string | GenericItem[] | undefined,
-      slotKey: string,
+      slotKey: string
     ) => {
       if (!Array.isArray(content)) {
         return;
@@ -870,16 +865,16 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         const localItem = synthesizeReasoningLocalMessageItem(
           item,
           message.id,
-          stableId,
+          stableId
         );
         void this.props.serviceManager.actions.handleUserDefinedResponseItems(
           localItem,
-          message,
+          message
         );
       });
     };
 
-    fireForArray(reasoning.content, "intro");
+    fireForArray(reasoning.content, 'intro');
     reasoning.steps?.forEach((step, index) => {
       fireForArray(step.content, `step-${index}`);
     });
@@ -897,7 +892,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     }
     const containerState = reasoning.open_state;
     return (
-      typeof containerState === "undefined" ||
+      typeof containerState === 'undefined' ||
       containerState === ReasoningStepOpenState.DEFAULT
     );
   }
@@ -909,10 +904,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   private getReasoningContainerOpen(reasoning?: ReasoningStepsData) {
     const containerOpenState = reasoning?.open_state;
     const hasExplicitContainerState =
-      typeof containerOpenState !== "undefined" &&
+      typeof containerOpenState !== 'undefined' &&
       containerOpenState !== ReasoningStepOpenState.DEFAULT;
 
-    if (typeof this.state.manualReasoningOpen === "boolean") {
+    if (typeof this.state.manualReasoningOpen === 'boolean') {
       return this.state.manualReasoningOpen;
     }
 
@@ -928,14 +923,14 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   private handleReasoningToggleClick = (
-    event?: CustomEvent<ReasoningStepsToggleEventDetail>,
+    event?: CustomEvent<ReasoningStepsToggleEventDetail>
   ) => {
     if (!isResponse(this.props.message)) {
       return;
     }
     const reasoning = this.props.message.message_options?.reasoning;
     const nextOpen =
-      typeof event?.detail?.open === "boolean"
+      typeof event?.detail?.open === 'boolean'
         ? event.detail.open
         : !this.getReasoningContainerOpen(reasoning);
 
@@ -960,13 +955,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     this.setState((prevState) => {
       let containerOpen =
-        typeof prevState.autoReasoningContainerOpen === "boolean"
+        typeof prevState.autoReasoningContainerOpen === 'boolean'
           ? prevState.autoReasoningContainerOpen
           : true;
 
       const prevStepStates = prevState.autoReasoningStepOpenStates.slice(
         0,
-        reasoningSteps.length,
+        reasoningSteps.length
       );
 
       const hasMatchingLength = prevStepStates.length === reasoningSteps.length;
@@ -980,7 +975,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                 prevState.reasoningStepUserControlStates[index];
               if (
                 isUserControlled &&
-                typeof prevStepStates[index] === "boolean"
+                typeof prevStepStates[index] === 'boolean'
               ) {
                 return prevStepStates[index];
               }
@@ -993,7 +988,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           prevState.autoReasoningStepOpenStates.length ||
         nextStepStates.some(
           (value, index) =>
-            value !== prevState.autoReasoningStepOpenStates[index],
+            value !== prevState.autoReasoningStepOpenStates[index]
         );
 
       let hasAutoCollapsed = prevState.autoReasoningHasAutoCollapsed;
@@ -1031,17 +1026,17 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   private handleAutoReasoningToggle = (
-    event: React.ToggleEvent<CDSAIChatReasoningSteps>,
+    event: React.ToggleEvent<CDSAIChatReasoningSteps>
   ) => {
     if (!this.isAutoReasoning(this.props.message)) {
       return;
     }
     const open =
-      typeof event?.newState !== "undefined"
-        ? event.newState === "open"
+      typeof event?.newState !== 'undefined'
+        ? event.newState === 'open'
         : Boolean(
             (event as unknown as CustomEvent<{ open: boolean }>).detail?.open ??
-            event.currentTarget?.open,
+            event.currentTarget?.open
           );
     this.setState((prevState) => {
       if (prevState.autoReasoningContainerOpen === open) {
@@ -1055,7 +1050,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   private handleAutoReasoningStepToggle = (
     index: number,
-    event: CustomEvent<{ open: boolean }>,
+    event: CustomEvent<{ open: boolean }>
   ) => {
     const open = Boolean(event?.detail?.open);
     this.setState((prevState) => {
@@ -1082,7 +1077,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       const prevStepStates = prevState.reasoningStepUserControlStates;
 
       const nextStepStates = reasoningSteps.map(
-        (_, index) => prevStepStates[index] ?? false,
+        (_, index) => prevStepStates[index] ?? false
       );
 
       const stepsChanged =
@@ -1163,13 +1158,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     // Note: VoiceOver will eat the Home and End events and apply their own behavior for those buttons.
 
     let moveFocus: MoveFocusType;
-    if (event.key === "ArrowUp") {
+    if (event.key === 'ArrowUp') {
       moveFocus = MoveFocusType.PREVIOUS;
-    } else if (event.key === "ArrowDown") {
+    } else if (event.key === 'ArrowDown') {
       moveFocus = MoveFocusType.NEXT;
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       moveFocus = MoveFocusType.INPUT;
-    } else if (event.key === "Enter" || event.key === " ") {
+    } else if (event.key === 'Enter' || event.key === ' ') {
       // Prevent native scrolling on Space
       event.preventDefault();
       this.reAnnounceFocusHandle(); // Re-announce message content
@@ -1252,13 +1247,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       ? getHumanAgentMessageClassName(
           agentMessageType,
           responseType,
-          isCustomMessage,
+          isCustomMessage
         )
       : null;
 
     const messageIsRequest = isRequest(message);
     const isSystemMessage = isHumanAgentStatusMessage(
-      localMessageItem.item.agent_message_type,
+      localMessageItem.item.agent_message_type
     );
 
     let isOptionResponseWithoutTitleOrDescription = false;
@@ -1279,29 +1274,27 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         className={cx(
           `cds-aichat--message cds-aichat--message-${messagesIndex}`,
           className,
-          agentMessageType && "cds-aichat--message--agent-message",
+          agentMessageType && 'cds-aichat--message--agent-message',
           {
-            "cds-aichat--message--with-avatar-line": showAvatarLine,
-            "cds-aichat--with-human-agent": this.isAgent,
-            "cds-aichat--message--request": messageIsRequest,
-            "cds-aichat--message--system-message": isSystemMessage,
-            "cds-aichat--message--response": !messageIsRequest,
-            "cds-aichat--message--custom": isCustomMessage,
-            "cds-aichat--message--disabled-inputs": disableUserInputs,
-            "cds-aichat--message--has-focus": this.state.focusHandleHasFocus,
-            "cds-aichat--message--option-response-without-title-or-description":
+            'cds-aichat--message--with-avatar-line': showAvatarLine,
+            'cds-aichat--with-human-agent': this.isAgent,
+            'cds-aichat--message--request': messageIsRequest,
+            'cds-aichat--message--system-message': isSystemMessage,
+            'cds-aichat--message--response': !messageIsRequest,
+            'cds-aichat--message--custom': isCustomMessage,
+            'cds-aichat--message--disabled-inputs': disableUserInputs,
+            'cds-aichat--message--has-focus': this.state.focusHandleHasFocus,
+            'cds-aichat--message--option-response-without-title-or-description':
               isOptionResponseWithoutTitleOrDescription,
-            "cds-aichat--message--hide-avatar": hideAvatar,
-          },
+            'cds-aichat--message--hide-avatar': hideAvatar,
+          }
         )}
-        ref={this.ref}
-      >
+        ref={this.ref}>
         {this.renderFocusHandle()}
         {showAvatarLine && this.renderAvatarLine(localMessageItem, message)}
         <div
           className="cds-aichat--message--padding"
-          aria-hidden={this.state.focusHandleHasFocus ? "true" : undefined}
-        >
+          aria-hidden={this.state.focusHandleHasFocus ? 'true' : undefined}>
           {isResponse(message) && (
             <div className="cds-aichat--assistant-message">
               {readWidgetSaid && (
@@ -1309,59 +1302,58 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
               )}
               <div
                 className={cx(
-                  "cds-aichat--received",
-                  "cds-aichat--message-vertical-padding",
+                  'cds-aichat--received',
+                  'cds-aichat--message-vertical-padding',
                   agentClassName,
                   {
-                    "cds-aichat--received--from-human":
+                    'cds-aichat--received--from-human':
                       !agentMessageType &&
                       message.message_options?.response_user_profile
                         ?.user_type === UserType.HUMAN,
-                    "cds-aichat--received--text":
+                    'cds-aichat--received--text':
                       responseType === MessageResponseTypes.TEXT,
-                    "cds-aichat--received--image":
+                    'cds-aichat--received--image':
                       responseType === MessageResponseTypes.IMAGE,
-                    "cds-aichat--received--options":
+                    'cds-aichat--received--options':
                       responseType === MessageResponseTypes.OPTION,
-                    "cds-aichat--received--inline-error":
+                    'cds-aichat--received--inline-error':
                       responseType === MessageResponseTypes.INLINE_ERROR,
-                    "cds-aichat--received--iframe-preview-card":
+                    'cds-aichat--received--iframe-preview-card':
                       responseType === MessageResponseTypes.IFRAME,
-                    "cds-aichat--received--video":
+                    'cds-aichat--received--video':
                       responseType === MessageResponseTypes.VIDEO,
-                    "cds-aichat--received--audio":
+                    'cds-aichat--received--audio':
                       responseType === MessageResponseTypes.AUDIO,
-                    "cds-aichat--received--date":
+                    'cds-aichat--received--date':
                       responseType === MessageResponseTypes.DATE,
-                    "cds-aichat--received--card":
+                    'cds-aichat--received--card':
                       responseType === MessageResponseTypes.CARD,
-                    "cds-aichat--received--carousel":
+                    'cds-aichat--received--carousel':
                       responseType === MessageResponseTypes.CAROUSEL,
-                    "cds-aichat--received--conversational-search":
+                    'cds-aichat--received--conversational-search':
                       responseType ===
                       MessageResponseTypes.CONVERSATIONAL_SEARCH,
-                    "cds-aichat--received--carousel-single":
+                    'cds-aichat--received--carousel-single':
                       isSingleItemCarousel(localMessageItem.item),
-                    "cds-aichat--received--button":
+                    'cds-aichat--received--button':
                       responseType === MessageResponseTypes.BUTTON,
-                    "cds-aichat--received--grid":
+                    'cds-aichat--received--grid':
                       responseType === MessageResponseTypes.GRID,
-                    "cds-aichat--received--full-width": isFullWidthUserDefined(
-                      localMessageItem.item,
+                    'cds-aichat--received--full-width': isFullWidthUserDefined(
+                      localMessageItem.item
                     ),
-                    "cds-aichat--message--historical": fromHistory,
-                  },
+                    'cds-aichat--message--historical': fromHistory,
+                  }
                 )}
-                ref={this.messageRef}
-              >
+                ref={this.messageRef}>
                 <div className="cds-aichat--received--inner">
                   {isFirstMessageItem &&
                     this.renderReasoningSteps(
                       message.message_options?.reasoning,
                       Boolean(
                         localMessageItem.ui_state.streamingState &&
-                        !localMessageItem.ui_state.streamingState.isDone,
-                      ),
+                        !localMessageItem.ui_state.streamingState.isDone
+                      )
                     )}
                   {messageComponent}
                 </div>
@@ -1372,14 +1364,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             <div className="cds-aichat--sent-container">
               <div
                 className={cx(
-                  "cds-aichat--sent-and-message-state-container",
-                  "cds-aichat--message-vertical-padding",
+                  'cds-aichat--sent-and-message-state-container',
+                  'cds-aichat--message-vertical-padding',
                   {
-                    "cds-aichat--sent-and-message-state--below-message":
+                    'cds-aichat--sent-and-message-state--below-message':
                       messageState?.showBelowMessage,
-                  },
-                )}
-              >
+                  }
+                )}>
                 {/* messageState is empty, or the messageState is not empty and the messageState should not be below the message. */}
                 {!messageState?.showBelowMessage && messageState?.element}
                 <div className="cds-aichat--sent">
@@ -1406,17 +1397,17 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 function getHumanAgentMessageClassName(
   agentMessageType: HumanAgentMessageType,
   messageResponseType: MessageResponseTypes,
-  isUserDefinedResponse: boolean,
+  isUserDefinedResponse: boolean
 ) {
   if (agentMessageType && isUserDefinedResponse) {
-    return "cds-aichat--received--agent-custom";
+    return 'cds-aichat--received--agent-custom';
   }
   if (
     !messageResponseType ||
     (messageResponseType !== MessageResponseTypes.TEXT &&
       messageResponseType !== MessageResponseTypes.BUTTON)
   ) {
-    return "";
+    return '';
   }
   switch (agentMessageType) {
     case null:
@@ -1425,11 +1416,11 @@ function getHumanAgentMessageClassName(
       return null;
     case HumanAgentMessageType.RELOAD_WARNING:
     case HumanAgentMessageType.DISCONNECTED:
-      return "cds-aichat--received--chat-status-message";
+      return 'cds-aichat--received--chat-status-message';
     case HumanAgentMessageType.FROM_HUMAN_AGENT:
-      return "cds-aichat--received--from-human";
+      return 'cds-aichat--received--from-human';
     default:
-      return "cds-aichat--received--agent-status-message";
+      return 'cds-aichat--received--agent-status-message';
   }
 }
 
@@ -1481,7 +1472,7 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
  */
 type MessageConnectorProps = Omit<
   MessageProps,
-  "languagePack" | "intl" | "useAITheme" | "carbonTheme"
+  'languagePack' | 'intl' | 'useAITheme' | 'carbonTheme'
 >;
 
 const MessageComponentConnector = React.forwardRef<
@@ -1490,11 +1481,11 @@ const MessageComponentConnector = React.forwardRef<
 >((props, ref) => {
   const languagePack = useSelector(
     selectMessageLanguagePackStrings,
-    shallowEqual,
+    shallowEqual
   );
   const intl = useIntl();
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
   const { carbonTheme } = useCarbonTheme();
   return (
@@ -1508,7 +1499,7 @@ const MessageComponentConnector = React.forwardRef<
     />
   );
 });
-MessageComponentConnector.displayName = "MessageComponentConnector";
+MessageComponentConnector.displayName = 'MessageComponentConnector';
 
 export default withAriaAnnouncer(MessageComponentConnector);
 export { MessageComponent as MessageClass, MoveFocusType };

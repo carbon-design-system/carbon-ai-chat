@@ -7,13 +7,13 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { CarbonTheme, PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { CarbonTheme, PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-@customElement("demo-theme-switcher")
+@customElement('demo-theme-switcher')
 export class DemoThemeSwitcher extends LitElement {
   @property({ type: Object })
   accessor config!: PublicConfig;
@@ -22,27 +22,26 @@ export class DemoThemeSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     // Emit a custom event `settings-changed` with the new framework value
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           // Map "inherit" to undefined to inherit from host
           injectCarbonTheme:
-            customEvent.detail.item.value === "inherit"
+            customEvent.detail.item.value === 'inherit'
               ? undefined
               : (customEvent.detail.item.value as CarbonTheme),
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      }),
+      })
     );
   };
 
   render() {
     return html`<cds-dropdown
-      value="${this.config?.injectCarbonTheme ?? "inherit"}"
+      value="${this.config?.injectCarbonTheme ?? 'inherit'}"
       title-text="Carbon theme"
-      @cds-dropdown-selected=${this.dropdownSelected}
-    >
+      @cds-dropdown-selected=${this.dropdownSelected}>
       <cds-dropdown-item value="white">White</cds-dropdown-item>
       <cds-dropdown-item value="g10">Light (g10)</cds-dropdown-item>
       <cds-dropdown-item value="g90">Dark (g90)</cds-dropdown-item>
@@ -55,6 +54,6 @@ export class DemoThemeSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-theme-switcher": DemoThemeSwitcher;
+    'demo-theme-switcher': DemoThemeSwitcher;
   }
 }

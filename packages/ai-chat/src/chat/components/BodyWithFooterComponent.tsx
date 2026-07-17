@@ -7,18 +7,18 @@
  *  @license
  */
 
-import React from "react";
-import { useSelector } from "../hooks/useSelector";
+import React from 'react';
+import { useSelector } from '../hooks/useSelector';
 
-import { useServiceManager } from "../hooks/useServiceManager";
-import { selectInputIsReadonly } from "../store/selectors";
-import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { THROW_ERROR } from "../utils/constants";
-import { BodyMessageComponents } from "./BodyMessageComponents";
-import { FooterButtonComponents } from "./FooterButtonComponents";
-import { MessageResponse } from "../../types/messaging/Messages";
-import { MessageTypeComponentProps } from "../../types/messaging/MessageTypeComponentProps";
+import { useServiceManager } from '../hooks/useServiceManager';
+import { selectInputIsReadonly } from '../store/selectors';
+import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { THROW_ERROR } from '../utils/constants';
+import { BodyMessageComponents } from './BodyMessageComponents';
+import { FooterButtonComponents } from './FooterButtonComponents';
+import { MessageResponse } from '../../types/messaging/Messages';
+import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
 
 interface BodyWithFooterComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem;

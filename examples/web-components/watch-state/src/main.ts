@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
 import {
   BusEventType,
@@ -15,11 +15,11 @@ import {
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement, css, PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement, css, PropertyValues } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -27,14 +27,14 @@ const config: PublicConfig = {
   },
   homescreen: {
     isOn: true,
-    greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
+    greeting: '👋 Hello!\n\nWelcome to Carbon AI Chat.',
     starters: {
       isOn: true,
       buttons: [
-        { label: "What can you help me with?" },
-        { label: "Tell me about state management" },
-        { label: "How do I use the STATE_CHANGE event?" },
-        { label: "Show me a user_defined response" },
+        { label: 'What can you help me with?' },
+        { label: 'Tell me about state management' },
+        { label: 'How do I use the STATE_CHANGE event?' },
+        { label: 'Show me a user_defined response' },
       ],
     },
   },
@@ -45,7 +45,7 @@ interface TrackedElementData {
   fullMessageId?: string;
 }
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .external {
@@ -97,7 +97,7 @@ export class Demo extends LitElement {
   };
 
   protected updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has("activeResponseId")) {
+    if (changedProperties.has('activeResponseId')) {
       for (const [el, data] of this._userDefinedElements) {
         if (!el.isConnected) {
           this._userDefinedElements.delete(el);
@@ -114,8 +114,8 @@ export class Demo extends LitElement {
       data.fullMessageId === this.activeResponseId;
     el.innerHTML = `
       ${data.text}
-      <div>Latest response id: ${this.activeResponseId ?? "none yet"}</div>
-      <div>Is this the most recent message? ${isLatest ? "Yes" : "Nope"}</div>
+      <div>Latest response id: ${this.activeResponseId ?? 'none yet'}</div>
+      <div>Is this the most recent message? ${isLatest ? 'Yes' : 'Nope'}</div>
     `;
   }
 
@@ -124,15 +124,15 @@ export class Demo extends LitElement {
    * streaming state, and element lifecycle.
    */
   renderUserDefinedCallback = (
-    state: RenderUserDefinedState,
+    state: RenderUserDefinedState
   ): HTMLElement | null => {
     const messageItem = state.messageItem as UserDefinedItem | undefined;
 
     if (
-      messageItem?.user_defined?.user_defined_type === "my_unique_identifier"
+      messageItem?.user_defined?.user_defined_type === 'my_unique_identifier'
     ) {
-      const el = document.createElement("div");
-      el.className = "external";
+      const el = document.createElement('div');
+      el.className = 'external';
       const data: TrackedElementData = {
         text: messageItem.user_defined.text as string,
         fullMessageId: state.fullMessage?.id,
@@ -149,19 +149,18 @@ export class Demo extends LitElement {
     return html`
       <div>
         <h4>Current View State (via getState()):</h4>
-        <p>${this.isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
+        <p>${this.isHomescreenVisible ? 'Homescreen' : 'Chat View'}</p>
         <p>Watching state via STATE_CHANGE event</p>
         <p>
           Active response id:
-          ${this.activeResponseId ? this.activeResponseId : "none yet"}
+          ${this.activeResponseId ? this.activeResponseId : 'none yet'}
         </p>
       </div>
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
         .homescreen=${config.homescreen}
-        .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-      ></cds-aichat-container>
+        .renderUserDefinedResponse=${this.renderUserDefinedCallback}></cds-aichat-container>
     `;
   }
 }

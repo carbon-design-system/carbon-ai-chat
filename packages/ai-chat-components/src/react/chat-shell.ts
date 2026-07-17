@@ -7,17 +7,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSChatShellElement from "../components/chat-shell/src/shell.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSChatShellElement from '../components/chat-shell/src/shell.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatShell = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-shell",
+    tagName: 'cds-aichat-shell',
     elementClass: CDSChatShellElement,
     react: React,
-  }),
+  })
 );
 
 export default CDSAIChatShell;

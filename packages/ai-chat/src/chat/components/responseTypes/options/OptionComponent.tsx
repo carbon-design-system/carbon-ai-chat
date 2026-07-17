@@ -7,26 +7,26 @@
  *  @license
  */
 
-import React, { Component, MouseEvent } from "react";
+import React, { Component, MouseEvent } from 'react';
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
+} from '@carbon/ai-chat-components/es/react/chat-button.js';
 
-import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { HasServiceManager } from '../../../hocs/withServiceManager';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   createMessageRequestForChoice,
   getOptionType,
-} from "../../../utils/messageUtils";
-import SelectComponent from "./SelectComponent";
+} from '../../../utils/messageUtils';
+import SelectComponent from './SelectComponent';
 import {
   Message,
   OptionItem,
   SingleOption,
-} from "../../../../types/messaging/Messages";
-import { MessageSendSource } from "../../../../types/events/eventBusTypes";
-import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
+} from '../../../../types/messaging/Messages';
+import { MessageSendSource } from '../../../../types/events/eventBusTypes';
+import { TextBlock } from '../../../components/util/TextBlock/TextBlock';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -73,13 +73,13 @@ class OptionComponent extends Component<OptionProps> {
     const { id: responseID } = originalMessage;
     const messageRequest = createMessageRequestForChoice(
       selectedOption,
-      responseID,
+      responseID
     );
     const localMessageID = localMessage.ui_state.id;
 
     // Track when user gives a response through a button or dropdown option.
     const source =
-      type === "button"
+      type === 'button'
         ? MessageSendSource.OPTION_BUTTON
         : MessageSendSource.OPTION_DROP_DOWN;
     serviceManager.actions.sendWithCatch(messageRequest, source, {
@@ -95,7 +95,7 @@ class OptionComponent extends Component<OptionProps> {
    * It also sets the responseType to 'button'.
    */
   onButtonClick = (event: any, item: SingleOption) => {
-    this.onOptionSelected(item, "button");
+    this.onOptionSelected(item, 'button');
   };
 
   /**
@@ -103,7 +103,7 @@ class OptionComponent extends Component<OptionProps> {
    * It also sets the responseType to 'dropdown'.
    */
   onSelectChange = (data: OnChangeData<SingleOption>) => {
-    this.onOptionSelected(data.selectedItem, "dropdown");
+    this.onOptionSelected(data.selectedItem, 'dropdown');
   };
 
   render() {
@@ -113,7 +113,7 @@ class OptionComponent extends Component<OptionProps> {
     const { optionSelected } = localMessage.ui_state;
     const type = getOptionType(preference, options.length);
 
-    return type === "button" ? (
+    return type === 'button' ? (
       <>
         <TextBlock
           title={title}
@@ -137,8 +137,7 @@ class OptionComponent extends Component<OptionProps> {
                     isselected={isSelected}
                     onClick={(event: MouseEvent) => {
                       this.onButtonClick(event, item);
-                    }}
-                  >
+                    }}>
                     {item.label}
                   </ChatButton>
                 </li>

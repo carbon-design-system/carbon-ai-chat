@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-import "./history-writeable-element-example";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
+import './history-writeable-element-example';
 
 import {
   BusEventType,
@@ -16,12 +16,12 @@ import {
   type MessageResponse,
   type PublicConfig,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement, css } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { customLoadHistory } from "./customLoadHistory";
+import { customSendMessage } from './customSendMessage';
+import { customLoadHistory } from './customLoadHistory';
 
 interface UserDefinedSlotsMap {
   [key: string]: UserDefinedSlot;
@@ -42,7 +42,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .external {
@@ -104,14 +104,14 @@ export class Demo extends LitElement {
    * Handles when the workspace panel is about to open.
    */
   workspacePanelPreOpenHandler = (event: any) => {
-    console.log(event, "Workspace panel pre-open");
+    console.log(event, 'Workspace panel pre-open');
   };
 
   /**
    * Handles when the workspace panel is opened.
    */
   workspacePanelOpenHandler = (event: any) => {
-    console.log(event, "Workspace panel opened");
+    console.log(event, 'Workspace panel opened');
 
     // Extract workspace data from the event
     const { workspaceId, additionalData } = event.data;
@@ -124,7 +124,7 @@ export class Demo extends LitElement {
    * Handles when the workspace panel is closed.
    */
   workspacePanelCloseHandler = (event: any) => {
-    console.log(event, "Workspace panel closed");
+    console.log(event, 'Workspace panel closed');
 
     // Clear workspace data when panel closes
     this.workspaceType = null;
@@ -176,17 +176,17 @@ export class Demo extends LitElement {
 
     // Check the "type" we have used as our key.
     switch (userDefinedMessage.user_defined?.user_defined_type) {
-      case "my_unique_identifier":
+      case 'my_unique_identifier':
         // And here is an example using your own component.
         return html`<div slot=${slot}>
           <div class="external">
             ${userDefinedMessage.user_defined.text as string}
             <div>
               Latest response id:
-              ${this.activeResponseId ? this.activeResponseId : "none yet"}
+              ${this.activeResponseId ? this.activeResponseId : 'none yet'}
             </div>
             <div>
-              Is this the most recent message? ${isLatest ? "Yes" : "Nope"}
+              Is this the most recent message? ${isLatest ? 'Yes' : 'Nope'}
             </div>
           </div>
         </div>`;
@@ -200,7 +200,7 @@ export class Demo extends LitElement {
       return null;
     }
 
-    const key = "historyPanelElement";
+    const key = 'historyPanelElement';
 
     return html`
       <div slot=${key}>
@@ -211,8 +211,7 @@ export class Demo extends LitElement {
           .isMobile=${
             this.instance?.getState().customPanels.history.isMobile ?? false
           }
-          @history-panel-load-chat=${this._loadChat}
-        ></history-writeable-element-example>
+          @history-panel-load-chat=${this._loadChat}></history-writeable-element-example>
       </div>
     `;
   }

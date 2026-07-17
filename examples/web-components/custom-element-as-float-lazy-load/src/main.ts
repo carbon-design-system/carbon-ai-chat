@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "@carbon/ai-chat/css/chat-float-layout.css";
-import "@carbon/ai-chat/css/chat-launcher-layout.css";
-import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
-import "@carbon/ai-chat-components/es/components/chat-button/index.js";
+import '@carbon/ai-chat/css/chat-float-layout.css';
+import '@carbon/ai-chat/css/chat-launcher-layout.css';
+import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
+import '@carbon/ai-chat-components/es/components/chat-button/index.js';
 
 import {
   type BusEventViewChange,
@@ -18,20 +18,20 @@ import {
   type PublicConfig,
   ViewType,
   readCarbonChatSession,
-} from "@carbon/ai-chat";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import AiLaunch16 from "@carbon/icons/es/ai-launch/16.js";
-import { LitElement, html, nothing } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import AiLaunch16 from '@carbon/icons/es/ai-launch/16.js';
+import { LitElement, html, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 // Check once at page load whether the chat was open in the previous session.
 // If so, auto-mount immediately (no launcher click required); otherwise wait.
 const previousSession = readCarbonChatSession();
 const chatWasPreviouslyOpen = previousSession?.viewState.mainWindow === true;
 
-type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
+type FloatPhase = 'idle' | 'opening' | 'open' | 'closing' | 'closed';
 
 const config: PublicConfig = {
   messaging: {
@@ -41,7 +41,7 @@ const config: PublicConfig = {
   launcher: { isOn: false },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   // Disable shadow DOM so float layout CSS from the imported stylesheets applies
   // to the cds-aichat-custom-element, cds-aichat-shell, and cds-aichat-button host elements.
@@ -50,7 +50,7 @@ export class Demo extends LitElement {
   }
 
   @state()
-  accessor _phase: FloatPhase = chatWasPreviouslyOpen ? "opening" : "idle";
+  accessor _phase: FloatPhase = chatWasPreviouslyOpen ? 'opening' : 'idle';
 
   // True once the cds-aichat-custom-element bundle has been dynamically imported.
   @state()
@@ -70,7 +70,7 @@ export class Demo extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // Auto-load if a previous session was open.
-    if (this._phase !== "idle") {
+    if (this._phase !== 'idle') {
       void this._loadChat();
     }
   }
@@ -78,12 +78,12 @@ export class Demo extends LitElement {
   updated(changedProps: Map<string | symbol, unknown>) {
     // When prefers-reduced-motion is set there is no CSS animation, so
     // animationend will never fire. Advance the phase immediately in that case.
-    if (changedProps.has("_phase")) {
+    if (changedProps.has('_phase')) {
       if (
-        (this._phase === "opening" || this._phase === "closing") &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        (this._phase === 'opening' || this._phase === 'closing') &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
       ) {
-        this._phase = this._phase === "opening" ? "open" : "closed";
+        this._phase = this._phase === 'opening' ? 'open' : 'closed';
       }
     }
   }
@@ -95,16 +95,16 @@ export class Demo extends LitElement {
     }
     // The 3000 ms delay makes the lazy-loading behavior obvious on localhost and should be removed in a real implementation.
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    await import("@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js");
+    await import('@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js');
     this._chatLoaded = true;
   }
 
   _handleLauncherClick = () => {
-    if (this._phase === "idle") {
+    if (this._phase === 'idle') {
       // First click: trigger the lazy load by setting phase and importing the bundle.
-      this._phase = "opening";
+      this._phase = 'opening';
       void this._loadChat();
-    } else if (this._phase === "closed" && this._instance) {
+    } else if (this._phase === 'closed' && this._instance) {
       // Subsequent clicks: chat is already loaded; changeView triggers
       // _onViewChange which advances the phase to "opening".
       void this._instance.changeView(ViewType.MAIN_WINDOW);
@@ -128,17 +128,17 @@ export class Demo extends LitElement {
   _onViewChange = (event: BusEventViewChange) => {
     if (event.newViewState.mainWindow) {
       this._hasEverOpened = true;
-      this._phase = "opening";
+      this._phase = 'opening';
     } else if (this._hasEverOpened) {
-      this._phase = "closing";
+      this._phase = 'closing';
     }
   };
 
   _onAnimationEnd = () => {
-    if (this._phase === "opening") {
-      this._phase = "open";
-    } else if (this._phase === "closing") {
-      this._phase = "closed";
+    if (this._phase === 'opening') {
+      this._phase = 'open';
+    } else if (this._phase === 'closing') {
+      this._phase = 'closed';
     }
   };
 
@@ -146,26 +146,26 @@ export class Demo extends LitElement {
     // Hide the launcher while the float is opening, open, or closing.
     // visibility:hidden (from --hidden) preserves layout so the entrance
     // animation does not replay when the launcher reappears.
-    const hidden = this._phase !== "idle" && this._phase !== "closed";
+    const hidden = this._phase !== 'idle' && this._phase !== 'closed';
     return hidden
-      ? "cds-aichat-launcher cds-aichat-launcher--hidden"
-      : "cds-aichat-launcher";
+      ? 'cds-aichat-launcher cds-aichat-launcher--hidden'
+      : 'cds-aichat-launcher';
   }
 
   _getFloatClass(): string {
     switch (this._phase) {
-      case "opening":
+      case 'opening':
         // --open supplies position:fixed + dimensions; --opening adds the animation.
-        return "cds-aichat-float--open cds-aichat-float--opening";
-      case "open":
-        return "cds-aichat-float--open";
-      case "closing":
+        return 'cds-aichat-float--open cds-aichat-float--opening';
+      case 'open':
+        return 'cds-aichat-float--open';
+      case 'closing':
         // Keep --open so the widget stays positioned while the close animation plays.
-        return "cds-aichat-float--open cds-aichat-float--closing";
-      case "closed":
-        return "cds-aichat-float--close";
+        return 'cds-aichat-float--open cds-aichat-float--closing';
+      case 'closed':
+        return 'cds-aichat-float--close';
       default:
-        return "";
+        return '';
     }
   }
 
@@ -180,15 +180,14 @@ export class Demo extends LitElement {
         icon-description="Open chat"
         kind="primary"
         size="lg"
-        @click=${this._handleLauncherClick}
-      >
-        ${iconLoader(AiLaunch16, { slot: "icon" })}
+        @click=${this._handleLauncherClick}>
+        ${iconLoader(AiLaunch16, { slot: 'icon' })}
       </cds-aichat-button>
 
       <!-- Not mounted until the launcher is first clicked. Stays mounted after
            that so the lazy bundle is not discarded. -->
       ${
-        this._phase !== "idle"
+        this._phase !== 'idle'
           ? html`
               ${
                 this._chatLoaded
@@ -199,8 +198,7 @@ export class Demo extends LitElement {
                         .launcher=${config.launcher}
                         .onAfterRender=${this._onAfterRender}
                         .onViewChange=${this._onViewChange}
-                        @animationend=${this._onAnimationEnd}
-                      ></cds-aichat-custom-element>
+                        @animationend=${this._onAnimationEnd}></cds-aichat-custom-element>
                     `
                   : nothing
               }
@@ -215,8 +213,7 @@ export class Demo extends LitElement {
                         class="cds-aichat-float--open"
                         show-frame
                         ai-enabled
-                        corner-all="round"
-                      ></cds-aichat-shell>
+                        corner-all="round"></cds-aichat-shell>
                     `
                   : nothing
               }

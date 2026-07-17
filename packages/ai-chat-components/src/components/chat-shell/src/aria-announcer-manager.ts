@@ -40,7 +40,7 @@ export class AriaAnnouncerManager {
    * Uses a dual-region pattern and 250ms delay for NVDA compatibility.
    */
   announce(message: string): void {
-    if (!message || typeof window === "undefined") {
+    if (!message || typeof window === 'undefined') {
       return;
     }
 
@@ -60,7 +60,7 @@ export class AriaAnnouncerManager {
    * Clear any pending announcements
    */
   private clearPendingAnnouncements(): void {
-    if (this.announcementTimeoutId !== null && typeof window !== "undefined") {
+    if (this.announcementTimeoutId !== null && typeof window !== 'undefined') {
       window.clearTimeout(this.announcementTimeoutId);
       this.announcementTimeoutId = null;
     }
@@ -77,7 +77,7 @@ export class AriaAnnouncerManager {
     }
 
     // Join all pending announcements
-    const message = this.pendingAnnouncements.join(" ");
+    const message = this.pendingAnnouncements.join(' ');
     this.pendingAnnouncements = [];
     this.announcementTimeoutId = null;
 
@@ -98,7 +98,7 @@ export class AriaAnnouncerManager {
 
     // Clear the previous region
     if (clearRegion) {
-      clearRegion.textContent = "";
+      clearRegion.textContent = '';
     }
 
     // Swap which region to use next time

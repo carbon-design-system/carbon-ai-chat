@@ -11,10 +11,10 @@ import {
   HeaderConfig,
   LayoutConfig,
   PublicConfig,
-} from "../config/PublicConfig";
-import { ThemeState } from "./AppState";
-import ObjectMap from "../utilities/ObjectMap";
-import { LauncherConfig } from "../config/LauncherConfig";
+} from '../config/PublicConfig';
+import { ThemeState } from './AppState';
+import ObjectMap from '../utilities/ObjectMap';
+import { LauncherConfig } from '../config/LauncherConfig';
 
 /**
  * This contains the top level interface that defines the configuration options for the application.

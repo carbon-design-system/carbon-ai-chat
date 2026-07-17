@@ -5,13 +5,13 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "sass:meta";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/layout";
-@use "@carbon/styles/scss/utilities/focus-outline" as *;
-@use "@carbon/styles/scss/motion";
-@use "../../../globals/scss/vars" as *;
+@use 'sass:meta';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
+@use '@carbon/styles/scss/motion';
+@use '../../../globals/scss/vars' as *;
 
 :host {
   display: block;
@@ -22,7 +22,7 @@
   --#{$prefix}-border-radius-end-start: 0.5rem;
   --#{$prefix}-border-radius-end-end: 0.5rem;
 
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   mark {
     border-radius: layout.$spacing-02;
@@ -85,7 +85,7 @@
   }
 
   p {
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
   }
 
   a {
@@ -136,7 +136,7 @@
   }
 
   pre {
-    @include type.type-style("code-02");
+    @include type.type-style('code-02');
 
     overflow: auto hidden;
     padding: layout.$spacing-05;
@@ -159,33 +159,33 @@
   }
 
   h1 {
-    @include type.type-style("heading-04");
+    @include type.type-style('heading-04');
   }
 
   h2 {
-    @include type.type-style("heading-03");
+    @include type.type-style('heading-03');
   }
 
   h3 {
-    @include type.type-style("heading-02");
+    @include type.type-style('heading-02');
   }
 
   h4 {
-    @include type.type-style("heading-01");
+    @include type.type-style('heading-01');
   }
 
   h5 {
-    @include type.type-style("heading-01");
+    @include type.type-style('heading-01');
   }
 
   h6 {
-    @include type.type-style("heading-01");
+    @include type.type-style('heading-01');
   }
 
   // List styles - following Carbon Design System patterns
   ol,
   ul {
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
 
     padding: 0;
     margin: 0;
@@ -213,7 +213,7 @@
     &::before {
       position: absolute;
       // – en dash
-      content: "\002013";
+      content: '\002013';
       inset-inline-start: calc(-1 * #{layout.$spacing-05});
     }
   }
@@ -230,7 +230,7 @@
 
     &::before {
       position: absolute;
-      content: counter(item) ".";
+      content: counter(item) '.';
       counter-increment: item;
       inset-inline-start: calc(-1 * #{layout.$spacing-05});
     }
@@ -248,7 +248,7 @@
   // Nested unordered lists use square bullets
   ul ul > li::before {
     // ▪ square
-    content: "\0025AA";
+    content: '\0025AA';
     // offset to account for smaller ▪ vs –
     inset-inline-start: calc(-1 * #{layout.$spacing-04});
   }
@@ -259,7 +259,7 @@
   }
 
   ol ol > li::before {
-    content: counter(item, lower-latin) ".";
+    content: counter(item, lower-latin) '.';
   }
 
   .cds-aichat-table--square {

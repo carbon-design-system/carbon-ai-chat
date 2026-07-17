@@ -7,57 +7,57 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../index";
-import "../../card/index.js";
-import { html } from "lit";
-import isChromatic from "chromatic/isChromatic";
+import '../index';
+import '../../card/index.js';
+import { html } from 'lit';
+import isChromatic from 'chromatic/isChromatic';
 
 const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
-  "data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA";
+  'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
-  title: "Preview/Audio player",
+  title: 'Preview/Audio player',
   args: {
     source:
-      "https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill",
-    title: "Leveraging AI to Tackle Large Problems",
+      'https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill',
+    title: 'Leveraging AI to Tackle Large Problems',
     description:
       "A conversation about being an optimistic futurist featuring Kate O'Neill from IBM Think Leaders.",
     playing: false,
     aspectRatioPercentage: 56.25,
-    ariaLabel: "Audio player",
+    ariaLabel: 'Audio player',
     useCard: true,
   },
   argTypes: {
     source: {
-      control: "text",
-      description: "Audio source URL (SoundCloud, native audio files, etc.)",
+      control: 'text',
+      description: 'Audio source URL (SoundCloud, native audio files, etc.)',
     },
     title: {
-      control: "text",
-      description: "Audio title displayed in card body (when useCard is true)",
+      control: 'text',
+      description: 'Audio title displayed in card body (when useCard is true)',
     },
     description: {
-      control: "text",
+      control: 'text',
       description:
-        "Audio description displayed in card body (when useCard is true)",
+        'Audio description displayed in card body (when useCard is true)',
     },
     playing: {
-      control: "boolean",
-      description: "Whether the audio should be playing",
+      control: 'boolean',
+      description: 'Whether the audio should be playing',
     },
     aspectRatioPercentage: {
-      control: { type: "number", min: 0, max: 100, step: 0.01 },
+      control: { type: 'number', min: 0, max: 100, step: 0.01 },
       description:
-        "Aspect ratio as padding-top percentage (default: 56.25 for visual consistency)",
+        'Aspect ratio as padding-top percentage (default: 56.25 for visual consistency)',
     },
     ariaLabel: {
-      control: "text",
-      description: "ARIA label for accessibility",
+      control: 'text',
+      description: 'ARIA label for accessibility',
     },
     useCard: {
-      control: "boolean",
-      description: "Wrap audio player in a card component with metadata",
+      control: 'boolean',
+      description: 'Wrap audio player in a card component with metadata',
     },
   },
 };
@@ -81,8 +81,7 @@ export const Default = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-audio-player>
         `
       : html`
@@ -90,8 +89,7 @@ export const Default = {
             source=${source}
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
-            aria-label=${ariaLabel}
-          >
+            aria-label=${ariaLabel}>
           </cds-aichat-audio-player>
         `;
 
@@ -125,8 +123,7 @@ export const Standalone = {
         source=${source}
         ?playing=${playing}
         aspect-ratio-percentage=${aspectRatioPercentage}
-        aria-label=${ariaLabel}
-      >
+        aria-label=${ariaLabel}>
       </cds-aichat-audio-player>
     `;
   },
@@ -135,8 +132,8 @@ export const Standalone = {
 export const WithMetadata = {
   args: {
     source:
-      "https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill",
-    title: "Leveraging AI to Tackle Large Problems",
+      'https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill',
+    title: 'Leveraging AI to Tackle Large Problems',
     description:
       "Join us for an insightful conversation about being an optimistic futurist featuring Kate O'Neill from IBM Think Leaders. Explore how AI can be leveraged to solve complex challenges facing our world today.",
     useCard: true,
@@ -159,8 +156,7 @@ export const WithMetadata = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-audio-player>
         </div>
         <div slot="body" style="padding: 1rem;">
@@ -178,27 +174,27 @@ export const WithTranscript = {
   args: {
     source: isChromatic()
       ? WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI
-      : "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
-    title: "Your own mp3 file with transcript",
-    description: "This example includes a transcript for accessibility.",
+      : 'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3',
+    title: 'Your own mp3 file with transcript',
+    description: 'This example includes a transcript for accessibility.',
     transcriptText:
-      "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
-    transcriptLabel: "English Transcript",
-    transcriptLanguage: "en",
+      'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
+    transcriptLabel: 'English Transcript',
+    transcriptLanguage: 'en',
     useCard: true,
   },
   argTypes: {
     transcriptText: {
-      control: "text",
-      description: "Transcript text content",
+      control: 'text',
+      description: 'Transcript text content',
     },
     transcriptLabel: {
-      control: "text",
-      description: "Transcript label",
+      control: 'text',
+      description: 'Transcript label',
     },
     transcriptLanguage: {
-      control: "text",
-      description: "Transcript language code",
+      control: 'text',
+      description: 'Transcript language code',
     },
   },
   render: (args) => {
@@ -222,8 +218,7 @@ export const WithTranscript = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-audio-player>
         </div>
         <div slot="body" style="padding: 1rem;">
@@ -234,8 +229,7 @@ export const WithTranscript = {
           <cds-aichat-transcript
             text=${transcriptText}
             label=${transcriptLabel}
-            language=${transcriptLanguage}
-          >
+            language=${transcriptLanguage}>
           </cds-aichat-transcript>
         </div>
       </cds-aichat-card>
@@ -245,10 +239,10 @@ export const WithTranscript = {
 
 export const ErrorState = {
   args: {
-    source: "https://invalid-url-that-will-cause-error.com/audio.mp3",
-    title: "Error State Example",
+    source: 'https://invalid-url-that-will-cause-error.com/audio.mp3',
+    title: 'Error State Example',
     description:
-      "This demonstrates the error state when an audio file fails to load.",
+      'This demonstrates the error state when an audio file fails to load.',
     useCard: true,
   },
   render: (args) => {
@@ -269,8 +263,7 @@ export const ErrorState = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-audio-player>
         </div>
         <div slot="body" style="padding: 1rem;">

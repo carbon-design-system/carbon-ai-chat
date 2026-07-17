@@ -20,13 +20,16 @@
 ## Overview
 
 The team follows a time-based release model where we deliver a stable `minor`
-update every two weeks. We use a release branching strategy to help maintain code quality and avoid unintended or unfinished features from slipping into releases.
+update every two weeks. We use a release branching strategy to help maintain
+code quality and avoid unintended or unfinished features from slipping into
+releases.
 
-The full schedule for releases is available [here](https://github.com/carbon-design-system/carbon-ai-chat/wiki/Carbon-AI-Chat-Releases).
+The full schedule for releases is available
+[here](https://github.com/carbon-design-system/carbon-ai-chat/wiki/Carbon-AI-Chat-Releases).
 
-We publish prereleases before every `minor` release. This prerelease
-happens a week before the stable release. This offers an integration
-window where the prerelease can be tested on products before the stable release.
+We publish prereleases before every `minor` release. This prerelease happens a
+week before the stable release. This offers an integration window where the
+prerelease can be tested on products before the stable release.
 
 We ship security and bug fixes in `patch` releases. This will be shipped
 as-needed and do not follow a specific schedule.
@@ -34,8 +37,8 @@ as-needed and do not follow a specific schedule.
 ## Release Team
 
 The release team is responsible for coordinating the `minor` and `patch`
-releases in a given sprint. This group is composed of a release lead and sidekick.
-The release lead is responsible for:
+releases in a given sprint. This group is composed of a release lead and
+sidekick. The release lead is responsible for:
 
 - Managing the release itself, including
   - Testing
@@ -74,17 +77,18 @@ release team will need to do the following:
   - Make sure the branch name follows the `release/vx.x.x` format
     ![Screenshot of manually creating release branch from GitHub UI](https://github.com/user-attachments/assets/d4247f09-b1ab-4903-a504-938ddece03a9)
 
-- [ ] Add branch protections to the release branch by going to 'Settings' in the repository > 'Branches' under 'Code and automation' side
-      panel. Change the branch name pattern from `released/v*` to
-      `release/v*`. (note the released vs. release)
+- [ ] Add branch protections to the release branch by going to 'Settings' in the
+      repository > 'Branches' under 'Code and automation' side panel. Change the
+      branch name pattern from `released/v*` to `release/v*`. (note the released
+      vs. release)
       ![Screenshot of branch settings page](https://github.com/user-attachments/assets/b333d25f-6b1b-4f5f-b8db-bcd7b1e2b8a3)
 
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
       to generate the prerelease versions for the packages
   - [ ] Ensure the release branch is selected
-  - [ ] Specify the type of release - in this case we will select
-        `first rc` (rc stands for release candidate)
+  - [ ] Specify the type of release - in this case we will select `first rc` (rc
+        stands for release candidate)
   - [ ] Ensure the dry run is checked
 
   ![Screenshot of minor release workflow](https://github.com/user-attachments/assets/8f6c67cd-9284-45e4-ace9-95cab1bc4145)
@@ -100,8 +104,12 @@ release team will need to do the following:
   - [ ] `@carbon/ai-chat`: https://www.npmjs.com/package/@carbon/ai-chat
 - [ ] Run the
       [create github tag and PR workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/create-release-tag-and-pr.yml).
-      This workflow creates the release tag, generates the release with notes, checks if there's a change in peer dependencies and updates the `peer-dependency-changes.md` file if so, updates the `versions.js` file which is used for our documentation and demo app version selector dropdown, and opens a PR to merge the changelog and version bumps from the release
-      branch to `main`.
+      This workflow creates the release tag, generates the release with notes,
+      checks if there's a change in peer dependencies and updates the
+      `peer-dependency-changes.md` file if so, updates the `versions.js` file
+      which is used for our documentation and demo app version selector
+      dropdown, and opens a PR to merge the changelog and version bumps from the
+      release branch to `main`.
   - [ ] Make sure to specify to release branch and the correct release versions.
         ![Screenshot of create github tag and PR workflow with options selected](https://github.com/user-attachments/assets/05ca42f4-8ec8-449e-8c42-5453e1341574)
     - The `release tag` option is the version that was just published (ie.
@@ -113,12 +121,17 @@ release team will need to do the following:
         [release](https://github.com/carbon-design-system/carbon-ai-chat/releases)
         to ensure the release notes are correct.
   - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [publish chat components cdn workflow ](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml).
-          Once this workflow has completed, check the
-          staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
-    - [ ] The [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml). Once this workflow has completed, check that the docs and demo app sites for the staging tag and version has been published.
-- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
-      new version of `@carbon/ai-chat`.
+    - [ ] The
+          [publish chat components cdn workflow ](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-components-cdn.yml).
+          Once this workflow has completed, check the staging environment on
+          GitHub Pages and ensure the version in the storybook top left header
+          has been updated.
+    - [ ] The
+          [publish chat cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-chat-cdn.yml).
+          Once this workflow has completed, check that the docs and demo app
+          sites for the staging tag and version has been published.
+- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new
+      version of `@carbon/ai-chat`.
 
 ### Subsequent Prerelease
 
@@ -127,7 +140,8 @@ available for testing. If there are any issues during the testing period, fixes
 can be pushed to the release branch. We can then publish subsequent prereleases
 from the release branch for further testing. To publish subsequent prereleases,
 
-- [ ] Ensure the new fixes that have been pushed to the `main` branch have also been cherry-picked into the release branch.
+- [ ] Ensure the new fixes that have been pushed to the `main` branch have also
+      been cherry-picked into the release branch.
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
       to generate the prerelease versions for the packages
@@ -157,17 +171,25 @@ from the release branch for further testing. To publish subsequent prereleases,
       candidate (ie. v0.10.0-rc.0)
   - [ ] Merge in the generated PR (the title of the PR should start with
         `chore(release):` followed by the version).
-    - If you encounter merge conflicts in this PR, resolve them by merging the main branch into the PR branch (typically named something like `chore/v1.2.0-release`), then push the updated branch to re-run the checks and complete the merge.
+    - If you encounter merge conflicts in this PR, resolve them by merging the
+      main branch into the PR branch (typically named something like
+      `chore/v1.2.0-release`), then push the updated branch to re-run the checks
+      and complete the merge.
   - [ ] Check the generated
         [release](https://github.com/carbon-design-system/carbon-ai-chat/releases)
         to ensure the release notes are correct.
   - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml).
-          Once this workflow has completed, check the
-          staging environment on GitHub Pages and ensure the version in the storybook top left header has been updated.
-    - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the staging tag and version has been published.
-- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
-      new version of `@carbon/ai-chat`.
+    - [ ] The
+          [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml).
+          Once this workflow has completed, check the staging environment on
+          GitHub Pages and ensure the version in the storybook top left header
+          has been updated.
+    - [ ] The
+          [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml).
+          Once this workflow has completed, check that the CDN for the staging
+          tag and version has been published.
+- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new
+      version of `@carbon/ai-chat`.
   - For **release candidates**, an example message:
 
   ```
@@ -186,9 +208,9 @@ from the release branch for further testing. To publish subsequent prereleases,
 
 ### Stable release
 
-A stable release occurs on the last Monday of the sprint and finishes later
-in the day. This should occur after the prerelease has been tested and
-validated. During this stage, the release team will do the following:
+A stable release occurs on the last Monday of the sprint and finishes later in
+the day. This should occur after the prerelease has been tested and validated.
+During this stage, the release team will do the following:
 
 - [ ] Run the
       [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml)
@@ -225,16 +247,25 @@ validated. During this stage, the release team will do the following:
         [release](https://github.com/carbon-design-system/carbon-ai-chat/releases)
         to ensure the release notes are correct.
   - [ ] The creation and push of the tag should have triggered:
-    - [ ] The [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml) and the [deploy latest environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-latest-storybook.yml)
-          Once both workflows have completed, check the
-          staging and latest environments on GitHub Pages and ensure the version in the storybook top left header has been updated.
-    - [ ] The [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml). Once this workflow has completed, check that the CDN for the latest tag and version has been published.
+    - [ ] The
+          [deploy staging environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-staging-storybook.yml)
+          and the
+          [deploy latest environment workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-latest-storybook.yml)
+          Once both workflows have completed, check the staging and latest
+          environments on GitHub Pages and ensure the version in the storybook
+          top left header has been updated.
+    - [ ] The
+          [publish cdn workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-cdn.yml).
+          Once this workflow has completed, check that the CDN for the latest
+          tag and version has been published.
   - [ ] Edit the generated release, and change the release from `pre-release` to
         `latest`.
         ![Screenshot of release label with latest option selected](https://github.com/user-attachments/assets/f3afc692-d691-4c04-b891-73d0406be7b0)
 
-- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the
-      new version of `@carbon/ai-chat`. This message usually includes a list of features / fixes completed in the release - these can be pulled from the release changelog.
+- [ ] Post a message to the `#carbon-ai-chat` Slack channel to announce the new
+      version of `@carbon/ai-chat`. This message usually includes a list of
+      features / fixes completed in the release - these can be pulled from the
+      release changelog.
   - For **stable releases**, an example message:
 
     ```
@@ -305,56 +336,103 @@ patch release:
       branch creation steps as we have already created the patch release branch
       from the steps above here),
       [subsequent prerelease](#subsequent-prerelease), and
-      [stable release](#stable-release) publishes, except instead of selecting `minor` in the type of semver release, select `patch`
+      [stable release](#stable-release) publishes, except instead of selecting
+      `minor` in the type of semver release, select `patch`
       ![Screenshot of release workflow with patch](https://github.com/user-attachments/assets/1fa292ba-8b7b-4609-9ec1-dac278b98388)
 
 ### Alpha release
 
-Alpha releases are rare, off-cadence previews of an in-progress feature, cut straight from a feature integration branch (e.g. `feat/prompt-line`) and handed to specific teams for validation. They are independent of the biweekly `next` / `latest` cadence.
+Alpha releases are rare, off-cadence previews of an in-progress feature, cut
+straight from a feature integration branch (e.g. `feat/prompt-line`) and handed
+to specific teams for validation. They are independent of the biweekly `next` /
+`latest` cadence.
 
-An alpha release publishes `@carbon/ai-chat` and `@carbon/ai-chat-components` to npm under the **`alpha`** dist-tag, and publishes the demo, documentation, both Storybooks, and the components bundle under `chat.carbondesignsystem.com/tag/alpha`. It deliberately does **not** create a git tag, GitHub release, changelog, `versions.js` update, or release PR, and it never commits or pushes — the version bumps happen only in the throwaway workflow runner, so the branch it runs from is left untouched.
+An alpha release publishes `@carbon/ai-chat` and `@carbon/ai-chat-components` to
+npm under the **`alpha`** dist-tag, and publishes the demo, documentation, both
+Storybooks, and the components bundle under
+`chat.carbondesignsystem.com/tag/alpha`. It deliberately does **not** create a
+git tag, GitHub release, changelog, `versions.js` update, or release PR, and it
+never commits or pushes — the version bumps happen only in the throwaway
+workflow runner, so the branch it runs from is left untouched.
 
 To publish an alpha:
 
-- [ ] Go to the [Release alpha workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-alpha.yml) and choose "Run workflow".
-- [ ] **Select the feature branch** you want to publish from (e.g. `feat/prompt-line`) — the alpha is built from whatever branch you select.
-- [ ] Leave `dry run` checked for the first run. The workflow computes the alpha versions and builds everything, but publishes nothing. Check the log to confirm the planned versions (e.g. `@carbon/ai-chat -> 1.18.0-alpha.0` and `@carbon/ai-chat-components -> 1.8.0-alpha.0`).
-- [ ] Leave `bump` as `minor` unless the alpha previews a patch release, in which case select `patch`.
-- [ ] If the versions look right, run the workflow again with `dry run` unchecked to publish to npm and the CDN.
+- [ ] Go to the
+      [Release alpha workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-alpha.yml)
+      and choose "Run workflow".
+- [ ] **Select the feature branch** you want to publish from (e.g.
+      `feat/prompt-line`) — the alpha is built from whatever branch you select.
+- [ ] Leave `dry run` checked for the first run. The workflow computes the alpha
+      versions and builds everything, but publishes nothing. Check the log to
+      confirm the planned versions (e.g. `@carbon/ai-chat -> 1.18.0-alpha.0` and
+      `@carbon/ai-chat-components -> 1.8.0-alpha.0`).
+- [ ] Leave `bump` as `minor` unless the alpha previews a patch release, in
+      which case select `patch`.
+- [ ] If the versions look right, run the workflow again with `dry run`
+      unchecked to publish to npm and the CDN.
 - [ ] Confirm the publish:
-  - [ ] `npm view @carbon/ai-chat dist-tags` and `npm view @carbon/ai-chat-components dist-tags` show the new `alpha` version, and `latest` / `next` are unchanged.
-  - [ ] The sites are live: [demo](https://chat.carbondesignsystem.com/tag/alpha/demo/index.html), [documentation](https://chat.carbondesignsystem.com/tag/alpha/docs/documents/Overview.html), [Web Components Storybook](https://chat.carbondesignsystem.com/components/storybook/tag/alpha/index.html), and [React Storybook](https://chat.carbondesignsystem.com/components/storybook/react/tag/alpha/index.html).
+  - [ ] `npm view @carbon/ai-chat dist-tags` and
+        `npm view @carbon/ai-chat-components dist-tags` show the new `alpha`
+        version, and `latest` / `next` are unchanged.
+  - [ ] The sites are live:
+        [demo](https://chat.carbondesignsystem.com/tag/alpha/demo/index.html),
+        [documentation](https://chat.carbondesignsystem.com/tag/alpha/docs/documents/Overview.html),
+        [Web Components Storybook](https://chat.carbondesignsystem.com/components/storybook/tag/alpha/index.html),
+        and
+        [React Storybook](https://chat.carbondesignsystem.com/components/storybook/react/tag/alpha/index.html).
 
 A few things to know:
 
-- Alpha versions auto-increment per package from what is already published on npm — the first alpha of a base version is `alpha.0`, and re-running produces `alpha.1`, `alpha.2`, and so on. There is no git tag or committed bump to keep in sync.
-- `@carbon/ai-chat@alpha` pins the exact `@carbon/ai-chat-components` alpha built in the same run, so installers get a self-consistent alpha stack rather than the stable components.
-- Alpha is unlisted in the version-selector dropdowns on the stable `latest` / `next` sites by design; the "Alpha" entry only appears when viewing the alpha site itself.
+- Alpha versions auto-increment per package from what is already published on
+  npm — the first alpha of a base version is `alpha.0`, and re-running produces
+  `alpha.1`, `alpha.2`, and so on. There is no git tag or committed bump to keep
+  in sync.
+- `@carbon/ai-chat@alpha` pins the exact `@carbon/ai-chat-components` alpha
+  built in the same run, so installers get a self-consistent alpha stack rather
+  than the stable components.
+- Alpha is unlisted in the version-selector dropdowns on the stable `latest` /
+  `next` sites by design; the "Alpha" entry only appears when viewing the alpha
+  site itself.
 
 ## Troubleshooting
 
 ### Force publish
 
-If you run into an issue where Lerna detects no changes (usually when bumping from release candidate to full release), you can run with the `force publish` option.
+If you run into an issue where Lerna detects no changes (usually when bumping
+from release candidate to full release), you can run with the `force publish`
+option.
 
 ![Screenshot of lerna not updating due to no changes detected](https://github.com/user-attachments/assets/8c43bd62-f440-45c7-be8d-55daca9a9e4f)
 
-Run the workflow again with both `dry run` and `force publish` options set to true so you can confirm the version bump before re-running with `force publish` set to true and `dry run` set to false.
+Run the workflow again with both `dry run` and `force publish` options set to
+true so you can confirm the version bump before re-running with `force publish`
+set to true and `dry run` set to false.
 
-> **Note:** when running the workflow with the `force publish` option, the workflow does not fail so make sure to cancel the workflow once it has completed running through the publish step.
+> **Note:** when running the workflow with the `force publish` option, the
+> workflow does not fail so make sure to cancel the workflow once it has
+> completed running through the publish step.
 
 ![Screenshot of minor release workflow with force publish option](https://github.com/user-attachments/assets/a1535d5c-058d-4784-a46f-ae65fed3b286)
 
 ### Tag already exists
 
-If you run into an error saying a tag already exists, that usually means the a previous job pushed out the git tags, and then failed afterwards. The current job then tries to push git tags that already exist.
+If you run into an error saying a tag already exists, that usually means the a
+previous job pushed out the git tags, and then failed afterwards. The current
+job then tries to push git tags that already exist.
 
 ![Screenshot of worfklow error due to tag already existing](https://github.com/user-attachments/assets/fc754557-5c06-4356-bad7-aef05769cdb7)
 
-Delete the git tags by going to the [tags page on GitHub](https://github.com/carbon-design-system/carbon-ai-chat/tags) and select the `Delete tag` option in next to all the appropriate tags. Then re-run the workflow.
+Delete the git tags by going to the
+[tags page on GitHub](https://github.com/carbon-design-system/carbon-ai-chat/tags)
+and select the `Delete tag` option in next to all the appropriate tags. Then
+re-run the workflow.
 
 ![Screenshot of tag page on GitHub](https://github.com/user-attachments/assets/c1c58e29-711a-4f14-81cf-9bb752be2b18)
 
 ### Checks are stuck on pending
 
-Sometimes when the actions bot runs a workflow that creates a pull request the checks can get stuck in a `pending` state that never seems to resolve. If this happens you can simply push an empty commit to the pull request to manually force the checks to re-run `git commit --allow-empty -m "chore: trigger ci" && git push`.
+Sometimes when the actions bot runs a workflow that creates a pull request the
+checks can get stuck in a `pending` state that never seems to resolve. If this
+happens you can simply push an empty commit to the pull request to manually
+force the checks to re-run
+`git commit --allow-empty -m "chore: trigger ci" && git push`.

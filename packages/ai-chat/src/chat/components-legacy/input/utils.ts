@@ -8,20 +8,20 @@
  */
 
 function normalizeTextValue(value: string) {
-  return value.replace(/\r\n?/g, "\n").replace(/\u00a0/g, " ");
+  return value.replace(/\r\n?/g, '\n').replace(/\u00a0/g, ' ');
 }
 
 function escapeHTML(value: string) {
   return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function toDisplayHTML(value: string) {
   const escaped = escapeHTML(value);
-  return escaped.replace(/\n/g, "<br>");
+  return escaped.replace(/\n/g, '<br>');
 }
 
 function getSelectionForElement(element: HTMLElement) {
@@ -31,7 +31,7 @@ function getSelectionForElement(element: HTMLElement) {
     const shadowRoot = root as ShadowRoot & {
       getSelection?: () => Selection | null;
     };
-    if (typeof shadowRoot.getSelection === "function") {
+    if (typeof shadowRoot.getSelection === 'function') {
       return shadowRoot.getSelection();
     }
   }
@@ -41,7 +41,7 @@ function getSelectionForElement(element: HTMLElement) {
 
 function getSelectionRangeForElement(
   element: HTMLElement,
-  selection: Selection | null,
+  selection: Selection | null
 ) {
   if (!selection || selection.rangeCount === 0) {
     return null;
@@ -66,7 +66,7 @@ function createRangeAtEnd(element: HTMLElement) {
 }
 
 function placeCaretAtEnd(element: HTMLElement, selection: Selection | null) {
-  if (typeof window === "undefined" || typeof document === "undefined") {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
     return;
   }
 
@@ -78,9 +78,9 @@ function placeCaretAtEnd(element: HTMLElement, selection: Selection | null) {
 function insertTextAtRange(
   range: Range,
   text: string,
-  selection: Selection | null,
+  selection: Selection | null
 ) {
-  const lines = text.split("\n");
+  const lines = text.split('\n');
   const fragment = document.createDocumentFragment();
   let lastNode: Node | null = null;
 
@@ -90,7 +90,7 @@ function insertTextAtRange(
     lastNode = textNode;
 
     if (index < lines.length - 1) {
-      const br = document.createElement("br");
+      const br = document.createElement('br');
       fragment.appendChild(br);
       lastNode = br;
     }
@@ -113,7 +113,7 @@ function insertTextAtRange(
  */
 function validateRangeInElement(
   range: Range | null,
-  element: HTMLElement,
+  element: HTMLElement
 ): Range | null {
   if (!range) {
     return null;
@@ -133,7 +133,7 @@ function validateRangeInElement(
 function calculateAvailableLength(
   currentText: string,
   selectedTextLength: number,
-  maxLength: number | undefined | null,
+  maxLength: number | undefined | null
 ): number | undefined {
   if (maxLength === undefined || maxLength === null) {
     return undefined;
@@ -156,7 +156,7 @@ function truncateToLength(text: string, maxLength: number | undefined): string {
  * This is used by CSS to show/hide the placeholder text.
  */
 function updateContentAttribute(element: HTMLElement, value: string): void {
-  element.dataset.hasContent = value.trim() ? "true" : "false";
+  element.dataset.hasContent = value.trim() ? 'true' : 'false';
 }
 
 /**
@@ -173,9 +173,9 @@ function getSelectionRange(element: HTMLElement): Range | null {
  */
 function extractNormalizedText(
   element: HTMLElement,
-  maxLength: number | undefined,
+  maxLength: number | undefined
 ): { rawValue: string; displayValue: string; wasTruncated: boolean } {
-  const textValue = normalizeTextValue(element.innerText || "");
+  const textValue = normalizeTextValue(element.innerText || '');
   let nextValue = textValue.trim();
   let wasTruncated = false;
 

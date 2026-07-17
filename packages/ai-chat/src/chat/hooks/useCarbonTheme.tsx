@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { useSelector } from "./useSelector";
-import { AppState } from "../../types/state/AppState";
-import { CarbonTheme } from "../../types/config/PublicConfig";
+import { useSelector } from './useSelector';
+import { AppState } from '../../types/state/AppState';
+import { CarbonTheme } from '../../types/config/PublicConfig';
 
 /**
  * Custom hook to get the current Carbon theme and determine if it's a dark theme.
@@ -21,7 +21,7 @@ import { CarbonTheme } from "../../types/config/PublicConfig";
 export function useCarbonTheme() {
   const carbonTheme = useSelector(
     (state: AppState) =>
-      state.config.derived.themeWithDefaults.derivedCarbonTheme,
+      state.config.derived.themeWithDefaults.derivedCarbonTheme
   );
 
   const isDarkTheme =

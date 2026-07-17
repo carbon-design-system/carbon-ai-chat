@@ -13,22 +13,22 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../../test_helpers";
-import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
-import { BusEventType } from "../../../../src/types/events/eventBusTypes";
+} from '../../../test_helpers';
+import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
+import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 
-describe("ChatInstance.messaging.addMessage", () => {
+describe('ChatInstance.messaging.addMessage', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have addMessage method available", async () => {
+  it('should have addMessage method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.messaging.addMessage).toBe("function");
+    expect(typeof instance.messaging.addMessage).toBe('function');
   });
 
-  it("should accept message response", async () => {
+  it('should accept message response', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -37,18 +37,18 @@ describe("ChatInstance.messaging.addMessage", () => {
         generic: [
           {
             response_type: MessageResponseTypes.TEXT,
-            text: "Hello from bot",
+            text: 'Hello from bot',
           },
         ],
       },
     };
 
     await expect(
-      instance.messaging.addMessage(messageResponse),
+      instance.messaging.addMessage(messageResponse)
     ).resolves.not.toThrow();
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -57,7 +57,7 @@ describe("ChatInstance.messaging.addMessage", () => {
         generic: [
           {
             response_type: MessageResponseTypes.TEXT,
-            text: "Welcome message",
+            text: 'Welcome message',
           },
         ],
       },
@@ -67,19 +67,19 @@ describe("ChatInstance.messaging.addMessage", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("state updates", () => {
-    it("should add message to allMessagesByID in store", async () => {
+  describe('state updates', () => {
+    it('should add message to allMessagesByID in store', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       const messageResponse = {
-        id: "test-message-1",
+        id: 'test-message-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message",
+              text: 'Test message',
             },
           ],
         },
@@ -87,35 +87,35 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
 
       await instance.messaging.addMessage(messageResponse);
 
       const updatedState = store.getState();
       const updatedMessageCount = Object.keys(
-        updatedState.allMessagesByID,
+        updatedState.allMessagesByID
       ).length;
 
       expect(updatedMessageCount).toBe(initialMessageCount + 1);
-      expect(updatedState.allMessagesByID["test-message-1"]).toBeDefined();
-      expect(updatedState.allMessagesByID["test-message-1"].id).toBe(
-        "test-message-1",
+      expect(updatedState.allMessagesByID['test-message-1']).toBeDefined();
+      expect(updatedState.allMessagesByID['test-message-1'].id).toBe(
+        'test-message-1'
       );
     });
 
-    it("should add local message item to allMessageItemsByID in store", async () => {
+    it('should add local message item to allMessageItemsByID in store', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       const messageResponse = {
-        id: "test-message-2",
+        id: 'test-message-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message for local items",
+              text: 'Test message for local items',
             },
           ],
         },
@@ -123,14 +123,14 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       const initialState = store.getState();
       const initialItemCount = Object.keys(
-        initialState.allMessageItemsByID,
+        initialState.allMessageItemsByID
       ).length;
 
       await instance.messaging.addMessage(messageResponse);
 
       const updatedState = store.getState();
       const updatedItemCount = Object.keys(
-        updatedState.allMessageItemsByID,
+        updatedState.allMessageItemsByID
       ).length;
 
       expect(updatedItemCount).toBeGreaterThan(initialItemCount);
@@ -138,27 +138,27 @@ describe("ChatInstance.messaging.addMessage", () => {
       // Find the local message item that corresponds to our message
       const localMessageItems = Object.values(updatedState.allMessageItemsByID);
       const relatedItem = localMessageItems.find(
-        (item) => item.fullMessageID === "test-message-2",
+        (item) => item.fullMessageID === 'test-message-2'
       );
 
       expect(relatedItem).toBeDefined();
       expect((relatedItem?.item as any).text).toBe(
-        "Test message for local items",
+        'Test message for local items'
       );
     });
 
-    it("should add message ID to botMessageState.localMessageItemIDs", async () => {
+    it('should add message ID to botMessageState.localMessageItemIDs', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       const messageResponse = {
-        id: "test-message-3",
+        id: 'test-message-3',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message for message order",
+              text: 'Test message for message order',
             },
           ],
         },
@@ -179,16 +179,16 @@ describe("ChatInstance.messaging.addMessage", () => {
       // Check that the new message item ID is in the list
       const allMessageItems = Object.values(updatedState.allMessageItemsByID);
       const relatedItem = allMessageItems.find(
-        (item) => item.fullMessageID === "test-message-3",
+        (item) => item.fullMessageID === 'test-message-3'
       );
 
       expect(relatedItem).toBeDefined();
       expect(updatedState.assistantMessageState.localMessageIDs).toContain(
-        relatedItem?.ui_state.id,
+        relatedItem?.ui_state.id
       );
     });
 
-    it("should auto-generate message ID if not provided", async () => {
+    it('should auto-generate message ID if not provided', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -199,7 +199,7 @@ describe("ChatInstance.messaging.addMessage", () => {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message without ID",
+              text: 'Test message without ID',
             },
           ],
         },
@@ -207,14 +207,14 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
 
       await instance.messaging.addMessage(messageResponse);
 
       const updatedState = store.getState();
       const updatedMessageCount = Object.keys(
-        updatedState.allMessagesByID,
+        updatedState.allMessagesByID
       ).length;
 
       expect(updatedMessageCount).toBe(initialMessageCount + 1);
@@ -222,41 +222,41 @@ describe("ChatInstance.messaging.addMessage", () => {
       // Find the newly added message
       const messageKeys = Object.keys(updatedState.allMessagesByID);
       const newMessageKeys = messageKeys.filter(
-        (key) => !initialState.allMessagesByID[key],
+        (key) => !initialState.allMessagesByID[key]
       );
 
       expect(newMessageKeys.length).toBe(1);
 
       const newMessage = updatedState.allMessagesByID[newMessageKeys[0]];
       expect(newMessage.id).toBeDefined();
-      expect(typeof newMessage.id).toBe("string");
+      expect(typeof newMessage.id).toBe('string');
       expect(newMessage.id.length).toBeGreaterThan(0);
     });
 
-    it("should handle multiple messages correctly", async () => {
+    it('should handle multiple messages correctly', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       const message1 = {
-        id: "multi-test-1",
+        id: 'multi-test-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "First message",
+              text: 'First message',
             },
           ],
         },
       };
 
       const message2 = {
-        id: "multi-test-2",
+        id: 'multi-test-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Second message",
+              text: 'Second message',
             },
           ],
         },
@@ -264,7 +264,7 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
 
       await instance.messaging.addMessage(message1);
@@ -274,16 +274,16 @@ describe("ChatInstance.messaging.addMessage", () => {
       const finalMessageCount = Object.keys(finalState.allMessagesByID).length;
 
       expect(finalMessageCount).toBe(initialMessageCount + 2);
-      expect(finalState.allMessagesByID["multi-test-1"]).toBeDefined();
-      expect(finalState.allMessagesByID["multi-test-2"]).toBeDefined();
+      expect(finalState.allMessagesByID['multi-test-1']).toBeDefined();
+      expect(finalState.allMessagesByID['multi-test-2']).toBeDefined();
 
       // Check order is maintained in localMessageIDs
       const message1Items = Object.values(
-        finalState.allMessageItemsByID,
-      ).filter((item) => item.fullMessageID === "multi-test-1");
+        finalState.allMessageItemsByID
+      ).filter((item) => item.fullMessageID === 'multi-test-1');
       const message2Items = Object.values(
-        finalState.allMessageItemsByID,
-      ).filter((item) => item.fullMessageID === "multi-test-2");
+        finalState.allMessageItemsByID
+      ).filter((item) => item.fullMessageID === 'multi-test-2');
 
       expect(message1Items.length).toBeGreaterThan(0);
       expect(message2Items.length).toBeGreaterThan(0);
@@ -293,11 +293,11 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       const message1Index =
         finalState.assistantMessageState.localMessageIDs.indexOf(
-          message1ItemID,
+          message1ItemID
         );
       const message2Index =
         finalState.assistantMessageState.localMessageIDs.indexOf(
-          message2ItemID,
+          message2ItemID
         );
 
       expect(message1Index).toBeGreaterThanOrEqual(0);
@@ -306,8 +306,8 @@ describe("ChatInstance.messaging.addMessage", () => {
     });
   });
 
-  describe("Event bus integration", () => {
-    it("should fire pre:receive and receive events", async () => {
+  describe('Event bus integration', () => {
+    it('should fire pre:receive and receive events', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -321,12 +321,12 @@ describe("ChatInstance.messaging.addMessage", () => {
       ]);
 
       const messageResponse = {
-        id: "event-test-message",
+        id: 'event-test-message',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message for events",
+              text: 'Test message for events',
             },
           ],
         },
@@ -344,21 +344,21 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       expect(preReceiveCall.type).toBe(BusEventType.PRE_RECEIVE);
       expect(preReceiveCall.data).toBeDefined();
-      expect(preReceiveCall.data.id).toBe("event-test-message");
+      expect(preReceiveCall.data.id).toBe('event-test-message');
 
       expect(receiveCall.type).toBe(BusEventType.RECEIVE);
       expect(receiveCall.data).toBeDefined();
-      expect(receiveCall.data.id).toBe("event-test-message");
+      expect(receiveCall.data.id).toBe('event-test-message');
     });
 
-    it("should allow pre:receive handler to modify message", async () => {
+    it('should allow pre:receive handler to modify message', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Handler that modifies the message
       const preReceiveHandler = jest.fn((event) => {
-        event.data.output.generic[0].text = "Modified text";
+        event.data.output.generic[0].text = 'Modified text';
       });
 
       instance.on({
@@ -367,12 +367,12 @@ describe("ChatInstance.messaging.addMessage", () => {
       });
 
       const messageResponse = {
-        id: "modify-test-message",
+        id: 'modify-test-message',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Original text",
+              text: 'Original text',
             },
           ],
         },
@@ -382,27 +382,27 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       // Verify the message was modified in the store
       const finalState = store.getState();
-      const storedMessage = finalState.allMessagesByID["modify-test-message"];
+      const storedMessage = finalState.allMessagesByID['modify-test-message'];
 
       expect(storedMessage).toBeDefined();
       expect((storedMessage as any).output.generic[0].text).toBe(
-        "Modified text",
+        'Modified text'
       );
       expect(preReceiveHandler).toHaveBeenCalledTimes(1);
     });
 
-    it("should fire events in correct order (pre:receive before receive)", async () => {
+    it('should fire events in correct order (pre:receive before receive)', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
       const eventOrder: string[] = [];
 
       const preReceiveHandler = jest.fn(() => {
-        eventOrder.push("pre:receive");
+        eventOrder.push('pre:receive');
       });
 
       const receiveHandler = jest.fn(() => {
-        eventOrder.push("receive");
+        eventOrder.push('receive');
       });
 
       instance.on([
@@ -411,12 +411,12 @@ describe("ChatInstance.messaging.addMessage", () => {
       ]);
 
       const messageResponse = {
-        id: "order-test-message",
+        id: 'order-test-message',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Test message for event order",
+              text: 'Test message for event order',
             },
           ],
         },
@@ -424,7 +424,7 @@ describe("ChatInstance.messaging.addMessage", () => {
 
       await instance.messaging.addMessage(messageResponse);
 
-      expect(eventOrder).toEqual(["pre:receive", "receive"]);
+      expect(eventOrder).toEqual(['pre:receive', 'receive']);
     });
   });
 });

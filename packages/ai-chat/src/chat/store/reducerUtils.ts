@@ -7,9 +7,9 @@
  *  @license
  */
 
-import isEqual from "lodash-es/isEqual.js";
+import isEqual from 'lodash-es/isEqual.js';
 
-import { VERSION } from "../utils/environmentVariables";
+import { VERSION } from '../utils/environmentVariables';
 import {
   AnnounceMessage,
   AppState,
@@ -26,44 +26,44 @@ import {
   ViewSourcePanelState,
   ViewState,
   PersistedState,
-} from "../../types/state/AppState";
+} from '../../types/state/AppState';
 import {
   DefaultCustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
   PanelType,
   PanelConfigOptionsByType,
-} from "../../types/instance/apiTypes";
+} from '../../types/instance/apiTypes';
 import {
   LauncherConfig,
   TIME_TO_ENTRANCE_ANIMATION_START,
-} from "../../types/config/LauncherConfig";
+} from '../../types/config/LauncherConfig';
 import {
   CornersType,
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
-} from "../utils/constants";
-import { deepFreeze } from "../utils/lang/objectUtils";
+} from '../utils/constants';
+import { deepFreeze } from '../utils/lang/objectUtils';
 import {
   HeaderConfig,
   LayoutConfig,
   MinimizeButtonIconType,
-} from "../../types/config/PublicConfig";
+} from '../../types/config/PublicConfig';
 import {
   LocalMessageItem,
   LocalMessageUIState,
-} from "../../types/messaging/LocalMessageItem";
+} from '../../types/messaging/LocalMessageItem';
 import {
   GenericItem,
   Message,
   MessageResponse,
-} from "../../types/messaging/Messages";
-import ObjectMap from "../../types/utilities/ObjectMap";
+} from '../../types/messaging/Messages';
+import ObjectMap from '../../types/utilities/ObjectMap';
 import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
-} from "../schema/outputItemToLocalItem";
-import { isResponseWithNestedItems, streamItemID } from "../utils/messageUtils";
-import { uuid, UUIDType } from "../utils/lang/uuid";
+} from '../schema/outputItemToLocalItem';
+import { isResponseWithNestedItems, streamItemID } from '../utils/messageUtils';
+import { uuid, UUIDType } from '../utils/lang/uuid';
 
 /**
  * Miscellaneous utilities to help in reducers.
@@ -83,12 +83,12 @@ const DEFAULT_LAUNCHER: LauncherConfig = {
   isOn: true,
   mobile: {
     isOn: false,
-    title: "",
+    title: '',
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
   desktop: {
     isOn: false,
-    title: "",
+    title: '',
     timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
   },
 };
@@ -98,7 +98,7 @@ const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   hideBackButton: false,
   disableAnimation: false,
   fullWidth: false,
-  backButtonType: "minimize",
+  backButtonType: 'minimize',
   showChatHeader: false,
   openFromSide: false,
 };
@@ -106,7 +106,7 @@ deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
 
 const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
   {
-    preferredLocation: "end",
+    preferredLocation: 'end',
   };
 deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
 
@@ -179,8 +179,8 @@ const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
-  rawValue: "",
-  displayValue: "",
+  rawValue: '',
+  displayValue: '',
   fieldVisible: null,
   isReadonly: null,
   files: [],
@@ -282,7 +282,7 @@ deepFreeze(DEFAULT_LAYOUT_STATE);
  */
 function calcAnnouncementForWidgetOpen(
   previousState: AppState,
-  newViewState: ViewState,
+  newViewState: ViewState
 ): AnnounceMessage {
   if (
     isEqual(previousState.persistedToBrowserStorage.viewState, newViewState)
@@ -294,8 +294,8 @@ function calcAnnouncementForWidgetOpen(
   // The view has changed so show the appropriate message.
   return {
     messageID: newViewState.mainWindow
-      ? "window_ariaWindowOpened"
-      : "window_ariaWindowClosed",
+      ? 'window_ariaWindowOpened'
+      : 'window_ariaWindowClosed',
   };
 }
 
@@ -305,7 +305,7 @@ function calcAnnouncementForWidgetOpen(
  */
 function applyAssistantMessageState(
   state: AppState,
-  newState: Partial<ChatMessagesState>,
+  newState: Partial<ChatMessagesState>
 ): AppState {
   return {
     ...state,
@@ -318,7 +318,7 @@ function applyAssistantMessageState(
 
 function handleViewStateChange(
   state: AppState,
-  viewState: ViewState,
+  viewState: ViewState
 ): AppState {
   // If the main window is opened and the page is visible, mark any unread messages as read.
   let { showUnreadIndicator } = state.persistedToBrowserStorage;
@@ -348,7 +348,7 @@ function handleViewStateChange(
 function setHomeScreenOpenState(
   state: AppState,
   isOpen: boolean,
-  showBackToAssistant?: boolean,
+  showBackToAssistant?: boolean
 ): AppState {
   if (showBackToAssistant === undefined) {
     showBackToAssistant =
@@ -382,7 +382,7 @@ function applyLocalMessageUIState<
   state: AppState,
   localMessageID: string,
   propertyName: TPropertyName,
-  propertyValue: LocalMessageUIState[TPropertyName],
+  propertyValue: LocalMessageUIState[TPropertyName]
 ) {
   const oldMessage = state.allMessageItemsByID[localMessageID];
   if (oldMessage) {
@@ -410,7 +410,7 @@ function applyLocalMessageUIState<
 function collectNestedLocalIDs(
   localItem: LocalMessageItem | undefined,
   byID: ObjectMap<LocalMessageItem>,
-  out: Set<string>,
+  out: Set<string>
 ) {
   if (!localItem) {
     return;
@@ -427,7 +427,7 @@ function collectNestedLocalIDs(
   ui.footerLocalMessageItemIDs?.forEach(walk);
   ui.itemsLocalMessageItemIDs?.forEach(walk);
   ui.gridLocalMessageItemIDs?.forEach((row) =>
-    row.forEach((cell) => cell.forEach(walk)),
+    row.forEach((cell) => cell.forEach(walk))
   );
 }
 
@@ -449,7 +449,7 @@ function collectNestedLocalIDs(
  */
 function rebuildLocalItemsForUpsert(
   state: AppState,
-  message: MessageResponse,
+  message: MessageResponse
 ): {
   newLocalItemsByID: ObjectMap<LocalMessageItem>;
   newLocalIDsForMessage: string[];
@@ -468,7 +468,7 @@ function rebuildLocalItemsForUpsert(
     }
   }
   const prevTopLevelItems = prevTopLevelLocalIDs.map(
-    (id) => state.allMessageItemsByID[id],
+    (id) => state.allMessageItemsByID[id]
   );
 
   const generic: GenericItem[] = message.output?.generic ?? [];
@@ -530,7 +530,7 @@ function rebuildLocalItemsForUpsert(
           message,
           false,
           nestedLocalItems,
-          true,
+          true
         );
         for (const nested of nestedLocalItems) {
           newLocalItemsByID[nested.ui_state.id] = nested;
@@ -550,11 +550,11 @@ function rebuildLocalItemsForUpsert(
     collectNestedLocalIDs(
       newLocalItemsByID[localID],
       newLocalItemsByID,
-      stillReferenced,
+      stillReferenced
     );
   }
   for (const [localID, candidate] of Object.entries(
-    state.allMessageItemsByID,
+    state.allMessageItemsByID
   )) {
     if (
       candidate &&
@@ -577,7 +577,7 @@ function rebuildLocalItemsForUpsert(
 function computeLocalIDInsertionPoint(
   prevLocalMessageIDs: string[],
   allMessageItemsByID: ObjectMap<LocalMessageItem>,
-  messageID: string,
+  messageID: string
 ): { otherLocalIDs: string[]; insertPoint: number } {
   const otherLocalIDs: string[] = [];
   let insertPoint = -1;

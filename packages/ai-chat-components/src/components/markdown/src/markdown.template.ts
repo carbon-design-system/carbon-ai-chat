@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { html } from "lit";
-import { ref } from "lit/directives/ref.js";
+import { html } from 'lit';
+import { ref } from 'lit/directives/ref.js';
 
 function markdownTemplate({
   slotRef,

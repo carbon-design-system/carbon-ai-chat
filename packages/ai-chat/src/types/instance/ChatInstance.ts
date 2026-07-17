@@ -12,17 +12,17 @@ import {
   ViewState,
   ViewType,
   WorkspaceCustomPanelConfigOptions,
-} from "./apiTypes";
-import { BusEvent, BusEventType } from "../events/eventBusTypes";
-import { ChatInstanceMessaging } from "../config/MessagingConfig";
+} from './apiTypes';
+import { BusEvent, BusEventType } from '../events/eventBusTypes';
+import { ChatInstanceMessaging } from '../config/MessagingConfig';
 import type {
   CatastrophicErrorPanelState,
   PersistedState,
-} from "../state/AppState";
-import type { PersistedHumanAgentState } from "../state/PersistedHumanAgentState";
-import { MessageRequest, StructuredData } from "../messaging/Messages";
-import type { ServiceManager } from "../../chat/services/ServiceManager";
-import { AutoScrollOptions } from "../utilities/HasDoAutoScroll";
+} from '../state/AppState';
+import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
+import { MessageRequest, StructuredData } from '../messaging/Messages';
+import type { ServiceManager } from '../../chat/services/ServiceManager';
+import { AutoScrollOptions } from '../utilities/HasDoAutoScroll';
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -152,7 +152,7 @@ export interface PublicCustomPanelsState {
  * @category Instance
  */
 export type PublicChatState = Readonly<
-  Omit<PersistedState, "humanAgentState"> & {
+  Omit<PersistedState, 'humanAgentState'> & {
     /**
      * Current human agent state.
      */
@@ -251,8 +251,8 @@ export interface ChatInstanceInput {
    */
   updateStructuredData: (
     updater: (
-      previous: StructuredData | undefined,
-    ) => StructuredData | undefined,
+      previous: StructuredData | undefined
+    ) => StructuredData | undefined
   ) => void;
 }
 
@@ -309,7 +309,7 @@ export interface EventHandlers {
  */
 export type EventBusHandler<T extends BusEvent = BusEvent> = (
   event: T,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => unknown;
 
 /**
@@ -358,7 +358,7 @@ interface ChatActions {
    */
   send: (
     message: MessageRequest | string,
-    options?: SendOptions,
+    options?: SendOptions
   ) => Promise<void>;
 
   /**
@@ -406,7 +406,7 @@ interface ChatActions {
    * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
    */
   updateCatastrophicErrorPanel: (
-    panelState: CatastrophicErrorPanelState,
+    panelState: CatastrophicErrorPanelState
   ) => void;
 
   /**
@@ -450,7 +450,7 @@ interface ChatActions {
    */
   updateIsMessageLoadingCounter: (
     direction: IncreaseOrDecrease,
-    message?: string,
+    message?: string
   ) => void;
 
   /**
@@ -484,7 +484,7 @@ interface ChatActions {
 /**
  * @category Instance
  */
-export type IncreaseOrDecrease = "increase" | "decrease" | "reset" | undefined;
+export type IncreaseOrDecrease = 'increase' | 'decrease' | 'reset' | undefined;
 
 /**
  * This interface represents the options for when a MessageRequest is sent to the server with the send method.
@@ -527,78 +527,78 @@ export enum WriteableElementName {
    * @deprecated Use {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT}
    * and {@link WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS} for full control over AI label popover content.
    */
-  AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT = "aiTooltipAfterDescriptionElement",
+  AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT = 'aiTooltipAfterDescriptionElement',
 
   /**
    * An element that appears in the header's AI label popover body. When content is provided to this slot,
    * `HeaderConfig.hideDefaultAiLabelContent` should be set to true.
    */
-  EXPLAINABILITY_POPOVER_CONTENT = "explainabilityPopoverContent",
+  EXPLAINABILITY_POPOVER_CONTENT = 'explainabilityPopoverContent',
 
   /**
    * An element that appears in the header's AI label popover actions footer area.
    */
-  EXPLAINABILITY_POPOVER_ACTIONS = "explainabilityPopoverActions",
+  EXPLAINABILITY_POPOVER_ACTIONS = 'explainabilityPopoverActions',
 
   /**
    * An element that appears in the main message body directly above the welcome node.
    */
-  WELCOME_NODE_BEFORE_ELEMENT = "welcomeNodeBeforeElement",
+  WELCOME_NODE_BEFORE_ELEMENT = 'welcomeNodeBeforeElement',
 
   /**
    * An element that appears in the header on a new line. Only visible while talking to the assistant.
    */
-  HEADER_BOTTOM_ELEMENT = "headerBottomElement",
+  HEADER_BOTTOM_ELEMENT = 'headerBottomElement',
 
   /**
    * An element that appears in the header's fixed-actions slot (before close/minimize buttons).
    */
-  HEADER_FIXED_ACTIONS_ELEMENT = "headerFixedActionsElement",
+  HEADER_FIXED_ACTIONS_ELEMENT = 'headerFixedActionsElement',
 
   /**
    * An element that appears after the messages area and before the input area.
    */
-  BEFORE_INPUT_ELEMENT = "beforeInputElement",
+  BEFORE_INPUT_ELEMENT = 'beforeInputElement',
 
   /**
    * An element that appears after the input field.
    */
-  AFTER_INPUT_ELEMENT = "afterInputElement",
+  AFTER_INPUT_ELEMENT = 'afterInputElement',
 
   /**
    * An element that appears in the footer area.
    */
-  FOOTER_ELEMENT = "footerElement",
+  FOOTER_ELEMENT = 'footerElement',
 
   /**
    * An element that appears above the input field on the home screen.
    */
-  HOME_SCREEN_BEFORE_INPUT_ELEMENT = "homeScreenBeforeInputElement",
+  HOME_SCREEN_BEFORE_INPUT_ELEMENT = 'homeScreenBeforeInputElement',
 
   /**
    * An element that appears on the home screen after the conversation starters.
    */
-  HOME_SCREEN_AFTER_STARTERS_ELEMENT = "homeScreenAfterStartersElement",
+  HOME_SCREEN_AFTER_STARTERS_ELEMENT = 'homeScreenAfterStartersElement',
 
   /**
    * An element that appears on the home screen above the welcome message and conversation starters.
    */
-  HOME_SCREEN_HEADER_BOTTOM_ELEMENT = "homeScreenHeaderBottomElement",
+  HOME_SCREEN_HEADER_BOTTOM_ELEMENT = 'homeScreenHeaderBottomElement',
 
   /**
    * An element to be housed in the custom panel.
    */
-  CUSTOM_PANEL_ELEMENT = "customPanelElement",
+  CUSTOM_PANEL_ELEMENT = 'customPanelElement',
 
   /**
    * An element to be housed in the workspace panel.
    */
-  WORKSPACE_PANEL_ELEMENT = "workspacePanelElement",
+  WORKSPACE_PANEL_ELEMENT = 'workspacePanelElement',
 
   /**
    * An element to be housed in the history panel.
    */
-  HISTORY_PANEL_ELEMENT = "historyPanelElement",
+  HISTORY_PANEL_ELEMENT = 'historyPanelElement',
 }
 
 /**

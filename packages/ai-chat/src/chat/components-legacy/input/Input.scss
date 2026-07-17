@@ -5,13 +5,13 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/components/button/tokens";
-@use "@carbon/styles/scss/components/button" as button;
-@use "../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/components/button/tokens';
+@use '@carbon/styles/scss/components/button' as button;
+@use '../../../globals/scss/chat-theme';
 
 .cds-aichat--input-and-completions {
   position: relative;
@@ -173,7 +173,7 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
 .cds-aichat--input-container .cds-aichat--text-area {
   display: inline-block;
   overflow: hidden;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   inline-size: 100%;
   min-block-size: 0;
@@ -228,7 +228,7 @@ label.cds-aichat--input-container__upload-button--disabled:hover {
   pointer-events: none;
   white-space: pre-wrap;
   word-wrap: break-word;
-  @include type.type-style("body-02");
+  @include type.type-style('body-02');
 }
 
 .cds-aichat--input-container__send-button-container,
@@ -258,7 +258,7 @@ cds-button.cds-aichat--input-container__send-button:focus svg {
   fill: theme.$interactive;
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--input-container__send-button
   svg {
   transform: scale(-1, 1);
@@ -275,7 +275,7 @@ cds-button.cds-aichat--input-container__send-button:focus svg {
 
   .cds-aichat--text-area-textarea,
   .cds-aichat--text-area-sizer {
-    @include type.type-style("body-02");
+    @include type.type-style('body-02');
 
     padding: 0;
     border: button.$button-border-width solid transparent;

@@ -7,8 +7,8 @@
  *  @license
  */
 
-import throttle from "lodash-es/throttle.js";
-import { EditorView } from "@codemirror/view";
+import throttle from 'lodash-es/throttle.js';
+import { EditorView } from '@codemirror/view';
 
 interface ContentSyncHooks {
   getEditorView(): EditorView | undefined;
@@ -56,7 +56,7 @@ export function createContentSync({
           changes: {
             from: content.length,
             to: current.length,
-            insert: "",
+            insert: '',
           },
         });
       } else {
@@ -76,7 +76,7 @@ export function createContentSync({
       }
     },
     throttleMs,
-    { leading: true, trailing: true },
+    { leading: true, trailing: true }
   );
 
   return {

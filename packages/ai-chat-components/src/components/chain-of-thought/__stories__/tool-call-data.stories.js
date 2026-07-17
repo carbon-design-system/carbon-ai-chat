@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "../src/tool-call-data";
-import "../../markdown";
-import { html } from "lit";
+import '../src/tool-call-data';
+import '../../markdown';
+import { html } from 'lit';
 
 const request = `\`\`\`bash
 curl -X POST https://api.internal/v1/search \\
@@ -27,39 +27,39 @@ const response = `\`\`\`json
 \`\`\``;
 
 export default {
-  title: "Components/Chain of thought/Tool call data",
-  component: "cds-aichat-tool-call-data",
+  title: 'Components/Chain of thought/Tool call data',
+  component: 'cds-aichat-tool-call-data',
   parameters: {
     docs: {
       description: {
         component:
-          "Structured container for displaying tool metadata and IO within chain-of-thought steps. Renders nothing when empty.",
+          'Structured container for displaying tool metadata and IO within chain-of-thought steps. Renders nothing when empty.',
       },
     },
   },
   argTypes: {
     toolName: {
-      control: "text",
-      description: "Plain text name of the tool.",
+      control: 'text',
+      description: 'Plain text name of the tool.',
     },
     inputLabelText: {
-      control: "text",
-      description: "Label text shown above the input slot.",
+      control: 'text',
+      description: 'Label text shown above the input slot.',
     },
     outputLabelText: {
-      control: "text",
-      description: "Label text shown above the output slot.",
+      control: 'text',
+      description: 'Label text shown above the output slot.',
     },
     toolLabelText: {
-      control: "text",
-      description: "Label text shown above the tool name.",
+      control: 'text',
+      description: 'Label text shown above the tool name.',
     },
   },
   args: {
-    toolName: "kb_search",
-    inputLabelText: "Input",
-    outputLabelText: "Output",
-    toolLabelText: "Tool",
+    toolName: 'kb_search',
+    inputLabelText: 'Input',
+    outputLabelText: 'Output',
+    toolLabelText: 'Tool',
   },
 };
 
@@ -69,12 +69,10 @@ export const Default = {
       tool-name=${args.toolName}
       input-label-text=${args.inputLabelText}
       output-label-text=${args.outputLabelText}
-      tool-label-text=${args.toolLabelText}
-    >
+      tool-label-text=${args.toolLabelText}>
       <div slot="description">
         <cds-aichat-markdown
-          .markdown=${"Searching knowledge base for password reset guidance."}
-        ></cds-aichat-markdown>
+          .markdown=${'Searching knowledge base for password reset guidance.'}></cds-aichat-markdown>
       </div>
       <div slot="input">
         <cds-aichat-markdown .markdown=${request}></cds-aichat-markdown>

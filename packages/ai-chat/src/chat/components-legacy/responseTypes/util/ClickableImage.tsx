@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import VisuallyHidden from "../../../components/util/VisuallyHidden";
-import { Image, ImageProps } from "../image/Image";
+import VisuallyHidden from '../../../components/util/VisuallyHidden';
+import { Image, ImageProps } from '../image/Image';
 
 interface ClickableImageProps extends ImageProps {
   /**
@@ -58,8 +58,7 @@ function ClickableImage({
         href={imageProps.displayURL}
         rel="noopener noreferrer"
         target={target}
-        onClick={onClick}
-      >
+        onClick={onClick}>
         <Image {...imageProps} />
         {buttonAltText && <VisuallyHidden>{buttonAltText}</VisuallyHidden>}
       </a>
@@ -71,8 +70,7 @@ function ClickableImage({
       className="cds-aichat--clickable-image"
       type="button"
       onClick={onClick}
-      disabled={disabled}
-    >
+      disabled={disabled}>
       <Image {...imageProps} />
       {buttonAltText && <VisuallyHidden>{buttonAltText}</VisuallyHidden>}
     </button>

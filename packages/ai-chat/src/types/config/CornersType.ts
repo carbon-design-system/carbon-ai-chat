@@ -16,12 +16,12 @@ export enum CornersType {
   /**
    * Makes the corners on the chat component rounded.
    */
-  ROUND = "round",
+  ROUND = 'round',
 
   /**
    * Makes the corners on the chat component square.
    */
-  SQUARE = "square",
+  SQUARE = 'square',
 }
 
 /**

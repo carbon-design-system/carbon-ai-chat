@@ -18,19 +18,19 @@ import {
   PublicConfig,
   RenderUserDefinedState,
   PanelType,
-} from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
-import "@carbon/styles/css/styles.css";
+} from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@carbon/styles/css/styles.css';
 
 // These functions hook up to your back-end.
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 // Workspace slot components
-import { InventoryReportExample } from "./InventoryReportExample";
-import { InventoryStatusExample } from "./InventoryStatusExample";
-import { OutstandingOrdersExample } from "./OutstandingOrdersExample";
-import { OutstandingOrdersCard } from "./OutstandingOrdersCard";
-import { SqlEditorExample } from "./SqlEditorExample";
+import { InventoryReportExample } from './InventoryReportExample';
+import { InventoryStatusExample } from './InventoryStatusExample';
+import { OutstandingOrdersExample } from './OutstandingOrdersExample';
+import { OutstandingOrdersCard } from './OutstandingOrdersCard';
+import { SqlEditorExample } from './SqlEditorExample';
 
 /**
  * Define your config outside your React component, or wrap it in useMemo /
@@ -48,7 +48,7 @@ const config: PublicConfig = {
   layout: {
     showFrame: false,
     customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
+      'messages-max-width': `max(60vw, 672px)`,
     },
   },
   openChatByDefault: true,
@@ -56,7 +56,7 @@ const config: PublicConfig = {
 
 function App() {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
-  const [stateText, setStateText] = useState<string>("Initial text");
+  const [stateText, setStateText] = useState<string>('Initial text');
   const [workspaceData, setWorkspaceData] = useState<{
     type: string | null;
     workspaceId?: string;
@@ -89,7 +89,7 @@ function App() {
   React.useEffect(() => {
     const interval = setInterval(
       () => setStateText(Date.now().toString()),
-      2000,
+      2000
     );
     return () => clearInterval(interval);
   }, []);
@@ -101,7 +101,7 @@ function App() {
     const { data } = event as BusEventWorkspacePreOpen;
     console.log(
       data,
-      "This event can be used to load additional resources into the workspace while displaying a manual loading state.",
+      'This event can be used to load additional resources into the workspace while displaying a manual loading state.'
     );
   }
 
@@ -110,7 +110,7 @@ function App() {
    */
   function customWorkspaceOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceOpen;
-    console.log(data, "Workspace panel opened");
+    console.log(data, 'Workspace panel opened');
 
     // Extract workspace data from the event
     const { workspaceId, additionalData } = data;
@@ -123,7 +123,7 @@ function App() {
    */
   function customWorkspaceCloseHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceClose;
-    console.log(data, "Workspace panel closed");
+    console.log(data, 'Workspace panel closed');
 
     // Clear workspace data when panel closes
     setWorkspaceData({ type: null });
@@ -137,7 +137,7 @@ function App() {
       const { messageItem } = state;
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
-          case "outstanding_orders_card":
+          case 'outstanding_orders_card':
             return (
               <OutstandingOrdersCard
                 workspaceId={messageItem.user_defined.workspace_id as string}
@@ -157,7 +157,7 @@ function App() {
 
                   // Open the workspace panel
                   const panel = _instance.customPanels?.getPanel(
-                    PanelType.WORKSPACE,
+                    PanelType.WORKSPACE
                   );
                   if (panel) {
                     panel.open({
@@ -174,7 +174,7 @@ function App() {
       }
       return undefined;
     },
-    [],
+    []
   );
 
   const renderWriteableElements = useMemo(() => {
@@ -184,7 +184,7 @@ function App() {
 
     let component;
     switch (workspaceData.type) {
-      case "inventory_report":
+      case 'inventory_report':
         component = (
           <InventoryReportExample
             location="workspacePanelElement"
@@ -195,7 +195,7 @@ function App() {
           />
         );
         break;
-      case "inventory_status":
+      case 'inventory_status':
         component = (
           <InventoryStatusExample
             location="workspacePanelElement"
@@ -205,7 +205,7 @@ function App() {
           />
         );
         break;
-      case "outstanding_orders":
+      case 'outstanding_orders':
         component = (
           <OutstandingOrdersExample
             location="workspacePanelElement"
@@ -215,7 +215,7 @@ function App() {
           />
         );
         break;
-      case "sql_editor":
+      case 'sql_editor':
         component = (
           <SqlEditorExample
             instance={instance}
@@ -243,6 +243,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

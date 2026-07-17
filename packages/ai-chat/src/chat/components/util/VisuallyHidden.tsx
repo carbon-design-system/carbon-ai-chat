@@ -12,25 +12,24 @@
  * that the item is present in the DOM and is visible to screen readers but it is not visible to sighted users.
  */
 
-import React from "react";
+import React from 'react';
 
 const VisuallyHidden = React.forwardRef(
   (
     props: React.HTMLAttributes<HTMLDivElement>,
-    ref: React.Ref<HTMLDivElement>,
+    ref: React.Ref<HTMLDivElement>
   ) => {
     return (
       <div
         ref={ref}
         {...props}
-        className={`cds-aichat--visually-hidden ${props.className || ""}`}
-      >
+        className={`cds-aichat--visually-hidden ${props.className || ''}`}>
         {props.children}
       </div>
     );
-  },
+  }
 );
 
-VisuallyHidden.displayName = "VisuallyHidden";
+VisuallyHidden.displayName = 'VisuallyHidden';
 
 export default VisuallyHidden;

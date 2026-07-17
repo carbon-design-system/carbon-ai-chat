@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { useCallback } from "react";
-import type { ServiceManager } from "../services/ServiceManager";
-import type { FileUpload } from "../../types/config/ServiceDeskConfig";
+import { useCallback } from 'react';
+import type { ServiceManager } from '../services/ServiceManager';
+import type { FileUpload } from '../../types/config/ServiceDeskConfig';
 
 interface UseAssistantUploadCallbacksProps {
   serviceManager: ServiceManager;
@@ -47,14 +47,14 @@ export function useAssistantUploadCallbacks({
         serviceManager.actions.handleFileSelectedForUpload(upload.file);
       }
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   const onRemoveAssistantUpload = useCallback(
     (uploadId: string) => {
       serviceManager.actions.removePendingUpload(uploadId);
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   return {

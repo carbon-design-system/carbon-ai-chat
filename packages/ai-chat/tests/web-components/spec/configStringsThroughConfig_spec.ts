@@ -20,29 +20,29 @@
  * `languagePack`, not have it reverted to the English defaults after mount.
  */
 
-import { waitFor } from "@testing-library/react";
+import { waitFor } from '@testing-library/react';
 
-import "../../../src/web-components/cds-aichat-container";
-import { createBaseConfig } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { enLanguagePack } from "../../../src/types/config/PublicConfig";
+import '../../../src/web-components/cds-aichat-container';
+import { createBaseConfig } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { enLanguagePack } from '../../../src/types/config/PublicConfig';
 
-describe("Web component: strings supplied through config", () => {
+describe('Web component: strings supplied through config', () => {
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
     jest.clearAllMocks();
   });
 
-  it("keeps config.strings overrides in the language pack and does not revert to defaults", async () => {
+  it('keeps config.strings overrides in the language pack and does not revert to defaults', async () => {
     let capturedInstance: any = null;
 
-    const element = document.createElement("cds-aichat-container") as any;
+    const element = document.createElement('cds-aichat-container') as any;
     // The consumer's single `strings` input arrives here as config.strings (the
     // flattened web-component channel); no separate `.strings` property is set.
     element.config = {
       ...createBaseConfig(),
       strings: {
-        input_placeholder: "Ask me anything…",
+        input_placeholder: 'Ask me anything…',
       },
     };
     element.onBeforeRender = (instance: any) => {
@@ -54,21 +54,21 @@ describe("Web component: strings supplied through config", () => {
       () => {
         expect(capturedInstance).not.toBeNull();
       },
-      { timeout: 5000 },
+      { timeout: 5000 }
     );
 
     const { serviceManager } = capturedInstance;
     const state: AppState = serviceManager.store.getState();
     // Overridden key reflects the custom string.
-    expect(state.languagePack.input_placeholder).toBe("Ask me anything…");
+    expect(state.languagePack.input_placeholder).toBe('Ask me anything…');
     // Unspecified keys retain the English defaults.
     expect(state.languagePack.launcher_isOpen).toBe(
-      enLanguagePack.launcher_isOpen,
+      enLanguagePack.launcher_isOpen
     );
     // The intl formatter (formatMessage / useIntl consumers) reflects the same
     // override — both string sinks track the config.strings channel.
-    expect(serviceManager.intl.formatMessage({ id: "input_placeholder" })).toBe(
-      "Ask me anything…",
+    expect(serviceManager.intl.formatMessage({ id: 'input_placeholder' })).toBe(
+      'Ask me anything…'
     );
   });
 });

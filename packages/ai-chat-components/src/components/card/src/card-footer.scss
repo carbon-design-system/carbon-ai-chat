@@ -5,13 +5,13 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/components/button/tokens" as *;
-@use "@carbon/web-components/scss/components/tile/tile";
-@use "@carbon/styles/scss/utilities/convert";
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/components/button/tokens' as *;
+@use '@carbon/web-components/scss/components/tile/tile';
+@use '@carbon/styles/scss/utilities/convert';
 
 :host(#{$prefix}-card-footer) {
   @include flush-modifiers;
@@ -26,7 +26,7 @@
     }
 
     // if no buttons are ghost add gap 1px
-    &:not(:has(cds-button[kind="ghost"])) {
+    &:not(:has(cds-button[kind='ghost'])) {
       background-color: $button-separator;
       gap: convert.to-rem(1px);
     }
@@ -52,11 +52,11 @@
     flex: 1;
   }
 
-  cds-button[kind="ghost"] {
+  cds-button[kind='ghost'] {
     border-block-start: convert.to-rem(1px) solid theme.$chat-bubble-border;
   }
 
-  cds-button[kind="ghost"]:not([disabled]) {
+  cds-button[kind='ghost']:not([disabled]) {
     .#{$prefix}-card-footer__action-icon {
       fill: theme.$link-primary;
     }

@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/web-components/scss/components/tile/tile";
-@use "@carbon/styles/scss/utilities/convert";
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/web-components/scss/components/tile/tile';
+@use '@carbon/styles/scss/utilities/convert';
 
 :host(#{$prefix}-card) {
   @extend :host(#{$cds-prefix}-tile);
@@ -30,7 +30,7 @@
   border-start-end-radius: var(--#{$prefix}-border-radius-start-end, 0);
   border-start-start-radius: var(--#{$prefix}-border-radius-start-start, 0);
 
-  ::slotted([slot="card-media"]) {
+  ::slotted([slot='card-media']) {
     display: flex;
 
     * {

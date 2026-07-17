@@ -12,26 +12,26 @@ import {
   renderChatAndGetInstance,
   setupBeforeEach,
   setupAfterEach,
-} from "../../../test_helpers";
-import { MessageRequest } from "../../../../src/types/messaging/Messages";
+} from '../../../test_helpers';
+import { MessageRequest } from '../../../../src/types/messaging/Messages';
 import {
   CancellationReason,
   CustomSendMessageOptions,
-} from "../../../../src/types/config/MessagingConfig";
-import { ChatInstance } from "../../../../src/types/instance/ChatInstance";
+} from '../../../../src/types/config/MessagingConfig';
+import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 
-describe("ChatInstance.messaging.restartConversation", () => {
+describe('ChatInstance.messaging.restartConversation', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have messaging.restartConversation method available", async () => {
+  it('should have messaging.restartConversation method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.messaging.restartConversation).toBe("function");
+    expect(typeof instance.messaging.restartConversation).toBe('function');
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -39,16 +39,16 @@ describe("ChatInstance.messaging.restartConversation", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  it("should resolve successfully", async () => {
+  it('should resolve successfully', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     await expect(
-      instance.messaging.restartConversation(),
+      instance.messaging.restartConversation()
     ).resolves.not.toThrow();
   });
 
-  it("should clear conversation state", async () => {
+  it('should clear conversation state', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -60,16 +60,16 @@ describe("ChatInstance.messaging.restartConversation", () => {
 
     // Should maintain basic state structure
     expect(restartedState).toBeDefined();
-    expect(typeof restartedState).toBe("object");
+    expect(typeof restartedState).toBe('object');
   });
 
-  describe("Deprecated instance.restartConversation", () => {
-    it("should show deprecation warning when using instance.restartConversation", async () => {
+  describe('Deprecated instance.restartConversation', () => {
+    it('should show deprecation warning when using instance.restartConversation', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       // Mock console.warn to capture the deprecation warning
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       await instance.restartConversation();
 
@@ -77,16 +77,16 @@ describe("ChatInstance.messaging.restartConversation", () => {
         consoleSpy.mock.calls.some(
           (call) =>
             call[0] ===
-            "[Chat] instance.restartConversation is deprecated. Use instance.messaging.restartConversation instead.",
-        ),
+            '[Chat] instance.restartConversation is deprecated. Use instance.messaging.restartConversation instead.'
+        )
       ).toBe(true);
 
       consoleSpy.mockRestore();
     });
   });
 
-  describe("Abort signal behavior", () => {
-    it("should trigger abort signal with CONVERSATION_RESTARTED reason when restarting during streaming", async () => {
+  describe('Abort signal behavior', () => {
+    it('should trigger abort signal with CONVERSATION_RESTARTED reason when restarting during streaming', async () => {
       const config = createBaseConfig();
       let capturedAbortReason: string | undefined;
 
@@ -95,10 +95,10 @@ describe("ChatInstance.messaging.restartConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
           // Listen for abort
-          options.signal?.addEventListener("abort", () => {
+          options.signal?.addEventListener('abort', () => {
             capturedAbortReason = options.signal?.reason;
           });
 
@@ -110,7 +110,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Send a message (starts streaming)
-      const sendPromise = instance.send("test message");
+      const sendPromise = instance.send('test message');
 
       // Wait a moment to ensure message starts processing
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -125,11 +125,11 @@ describe("ChatInstance.messaging.restartConversation", () => {
 
       // Verify abort was triggered with correct reason
       expect(capturedAbortReason).toBe(
-        CancellationReason.CONVERSATION_RESTARTED,
+        CancellationReason.CONVERSATION_RESTARTED
       );
     });
 
-    it("should cancel multiple pending messages on restart", async () => {
+    it('should cancel multiple pending messages on restart', async () => {
       const config = createBaseConfig();
       let abortCount = 0;
 
@@ -137,9 +137,9 @@ describe("ChatInstance.messaging.restartConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
-          options.signal?.addEventListener("abort", () => {
+          options.signal?.addEventListener('abort', () => {
             abortCount++;
           });
 
@@ -151,8 +151,8 @@ describe("ChatInstance.messaging.restartConversation", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Send multiple messages
-      const send1 = instance.send("message 1");
-      const send2 = instance.send("message 2");
+      const send1 = instance.send('message 1');
+      const send2 = instance.send('message 2');
 
       // Wait a moment to ensure messages start processing
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -167,7 +167,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
       expect(abortCount).toBeGreaterThan(0);
     });
 
-    it("should use enum value for abort reason", async () => {
+    it('should use enum value for abort reason', async () => {
       const config = createBaseConfig();
       let capturedReason: string | undefined;
 
@@ -175,9 +175,9 @@ describe("ChatInstance.messaging.restartConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
-          options.signal?.addEventListener("abort", () => {
+          options.signal?.addEventListener('abort', () => {
             capturedReason = options.signal?.reason;
           });
 
@@ -187,7 +187,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
 
       const instance = await renderChatAndGetInstance(config);
 
-      const sendPromise = instance.send("test");
+      const sendPromise = instance.send('test');
 
       // Wait a moment to ensure message starts processing
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -196,13 +196,13 @@ describe("ChatInstance.messaging.restartConversation", () => {
       await sendPromise.catch(() => {});
 
       // Verify the reason matches the enum value
-      expect(capturedReason).toBe("Conversation restarted");
+      expect(capturedReason).toBe('Conversation restarted');
       expect(capturedReason).toBe(CancellationReason.CONVERSATION_RESTARTED);
     });
   });
 
-  describe("Chunk queue filtering during restart", () => {
-    it("should handle restart during message processing gracefully", async () => {
+  describe('Chunk queue filtering during restart', () => {
+    it('should handle restart during message processing gracefully', async () => {
       const config = createBaseConfig();
       const processedMessages: string[] = [];
       let restartOccurred = false;
@@ -211,12 +211,12 @@ describe("ChatInstance.messaging.restartConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
           const requestText = request.input.text;
 
           // Listen for abort
-          options.signal?.addEventListener("abort", () => {
+          options.signal?.addEventListener('abort', () => {
             restartOccurred = true;
           });
 
@@ -233,7 +233,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Send first message (will start streaming)
-      const send1 = instance.send("message 1");
+      const send1 = instance.send('message 1');
 
       // Wait a bit for first message to start processing
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -245,18 +245,18 @@ describe("ChatInstance.messaging.restartConversation", () => {
       await send1.catch(() => {});
 
       // Send a new message after restart
-      const send2 = instance.send("message 2");
+      const send2 = instance.send('message 2');
       await send2;
 
       // Restart should have occurred
       expect(restartOccurred).toBe(true);
 
       // Only message 2 should have been fully processed since message 1 was aborted
-      expect(processedMessages).toContain("message 2");
+      expect(processedMessages).toContain('message 2');
       expect(processedMessages.length).toBeLessThanOrEqual(2);
     });
 
-    it("should process messages correctly after restart", async () => {
+    it('should process messages correctly after restart', async () => {
       const config = createBaseConfig();
       let messagesProcessed = 0;
 
@@ -264,7 +264,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
           // Simulate some processing
           await new Promise((resolve) => setTimeout(resolve, 10));
@@ -281,13 +281,13 @@ describe("ChatInstance.messaging.restartConversation", () => {
       await instance.messaging.restartConversation();
 
       // Send a message after restart
-      await instance.send("test message");
+      await instance.send('test message');
 
       // Message should be processed
       expect(messagesProcessed).toBe(1);
     });
 
-    it("should handle rapid successive restarts without errors", async () => {
+    it('should handle rapid successive restarts without errors', async () => {
       const config = createBaseConfig();
       let messagesProcessed = 0;
 
@@ -295,7 +295,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
           // Simulate brief processing
           await new Promise((resolve) => setTimeout(resolve, 5));
@@ -309,7 +309,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Send initial message
-      const send1 = instance.send("message 1");
+      const send1 = instance.send('message 1');
 
       // Restart multiple times quickly
       await instance.messaging.restartConversation();
@@ -320,7 +320,7 @@ describe("ChatInstance.messaging.restartConversation", () => {
       await send1.catch(() => {});
 
       // Send final message
-      await instance.send("message 2");
+      await instance.send('message 2');
 
       // Should handle all restarts gracefully - at least final message should process
       expect(messagesProcessed).toBeGreaterThanOrEqual(1);

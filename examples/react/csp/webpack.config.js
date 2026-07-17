@@ -5,35 +5,35 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import CspHtmlWebpackPlugin from "csp-html-webpack-plugin";
-import path from "path";
-import { fileURLToPath } from "url";
-import crypto from "crypto";
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import CspHtmlWebpackPlugin from 'csp-html-webpack-plugin';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const environment = process.env.ENVIRONMENT
   ? process.env.ENVIRONMENT
-  : "production";
+  : 'production';
 
 // Generate a random nonce for this build
-const nonce = crypto.randomBytes(16).toString("base64");
+const nonce = crypto.randomBytes(16).toString('base64');
 
 export default () => {
   const port = process.env.PORT || 3000;
 
   return {
     mode: environment,
-    entry: "./src/App.tsx",
+    entry: './src/App.tsx',
     output: {
-      path: path.resolve(__dirname, "dist"),
-      filename: "bundle.js",
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.js',
       clean: true,
     },
     resolve: {
-      extensions: [".ts", ".tsx", ".js", ".jsx"],
+      extensions: ['.ts', '.tsx', '.js', '.jsx'],
     },
     module: {
       rules: [
@@ -41,12 +41,12 @@ export default () => {
           test: /\.(ts|tsx|js|jsx)$/,
           exclude: /node_modules/,
           use: {
-            loader: "babel-loader",
+            loader: 'babel-loader',
             options: {
               presets: [
-                "@babel/preset-env",
-                "@babel/preset-react",
-                "@babel/preset-typescript",
+                '@babel/preset-env',
+                '@babel/preset-react',
+                '@babel/preset-typescript',
               ],
             },
           },
@@ -55,39 +55,39 @@ export default () => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: "./index.html",
-        inject: "body",
-        scriptLoading: "defer",
+        template: './index.html',
+        inject: 'body',
+        scriptLoading: 'defer',
       }),
       new CspHtmlWebpackPlugin(
         {
-          "default-src": "'self'",
-          "script-src": ["'self'", `'nonce-${nonce}'`],
-          "style-src": "'self'",
-          "connect-src": "'self'",
-          "img-src": ["'self'", "data:", "blob:"],
-          "font-src": "'self'",
-          "object-src": "'none'",
-          "base-uri": "'self'",
-          "form-action": "'self'",
-          "frame-ancestors": "'none'",
-          "upgrade-insecure-requests": [],
+          'default-src': "'self'",
+          'script-src': ["'self'", `'nonce-${nonce}'`],
+          'style-src': "'self'",
+          'connect-src': "'self'",
+          'img-src': ["'self'", 'data:', 'blob:'],
+          'font-src': "'self'",
+          'object-src': "'none'",
+          'base-uri': "'self'",
+          'form-action': "'self'",
+          'frame-ancestors': "'none'",
+          'upgrade-insecure-requests': [],
         },
         {
           enabled: true,
-          hashingMethod: "sha256",
+          hashingMethod: 'sha256',
           hashEnabled: {
-            "script-src": false,
-            "style-src": false,
+            'script-src': false,
+            'style-src': false,
           },
           nonceEnabled: {
-            "script-src": true,
-            "style-src": false,
+            'script-src': true,
+            'style-src': false,
           },
-        },
+        }
       ),
     ],
-    devtool: "source-map",
+    devtool: 'source-map',
     snapshot: {
       managedPaths: [], // don't treat node_modules as immutable
     },
@@ -95,13 +95,13 @@ export default () => {
       ignored: /node_modules\/(?!@carbon\/ai-chat)/, // watch only our packages @carbon/ai-chat and @carbon/ai-chat-components
     },
     devServer: {
-      static: path.join(__dirname, "dist"),
+      static: path.join(__dirname, 'dist'),
       compress: true,
       port,
       open: true,
       hot: true,
       headers: {
-        "Content-Security-Policy": [
+        'Content-Security-Policy': [
           "default-src 'self'",
           `script-src 'self' 'nonce-${nonce}'`,
           "style-src 'self'",
@@ -112,7 +112,7 @@ export default () => {
           "base-uri 'self'",
           "form-action 'self'",
           "frame-ancestors 'none'",
-        ].join("; "),
+        ].join('; '),
       },
     },
   };

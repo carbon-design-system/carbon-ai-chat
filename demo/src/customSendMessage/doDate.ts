@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
 
 function doDate(instance: ChatInstance) {
   instance.messaging.addMessage({

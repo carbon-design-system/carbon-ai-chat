@@ -7,7 +7,7 @@
  *  @license
  */
 
-type CodeMirrorRuntimeModule = typeof import("./codemirror-runtime.js");
+type CodeMirrorRuntimeModule = typeof import('./codemirror-runtime.js');
 
 let runtimePromise: Promise<CodeMirrorRuntimeModule> | null = null;
 
@@ -17,7 +17,7 @@ let runtimePromise: Promise<CodeMirrorRuntimeModule> | null = null;
  */
 export function loadCodeMirrorRuntime(): Promise<CodeMirrorRuntimeModule> {
   if (!runtimePromise) {
-    runtimePromise = import("./codemirror-runtime.js");
+    runtimePromise = import('./codemirror-runtime.js');
   }
   return runtimePromise;
 }

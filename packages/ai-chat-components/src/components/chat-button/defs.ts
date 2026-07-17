@@ -14,15 +14,15 @@ export enum CHAT_BUTTON_SIZE {
   /**
    * Small size.
    */
-  SMALL = "sm",
+  SMALL = 'sm',
 
   /**
    * Medium size.
    */
-  MEDIUM = "md",
+  MEDIUM = 'md',
 
   /**
    * Large size.
    */
-  LARGE = "lg",
+  LARGE = 'lg',
 }

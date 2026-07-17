@@ -12,7 +12,7 @@
  * effect where the inputs are new).
  */
 
-import { DependencyList, EffectCallback, useEffect, useRef } from "react";
+import { DependencyList, EffectCallback, useEffect, useRef } from 'react';
 
 function useEffectDidUpdate(effect: EffectCallback, deps?: DependencyList) {
   const hasRunRef = useRef(false);

@@ -7,12 +7,12 @@
  *  @license
  */
 
-import React from "react";
-import { createRoot, Root } from "react-dom/client";
-import type { PublicConfig, ChatInstance } from "@carbon/ai-chat";
-import { DemoApp } from "../react/DemoApp";
-import type { Settings } from "./types";
-import type { SetChatConfigModeState } from "./set-chat-config-manager";
+import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import type { PublicConfig, ChatInstance } from '@carbon/ai-chat';
+import { DemoApp } from '../react/DemoApp';
+import type { Settings } from './types';
+import type { SetChatConfigModeState } from './set-chat-config-manager';
 
 /**
  * Manages React app rendering and lifecycle.
@@ -38,7 +38,7 @@ export class ReactAppManager {
     settings: Settings,
     setChatConfigState: SetChatConfigModeState,
     onChatInstanceReady: (instance: ChatInstance) => void,
-    container: HTMLElement,
+    container: HTMLElement
   ): Promise<void> {
     // Create root only once to avoid memory leaks
     if (!this.root) {
@@ -51,7 +51,7 @@ export class ReactAppManager {
       !setChatConfigState.hasReceivedSetChatConfig
     ) {
       // Only render empty div if we haven't already rendered it
-      this.root.render(React.createElement("div")); // Render empty div
+      this.root.render(React.createElement('div')); // Render empty div
       return;
     }
 
@@ -61,7 +61,7 @@ export class ReactAppManager {
         config,
         settings,
         onChatInstanceReady,
-      }),
+      })
     );
 
     // Wait for React to complete the render

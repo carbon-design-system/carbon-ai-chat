@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { loadCodeSnippetDeps } from "../components/code-snippet/src/codemirror/codemirror-loader.js";
-import { loadTableDeps } from "../components/table/src/table-loader.js";
+import { loadCodeSnippetDeps } from '../components/code-snippet/src/codemirror/codemirror-loader.js';
+import { loadTableDeps } from '../components/table/src/table-loader.js';
 
 /**
  * Preloads all lazily loaded dependencies so test environments (like Jest)

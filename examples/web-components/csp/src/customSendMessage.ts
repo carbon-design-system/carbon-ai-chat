@@ -12,7 +12,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to the CSP example! This demonstrates @carbon/ai-chat working with a strict Content Security Policy (no 'unsafe-inline', no 'unsafe-eval').
 
@@ -41,9 +41,9 @@ The code block above should render with syntax highlighting via CodeMirror, whic
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

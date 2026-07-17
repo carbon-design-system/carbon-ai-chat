@@ -17,10 +17,10 @@
  * https://github.com/cookpete/react-player/blob/v2.15.1/src/players/YouTube.js
  */
 
-import { BaseProvider, ProviderConfig } from "./base-provider.js";
-import { ScriptLoader } from "../../../shared/media-utils/script-loader.js";
+import { BaseProvider, ProviderConfig } from './base-provider.js';
+import { ScriptLoader } from '../../../shared/media-utils/script-loader.js';
 
-const SDK_URL = "https://www.youtube.com/iframe_api";
+const SDK_URL = 'https://www.youtube.com/iframe_api';
 const MATCH_URL_YOUTUBE =
   /(?:youtu\.be\/|youtube(?:-nocookie|education)?\.com\/(?:embed\/|v\/|watch\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))((\w|-){11})/;
 
@@ -46,10 +46,10 @@ export class YouTubeProvider extends BaseProvider {
    */
   protected updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void {
-    element.setAttribute("aria-label", this.getStateLabel(state));
-    element.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    element.setAttribute('aria-label', this.getStateLabel(state));
+    element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
   }
 
   /**
@@ -67,13 +67,13 @@ export class YouTubeProvider extends BaseProvider {
     await super.init(container, config);
 
     if (!this.container) {
-      throw new Error("Container element is required");
+      throw new Error('Container element is required');
     }
 
     // Create container for YouTube player. The YT IFrame API replaces this
     // element with an iframe; sizing/positioning is handled by the
     // .cds-aichat--video-player__provider SCSS rules in video-player.scss.
-    this.playerContainer = document.createElement("div");
+    this.playerContainer = document.createElement('div');
     this.container.appendChild(this.playerContainer);
 
     // Load YouTube IFrame API
@@ -112,11 +112,11 @@ export class YouTubeProvider extends BaseProvider {
   async load(url: string): Promise<void> {
     const videoId = this.getVideoId(url);
     if (!videoId) {
-      throw new Error("Invalid YouTube URL");
+      throw new Error('Invalid YouTube URL');
     }
 
     if (!this.playerContainer) {
-      throw new Error("Player container not initialized");
+      throw new Error('Player container not initialized');
     }
 
     // Wait for API to be ready
@@ -131,8 +131,8 @@ export class YouTubeProvider extends BaseProvider {
     } else {
       // Create new player
       this.player = new window.YT.Player(this.playerContainer, {
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
         videoId: videoId,
         playerVars: {
           autoplay: this.config.playing ? 1 : 0,
@@ -145,10 +145,10 @@ export class YouTubeProvider extends BaseProvider {
           onReady: () => {
             // Get the iframe element and set aria attributes
             this.iframe = this.playerContainer?.querySelector(
-              "iframe",
+              'iframe'
             ) as HTMLIFrameElement;
             if (this.iframe) {
-              this.updateAriaAttributes(this.iframe, "ready");
+              this.updateAriaAttributes(this.iframe, 'ready');
             }
             this.isReady = true;
             this.triggerReady();
@@ -165,10 +165,10 @@ export class YouTubeProvider extends BaseProvider {
       // Set initial loading state on iframe once it's created
       setTimeout(() => {
         this.iframe = this.playerContainer?.querySelector(
-          "iframe",
+          'iframe'
         ) as HTMLIFrameElement;
         if (this.iframe) {
-          this.updateAriaAttributes(this.iframe, "loading");
+          this.updateAriaAttributes(this.iframe, 'loading');
         }
       }, 100);
     }
@@ -201,12 +201,12 @@ export class YouTubeProvider extends BaseProvider {
    */
   private handleError(_event: any): void {
     if (this.iframe) {
-      this.updateAriaAttributes(this.iframe, "error");
+      this.updateAriaAttributes(this.iframe, 'error');
     }
 
     // Use the generic error message from config
     this.triggerError(
-      new Error(this.config.errorMessage || "Failed to load video"),
+      new Error(this.config.errorMessage || 'Failed to load video')
     );
   }
 

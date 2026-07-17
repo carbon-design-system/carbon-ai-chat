@@ -7,29 +7,29 @@
  *  @license
  */
 
-import type { AppStore } from "../store/appStore";
-import { IntlShape } from "../utils/i18n";
-import { AriaAnnouncerFunctionType } from "../contexts/AriaAnnouncerContext";
+import type { AppStore } from '../store/appStore';
+import { IntlShape } from '../utils/i18n';
+import { AriaAnnouncerFunctionType } from '../contexts/AriaAnnouncerContext';
 
-import { EventBus } from "../events/EventBus";
-import { AppState } from "../../types/state/AppState";
-import { HumanAgentService } from "./haa/HumanAgentService";
-import { CustomPanelManager } from "./CustomPanelManager";
-import { HistoryService } from "./HistoryService";
-import { MessageUpsertCoordinator } from "./MessageUpsertCoordinator";
-import MessageService from "./MessageService";
-import { NamespaceService } from "./NamespaceService";
-import { ThemeWatcherService } from "./ThemeWatcherService";
-import { UserSessionStorageService } from "./UserSessionStorageService";
+import { EventBus } from '../events/EventBus';
+import { AppState } from '../../types/state/AppState';
+import { HumanAgentService } from './haa/HumanAgentService';
+import { CustomPanelManager } from './CustomPanelManager';
+import { HistoryService } from './HistoryService';
+import { MessageUpsertCoordinator } from './MessageUpsertCoordinator';
+import MessageService from './MessageService';
+import { NamespaceService } from './NamespaceService';
+import { ThemeWatcherService } from './ThemeWatcherService';
+import { UserSessionStorageService } from './UserSessionStorageService';
 import {
   ChatInstance,
   WriteableElements,
-} from "../../types/instance/ChatInstance";
-import { BusEvent } from "../../types/events/eventBusTypes";
-import { MainWindowFunctions } from "../AppShell";
-import { ChatActionsImpl } from "./ChatActionsImpl";
-import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import type { InputFunctions } from "../components-legacy/input/Input";
+} from '../../types/instance/ChatInstance';
+import { BusEvent } from '../../types/events/eventBusTypes';
+import { MainWindowFunctions } from '../AppShell';
+import { ChatActionsImpl } from './ChatActionsImpl';
+import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import type { InputFunctions } from '../components-legacy/input/Input';
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;

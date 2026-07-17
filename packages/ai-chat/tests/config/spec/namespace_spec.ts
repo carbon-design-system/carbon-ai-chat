@@ -7,20 +7,20 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { doCreateStore } from "../../../src/chat/store/doCreateStore";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { NamespaceService } from "../../../src/chat/services/NamespaceService";
-import { UserSessionStorageService } from "../../../src/chat/services/UserSessionStorageService";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+import { doCreateStore } from '../../../src/chat/store/doCreateStore';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { NamespaceService } from '../../../src/chat/services/NamespaceService';
+import { UserSessionStorageService } from '../../../src/chat/services/UserSessionStorageService';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-describe("Config Namespace", () => {
+describe('Config Namespace', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -30,12 +30,12 @@ describe("Config Namespace", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("namespace", () => {
-    it("should store namespace string in Redux state", async () => {
-      const testNamespace = "test-namespace";
+  describe('namespace', () => {
+    it('should store namespace string in Redux state', async () => {
+      const testNamespace = 'test-namespace';
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         namespace: testNamespace,
@@ -52,7 +52,7 @@ describe("Config Namespace", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -60,8 +60,8 @@ describe("Config Namespace", () => {
       expect(state.config.public.namespace).toBe(testNamespace);
     });
 
-    it("should store namespace with special characters in Redux state", async () => {
-      const testNamespace = "test-namespace_123";
+    it('should store namespace with special characters in Redux state', async () => {
+      const testNamespace = 'test-namespace_123';
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         namespace: testNamespace,
@@ -76,14 +76,14 @@ describe("Config Namespace", () => {
         React.createElement(ChatContainer, {
           ...props,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -91,10 +91,10 @@ describe("Config Namespace", () => {
       expect(state.config.public.namespace).toBe(testNamespace);
     });
 
-    it("should store empty string namespace in Redux state", async () => {
+    it('should store empty string namespace in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
-        namespace: "",
+        namespace: '',
       };
 
       let capturedInstance: any = null;
@@ -106,22 +106,22 @@ describe("Config Namespace", () => {
         React.createElement(ChatContainer, {
           ...props,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.config.public.namespace).toBe("");
+      expect(state.config.public.namespace).toBe('');
     });
 
-    it("should handle undefined namespace in Redux state", async () => {
+    it('should handle undefined namespace in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // namespace intentionally omitted
@@ -136,14 +136,14 @@ describe("Config Namespace", () => {
         React.createElement(ChatContainer, {
           ...props,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -151,64 +151,64 @@ describe("Config Namespace", () => {
       expect(state.config.public.namespace).toBeUndefined();
     });
 
-    describe("Dynamic Namespace Config Updates", () => {
+    describe('Dynamic Namespace Config Updates', () => {
       let serviceManager: ServiceManager;
 
       beforeEach(() => {
         const initialConfig: PublicConfig = {
-          assistantName: "Test Assistant",
+          assistantName: 'Test Assistant',
         };
 
         const store = doCreateStore(initialConfig, {} as ServiceManager);
         serviceManager = {
           store,
-          namespace: new NamespaceService("test"),
+          namespace: new NamespaceService('test'),
           messageService: { timeoutMS: 30000 } as any,
           humanAgentService: null,
         } as ServiceManager;
       });
 
-      it("should handle namespace changes dynamically", async () => {
+      it('should handle namespace changes dynamically', async () => {
         const previousConfig: PublicConfig = {
-          namespace: "old-namespace",
+          namespace: 'old-namespace',
         };
 
         const newConfig: PublicConfig = {
-          namespace: "new-namespace",
+          namespace: 'new-namespace',
         };
 
-        serviceManager.namespace = new NamespaceService("new-namespace");
+        serviceManager.namespace = new NamespaceService('new-namespace');
 
         await applyConfigChangesDynamically(
           previousConfig,
           newConfig,
-          serviceManager,
+          serviceManager
         );
 
         const state: AppState = serviceManager.store.getState();
-        expect(state.config.public.namespace).toBe("new-namespace");
+        expect(state.config.public.namespace).toBe('new-namespace');
       });
 
-      it("derives the session-storage key from the live namespace on each access", () => {
+      it('derives the session-storage key from the live namespace on each access', () => {
         // No namespace suffix -> base key.
         serviceManager.namespace = new NamespaceService();
         const sessionStorageService = new UserSessionStorageService(
-          serviceManager,
+          serviceManager
         );
         expect(sessionStorageService.getSessionKey()).toBe(
-          "CARBON_CHAT_SESSION",
+          'CARBON_CHAT_SESSION'
         );
 
         // A runtime namespace swap must move the bucket WITHOUT reconstructing
         // the service (the key is derived per access, not cached at construction).
-        serviceManager.namespace = new NamespaceService("tenant-a");
+        serviceManager.namespace = new NamespaceService('tenant-a');
         expect(sessionStorageService.getSessionKey()).toBe(
-          "CARBON_CHAT_SESSION--tenant-a",
+          'CARBON_CHAT_SESSION--tenant-a'
         );
 
-        serviceManager.namespace = new NamespaceService("tenant-b");
+        serviceManager.namespace = new NamespaceService('tenant-b');
         expect(sessionStorageService.getSessionKey()).toBe(
-          "CARBON_CHAT_SESSION--tenant-b",
+          'CARBON_CHAT_SESSION--tenant-b'
         );
       });
     });

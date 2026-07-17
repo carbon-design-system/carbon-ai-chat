@@ -7,6 +7,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/card";
-import "./src/card-footer";
-import "./src/card-steps";
+import './src/card';
+import './src/card-footer';
+import './src/card-steps';

@@ -9,19 +9,19 @@
  * This is here because @carbon/web-components neglects to include es/globals/* in its exports field.
  */
 
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { dirname, resolve as pathResolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { dirname, resolve as pathResolve } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const actualPath = pathResolve(
   here,
-  "../../node_modules/@carbon/web-components/es/globals/internal/icon-loader.js",
+  '../../node_modules/@carbon/web-components/es/globals/internal/icon-loader.js'
 );
 const actualUrl = pathToFileURL(actualPath).href;
 
 export async function resolve(specifier, context, defaultResolve) {
   if (
-    specifier === "@carbon/web-components/es/globals/internal/icon-loader.js"
+    specifier === '@carbon/web-components/es/globals/internal/icon-loader.js'
   ) {
     // We handled it; stop the chain.
     return { url: actualUrl, shortCircuit: true };

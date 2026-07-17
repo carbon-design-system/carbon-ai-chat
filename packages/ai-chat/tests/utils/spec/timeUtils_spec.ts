@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { timestampToTimeString } from "../../../src/chat/utils/timeUtils";
+import { timestampToTimeString } from '../../../src/chat/utils/timeUtils';
 
 // Mock dayjs to have consistent test results
-jest.mock("dayjs", () => {
-  const originalDayjs = jest.requireActual("dayjs");
+jest.mock('dayjs', () => {
+  const originalDayjs = jest.requireActual('dayjs');
   return jest.fn((timestamp) => ({
     format: jest.fn((format) => {
-      if (format === "LT") {
+      if (format === 'LT') {
         const date = new Date(timestamp);
         const hours = date.getHours();
-        const minutes = date.getMinutes().toString().padStart(2, "0");
-        const ampm = hours >= 12 ? "PM" : "AM";
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
         const displayHours = hours % 12 || 12;
         return `${displayHours}:${minutes} ${ampm}`;
       }
@@ -27,46 +27,46 @@ jest.mock("dayjs", () => {
   }));
 });
 
-describe("timeUtils", () => {
-  describe("timestampToTimeString", () => {
+describe('timeUtils', () => {
+  describe('timestampToTimeString', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
 
-    it("should format number timestamp to time string", () => {
+    it('should format number timestamp to time string', () => {
       const timestamp = new Date(2023, 11, 25, 14, 30, 0).getTime();
       const result = timestampToTimeString(timestamp);
-      expect(result).toBe("2:30 PM");
+      expect(result).toBe('2:30 PM');
     });
 
-    it("should format Date object to time string", () => {
+    it('should format Date object to time string', () => {
       const date = new Date(2023, 11, 25, 9, 15, 0);
       const result = timestampToTimeString(date);
-      expect(result).toBe("9:15 AM");
+      expect(result).toBe('9:15 AM');
     });
 
-    it("should format string timestamp to time string", () => {
+    it('should format string timestamp to time string', () => {
       const timestamp = new Date(2023, 11, 25, 23, 45, 0).toISOString();
       const result = timestampToTimeString(timestamp);
-      expect(result).toBe("11:45 PM");
+      expect(result).toBe('11:45 PM');
     });
 
-    it("should handle midnight", () => {
+    it('should handle midnight', () => {
       const timestamp = new Date(2023, 11, 25, 0, 0, 0).getTime();
       const result = timestampToTimeString(timestamp);
-      expect(result).toBe("12:00 AM");
+      expect(result).toBe('12:00 AM');
     });
 
-    it("should handle noon", () => {
+    it('should handle noon', () => {
       const timestamp = new Date(2023, 11, 25, 12, 0, 0).getTime();
       const result = timestampToTimeString(timestamp);
-      expect(result).toBe("12:00 PM");
+      expect(result).toBe('12:00 PM');
     });
 
-    it("should pad minutes with zeros", () => {
+    it('should pad minutes with zeros', () => {
       const timestamp = new Date(2023, 11, 25, 15, 5, 0).getTime();
       const result = timestampToTimeString(timestamp);
-      expect(result).toBe("3:05 PM");
+      expect(result).toBe('3:05 PM');
     });
   });
 });

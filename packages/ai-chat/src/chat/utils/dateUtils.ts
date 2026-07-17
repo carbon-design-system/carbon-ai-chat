@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { RIGHT_TO_LEFT_MARK } from "./constants";
+import { RIGHT_TO_LEFT_MARK } from './constants';
 
 // A regex object that checks for white space/right-left-mark characters in a string and a period at the end of a
 // string.
 const UNWANTED_CHARACTERS_REGEX = new RegExp(
   `[ ${RIGHT_TO_LEFT_MARK}]|\\.$`,
-  "g",
+  'g'
 );
 
 /**
@@ -23,15 +23,15 @@ const UNWANTED_CHARACTERS_REGEX = new RegExp(
  * @param value The value to use to get format data.
  */
 function sanitizeDateFormat(value: string) {
-  let format = value.replace(UNWANTED_CHARACTERS_REGEX, "");
+  let format = value.replace(UNWANTED_CHARACTERS_REGEX, '');
 
   // If there is no mm token, this means the month if represented with just one m.
-  if (!format.includes("mm")) {
-    format = format.replace("m", "mm");
+  if (!format.includes('mm')) {
+    format = format.replace('m', 'mm');
   }
   // If there is no dd token, this means the month if represented with just one d.
-  if (!format.includes("dd")) {
-    format = format.replace("d", "dd");
+  if (!format.includes('dd')) {
+    format = format.replace('d', 'dd');
   }
 
   return format;
@@ -45,10 +45,10 @@ function sanitizeDateFormat(value: string) {
  * @param format The date format to reference.
  */
 function toUserDateFormat(date: Date, format: string) {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = String(date.getFullYear());
-  return format.replace("dd", day).replace("mm", month).replace("yyyy", year);
+  return format.replace('dd', day).replace('mm', month).replace('yyyy', year);
 }
 
 /**
@@ -56,8 +56,8 @@ function toUserDateFormat(date: Date, format: string) {
  * help avoid ambiguity with the meaning of the date.
  */
 function toAssistantDateFormat(date: Date) {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = String(date.getFullYear());
   return `${year}-${month}-${day}`;
 }

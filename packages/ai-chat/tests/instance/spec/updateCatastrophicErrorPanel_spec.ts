@@ -13,29 +13,29 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.updateCatastrophicErrorPanel", () => {
+describe('ChatInstance.updateCatastrophicErrorPanel', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have updateCatastrophicErrorPanel method available", async () => {
+  it('should have updateCatastrophicErrorPanel method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.updateCatastrophicErrorPanel).toBe("function");
+    expect(typeof instance.updateCatastrophicErrorPanel).toBe('function');
   });
 
-  it("should execute without throwing any errors", async () => {
+  it('should execute without throwing any errors', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     expect(() =>
-      instance.updateCatastrophicErrorPanel({ isOpen: false }),
+      instance.updateCatastrophicErrorPanel({ isOpen: false })
     ).not.toThrow();
   });
 
-  it("should set catastrophicErrorType in app state to true when opening panel for the first time", async () => {
+  it('should set catastrophicErrorType in app state to true when opening panel for the first time', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -49,7 +49,7 @@ describe("ChatInstance.updateCatastrophicErrorPanel", () => {
     expect(state.catastrophicErrorType).toBe(true);
   });
 
-  it("should not set catastrophicErrorType in app state to true if not opening panel", async () => {
+  it('should not set catastrophicErrorType in app state to true if not opening panel', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -60,24 +60,24 @@ describe("ChatInstance.updateCatastrophicErrorPanel", () => {
     // Test catastrophicErrorType is still undefined after calling updateCatastrophicErrorPanel() without setting isOpen to true
     instance.updateCatastrophicErrorPanel({
       isOpen: false,
-      title: "Custom title",
-      bodyText: "Custom body text",
+      title: 'Custom title',
+      bodyText: 'Custom body text',
     });
     state = store.getState();
     expect(state.catastrophicErrorType).toBe(undefined);
   });
 
-  it("should correctly set custom title and body text on panel", async () => {
+  it('should correctly set custom title and body text on panel', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     instance.updateCatastrophicErrorPanel({
       isOpen: true,
-      title: "Custom title",
-      bodyText: "Custom body text",
+      title: 'Custom title',
+      bodyText: 'Custom body text',
     });
     const state = store.getState();
-    expect(state.catastrophicErrorPanelState.title).toBe("Custom title");
-    expect(state.catastrophicErrorPanelState.bodyText).toBe("Custom body text");
+    expect(state.catastrophicErrorPanelState.title).toBe('Custom title');
+    expect(state.catastrophicErrorPanelState.bodyText).toBe('Custom body text');
   });
 });

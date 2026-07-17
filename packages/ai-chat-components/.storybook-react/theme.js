@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { create } from "storybook/theming";
-import packageInfo from "../package.json";
+import { create } from 'storybook/theming';
+import packageInfo from '../package.json';
 
 const { description, version } = packageInfo;
 

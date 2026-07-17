@@ -2,9 +2,12 @@
 
 This is a demo of the Carbon AI Chat using a mock back-end.
 
-It can serve as a helpful guide in concert with the specific more simple examples located in ['../react'](../examples/react) and ['../web-components'](../examples/web-components).
+It can serve as a helpful guide in concert with the specific more simple
+examples located in ['../react'](../examples/react) and
+['../web-components'](../examples/web-components).
 
-Switching around the options in the sidebar will change that default configuration.
+Switching around the options in the sidebar will change that default
+configuration.
 
 | Location                  | Description                                                                                                                                                                                                                                                         |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

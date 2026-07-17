@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
 import {
   BusEventType,
@@ -15,12 +15,12 @@ import {
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { css, html, LitElement, PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement, PropertyValues } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -34,7 +34,7 @@ interface TrackedElementData {
   fullMessageId?: string;
 }
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .external {
@@ -85,17 +85,17 @@ export class Demo extends LitElement {
     // Display the active response information for the last history message.
     const lastMessage = historyData[historyData.length - 1]?.message;
     const isLatest =
-      lastMessage && lastMessage.id === this.activeResponseId ? "Yes" : "Nope";
+      lastMessage && lastMessage.id === this.activeResponseId ? 'Yes' : 'Nope';
     console.info(
-      "[History Example] Last message id:",
+      '[History Example] Last message id:',
       lastMessage?.id,
-      "Is latest?",
-      isLatest,
+      'Is latest?',
+      isLatest
     );
   }
 
   protected updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has("activeResponseId")) {
+    if (changedProperties.has('activeResponseId')) {
       for (const [el, data] of this._userDefinedElements) {
         if (!el.isConnected) {
           this._userDefinedElements.delete(el);
@@ -112,8 +112,8 @@ export class Demo extends LitElement {
       data.fullMessageId === this.activeResponseId;
     el.innerHTML = `
       ${data.text}
-      <div>Latest response id: ${this.activeResponseId ?? "none yet"}</div>
-      <div>Is this the most recent message? ${isLatest ? "Yes" : "Nope"}</div>
+      <div>Latest response id: ${this.activeResponseId ?? 'none yet'}</div>
+      <div>Is this the most recent message? ${isLatest ? 'Yes' : 'Nope'}</div>
     `;
   }
 
@@ -122,15 +122,15 @@ export class Demo extends LitElement {
    * streaming state, and element lifecycle.
    */
   renderUserDefinedCallback = (
-    state: RenderUserDefinedState,
+    state: RenderUserDefinedState
   ): HTMLElement | null => {
     const messageItem = state.messageItem as UserDefinedItem | undefined;
 
     if (
-      messageItem?.user_defined?.user_defined_type === "my_unique_identifier"
+      messageItem?.user_defined?.user_defined_type === 'my_unique_identifier'
     ) {
-      const el = document.createElement("div");
-      el.className = "external";
+      const el = document.createElement('div');
+      el.className = 'external';
       const data: TrackedElementData = {
         text: messageItem.user_defined.text as string,
         fullMessageId: state.fullMessage?.id,
@@ -150,13 +150,12 @@ export class Demo extends LitElement {
           ? html`<button @click=${this.injectHistory}>
               Insert a different conversation
             </button>`
-          : ""
+          : ''
       }
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
-        .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-      ></cds-aichat-container>
+        .renderUserDefinedResponse=${this.renderUserDefinedCallback}></cds-aichat-container>
     `;
   }
 }

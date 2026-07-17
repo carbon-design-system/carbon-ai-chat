@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { DeepPartial } from "../utilities/DeepPartial";
+import { DeepPartial } from '../utilities/DeepPartial';
 
-import { HasNeedsAnnouncement } from "../utilities/HasNeedsAnnouncement";
-import { GenericItem, MessageRequest } from "./Messages";
+import { HasNeedsAnnouncement } from '../utilities/HasNeedsAnnouncement';
+import { GenericItem, MessageRequest } from './Messages';
 
 /**
  * The different type of error states a given message can be in.

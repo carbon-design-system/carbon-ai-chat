@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 .cds-aichat--citation-card {
   display: block;
@@ -73,7 +73,7 @@
 
 .cds-aichat--citation-card-title {
   color: theme.$text-secondary;
-  @include type.type-style("body-02");
+  @include type.type-style('body-02');
 
   padding-block-end: layout.$spacing-03;
 }
@@ -83,7 +83,7 @@
   overflow: hidden;
   -webkit-box-orient: vertical;
   color: theme.$text-secondary;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   -webkit-line-clamp: 5;
   line-clamp: 5;
@@ -100,7 +100,7 @@
 
 .cds-aichat--citation-card-label,
 .cds-aichat--citation-card-icon {
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 }
 
 .cds-aichat--citation-card-icon {

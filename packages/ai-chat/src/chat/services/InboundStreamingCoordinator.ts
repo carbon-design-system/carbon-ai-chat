@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { StreamingTracker } from "../utils/streamingUtils";
-import { MessageRequest } from "../../types/messaging/Messages";
+import { StreamingTracker } from '../utils/streamingUtils';
+import { MessageRequest } from '../../types/messaging/Messages';
 
 type StreamingCurrent =
   | {
@@ -33,7 +33,7 @@ class InboundStreamingCoordinator {
 
   constructor(
     private messageAbortControllers: Map<string, AbortController>,
-    private moveToNextQueueItem: () => void,
+    private moveToNextQueueItem: () => void
   ) {}
 
   /**
@@ -57,7 +57,7 @@ class InboundStreamingCoordinator {
     current: StreamingCurrent,
     messageID?: string,
     itemID?: string,
-    lastProcessedMessageID?: string | null,
+    lastProcessedMessageID?: string | null
   ) {
     // Set the messageID (from the chunk); otherwise fall back to the current queued message id.
     const responseId = messageID ?? current?.message.id;
@@ -66,7 +66,7 @@ class InboundStreamingCoordinator {
     // If we have the last processed message ID, copy its controller to the response_id
     if (responseId && lastProcessedMessageID) {
       const controller = this.messageAbortControllers.get(
-        lastProcessedMessageID,
+        lastProcessedMessageID
       );
       if (controller) {
         this.messageAbortControllers.set(responseId, controller);
@@ -96,7 +96,7 @@ class InboundStreamingCoordinator {
       responseId,
       current.message.id,
       controller,
-      itemID,
+      itemID
     );
   }
 
@@ -142,7 +142,7 @@ class InboundStreamingCoordinator {
     messageID: string | undefined,
     messageGenerations: Map<string, number>,
     currentGeneration: number,
-    hideStopStreaming: () => void,
+    hideStopStreaming: () => void
   ): boolean {
     if (!messageID) {
       return true;

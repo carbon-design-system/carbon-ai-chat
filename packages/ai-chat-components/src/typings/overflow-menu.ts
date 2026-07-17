@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type CDSOverflowMenuItem from "@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js";
+import type CDSOverflowMenuItem from '@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js';
 
 /**
  * Base type for overflow menu items.
@@ -21,7 +21,7 @@ import type CDSOverflowMenuItem from "@carbon/web-components/es/components/overf
 export interface BaseOverflowMenuItem extends Partial<
   Pick<
     CDSOverflowMenuItem,
-    "danger" | "dangerDescription" | "disabled" | "divider" | "href"
+    'danger' | 'dangerDescription' | 'disabled' | 'divider' | 'href'
   >
 > {
   /**

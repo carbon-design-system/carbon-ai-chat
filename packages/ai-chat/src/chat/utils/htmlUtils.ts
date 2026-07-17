@@ -11,7 +11,7 @@
  * Miscellaneous utilities for dealing with HTML.
  */
 
-import { isEmptyString } from "./lang/stringUtils";
+import { isEmptyString } from './lang/stringUtils';
 
 /**
  * Determines if the given string represents a valid URL. This is a very very very lazy check but a more robust check
@@ -22,7 +22,7 @@ function isValidURL(string: string) {
     return false;
   }
   // For performance, lets short circuit doing the full regex check if the url doesn't have any basics.
-  return string.includes("http://") || string.includes("https://");
+  return string.includes('http://') || string.includes('https://');
 }
 
 export { isValidURL };

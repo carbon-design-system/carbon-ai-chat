@@ -11,9 +11,9 @@
  * This is a React hook that will provided access to the current window size and is updated as the window size changes.
  */
 
-import { useContext } from "react";
+import { useContext } from 'react';
 
-import { WindowSizeContext } from "../contexts/WindowSizeContext";
+import { WindowSizeContext } from '../contexts/WindowSizeContext';
 
 function useWindowSize() {
   return useContext(WindowSizeContext);

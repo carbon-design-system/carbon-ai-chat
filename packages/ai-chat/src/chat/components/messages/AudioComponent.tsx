@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer.js";
-import { MessageResponseTypes } from "../../../types/messaging/Messages.js";
+import { MediaPlayer, MediaPlayerContentConfig } from '../util/MediaPlayer.js';
+import { MessageResponseTypes } from '../../../types/messaging/Messages.js';
 
 type AudioComponentProps = MediaPlayerContentConfig;
 

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ChatShortcutConfig } from "../../types/config/ShortcutConfig";
+import type { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
 
 /**
  * Checks if a keyboard event matches the given shortcut configuration.
@@ -23,7 +23,7 @@ import type { ChatShortcutConfig } from "../../types/config/ShortcutConfig";
  */
 export function matchesShortcut(
   event: KeyboardEvent,
-  config: ChatShortcutConfig,
+  config: ChatShortcutConfig
 ): boolean {
   let keyMatches = false;
 
@@ -74,25 +74,25 @@ export function formatShortcutForDisplay(config: ChatShortcutConfig): string {
 
   // Add modifiers in a consistent order
   if (config.modifiers.ctrl) {
-    parts.push("Ctrl");
+    parts.push('Ctrl');
   }
   if (config.modifiers.alt) {
-    parts.push("Alt");
+    parts.push('Alt');
   }
   if (config.modifiers.shift) {
-    parts.push("Shift");
+    parts.push('Shift');
   }
   if (config.modifiers.meta) {
     // Use platform-specific name for meta key
     const isMac =
-      typeof navigator !== "undefined" &&
+      typeof navigator !== 'undefined' &&
       /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-    parts.push(isMac ? "Cmd" : "Meta");
+    parts.push(isMac ? 'Cmd' : 'Meta');
   }
 
   // Add the key (capitalize single letters, keep special keys as-is)
   const key = config.key.length === 1 ? config.key.toUpperCase() : config.key;
   parts.push(key);
 
-  return parts.join(" + ");
+  return parts.join(' + ');
 }

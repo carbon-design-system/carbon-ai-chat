@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { WidthState, BodyState } from "./types.js";
+import { WidthState, BodyState } from './types.js';
 
 /**
  * Manages all resize observation logic for the chat shell.
@@ -22,7 +22,7 @@ export class ResizeObserverManager {
 
   constructor(
     private readonly shellRoot: ShadowRoot,
-    private readonly hostElement: HTMLElement,
+    private readonly hostElement: HTMLElement
   ) {}
 
   /**
@@ -39,12 +39,12 @@ export class ResizeObserverManager {
    * Observe header height changes
    */
   observeHeaderHeight(onHeightChange: (height: number) => void): void {
-    if (typeof ResizeObserver === "undefined") {
+    if (typeof ResizeObserver === 'undefined') {
       return;
     }
 
     const headerWrapper = this.shellRoot.querySelector<HTMLElement>(
-      ".header-with-header-after",
+      '.header-with-header-after'
     );
 
     if (!headerWrapper) {
@@ -88,9 +88,9 @@ export class ResizeObserverManager {
    */
   observeInputAndMessagesWidth(
     onWidthChange: (state: WidthState) => void,
-    onInitialMeasurement?: () => void,
+    onInitialMeasurement?: () => void
   ): void {
-    if (typeof ResizeObserver === "undefined") {
+    if (typeof ResizeObserver === 'undefined') {
       onInitialMeasurement?.();
       return;
     }
@@ -139,15 +139,15 @@ export class ResizeObserverManager {
   observeMainContentBodyWidth(
     showHistory: boolean,
     onVisibilityChange: (state: BodyState) => void,
-    onInitialMeasurement?: () => void,
+    onInitialMeasurement?: () => void
   ): void {
-    if (typeof ResizeObserver === "undefined" || !showHistory) {
+    if (typeof ResizeObserver === 'undefined' || !showHistory) {
       onInitialMeasurement?.();
       return;
     }
 
     const mainContentBody =
-      this.shellRoot.querySelector<HTMLElement>(".main-content-body");
+      this.shellRoot.querySelector<HTMLElement>('.main-content-body');
 
     if (!mainContentBody) {
       onInitialMeasurement?.();
@@ -156,12 +156,12 @@ export class ResizeObserverManager {
 
     const updateHistoryVisibility = (width: number) => {
       const messagesMinWidth = this.getCssLengthFromProperty(
-        "--cds-aichat-messages-min-width",
-        320,
+        '--cds-aichat-messages-min-width',
+        320
       );
       const historyWidth = this.getCssLengthFromProperty(
-        "--cds-aichat-history-width",
-        320,
+        '--cds-aichat-history-width',
+        320
       );
 
       const requiredWidth = messagesMinWidth + historyWidth;
@@ -224,8 +224,8 @@ export class ResizeObserverManager {
    */
   getMessagesMaxWidth(): number {
     const value = this.getCssLengthFromProperty(
-      "--cds-aichat-messages-max-width",
-      672,
+      '--cds-aichat-messages-max-width',
+      672
     );
 
     // Cache the value for performance
@@ -254,7 +254,7 @@ export class ResizeObserverManager {
    * Observe CSS custom properties for changes
    */
   observeCssProperties(onPropertyChange: () => void): void {
-    if (typeof MutationObserver === "undefined") {
+    if (typeof MutationObserver === 'undefined') {
       return;
     }
 
@@ -266,7 +266,7 @@ export class ResizeObserverManager {
 
     this.cssPropertyObserver.observe(this.hostElement, {
       attributes: true,
-      attributeFilter: ["style"],
+      attributeFilter: ['style'],
     });
   }
 }

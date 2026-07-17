@@ -1,5 +1,5 @@
-import "@testing-library/jest-dom";
-import { loadAllLazyDeps } from "@carbon/ai-chat/server";
+import '@testing-library/jest-dom';
+import { loadAllLazyDeps } from '@carbon/ai-chat/server';
 
 // Preload the shared lazy dependencies so jsdom never has to evaluate dynamic
 // import() calls during the tests. Even though jsdom cannot render inside the

@@ -51,7 +51,7 @@ function resolvablePromise<
   TResolveType = void,
 >(): ResolvablePromise<TResolveType> {
   let resolveFunction: (
-    value?: TResolveType | PromiseLike<TResolveType>,
+    value?: TResolveType | PromiseLike<TResolveType>
   ) => void;
   let rejectFunction: (reason?: any) => void;
 

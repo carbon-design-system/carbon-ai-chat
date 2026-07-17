@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { ServiceManager } from "../services/ServiceManager";
+import { ServiceManager } from '../services/ServiceManager';
 
 /**
  * This file contains the instance of the {@link ServiceManagerContext} which is used to provide access to the

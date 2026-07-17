@@ -6,11 +6,11 @@
  *
  *  @license
  */
-import { PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-@customElement("demo-chat-avatar-switcher")
+@customElement('demo-chat-avatar-switcher')
 export class DemoChatAvatarSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -39,14 +39,14 @@ export class DemoChatAvatarSwitcher extends LitElement {
       ...updates,
     };
 
-    console.log("newConfig", newConfig);
+    console.log('newConfig', newConfig);
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: newConfig,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -54,7 +54,7 @@ export class DemoChatAvatarSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     const checked = customEvent.detail.checked;
 
-    console.log("hideAvatar", checked);
+    console.log('hideAvatar', checked);
 
     this._updateConfig({ hideAvatar: checked });
   };
@@ -66,8 +66,7 @@ export class DemoChatAvatarSwitcher extends LitElement {
       <cds-checkbox
         ?checked=${hideAvatar}
         @cds-checkbox-changed=${this._onChanged}
-        label-text="Hide avatar"
-      >
+        label-text="Hide avatar">
       </cds-checkbox>
     </div>`;
   }
@@ -76,6 +75,6 @@ export class DemoChatAvatarSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-chat-avatar-switcher": DemoChatAvatarSwitcher;
+    'demo-chat-avatar-switcher': DemoChatAvatarSwitcher;
   }
 }

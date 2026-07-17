@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import prefix from "../../../globals/settings.js";
-import { property, query } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import "../../chat-button/index.js";
-import TrashCan16 from "@carbon/icons/es/trash-can/16.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import { LitElement, html } from 'lit';
+import prefix from '../../../globals/settings.js';
+import { property, query } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import '../../chat-button/index.js';
+import TrashCan16 from '@carbon/icons/es/trash-can/16.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History delete chat panel.
@@ -25,17 +25,17 @@ import styles from "./chat-history.scss?lit";
  */
 @carbonElement(`${prefix}-history-delete-panel`)
 class CDSAIChatHistoryDeletePanel extends LitElement {
-  @property({ type: String, attribute: "cancel-text", reflect: true })
-  cancelText = "Cancel";
+  @property({ type: String, attribute: 'cancel-text', reflect: true })
+  cancelText = 'Cancel';
 
-  @property({ type: String, attribute: "delete-text", reflect: true })
-  deleteText = "Delete";
+  @property({ type: String, attribute: 'delete-text', reflect: true })
+  deleteText = 'Delete';
 
   /**
    * Id of the chat item being deleted.
    */
-  @property({ type: String, attribute: "item-id", reflect: true })
-  itemId = "";
+  @property({ type: String, attribute: 'item-id', reflect: true })
+  itemId = '';
 
   @query('cds-aichat-button[kind="danger"]')
   _deleteButton;
@@ -61,7 +61,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
         nodes[index + 1] ?? (index > 0 ? nodes[index - 1] : undefined);
       const nextId = next?.id;
       nextItemId =
-        typeof nextId === "string" && nextId.length > 0 ? nextId : undefined;
+        typeof nextId === 'string' && nextId.length > 0 ? nextId : undefined;
     }
 
     return {
@@ -74,7 +74,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
   // auto focus on delete button when delete panel first renders.
   async firstUpdated() {
     await this.updateComplete;
-    this._deleteButton?.shadowRoot?.querySelector("button").focus();
+    this._deleteButton?.shadowRoot?.querySelector('button').focus();
   }
 
   /**
@@ -82,10 +82,10 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
    */
   _handleCancelClick = () => {
     this.dispatchEvent(
-      new CustomEvent("history-delete-cancel", {
+      new CustomEvent('history-delete-cancel', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   };
 
@@ -99,13 +99,13 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
         : {};
 
     this.dispatchEvent(
-      new CustomEvent("history-delete-confirm", {
+      new CustomEvent('history-delete-confirm', {
         bubbles: true,
         composed: true,
         detail: {
           ...focusDetail,
         },
-      }),
+      })
     );
   };
 
@@ -134,7 +134,7 @@ class CDSAIChatHistoryDeletePanel extends LitElement {
           >
           <cds-aichat-button size="sm" kind="danger" @click=${handleDeleteClick}
             >${deleteText}
-            ${iconLoader(TrashCan16, { slot: "icon" })}</cds-aichat-button
+            ${iconLoader(TrashCan16, { slot: 'icon' })}</cds-aichat-button
           >
         </div>
       </div>

@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '../../../globals/scss/chat-theme';
 
 .cds-aichat--confirm-modal {
   position: absolute;
@@ -20,7 +20,7 @@
   block-size: 100%;
   inline-size: 100%;
   inset-block-start: 0;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__container {
@@ -34,7 +34,7 @@
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__title {
   padding: layout.$spacing-05;
-  @include type.type-style("heading-compact-01");
+  @include type.type-style('heading-compact-01');
 }
 
 .cds-aichat--confirm-modal .cds-aichat--confirm-modal__message {

@@ -7,11 +7,11 @@
  *  @license
  */
 
-import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -23,6 +23,6 @@ function App() {
   return <ChatContainer {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

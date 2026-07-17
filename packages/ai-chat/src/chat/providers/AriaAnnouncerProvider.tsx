@@ -7,17 +7,17 @@
  *  @license
  */
 
-import React, { useCallback, useEffect, useRef } from "react";
-import { useIntl } from "../hooks/useIntl";
+import React, { useCallback, useEffect, useRef } from 'react';
+import { useIntl } from '../hooks/useIntl';
 
 import {
   AriaAnnouncerContext,
   AriaAnnouncerFunctionType,
-} from "../contexts/AriaAnnouncerContext";
-import { useServiceManager } from "../hooks/useServiceManager";
-import { AnnounceMessage } from "../../types/state/AppState";
-import { HasChildren } from "../../types/utilities/HasChildren";
-import { AriaAnnouncerComponent } from "../components/aria/AriaAnnouncerComponent";
+} from '../contexts/AriaAnnouncerContext';
+import { useServiceManager } from '../hooks/useServiceManager';
+import { AnnounceMessage } from '../../types/state/AppState';
+import { HasChildren } from '../../types/utilities/HasChildren';
+import { AriaAnnouncerComponent } from '../components/aria/AriaAnnouncerComponent';
 
 /**
  * AriaAnnouncerProvider

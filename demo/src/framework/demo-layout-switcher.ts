@@ -7,14 +7,14 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-import { Settings } from "./types";
+import { Settings } from './types';
 
-@customElement("demo-layout-switcher")
+@customElement('demo-layout-switcher')
 export class DemoLayoutSwitcher extends LitElement {
   @property({ type: Object })
   accessor settings!: Settings;
@@ -23,11 +23,11 @@ export class DemoLayoutSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     // Emit a custom event `settings-changed` with the new framework value
     this.dispatchEvent(
-      new CustomEvent("settings-changed", {
+      new CustomEvent('settings-changed', {
         detail: { ...this.settings, layout: customEvent.detail.item.value },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      }),
+      })
     );
   };
 
@@ -35,8 +35,7 @@ export class DemoLayoutSwitcher extends LitElement {
     return html`<cds-dropdown
       value="${this.settings.layout}"
       title-text="Layout (requires restart)"
-      @cds-dropdown-selected=${this.dropdownSelected}
-    >
+      @cds-dropdown-selected=${this.dropdownSelected}>
       <cds-dropdown-item value="fullscreen">Fullscreen</cds-dropdown-item>
       <cds-dropdown-item value="sidebar">Sidebar</cds-dropdown-item>
       <cds-dropdown-item value="float">Float</cds-dropdown-item>
@@ -47,6 +46,6 @@ export class DemoLayoutSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-layout-switcher": DemoLayoutSwitcher;
+    'demo-layout-switcher': DemoLayoutSwitcher;
   }
 }

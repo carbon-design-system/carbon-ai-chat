@@ -7,8 +7,8 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
 
 import {
   BusEventType,
@@ -17,53 +17,53 @@ import {
   ViewChangeReason,
   ViewState,
   ViewType,
-} from "../../../src/aiChatEntry";
-import { ChatContainer } from "../../../src/react/ChatContainer";
+} from '../../../src/aiChatEntry';
+import { ChatContainer } from '../../../src/react/ChatContainer';
 import {
   createBaseConfig,
   renderChatAndGetInstance,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.changeView", () => {
+describe('ChatInstance.changeView', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have changeView method available", async () => {
+  it('should have changeView method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.changeView).toBe("function");
+    expect(typeof instance.changeView).toBe('function');
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    const result = instance.changeView("launcher" as ViewType);
+    const result = instance.changeView('launcher' as ViewType);
     expect(result).toBeInstanceOf(Promise);
   });
 
-  it("should accept ViewType string values and update Redux state", async () => {
+  it('should accept ViewType string values and update Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     // Test launcher view
-    await instance.changeView("launcher" as ViewType);
+    await instance.changeView('launcher' as ViewType);
     let state = store.getState();
     expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
 
     // Test mainWindow view
-    await instance.changeView("mainWindow" as ViewType);
+    await instance.changeView('mainWindow' as ViewType);
     state = store.getState();
     expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
   });
 
-  it("should accept ViewState object and update Redux state", async () => {
+  it('should accept ViewState object and update Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -79,7 +79,7 @@ describe("ChatInstance.changeView", () => {
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
   });
 
-  it("should accept partial ViewState object and update Redux state", async () => {
+  it('should accept partial ViewState object and update Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -102,11 +102,11 @@ describe("ChatInstance.changeView", () => {
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
   });
 
-  it("should update view state accessible through getState", async () => {
+  it('should update view state accessible through getState', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
-    await instance.changeView("launcher" as ViewType);
+    await instance.changeView('launcher' as ViewType);
 
     // Get updated state from both instance and store
     const newInstanceState = instance.getState();
@@ -114,30 +114,30 @@ describe("ChatInstance.changeView", () => {
 
     // Verify both instance and store have updated viewState
     expect(newInstanceState.viewState).toBeDefined();
-    expect(typeof newInstanceState.viewState).toBe("object");
+    expect(typeof newInstanceState.viewState).toBe('object');
     expect(newInstanceState.viewState.launcher).toBe(true);
     expect(newInstanceState.viewState.mainWindow).toBe(false);
 
     expect(newStoreState.persistedToBrowserStorage.viewState).toBeDefined();
     expect(newStoreState.persistedToBrowserStorage.viewState.launcher).toBe(
-      true,
+      true
     );
     expect(newStoreState.persistedToBrowserStorage.viewState.mainWindow).toBe(
-      false,
+      false
     );
 
     // Verify instance and store states are in sync
     expect(newInstanceState.viewState).toEqual(
-      newStoreState.persistedToBrowserStorage.viewState,
+      newStoreState.persistedToBrowserStorage.viewState
     );
   });
 
-  it("triggers hydration when mainWindow is opened and chat is not hydrated", async () => {
+  it('triggers hydration when mainWindow is opened and chat is not hydrated', async () => {
     const config = createBaseConfig();
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore(config);
     const hydrateSpy = jest
-      .spyOn(serviceManager.actions, "hydrateChat")
+      .spyOn(serviceManager.actions, 'hydrateChat')
       .mockResolvedValue(undefined);
 
     await instance.changeView(ViewType.MAIN_WINDOW);
@@ -145,32 +145,32 @@ describe("ChatInstance.changeView", () => {
     expect(hydrateSpy).toHaveBeenCalled();
   });
 
-  describe("comprehensive ViewType tests", () => {
-    it("should handle switching between all ViewType values", async () => {
+  describe('comprehensive ViewType tests', () => {
+    it('should handle switching between all ViewType values', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Test switching to launcher
-      await instance.changeView("launcher" as ViewType);
+      await instance.changeView('launcher' as ViewType);
       let state = store.getState();
       expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
       expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
 
       // Test switching to mainWindow
-      await instance.changeView("mainWindow" as ViewType);
+      await instance.changeView('mainWindow' as ViewType);
       state = store.getState();
       expect(state.persistedToBrowserStorage.viewState.launcher).toBe(false);
       expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
 
       // Test switching back to launcher
-      await instance.changeView("launcher" as ViewType);
+      await instance.changeView('launcher' as ViewType);
       state = store.getState();
       expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
       expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
     });
 
-    it("should handle ViewState with both views true", async () => {
+    it('should handle ViewState with both views true', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -187,7 +187,7 @@ describe("ChatInstance.changeView", () => {
       expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
     });
 
-    it("should handle ViewState with both views false", async () => {
+    it('should handle ViewState with both views false', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -209,16 +209,16 @@ describe("ChatInstance.changeView", () => {
     });
   });
 
-  describe("hydration when a view:pre:change handler forces mainWindow open", () => {
+  describe('hydration when a view:pre:change handler forces mainWindow open', () => {
     // Regression coverage for https://github.com/carbon-design-system/carbon-ai-chat/issues/1679:
     // a host that mutates event.newViewState.mainWindow directly inside onViewPreChange (rather than
     // calling changeView itself) was never hydrated, so customSendMessage/customLoadHistory never ran.
-    it("hydrates when a view:pre:change handler mutates newViewState.mainWindow to true", async () => {
+    it('hydrates when a view:pre:change handler mutates newViewState.mainWindow to true', async () => {
       const config = createBaseConfig();
       const { instance, store, serviceManager } =
         await renderChatAndGetInstanceWithStore(config);
       const hydrateSpy = jest
-        .spyOn(serviceManager.actions, "hydrateChat")
+        .spyOn(serviceManager.actions, 'hydrateChat')
         .mockResolvedValue(undefined);
 
       instance.on({
@@ -235,37 +235,37 @@ describe("ChatInstance.changeView", () => {
         { launcher: true, mainWindow: false },
         { viewChangeReason: ViewChangeReason.WEB_CHAT_LOADED },
         /* tryHydrating */ false,
-        /* forceViewChange */ true,
+        /* forceViewChange */ true
       );
 
       expect(
-        store.getState().persistedToBrowserStorage.viewState.mainWindow,
+        store.getState().persistedToBrowserStorage.viewState.mainWindow
       ).toBe(true);
       expect(hydrateSpy).toHaveBeenCalled();
     });
 
-    it("does not hydrate when no handler mutates newViewState during a deferred-hydration change", async () => {
+    it('does not hydrate when no handler mutates newViewState during a deferred-hydration change', async () => {
       const config = createBaseConfig();
       const { store, serviceManager } =
         await renderChatAndGetInstanceWithStore(config);
       const hydrateSpy = jest
-        .spyOn(serviceManager.actions, "hydrateChat")
+        .spyOn(serviceManager.actions, 'hydrateChat')
         .mockResolvedValue(undefined);
 
       await serviceManager.actions.changeView(
         { launcher: true, mainWindow: false },
         { viewChangeReason: ViewChangeReason.WEB_CHAT_LOADED },
         /* tryHydrating */ false,
-        /* forceViewChange */ true,
+        /* forceViewChange */ true
       );
 
       expect(
-        store.getState().persistedToBrowserStorage.viewState.mainWindow,
+        store.getState().persistedToBrowserStorage.viewState.mainWindow
       ).toBe(false);
       expect(hydrateSpy).not.toHaveBeenCalled();
     });
 
-    it("calls customSendMessage and customLoadHistory when onViewPreChange forces the window open during cold boot", async () => {
+    it('calls customSendMessage and customLoadHistory when onViewPreChange forces the window open during cold boot', async () => {
       window.sessionStorage.clear();
 
       const customLoadHistory = jest.fn().mockResolvedValue([]);
@@ -283,7 +283,7 @@ describe("ChatInstance.changeView", () => {
           onViewPreChange: (event) => {
             event.newViewState.mainWindow = true;
           },
-        }),
+        })
       );
 
       await waitFor(() => {

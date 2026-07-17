@@ -10,29 +10,29 @@
  * and apply Carbon Design System styling
  */
 (function () {
-  "use strict";
+  'use strict';
 
   function replaceExperimentalTags() {
     // Find all .tsd-tag elements
-    const tags = document.querySelectorAll(".tsd-tag, code.tsd-tag");
+    const tags = document.querySelectorAll('.tsd-tag, code.tsd-tag');
 
     tags.forEach((tag) => {
-      if (tag.textContent.trim() === "Experimental") {
+      if (tag.textContent.trim() === 'Experimental') {
         // Replace the text content
-        tag.textContent = "Preview";
+        tag.textContent = 'Preview';
 
         // Add data attribute for CSS targeting
-        tag.setAttribute("data-tag-type", "experimental");
+        tag.setAttribute('data-tag-type', 'experimental');
 
         // Add class for additional styling
-        tag.classList.add("tsd-tag--experimental");
+        tag.classList.add('tsd-tag--experimental');
       }
     });
   }
 
   // Run when DOM is ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", replaceExperimentalTags);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', replaceExperimentalTags);
   } else {
     replaceExperimentalTags();
   }

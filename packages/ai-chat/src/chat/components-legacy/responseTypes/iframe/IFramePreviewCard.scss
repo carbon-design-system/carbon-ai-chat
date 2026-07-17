@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
 
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--i-frame-preview-card .cds-aichat--image {

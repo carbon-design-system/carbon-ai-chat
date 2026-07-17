@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/ai-chat-components/es/components/table/index.js";
-import CDSAIChatTable from "@carbon/ai-chat-components/es/components/table/src/table.js";
+import { html, fixture, expect } from '@open-wc/testing';
+import '@carbon/ai-chat-components/es/components/table/index.js';
+import CDSAIChatTable from '@carbon/ai-chat-components/es/components/table/src/table.js';
 
 /**
  * This repository uses the @web/test-runner library for testing
@@ -17,18 +17,17 @@ import CDSAIChatTable from "@carbon/ai-chat-components/es/components/table/src/t
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
 
-const headers = [{ text: "A" }, { text: "B" }];
+const headers = [{ text: 'A' }, { text: 'B' }];
 const rows = Array.from({ length: 24 }, (_, i) => ({
   cells: [{ text: `row ${i} A` }, { text: `row ${i} B` }],
 }));
 
-describe("aichat table defaultPageSize", function () {
-  it("cascades into the current page size after first mount", async () => {
+describe('aichat table defaultPageSize', function () {
+  it('cascades into the current page size after first mount', async () => {
     const el = await fixture<CDSAIChatTable>(
       html`<cds-aichat-table
         .headers=${headers}
-        .rows=${rows}
-      ></cds-aichat-table>`,
+        .rows=${rows}></cds-aichat-table>`
     );
     await el.updateComplete;
 
@@ -39,12 +38,11 @@ describe("aichat table defaultPageSize", function () {
     expect(el.defaultPageSize).to.equal(20);
   });
 
-  it("preserves a user-selected page size once the pagination dropdown has been used", async () => {
+  it('preserves a user-selected page size once the pagination dropdown has been used', async () => {
     const el = await fixture<CDSAIChatTable>(
       html`<cds-aichat-table
         .headers=${headers}
-        .rows=${rows}
-      ></cds-aichat-table>`,
+        .rows=${rows}></cds-aichat-table>`
     );
     await el.updateComplete;
 

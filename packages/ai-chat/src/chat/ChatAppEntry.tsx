@@ -7,51 +7,51 @@
  *  @license
  */
 
-import isEqual from "lodash-es/isEqual.js";
+import isEqual from 'lodash-es/isEqual.js';
 import React, {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-} from "react";
-import { StoreProvider } from "./providers/StoreProvider";
-import { WindowSizeProvider } from "./providers/WindowSizeProvider";
-import { ServiceManagerProvider } from "./providers/ServiceManagerProvider";
-import { IntlProvider } from "./providers/IntlProvider";
-import { AriaAnnouncerProvider } from "./providers/AriaAnnouncerProvider";
-import { ServiceManager } from "./services/ServiceManager";
+} from 'react';
+import { StoreProvider } from './providers/StoreProvider';
+import { WindowSizeProvider } from './providers/WindowSizeProvider';
+import { ServiceManagerProvider } from './providers/ServiceManagerProvider';
+import { IntlProvider } from './providers/IntlProvider';
+import { AriaAnnouncerProvider } from './providers/AriaAnnouncerProvider';
+import { ServiceManager } from './services/ServiceManager';
 import {
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
   initServiceManagerAndInstance,
   mergePublicConfig,
   performInitialViewChange,
-} from "./utils/chatBoot";
-import { UserDefinedResponsePortalsContainer } from "./components/UserDefinedResponsePortalsContainer";
+} from './utils/chatBoot';
+import { UserDefinedResponsePortalsContainer } from './components/UserDefinedResponsePortalsContainer';
 import {
   CustomFooterSlotState,
   CustomFooterPortalsContainer,
-} from "./components/CustomFooterPortalsContainer";
-import { WriteableElementsPortalsContainer } from "./components/WriteableElementsPortalsContainer";
+} from './components/CustomFooterPortalsContainer';
+import { WriteableElementsPortalsContainer } from './components/WriteableElementsPortalsContainer';
 
-import { useOnMount } from "./hooks/useOnMount";
-import appActions from "./store/actions";
-import { consoleError, consoleWarn } from "./utils/miscUtils";
-import { isBrowser } from "./utils/browserUtils";
+import { useOnMount } from './hooks/useOnMount';
+import appActions from './store/actions';
+import { consoleError, consoleWarn } from './utils/miscUtils';
+import { isBrowser } from './utils/browserUtils';
 
-import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
+import { applyConfigChangesDynamically } from './utils/dynamicConfigUpdates';
 
 import {
   RenderUserDefinedState,
   RenderUserDefinedResponse,
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
-} from "../types/component/ChatContainer";
-import { ChatInstance } from "../types/instance/ChatInstance";
-import { PublicConfig } from "../types/config/PublicConfig";
-import { Dimension } from "../types/utilities/Dimension";
-import AppShell from "./AppShell";
+} from '../types/component/ChatContainer';
+import { ChatInstance } from '../types/instance/ChatInstance';
+import { PublicConfig } from '../types/config/PublicConfig';
+import { Dimension } from '../types/utilities/Dimension';
+import AppShell from './AppShell';
 
 /**
  * Props for the top-level Chat container. This component is responsible for
@@ -109,7 +109,7 @@ export function ChatAppEntry({
 }: AppProps) {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
   const [serviceManager, setServiceManager] = useState<ServiceManager | null>(
-    null,
+    null
   );
   const [beforeRenderComplete, setBeforeRenderComplete] =
     useState<boolean>(false);
@@ -152,10 +152,10 @@ export function ChatAppEntry({
       unstablePropsWarnedRef.current.add(name);
       consoleWarn(
         `The \`${name}\` prop changed identity without changing content. Memoize it ` +
-          `(e.g. useMemo / useCallback) so it does not trigger avoidable work on every render.`,
+          `(e.g. useMemo / useCallback) so it does not trigger avoidable work on every render.`
       );
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   /**
@@ -192,13 +192,13 @@ export function ChatAppEntry({
         // references stable for the slice's `isEqual` guard.
         if (config.markdown) {
           serviceManager.store.dispatch(
-            appActions.setAppStateValue("markdownConfig", config.markdown),
+            appActions.setAppStateValue('markdownConfig', config.markdown)
           );
         }
 
         attachUserDefinedResponseHandlers(
           instance,
-          setUserDefinedResponseEventsBySlot,
+          setUserDefinedResponseEventsBySlot
         );
 
         attachCustomFooterHandler(instance, setCustomFooterSlotsByName);
@@ -213,14 +213,14 @@ export function ChatAppEntry({
         setBeforeRenderComplete(true);
         await performInitialViewChange(serviceManager);
         serviceManager.store.dispatch(
-          appActions.setInitialViewChangeComplete(true),
+          appActions.setInitialViewChangeComplete(true)
         );
 
         if (onAfterRender) {
           setAfterRenderCallback(() => () => onAfterRender(instance));
         }
       } catch (error) {
-        console.error("Error initializing chat:", error);
+        console.error('Error initializing chat:', error);
       }
     };
 
@@ -250,7 +250,7 @@ export function ChatAppEntry({
     if (isEqual(previousEffective, nextEffective)) {
       // The effect re-ran (a `config`/`strings`/`serviceDesk` prop changed
       // identity) but nothing actually changed — surface the churn in debug mode.
-      warnUnstableProp("config");
+      warnUnstableProp('config');
       return;
     }
 
@@ -261,10 +261,10 @@ export function ChatAppEntry({
         await applyConfigChangesDynamically(
           previousEffective,
           nextEffective,
-          currentServiceManager,
+          currentServiceManager
         );
       } catch (error) {
-        consoleError("Failed to apply config changes dynamically:", error);
+        consoleError('Failed to apply config changes dynamically:', error);
       }
     };
     handleDynamicUpdate();
@@ -291,12 +291,12 @@ export function ChatAppEntry({
     if (isEqual(current, markdown)) {
       // A new `markdown` identity with unchanged content — diagnose the churn.
       if (markdown !== undefined && markdown !== current) {
-        warnUnstableProp("markdown");
+        warnUnstableProp('markdown');
       }
       return;
     }
     serviceManager.store.dispatch(
-      appActions.setAppStateValue("markdownConfig", markdown),
+      appActions.setAppStateValue('markdownConfig', markdown)
     );
   }, [markdown, serviceManager, warnUnstableProp]);
 
@@ -335,21 +335,21 @@ export function ChatAppEntry({
     const windowListener = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
-    window.addEventListener("resize", windowListener);
+    window.addEventListener('resize', windowListener);
 
     const visibilityListener = () => {
       serviceManager?.store.dispatch(
         appActions.setIsBrowserPageVisible(
-          document.visibilityState === "visible",
-        ),
+          document.visibilityState === 'visible'
+        )
       );
     };
 
-    document.addEventListener("visibilitychange", visibilityListener);
+    document.addEventListener('visibilitychange', visibilityListener);
 
     return () => {
-      window.removeEventListener("resize", windowListener);
-      document.removeEventListener("visibilitychange", visibilityListener);
+      window.removeEventListener('resize', windowListener);
+      document.removeEventListener('visibilitychange', visibilityListener);
       serviceManager?.themeWatcherService?.stopWatching();
     };
   });
@@ -370,9 +370,9 @@ export function ChatAppEntry({
             .filter(([, node]) => node != null)
             .map(([key]) => key)
             .sort()
-            .join(" ")
+            .join(' ')
         : undefined,
-    [renderWriteableElements],
+    [renderWriteableElements]
   );
 
   if (!(serviceManager && instance && beforeRenderComplete)) {

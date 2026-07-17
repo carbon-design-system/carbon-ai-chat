@@ -13,13 +13,13 @@
  * Only changes made after it is attached are announced.
  */
 
-import React, { PureComponent } from "react";
+import React, { PureComponent } from 'react';
 
 import {
   HasAriaAnnouncer,
   withAriaAnnouncer,
-} from "../../hocs/withAriaAnnouncer";
-import { HasChildren } from "../../../types/utilities/HasChildren";
+} from '../../hocs/withAriaAnnouncer';
+import { HasChildren } from '../../../types/utilities/HasChildren';
 
 interface AnnounceOnMountComponentProps extends HasAriaAnnouncer, HasChildren {
   /**
@@ -74,6 +74,6 @@ class AnnounceOnMountComponent extends PureComponent<
 }
 
 const AnnounceOnMountComponentExport = withAriaAnnouncer(
-  AnnounceOnMountComponent,
+  AnnounceOnMountComponent
 );
 export { AnnounceOnMountComponentExport as AnnounceOnMountComponent };

@@ -7,7 +7,7 @@
  *  @license
  */
 
-declare module "@carbon/icons/es/*" {
+declare module '@carbon/icons/es/*' {
   const icon: any;
   export default icon;
 }

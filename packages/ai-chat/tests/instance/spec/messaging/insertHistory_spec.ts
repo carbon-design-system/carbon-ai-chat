@@ -13,56 +13,56 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../../test_helpers";
-import { BusEventType } from "../../../../src/types/events/eventBusTypes";
-import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
-import { HistoryItem } from "../../../../src/types/messaging/History";
+} from '../../../test_helpers';
+import { BusEventType } from '../../../../src/types/events/eventBusTypes';
+import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
+import { HistoryItem } from '../../../../src/types/messaging/History';
 
-describe("ChatInstance.messaging.insertHistory", () => {
+describe('ChatInstance.messaging.insertHistory', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have insertHistory method available", async () => {
+  it('should have insertHistory method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.messaging.insertHistory).toBe("function");
+    expect(typeof instance.messaging.insertHistory).toBe('function');
   });
 
-  it("should accept array of history items", async () => {
+  it('should accept array of history items', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     const historyItems: HistoryItem[] = [
       {
         message: {
-          id: "hist-1",
+          id: 'hist-1',
           output: {
             generic: [
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "Assistant response",
+                text: 'Assistant response',
               },
             ],
           },
         },
-        time: "2024-01-01T00:00:00.000Z",
+        time: '2024-01-01T00:00:00.000Z',
       },
     ];
 
     await expect(
-      instance.messaging.insertHistory(historyItems),
+      instance.messaging.insertHistory(historyItems)
     ).resolves.not.toThrow();
   });
 
-  it("should accept empty history array", async () => {
+  it('should accept empty history array', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     await expect(instance.messaging.insertHistory([])).resolves.not.toThrow();
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -70,8 +70,8 @@ describe("ChatInstance.messaging.insertHistory", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("Redux state updates", () => {
-    it("should add history messages to allMessagesByID in Redux store", async () => {
+  describe('Redux state updates', () => {
+    it('should add history messages to allMessagesByID in Redux store', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -79,55 +79,55 @@ describe("ChatInstance.messaging.insertHistory", () => {
       const historyItems: HistoryItem[] = [
         {
           message: {
-            id: "history-msg-1",
+            id: 'history-msg-1',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "First bot response",
+                  text: 'First bot response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
         {
           message: {
-            id: "history-msg-2",
+            id: 'history-msg-2',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Second bot response",
+                  text: 'Second bot response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:01:00.000Z",
+          time: '2024-01-01T00:01:00.000Z',
         },
       ];
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
 
       await instance.messaging.insertHistory(historyItems);
 
       const updatedState = store.getState();
       const updatedMessageCount = Object.keys(
-        updatedState.allMessagesByID,
+        updatedState.allMessagesByID
       ).length;
 
       // Should have added both request and response messages
       expect(updatedMessageCount).toBeGreaterThan(initialMessageCount);
 
       // Check specific messages exist
-      expect(updatedState.allMessagesByID["history-msg-1"]).toBeDefined();
-      expect(updatedState.allMessagesByID["history-msg-2"]).toBeDefined();
+      expect(updatedState.allMessagesByID['history-msg-1']).toBeDefined();
+      expect(updatedState.allMessagesByID['history-msg-2']).toBeDefined();
     });
 
-    it("should add history message items to allMessageItemsByID", async () => {
+    it('should add history message items to allMessageItemsByID', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -135,30 +135,30 @@ describe("ChatInstance.messaging.insertHistory", () => {
       const historyItems: HistoryItem[] = [
         {
           message: {
-            id: "history-item-1",
+            id: 'history-item-1',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Test history response",
+                  text: 'Test history response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ];
 
       const initialState = store.getState();
       const initialItemCount = Object.keys(
-        initialState.allMessageItemsByID,
+        initialState.allMessageItemsByID
       ).length;
 
       await instance.messaging.insertHistory(historyItems);
 
       const updatedState = store.getState();
       const updatedItemCount = Object.keys(
-        updatedState.allMessageItemsByID,
+        updatedState.allMessageItemsByID
       ).length;
 
       expect(updatedItemCount).toBeGreaterThan(initialItemCount);
@@ -166,25 +166,25 @@ describe("ChatInstance.messaging.insertHistory", () => {
       // Find message items related to our history
       const messageItems = Object.values(updatedState.allMessageItemsByID);
       const historyMessageItems = messageItems.filter(
-        (item) => item.fullMessageID === "history-item-1",
+        (item) => item.fullMessageID === 'history-item-1'
       );
 
       expect(historyMessageItems.length).toBeGreaterThan(0);
     });
 
-    it("should maintain message order (history messages before current)", async () => {
+    it('should maintain message order (history messages before current)', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // First add a current message
       await instance.messaging.addMessage({
-        id: "current-msg",
+        id: 'current-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Current message",
+              text: 'Current message',
             },
           ],
         },
@@ -202,17 +202,17 @@ describe("ChatInstance.messaging.insertHistory", () => {
       const historyItems: HistoryItem[] = [
         {
           message: {
-            id: "history-old-msg",
+            id: 'history-old-msg',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Old bot response",
+                  text: 'Old bot response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ];
 
@@ -229,32 +229,32 @@ describe("ChatInstance.messaging.insertHistory", () => {
 
       // Current message IDs should be at the end (preserved order)
       const currentIDsInFinal = finalMessageIDs.slice(
-        -currentMessageIDs.length,
+        -currentMessageIDs.length
       );
       expect(currentIDsInFinal).toEqual(currentMessageIDs);
     });
 
-    it("should handle empty history array without errors", async () => {
+    it('should handle empty history array without errors', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
       const initialItemCount = Object.keys(
-        initialState.allMessageItemsByID,
+        initialState.allMessageItemsByID
       ).length;
 
       await instance.messaging.insertHistory([]);
 
       const updatedState = store.getState();
       const updatedMessageCount = Object.keys(
-        updatedState.allMessagesByID,
+        updatedState.allMessagesByID
       ).length;
       const updatedItemCount = Object.keys(
-        updatedState.allMessageItemsByID,
+        updatedState.allMessageItemsByID
       ).length;
 
       // Should not change state
@@ -262,19 +262,19 @@ describe("ChatInstance.messaging.insertHistory", () => {
       expect(updatedItemCount).toBe(initialItemCount);
     });
 
-    it("should preserve existing messages when inserting history", async () => {
+    it('should preserve existing messages when inserting history', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add an existing message first
       await instance.messaging.addMessage({
-        id: "existing-msg",
+        id: 'existing-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Existing message",
+              text: 'Existing message',
             },
           ],
         },
@@ -282,24 +282,24 @@ describe("ChatInstance.messaging.insertHistory", () => {
 
       const stateAfterExisting = store.getState();
       const existingMessageKeys = Object.keys(
-        stateAfterExisting.allMessagesByID,
+        stateAfterExisting.allMessagesByID
       );
 
       // Insert history
       await instance.messaging.insertHistory([
         {
           message: {
-            id: "new-history-msg",
+            id: 'new-history-msg',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "History output",
+                  text: 'History output',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ]);
 
@@ -311,12 +311,12 @@ describe("ChatInstance.messaging.insertHistory", () => {
       });
 
       // New history message should also be present
-      expect(finalState.allMessagesByID["new-history-msg"]).toBeDefined();
+      expect(finalState.allMessagesByID['new-history-msg']).toBeDefined();
     });
   });
 
-  describe("Event bus integration", () => {
-    it("should fire history:begin and history:end events", async () => {
+  describe('Event bus integration', () => {
+    it('should fire history:begin and history:end events', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -331,17 +331,17 @@ describe("ChatInstance.messaging.insertHistory", () => {
       const historyItems: HistoryItem[] = [
         {
           message: {
-            id: "event-test-msg",
+            id: 'event-test-msg',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Event test output",
+                  text: 'Event test output',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ];
 
@@ -361,18 +361,18 @@ describe("ChatInstance.messaging.insertHistory", () => {
       expect(endCall.messages).toBeDefined();
     });
 
-    it("should fire events in correct order (begin before end)", async () => {
+    it('should fire events in correct order (begin before end)', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
       const eventOrder: string[] = [];
 
       const historyBeginHandler = jest.fn(() => {
-        eventOrder.push("history:begin");
+        eventOrder.push('history:begin');
       });
 
       const historyEndHandler = jest.fn(() => {
-        eventOrder.push("history:end");
+        eventOrder.push('history:end');
       });
 
       instance.on([
@@ -383,24 +383,24 @@ describe("ChatInstance.messaging.insertHistory", () => {
       await instance.messaging.insertHistory([
         {
           message: {
-            id: "order-test-msg",
+            id: 'order-test-msg',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Order test response",
+                  text: 'Order test response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ]);
 
-      expect(eventOrder).toEqual(["history:begin", "history:end"]);
+      expect(eventOrder).toEqual(['history:begin', 'history:end']);
     });
 
-    it("should not fire events for empty history", async () => {
+    it('should not fire events for empty history', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -419,7 +419,7 @@ describe("ChatInstance.messaging.insertHistory", () => {
       expect(historyEndHandler).toHaveBeenCalledTimes(0);
     });
 
-    it("should include history data in events", async () => {
+    it('should include history data in events', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -434,17 +434,17 @@ describe("ChatInstance.messaging.insertHistory", () => {
       const historyItems: HistoryItem[] = [
         {
           message: {
-            id: "data-test-msg",
+            id: 'data-test-msg',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Data test output",
+                  text: 'Data test output',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ];
 
@@ -462,7 +462,7 @@ describe("ChatInstance.messaging.insertHistory", () => {
       expect(Array.isArray(endCall.messages)).toBe(true);
     });
 
-    it("should handle multiple history insertions", async () => {
+    it('should handle multiple history insertions', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -478,17 +478,17 @@ describe("ChatInstance.messaging.insertHistory", () => {
       await instance.messaging.insertHistory([
         {
           message: {
-            id: "multi-test-msg-1",
+            id: 'multi-test-msg-1',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "First response",
+                  text: 'First response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:00:00.000Z",
+          time: '2024-01-01T00:00:00.000Z',
         },
       ]);
 
@@ -496,17 +496,17 @@ describe("ChatInstance.messaging.insertHistory", () => {
       await instance.messaging.insertHistory([
         {
           message: {
-            id: "multi-test-msg-2",
+            id: 'multi-test-msg-2',
             output: {
               generic: [
                 {
                   response_type: MessageResponseTypes.TEXT,
-                  text: "Second response",
+                  text: 'Second response',
                 },
               ],
             },
           },
-          time: "2024-01-01T00:01:00.000Z",
+          time: '2024-01-01T00:01:00.000Z',
         },
       ]);
 

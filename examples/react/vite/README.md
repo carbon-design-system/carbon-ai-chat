@@ -1,14 +1,18 @@
 # Vite
 
-Vite-powered React example that mirrors the `basic` mocked messaging flow and adds a Vitest + happy-dom test suite.
+Vite-powered React example that mirrors the `basic` mocked messaging flow and
+adds a Vitest + happy-dom test suite.
 
 ## What this example shows
 
 - Mounting `ChatContainer` from a Vite dev server with React 19.
-- Mocked streaming, plain text, and `user_defined` response branches in `customSendMessage`, including stream-stop handling.
-- Subscribing to `BusEventType.FEEDBACK` in `onBeforeRender` and alerting the submitted payload.
+- Mocked streaming, plain text, and `user_defined` response branches in
+  `customSendMessage`, including stream-stop handling.
+- Subscribing to `BusEventType.FEEDBACK` in `onBeforeRender` and alerting the
+  submitted payload.
 - Rendering user-defined responses through `renderUserDefinedResponse`.
-- Running the same app under Vitest with a happy-dom environment (`vitest.setup.ts`, `src/__tests__`).
+- Running the same app under Vitest with a happy-dom environment
+  (`vitest.setup.ts`, `src/__tests__`).
 
 ## When to use this pattern
 
@@ -30,7 +34,10 @@ Vite-powered React example that mirrors the `basic` mocked messaging flow and ad
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 
@@ -42,6 +49,8 @@ npm run build --workspace=@carbon/ai-chat
 npm run dev --workspace=@carbon/ai-chat-examples-react-vite
 ```
 
-(Use `npm run test --workspace=@carbon/ai-chat-examples-react-vite` for the Vitest suite, or `test:watch` for watch mode. `build` and `preview` are also available.)
+(Use `npm run test --workspace=@carbon/ai-chat-examples-react-vite` for the
+Vitest suite, or `test:watch` for watch mode. `build` and `preview` are also
+available.)
 
 See [../README.md](../README.md) for the full setup walkthrough.

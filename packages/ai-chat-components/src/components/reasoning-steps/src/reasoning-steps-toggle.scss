@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/utilities/button-reset" as button;
-@use "@carbon/layout";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/utilities/button-reset' as button;
+@use '@carbon/layout';
 
 :host {
   display: inline-flex;
@@ -18,7 +18,7 @@
 
 button.#{$prefix}--reasoning-steps-toggle {
   @include button.reset(true);
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 
   display: inline-flex;
   align-items: center;

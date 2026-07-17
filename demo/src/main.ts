@@ -7,58 +7,58 @@
  *  @license
  */
 
-import "./index.css";
-import "@carbon/web-components/es/components/ui-shell/index.js";
-import "@carbon/web-components/es/components/layer/index.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
-import "@carbon/web-components/es/components/accordion/index.js";
-import "@carbon/web-components/es/components/notification/index.js";
-import "./framework/demo-body";
-import "./framework/demo-header";
-import "./framework/demo-version-switcher";
-import "./framework/demo-layout-switcher";
-import "./framework/demo-homescreen-switcher";
-import "./framework/demo-theme-switcher";
-import "./framework/demo-page-theme-switcher";
-import "./framework/demo-writeable-elements-switcher";
-import "./framework/demo-stop-button-immediate-switcher";
-import "./web-components/demo-app";
+import './index.css';
+import '@carbon/web-components/es/components/ui-shell/index.js';
+import '@carbon/web-components/es/components/layer/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
+import '@carbon/web-components/es/components/accordion/index.js';
+import '@carbon/web-components/es/components/notification/index.js';
+import './framework/demo-body';
+import './framework/demo-header';
+import './framework/demo-version-switcher';
+import './framework/demo-layout-switcher';
+import './framework/demo-homescreen-switcher';
+import './framework/demo-theme-switcher';
+import './framework/demo-page-theme-switcher';
+import './framework/demo-writeable-elements-switcher';
+import './framework/demo-stop-button-immediate-switcher';
+import './web-components/demo-app';
 
-import { ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement, PropertyValues, css } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement, PropertyValues, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { Settings } from "./framework/types";
-import { getSettings } from "./framework/utils";
+import { Settings } from './framework/types';
+import { getSettings } from './framework/utils';
 
 const { defaultConfig, defaultSettings } = getSettings();
 
 // Handle skip link to work with shadow DOM
 // The #main-content element is inside the shadow DOM of demo-body,
 // so we need to manually handle the focus when the skip link is clicked
-document.addEventListener("DOMContentLoaded", () => {
-  const skipLink = document.querySelector(".skip-to-main");
+document.addEventListener('DOMContentLoaded', () => {
+  const skipLink = document.querySelector('.skip-to-main');
   if (skipLink) {
-    skipLink.addEventListener("click", (e) => {
+    skipLink.addEventListener('click', (e) => {
       e.preventDefault();
-      const demoBody = document.querySelector("demo-body");
+      const demoBody = document.querySelector('demo-body');
       const mainContent = demoBody?.shadowRoot?.querySelector(
-        "#main-content",
+        '#main-content'
       ) as HTMLElement | null;
       if (mainContent) {
         // Make the main element focusable if it isn't already
-        if (!mainContent.hasAttribute("tabindex")) {
-          mainContent.setAttribute("tabindex", "-1");
+        if (!mainContent.hasAttribute('tabindex')) {
+          mainContent.setAttribute('tabindex', '-1');
         }
         mainContent.focus();
         // Optionally scroll into view
-        mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
+        mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
   }
 });
 
-@customElement("demo-container")
+@customElement('demo-container')
 export class Demo extends LitElement {
   static styles = css`
     :host {
@@ -101,36 +101,36 @@ export class Demo extends LitElement {
     super.connectedCallback();
     // Listen for setChatConfig mode changes from demo-body
     this.addEventListener(
-      "set-chat-config-mode-changed",
-      this._onSetChatConfigModeChanged as EventListener,
+      'set-chat-config-mode-changed',
+      this._onSetChatConfigModeChanged as EventListener
     );
     this.addEventListener(
-      "demo-settings-changed",
-      this._onDemoSettingsChanged as EventListener,
+      'demo-settings-changed',
+      this._onDemoSettingsChanged as EventListener
     );
     this.addEventListener(
-      "demo-chat-instance-changed",
-      this._onDemoChatInstanceChanged as EventListener,
+      'demo-chat-instance-changed',
+      this._onDemoChatInstanceChanged as EventListener
     );
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener(
-      "set-chat-config-mode-changed",
-      this._onSetChatConfigModeChanged as EventListener,
+      'set-chat-config-mode-changed',
+      this._onSetChatConfigModeChanged as EventListener
     );
     this.removeEventListener(
-      "demo-settings-changed",
-      this._onDemoSettingsChanged as EventListener,
+      'demo-settings-changed',
+      this._onDemoSettingsChanged as EventListener
     );
     this.removeEventListener(
-      "demo-chat-instance-changed",
-      this._onDemoChatInstanceChanged as EventListener,
+      'demo-chat-instance-changed',
+      this._onDemoChatInstanceChanged as EventListener
     );
     this.headerSlot?.removeEventListener(
-      "slotchange",
-      this._onHeaderSlotChange,
+      'slotchange',
+      this._onHeaderSlotChange
     );
     this.headerSlot = null;
   }
@@ -162,9 +162,9 @@ export class Demo extends LitElement {
   protected firstUpdated(_changedProperties: PropertyValues): void {
     super.firstUpdated(_changedProperties);
     this.headerSlot = this.shadowRoot?.querySelector(
-      'slot[name="demo-header"]',
+      'slot[name="demo-header"]'
     ) as HTMLSlotElement | null;
-    this.headerSlot?.addEventListener("slotchange", this._onHeaderSlotChange);
+    this.headerSlot?.addEventListener('slotchange', this._onHeaderSlotChange);
     this._applyHeaderStateToComponent();
   }
 
@@ -172,7 +172,7 @@ export class Demo extends LitElement {
     const slot =
       this.headerSlot ??
       (this.shadowRoot?.querySelector(
-        'slot[name="demo-header"]',
+        'slot[name="demo-header"]'
       ) as HTMLSlotElement | null);
     if (!slot) {
       return null;
@@ -184,11 +184,11 @@ export class Demo extends LitElement {
         continue;
       }
 
-      if (element.tagName.toLowerCase() === "demo-header") {
+      if (element.tagName.toLowerCase() === 'demo-header') {
         return element;
       }
 
-      const nestedHeader = element.querySelector("demo-header");
+      const nestedHeader = element.querySelector('demo-header');
       if (nestedHeader) {
         return nestedHeader as HTMLElement;
       }
@@ -210,8 +210,8 @@ export class Demo extends LitElement {
   private _leaveSetChatConfigMode = () => {
     // Remove setChatConfig query parameters and reload
     const urlParams = new URLSearchParams(window.location.search);
-    urlParams.delete("settings");
-    urlParams.delete("config");
+    urlParams.delete('settings');
+    urlParams.delete('config');
 
     // Build new URL without setChatConfig params
     const newUrl = urlParams.toString()
@@ -235,8 +235,7 @@ export class Demo extends LitElement {
                 subtitle="You are in setChatConfig mode but no configuration has been set. Call window.setChatConfig() to provide a configuration."
                 inline
                 hide-close-button
-                data-testid="set_chat_config_notification_error"
-              >
+                data-testid="set_chat_config_notification_error">
                 <cds-actionable-notification-button
                   slot="action"
                   @click=${this._leaveSetChatConfigMode}
@@ -244,7 +243,7 @@ export class Demo extends LitElement {
                 >
               </cds-actionable-notification>
             </div>`
-          : ""
+          : ''
       }`;
   }
 }
@@ -252,6 +251,6 @@ export class Demo extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-container": Demo;
+    'demo-container': Demo;
   }
 }

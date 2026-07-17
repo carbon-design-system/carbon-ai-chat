@@ -7,21 +7,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { CornerConfig, CornerStyle, CornerPosition } from "./types.js";
+import { CornerConfig, CornerStyle, CornerPosition } from './types.js';
 import {
   setVarsForSelector,
   clearVarsForSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
+} from '../../shared/dynamic-css-var-sheet.js';
 
 const CORNER_PROPS = [
-  "--cds-aichat-border-radius-start-start-base",
-  "--cds-aichat-border-radius-start-end-base",
-  "--cds-aichat-border-radius-end-start-base",
-  "--cds-aichat-border-radius-end-end-base",
-  "--cds-aichat-border-radius-start-start",
-  "--cds-aichat-border-radius-start-end",
-  "--cds-aichat-border-radius-end-start",
-  "--cds-aichat-border-radius-end-end",
+  '--cds-aichat-border-radius-start-start-base',
+  '--cds-aichat-border-radius-start-end-base',
+  '--cds-aichat-border-radius-end-start-base',
+  '--cds-aichat-border-radius-end-end-base',
+  '--cds-aichat-border-radius-start-start',
+  '--cds-aichat-border-radius-start-end',
+  '--cds-aichat-border-radius-end-start',
+  '--cds-aichat-border-radius-end-end',
 ];
 
 /**
@@ -34,7 +34,7 @@ export class CornerManager {
 
   constructor(
     private readonly shellSelector: string,
-    config: CornerConfig,
+    config: CornerConfig
   ) {
     this.config = config;
     this.updateCornerCSSVariables();
@@ -60,11 +60,11 @@ export class CornerManager {
    */
   hasAnyRoundedCorner(): boolean {
     return (
-      this.config.cornerAll === "round" ||
-      this.config.cornerStartStart === "round" ||
-      this.config.cornerStartEnd === "round" ||
-      this.config.cornerEndStart === "round" ||
-      this.config.cornerEndEnd === "round"
+      this.config.cornerAll === 'round' ||
+      this.config.cornerStartStart === 'round' ||
+      this.config.cornerStartEnd === 'round' ||
+      this.config.cornerEndStart === 'round' ||
+      this.config.cornerEndEnd === 'round'
     );
   }
 
@@ -73,13 +73,13 @@ export class CornerManager {
    */
   getEffectiveCorner(position: CornerPosition): CornerStyle {
     switch (position) {
-      case "start-start":
+      case 'start-start':
         return this.config.cornerStartStart ?? this.config.cornerAll;
-      case "start-end":
+      case 'start-end':
         return this.config.cornerStartEnd ?? this.config.cornerAll;
-      case "end-start":
+      case 'end-start':
         return this.config.cornerEndStart ?? this.config.cornerAll;
-      case "end-end":
+      case 'end-end':
         return this.config.cornerEndEnd ?? this.config.cornerAll;
     }
   }
@@ -89,23 +89,23 @@ export class CornerManager {
    */
   private updateCornerCSSVariables(): void {
     const radiusValue = (corner: CornerStyle) =>
-      corner === "round" ? "0.5rem" : "0";
+      corner === 'round' ? '0.5rem' : '0';
 
-    const startStartValue = radiusValue(this.getEffectiveCorner("start-start"));
-    const startEndValue = radiusValue(this.getEffectiveCorner("start-end"));
-    const endStartValue = radiusValue(this.getEffectiveCorner("end-start"));
-    const endEndValue = radiusValue(this.getEffectiveCorner("end-end"));
+    const startStartValue = radiusValue(this.getEffectiveCorner('start-start'));
+    const startEndValue = radiusValue(this.getEffectiveCorner('start-end'));
+    const endStartValue = radiusValue(this.getEffectiveCorner('end-start'));
+    const endEndValue = radiusValue(this.getEffectiveCorner('end-end'));
 
     setVarsForSelector(this.shellSelector, {
-      "--cds-aichat-border-radius-start-start-base": startStartValue,
-      "--cds-aichat-border-radius-start-end-base": startEndValue,
-      "--cds-aichat-border-radius-end-start-base": endStartValue,
-      "--cds-aichat-border-radius-end-end-base": endEndValue,
+      '--cds-aichat-border-radius-start-start-base': startStartValue,
+      '--cds-aichat-border-radius-start-end-base': startEndValue,
+      '--cds-aichat-border-radius-end-start-base': endStartValue,
+      '--cds-aichat-border-radius-end-end-base': endEndValue,
       // Also set regular variables for direct usage (backward compatibility)
-      "--cds-aichat-border-radius-start-start": startStartValue,
-      "--cds-aichat-border-radius-start-end": startEndValue,
-      "--cds-aichat-border-radius-end-start": endStartValue,
-      "--cds-aichat-border-radius-end-end": endEndValue,
+      '--cds-aichat-border-radius-start-start': startStartValue,
+      '--cds-aichat-border-radius-start-end': startEndValue,
+      '--cds-aichat-border-radius-end-start': endStartValue,
+      '--cds-aichat-border-radius-end-end': endEndValue,
     });
   }
 }

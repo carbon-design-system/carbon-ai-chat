@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "@testing-library/jest-dom";
-import { loadAllLazyDeps } from "@carbon/ai-chat/server";
-import { vi, expect } from "vitest";
-import { shadowDomSerializer } from "./__tests__/snapshot-serializer";
+import '@testing-library/jest-dom';
+import { loadAllLazyDeps } from '@carbon/ai-chat/server';
+import { vi, expect } from 'vitest';
+import { shadowDomSerializer } from './__tests__/snapshot-serializer';
 
 // Register custom snapshot serializer to handle dynamic content in shadow DOM
 // This normalizes Lit comment markers and UUID-based IDs in snapshots
@@ -31,10 +31,10 @@ beforeAll(async () => {
  * verify the markup around the snippet without CodeMirror blowing up. Skip
  * this mock as well if your tests avoid rendering code responses.
  */
-vi.mock("@codemirror/view", async () => {
+vi.mock('@codemirror/view', async () => {
   const actual =
-    await vi.importActual<typeof import("@codemirror/view")>(
-      "@codemirror/view",
+    await vi.importActual<typeof import('@codemirror/view')>(
+      '@codemirror/view'
     );
 
   class MockEditorView {
@@ -63,7 +63,7 @@ vi.mock("@codemirror/view", async () => {
  * this mock as well if your tests avoid rendering code responses.
  */
 vi.mock(
-  "@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js",
+  '@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js',
   () => {
     const createRuntime = async () => {
       class MockCompartment {}
@@ -86,9 +86,9 @@ vi.mock(
         }),
         applyLanguageSupport() {},
         updateReadOnlyConfiguration() {},
-        createEditorView: ({ doc = "" }) => {
+        createEditorView: ({ doc = '' }) => {
           const lines =
-            typeof doc === "string" ? doc.split(/\r\n|\r|\n/).length : 0;
+            typeof doc === 'string' ? doc.split(/\r\n|\r|\n/).length : 0;
           return {
             state: { doc: { lines } },
             destroy() {},
@@ -102,7 +102,7 @@ vi.mock(
       loadCodeMirrorRuntime: () => createRuntime(),
       loadCodeSnippetDeps: () => createRuntime(),
     };
-  },
+  }
 );
 
 beforeEach(() => {

@@ -9,54 +9,54 @@
 
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import "../src/chat-button";
-import { html } from "lit";
+import '../src/chat-button';
+import { html } from 'lit';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
   BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TYPE,
   BUTTON_TOOLTIP_POSITION,
-} from "@carbon/web-components/es/components/button/button.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Add16 from "@carbon/icons/es/add/16.js";
-import Link16 from "@carbon/icons/es/link/16.js";
-import { fn } from "storybook/test";
-import { ifDefined } from "lit/directives/if-defined.js";
+} from '@carbon/web-components/es/components/button/button.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Add16 from '@carbon/icons/es/add/16.js';
+import Link16 from '@carbon/icons/es/link/16.js';
+import { fn } from 'storybook/test';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 const slots = {
-  Add16: () => html`${iconLoader(Add16, { slot: "icon" })}`,
-  Link16: () => html`${iconLoader(Link16, { slot: "icon" })}`,
-  None: () => "",
+  Add16: () => html`${iconLoader(Add16, { slot: 'icon' })}`,
+  Link16: () => html`${iconLoader(Link16, { slot: 'icon' })}`,
+  None: () => '',
 };
 
 const sharedArgTypes = {
   disabled: {
-    control: "boolean",
-    description: "Specify whether the Button should be disabled, or not.",
+    control: 'boolean',
+    description: 'Specify whether the Button should be disabled, or not.',
   },
   href: {
-    control: "text",
+    control: 'text',
     description:
-      "Optionally specify an href for your Button to become an `<a>` element.",
+      'Optionally specify an href for your Button to become an `<a>` element.',
   },
   isExpressive: {
-    control: "boolean",
-    description: "Specify whether the Button is expressive, or not.",
+    control: 'boolean',
+    description: 'Specify whether the Button is expressive, or not.',
   },
   linkRole: {
-    control: "text",
-    description: "Optional prop to specify the role of the Button.",
-    if: { arg: "href" },
+    control: 'text',
+    description: 'Optional prop to specify the role of the Button.',
+    if: { arg: 'href' },
   },
   size: {
-    control: "select",
-    description: "Specify the size of the Button.",
+    control: 'select',
+    description: 'Specify the size of the Button.',
     options: [BUTTON_SIZE.SMALL, BUTTON_SIZE.MEDIUM, BUTTON_SIZE.LARGE],
   },
   type: {
-    control: "radio",
-    description: "Specify the type of the Button.",
+    control: 'radio',
+    description: 'Specify the type of the Button.',
     options: [BUTTON_TYPE.BUTTON, BUTTON_TYPE.RESET, BUTTON_TYPE.SUBMIT],
   },
   onClick: { table: { disable: true } },
@@ -65,23 +65,23 @@ const sharedArgTypes = {
 const sharedArgs = {
   disabled: false,
   isExpressive: false,
-  iconSlot: "None",
+  iconSlot: 'None',
   onClick: fn(),
 };
 
 const baseButtonControls = {
   buttonText: {
-    control: "text",
+    control: 'text',
     description:
-      "The button text. storybook only control, not a prop/attribute.",
-    table: { category: "story controls" },
+      'The button text. storybook only control, not a prop/attribute.',
+    table: { category: 'story controls' },
   },
   iconSlot: {
-    control: "select",
+    control: 'select',
     options: Object.keys(slots),
     mapping: slots,
-    description: "Places the slotted icon inside the Button.",
-    table: { category: "slot" },
+    description: 'Places the slotted icon inside the Button.',
+    table: { category: 'slot' },
   },
 };
 
@@ -101,33 +101,32 @@ const baseButtonTemplate = (args) => html`
     tooltip-alignment=${ifDefined(args.tooltipAlignment)}
     tooltip-position=${ifDefined(args.tooltipPosition)}
     type=${ifDefined(args.type)}
-    ?is-quick-action="${args.isQuickAction}"
-  >
+    ?is-quick-action="${args.isQuickAction}">
     ${args.buttonText} ${args.iconSlot?.()}
   </cds-aichat-button>
 `;
 
 export default {
-  title: "Components/Chat button",
-  component: "cds-aichat-button",
+  title: 'Components/Chat button',
+  component: 'cds-aichat-button',
 };
 
 export const Default = {
-  name: "Primary (default)",
+  name: 'Primary (default)',
   argTypes: {
     ...sharedArgTypes,
     ...baseButtonControls,
     kind: {
-      control: "select",
-      description: "Specify the kind of Button.",
+      control: 'select',
+      description: 'Specify the kind of Button.',
       options: [BUTTON_KIND.PRIMARY],
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.PRIMARY,
-    buttonText: "Button",
-    iconSlot: "None",
+    buttonText: 'Button',
+    iconSlot: 'None',
   },
   render: baseButtonTemplate,
 };
@@ -137,16 +136,16 @@ export const Secondary = {
     ...sharedArgTypes,
     ...baseButtonControls,
     kind: {
-      control: "select",
-      description: "Specify the kind of Button.",
+      control: 'select',
+      description: 'Specify the kind of Button.',
       options: [BUTTON_KIND.SECONDARY],
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.SECONDARY,
-    buttonText: "Button",
-    iconSlot: "None",
+    buttonText: 'Button',
+    iconSlot: 'None',
   },
   render: baseButtonTemplate,
 };
@@ -156,16 +155,16 @@ export const Tertiary = {
     ...sharedArgTypes,
     ...baseButtonControls,
     kind: {
-      control: "select",
-      description: "Specify the kind of Button.",
+      control: 'select',
+      description: 'Specify the kind of Button.',
       options: [BUTTON_KIND.TERTIARY],
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.TERTIARY,
-    buttonText: "Button",
-    iconSlot: "None",
+    buttonText: 'Button',
+    iconSlot: 'None',
   },
   render: baseButtonTemplate,
 };
@@ -175,8 +174,8 @@ export const Danger = {
     ...sharedArgTypes,
     ...baseButtonControls,
     kind: {
-      control: "select",
-      description: "Specify the kind of Button.",
+      control: 'select',
+      description: 'Specify the kind of Button.',
       options: [
         BUTTON_KIND.DANGER,
         BUTTON_KIND.DANGER_TERTIARY,
@@ -184,17 +183,17 @@ export const Danger = {
       ],
     },
     dangerDescription: {
-      control: "text",
+      control: 'text',
       description:
-        "Specify the message read by screen readers for the danger button variant",
+        'Specify the message read by screen readers for the danger button variant',
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.DANGER,
-    dangerDescription: "danger",
-    buttonText: "Button",
-    iconSlot: "None",
+    dangerDescription: 'danger',
+    buttonText: 'Button',
+    iconSlot: 'None',
   },
   render: baseButtonTemplate,
 };
@@ -204,16 +203,16 @@ export const Ghost = {
     ...sharedArgTypes,
     ...baseButtonControls,
     kind: {
-      control: "select",
+      control: 'select',
       options: [BUTTON_KIND.GHOST],
-      description: "Specify the kind of Button.",
+      description: 'Specify the kind of Button.',
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.GHOST,
-    buttonText: "Button",
-    iconSlot: "None",
+    buttonText: 'Button',
+    iconSlot: 'None',
   },
   render: baseButtonTemplate,
 };
@@ -222,80 +221,80 @@ export const IconOnly = {
   argTypes: {
     ...sharedArgTypes,
     href: {
-      control: "text",
+      control: 'text',
       description:
-        "Optionally specify an href for your Button to become an `<a>` element <br> Note: setting this overrides `tooltipText` which would fail the accessibility. need a fix from carbon.",
+        'Optionally specify an href for your Button to become an `<a>` element <br> Note: setting this overrides `tooltipText` which would fail the accessibility. need a fix from carbon.',
     },
     kind: {
-      control: "select",
+      control: 'select',
       options: [
         BUTTON_KIND.PRIMARY,
         BUTTON_KIND.SECONDARY,
         BUTTON_KIND.TERTIARY,
         BUTTON_KIND.GHOST,
       ],
-      description: "Specify the kind of Button.",
+      description: 'Specify the kind of Button.',
     },
     tooltipText: {
-      control: "text",
+      control: 'text',
       description:
-        "The tooltip text for icon only button (accessibility required).",
-      if: { arg: "href", exists: false },
+        'The tooltip text for icon only button (accessibility required).',
+      if: { arg: 'href', exists: false },
     },
     tooltipAlignment: {
-      control: "radio",
+      control: 'radio',
       description:
-        "Specify the alignment of the tooltip to the icon-only button. Can be one of: start, center, or end.",
-      options: ["start", "center", "end"],
+        'Specify the alignment of the tooltip to the icon-only button. Can be one of: start, center, or end.',
+      options: ['start', 'center', 'end'],
       mapping: {
         start: BUTTON_TOOLTIP_ALIGNMENT.START,
         center: BUTTON_TOOLTIP_ALIGNMENT.CENTER,
         end: BUTTON_TOOLTIP_ALIGNMENT.END,
       },
-      if: { arg: "tooltipText" },
+      if: { arg: 'tooltipText' },
     },
     tooltipPosition: {
-      control: "radio",
+      control: 'radio',
       description:
-        "Specify the direction of the tooltip for icon-only buttons. Can be either top, right, bottom, or left.",
+        'Specify the direction of the tooltip for icon-only buttons. Can be either top, right, bottom, or left.',
       options: [
         BUTTON_TOOLTIP_POSITION.TOP,
         BUTTON_TOOLTIP_POSITION.RIGHT,
         BUTTON_TOOLTIP_POSITION.BOTTOM,
         BUTTON_TOOLTIP_POSITION.LEFT,
       ],
-      if: { arg: "tooltipText" },
+      if: { arg: 'tooltipText' },
     },
     isSelected: {
-      control: "boolean",
-      if: { arg: "kind", eq: BUTTON_KIND.GHOST },
+      control: 'boolean',
+      if: { arg: 'kind', eq: BUTTON_KIND.GHOST },
     },
     iconSlot: {
-      control: "select",
-      options: Object.keys(slots).filter((key) => key !== "None"),
+      control: 'select',
+      options: Object.keys(slots).filter((key) => key !== 'None'),
       mapping: slots,
-      description: "Places the slotted icon inside the button",
-      table: { category: "slot" },
+      description: 'Places the slotted icon inside the button',
+      table: { category: 'slot' },
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.PRIMARY,
-    iconSlot: "Add16",
-    tooltipText: "Tooltip text",
-    tooltipAlignment: "center",
+    iconSlot: 'Add16',
+    tooltipText: 'Tooltip text',
+    tooltipAlignment: 'center',
     tooltipPosition: BUTTON_TOOLTIP_POSITION.TOP,
   },
   render: baseButtonTemplate,
 };
 
 export const IconOnlyDanger = {
-  name: "Icon Only (danger)",
+  name: 'Icon Only (danger)',
   argTypes: {
     ...IconOnly.argTypes,
     kind: {
-      control: "select",
-      description: "Specify the kind of Button.",
+      control: 'select',
+      description: 'Specify the kind of Button.',
       options: [
         BUTTON_KIND.DANGER,
         BUTTON_KIND.DANGER_TERTIARY,
@@ -303,30 +302,30 @@ export const IconOnlyDanger = {
       ],
     },
     href: {
-      control: "text",
+      control: 'text',
       description:
-        "Optionally specify an href for your Button to become an `<a>` element <br> Note: setting this overrides `tooltipText`, `dangerDescription` which would fail the accessibility. need a fix from carbon.",
+        'Optionally specify an href for your Button to become an `<a>` element <br> Note: setting this overrides `tooltipText`, `dangerDescription` which would fail the accessibility. need a fix from carbon.',
     },
     tooltipText: {
-      control: "text",
+      control: 'text',
       description:
-        "The tooltip text for icon only button (accessibility required). <br> Note: setting this overrides `dangerDescription`",
-      if: { arg: "href", exists: false },
+        'The tooltip text for icon only button (accessibility required). <br> Note: setting this overrides `dangerDescription`',
+      if: { arg: 'href', exists: false },
     },
     dangerDescription: {
-      control: "text",
+      control: 'text',
       description:
-        "Screen reader message for the danger variant when no tooltip text is present.",
-      if: { arg: "tooltipText", eq: "" },
+        'Screen reader message for the danger variant when no tooltip text is present.',
+      if: { arg: 'tooltipText', eq: '' },
     },
   },
   args: {
     ...sharedArgs,
     kind: BUTTON_KIND.DANGER,
-    iconSlot: "Add16",
-    dangerDescription: "danger",
-    tooltipText: "Tooltip text",
-    tooltipAlignment: "center",
+    iconSlot: 'Add16',
+    dangerDescription: 'danger',
+    tooltipText: 'Tooltip text',
+    tooltipAlignment: 'center',
     tooltipPosition: BUTTON_TOOLTIP_POSITION.TOP,
   },
   render: baseButtonTemplate,
@@ -339,22 +338,22 @@ export const QuickAction = {
     isQuickAction: {
       control: { disable: true },
       description:
-        "Specify whether the Button is a quick action. Overrides `kind` to `ghost`. and `size` to `sm`",
+        'Specify whether the Button is a quick action. Overrides `kind` to `ghost`. and `size` to `sm`',
     },
     size: {
       control: { disable: true },
       description:
-        "Size defaults to `sm` in quick action variant, and does not support any other size.",
+        'Size defaults to `sm` in quick action variant, and does not support any other size.',
     },
     isSelected: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Specify whether the Button is currently selected. Only applies to Ghost variant or Quick Action button.",
+        'Specify whether the Button is currently selected. Only applies to Ghost variant or Quick Action button.',
     },
   },
   args: {
     ...sharedArgs,
-    buttonText: "Quick action",
+    buttonText: 'Quick action',
     isQuickAction: true,
     isSelected: false,
   },

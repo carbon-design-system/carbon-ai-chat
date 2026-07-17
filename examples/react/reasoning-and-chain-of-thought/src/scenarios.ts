@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ChatInstance } from "@carbon/ai-chat";
+import type { ChatInstance } from '@carbon/ai-chat';
 import {
   MessageResponseTypes,
   ReasoningStepOpenState,
@@ -16,19 +16,19 @@ import {
   type StreamChunk,
   ChainOfThoughtStepStatus,
   type ChainOfThoughtStep,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 export const scenarios = {
-  "Reasoning steps": {
-    text: "Reasoning steps will auto-open while the model provides reasoning steps, and then auto-open the active reasoning step.\n\nIt will then hide once user-facing content starts streaming back.\n\nThis is the default behavior.",
+  'Reasoning steps': {
+    text: 'Reasoning steps will auto-open while the model provides reasoning steps, and then auto-open the active reasoning step.\n\nIt will then hide once user-facing content starts streaming back.\n\nThis is the default behavior.',
   },
-  "Controlled reasoning steps": {
-    text: "This *controlled* reasoning example is set to keep all reasoning steps closed by default with a loading indicator visible instead.",
+  'Controlled reasoning steps': {
+    text: 'This *controlled* reasoning example is set to keep all reasoning steps closed by default with a loading indicator visible instead.',
   },
-  "Reasoning content": {
-    text: "Reasoning content can stream in as a single trace without individual steps. Use this when you want a long-form rationale instead of expandable steps.",
+  'Reasoning content': {
+    text: 'Reasoning content can stream in as a single trace without individual steps. Use this when you want a long-form rationale instead of expandable steps.',
   },
-  "Chain of thought": {
+  'Chain of thought': {
     text: "Chain of thought is best suited for raw debugging or tool-call traces. In most cases you should use reasoning steps instead, because they are more user-friendly while still exposing the assistant's thinking.",
   },
 };
@@ -41,20 +41,20 @@ export const scenarioOptions = Object.keys(scenarios).map((key) => {
 
 const REASONING_STEPS = [
   {
-    title: "Read the user request",
+    title: 'Read the user request',
     content:
-      "Scanning the prompt and preparing to choose a relevant example response.",
+      'Scanning the prompt and preparing to choose a relevant example response.',
   },
   {
-    title: "Pick a scenario",
+    title: 'Pick a scenario',
     content:
-      "Selecting the reasoning flow that matches the provided dropdown choice.",
+      'Selecting the reasoning flow that matches the provided dropdown choice.',
   },
   {
-    title: "Considering options",
+    title: 'Considering options',
   },
   {
-    title: "Fetching data",
+    title: 'Fetching data',
     content: `Calling the retrieval service for supporting facts:
 \`\`\`json
 {
@@ -67,42 +67,42 @@ const REASONING_STEPS = [
 \`\`\``,
   },
   {
-    title: "Prepare the response",
+    title: 'Prepare the response',
   },
 ];
 
 const REASONING_TRACE_CONTENT = REASONING_STEPS.map(
-  (step) => step.content || step.title,
-).join("\n\n");
+  (step) => step.content || step.title
+).join('\n\n');
 
 const CHAIN_OF_THOUGHT_STEPS: ChainOfThoughtStep[] = [
   {
-    title: "Vector search",
-    description: "Retrieved similar documents.",
-    tool_name: "semantic_search",
-    request: { args: { query: "user request" } },
-    response: { content: ["doc-1", "doc-2", "doc-3"] },
+    title: 'Vector search',
+    description: 'Retrieved similar documents.',
+    tool_name: 'semantic_search',
+    request: { args: { query: 'user request' } },
+    response: { content: ['doc-1', 'doc-2', 'doc-3'] },
     status: ChainOfThoughtStepStatus.SUCCESS,
   },
   {
-    title: "Summarize",
-    description: "Summarizing the retrieved documents.",
-    tool_name: "summarize",
-    request: { args: { documents: ["doc-1", "doc-2", "doc-3"] } },
-    response: { content: "Summary of the retrieved context." },
+    title: 'Summarize',
+    description: 'Summarizing the retrieved documents.',
+    tool_name: 'summarize',
+    request: { args: { documents: ['doc-1', 'doc-2', 'doc-3'] } },
+    response: { content: 'Summary of the retrieved context.' },
     status: ChainOfThoughtStepStatus.SUCCESS,
   },
   {
-    title: "Generate response",
-    description: "Drafting the user-facing reply.",
-    tool_name: "generate",
-    request: { args: { summary: "Summary of the retrieved context." } },
-    response: { content: "Final chain of thought drafted." },
+    title: 'Generate response',
+    description: 'Drafting the user-facing reply.',
+    tool_name: 'generate',
+    request: { args: { summary: 'Summary of the retrieved context.' } },
+    response: { content: 'Final chain of thought drafted.' },
     status: ChainOfThoughtStepStatus.SUCCESS,
   },
 ];
 
-const TEXT_STREAM_ID = "text-1";
+const TEXT_STREAM_ID = 'text-1';
 const WORD_DELAY = 40;
 const REASONING_STEP_DELAY = 3000;
 
@@ -115,13 +115,13 @@ async function sleep(milliseconds: number) {
 function createShellMessage(
   instance: ChatInstance,
   responseID: string,
-  messageOptions?: MessageResponseOptions,
+  messageOptions?: MessageResponseOptions
 ) {
   // Use streaming chunk to seed the message so reducers create the shell before steps stream in.
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID },
     },
     partial_response: {
@@ -134,12 +134,12 @@ function createShellMessage(
 function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID, cancellable: true },
     },
     partial_response: { message_options: messageOptions },
@@ -153,9 +153,9 @@ async function streamText(
   text: string,
   signal?: AbortSignal,
   onStart?: () => void,
-  finalMessageOptions?: MessageResponseOptions,
+  finalMessageOptions?: MessageResponseOptions
 ) {
-  const words = text.split(" ");
+  const words = text.split(' ');
   let isCanceled = false;
   const timeouts: number[] = [];
 
@@ -163,7 +163,7 @@ async function streamText(
     isCanceled = true;
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   onStart?.();
 
@@ -211,7 +211,7 @@ async function streamText(
       instance.messaging.addMessageChunk(finalResponse);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
@@ -219,7 +219,7 @@ async function streamReasoningContentFirst(
   instance: ChatInstance,
   responseID: string,
   content: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const tokens = content.match(/\S+\s*/g) ?? [content];
   let isCanceled = false;
@@ -227,10 +227,10 @@ async function streamReasoningContentFirst(
     isCanceled = true;
   };
 
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
-    let partial = "";
+    let partial = '';
     for (const token of tokens) {
       if (isCanceled) {
         break;
@@ -242,7 +242,7 @@ async function streamReasoningContentFirst(
       await sleep(WORD_DELAY);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 
   return !isCanceled;
@@ -250,7 +250,7 @@ async function streamReasoningContentFirst(
 
 export async function runReasoningStepsScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = crypto.randomUUID();
   const collectedSteps: ReasoningStep[] = [];
@@ -268,16 +268,16 @@ export async function runReasoningStepsScenario(
   await streamText(
     instance,
     responseID,
-    scenarios["Reasoning steps"].text,
+    scenarios['Reasoning steps'].text,
     signal,
     undefined,
-    { reasoning: { steps: collectedSteps } },
+    { reasoning: { steps: collectedSteps } }
   );
 }
 
 export async function runControlledReasoningScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = crypto.randomUUID();
 
@@ -285,7 +285,7 @@ export async function runControlledReasoningScenario(
 
   createShellMessage(instance, responseID, { reasoning: { steps: [] } });
 
-  instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+  instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
   for (const step of REASONING_STEPS) {
     collectedSteps.push({
@@ -302,31 +302,31 @@ export async function runControlledReasoningScenario(
     await sleep(REASONING_STEP_DELAY);
   }
 
-  instance.updateIsMessageLoadingCounter("decrease");
+  instance.updateIsMessageLoadingCounter('decrease');
 
   await streamText(
     instance,
     responseID,
-    scenarios["Controlled reasoning steps"].text,
+    scenarios['Controlled reasoning steps'].text,
     signal,
     undefined,
-    { reasoning: { steps: collectedSteps } },
+    { reasoning: { steps: collectedSteps } }
   );
 }
 
 export async function runReasoningContentScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = crypto.randomUUID();
 
-  createShellMessage(instance, responseID, { reasoning: { content: "" } });
+  createShellMessage(instance, responseID, { reasoning: { content: '' } });
 
   const completed = await streamReasoningContentFirst(
     instance,
     responseID,
     REASONING_TRACE_CONTENT,
-    signal,
+    signal
   );
 
   if (!completed) {
@@ -336,16 +336,16 @@ export async function runReasoningContentScenario(
   await streamText(
     instance,
     responseID,
-    scenarios["Reasoning content"].text,
+    scenarios['Reasoning content'].text,
     signal,
     undefined,
-    { reasoning: { content: REASONING_TRACE_CONTENT } },
+    { reasoning: { content: REASONING_TRACE_CONTENT } }
   );
 }
 
 export async function runChainOfThoughtScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = crypto.randomUUID();
   createShellMessage(instance, responseID, { chain_of_thought: [] });
@@ -353,29 +353,29 @@ export async function runChainOfThoughtScenario(
   await streamText(
     instance,
     responseID,
-    scenarios["Chain of thought"].text,
+    scenarios['Chain of thought'].text,
     signal,
     undefined,
-    { chain_of_thought: CHAIN_OF_THOUGHT_STEPS },
+    { chain_of_thought: CHAIN_OF_THOUGHT_STEPS }
   );
 }
 
 export async function runScenario(
   scenario: ScenarioKey,
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   switch (scenario) {
-    case "Reasoning steps":
+    case 'Reasoning steps':
       await runReasoningStepsScenario(instance, signal);
       return;
-    case "Controlled reasoning steps":
+    case 'Controlled reasoning steps':
       await runControlledReasoningScenario(instance, signal);
       return;
-    case "Reasoning content":
+    case 'Reasoning content':
       await runReasoningContentScenario(instance, signal);
       return;
-    case "Chain of thought":
+    case 'Chain of thought':
       await runChainOfThoughtScenario(instance, signal);
       return;
     default:

@@ -13,11 +13,11 @@ import {
   CustomPanelInstance,
   CustomPanelOpenOptions,
   PanelType,
-} from "../../types/instance/apiTypes";
-import { BusEventType } from "../../types/events/eventBusTypes";
-import actions from "../store/actions";
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "../store/reducerUtils";
-import { ServiceManager } from "./ServiceManager";
+} from '../../types/instance/apiTypes';
+import { BusEventType } from '../../types/events/eventBusTypes';
+import actions from '../store/actions';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../store/reducerUtils';
+import { ServiceManager } from './ServiceManager';
 
 /**
  * This function takes in the service manager to help create a custom panel instance. The panel instance is created
@@ -27,7 +27,7 @@ import { ServiceManager } from "./ServiceManager";
 function createCustomPanelInstance(
   panelType: PanelType,
   serviceManager: ServiceManager,
-  defaultPanelOptions: CustomPanelOpenOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  defaultPanelOptions: CustomPanelOpenOptions = DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
 ): CustomPanelInstance {
   let hostElement;
 
@@ -51,7 +51,7 @@ function createCustomPanelInstance(
 
   const customPanelInstance: CustomPanelInstance = {
     async open(
-      options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions,
+      options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions
     ) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
@@ -74,7 +74,7 @@ function createCustomPanelInstance(
             actions.setWorkspacePanelData({
               workspaceID: workspaceOptions.workspaceId,
               additionalData: workspaceOptions.additionalData,
-            }),
+            })
           );
         }
       }
@@ -95,7 +95,7 @@ function createCustomPanelInstance(
               fullMessage,
             },
           },
-          instance,
+          instance
         );
       }
 
@@ -118,7 +118,7 @@ function createCustomPanelInstance(
               fullMessage,
             },
           },
-          instance,
+          instance
         );
       }
     },
@@ -146,7 +146,7 @@ function createCustomPanelInstance(
             type: BusEventType.WORKSPACE_PRE_CLOSE,
             data: workspaceEventData,
           },
-          instance,
+          instance
         );
       }
 
@@ -159,7 +159,7 @@ function createCustomPanelInstance(
             type: BusEventType.WORKSPACE_CLOSE,
             data: workspaceEventData,
           },
-          instance,
+          instance
         );
       }
     },

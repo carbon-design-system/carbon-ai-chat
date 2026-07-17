@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { stopStreamingButtonTemplate } from "./src/stopStreamingButton.template";
-import { StopStreamingButtonElement } from "./src/StopStreamingButtonElement";
+import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import { stopStreamingButtonTemplate } from './src/stopStreamingButton.template';
+import { StopStreamingButtonElement } from './src/StopStreamingButtonElement';
 
 /**
  * Constructed class functionality for the stop streaming button.
  */
-@carbonElement("cds-aichat-stop-streaming-button")
+@carbonElement('cds-aichat-stop-streaming-button')
 class CDSAIChatStopStreamingButtonElement extends StopStreamingButtonElement {
   render() {
     return stopStreamingButtonTemplate(this);
@@ -23,7 +23,7 @@ class CDSAIChatStopStreamingButtonElement extends StopStreamingButtonElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-stop-streaming-button": CDSAIChatStopStreamingButtonElement;
+    'cds-aichat-stop-streaming-button': CDSAIChatStopStreamingButtonElement;
   }
 }
 

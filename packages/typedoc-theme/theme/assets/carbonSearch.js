@@ -33,8 +33,8 @@ class CarbonSearch {
       return;
     }
 
-    if (typeof lunr === "undefined") {
-      console.log("Waiting for Lunr.js to load...");
+    if (typeof lunr === 'undefined') {
+      console.log('Waiting for Lunr.js to load...');
       setTimeout(() => this.initialize(), 100);
       return;
     }
@@ -44,32 +44,32 @@ class CarbonSearch {
     this.setupEventListeners();
 
     this.initialized = true;
-    console.log("Carbon search initialized successfully");
+    console.log('Carbon search initialized successfully');
   }
 
   // Carbon integration: pull the TypeDoc search nodes into the modal shell.
   setupElements() {
-    this.modal = document.querySelector("#carbon-search-modal");
+    this.modal = document.querySelector('#carbon-search-modal');
     this.input = document.querySelector(
-      "#carbon-search-content #tsd-search-input",
+      '#carbon-search-content #tsd-search-input'
     );
     this.results = document.querySelector(
-      "#carbon-search-content #tsd-search-results",
+      '#carbon-search-content #tsd-search-results'
     );
     this.status = document.querySelector(
-      "#carbon-search-content #tsd-search-status",
+      '#carbon-search-content #tsd-search-status'
     );
 
     if (!this.input || !this.results || !this.status) {
       throw new Error(
-        "Search elements not found - ensure carbonSearchModal.js has run first",
+        'Search elements not found - ensure carbonSearchModal.js has run first'
       );
     }
   }
 
   async loadSearchData() {
     if (!window.searchData) {
-      this.updateStatus("Search index not available");
+      this.updateStatus('Search index not available');
       return;
     }
 
@@ -78,20 +78,20 @@ class CarbonSearch {
       this.searchData = response;
       this.searchIndex = lunr.Index.load(response.index);
 
-      this.updateStatus("");
-      console.log("Search data loaded successfully");
+      this.updateStatus('');
+      console.log('Search data loaded successfully');
     } catch (error) {
-      console.error("Failed to load search data:", error);
-      this.updateStatus("Failed to load search index");
+      console.error('Failed to load search data:', error);
+      this.updateStatus('Failed to load search index');
     }
   }
 
   async fetchSearchData(searchDataUrl) {
-    if (typeof searchDataUrl === "object") {
+    if (typeof searchDataUrl === 'object') {
       return searchDataUrl;
     }
 
-    if (typeof searchDataUrl === "string") {
+    if (typeof searchDataUrl === 'string') {
       const response = await fetch(searchDataUrl);
       if (!response.ok) {
         throw new Error(`Failed to fetch search data: ${response.statusText}`);
@@ -99,33 +99,33 @@ class CarbonSearch {
       return response.json();
     }
 
-    throw new Error("Invalid search data format");
+    throw new Error('Invalid search data format');
   }
 
   // Carbon integration: keyboard shortcuts and modal friendly listeners.
   setupEventListeners() {
     this.input.addEventListener(
-      "input",
+      'input',
       this.debounce(() => {
         this.performSearch(this.input.value.trim());
-      }, 200),
+      }, 200)
     );
 
-    this.input.addEventListener("keydown", (event) => {
+    this.input.addEventListener('keydown', (event) => {
       this.handleKeyNavigation(event);
     });
 
-    this.input.addEventListener("input", () => {
+    this.input.addEventListener('input', () => {
       this.clearSelection();
     });
 
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener('keydown', (event) => {
       const isShortcut =
-        (event.ctrlKey && event.key === "k") ||
+        (event.ctrlKey && event.key === 'k') ||
         (!event.ctrlKey &&
           !event.metaKey &&
           !event.altKey &&
-          event.key === "/" &&
+          event.key === '/' &&
           !this.isInputFocused());
 
       if (isShortcut) {
@@ -140,8 +140,8 @@ class CarbonSearch {
       return;
     }
 
-    this.results.innerHTML = "";
-    this.updateStatus("");
+    this.results.innerHTML = '';
+    this.updateStatus('');
 
     if (!query) {
       return;
@@ -149,9 +149,9 @@ class CarbonSearch {
 
     try {
       const lunrQuery = query
-        .split(" ")
-        .map((term) => (term.length ? `*${term}*` : ""))
-        .join(" ");
+        .split(' ')
+        .map((term) => (term.length ? `*${term}*` : ''))
+        .join(' ');
 
       const searchResults = this.searchIndex.search(lunrQuery);
 
@@ -167,15 +167,15 @@ class CarbonSearch {
 
       this.displayResults(filteredResults, query);
     } catch (error) {
-      console.error("Search error:", error);
-      this.updateStatus("Search error occurred");
+      console.error('Search error:', error);
+      this.updateStatus('Search error occurred');
     }
   }
 
   displayResults(results, query) {
     if (results.length === 0) {
       this.updateStatus(
-        `No results found for "<strong>${this.escapeHtml(query)}</strong>"`,
+        `No results found for "<strong>${this.escapeHtml(query)}</strong>"`
       );
       return;
     }
@@ -200,26 +200,26 @@ class CarbonSearch {
   }
 
   createResultElement(row, query, index) {
-    const listItem = document.createElement("li");
+    const listItem = document.createElement('li');
     listItem.id = `carbon-search-result-${index}`;
-    listItem.role = "option";
-    listItem.setAttribute("aria-selected", "false");
-    listItem.classList.value = row.classes || "";
+    listItem.role = 'option';
+    listItem.setAttribute('aria-selected', 'false');
+    listItem.classList.value = row.classes || '';
 
-    const anchor = document.createElement("a");
+    const anchor = document.createElement('a');
     anchor.tabIndex = -1;
     anchor.href = this.getBaseUrl() + row.url;
 
-    const icon = document.createElement("div");
+    const icon = document.createElement('div');
     icon.innerHTML = this.getKindIcon(row.kind, row.icon);
 
-    const textSpan = document.createElement("span");
-    textSpan.className = "text";
+    const textSpan = document.createElement('span');
+    textSpan.className = 'text';
     textSpan.innerHTML = this.highlightText(row.name, query);
 
     if (row.parent) {
-      const parentSpan = document.createElement("span");
-      parentSpan.className = "parent";
+      const parentSpan = document.createElement('span');
+      parentSpan.className = 'parent';
       parentSpan.innerHTML = `${this.highlightText(row.parent, query)}.`;
       textSpan.insertBefore(parentSpan, textSpan.firstChild);
     }
@@ -253,7 +253,7 @@ class CarbonSearch {
       }
 
       segments.push(
-        `<mark>${this.escapeHtml(text.substring(index, index + query.length))}</mark>`,
+        `<mark>${this.escapeHtml(text.substring(index, index + query.length))}</mark>`
       );
 
       lastIndex = index + query.length;
@@ -264,7 +264,7 @@ class CarbonSearch {
       segments.push(this.escapeHtml(text.substring(lastIndex)));
     }
 
-    return segments.join("");
+    return segments.join('');
   }
 
   handleKeyNavigation(event) {
@@ -277,28 +277,28 @@ class CarbonSearch {
     let newIndex = -1;
 
     switch (event.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         event.preventDefault();
         newIndex = activeItem
           ? Math.min(
               Array.from(items).indexOf(activeItem) + 1,
-              items.length - 1,
+              items.length - 1
             )
           : 0;
         break;
-      case "ArrowUp":
+      case 'ArrowUp':
         event.preventDefault();
         newIndex = activeItem
           ? Math.max(Array.from(items).indexOf(activeItem) - 1, 0)
           : items.length - 1;
         break;
-      case "Enter":
+      case 'Enter':
         if (activeItem) {
           event.preventDefault();
-          activeItem.querySelector("a")?.click();
+          activeItem.querySelector('a')?.click();
         }
         break;
-      case "Escape":
+      case 'Escape':
         this.closeSearch();
         break;
       default:
@@ -313,24 +313,24 @@ class CarbonSearch {
   selectItem(item) {
     this.results
       .querySelectorAll('li[aria-selected="true"]')
-      .forEach((listItem) => listItem.setAttribute("aria-selected", "false"));
+      .forEach((listItem) => listItem.setAttribute('aria-selected', 'false'));
 
-    item.setAttribute("aria-selected", "true");
-    item.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    this.input.setAttribute("aria-activedescendant", item.id);
+    item.setAttribute('aria-selected', 'true');
+    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    this.input.setAttribute('aria-activedescendant', item.id);
   }
 
   clearSelection() {
     this.results
       .querySelectorAll('li[aria-selected="true"]')
-      .forEach((listItem) => listItem.setAttribute("aria-selected", "false"));
-    this.input.setAttribute("aria-activedescendant", "");
+      .forEach((listItem) => listItem.setAttribute('aria-selected', 'false'));
+    this.input.setAttribute('aria-activedescendant', '');
   }
 
   // Carbon integration: open Carbon modal before focusing the input.
   openSearch() {
     if (this.modal) {
-      this.modal.setAttribute("open", "");
+      this.modal.setAttribute('open', '');
       setTimeout(() => {
         this.input?.focus();
         this.input?.select();
@@ -341,7 +341,7 @@ class CarbonSearch {
   // Carbon integration: close modal when finished.
   closeSearch() {
     if (this.modal) {
-      this.modal.removeAttribute("open");
+      this.modal.removeAttribute('open');
     }
   }
 
@@ -350,13 +350,13 @@ class CarbonSearch {
       return;
     }
 
-    this.status.innerHTML = message ? `<div>${message}</div>` : "";
+    this.status.innerHTML = message ? `<div>${message}</div>` : '';
   }
 
   getBaseUrl() {
-    let base = document.documentElement.dataset.base || "./";
-    if (!base.endsWith("/")) {
-      base += "/";
+    let base = document.documentElement.dataset.base || './';
+    if (!base.endsWith('/')) {
+      base += '/';
     }
     return base;
   }
@@ -376,21 +376,21 @@ class CarbonSearch {
       return true;
     }
 
-    if (active.tagName === "TEXTAREA" || active.tagName === "SEARCH") {
+    if (active.tagName === 'TEXTAREA' || active.tagName === 'SEARCH') {
       return true;
     }
 
-    if (active.tagName === "INPUT") {
+    if (active.tagName === 'INPUT') {
       const disallowed = [
-        "button",
-        "checkbox",
-        "file",
-        "hidden",
-        "image",
-        "radio",
-        "range",
-        "reset",
-        "submit",
+        'button',
+        'checkbox',
+        'file',
+        'hidden',
+        'image',
+        'radio',
+        'range',
+        'reset',
+        'submit',
       ];
       return !disallowed.includes(active.type);
     }
@@ -399,7 +399,7 @@ class CarbonSearch {
   }
 
   escapeHtml(text) {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
@@ -421,15 +421,15 @@ function initializeCarbonSearch() {
   const search = new CarbonSearch();
 
   const waitForModal = () => {
-    if (document.querySelector("#carbon-search-modal")) {
+    if (document.querySelector('#carbon-search-modal')) {
       void search.initialize();
     } else {
       setTimeout(waitForModal, 100);
     }
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", waitForModal);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForModal);
   } else {
     waitForModal();
   }

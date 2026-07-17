@@ -7,77 +7,77 @@
  *  @license
  */
 
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/button/index.js";
-import { PanelType } from "@carbon/ai-chat";
-import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/web-components/es/components/tag/index.js";
-import "@carbon/web-components/es/components/button/button.js";
-import "@carbon/web-components/es/components/tag/tag.js";
-import "@carbon/web-components/es/components/icon-button/icon-button.js";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
-import "@carbon/web-components/es/components/notification/inline-notification.js";
-import "./explainability-popover-example";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/button/index.js';
+import { PanelType } from '@carbon/ai-chat';
+import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import '@carbon/web-components/es/components/notification/inline-notification.js';
+import './explainability-popover-example';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 //icons
-import Version16 from "@carbon/icons/es/version/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import Edit16 from "@carbon/icons/es/edit/16.js";
+import Version16 from '@carbon/icons/es/version/16.js';
+import Download16 from '@carbon/icons/es/download/16.js';
+import Share16 from '@carbon/icons/es/share/16.js';
+import Launch16 from '@carbon/icons/es/launch/16.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+import Edit16 from '@carbon/icons/es/edit/16.js';
 
-@customElement("workspace-writeable-element-example")
+@customElement('workspace-writeable-element-example')
 class WorkspaceWriteableElementExample extends LitElement {
   @property({ type: String })
-  accessor location: string = "";
+  accessor location: string = '';
 
   @property({ type: Object })
   accessor instance: any = null;
 
   @property({ type: String })
-  accessor valueFromParent: string = "";
+  accessor valueFromParent: string = '';
 
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Version",
+      text: 'Version',
       icon: Version16,
-      size: "md",
-      onClick: () => alert("Version clicked"),
+      size: 'md',
+      onClick: () => alert('Version clicked'),
     },
     {
-      text: "Download",
+      text: 'Download',
       icon: Download16,
-      size: "md",
-      onClick: () => alert("Download clicked"),
+      size: 'md',
+      onClick: () => alert('Download clicked'),
     },
     {
-      text: "Share",
+      text: 'Share',
       icon: Share16,
-      size: "md",
-      onClick: () => alert("Share clicked"),
+      size: 'md',
+      onClick: () => alert('Share clicked'),
     },
     {
-      text: "Launch",
+      text: 'Launch',
       icon: Launch16,
-      size: "md",
-      onClick: () => alert("Launch clicked"),
+      size: 'md',
+      onClick: () => alert('Launch clicked'),
     },
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
-      onClick: () => alert("Maximize clicked"),
+      size: 'md',
+      onClick: () => alert('Maximize clicked'),
     },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
+      size: 'md',
       onClick: this.handleClose.bind(this),
     },
   ];
@@ -85,22 +85,22 @@ class WorkspaceWriteableElementExample extends LitElement {
   @property({ type: Array })
   accessor footerActions: any[] = [
     {
-      id: "evaluate",
-      label: "Evaluate plan",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'evaluate',
+      label: 'Evaluate plan',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "run",
-      label: "Run plan",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'run',
+      label: 'Run plan',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ];
 
@@ -112,17 +112,17 @@ class WorkspaceWriteableElementExample extends LitElement {
   handleWorkspaceFooterClick(event: any) {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
-      case "evaluate":
+      case 'evaluate':
         alert(
-          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "run":
+      case 'run':
         alert(
-          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "cancel":
+      case 'cancel':
         this.handleClose();
         break;
       default:
@@ -132,22 +132,19 @@ class WorkspaceWriteableElementExample extends LitElement {
 
   render() {
     const workspaceId =
-      this.instance?.getState()?.workspace?.workspaceID || "unknown";
+      this.instance?.getState()?.workspace?.workspaceID || 'unknown';
 
     return html` <cds-aichat-workspace-shell auto-collapsible-header>
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
         .actions=${this.toolbarActions}
-        titleText="Optimizing excess inventory"
-      >
+        titleText="Optimizing excess inventory">
         <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <explainability-popover-content
-            slot="body-text"
-          ></explainability-popover-content>
+            slot="body-text"></explainability-popover-content>
           <explainability-popover-actions
-            slot="actions"
-          ></explainability-popover-actions>
+            slot="actions"></explainability-popover-actions>
         </cds-ai-label>
       </cds-aichat-toolbar>
       <cds-inline-notification
@@ -156,13 +153,11 @@ class WorkspaceWriteableElementExample extends LitElement {
         subtitle="Notification Subtitle"
         kind="warning"
         low-contrast=""
-        hide-close-button
-      >
+        hide-close-button>
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header
         title-text=${`Optimizing excess inventory plan (ID: ${workspaceId.substring(0, 8)}...)`}
-        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}
-      >
+        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}>
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
@@ -172,7 +167,7 @@ class WorkspaceWriteableElementExample extends LitElement {
           <cds-tag size="sm" type="gray">Phase: Viewing</cds-tag>
         </div>
         <cds-button kind="tertiary" slot="header-action">
-          Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+          Edit Plan ${iconLoader(Edit16, { slot: 'icon' })}
         </cds-button>
       </cds-aichat-workspace-shell-header>
       <cds-aichat-workspace-shell-body>
@@ -189,8 +184,7 @@ class WorkspaceWriteableElementExample extends LitElement {
         .actions=${this.footerActions}
         @cds-aichat-workspace-shell-footer-clicked=${
           this.handleWorkspaceFooterClick
-        }
-      >
+        }>
       </cds-aichat-workspace-shell-footer>
     </cds-aichat-workspace-shell>`;
   }

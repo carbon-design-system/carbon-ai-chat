@@ -17,7 +17,7 @@
  * https://github.com/cookpete/react-player/blob/v2.15.1/src/players/FilePlayer.js
  */
 
-import { BaseProvider, ProviderConfig } from "./base-provider.js";
+import { BaseProvider, ProviderConfig } from './base-provider.js';
 
 /**
  * Provider for native HTML5 audio files
@@ -31,10 +31,10 @@ export class NativeAudioProvider extends BaseProvider {
    */
   protected updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void {
-    element.setAttribute("aria-label", this.getStateLabel(state));
-    element.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    element.setAttribute('aria-label', this.getStateLabel(state));
+    element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
   }
 
   /**
@@ -44,41 +44,41 @@ export class NativeAudioProvider extends BaseProvider {
     await super.init(container, config);
 
     if (!this.container) {
-      throw new Error("Container element is required");
+      throw new Error('Container element is required');
     }
 
     // Create audio element
-    this.audioElement = document.createElement("audio");
+    this.audioElement = document.createElement('audio');
     this.audioElement.controls = true;
-    this.audioElement.setAttribute("controlsList", "nodownload");
-    this.audioElement.crossOrigin = "anonymous";
+    this.audioElement.setAttribute('controlsList', 'nodownload');
+    this.audioElement.crossOrigin = 'anonymous';
 
     // Set initial ARIA attributes for loading state
     if (config.ariaLabel) {
-      this.updateAriaAttributes(this.audioElement, "loading");
+      this.updateAriaAttributes(this.audioElement, 'loading');
     }
 
     // Set up event listeners
-    this.audioElement.addEventListener("loadedmetadata", () => {
+    this.audioElement.addEventListener('loadedmetadata', () => {
       if (this.audioElement) {
-        this.updateAriaAttributes(this.audioElement, "ready");
+        this.updateAriaAttributes(this.audioElement, 'ready');
       }
       this.triggerReady();
     });
 
-    this.audioElement.addEventListener("play", () => {
+    this.audioElement.addEventListener('play', () => {
       this.triggerPlay();
     });
 
-    this.audioElement.addEventListener("pause", () => {
+    this.audioElement.addEventListener('pause', () => {
       this.triggerPause();
     });
 
-    this.audioElement.addEventListener("error", () => {
+    this.audioElement.addEventListener('error', () => {
       const error = this.audioElement?.error;
 
       // Log detailed error information for debugging
-      console.error("[NativeAudioProvider] Audio error:", {
+      console.error('[NativeAudioProvider] Audio error:', {
         code: error?.code,
         message: error?.message,
         src: this.audioElement?.src,
@@ -87,7 +87,7 @@ export class NativeAudioProvider extends BaseProvider {
       });
 
       if (this.audioElement) {
-        this.updateAriaAttributes(this.audioElement, "error");
+        this.updateAriaAttributes(this.audioElement, 'error');
       }
 
       // Use the generic error message from config
@@ -103,7 +103,7 @@ export class NativeAudioProvider extends BaseProvider {
    */
   async load(url: string): Promise<void> {
     if (!this.audioElement) {
-      throw new Error("Audio element not initialized");
+      throw new Error('Audio element not initialized');
     }
 
     // Try loading with CORS first
@@ -116,7 +116,7 @@ export class NativeAudioProvider extends BaseProvider {
         await this.audioElement.play();
       } catch (error) {
         // Auto-play might be blocked by browser
-        console.warn("[NativeAudioProvider] Auto-play was prevented:", error);
+        console.warn('[NativeAudioProvider] Auto-play was prevented:', error);
       }
     }
   }
@@ -127,7 +127,7 @@ export class NativeAudioProvider extends BaseProvider {
   play(): void {
     if (this.audioElement) {
       this.audioElement.play().catch((error) => {
-        console.warn("Play was prevented:", error);
+        console.warn('Play was prevented:', error);
       });
     }
   }
@@ -147,7 +147,7 @@ export class NativeAudioProvider extends BaseProvider {
   destroy(): void {
     if (this.audioElement) {
       this.audioElement.pause();
-      this.audioElement.removeAttribute("src");
+      this.audioElement.removeAttribute('src');
       this.audioElement.load();
 
       // Remove from DOM before calling super.destroy()

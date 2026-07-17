@@ -7,19 +7,19 @@
  *  @license
  */
 
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import cx from "classnames";
-import React from "react";
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import cx from 'classnames';
+import React from 'react';
 
-import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { BodyWithFooterComponent } from "../../../components/BodyWithFooterComponent";
+import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { BodyWithFooterComponent } from '../../../components/BodyWithFooterComponent';
 import {
   CardItem,
   MessageResponse,
   WidthOptions,
-} from "../../../../types/messaging/Messages";
-import { MessageTypeComponentProps } from "../../../../types/messaging/MessageTypeComponentProps";
+} from '../../../../types/messaging/Messages';
+import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
 
 interface CardItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem;
@@ -50,15 +50,14 @@ function CardItemComponent(props: CardItemComponentProps) {
   const item = props.localMessageItem.item as CardItem;
   return (
     <Card
-      className={cx("cds-aichat--card-message-component", {
-        "cds-aichat--max-width-small":
+      className={cx('cds-aichat--card-message-component', {
+        'cds-aichat--max-width-small':
           !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
-        "cds-aichat--max-width-medium":
+        'cds-aichat--max-width-medium':
           !ignoreMaxWidth && item.max_width === WidthOptions.MEDIUM,
-        "cds-aichat--max-width-large":
+        'cds-aichat--max-width-large':
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
-      })}
-    >
+      })}>
       <BodyWithFooterComponent
         {...props}
         renderMessageComponent={props.renderMessageComponent}

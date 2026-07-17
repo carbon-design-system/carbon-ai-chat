@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { Converter } from "typedoc";
+import { Converter } from 'typedoc';
 
 /**
  * Renames the entry-file module reflection from "aiChatEntry" (derived from
@@ -17,9 +17,9 @@ import { Converter } from "typedoc";
 export function load(app) {
   app.converter.on(Converter.EVENT_RESOLVE_END, (context) => {
     const project = context.project;
-    const mod = project.children.find((r) => r.name === "aiChatEntry");
+    const mod = project.children.find((r) => r.name === 'aiChatEntry');
     if (mod) {
-      mod.name = "Type reference";
+      mod.name = 'Type reference';
     }
   });
 }

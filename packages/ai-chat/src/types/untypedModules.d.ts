@@ -13,16 +13,16 @@
  * type checking when interacting with the module.
  */
 
-declare module "@carbon/colors";
-declare module "@carbon/themes";
-declare module "@carbon/icons/es/*" {
+declare module '@carbon/colors';
+declare module '@carbon/themes';
+declare module '@carbon/icons/es/*' {
   const icon: IconDescriptor;
   export default icon;
 }
 
 // These will let typescript recognizes image assets.
-declare module "*.png";
-declare module "*.jpg";
-declare module "*.gif";
-declare module "*.svg";
-declare module "*.scss";
+declare module '*.png';
+declare module '*.jpg';
+declare module '*.gif';
+declare module '*.svg';
+declare module '*.scss';

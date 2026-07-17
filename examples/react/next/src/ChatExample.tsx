@@ -8,7 +8,7 @@
  */
 
 // ChatContainer interacts with browser APIs (window, custom elements), so force this module to run on the client.
-"use client";
+'use client';
 
 import {
   BusEventType,
@@ -16,12 +16,12 @@ import {
   ChatInstance,
   FeedbackInteractionType,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useCallback } from "react";
+} from '@carbon/ai-chat';
+import React, { useCallback } from 'react';
 
-import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { renderUserDefinedResponse } from './renderUserDefinedResponse';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -44,7 +44,7 @@ export function ChatExample() {
     (instance: ChatInstance) => {
       instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
     },
-    [feedbackHandler],
+    [feedbackHandler]
   );
 
   return (

@@ -24,8 +24,8 @@ export function normalizeModuleInterop<T>(mod: T): any {
 
   while (
     resolved &&
-    typeof resolved === "object" &&
-    "default" in resolved &&
+    typeof resolved === 'object' &&
+    'default' in resolved &&
     resolved.default !== resolved
   ) {
     resolved = resolved.default;

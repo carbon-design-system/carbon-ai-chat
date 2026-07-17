@@ -7,23 +7,23 @@
  *  @license
  */
 
-import React, { useMemo } from "react";
-import Restart16 from "@carbon/icons/es/restart/16.js";
-import cx from "classnames";
+import React, { useMemo } from 'react';
+import Restart16 from '@carbon/icons/es/restart/16.js';
+import cx from 'classnames';
 
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "../carbon/ChatButton";
-import { ErrorMessage } from "./ErrorMessage";
-import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
-import { useCarbonTheme } from "../../hooks/useCarbonTheme";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import { LanguagePack } from "../../../types/config/PublicConfig";
-import { AppState } from "../../../types/state/AppState";
-import { useIntl } from "../../hooks/useIntl";
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
+} from '../carbon/ChatButton';
+import { ErrorMessage } from './ErrorMessage';
+import { MarkdownWithDefaults } from '../util/MarkdownWithDefaults';
+import { useCarbonTheme } from '../../hooks/useCarbonTheme';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import { LanguagePack } from '../../../types/config/PublicConfig';
+import { AppState } from '../../../types/state/AppState';
+import { useIntl } from '../../hooks/useIntl';
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
 
 interface CatastrophicErrorPanelProps {
   title?: string;
@@ -46,25 +46,25 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
       buttons_restart: state.languagePack.buttons_restart,
       buttons_retry: state.languagePack.buttons_retry,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const assistantName = useSelector(
-    (state: AppState) => state.config.public.assistantName,
+    (state: AppState) => state.config.public.assistantName
   );
 
   const errorTitle = useMemo(
     () => title ?? languagePack.errors_somethingWrong,
-    [title, languagePack],
+    [title, languagePack]
   );
 
   const errorBodyText = useMemo(
     () =>
       bodyText ??
       intl.formatMessage(
-        { id: "errors_communicating" as keyof LanguagePack },
-        { assistantName },
+        { id: 'errors_communicating' as keyof LanguagePack },
+        { assistantName }
       ),
-    [bodyText, intl, assistantName],
+    [bodyText, intl, assistantName]
   );
 
   const Restart = carbonIconToReact(Restart16);
@@ -72,12 +72,11 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
   return (
     <div
       className={cx(
-        "cds-aichat--catastrophic-error",
-        "cds-aichat--panel-content",
-      )}
-    >
+        'cds-aichat--catastrophic-error',
+        'cds-aichat--panel-content'
+      )}>
       <div className="cds-aichat--catastrophic-error__error-text-container">
-        <ErrorMessage theme={isDarkTheme ? "dark" : "light"} />
+        <ErrorMessage theme={isDarkTheme ? 'dark' : 'light'} />
         <div className="cds-aichat--catastrophic-error__error-heading">
           {errorTitle}
         </div>
@@ -90,8 +89,7 @@ const CatastrophicErrorPanel: React.FC<CatastrophicErrorPanelProps> = ({
             kind={CHAT_BUTTON_KIND.TERTIARY}
             size={CHAT_BUTTON_SIZE.SMALL}
             aria-label={languagePack.buttons_restart}
-            onClick={onRestart}
-          >
+            onClick={onRestart}>
             <Restart slot="icon" />
             {languagePack.buttons_retry}
           </ChatButton>

@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "ResponseUserAvatar" as responseUserAvatar;
-@use "humanAgent/imports" as agent;
-@use "input/imports" as input;
-@use "launcher/imports" as launcher;
-@use "responseTypes/imports" as responseTypes;
-@use "MessageComponent";
-@use "MessagesComponent";
-@use "@carbon/styles/scss/_carbon-utilities.scss" as carousel;
+@use 'ResponseUserAvatar' as responseUserAvatar;
+@use 'humanAgent/imports' as agent;
+@use 'input/imports' as input;
+@use 'launcher/imports' as launcher;
+@use 'responseTypes/imports' as responseTypes;
+@use 'MessageComponent';
+@use 'MessagesComponent';
+@use '@carbon/styles/scss/_carbon-utilities.scss' as carousel;

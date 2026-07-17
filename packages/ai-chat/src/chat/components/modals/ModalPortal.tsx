@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React, { Component, type JSX } from "react";
-import ReactDOM from "react-dom";
+import React, { Component, type JSX } from 'react';
+import ReactDOM from 'react-dom';
 
-import { ModalPortalRootContext } from "../../contexts/ModalPortalRootContext";
+import { ModalPortalRootContext } from '../../contexts/ModalPortalRootContext';
 
 /**
  * This component acts as a portal that can be used to insert modal components that need to sit on top of the entire
@@ -49,7 +49,7 @@ class ModalPortal extends Component<ModalPortalProps, ModalPortalState> {
   /**
    * The element that will contain this modal instance.
    */
-  private modalElement = document.createElement("div");
+  private modalElement = document.createElement('div');
 
   componentDidMount() {
     // Attach to the host if it's available right away.

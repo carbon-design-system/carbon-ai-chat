@@ -7,17 +7,17 @@
  *  @license
  */
 
-import { DeepPartial } from "../utilities/DeepPartial";
+import { DeepPartial } from '../utilities/DeepPartial';
 
 import {
   ResponseUserProfile,
   MessageRequest,
   MessageResponse,
-} from "../messaging/Messages";
+} from '../messaging/Messages';
 import type {
   ChatInstance,
   FileUploadCapabilities,
-} from "../instance/ChatInstance";
+} from '../instance/ChatInstance';
 
 /**
  * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
@@ -25,10 +25,10 @@ import type {
  * @category Service desk
  */
 export enum FileStatusValue {
-  COMPLETE = "complete",
-  EDIT = "edit",
-  UPLOADING = "uploading",
-  SUCCESS = "success",
+  COMPLETE = 'complete',
+  EDIT = 'edit',
+  UPLOADING = 'uploading',
+  SUCCESS = 'success',
 }
 
 /**
@@ -106,18 +106,18 @@ export enum HumanAgentsOnlineStatus {
   /**
    * Indicates that agents are online.
    */
-  ONLINE = "online",
+  ONLINE = 'online',
 
   /**
    * Indicates that no agents are online.
    */
-  OFFLINE = "offline",
+  OFFLINE = 'offline',
 
   /**
    * Indicates that it is unknown whether any agents are available. This may be because the service desk being used
    * doesn't support the ability to determine this information.
    */
-  UNKNOWN = "unknown",
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -201,7 +201,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    */
   sendMessageToUser(
     message: MessageResponse | string,
-    agentID?: string,
+    agentID?: string
   ): Promise<void>;
 
   /**
@@ -250,7 +250,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   setFileUploadStatus(
     fileID: string,
     isError?: boolean,
-    errorMessage?: string,
+    errorMessage?: string
   ): Promise<void>;
 
   /**
@@ -291,7 +291,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    */
   updatePersistedState(
     state: DeepPartial<TPersistedStateType>,
-    mergeWithCurrent?: boolean,
+    mergeWithCurrent?: boolean
   ): void;
 }
 
@@ -311,22 +311,22 @@ export enum ScreenShareState {
   /**
    * Indicates the screen sharing was accepted by the user.
    */
-  ACCEPTED = "accepted",
+  ACCEPTED = 'accepted',
 
   /**
    * Indicates the screen sharing was declined by the user.
    */
-  DECLINED = "declined",
+  DECLINED = 'declined',
 
   /**
    * Indicates the screen sharing request was cancelled.
    */
-  CANCELLED = "cancelled",
+  CANCELLED = 'cancelled',
 
   /**
    * Indicates that screen sharing has ended.
    */
-  ENDED = "ended",
+  ENDED = 'ended',
 }
 
 /**
@@ -549,7 +549,7 @@ export interface ServiceDesk {
    */
   startChat: (
     connectMessage: MessageResponse,
-    startChatOptions: StartChatOptions,
+    startChatOptions: StartChatOptions
   ) => Promise<void>;
 
   /**
@@ -572,7 +572,7 @@ export interface ServiceDesk {
   sendMessageToAgent: (
     message: MessageRequest,
     messageID: string,
-    additionalData: AdditionalDataToAgent,
+    additionalData: AdditionalDataToAgent
   ) => Promise<void>;
 
   /**
@@ -603,7 +603,7 @@ export interface ServiceDesk {
    * means the availability status of agents is unknown or the service desk doesn't support this information.
    */
   areAnyAgentsOnline?: (
-    connectMessage: MessageResponse,
+    connectMessage: MessageResponse
   ) => Promise<boolean | null>;
 
   /**

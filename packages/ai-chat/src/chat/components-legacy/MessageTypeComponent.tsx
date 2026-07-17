@@ -9,68 +9,68 @@
 
 /* eslint-disable react/no-array-index-key */
 
-import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
+import Attachment16 from '@carbon/icons/es/attachment/16.js';
+import { carbonIconToReact } from '../utils/carbonIcon';
 import React, {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-} from "react";
-import { useIntl } from "../hooks/useIntl";
+} from 'react';
+import { useIntl } from '../hooks/useIntl';
 
 import {
   BusEventFeedback,
   BusEventType,
   FeedbackInteractionType,
-} from "../../types/events/eventBusTypes";
-import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+} from '../../types/events/eventBusTypes';
+import FeedbackButtons from '@carbon/ai-chat-components/es/react/feedback-buttons.js';
 import Feedback, {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
-} from "@carbon/ai-chat-components/es/react/feedback.js";
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { SystemMessage } from "../components/SystemMessage.js";
-import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
-import { AudioComponent } from "../components/messages/AudioComponent";
-import { ButtonItemComponent } from "../components/ButtonItemComponent";
-import { CardItemComponent } from "../components/messages/CardItemComponent";
-import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
-import { CarouselItemComponent } from "../components/messages/CarouselItemComponent";
-import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "../components/UserDefinedResponse";
-import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
-import { DatePickerComponent } from "../components/responseTypes/datePicker/DatePickerComponent";
-import InlineError from "../components/util/InlineError";
-import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
-import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
-import { Image } from "./responseTypes/image/Image";
-import { OptionComponent } from "../components/responseTypes/options/OptionComponent";
-import { MarkdownWithErrorHandling } from "../components/util/MarkdownWithErrorHandling";
-import { VideoComponent } from "../components/messages/VideoComponent";
-import { useSelector } from "../hooks/useSelector";
-import { shallowEqual } from "../store/appStore";
-import { AppState } from "../../types/state/AppState";
-import { useUUID } from "../hooks/useUUID";
-import actions from "../store/actions";
+} from '@carbon/ai-chat-components/es/react/feedback.js';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { SystemMessage } from '../components/SystemMessage.js';
+import { ConnectToHumanAgent } from './responseTypes/humanAgent/ConnectToHumanAgent';
+import { AudioComponent } from '../components/messages/AudioComponent';
+import { ButtonItemComponent } from '../components/ButtonItemComponent';
+import { CardItemComponent } from '../components/messages/CardItemComponent';
+import { PreviewCardComponent } from './responseTypes/previewCard/PreviewCardComponent';
+import { CarouselItemComponent } from '../components/messages/CarouselItemComponent';
+import { ConversationalSearch } from './responseTypes/conversationalSearch/ConversationalSearch';
+import UserDefinedResponse from '../components/UserDefinedResponse';
+import CustomFooterSlot from './responseTypes/custom/CustomFooterSlot';
+import { DatePickerComponent } from '../components/responseTypes/datePicker/DatePickerComponent';
+import InlineError from '../components/util/InlineError';
+import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
+import { IFrameMessage } from './responseTypes/iframe/IFrameMessage';
+import { Image } from './responseTypes/image/Image';
+import { OptionComponent } from '../components/responseTypes/options/OptionComponent';
+import { MarkdownWithErrorHandling } from '../components/util/MarkdownWithErrorHandling';
+import { VideoComponent } from '../components/messages/VideoComponent';
+import { useSelector } from '../hooks/useSelector';
+import { shallowEqual } from '../store/appStore';
+import { AppState } from '../../types/state/AppState';
+import { useUUID } from '../hooks/useUUID';
+import actions from '../store/actions';
 import {
   LocalMessageItem,
   MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
-import { MessageTypeComponentProps } from "../../types/messaging/MessageTypeComponentProps";
+} from '../../types/messaging/LocalMessageItem';
+import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
 import {
   getMediaDimensions,
   isRequest,
   isResponse,
   isTextItem,
   renderAsUserDefinedMessage,
-} from "../utils/messageUtils";
-import { parseUnknownDataToMarkdown } from "../utils/parseUnknownDataToMarkdown";
-import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
-import ChainOfThoughtStep from "@carbon/ai-chat-components/es/react/chain-of-thought-step.js";
-import ChainOfThoughtToggle from "@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js";
-import ToolCallData from "@carbon/ai-chat-components/es/react/tool-call-data.js";
+} from '../utils/messageUtils';
+import { parseUnknownDataToMarkdown } from '../utils/parseUnknownDataToMarkdown';
+import ChainOfThought from '@carbon/ai-chat-components/es/react/chain-of-thought.js';
+import ChainOfThoughtStep from '@carbon/ai-chat-components/es/react/chain-of-thought-step.js';
+import ChainOfThoughtToggle from '@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js';
+import ToolCallData from '@carbon/ai-chat-components/es/react/tool-call-data.js';
 import {
   AudioItem,
   ButtonItem,
@@ -98,10 +98,10 @@ import {
   UserType,
   VideoItem,
   PreviewCardItem,
-} from "../../types/messaging/Messages";
-import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
-import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
-import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
+} from '../../types/messaging/Messages';
+import { MarkdownWithDefaults } from '../components/util/MarkdownWithDefaults';
+import type { CDSAIChatChainOfThought } from '@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js';
+import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
 
 /**
  * The exact language-pack strings MessageTypeComponent renders. Selected as a
@@ -146,7 +146,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   const { formatMessage } = useIntl();
   const languagePack = useSelector(selectMessageTypeStrings, shallowEqual);
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
   const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const chainOfThoughtRef = useRef<CDSAIChatChainOfThought>(null);
@@ -175,15 +175,15 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   // Indicates if the negative or positive feedback buttons are marked as selected.
   const [isPositiveFeedbackSelected, setIsPositiveFeedbackSelected] = useState(
-    feedbackHistory && feedbackHistory.is_positive,
+    feedbackHistory && feedbackHistory.is_positive
   );
   const [isNegativeFeedbackSelected, setIsNegativeFeedbackSelected] = useState(
-    feedbackHistory && !feedbackHistory.is_positive,
+    feedbackHistory && !feedbackHistory.is_positive
   );
 
   // Indicates if details have been submitted.
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(
-    Boolean(feedbackHistory),
+    Boolean(feedbackHistory)
   );
 
   useEffect(() => {
@@ -196,7 +196,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     (childProps: MessageTypeComponentProps) => (
       <MessageTypeComponent {...childProps} />
     ),
-    [],
+    []
   );
 
   /**
@@ -204,7 +204,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderSpecificMessage(
     localMessageItem: LocalMessageItem,
-    message: Message,
+    message: Message
   ) {
     if (isRequest(message)) {
       return renderRequest(localMessageItem, message as MessageRequest);
@@ -233,7 +233,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderRequest(
     localMessageItem: LocalMessageItem,
-    originalMessage: MessageRequest,
+    originalMessage: MessageRequest
   ) {
     const messageItem = localMessageItem.item;
 
@@ -259,8 +259,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
             <MarkdownWithDefaults
               text={userText}
               removeHTML
-              overrideSanitize={true}
-            ></MarkdownWithDefaults>
+              overrideSanitize={true}></MarkdownWithDefaults>
           </div>
         </div>
       );
@@ -274,99 +273,99 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderResponse(
     localMessageItem: LocalMessageItem,
-    message: MessageResponse,
+    message: MessageResponse
   ) {
     if (renderAsUserDefinedMessage(localMessageItem.item)) {
       // Render all invalid components as a user defined response
       return renderUserDefinedResponse(
         localMessageItem as LocalMessageItem<any>,
-        message,
+        message
       );
     }
 
     const responseType = localMessageItem.item.response_type;
     const withHuman = Boolean(
       message.message_options?.response_user_profile?.user_type ===
-        UserType.HUMAN || localMessageItem.item.agent_message_type,
+        UserType.HUMAN || localMessageItem.item.agent_message_type
     );
     switch (responseType) {
       case MessageResponseTypes.TEXT:
         return renderText(
           localMessageItem as LocalMessageItem<TextItem>,
           message,
-          withHuman,
+          withHuman
         );
       case MessageResponseTypes.IMAGE:
         return renderImage(localMessageItem as LocalMessageItem<ImageItem>);
       case MessageResponseTypes.OPTION:
         return renderOption(
           localMessageItem as LocalMessageItem<OptionItem>,
-          message,
+          message
         );
       case MessageResponseTypes.CONNECT_TO_HUMAN_AGENT:
         return renderConnectToHumanAgent(
           localMessageItem as LocalMessageItem<ConnectToHumanAgentItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.INLINE_ERROR:
         return renderInlineError(
-          localMessageItem as LocalMessageItem<InlineErrorItem>,
+          localMessageItem as LocalMessageItem<InlineErrorItem>
         );
       case MessageResponseTypes.IFRAME:
         return renderIFrameMessage(
-          localMessageItem as LocalMessageItem<IFrameItem>,
+          localMessageItem as LocalMessageItem<IFrameItem>
         );
       case MessageResponseTypes.VIDEO:
         return renderVideoMessage(
-          localMessageItem as LocalMessageItem<VideoItem>,
+          localMessageItem as LocalMessageItem<VideoItem>
         );
       case MessageResponseTypes.AUDIO:
         return renderAudioMessage(
-          localMessageItem as LocalMessageItem<AudioItem>,
+          localMessageItem as LocalMessageItem<AudioItem>
         );
       case MessageResponseTypes.DATE:
         return renderDateMessage(
-          localMessageItem as LocalMessageItem<DateItem>,
+          localMessageItem as LocalMessageItem<DateItem>
         );
       case MessageResponseTypes.CONVERSATIONAL_SEARCH:
         return renderConversationalSearchMessage(
           localMessageItem as LocalMessageItem<ConversationalSearchItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.CARD:
         return renderCard(
           localMessageItem as LocalMessageItem<CardItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.CAROUSEL:
         return renderCarouselMessage(
           localMessageItem as LocalMessageItem<CarouselItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.BUTTON:
         return renderButtonItem(
           localMessageItem as LocalMessageItem<ButtonItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.GRID:
         return renderGrid(
           localMessageItem as LocalMessageItem<GridItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.PREVIEW_CARD:
         return renderPreviewCard(
           localMessageItem as LocalMessageItem<PreviewCardItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       case MessageResponseTypes.SYSTEM:
         return renderSystemMessage(
           localMessageItem as LocalMessageItem<SystemMessageItem>,
-          message as MessageResponse,
+          message as MessageResponse
         );
       default:
         return renderUserDefinedResponse(
           localMessageItem as LocalMessageItem<TextItem>,
-          message,
+          message
         );
     }
   }
@@ -374,13 +373,13 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   function renderText(
     message: LocalMessageItem<TextItem>,
     originalMessage: MessageResponse,
-    removeHTML: boolean,
+    removeHTML: boolean
   ) {
     if (props.isNestedMessageItem) {
       return renderRichText(
         message,
         removeHTML,
-        originalMessage as MessageResponse,
+        originalMessage as MessageResponse
       );
     }
 
@@ -390,7 +389,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         {renderRichText(
           message,
           removeHTML,
-          originalMessage as MessageResponse,
+          originalMessage as MessageResponse
         )}
       </div>
     );
@@ -399,7 +398,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   function renderRichText(
     localMessageItem: LocalMessageItem<TextItem>,
     removeHTML: boolean,
-    originalMessage?: MessageResponse,
+    originalMessage?: MessageResponse
   ) {
     return (
       <MarkdownWithErrorHandling
@@ -416,7 +415,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderOption(
     message: LocalMessageItem<OptionItem>,
-    originalMessage: Message,
+    originalMessage: Message
   ) {
     const {
       requestInputFocus,
@@ -506,7 +505,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderUserDefinedResponse(
     message: LocalMessageItem,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     const { serviceManager } = props;
     return (
@@ -523,7 +522,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderConnectToHumanAgent(
     message: LocalMessageItem,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     const { serviceManager, disableUserInputs, isMessageForInput } = props;
 
@@ -540,7 +539,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderCard(
     message: LocalMessageItem<CardItem>,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
@@ -556,7 +555,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderPreviewCard(
     message: LocalMessageItem<PreviewCardItem>,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     return (
       <PreviewCardComponent
@@ -568,7 +567,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderConversationalSearchMessage(
     localMessageItem: LocalMessageItem<ConversationalSearchItem>,
-    fullMessage: MessageResponse,
+    fullMessage: MessageResponse
   ) {
     const { scrollElementIntoView } = props;
     return (
@@ -585,7 +584,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderButtonItem(
     message: LocalMessageItem<ButtonItem>,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
@@ -600,7 +599,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderCarouselMessage(
     message: LocalMessageItem<CarouselItem>,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
@@ -622,7 +621,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderGrid(
     message: LocalMessageItem<GridItem>,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     return (
       <GridItemComponent
@@ -635,7 +634,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderSystemMessage(
     _localMessageItem: LocalMessageItem<SystemMessageItem>,
-    message: MessageResponse,
+    message: MessageResponse
   ) {
     // Render inline system message (within message bubble)
     return <SystemMessage message={message} standalone={false} />;
@@ -657,8 +656,8 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     stepTitle: string;
   }) {
     return formatMessage(
-      { id: "chainOfThought_stepTitle" },
-      { stepNumber, stepTitle },
+      { id: 'chainOfThought_stepTitle' },
+      { stepNumber, stepTitle }
     );
   }
 
@@ -668,7 +667,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderChainOfThought(
     _localMessageItem: LocalMessageItem,
-    message: MessageResponse,
+    message: MessageResponse
   ) {
     const chainOfThought = message.message_options?.chain_of_thought;
     if (!chainOfThought || props.isNestedMessageItem) {
@@ -687,7 +686,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     const handleStepToggle = (event: CustomEvent<{ open: boolean }>) => {
       scrollChainOfThought(
         Boolean(event.detail?.open),
-        (event.target as HTMLElement) ?? chainOfThoughtRef.current,
+        (event.target as HTMLElement) ?? chainOfThoughtRef.current
       );
     };
 
@@ -706,26 +705,25 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           panelId={chainOfThoughtPanelId}
           open={isChainOfThoughtOpen}
           onToggle={handleToggle}
-          onStepToggle={handleStepToggle}
-        >
+          onStepToggle={handleStepToggle}>
           {chainOfThought.map((step, index) => {
             const stepNumber = index + 1;
             const labelText = formatStepLabelText({
               stepNumber,
-              stepTitle: step.title || step.tool_name || "",
+              stepTitle: step.title || step.tool_name || '',
             });
             const requestMarkdown = parseUnknownDataToMarkdown(
-              step.request?.args,
+              step.request?.args
             );
             const responseMarkdown = parseUnknownDataToMarkdown(
-              step.response?.content,
+              step.response?.content
             );
 
             return (
               <ChainOfThoughtStep
                 key={step.title || step.tool_name || index}
-                title={step.title || step.tool_name || ""}
-                status={step.status || "success"}
+                title={step.title || step.tool_name || ''}
+                status={step.status || 'success'}
                 stepNumber={stepNumber}
                 labelText={labelText}
                 statusSucceededLabelText={
@@ -736,14 +734,12 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
                 }
                 statusProcessingLabelText={
                   languagePack.chainOfThought_statusProcessingLabel
-                }
-              >
+                }>
                 <ToolCallData
                   toolName={step.tool_name}
                   inputLabelText={languagePack.chainOfThought_inputLabel}
                   outputLabelText={languagePack.chainOfThought_outputLabel}
-                  toolLabelText={languagePack.chainOfThought_toolLabel}
-                >
+                  toolLabelText={languagePack.chainOfThought_toolLabel}>
                   {step.description ? (
                     <div slot="description">
                       <MarkdownWithDefaults text={step.description} />
@@ -773,7 +769,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderFeedback(
     localMessageItem: LocalMessageItem,
-    message: MessageResponse,
+    message: MessageResponse
   ) {
     const feedbackOptions =
       localMessageItem.item.message_item_options?.feedback || {};
@@ -813,7 +809,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
           },
         };
         serviceManager.store.dispatch(
-          actions.mergeMessageHistory(localMessageItem.fullMessageID, history),
+          actions.mergeMessageHistory(localMessageItem.fullMessageID, history)
         );
       }
     }
@@ -914,10 +910,10 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       return (
         <Feedback
           class={`${prefix}--feedback-details-${
-            isPositive ? "positive" : "negative"
+            isPositive ? 'positive' : 'negative'
           }`}
           id={`${feedbackPanelID}-feedback-${
-            isPositive ? "positive" : "negative"
+            isPositive ? 'positive' : 'negative'
           }`}
           isOpen={isOpen}
           isReadonly={isFeedbackSubmitted}
@@ -995,7 +991,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
    */
   function renderFeedbackAndCustomFooter(
     localMessageItem: LocalMessageItem,
-    message: MessageResponse,
+    message: MessageResponse
   ) {
     const feedback = renderFeedback(localMessageItem, message);
     const customFooter = renderCustomFooter(localMessageItem);

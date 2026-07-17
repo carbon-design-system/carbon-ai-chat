@@ -33,10 +33,10 @@
  * assignments below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/ai-chat-components/es/components/table/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/ai-chat-components/es/components/table/index.js';
 
 import {
   BusEventType,
@@ -44,13 +44,13 @@ import {
   type MarkdownRendererTableArgs,
   PanelType,
   type WCMarkdown,
-} from "@carbon/ai-chat";
-import type { Action } from "@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
+} from '@carbon/ai-chat';
+import type { Action } from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
 
-import { customSendMessage } from "./customSendMessage";
-import "./workspaceTable";
-import { type WorkspaceTableData } from "./workspaceTable";
+import { customSendMessage } from './customSendMessage';
+import './workspaceTable';
+import { type WorkspaceTableData } from './workspaceTable';
 
 // Captured in `onBeforeRender` so the table renderer (which closes over
 // this module) can reach `customPanels` and `writeableElements` later.
@@ -67,7 +67,7 @@ let workspaceContent: HTMLElement | null = null;
 
 function ensureWorkspaceContent(): HTMLElement {
   if (!workspaceContent) {
-    workspaceContent = document.createElement("workspace-table-content");
+    workspaceContent = document.createElement('workspace-table-content');
   }
   return workspaceContent;
 }
@@ -75,7 +75,7 @@ function ensureWorkspaceContent(): HTMLElement {
 const MARKDOWN_CONFIG: WCMarkdown = {
   customRenderers: {
     table: ({ headers, rows, slotName }: MarkdownRendererTableArgs) => {
-      const title = "Orders";
+      const title = 'Orders';
       // Use cached card / refresh its toolbar/table content. The toolbar
       // expects an `actions: Action[]` array (objects, not children) and
       // renders each as a `cds-icon-button` with a tooltip internally.
@@ -84,24 +84,24 @@ const MARKDOWN_CONFIG: WCMarkdown = {
       let body: HTMLElement | null = null;
       let table: HTMLElement | null = null;
       if (!card) {
-        card = document.createElement("cds-aichat-card");
-        card.setAttribute("is-flush", "");
-        toolbar = document.createElement("cds-aichat-toolbar");
-        toolbar.setAttribute("slot", "header");
-        body = document.createElement("div");
-        body.setAttribute("slot", "body");
+        card = document.createElement('cds-aichat-card');
+        card.setAttribute('is-flush', '');
+        toolbar = document.createElement('cds-aichat-toolbar');
+        toolbar.setAttribute('slot', 'header');
+        body = document.createElement('div');
+        body.setAttribute('slot', 'body');
         // The inline preview shares the same `cds-aichat-table` component
         // the chat uses by default — wrapping it in a card with a toolbar
         // is the entire override.
-        table = document.createElement("cds-aichat-table");
+        table = document.createElement('cds-aichat-table');
         body.appendChild(table);
         card.appendChild(toolbar);
         card.appendChild(body);
         renderedCards.set(slotName, card);
       } else {
-        toolbar = card.querySelector("cds-aichat-toolbar");
+        toolbar = card.querySelector('cds-aichat-toolbar');
         body = card.querySelector('[slot="body"]');
-        table = card.querySelector("cds-aichat-table");
+        table = card.querySelector('cds-aichat-table');
       }
 
       // Toolbar properties (set imperatively because `actions` is an
@@ -110,7 +110,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
         (toolbar as unknown as { titleText: string }).titleText = title;
         const actions: Action[] = [
           {
-            text: "Open in workspace",
+            text: 'Open in workspace',
             icon: Maximize16,
             onClick: () => {
               if (!chatInstance) {
@@ -136,7 +136,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
               }
               chatInstance.customPanels?.getPanel(PanelType.WORKSPACE).open({
                 title,
-                preferredLocation: "end",
+                preferredLocation: 'end',
                 workspaceId: slotName,
               });
             },
@@ -162,7 +162,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
   },
 };
 
-const el = document.querySelector("cds-aichat-custom-element") as
+const el = document.querySelector('cds-aichat-custom-element') as
   | (HTMLElement & {
       messaging?: { customSendMessage: typeof customSendMessage };
       layout?: { showFrame?: boolean };

@@ -7,13 +7,13 @@
  *  @license
  */
 
-import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
+import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
 
-import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
-import { LitElement, html, nothing } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { type ChatInstance, type PublicConfig } from '@carbon/ai-chat';
+import { LitElement, html, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -27,7 +27,7 @@ const config: PublicConfig = {
   header: { hideMinimizeButton: true },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   // Disable shadow DOM so global CSS classes from index.html apply to the
   // cds-aichat-custom-element and cds-aichat-shell host elements.
@@ -52,7 +52,7 @@ export class Demo extends LitElement {
   async _loadChat() {
     // The 3000 ms delay makes the lazy-loading behavior obvious on localhost and should be removed in a real implementation.
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    await import("@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js");
+    await import('@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js');
     this._chatLoaded = true;
   }
 
@@ -72,8 +72,7 @@ export class Demo extends LitElement {
                 .openChatByDefault=${config.openChatByDefault}
                 .launcher=${config.launcher}
                 .header=${config.header}
-                .onAfterRender=${this._onAfterRender}
-              ></cds-aichat-custom-element>
+                .onAfterRender=${this._onAfterRender}></cds-aichat-custom-element>
             `
           : nothing
       }
@@ -82,8 +81,7 @@ export class Demo extends LitElement {
           ? html`
               <cds-aichat-shell
                 class="chat-custom-element chat-custom-element-loading"
-                ai-enabled
-              ></cds-aichat-shell>
+                ai-enabled></cds-aichat-shell>
             `
           : nothing
       }

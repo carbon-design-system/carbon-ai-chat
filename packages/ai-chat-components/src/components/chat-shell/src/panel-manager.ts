@@ -21,18 +21,18 @@ export class PanelManager {
 
   constructor(
     private readonly panelsSlot: HTMLSlotElement,
-    private readonly shellRoot: HTMLElement,
+    private readonly shellRoot: HTMLElement
   ) {}
 
   connect() {
     this.syncSlotElements();
-    this.panelsSlot.addEventListener("slotchange", this.onSlotChange);
+    this.panelsSlot.addEventListener('slotchange', this.onSlotChange);
     this.observeAssignedPanels();
     this.updateState();
   }
 
   disconnect() {
-    this.panelsSlot.removeEventListener("slotchange", this.onSlotChange);
+    this.panelsSlot.removeEventListener('slotchange', this.onSlotChange);
     this.stopObservingPanels();
   }
 
@@ -87,7 +87,7 @@ export class PanelManager {
 
     this.slotElements.forEach((slot) => {
       const slotName = slot.dataset.panelSlot;
-      if (slotName === "header" || slotName === "header-after") {
+      if (slotName === 'header' || slotName === 'header-after') {
         this.setInert(slot, headerInert);
       } else {
         this.setInert(slot, hasActive);
@@ -101,29 +101,29 @@ export class PanelManager {
     });
 
     const isAnyPanelAnimating = panels.some((panelState) =>
-      this.isPanelAnimating(panelState.element),
+      this.isPanelAnimating(panelState.element)
     );
     this.shellRoot.classList.toggle(
-      "shell--panels-animating",
-      isAnyPanelAnimating,
+      'shell--panels-animating',
+      isAnyPanelAnimating
     );
   }
 
   private getAssignedPanelElements(): HTMLElement[] {
     const internalPanels = Array.from(
       this.shellRoot.querySelectorAll<HTMLElement>(
-        "cds-aichat-panel[data-internal-panel]",
-      ),
+        'cds-aichat-panel[data-internal-panel]'
+      )
     );
 
     const panelsElement = this.panelsSlot
       .assignedElements({ flatten: true })
       .find(
-        (element): element is HTMLElement => element instanceof HTMLElement,
+        (element): element is HTMLElement => element instanceof HTMLElement
       );
     const slottedPanels = panelsElement
       ? Array.from(
-          panelsElement.querySelectorAll<HTMLElement>("cds-aichat-panel"),
+          panelsElement.querySelectorAll<HTMLElement>('cds-aichat-panel')
         )
       : [];
 
@@ -135,9 +135,9 @@ export class PanelManager {
     const panels = this.getAssignedPanelElements();
     return panels.map((element, index) => ({
       element,
-      open: element.hasAttribute("open"),
-      priority: Number(element.getAttribute("priority") ?? 0),
-      showChatHeader: element.hasAttribute("show-chat-header"),
+      open: element.hasAttribute('open'),
+      priority: Number(element.getAttribute('priority') ?? 0),
+      showChatHeader: element.hasAttribute('show-chat-header'),
       index,
     }));
   }
@@ -170,12 +170,12 @@ export class PanelManager {
   }
 
   private isPanelAnimating(panelElement: HTMLElement) {
-    return panelElement.classList.contains("panel-container--animating");
+    return panelElement.classList.contains('panel-container--animating');
   }
 
   private syncSlotElements() {
     this.slotElements = Array.from(
-      this.shellRoot.querySelectorAll<HTMLElement>("[data-panel-slot]"),
+      this.shellRoot.querySelectorAll<HTMLElement>('[data-panel-slot]')
     );
   }
 }

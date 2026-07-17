@@ -7,8 +7,8 @@
  *  @license
  */
 
-import cx from "classnames";
-import React from "react";
+import cx from 'classnames';
+import React from 'react';
 
 interface MessagesViewProps {
   bottomScrollHandle: React.ReactNode;
@@ -40,13 +40,12 @@ function MessagesView({
       {humanAgentBanner}
       {topScrollHandle}
       <div
-        className={cx("cds-aichat--messages__wrapper", {
-          "cds-aichat--messages__wrapper--scroll-handle-has-focus":
+        className={cx('cds-aichat--messages__wrapper', {
+          'cds-aichat--messages__wrapper--scroll-handle-has-focus':
             scrollHandleHasFocus,
         })}
         ref={messagesContainerRef}
-        onScroll={onScroll}
-      >
+        onScroll={onScroll}>
         <div className="cds-aichat--messages">
           {regularMessages}
           {typingIndicator}

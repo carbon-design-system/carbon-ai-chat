@@ -5,44 +5,44 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/components/button";
-@use "../../../globals/scss/chat-launcher-layout";
-@use "@carbon/ai-chat-components/scss/utilities" as chat-config;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/components/button';
+@use '../../../globals/scss/chat-launcher-layout';
+@use '@carbon/ai-chat-components/scss/utilities' as chat-config;
 
 // Web chat widget variables
-$box-shadow: chat-config.get-var("box-shadow", 1px 0 4px hsl(0deg 0% 9% / 30%));
+$box-shadow: chat-config.get-var('box-shadow', 1px 0 4px hsl(0deg 0% 9% / 30%));
 // Launcher Variables (container-specific sizing/positioning)
-$launcher-default-size: chat-config.get-var("launcher-default-size", 56px);
-$launcher-extended-width: chat-config.get-var("launcher-extended-width", 280px);
+$launcher-default-size: chat-config.get-var('launcher-default-size', 56px);
+$launcher-extended-width: chat-config.get-var('launcher-extended-width', 280px);
 
 $launcher-color-background: chat-config.get-var(
-  "launcher-color-background",
+  'launcher-color-background',
   button.$button-primary
 );
 $launcher-color-avatar: chat-config.get-var(
-  "launcher-color-avatar",
+  'launcher-color-avatar',
   theme.$text-on-color
 );
 $launcher-color-focus-border: chat-config.get-var(
-  "launcher-color-focus-border",
+  'launcher-color-focus-border',
   theme.$text-on-color
 );
 $launcher-mobile-color-text: chat-config.get-var(
-  "launcher-mobile-color-text",
+  'launcher-mobile-color-text',
   theme.$text-on-color
 );
 
 // Unread indicator colors
 $unread-indicator-color-background: chat-config.get-var(
-  "unread-indicator-color-background",
+  'unread-indicator-color-background',
   theme.$support-error
 );
 $unread-indicator-color-text: chat-config.get-var(
-  "unread-indicator-color-text",
+  'unread-indicator-color-text',
   theme.$text-on-color
 );
 
@@ -78,7 +78,7 @@ $launcher-easing: motion.motion(standard, productive);
   inset-inline-end: calc(-1 * #{layout.$spacing-02});
   min-block-size: 20px;
   min-inline-size: 20px;
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 }
 
 cds-button.cds-aichat--launcher__button {
@@ -153,7 +153,7 @@ cds-button.cds-aichat--launcher__button {
 
   opacity: 0;
   word-break: break-word;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 .cds-aichat--launcher-extended__greeting-text {
@@ -327,15 +327,15 @@ cds-button.cds-aichat--launcher-extended__close-button {
   }
 }
 
-[dir="rtl"] .cds-aichat--count-indicator {
+[dir='rtl'] .cds-aichat--count-indicator {
   inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
 }
 
-[dir="rtl"] cds-button.cds-aichat--launcher-extended__close-button {
+[dir='rtl'] cds-button.cds-aichat--launcher-extended__close-button {
   transform: translate(-50%, 50%);
 }
 
-[dir="rtl"] .cds-aichat-launcher {
+[dir='rtl'] .cds-aichat-launcher {
   .cds-aichat--launcher-extended__wrapper {
     inset-inline: 0 unset;
   }

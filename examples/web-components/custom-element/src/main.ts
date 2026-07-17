@@ -7,13 +7,13 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -22,13 +22,13 @@ const config: PublicConfig = {
   layout: {
     showFrame: false,
     customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
+      'messages-max-width': `max(60vw, 672px)`,
     },
   },
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -43,8 +43,7 @@ export class Demo extends LitElement {
         .messaging=${config.messaging}
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
-        class="chat-custom-element"
-      ></cds-aichat-custom-element>
+        class="chat-custom-element"></cds-aichat-custom-element>
     `;
   }
 }

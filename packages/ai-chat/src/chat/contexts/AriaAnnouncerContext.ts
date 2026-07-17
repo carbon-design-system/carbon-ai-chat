@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { AnnounceMessage } from "../../types/state/AppState";
+import { AnnounceMessage } from '../../types/state/AppState';
 
 /**
  * This file contains the instance of the {@link AriaAnnouncerContext} which is used to provide access to the
@@ -22,7 +22,7 @@ import { AnnounceMessage } from "../../types/state/AppState";
  * @see AriaAnnouncerProvider
  */
 type AriaAnnouncerFunctionType = (
-  value: Node | AnnounceMessage | string,
+  value: Node | AnnounceMessage | string
 ) => void;
 
 const AriaAnnouncerContext =

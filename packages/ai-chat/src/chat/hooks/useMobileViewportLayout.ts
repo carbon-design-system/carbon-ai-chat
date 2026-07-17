@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { useEffect, useState } from "react";
-import type React from "react";
+import { useEffect, useState } from 'react';
+import type React from 'react';
 import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+} from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 interface VisualViewportMetrics {
   width: number;
@@ -40,7 +40,7 @@ interface UseMobileViewportLayoutArgs {
   margin?: number;
 }
 
-const VIEWPORT_SELECTOR = ".cds-aichat--container--render";
+const VIEWPORT_SELECTOR = '.cds-aichat--container--render';
 
 /**
  * Sizes the chat to the live visual viewport on mobile Safari by writing
@@ -66,7 +66,7 @@ function useMobileViewportLayout({
   const [metrics, setMetrics] = useState<VisualViewportMetrics | null>(null);
 
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") {
+    if (!enabled || typeof window === 'undefined') {
       setMetrics(null);
       return undefined;
     }
@@ -86,12 +86,12 @@ function useMobileViewportLayout({
     };
 
     update();
-    visualViewport.addEventListener("resize", update);
-    visualViewport.addEventListener("scroll", update);
+    visualViewport.addEventListener('resize', update);
+    visualViewport.addEventListener('scroll', update);
 
     return () => {
-      visualViewport.removeEventListener("resize", update);
-      visualViewport.removeEventListener("scroll", update);
+      visualViewport.removeEventListener('resize', update);
+      visualViewport.removeEventListener('scroll', update);
     };
   }, [enabled]);
 
@@ -111,13 +111,13 @@ function useMobileViewportLayout({
 
     const vars: Record<string, string> = {};
     if (metrics.height) {
-      vars["--cds-aichat-height"] = `calc(${metrics.height}px - ${margin}px)`;
+      vars['--cds-aichat-height'] = `calc(${metrics.height}px - ${margin}px)`;
     }
     if (metrics.width) {
-      vars["--cds-aichat-width"] = `calc(${metrics.width}px - ${margin}px)`;
+      vars['--cds-aichat-width'] = `calc(${metrics.width}px - ${margin}px)`;
     }
     if (metrics.offsetTop) {
-      vars["--cds-aichat-top-position"] = `${metrics.offsetTop}px`;
+      vars['--cds-aichat-top-position'] = `${metrics.offsetTop}px`;
     }
     if (Object.keys(vars).length === 0) {
       clearSelector(VIEWPORT_SELECTOR);

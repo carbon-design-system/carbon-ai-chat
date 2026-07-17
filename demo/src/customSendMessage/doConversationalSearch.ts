@@ -13,9 +13,9 @@ import {
   ConversationalSearchItem,
   MessageResponseTypes,
   StreamChunk,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { WORD_DELAY } from "./constants";
+import { WORD_DELAY } from './constants';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -24,26 +24,26 @@ async function sleep(milliseconds: number) {
 }
 
 const TEXT =
-  "Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times. Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.";
+  'Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times. Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.';
 
 const META = {
   citations: [
     {
-      title: "Carbon Allotropes - Chemical Database (IBM Research)",
-      text: "Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov.",
-      url: "https://ibm.com/research/carbon-allotropes#:~:text=Diamond%20was%20first,University%20of%20Manchester",
+      title: 'Carbon Allotropes - Chemical Database (IBM Research)',
+      text: 'Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov.',
+      url: 'https://ibm.com/research/carbon-allotropes#:~:text=Diamond%20was%20first,University%20of%20Manchester',
       ranges: [{ start: 147, end: 290 }],
     },
     {
-      title: "Carbon Element History - Chemical Elements Database (IBM Watson)",
-      text: "Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times.",
-      url: "https://ibm.com/chemistry/elements/carbon#:~:text=Antoine%20Lavoisier%201789",
+      title: 'Carbon Element History - Chemical Elements Database (IBM Watson)',
+      text: 'Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times.',
+      url: 'https://ibm.com/chemistry/elements/carbon#:~:text=Antoine%20Lavoisier%201789',
       ranges: [{ start: 0, end: 137 }],
     },
     {
       title:
-        "Carbon Research Database - Internal Collection (IBM Quantum Network)",
-      text: "Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985.",
+        'Carbon Research Database - Internal Collection (IBM Quantum Network)',
+      text: 'Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985.',
       // The result comes from an internal collection and does not have a url, instead we are going to reference the full search result.
       search_result_idx: 0,
       ranges: [{ start: 138, end: 247 }],
@@ -79,11 +79,11 @@ function doConversationalSearch(instance: ChatInstance) {
 async function doConversationalSearchStreaming(
   instance: ChatInstance,
   text: string = TEXT,
-  requestOptions?: CustomSendMessageOptions,
+  requestOptions?: CustomSendMessageOptions
 ) {
   const signal = requestOptions?.signal;
   const responseID = crypto.randomUUID();
-  const words = text.split(" ");
+  const words = text.split(' ');
   let isCanceled = false;
   let lastWordIndex = 0;
 
@@ -91,7 +91,7 @@ async function doConversationalSearchStreaming(
   const abortHandler = () => {
     isCanceled = true;
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     for (let index = 0; index < words.length && !isCanceled; index++) {
@@ -109,7 +109,7 @@ async function doConversationalSearchStreaming(
             // This is the id of the item inside the response. If you have multiple items in this message they will be
             // ordered in the view in the order of the first message chunk received. If you want message item 1 to
             // appear above message item 2, be sure to seed it with a chunk first, even if its empty to start.
-            id: "1",
+            id: '1',
             cancellable: true,
           },
         },
@@ -125,10 +125,10 @@ async function doConversationalSearchStreaming(
     // else that mutates the data, you can do so here.
     let completeItem = {
       response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
-      text: isCanceled ? words.splice(0, lastWordIndex).join(" ") : text,
+      text: isCanceled ? words.splice(0, lastWordIndex).join(' ') : text,
       streaming_metadata: {
         // This is the id of the item inside the response.
-        id: "1",
+        id: '1',
         stream_stopped: isCanceled,
       },
     };
@@ -161,7 +161,7 @@ async function doConversationalSearchStreaming(
       final_response: finalResponse,
     } as StreamChunk);
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 

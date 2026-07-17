@@ -13,7 +13,7 @@ import {
   MessageRequest,
   MessageResponseTypes,
   OptionItemPreference,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 /**
  * Sends the inventory type selection options to the user.
@@ -24,21 +24,21 @@ function sendInventoryOptions(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.OPTION,
-          title: "Select inventory type",
-          description: "Choose which inventory view you would like to see.",
+          title: 'Select inventory type',
+          description: 'Choose which inventory view you would like to see.',
           preference: OptionItemPreference.BUTTON,
           options: [
             {
-              label: "Excess Inventory",
-              value: { input: { text: "Excess Inventory" } },
+              label: 'Excess Inventory',
+              value: { input: { text: 'Excess Inventory' } },
             },
             {
-              label: "Current Inventory",
-              value: { input: { text: "Current Inventory" } },
+              label: 'Current Inventory',
+              value: { input: { text: 'Current Inventory' } },
             },
             {
-              label: "Outstanding Orders",
-              value: { input: { text: "Outstanding Orders" } },
+              label: 'Outstanding Orders',
+              value: { input: { text: 'Outstanding Orders' } },
             },
           ],
         },
@@ -56,16 +56,16 @@ function sendExcessInventoryResponse(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "Here is a plan for optimizing excess inventory.",
+          text: 'Here is a plan for optimizing excess inventory.',
         },
         {
-          title: "Optimizing excess inventory",
+          title: 'Optimizing excess inventory',
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
           workspace_id: crypto.randomUUID(),
           additional_data: {
-            type: "inventory_report",
-            data: "some additional data for the workspace",
+            type: 'inventory_report',
+            data: 'some additional data for the workspace',
           },
         },
       ],
@@ -82,16 +82,16 @@ function sendCurrentInventoryResponse(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "Here is the current inventory status.",
+          text: 'Here is the current inventory status.',
         },
         {
-          title: "Current inventory status",
+          title: 'Current inventory status',
           subtitle: `Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
           workspace_id: crypto.randomUUID(),
           additional_data: {
-            type: "inventory_status",
-            data: "some additional data for the workspace",
+            type: 'inventory_status',
+            data: 'some additional data for the workspace',
           },
         },
       ],
@@ -108,16 +108,16 @@ function sendOutstandingOrdersResponse(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "Here are your outstanding orders.",
+          text: 'Here are your outstanding orders.',
         },
         {
           response_type: MessageResponseTypes.USER_DEFINED,
           user_defined: {
-            user_defined_type: "outstanding_orders_card",
+            user_defined_type: 'outstanding_orders_card',
             workspace_id: crypto.randomUUID(),
             additional_data: {
-              type: "outstanding_orders",
-              data: "Outstanding orders data",
+              type: 'outstanding_orders',
+              data: 'Outstanding orders data',
             },
           },
         },
@@ -129,16 +129,16 @@ function sendOutstandingOrdersResponse(instance: ChatInstance) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const userInput = request.input.text?.trim();
 
   // Handle option selections
-  if (userInput === "Excess Inventory") {
+  if (userInput === 'Excess Inventory') {
     sendExcessInventoryResponse(instance);
-  } else if (userInput === "Current Inventory") {
+  } else if (userInput === 'Current Inventory') {
     sendCurrentInventoryResponse(instance);
-  } else if (userInput === "Outstanding Orders") {
+  } else if (userInput === 'Outstanding Orders') {
     sendOutstandingOrdersResponse(instance);
   } else {
     // Show options for any other input

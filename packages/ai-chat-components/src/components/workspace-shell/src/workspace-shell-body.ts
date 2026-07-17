@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./workspace-shell.scss?lit";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './workspace-shell.scss?lit';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
 
 /**
  * Workspace Shell Body.
@@ -28,7 +28,7 @@ class CDSAIChatWorkspaceShellBody extends LitElement {
    * Sets default slot value to body
    */
   @property({ type: String, reflect: true })
-  slot = "body";
+  slot = 'body';
 
   render() {
     return html` <slot></slot> `;

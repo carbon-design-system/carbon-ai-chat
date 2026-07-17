@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "./CustomResponseStyles.css";
+import './CustomResponseStyles.css';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 interface CustomResponseExampleData {
   type: string;

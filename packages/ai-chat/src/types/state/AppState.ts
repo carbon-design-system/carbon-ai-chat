@@ -13,28 +13,28 @@ import {
   type ViewState,
   ViewType,
   DefaultCustomPanelConfigOptions,
-} from "../instance/apiTypes";
-import { LanguagePack } from "../config/PublicConfig";
-import { type FileUpload } from "../config/ServiceDeskConfig";
-import type { StructuredData } from "../messaging/Messages";
+} from '../instance/apiTypes';
+import { LanguagePack } from '../config/PublicConfig';
+import { type FileUpload } from '../config/ServiceDeskConfig';
+import type { StructuredData } from '../messaging/Messages';
 
-import type { FileUploadCapabilities } from "../instance/ChatInstance";
-import type { CornersType } from "../../chat/utils/constants";
-import type { MarkdownConfig } from "../config/MarkdownConfig";
-import type { AppConfig } from "./AppConfig";
-import type { CarbonTheme } from "../config/PublicConfig";
-import type { LocalMessageItem } from "../messaging/LocalMessageItem";
-import ObjectMap from "../utilities/ObjectMap";
-import { HomeScreenState } from "../config/HomeScreenConfig";
+import type { FileUploadCapabilities } from '../instance/ChatInstance';
+import type { CornersType } from '../../chat/utils/constants';
+import type { MarkdownConfig } from '../config/MarkdownConfig';
+import type { AppConfig } from './AppConfig';
+import type { CarbonTheme } from '../config/PublicConfig';
+import type { LocalMessageItem } from '../messaging/LocalMessageItem';
+import ObjectMap from '../utilities/ObjectMap';
+import { HomeScreenState } from '../config/HomeScreenConfig';
 import {
   ConversationalSearchItemCitation,
   GenericItem,
   IFrameItem,
   Message,
   SearchResult,
-} from "../messaging/Messages";
-import { AgentAvailability } from "../config/ServiceDeskConfig";
-import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
+} from '../messaging/Messages';
+import { AgentAvailability } from '../config/ServiceDeskConfig';
+import { PersistedHumanAgentState } from './PersistedHumanAgentState';
 
 /**
  * The message-related portion of AppState. Used for message history operations.
@@ -224,9 +224,9 @@ interface AppState extends AppStateMessages {
  * @internal
  */
 export enum PendingUploadStatus {
-  UPLOADING = "uploading",
-  COMPLETE = "complete",
-  ERROR = "error",
+  UPLOADING = 'uploading',
+  COMPLETE = 'complete',
+  ERROR = 'error',
 }
 
 /**
@@ -597,11 +597,11 @@ interface AnnounceMessage {
  */
 enum ChatWidthBreakpoint {
   // < 360px
-  NARROW = "narrow",
+  NARROW = 'narrow',
   // >= 360px
-  STANDARD = "standard",
+  STANDARD = 'standard',
   // > 672 + 16 + 16px
-  WIDE = "wide",
+  WIDE = 'wide',
 }
 
 interface IFramePanelState {

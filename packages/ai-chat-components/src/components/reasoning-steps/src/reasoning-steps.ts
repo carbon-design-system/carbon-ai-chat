@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./reasoning-steps.scss?lit";
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators";
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './reasoning-steps.scss?lit';
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators';
 
 const baseClass = `${prefix}--reasoning-steps`;
 const stepSelector = `${prefix}-reasoning-step`;
@@ -25,10 +25,10 @@ const stepSelector = `${prefix}-reasoning-step`;
 class CDSAIChatReasoningSteps extends LitElement {
   static styles = [commonStyles, styles];
 
-  @property({ type: Boolean, attribute: "open", reflect: true })
+  @property({ type: Boolean, attribute: 'open', reflect: true })
   open = false;
 
-  @property({ type: Boolean, attribute: "controlled", reflect: true })
+  @property({ type: Boolean, attribute: 'controlled', reflect: true })
   controlled = false;
 
   connectedCallback() {
@@ -36,11 +36,11 @@ class CDSAIChatReasoningSteps extends LitElement {
   }
 
   updated(changedProperties: Map<PropertyKey, unknown>) {
-    if (changedProperties.has("controlled")) {
+    if (changedProperties.has('controlled')) {
       this.propagateControlled();
     }
 
-    if (changedProperties.has("open")) {
+    if (changedProperties.has('open')) {
       this.propagateOpen();
     }
 
@@ -57,9 +57,9 @@ class CDSAIChatReasoningSteps extends LitElement {
   propagateOpen() {
     this.steps.forEach((step) => {
       if (this.open) {
-        step.removeAttribute("inert");
+        step.removeAttribute('inert');
       } else {
-        step.setAttribute("inert", "");
+        step.setAttribute('inert', '');
       }
     });
   }
@@ -67,11 +67,11 @@ class CDSAIChatReasoningSteps extends LitElement {
   propagateControlled() {
     this.steps.forEach((step) => {
       if (this.controlled) {
-        step.setAttribute("data-parent-controlled", "");
-        step.setAttribute("controlled", "");
-      } else if (step.hasAttribute("data-parent-controlled")) {
-        step.removeAttribute("data-parent-controlled");
-        step.removeAttribute("controlled");
+        step.setAttribute('data-parent-controlled', '');
+        step.setAttribute('controlled', '');
+      } else if (step.hasAttribute('data-parent-controlled')) {
+        step.removeAttribute('data-parent-controlled');
+        step.removeAttribute('controlled');
       }
     });
   }
@@ -80,13 +80,13 @@ class CDSAIChatReasoningSteps extends LitElement {
     const steps = Array.from(this.steps);
 
     steps.forEach((step) => {
-      step.removeAttribute("data-last-item");
+      step.removeAttribute('data-last-item');
     });
 
     const lastVisible = steps.reverse().find((step) => !step.hidden);
 
     if (lastVisible) {
-      lastVisible.setAttribute("data-last-item", "");
+      lastVisible.setAttribute('data-last-item', '');
     }
   }
 
@@ -95,8 +95,7 @@ class CDSAIChatReasoningSteps extends LitElement {
       <div class=${baseClass}>
         <div
           class="${baseClass}__wrapper"
-          aria-hidden=${this.open ? "false" : "true"}
-        >
+          aria-hidden=${this.open ? 'false' : 'true'}>
           <div class="${baseClass}__body" role="list">
             <slot></slot>
           </div>
@@ -108,7 +107,7 @@ class CDSAIChatReasoningSteps extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-reasoning-steps": CDSAIChatReasoningSteps;
+    'cds-aichat-reasoning-steps': CDSAIChatReasoningSteps;
   }
 }
 

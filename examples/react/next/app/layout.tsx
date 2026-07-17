@@ -7,14 +7,14 @@
  *  @license
  */
 
-import "./globals.css";
-import type { Metadata } from "next";
-import React from "react";
+import './globals.css';
+import type { Metadata } from 'next';
+import React from 'react';
 
 export const metadata: Metadata = {
-  title: "Carbon AI Chat Next.js Example",
+  title: 'Carbon AI Chat Next.js Example',
   description:
-    "Demonstrates embedding the Carbon AI Chat React component inside a Next.js application.",
+    'Demonstrates embedding the Carbon AI Chat React component inside a Next.js application.',
 };
 
 export default function RootLayout({

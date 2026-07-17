@@ -7,40 +7,40 @@
  *  @license
  */
 
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { selectInputIsReadonly } from "../../../src/chat/store/selectors";
-import { createAppStore } from "../../../src/chat/store/appStore";
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+import { selectInputIsReadonly } from '../../../src/chat/store/selectors';
+import { createAppStore } from '../../../src/chat/store/appStore';
 import {
   createAppConfig,
   createInitialState,
-} from "../../../src/chat/store/doCreateStore";
-import { reducers } from "../../../src/chat/store/reducers";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { AppState } from "../../../src/types/state/AppState";
+} from '../../../src/chat/store/doCreateStore';
+import { reducers } from '../../../src/chat/store/reducers';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { AppState } from '../../../src/types/state/AppState';
 import {
   PublicConfig,
   enLanguagePack,
   CarbonTheme,
-} from "../../../src/types/config/PublicConfig";
+} from '../../../src/types/config/PublicConfig';
 
 // Mock ServiceManager for testing
 const createMockServiceManager = (initialState: AppState): ServiceManager => {
   const store = createAppStore(
     (
       state: AppState,
-      action: { type: string; [key: string]: unknown } | undefined,
+      action: { type: string; [key: string]: unknown } | undefined
     ): AppState => {
       return action && reducers[action.type]
         ? reducers[action.type](state, action)
         : state;
     },
-    initialState,
+    initialState
   );
 
   return {
     store,
     namespace: {
-      suffix: "-test",
+      suffix: '-test',
     },
   } as any; // Simplified mock
 };
@@ -49,7 +49,7 @@ function createInitialAppState(config: PublicConfig = {}): AppState {
   return createInitialState(createAppConfig(config));
 }
 
-describe("Dynamic Config Updates", () => {
+describe('Dynamic Config Updates', () => {
   let serviceManager: ServiceManager;
   let initialState: AppState;
 
@@ -57,19 +57,19 @@ describe("Dynamic Config Updates", () => {
     initialState = createInitialAppState({
       debug: false,
       header: {
-        title: "Initial Title",
+        title: 'Initial Title',
         showRestartButton: true,
       },
     });
     serviceManager = createMockServiceManager(initialState);
   });
 
-  describe("applyConfigChangesDynamically", () => {
-    it("should update the Redux store with new config", async () => {
+  describe('applyConfigChangesDynamically', () => {
+    it('should update the Redux store with new config', async () => {
       const newConfig: PublicConfig = {
         debug: true,
         header: {
-          title: "Updated Title",
+          title: 'Updated Title',
           showRestartButton: false,
         },
       };
@@ -77,39 +77,39 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
       expect(updatedState.config.public.debug).toBe(true);
-      expect(updatedState.config.derived.header?.title).toBe("Updated Title");
+      expect(updatedState.config.derived.header?.title).toBe('Updated Title');
       expect(updatedState.config.derived.header?.showRestartButton).toBe(false);
     });
 
-    it("should handle header property deletion correctly", async () => {
+    it('should handle header property deletion correctly', async () => {
       // Start with a header that has multiple properties
       const initialConfig: PublicConfig = {
         header: {
-          title: "Test Title",
-          name: "Assistant Name",
+          title: 'Test Title',
+          name: 'Assistant Name',
           showRestartButton: true,
           hideMinimizeButton: false,
           menuOptions: [
-            { text: "Help", handler: () => {} },
-            { text: "Settings", handler: () => {} },
+            { text: 'Help', handler: () => {} },
+            { text: 'Settings', handler: () => {} },
           ],
         },
       };
 
       const initialStateWithFullHeader = createInitialAppState(initialConfig);
       const serviceManagerWithFullHeader = createMockServiceManager(
-        initialStateWithFullHeader,
+        initialStateWithFullHeader
       );
 
       // Update to config with some properties deleted
       const newConfig: PublicConfig = {
         header: {
-          title: "Updated Title",
+          title: 'Updated Title',
           // name, showRestartButton, hideMinimizeButton, and menuOptions should be deleted
         },
       };
@@ -117,14 +117,14 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialStateWithFullHeader.config.public,
         newConfig,
-        serviceManagerWithFullHeader,
+        serviceManagerWithFullHeader
       );
 
       const updatedState = serviceManagerWithFullHeader.store.getState();
       const header = updatedState.config.derived.header;
 
       // Property that was updated should be present
-      expect(header?.title).toBe("Updated Title");
+      expect(header?.title).toBe('Updated Title');
 
       // Properties that were deleted should be undefined
       expect(header?.name).toBeUndefined();
@@ -133,10 +133,10 @@ describe("Dynamic Config Updates", () => {
       expect(header?.menuOptions).toBeUndefined();
     });
 
-    it("should handle complete header replacement", async () => {
+    it('should handle complete header replacement', async () => {
       const newConfig: PublicConfig = {
         header: {
-          name: "New Assistant",
+          name: 'New Assistant',
           // All other header properties should be gone
         },
       };
@@ -144,21 +144,21 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
       const header = updatedState.config.derived.header;
 
-      expect(header?.name).toBe("New Assistant");
+      expect(header?.name).toBe('New Assistant');
       expect(header?.title).toBeUndefined();
       expect(header?.showRestartButton).toBeUndefined();
     });
 
-    it("should merge partial string overrides into the language pack", async () => {
+    it('should merge partial string overrides into the language pack', async () => {
       const stringOverrides = {
-        input_placeholder: "Ask me anything",
-        launcher_isOpen: "Close assistant",
+        input_placeholder: 'Ask me anything',
+        launcher_isOpen: 'Close assistant',
       };
 
       const newConfig: PublicConfig = {
@@ -169,7 +169,7 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
@@ -177,13 +177,13 @@ describe("Dynamic Config Updates", () => {
       expect(updatedState.config.public.strings).toEqual(stringOverrides);
       const languagePack = updatedState.languagePack;
       expect(languagePack.input_placeholder).toBe(
-        stringOverrides.input_placeholder,
+        stringOverrides.input_placeholder
       );
       expect(languagePack.launcher_isOpen).toBe(
-        stringOverrides.launcher_isOpen,
+        stringOverrides.launcher_isOpen
       );
       expect(languagePack.launcher_isClosed).toBe(
-        enLanguagePack.launcher_isClosed,
+        enLanguagePack.launcher_isClosed
       );
     });
 
@@ -194,18 +194,18 @@ describe("Dynamic Config Updates", () => {
     // runtime change lives in the booted integration tests in
     // `tests/config/spec/strings_spec.ts`.
 
-    it("should handle homescreen changes and update homescreen state", async () => {
+    it('should handle homescreen changes and update homescreen state', async () => {
       const newConfig: PublicConfig = {
         homescreen: {
           isOn: true,
-          greeting: "Hello World",
+          greeting: 'Hello World',
         },
       };
 
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
@@ -213,23 +213,23 @@ describe("Dynamic Config Updates", () => {
       // Config should be updated
       expect(updatedState.config.public.homescreen?.isOn).toBe(true);
       expect(updatedState.config.public.homescreen?.greeting).toBe(
-        "Hello World",
+        'Hello World'
       );
 
       // Homescreen state should be opened since messageIDs length is 0
       expect(
         (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen,
+          .isHomeScreenOpen
       ).toBe(true);
     });
 
-    it("should handle homescreen being turned off", async () => {
+    it('should handle homescreen being turned off', async () => {
       // Start with homescreen on and open
       const initialConfigWithHomescreen: PublicConfig = {
         homescreen: { isOn: true },
       };
       const stateWithHomescreenOpen = createInitialAppState(
-        initialConfigWithHomescreen,
+        initialConfigWithHomescreen
       );
       stateWithHomescreenOpen.persistedToBrowserStorage = {
         ...stateWithHomescreenOpen.persistedToBrowserStorage,
@@ -240,7 +240,7 @@ describe("Dynamic Config Updates", () => {
       };
 
       const serviceManagerWithHomescreen = createMockServiceManager(
-        stateWithHomescreenOpen,
+        stateWithHomescreenOpen
       );
 
       const newConfig: PublicConfig = {
@@ -250,7 +250,7 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         stateWithHomescreenOpen.config.public,
         newConfig,
-        serviceManagerWithHomescreen,
+        serviceManagerWithHomescreen
       );
 
       const updatedState = serviceManagerWithHomescreen.store.getState();
@@ -261,11 +261,11 @@ describe("Dynamic Config Updates", () => {
       // Homescreen state should be closed
       expect(
         (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen,
+          .isHomeScreenOpen
       ).toBe(false);
     });
 
-    it("should handle readonly state changes", async () => {
+    it('should handle readonly state changes', async () => {
       const newConfig: PublicConfig = {
         isReadonly: true,
       };
@@ -273,7 +273,7 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
@@ -286,13 +286,13 @@ describe("Dynamic Config Updates", () => {
       expect(selectInputIsReadonly(updatedState)).toBe(true);
     });
 
-    it("should preserve derived theme properties correctly", async () => {
+    it('should preserve derived theme properties correctly', async () => {
       // Start with inherit mode (originalCarbonTheme is null)
       const initialStateWithInherit = createInitialAppState({
         injectCarbonTheme: null,
       });
       const serviceManagerWithInherit = createMockServiceManager(
-        initialStateWithInherit,
+        initialStateWithInherit
       );
 
       const originalDerivedTheme =
@@ -306,7 +306,7 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialStateWithInherit.config.public,
         newConfig,
-        serviceManagerWithInherit,
+        serviceManagerWithInherit
       );
 
       const updatedState = serviceManagerWithInherit.store.getState();
@@ -316,11 +316,11 @@ describe("Dynamic Config Updates", () => {
 
       // Derived theme should be preserved since originalCarbonTheme is null
       expect(
-        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme,
+        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme
       ).toBe(originalDerivedTheme);
     });
 
-    it("should NOT carry forward the previously resolved theme on explicit → inherit transition", async () => {
+    it('should NOT carry forward the previously resolved theme on explicit → inherit transition', async () => {
       // Start with explicit G90 theme. derivedCarbonTheme === G90 here.
       const initialStateExplicit = createInitialAppState({
         injectCarbonTheme: CarbonTheme.G90,
@@ -330,11 +330,10 @@ describe("Dynamic Config Updates", () => {
 
       expect(
         initialStateExplicit.config.derived.themeWithDefaults
-          .originalCarbonTheme,
+          .originalCarbonTheme
       ).toBe(CarbonTheme.G90);
       expect(
-        initialStateExplicit.config.derived.themeWithDefaults
-          .derivedCarbonTheme,
+        initialStateExplicit.config.derived.themeWithDefaults.derivedCarbonTheme
       ).toBe(CarbonTheme.G90);
 
       // Transition to inherit mode by setting injectCarbonTheme back to null.
@@ -342,7 +341,7 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialStateExplicit.config.public,
         newConfig,
-        serviceManagerExplicit,
+        serviceManagerExplicit
       );
 
       const updatedState = serviceManagerExplicit.store.getState();
@@ -353,14 +352,14 @@ describe("Dynamic Config Updates", () => {
       // off by the originalCarbonTheme flip via loadServices.ts — then resolves
       // the actual host theme.
       expect(
-        updatedState.config.derived.themeWithDefaults.originalCarbonTheme,
+        updatedState.config.derived.themeWithDefaults.originalCarbonTheme
       ).toBeNull();
       expect(
-        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme,
+        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme
       ).toBeNull();
     });
 
-    it("should handle messaging timeout updates", async () => {
+    it('should handle messaging timeout updates', async () => {
       // Mock message service for testing
       const mockMessageService = {
         timeoutMS: 30000,
@@ -376,7 +375,7 @@ describe("Dynamic Config Updates", () => {
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
@@ -388,23 +387,23 @@ describe("Dynamic Config Updates", () => {
       expect(mockMessageService.timeoutMS).toBe(60000); // 60 seconds in milliseconds
     });
 
-    it("should handle multiple simultaneous changes", async () => {
+    it('should handle multiple simultaneous changes', async () => {
       const newConfig: PublicConfig = {
         debug: true,
         isReadonly: true,
         header: {
-          title: "Multi-Change Title",
+          title: 'Multi-Change Title',
         },
         homescreen: {
           isOn: true,
-          greeting: "Multi-Change Greeting",
+          greeting: 'Multi-Change Greeting',
         },
       };
 
       await applyConfigChangesDynamically(
         initialState.config.public,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const updatedState = serviceManager.store.getState();
@@ -413,44 +412,44 @@ describe("Dynamic Config Updates", () => {
       expect(updatedState.config.public.debug).toBe(true);
       expect(updatedState.config.public.isReadonly).toBe(true);
       expect(updatedState.config.derived.header?.title).toBe(
-        "Multi-Change Title",
+        'Multi-Change Title'
       );
       expect(updatedState.config.public.homescreen?.isOn).toBe(true);
       expect(updatedState.config.public.homescreen?.greeting).toBe(
-        "Multi-Change Greeting",
+        'Multi-Change Greeting'
       );
 
       // Effective readonly derives from config; homescreen state is applied.
       expect(selectInputIsReadonly(updatedState as AppState)).toBe(true);
       expect(
         (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen,
+          .isHomeScreenOpen
       ).toBe(true);
     });
 
-    describe("disclaimer invalidation", () => {
-      it("clears the recorded acceptance for the current hostname when the disclaimer content changes", async () => {
+    describe('disclaimer invalidation', () => {
+      it('clears the recorded acceptance for the current hostname when the disclaimer content changes', async () => {
         const hostname = window.location.hostname;
 
         const stateWithAcceptance = createInitialAppState({
-          disclaimer: { isOn: true, disclaimerHTML: "<p>Original</p>" },
+          disclaimer: { isOn: true, disclaimerHTML: '<p>Original</p>' },
         });
         stateWithAcceptance.persistedToBrowserStorage = {
           ...stateWithAcceptance.persistedToBrowserStorage,
           disclaimersAccepted: {
             [hostname]: true,
-            "other-host.example": true,
+            'other-host.example': true,
           },
         };
         const sm = createMockServiceManager(stateWithAcceptance);
 
         const newConfig: PublicConfig = {
-          disclaimer: { isOn: true, disclaimerHTML: "<p>Updated</p>" },
+          disclaimer: { isOn: true, disclaimerHTML: '<p>Updated</p>' },
         };
         await applyConfigChangesDynamically(
           stateWithAcceptance.config.public,
           newConfig,
-          sm,
+          sm
         );
 
         const accepted =
@@ -460,12 +459,12 @@ describe("Dynamic Config Updates", () => {
         // reducer's deep merge of persistedToBrowserStorage.
         expect(accepted[hostname]).toBeFalsy();
         // ...but acceptance for other hostnames is untouched.
-        expect(accepted["other-host.example"]).toBe(true);
+        expect(accepted['other-host.example']).toBe(true);
       });
     });
 
-    describe("error handling", () => {
-      it("should handle null/undefined configs gracefully", async () => {
+    describe('error handling', () => {
+      it('should handle null/undefined configs gracefully', async () => {
         const newConfig: PublicConfig = {
           header: null as any,
         };
@@ -474,7 +473,7 @@ describe("Dynamic Config Updates", () => {
           await applyConfigChangesDynamically(
             initialState.config.public,
             newConfig,
-            serviceManager,
+            serviceManager
           );
         }).not.toThrow();
 

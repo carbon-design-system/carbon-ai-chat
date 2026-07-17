@@ -6,7 +6,7 @@
  *
  *  @license
  */
-import { debugLog, isEnableDebugLog } from "../utils/miscUtils";
+import { debugLog, isEnableDebugLog } from '../utils/miscUtils';
 
 /**
  * Compatibility and design notes
@@ -95,7 +95,7 @@ export function createAppStore<
   ActionType extends UnknownAction = UnknownAction,
 >(
   reducer: Reducer<StateShape, ActionType>,
-  preloadedState: StateShape,
+  preloadedState: StateShape
 ): AppStore<StateShape, ActionType> {
   let currentState: StateShape = preloadedState;
   const listeners: Set<StoreListener> = new Set();
@@ -103,14 +103,14 @@ export function createAppStore<
   const getState = (): StateShape => currentState;
 
   const dispatch: DispatchFunction<ActionType> = (
-    action: Readonly<ActionType>,
+    action: Readonly<ActionType>
   ): ActionType => {
     const previousState = currentState;
     if (isEnableDebugLog()) {
       debugLog(
-        "[store] dispatch",
+        '[store] dispatch',
         (action as unknown as { type?: string }).type ?? action,
-        action,
+        action
       );
     }
 
@@ -131,8 +131,8 @@ export function createAppStore<
             changed.push(k);
           }
         }
-        debugLog("[store] state updated; changed keys", changed);
-        debugLog("[store] notifying listeners", listeners.size);
+        debugLog('[store] state updated; changed keys', changed);
+        debugLog('[store] notifying listeners', listeners.size);
       }
       currentState = nextState;
       listeners.forEach((listener) => {
@@ -170,9 +170,9 @@ export function shallowEqual<T>(left: T, right: T): boolean {
     return true;
   }
   if (
-    typeof left !== "object" ||
+    typeof left !== 'object' ||
     left === null ||
-    typeof right !== "object" ||
+    typeof right !== 'object' ||
     right === null
   ) {
     return false;

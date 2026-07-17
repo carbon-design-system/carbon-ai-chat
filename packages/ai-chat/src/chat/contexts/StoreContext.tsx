@@ -18,8 +18,8 @@
  * - react-redux: https://github.com/reduxjs/react-redux (License: https://github.com/reduxjs/react-redux/blob/master/LICENSE.md)
  */
 
-import React from "react";
-import type { AppStore, UnknownAction } from "../store/appStore";
+import React from 'react';
+import type { AppStore, UnknownAction } from '../store/appStore';
 
 const StoreContext = React.createContext<AppStore<
   unknown,

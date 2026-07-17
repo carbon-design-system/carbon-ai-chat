@@ -14,9 +14,9 @@
  * This is framework-agnostic and prepares for web components migration.
  */
 
-import React, { ReactNode, type JSX } from "react";
-import { IntlContext } from "../contexts/IntlContext";
-import { IntlShape } from "../utils/i18n";
+import React, { ReactNode, type JSX } from 'react';
+import { IntlContext } from '../contexts/IntlContext';
+import { IntlShape } from '../utils/i18n';
 
 interface IntlProviderProps {
   /**

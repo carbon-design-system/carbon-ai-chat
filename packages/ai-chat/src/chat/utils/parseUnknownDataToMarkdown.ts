@@ -21,11 +21,11 @@ function parseUnknownDataToMarkdown(data: unknown): string | undefined {
   }
 
   try {
-    if (typeof data === "object") {
+    if (typeof data === 'object') {
       return `\`\`\`\n${JSON.stringify(data, null, 2)}\n\`\`\`\n`;
     }
 
-    if (typeof data === "string") {
+    if (typeof data === 'string') {
       try {
         const parsed = JSON.parse(data);
         return `\`\`\`\n${JSON.stringify(parsed, null, 2)}\n\`\`\`\n`;
@@ -36,7 +36,7 @@ function parseUnknownDataToMarkdown(data: unknown): string | undefined {
 
     return String(data);
   } catch (error) {
-    console.error("Cannot parse step content", error);
+    console.error('Cannot parse step content', error);
     return undefined;
   }
 }

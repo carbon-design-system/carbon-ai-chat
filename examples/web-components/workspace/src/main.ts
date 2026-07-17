@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   BusEventType,
@@ -16,16 +16,16 @@ import {
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import "./inventory-report-example";
-import "./inventory-status-example";
-import "./outstanding-orders-example";
-import "./outstanding-orders-card";
-import "./sql-editor-example";
+import { customSendMessage } from './customSendMessage';
+import './inventory-report-example';
+import './inventory-status-example';
+import './outstanding-orders-example';
+import './outstanding-orders-card';
+import './sql-editor-example';
 
 const config: PublicConfig = {
   messaging: {
@@ -34,13 +34,13 @@ const config: PublicConfig = {
   layout: {
     showFrame: false,
     customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
+      'messages-max-width': `max(60vw, 672px)`,
     },
   },
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -103,14 +103,14 @@ export class Demo extends LitElement {
    * Handles when the workspace panel is about to open.
    */
   workspacePanelPreOpenHandler = (event: any) => {
-    console.log(event, "Workspace panel pre-open");
+    console.log(event, 'Workspace panel pre-open');
   };
 
   /**
    * Handles when the workspace panel is opened.
    */
   workspacePanelOpenHandler = (event: any) => {
-    console.log(event, "Workspace panel opened");
+    console.log(event, 'Workspace panel opened');
 
     // Extract workspace data from the event
     const { workspaceId, additionalData } = event.data;
@@ -123,7 +123,7 @@ export class Demo extends LitElement {
    * Handles when the workspace panel is closed.
    */
   workspacePanelCloseHandler = (event: any) => {
-    console.log(event, "Workspace panel closed");
+    console.log(event, 'Workspace panel closed');
 
     // Clear workspace data when panel closes
     this.workspaceType = null;
@@ -136,14 +136,14 @@ export class Demo extends LitElement {
    * streaming state, and element lifecycle.
    */
   renderUserDefinedCallback = (
-    state: RenderUserDefinedState,
+    state: RenderUserDefinedState
   ): HTMLElement | null => {
     const messageItem = state.messageItem as UserDefinedItem | undefined;
 
     if (
-      messageItem?.user_defined?.user_defined_type === "outstanding_orders_card"
+      messageItem?.user_defined?.user_defined_type === 'outstanding_orders_card'
     ) {
-      const el = document.createElement("outstanding-orders-card") as any;
+      const el = document.createElement('outstanding-orders-card') as any;
       el.workspaceId = messageItem.user_defined?.workspace_id;
       el.additionalData = messageItem.user_defined?.additional_data;
       el.onMaximize = () => {
@@ -179,34 +179,30 @@ export class Demo extends LitElement {
     }
 
     switch (this.workspaceType) {
-      case "inventory_report":
+      case 'inventory_report':
         return html`<inventory-report-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
           location="workspace"
-          valueFromParent="Hello from parent!"
-        ></inventory-report-example>`;
-      case "inventory_status":
+          valueFromParent="Hello from parent!"></inventory-report-example>`;
+      case 'inventory_status':
         return html`<inventory-status-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
-          location="workspace"
-        ></inventory-status-example>`;
-      case "outstanding_orders":
+          location="workspace"></inventory-status-example>`;
+      case 'outstanding_orders':
         return html`<outstanding-orders-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
-          location="workspace"
-        ></outstanding-orders-example>`;
-      case "sql_editor":
+          location="workspace"></outstanding-orders-example>`;
+      case 'sql_editor':
         return html`<sql-editor-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
-          .additionalData=${this.workspaceAdditionalData}
-        ></sql-editor-example>`;
+          .additionalData=${this.workspaceAdditionalData}></sql-editor-example>`;
       default:
         return html``;
     }
@@ -220,8 +216,7 @@ export class Demo extends LitElement {
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
         .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-        class="chat-custom-element"
-      >
+        class="chat-custom-element">
         <div slot="workspacePanelElement">${this.renderWorkspaceElement()}</div>
       </cds-aichat-custom-element>
     `;

@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect } from 'react';
 
-import { AriaAnnouncerContext } from "../../contexts/AriaAnnouncerContext";
+import { AriaAnnouncerContext } from '../../contexts/AriaAnnouncerContext';
 
 interface AriaLiveMessageProps {
   /**

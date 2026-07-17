@@ -7,11 +7,11 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/tag/index.js";
-import "@carbon/web-components/es/components/dropdown/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
-import "@carbon/web-components/es/components/accordion/index.js";
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/dropdown/index.js';
+import '@carbon/web-components/es/components/checkbox/index.js';
+import '@carbon/web-components/es/components/accordion/index.js';
 
 import {
   ChatInstance,
@@ -19,9 +19,9 @@ import {
   IncreaseOrDecrease,
   ViewType,
   WriteableElementName,
-} from "@carbon/ai-chat";
-import { css, html, LitElement, PropertyValues } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement, PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 
 interface PanelControlExample {
   id: string;
@@ -29,10 +29,10 @@ interface PanelControlExample {
   description: string;
   options: CustomPanelOpenOptions;
   panelBody: string;
-  apiType: "current" | "deprecated";
+  apiType: 'current' | 'deprecated';
 }
 
-@customElement("demo-chat-instance-switcher")
+@customElement('demo-chat-instance-switcher')
 export class DemoChatInstanceSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -124,8 +124,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   // Panel configuration state
   @state() accessor _hideBackButton: boolean = false;
-  @state() accessor _backButtonType: "minimize" | "close" = "minimize";
-  @state() accessor _backButtonPosition: "start" | "end" = "end";
+  @state() accessor _backButtonType: 'minimize' | 'close' = 'minimize';
+  @state() accessor _backButtonPosition: 'start' | 'end' = 'end';
   @state() accessor _disableAnimation: boolean = false;
   @state() accessor _aiEnabled: boolean = false;
   @state() accessor _showFrame: boolean = false;
@@ -135,12 +135,12 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   private readonly _panelExamples: PanelControlExample[] = [
     {
-      id: "panel-basic-deprecated",
-      buttonLabel: "Basic panel",
-      description: "Basic deprecated panel with title only.",
-      apiType: "deprecated",
+      id: 'panel-basic-deprecated',
+      buttonLabel: 'Basic panel',
+      description: 'Basic deprecated panel with title only.',
+      apiType: 'deprecated',
       options: {
-        title: "Basic deprecated panel",
+        title: 'Basic deprecated panel',
       },
       panelBody: `
         <div>
@@ -158,12 +158,12 @@ export class DemoChatInstanceSwitcher extends LitElement {
       `,
     },
     {
-      id: "panel-hidden-close-button",
-      buttonLabel: "Panel with hidden close button",
-      description: "Hides the close/minimize button in the panel header.",
-      apiType: "deprecated",
+      id: 'panel-hidden-close-button',
+      buttonLabel: 'Panel with hidden close button',
+      description: 'Hides the close/minimize button in the panel header.',
+      apiType: 'deprecated',
       options: {
-        title: "Panel without close button",
+        title: 'Panel without close button',
         hideCloseButton: true,
       },
       panelBody: `
@@ -183,12 +183,12 @@ export class DemoChatInstanceSwitcher extends LitElement {
       `,
     },
     {
-      id: "panel-hidden-back-button",
-      buttonLabel: "Panel with hidden back button",
-      description: "Hides the back button in the panel header.",
-      apiType: "deprecated",
+      id: 'panel-hidden-back-button',
+      buttonLabel: 'Panel with hidden back button',
+      description: 'Hides the back button in the panel header.',
+      apiType: 'deprecated',
       options: {
-        title: "Panel without back button",
+        title: 'Panel without back button',
         hideBackButton: true,
       },
       panelBody: `
@@ -208,10 +208,10 @@ export class DemoChatInstanceSwitcher extends LitElement {
       `,
     },
     {
-      id: "panel-hidden-header",
-      buttonLabel: "Panel with hidden header",
-      description: "Completely hides the panel header chrome.",
-      apiType: "deprecated",
+      id: 'panel-hidden-header',
+      buttonLabel: 'Panel with hidden header',
+      description: 'Completely hides the panel header chrome.',
+      apiType: 'deprecated',
       options: {
         hidePanelHeader: true,
       },
@@ -237,7 +237,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
   @state() accessor _unreadIndicatorVisible: boolean = false;
 
   protected updated(changed: PropertyValues) {
-    if (changed.has("chatInstance")) {
+    if (changed.has('chatInstance')) {
       const nextInstance = this.chatInstance;
       if (!nextInstance) {
         this._inputVisible = true;
@@ -256,7 +256,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
   }
 
   private _withInstance<T>(
-    callback: (instance: ChatInstance) => T,
+    callback: (instance: ChatInstance) => T
   ): T | undefined {
     const instance = this.chatInstance;
     if (!instance) {
@@ -278,9 +278,9 @@ export class DemoChatInstanceSwitcher extends LitElement {
     element.innerHTML = content.trim();
 
     // Add event listener for close button clicks within the panel
-    const closeButton = element.querySelector("[data-close-panel]");
+    const closeButton = element.querySelector('[data-close-panel]');
     if (closeButton) {
-      closeButton.addEventListener("click", () => {
+      closeButton.addEventListener('click', () => {
         this._withInstance((instance) => {
           const panel = instance.customPanels?.getPanel();
           panel?.close();
@@ -310,7 +310,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
       // Build options from current state
       const options: any = {
-        title: "Custom Panel Configuration",
+        title: 'Custom Panel Configuration',
         backButtonType: this._backButtonType,
         backButtonPosition: this._backButtonPosition,
       };
@@ -349,59 +349,59 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
     if (options.title) {
       optionsList.push(
-        `<li><code>title</code>: <strong>"${options.title}"</strong></li>`,
+        `<li><code>title</code>: <strong>"${options.title}"</strong></li>`
       );
     }
     if (options.hideBackButton) {
       optionsList.push(
-        `<li><code>hideBackButton</code>: <strong>true</strong></li>`,
+        `<li><code>hideBackButton</code>: <strong>true</strong></li>`
       );
     }
     if (options.backButtonType) {
       optionsList.push(
-        `<li><code>backButtonType</code>: <strong>"${options.backButtonType}"</strong></li>`,
+        `<li><code>backButtonType</code>: <strong>"${options.backButtonType}"</strong></li>`
       );
     }
     if (options.backButtonPosition) {
       optionsList.push(
-        `<li><code>backButtonPosition</code>: <strong>"${options.backButtonPosition}"</strong></li>`,
+        `<li><code>backButtonPosition</code>: <strong>"${options.backButtonPosition}"</strong></li>`
       );
     }
     if (options.disableAnimation) {
       optionsList.push(
-        `<li><code>disableAnimation</code>: <strong>true</strong></li>`,
+        `<li><code>disableAnimation</code>: <strong>true</strong></li>`
       );
     }
     if (options.aiEnabled) {
       optionsList.push(
-        `<li><code>aiEnabled</code>: <strong>true</strong></li>`,
+        `<li><code>aiEnabled</code>: <strong>true</strong></li>`
       );
     }
     if (options.showFrame) {
       optionsList.push(
-        `<li><code>showFrame</code>: <strong>true</strong></li>`,
+        `<li><code>showFrame</code>: <strong>true</strong></li>`
       );
     }
     if (options.fullWidth) {
       optionsList.push(
-        `<li><code>fullWidth</code>: <strong>true</strong></li>`,
+        `<li><code>fullWidth</code>: <strong>true</strong></li>`
       );
     }
     if (options.showChatHeader) {
       optionsList.push(
-        `<li><code>showChatHeader</code>: <strong>true</strong></li>`,
+        `<li><code>showChatHeader</code>: <strong>true</strong></li>`
       );
     }
     if (options.openFromSide) {
       optionsList.push(
-        `<li><code>openFromSide</code>: <strong>true</strong></li>`,
+        `<li><code>openFromSide</code>: <strong>true</strong></li>`
       );
     }
 
     const optionsHtml =
       optionsList.length > 0
-        ? `<ul>${optionsList.join("\n            ")}</ul>`
-        : "<p><em>No options configured (using all defaults)</em></p>";
+        ? `<ul>${optionsList.join('\n            ')}</ul>`
+        : '<p><em>No options configured (using all defaults)</em></p>';
 
     return `
       <div>
@@ -444,7 +444,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
     try {
       const promise = this._withInstance(
         (instance) =>
-          instance.messaging?.restartConversation?.() ?? Promise.resolve(),
+          instance.messaging?.restartConversation?.() ?? Promise.resolve()
       );
       if (promise) {
         await promise;
@@ -456,13 +456,13 @@ export class DemoChatInstanceSwitcher extends LitElement {
 
   private _handleLoadingCounter(
     direction: IncreaseOrDecrease,
-    withText?: boolean,
+    withText?: boolean
   ) {
     this._withInstance(async (instance) => {
-      if (direction === "increase") {
+      if (direction === 'increase') {
         instance.updateIsMessageLoadingCounter?.(
           direction,
-          withText ? "Thinking..." : undefined,
+          withText ? 'Thinking...' : undefined
         );
       } else {
         instance.updateIsMessageLoadingCounter?.(direction);
@@ -513,9 +513,8 @@ export class DemoChatInstanceSwitcher extends LitElement {
           <cds-button
             kind="secondary"
             ?disabled=${this._isRestarting}
-            @click=${this._handleRestartConversation}
-          >
-            ${this._isRestarting ? "Restarting..." : "Restart conversation"}
+            @click=${this._handleRestartConversation}>
+            ${this._isRestarting ? 'Restarting...' : 'Restart conversation'}
           </cds-button>
         </div>
       </div>
@@ -525,32 +524,27 @@ export class DemoChatInstanceSwitcher extends LitElement {
         <div class="actions">
           <cds-button
             kind="secondary"
-            @click=${() => this._handleLoadingCounter("increase")}
-          >
+            @click=${() => this._handleLoadingCounter('increase')}>
             Increment message loading
           </cds-button>
           <cds-button
             kind="secondary"
-            @click=${() => this._handleLoadingCounter("increase", true)}
-          >
+            @click=${() => this._handleLoadingCounter('increase', true)}>
             Increment message loading<br />(with optional helper text)
           </cds-button>
           <cds-button
             kind="secondary"
-            @click=${() => this._handleLoadingCounter("decrease")}
-          >
+            @click=${() => this._handleLoadingCounter('decrease')}>
             Decrement message loading
           </cds-button>
           <cds-button
             kind="secondary"
-            @click=${() => this._handleChatLoadingCounter("increase")}
-          >
+            @click=${() => this._handleChatLoadingCounter('increase')}>
             Increment chat hydration
           </cds-button>
           <cds-button
             kind="secondary"
-            @click=${() => this._handleChatLoadingCounter("decrease")}
-          >
+            @click=${() => this._handleChatLoadingCounter('decrease')}>
             Decrement chat hydration
           </cds-button>
         </div>
@@ -561,8 +555,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
         <div class="actions">
           <cds-button
             kind="secondary"
-            @click=${this._handleChangeViewMainWindow}
-          >
+            @click=${this._handleChangeViewMainWindow}>
             Open chat window
           </cds-button>
           <cds-button kind="secondary" @click=${this._handleChangeViewLauncher}>
@@ -583,8 +576,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
               value="${this._backButtonType}"
               title-text="Back button type"
               ?disabled=${this._hideBackButton}
-              @cds-dropdown-selected=${this._handleBackButtonTypeChanged}
-            >
+              @cds-dropdown-selected=${this._handleBackButtonTypeChanged}>
               <cds-dropdown-item value="minimize">Minimize</cds-dropdown-item>
               <cds-dropdown-item value="close">Close</cds-dropdown-item>
             </cds-dropdown>
@@ -595,8 +587,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._hideBackButton = e.target.checked;
                 }}
-                label-text="Hide back button"
-              >
+                label-text="Hide back button">
               </cds-checkbox>
 
               <cds-checkbox
@@ -604,8 +595,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._disableAnimation = e.target.checked;
                 }}
-                label-text="Disable animation"
-              >
+                label-text="Disable animation">
               </cds-checkbox>
 
               <cds-checkbox
@@ -613,8 +603,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._aiEnabled = e.target.checked;
                 }}
-                label-text="Enable AI gradient"
-              >
+                label-text="Enable AI gradient">
               </cds-checkbox>
 
               <cds-checkbox
@@ -622,8 +611,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._showFrame = e.target.checked;
                 }}
-                label-text="Show frame border"
-              >
+                label-text="Show frame border">
               </cds-checkbox>
 
               <cds-checkbox
@@ -631,8 +619,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._fullWidth = e.target.checked;
                 }}
-                label-text="Full width layout"
-              >
+                label-text="Full width layout">
               </cds-checkbox>
 
               <cds-checkbox
@@ -640,8 +627,7 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._showChatHeader = e.target.checked;
                 }}
-                label-text="Show chat header"
-              >
+                label-text="Show chat header">
               </cds-checkbox>
 
               <cds-checkbox
@@ -649,51 +635,46 @@ export class DemoChatInstanceSwitcher extends LitElement {
                 @cds-checkbox-changed=${(e: any) => {
                   this._openFromSide = e.target.checked;
                 }}
-                label-text="Open from side"
-              >
+                label-text="Open from side">
               </cds-checkbox>
 
               <cds-checkbox
-                ?checked=${this._backButtonPosition === "start"}
+                ?checked=${this._backButtonPosition === 'start'}
                 ?disabled=${this._hideBackButton}
                 @cds-checkbox-changed=${(e: any) => {
-                  this._backButtonPosition = e.target.checked ? "start" : "end";
+                  this._backButtonPosition = e.target.checked ? 'start' : 'end';
                 }}
-                label-text="Position back button at start"
-              >
+                label-text="Position back button at start">
               </cds-checkbox>
             </div>
 
             <cds-button
               kind="primary"
-              @click=${this._handleOpenConfiguredPanel}
-            >
+              @click=${this._handleOpenConfiguredPanel}>
               Open Panel
             </cds-button>
           </div>
 
           <cds-accordion>
             <cds-accordion-item
-              title="CustomPanelConfigOptions (Deprecated API)"
-            >
+              title="CustomPanelConfigOptions (Deprecated API)">
               <div class="actions">
                 ${this._panelExamples
-                  .filter((example) => example.apiType === "deprecated")
+                  .filter((example) => example.apiType === 'deprecated')
                   .map(
                     (example) => html`
                       <div class="panel-control">
                         <cds-button
                           kind="secondary"
                           @click=${() =>
-                            this._handleOpenCustomPanelExample(example)}
-                        >
+                            this._handleOpenCustomPanelExample(example)}>
                           ${example.buttonLabel}
                         </cds-button>
                         <p class="panel-control__description">
                           ${example.description}
                         </p>
                       </div>
-                    `,
+                    `
                   )}
               </div>
             </cds-accordion-item>
@@ -716,6 +697,6 @@ export class DemoChatInstanceSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-chat-instance-switcher": DemoChatInstanceSwitcher;
+    'demo-chat-instance-switcher': DemoChatInstanceSwitcher;
   }
 }

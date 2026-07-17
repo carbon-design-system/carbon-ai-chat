@@ -7,25 +7,25 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonDropdownElement from "@carbon/web-components/es/components/dropdown/dropdown.js";
-import CarbonDropdownItemElement from "@carbon/web-components/es/components/dropdown/dropdown-item.js";
+import CarbonDropdownElement from '@carbon/web-components/es/components/dropdown/dropdown.js';
+import CarbonDropdownItemElement from '@carbon/web-components/es/components/dropdown/dropdown-item.js';
 
 const Dropdown = createComponent({
-  tagName: "cds-dropdown",
+  tagName: 'cds-dropdown',
   elementClass: CarbonDropdownElement,
   events: {
-    onSelected: "cds-dropdown-selected",
-    onToggled: "cds-dropdown-toggled",
+    onSelected: 'cds-dropdown-selected',
+    onToggled: 'cds-dropdown-toggled',
   },
   react: React,
 });
 
 const DropdownItem = createComponent({
-  tagName: "cds-dropdown-item",
+  tagName: 'cds-dropdown-item',
   elementClass: CarbonDropdownItemElement,
   react: React,
 });

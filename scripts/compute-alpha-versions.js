@@ -7,10 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const { execSync } = require("child_process");
+const fs = require('fs');
+const { execSync } = require('child_process');
 
 /**
  * Public packages published under the `alpha` dist-tag. Each is versioned
@@ -20,18 +20,18 @@ const { execSync } = require("child_process");
  */
 const PACKAGES = [
   {
-    name: "@carbon/ai-chat-components",
-    dir: "packages/ai-chat-components",
-    envKey: "COMPONENTS_ALPHA",
+    name: '@carbon/ai-chat-components',
+    dir: 'packages/ai-chat-components',
+    envKey: 'COMPONENTS_ALPHA',
   },
   {
-    name: "@carbon/ai-chat",
-    dir: "packages/ai-chat",
-    envKey: "AI_CHAT_ALPHA",
+    name: '@carbon/ai-chat',
+    dir: 'packages/ai-chat',
+    envKey: 'AI_CHAT_ALPHA',
   },
 ];
 
-const bump = process.env.BUMP === "patch" ? "patch" : "minor";
+const bump = process.env.BUMP === 'patch' ? 'patch' : 'minor';
 
 /**
  * Returns the base release version the alpha is a preview of: the next minor
@@ -41,8 +41,8 @@ const bump = process.env.BUMP === "patch" ? "patch" : "minor";
  * @returns {string} The base version for the alpha prerelease.
  */
 function nextBase(version) {
-  const [major, minor, patch] = version.split("-")[0].split(".").map(Number);
-  return bump === "patch"
+  const [major, minor, patch] = version.split('-')[0].split('.').map(Number);
+  return bump === 'patch'
     ? `${major}.${minor}.${patch + 1}`
     : `${major}.${minor + 1}.0`;
 }
@@ -57,8 +57,8 @@ function nextBase(version) {
 function publishedVersions(name) {
   try {
     const output = execSync(`npm view ${name} versions --json`, {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
     });
     const parsed = JSON.parse(output);
     return Array.isArray(parsed) ? parsed : [parsed];
@@ -77,11 +77,11 @@ function publishedVersions(name) {
  */
 function computeAlpha(pkg) {
   const { version } = JSON.parse(
-    fs.readFileSync(`${pkg.dir}/package.json`, "utf8"),
+    fs.readFileSync(`${pkg.dir}/package.json`, 'utf8')
   );
   const base = nextBase(version);
   const alphaPattern = new RegExp(
-    `^${base.replace(/\./g, "\\.")}-alpha\\.(\\d+)$`,
+    `^${base.replace(/\./g, '\\.')}-alpha\\.(\\d+)$`
   );
   let highest = -1;
   for (const published of publishedVersions(pkg.name)) {
@@ -102,5 +102,5 @@ for (const pkg of PACKAGES) {
 
 // Expose the computed versions to later GitHub Actions steps.
 if (process.env.GITHUB_ENV) {
-  fs.appendFileSync(process.env.GITHUB_ENV, `${envLines.join("\n")}\n`);
+  fs.appendFileSync(process.env.GITHUB_ENV, `${envLines.join('\n')}\n`);
 }

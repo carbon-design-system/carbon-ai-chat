@@ -10,15 +10,15 @@
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
-import cx from "classnames";
-import React from "react";
-import { useSelector } from "../hooks/useSelector";
+} from '@carbon/ai-chat-components/es/react/chat-button.js';
+import cx from 'classnames';
+import React from 'react';
+import { useSelector } from '../hooks/useSelector';
 
-import { AppState } from "../../types/state/AppState";
-import { HasClassName } from "../../types/utilities/HasClassName";
-import { ClickableImage } from "../components-legacy/responseTypes/util/ClickableImage";
-import Button, { BUTTON_KIND, BUTTON_SIZE } from "./carbon/Button";
+import { AppState } from '../../types/state/AppState';
+import { HasClassName } from '../../types/utilities/HasClassName';
+import { ClickableImage } from '../components-legacy/responseTypes/util/ClickableImage';
+import Button, { BUTTON_KIND, BUTTON_SIZE } from './carbon/Button';
 
 interface BaseButtonComponentProps extends HasClassName {
   /**
@@ -39,7 +39,7 @@ interface BaseButtonComponentProps extends HasClassName {
   /**
    * The button style.
    */
-  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | 'LINK';
 
   /**
    * The button size.
@@ -51,7 +51,7 @@ interface BaseButtonComponentProps extends HasClassName {
    *
    * @internal
    */
-  is?: "standard-button";
+  is?: 'standard-button';
 
   /**
    * The url to visit when the button is clicked.
@@ -88,7 +88,7 @@ function BaseButtonItemComponent({
   kind,
   size,
   url,
-  target = "_blank",
+  target = '_blank',
   disabled,
   is,
   renderIcon,
@@ -97,10 +97,10 @@ function BaseButtonItemComponent({
   onClick,
 }: BaseButtonComponentProps) {
   const errors_imageSource = useSelector(
-    (state: AppState) => state.languagePack.errors_imageSource,
+    (state: AppState) => state.languagePack.errors_imageSource
   );
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
   const text = label || url;
   const linkTarget = url ? target : undefined;
@@ -123,18 +123,18 @@ function BaseButtonItemComponent({
     );
   }
   const RenderIcon = renderIcon; // todo: enable passing custom icon
-  const buttonKind = getButtonKind(kind) || "primary";
-  const isStandard = is === "standard-button";
+  const buttonKind = getButtonKind(kind) || 'primary';
+  const isStandard = is === 'standard-button';
 
   const commonBtnProps = {
-    className: cx("cds-aichat--button-item", className),
+    className: cx('cds-aichat--button-item', className),
     disabled,
     href: url,
     kind: isStandard
       ? (buttonKind as BUTTON_KIND)
       : (buttonKind as CHAT_BUTTON_KIND),
     onClick,
-    rel: url ? "noopener noreferrer" : undefined,
+    rel: url ? 'noopener noreferrer' : undefined,
     size: isStandard ? (size as BUTTON_SIZE) : (size as CHAT_BUTTON_SIZE),
     target: linkTarget,
   };
@@ -146,15 +146,15 @@ function BaseButtonItemComponent({
     </>
   );
 
-  if (is === "standard-button") {
+  if (is === 'standard-button') {
     return <Button {...commonBtnProps}>{body}</Button>;
   }
 
   return <ChatButton {...commonBtnProps}>{body}</ChatButton>;
 }
 
-function getButtonKind(style: BUTTON_KIND | "LINK"): BUTTON_KIND {
-  if (style == "LINK") {
+function getButtonKind(style: BUTTON_KIND | 'LINK'): BUTTON_KIND {
+  if (style == 'LINK') {
     return BUTTON_KIND.GHOST;
   }
   return style;

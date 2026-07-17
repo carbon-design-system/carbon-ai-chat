@@ -10,34 +10,34 @@
 import {
   createAppStore,
   UnknownAction,
-} from "../../../src/chat/store/appStore";
+} from '../../../src/chat/store/appStore';
 
 interface CounterState {
   count: number;
 }
 
 type CounterAction =
-  | (UnknownAction & { type: "increment" })
-  | (UnknownAction & { type: "decrement" })
-  | (UnknownAction & { type: "noop" });
+  | (UnknownAction & { type: 'increment' })
+  | (UnknownAction & { type: 'decrement' })
+  | (UnknownAction & { type: 'noop' });
 
 const counterReducer = (
   state: CounterState,
-  action: CounterAction,
+  action: CounterAction
 ): CounterState => {
   switch (action.type) {
-    case "increment":
+    case 'increment':
       return { ...state, count: state.count + 1 };
-    case "decrement":
+    case 'decrement':
       return { ...state, count: state.count - 1 };
-    case "noop":
+    case 'noop':
     default:
       return state;
   }
 };
 
-describe("appStore", () => {
-  it("dispatch, getState, and subscribe work and notify only on reference change", () => {
+describe('appStore', () => {
+  it('dispatch, getState, and subscribe work and notify only on reference change', () => {
     const store = createAppStore<CounterState, CounterAction>(counterReducer, {
       count: 0,
     });
@@ -48,21 +48,21 @@ describe("appStore", () => {
       notificationCount += 1;
     });
 
-    store.dispatch({ type: "increment" } as CounterAction);
+    store.dispatch({ type: 'increment' } as CounterAction);
     expect(store.getState().count).toBe(1);
     expect(notificationCount).toBe(1);
 
     // No-op action should not notify
-    store.dispatch({ type: "noop" } as CounterAction);
+    store.dispatch({ type: 'noop' } as CounterAction);
     expect(notificationCount).toBe(1);
 
     unsubscribe();
-    store.dispatch({ type: "decrement" } as CounterAction);
+    store.dispatch({ type: 'decrement' } as CounterAction);
     expect(store.getState().count).toBe(0);
     expect(notificationCount).toBe(1);
   });
 
-  it("continues notifying other listeners when one throws", () => {
+  it('continues notifying other listeners when one throws', () => {
     const store = createAppStore<CounterState, CounterAction>(counterReducer, {
       count: 0,
     });
@@ -72,21 +72,21 @@ describe("appStore", () => {
 
     store.subscribe(() => {
       callsA += 1;
-      throw new Error("listener boom");
+      throw new Error('listener boom');
     });
     store.subscribe(() => {
       callsB += 1;
     });
 
     expect(() => {
-      store.dispatch({ type: "increment" } as CounterAction);
+      store.dispatch({ type: 'increment' } as CounterAction);
     }).not.toThrow();
 
     expect(callsA).toBe(1);
     expect(callsB).toBe(1);
   });
 
-  it("supports unsubscribing within a listener without breaking iteration", () => {
+  it('supports unsubscribing within a listener without breaking iteration', () => {
     const store = createAppStore<CounterState, CounterAction>(counterReducer, {
       count: 0,
     });
@@ -102,15 +102,15 @@ describe("appStore", () => {
       callsB += 1;
     });
 
-    store.dispatch({ type: "increment" } as CounterAction);
-    store.dispatch({ type: "increment" } as CounterAction);
+    store.dispatch({ type: 'increment' } as CounterAction);
+    store.dispatch({ type: 'increment' } as CounterAction);
 
     // A is called only once (after it unsubscribed itself), B sees both.
     expect(callsA).toBe(1);
     expect(callsB).toBe(2);
   });
 
-  it("does not notify for repeated no-op dispatches (unchanged reference)", () => {
+  it('does not notify for repeated no-op dispatches (unchanged reference)', () => {
     const store = createAppStore<CounterState, CounterAction>(counterReducer, {
       count: 0,
     });
@@ -122,19 +122,19 @@ describe("appStore", () => {
 
     // Dispatch many no-op actions; the reducer returns the same reference
     for (let i = 0; i < 50; i += 1) {
-      store.dispatch({ type: "noop" } as CounterAction);
+      store.dispatch({ type: 'noop' } as CounterAction);
     }
     expect(store.getState().count).toBe(0);
     expect(notifications).toBe(0);
 
     // One real update should notify exactly once
-    store.dispatch({ type: "increment" } as CounterAction);
+    store.dispatch({ type: 'increment' } as CounterAction);
     expect(store.getState().count).toBe(1);
     expect(notifications).toBe(1);
 
     // More no-op dispatches still should not notify further
     for (let i = 0; i < 50; i += 1) {
-      store.dispatch({ type: "noop" } as CounterAction);
+      store.dispatch({ type: 'noop' } as CounterAction);
     }
     expect(notifications).toBe(1);
   });

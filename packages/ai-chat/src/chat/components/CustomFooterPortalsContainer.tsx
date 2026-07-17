@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from "react";
-import ReactDOM from "react-dom";
+import React, { ReactNode, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 
-import { ChatInstance } from "../../types/instance/ChatInstance";
+import { ChatInstance } from '../../types/instance/ChatInstance';
 import {
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
-} from "../../types/component/ChatContainer";
+} from '../../types/component/ChatContainer';
 
 /**
  * Internal state object used by CustomFooterPortalsContainer to track each custom footer slot.
@@ -92,8 +92,8 @@ function CustomFooterPortalsContainer({
 
     if (!hostElement) {
       // Create a new slot element
-      hostElement = document.createElement("div");
-      hostElement.setAttribute("slot", slot);
+      hostElement = document.createElement('div');
+      hostElement.setAttribute('slot', slot);
 
       // Add it to the chat wrapper
       if (chatWrapper) {
@@ -119,7 +119,7 @@ function CustomFooterPortalsContainer({
               message,
               messageItem,
               chatInstance,
-              additionalData,
+              additionalData
             )}
           </CustomFooterComponentPortal>
         );
@@ -144,7 +144,7 @@ function CustomFooterComponentPortal({
 }
 
 const CustomFooterPortalsContainerExport = React.memo(
-  CustomFooterPortalsContainer,
+  CustomFooterPortalsContainer
 );
 export { CustomFooterPortalsContainerExport as CustomFooterPortalsContainer };
 export type { CustomFooterSlotState };

@@ -12,12 +12,12 @@
  * her to do what she likes. The element is stored in the serviceManager and set in Chat.ts.
  */
 
-import React from "react";
+import React from 'react';
 
-import { WriteableElementName } from "../../types/instance/ChatInstance";
-import { useServiceManager } from "../hooks/useServiceManager";
-import { HasChildren } from "../../types/utilities/HasChildren";
-import WriteableElement from "../components/util/WriteableElement";
+import { WriteableElementName } from '../../types/instance/ChatInstance';
+import { useServiceManager } from '../hooks/useServiceManager';
+import { HasChildren } from '../../types/utilities/HasChildren';
+import WriteableElement from '../components/util/WriteableElement';
 
 interface LatestWelcomeNodesProps extends HasChildren {
   /**

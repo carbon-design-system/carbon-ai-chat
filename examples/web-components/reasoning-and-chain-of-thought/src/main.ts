@@ -7,13 +7,13 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
-import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { type ChatInstance, type PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -21,7 +21,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   @state()
   accessor instance!: ChatInstance;
@@ -34,8 +34,7 @@ export class Demo extends LitElement {
     return html`
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
-        .messaging=${config.messaging}
-      ></cds-aichat-container>
+        .messaging=${config.messaging}></cds-aichat-container>
     `;
   }
 }

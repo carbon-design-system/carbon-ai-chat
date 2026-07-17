@@ -7,19 +7,19 @@
  *  @license
  */
 
-import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
-import React from "react";
-import { useIntl } from "../../../hooks/useIntl";
-import { useSelector } from "../../../hooks/useSelector";
+import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
+import { carbonIconToReact } from '../../../utils/carbonIcon';
+import React from 'react';
+import { useIntl } from '../../../hooks/useIntl';
+import { useSelector } from '../../../hooks/useSelector';
 
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import actions from "../../../store/actions";
-import { AppState } from "../../../../types/state/AppState";
-import { getURLHostName } from "../../../utils/browserUtils";
-import VisuallyHidden from "../../../components/util/VisuallyHidden";
-import { ClickableImage } from "../util/ClickableImage";
-import { IFrameItem } from "../../../../types/messaging/Messages";
+import { useServiceManager } from '../../../hooks/useServiceManager';
+import actions from '../../../store/actions';
+import { AppState } from '../../../../types/state/AppState';
+import { getURLHostName } from '../../../utils/browserUtils';
+import VisuallyHidden from '../../../components/util/VisuallyHidden';
+import { ClickableImage } from '../util/ClickableImage';
+import { IFrameItem } from '../../../../types/messaging/Messages';
 
 interface IFramePreviewCardComponentProps {
   /**
@@ -36,17 +36,17 @@ function IFramePreviewCardComponent({
 }: IFramePreviewCardComponentProps) {
   const { source, image_url, title, description } = messageItem;
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
   const iframe_ariaImageAltText = useSelector(
-    (state: AppState) => state.languagePack.iframe_ariaImageAltText,
+    (state: AppState) => state.languagePack.iframe_ariaImageAltText
   );
   const { formatMessage } = useIntl();
   const iframeAriaClickPreviewCardMessage = formatMessage(
-    { id: "iframe_ariaClickPreviewCard" },
-    { source: urlHostName },
+    { id: 'iframe_ariaClickPreviewCard' },
+    { source: urlHostName }
   );
   const ArrowRight = carbonIconToReact(ArrowRight16);
 

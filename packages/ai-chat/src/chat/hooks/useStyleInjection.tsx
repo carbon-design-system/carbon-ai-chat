@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { useEffect } from "react";
-import type React from "react";
-import { setVarsForSelector } from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+import { useEffect } from 'react';
+import type React from 'react';
+import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 let hostFillRuleInstalled = false;
 
@@ -21,9 +21,9 @@ function ensureHostFillRule(): void {
   if (hostFillRuleInstalled) {
     return;
   }
-  setVarsForSelector(".cds-aichat--container-host-fill", {
-    height: "100% !important",
-    width: "100% !important",
+  setVarsForSelector('.cds-aichat--container-host-fill', {
+    height: '100% !important',
+    width: '100% !important',
   });
   hostFillRuleInstalled = true;
 }
@@ -60,19 +60,19 @@ export function useStyleInjection({
     // dynamic stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
     if (hostElement) {
       ensureHostFillRule();
-      containerRef.current.classList.add("cds-aichat--container-host-fill");
+      containerRef.current.classList.add('cds-aichat--container-host-fill');
     } else {
-      containerRef.current.classList.remove("cds-aichat--container-host-fill");
+      containerRef.current.classList.remove('cds-aichat--container-host-fill');
     }
 
     const rootNode = containerRef.current.getRootNode();
-    const cssVariableStyles = cssVariableOverrideString || "";
+    const cssVariableStyles = cssVariableOverrideString || '';
 
     if (rootNode instanceof ShadowRoot) {
       // Use Constructable Stylesheets if available
       if (
         applicationStylesheet &&
-        "replaceSync" in applicationStylesheet &&
+        'replaceSync' in applicationStylesheet &&
         cssVariableOverrideStylesheet
       ) {
         applicationStylesheet.replaceSync(appStyles);
@@ -83,7 +83,7 @@ export function useStyleInjection({
         // accumulate duplicates.
         const otherSheets = Array.from(rootNode.adoptedStyleSheets).filter(
           (s) =>
-            s !== applicationStylesheet && s !== cssVariableOverrideStylesheet,
+            s !== applicationStylesheet && s !== cssVariableOverrideStylesheet
         );
         rootNode.adoptedStyleSheets = [
           ...otherSheets,
@@ -92,15 +92,15 @@ export function useStyleInjection({
         ];
       } else {
         // Fallback to style elements
-        if (!rootNode.querySelector("style[data-base-styles]")) {
-          const baseStyles = document.createElement("style");
-          baseStyles.dataset.appStyles = "true";
+        if (!rootNode.querySelector('style[data-base-styles]')) {
+          const baseStyles = document.createElement('style');
+          baseStyles.dataset.appStyles = 'true';
           baseStyles.textContent = appStyles;
           rootNode.appendChild(baseStyles);
         }
-        if (!rootNode.querySelector("style[data-variables-custom]")) {
-          const variableCustomStyles = document.createElement("style");
-          variableCustomStyles.dataset.overrideStyles = "true";
+        if (!rootNode.querySelector('style[data-variables-custom]')) {
+          const variableCustomStyles = document.createElement('style');
+          variableCustomStyles.dataset.overrideStyles = 'true';
           variableCustomStyles.textContent = cssVariableStyles;
           rootNode.appendChild(variableCustomStyles);
         }

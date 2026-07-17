@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/data-table/table-skeleton.js";
+import '@carbon/web-components/es/components/data-table/table-skeleton.js';
 
-import { html } from "lit";
+import { html } from 'lit';
 
 /**
  * Table skeleton view logic.
@@ -21,8 +21,7 @@ function tableSkeletonTemplate(rowCount = 5) {
     <cds-table-skeleton
       row-count=${rowCount}
       column-count="2"
-      .showHeader=${false}
-    >
+      .showHeader=${false}>
     </cds-table-skeleton>
   </div>`;
 }

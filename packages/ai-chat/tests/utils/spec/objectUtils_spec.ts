@@ -7,11 +7,11 @@
  *  @license
  */
 
-import { deepFreeze } from "../../../src/chat/utils/lang/objectUtils";
+import { deepFreeze } from '../../../src/chat/utils/lang/objectUtils';
 
-describe("objectUtils", () => {
-  describe("deepFreeze", () => {
-    it("should freeze simple object", () => {
+describe('objectUtils', () => {
+  describe('deepFreeze', () => {
+    it('should freeze simple object', () => {
       const obj = { a: 1, b: 2 };
       const frozen = deepFreeze(obj);
 
@@ -21,7 +21,7 @@ describe("objectUtils", () => {
       }).toThrow();
     });
 
-    it("should deep freeze nested objects", () => {
+    it('should deep freeze nested objects', () => {
       const obj = {
         a: 1,
         nested: {
@@ -39,7 +39,7 @@ describe("objectUtils", () => {
       expect(Object.isFrozen(frozen.nested.deeper)).toBe(true);
     });
 
-    it("should freeze arrays", () => {
+    it('should freeze arrays', () => {
       const obj = {
         arr: [1, 2, 3],
         nested: {
@@ -54,7 +54,7 @@ describe("objectUtils", () => {
       expect(Object.isFrozen(frozen.nested.arr[0])).toBe(true);
     });
 
-    it("should handle null values", () => {
+    it('should handle null values', () => {
       const obj: {
         a: null;
         b: undefined;
@@ -74,13 +74,13 @@ describe("objectUtils", () => {
       expect(Object.isFrozen(frozen.c)).toBe(true);
     });
 
-    it("should freeze functions", () => {
+    it('should freeze functions', () => {
       const obj = {
         fn: function () {
-          return "test";
+          return 'test';
         },
         nested: {
-          fn: () => "arrow",
+          fn: () => 'arrow',
         },
       };
 
@@ -90,7 +90,7 @@ describe("objectUtils", () => {
       expect(Object.isFrozen(frozen.nested.fn)).toBe(true);
     });
 
-    it("should handle already frozen objects", () => {
+    it('should handle already frozen objects', () => {
       const innerObj = { a: 1 };
       Object.freeze(innerObj);
 
@@ -106,13 +106,13 @@ describe("objectUtils", () => {
       expect(Object.isFrozen(frozen.normal)).toBe(true);
     });
 
-    it("should return the same object reference", () => {
+    it('should return the same object reference', () => {
       const obj = { a: 1 };
       const frozen = deepFreeze(obj);
       expect(frozen).toBe(obj);
     });
 
-    it("should handle circular references", () => {
+    it('should handle circular references', () => {
       const obj: any = { a: 1 };
       obj.self = obj;
 

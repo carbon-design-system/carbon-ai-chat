@@ -12,12 +12,12 @@
  * This follows the extended markdown syntax from https://www.markdownguide.org/extended-syntax/
  */
 
-import MarkdownIt from "markdown-it";
+import MarkdownIt from 'markdown-it';
 
 function markdownItHighlight(md: MarkdownIt) {
   // Define the highlight rule
-  md.inline.ruler.before("emphasis", "highlight", (state, silent) => {
-    const marker = "==";
+  md.inline.ruler.before('emphasis', 'highlight', (state, silent) => {
+    const marker = '==';
     const markerLength = marker.length;
     const start = state.pos;
 
@@ -38,7 +38,7 @@ function markdownItHighlight(md: MarkdownIt) {
         const content = state.src.slice(start + markerLength, pos);
 
         if (content.trim()) {
-          const token = state.push("highlight_open", "mark", 1);
+          const token = state.push('highlight_open', 'mark', 1);
           token.markup = marker;
 
           // Recursively tokenize the content to support nested formatting
@@ -50,7 +50,7 @@ function markdownItHighlight(md: MarkdownIt) {
           state.pos = oldPos;
           state.posMax = oldPosMax;
 
-          const closeToken = state.push("highlight_close", "mark", -1);
+          const closeToken = state.push('highlight_close', 'mark', -1);
           closeToken.markup = marker;
 
           state.pos = pos + markerLength;

@@ -5,17 +5,17 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "../../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '../../../../globals/scss/chat-theme';
 
 .cds-aichat--connect-to-human-agent {
   max-inline-size: chat-theme.$card-max-width;
 }
 
 .cds-aichat--connect-to-human-agent__title {
-  @include type.type-style("heading-02");
+  @include type.type-style('heading-02');
 
   padding-block-end: 0.25rem;
 }
@@ -29,7 +29,7 @@
   margin-inline-start: layout.$spacing-07;
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--connect-to-human-agent__request-button
   svg {
   margin-inline: 0 layout.$spacing-07;

@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/web-components/scss/components/button/button";
-@use "@carbon/styles/scss/utilities/layout";
-@use "@carbon/styles/scss/utilities/convert";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/web-components/scss/components/button/button';
+@use '@carbon/styles/scss/utilities/layout';
+@use '@carbon/styles/scss/utilities/convert';
 
 :host(#{$prefix}-button) {
   @extend :host(#{$cds-prefix}-button);
@@ -17,7 +17,7 @@
   .#{$cds-prefix}--btn--ghost:not([disabled]):not(
       .#{$cds-prefix}--btn--icon-only
     )
-    ::slotted([slot="icon"]) {
+    ::slotted([slot='icon']) {
     fill: currentColor;
   }
 
@@ -36,7 +36,7 @@
 
   .#{$cds-prefix}--btn:not(.#{$cds-prefix}-ce--btn--has-icon) {
     padding-inline-end: calc(
-      layout.density("padding-inline") - convert.to-rem(1px)
+      layout.density('padding-inline') - convert.to-rem(1px)
     );
   }
 }

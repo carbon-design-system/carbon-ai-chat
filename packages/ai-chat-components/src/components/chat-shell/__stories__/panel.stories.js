@@ -7,13 +7,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../src/shell.js";
-import "../src/panel.js";
-import "../../card/src/card-footer.js";
-import "@carbon/web-components/es/components/toggle/index.js";
-import { html, nothing } from "lit";
-import styles from "./story-styles.scss?lit";
-import { cardFooterPresets } from "../../card/__stories__/story-data.js";
+import '../src/shell.js';
+import '../src/panel.js';
+import '../../card/src/card-footer.js';
+import '@carbon/web-components/es/components/toggle/index.js';
+import { html, nothing } from 'lit';
+import styles from './story-styles.scss?lit';
+import { cardFooterPresets } from '../../card/__stories__/story-data.js';
 
 const togglePanelOpenState = (panelId, checked) => {
   const panel = document.getElementById(panelId);
@@ -21,9 +21,9 @@ const togglePanelOpenState = (panelId, checked) => {
     return;
   }
   if (checked) {
-    panel.setAttribute("open", "");
+    panel.setAttribute('open', '');
   } else {
-    panel.removeAttribute("open");
+    panel.removeAttribute('open');
   }
 };
 
@@ -45,8 +45,7 @@ const panelDefinitions = html`
       show-frame
       animation-on-open="slide-in-from-bottom"
       animation-on-close="slide-out-to-bottom"
-      panel-aria-label="Standard panel"
-    >
+      panel-aria-label="Standard panel">
       <div slot="header"><h4>Standard panel</h4></div>
       <div slot="body" class="panel-sample">
         Slide in from bottom with frame while showing chat header<br />
@@ -57,8 +56,7 @@ const panelDefinitions = html`
       id="panel-tertiary-no-header"
       animation-on-open="slide-in-from-bottom"
       animation-on-close="slide-out-to-bottom"
-      panel-aria-label="Standard panel takeover panel"
-    >
+      panel-aria-label="Standard panel takeover panel">
       <div slot="header"><h4>Standard panel takeover panel</h4></div>
       <div slot="body" class="panel-sample">
         Slide in from bottom without chat header or content frame<br />
@@ -72,8 +70,7 @@ const panelDefinitions = html`
       full-width
       animation-on-open="slide-in-from-bottom"
       animation-on-close="slide-out-to-bottom"
-      panel-aria-label="Fullscreen panel"
-    >
+      panel-aria-label="Fullscreen panel">
       <div slot="header" class="panel-sample">
         <h4>Fullscreen panel</h4>
       </div>
@@ -86,15 +83,13 @@ const panelDefinitions = html`
       </div>
       <cds-aichat-card-footer
         slot="footer"
-        .actions=${cardFooterPresets["secondary primary buttons"]}
-      ></cds-aichat-card-footer>
+        .actions=${cardFooterPresets['secondary primary buttons']}></cds-aichat-card-footer>
     </cds-aichat-panel>
     <cds-aichat-panel
       id="panel-primary-full"
       priority="2"
       full-width
-      panel-aria-label="Fullscreen takeover panel"
-    >
+      panel-aria-label="Fullscreen takeover panel">
       <div slot="header">
         <h4>Fullscreen takeover panel. (highest priority)</h4>
       </div>
@@ -107,16 +102,16 @@ const panelDefinitions = html`
 `;
 
 export default {
-  title: "Preview/Chat shell/Panels",
+  title: 'Preview/Chat shell/Panels',
   args: {
     aiEnabled: false,
     showFrame: true,
     roundedCorners: true,
   },
   argTypes: {
-    aiEnabled: { control: "boolean" },
-    showFrame: { control: "boolean" },
-    roundedCorners: { control: "boolean" },
+    aiEnabled: { control: 'boolean' },
+    showFrame: { control: 'boolean' },
+    roundedCorners: { control: 'boolean' },
   },
   decorators: [
     (story) => html`
@@ -130,25 +125,24 @@ export default {
 
 const panelConfigs = [
   {
-    id: "panel-primary-full",
-    label: "fullscreen takeover panel. (highest priority)",
+    id: 'panel-primary-full',
+    label: 'fullscreen takeover panel. (highest priority)',
   },
-  { id: "panel-tertiary-full", label: "fullscreen panel" },
-  { id: "panel-tertiary", label: "standard panel" },
-  { id: "panel-tertiary-no-header", label: "standard panel takeover panel" },
+  { id: 'panel-tertiary-full', label: 'fullscreen panel' },
+  { id: 'panel-tertiary', label: 'standard panel' },
+  { id: 'panel-tertiary-no-header', label: 'standard panel takeover panel' },
 ];
 
 const createPanelToggle = (panelId, label) => {
   const panel = document.getElementById(panelId);
-  const isOpen = panel?.hasAttribute("open");
+  const isOpen = panel?.hasAttribute('open');
 
   return html`
     <cds-toggle
       label-text="${label}"
       ?checked=${isOpen}
       @cds-toggle-changed=${(e) =>
-        togglePanelOpenState(panelId, e.detail.checked)}
-    ></cds-toggle>
+        togglePanelOpenState(panelId, e.detail.checked)}></cds-toggle>
   `;
 };
 
@@ -161,43 +155,43 @@ export const Default = {
     showChatHeader: true,
     showFrame: true,
     aiEnabled: false,
-    animationOnOpen: "slide-in-from-bottom",
-    animationOnClose: "slide-out-to-bottom",
-    panelAriaLabel: "Configurable panel",
+    animationOnOpen: 'slide-in-from-bottom',
+    animationOnClose: 'slide-out-to-bottom',
+    panelAriaLabel: 'Configurable panel',
   },
   argTypes: {
     // Hide shell-level controls
     roundedCorners: { table: { disable: true } },
     // Panel-specific argTypes only
-    open: { control: "boolean" },
+    open: { control: 'boolean' },
     priority: {
-      control: { type: "number", min: 0, max: 2, step: 1 },
+      control: { type: 'number', min: 0, max: 2, step: 1 },
     },
-    fullWidth: { control: "boolean" },
-    showChatHeader: { control: "boolean" },
-    showFrame: { control: "boolean" },
-    aiEnabled: { control: "boolean" },
+    fullWidth: { control: 'boolean' },
+    showChatHeader: { control: 'boolean' },
+    showFrame: { control: 'boolean' },
+    aiEnabled: { control: 'boolean' },
     animationOnOpen: {
-      control: { type: "select" },
+      control: { type: 'select' },
       options: [
-        "",
-        "slide-in-from-bottom",
-        "slide-in-from-end",
-        "slide-in-from-start",
-        "fade-in",
+        '',
+        'slide-in-from-bottom',
+        'slide-in-from-end',
+        'slide-in-from-start',
+        'fade-in',
       ],
     },
     animationOnClose: {
-      control: { type: "select" },
+      control: { type: 'select' },
       options: [
-        "",
-        "slide-out-to-bottom",
-        "slide-out-to-end",
-        "slide-out-to-start",
-        "fade-out",
+        '',
+        'slide-out-to-bottom',
+        'slide-out-to-end',
+        'slide-out-to-start',
+        'fade-out',
       ],
     },
-    panelAriaLabel: { control: "text" },
+    panelAriaLabel: { control: 'text' },
   },
   render: (args) => {
     const {
@@ -225,8 +219,7 @@ export const Default = {
             ?ai-enabled=${aiEnabled}
             animation-on-open=${animationOnOpen || nothing}
             animation-on-close=${animationOnClose || nothing}
-            panel-aria-label=${panelAriaLabel || nothing}
-          >
+            panel-aria-label=${panelAriaLabel || nothing}>
             <div slot="header"><h4>Panel Header</h4></div>
             <div slot="body" class="panel-sample">
               <p>
@@ -240,8 +233,7 @@ export const Default = {
             </div>
             <cds-aichat-card-footer
               slot="footer"
-              .actions=${cardFooterPresets["secondary primary buttons"]}
-            ></cds-aichat-card-footer>
+              .actions=${cardFooterPresets['secondary primary buttons']}></cds-aichat-card-footer>
           </cds-aichat-panel>
         </div>
       </cds-aichat-shell>

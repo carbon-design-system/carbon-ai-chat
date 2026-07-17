@@ -12,10 +12,10 @@
  * UI Shell components while preserving existing functionality.
  */
 
-import { DefaultTheme } from "typedoc";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
-import { defaultLayout } from "./layouts/default.js";
+import { DefaultTheme } from 'typedoc';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { defaultLayout } from './layouts/default.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

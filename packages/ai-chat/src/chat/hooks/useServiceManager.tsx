@@ -11,9 +11,9 @@
  * This is a React hook that will provided access to the {@link ServiceManager}.
  */
 
-import { useContext } from "react";
+import { useContext } from 'react';
 
-import { ServiceManagerContext } from "../contexts/ServiceManagerContext";
+import { ServiceManagerContext } from '../contexts/ServiceManagerContext';
 
 function useServiceManager() {
   return useContext(ServiceManagerContext);

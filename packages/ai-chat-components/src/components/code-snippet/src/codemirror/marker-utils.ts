@@ -7,9 +7,9 @@
  * @license
  */
 
-import { EditorView } from "@codemirror/view";
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-import { getAttributes } from "@carbon/icon-helpers";
+import { EditorView } from '@codemirror/view';
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
+import { getAttributes } from '@carbon/icon-helpers';
 
 /**
  * Configuration options for the Carbon fold marker
@@ -96,25 +96,25 @@ export interface CarbonFoldMarkerOptions {
  * @returns A markerDOM function for use with foldGutter()
  */
 export function createCarbonFoldMarker(
-  options: CarbonFoldMarkerOptions = {},
+  options: CarbonFoldMarkerOptions = {}
 ): (open: boolean) => HTMLElement {
   const {
-    collapseLabel = "Collapse code block",
-    expandLabel = "Expand code block",
+    collapseLabel = 'Collapse code block',
+    expandLabel = 'Expand code block',
   } = options;
 
   return (open: boolean) => {
     // Manually create SVG to avoid toSVG's attribute issues
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const attrs = getAttributes(ChevronDown16.attrs);
 
     // Only set attributes that have valid values
     Object.entries(attrs).forEach(([key, value]) => {
       if (
         value !== undefined &&
-        value !== "undefined" &&
+        value !== 'undefined' &&
         value !== null &&
-        String(value) !== "undefined"
+        String(value) !== 'undefined'
       ) {
         svg.setAttribute(key, String(value));
       }
@@ -122,10 +122,10 @@ export function createCarbonFoldMarker(
 
     // Add the path element
     ChevronDown16.content.forEach((item: any) => {
-      if (item.elem === "path") {
+      if (item.elem === 'path') {
         const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path",
+          'http://www.w3.org/2000/svg',
+          'path'
         );
         Object.entries(item.attrs).forEach(([key, value]) => {
           path.setAttribute(key, String(value));
@@ -137,9 +137,9 @@ export function createCarbonFoldMarker(
     // Accessibility attributes - all styling is in theme.ts for CSP compliance
     // Note: tabindex removed to prevent aria-hidden-focus violation
     // Fold markers remain clickable via mouse/touch and keyboard shortcuts (Ctrl+Shift+[)
-    svg.setAttribute("role", "button");
-    svg.setAttribute("aria-label", open ? collapseLabel : expandLabel);
-    svg.setAttribute("aria-expanded", String(open));
+    svg.setAttribute('role', 'button');
+    svg.setAttribute('aria-label', open ? collapseLabel : expandLabel);
+    svg.setAttribute('aria-expanded', String(open));
 
     return svg as unknown as HTMLElement;
   };
@@ -190,14 +190,14 @@ export function carbonFoldMarkerKeyHandler() {
       const target = event.target as HTMLElement;
       // Check if the target is a fold gutter marker
       if (
-        target.tagName === "svg" &&
-        target.getAttribute("role") === "button" &&
-        target.hasAttribute("aria-expanded") &&
-        (event.key === "Enter" || event.key === " ")
+        target.tagName === 'svg' &&
+        target.getAttribute('role') === 'button' &&
+        target.hasAttribute('aria-expanded') &&
+        (event.key === 'Enter' || event.key === ' ')
       ) {
         event.preventDefault();
         // Trigger a mouse event to activate CodeMirror's fold handler
-        const mouseEvent = new MouseEvent("mousedown", {
+        const mouseEvent = new MouseEvent('mousedown', {
           bubbles: true,
           cancelable: true,
         });

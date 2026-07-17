@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ResponseUserProfile } from "../messaging/Messages";
+import { ResponseUserProfile } from '../messaging/Messages';
 
 /**
  * The subset of HumanAgentState that is persisted to browser storage.

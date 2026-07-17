@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasChildren } from "../../../../../types/utilities/HasChildren";
+import { HasChildren } from '../../../../../types/utilities/HasChildren';
 
 interface CitationClickableCardProps extends HasChildren {
   title: string;
@@ -34,8 +34,7 @@ function CitationClickableCard({
         onClick();
         onSelectCitation?.();
       }}
-      onFocus={onSelectCitation}
-    >
+      onFocus={onSelectCitation}>
       {children}
     </button>
   );

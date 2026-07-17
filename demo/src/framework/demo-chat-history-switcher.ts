@@ -6,12 +6,12 @@
  *
  *  @license
  */
-import { PublicConfig, ChatInstance, PanelType } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/button/index.js";
+import { PublicConfig, ChatInstance, PanelType } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/button/index.js';
 
-@customElement("demo-chat-history-switcher")
+@customElement('demo-chat-history-switcher')
 export class DemoChatHistorySwitcher extends LitElement {
   static styles = css`
     :host {
@@ -48,11 +48,11 @@ export class DemoChatHistorySwitcher extends LitElement {
     };
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: newConfig,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -96,7 +96,7 @@ export class DemoChatHistorySwitcher extends LitElement {
     if (this.instance?.customPanels) {
       try {
         const historyPanel = this.instance.customPanels.getPanel(
-          PanelType.HISTORY,
+          PanelType.HISTORY
         );
         const isOpen = this.instance.getState().customPanels.history.isOpen;
 
@@ -106,7 +106,7 @@ export class DemoChatHistorySwitcher extends LitElement {
           await historyPanel.open();
         }
       } catch (error) {
-        console.error("Failed to toggle history panel:", error);
+        console.error('Failed to toggle history panel:', error);
       }
     }
   };
@@ -120,28 +120,24 @@ export class DemoChatHistorySwitcher extends LitElement {
       <cds-checkbox
         ?checked=${showHistory}
         @cds-checkbox-changed=${this._onHistoryChanged}
-        label-text="Enable chat history"
-      >
+        label-text="Enable chat history">
       </cds-checkbox>
       <cds-checkbox
         ?checked=${showMobileMenu}
         ?disabled=${!showHistory}
         @cds-checkbox-changed=${this._onMobileMenuChanged}
-        label-text="Show mobile menu"
-      >
+        label-text="Show mobile menu">
       </cds-checkbox>
       <cds-checkbox
         ?checked=${startClosed}
         ?disabled=${!showHistory}
         @cds-checkbox-changed=${this._onStartClosedChanged}
-        label-text="Start closed & preserve state across desktop/mobile"
-      >
+        label-text="Start closed & preserve state across desktop/mobile">
       </cds-checkbox>
       <cds-button
         kind="secondary"
         ?disabled=${!this.instance}
-        @click=${this._onToggleHistoryClick}
-      >
+        @click=${this._onToggleHistoryClick}>
         Toggle history (external action)
       </cds-button>
     </div>`;
@@ -151,6 +147,6 @@ export class DemoChatHistorySwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-chat-history-switcher": DemoChatHistorySwitcher;
+    'demo-chat-history-switcher': DemoChatHistorySwitcher;
   }
 }

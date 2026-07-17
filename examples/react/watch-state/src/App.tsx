@@ -12,13 +12,13 @@ import {
   ChatContainer,
   ChatInstance,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { renderUserDefinedResponseFactory } from './renderUserDefinedResponse';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -26,14 +26,14 @@ const config: PublicConfig = {
   },
   homescreen: {
     isOn: true,
-    greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
+    greeting: '👋 Hello!\n\nWelcome to Carbon AI Chat.',
     starters: {
       isOn: true,
       buttons: [
-        { label: "What can you help me with?" },
-        { label: "Tell me about state management" },
-        { label: "How do I use the STATE_CHANGE event?" },
-        { label: "Show me a user_defined response" },
+        { label: 'What can you help me with?' },
+        { label: 'Tell me about state management' },
+        { label: 'How do I use the STATE_CHANGE event?' },
+        { label: 'Show me a user_defined response' },
       ],
     },
   },
@@ -68,8 +68,8 @@ function App() {
           setActiveResponseId(event.newState.activeResponseId ?? null);
         }
         console.log(
-          "View changed via STATE_CHANGE event:",
-          isHomescreen ? "Homescreen" : "Chat View",
+          'View changed via STATE_CHANGE event:',
+          isHomescreen ? 'Homescreen' : 'Chat View'
         );
       },
     });
@@ -77,14 +77,14 @@ function App() {
 
   const renderUserDefinedResponse = useMemo(
     () => renderUserDefinedResponseFactory(activeResponseId),
-    [activeResponseId],
+    [activeResponseId]
   );
 
   return (
     <div>
       <div>
         <h4>Current View State (via getState()):</h4>
-        <p>{isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
+        <p>{isHomescreenVisible ? 'Homescreen' : 'Chat View'}</p>
         <p>Watching state via STATE_CHANGE event</p>
       </div>
       <ChatContainer
@@ -96,6 +96,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { css, LitElement, unsafeCSS } from "lit";
-import { property } from "lit/decorators.js";
+import { css, LitElement, unsafeCSS } from 'lit';
+import { property } from 'lit/decorators.js';
 
-import styles from "./stopStreamingButton.scss";
+import styles from './stopStreamingButton.scss';
 
 class StopStreamingButtonElement extends LitElement {
   static styles = css`
@@ -20,19 +20,19 @@ class StopStreamingButtonElement extends LitElement {
   /**
    * The label to display in the button tooltip.
    */
-  @property({ type: String, attribute: "label" })
+  @property({ type: String, attribute: 'label' })
   label: string;
 
   /**
    * The direction to align the tooltip to the button.
    */
-  @property({ type: String, attribute: "tooltip-alignment" })
+  @property({ type: String, attribute: 'tooltip-alignment' })
   tooltipAlignment: string;
 
   /**
    * Determines whether the stop generating button is disabled.
    */
-  @property({ type: Boolean, attribute: "disabled" })
+  @property({ type: Boolean, attribute: 'disabled' })
   disabled: boolean;
 
   /**

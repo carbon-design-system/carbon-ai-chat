@@ -1,18 +1,26 @@
 # Custom Element (Lazy Load)
 
-Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat-shell>` as a crossfade fallback until the chat is ready.
+Dynamically imports the `cds-aichat-custom-element` bundle and uses
+`<cds-aichat-shell>` as a crossfade fallback until the chat is ready.
 
 ## What this example shows
 
-- Lazy-loading the `cds-aichat-custom-element` bundle via `await import(...)` on `connectedCallback`.
-- Rendering `<cds-aichat-shell>` as a visual placeholder while the bundle loads and until `onAfterRender` fires.
-- Mounting the chat fullscreen with `layout.showFrame: false`, `openChatByDefault: true`, `launcher.isOn: false`, and `header.hideMinimizeButton: true`.
-- Disabling Shadow DOM on the outer Lit element so global CSS classes on the host apply.
+- Lazy-loading the `cds-aichat-custom-element` bundle via `await import(...)` on
+  `connectedCallback`.
+- Rendering `<cds-aichat-shell>` as a visual placeholder while the bundle loads
+  and until `onAfterRender` fires.
+- Mounting the chat fullscreen with `layout.showFrame: false`,
+  `openChatByDefault: true`, `launcher.isOn: false`, and
+  `header.hideMinimizeButton: true`.
+- Disabling Shadow DOM on the outer Lit element so global CSS classes on the
+  host apply.
 
 ## When to use this pattern
 
-- You want a fullscreen, always-open custom-element chat but need to keep it out of the initial JS bundle.
-- You need a shell/skeleton that is visually consistent with the chat while the main chunk streams in.
+- You want a fullscreen, always-open custom-element chat but need to keep it out
+  of the initial JS bundle.
+- You need a shell/skeleton that is visually consistent with the chat while the
+  main chunk streams in.
 
 ## APIs and props demonstrated
 
@@ -30,7 +38,10 @@ Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

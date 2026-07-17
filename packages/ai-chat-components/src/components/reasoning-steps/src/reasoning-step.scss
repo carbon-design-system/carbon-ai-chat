@@ -7,11 +7,11 @@
  *  @license
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/layout";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/layout';
 
 :host {
   display: block;
@@ -74,7 +74,7 @@
 
 .#{$prefix}--reasoning-step__title {
   flex: 1;
-  @include type.type-style("heading-01");
+  @include type.type-style('heading-01');
 
   color: theme.$text-helper;
 }

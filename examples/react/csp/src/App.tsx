@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { CarbonTheme, ChatContainer, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
+import { CarbonTheme, ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
 // This function hooks up to your back-end.
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 /**
  * Configuration object for the chat component.
@@ -29,7 +29,7 @@ function App() {
   return <ChatContainer {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);
 

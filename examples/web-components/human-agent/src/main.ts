@@ -7,28 +7,28 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
 import {
   type PublicConfig,
   type ServiceDeskFactoryParameters,
-} from "@carbon/ai-chat";
-import { html, LitElement, type PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement, type PropertyValues } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { MockServiceDesk } from "./mockServiceDesk";
+import { customSendMessage } from './customSendMessage';
+import { MockServiceDesk } from './mockServiceDesk';
 
 interface UserData {
   name: string;
   id: string;
 }
 
-const messagingConfig: PublicConfig["messaging"] = {
+const messagingConfig: PublicConfig['messaging'] = {
   customSendMessage,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   @state()
   accessor userData: UserData | undefined = undefined;
@@ -51,12 +51,12 @@ export class Demo extends LitElement {
     super.connectedCallback();
     // Mock updating user data after mount to mirror the React example behavior.
     setTimeout(() => {
-      this.userData = { name: "Bob", id: "1234" };
+      this.userData = { name: 'Bob', id: '1234' };
     }, 5000);
   }
 
   protected willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has("userData")) {
+    if (changedProperties.has('userData')) {
       // Changing the factory reference signals the container to rebuild the service desk with
       // the new user data; this will reset any active human-agent chat session. You should avoid
       // this unless you have to (for instance, you don't have the userData guaranteed on mount).
@@ -70,8 +70,7 @@ export class Demo extends LitElement {
     return html`
       <cds-aichat-container
         .messaging=${messagingConfig}
-        .serviceDeskFactory=${this.serviceDeskFactory}
-      ></cds-aichat-container>
+        .serviceDeskFactory=${this.serviceDeskFactory}></cds-aichat-container>
     `;
   }
 }

@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React from "react";
-import ClickableTile from "../components/carbon/ClickableTile";
-import { IS_MOBILE } from "../utils/browserUtils";
+import React from 'react';
+import ClickableTile from '../components/carbon/ClickableTile';
+import { IS_MOBILE } from '../utils/browserUtils';
 
 interface MessagesScrollHandleProps {
   ariaLabel: string;
@@ -28,11 +28,11 @@ function MessagesScrollHandle({
 }: MessagesScrollHandleProps) {
   // Handle keyboard activation (Enter or Space) and Escape to close
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       // Blur the element to close/hide it
       event.preventDefault();
       (event.target as HTMLElement).blur();
-    } else if ((event.key === "Enter" || event.key === " ") && onClick) {
+    } else if ((event.key === 'Enter' || event.key === ' ') && onClick) {
       event.preventDefault();
       onClick();
     }
@@ -62,8 +62,7 @@ function MessagesScrollHandle({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       onFocus={onFocus}
-      onBlur={onBlur}
-    >
+      onBlur={onBlur}>
       {ariaLabel}
     </ClickableTile>
   );

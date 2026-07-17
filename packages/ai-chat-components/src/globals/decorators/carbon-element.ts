@@ -17,14 +17,14 @@ declare type Constructor<T> = {
   new (...args: any[]): T;
 };
 interface ClassDescriptor {
-  kind: "class";
+  kind: 'class';
   elements: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => void | Constructor<T>;
 }
 interface ClassElement {
-  kind: "field" | "method";
+  kind: 'field' | 'method';
   key: PropertyKey;
-  placement: "static" | "prototype" | "own";
+  placement: 'static' | 'prototype' | 'own';
   // eslint-disable-next-line @typescript-eslint/ban-types
   initializer?: Function;
   extras?: ClassElement[];
@@ -35,7 +35,7 @@ interface ClassElement {
 /**
  * Allow for custom element classes with private constructors
  */
-type CustomElementClass = Omit<typeof HTMLElement, "new">;
+type CustomElementClass = Omit<typeof HTMLElement, 'new'>;
 
 const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
   try {
@@ -54,7 +54,7 @@ const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
 
 const standardCustomElement = (
   tagName: string,
-  descriptor: ClassDescriptor,
+  descriptor: ClassDescriptor
 ) => {
   const { kind, elements } = descriptor;
   return {
@@ -87,7 +87,7 @@ const standardCustomElement = (
  */
 export function carbonElement(tagName: string) {
   return (classOrDescriptor: CustomElementClass | ClassDescriptor) =>
-    typeof classOrDescriptor === "function"
+    typeof classOrDescriptor === 'function'
       ? legacyCustomElement(tagName, classOrDescriptor)
       : standardCustomElement(tagName, classOrDescriptor as ClassDescriptor);
 }

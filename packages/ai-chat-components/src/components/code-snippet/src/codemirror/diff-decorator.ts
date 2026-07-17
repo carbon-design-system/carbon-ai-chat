@@ -12,13 +12,13 @@ import {
   Decoration,
   DecorationSet,
   EditorView,
-} from "@codemirror/view";
-import { RangeSetBuilder } from "@codemirror/state";
-import type { ViewUpdate } from "@codemirror/view";
+} from '@codemirror/view';
+import { RangeSetBuilder } from '@codemirror/state';
+import type { ViewUpdate } from '@codemirror/view';
 
 // Line decorations for diff syntax
-const insertedLineDeco = Decoration.line({ class: "cm-diff-line-inserted" });
-const deletedLineDeco = Decoration.line({ class: "cm-diff-line-deleted" });
+const insertedLineDeco = Decoration.line({ class: 'cm-diff-line-inserted' });
+const deletedLineDeco = Decoration.line({ class: 'cm-diff-line-deleted' });
 
 /**
  * Creates a CodeMirror decorator that applies line-level background colors
@@ -67,11 +67,11 @@ export function createDiffDecorator() {
             const text = line.text;
 
             // Check if line is an insertion (starts with + but not +++)
-            if (text.startsWith("+") && !text.startsWith("+++")) {
+            if (text.startsWith('+') && !text.startsWith('+++')) {
               builder.add(line.from, line.from, insertedLineDeco);
             }
             // Check if line is a deletion (starts with - but not ---)
-            else if (text.startsWith("-") && !text.startsWith("---")) {
+            else if (text.startsWith('-') && !text.startsWith('---')) {
               builder.add(line.from, line.from, deletedLineDeco);
             }
 
@@ -84,6 +84,6 @@ export function createDiffDecorator() {
     },
     {
       decorations: (v) => v.decorations,
-    },
+    }
   );
 }

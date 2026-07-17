@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
-import { CDSAIChatToolCallData } from "../components/chain-of-thought/src/tool-call-data.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import { CDSAIChatToolCallData } from '../components/chain-of-thought/src/tool-call-data.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ToolCallData = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-tool-call-data",
+    tagName: 'cds-aichat-tool-call-data',
     elementClass: CDSAIChatToolCallData,
     react: React,
-  }),
+  })
 );
 
 export default ToolCallData;

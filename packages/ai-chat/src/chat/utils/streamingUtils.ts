@@ -7,7 +7,7 @@
  *  @license
  */
 
-import actions from "../store/actions";
+import actions from '../store/actions';
 import {
   CompleteItemChunk,
   FinalResponseChunk,
@@ -18,14 +18,14 @@ import {
   StreamChunk,
   TextItem,
   UserDefinedItem,
-} from "../../types/messaging/Messages";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
+} from '../../types/messaging/Messages';
+import { DeepPartial } from '../../types/utilities/DeepPartial';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import {
   isStreamCompleteItem,
   isStreamFinalResponse,
   isStreamPartialItem,
-} from "./messageUtils";
+} from './messageUtils';
 
 type StoreLike = {
   dispatch: (action: any) => void;
@@ -61,7 +61,7 @@ class StreamingTracker {
     responseId: string,
     requestId?: string,
     controller?: AbortController,
-    itemId?: string,
+    itemId?: string
   ) {
     const existing = this.responseToMeta.get(responseId);
     if (existing) {
@@ -112,7 +112,7 @@ class StreamingTracker {
  */
 function resolveChunkContext(
   chunk: StreamChunk,
-  providedMessageID?: string,
+  providedMessageID?: string
 ): ChunkContext {
   const isPartialItem = isStreamPartialItem(chunk);
   const isCompleteItem = isStreamCompleteItem(chunk);
@@ -120,7 +120,7 @@ function resolveChunkContext(
 
   let messageID = providedMessageID;
   if (!messageID) {
-    if ("streaming_metadata" in chunk && chunk.streaming_metadata) {
+    if ('streaming_metadata' in chunk && chunk.streaming_metadata) {
       messageID = chunk.streaming_metadata.response_id;
     } else if (isFinalResponse && chunk.final_response?.id) {
       messageID = chunk.final_response.id;
@@ -146,7 +146,7 @@ function resolveChunkContext(
  */
 function shouldShowStopStreaming(
   streamingData: { cancellable?: boolean } | undefined,
-  isStopGeneratingVisible: boolean,
+  isStopGeneratingVisible: boolean
 ) {
   // If button is already visible, don't show it again (avoid redundant dispatch)
   if (isStopGeneratingVisible) {
@@ -167,7 +167,7 @@ function shouldShowStopStreaming(
  */
 function resetStopStreamingButton(
   store: StoreLike,
-  streamingMessageID?: string | null,
+  streamingMessageID?: string | null
 ) {
   const stopStreamingState =
     store.getState().assistantInputState.stopStreamingButtonState;
@@ -187,14 +187,14 @@ function resetStopStreamingButton(
 function mergePartialResponseOptions(
   store: StoreLike,
   messageID: string | undefined,
-  chunk: PartialOrCompleteItemChunk,
+  chunk: PartialOrCompleteItemChunk
 ) {
   if (chunk.partial_response?.message_options && messageID) {
     store.dispatch(
       actions.streamingMergeMessageOptions(
         messageID,
-        chunk.partial_response.message_options,
-      ),
+        chunk.partial_response.message_options
+      )
     );
   }
 }
@@ -209,7 +209,7 @@ function mergePartialResponseOptions(
  */
 function hasDisplayableContentForItem(
   item: DeepPartial<GenericItem> | undefined,
-  responseType: string | undefined,
+  responseType: string | undefined
 ): boolean {
   if (!item || !responseType) {
     return false;
@@ -261,7 +261,7 @@ function chunkHasDisplayableContent(chunk: StreamChunk): boolean {
  * @returns true if the message has content that should be displayed
  */
 function messageHasDisplayableContent(
-  localMessageItem: LocalMessageItem | undefined,
+  localMessageItem: LocalMessageItem | undefined
 ): boolean {
   if (!localMessageItem || !localMessageItem.item?.response_type) {
     return false;
@@ -273,8 +273,8 @@ function messageHasDisplayableContent(
   if (item.response_type === MessageResponseTypes.TEXT) {
     const textFromStreaming = uiState.streamingState
       ? uiState.streamingState.chunks
-          .map((chunk) => (chunk as Partial<TextItem>).text ?? "")
-          .join("")
+          .map((chunk) => (chunk as Partial<TextItem>).text ?? '')
+          .join('')
       : undefined;
     const text = (item as TextItem).text.length
       ? (item as TextItem).text

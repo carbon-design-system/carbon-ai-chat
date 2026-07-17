@@ -2,13 +2,15 @@
 
 ## Goals
 
-We should be looking for what here can can automate, and as we do, we can remove it from this list.
+We should be looking for what here can can automate, and as we do, we can remove
+it from this list.
 
 ## Testing Tracks
 
 ### Track 1: Core Configuration & Instance Control
 
-**Focus:** Test PublicConfig and ChatInstance methods NOT available through demo UI.
+**Focus:** Test PublicConfig and ChatInstance methods NOT available through demo
+UI.
 
 #### Demo UI Available Features (Test Normally)
 
@@ -100,9 +102,12 @@ Test text (stream), html (stream), audio, video message types in:
 
 **iOS Safari (iPhone required):**
 
-- [ ] **Touch interactions:** Tap to send, touch scrolling, pinch zoom, button feedback
-- [ ] **Virtual keyboard:** Appearance/dismissal, focus behavior, viewport adjustment, auto-scroll
-- [ ] **Layout adaptation:** Portrait/landscape, different screen sizes, responsive headers/messages
+- [ ] **Touch interactions:** Tap to send, touch scrolling, pinch zoom, button
+      feedback
+- [ ] **Virtual keyboard:** Appearance/dismissal, focus behavior, viewport
+      adjustment, auto-scroll
+- [ ] **Layout adaptation:** Portrait/landscape, different screen sizes,
+      responsive headers/messages
 - [ ] **Performance:** Scroll performance, animation smoothness, memory usage
 
 **Chrome Mobile (Android required):**
@@ -115,8 +120,10 @@ Test text (stream), html (stream), audio, video message types in:
 #### Mobile-Specific Features
 
 - [ ] **Accessibility:** Voice input, high contrast mode
-- [ ] **Network handling:** Slow connections, offline/online transitions, retry mechanisms
-- [ ] **App behavior:** Full-screen mode, background/foreground transitions, session persistence
+- [ ] **Network handling:** Slow connections, offline/online transitions, retry
+      mechanisms
+- [ ] **App behavior:** Full-screen mode, background/foreground transitions,
+      session persistence
 
 ### Track 4: Human Agent Integration and Accessibility
 
@@ -125,7 +132,8 @@ Test text (stream), html (stream), audio, video message types in:
 #### ServiceDesk Configuration (`window.setChatConfig()`)
 
 - [ ] **Basic integration:** Configure serviceDeskFactory with mockServiceDesk
-- [ ] **Factory parameters:** Verify ServiceDeskFactoryParameters passed correctly
+- [ ] **Factory parameters:** Verify ServiceDeskFactoryParameters passed
+      correctly
 - [ ] **Service desk instance:** Verify ServiceDesk instance creation
 - [ ] **Multiple configurations:** Test switching between different configs
 
@@ -168,7 +176,8 @@ Send messages to agents and test responses:
 
 #### File Upload Testing
 
-- [ ] **Upload capabilities:** allowFileUploads, allowMultipleFileUploads, allowedFileUploadTypes
+- [ ] **Upload capabilities:** allowFileUploads, allowMultipleFileUploads,
+      allowedFileUploadTypes
 - [ ] **File validation:** .png acceptance, other file rejections
 - [ ] **Upload progress:** Status updates
 - [ ] **Error handling:** Files starting with "A" errors
@@ -196,7 +205,8 @@ Verify using `window.chatInstance.getState().humanAgent`:
 
 #### Service Desk Error Scenarios
 
-- [ ] **No service desk configured:** Test connect_to_agent without serviceDeskFactory
+- [ ] **No service desk configured:** Test connect_to_agent without
+      serviceDeskFactory
 - [ ] **Service desk creation failure:** Test factory throwing errors
 - [ ] **Connection timeouts:** Test connection timeout handling
 - [ ] **Agent disconnection:** Test unexpected agent disconnection
@@ -206,7 +216,8 @@ Verify using `window.chatInstance.getState().humanAgent`:
 
 **REQUIREMENT: Use IBM Equal Access Accessibility Checker in Chrome**
 
-- [ ] **IBM Equal Access Checker:** Run full scan in various states (open, closed, with messages)
+- [ ] **IBM Equal Access Checker:** Run full scan in various states (open,
+      closed, with messages)
 - [ ] **Keyboard navigation:** Tab, Enter, Space, Arrow keys
 - [ ] **Focus management:** Proper focus trapping and movement
 - [ ] **High contrast mode:** Visibility and usability
@@ -214,7 +225,9 @@ Verify using `window.chatInstance.getState().humanAgent`:
 
 ### IBM Equal Access Setup
 
-1. Install [IBM Equal Access Accessibility Checker](https://www.ibm.com/able/toolkit/tools/#develop) Chrome extension
+1. Install
+   [IBM Equal Access Accessibility Checker](https://www.ibm.com/able/toolkit/tools/#develop)
+   Chrome extension
 2. Open Chrome DevTools (F12) → "IBM Equal Access" tab
 3. Run scan on chat interface in various states
 4. Document violations with severity levels

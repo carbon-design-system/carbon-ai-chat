@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { UUIDType } from "./UUIDType";
+import { UUIDType } from './UUIDType';
 
 /**
  * The function generates a new v4 UUID. This function is here to provide a nicer mechanism for mocking UUIDs in
@@ -18,14 +18,14 @@ import { UUIDType } from "./UUIDType";
  */
 function uuid(_type?: UUIDType) {
   // Use native crypto.randomUUID() if available, otherwise fallback to a simple implementation
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
 
   // Fallback for older browsers or non-secure contexts
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }

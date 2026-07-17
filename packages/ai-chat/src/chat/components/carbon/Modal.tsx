@@ -7,24 +7,24 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonModalElement from "@carbon/web-components/es/components/modal/modal.js";
-import CarbonModalBodyElement from "@carbon/web-components/es/components/modal/modal-body.js";
+import CarbonModalElement from '@carbon/web-components/es/components/modal/modal.js';
+import CarbonModalBodyElement from '@carbon/web-components/es/components/modal/modal-body.js';
 
 const Modal = createComponent({
-  tagName: "cds-modal",
+  tagName: 'cds-modal',
   elementClass: CarbonModalElement,
   react: React,
   events: {
-    onClose: "cds-modal-closed",
+    onClose: 'cds-modal-closed',
   },
 });
 
 const ModalBody = createComponent({
-  tagName: "cds-modal-body",
+  tagName: 'cds-modal-body',
   elementClass: CarbonModalBodyElement,
   react: React,
 });

@@ -5,8 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/styles/scss/layout";
-@use "@carbon/styles/scss/utilities/component-reset";
+@use '@carbon/styles/scss/layout';
+@use '@carbon/styles/scss/utilities/component-reset';
 
 :host {
   @include layout.emit-layout-tokens;

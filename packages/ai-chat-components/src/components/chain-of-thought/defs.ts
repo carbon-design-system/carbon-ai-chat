@@ -16,17 +16,17 @@ enum ChainOfThoughtStepStatus {
   /**
    * If the tool call is currently processing.
    */
-  PROCESSING = "processing",
+  PROCESSING = 'processing',
 
   /**
    * If the tool call failed.
    */
-  FAILURE = "failure",
+  FAILURE = 'failure',
 
   /**
    * If the tool call succeeded.
    */
-  SUCCESS = "success",
+  SUCCESS = 'success',
 }
 
 /**
@@ -41,7 +41,7 @@ type ChainOfThoughtOnToggle = (
   /**
    * Target element to scroll into view if needed.
    */
-  scrollToElement: HTMLElement,
+  scrollToElement: HTMLElement
 ) => void;
 
 /**

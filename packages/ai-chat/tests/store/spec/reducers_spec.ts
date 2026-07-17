@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { createAppStore } from "../../../src/chat/store/appStore";
+import { createAppStore } from '../../../src/chat/store/appStore';
 import {
   buildLanguagePack,
   createAppConfig,
-} from "../../../src/chat/store/doCreateStore";
-import actions from "../../../src/chat/store/actions";
-import { reducers } from "../../../src/chat/store/reducers";
-import { AppState } from "../../../src/types/state/AppState";
+} from '../../../src/chat/store/doCreateStore';
+import actions from '../../../src/chat/store/actions';
+import { reducers } from '../../../src/chat/store/reducers';
+import { AppState } from '../../../src/types/state/AppState';
 import {
   HeaderConfig,
   MinimizeButtonIconType,
-} from "../../../src/types/config/PublicConfig";
+} from '../../../src/types/config/PublicConfig';
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
@@ -31,12 +31,12 @@ import {
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
   VIEW_STATE_ALL_CLOSED,
-} from "../../../src/chat/store/reducerUtils";
+} from '../../../src/chat/store/reducerUtils';
 
 // Root reducer function like in doCreateStore.ts
 function rootReducer(
   state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined,
+  action: { type: string; [key: string]: unknown } | undefined
 ): AppState {
   return action && reducers[action.type]
     ? reducers[action.type](state, action)
@@ -80,7 +80,7 @@ function createInitialAppState(): AppState {
   };
 }
 
-describe("Store Reducers", () => {
+describe('Store Reducers', () => {
   let store: ReturnType<typeof createAppStore>;
   let initialState: AppState;
 
@@ -89,14 +89,14 @@ describe("Store Reducers", () => {
     store = createAppStore(rootReducer, initialState);
   });
 
-  describe("CHANGE_STATE action", () => {
-    it("should merge partial state updates correctly", () => {
+  describe('CHANGE_STATE action', () => {
+    it('should merge partial state updates correctly', () => {
       const currentState = store.getState();
       const newConfig = {
         config: {
           public: {
             debug: true,
-            namespace: "test-namespace",
+            namespace: 'test-namespace',
           },
         },
       };
@@ -106,18 +106,18 @@ describe("Store Reducers", () => {
 
       expect((updatedState as AppState).config.public.debug).toBe(true);
       expect((updatedState as AppState).config.public.namespace).toBe(
-        "test-namespace",
+        'test-namespace'
       );
       // Other config properties should remain unchanged
       expect((updatedState as AppState).config.public.aiEnabled).toBe(
-        (currentState as AppState).config.public.aiEnabled,
+        (currentState as AppState).config.public.aiEnabled
       );
     });
 
-    it("should handle deep nested property updates", () => {
+    it('should handle deep nested property updates', () => {
       const headerConfig: HeaderConfig = {
-        title: "Test Chat",
-        name: "Assistant",
+        title: 'Test Chat',
+        name: 'Assistant',
         showRestartButton: true,
         minimizeButtonIconType: MinimizeButtonIconType.CLOSE,
       };
@@ -129,30 +129,30 @@ describe("Store Reducers", () => {
               header: headerConfig,
             },
           },
-        }),
+        })
       );
 
       const state = store.getState() as AppState;
-      expect(state.config.public.header?.title).toBe("Test Chat");
-      expect(state.config.public.header?.name).toBe("Assistant");
+      expect(state.config.public.header?.title).toBe('Test Chat');
+      expect(state.config.public.header?.name).toBe('Assistant');
       expect(state.config.public.header?.showRestartButton).toBe(true);
       expect(state.config.public.header?.minimizeButtonIconType).toBe(
-        MinimizeButtonIconType.CLOSE,
+        MinimizeButtonIconType.CLOSE
       );
     });
 
-    describe("Property deletion behavior", () => {
+    describe('Property deletion behavior', () => {
       beforeEach(() => {
         // Set up initial state with header properties
         const initialHeaderConfig: HeaderConfig = {
-          title: "Initial Title",
-          name: "Initial Name",
+          title: 'Initial Title',
+          name: 'Initial Name',
           showRestartButton: true,
           hideMinimizeButton: false,
           minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
           menuOptions: [
-            { text: "Help", handler: () => {} },
-            { text: "Settings", handler: () => {} },
+            { text: 'Help', handler: () => {} },
+            { text: 'Settings', handler: () => {} },
           ],
         };
 
@@ -163,15 +163,15 @@ describe("Store Reducers", () => {
                 header: initialHeaderConfig,
               },
             },
-          }),
+          })
         );
       });
 
-      it("should delete properties when they are explicitly set to undefined", () => {
+      it('should delete properties when they are explicitly set to undefined', () => {
         // Update with some properties explicitly undefined (deleted)
         const updatedHeaderConfig: HeaderConfig = {
           title: undefined, // Delete title
-          name: "Updated Name", // Keep name but change value
+          name: 'Updated Name', // Keep name but change value
           showRestartButton: undefined, // Delete showRestartButton
           hideMinimizeButton: false, // Keep hideMinimizeButton
           // minimizeButtonIconType and menuOptions not included = should be deleted
@@ -184,7 +184,7 @@ describe("Store Reducers", () => {
                 header: updatedHeaderConfig,
               },
             },
-          }),
+          })
         );
 
         const state = store.getState() as AppState;
@@ -195,7 +195,7 @@ describe("Store Reducers", () => {
         expect(header?.showRestartButton).toBeUndefined();
 
         // Properties with values should be updated
-        expect(header?.name).toBe("Updated Name");
+        expect(header?.name).toBe('Updated Name');
         expect(header?.hideMinimizeButton).toBe(false);
 
         // Properties not included in the update should be deleted (replaced by new object)
@@ -203,9 +203,9 @@ describe("Store Reducers", () => {
         expect(header?.menuOptions).toBeUndefined();
       });
 
-      it("should completely replace nested objects when provided", () => {
+      it('should completely replace nested objects when provided', () => {
         const newHeaderConfig: HeaderConfig = {
-          title: "New Title Only",
+          title: 'New Title Only',
           // All other properties should be gone
         };
 
@@ -216,13 +216,13 @@ describe("Store Reducers", () => {
                 header: newHeaderConfig,
               },
             },
-          }),
+          })
         );
 
         const state = store.getState() as AppState;
         const header = state.config.public.header;
 
-        expect(header?.title).toBe("New Title Only");
+        expect(header?.title).toBe('New Title Only');
         expect(header?.name).toBeUndefined();
         expect(header?.showRestartButton).toBeUndefined();
         expect(header?.hideMinimizeButton).toBeUndefined();
@@ -230,7 +230,7 @@ describe("Store Reducers", () => {
         expect(header?.menuOptions).toBeUndefined();
       });
 
-      it("should handle empty objects (delete all properties)", () => {
+      it('should handle empty objects (delete all properties)', () => {
         store.dispatch(
           actions.changeState({
             config: {
@@ -238,7 +238,7 @@ describe("Store Reducers", () => {
                 header: {},
               },
             },
-          }),
+          })
         );
 
         const state = store.getState() as AppState;
@@ -253,7 +253,7 @@ describe("Store Reducers", () => {
         expect(header?.menuOptions).toBeUndefined();
       });
 
-      it("should preserve other config properties when updating nested objects", () => {
+      it('should preserve other config properties when updating nested objects', () => {
         const originalDebug = (store.getState() as AppState).config.public
           .debug;
         const originalNamespace = (store.getState() as AppState).config.public
@@ -264,17 +264,17 @@ describe("Store Reducers", () => {
             config: {
               public: {
                 header: {
-                  title: "Updated Title",
+                  title: 'Updated Title',
                 },
               },
             },
-          }),
+          })
         );
 
         const state = store.getState() as AppState;
 
         // Header should be updated
-        expect(state.config.public.header?.title).toBe("Updated Title");
+        expect(state.config.public.header?.title).toBe('Updated Title');
 
         // Other config properties should be preserved
         expect(state.config.public.debug).toBe(originalDebug);
@@ -282,37 +282,37 @@ describe("Store Reducers", () => {
       });
     });
 
-    it("should handle multiple nested property updates simultaneously", () => {
+    it('should handle multiple nested property updates simultaneously', () => {
       store.dispatch(
         actions.changeState({
           config: {
             public: {
               debug: true,
               header: {
-                title: "Multi Update Title",
+                title: 'Multi Update Title',
                 showRestartButton: false,
               },
               homescreen: {
                 isOn: true,
-                greeting: "Hello World",
+                greeting: 'Hello World',
               },
             },
           },
           isHydrated: true,
-        }),
+        })
       );
 
       const state = store.getState() as AppState;
 
       expect(state.config.public.debug).toBe(true);
-      expect(state.config.public.header?.title).toBe("Multi Update Title");
+      expect(state.config.public.header?.title).toBe('Multi Update Title');
       expect(state.config.public.header?.showRestartButton).toBe(false);
       expect(state.config.public.homescreen?.isOn).toBe(true);
-      expect(state.config.public.homescreen?.greeting).toBe("Hello World");
+      expect(state.config.public.homescreen?.greeting).toBe('Hello World');
       expect(state.isHydrated).toBe(true);
     });
 
-    it("should maintain reference equality when no actual changes occur", () => {
+    it('should maintain reference equality when no actual changes occur', () => {
       const initialState = store.getState();
 
       // Dispatch the same state
@@ -322,7 +322,7 @@ describe("Store Reducers", () => {
       expect(afterEmptyUpdate).toBe(initialState); // Should be same reference
     });
 
-    it("should create new references when actual changes occur", () => {
+    it('should create new references when actual changes occur', () => {
       const initialState = store.getState();
 
       store.dispatch(
@@ -332,18 +332,18 @@ describe("Store Reducers", () => {
               debug: !(initialState as AppState).config.public.debug,
             },
           },
-        }),
+        })
       );
 
       const updatedState = store.getState() as AppState;
       expect(updatedState).not.toBe(initialState); // Should be different reference
       expect(updatedState.config).not.toBe((initialState as AppState).config);
       expect(updatedState.config.public).not.toBe(
-        (initialState as AppState).config.public,
+        (initialState as AppState).config.public
       );
     });
 
-    it("preserves every non-config slice reference when only config changes", () => {
+    it('preserves every non-config slice reference when only config changes', () => {
       const before = store.getState() as AppState;
 
       // A config-only dispatch must take the shallow-copy path so unrelated
@@ -356,7 +356,7 @@ describe("Store Reducers", () => {
               debug: !before.config.public.debug,
             },
           },
-        }),
+        })
       );
 
       const after = store.getState() as AppState;
@@ -368,7 +368,7 @@ describe("Store Reducers", () => {
       expect(after.assistantInputState).toBe(before.assistantInputState);
       expect(after.humanAgentState).toBe(before.humanAgentState);
       expect(after.persistedToBrowserStorage).toBe(
-        before.persistedToBrowserStorage,
+        before.persistedToBrowserStorage
       );
       expect(after.assistantMessageState).toBe(before.assistantMessageState);
       expect(after.allMessagesByID).toBe(before.allMessagesByID);
@@ -377,13 +377,13 @@ describe("Store Reducers", () => {
       expect(after.responsePanelState).toBe(before.responsePanelState);
     });
 
-    it("still deep-merges a non-config slice update", () => {
+    it('still deep-merges a non-config slice update', () => {
       const before = store.getState() as AppState;
 
       store.dispatch(
         actions.changeState({
           assistantInputState: { isReadonly: true },
-        }),
+        })
       );
 
       const after = store.getState() as AppState;
@@ -395,8 +395,8 @@ describe("Store Reducers", () => {
     });
   });
 
-  describe("Other reducer actions", () => {
-    it("should toggle the isRestarting flag", () => {
+  describe('Other reducer actions', () => {
+    it('should toggle the isRestarting flag', () => {
       expect((store.getState() as AppState).isRestarting).toBe(false);
       store.dispatch(actions.setIsRestarting(true));
       expect((store.getState() as AppState).isRestarting).toBe(true);
@@ -404,54 +404,54 @@ describe("Store Reducers", () => {
       expect((store.getState() as AppState).isRestarting).toBe(false);
     });
 
-    it("should handle HYDRATE_CHAT action", () => {
+    it('should handle HYDRATE_CHAT action', () => {
       expect((store.getState() as AppState).isHydrated).toBe(false);
 
-      store.dispatch({ type: "HYDRATE_CHAT" });
+      store.dispatch({ type: 'HYDRATE_CHAT' });
 
       expect((store.getState() as AppState).isHydrated).toBe(true);
     });
 
-    it("should handle SET_HOME_SCREEN_IS_OPEN action", () => {
+    it('should handle SET_HOME_SCREEN_IS_OPEN action', () => {
       store.dispatch(actions.setHomeScreenIsOpen(true));
       expect(
         (store.getState() as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen,
+          .isHomeScreenOpen
       ).toBe(true);
 
       store.dispatch(actions.setHomeScreenIsOpen(false));
       expect(
         (store.getState() as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen,
+          .isHomeScreenOpen
       ).toBe(false);
     });
 
-    it("should handle multiple action types in sequence", () => {
+    it('should handle multiple action types in sequence', () => {
       // Test that multiple different actions work correctly together
       store.dispatch(
         actions.changeState({
           config: {
             public: {
-              header: { title: "Test Title" },
+              header: { title: 'Test Title' },
             },
           },
-        }),
+        })
       );
 
-      store.dispatch({ type: "HYDRATE_CHAT" });
+      store.dispatch({ type: 'HYDRATE_CHAT' });
       store.dispatch(actions.setHomeScreenIsOpen(true));
 
       const state = store.getState() as AppState;
-      expect(state.config.public.header?.title).toBe("Test Title");
+      expect(state.config.public.header?.title).toBe('Test Title');
       expect(state.isHydrated).toBe(true);
       expect(
-        state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+        state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
       ).toBe(true);
     });
   });
 
-  describe("Edge cases and error handling", () => {
-    it("should handle null and undefined values gracefully", () => {
+  describe('Edge cases and error handling', () => {
+    it('should handle null and undefined values gracefully', () => {
       expect(() => {
         store.dispatch(
           actions.changeState({
@@ -460,7 +460,7 @@ describe("Store Reducers", () => {
                 header: null as any,
               },
             },
-          }),
+          })
         );
       }).not.toThrow();
 
@@ -468,7 +468,7 @@ describe("Store Reducers", () => {
       expect(state.config.public.header).toBeNull();
     });
 
-    it("should handle deeply nested undefined values", () => {
+    it('should handle deeply nested undefined values', () => {
       expect(() => {
         store.dispatch(
           actions.changeState({
@@ -480,7 +480,7 @@ describe("Store Reducers", () => {
                 },
               },
             },
-          }),
+          })
         );
       }).not.toThrow();
 
@@ -489,73 +489,73 @@ describe("Store Reducers", () => {
       expect(state.config.public.header?.menuOptions).toBeUndefined();
     });
 
-    describe("Workspace Panel Data Management", () => {
-      describe("SET_WORKSPACE_PANEL_DATA action", () => {
-        it("should store workspace panel data correctly", () => {
+    describe('Workspace Panel Data Management', () => {
+      describe('SET_WORKSPACE_PANEL_DATA action', () => {
+        it('should store workspace panel data correctly', () => {
           const mockLocalMessageItem = {
-            id: "msg-123",
-            item: { type: "preview_card", title: "Test Card" },
+            id: 'msg-123',
+            item: { type: 'preview_card', title: 'Test Card' },
           } as any;
           const mockFullMessage = {
-            id: "full-msg-123",
+            id: 'full-msg-123',
             output: { generic: [] },
           } as any;
 
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "workspace-456",
+              workspaceID: 'workspace-456',
               localMessageItem: mockLocalMessageItem,
               fullMessage: mockFullMessage,
-              additionalData: { userId: "user-789", context: "test" },
-            }),
+              additionalData: { userId: 'user-789', context: 'test' },
+            })
           );
 
           const state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("workspace-456");
+          expect(state.workspacePanelState.workspaceID).toBe('workspace-456');
           expect(state.workspacePanelState.localMessageItem).toBe(
-            mockLocalMessageItem,
+            mockLocalMessageItem
           );
           expect(state.workspacePanelState.fullMessage).toBe(mockFullMessage);
           expect(state.workspacePanelState.additionalData).toEqual({
-            userId: "user-789",
-            context: "test",
+            userId: 'user-789',
+            context: 'test',
           });
         });
 
-        it("should handle partial workspace data updates", () => {
+        it('should handle partial workspace data updates', () => {
           // First set some data
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "workspace-1",
-              additionalData: { initial: "data" },
-            }),
+              workspaceID: 'workspace-1',
+              additionalData: { initial: 'data' },
+            })
           );
 
           // Then update with different data
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "workspace-2",
-              additionalData: { updated: "data" },
-            }),
+              workspaceID: 'workspace-2',
+              additionalData: { updated: 'data' },
+            })
           );
 
           const state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("workspace-2");
+          expect(state.workspacePanelState.workspaceID).toBe('workspace-2');
           expect(state.workspacePanelState.additionalData).toEqual({
-            updated: "data",
+            updated: 'data',
           });
           expect(state.workspacePanelState.localMessageItem).toBeUndefined();
           expect(state.workspacePanelState.fullMessage).toBeUndefined();
         });
 
-        it("should handle undefined values in workspace data", () => {
+        it('should handle undefined values in workspace data', () => {
           store.dispatch(
             actions.setWorkspacePanelData({
               workspaceID: undefined,
               localMessageItem: undefined,
               fullMessage: undefined,
               additionalData: undefined,
-            }),
+            })
           );
 
           const state = store.getState() as AppState;
@@ -565,70 +565,70 @@ describe("Store Reducers", () => {
           expect(state.workspacePanelState.additionalData).toBeUndefined();
         });
 
-        it("should preserve other workspace panel state properties", () => {
+        it('should preserve other workspace panel state properties', () => {
           // Set initial state with options
           store.dispatch(
             actions.setWorkspaceCustomPanelConfigOptions({
-              preferredLocation: "start",
-            }),
+              preferredLocation: 'start',
+            })
           );
 
           // Set workspace data
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "workspace-123",
-            }),
+              workspaceID: 'workspace-123',
+            })
           );
 
           const state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("workspace-123");
+          expect(state.workspacePanelState.workspaceID).toBe('workspace-123');
           expect(state.workspacePanelState.options.preferredLocation).toBe(
-            "start",
+            'start'
           );
           expect(state.workspacePanelState.isOpen).toBe(false);
         });
       });
 
-      describe("SET_WORKSPACE_PANEL_OPEN action with cleanup", () => {
+      describe('SET_WORKSPACE_PANEL_OPEN action with cleanup', () => {
         beforeEach(() => {
           // Set up workspace data before each test
           const mockLocalMessageItem = {
-            id: "msg-123",
-            item: { type: "preview_card", title: "Test Card" },
+            id: 'msg-123',
+            item: { type: 'preview_card', title: 'Test Card' },
           } as any;
           const mockFullMessage = {
-            id: "full-msg-123",
+            id: 'full-msg-123',
             output: { generic: [] },
           } as any;
 
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "workspace-456",
+              workspaceID: 'workspace-456',
               localMessageItem: mockLocalMessageItem,
               fullMessage: mockFullMessage,
-              additionalData: { userId: "user-789" },
-            }),
+              additionalData: { userId: 'user-789' },
+            })
           );
         });
 
-        it("should open workspace panel without clearing data", () => {
+        it('should open workspace panel without clearing data', () => {
           store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
 
           const state = store.getState() as AppState;
           expect(state.workspacePanelState.isOpen).toBe(true);
-          expect(state.workspacePanelState.workspaceID).toBe("workspace-456");
+          expect(state.workspacePanelState.workspaceID).toBe('workspace-456');
           expect(state.workspacePanelState.localMessageItem).toBeDefined();
           expect(state.workspacePanelState.fullMessage).toBeDefined();
           expect(state.workspacePanelState.additionalData).toEqual({
-            userId: "user-789",
+            userId: 'user-789',
           });
         });
 
-        it("should reset workspace panel state when closing", () => {
+        it('should reset workspace panel state when closing', () => {
           // Open first
           store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
           expect(
-            (store.getState() as AppState).workspacePanelState.isOpen,
+            (store.getState() as AppState).workspacePanelState.isOpen
           ).toBe(true);
 
           // Close and verify reset
@@ -646,7 +646,7 @@ describe("Store Reducers", () => {
           });
         });
 
-        it("should handle multiple open/close cycles correctly", () => {
+        it('should handle multiple open/close cycles correctly', () => {
           // First cycle
           store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
           store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
@@ -657,15 +657,15 @@ describe("Store Reducers", () => {
           // Set new data
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "workspace-new",
-              additionalData: { new: "data" },
-            }),
+              workspaceID: 'workspace-new',
+              additionalData: { new: 'data' },
+            })
           );
 
           // Second cycle
           store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
           state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("workspace-new");
+          expect(state.workspacePanelState.workspaceID).toBe('workspace-new');
 
           store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
           state = store.getState() as AppState;
@@ -673,11 +673,11 @@ describe("Store Reducers", () => {
         });
       });
 
-      describe("Workspace panel data lifecycle", () => {
-        it("should maintain data through open state", () => {
+      describe('Workspace panel data lifecycle', () => {
+        it('should maintain data through open state', () => {
           const mockData = {
-            workspaceID: "ws-123",
-            additionalData: { test: "data" },
+            workspaceID: 'ws-123',
+            additionalData: { test: 'data' },
           };
 
           // Set data
@@ -688,60 +688,60 @@ describe("Store Reducers", () => {
 
           // Data should still be there
           let state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("ws-123");
+          expect(state.workspacePanelState.workspaceID).toBe('ws-123');
           expect(state.workspacePanelState.additionalData).toEqual({
-            test: "data",
+            test: 'data',
           });
 
           // Update options while open
           store.dispatch(
             actions.setWorkspaceCustomPanelConfigOptions({
-              preferredLocation: "end",
-            }),
+              preferredLocation: 'end',
+            })
           );
 
           // Data should still be preserved
           state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("ws-123");
+          expect(state.workspacePanelState.workspaceID).toBe('ws-123');
           expect(state.workspacePanelState.options.preferredLocation).toBe(
-            "end",
+            'end'
           );
         });
 
-        it("should allow updating data while panel is open", () => {
+        it('should allow updating data while panel is open', () => {
           // Set initial data and open
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "ws-1",
+              workspaceID: 'ws-1',
               additionalData: { version: 1 },
-            }),
+            })
           );
           store.dispatch(actions.setWorkspaceCustomPanelOpen(true));
 
           // Update data while open
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "ws-2",
+              workspaceID: 'ws-2',
               additionalData: { version: 2 },
-            }),
+            })
           );
 
           const state = store.getState() as AppState;
           expect(state.workspacePanelState.isOpen).toBe(true);
-          expect(state.workspacePanelState.workspaceID).toBe("ws-2");
+          expect(state.workspacePanelState.workspaceID).toBe('ws-2');
           expect(state.workspacePanelState.additionalData).toEqual({
             version: 2,
           });
         });
       });
 
-      describe("Integration with other actions", () => {
-        it("should not affect workspace data when other panel states change", () => {
+      describe('Integration with other actions', () => {
+        it('should not affect workspace data when other panel states change', () => {
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "ws-123",
+              workspaceID: 'ws-123',
               additionalData: { preserved: true },
-            }),
+            })
           );
 
           // Change custom panel state
@@ -749,17 +749,17 @@ describe("Store Reducers", () => {
           store.dispatch(actions.setCustomPanelOpen(false));
 
           const state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("ws-123");
+          expect(state.workspacePanelState.workspaceID).toBe('ws-123');
           expect(state.workspacePanelState.additionalData).toEqual({
             preserved: true,
           });
         });
 
-        it("should maintain workspace data through state changes", () => {
+        it('should maintain workspace data through state changes', () => {
           store.dispatch(
             actions.setWorkspacePanelData({
-              workspaceID: "ws-persistent",
-            }),
+              workspaceID: 'ws-persistent',
+            })
           );
 
           // Perform various state changes
@@ -768,7 +768,7 @@ describe("Store Reducers", () => {
           store.dispatch(actions.setIsRestarting(false));
 
           const state = store.getState() as AppState;
-          expect(state.workspacePanelState.workspaceID).toBe("ws-persistent");
+          expect(state.workspacePanelState.workspaceID).toBe('ws-persistent');
         });
       });
     });

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import cx from "classnames";
+import cx from 'classnames';
 import React, {
   FocusEvent,
   KeyboardEvent,
@@ -18,13 +18,13 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
-} from "react";
+} from 'react';
 
-import { doFocusRef } from "../../utils/domUtils";
+import { doFocusRef } from '../../utils/domUtils';
 import {
   applyDynamicStyles,
   clearDynamicStyles,
-} from "../../utils/cspStyleUtils";
+} from '../../utils/cspStyleUtils';
 import {
   calculateAvailableLength,
   escapeHTML,
@@ -36,7 +36,7 @@ import {
   placeCaretAtEnd,
   truncateToLength,
   updateContentAttribute,
-} from "./utils";
+} from './utils';
 
 /**
  * Maximum height in pixels before the contenteditable div switches from auto-growing
@@ -180,7 +180,7 @@ const ContentEditableInput = forwardRef<
       placeholder,
       testId,
     },
-    ref,
+    ref
   ) => {
     /** Reference to the contenteditable div element */
     const editorRef = useRef<HTMLDivElement | null>(null);
@@ -196,7 +196,7 @@ const ContentEditableInput = forwardRef<
     const skipNextDomSync = useRef(false);
 
     /** Tracks the last displayValue we synced to the DOM to avoid unnecessary updates */
-    const lastDisplayValue = useRef<string>("");
+    const lastDisplayValue = useRef<string>('');
 
     /**
      * Tracks the most recent selection range. Updated on keydown, keyup, and mouseup.
@@ -230,7 +230,7 @@ const ContentEditableInput = forwardRef<
 
       const { rawValue, displayValue, wasTruncated } = extractNormalizedText(
         editorRef.current,
-        maxLength,
+        maxLength
       );
 
       if (wasTruncated) {
@@ -301,7 +301,7 @@ const ContentEditableInput = forwardRef<
           return;
         }
 
-        const clipboardText = event.clipboardData?.getData("text/plain") || "";
+        const clipboardText = event.clipboardData?.getData('text/plain') || '';
         if (!clipboardText) {
           return;
         }
@@ -312,7 +312,7 @@ const ContentEditableInput = forwardRef<
         const normalizedText = normalizeTextValue(clipboardText);
 
         // Calculate how much text we can insert based on maxLength
-        const currentText = normalizeTextValue(element.innerText || "");
+        const currentText = normalizeTextValue(element.innerText || '');
         const selection = getSelectionForElement(element);
         const range = getSelectionRangeForElement(element, selection);
         const selectedTextLength = range
@@ -322,7 +322,7 @@ const ContentEditableInput = forwardRef<
         const available = calculateAvailableLength(
           currentText,
           selectedTextLength,
-          maxLength,
+          maxLength
         );
 
         const textToInsert = truncateToLength(normalizedText, available);
@@ -335,13 +335,13 @@ const ContentEditableInput = forwardRef<
         // Note: execCommand is deprecated but still widely supported and necessary
         // for undo/redo integration. There's no modern alternative that preserves
         // the undo stack when intercepting paste events.
-        document.execCommand("insertText", false, textToInsert);
+        document.execCommand('insertText', false, textToInsert);
 
         // Capture the new selection state and emit the change
         captureSelection();
         emitChangeFromDom();
       },
-      [captureSelection, emitChangeFromDom, maxLength],
+      [captureSelection, emitChangeFromDom, maxLength]
     );
 
     /**
@@ -366,10 +366,10 @@ const ContentEditableInput = forwardRef<
         type: string;
         handler: EventListener;
       }> = [
-        { type: "keydown", handler: captureSelection as EventListener },
-        { type: "keyup", handler: captureSelection as EventListener },
-        { type: "mouseup", handler: captureSelection as EventListener },
-        { type: "paste", handler: handleNativePaste as EventListener },
+        { type: 'keydown', handler: captureSelection as EventListener },
+        { type: 'keyup', handler: captureSelection as EventListener },
+        { type: 'mouseup', handler: captureSelection as EventListener },
+        { type: 'paste', handler: handleNativePaste as EventListener },
       ];
 
       // Add all event listeners
@@ -401,10 +401,10 @@ const ContentEditableInput = forwardRef<
         if (!editorRef.current) {
           return;
         }
-        editorRef.current.innerHTML = "";
-        lastDisplayValue.current = "";
+        editorRef.current.innerHTML = '';
+        lastDisplayValue.current = '';
         skipNextDomSync.current = false;
-        updateContentAttribute(editorRef.current, "");
+        updateContentAttribute(editorRef.current, '');
       },
     }));
 
@@ -427,10 +427,10 @@ const ContentEditableInput = forwardRef<
 
       const editor = editorRef.current;
       const sizerHeight = sizerRef.current.scrollHeight;
-      applyDynamicStyles(editor, "editor-autoresize", {
-        "overflow-y": sizerHeight >= MAX_AUTO_RESIZE_HEIGHT ? "auto" : "hidden",
+      applyDynamicStyles(editor, 'editor-autoresize', {
+        'overflow-y': sizerHeight >= MAX_AUTO_RESIZE_HEIGHT ? 'auto' : 'hidden',
       });
-      return () => clearDynamicStyles(editor, "editor-autoresize");
+      return () => clearDynamicStyles(editor, 'editor-autoresize');
     }, [autoSize, displayValue]);
 
     /**
@@ -470,7 +470,7 @@ const ContentEditableInput = forwardRef<
       if (displayValue) {
         editorRef.current.innerHTML = displayValue;
       } else {
-        editorRef.current.innerHTML = "";
+        editorRef.current.innerHTML = '';
       }
       const selection = getSelectionForElement(editorRef.current);
       placeCaretAtEnd(editorRef.current, selection);
@@ -494,19 +494,18 @@ const ContentEditableInput = forwardRef<
       () => ({
         __html:
           rawValue && rawValue.length
-            ? displayValue || "&nbsp;"
-            : escapeHTML(placeholder || " ") || "&nbsp;",
+            ? displayValue || '&nbsp;'
+            : escapeHTML(placeholder || ' ') || '&nbsp;',
       }),
-      [rawValue, displayValue, placeholder],
+      [rawValue, displayValue, placeholder]
     );
 
     return (
       <div
-        className={cx("cds-aichat--text-area", {
-          "cds-aichat--text-area--auto-size": autoSize,
-          "cds-aichat--text-area--disabled": disabled,
-        })}
-      >
+        className={cx('cds-aichat--text-area', {
+          'cds-aichat--text-area--auto-size': autoSize,
+          'cds-aichat--text-area--disabled': disabled,
+        })}>
         {/* Placeholder overlay - hidden from screen readers */}
         {!rawValue && placeholder && (
           <div className="cds-aichat--text-area-placeholder" aria-hidden="true">
@@ -549,9 +548,9 @@ const ContentEditableInput = forwardRef<
         )}
       </div>
     );
-  },
+  }
 );
 
-ContentEditableInput.displayName = "ContentEditableInput";
+ContentEditableInput.displayName = 'ContentEditableInput';
 
 export { ContentEditableInput };

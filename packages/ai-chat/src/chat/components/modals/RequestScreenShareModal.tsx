@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { useSelector } from "../../hooks/useSelector";
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { ConfirmModal } from "./ConfirmModal";
-import { ScreenShareState } from "../../../types/config/ServiceDeskConfig";
-import { shallowEqual } from "../../store/appStore";
-import { AppState } from "../../../types/state/AppState";
+import { useSelector } from '../../hooks/useSelector';
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { ConfirmModal } from './ConfirmModal';
+import { ScreenShareState } from '../../../types/config/ServiceDeskConfig';
+import { shallowEqual } from '../../store/appStore';
+import { AppState } from '../../../types/state/AppState';
 
 /**
  * Displays a modal asking if the user wants to end a chat with an agent. This also covers the case where the user
@@ -30,18 +30,18 @@ function RequestScreenShareModal() {
       agent_sharingDeclineButton: state.languagePack.agent_sharingDeclineButton,
       agent_sharingAcceptButton: state.languagePack.agent_sharingAcceptButton,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   const onConfirm = () => {
     serviceManager.humanAgentService?.screenShareUpdateRequestState(
-      ScreenShareState.ACCEPTED,
+      ScreenShareState.ACCEPTED
     );
   };
 
   const onCancel = () => {
     serviceManager.humanAgentService?.screenShareUpdateRequestState(
-      ScreenShareState.DECLINED,
+      ScreenShareState.DECLINED
     );
   };
 

@@ -7,20 +7,20 @@
  *  @license
  */
 
-import type { ReactElement } from "react";
-import { act, render, waitFor } from "@testing-library/react";
-import { PageObjectId } from "@carbon/ai-chat";
-import { WAIT_FOR_TIMEOUT } from "./constants";
+import type { ReactElement } from 'react';
+import { act, render, waitFor } from '@testing-library/react';
+import { PageObjectId } from '@carbon/ai-chat';
+import { WAIT_FOR_TIMEOUT } from './constants';
 
 function deepQuerySelector(
   root: ShadowRoot | Element | Document,
-  selector: string,
+  selector: string
 ): Element | null {
   const direct = (root as Element).querySelector(selector);
   if (direct) {
     return direct;
   }
-  for (const el of Array.from(root.querySelectorAll("*"))) {
+  for (const el of Array.from(root.querySelectorAll('*'))) {
     const shadow = (el as HTMLElement).shadowRoot;
     if (shadow) {
       const found = deepQuerySelector(shadow, selector);
@@ -33,7 +33,7 @@ function deepQuerySelector(
 }
 
 export async function renderChatContainer(
-  ui: ReactElement,
+  ui: ReactElement
 ): Promise<ReturnType<typeof render>> {
   const result = render(ui);
   await waitForChatElement(result.container);
@@ -41,43 +41,43 @@ export async function renderChatContainer(
 }
 
 export async function waitForChatElement(
-  container: HTMLElement,
+  container: HTMLElement
 ): Promise<Element> {
   return waitFor(
     () => {
-      for (const el of Array.from(container.querySelectorAll("*"))) {
+      for (const el of Array.from(container.querySelectorAll('*'))) {
         const shadowRoot = (el as HTMLElement).shadowRoot;
         if (
           shadowRoot?.querySelector(
-            `[data-testid="${PageObjectId.CHAT_WIDGET}"]`,
+            `[data-testid="${PageObjectId.CHAT_WIDGET}"]`
           )
         ) {
           return el;
         }
       }
-      throw new Error("Chat element not rendered yet");
+      throw new Error('Chat element not rendered yet');
     },
     {
       timeout: WAIT_FOR_TIMEOUT,
-    },
+    }
   );
 }
 
 export async function openChat(customElement: Element): Promise<ShadowRoot> {
-  if (typeof (customElement as any).updateComplete !== "undefined") {
+  if (typeof (customElement as any).updateComplete !== 'undefined') {
     await (customElement as any).updateComplete;
   }
   const shadowRoot = (customElement as HTMLElement).shadowRoot;
   if (!shadowRoot) {
-    throw new Error("Custom element shadow root not ready");
+    throw new Error('Custom element shadow root not ready');
   }
   const { launcher, alreadyOpen } = await waitFor(
     () => {
       const button = shadowRoot.querySelector(
-        `[data-testid="${PageObjectId.LAUNCHER}"]`,
+        `[data-testid="${PageObjectId.LAUNCHER}"]`
       ) as HTMLElement | null;
       const isMainPanelVisible = Boolean(
-        shadowRoot.querySelector(`[data-testid="${PageObjectId.MAIN_PANEL}"]`),
+        shadowRoot.querySelector(`[data-testid="${PageObjectId.MAIN_PANEL}"]`)
       );
 
       if (button) {
@@ -88,15 +88,15 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
         return { launcher: null, alreadyOpen: true } as const;
       }
 
-      throw new Error("Launcher not ready");
+      throw new Error('Launcher not ready');
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   if (!alreadyOpen && launcher) {
     await act(async () => {
       launcher.click();
-      if (typeof (customElement as any).updateComplete !== "undefined") {
+      if (typeof (customElement as any).updateComplete !== 'undefined') {
         await (customElement as any).updateComplete;
       }
     });
@@ -104,7 +104,7 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
   await waitFor(
     () =>
       shadowRoot.querySelector(`[data-testid="${PageObjectId.CHAT_WIDGET}"]`),
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
   return shadowRoot;
 }
@@ -112,26 +112,26 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
 export async function closeChat(customElement: Element) {
   const shadowRoot = (customElement as HTMLElement).shadowRoot;
   if (!shadowRoot) {
-    throw new Error("Custom element shadow root not ready");
+    throw new Error('Custom element shadow root not ready');
   }
 
   const closeButton = await waitFor(
     () => {
       const button = deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.CLOSE_CHAT}"]`,
+        `[data-testid="${PageObjectId.CLOSE_CHAT}"]`
       ) as HTMLElement | null;
       if (!button) {
-        throw new Error("Close chat button not ready");
+        throw new Error('Close chat button not ready');
       }
       return button;
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   await act(async () => {
     closeButton.click();
-    if (typeof (customElement as any).updateComplete !== "undefined") {
+    if (typeof (customElement as any).updateComplete !== 'undefined') {
       await (customElement as any).updateComplete;
     }
   });
@@ -139,44 +139,44 @@ export async function closeChat(customElement: Element) {
 
 export async function sendUserMessage(
   shadowRoot: ShadowRoot,
-  text: string,
+  text: string
 ): Promise<void> {
   const input = await waitFor(
     () => {
       const field = shadowRoot.querySelector(
-        `[data-testid="${PageObjectId.INPUT}"]`,
+        `[data-testid="${PageObjectId.INPUT}"]`
       ) as HTMLInputElement | null;
       if (!field) {
-        throw new Error("Input not ready");
+        throw new Error('Input not ready');
       }
       return field;
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   const sendButton = await waitFor(
     () => {
       const button = shadowRoot.querySelector(
-        `[data-testid="${PageObjectId.INPUT_SEND}"]`,
+        `[data-testid="${PageObjectId.INPUT_SEND}"]`
       ) as HTMLElement | null;
       if (!button) {
-        throw new Error("Send button not ready");
+        throw new Error('Send button not ready');
       }
       return button;
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   await act(async () => {
     input.value = text;
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
   await act(async () => {
     sendButton.click();
   });
 
-  if (typeof (shadowRoot.host as any).updateComplete !== "undefined") {
+  if (typeof (shadowRoot.host as any).updateComplete !== 'undefined') {
     await (shadowRoot.host as any).updateComplete;
   }
 }

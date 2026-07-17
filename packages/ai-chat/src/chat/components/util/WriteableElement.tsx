@@ -13,9 +13,9 @@
  * own custom elements below it.
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasClassName } from "../../../types/utilities/HasClassName";
+import { HasClassName } from '../../../types/utilities/HasClassName';
 
 interface WriteableElementProps extends HasClassName {
   /**
@@ -55,8 +55,7 @@ function WriteableElement({
       className={className}
       id={id}
       data-floating-menu-container
-      slot={wrapperSlot}
-    >
+      slot={wrapperSlot}>
       <slot name={slotName} />
     </div>
   );

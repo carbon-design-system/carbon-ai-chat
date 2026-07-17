@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/utilities/ai-gradient" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/utilities/ai-gradient' as *;
 
 .cds-aichat--widget--max-width
   .cds-aichat--home-screen__home-screen-bottom-element,
@@ -85,7 +85,7 @@
 
 .cds-aichat--home-screen__greeting {
   color: theme.$text-primary;
-  @include type.type-style("heading-04");
+  @include type.type-style('heading-04');
 
   margin-block-start: layout.$spacing-07;
 }
@@ -200,7 +200,7 @@ cds-aichat-button.cds-aichat--home-screen__starter {
   }
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--home-screen__back-button
   .cds-aichat--home-screen__back-button-content
   .cds-aichat--home-screen__back-button-content-text {

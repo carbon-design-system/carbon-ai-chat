@@ -17,10 +17,10 @@
  * https://github.com/cookpete/react-player/blob/v2.15.1/src/players/Kaltura.js
  */
 
-import { BaseProvider, ProviderConfig } from "./base-provider.js";
-import { ScriptLoader } from "../../../shared/media-utils/script-loader.js";
+import { BaseProvider, ProviderConfig } from './base-provider.js';
+import { ScriptLoader } from '../../../shared/media-utils/script-loader.js';
 
-const SDK_URL = "https://cdn.embed.ly/player-0.1.0.min.js";
+const SDK_URL = 'https://cdn.embed.ly/player-0.1.0.min.js';
 
 // Declare player.js API types
 declare global {
@@ -43,10 +43,10 @@ export class KalturaProvider extends BaseProvider {
    */
   protected updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void {
-    element.setAttribute("aria-label", this.getStateLabel(state));
-    element.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    element.setAttribute('aria-label', this.getStateLabel(state));
+    element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
   }
 
   /**
@@ -56,25 +56,25 @@ export class KalturaProvider extends BaseProvider {
     await super.init(container, config);
 
     if (!this.container) {
-      throw new Error("Container element is required");
+      throw new Error('Container element is required');
     }
 
     // Create iframe for Kaltura player. Sizing/positioning is handled by the
     // .cds-aichat--video-player__provider iframe SCSS rule.
-    this.iframe = document.createElement("iframe");
-    this.iframe.setAttribute("frameborder", "0");
-    this.iframe.setAttribute("scrolling", "no");
-    this.iframe.setAttribute("allow", "encrypted-media; autoplay; fullscreen;");
+    this.iframe = document.createElement('iframe');
+    this.iframe.setAttribute('frameborder', '0');
+    this.iframe.setAttribute('scrolling', 'no');
+    this.iframe.setAttribute('allow', 'encrypted-media; autoplay; fullscreen;');
     this.iframe.setAttribute(
-      "sandbox",
-      "allow-scripts allow-downloads allow-forms allow-popups allow-same-origin",
+      'sandbox',
+      'allow-scripts allow-downloads allow-forms allow-popups allow-same-origin'
     );
-    this.iframe.setAttribute("referrer-policy", "origin");
-    this.iframe.setAttribute("role", "application");
+    this.iframe.setAttribute('referrer-policy', 'origin');
+    this.iframe.setAttribute('role', 'application');
 
     // Set initial ARIA attributes for loading state
     if (config.ariaLabel) {
-      this.updateAriaAttributes(this.iframe, "loading");
+      this.updateAriaAttributes(this.iframe, 'loading');
     }
 
     this.container.appendChild(this.iframe);
@@ -107,7 +107,7 @@ export class KalturaProvider extends BaseProvider {
       // Timeout after 5 seconds
       setTimeout(() => {
         if (!window.playerjs || !window.playerjs.Player) {
-          reject(new Error("player.js API failed to load"));
+          reject(new Error('player.js API failed to load'));
         }
       }, 5000);
     });
@@ -118,7 +118,7 @@ export class KalturaProvider extends BaseProvider {
    */
   async load(url: string): Promise<void> {
     if (!this.iframe) {
-      throw new Error("Iframe not initialized");
+      throw new Error('Iframe not initialized');
     }
 
     // Wait for API to be ready
@@ -140,11 +140,11 @@ export class KalturaProvider extends BaseProvider {
     this.player = new window.playerjs.Player(this.iframe);
 
     // Set up ready handler
-    this.player.on("ready", () => {
+    this.player.on('ready', () => {
       // Arbitrary timeout required for event listeners to work
       setTimeout(() => {
         if (this.iframe) {
-          this.updateAriaAttributes(this.iframe, "ready");
+          this.updateAriaAttributes(this.iframe, 'ready');
         }
         this.isReady = true;
         this.addListeners();
@@ -161,29 +161,29 @@ export class KalturaProvider extends BaseProvider {
       return;
     }
 
-    this.player.on("play", () => {
+    this.player.on('play', () => {
       this.triggerPlay();
     });
 
-    this.player.on("pause", () => {
+    this.player.on('pause', () => {
       this.triggerPause();
     });
 
-    this.player.on("ended", () => {
+    this.player.on('ended', () => {
       this.triggerPause();
     });
 
-    this.player.on("error", (_error: any) => {
+    this.player.on('error', (_error: any) => {
       if (this.iframe) {
-        this.updateAriaAttributes(this.iframe, "error");
+        this.updateAriaAttributes(this.iframe, 'error');
       }
       // Use the generic error message from config
       this.triggerError(
-        new Error(this.config.errorMessage || "Failed to load video"),
+        new Error(this.config.errorMessage || 'Failed to load video')
       );
     });
 
-    this.player.on("timeupdate", (_data: any) => {
+    this.player.on('timeupdate', (_data: any) => {
       // Track time updates if needed in the future
     });
   }

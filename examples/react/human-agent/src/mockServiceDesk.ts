@@ -26,7 +26,7 @@ import {
   TextItem,
   UserDefinedItem,
   UserType,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const MARKDOWN = `Carbon is a **chemical element** with the *atomic number* 6 and symbol **C**. \`C + O₂ → CO₂\` represents one of carbon's most fundamental reactions.
 
@@ -53,7 +53,7 @@ function assertType<TItemType>(item: TItemType): TItemType {
  */
 function createMessageResponseForText(
   text: string,
-  responseType: MessageResponseTypes = MessageResponseTypes.TEXT,
+  responseType: MessageResponseTypes = MessageResponseTypes.TEXT
 ): MessageResponse {
   const textItem: TextItem = {
     response_type: responseType as MessageResponseTypes,
@@ -167,32 +167,32 @@ interface MockState {
 
 const HELLO_TEXT = (userName: string) =>
   `Hi${
-    userName ? ` ${userName}` : ""
+    userName ? ` ${userName}` : ''
   }, I'm Shepard! I'm a **mock** service desk agent. Type *"help"* to see a list of messages you can mock me with. <script>alert("If you see this in a popup, it is a serious bug!");</script>`;
 
 const MOCK_AGENT_PROFILE_SHEPARD: ResponseUserProfile = {
-  id: "CommanderShepard-id",
-  nickname: "Shepard",
+  id: 'CommanderShepard-id',
+  nickname: 'Shepard',
   user_type: UserType.HUMAN,
   profile_picture_url:
-    "data:image/png;base64,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",
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGe0lEQVR4nMWXbXBU5RXHf8992c2yAZIgSWgCSAIkAUUS3iTRAjLVaYoUitiOwYAzthQTpCMtNDLOdFRqFQs1VdC20AD94LQdkBIpTOl0nCJvTqaQhheTIkICJJss5G337t6993n6IZIpdZMQa4c7cz/c5859zu/8zznPOVfYtq24g5d2J40DGF/kIyklUsreZyEEQgg0bfD+DArAdV10Xcfr9cZ9H41GAQYFclsASimUUiQkJBBzHI6dOMnZs2cJBoMITWNUejr5+VOZnJcHQCQSQdf1LwdAqZ4c9Xq9VO3azdbKN2i5dAGPcjA1DQXEpEKaCdwzczabN29mfHY2lmVhGAP7J/qrgpueezwevrtyJe/t2kFhXhZpI5Jv3VwpYo7D6YaLBEhgz779TMufim3bCCH6Beg3WFJKvF4v6yueZ1/Vr3l87ixGpiQTsR26wxG6w1bPbUVxXMncgnuZnOLjG/PnsPrZNeia3qvgoBWQUuLxeDhx8iOK5z3I0qJ8NE1DKYUmBKBQCAQglaIrHKHmQiNj0kaQM+ouqg4epfK3VTy1YjkRK4JuxM+JPoMkpUQIwVtvvUlOWhJKCP56uh5HSnweozf+jiuxYg6Gx2Te/fdx+MQ/SRs+lMJJY9n33l6eWrEc+olCfAAFpmkSjdqcPX2KnPRUDtc2sOyRIvKyMrnQ1EIoEsXQNFKG+cn+Sir3ZWUyNnccm97+A+/sPcy0Mak0Xw8C/ZdlXACFQhMa0ZgN0uVKsJO7M1J58blS0DQQAuwYRO3PdtFBSrAilC2ax86DRwh2dmMmpvXkgKJPFeKiCSGIxWIMS0wkNy+P81cCPFQwifr6T3niudd4rHwjx46fJhqyiIYsjp6s4/GKNyj9yTaaO7p5YMpEzjcFyMvNQQiBK91BKqAUuq7T2trKxasBAmGb7FEj6e4KUzxrCqNTU0gZ6kcXAgQkJfooXzyfS81tdIQs8saO4p1QlNrzDQQCrSQnJ6GUiluScRVQSqEbBmXPrGJWqo4vwUvEtikoyqczZLHjwN/JycrEtmPYUZtJ48ew8+AROkMW+UVTEYBpGuQPl5StWomu912OnwNQCjymSXtHJ4HGi2yp+B5LvjqNaMxBui4f1jVw6KM6cCVDEn0MSRwCrqT6eC1H6hqQjosmBI/NmcEvNqyktekSNzo68Zgm8Rg+FwIhwHFdEv1DcDQPoUCQSXdnYGgaWneYytVPoGkazcF26j5pAmDyuAzO79yIdF207jCGoXNPVibdLW3ENJOhiX4c1yXeoRg3BK7j4jFNlpaUUvLiVmobLvYcQq7EYxgIAa7rsPvwMXb+5ViPYSHwmibKlRi6zpl/XeLJl7axtORJPKaJ68ZPxLgAuqFj2zZrylbxrdUbqO/WudZ2HeHz0tB4jZzlL7B2ezUC0AX8qOoAOSte4OPL1xA+Ly3BG5zrgkVlFfygvAzbtvvsjn2ehEIIIpEIpctKmF1YROnCh6lYHmJC9hgmZqQyZuZ8Fj9aDMDe/e8zvqmJieNHo7pCVJ+o4919h5iYnTVga+63GwLYto3f7+fp7z/DXW3n+NnLa7l8+hzlv3wXz8jRSCmx2xrZtqaE0VNyWb/hddpG5LL9V28TCoXweDz9bT8wwM3yicViLFj4TWYkK155thR9mJ/m+k8ASJ8wDqcrzLotVdS0Cw5U78c0zV4l/ycAAMdxSEhIQAhBSekKaj44xNyCyUzISEUpRcOVAH+rOcP9X1vArh2/QSpFNBK5rYFkwOFNKYXP5+N6W4DK11/lbF0tSx6cxqNzptMVsgiFIyycO4Olc6ZzpvYUlT9/lfZgKz6fb8BZYEAFbh6fe/fsYdPW7cjR0xmSPg5x8Kf8edNa/JkZgMK6eo0F67YQnf9Dws2fojfVsK78aRYtXoJSst8w9Alw07jrSmZOz6c15V6Wvfw7EpNMPvz9bhrff5OJST0CNrRLMovLKPp2KV03ouz+8XdI6/qYkzX/QP9siOkLYkAFNE3Dsixe2fgSfzz4AcbYArJmF2P4h9Pe1gJA0ohUnFAHF45WIxtPsfTrD7H++Q34fL7ewWbQCvwnhGEYaJrG1abLHNj/J44eP86Vtg5iGD29A4eMkcN5oLCQ4gULSc/IxHVdXNf9cqpAKYXruvh8vlvWY1ELANN767plWei6PqDx2wb4bxAATdd7Ry0lZa+3mqbdluEvBPD/uO743/G/AQRL/NSFvHN/AAAAAElFTkSuQmCC',
 };
 
 const MOCK_AGENT_PROFILE_GARRUS: ResponseUserProfile = {
-  id: "GarrusVakarian-id",
-  nickname: "Garrus",
+  id: 'GarrusVakarian-id',
+  nickname: 'Garrus',
   user_type: UserType.HUMAN,
 };
 
 const MOCK_AGENT_PROFILE_LEGION: ResponseUserProfile = {
-  id: "Legion-id",
-  nickname: "Legion",
+  id: 'Legion-id',
+  nickname: 'Legion',
   user_type: UserType.HUMAN,
 };
 
 const MOCK_AGENT_PROFILE_EMPTY: ResponseUserProfile = {
-  id: "",
-  nickname: "",
+  id: '',
+  nickname: '',
   user_type: UserType.HUMAN,
 };
 
@@ -238,9 +238,9 @@ class MockServiceDesk implements ServiceDesk {
   chatInstance: ChatInstance;
 
   constructor(parameters: ServiceDeskFactoryParameters) {
-    console.log("Creating MockServiceDesk");
+    console.log('Creating MockServiceDesk');
     this.preStartChatPayload = {
-      userName: "",
+      userName: '',
     };
     this.hasStarted = false;
     this.factoryParameters = parameters;
@@ -248,23 +248,23 @@ class MockServiceDesk implements ServiceDesk {
     this.callback = parameters.callback;
     this.callback.updateCapabilities({
       allowFileUploads: true,
-      allowedFileUploadTypes: "image/*,.txt",
+      allowedFileUploadTypes: 'image/*,.txt',
       allowMultipleFileUploads: true,
     });
   }
 
   getName(): string {
-    return "mock service desk";
+    return 'mock service desk';
   }
 
   startChat(
     connectMessage: MessageResponse,
-    startChatOptions: StartChatOptions,
+    startChatOptions: StartChatOptions
   ): Promise<void> {
     console.log(`MockServiceDesk [startChat]: connectMessage`, connectMessage);
     console.log(
       `MockServiceDesk [startChat]: startChatOptions`,
-      startChatOptions,
+      startChatOptions
     );
 
     this.preStartChatPayload =
@@ -274,18 +274,18 @@ class MockServiceDesk implements ServiceDesk {
       return runSteps(this, START_CHAT_CONNECT_ERROR(this.mockState));
     }
     if (this.mockState.connectInfoType === ConnectInfoType.THROW_ERROR) {
-      throw new Error("The mock service desk threw an error during startChat!");
+      throw new Error('The mock service desk threw an error during startChat!');
     }
     if (this.mockState.connectDelayFactor === 0) {
       return runSteps(
         this,
-        START_CHAT_IMMEDIATELY(this.preStartChatPayload.userName),
+        START_CHAT_IMMEDIATELY(this.preStartChatPayload.userName)
       );
     }
     if (this.mockState.connectInfoType === ConnectInfoType.NONE) {
       return runSteps(
         this,
-        START_CHAT_NO_INFO(this.preStartChatPayload.userName, this.mockState),
+        START_CHAT_NO_INFO(this.preStartChatPayload.userName, this.mockState)
       );
     }
 
@@ -293,7 +293,7 @@ class MockServiceDesk implements ServiceDesk {
 
     return runSteps(
       this,
-      START_CHAT(this.preStartChatPayload.userName, this.mockState),
+      START_CHAT(this.preStartChatPayload.userName, this.mockState)
     );
   }
 
@@ -304,16 +304,16 @@ class MockServiceDesk implements ServiceDesk {
 
     let surveyResponse;
     if (info.preEndChatPayload?.wasAgentHelpful === true) {
-      surveyResponse = "We understand that you found the agent helpful.";
+      surveyResponse = 'We understand that you found the agent helpful.';
     } else if (info.preEndChatPayload?.wasAgentHelpful === false) {
-      surveyResponse = "We are sorry that the agent was not helpful.";
+      surveyResponse = 'We are sorry that the agent was not helpful.';
     }
 
     if (surveyResponse) {
       const text = `Thank you for responding to our survey. ${surveyResponse}`;
       this.sendMessageToUser(
         createMessageResponseForText(text),
-        this.mockState.currentAgent.id,
+        this.mockState.currentAgent.id
       );
     }
 
@@ -328,12 +328,12 @@ class MockServiceDesk implements ServiceDesk {
   sendMessageToAgent(
     message: MessageRequest,
     _messageID: string,
-    additionalData: AdditionalDataToAgent,
+    additionalData: AdditionalDataToAgent
   ): Promise<void> {
     console.log(
       `MockServiceDesk [sendMessageToAgent]`,
       message,
-      additionalData,
+      additionalData
     );
     const { text } = message.input;
 
@@ -343,9 +343,9 @@ class MockServiceDesk implements ServiceDesk {
       // Ignore empty text. This occurs if the user just uploads files.
     } else {
       const textLower = text.toLowerCase();
-      if (textLower.includes("help")) {
+      if (textLower.includes('help')) {
         steps = MESSAGE_TO_AGENT_HELP();
-      } else if (textLower.includes("someone else")) {
+      } else if (textLower.includes('someone else')) {
         if (
           this.mockState.currentAgent === MOCK_AGENT_PROFILE_SHEPARD ||
           this.mockState.currentAgent === MOCK_AGENT_PROFILE_EMPTY
@@ -356,33 +356,33 @@ class MockServiceDesk implements ServiceDesk {
         } else {
           steps = TRANSFER_TO_EMPTY();
         }
-      } else if (textLower.includes("markdown")) {
+      } else if (textLower.includes('markdown')) {
         steps = MESSAGE_TO_AGENT_TEXT(MARKDOWN);
-      } else if (textLower.includes("multiple")) {
+      } else if (textLower.includes('multiple')) {
         steps = MESSAGE_TO_AGENT_MULTIPLE();
-      } else if (textLower.includes("leave")) {
+      } else if (textLower.includes('leave')) {
         steps = MESSAGE_TO_AGENT_LEAVE_CHAT();
-      } else if (textLower.includes("text")) {
+      } else if (textLower.includes('text')) {
         steps = MESSAGE_TO_AGENT_TEXT(
-          "Carbon is awesome! I don't know how anyone can live without it.",
+          "Carbon is awesome! I don't know how anyone can live without it."
         );
-      } else if (textLower.includes("upload")) {
+      } else if (textLower.includes('upload')) {
         steps = MESSAGE_TO_AGENT_TEXT(
-          "Alright, you can upload some files. But only .png files please.",
+          'Alright, you can upload some files. But only .png files please.',
           0,
-          false,
+          false
         );
-      } else if (textLower.includes("message throw")) {
+      } else if (textLower.includes('message throw')) {
         steps = MESSAGE_THROW();
-      } else if (textLower.includes("video")) {
+      } else if (textLower.includes('video')) {
         steps = MESSAGE_VIDEO();
-      } else if (textLower.includes("custom")) {
+      } else if (textLower.includes('custom')) {
         steps = MESSAGE_CUSTOM();
-      } else if (textLower.includes("hang")) {
+      } else if (textLower.includes('hang')) {
         steps = HANG_MESSAGE();
       } else {
         steps = MESSAGE_TO_AGENT_TEXT(
-          'If you say so. Type *"help"* for a list of other things you can say.',
+          'If you say so. Type *"help"* for a list of other things you can say.'
         );
       }
     }
@@ -393,17 +393,17 @@ class MockServiceDesk implements ServiceDesk {
         // Use a setTimeout to simulate a random amount of time it takes to upload a file.
         setTimeout(
           () => {
-            let errorMessage = "";
-            if (!file.file.name.endsWith(".png")) {
-              errorMessage = "Only .png files may be uploaded.";
+            let errorMessage = '';
+            if (!file.file.name.endsWith('.png')) {
+              errorMessage = 'Only .png files may be uploaded.';
             }
             this.callback.setFileUploadStatus(
               file.id,
               Boolean(errorMessage.length),
-              errorMessage,
+              errorMessage
             );
           },
-          Math.random() * 5000 + 1,
+          Math.random() * 5000 + 1
         );
       });
     }
@@ -414,11 +414,11 @@ class MockServiceDesk implements ServiceDesk {
   filesSelectedForUpload(uploads: FileUpload[]): void {
     console.log(`MockServiceDesk [filesSelectedForUpload]`, uploads);
     uploads.forEach((file) => {
-      if (file.file.name.toLowerCase().startsWith("a")) {
+      if (file.file.name.toLowerCase().startsWith('a')) {
         this.callback.setFileUploadStatus(
           file.id,
           true,
-          'You may not upload files that start with the letter "A"!',
+          'You may not upload files that start with the letter "A"!'
         );
       }
     });
@@ -444,8 +444,8 @@ class MockServiceDesk implements ServiceDesk {
 
   async screenShareStop() {
     this.callback.sendMessageToUser(
-      "Alright, you have stopped sharing your screen.",
-      this.mockState.currentAgent.id,
+      'Alright, you have stopped sharing your screen.',
+      this.mockState.currentAgent.id
     );
   }
 
@@ -487,7 +487,7 @@ function START_CHAT_IMMEDIATELY(userName: string): MockStep[] {
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_SHEPARD);
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          instance.mockState.currentAgent.id,
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -496,7 +496,7 @@ function START_CHAT_IMMEDIATELY(userName: string): MockStep[] {
 
 function START_CHAT_NO_INFO(
   userName: string,
-  mockState: MockState,
+  mockState: MockState
 ): MockStep[] {
   return [
     {
@@ -517,7 +517,7 @@ function START_CHAT_NO_INFO(
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          MOCK_AGENT_PROFILE_SHEPARD.id,
+          MOCK_AGENT_PROFILE_SHEPARD.id
         );
       },
     },
@@ -532,8 +532,8 @@ function START_CHAT_CONNECT_ERROR(mockState: MockState): MockStep[] {
         mockState.currentAgent = MOCK_AGENT_PROFILE_SHEPARD;
         instance.callback.setErrorStatus({
           type: ErrorType.CONNECTING,
-          logInfo: "Error!",
-          messageToUser: "All our agents are offline",
+          logInfo: 'Error!',
+          messageToUser: 'All our agents are offline',
         });
       },
     },
@@ -547,9 +547,9 @@ function START_CHAT(userName: string, mockState: MockState): MockStep[] {
   switch (mockState?.connectInfoType) {
     case ConnectInfoType.MESSAGE: {
       availability = [
-        { message: "Agent getting on a *plane*..." },
-        { message: "Agent getting on a *train*..." },
-        { message: "Agent getting into a *car*..." },
+        { message: 'Agent getting on a *plane*...' },
+        { message: 'Agent getting on a *train*...' },
+        { message: 'Agent getting into a *car*...' },
       ];
       break;
     }
@@ -608,7 +608,7 @@ function START_CHAT(userName: string, mockState: MockState): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           HELLO_TEXT(userName),
-          mockState.currentAgent.id,
+          mockState.currentAgent.id
         );
       },
     },
@@ -633,9 +633,9 @@ function MESSAGE_TO_AGENT_HELP(): MockStep[] {
       delay: 0,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "***These messages must be sent to an agent and not to the bot.*** \n" +
+          '***These messages must be sent to an agent and not to the bot.*** \n' +
             HELP_TEXT,
-          instance.mockState.currentAgent.id,
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -743,7 +743,7 @@ function AGENT_END_CHAT(): MockStep[] {
 function MESSAGE_TO_AGENT_TEXT(
   text: string,
   delay = 1000,
-  showTyping = true,
+  showTyping = true
 ): MockStep[] {
   const steps: MockStep[] = [];
   if (showTyping) {
@@ -780,8 +780,8 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       delay: 1000,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "I thought we were getting along so well!",
-          instance.mockState.currentAgent.id,
+          'I thought we were getting along so well!',
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -797,7 +797,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Okay, I'll find **someone else** you can talk to.",
-          instance.mockState.currentAgent.id,
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -826,7 +826,7 @@ function TRANSFER_TO_GARRUS(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "Hi! I'm **Garrus** and I'm nicer than **Shepard**!",
-          instance.mockState.currentAgent.id,
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -841,7 +841,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
           "You'll regret this.",
-          instance.mockState.currentAgent.id,
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -857,7 +857,7 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       callback: (instance: MockServiceDesk) => {
         instance.mockState.currentAgent = MOCK_AGENT_PROFILE_LEGION;
         instance.callback.beginTransferToAnotherAgent(
-          MOCK_AGENT_PROFILE_LEGION,
+          MOCK_AGENT_PROFILE_LEGION
         );
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_LEGION);
       },
@@ -866,8 +866,8 @@ function TRANSFER_TO_LEGION(): MockStep[] {
       delay: 0,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "Shepard-Commander.",
-          instance.mockState.currentAgent.id,
+          'Shepard-Commander.',
+          instance.mockState.currentAgent.id
         );
       },
     },
@@ -881,8 +881,8 @@ function MESSAGE_TO_AGENT_LEAVE_CHAT(): MockStep[] {
       delay: 0,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "I am leaving now!",
-          instance.mockState.currentAgent.id,
+          'I am leaving now!',
+          instance.mockState.currentAgent.id
         );
         instance.callback.agentLeftChat();
       },
@@ -897,12 +897,12 @@ function TRANSFER_TO_EMPTY(): MockStep[] {
       delay: 0,
       callback: (instance: MockServiceDesk) => {
         instance.sendMessageToUser(
-          "Transferring you to a no-name.",
-          instance.mockState.currentAgent.id,
+          'Transferring you to a no-name.',
+          instance.mockState.currentAgent.id
         );
         instance.mockState.currentAgent = MOCK_AGENT_PROFILE_EMPTY;
         instance.callback.agentJoined(MOCK_AGENT_PROFILE_EMPTY);
-        instance.sendMessageToUser("Hi.", instance.mockState.currentAgent.id);
+        instance.sendMessageToUser('Hi.', instance.mockState.currentAgent.id);
       },
     },
   ];
@@ -929,10 +929,10 @@ function MESSAGE_VIDEO(): MockStep[] {
             generic: [
               assertType<VideoItem>({
                 response_type: MessageResponseTypes.VIDEO,
-                title: "The video title",
-                source: "https://www.youtube.com/watch?v=QuW4_bRHbUk",
-                alt_text: "The video alternate text",
-                description: "The video description",
+                title: 'The video title',
+                source: 'https://www.youtube.com/watch?v=QuW4_bRHbUk',
+                alt_text: 'The video alternate text',
+                description: 'The video description',
               }),
             ],
           },
@@ -955,13 +955,13 @@ function MESSAGE_CUSTOM(): MockStep[] {
             generic: [
               assertType<TextItem>({
                 response_type: MessageResponseTypes.TEXT,
-                text: "Below is a custom response but you may not see it if no handler has been created.",
+                text: 'Below is a custom response but you may not see it if no handler has been created.',
               }),
               assertType<UserDefinedItem>({
                 response_type: MessageResponseTypes.USER_DEFINED,
                 user_defined: {
-                  user_defined_type: "green",
-                  text: "This is a user_defined response.",
+                  user_defined_type: 'green',
+                  text: 'This is a user_defined response.',
                 },
               }),
             ],
@@ -984,11 +984,11 @@ function MESSAGE_TO_AGENT_MULTIPLE(): MockStep[] {
             generic: [
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "This is a text item in this response.",
+                text: 'This is a text item in this response.',
               },
               {
                 response_type: MessageResponseTypes.TEXT,
-                text: "This is a second text item.",
+                text: 'This is a second text item.',
               },
             ],
           },

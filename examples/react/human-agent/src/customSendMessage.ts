@@ -12,7 +12,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to this example of a custom back-end. This back-end is mocked entirely on the client side. It does not show all potential functionality.
 
@@ -29,9 +29,9 @@ Quam scelerisque platea ridiculus sem placerat pharetra sed. Porttitor per massa
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -44,7 +44,7 @@ async function customSendMessage(
     });
   } else {
     switch (request.input.text) {
-      case "text":
+      case 'text':
         instance.messaging.addMessage({
           output: {
             generic: [
@@ -56,7 +56,7 @@ async function customSendMessage(
           },
         });
         break;
-      case "human":
+      case 'human':
         instance.messaging.addMessage({
           output: {
             generic: [

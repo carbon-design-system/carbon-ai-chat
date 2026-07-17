@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '../../../globals/scss/chat-theme';
 
 .cds-aichat--human-agent-banner__body {
   display: flex;
@@ -16,7 +16,7 @@
   padding: layout.$spacing-05;
   background-color: theme.$chat-shell-background;
   border-block-end: 1px solid theme.$border-subtle-01;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 .cds-aichat--widget--max-width {
@@ -32,7 +32,7 @@
   inline-size: 32px;
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--human-agent-banner
   .cds-aichat--response-user-avatar {
   margin: 0 0 0 layout.$spacing-04;
@@ -50,7 +50,7 @@
   padding: 0 layout.$spacing-05 0 0;
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--human-agent-banner__human-agent-info {
   padding: 0 0 0 layout.$spacing-05;
 }
@@ -61,7 +61,7 @@
 
 .cds-aichat--human-agent-banner--connected
   .cds-aichat--agent-banner__agent-line1 {
-  @include type.type-style("body-02");
+  @include type.type-style('body-02');
 }
 
 .cds-aichat--human-agent-banner__human-agent-line2 {
@@ -70,7 +70,7 @@
 
 .cds-aichat--human-agent-banner__human-agent-line2,
 .cds-aichat--human-agent-banner__human-agent-line2 p {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 .cds-aichat--agent-banner__stop-sharing-button {

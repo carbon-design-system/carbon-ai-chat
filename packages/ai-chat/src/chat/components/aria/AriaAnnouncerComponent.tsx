@@ -7,12 +7,12 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { AnnounceMessage } from "../../../types/state/AppState";
-import HasIntl from "../../../types/utilities/HasIntl";
-import { nodeToText } from "../../utils/domUtils";
-import VisuallyHidden from "../util/VisuallyHidden";
+import { AnnounceMessage } from '../../../types/state/AppState';
+import HasIntl from '../../../types/utilities/HasIntl';
+import { nodeToText } from '../../utils/domUtils';
+import VisuallyHidden from '../util/VisuallyHidden';
 
 /**
  * This component holds several aria live-regions that are used to make screen reader announcements by the application.
@@ -77,12 +77,12 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
       setTimeout(this.doAnnouncements, 250);
     }
 
-    if (typeof value === "string" || hasNodeType(value)) {
+    if (typeof value === 'string' || hasNodeType(value)) {
       this.pendingValues.push(value);
     } else if (value.messageID) {
       const formattedMessage = this.props.intl.formatMessage(
         { id: value.messageID },
-        value.messageValues,
+        value.messageValues
       );
       this.pendingValues.push(formattedMessage);
     } else {
@@ -100,7 +100,7 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
 
     // Turn all of the pending elements into strings.
     this.pendingValues.forEach((elementToAnnounce) => {
-      if (typeof elementToAnnounce === "string") {
+      if (typeof elementToAnnounce === 'string') {
         strings.push(elementToAnnounce);
       } else {
         nodeToText(elementToAnnounce, strings);
@@ -111,12 +111,12 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
     const useElement = refs[this.currentRefIndex].current;
 
     if (useElement) {
-      useElement.innerText = strings.join(" ");
+      useElement.innerText = strings.join(' ');
 
       // Clear the other two elements
       refs.forEach((ref, index) => {
         if (index !== this.currentRefIndex && ref.current) {
-          ref.current.innerHTML = "";
+          ref.current.innerHTML = '';
         }
       });
     }

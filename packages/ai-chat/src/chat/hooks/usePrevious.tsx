@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 /**
  * A custom react hook to be able to set and access previous prop/state values:

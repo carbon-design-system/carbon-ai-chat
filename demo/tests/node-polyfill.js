@@ -16,9 +16,9 @@
  * and cause "Node is not defined" errors during test module loading.
  */
 
-if (typeof globalThis.Node === "undefined") {
+if (typeof globalThis.Node === 'undefined') {
   globalThis.Node = class Node {};
   console.log(
-    "[Test Setup] Polyfilled globalThis.Node for Carbon web components compatibility",
+    '[Test Setup] Polyfilled globalThis.Node for Carbon web components compatibility'
   );
 }

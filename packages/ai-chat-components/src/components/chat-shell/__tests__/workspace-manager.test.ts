@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect } from "@open-wc/testing";
-import { WorkspaceManager } from "../src/workspace-manager.js";
+import { expect } from '@open-wc/testing';
+import { WorkspaceManager } from '../src/workspace-manager.js';
 
 /**
  * This repository uses the @web/test-runner library for testing
@@ -24,21 +24,21 @@ type LayoutWidths = {
 
 const setLayoutWidths = (host: HTMLElement, widths: LayoutWidths) => {
   host.style.setProperty(
-    "--cds-aichat-workspace-min-width",
-    `${widths.workspaceMinWidth}px`,
+    '--cds-aichat-workspace-min-width',
+    `${widths.workspaceMinWidth}px`
   );
   host.style.setProperty(
-    "--cds-aichat-messages-min-width",
-    `${widths.messagesMinWidth}px`,
+    '--cds-aichat-messages-min-width',
+    `${widths.messagesMinWidth}px`
   );
   host.style.setProperty(
-    "--cds-aichat-history-width",
-    `${widths.historyWidth}px`,
+    '--cds-aichat-history-width',
+    `${widths.historyWidth}px`
   );
 };
 
 const createHost = (width: number) => {
-  const host = document.createElement("div");
+  const host = document.createElement('div');
   let currentWidth = width;
 
   host.getBoundingClientRect = () =>
@@ -68,7 +68,7 @@ const createManager = (options: {
   showWorkspace: boolean;
   showHistory?: boolean;
 }) => {
-  const shellRoot = document.createElement("div");
+  const shellRoot = document.createElement('div');
   const { host, setWidth } = createHost(options.hostWidth);
   document.body.appendChild(host);
 
@@ -77,7 +77,7 @@ const createManager = (options: {
   const manager = new WorkspaceManager(shellRoot, host, {
     showWorkspace: options.showWorkspace,
     showHistory: options.showHistory ?? false,
-    workspaceLocation: "start",
+    workspaceLocation: 'start',
     roundedCorners: false,
   });
 
@@ -95,8 +95,8 @@ afterEach(() => {
   console.trace = originalConsoleTrace;
 });
 
-describe("WorkspaceManager", () => {
-  it("renders workspace inline when the host is wide enough", () => {
+describe('WorkspaceManager', () => {
+  it('renders workspace inline when the host is wide enough', () => {
     const { manager, host, shellRoot } = createManager({
       hostWidth: 720,
       layoutWidths: {
@@ -110,20 +110,20 @@ describe("WorkspaceManager", () => {
     manager.connect();
 
     const state = manager.getState();
-    expect(host.hasAttribute("workspace-in-container")).to.be.true;
-    expect(host.hasAttribute("workspace-in-panel")).to.be.false;
+    expect(host.hasAttribute('workspace-in-container')).to.be.true;
+    expect(host.hasAttribute('workspace-in-panel')).to.be.false;
     expect(state.containerVisible).to.be.true;
     expect(state.inPanel).to.be.false;
     expect(state.contentVisible).to.be.true;
     expect(manager.shouldRenderInline()).to.be.true;
     expect(manager.shouldRenderPanel()).to.be.false;
-    expect(shellRoot.classList.contains("workspace-checking")).to.be.false;
+    expect(shellRoot.classList.contains('workspace-checking')).to.be.false;
 
     manager.disconnect();
     document.body.removeChild(host);
   });
 
-  it("renders workspace in a panel when the host cannot grow", () => {
+  it('renders workspace in a panel when the host cannot grow', () => {
     const requiredWidth = window.innerWidth + 200;
     const { manager, host } = createManager({
       hostWidth: requiredWidth - 100,
@@ -138,8 +138,8 @@ describe("WorkspaceManager", () => {
     manager.connect();
 
     const state = manager.getState();
-    expect(host.hasAttribute("workspace-in-panel")).to.be.true;
-    expect(host.hasAttribute("workspace-in-container")).to.be.false;
+    expect(host.hasAttribute('workspace-in-panel')).to.be.true;
+    expect(host.hasAttribute('workspace-in-container')).to.be.false;
     expect(state.inPanel).to.be.true;
     expect(state.containerVisible).to.be.true;
     expect(manager.shouldRenderPanel()).to.be.true;
@@ -149,7 +149,7 @@ describe("WorkspaceManager", () => {
     document.body.removeChild(host);
   });
 
-  it("enters expansion checking when the host may grow", () => {
+  it('enters expansion checking when the host may grow', () => {
     const requiredWidth = Math.max(640, window.innerWidth - 100);
     const { manager, host, shellRoot } = createManager({
       hostWidth: requiredWidth - 120,
@@ -167,7 +167,7 @@ describe("WorkspaceManager", () => {
     expect(state.isCheckingExpansion).to.be.true;
     expect(state.containerVisible).to.be.true;
     expect(state.contentVisible).to.be.false;
-    expect(shellRoot.classList.contains("workspace-checking")).to.be.true;
+    expect(shellRoot.classList.contains('workspace-checking')).to.be.true;
     expect(manager.shouldRenderInline()).to.be.true;
     expect(manager.shouldRenderPanel()).to.be.false;
 
@@ -175,7 +175,7 @@ describe("WorkspaceManager", () => {
     document.body.removeChild(host);
   });
 
-  it("clears workspace attributes when disabled", () => {
+  it('clears workspace attributes when disabled', () => {
     const requiredWidth = window.innerWidth + 200;
     const { manager, host } = createManager({
       hostWidth: requiredWidth - 100,
@@ -188,13 +188,13 @@ describe("WorkspaceManager", () => {
     });
 
     manager.connect();
-    expect(host.hasAttribute("workspace-in-panel")).to.be.true;
+    expect(host.hasAttribute('workspace-in-panel')).to.be.true;
 
     manager.updateConfig({ showWorkspace: false });
 
     const state = manager.getState();
-    expect(host.hasAttribute("workspace-in-panel")).to.be.false;
-    expect(host.hasAttribute("workspace-in-container")).to.be.false;
+    expect(host.hasAttribute('workspace-in-panel')).to.be.false;
+    expect(host.hasAttribute('workspace-in-container')).to.be.false;
     expect(state.containerVisible).to.be.false;
     expect(state.inPanel).to.be.false;
     expect(manager.shouldRenderInline()).to.be.false;
@@ -203,7 +203,7 @@ describe("WorkspaceManager", () => {
     document.body.removeChild(host);
   });
 
-  it("recalculates panel state when showHistory toggles", () => {
+  it('recalculates panel state when showHistory toggles', () => {
     const { manager, host } = createManager({
       hostWidth: 600,
       layoutWidths: {
@@ -216,12 +216,12 @@ describe("WorkspaceManager", () => {
     });
 
     manager.connect();
-    expect(host.hasAttribute("workspace-in-container")).to.be.true;
+    expect(host.hasAttribute('workspace-in-container')).to.be.true;
 
     manager.updateConfig({ showHistory: true });
 
-    expect(host.hasAttribute("workspace-in-panel")).to.be.true;
-    expect(host.hasAttribute("workspace-in-container")).to.be.false;
+    expect(host.hasAttribute('workspace-in-panel')).to.be.true;
+    expect(host.hasAttribute('workspace-in-container')).to.be.false;
 
     manager.disconnect();
     document.body.removeChild(host);

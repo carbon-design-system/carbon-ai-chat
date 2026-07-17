@@ -5,30 +5,30 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { CarbonTheme } from "./theme/index.js";
-import { applyCarbonRules } from "./theme/markdownItCarbon.js";
-import { Converter, ParameterType } from "typedoc";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
-import { createRequire } from "module";
-import { promises as fs, cpSync } from "fs";
+import { CarbonTheme } from './theme/index.js';
+import { applyCarbonRules } from './theme/markdownItCarbon.js';
+import { Converter, ParameterType } from 'typedoc';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+import { promises as fs, cpSync } from 'fs';
 
 const require = createRequire(import.meta.url);
 
 const CARBON_ASSETS = [
   /*"carbonSearch.js",
   "carbonSearchModal.js",*/
-  "redirectToOverview.js",
-  "carbonTheme.css",
-  "cookiePreferences.js",
-  "versionDropdown.js",
-  "experimentalToPreview.js",
-  "sideNavFocus.js",
-  "signatureCards.js",
+  'redirectToOverview.js',
+  'carbonTheme.css',
+  'cookiePreferences.js',
+  'versionDropdown.js',
+  'experimentalToPreview.js',
+  'sideNavFocus.js',
+  'signatureCards.js',
 ];
 
 export function load(app) {
-  app.renderer.defineTheme("carbon", CarbonTheme);
+  app.renderer.defineTheme('carbon', CarbonTheme);
 
   // Render Markdown tables, fenced code, and lists as Carbon web components. The
   // loader runs against TypeDoc's single shared markdown-it instance, so it covers
@@ -36,21 +36,21 @@ export function load(app) {
   // begin (not in load): bootstrap calls options.reset() after plugins load, which
   // would otherwise discard the value. EVENT_BEGIN re-fires on watch rebuilds too.
   app.converter.on(Converter.EVENT_BEGIN, () => {
-    app.options.setValue("markdownItLoader", (parser) =>
-      applyCarbonRules(parser),
+    app.options.setValue('markdownItLoader', (parser) =>
+      applyCarbonRules(parser)
     );
   });
 
   app.options.addDeclaration({
-    name: "versionsFile",
-    help: "Path to a versions.js file to copy to the docs output root. Resolved relative to typedoc.json. Omit to skip.",
+    name: 'versionsFile',
+    help: 'Path to a versions.js file to copy to the docs output root. Resolved relative to typedoc.json. Omit to skip.',
     type: ParameterType.Path,
   });
 
   const themeDir = dirname(fileURLToPath(import.meta.url));
-  const assetDir = join(themeDir, "theme", "assets");
+  const assetDir = join(themeDir, 'theme', 'assets');
 
-  app.renderer.on("beginRender", async (event) => {
+  app.renderer.on('beginRender', async (event) => {
     // Vendor the self-contained @carbon/ai-chat-components bundle that provides
     // cds-aichat-code-snippet (plus its lazily-imported CodeMirror runtime and
     // per-language chunks). It must be served same-origin: the published copy on
@@ -66,43 +66,43 @@ export function load(app) {
     // loses that race; cpSync completes within the trigger.
     try {
       const aiChatComponentsDist = join(
-        dirname(require.resolve("@carbon/ai-chat-components/package.json")),
-        "dist",
+        dirname(require.resolve('@carbon/ai-chat-components/package.json')),
+        'dist'
       );
       const aiChatComponentsTarget = join(
         event.outputDirectory,
-        "assets",
-        "ai-chat-components",
+        'assets',
+        'ai-chat-components'
       );
       cpSync(aiChatComponentsDist, aiChatComponentsTarget, { recursive: true });
     } catch (error) {
       app.logger.warn(
-        `Failed to copy ai-chat-components bundle: ${error.message}`,
+        `Failed to copy ai-chat-components bundle: ${error.message}`
       );
     }
 
     await Promise.all(
       CARBON_ASSETS.map(async (assetName) => {
         const source = join(assetDir, assetName);
-        const target = join(event.outputDirectory, "assets", assetName);
+        const target = join(event.outputDirectory, 'assets', assetName);
 
         try {
           await fs.mkdir(dirname(target), { recursive: true });
           await fs.copyFile(source, target);
         } catch (error) {
           app.logger.warn(
-            `Failed to copy Carbon theme asset ${assetName}: ${error.message}`,
+            `Failed to copy Carbon theme asset ${assetName}: ${error.message}`
           );
         }
-      }),
+      })
     );
 
     const carbonStylesSource =
-      require.resolve("@carbon/styles/css/styles.min.css");
+      require.resolve('@carbon/styles/css/styles.min.css');
     const carbonStylesTarget = join(
       event.outputDirectory,
-      "assets",
-      "carbon-styles.min.css",
+      'assets',
+      'carbon-styles.min.css'
     );
 
     try {
@@ -112,9 +112,9 @@ export function load(app) {
       app.logger.warn(`Failed to copy Carbon styles: ${error.message}`);
     }
 
-    const versionsFile = app.options.getValue("versionsFile");
+    const versionsFile = app.options.getValue('versionsFile');
     if (versionsFile) {
-      const versionsTarget = join(event.outputDirectory, "versions.js");
+      const versionsTarget = join(event.outputDirectory, 'versions.js');
       try {
         await fs.copyFile(versionsFile, versionsTarget);
       } catch (error) {

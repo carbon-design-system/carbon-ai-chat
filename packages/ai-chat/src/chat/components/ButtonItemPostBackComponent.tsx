@@ -7,22 +7,22 @@
  *  @license
  */
 
-import Send16 from "@carbon/icons/es/send/16.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
-import React, { useCallback } from "react";
-import { useSelector } from "../hooks/useSelector";
+import Send16 from '@carbon/icons/es/send/16.js';
+import { carbonIconToReact } from '../utils/carbonIcon';
+import React, { useCallback } from 'react';
+import { useSelector } from '../hooks/useSelector';
 
-import { useServiceManager } from "../hooks/useServiceManager";
-import { selectInputIsReadonly } from "../store/selectors";
-import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { WA_CONSOLE_PREFIX } from "../utils/constants";
-import { createMessageRequestForButtonItemOption } from "../utils/messageUtils";
-import { consoleError } from "../utils/miscUtils";
-import actions from "../store/actions";
-import { MessageSendSource } from "../../types/events/eventBusTypes";
-import { ButtonItem } from "../../types/messaging/Messages";
-import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
+import { useServiceManager } from '../hooks/useServiceManager';
+import { selectInputIsReadonly } from '../store/selectors';
+import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { WA_CONSOLE_PREFIX } from '../utils/constants';
+import { createMessageRequestForButtonItemOption } from '../utils/messageUtils';
+import { consoleError } from '../utils/miscUtils';
+import actions from '../store/actions';
+import { MessageSendSource } from '../../types/events/eventBusTypes';
+import { ButtonItem } from '../../types/messaging/Messages';
+import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 
 interface ButtonItemPostBackComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<ButtonItem>;
@@ -57,20 +57,20 @@ function ButtonItemPostBackComponent({
     if (isInputAvailable) {
       const messageRequest = createMessageRequestForButtonItemOption(
         messageItem,
-        fullMessageID,
+        fullMessageID
       );
 
       requestFocus();
       serviceManager.store.dispatch(
-        actions.messageSetOptionSelected(ui_state.id, messageRequest),
+        actions.messageSetOptionSelected(ui_state.id, messageRequest)
       );
       serviceManager.actions.sendWithCatch(
         messageRequest,
-        MessageSendSource.POST_BACK_BUTTON,
+        MessageSendSource.POST_BACK_BUTTON
       );
     } else {
       consoleError(
-        `${WA_CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`,
+        `${WA_CONSOLE_PREFIX} post_back button with label "${messageItem.label}" has no input message to send.`
       );
     }
   }, [

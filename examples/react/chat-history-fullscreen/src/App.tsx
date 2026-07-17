@@ -12,19 +12,19 @@ import {
   ChatInstance,
   PublicConfig,
   BusEventType,
-} from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
 // These functions hook up to your back-end.
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 
 // This function returns a React component for user defined responses.
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
+import { renderUserDefinedResponse } from './renderUserDefinedResponse';
 
-import { ChatHistoryExample } from "./ChatHistoryExample";
-import "@carbon/styles/css/styles.css";
+import { ChatHistoryExample } from './ChatHistoryExample';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   history: {
@@ -37,7 +37,7 @@ const config: PublicConfig = {
   layout: {
     showFrame: false,
     customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
+      'messages-max-width': `max(60vw, 672px)`,
     },
   },
   openChatByDefault: true,
@@ -78,7 +78,7 @@ function App() {
       await instance.messaging.clearConversation();
       instance.messaging.insertHistory(historyData);
     },
-    [instance],
+    [instance]
   );
 
   const historyWriteableElementExample = useMemo(
@@ -89,7 +89,7 @@ function App() {
         loadChat={loadChat}
       />
     ),
-    [instance, isMobile, loadChat],
+    [instance, isMobile, loadChat]
   );
 
   const renderWriteableElements = useMemo(() => {
@@ -109,6 +109,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

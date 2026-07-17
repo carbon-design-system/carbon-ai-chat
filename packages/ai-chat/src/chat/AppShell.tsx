@@ -13,105 +13,105 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
-import cx from "classnames";
-import type CDSButton from "@carbon/web-components/es/components/button/button.js";
-import { useIntl } from "./hooks/useIntl";
-import { useHistoryMobileDetection } from "./hooks/useHistoryMobileDetection";
-import { useAriaAnnouncer } from "./hooks/useAriaAnnouncer";
-import { matchesShortcut } from "./utils/keyboardUtils";
-import { getDeepActiveElement } from "./utils/domUtils";
-import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../types/config/ShortcutConfig";
+} from 'react';
+import cx from 'classnames';
+import type CDSButton from '@carbon/web-components/es/components/button/button.js';
+import { useIntl } from './hooks/useIntl';
+import { useHistoryMobileDetection } from './hooks/useHistoryMobileDetection';
+import { useAriaAnnouncer } from './hooks/useAriaAnnouncer';
+import { matchesShortcut } from './utils/keyboardUtils';
+import { getDeepActiveElement } from './utils/domUtils';
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../types/config/ShortcutConfig';
 
-import AppShellErrorBoundary from "./AppShellErrorBoundary";
-import { LauncherContainer } from "./components-legacy/launcher/LauncherContainer";
-import { InputFunctions } from "./components-legacy/input/Input";
-import Layer from "./components/carbon/Layer";
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import { Header } from "./components/header/Header";
+import AppShellErrorBoundary from './AppShellErrorBoundary';
+import { LauncherContainer } from './components-legacy/launcher/LauncherContainer';
+import { InputFunctions } from './components-legacy/input/Input';
+import Layer from './components/carbon/Layer';
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import { Header } from './components/header/Header';
 import MessagesComponent, {
   MessagesComponentClass,
-} from "./components-legacy/MessagesComponent";
-import { HomeScreen } from "./components/homeScreen/HomeScreen";
-import { Input } from "./components-legacy/input/Input";
-import { AppShellWriteableElements } from "./AppShellWriteableElements";
-import { EndHumanAgentChatModal } from "./components/modals/EndHumanAgentChatModal";
-import { RequestScreenShareModal } from "./components/modals/RequestScreenShareModal";
-import WriteableElement from "./components/util/WriteableElement";
-import { createUnmappingMemoizer } from "./utils/memoizerUtils";
-import { WriteableElementName } from "./utils/constants";
-import { LocalMessageItem } from "../types/messaging/LocalMessageItem";
-import { AppShellPanels } from "./AppShellPanels";
+} from './components-legacy/MessagesComponent';
+import { HomeScreen } from './components/homeScreen/HomeScreen';
+import { Input } from './components-legacy/input/Input';
+import { AppShellWriteableElements } from './AppShellWriteableElements';
+import { EndHumanAgentChatModal } from './components/modals/EndHumanAgentChatModal';
+import { RequestScreenShareModal } from './components/modals/RequestScreenShareModal';
+import WriteableElement from './components/util/WriteableElement';
+import { createUnmappingMemoizer } from './utils/memoizerUtils';
+import { WriteableElementName } from './utils/constants';
+import { LocalMessageItem } from '../types/messaging/LocalMessageItem';
+import { AppShellPanels } from './AppShellPanels';
 
-import { HasServiceManager } from "./hocs/withServiceManager";
-import { useMobileViewportLayout } from "./hooks/useMobileViewportLayout";
-import { useOnMount } from "./hooks/useOnMount";
-import { useSelector } from "./hooks/useSelector";
-import { useWindowOpenState } from "./hooks/useWindowOpenState";
-import { useFocusManager } from "./hooks/useFocusManager";
-import { useStyleInjection } from "./hooks/useStyleInjection";
-import { useDerivedState } from "./hooks/useDerivedState";
-import { useHumanAgentCallbacks } from "./hooks/useHumanAgentCallbacks";
-import { useAssistantUploadCallbacks } from "./hooks/useAssistantUploadCallbacks";
-import { usePanelCallbacks } from "./hooks/usePanelCallbacks";
-import { useInputCallbacks } from "./hooks/useInputCallbacks";
-import { useResizeObserver } from "./hooks/useResizeObserver";
-import { ModalPortalRootProvider } from "./providers/ModalPortalRootProvider";
-import actions from "./store/actions";
+import { HasServiceManager } from './hocs/withServiceManager';
+import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
+import { useOnMount } from './hooks/useOnMount';
+import { useSelector } from './hooks/useSelector';
+import { useWindowOpenState } from './hooks/useWindowOpenState';
+import { useFocusManager } from './hooks/useFocusManager';
+import { useStyleInjection } from './hooks/useStyleInjection';
+import { useDerivedState } from './hooks/useDerivedState';
+import { useHumanAgentCallbacks } from './hooks/useHumanAgentCallbacks';
+import { useAssistantUploadCallbacks } from './hooks/useAssistantUploadCallbacks';
+import { usePanelCallbacks } from './hooks/usePanelCallbacks';
+import { useInputCallbacks } from './hooks/useInputCallbacks';
+import { useResizeObserver } from './hooks/useResizeObserver';
+import { ModalPortalRootProvider } from './providers/ModalPortalRootProvider';
+import actions from './store/actions';
 import {
   selectHumanAgentDisplayState,
   selectInputIsReadonly,
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
-} from "./store/selectors";
-import { shallowEqual } from "./store/appStore";
-import { consoleError, createDidCatchErrorData } from "./utils/miscUtils";
+} from './store/selectors';
+import { shallowEqual } from './store/appStore';
+import { consoleError, createDidCatchErrorData } from './utils/miscUtils';
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
   isBrowser,
-} from "./utils/browserUtils";
-import { SCROLLBAR_WIDTH } from "./utils/domUtils";
+} from './utils/browserUtils';
+import { SCROLLBAR_WIDTH } from './utils/domUtils';
 import {
   adoptOnRoot,
   setVarsForSelector,
-} from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+} from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
-const SCROLLBAR_WIDTH_ATTR = "data-cds-aichat-widget-id";
+const SCROLLBAR_WIDTH_ATTR = 'data-cds-aichat-widget-id';
 let scrollbarWidthCounter = 0;
-import { calculateChatWidthBreakpoint } from "./utils/breakpointUtils";
+import { calculateChatWidthBreakpoint } from './utils/breakpointUtils';
 import {
   convertCSSVariablesToString,
   getThemeClassNames,
-} from "./utils/styleUtils";
+} from './utils/styleUtils';
 
 import {
   AppState,
   ChatWidthBreakpoint,
   PendingUpload,
-} from "../types/state/AppState";
+} from '../types/state/AppState';
 import {
   AutoScrollOptions,
   HasDoAutoScroll,
-} from "../types/utilities/HasDoAutoScroll";
-import { HasRequestFocus } from "../types/utilities/HasRequestFocus";
-import { MessageSendSource, BusEventType } from "../types/events/eventBusTypes";
-import { CarbonTheme } from "../types/config/PublicConfig";
-import { FileStatusValue } from "./utils/constants";
-import type { FileUpload } from "../types/config/ServiceDeskConfig";
+} from '../types/utilities/HasDoAutoScroll';
+import { HasRequestFocus } from '../types/utilities/HasRequestFocus';
+import { MessageSendSource, BusEventType } from '../types/events/eventBusTypes';
+import { CarbonTheme } from '../types/config/PublicConfig';
+import { FileStatusValue } from './utils/constants';
+import type { FileUpload } from '../types/config/ServiceDeskConfig';
 
-import styles from "./AppShell.scss";
-import { PageObjectId } from "../testing/PageObjectId";
+import styles from './AppShell.scss';
+import { PageObjectId } from '../testing/PageObjectId';
 
 const applicationStylesheet =
-  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
+  typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
 const cssVariableOverrideStylesheet =
-  typeof CSSStyleSheet !== "undefined" ? new CSSStyleSheet() : null;
+  typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
 
-const WIDTH_BREAKPOINT_STANDARD = "cds-aichat--standard-width";
-const WIDTH_BREAKPOINT_NARROW = "cds-aichat--narrow-width";
-const WIDTH_BREAKPOINT_WIDE = "cds-aichat--wide-width";
+const WIDTH_BREAKPOINT_STANDARD = 'cds-aichat--standard-width';
+const WIDTH_BREAKPOINT_NARROW = 'cds-aichat--narrow-width';
+const WIDTH_BREAKPOINT_WIDE = 'cds-aichat--wide-width';
 
 // Module-level selectors — stable references so useSelector can use Object.is
 // to skip re-renders when the slice hasn't changed.
@@ -207,7 +207,7 @@ function AppShell({
   }, [serviceManager, ariaAnnouncer]);
 
   const persistedToBrowserStorage = useSelector(
-    selectPersistedToBrowserStorage,
+    selectPersistedToBrowserStorage
   );
   const isHydrated = useSelector(selectIsHydrated);
   const assistantMessageState = useSelector(selectAssistantMessageState);
@@ -218,7 +218,7 @@ function AppShell({
   const allMessagesByID = useSelector(selectAllMessagesByID);
   const catastrophicErrorType = useSelector(selectCatastrophicErrorType);
   const catastrophicErrorPanelState = useSelector(
-    selectCatastrophicErrorPanelState,
+    selectCatastrophicErrorPanelState
   );
   const iFramePanelState = useSelector(selectIFramePanelState);
   const viewSourcePanelState = useSelector(selectViewSourcePanelState);
@@ -235,21 +235,21 @@ function AppShell({
   const publicConfig = useSelector(selectPublicConfig);
   const namespaceName = serviceManager.namespace.originalName;
   const languageKey = namespaceName
-    ? "window_ariaChatRegionNamespace"
-    : "window_ariaChatRegion";
+    ? 'window_ariaChatRegionNamespace'
+    : 'window_ariaChatRegion';
   const regionLabel = intl.formatMessage(
     { id: languageKey },
-    { namespace: namespaceName },
+    { namespace: namespaceName }
   );
   const viewState = persistedToBrowserStorage.viewState;
   const showLauncher = launcher.isOn && viewState.launcher;
   const cssVariableOverrideString = useMemo(
     () => convertCSSVariablesToString(cssVariableOverrides),
-    [cssVariableOverrides],
+    [cssVariableOverrides]
   );
   const useMobileEnhancements =
     IS_PHONE && !publicConfig.disableCustomElementMobileEnhancements;
-  const dir = isBrowser() ? document.dir || "auto" : "auto";
+  const dir = isBrowser() ? document.dir || 'auto' : 'auto';
   const mainWindowRef = useRef<MainWindowFunctions | null>(null);
   const [modalPortalHostElement, setModalPortalHostElement] =
     useState<Element | null>(null);
@@ -272,7 +272,7 @@ function AppShell({
   // Memoizer for messages array
   const messagesToArray = useMemo(
     () => createUnmappingMemoizer<LocalMessageItem>(),
-    [],
+    []
   );
   const useCustomHostElement = Boolean(hostElement);
   // Narrow subscription to just the fields AppShell consumes from the active
@@ -280,14 +280,14 @@ function AppShell({
   // avoids re-rendering on every keystroke (rawValue/displayValue updates).
   const inputFields = useSelector(
     selectInputUploadAndStreamingFields,
-    shallowEqual,
+    shallowEqual
   );
   // Effective input flags derived from config + runtime override.
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const isInputFieldVisible = useSelector(selectInputFieldVisible);
   const agentDisplayState = useSelector(
     selectHumanAgentDisplayState,
-    shallowEqual,
+    shallowEqual
   );
 
   // Use derived state hook for memoized calculations
@@ -430,13 +430,13 @@ function AppShell({
         id: u.id,
         file: u.file,
         status:
-          u.status === "uploading"
+          u.status === 'uploading'
             ? FileStatusValue.UPLOADING
             : FileStatusValue.EDIT,
-        isError: u.status === "error",
+        isError: u.status === 'error',
         errorMessage: u.errorMessage,
       })),
-    [inputFields.pendingUploads],
+    [inputFields.pendingUploads]
   );
 
   // Disable the assistant upload button when the max number of files has been reached.
@@ -516,12 +516,12 @@ function AppShell({
     const height = container.offsetHeight;
     const width = container.offsetWidth;
     const breakpoint = calculateChatWidthBreakpoint(width);
-    serviceManager.store.dispatch(actions.setAppStateValue("chatWidth", width));
+    serviceManager.store.dispatch(actions.setAppStateValue('chatWidth', width));
     serviceManager.store.dispatch(
-      actions.setAppStateValue("chatHeight", height),
+      actions.setAppStateValue('chatHeight', height)
     );
     serviceManager.store.dispatch(
-      actions.setAppStateValue("chatWidthBreakpoint", breakpoint),
+      actions.setAppStateValue('chatWidthBreakpoint', breakpoint)
     );
 
     // Update history mobile detection
@@ -543,7 +543,7 @@ function AppShell({
           mainWindowRef.current?.requestFocus();
         }
       } catch (error) {
-        consoleError("An error occurred in App.requestFocus", error);
+        consoleError('An error occurred in App.requestFocus', error);
       }
     }
     serviceManager.appWindow = { requestFocus: requestFocusWrapper };
@@ -552,10 +552,10 @@ function AppShell({
   const handleBoundaryError = useCallback(
     (error: Error, errorInfo: React.ErrorInfo) => {
       serviceManager.actions.errorOccurred(
-        createDidCatchErrorData("AppShell", error, errorInfo, true),
+        createDidCatchErrorData('AppShell', error, errorInfo, true)
       );
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   const doAutoScroll = useCallback((options?: AutoScrollOptions) => {
@@ -585,14 +585,14 @@ function AppShell({
         inputRef.current?.requestFocus();
       }
     } catch (error) {
-      consoleError("An error occurred in handleFocusToggle", error);
+      consoleError('An error occurred in handleFocusToggle', error);
     }
   }, []);
 
   // Stable wrapper so <Input> receives a referentially stable onSendInput prop
   const onSendInputFromInput = useCallback(
     (text: string) => onSendInput(text, MessageSendSource.MESSAGE_INPUT),
-    [onSendInput],
+    [onSendInput]
   );
 
   // Add keyboard event listener for focus toggle shortcut and Escape to exit message navigation
@@ -610,20 +610,20 @@ function AppShell({
         event.preventDefault();
         event.stopPropagation();
         handleFocusToggle();
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         // If focus is in the messages area, return to input field
         // Use getDeepActiveElement to traverse all shadow DOM levels
         const activeElement = getDeepActiveElement();
 
         // Search within containerRef, not the entire document
         const messagesWrapper = containerRef.current?.querySelector(
-          ".cds-aichat--messages__wrapper",
+          '.cds-aichat--messages__wrapper'
         );
         const messagesContainer = containerRef.current?.querySelector(
-          ".cds-aichat--messages",
+          '.cds-aichat--messages'
         );
         const inputContainer =
-          containerRef.current?.querySelector(".cds-aichat--input");
+          containerRef.current?.querySelector('.cds-aichat--input');
 
         // Check if focus is in messages area but not in input
         if (
@@ -641,9 +641,9 @@ function AppShell({
     // Only attach listener when chat is open and container is available
     if (viewState.mainWindow && containerRef.current) {
       const container = containerRef.current;
-      container.addEventListener("keydown", handleKeyDown);
+      container.addEventListener('keydown', handleKeyDown);
       return () => {
-        container.removeEventListener("keydown", handleKeyDown);
+        container.removeEventListener('keydown', handleKeyDown);
       };
     }
 
@@ -662,7 +662,7 @@ function AppShell({
       doScrollToMessage,
       getMessagesScrollBottom,
     }),
-    [doAutoScroll, doScrollToMessage, getMessagesScrollBottom, requestFocus],
+    [doAutoScroll, doScrollToMessage, getMessagesScrollBottom, requestFocus]
   );
 
   useEffect(() => {
@@ -693,7 +693,7 @@ function AppShell({
       adoptOnRoot(root);
     }
     setVarsForSelector(`[${SCROLLBAR_WIDTH_ATTR}="${id}"]`, {
-      "--cds-aichat-scrollbar-width": `${SCROLLBAR_WIDTH()}px`,
+      '--cds-aichat-scrollbar-width': `${SCROLLBAR_WIDTH()}px`,
     });
   }, [widgetContainerRef]);
 
@@ -703,48 +703,46 @@ function AppShell({
         `cds-aichat--container--render`,
         getThemeClassNames(theme),
         {
-          "cds-aichat--container-disable-mobile-enhancements":
+          'cds-aichat--container-disable-mobile-enhancements':
             hostElement && publicConfig.disableCustomElementMobileEnhancements,
-          "cds-aichat--is-phone":
+          'cds-aichat--is-phone':
             IS_PHONE && !publicConfig.disableCustomElementMobileEnhancements,
-          "cds-aichat--is-phone-portrait-mode":
+          'cds-aichat--is-phone-portrait-mode':
             IS_PHONE_IN_PORTRAIT_MODE &&
             !publicConfig.disableCustomElementMobileEnhancements,
-        },
+        }
       )}
       data-theme={theme.derivedCarbonTheme}
       dir={dir}
       data-namespace={namespaceName}
       ref={containerRef}
       role="region"
-      aria-label={regionLabel}
-    >
+      aria-label={regionLabel}>
       <AppShellErrorBoundary onError={handleBoundaryError}>
         <ModalPortalRootProvider hostElement={modalPortalHostElement}>
           <Layer
-            className={cx("cds-aichat--widget__layer", {
-              "cds-aichat--widget__layer--hidden": !open,
+            className={cx('cds-aichat--widget__layer', {
+              'cds-aichat--widget__layer--hidden': !open,
             })}
             level={
               theme.derivedCarbonTheme === CarbonTheme.G10 ||
               theme.derivedCarbonTheme === CarbonTheme.G100
                 ? 1
                 : 0
-            }
-          >
+            }>
             <ChatShell
               data-testid={PageObjectId.CHAT_WIDGET}
-              className={cx("cds-aichat--widget", {
-                "cds-aichat-float--open": !useCustomHostElement && open,
-                "cds-aichat-float--opening":
+              className={cx('cds-aichat--widget', {
+                'cds-aichat-float--open': !useCustomHostElement && open,
+                'cds-aichat-float--opening':
                   !useCustomHostElement && !closing && open,
-                "cds-aichat-float--closing": !useCustomHostElement && closing,
-                "cds-aichat-float--close": !useCustomHostElement && !open,
-                "cds-aichat-float--mobile":
+                'cds-aichat-float--closing': !useCustomHostElement && closing,
+                'cds-aichat-float--close': !useCustomHostElement && !open,
+                'cds-aichat-float--mobile':
                   !useCustomHostElement &&
                   IS_PHONE &&
                   !publicConfig.disableCustomElementMobileEnhancements,
-                "cds-aichat--widget--max-width":
+                'cds-aichat--widget--max-width':
                   chatWidthBreakpoint === ChatWidthBreakpoint.WIDE &&
                   layout.hasContentMaxWidth,
                 [WIDTH_BREAKPOINT_NARROW]:
@@ -791,15 +789,14 @@ function AppShell({
               workspaceOpenedAnnouncement={
                 workspacePanelState.options.title
                   ? intl.formatMessage(
-                      { id: "workspace_opened" },
-                      { title: workspacePanelState.options.title },
+                      { id: 'workspace_opened' },
+                      { title: workspacePanelState.options.title }
                     )
                   : languagePack.workspace_opened_no_title
               }
               workspaceClosedAnnouncement={languagePack.workspace_closed}
               historyShownAnnouncement={languagePack.history_shown}
-              historyHiddenAnnouncement={languagePack.history_hidden}
-            >
+              historyHiddenAnnouncement={languagePack.history_hidden}>
               <AppShellPanels
                 serviceManager={serviceManager}
                 isHydratingComplete={isHydratingComplete}
@@ -851,8 +848,7 @@ function AppShell({
               <div
                 slot="messages"
                 className="cds-aichat--widget--expand-to-fit"
-                data-testid={PageObjectId.MAIN_PANEL}
-              >
+                data-testid={PageObjectId.MAIN_PANEL}>
                 {showHomeScreen ? (
                   <HomeScreen
                     isHydrated={true}
@@ -865,14 +861,14 @@ function AppShell({
                     messageState={assistantMessageState}
                     localMessageItems={messagesToArray(
                       assistantMessageState.localMessageIDs,
-                      allMessageItemsByID,
+                      allMessageItemsByID
                     )}
                     requestInputFocus={requestInputFocus}
                     assistantName={publicConfig.assistantName}
                     assistantAvatarUrl={publicConfig.assistantAvatarUrl}
                     intl={intl}
                     onEndHumanAgentChat={showConfirmEndChat}
-                    locale={publicConfig.locale || "en"}
+                    locale={publicConfig.locale || 'en'}
                     carbonTheme={theme.derivedCarbonTheme}
                   />
                 )}
@@ -937,8 +933,7 @@ function AppShell({
 
               <div
                 slot="workspace"
-                className="cds-aichat--widget--expand-to-fit"
-              >
+                className="cds-aichat--widget--expand-to-fit">
                 <WriteableElement
                   slotName={WriteableElementName.WORKSPACE_PANEL_ELEMENT}
                   className="cds-aichat--workspace-writeable-element cds-aichat--widget--expand-to-fit"

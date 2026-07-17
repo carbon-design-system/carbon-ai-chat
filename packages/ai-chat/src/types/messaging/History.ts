@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { MessageRequest, MessageResponse } from "./Messages";
+import { MessageRequest, MessageResponse } from './Messages';
 
 /**
  * The types here describe the history structure.

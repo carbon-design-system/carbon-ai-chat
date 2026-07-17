@@ -12,7 +12,7 @@
  * risking someone using the callback with values that could change after mounting.
  */
 
-import { EffectCallback, useEffect } from "react";
+import { EffectCallback, useEffect } from 'react';
 
 const useOnMount = (callback: EffectCallback) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps

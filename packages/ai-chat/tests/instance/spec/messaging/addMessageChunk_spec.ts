@@ -13,7 +13,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../../test_helpers";
+} from '../../../test_helpers';
 import {
   MessageResponseTypes,
   TextItem,
@@ -22,60 +22,60 @@ import {
   PartialItemChunk,
   CompleteItemChunk,
   MessageRequest,
-} from "../../../../src/types/messaging/Messages";
+} from '../../../../src/types/messaging/Messages';
 import {
   CancellationReason,
   CustomSendMessageOptions,
-} from "../../../../src/types/config/MessagingConfig";
-import { ChatInstance } from "../../../../src/types/instance/ChatInstance";
+} from '../../../../src/types/config/MessagingConfig';
+import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 
-describe("ChatInstance.messaging.addMessageChunk", () => {
+describe('ChatInstance.messaging.addMessageChunk', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have addMessageChunk method available", async () => {
+  it('should have addMessageChunk method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.messaging.addMessageChunk).toBe("function");
+    expect(typeof instance.messaging.addMessageChunk).toBe('function');
   });
 
-  it("should accept stream chunk", async () => {
+  it('should accept stream chunk', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     const chunk: PartialItemChunk = {
       streaming_metadata: {
-        response_id: "msg-1",
+        response_id: 'msg-1',
       },
       partial_item: {
         streaming_metadata: {
-          id: "chunk-1",
+          id: 'chunk-1',
         },
         response_type: MessageResponseTypes.TEXT,
-        text: "Hello ",
+        text: 'Hello ',
       },
     };
 
     await expect(
-      instance.messaging.addMessageChunk(chunk),
+      instance.messaging.addMessageChunk(chunk)
     ).resolves.not.toThrow();
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     const chunk: PartialItemChunk = {
       streaming_metadata: {
-        response_id: "msg-1",
+        response_id: 'msg-1',
       },
       partial_item: {
         streaming_metadata: {
-          id: "chunk-1",
+          id: 'chunk-1',
         },
         response_type: MessageResponseTypes.TEXT,
-        text: "streaming text",
+        text: 'streaming text',
       },
     };
 
@@ -83,11 +83,11 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  it("should handle multiple addMessageChunk calls and concatenate text properly in store", async () => {
+  it('should handle multiple addMessageChunk calls and concatenate text properly in store', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
-    const responseId = "msg-test-concat";
-    const itemId = "chunk-1";
+    const responseId = 'msg-test-concat';
+    const itemId = 'chunk-1';
 
     const chunks: PartialItemChunk[] = [
       {
@@ -95,7 +95,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "Hello ",
+          text: 'Hello ',
         },
       },
       {
@@ -103,7 +103,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "world ",
+          text: 'world ',
         },
       },
       {
@@ -111,7 +111,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "from ",
+          text: 'from ',
         },
       },
       {
@@ -119,7 +119,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "Jest!",
+          text: 'Jest!',
         },
       },
     ];
@@ -139,16 +139,16 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
 
     const concatenatedText = messageItem.ui_state.streamingState.chunks
       .map((chunk: any) => chunk.text)
-      .join("");
+      .join('');
 
-    expect(concatenatedText).toBe("Hello world from Jest!");
+    expect(concatenatedText).toBe('Hello world from Jest!');
   });
 
-  it("should handle complete streaming flow: PartialItemChunk -> CompleteItemChunk -> FinalResponseChunk", async () => {
+  it('should handle complete streaming flow: PartialItemChunk -> CompleteItemChunk -> FinalResponseChunk', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
-    const responseId = "msg-full-flow";
-    const itemId = "chunk-1";
+    const responseId = 'msg-full-flow';
+    const itemId = 'chunk-1';
 
     // Step 1: Send partial chunks
     const partialChunks: PartialItemChunk[] = [
@@ -157,7 +157,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "Streaming ",
+          text: 'Streaming ',
         },
       },
       {
@@ -165,7 +165,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "text ",
+          text: 'text ',
         },
       },
       {
@@ -173,7 +173,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId },
           response_type: MessageResponseTypes.TEXT,
-          text: "response!",
+          text: 'response!',
         },
       },
     ];
@@ -193,8 +193,8 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
 
     const partialText = messageItem.ui_state.streamingState.chunks
       .map((chunk: any) => chunk.text)
-      .join("");
-    expect(partialText).toBe("Streaming text response!");
+      .join('');
+    expect(partialText).toBe('Streaming text response!');
 
     // Step 2: Send complete item chunk
     const completeItemChunk: CompleteItemChunk = {
@@ -202,7 +202,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       complete_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Complete streaming text response!",
+        text: 'Complete streaming text response!',
       },
     };
 
@@ -215,7 +215,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(messageItem).toBeDefined();
     expect(messageItem.ui_state.streamingState.isDone).toBe(true);
     expect((messageItem.item as TextItem).text).toBe(
-      "Complete streaming text response!",
+      'Complete streaming text response!'
     );
 
     // Step 3: Send final response chunk
@@ -227,7 +227,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
             {
               streaming_metadata: { id: itemId },
               response_type: MessageResponseTypes.TEXT,
-              text: "Final complete streaming text response!",
+              text: 'Final complete streaming text response!',
             },
           ],
         },
@@ -245,20 +245,20 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(finalMessage.id).toBe(responseId);
     expect(finalMessage.output.generic).toHaveLength(1);
     expect((finalMessage.output.generic[0] as TextItem).text).toBe(
-      "Final complete streaming text response!",
+      'Final complete streaming text response!'
     );
 
     expect(finalMessageItem).toBeDefined();
     expect((finalMessageItem.item as TextItem).text).toBe(
-      "Final complete streaming text response!",
+      'Final complete streaming text response!'
     );
   });
 
-  it("should properly transition streamingState.isDone when receiving CompleteItemChunk", async () => {
+  it('should properly transition streamingState.isDone when receiving CompleteItemChunk', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
-    const responseId = "msg-complete-test";
-    const itemId = "chunk-1";
+    const responseId = 'msg-complete-test';
+    const itemId = 'chunk-1';
 
     // Send partial chunk first
     const partialChunk: PartialItemChunk = {
@@ -266,7 +266,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       partial_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Partial text",
+        text: 'Partial text',
       },
     };
 
@@ -284,7 +284,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       complete_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Complete text",
+        text: 'Complete text',
       },
     };
 
@@ -294,14 +294,14 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     messageItem = state.allMessageItemsByID[localItemId];
 
     expect(messageItem.ui_state.streamingState.isDone).toBe(true);
-    expect((messageItem.item as TextItem).text).toBe("Complete text");
+    expect((messageItem.item as TextItem).text).toBe('Complete text');
   });
 
-  it("should finalize message with FinalResponseChunk and update store", async () => {
+  it('should finalize message with FinalResponseChunk and update store', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
-    const responseId = "msg-final-test";
-    const itemId = "chunk-1";
+    const responseId = 'msg-final-test';
+    const itemId = 'chunk-1';
 
     // Send partial chunk
     const partialChunk: PartialItemChunk = {
@@ -309,7 +309,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       partial_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Building response...",
+        text: 'Building response...',
       },
     };
 
@@ -334,7 +334,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
             {
               streaming_metadata: { id: itemId },
               response_type: MessageResponseTypes.TEXT,
-              text: "This is the final response text",
+              text: 'This is the final response text',
             },
           ],
         },
@@ -352,13 +352,13 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(message.id).toBe(responseId);
     expect(message.output.generic).toHaveLength(1);
     expect((message.output.generic[0] as TextItem).text).toBe(
-      "This is the final response text",
+      'This is the final response text'
     );
 
     // Verify message item was updated with final content
     expect(messageItem).toBeDefined();
     expect((messageItem.item as TextItem).text).toBe(
-      "This is the final response text",
+      'This is the final response text'
     );
 
     // Verify that FinalResponseChunk achieves the same effects as CompleteItemChunk:
@@ -370,18 +370,18 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(messageItem.ui_state.isIntermediateStreaming).toBeUndefined();
   });
 
-  it("should reuse streaming IDs when final response items match existing items but omit IDs", async () => {
+  it('should reuse streaming IDs when final response items match existing items but omit IDs', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
-    const responseId = "msg-final-id-patch";
-    const itemId = "chunk-1";
+    const responseId = 'msg-final-id-patch';
+    const itemId = 'chunk-1';
 
     await instance.messaging.addMessageChunk({
       streaming_metadata: { response_id: responseId },
       partial_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Partial ",
+        text: 'Partial ',
       },
     });
 
@@ -390,7 +390,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       complete_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Complete text",
+        text: 'Complete text',
       },
     });
 
@@ -401,7 +401,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Complete text",
+              text: 'Complete text',
             },
           ],
         },
@@ -418,18 +418,18 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(state.allMessageItemsByID[`${responseId}-${itemId}`]).toBeDefined();
   });
 
-  it("should not reuse streaming IDs when final response items differ", async () => {
+  it('should not reuse streaming IDs when final response items differ', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
-    const responseId = "msg-final-id-no-patch";
-    const itemId = "chunk-1";
+    const responseId = 'msg-final-id-no-patch';
+    const itemId = 'chunk-1';
 
     await instance.messaging.addMessageChunk({
       streaming_metadata: { response_id: responseId },
       partial_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Partial ",
+        text: 'Partial ',
       },
     });
 
@@ -438,7 +438,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       complete_item: {
         streaming_metadata: { id: itemId },
         response_type: MessageResponseTypes.TEXT,
-        text: "Complete text",
+        text: 'Complete text',
       },
     });
 
@@ -449,7 +449,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Different final text",
+              text: 'Different final text',
             },
           ],
         },
@@ -465,12 +465,12 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
     expect(finalItem.streaming_metadata?.id).toBeUndefined();
     // Orphaned streaming items should be removed when content differs
     expect(
-      state.allMessageItemsByID[`${responseId}-${itemId}`],
+      state.allMessageItemsByID[`${responseId}-${itemId}`]
     ).toBeUndefined();
   });
 
-  describe("Abort signal behavior during streaming", () => {
-    it("should trigger abort signal with STOP_STREAMING reason when stop button is used", async () => {
+  describe('Abort signal behavior during streaming', () => {
+    it('should trigger abort signal with STOP_STREAMING reason when stop button is used', async () => {
       const config = createBaseConfig();
       let capturedAbortReason: string | undefined;
       let isStreaming = false;
@@ -479,18 +479,18 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          instance: ChatInstance,
+          instance: ChatInstance
         ) => {
           isStreaming = true;
 
           // Listen for abort
-          options.signal?.addEventListener("abort", () => {
+          options.signal?.addEventListener('abort', () => {
             capturedAbortReason = options.signal?.reason;
             isStreaming = false;
           });
 
-          const responseId = "streaming-test";
-          const itemId = "chunk-1";
+          const responseId = 'streaming-test';
+          const itemId = 'chunk-1';
 
           // Send partial chunks
           for (let i = 0; i < 10; i++) {
@@ -520,7 +520,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
                     {
                       streaming_metadata: { id: itemId },
                       response_type: MessageResponseTypes.TEXT,
-                      text: "Complete message",
+                      text: 'Complete message',
                     },
                   ],
                 },
@@ -533,7 +533,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Start sending message
-      const sendPromise = instance.send("test");
+      const sendPromise = instance.send('test');
 
       // Wait for streaming to start
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -550,12 +550,12 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       expect(capturedAbortReason).toBe(CancellationReason.STOP_STREAMING);
     });
 
-    it("should handle stream_stopped flag in CompleteItemChunk when cancelled", async () => {
+    it('should handle stream_stopped flag in CompleteItemChunk when cancelled', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
-      const responseId = "stopped-stream";
-      const itemId = "chunk-1";
+      const responseId = 'stopped-stream';
+      const itemId = 'chunk-1';
 
       // Send some partial chunks
       await instance.messaging.addMessageChunk({
@@ -563,7 +563,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId, cancellable: true },
           response_type: MessageResponseTypes.TEXT,
-          text: "Partial ",
+          text: 'Partial ',
         },
       });
 
@@ -572,7 +572,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         partial_item: {
           streaming_metadata: { id: itemId, cancellable: true },
           response_type: MessageResponseTypes.TEXT,
-          text: "text ",
+          text: 'text ',
         },
       });
 
@@ -582,7 +582,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         complete_item: {
           streaming_metadata: { id: itemId, stream_stopped: true },
           response_type: MessageResponseTypes.TEXT,
-          text: "Partial text",
+          text: 'Partial text',
         },
       });
 
@@ -593,10 +593,10 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
 
       expect(messageItem).toBeDefined();
       expect(messageItem.ui_state.streamingState.isDone).toBe(true);
-      expect((messageItem.item as TextItem).text).toBe("Partial text");
+      expect((messageItem.item as TextItem).text).toBe('Partial text');
     });
 
-    it("should verify abort signal is passed to customSendMessage", async () => {
+    it('should verify abort signal is passed to customSendMessage', async () => {
       const config = createBaseConfig();
       let signalReceived = false;
       let signalIsAbortSignal = false;
@@ -605,7 +605,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
           signalReceived = options.signal !== undefined;
           signalIsAbortSignal = options.signal instanceof AbortSignal;
@@ -613,7 +613,7 @@ describe("ChatInstance.messaging.addMessageChunk", () => {
       };
 
       const instance = await renderChatAndGetInstance(config);
-      await instance.send("test");
+      await instance.send('test');
 
       expect(signalReceived).toBe(true);
       expect(signalIsAbortSignal).toBe(true);

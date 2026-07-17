@@ -15,17 +15,17 @@ export enum PageObjectId {
   /**
    * Chat header container element.
    */
-  CHAT_HEADER = "chat_header",
+  CHAT_HEADER = 'chat_header',
 
   /**
    * Header title element.
    */
-  HEADER_TITLE = "header_title",
+  HEADER_TITLE = 'header_title',
 
   /**
    * Header name element.
    */
-  HEADER_NAME = "header_name",
+  HEADER_NAME = 'header_name',
 }
 
 /**

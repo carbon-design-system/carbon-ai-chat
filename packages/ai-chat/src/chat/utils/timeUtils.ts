@@ -7,14 +7,14 @@
  *  @license
  */
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 /**
  * Returns the time from the given timestamp localized into the user's current timezone and formatted with the
  * current locale.
  */
 function timestampToTimeString(timestamp: number | Date | string) {
-  return dayjs(timestamp).format("LT");
+  return dayjs(timestamp).format('LT');
 }
 
 export { timestampToTimeString };

@@ -1,6 +1,7 @@
 # Web component examples
 
-This folder contains examples for specific functionality using web components with Lit.
+This folder contains examples for specific functionality using web components
+with Lit.
 
 ## Run Examples from the Monorepo Root
 
@@ -10,7 +11,8 @@ Install dependencies once from the repository root:
 npm install
 ```
 
-Then build the required packages (needed once after install, and again after any local changes to `packages/`):
+Then build the required packages (needed once after install, and again after any
+local changes to `packages/`):
 
 ```bash
 npm run build --workspace=@carbon/ai-chat-components

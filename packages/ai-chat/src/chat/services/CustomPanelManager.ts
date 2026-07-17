@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { CustomPanels, PanelType } from "../../types/instance/apiTypes";
+import { CustomPanels, PanelType } from '../../types/instance/apiTypes';
 import {
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
   HISTORY_PANEL_ID,
-} from "../utils/constants";
-import { PANEL_CONFIG_OPTIONS_BY_TYPE } from "../store/reducerUtils";
+} from '../utils/constants';
+import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../store/reducerUtils';
 import {
   createCustomPanelInstance,
   CustomPanelInstance,
-} from "./CustomPanelInstance";
-import { ServiceManager } from "./ServiceManager";
+} from './CustomPanelInstance';
+import { ServiceManager } from './ServiceManager';
 
 /**
  * This function takes in the service manager to help create a custom panel manager. The panel manager is created
@@ -32,16 +32,16 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
     [DEFAULT_CUSTOM_PANEL_ID]: createCustomPanelInstance(
       PanelType.DEFAULT,
       serviceManger,
-      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.DEFAULT],
+      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.DEFAULT]
     ),
     [WORKSPACE_CUSTOM_PANEL_ID]: createCustomPanelInstance(
       PanelType.WORKSPACE,
       serviceManger,
-      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.WORKSPACE],
+      PANEL_CONFIG_OPTIONS_BY_TYPE[PanelType.WORKSPACE]
     ),
     [HISTORY_PANEL_ID]: createCustomPanelInstance(
       PanelType.HISTORY,
-      serviceManger,
+      serviceManger
     ),
   };
 

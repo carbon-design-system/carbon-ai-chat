@@ -7,18 +7,18 @@
  *  @license
  */
 
-import Button from "../../components/carbon/Button";
-import Send16 from "@carbon/icons/es/send/16.js";
-import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { matchesShortcut } from "../../utils/keyboardUtils";
-import { getDeepActiveElement } from "../../utils/domUtils";
-import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../../types/config/ShortcutConfig";
+import Button from '../../components/carbon/Button';
+import Send16 from '@carbon/icons/es/send/16.js';
+import SendFilled16 from '@carbon/icons/es/send--filled/16.js';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import Attachment16 from '@carbon/icons/es/attachment/16.js';
+import { matchesShortcut } from '../../utils/keyboardUtils';
+import { getDeepActiveElement } from '../../utils/domUtils';
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../../../types/config/ShortcutConfig';
 import FileUploaderItem, {
   FILE_UPLOADER_ITEM_SIZE,
-} from "../../components/carbon/FileUploaderItem";
-import cx from "classnames";
+} from '../../components/carbon/FileUploaderItem';
+import cx from 'classnames';
 import React, {
   ChangeEvent,
   forwardRef,
@@ -29,40 +29,40 @@ import React, {
   useImperativeHandle,
   useRef,
   useState,
-} from "react";
+} from 'react';
 
-import { StopStreamingButton } from "../../ai-chat-components/react/components/stopStreamingButton/StopStreamingButton";
-import { HasServiceManager } from "../../hocs/withServiceManager";
-import { useCounter } from "../../hooks/useCounter";
-import { useSelector } from "../../hooks/useSelector";
-import actions from "../../store/actions";
+import { StopStreamingButton } from '../../ai-chat-components/react/components/stopStreamingButton/StopStreamingButton';
+import { HasServiceManager } from '../../hocs/withServiceManager';
+import { useCounter } from '../../hooks/useCounter';
+import { useSelector } from '../../hooks/useSelector';
+import actions from '../../store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from "../../store/selectors";
-import { shallowEqual } from "../../store/appStore";
-import { FileUpload } from "../../../types/config/ServiceDeskConfig";
-import { AppState } from "../../../types/state/AppState";
-import { IS_MOBILE } from "../../utils/browserUtils";
-import { FileStatusValue } from "../../utils/constants";
-import { isEnterKey, isDirectionRTL } from "../../utils/domUtils";
-import { uuid, UUIDType } from "../../utils/lang/uuid";
-import { isValidForUpload } from "../../utils/miscUtils";
+} from '../../store/selectors';
+import { shallowEqual } from '../../store/appStore';
+import { FileUpload } from '../../../types/config/ServiceDeskConfig';
+import { AppState } from '../../../types/state/AppState';
+import { IS_MOBILE } from '../../utils/browserUtils';
+import { FileStatusValue } from '../../utils/constants';
+import { isEnterKey, isDirectionRTL } from '../../utils/domUtils';
+import { uuid, UUIDType } from '../../utils/lang/uuid';
+import { isValidForUpload } from '../../utils/miscUtils';
 import {
   ContentEditableInput,
   ContentEditableInputHandle,
   ContentEditableChange,
-} from "./ContentEditableInput";
-import { getFileUploaderItemDisplayProps } from "./fileUploaderItemStateUtils";
-import { BusEventType } from "../../../types/events/eventBusTypes";
-import { PageObjectId } from "../../../testing/PageObjectId";
+} from './ContentEditableInput';
+import { getFileUploaderItemDisplayProps } from './fileUploaderItemStateUtils';
+import { BusEventType } from '../../../types/events/eventBusTypes';
+import { PageObjectId } from '../../../testing/PageObjectId';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
   BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TOOLTIP_POSITION,
   BUTTON_TYPE,
-} from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/web-components/es/components/button/defs.js';
 
 const Send = carbonIconToReact(Send16);
 const SendFilled = carbonIconToReact(SendFilled16);
@@ -240,7 +240,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       fileSharing_removeButtonTitle:
         state.languagePack.fileSharing_removeButtonTitle,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   const store = serviceManager.store;
@@ -258,12 +258,12 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
   // The canonical raw value that will be sent to customSendMessage.
   const [rawInputValue, setRawInputValue] = useState(
-    trackedInputState?.rawValue ?? "",
+    trackedInputState?.rawValue ?? ''
   );
 
   // The formatted value that renders inside the content editable surface.
   const [displayInputValue, setDisplayInputValue] = useState(
-    trackedInputState?.displayValue ?? "",
+    trackedInputState?.displayValue ?? ''
   );
 
   const rawInputValueRef = useRef(rawInputValue);
@@ -287,8 +287,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     const unsubscribe = store.subscribe(() => {
       const nextInputState = selectInputState(store.getState());
-      const nextRawValue = nextInputState.rawValue ?? "";
-      const nextDisplayValue = nextInputState.displayValue ?? "";
+      const nextRawValue = nextInputState.rawValue ?? '';
+      const nextDisplayValue = nextInputState.displayValue ?? '';
 
       if (nextRawValue !== rawInputValueRef.current) {
         setRawInputValue(nextRawValue);
@@ -307,8 +307,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       return;
     }
     const nextInputState = selectInputState(store.getState());
-    setRawInputValue(nextInputState.rawValue ?? "");
-    setDisplayInputValue(nextInputState.displayValue ?? "");
+    setRawInputValue(nextInputState.rawValue ?? '');
+    setDisplayInputValue(nextInputState.displayValue ?? '');
   }, [store, trackInputState]);
 
   // Cleanup timeout on unmount
@@ -388,8 +388,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       store.dispatch(
         actions.updateInputState(
           { rawValue, displayValue },
-          isInputToHumanAgent,
-        ),
+          isInputToHumanAgent
+        )
       );
     }
   }
@@ -413,17 +413,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
         store.dispatch(
           actions.updateInputState(
-            { rawValue: "", displayValue: "" },
-            isInputToHumanAgent,
-          ),
+            { rawValue: '', displayValue: '' },
+            isInputToHumanAgent
+          )
         );
       }
 
       onSendInput(text);
 
       // Reset the value of the field.
-      setRawInputValue("");
-      setDisplayInputValue("");
+      setRawInputValue('');
+      setDisplayInputValue('');
       // Belt-and-suspenders: imperatively clear the contenteditable DOM in
       // case the state-driven useLayoutEffect path is short-circuited by a
       // stale skipNextDomSync flag or batching quirk. See issue #1382.
@@ -447,9 +447,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         const key = shortcutConfig.key;
         serviceManager.store.dispatch(
           actions.announceMessage({
-            messageID: "input_keyboardShortcutAnnouncement",
+            messageID: 'input_keyboardShortcutAnnouncement',
             messageValues: { key },
-          }),
+          })
         );
         setHasAnnouncedShortcut(true);
       }
@@ -517,10 +517,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       onRemoveFileProp(fileID);
     } else {
       const isInputToHumanAgent = selectIsInputToHumanAgent(
-        serviceManager.store.getState(),
+        serviceManager.store.getState()
       );
       serviceManager.store.dispatch(
-        actions.removeFileUpload(fileID, isInputToHumanAgent),
+        actions.removeFileUpload(fileID, isInputToHumanAgent)
       );
     }
     // After we remove the file, we need to move focus back to the input field.
@@ -535,7 +535,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     const isInputToHumanAgent = selectIsInputToHumanAgent(
-      serviceManager.store.getState(),
+      serviceManager.store.getState()
     );
     const { dispatch } = serviceManager.store;
     const { files } = event.target;
@@ -595,8 +595,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     input_uploadButtonLabel,
     input_stopResponse,
   } = languagePack;
-  const visibleRawValue = disableInput ? "" : rawInputValue;
-  const visibleDisplayValue = disableInput ? "" : displayInputValue;
+  const visibleRawValue = disableInput ? '' : rawInputValue;
+  const visibleDisplayValue = disableInput ? '' : displayInputValue;
   const hasValidInput = doHasValidInput();
   const showDisabledSend = !hasValidInput || disableInput || disableSend;
   const showUploadButtonDisabled = disableUploadButton || disableInput;
@@ -611,11 +611,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isInputVisible && ( // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <div className="cds-aichat--input-and-completions">
         <div
-          className={cx("cds-aichat--input-container", {
-            "cds-aichat--input-container--has-focus": textAreaHasFocus,
-            "cds-aichat--input-container--show-upload-button": showUploadButton,
-          })}
-        >
+          className={cx('cds-aichat--input-container', {
+            'cds-aichat--input-container--has-focus': textAreaHasFocus,
+            'cds-aichat--input-container--show-upload-button': showUploadButton,
+          })}>
           <div className="cds-aichat--input-container__left-container">
             <div className="cds-aichat--input-container__text-and-upload">
               {showUploadButton && (
@@ -635,14 +634,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                   {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                   <label
                     className={cx(
-                      "cds-aichat--input-container__upload-button",
+                      'cds-aichat--input-container__upload-button',
                       {
-                        "cds-aichat--input-container__upload-button--disabled":
+                        'cds-aichat--input-container__upload-button--disabled':
                           showUploadButtonDisabled,
-                      },
+                      }
                     )}
-                    htmlFor={uploadButtonID}
-                  >
+                    htmlFor={uploadButtonID}>
                     <Attachment />
                   </label>
                 </div>
@@ -680,8 +678,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                       errorSubject={fileUpload.errorMessage}
                       invalid={fileUpload.isError}
                       size={FILE_UPLOADER_ITEM_SIZE.SMALL}
-                      onDelete={() => onRemoveFile(fileUpload.id)}
-                    >
+                      onDelete={() => onRemoveFile(fileUpload.id)}>
                       {fileUpload.file.name}
                     </FileUploaderItem>
                   );
@@ -723,8 +720,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
                     : BUTTON_TOOLTIP_ALIGNMENT.END
                 }
                 tooltipPosition={BUTTON_TOOLTIP_POSITION.TOP}
-                data-testid={PageObjectId.INPUT_SEND}
-              >
+                data-testid={PageObjectId.INPUT_SEND}>
                 {hasValidInput ? (
                   <SendFilled
                     slot="icon"

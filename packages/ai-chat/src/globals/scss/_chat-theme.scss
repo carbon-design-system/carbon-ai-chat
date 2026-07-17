@@ -5,17 +5,17 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/components/button/tokens" as button;
-@use "@carbon/layout";
-@use "@carbon/ai-chat-components/scss/utilities" as config;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/components/button/tokens' as button;
+@use '@carbon/layout';
+@use '@carbon/ai-chat-components/scss/utilities' as config;
 
 // Import shared tokens from @carbon/ai-chat-components
-@use "@carbon/ai-chat-components/scss/tokens-layout" as shared-layout;
-@use "@carbon/ai-chat-components/scss/tokens-component" as shared-component;
+@use '@carbon/ai-chat-components/scss/tokens-layout' as shared-layout;
+@use '@carbon/ai-chat-components/scss/tokens-component' as shared-component;
 
 // Styling Variables (float container-specific)
-$z-index: config.get-var("z-index", 99999);
+$z-index: config.get-var('z-index', 99999);
 
 // ============================================================================
 // Shared Variables (from @carbon/ai-chat-components)
@@ -24,17 +24,17 @@ $z-index: config.get-var("z-index", 99999);
 
 // Layout tokens
 $messages-max-width: config.get-var(
-  "messages-max-width",
+  'messages-max-width',
   shared-layout.$messages-max-width
 );
 
 $card-max-width: config.get-var(
-  "card-max-width",
+  'card-max-width',
   shared-layout.$card-max-width
 );
 
 // Component tokens
 $card-border-radius: config.get-var(
-  "card-border-radius",
+  'card-border-radius',
   shared-component.$card-border-radius
 );

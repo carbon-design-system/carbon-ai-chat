@@ -24,13 +24,13 @@ import {
   ChatCustomElement,
   type MarkdownItPlugin,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import markdownItKatex from "@vscode/markdown-it-katex";
-import React, { useMemo } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import markdownItKatex from '@vscode/markdown-it-katex';
+import React, { useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -57,6 +57,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

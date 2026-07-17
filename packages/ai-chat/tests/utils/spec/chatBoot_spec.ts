@@ -13,22 +13,22 @@ import {
   performInitialViewChange,
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
-} from "../../../src/chat/utils/chatBoot";
+} from '../../../src/chat/utils/chatBoot';
 
-import { createBaseTestProps } from "../../test_helpers";
-import type { ChatInstance } from "../../../src/types/instance/ChatInstance";
+import { createBaseTestProps } from '../../test_helpers';
+import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import {
   BusEventType,
   BusEvent,
-} from "../../../src/types/events/eventBusTypes";
+} from '../../../src/types/events/eventBusTypes';
 
-describe("chatBoot utils", () => {
+describe('chatBoot utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("mergePublicConfig", () => {
-    it("merges defaults with provided config", () => {
+  describe('mergePublicConfig', () => {
+    it('merges defaults with provided config', () => {
       const base = createBaseTestProps();
       const publicConfig = mergePublicConfig(base);
 
@@ -39,7 +39,7 @@ describe("chatBoot utils", () => {
 
       // Provided fields preserved
       expect(publicConfig.messaging?.customSendMessage).toBe(
-        base.messaging?.customSendMessage,
+        base.messaging?.customSendMessage
       );
       expect(publicConfig.exposeServiceManagerForTesting).toBe(true);
     });
@@ -49,42 +49,42 @@ describe("chatBoot utils", () => {
       const publicConfig = mergePublicConfig(base);
 
       // Default assistantName should be set
-      expect(publicConfig.assistantName).toBe("watsonx");
+      expect(publicConfig.assistantName).toBe('watsonx');
     });
 
-    it("preserves custom assistantName when provided", () => {
+    it('preserves custom assistantName when provided', () => {
       const base = createBaseTestProps();
-      base.assistantName = "Custom Assistant";
+      base.assistantName = 'Custom Assistant';
       const publicConfig = mergePublicConfig(base);
 
       // Custom assistantName should be preserved
-      expect(publicConfig.assistantName).toBe("Custom Assistant");
+      expect(publicConfig.assistantName).toBe('Custom Assistant');
     });
 
-    it("uses default assistantName when not provided", () => {
+    it('uses default assistantName when not provided', () => {
       const base = createBaseTestProps();
       // Explicitly not setting assistantName
       delete (base as any).assistantName;
       const publicConfig = mergePublicConfig(base);
 
       // Should fall back to default
-      expect(publicConfig.assistantName).toBe("watsonx");
+      expect(publicConfig.assistantName).toBe('watsonx');
     });
 
-    it("allows empty string as assistantName", () => {
+    it('allows empty string as assistantName', () => {
       const base = createBaseTestProps();
-      base.assistantName = "";
+      base.assistantName = '';
       const publicConfig = mergePublicConfig(base);
 
       // Empty string should be preserved
-      expect(publicConfig.assistantName).toBe("");
+      expect(publicConfig.assistantName).toBe('');
     });
   });
 
-  describe("initServiceManagerAndInstance", () => {
-    it("initializes ServiceManager, sets container styles and creates instance (with host element)", async () => {
-      const container = document.createElement("div");
-      const host = document.createElement("div");
+  describe('initServiceManagerAndInstance', () => {
+    it('initializes ServiceManager, sets container styles and creates instance (with host element)', async () => {
+      const container = document.createElement('div');
+      const host = document.createElement('div');
 
       const props = createBaseTestProps();
       const publicConfig = mergePublicConfig(props);
@@ -104,15 +104,15 @@ describe("chatBoot utils", () => {
       // Container should be tagged with the boot-container fill class. The
       // matching dynamic-stylesheet rule applies width/height: 100% !important.
       expect(
-        container.classList.contains("cds-aichat--boot-container--filled"),
+        container.classList.contains('cds-aichat--boot-container--filled')
       ).toBe(true);
       expect(
-        container.classList.contains("cds-aichat--boot-container--collapsed"),
+        container.classList.contains('cds-aichat--boot-container--collapsed')
       ).toBe(false);
     });
 
-    it("initializes with default container styles when no host element provided", async () => {
-      const container = document.createElement("div");
+    it('initializes with default container styles when no host element provided', async () => {
+      const container = document.createElement('div');
 
       const props = createBaseTestProps();
       const publicConfig = mergePublicConfig(props);
@@ -129,16 +129,16 @@ describe("chatBoot utils", () => {
       // Container should be tagged with the boot-container collapsed class.
       // The matching dynamic-stylesheet rule applies width/height: 0 !important.
       expect(
-        container.classList.contains("cds-aichat--boot-container--collapsed"),
+        container.classList.contains('cds-aichat--boot-container--collapsed')
       ).toBe(true);
       expect(
-        container.classList.contains("cds-aichat--boot-container--filled"),
+        container.classList.contains('cds-aichat--boot-container--filled')
       ).toBe(false);
     });
   });
 
-  describe("performInitialViewChange", () => {
-    it("opens main window with OPEN_BY_DEFAULT when configured and not from browser", async () => {
+  describe('performInitialViewChange', () => {
+    it('opens main window with OPEN_BY_DEFAULT when configured and not from browser', async () => {
       const changeView = jest.fn().mockResolvedValue({ mainWindow: true });
 
       const fakeServiceManager: any = {
@@ -160,7 +160,7 @@ describe("chatBoot utils", () => {
       expect(options).toMatchObject({}); // options object exists
     });
 
-    it("calls changeView with WEB_CHAT_LOADED when main window not targeted", async () => {
+    it('calls changeView with WEB_CHAT_LOADED when main window not targeted', async () => {
       const changeView = jest.fn().mockResolvedValue({ mainWindow: false });
 
       const fakeServiceManager: any = {
@@ -184,8 +184,8 @@ describe("chatBoot utils", () => {
     });
   });
 
-  describe("attachUserDefinedResponseHandlers", () => {
-    it("updates state on user-defined response and chunk events", () => {
+  describe('attachUserDefinedResponseHandlers', () => {
+    it('updates state on user-defined response and chunk events', () => {
       const handlers: Record<
         string | number,
         (event: BusEvent & { data?: any }) => void
@@ -198,36 +198,36 @@ describe("chatBoot utils", () => {
 
       let bySlot: any = {};
       const setBySlot = (updater: any) => {
-        bySlot = typeof updater === "function" ? updater(bySlot) : updater;
+        bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
       };
 
       attachUserDefinedResponseHandlers(
         fakeInstance as unknown as ChatInstance,
-        setBySlot as any,
+        setBySlot as any
       );
 
       // Simulate full user-defined response
       handlers[BusEventType.USER_DEFINED_RESPONSE]({
         type: BusEventType.USER_DEFINED_RESPONSE,
-        data: { slot: "s1", fullMessage: { id: "m1" }, message: { id: "i1" } },
+        data: { slot: 's1', fullMessage: { id: 'm1' }, message: { id: 'i1' } },
       });
 
-      expect(bySlot.s1.fullMessage).toEqual({ id: "m1" });
-      expect(bySlot.s1.messageItem).toEqual({ id: "i1" });
+      expect(bySlot.s1.fullMessage).toEqual({ id: 'm1' });
+      expect(bySlot.s1.messageItem).toEqual({ id: 'i1' });
 
       // Simulate partial chunk
       handlers[BusEventType.CHUNK_USER_DEFINED_RESPONSE]({
         type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        data: { slot: "s1", chunk: { partial_item: { t: "p1" } } },
+        data: { slot: 's1', chunk: { partial_item: { t: 'p1' } } },
       });
-      expect(bySlot.s1.partialItems).toEqual([{ t: "p1" }]);
+      expect(bySlot.s1.partialItems).toEqual([{ t: 'p1' }]);
 
       // Simulate completion chunk
       handlers[BusEventType.CHUNK_USER_DEFINED_RESPONSE]({
         type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        data: { slot: "s1", chunk: { complete_item: { id: "i2" } } },
+        data: { slot: 's1', chunk: { complete_item: { id: 'i2' } } },
       });
-      expect(bySlot.s1.messageItem).toEqual({ id: "i2" });
+      expect(bySlot.s1.messageItem).toEqual({ id: 'i2' });
 
       // Simulate restart: state should reset
       handlers[BusEventType.RESTART_CONVERSATION]({
@@ -236,8 +236,8 @@ describe("chatBoot utils", () => {
       expect(bySlot).toEqual({});
     });
   });
-  describe("attachCustomFooterHandler", () => {
-    it("updates state on custom footer slot events", () => {
+  describe('attachCustomFooterHandler', () => {
+    it('updates state on custom footer slot events', () => {
       const handlers: Record<
         string | number,
         (event: BusEvent & { data?: any }) => void
@@ -250,37 +250,37 @@ describe("chatBoot utils", () => {
 
       let bySlot: any = {};
       const setBySlot = (updater: any) => {
-        bySlot = typeof updater === "function" ? updater(bySlot) : updater;
+        bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
       };
 
       attachCustomFooterHandler(
         fakeInstance as unknown as ChatInstance,
-        setBySlot as any,
+        setBySlot as any
       );
 
       // Simulate custom footer slot event
       handlers[BusEventType.CUSTOM_FOOTER_SLOT]({
         type: BusEventType.CUSTOM_FOOTER_SLOT,
         data: {
-          slotName: "footer1",
-          message: { id: "msg1" },
-          messageItem: { id: "item1", text: "Hello" },
-          additionalData: { customKey: "customValue", count: 42 },
+          slotName: 'footer1',
+          message: { id: 'msg1' },
+          messageItem: { id: 'item1', text: 'Hello' },
+          additionalData: { customKey: 'customValue', count: 42 },
         },
       });
 
-      expect(bySlot.footer1.slotName).toBe("footer1");
-      expect(bySlot.footer1.message).toEqual({ id: "msg1" });
+      expect(bySlot.footer1.slotName).toBe('footer1');
+      expect(bySlot.footer1.message).toEqual({ id: 'msg1' });
       expect(bySlot.footer1.messageItem).toEqual({
-        id: "item1",
-        text: "Hello",
+        id: 'item1',
+        text: 'Hello',
       });
       expect(bySlot.footer1.additionalData).toEqual({
-        customKey: "customValue",
+        customKey: 'customValue',
         count: 42,
       });
 
-      expect(Object.keys(bySlot)).toEqual(["footer1"]);
+      expect(Object.keys(bySlot)).toEqual(['footer1']);
 
       // Simulate restart: state should reset
       handlers[BusEventType.RESTART_CONVERSATION]({

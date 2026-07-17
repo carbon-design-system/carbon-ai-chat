@@ -5,21 +5,21 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/utilities/button-reset" as button;
-@use "@carbon/layout";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/utilities/button-reset' as button;
+@use '@carbon/layout';
 
 :host {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   display: block;
   background: var(--cds-layer-02, #{theme.$layer-02});
 }
 
-:host([data-step-parity="even"]) {
+:host([data-step-parity='even']) {
   background: var(--cds-layer-accent-02, #{theme.$layer-accent-02});
 }
 
@@ -81,7 +81,7 @@
 }
 
 .#{$prefix}--chain-of-thought-accordion-item-static {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   display: flex;
   align-items: center;
@@ -94,7 +94,7 @@
 .#{$prefix}--chain-of-thought-accordion-item {
   button.#{$prefix}--chain-of-thought-accordion-item-header {
     @include button.reset(true);
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
 
     display: flex;
     align-items: center;
@@ -123,7 +123,7 @@
   }
 }
 
-:host([data-step-parity="odd"]) {
+:host([data-step-parity='odd']) {
   button.#{$prefix}--chain-of-thought-accordion-item-header,
   .#{$prefix}--chain-of-thought-accordion-item-static {
     background: var(--cds-layer-02, #{theme.$layer-02});

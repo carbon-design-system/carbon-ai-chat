@@ -13,15 +13,15 @@ import {
   ChatInstance,
   FeedbackInteractionType,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
-import ReactDOM from "react-dom";
+} from '@carbon/ai-chat';
+import React, { useMemo, useState } from 'react';
+import ReactDOM from 'react-dom';
 
 // These functions hook up to your back-end.
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 // This function returns a React component for user defined responses.
-import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
-import "@carbon/styles/css/styles.css";
+import { renderUserDefinedResponseFactory } from './renderUserDefinedResponse';
+import '@carbon/styles/css/styles.css';
 
 /**
  * Define your config outside your React component, or wrap it in useMemo /
@@ -76,7 +76,7 @@ function App() {
 
   const renderUserDefinedResponse = useMemo(
     () => renderUserDefinedResponseFactory(activeResponseId),
-    [activeResponseId],
+    [activeResponseId]
   );
 
   return (
@@ -90,4 +90,4 @@ function App() {
 }
 
 // eslint-disable-next-line react/no-deprecated -- this example intentionally demonstrates React 17's legacy render API
-ReactDOM.render(<App />, document.querySelector("#root"));
+ReactDOM.render(<App />, document.querySelector('#root'));

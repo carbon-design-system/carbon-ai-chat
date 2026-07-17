@@ -1,18 +1,25 @@
 # Watch State
 
-Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibility and active-response id into the host UI, and keeps `user_defined` response elements updated when `activeResponseId` changes.
+Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen
+visibility and active-response id into the host UI, and keeps `user_defined`
+response elements updated when `activeResponseId` changes.
 
 ## What this example shows
 
-- Capturing the `ChatInstance` via `onBeforeRender`, reading `instance.getState()`, and subscribing to `BusEventType.STATE_CHANGE`.
-- Reflecting `homeScreenState.isHomeScreenOpen` and `activeResponseId` into Lit `@state` accessors displayed above the chat.
+- Capturing the `ChatInstance` via `onBeforeRender`, reading
+  `instance.getState()`, and subscribing to `BusEventType.STATE_CHANGE`.
+- Reflecting `homeScreenState.isHomeScreenOpen` and `activeResponseId` into Lit
+  `@state` accessors displayed above the chat.
 - Configuring a homescreen with greeting and starter buttons.
-- Rendering a `user_defined` response via `renderUserDefinedResponse` and updating its DOM when the active response changes.
+- Rendering a `user_defined` response via `renderUserDefinedResponse` and
+  updating its DOM when the active response changes.
 
 ## When to use this pattern
 
-- Hosts that need to react to chat view/state changes (e.g. toggle external panels when the homescreen closes).
-- User-defined response elements whose content must stay in sync with which message is currently active.
+- Hosts that need to react to chat view/state changes (e.g. toggle external
+  panels when the homescreen closes).
+- User-defined response elements whose content must stay in sync with which
+  message is currently active.
 
 ## APIs and props demonstrated
 
@@ -35,7 +42,10 @@ Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibilit
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

@@ -18,9 +18,9 @@
  * - react-redux: https://github.com/reduxjs/react-redux (License: https://github.com/reduxjs/react-redux/blob/master/LICENSE.md)
  */
 
-import { useContext } from "react";
-import type { AppStore, UnknownAction } from "../store/appStore";
-import { StoreContext } from "../contexts/StoreContext";
+import { useContext } from 'react';
+import type { AppStore, UnknownAction } from '../store/appStore';
+import { StoreContext } from '../contexts/StoreContext';
 
 export function useStore<
   RootState,
@@ -28,7 +28,7 @@ export function useStore<
 >(): AppStore<RootState, ActionType> {
   const store = useContext(StoreContext);
   if (!store) {
-    throw new Error("StoreProvider is missing in the component tree.");
+    throw new Error('StoreProvider is missing in the component tree.');
   }
   return store as unknown as AppStore<RootState, ActionType>;
 }

@@ -13,7 +13,7 @@
  * This must run at module load time (not just in globalSetup function)
  * to be available before test files are imported.
  */
-if (typeof globalThis.Node === "undefined") {
+if (typeof globalThis.Node === 'undefined') {
   // @ts-ignore - adding minimal polyfill for DOM Node type
   globalThis.Node = class Node {};
 }

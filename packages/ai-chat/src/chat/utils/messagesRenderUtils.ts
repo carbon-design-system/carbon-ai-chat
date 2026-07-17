@@ -7,10 +7,10 @@
  *  @license
  */
 
-import ObjectMap from "../../types/utilities/ObjectMap";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { Message } from "../../types/messaging/Messages";
-import { isStandaloneSystemMessage } from "./messageUtils";
+import ObjectMap from '../../types/utilities/ObjectMap';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { Message } from '../../types/messaging/Messages';
+import { isStandaloneSystemMessage } from './messageUtils';
 
 interface RenderableMessageMetadata {
   fullMessage: Message;
@@ -27,7 +27,7 @@ interface RenderableMessageMetadata {
 function buildRenderableMessageMetadata(
   localMessageItems: LocalMessageItem[],
   allMessagesByID: ObjectMap<Message>,
-  messageIDForInput: string,
+  messageIDForInput: string
 ): RenderableMessageMetadata[] {
   const metadata: RenderableMessageMetadata[] = [];
   let previousMessageID: string | null = null;

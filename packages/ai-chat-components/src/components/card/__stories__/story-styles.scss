@@ -7,13 +7,13 @@
  *  @license
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/utilities/convert" as *;
-@use "@carbon/styles/scss/type" as *;
-@use "@carbon/styles/scss/components/button/tokens" as *;
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/utilities/convert' as *;
+@use '@carbon/styles/scss/type' as *;
+@use '@carbon/styles/scss/components/button/tokens' as *;
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
 
 // story specific styles
 
@@ -31,25 +31,25 @@
   .preview-card-small,
   .standard-card {
     h4 {
-      @include type-style("heading-01");
+      @include type-style('heading-01');
 
       margin-block-end: layout.$spacing-04;
     }
 
     p {
-      @include type-style("body-01");
+      @include type-style('body-01');
     }
   }
 
   .iframe-body {
     h4 {
-      @include type-style("body-02");
+      @include type-style('body-02');
 
       margin: 0;
     }
 
     p {
-      @include type-style("caption-01");
+      @include type-style('caption-01');
 
       color: theme.$text-secondary;
     }
@@ -57,20 +57,20 @@
 
   .preview-card {
     h4 {
-      @include type-style("body-compact-02");
+      @include type-style('body-compact-02');
 
       color: theme.$text-primary;
       margin-block-end: layout.$spacing-01;
     }
 
     p {
-      @include type-style("helper-text-01");
+      @include type-style('helper-text-01');
 
       color: theme.$text-secondary;
     }
   }
 
-  [slot="media"] {
+  [slot='media'] {
     display: flex;
 
     > * {

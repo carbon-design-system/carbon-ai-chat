@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { IFrameComponent } from "../../components-legacy/responseTypes/iframe/IFrameComponent";
+import { IFrameComponent } from '../../components-legacy/responseTypes/iframe/IFrameComponent';
 
 interface IFramePanelProps {
   messageItem?: {

@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonAISkeletonText from "@carbon/web-components/es/components/ai-skeleton/ai-skeleton-text.js";
+import CarbonAISkeletonText from '@carbon/web-components/es/components/ai-skeleton/ai-skeleton-text.js';
 
 const AISkeletonText = createComponent({
-  tagName: "cds-ai-skeleton-text",
+  tagName: 'cds-ai-skeleton-text',
   elementClass: CarbonAISkeletonText,
   react: React,
 });

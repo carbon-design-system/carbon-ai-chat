@@ -7,11 +7,11 @@
  *  @license
  */
 
-import type { PublicConfig, ChatInstance } from "@carbon/ai-chat";
-import isEqual from "lodash-es/isEqual";
-import type { Settings } from "./types";
-import { updateQueryParamsWithoutRefresh } from "./utils";
-import { customSendMessage } from "../customSendMessage/customSendMessage";
+import type { PublicConfig, ChatInstance } from '@carbon/ai-chat';
+import isEqual from 'lodash-es/isEqual';
+import type { Settings } from './types';
+import { updateQueryParamsWithoutRefresh } from './utils';
+import { customSendMessage } from '../customSendMessage/customSendMessage';
 
 /**
  * Manages configuration changes and their side effects.
@@ -37,7 +37,7 @@ export class ConfigManager {
     options: {
       triggerSetChatConfigMode: boolean;
       onReactRender?: (config: PublicConfig) => Promise<void>;
-    },
+    }
   ): Promise<PublicConfig> {
     // Simple merge - testing if the issue is with safe merge logic
     const config: PublicConfig = {
@@ -64,7 +64,7 @@ export class ConfigManager {
                       key:
                         newConfig.keyboardShortcuts?.messageFocusToggle?.key ||
                         oldConfig.keyboardShortcuts?.messageFocusToggle?.key ||
-                        "F6",
+                        'F6',
                       modifiers: {
                         ...(oldConfig.keyboardShortcuts?.messageFocusToggle
                           ?.modifiers || {}),
@@ -83,7 +83,7 @@ export class ConfigManager {
           : undefined,
     };
 
-    console.log("[ConfigManager] Processing config change:", {
+    console.log('[ConfigManager] Processing config change:', {
       oldConfig: oldConfig.keyboardShortcuts,
       newConfig: newConfig.keyboardShortcuts,
       mergedConfig: config.keyboardShortcuts,
@@ -91,14 +91,14 @@ export class ConfigManager {
 
     // Explicitly remove top-level sections that were set back to default (undefined)
     if (
-      Object.prototype.hasOwnProperty.call(newConfig, "input") &&
+      Object.prototype.hasOwnProperty.call(newConfig, 'input') &&
       !newConfig.input
     ) {
       delete config.input;
     }
 
     if (
-      Object.prototype.hasOwnProperty.call(newConfig, "launcher") &&
+      Object.prototype.hasOwnProperty.call(newConfig, 'launcher') &&
       !newConfig.launcher
     ) {
       delete config.launcher;
@@ -107,22 +107,22 @@ export class ConfigManager {
     // Check for changes that require session restart
     const homescreenChanged = !isEqual(
       oldConfig.homescreen,
-      newConfig.homescreen,
+      newConfig.homescreen
     );
     const disclaimerChanged = !isEqual(
       oldConfig.disclaimer,
-      newConfig.disclaimer,
+      newConfig.disclaimer
     );
 
     // Update query parameters for persistence
     await this.updateQueryParameters(
       config,
       settings,
-      options.triggerSetChatConfigMode,
+      options.triggerSetChatConfigMode
     );
 
     // Re-render React app if needed
-    if (settings.framework === "react" && options.onReactRender) {
+    if (settings.framework === 'react' && options.onReactRender) {
       await options.onReactRender(config);
     }
 
@@ -144,7 +144,7 @@ export class ConfigManager {
   private async updateQueryParameters(
     config: PublicConfig,
     settings: Settings,
-    triggerSetChatConfigMode: boolean,
+    triggerSetChatConfigMode: boolean
   ): Promise<void> {
     // Don't update query params when NOT triggering setChatConfig mode
     // This means we're in setChatConfig mode and SetChatConfigManager should handle query params
@@ -172,8 +172,8 @@ export class ConfigManager {
     };
 
     const queryUpdates = [
-      { key: "settings", value: JSON.stringify(settings) },
-      { key: "config", value: JSON.stringify(configForSerialization) },
+      { key: 'settings', value: JSON.stringify(settings) },
+      { key: 'config', value: JSON.stringify(configForSerialization) },
     ];
 
     // Update query params without refresh (setChatConfig mode doesn't refresh)

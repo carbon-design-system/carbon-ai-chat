@@ -1,17 +1,21 @@
 # Custom Element
 
-Full-screen `ChatCustomElement` integration that hosts the chat inside your own element with the frame disabled.
+Full-screen `ChatCustomElement` integration that hosts the chat inside your own
+element with the frame disabled.
 
 ## What this example shows
 
-- Mounting `ChatCustomElement` instead of `ChatContainer` to control the host element's layout.
-- Disabling the chat frame via `layout.showFrame: false` so the host CSS drives the size.
+- Mounting `ChatCustomElement` instead of `ChatContainer` to control the host
+  element's layout.
+- Disabling the chat frame via `layout.showFrame: false` so the host CSS drives
+  the size.
 - Opening the chat automatically with `openChatByDefault`.
 - Wiring a mock backend through `customSendMessage`.
 
 ## When to use this pattern
 
-- You want the chat to occupy a custom slot in your page layout rather than float.
+- You want the chat to occupy a custom slot in your page layout rather than
+  float.
 - You need direct control over the chat host element's sizing and styling.
 - You are building a full-screen chat UI.
 
@@ -28,7 +32,10 @@ Full-screen `ChatCustomElement` integration that hosts the chat inside your own 
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

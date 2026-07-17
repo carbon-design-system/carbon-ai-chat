@@ -7,13 +7,13 @@
  *  @license
  */
 
-type TableRuntimeModule = typeof import("./table-runtime.js");
+type TableRuntimeModule = typeof import('./table-runtime.js');
 
 let tableRuntimePromise: Promise<TableRuntimeModule> | null = null;
 
 export function loadTableRuntime(): Promise<TableRuntimeModule> {
   if (!tableRuntimePromise) {
-    tableRuntimePromise = import("./table-runtime.js");
+    tableRuntimePromise = import('./table-runtime.js');
   }
   return tableRuntimePromise;
 }

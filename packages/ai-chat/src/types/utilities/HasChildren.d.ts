@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
 /**
  * Represents an item that has an optional className.

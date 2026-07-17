@@ -11,10 +11,10 @@
  * Miscellaneous utilities for dealing with the browser.
  */
 
-import { memoizeFunction } from "./memoizerUtils";
+import { memoizeFunction } from './memoizerUtils';
 
 function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof navigator !== "undefined";
+  return typeof window !== 'undefined' && typeof navigator !== 'undefined';
 }
 
 let screenWidth = 0;
@@ -46,9 +46,9 @@ function isSessionStorageAvailable(): boolean {
     return false;
   }
   try {
-    window.sessionStorage.setItem("web-chat-test-item", "true");
-    window.sessionStorage.getItem("web-chat-test-item");
-    window.sessionStorage.removeItem("web-chat-test-item");
+    window.sessionStorage.setItem('web-chat-test-item', 'true');
+    window.sessionStorage.getItem('web-chat-test-item');
+    window.sessionStorage.removeItem('web-chat-test-item');
     return true;
   } catch {
     // Ignore.
@@ -76,7 +76,7 @@ function getURLHostName(url: string): string {
  */
 function conditionalSetTimeout(
   operation: () => void,
-  timeout: number,
+  timeout: number
 ): ReturnType<typeof setTimeout> | null {
   if (timeout) {
     return setTimeout(operation, timeout);

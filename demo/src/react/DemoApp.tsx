@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "./DemoApp.css";
-import "@carbon/styles/css/styles.css";
-import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
+import './DemoApp.css';
+import '@carbon/styles/css/styles.css';
+import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
 
 import {
   BusEvent,
@@ -28,21 +28,21 @@ import {
   RenderCustomMessageFooter,
   ServiceDesk,
   ServiceDeskFactoryParameters,
-} from "@carbon/ai-chat";
-import { AISkeletonPlaceholder } from "@carbon/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+} from '@carbon/ai-chat';
+import { AISkeletonPlaceholder } from '@carbon/react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Settings } from "../framework/types";
-import { UserDefinedResponseExample } from "./UserDefinedResponseExample";
-import { WriteableElementExample } from "./WriteableElementExample";
-import { WorkspaceWriteableElementExample } from "./WorkspaceWriteableElementExample";
-import { CustomFooterExample } from "./CustomFooterExample";
-import { HistoryWriteableElementExample } from "./HistoryWriteableElementExample";
+import { Settings } from '../framework/types';
+import { UserDefinedResponseExample } from './UserDefinedResponseExample';
+import { WriteableElementExample } from './WriteableElementExample';
+import { WorkspaceWriteableElementExample } from './WorkspaceWriteableElementExample';
+import { CustomFooterExample } from './CustomFooterExample';
+import { HistoryWriteableElementExample } from './HistoryWriteableElementExample';
 import {
   ExplainabilityPopoverActions,
   ExplainabilityPopoverContent,
-} from "./ExplainabilityPopoverExample";
-import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+} from './ExplainabilityPopoverExample';
+import { MockServiceDesk } from '../mockServiceDesk/mockServiceDesk';
 
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -61,11 +61,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   const [sideBarClosing, setSideBarClosing] = useState(false);
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceAnimating, setWorkspaceAnimating] = useState<
-    "expanding" | "contracting" | null
+    'expanding' | 'contracting' | null
   >(null);
   const [instance, setInstance] = useState<ChatInstance | null>(null);
-  const [stateText, setStateText] = useState<string>("Initial text");
-  const isSidebarLayout = settings.layout === "sidebar";
+  const [stateText, setStateText] = useState<string>('Initial text');
+  const isSidebarLayout = settings.layout === 'sidebar';
 
   useEffect(() => {
     // This demo continuously updates parent state to exercise live host-state
@@ -73,8 +73,8 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     // constant noise when profiling the chat's render performance, so it can be
     // turned off with the `?disableParentStateTimer` query param.
     if (
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).has("disableParentStateTimer")
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).has('disableParentStateTimer')
     ) {
       return undefined;
     }
@@ -91,14 +91,14 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       // The event here will contain details for each user defined response that needs to be rendered.
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
-          case "green":
+          case 'green':
             return (
               <UserDefinedResponseExample
                 text={messageItem.user_defined.text as string}
                 parentStateText={stateText}
               />
             );
-          case "response-stopped":
+          case 'response-stopped':
             return <>Custom user_defined response stopped message.</>;
           default:
             return undefined;
@@ -107,12 +107,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
       if (partialItems) {
         switch (partialItems[0].user_defined?.user_defined_type) {
-          case "green": {
+          case 'green': {
             // The partial members are not concatenated, you get a whole array of chunks so you can special handle
             // concatenation as you want.
             const text = partialItems
               .map((item) => item.user_defined?.text)
-              .join("");
+              .join('');
             return (
               <UserDefinedResponseExample
                 text={text}
@@ -128,7 +128,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         }
       }
     },
-    [stateText],
+    [stateText]
   );
 
   /**
@@ -146,7 +146,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         />
       );
     },
-    [],
+    []
   );
 
   /**
@@ -163,7 +163,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         isMobile={historyIsMobile}
       />
     ),
-    [instance, historyIsMobile],
+    [instance, historyIsMobile]
   );
 
   const allWriteableElements = useMemo(
@@ -239,7 +239,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       ),
       historyPanelElement,
     }),
-    [instance, historyPanelElement, stateText],
+    [instance, historyPanelElement, stateText]
   );
 
   /**
@@ -250,7 +250,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
    */
   const renderWriteableElements = useMemo(() => {
     const isCustomHomeScreen = config.homescreen?.customContentOnly === true;
-    const showAllWriteableElements = settings.writeableElements === "true";
+    const showAllWriteableElements = settings.writeableElements === 'true';
     const showHomeScreenElements =
       !showAllWriteableElements && isCustomHomeScreen;
 
@@ -304,12 +304,12 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         const { data } = event as BusEventWorkspacePreOpen;
         console.log(
           data,
-          "This event can be used to load additional resources into the workspace while displaying a manual loading state. in your writeableElement",
+          'This event can be used to load additional resources into the workspace while displaying a manual loading state. in your writeableElement'
         );
         // Expand sidebar when workspace is opening (only in sidebar layout)
         if (isSidebarLayout) {
-          console.log("Expanding sidebar - workspace opening");
-          setWorkspaceAnimating("expanding");
+          console.log('Expanding sidebar - workspace opening');
+          setWorkspaceAnimating('expanding');
           setWorkspaceExpanded(true);
         }
       },
@@ -326,8 +326,8 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       handler: () => {
         // Contract sidebar when workspace is closing (only in sidebar layout)
         if (isSidebarLayout) {
-          console.log("Contracting sidebar - workspace closing");
-          setWorkspaceAnimating("contracting");
+          console.log('Contracting sidebar - workspace closing');
+          setWorkspaceAnimating('contracting');
           setWorkspaceExpanded(false);
         }
       },
@@ -335,7 +335,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
     instance.on({
       type: BusEventType.HISTORY_PANEL_NEW_CHAT,
-      handler: () => window.alert("Creating new chat from header menu"),
+      handler: () => window.alert('Creating new chat from header menu'),
     });
 
     // Handle feedback event.
@@ -371,29 +371,29 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   // Handle transitionend to remove animation classes
   const handleTransitionEnd = useCallback((event: React.TransitionEvent) => {
     // Only handle width transitions
-    if (event.propertyName === "width") {
+    if (event.propertyName === 'width') {
       setWorkspaceAnimating(null);
     }
   }, []);
 
   // And some logic to add the right classname to our custom element depending on what mode we are in.
-  let className = "";
-  if (settings.layout === "fullscreen") {
-    className = "fullScreen";
+  let className = '';
+  if (settings.layout === 'fullscreen') {
+    className = 'fullScreen';
   } else if (isSidebarLayout) {
-    className = "sidebar";
+    className = 'sidebar';
     if (workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += ' sidebar--expanded';
     }
-    if (workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
-    } else if (workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+    if (workspaceAnimating === 'expanding') {
+      className += ' sidebar--expanding';
+    } else if (workspaceAnimating === 'contracting') {
+      className += ' sidebar--contracting';
     }
     if (sideBarClosing) {
-      className += " sidebar--closing";
+      className += ' sidebar--closing';
     } else if (!sideBarOpen) {
-      className += " sidebar--closed";
+      className += ' sidebar--closed';
     }
   }
 
@@ -402,7 +402,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     hideDefaultAiLabelContent: true,
   };
 
-  return settings.layout === "float" ? (
+  return settings.layout === 'float' ? (
     <ChatContainer
       {...config}
       header={headerConfig}
@@ -449,7 +449,7 @@ function feedbackHandler(event: any) {
 function customButtonHandler(event: BusEvent) {
   const { messageItem } = event as BusEventMessageItemCustom;
   // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
-  if (messageItem.custom_event_name === "alert_button") {
+  if (messageItem.custom_event_name === 'alert_button') {
     // eslint-disable-next-line no-alert
     window.alert(messageItem.user_defined?.text);
   }
@@ -460,7 +460,7 @@ function customButtonHandler(event: BusEvent) {
  */
 function customWorkspaceOpenHandler(event: BusEvent) {
   const { data } = event as BusEventWorkspaceOpen;
-  console.log(data, "open handler");
+  console.log(data, 'open handler');
 }
 
 export { DemoApp };

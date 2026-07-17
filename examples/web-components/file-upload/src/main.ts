@@ -7,14 +7,14 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
-import { type PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { type PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { mockOnFileUpload } from "./mockOnFileUpload";
+import { customSendMessage } from './customSendMessage';
+import { mockOnFileUpload } from './mockOnFileUpload';
 
 const config: PublicConfig = {
   messaging: {
@@ -32,14 +32,13 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   render() {
     return html`
       <cds-aichat-container
         .messaging=${config.messaging}
-        .upload=${config.upload}
-      ></cds-aichat-container>
+        .upload=${config.upload}></cds-aichat-container>
     `;
   }
 }

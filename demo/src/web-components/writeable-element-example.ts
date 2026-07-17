@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-@customElement("writeable-element-example")
+@customElement('writeable-element-example')
 class WriteableElementExample extends LitElement {
   static styles = css`
     .writeable-element-external--not-rounded {
@@ -36,19 +36,19 @@ class WriteableElementExample extends LitElement {
   `;
 
   @property({ type: String })
-  accessor location: string = "";
+  accessor location: string = '';
 
   @property({ type: String })
-  accessor valueFromParent: string = "";
+  accessor valueFromParent: string = '';
 
   render() {
-    let classNames = "external";
-    if (this.location === "aiTooltipAfterDescriptionElement") {
-      classNames += " writeable-element-external--not-rounded";
+    let classNames = 'external';
+    if (this.location === 'aiTooltipAfterDescriptionElement') {
+      classNames += ' writeable-element-external--not-rounded';
     }
 
     // Special compact display for header fixed actions
-    if (this.location === "headerFixedActionsElement") {
+    if (this.location === 'headerFixedActionsElement') {
       return html`<div class="external external--compact">
         ${this.location}
       </div>`;

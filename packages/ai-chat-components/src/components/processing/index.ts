@@ -7,4 +7,4 @@
  *  @license
  */
 
-import "./src/processing";
+import './src/processing';

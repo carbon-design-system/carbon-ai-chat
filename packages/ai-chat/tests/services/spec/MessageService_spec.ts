@@ -9,22 +9,22 @@
 
 import MessageService, {
   PendingMessageRequest,
-} from "../../../src/chat/services/MessageService";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
+} from '../../../src/chat/services/MessageService';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import {
   MessageRequest,
   MessageInputType,
-} from "../../../src/types/messaging/Messages";
-import { MessageSendSource } from "../../../src/types/events/eventBusTypes";
-import { resolvablePromise } from "../../../src/chat/utils/resolvablePromise";
-import { OnErrorType } from "../../../src/types/config/PublicConfig";
-import { CancellationReason } from "../../../src/types/config/MessagingConfig";
+} from '../../../src/types/messaging/Messages';
+import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
+import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { OnErrorType } from '../../../src/types/config/PublicConfig';
+import { CancellationReason } from '../../../src/types/config/MessagingConfig';
 
 const createMessage = (id: string): MessageRequest<any> => ({
   id,
   input: {
     message_type: MessageInputType.TEXT,
-    text: "hello",
+    text: 'hello',
   },
   history: {
     timestamp: Date.now(),
@@ -47,8 +47,8 @@ const createServiceManagerStub = (customSendMessage = jest.fn()) => {
         derived: {},
       },
       languagePack: {
-        errors_singleMessage: "error",
-        messages_requestCancelled: "Request cancelled",
+        errors_singleMessage: 'error',
+        messages_requestCancelled: 'Request cancelled',
       },
       assistantMessageState: { messageIDs: [] as string[] },
       assistantInputState: {
@@ -84,8 +84,8 @@ const createServiceManagerStub = (customSendMessage = jest.fn()) => {
   return serviceManager;
 };
 
-describe("MessageService", () => {
-  it("sends a message and advances the queue", async () => {
+describe('MessageService', () => {
+  it('sends a message and advances the queue', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
 
@@ -97,12 +97,12 @@ describe("MessageService", () => {
       },
     } as any);
 
-    const message = createMessage("m-1");
+    const message = createMessage('m-1');
     await messageService.send(
       message,
       MessageSendSource.MESSAGE_INPUT,
-      "local-1",
-      { silent: false },
+      'local-1',
+      { silent: false }
     );
 
     expect(customSendMessage).toHaveBeenCalledTimes(1);
@@ -111,7 +111,7 @@ describe("MessageService", () => {
     expect((messageService as any).queue.current).toBeNull();
   });
 
-  it("cancels a streaming message by response id and advances the queue", async () => {
+  it('cancels a streaming message by response id and advances the queue', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
     const messageService = new MessageService(serviceManager, {
       messaging: {
@@ -124,8 +124,8 @@ describe("MessageService", () => {
     const sendMessagePromise = resolvablePromise<void>();
     const abortController = new AbortController();
     const pendingRequest: PendingMessageRequest = {
-      localMessageID: "local-1",
-      message: createMessage("m-2"),
+      localMessageID: 'local-1',
+      message: createMessage('m-2'),
       sendMessagePromise,
       requestOptions: {},
       timeFirstRequest: 0,
@@ -141,7 +141,7 @@ describe("MessageService", () => {
     };
 
     (messageService as any).queue.current = pendingRequest;
-    messageService.markCurrentMessageAsStreaming("resp-1", "item-1");
+    messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
     await messageService.cancelCurrentMessageRequest();
 
@@ -149,7 +149,7 @@ describe("MessageService", () => {
     expect((messageService as any).queue.current).toBeNull();
   });
 
-  it("cancels a waiting message using its abort controller", async () => {
+  it('cancels a waiting message using its abort controller', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
     const messageService = new MessageService(serviceManager, {
       messaging: {
@@ -161,8 +161,8 @@ describe("MessageService", () => {
 
     // Keep the queue busy so the next send stays in the waiting list.
     (messageService as any).queue.current = {
-      localMessageID: "local-current",
-      message: createMessage("m-current"),
+      localMessageID: 'local-current',
+      message: createMessage('m-current'),
       sendMessagePromise: resolvablePromise<void>(),
       requestOptions: {},
       timeFirstRequest: 0,
@@ -178,21 +178,21 @@ describe("MessageService", () => {
     };
 
     const sendPromise = messageService.send(
-      createMessage("m-waiting"),
+      createMessage('m-waiting'),
       MessageSendSource.MESSAGE_INPUT,
-      "local-waiting",
-      { silent: false },
+      'local-waiting',
+      { silent: false }
     );
 
     const controller = (messageService as any).messageAbortControllers.get(
-      "m-waiting",
+      'm-waiting'
     );
     expect(controller).toBeInstanceOf(AbortController);
 
     await messageService.cancelMessageRequestByID(
-      "m-waiting",
+      'm-waiting',
       false,
-      CancellationReason.CONVERSATION_RESTARTED,
+      CancellationReason.CONVERSATION_RESTARTED
     );
 
     await expect(sendPromise).resolves.toBeUndefined();
@@ -200,7 +200,7 @@ describe("MessageService", () => {
     expect((messageService as any).queue.waiting).toHaveLength(0);
   });
 
-  it("rejects a send when it exceeds the configured timeout", async () => {
+  it('rejects a send when it exceeds the configured timeout', async () => {
     const customSendMessage = jest.fn(() => new Promise<void>(() => undefined));
     const serviceManager = createServiceManagerStub(customSendMessage);
 
@@ -213,17 +213,17 @@ describe("MessageService", () => {
     } as any);
 
     const startSpy = jest
-      .spyOn(messageService.messageLoadingManager, "start")
+      .spyOn(messageService.messageLoadingManager, 'start')
       .mockImplementation((_, __, onTimeout) => {
         onTimeout();
       });
 
     try {
       const sendPromise = messageService.send(
-        createMessage("m-timeout"),
+        createMessage('m-timeout'),
         MessageSendSource.MESSAGE_INPUT,
-        "local-timeout",
-        { silent: false },
+        'local-timeout',
+        { silent: false }
       );
 
       await expect(sendPromise).rejects.toThrow(CancellationReason.TIMEOUT);
@@ -238,7 +238,7 @@ describe("MessageService", () => {
     }
   });
 
-  it("cancels streaming by item id even when response_id differs", async () => {
+  it('cancels streaming by item id even when response_id differs', async () => {
     const serviceManager = createServiceManagerStub(jest.fn());
     const messageService = new MessageService(serviceManager, {
       messaging: {
@@ -251,8 +251,8 @@ describe("MessageService", () => {
     const sendMessagePromise = resolvablePromise<void>();
     const abortController = new AbortController();
     const pendingRequest: PendingMessageRequest = {
-      localMessageID: "local-streaming",
-      message: createMessage("m-streaming"),
+      localMessageID: 'local-streaming',
+      message: createMessage('m-streaming'),
       sendMessagePromise,
       requestOptions: {},
       timeFirstRequest: 0,
@@ -269,30 +269,30 @@ describe("MessageService", () => {
 
     (messageService as any).queue.current = pendingRequest;
     (messageService as any).messageAbortControllers.set(
-      "m-streaming",
-      abortController,
+      'm-streaming',
+      abortController
     );
 
-    messageService.markCurrentMessageAsStreaming("resp-1", "item-1");
+    messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
     await messageService.cancelMessageRequestByID(
-      "item-1",
+      'item-1',
       false,
-      CancellationReason.STOP_STREAMING,
+      CancellationReason.STOP_STREAMING
     );
 
     await expect(sendMessagePromise).resolves.toBeUndefined();
     expect(abortController.signal.aborted).toBe(true);
     expect((messageService as any).inboundStreaming.streamingMessageID).toBe(
-      null,
+      null
     );
     expect((messageService as any).queue.current).toBeNull();
   });
 
-  describe("Message cancellation with system messages", () => {
-    it("creates system message when cancelling before streaming starts", async () => {
+  describe('Message cancellation with system messages', () => {
+    it('creates system message when cancelling before streaming starts', async () => {
       const customSendMessage = jest.fn().mockImplementation(
-        () => new Promise<void>(() => undefined), // Never resolves
+        () => new Promise<void>(() => undefined) // Never resolves
       );
       const serviceManager = createServiceManagerStub(customSendMessage);
       const messageService = new MessageService(serviceManager, {
@@ -303,19 +303,19 @@ describe("MessageService", () => {
         },
       } as any);
 
-      const message = createMessage("m-1");
+      const message = createMessage('m-1');
       const sendPromise = messageService.send(
         message,
         MessageSendSource.MESSAGE_INPUT,
-        "local-1",
-        { silent: false },
+        'local-1',
+        { silent: false }
       );
 
       // Cancel before streaming starts
       await messageService.cancelMessageRequestByID(
-        "m-1",
+        'm-1',
         false,
-        CancellationReason.STOP_STREAMING,
+        CancellationReason.STOP_STREAMING
       );
 
       await expect(sendPromise).resolves.toBeUndefined();
@@ -324,12 +324,12 @@ describe("MessageService", () => {
       const dispatchCalls = (serviceManager.store.dispatch as jest.Mock).mock
         .calls;
       const addMessageCalls = dispatchCalls.filter(
-        (call: any) => call[0]?.type === "ADD_MESSAGE",
+        (call: any) => call[0]?.type === 'ADD_MESSAGE'
       );
       expect(addMessageCalls.length).toBeGreaterThan(0);
     });
 
-    it("does not create duplicate system message when cancelling during streaming", async () => {
+    it('does not create duplicate system message when cancelling during streaming', async () => {
       const customSendMessage = jest.fn().mockResolvedValue(undefined);
       const serviceManager = createServiceManagerStub(customSendMessage);
       const messageService = new MessageService(serviceManager, {
@@ -343,8 +343,8 @@ describe("MessageService", () => {
       const sendMessagePromise = resolvablePromise<void>();
       const abortController = new AbortController();
       const pendingRequest: PendingMessageRequest = {
-        localMessageID: "local-1",
-        message: createMessage("m-1"),
+        localMessageID: 'local-1',
+        message: createMessage('m-1'),
         sendMessagePromise,
         requestOptions: {},
         timeFirstRequest: 0,
@@ -361,15 +361,15 @@ describe("MessageService", () => {
       };
 
       (messageService as any).queue.current = pendingRequest;
-      messageService.markCurrentMessageAsStreaming("resp-1", "item-1");
+      messageService.markCurrentMessageAsStreaming('resp-1', 'item-1');
 
       const initialDispatchCount = (serviceManager.store.dispatch as jest.Mock)
         .mock.calls.length;
 
       await messageService.cancelMessageRequestByID(
-        "item-1",
+        'item-1',
         false,
-        CancellationReason.STOP_STREAMING,
+        CancellationReason.STOP_STREAMING
       );
 
       await expect(sendMessagePromise).resolves.toBeUndefined();
@@ -383,7 +383,7 @@ describe("MessageService", () => {
       expect(newDispatches).toBeLessThan(5);
     });
 
-    it("handles cancellation with USER_CANCELLED reason", async () => {
+    it('handles cancellation with USER_CANCELLED reason', async () => {
       const customSendMessage = jest
         .fn()
         .mockImplementation(() => new Promise<void>(() => undefined));
@@ -396,24 +396,24 @@ describe("MessageService", () => {
         },
       } as any);
 
-      const message = createMessage("m-cancel");
+      const message = createMessage('m-cancel');
       const sendPromise = messageService.send(
         message,
         MessageSendSource.MESSAGE_INPUT,
-        "local-cancel",
-        { silent: false },
+        'local-cancel',
+        { silent: false }
       );
 
       // Get the controller before cancellation
       const controller = (messageService as any).messageAbortControllers.get(
-        "m-cancel",
+        'm-cancel'
       );
       expect(controller).toBeDefined();
 
       await messageService.cancelMessageRequestByID(
-        "m-cancel",
+        'm-cancel',
         false,
-        CancellationReason.STOP_STREAMING,
+        CancellationReason.STOP_STREAMING
       );
 
       await expect(sendPromise).resolves.toBeUndefined();

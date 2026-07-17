@@ -12,13 +12,13 @@ import {
   PublicConfig,
   ServiceDesk,
   ServiceDeskFactoryParameters,
-} from "@carbon/ai-chat";
-import React, { useEffect, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useEffect, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { MockServiceDesk } from "./mockServiceDesk";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { MockServiceDesk } from './mockServiceDesk';
+import '@carbon/styles/css/styles.css';
 
 /**
  * The serviceDeskFactory is a special property. If its value changes, the service desk must be restarted and any
@@ -71,13 +71,13 @@ function App() {
   // Mocking updating the user data in your React application.
   useEffect(() => {
     setTimeout(() => {
-      setData({ name: "Bob", id: "1234" });
+      setData({ name: 'Bob', id: '1234' });
     }, 5000);
   }, []);
 
   return <Chat data={data} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

@@ -7,12 +7,12 @@
  *  @license
  */
 
-"use client";
+'use client';
 
-import dynamic from "next/dynamic";
-import React from "react";
+import dynamic from 'next/dynamic';
+import React from 'react';
 
-const ChatExample = dynamic(() => import("@/src/ChatExample"), {
+const ChatExample = dynamic(() => import('@/src/ChatExample'), {
   ssr: false,
   loading: () => <p>Loading chat experience…</p>,
 });

@@ -7,28 +7,28 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property, query } from "lit/decorators.js";
-import { repeat } from "lit/directives/repeat.js";
-import { classMap } from "lit/directives/class-map.js";
-import prefix from "../../../globals/settings.js";
+import { LitElement, html } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
+import { classMap } from 'lit/directives/class-map.js';
+import prefix from '../../../globals/settings.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import "./history-panel-item-input.js";
-import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
-import HostListener from "@carbon/web-components/es/globals/decorators/host-listener.js";
-import HostListenerMixin from "@carbon/web-components/es/globals/mixins/host-listener.js";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
-import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import "@carbon/web-components/es/components/overflow-menu/index.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import './history-panel-item-input.js';
+import FocusMixin from '@carbon/web-components/es/globals/mixins/focus.js';
+import HostListener from '@carbon/web-components/es/globals/decorators/host-listener.js';
+import HostListenerMixin from '@carbon/web-components/es/globals/mixins/host-listener.js';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import '@carbon/web-components/es/components/overflow-menu/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
 import {
   adoptOnRoot,
   setVarsForSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
+} from '../../shared/dynamic-css-var-sheet.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 export interface Action {
   text: string;
@@ -52,7 +52,7 @@ export interface Action {
  */
 @carbonElement(`${prefix}-history-panel-item`)
 class CDSAIChatHistoryPanelItem extends HostListenerMixin(
-  FocusMixin(LitElement),
+  FocusMixin(LitElement)
 ) {
   /**
    * `true` if the history panel item is selected.
@@ -87,21 +87,21 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   /**
    * Overflow tooltip label
    */
-  @property({ type: String, attribute: "overflow-menu-label" })
-  overflowMenuLabel = "Options";
+  @property({ type: String, attribute: 'overflow-menu-label' })
+  overflowMenuLabel = 'Options';
 
   /**
    * `true` to always show the actions menu for this item.
    * When set, the actions menu will be visible without requiring hover or selection.
    * Can be set directly on the item or inherited from the parent panel's `show-actions` attribute.
    */
-  @property({ type: Boolean, reflect: true, attribute: "show-actions" })
+  @property({ type: Boolean, reflect: true, attribute: 'show-actions' })
   showActions = false;
 
   /**
    * `true` if the rename input is in an invalid state.
    */
-  @property({ type: Boolean, reflect: true, attribute: "rename-invalid" })
+  @property({ type: Boolean, reflect: true, attribute: 'rename-invalid' })
   renameInvalid = false;
 
   /**
@@ -110,21 +110,21 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   @property({
     type: String,
     reflect: true,
-    attribute: "rename-invalid-message",
+    attribute: 'rename-invalid-message',
   })
-  renameInvalidMessage = "";
+  renameInvalidMessage = '';
 
   /**
    * `true` if the parent menu is expanded.
    * This is automatically set based on the parent history-panel-menu's expanded attribute.
    */
-  @property({ type: Boolean, reflect: true, attribute: "parent-menu-expanded" })
+  @property({ type: Boolean, reflect: true, attribute: 'parent-menu-expanded' })
   parentMenuExpanded = true;
 
   @query(`${prefix}-history-panel-item-input`) input!: HTMLElement;
 
-  @query("cds-overflow-menu") overflowMenu!: HTMLElement;
-  @query("cds-overflow-menu-body") overflowMenuBody!: HTMLElement;
+  @query('cds-overflow-menu') overflowMenu!: HTMLElement;
+  @query('cds-overflow-menu-body') overflowMenuBody!: HTMLElement;
 
   private _overflowMenuBodyElement?: HTMLElement;
   private _overflowMenuBodyFlippedClass = `${prefix}--history-overflow-menu-body--flipped`;
@@ -138,7 +138,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   }
 
   private _adoptOverflowMenuBodyStylesAfterPortal(
-    overflowMenuBody: HTMLElement,
+    overflowMenuBody: HTMLElement
   ) {
     requestAnimationFrame(() => {
       this._adoptOverflowMenuBodyStyles(overflowMenuBody);
@@ -198,7 +198,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     const flipUp = spaceBelow < actualMenuHeight && spaceAbove > spaceBelow;
     overflowMenuBody.classList.toggle(
       this._overflowMenuBodyFlippedClass,
-      flipUp,
+      flipUp
     );
     this._adoptOverflowMenuBodyStylesAfterPortal(overflowMenuBody);
   }
@@ -209,7 +209,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleMenuTriggerKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       this._adjustMenuPosition();
     }
   };
@@ -220,10 +220,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   private _handleMenuItemClick = (event: Event) => {
     const target = event.currentTarget as HTMLElement;
     const menuItemText =
-      target.getAttribute("data-action-text") || target.textContent?.trim();
+      target.getAttribute('data-action-text') || target.textContent?.trim();
 
     // Dispatch a custom event with item details
-    const itemActionEvent = new CustomEvent("history-item-menu-action", {
+    const itemActionEvent = new CustomEvent('history-item-menu-action', {
       bubbles: true,
       composed: true,
       detail: {
@@ -242,7 +242,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleMenuItemKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       this._handleMenuItemClick(event);
       // Close the overflow menu after handling the action
@@ -253,22 +253,22 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     }
 
     // Handle arrow keys
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       event.stopPropagation();
 
-      const direction = event.key === "ArrowDown" ? 1 : -1;
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
 
       // Find the menu body - the event target is the menu item
       const target = event.target as HTMLElement;
-      const menuBody = target.closest("cds-overflow-menu-body");
+      const menuBody = target.closest('cds-overflow-menu-body');
 
       if (!menuBody) {
         return;
       }
 
       const menuItems = Array.from(
-        menuBody.querySelectorAll("cds-overflow-menu-item:not([disabled])"),
+        menuBody.querySelectorAll('cds-overflow-menu-item:not([disabled])')
       ) as HTMLElement[];
 
       if (menuItems.length === 0) {
@@ -279,7 +279,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
         (item) =>
           item.contains(document.activeElement) ||
           item === document.activeElement ||
-          item.matches(":focus-within"),
+          item.matches(':focus-within')
       );
 
       let nextIndex: number;
@@ -300,7 +300,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     }
   };
 
-  @HostListener("click")
+  @HostListener('click')
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleClick(event: Event) {
     const composedPath = event.composedPath();
@@ -311,10 +311,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       if (element instanceof HTMLElement) {
         const tagName = element.tagName?.toLowerCase();
         return (
-          tagName?.includes("overflow-menu") ||
-          tagName === "cds-overflow-menu" ||
-          tagName === "cds-overflow-menu-body" ||
-          tagName === "cds-overflow-menu-item"
+          tagName?.includes('overflow-menu') ||
+          tagName === 'cds-overflow-menu' ||
+          tagName === 'cds-overflow-menu-body' ||
+          tagName === 'cds-overflow-menu-item'
         );
       }
       return false;
@@ -325,7 +325,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     }
 
     // Dispatch a custom event with item details
-    const itemActionEvent = new CustomEvent("history-item-selected", {
+    const itemActionEvent = new CustomEvent('history-item-selected', {
       bubbles: true,
       composed: true,
       detail: {
@@ -337,10 +337,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     this.dispatchEvent(itemActionEvent);
   }
 
-  @HostListener("keydown")
+  @HostListener('keydown')
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       this._handleClick(event);
     }
@@ -351,19 +351,19 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
 
     // Inherit show-actions from parent panel if not explicitly set on this item
     const parentPanel = this.closest(`${prefix}-history-panel`);
-    if (parentPanel && !this.hasAttribute("show-actions")) {
+    if (parentPanel && !this.hasAttribute('show-actions')) {
       // Set initial value
-      this.showActions = parentPanel.hasAttribute("show-actions");
+      this.showActions = parentPanel.hasAttribute('show-actions');
 
       // Watch for changes to parent's show-actions attribute
       this._parentObserver = new MutationObserver(() => {
-        const parentHasAttribute = parentPanel.hasAttribute("show-actions");
+        const parentHasAttribute = parentPanel.hasAttribute('show-actions');
         this.showActions = parentHasAttribute;
       });
 
       this._parentObserver.observe(parentPanel, {
         attributes: true,
-        attributeFilter: ["show-actions"],
+        attributeFilter: ['show-actions'],
       });
     }
 
@@ -378,15 +378,15 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       }) as EventListener;
 
       parentMenu.addEventListener(
-        "cds-side-nav-menu-toggled",
-        this._parentMenuToggleListener,
+        'cds-side-nav-menu-toggled',
+        this._parentMenuToggleListener
       );
     }
   }
 
   disconnectedCallback() {
     this._overflowMenuBodyElement?.classList.remove(
-      this._overflowMenuBodyFlippedClass,
+      this._overflowMenuBodyFlippedClass
     );
 
     super.disconnectedCallback();
@@ -395,8 +395,8 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     // Remove event listener from parent menu
     if (this._parentMenu && this._parentMenuToggleListener) {
       this._parentMenu.removeEventListener(
-        "cds-side-nav-menu-toggled",
-        this._parentMenuToggleListener,
+        'cds-side-nav-menu-toggled',
+        this._parentMenuToggleListener
       );
     }
   }
@@ -414,18 +414,18 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     super.updated(changedProperties);
 
     if (this.input) {
-      this.input.addEventListener("history-panel-item-input-cancel", () => {
+      this.input.addEventListener('history-panel-item-input-cancel', () => {
         this.rename = false;
         this.renameInvalid = false;
-        this.renameInvalidMessage = "";
+        this.renameInvalidMessage = '';
       });
 
-      this.input.addEventListener("history-panel-item-input-save", (event) => {
+      this.input.addEventListener('history-panel-item-input-save', (event) => {
         const newName = (event as CustomEvent).detail.newName;
         this.name = newName;
         this.rename = false;
         this.renameInvalid = false;
-        this.renameInvalidMessage = "";
+        this.renameInvalidMessage = '';
       });
     }
   }
@@ -459,11 +459,10 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                   align="top-right"
                   size="sm"
                   @click=${adjustMenuPosition}
-                  @keydown=${handleMenuTriggerKeyDown}
-                >
+                  @keydown=${handleMenuTriggerKeyDown}>
                   ${iconLoader(OverflowMenuVertical16, {
                     class: `${prefix}--overflow-menu__icon`,
-                    slot: "icon",
+                    slot: 'icon',
                   })}
                   <span slot="tooltip-content">${overflowMenuLabel}</span>
                   <cds-overflow-menu-body flipped>
@@ -477,7 +476,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                           @click=${handleMenuItemClick}
                           @keydown=${handleMenuItemKeyDown}
                           >${action.text}${action.icon}</cds-overflow-menu-item
-                        >`,
+                        >`
                     )}
                   </cds-overflow-menu-body>
                 </cds-overflow-menu>
@@ -488,8 +487,7 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
                 value="${name}"
                 item-id="${id}"
                 ?invalid=${this.renameInvalid}
-                invalid-message="${this.renameInvalidMessage}"
-              ></cds-aichat-history-panel-item-input>
+                invalid-message="${this.renameInvalidMessage}"></cds-aichat-history-panel-item-input>
             `
       }
     `;

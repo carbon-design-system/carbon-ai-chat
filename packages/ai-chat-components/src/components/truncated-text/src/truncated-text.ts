@@ -7,28 +7,28 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, LitElement } from "lit";
-import { property, query, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import { carbonElement as customElement } from "@carbon/web-components/es/globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings";
-import "@carbon/web-components/es/components/tooltip/index.js";
-import "@carbon/web-components/es/components/button/button.js";
-import "@carbon/web-components/es/components/link/index.js";
+import { html, LitElement } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { carbonElement as customElement } from '@carbon/web-components/es/globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings';
+import '@carbon/web-components/es/components/tooltip/index.js';
+import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/link/index.js';
 
-import styles from "./truncated-text.scss?lit";
+import styles from './truncated-text.scss?lit';
 import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
+} from '../../shared/dynamic-css-var-sheet.js';
 
-const componentName = "truncated-text";
+const componentName = 'truncated-text';
 export const blockClass = `${prefix}--${componentName}`;
 const elementName = `${prefix}-${componentName}`; // cds-aichat-truncated-text
-const carbonPrefix = "cds";
+const carbonPrefix = 'cds';
 
-const TRUNCATED_INSTANCE_ATTR = "data-cds-aichat-truncated-text-id";
+const TRUNCATED_INSTANCE_ATTR = 'data-cds-aichat-truncated-text-id';
 let truncatedInstanceCounter = 0;
 
 /**
@@ -43,7 +43,7 @@ class CDSAIChatTruncatedText extends LitElement {
    * Specify how the tooltip should align with the content.
    */
   @property({ reflect: true, type: String })
-  align = "top";
+  align = 'top';
 
   /**
    * Specify whether a auto align functionality should be applied
@@ -54,20 +54,20 @@ class CDSAIChatTruncatedText extends LitElement {
   /**
    * The label on the collapse button.
    */
-  @property({ attribute: "collapse-label", type: String, reflect: true })
-  collapseLabel = "";
+  @property({ attribute: 'collapse-label', type: String, reflect: true })
+  collapseLabel = '';
 
   /**
    * The label on expand button.
    */
-  @property({ attribute: "expand-label", type: String, reflect: true })
-  expandLabel = "";
+  @property({ attribute: 'expand-label', type: String, reflect: true })
+  expandLabel = '';
 
   /**
    * Unique identifier for the element.
    */
   @property({ type: String, reflect: true })
-  id = "";
+  id = '';
 
   /**
    * The maximum number of lines to display before truncation.
@@ -79,17 +79,17 @@ class CDSAIChatTruncatedText extends LitElement {
    * The method to display the full text when truncated. Options are "tooltip" or "expand". if not passed, the text would just be truncated with ellipsis.
    */
   @property({ type: String, reflect: true })
-  type: "tooltip" | "expand" = "tooltip";
+  type: 'tooltip' | 'expand' = 'tooltip';
 
   /**
    * The string value to be truncated.
    */
-  @property({ type: String, attribute: "value", reflect: true })
-  value = "";
+  @property({ type: String, attribute: 'value', reflect: true })
+  value = '';
 
   @state() private _isOverflowing = false;
   @state() private _isExpanded = false;
-  @state() private _maxHeight = "none";
+  @state() private _maxHeight = 'none';
 
   @query(`.${blockClass}_content`) private _textElement!: HTMLElement;
   private _lineHeight = 0;
@@ -103,8 +103,8 @@ class CDSAIChatTruncatedText extends LitElement {
 
   private _syncTruncatedVars() {
     setVarsForSelector(this._truncatedSelector, {
-      "--line-clamp-value": this.lines === 0 ? "none" : String(this.lines),
-      "--max-height-value": this._maxHeight || "none",
+      '--line-clamp-value': this.lines === 0 ? 'none' : String(this.lines),
+      '--max-height-value': this._maxHeight || 'none',
     });
   }
 
@@ -113,7 +113,7 @@ class CDSAIChatTruncatedText extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._isLayered = !!this.closest(`${carbonPrefix}-layer`);
-    this.type = this.type || "tooltip";
+    this.type = this.type || 'tooltip';
   }
 
   disconnectedCallback() {
@@ -126,7 +126,7 @@ class CDSAIChatTruncatedText extends LitElement {
     if (this._textElement) {
       this._textElement.setAttribute(
         TRUNCATED_INSTANCE_ATTR,
-        this._truncatedInstanceId,
+        this._truncatedInstanceId
       );
       adoptOnRoot(this.renderRoot as ShadowRoot);
       this._syncTruncatedVars();
@@ -141,7 +141,7 @@ class CDSAIChatTruncatedText extends LitElement {
   }
 
   protected updated(changed: Map<string, unknown>) {
-    if (changed.has("lines") || changed.has("value")) {
+    if (changed.has('lines') || changed.has('value')) {
       // Use requestAnimationFrame to ensure DOM is updated before checking overflow
       requestAnimationFrame(() => {
         this._updateOverflowStatus();
@@ -154,7 +154,7 @@ class CDSAIChatTruncatedText extends LitElement {
   }
 
   private _updateMaxHeight() {
-    if (this.type !== "expand") {
+    if (this.type !== 'expand') {
       return;
     }
     requestAnimationFrame(() => {
@@ -201,7 +201,7 @@ class CDSAIChatTruncatedText extends LitElement {
 
   private _handleKeydown(evt: KeyboardEvent) {
     const { key } = evt;
-    if (key === "Enter" || key === " ") {
+    if (key === 'Enter' || key === ' ') {
       this._toggleExpansion();
     }
   }
@@ -211,10 +211,10 @@ class CDSAIChatTruncatedText extends LitElement {
     this._updateMaxHeight();
     this._textElement?.classList.add(`${blockClass}_transition`);
     const onTransitionEnd = () => {
-      this._textElement?.querySelector("button")?.focus();
-      this._textElement?.removeEventListener("transitionend", onTransitionEnd);
+      this._textElement?.querySelector('button')?.focus();
+      this._textElement?.removeEventListener('transitionend', onTransitionEnd);
     };
-    this._textElement?.addEventListener("transitionend", onTransitionEnd);
+    this._textElement?.addEventListener('transitionend', onTransitionEnd);
 
     /**
      * currently you cannot animate line-clamping
@@ -245,8 +245,7 @@ class CDSAIChatTruncatedText extends LitElement {
         @click=${this._toggleExpansion}
         @keydown=${this._handleKeydown}
         role="button"
-        tabIndex="0"
-      >
+        tabIndex="0">
         ${label}
       </span>
     `;
@@ -272,7 +271,7 @@ class CDSAIChatTruncatedText extends LitElement {
     const contentClasses = classMap({
       [`${blockClass}_content`]: true,
       [`${blockClass}_content--expanded`]: this._isExpanded,
-      [`${blockClass}_content--expand-type`]: this.type === "expand",
+      [`${blockClass}_content--expand-type`]: this.type === 'expand',
     });
 
     const valueBody = html`
@@ -285,8 +284,7 @@ class CDSAIChatTruncatedText extends LitElement {
         align=${this.align}
         autoalign=${this.autoalign}
         enter-delay-ms="0"
-        leave-delay-ms="0"
-      >
+        leave-delay-ms="0">
         ${valueBody}
         <cds-tooltip-content>${tooltipContent}</cds-tooltip-content>
       </cds-tooltip>
@@ -294,7 +292,7 @@ class CDSAIChatTruncatedText extends LitElement {
 
     const expandVariant = html`${valueBody} ${this._renderToggleButton()}`;
 
-    return this.type === "tooltip" && this._isOverflowing
+    return this.type === 'tooltip' && this._isOverflowing
       ? tooltipVariant
       : expandVariant;
   }

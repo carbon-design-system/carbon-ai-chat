@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   BusEventType,
@@ -18,19 +18,19 @@ import {
   type MessageResponse,
   type PublicConfig,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import AiLaunch20 from '@carbon/icons/es/ai-launch/20.js';
 
-import { customSendMessage } from "./customSendMessage";
-import "./inventory-report-example";
-import "./inventory-status-example";
-import "./outstanding-orders-example";
-import "./outstanding-orders-card";
-import "./sql-editor-example";
-import "./styles.css";
+import { customSendMessage } from './customSendMessage';
+import './inventory-report-example';
+import './inventory-status-example';
+import './outstanding-orders-example';
+import './outstanding-orders-card';
+import './sql-editor-example';
+import './styles.css';
 
 interface UserDefinedSlotsMap {
   [key: string]: UserDefinedSlot;
@@ -54,7 +54,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     :host {
@@ -147,7 +147,7 @@ export class Demo extends LitElement {
     }
 
     /* RTL support */
-    :host([dir="rtl"]) .sidebar {
+    :host([dir='rtl']) .sidebar {
       right: auto;
       left: 0;
       transition:
@@ -155,30 +155,30 @@ export class Demo extends LitElement {
         visibility 0s 70ms;
     }
 
-    :host([dir="rtl"]) .sidebar--expanded {
+    :host([dir='rtl']) .sidebar--expanded {
       width: calc(100vw - 320px - 2rem);
     }
 
-    :host([dir="rtl"]) .sidebar--expanding {
+    :host([dir='rtl']) .sidebar--expanding {
       transition:
         left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
         width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
         visibility 0s 70ms;
     }
 
-    :host([dir="rtl"]) .sidebar--contracting {
+    :host([dir='rtl']) .sidebar--contracting {
       transition:
         left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
         width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
         visibility 0s 70ms;
     }
 
-    :host([dir="rtl"]) .sidebar--closing {
+    :host([dir='rtl']) .sidebar--closing {
       left: calc(calc(320px + 1rem) * -1);
       width: 320px;
     }
 
-    :host([dir="rtl"]) .sidebar--closed {
+    :host([dir='rtl']) .sidebar--closed {
       right: auto;
       left: calc(calc(320px + 1rem) * -1);
       width: 320px;
@@ -217,7 +217,7 @@ export class Demo extends LitElement {
   accessor workspaceExpanded: boolean = false;
 
   @state()
-  accessor workspaceAnimating: "expanding" | "contracting" | null = null;
+  accessor workspaceAnimating: 'expanding' | 'contracting' | null = null;
 
   @state()
   accessor clickInProgress: boolean = false;
@@ -285,11 +285,11 @@ export class Demo extends LitElement {
   workspacePanelPreOpenHandler = (event: any) => {
     console.log(
       event.data,
-      "This event can be used to load additional resources into the workspace while displaying a manual loading state.",
+      'This event can be used to load additional resources into the workspace while displaying a manual loading state.'
     );
     // Expand sidebar when workspace is opening
-    console.log("Expanding sidebar - workspace opening");
-    this.workspaceAnimating = "expanding";
+    console.log('Expanding sidebar - workspace opening');
+    this.workspaceAnimating = 'expanding';
     this.workspaceExpanded = true;
   };
 
@@ -297,7 +297,7 @@ export class Demo extends LitElement {
    * Handles when the workspace panel is opened.
    */
   workspacePanelOpenHandler = (event: any) => {
-    console.log(event.data, "Workspace panel opened");
+    console.log(event.data, 'Workspace panel opened');
 
     // Extract workspace data from the event
     const { workspaceId, additionalData } = event.data;
@@ -311,8 +311,8 @@ export class Demo extends LitElement {
    */
   workspacePanelPreCloseHandler = () => {
     // Contract sidebar when workspace is closing
-    console.log("Contracting sidebar - workspace closing");
-    this.workspaceAnimating = "contracting";
+    console.log('Contracting sidebar - workspace closing');
+    this.workspaceAnimating = 'contracting';
     this.workspaceExpanded = false;
   };
 
@@ -320,7 +320,7 @@ export class Demo extends LitElement {
    * Handles when the workspace panel is closed.
    */
   workspacePanelCloseHandler = (event: any) => {
-    console.log(event.data, "Workspace panel closed");
+    console.log(event.data, 'Workspace panel closed');
 
     // Clear workspace data when panel closes
     this.workspaceType = null;
@@ -355,7 +355,7 @@ export class Demo extends LitElement {
    */
   handleTransitionEnd = (event: TransitionEvent) => {
     // Only handle width transitions
-    if (event.propertyName === "width") {
+    if (event.propertyName === 'width') {
       this.workspaceAnimating = null;
     }
   };
@@ -422,7 +422,7 @@ export class Demo extends LitElement {
 
     // Check the "type" we have used as our key.
     switch (userDefinedMessage.user_defined?.user_defined_type) {
-      case "outstanding_orders_card":
+      case 'outstanding_orders_card':
         return html`<div slot=${slot}>
           <outstanding-orders-card
             .workspaceId=${userDefinedMessage.user_defined?.workspace_id}
@@ -439,7 +439,7 @@ export class Demo extends LitElement {
 
               // Use the customPanels API to open the workspace
               const panel = this.instance.customPanels?.getPanel(
-                PanelType.WORKSPACE,
+                PanelType.WORKSPACE
               );
               if (panel) {
                 panel.open({
@@ -447,8 +447,7 @@ export class Demo extends LitElement {
                   additionalData,
                 });
               }
-            }}
-          ></outstanding-orders-card>
+            }}></outstanding-orders-card>
         </div>`;
       default:
         return null;
@@ -464,34 +463,30 @@ export class Demo extends LitElement {
     }
 
     switch (this.workspaceType) {
-      case "inventory_report":
+      case 'inventory_report':
         return html`<inventory-report-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
           location="workspace"
-          valueFromParent="Hello from parent!"
-        ></inventory-report-example>`;
-      case "inventory_status":
+          valueFromParent="Hello from parent!"></inventory-report-example>`;
+      case 'inventory_status':
         return html`<inventory-status-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
-          location="workspace"
-        ></inventory-status-example>`;
-      case "outstanding_orders":
+          location="workspace"></inventory-status-example>`;
+      case 'outstanding_orders':
         return html`<outstanding-orders-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
-          location="workspace"
-        ></outstanding-orders-example>`;
-      case "sql_editor":
+          location="workspace"></outstanding-orders-example>`;
+      case 'sql_editor':
         return html`<sql-editor-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
-          .additionalData=${this.workspaceAdditionalData}
-        ></sql-editor-example>`;
+          .additionalData=${this.workspaceAdditionalData}></sql-editor-example>`;
       default:
         return html``;
     }
@@ -501,19 +496,19 @@ export class Demo extends LitElement {
    * Build className for sidebar layout
    */
   getSidebarClassName() {
-    let className = "sidebar";
+    let className = 'sidebar';
     if (this.workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += ' sidebar--expanded';
     }
-    if (this.workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
-    } else if (this.workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+    if (this.workspaceAnimating === 'expanding') {
+      className += ' sidebar--expanding';
+    } else if (this.workspaceAnimating === 'contracting') {
+      className += ' sidebar--contracting';
     }
     if (this.sideBarClosing) {
-      className += " sidebar--closing";
+      className += ' sidebar--closing';
     } else if (!this.sideBarOpen) {
-      className += " sidebar--closed";
+      className += ' sidebar--closed';
     }
     return className;
   }
@@ -530,25 +525,22 @@ export class Demo extends LitElement {
                   class="app-header__button"
                   @click=${this.handleHeaderButtonClick}
                   ?disabled=${this.clickInProgress}
-                  aria-label="Toggle AI Chat"
-                >
+                  aria-label="Toggle AI Chat">
                   ${iconLoader(AiLaunch20)}
                 </button>
               `
-            : ""
+            : ''
         }
       </header>
       <div
         class=${this.getSidebarClassName()}
-        @transitionend=${this.handleTransitionEnd}
-      >
+        @transitionend=${this.handleTransitionEnd}>
         <cds-aichat-custom-element
           .onBeforeRender=${this.onBeforeRender}
           .messaging=${config.messaging}
           .layout=${config.layout}
           .openChatByDefault=${config.openChatByDefault}
-          class="chat-custom-element"
-        >
+          class="chat-custom-element">
           ${this.renderUserDefinedSlots()}
           <div slot="workspacePanelElement">
             ${this.renderWorkspaceElement()}

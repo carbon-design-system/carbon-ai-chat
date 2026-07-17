@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { ChatInstance, RenderUserDefinedState } from "@carbon/ai-chat";
-import React from "react";
+import { ChatInstance, RenderUserDefinedState } from '@carbon/ai-chat';
+import React from 'react';
 
-import { CustomResponseExample } from "./CustomResponseExample";
+import { CustomResponseExample } from './CustomResponseExample';
 
 function renderUserDefinedResponse(
   state: RenderUserDefinedState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const { messageItem } = state;
   if (messageItem) {
@@ -23,7 +23,7 @@ function renderUserDefinedResponse(
       Boolean(activeResponseId) && state.fullMessage?.id === activeResponseId;
 
     switch (messageItem.user_defined?.user_defined_type) {
-      case "my_unique_identifier":
+      case 'my_unique_identifier':
         return (
           <CustomResponseExample
             data={messageItem.user_defined as { type: string; text: string }}

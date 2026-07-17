@@ -5,18 +5,18 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId } from "@carbon/ai-chat/server";
-import { test, expect } from "@playwright/test";
-import { DemoPageObjectId } from "./utils";
+import { PageObjectId } from '@carbon/ai-chat/server';
+import { test, expect } from '@playwright/test';
+import { DemoPageObjectId } from './utils';
 import {
   destroyChatSession,
   openChatWindow,
   waitForChatReady,
   waitForSetChatConfigApplied,
-} from "./utils";
+} from './utils';
 
 // Import types for window.setChatConfig without emitting runtime code
-import type {} from "../types/window";
+import type {} from '../types/window';
 
 // Clear session between all tests to ensure clean state
 test.afterEach(async ({ page }) => {
@@ -24,14 +24,14 @@ test.afterEach(async ({ page }) => {
 });
 
 // Full happy-path regression for setChatConfig mode to ensure notifications and view transitions still behave.
-test("setChatConfig configuration mode functionality", async ({ page }) => {
+test('setChatConfig configuration mode functionality', async ({ page }) => {
   // Block analytics script to avoid cookie consent issues
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
 
   // Phase 1: Initial Setup & Config Application
 
   // 1. Navigate to demo page
-  await page.goto("/");
+  await page.goto('/');
 
   // Clear session storage to ensure clean state
   await page.evaluate(() => {
@@ -41,18 +41,18 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
   });
 
   // Wait for page to be ready for interaction
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   // 2. Verify normal mode: sidebar visible, no notifications
   await expect(page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR)).toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE)
   ).not.toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR)
   ).toBeHidden({ timeout: 15000 });
 
-  await page.goto("/?config=setChatConfig");
+  await page.goto('/?config=setChatConfig');
 
   await page.evaluate(() => {
     if (window.chatInstance) {
@@ -61,13 +61,13 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
   });
 
   // Wait for page to be ready for interaction
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   // 3. Call window.setChatConfig with header title
   await page.evaluate(async () => {
     if (window.setChatConfig) {
       await window.setChatConfig({
-        header: { title: "Test Title 1" },
+        header: { title: 'Test Title 1' },
       });
     }
   });
@@ -78,20 +78,20 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
 
   // 4. Assertions for setChatConfig mode activation - sidebar should still be visible but with different content
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR)
   ).toBeHidden({ timeout: 15000 });
 
   // Should show "Leave setChatConfig Mode" button in sidebar
   await expect(
-    page.getByTestId(DemoPageObjectId.LEAVE_SET_CHAT_CONFIG_MODE_BUTTON),
+    page.getByTestId(DemoPageObjectId.LEAVE_SET_CHAT_CONFIG_MODE_BUTTON)
   ).toBeVisible();
 
   // Check if title was updated (scoped to chat_header)
   await expect(
     page
       .getByTestId(PageObjectId.CHAT_HEADER)
-      .getByTestId(PageObjectId.HEADER_TITLE),
-  ).toContainText("Test Title 1");
+      .getByTestId(PageObjectId.HEADER_TITLE)
+  ).toContainText('Test Title 1');
 
   // Phase 2: Page Refresh & Error State
 
@@ -102,20 +102,20 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
     }
   });
   await page.reload();
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   // Verify URL contains setChatConfig parameters
   await expect(page).toHaveURL(/[?&]config=setChatConfig/);
 
   // 6. Assertions for error state after refresh - should show error notification and no sidebar
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR)
   ).toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE)
   ).not.toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR),
+    page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR)
   ).not.toBeVisible();
 
   // Verify chat is not started (no launcher should be visible)
@@ -128,7 +128,7 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
   await page.evaluate(async () => {
     if (window.setChatConfig) {
       await window.setChatConfig({
-        header: { name: "Test Assistant" },
+        header: { name: 'Test Assistant' },
       });
     }
   });
@@ -142,39 +142,39 @@ test("setChatConfig configuration mode functionality", async ({ page }) => {
   await expect(
     page
       .getByTestId(PageObjectId.CHAT_HEADER)
-      .getByTestId(PageObjectId.HEADER_NAME),
-  ).toContainText("Test Assistant");
+      .getByTestId(PageObjectId.HEADER_NAME)
+  ).toContainText('Test Assistant');
 
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR)
   ).not.toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE)
   ).not.toBeVisible();
   await expect(page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR)).toBeVisible();
 });
 
-test("setChatConfig mode without config prevents chat startup", async ({
+test('setChatConfig mode without config prevents chat startup', async ({
   page,
 }) => {
   // Block analytics script to avoid cookie consent issues
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
 
   // Navigate directly to setChatConfig mode URL without calling setChatConfig
-  await page.goto("/?config=setChatConfig");
-  await page.waitForLoadState("domcontentloaded");
+  await page.goto('/?config=setChatConfig');
+  await page.waitForLoadState('domcontentloaded');
 
   // Should show error notification
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ERROR)
   ).toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE)
   ).not.toBeVisible();
 
   // Sidebar should be hidden
   await expect(
-    page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR),
+    page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR)
   ).not.toBeVisible();
 
   // Chat should NOT be started - no launcher visible
@@ -185,7 +185,7 @@ test("setChatConfig mode without config prevents chat startup", async ({
   await page.evaluate(async () => {
     if (window.setChatConfig) {
       await window.setChatConfig({
-        header: { title: "Recovery Test" },
+        header: { title: 'Recovery Test' },
       });
     }
   });
@@ -201,9 +201,9 @@ test("setChatConfig mode without config prevents chat startup", async ({
   });
   await expect(page.getByTestId(DemoPageObjectId.CONFIG_SIDEBAR)).toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.LEAVE_SET_CHAT_CONFIG_MODE_BUTTON),
+    page.getByTestId(DemoPageObjectId.LEAVE_SET_CHAT_CONFIG_MODE_BUTTON)
   ).toBeVisible();
   await expect(
-    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE),
+    page.getByTestId(DemoPageObjectId.SET_CHAT_CONFIG_NOTIFICATION_ACTIVE)
   ).not.toBeVisible();
 });

@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { FILE_UPLOADER_ITEM_STATE } from "@carbon/web-components/es/components/file-uploader/defs.js";
-import { LanguagePack } from "../../../types/config/PublicConfig";
+import { FILE_UPLOADER_ITEM_STATE } from '@carbon/web-components/es/components/file-uploader/defs.js';
+import { LanguagePack } from '../../../types/config/PublicConfig';
 import {
   FileStatusValue,
   FileUpload,
-} from "../../../types/config/ServiceDeskConfig";
+} from '../../../types/config/ServiceDeskConfig';
 
 type FileUploaderItemLanguagePack = Pick<
   LanguagePack,
-  "fileSharing_removeButtonTitle" | "fileSharing_statusUploading"
+  'fileSharing_removeButtonTitle' | 'fileSharing_statusUploading'
 >;
 
 interface FileUploaderItemDisplayProps {
@@ -25,7 +25,7 @@ interface FileUploaderItemDisplayProps {
 }
 
 function getFileUploaderItemState(
-  fileUpload: FileUpload,
+  fileUpload: FileUpload
 ): FILE_UPLOADER_ITEM_STATE {
   if (fileUpload.isError === true) {
     return FILE_UPLOADER_ITEM_STATE.EDIT;
@@ -40,7 +40,7 @@ function getFileUploaderItemState(
 
 function getFileUploaderItemDisplayProps(
   fileUpload: FileUpload,
-  languagePack: FileUploaderItemLanguagePack,
+  languagePack: FileUploaderItemLanguagePack
 ): FileUploaderItemDisplayProps {
   const state = getFileUploaderItemState(fileUpload);
   const iconDescription =

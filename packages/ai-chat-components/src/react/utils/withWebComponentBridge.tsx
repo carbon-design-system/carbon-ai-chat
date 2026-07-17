@@ -19,19 +19,19 @@
  * workaround is still required).
  */
 
-import React from "react";
+import React from 'react';
 
 // React-managed props that should never be forwarded to the host element.
 const REACT_RESERVED_PROPS = new Set([
-  "children",
-  "className",
-  "style",
-  "slot",
-  "key",
-  "ref",
-  "suppressContentEditableWarning",
-  "suppressHydrationWarning",
-  "dangerouslySetInnerHTML",
+  'children',
+  'className',
+  'style',
+  'slot',
+  'key',
+  'ref',
+  'suppressContentEditableWarning',
+  'suppressHydrationWarning',
+  'dangerouslySetInnerHTML',
 ]);
 
 // Merge forwardedRef with our internal host ref so both the wrapper and callers observe the same element.
@@ -45,7 +45,7 @@ function mergeRefs<T>(
         continue;
       }
       // Support both callback refs and mutable ref objects.
-      if (typeof ref === "function") {
+      if (typeof ref === 'function') {
         ref(value);
       } else {
         (ref as React.MutableRefObject<T | null>).current = value;
@@ -61,28 +61,28 @@ function mergeRefs<T>(
 function isInTestEnvironment(): boolean {
   // Explicit override to disable
   if (
-    typeof process !== "undefined" &&
-    process.env?.AICHAT_DISABLE_WEB_COMPONENT_BRIDGE === "true"
+    typeof process !== 'undefined' &&
+    process.env?.AICHAT_DISABLE_WEB_COMPONENT_BRIDGE === 'true'
   ) {
     return false;
   }
 
   // Check for happy-dom (most reliable for happy-dom detection)
-  if (typeof window !== "undefined" && (window as any).happyDOM) {
+  if (typeof window !== 'undefined' && (window as any).happyDOM) {
     return true;
   }
 
   // Check for jsdom via navigator.userAgent
   if (
-    typeof navigator !== "undefined" &&
-    navigator.userAgent?.includes("jsdom")
+    typeof navigator !== 'undefined' &&
+    navigator.userAgent?.includes('jsdom')
   ) {
     return true;
   }
 
   // Check for Jest environment variable
   if (
-    typeof process !== "undefined" &&
+    typeof process !== 'undefined' &&
     process.env?.JEST_WORKER_ID !== undefined
   ) {
     return true;
@@ -90,16 +90,16 @@ function isInTestEnvironment(): boolean {
 
   // Check if we're in Node.js with test environment
   if (
-    typeof process !== "undefined" &&
+    typeof process !== 'undefined' &&
     process.versions?.node &&
-    process.env?.NODE_ENV === "test"
+    process.env?.NODE_ENV === 'test'
   ) {
     return true;
   }
 
   // Fallback: check if we're in a Node.js environment at all
   // (real browsers don't have process.versions)
-  if (typeof process !== "undefined" && process.versions?.node) {
+  if (typeof process !== 'undefined' && process.versions?.node) {
     return true;
   }
 
@@ -114,7 +114,7 @@ const shouldEnableBridge = isInTestEnvironment();
  * The return type is intentionally loose to avoid breaking existing code that relies on flexible prop types.
  */
 export function withWebComponentBridge<C extends React.ComponentType<any>>(
-  Component: C,
+  Component: C
 ): React.ComponentType<any> {
   // Early return if bridge is disabled (production browsers)
   if (!shouldEnableBridge) {
@@ -126,7 +126,7 @@ export function withWebComponentBridge<C extends React.ComponentType<any>>(
     const hostRef = React.useRef<Element | null>(null);
     const mergedRef = React.useMemo(
       () => mergeRefs(hostRef, forwardedRef),
-      [forwardedRef],
+      [forwardedRef]
     );
 
     React.useLayoutEffect(() => {
@@ -141,7 +141,7 @@ export function withWebComponentBridge<C extends React.ComponentType<any>>(
         }
 
         const isEventProp =
-          key.startsWith("on") &&
+          key.startsWith('on') &&
           key.length > 2 &&
           key[2] === key[2].toUpperCase();
 
@@ -161,7 +161,7 @@ export function withWebComponentBridge<C extends React.ComponentType<any>>(
           if (value === null || value === undefined || value === false) {
             element.removeAttribute(key);
           } else if (value === true) {
-            element.setAttribute(key, "");
+            element.setAttribute(key, '');
           } else {
             element.setAttribute(key, String(value));
           }
@@ -178,7 +178,7 @@ export function withWebComponentBridge<C extends React.ComponentType<any>>(
   Bridged.displayName =
     (Component as any).displayName ||
     (Component as any).name ||
-    "CarbonAIChatWebComponentWrapper";
+    'CarbonAIChatWebComponentWrapper';
 
   return Bridged;
 }

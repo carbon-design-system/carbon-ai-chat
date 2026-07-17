@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonTagElement from "@carbon/web-components/es/components/tag/tag.js";
+import CarbonTagElement from '@carbon/web-components/es/components/tag/tag.js';
 
 const Tag = createComponent({
-  tagName: "cds-tag",
+  tagName: 'cds-tag',
   elementClass: CarbonTagElement,
   react: React,
 });

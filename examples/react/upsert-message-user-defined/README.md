@@ -1,19 +1,31 @@
 # Upsert message user defined
 
-Progressively updates a `user_defined` steps-card widget inside a single assistant message using `ChatInstance.messaging.upsertMessage`, and pops a Carbon toast (with a "View message" action wired to `instance.scrollToMessage`) when the run completes.
+Progressively updates a `user_defined` steps-card widget inside a single
+assistant message using `ChatInstance.messaging.upsertMessage`, and pops a
+Carbon toast (with a "View message" action wired to `instance.scrollToMessage`)
+when the run completes.
 
 ## What this example shows
 
-- How to use `ChatInstance.messaging.upsertMessage` to mutate a message after it is already `MessageState.COMPLETE`, keeping the input usable throughout.
-- How a `user_defined` widget keeps its component identity across successive upserts (no remount), so internal animations and focus survive each update.
-- How to run multiple long-running scenarios concurrently — each click of the welcome message's post-back button generates a fresh `messageID`, parallelized by the lifecycle coordinator.
-- How to surface scenario completion outside the chat with a Carbon `ActionableNotification` whose action calls `instance.scrollToMessage` to jump the conversation back to the finished message.
+- How to use `ChatInstance.messaging.upsertMessage` to mutate a message after it
+  is already `MessageState.COMPLETE`, keeping the input usable throughout.
+- How a `user_defined` widget keeps its component identity across successive
+  upserts (no remount), so internal animations and focus survive each update.
+- How to run multiple long-running scenarios concurrently — each click of the
+  welcome message's post-back button generates a fresh `messageID`, parallelized
+  by the lifecycle coordinator.
+- How to surface scenario completion outside the chat with a Carbon
+  `ActionableNotification` whose action calls `instance.scrollToMessage` to jump
+  the conversation back to the finished message.
 
 ## When to use this pattern
 
-- You have an assistant message that contains a stateful widget (a card, a chart, a progress tracker) whose data continues to change after the message is delivered.
+- You have an assistant message that contains a stateful widget (a card, a
+  chart, a progress tracker) whose data continues to change after the message is
+  delivered.
 - You want the user to keep typing while the widget updates in the background.
-- You need an out-of-chat notification that lets the user jump back to the relevant message after they have scrolled away.
+- You need an out-of-chat notification that lets the user jump back to the
+  relevant message after they have scrolled away.
 
 ## APIs and props demonstrated
 
@@ -36,7 +48,10 @@ Progressively updates a `user_defined` steps-card widget inside a single assista
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

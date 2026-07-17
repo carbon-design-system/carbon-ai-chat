@@ -1,18 +1,27 @@
 # Workspace Sidebar
 
-Same workspace payloads as `workspace`, but the chat is mounted inside a collapsible app sidebar that expands when a workspace opens and contracts when it closes.
+Same workspace payloads as `workspace`, but the chat is mounted inside a
+collapsible app sidebar that expands when a workspace opens and contracts when
+it closes.
 
 ## What this example shows
 
-- Subscribing to `WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_PRE_CLOSE` / `WORKSPACE_CLOSE` to drive sidebar expand/contract animations.
-- Subscribing to `BusEventViewPreChange` and `BusEventViewChange` (`ViewType.MAIN_WINDOW`) to animate the sidebar open/closed alongside the chat view.
-- Opening the workspace via `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
-- `CornersType.SQUARE` layout and an `AiLaunch20` `@carbon/icons-react` launcher button.
-- Same set of workspace bodies as `workspace` (inventory report, inventory status, outstanding orders, SQL editor).
+- Subscribing to `WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_PRE_CLOSE`
+  / `WORKSPACE_CLOSE` to drive sidebar expand/contract animations.
+- Subscribing to `BusEventViewPreChange` and `BusEventViewChange`
+  (`ViewType.MAIN_WINDOW`) to animate the sidebar open/closed alongside the chat
+  view.
+- Opening the workspace via
+  `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
+- `CornersType.SQUARE` layout and an `AiLaunch20` `@carbon/icons-react` launcher
+  button.
+- Same set of workspace bodies as `workspace` (inventory report, inventory
+  status, outstanding orders, SQL editor).
 
 ## When to use this pattern
 
-- You want the chat to live permanently in a side panel of your app and expand to include a workspace when relevant.
+- You want the chat to live permanently in a side panel of your app and expand
+  to include a workspace when relevant.
 - You need explicit control over view transitions and sidebar animation timing.
 
 ## APIs and props demonstrated
@@ -37,7 +46,10 @@ Same workspace payloads as `workspace`, but the chat is mounted inside a collaps
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 
@@ -49,6 +61,7 @@ npm run build --workspace=@carbon/ai-chat
 npm run start --workspace=@carbon/ai-chat-examples-react-workspace-sidebar
 ```
 
-(Replace `start` with `dev` or `test` if this example's package.json defines those instead.)
+(Replace `start` with `dev` or `test` if this example's package.json defines
+those instead.)
 
 See [../README.md](../README.md) for the full setup walkthrough.

@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { GenericItem } from "../../types/messaging/Messages";
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { GenericItem } from '../../types/messaging/Messages';
 
 /**
  * Returns true when reasoning content is something the UI should render.
@@ -17,7 +17,7 @@ import { GenericItem } from "../../types/messaging/Messages";
  * empty arrays do not — an empty array must not cause the reasoning container or step body to appear.
  */
 function hasReasoningContent(
-  content: string | GenericItem[] | undefined,
+  content: string | GenericItem[] | undefined
 ): boolean {
   if (Array.isArray(content)) {
     return content.length > 0;
@@ -36,7 +36,7 @@ function hasReasoningContent(
 function synthesizeReasoningLocalMessageItem(
   item: GenericItem,
   fullMessageID: string,
-  stableId: string,
+  stableId: string
 ): LocalMessageItem {
   return {
     item,

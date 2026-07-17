@@ -13,12 +13,12 @@ import {
   ChatInstance,
   FeedbackInteractionType,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React from "react";
+} from '@carbon/ai-chat';
+import React from 'react';
 
-import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { renderUserDefinedResponse } from './renderUserDefinedResponse';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {

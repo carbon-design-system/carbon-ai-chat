@@ -14,54 +14,54 @@ import {
   IS_MOBILE,
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
-} from "../../../src/chat/utils/browserUtils";
+} from '../../../src/chat/utils/browserUtils';
 
 // Mock browser environment for testing
 const originalWindow = global.window;
 const originalNavigator = global.navigator;
 
-describe("browserUtils", () => {
+describe('browserUtils', () => {
   afterEach(() => {
     // Restore original values
     (global as any).window = originalWindow;
     (global as any).navigator = originalNavigator;
   });
 
-  describe("isBrowser", () => {
-    it("should detect browser environment", () => {
+  describe('isBrowser', () => {
+    it('should detect browser environment', () => {
       const browser = isBrowser();
-      expect(typeof browser).toBe("boolean");
+      expect(typeof browser).toBe('boolean');
     });
   });
 
-  describe("getURLHostName", () => {
-    it("should extract hostname from valid URLs", () => {
-      expect(getURLHostName("https://example.com")).toBe("example.com");
-      expect(getURLHostName("http://www.example.com:8080")).toBe(
-        "www.example.com",
+  describe('getURLHostName', () => {
+    it('should extract hostname from valid URLs', () => {
+      expect(getURLHostName('https://example.com')).toBe('example.com');
+      expect(getURLHostName('http://www.example.com:8080')).toBe(
+        'www.example.com'
       );
-      expect(getURLHostName("https://subdomain.example.com/path?query=1")).toBe(
-        "subdomain.example.com",
+      expect(getURLHostName('https://subdomain.example.com/path?query=1')).toBe(
+        'subdomain.example.com'
       );
     });
 
-    it("should return original string for invalid URLs", () => {
-      expect(getURLHostName("not-a-url")).toBe("not-a-url");
-      expect(getURLHostName("")).toBe("");
-      expect(getURLHostName("just-text")).toBe("just-text");
+    it('should return original string for invalid URLs', () => {
+      expect(getURLHostName('not-a-url')).toBe('not-a-url');
+      expect(getURLHostName('')).toBe('');
+      expect(getURLHostName('just-text')).toBe('just-text');
     });
 
-    it("should handle various URL formats", () => {
-      expect(getURLHostName("ftp://files.example.com")).toBe(
-        "files.example.com",
+    it('should handle various URL formats', () => {
+      expect(getURLHostName('ftp://files.example.com')).toBe(
+        'files.example.com'
       );
-      expect(getURLHostName("http://localhost")).toBe("localhost");
-      expect(getURLHostName("https://127.0.0.1")).toBe("127.0.0.1");
+      expect(getURLHostName('http://localhost')).toBe('localhost');
+      expect(getURLHostName('https://127.0.0.1')).toBe('127.0.0.1');
     });
   });
 
-  describe("conditionalSetTimeout", () => {
-    it("should execute operation immediately when timeout is 0", () => {
+  describe('conditionalSetTimeout', () => {
+    it('should execute operation immediately when timeout is 0', () => {
       const mockFn = jest.fn();
       const result = conditionalSetTimeout(mockFn, 0);
 
@@ -69,7 +69,7 @@ describe("browserUtils", () => {
       expect(result).toBeNull();
     });
 
-    it("should execute operation immediately when timeout is falsy", () => {
+    it('should execute operation immediately when timeout is falsy', () => {
       const mockFn = jest.fn();
       conditionalSetTimeout(mockFn, null as any);
       conditionalSetTimeout(mockFn, undefined as any);
@@ -77,12 +77,12 @@ describe("browserUtils", () => {
       expect(mockFn).toHaveBeenCalledTimes(2);
     });
 
-    it("should return timeout ID when timeout is provided", () => {
+    it('should return timeout ID when timeout is provided', () => {
       const mockFn = jest.fn();
       const result = conditionalSetTimeout(mockFn, 100);
 
       expect(result).not.toBeNull();
-      expect(typeof result).toBe("number"); // setTimeout returns number in browser environment
+      expect(typeof result).toBe('number'); // setTimeout returns number in browser environment
 
       // Clean up
       if (result) {
@@ -90,7 +90,7 @@ describe("browserUtils", () => {
       }
     });
 
-    it("should execute operation after timeout", (done) => {
+    it('should execute operation after timeout', (done) => {
       const mockFn = jest.fn();
       conditionalSetTimeout(mockFn, 50);
 
@@ -101,12 +101,12 @@ describe("browserUtils", () => {
     });
   });
 
-  describe("device detection constants", () => {
-    it("should export device detection constants", () => {
+  describe('device detection constants', () => {
+    it('should export device detection constants', () => {
       // Test that the constants are boolean values
-      expect(typeof IS_MOBILE).toBe("boolean");
-      expect(typeof IS_PHONE).toBe("boolean");
-      expect(typeof IS_PHONE_IN_PORTRAIT_MODE).toBe("boolean");
+      expect(typeof IS_MOBILE).toBe('boolean');
+      expect(typeof IS_PHONE).toBe('boolean');
+      expect(typeof IS_PHONE_IN_PORTRAIT_MODE).toBe('boolean');
     });
   });
 });

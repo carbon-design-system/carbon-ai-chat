@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
 
 .cds-aichat--conversational-search-text__CitationsToggleContainer {
   padding-block-start: layout.$spacing-04;
@@ -29,7 +29,7 @@
   margin: 0;
 }
 
-.cds-aichat--container--render[dir="rtl"] {
+.cds-aichat--container--render[dir='rtl'] {
   .cds-aichat--conversational-search-text__segment:nth-last-child(
     1 of .cds-aichat--conversational-search-text__segment
   ) {

@@ -7,18 +7,18 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { InputConfig, PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+import { InputConfig, PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { mockOnFileUpload } from '../customSendMessage/doFileUpload';
 
-const DROPDOWN_DEFAULT = "default";
-const DROPDOWN_TRUE = "true";
-const DROPDOWN_FALSE = "false";
+const DROPDOWN_DEFAULT = 'default';
+const DROPDOWN_TRUE = 'true';
+const DROPDOWN_FALSE = 'false';
 
-@customElement("demo-input-config-switcher")
+@customElement('demo-input-config-switcher')
 export class DemoInputConfigSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -38,7 +38,7 @@ export class DemoInputConfigSwitcher extends LitElement {
   accessor config!: PublicConfig;
 
   private _updateInput(
-    mutate: (input: InputConfig | undefined) => InputConfig | undefined,
+    mutate: (input: InputConfig | undefined) => InputConfig | undefined
   ) {
     const currentInput = this.config.input
       ? { ...this.config.input }
@@ -46,19 +46,19 @@ export class DemoInputConfigSwitcher extends LitElement {
     const nextInput = mutate(currentInput);
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           input: nextInput,
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   private _normalizeInput(
-    input: InputConfig | undefined,
+    input: InputConfig | undefined
   ): InputConfig | undefined {
     if (!input) {
       return undefined;
@@ -89,7 +89,7 @@ export class DemoInputConfigSwitcher extends LitElement {
 
     if (value === DROPDOWN_TRUE) {
       this.dispatchEvent(
-        new CustomEvent("config-changed", {
+        new CustomEvent('config-changed', {
           detail: {
             ...this.config,
             upload: {
@@ -99,25 +99,25 @@ export class DemoInputConfigSwitcher extends LitElement {
           },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     } else {
       // Default or false — remove the upload config entirely.
       const next = { ...this.config };
       delete next.upload;
       this.dispatchEvent(
-        new CustomEvent("config-changed", {
+        new CustomEvent('config-changed', {
           detail: next,
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     }
   }
 
   private _handleBooleanDropdown(
     event: Event,
-    key: "isVisible" | "isDisabled",
+    key: 'isVisible' | 'isDisabled'
   ) {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
@@ -152,14 +152,14 @@ export class DemoInputConfigSwitcher extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           shouldTakeFocusIfOpensAutomatically,
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -179,8 +179,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._uploadDropdownValue()}"
           title-text="File uploads"
-          @cds-dropdown-selected=${this._handleUploadDropdown}
-        >
+          @cds-dropdown-selected=${this._handleUploadDropdown}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -198,8 +197,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           value="${this._booleanDropdownValue(input?.isVisible)}"
           title-text="Input field visibility"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "isVisible")}
-        >
+            this._handleBooleanDropdown(event, 'isVisible')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -217,8 +215,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           value="${this._booleanDropdownValue(input?.isDisabled)}"
           title-text="Input field state"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "isDisabled")}
-        >
+            this._handleBooleanDropdown(event, 'isDisabled')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -234,11 +231,10 @@ export class DemoInputConfigSwitcher extends LitElement {
       <div class="input-section">
         <cds-dropdown
           value="${this._booleanDropdownValue(
-            this.config?.shouldTakeFocusIfOpensAutomatically,
+            this.config?.shouldTakeFocusIfOpensAutomatically
           )}"
           title-text="Auto focus"
-          @cds-dropdown-selected=${this._handleFocusDropdown}
-        >
+          @cds-dropdown-selected=${this._handleFocusDropdown}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -256,6 +252,6 @@ export class DemoInputConfigSwitcher extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-input-config-switcher": DemoInputConfigSwitcher;
+    'demo-input-config-switcher': DemoInputConfigSwitcher;
   }
 }

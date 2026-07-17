@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { useRef } from "react";
+import { useRef } from 'react';
 
 let nextNumber = 1;
 

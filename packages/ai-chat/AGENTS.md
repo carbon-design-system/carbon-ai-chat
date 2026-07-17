@@ -1,38 +1,67 @@
 # AGENTS.md — `@carbon/ai-chat`
 
-Guidance for authoring inside [packages/ai-chat/](.). Read this before editing anything here.
+Guidance for authoring inside [packages/ai-chat/](.). Read this before editing
+anything here.
 
 ## What this package is
 
 The primary Carbon AI Chat app. Ships as:
 
 - A React component tree rooted at [src/aiChatEntry.tsx](src/aiChatEntry.tsx).
-- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that mount the same React tree via `@lit/react`.
-- A server entry ([src/serverEntry.ts](src/serverEntry.ts)) exposing SSR-safe types/utilities only.
+- Lit web-component wrappers (`cds-aichat-container`,
+  `cds-aichat-custom-element`) under [src/web-components/](src/web-components)
+  that mount the same React tree via `@lit/react`.
+- A server entry ([src/serverEntry.ts](src/serverEntry.ts)) exposing SSR-safe
+  types/utilities only.
 
-All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.
+All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to
+`dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix,
+avoiding `@carbon/angular-components` collisions). TypeDoc emits to
+`dist/docs/`.
 
-** Before running any build commands**: Ask the user if `npm run aiChat:start` is already running. Most developers keep it running continuously. Running a parallel build will cause race conditions and intermittent failures.
+** Before running any build commands**: Ask the user if `npm run aiChat:start`
+is already running. Most developers keep it running continuously. Running a
+parallel build will cause race conditions and intermittent failures.
 
 ## Where things live
 
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
-  - `AppShell.tsx`, `ChatAppEntry.tsx`, `AppShellPanels.tsx`, `AppShellWriteableElements.tsx` — top-level composition.
-  - `store/` — Redux-style store. See [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md) for hard rules (pure reducers, synchronous dispatch, no middleware).
-  - `services/` — long-lived singletons wired in `ServiceManager.ts` and `loadServices.ts`. `ChatActionsImpl.ts` is the instance-facing API — public methods added here must also be reflected on the `ChatInstance` type in `instance/`.
-  - `instance/` — the public `ChatInstance` object. Breaking changes here are breaking changes for every consumer; prefer additive API.
-  - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
-  - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
-  - `hocs/`, `hooks/`, `contexts/`, `providers/` — React glue. Hooks reading the store should use `useSelector` from the local store, not bespoke subscriptions.
-  - `languages/` — `intl-messageformat` string bundles. When adding a key, add it to every locale file in the same PR; English is the source of truth.
-  - `components/` vs `components-legacy/` — **always author new UI in `components/`**. `components-legacy/` is closed to new components; bug fixes and refactoring transitions out are welcome. Lift a component to `@carbon/ai-chat-components` when it has no chat-specific state and could plausibly be consumed outside the chat app.
-  - `ai-chat-components/` — React bindings (`@lit/react`) around the sibling package's Lit components.
-- [src/react/](src/react/) — public React wrapper components re-exported from the package root.
-- [src/web-components/](src/web-components/) — Lit hosts. Kept thin: bridge props/events/slots to the React core.
+  - `AppShell.tsx`, `ChatAppEntry.tsx`, `AppShellPanels.tsx`,
+    `AppShellWriteableElements.tsx` — top-level composition.
+  - `store/` — Redux-style store. See
+    [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md) for hard rules (pure
+    reducers, synchronous dispatch, no middleware).
+  - `services/` — long-lived singletons wired in `ServiceManager.ts` and
+    `loadServices.ts`. `ChatActionsImpl.ts` is the instance-facing API — public
+    methods added here must also be reflected on the `ChatInstance` type in
+    `instance/`.
+  - `instance/` — the public `ChatInstance` object. Breaking changes here are
+    breaking changes for every consumer; prefer additive API.
+  - `events/` — typed pub/sub for the public event API. Event names and payloads
+    are part of the public contract.
+  - `schema/` — runtime message/config schema. Keep in sync with types in
+    [src/types/](src/types/).
+  - `hocs/`, `hooks/`, `contexts/`, `providers/` — React glue. Hooks reading the
+    store should use `useSelector` from the local store, not bespoke
+    subscriptions.
+  - `languages/` — `intl-messageformat` string bundles. When adding a key, add
+    it to every locale file in the same PR; English is the source of truth.
+  - `components/` vs `components-legacy/` — **always author new UI in
+    `components/`**. `components-legacy/` is closed to new components; bug fixes
+    and refactoring transitions out are welcome. Lift a component to
+    `@carbon/ai-chat-components` when it has no chat-specific state and could
+    plausibly be consumed outside the chat app.
+  - `ai-chat-components/` — React bindings (`@lit/react`) around the sibling
+    package's Lit components.
+- [src/react/](src/react/) — public React wrapper components re-exported from
+  the package root.
+- [src/web-components/](src/web-components/) — Lit hosts. Kept thin: bridge
+  props/events/slots to the React core.
 
 ## React/Lit Architecture Boundary
 
-This package uses a hybrid architecture: React application code runs inside a Lit-managed shadow DOM host.
+This package uses a hybrid architecture: React application code runs inside a
+Lit-managed shadow DOM host.
 
 ### The Boundary
 
@@ -50,15 +79,20 @@ React Application Components
 
 ### How It Works
 
-1. **Lit Host**: [`ChatContainerReact`](src/react/ChatContainer.tsx:40) is a Lit custom element decorated with `@carbonElement("cds-aichat-react")`
+1. **Lit Host**: [`ChatContainerReact`](src/react/ChatContainer.tsx:40) is a Lit
+   custom element decorated with `@carbonElement("cds-aichat-react")`
 
-2. **React Wrapper**: [`createComponent()`](src/react/ChatContainer.tsx:60) from `@lit/react` wraps the Lit host for React consumers
+2. **React Wrapper**: [`createComponent()`](src/react/ChatContainer.tsx:60) from
+   `@lit/react` wraps the Lit host for React consumers
 
-3. **Shadow DOM Setup**: The Lit host creates a shadow root and emits `"shadow-ready"` event in [`firstUpdated()`](src/react/ChatContainer.tsx:52)
+3. **Shadow DOM Setup**: The Lit host creates a shadow root and emits
+   `"shadow-ready"` event in [`firstUpdated()`](src/react/ChatContainer.tsx:52)
 
-4. **React Portal**: [`ChatContainer`](src/react/ChatContainer.tsx:183) waits for shadow root, creates mount div, and portals React app into it
+4. **React Portal**: [`ChatContainer`](src/react/ChatContainer.tsx:183) waits
+   for shadow root, creates mount div, and portals React app into it
 
-5. **Extensibility**: User-defined content crosses the boundary via slots, not direct shadow DOM manipulation
+5. **Extensibility**: User-defined content crosses the boundary via slots, not
+   direct shadow DOM manipulation
 
 ### When to Work in Each Layer
 
@@ -122,17 +156,23 @@ wrapper.appendChild(element);
 
 ### References
 
-- Lit host implementation: [`src/react/ChatContainer.tsx`](src/react/ChatContainer.tsx:40)
-- React wrapper: [`src/react/ChatCustomElement.tsx`](src/react/ChatCustomElement.tsx:137)
-- `@carbon/ai-chat-components` provides `@carbonElement` decorator and base classes
+- Lit host implementation:
+  [`src/react/ChatContainer.tsx`](src/react/ChatContainer.tsx:40)
+- React wrapper:
+  [`src/react/ChatCustomElement.tsx`](src/react/ChatCustomElement.tsx:137)
+- `@carbon/ai-chat-components` provides `@carbonElement` decorator and base
+  classes
 
 ## Service Architecture
 
-Services are orchestration boundaries that coordinate between the store, external APIs, and browser APIs.
+Services are orchestration boundaries that coordinate between the store,
+external APIs, and browser APIs.
 
 ### Initialization Order
 
-Services are bootstrapped in [`createServiceManager()`](src/chat/services/loadServices.ts:36) with a specific dependency order:
+Services are bootstrapped in
+[`createServiceManager()`](src/chat/services/loadServices.ts:36) with a specific
+dependency order:
 
 1. **Core primitives**: namespace, userSessionStorageService
 2. **Actions & EventBus**: action creators, event bus
@@ -144,7 +184,9 @@ Services are bootstrapped in [`createServiceManager()`](src/chat/services/loadSe
 
 ### Dependency Pattern
 
-Services **do not hold direct references to each other**. Instead, they resolve collaborators through [`ServiceManager`](src/chat/services/ServiceManager.ts:38):
+Services **do not hold direct references to each other**. Instead, they resolve
+collaborators through
+[`ServiceManager`](src/chat/services/ServiceManager.ts:38):
 
 ```typescript
 class MyService {
@@ -166,7 +208,8 @@ This pattern:
 
 ### Service Archetypes
 
-**1. Simple Data Adapter** (e.g., [`HistoryService`](src/chat/services/HistoryService.ts:23))
+**1. Simple Data Adapter** (e.g.,
+[`HistoryService`](src/chat/services/HistoryService.ts:23))
 
 - Reads config and state
 - Transforms external data
@@ -186,7 +229,8 @@ class HistoryService {
 }
 ```
 
-**2. Lifecycle Watcher** (e.g., [`ThemeWatcherService`](src/chat/services/ThemeWatcherService.ts:28))
+**2. Lifecycle Watcher** (e.g.,
+[`ThemeWatcherService`](src/chat/services/ThemeWatcherService.ts:28))
 
 - Manages browser API subscriptions
 - Maintains internal state (observers, intervals)
@@ -209,7 +253,8 @@ class ThemeWatcherService {
 }
 ```
 
-**3. Orchestration Engine** (e.g., [`MessageService`](src/chat/services/MessageService.ts:155))
+**3. Orchestration Engine** (e.g.,
+[`MessageService`](src/chat/services/MessageService.ts:155))
 
 - Coordinates multiple sub-systems
 - Manages queues and async flows
@@ -247,15 +292,28 @@ Don't create a service for:
 
 ### Testing Services
 
-See [Testing Strategy](#testing-strategy) for the service testing pattern. Key points:
+See [Testing Strategy](#testing-strategy) for the service testing pattern. Key
+points:
 
 - Stub `ServiceManager` with only required fields
 - Instantiate service directly (no DI container)
 - Assert on mock calls and internal state
-- Example: [`MessageService_spec.ts`](tests/services/spec/MessageService_spec.ts:87)
-- [src/types/](src/types/) — public type surface. Anything exported through `aiChatEntry.tsx` is public API; treat edits with semver discipline. **Read [src/types/AGENTS.md](src/types/AGENTS.md) before editing** — TypeDoc output ships as the public docs site, is indexed into Elasticsearch, and is served by an MCP developer-helper. JSDoc here is product copy.
-- [tests/](tests/) — Jest specs in `spec/` folders under `tests/<area>/` (e.g. `tests/store/spec/*_spec.ts`). Naming is `_spec.ts(x)`, not `.test.ts`, and tests are not colocated with source — opposite of `@carbon/ai-chat-components`. Areas: `store/`, `services/`, `instance/`, `config/`, `transforms/`, `utils/`. `setup.ts` installs DOM + testing-library setup; `test_helpers.ts` has shared fixtures.
-- [docs/](docs/) — consumer-facing docs published via TypeDoc. See [docs/AGENTS.md](docs/AGENTS.md) before editing — these files ship to the public site.
+- Example:
+  [`MessageService_spec.ts`](tests/services/spec/MessageService_spec.ts:87)
+- [src/types/](src/types/) — public type surface. Anything exported through
+  `aiChatEntry.tsx` is public API; treat edits with semver discipline. **Read
+  [src/types/AGENTS.md](src/types/AGENTS.md) before editing** — TypeDoc output
+  ships as the public docs site, is indexed into Elasticsearch, and is served by
+  an MCP developer-helper. JSDoc here is product copy.
+- [tests/](tests/) — Jest specs in `spec/` folders under `tests/<area>/` (e.g.
+  `tests/store/spec/*_spec.ts`). Naming is `_spec.ts(x)`, not `.test.ts`, and
+  tests are not colocated with source — opposite of
+  `@carbon/ai-chat-components`. Areas: `store/`, `services/`, `instance/`,
+  `config/`, `transforms/`, `utils/`. `setup.ts` installs DOM + testing-library
+  setup; `test_helpers.ts` has shared fixtures.
+- [docs/](docs/) — consumer-facing docs published via TypeDoc. See
+  [docs/AGENTS.md](docs/AGENTS.md) before editing — these files ship to the
+  public site.
 
 ## Build, test, lint
 
@@ -299,9 +357,9 @@ expect(screen.getByText('expected')).toBeInTheDocument();
 
 #### 2. Service Tests
 
-**Location**: `tests/services/spec/`
-**Purpose**: Validate service orchestration and side effects
-**Pattern**: Stub `ServiceManager`, instantiate service directly, assert method calls and state
+**Location**: `tests/services/spec/` **Purpose**: Validate service orchestration
+and side effects **Pattern**: Stub `ServiceManager`, instantiate service
+directly, assert method calls and state
 
 **Example**: `MessageService_spec.ts`
 
@@ -313,7 +371,7 @@ const mockManager = {
   instance: mockInstance,
 };
 const service = new MessageService(mockManager);
-await service.sendMessage("test");
+await service.sendMessage('test');
 expect(mockManager.actions.addMessage).toHaveBeenCalled();
 ```
 
@@ -325,9 +383,9 @@ expect(mockManager.actions.addMessage).toHaveBeenCalled();
 
 #### 3. Component Tests
 
-**Location**: `tests/components/spec/`
-**Purpose**: Validate React component rendering and interactions
-**Pattern**: Render with Testing Library, simulate user interactions, assert DOM state
+**Location**: `tests/components/spec/` **Purpose**: Validate React component
+rendering and interactions **Pattern**: Render with Testing Library, simulate
+user interactions, assert DOM state
 
 **When to add**:
 
@@ -337,9 +395,9 @@ expect(mockManager.actions.addMessage).toHaveBeenCalled();
 
 #### 4. Integration Tests
 
-**Location**: `demo/tests/` (Playwright)
-**Purpose**: Validate end-to-end user flows across the full stack
-**Pattern**: See `demo/AGENTS.md` for Playwright patterns
+**Location**: `demo/tests/` (Playwright) **Purpose**: Validate end-to-end user
+flows across the full stack **Pattern**: See `demo/AGENTS.md` for Playwright
+patterns
 
 **When to add**:
 
@@ -408,10 +466,19 @@ npm run test:coverage --workspace=@carbon/ai-chat
 
 ## Gotchas
 
-- **Custom store hooks**: `useSelector` and `useDispatch` come from `src/chat/store/hooks/` — **not** `react-redux`. Import from the local store.
-- **ESM `.js` extensions in imports**: TS source uses explicit `.js` extensions on relative imports even when the file is `.ts`/`.tsx` (e.g. `import { foo } from "./bar.js"`). Jest's `moduleNameMapper` rewrites these at test time. Omitting the extension breaks the build.
-- **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Don't assume null safety; check explicitly or add guards.
-- **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow the existing patterns rather than reaching into the shadow tree.
+- **Custom store hooks**: `useSelector` and `useDispatch` come from
+  `src/chat/store/hooks/` — **not** `react-redux`. Import from the local store.
+- **ESM `.js` extensions in imports**: TS source uses explicit `.js` extensions
+  on relative imports even when the file is `.ts`/`.tsx` (e.g.
+  `import { foo } from "./bar.js"`). Jest's `moduleNameMapper` rewrites these at
+  test time. Omitting the extension breaks the build.
+- **Relaxed TS strictness**: `tsconfig` sets `strictNullChecks: false` and
+  `strictFunctionTypes: false`. Don't assume null safety; check explicitly or
+  add guards.
+- **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount
+  React into a shadow root. User-defined responses and writeable elements use
+  slotted content; follow the existing patterns rather than reaching into the
+  shadow tree.
 
 ## Accessibility Requirements
 
@@ -419,7 +486,8 @@ All UI changes must meet WCAG 2.1 AA standards:
 
 ### Keyboard Navigation
 
-- All interactive elements must be keyboard accessible (Tab, Enter, Escape, arrow keys)
+- All interactive elements must be keyboard accessible (Tab, Enter, Escape,
+  arrow keys)
 - Focus order must be logical and match visual layout
 - Focus indicators must be visible (4.5:1 contrast ratio minimum)
 - No keyboard traps - users can navigate away from all elements
@@ -435,7 +503,8 @@ All UI changes must meet WCAG 2.1 AA standards:
 ### Visual & Layout
 
 - Maintain color contrast ratios: 4.5:1 for text, 3:1 for UI components
-- Support RTL layouts via CSS logical properties (`padding-inline-start`, `inset-inline-end`)
+- Support RTL layouts via CSS logical properties (`padding-inline-start`,
+  `inset-inline-end`)
 - Ensure UI is usable at 200% zoom
 - Don't rely on color alone to convey information
 
@@ -456,31 +525,57 @@ Before marking a UI task done:
 
 ## Definition of done
 
-See root [AGENTS.md](../../AGENTS.md#definition-of-done) for the gate. Additionally: if you changed anything under `src/types/`, `aiChatEntry.tsx`, or `serverEntry.ts`, verify a consumer (`demo/` or an example) still builds against the new artifacts.
+See root [AGENTS.md](../../AGENTS.md#definition-of-done) for the gate.
+Additionally: if you changed anything under `src/types/`, `aiChatEntry.tsx`, or
+`serverEntry.ts`, verify a consumer (`demo/` or an example) still builds against
+the new artifacts.
 
 ## Related Guidance
 
-- **Parent guidance**: [Root AGENTS.md](../../AGENTS.md) - Monorepo-wide conventions
-- **Store patterns**: [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md) - Redux-like store rules
-- **Type conventions**: [src/types/AGENTS.md](src/types/AGENTS.md) - TypeScript and JSDoc standards
-- **Documentation**: [docs/AGENTS.md](docs/AGENTS.md) - Consumer-facing docs guidelines
-- **Component library**: [../ai-chat-components/AGENTS.md](../ai-chat-components/AGENTS.md) - Lit component authoring
+- **Parent guidance**: [Root AGENTS.md](../../AGENTS.md) - Monorepo-wide
+  conventions
+- **Store patterns**: [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md) -
+  Redux-like store rules
+- **Type conventions**: [src/types/AGENTS.md](src/types/AGENTS.md) - TypeScript
+  and JSDoc standards
+- **Documentation**: [docs/AGENTS.md](docs/AGENTS.md) - Consumer-facing docs
+  guidelines
+- **Component library**:
+  [../ai-chat-components/AGENTS.md](../ai-chat-components/AGENTS.md) - Lit
+  component authoring
 - **Code reviews**: [../../AGENTS_CODE_REVIEW.md](../../AGENTS_CODE_REVIEW.md)
 
 ## Troubleshooting
 
-**Build fails**: Ensure `@carbon/ai-chat-components` is built first: `npm run build --workspace=@carbon/ai-chat-components`
+**Build fails**: Ensure `@carbon/ai-chat-components` is built first:
+`npm run build --workspace=@carbon/ai-chat-components`
 
-**TypeDoc errors**: Verify all `@param` tags in JSDoc match actual function parameters
+**TypeDoc errors**: Verify all `@param` tags in JSDoc match actual function
+parameters
 
-**React portal not rendering**: Check browser console for shadow DOM errors; verify `window.chatInstance` exists
+**React portal not rendering**: Check browser console for shadow DOM errors;
+verify `window.chatInstance` exists
 
 ## Authoring rules
 
-- **Prefix discipline (CRITICAL — build-breaking)**: never hardcode `cds--` in SCSS or TSX class strings. Use `#{$prefix}--` in SCSS and the prefix helpers in TS, otherwise the `es-custom` build breaks.
-- **RTL**: use CSS logical properties (`inline-start`, `block-end`, etc.). Validate via the demo's direction switcher before shipping.
-- **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
-- **Store**: see [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md). Reducers stay pure; side effects go through services or `store/actions.ts` / `store/subscriptions.ts`. `humanAgentReducers.ts` is a separate slice on purpose.
-- **Services**: wire new services through `ServiceManager` and `loadServices`; dispose them in `ChatInstanceImpl.destroy()` and the matching `unloadServices()` teardown. See `tests/services/` for disposal patterns — leaking a subscription across instance re-creation is a common regression.
+- **Prefix discipline (CRITICAL — build-breaking)**: never hardcode `cds--` in
+  SCSS or TSX class strings. Use `#{$prefix}--` in SCSS and the prefix helpers
+  in TS, otherwise the `es-custom` build breaks.
+- **RTL**: use CSS logical properties (`inline-start`, `block-end`, etc.).
+  Validate via the demo's direction switcher before shipping.
+- **Public API changes**: anything exported from `aiChatEntry.tsx`,
+  `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a
+  `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules:
+  [src/types/AGENTS.md](src/types/AGENTS.md).
+- **Store**: see [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md). Reducers
+  stay pure; side effects go through services or `store/actions.ts` /
+  `store/subscriptions.ts`. `humanAgentReducers.ts` is a separate slice on
+  purpose.
+- **Services**: wire new services through `ServiceManager` and `loadServices`;
+  dispose them in `ChatInstanceImpl.destroy()` and the matching
+  `unloadServices()` teardown. See `tests/services/` for disposal patterns —
+  leaking a subscription across instance re-creation is a common regression.
 - **i18n**: no user-visible strings in code. Route through `languages/`.
-- **Tests**: colocate helpers in `tests/test_helpers.ts`. Store tests should exercise reducers directly; service tests should use the mocks in `tests/services/`. For instance-level regressions, add to `tests/instance/`.
+- **Tests**: colocate helpers in `tests/test_helpers.ts`. Store tests should
+  exercise reducers directly; service tests should use the mocks in
+  `tests/services/`. For instance-level regressions, add to `tests/instance/`.

@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React from "react";
-import IntlMessageFormat from "intl-messageformat";
+import React from 'react';
+import IntlMessageFormat from 'intl-messageformat';
 
-import { useIntl } from "../../hooks/useIntl";
-import { isNil } from "../../utils/lang/langUtils";
-import { MarkdownWithDefaults } from "../../components/util/MarkdownWithDefaults";
-import { AgentAvailability } from "../../../types/config/ServiceDeskConfig";
-import { LanguagePack } from "../../../types/config/PublicConfig";
+import { useIntl } from '../../hooks/useIntl';
+import { isNil } from '../../utils/lang/langUtils';
+import { MarkdownWithDefaults } from '../../components/util/MarkdownWithDefaults';
+import { AgentAvailability } from '../../../types/config/ServiceDeskConfig';
+import { LanguagePack } from '../../../types/config/PublicConfig';
 
 interface AvailabilityMessageProps {
   availability: AgentAvailability;
@@ -34,10 +34,10 @@ function AvailabilityMessage({
   let availabilityText: string;
 
   if (!isNil(availability?.estimatedWaitTime)) {
-    availabilityKey = "agent_connectingMinutes";
+    availabilityKey = 'agent_connectingMinutes';
     availabilityValues = { time: availability.estimatedWaitTime };
   } else if (!isNil(availability?.positionInQueue)) {
-    availabilityKey = "agent_connectingQueue";
+    availabilityKey = 'agent_connectingQueue';
     availabilityValues = { position: availability.positionInQueue };
   } else if (availability?.message) {
     availabilityText = availability.message;

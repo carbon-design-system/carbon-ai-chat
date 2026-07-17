@@ -7,18 +7,18 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/icon-button/index.js";
+import '@carbon/web-components/es/components/icon-button/index.js';
 
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import StopFilled16 from "@carbon/icons/es/stop--filled/16.js";
-import { html } from "lit";
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import StopFilled16 from '@carbon/icons/es/stop--filled/16.js';
+import { html } from 'lit';
 
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { StopStreamingButtonElement } from "./StopStreamingButtonElement";
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import { StopStreamingButtonElement } from './StopStreamingButtonElement';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
-} from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/web-components/es/components/button/defs.js';
 
 export function stopStreamingButtonTemplate({
   label,
@@ -33,12 +33,11 @@ export function stopStreamingButtonTemplate({
       kind="${BUTTON_KIND.GHOST}"
       size="${BUTTON_SIZE.SMALL}"
       ?disabled=${disabled}
-      @click="${onClick}"
-    >
+      @click="${onClick}">
       <span slot="icon">
         <span
           class="${prefix}--stop-icon ${
-            disabled ? "${prefix}--stop-icon--disabled" : ""
+            disabled ? '${prefix}--stop-icon--disabled' : ''
           }"
           >${iconLoader(StopFilled16)}</span
         >

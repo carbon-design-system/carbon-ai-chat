@@ -7,10 +7,10 @@
  *  @license
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/layout";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/layout';
 
 :host {
   display: block;

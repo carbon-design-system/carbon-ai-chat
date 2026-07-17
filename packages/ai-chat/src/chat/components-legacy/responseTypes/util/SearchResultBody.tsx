@@ -7,16 +7,16 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
 import {
   convertPossibleStringifiedArrayToFirstString,
   convertToEmptyStringIfStringifiedNull,
-} from "../../../utils/lang/stringUtils";
+} from '../../../utils/lang/stringUtils';
 import {
   ConversationalSearchItemCitation,
   SearchResult,
-} from "../../../../types/messaging/Messages";
+} from '../../../../types/messaging/Messages';
 
 interface SearchResultBodyWithCitationProps {
   relatedSearchResult: SearchResult;
@@ -39,17 +39,17 @@ function SearchResultBodyWithCitationHighlighted({
 
   if (relatedSearchResult?.body) {
     const searchStringFromBody = convertPossibleStringifiedArrayToFirstString(
-      convertToEmptyStringIfStringifiedNull(relatedSearchResult.body),
+      convertToEmptyStringIfStringifiedNull(relatedSearchResult.body)
     );
     // Search result body's can contain <em> and </em> tags which need to be removed. After remove the em tags, it
     // should be safe to assume that the citation text is a direct substring of either the search_result body or title.
     searchString = searchStringFromBody
-      .replace("<em>", "")
-      .replace("</em>", "");
+      .replace('<em>', '')
+      .replace('</em>', '');
   }
   if (citationItem?.text) {
     citationString = convertPossibleStringifiedArrayToFirstString(
-      convertToEmptyStringIfStringifiedNull(citationItem.text),
+      convertToEmptyStringIfStringifiedNull(citationItem.text)
     );
   }
 
@@ -60,22 +60,22 @@ function SearchResultBodyWithCitationHighlighted({
     if (startOfCitation !== -1) {
       // Add the text prior to the citation to the array.
       elementsArray.push(
-        <span key={1}>{searchString.substring(0, startOfCitation)}</span>,
+        <span key={1}>{searchString.substring(0, startOfCitation)}</span>
       );
       // Add the highlighted citation text to the array.
       elementsArray.push(
         <em key={2} className="cds-aichat--search-result-highlight">
           {searchString.substring(
             startOfCitation,
-            startOfCitation + citationString.length,
+            startOfCitation + citationString.length
           )}
-        </em>,
+        </em>
       );
       // Add the text after the citation to the array.
       elementsArray.push(
         <span key={3}>
           {searchString.substring(startOfCitation + citationString.length)}
-        </span>,
+        </span>
       );
     }
   }
@@ -95,7 +95,7 @@ function SearchResultBodyWithCitationHighlighted({
 }
 
 const SearchResultBodyWithCitationHighlightedExport = React.memo(
-  SearchResultBodyWithCitationHighlighted,
+  SearchResultBodyWithCitationHighlighted
 );
 
 export { SearchResultBodyWithCitationHighlightedExport as SearchResultBodyWithCitationHighlighted };

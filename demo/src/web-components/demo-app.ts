@@ -7,16 +7,16 @@
  *  @license
  */
 
-import "./DemoApp.css";
-import "@carbon/web-components/es/components/ai-skeleton/index.js";
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "./user-defined-response-example";
-import "./custom-footer-example";
-import "./writeable-element-example";
-import "./workspace-writeable-element-example";
-import "./history-writeable-element-example";
-import "./explainability-popover-example";
+import './DemoApp.css';
+import '@carbon/web-components/es/components/ai-skeleton/index.js';
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import './user-defined-response-example';
+import './custom-footer-example';
+import './writeable-element-example';
+import './workspace-writeable-element-example';
+import './history-writeable-element-example';
+import './explainability-popover-example';
 
 import {
   BusEvent,
@@ -32,13 +32,13 @@ import {
   ServiceDeskFactoryParameters,
   UserDefinedItem,
   ViewType,
-} from "@carbon/ai-chat";
-import { css, html, LitElement, PropertyValues } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { DeepPartial } from "../types/DeepPartial";
+} from '@carbon/ai-chat';
+import { css, html, LitElement, PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { DeepPartial } from '../types/DeepPartial';
 
-import { Settings } from "../framework/types";
-import { MockServiceDesk } from "../mockServiceDesk/mockServiceDesk";
+import { Settings } from '../framework/types';
+import { MockServiceDesk } from '../mockServiceDesk/mockServiceDesk';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -61,7 +61,7 @@ interface CustomFooterSlot {
 /**
  * `DemoApp` is a custom Lit element representing usage of AI chat with a web component.
  */
-@customElement("demo-app")
+@customElement('demo-app')
 export class DemoApp extends LitElement {
   static styles = css`
     cds-ai-skeleton-placeholder {
@@ -145,7 +145,7 @@ export class DemoApp extends LitElement {
   accessor workspaceExpanded: boolean = false;
 
   @state()
-  accessor workspaceAnimating: "expanding" | "contracting" | null = null;
+  accessor workspaceAnimating: 'expanding' | 'contracting' | null = null;
 
   @state()
   accessor instance!: ChatInstance;
@@ -169,7 +169,7 @@ export class DemoApp extends LitElement {
     // host-state propagation. Skipped via `?disableParentStateTimer` so the
     // chat's render performance can be profiled without this constant noise.
     if (
-      new URLSearchParams(window.location.search).has("disableParentStateTimer")
+      new URLSearchParams(window.location.search).has('disableParentStateTimer')
     ) {
       return;
     }
@@ -179,7 +179,7 @@ export class DemoApp extends LitElement {
   }
 
   protected updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has("valueFromParent")) {
+    if (changedProperties.has('valueFromParent')) {
       for (const el of this._userDefinedElements) {
         if (!el.isConnected) {
           this._userDefinedElements.delete(el);
@@ -202,7 +202,7 @@ export class DemoApp extends LitElement {
    */
   onViewPreChange = async (
     event: BusEventViewPreChange,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ) => {
     if (!event.newViewState.mainWindow) {
       this.sideBarClosing = true;
@@ -236,7 +236,7 @@ export class DemoApp extends LitElement {
   customButtonHandler = (event: BusEvent) => {
     const { messageItem } = event as BusEventMessageItemCustom;
     // The 'custom_event_name' property comes from the button response type with button_type of custom_event.
-    if (messageItem.custom_event_name === "alert_button") {
+    if (messageItem.custom_event_name === 'alert_button') {
       // eslint-disable-next-line no-alert
       window.alert(messageItem.user_defined?.text);
     }
@@ -267,9 +267,9 @@ export class DemoApp extends LitElement {
     this.instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
       handler: () => {
-        if (this.settings.layout === "sidebar") {
-          console.log("Web Component: Expanding sidebar - workspace opening");
-          this.workspaceAnimating = "expanding";
+        if (this.settings.layout === 'sidebar') {
+          console.log('Web Component: Expanding sidebar - workspace opening');
+          this.workspaceAnimating = 'expanding';
           this.workspaceExpanded = true;
         }
       },
@@ -279,9 +279,9 @@ export class DemoApp extends LitElement {
     this.instance.on({
       type: BusEventType.WORKSPACE_PRE_CLOSE,
       handler: () => {
-        if (this.settings.layout === "sidebar") {
-          console.log("Web Component: Contracting sidebar - workspace closing");
-          this.workspaceAnimating = "contracting";
+        if (this.settings.layout === 'sidebar') {
+          console.log('Web Component: Contracting sidebar - workspace closing');
+          this.workspaceAnimating = 'contracting';
           this.workspaceExpanded = false;
         }
       },
@@ -290,7 +290,7 @@ export class DemoApp extends LitElement {
     // Listen for when new chat option is selected from the chat header overflow menu
     instance.on({
       type: BusEventType.HISTORY_PANEL_NEW_CHAT,
-      handler: () => window.alert("Creating new chat from header menu"),
+      handler: () => window.alert('Creating new chat from header menu'),
     });
   };
 
@@ -302,21 +302,21 @@ export class DemoApp extends LitElement {
    * can be pushed to them reactively via updated().
    */
   renderUserDefinedCallback = (
-    state: RenderUserDefinedState,
+    state: RenderUserDefinedState
   ): HTMLElement | null => {
     // Handle streaming — show partial content as it arrives
     if (state.partialItems?.length) {
       const firstChunk = state.partialItems[0] as DeepPartial<UserDefinedItem>;
       switch (firstChunk.user_defined?.user_defined_type) {
-        case "green": {
+        case 'green': {
           const text = state.partialItems
             .map(
               (item: DeepPartial<GenericItem>) =>
-                (item as DeepPartial<UserDefinedItem>).user_defined?.text,
+                (item as DeepPartial<UserDefinedItem>).user_defined?.text
             )
-            .join("");
+            .join('');
           const el = document.createElement(
-            "user-defined-response-example",
+            'user-defined-response-example'
           ) as any;
           el.text = text;
           el.valueFromParent = this.valueFromParent;
@@ -325,7 +325,7 @@ export class DemoApp extends LitElement {
         }
         default:
           // Show skeleton for unknown streaming types
-          return document.createElement("cds-ai-skeleton-text");
+          return document.createElement('cds-ai-skeleton-text');
       }
     }
 
@@ -333,9 +333,9 @@ export class DemoApp extends LitElement {
     if (state.messageItem) {
       const userDefinedMessage = state.messageItem as UserDefinedItem;
       switch (userDefinedMessage.user_defined?.user_defined_type) {
-        case "green": {
+        case 'green': {
           const el = document.createElement(
-            "user-defined-response-example",
+            'user-defined-response-example'
           ) as any;
           el.text = userDefinedMessage.user_defined.text as string;
           el.valueFromParent = this.valueFromParent;
@@ -379,8 +379,7 @@ export class DemoApp extends LitElement {
       return html`<div slot=${slotName}>
         <custom-footer-example
           .messageItem=${messageItem}
-          .additionalData=${additionalData}
-        ></custom-footer-example>
+          .additionalData=${additionalData}></custom-footer-example>
       </div>`;
     });
   }
@@ -393,18 +392,18 @@ export class DemoApp extends LitElement {
    */
   renderWriteableElementSlots() {
     const ALWAYS_RENDER_KEYS = [
-      "workspacePanelElement",
-      "historyPanelElement",
-      "explainabilityPopoverContent",
-      "explainabilityPopoverActions",
+      'workspacePanelElement',
+      'historyPanelElement',
+      'explainabilityPopoverContent',
+      'explainabilityPopoverActions',
     ];
     const elements = this.instance?.writeableElements ?? {};
 
     const keys =
-      this.settings.writeableElements === "true"
+      this.settings.writeableElements === 'true'
         ? Object.keys(elements)
         : this.config.homescreen?.customContentOnly
-          ? ["homeScreenHeaderBottomElement", "homeScreenAfterStartersElement"]
+          ? ['homeScreenHeaderBottomElement', 'homeScreenAfterStartersElement']
           : [];
 
     const finalKeys = [
@@ -414,23 +413,22 @@ export class DemoApp extends LitElement {
 
     return finalKeys.map((key) => {
       switch (key) {
-        case "explainabilityPopoverContent":
+        case 'explainabilityPopoverContent':
           return html`<div slot=${key}>
             <explainability-popover-content></explainability-popover-content>
           </div>`;
-        case "explainabilityPopoverActions":
+        case 'explainabilityPopoverActions':
           return html`<div slot=${key}>
             <explainability-popover-actions></explainability-popover-actions>
           </div>`;
-        case "workspacePanelElement":
+        case 'workspacePanelElement':
           return html`<div slot=${key}>
             <workspace-writeable-element-example
               location=${key}
               .instance=${this.instance}
-              .valueFromParent=${this.valueFromParent}
-            ></workspace-writeable-element-example>
+              .valueFromParent=${this.valueFromParent}></workspace-writeable-element-example>
           </div>`;
-        case "historyPanelElement":
+        case 'historyPanelElement':
           return html`<div slot=${key}>
             <history-writeable-element-example
               location=${key}
@@ -438,15 +436,13 @@ export class DemoApp extends LitElement {
               .valueFromParent=${this.valueFromParent}
               .isMobile=${
                 this.instance?.getState().customPanels.history.isMobile ?? false
-              }
-            ></history-writeable-element-example>
+              }></history-writeable-element-example>
           </div>`;
         default:
           return html`<div slot=${key}>
             <writeable-element-example
               location=${key}
-              valueFromParent=${this.valueFromParent}
-            ></writeable-element-example>
+              valueFromParent=${this.valueFromParent}></writeable-element-example>
           </div>`;
       }
     });
@@ -455,7 +451,7 @@ export class DemoApp extends LitElement {
   handleTransitionEnd = (event: TransitionEvent) => {
     // Only handle width transitions on the chat element itself
     if (
-      event.propertyName === "width" &&
+      event.propertyName === 'width' &&
       event.target === event.currentTarget
     ) {
       this.workspaceAnimating = null;
@@ -463,19 +459,19 @@ export class DemoApp extends LitElement {
   };
 
   getSideBarClassName() {
-    let className = "sidebar";
+    let className = 'sidebar';
     if (this.workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += ' sidebar--expanded';
     }
-    if (this.workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
-    } else if (this.workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+    if (this.workspaceAnimating === 'expanding') {
+      className += ' sidebar--expanding';
+    } else if (this.workspaceAnimating === 'contracting') {
+      className += ' sidebar--contracting';
     }
     if (this.sideBarClosing) {
-      className += " sidebar--closing";
+      className += ' sidebar--closing';
     } else if (!this.sideBarOpen) {
-      className += " sidebar--closed";
+      className += ' sidebar--closed';
     }
     return className;
   }
@@ -484,7 +480,7 @@ export class DemoApp extends LitElement {
   render() {
     return html`
       ${
-        this.settings.layout === "float"
+        this.settings.layout === 'float'
           ? html`<cds-aichat-container
               .config=${this.config}
               .onError=${this.config.onError}
@@ -523,7 +519,7 @@ export class DemoApp extends LitElement {
           : html``
       }
       ${
-        this.settings.layout === "sidebar"
+        this.settings.layout === 'sidebar'
           ? html`<cds-aichat-custom-element
               class=${this.getSideBarClassName()}
               @transitionend=${this.handleTransitionEnd}
@@ -566,7 +562,7 @@ export class DemoApp extends LitElement {
           : html``
       }
       ${
-        this.settings.layout === "fullscreen"
+        this.settings.layout === 'fullscreen'
           ? html`<cds-aichat-custom-element
               class="fullScreen"
               .config=${this.config}
@@ -611,6 +607,6 @@ export class DemoApp extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-app": DemoApp;
+    'demo-app': DemoApp;
   }
 }

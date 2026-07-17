@@ -68,7 +68,7 @@ export interface KeyboardShortcuts {
  * Users can disable it via configuration if needed.
  */
 export const DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT: ChatShortcutConfig = {
-  key: "F6",
+  key: 'F6',
   modifiers: {},
   is_on: true,
 };

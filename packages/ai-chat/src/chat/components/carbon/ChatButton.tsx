@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 import {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "@carbon/web-components/es/components/chat-button/chat-button.js";
+} from '@carbon/web-components/es/components/chat-button/chat-button.js';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonChatButtonElement from "@carbon/web-components/es/components/chat-button/chat-button.js";
+import CarbonChatButtonElement from '@carbon/web-components/es/components/chat-button/chat-button.js';
 
 const ChatButton = createComponent({
-  tagName: "cds-chat-button",
+  tagName: 'cds-chat-button',
   elementClass: CarbonChatButtonElement,
   react: React,
 });

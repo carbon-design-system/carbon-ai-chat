@@ -1,17 +1,23 @@
 # History
 
-Demonstrates one-shot conversation rehydration: a button clears the active conversation and re-seeds it with a random-length history returned by `customLoadHistory`.
+Demonstrates one-shot conversation rehydration: a button clears the active
+conversation and re-seeds it with a random-length history returned by
+`customLoadHistory`.
 
 ## What this example shows
 
-- Supplying a `customLoadHistory` function on `<cds-aichat-container>` alongside `customSendMessage`.
-- Triggering a reload via `instance.messaging.clearConversation()` followed by `instance.messaging.insertHistory()`.
+- Supplying a `customLoadHistory` function on `<cds-aichat-container>` alongside
+  `customSendMessage`.
+- Triggering a reload via `instance.messaging.clearConversation()` followed by
+  `instance.messaging.insertHistory()`.
 - Logging the last loaded message id and its `activeResponseId` relationship.
-- Rendering `user_defined` responses through `renderUserDefinedResponse` and keeping them in sync via the `STATE_CHANGE` bus event.
+- Rendering `user_defined` responses through `renderUserDefinedResponse` and
+  keeping them in sync via the `STATE_CHANGE` bus event.
 
 ## When to use this pattern
 
-- You need to rehydrate the chat from your own storage or server, without exposing a full history-picker UI.
+- You need to rehydrate the chat from your own storage or server, without
+  exposing a full history-picker UI.
 - You want the default floating container layout.
 
 ## APIs and props demonstrated
@@ -29,7 +35,10 @@ Demonstrates one-shot conversation rehydration: a button clears the active conve
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

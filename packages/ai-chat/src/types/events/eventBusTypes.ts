@@ -11,7 +11,7 @@
  * This file contains the type definitions for the event bus.
  */
 
-import { DeepPartial } from "../utilities/DeepPartial";
+import { DeepPartial } from '../utilities/DeepPartial';
 
 import {
   ResponseUserProfile,
@@ -21,221 +21,221 @@ import {
   MessageRequest,
   MessageResponse,
   PartialOrCompleteItemChunk,
-} from "../messaging/Messages";
-import { ViewState } from "../instance/apiTypes";
-import { FileUpload } from "../config/ServiceDeskConfig";
-import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { PublicChatState } from "../instance/ChatInstance";
-import { MessageState } from "../config/MessagingConfig";
+} from '../messaging/Messages';
+import { ViewState } from '../instance/apiTypes';
+import { FileUpload } from '../config/ServiceDeskConfig';
+import { HumanAgentsOnlineStatus } from '../config/ServiceDeskConfig';
+import { PublicChatState } from '../instance/ChatInstance';
+import { MessageState } from '../config/MessagingConfig';
 
 /** @category Events */
 export enum BusEventType {
   /**
    * When a panel has been closed.
    */
-  CLOSE_PANEL_BUTTON_TOGGLED = "closePanelButton:toggled",
+  CLOSE_PANEL_BUTTON_TOGGLED = 'closePanelButton:toggled',
 
   /**
    * Fired before a message is received. Can take mutations to the message.
    */
-  PRE_RECEIVE = "pre:receive",
+  PRE_RECEIVE = 'pre:receive',
 
   /**
    * Fired after a message is received.
    */
-  RECEIVE = "receive",
+  RECEIVE = 'receive',
 
   /**
    * Fired before a message is sent to customSendMessage. Can take mutations to the message.
    */
-  PRE_SEND = "pre:send",
+  PRE_SEND = 'pre:send',
 
   /**
    * Fired after the message is sent to customSendMessage.
    */
-  SEND = "send",
+  SEND = 'send',
 
   /**
    * Fired before the view changes (e.g. when the chat window closes).
    */
-  VIEW_PRE_CHANGE = "view:pre:change",
+  VIEW_PRE_CHANGE = 'view:pre:change',
 
   /**
    * Fired after the view changes (e.g. when the chat window closes).
    */
-  VIEW_CHANGE = "view:change",
+  VIEW_CHANGE = 'view:change',
 
   /**
    * Fired when a button response item with button_type "custom_event" is clicked.
    * Provides the originating button item and the full message payload to handlers.
    */
-  MESSAGE_ITEM_CUSTOM = "messageItemCustom",
+  MESSAGE_ITEM_CUSTOM = 'messageItemCustom',
 
   /**
    * Fired when a userDefined message is received.
    */
-  USER_DEFINED_RESPONSE = "userDefinedResponse",
+  USER_DEFINED_RESPONSE = 'userDefinedResponse',
 
   /**
    * Fired when a message with custom_footer_slot.is_on is received.
    */
-  CUSTOM_FOOTER_SLOT = "customFooterSlot",
+  CUSTOM_FOOTER_SLOT = 'customFooterSlot',
 
   /**
    * Fired when history begins to load.
    */
-  HISTORY_BEGIN = "history:begin",
+  HISTORY_BEGIN = 'history:begin',
 
   /**
    * Fired after history is loaded.
    */
-  HISTORY_END = "history:end",
+  HISTORY_END = 'history:end',
 
   /**
    * Fired when new chat option within the chat header menu is selected.
    */
-  HISTORY_PANEL_NEW_CHAT = "history:newChat",
+  HISTORY_PANEL_NEW_CHAT = 'history:newChat',
 
   /**
    * Fired before mobile chat history panel opens.
    */
-  HISTORY_PANEL_PRE_OPEN = "historyPanel:pre:open",
+  HISTORY_PANEL_PRE_OPEN = 'historyPanel:pre:open',
 
   /**
    * Fired before a conversation restarts.
    */
-  PRE_RESTART_CONVERSATION = "pre:restartConversation",
+  PRE_RESTART_CONVERSATION = 'pre:restartConversation',
 
   /**
    * Fired after a conversation restarts.
    */
-  RESTART_CONVERSATION = "restartConversation",
+  RESTART_CONVERSATION = 'restartConversation',
 
   /**
    * When the chat has finished hydrating from history or welcome node request.
    */
-  CHAT_READY = "chat:ready",
+  CHAT_READY = 'chat:ready',
 
   /**
    * Fired before a custom panel opens.
    */
-  CUSTOM_PANEL_PRE_OPEN = "customPanel:pre:open",
+  CUSTOM_PANEL_PRE_OPEN = 'customPanel:pre:open',
 
   /**
    * Fired after a custom panel opens.
    */
-  CUSTOM_PANEL_OPEN = "customPanel:open",
+  CUSTOM_PANEL_OPEN = 'customPanel:open',
 
   /**
    * Fired before a custom panel closes.
    */
-  CUSTOM_PANEL_PRE_CLOSE = "customPanel:pre:close",
+  CUSTOM_PANEL_PRE_CLOSE = 'customPanel:pre:close',
 
   /**
    * Fired after a custom panel closes.
    */
-  CUSTOM_PANEL_CLOSE = "customPanel:close",
+  CUSTOM_PANEL_CLOSE = 'customPanel:close',
 
   /**
    * Fired before a workspace opens.
    */
-  WORKSPACE_PRE_OPEN = "workspace:pre:open",
+  WORKSPACE_PRE_OPEN = 'workspace:pre:open',
 
   /**
    * Fired after a workspace opens.
    */
-  WORKSPACE_OPEN = "workspace:open",
+  WORKSPACE_OPEN = 'workspace:open',
 
   /**
    * Fired before a workspace closes.
    */
-  WORKSPACE_PRE_CLOSE = "workspace:pre:close",
+  WORKSPACE_PRE_CLOSE = 'workspace:pre:close',
 
   /**
    * Fired after a workspace closes.
    */
-  WORKSPACE_CLOSE = "workspace:close",
+  WORKSPACE_CLOSE = 'workspace:close',
 
   /**
    * This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to filter messages before they are displayed to the end user.
    */
-  HUMAN_AGENT_PRE_RECEIVE = "human_agent:pre:receive",
+  HUMAN_AGENT_PRE_RECEIVE = 'human_agent:pre:receive',
 
   /**
    * This event is fired after Carbon AI Chat processes a message received from a human agent from a service desk.
    * You can use this to update your history store.
    */
-  HUMAN_AGENT_RECEIVE = "human_agent:receive",
+  HUMAN_AGENT_RECEIVE = 'human_agent:receive',
 
   /**
    * This event is fired before Carbon AI Chat sends a message to a human agent from a service desk.
    * You can use this to filter messages before they are sent to the agent.
    */
-  HUMAN_AGENT_PRE_SEND = "human_agent:pre:send",
+  HUMAN_AGENT_PRE_SEND = 'human_agent:pre:send',
 
   /**
    * This event is fired after Carbon AI Chat sends a message to a human agent from a service desk.
    * You can use this to update your history store.
    */
-  HUMAN_AGENT_SEND = "human_agent:send",
+  HUMAN_AGENT_SEND = 'human_agent:send',
 
   /**
    * This event is fired before a chat with a service desk has started. This occurs as soon as the user clicks the
    * "Request agent" button and before any attempt is made to communicate with the service desk.
    */
-  HUMAN_AGENT_PRE_START_CHAT = "human_agent:pre:startChat",
+  HUMAN_AGENT_PRE_START_CHAT = 'human_agent:pre:startChat',
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
    * confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
    * request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
    */
-  HUMAN_AGENT_PRE_END_CHAT = "human_agent:pre:endChat",
+  HUMAN_AGENT_PRE_END_CHAT = 'human_agent:pre:endChat',
 
   /**
    * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
    * can be fired both from the user leaving the chat or the agent ending the chat.
    */
-  HUMAN_AGENT_END_CHAT = "human_agent:endChat",
+  HUMAN_AGENT_END_CHAT = 'human_agent:endChat',
 
   /**
    * This event is fired after Carbon AI Chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
    * from that call. This is particularly useful if some custom code wants to take action if no agents are online.
    */
-  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE = "human_agent:areAnyAgentsOnline",
+  HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE = 'human_agent:areAnyAgentsOnline',
 
   /**
    * Fired when a new chunk in a user_defined response comes through.
    */
-  CHUNK_USER_DEFINED_RESPONSE = "chunk:userDefinedResponse",
+  CHUNK_USER_DEFINED_RESPONSE = 'chunk:userDefinedResponse',
 
   /**
    * This event is fired when the user interacts with the feedback controls on a message. This includes both the feedback
    * buttons (thumbs up/down) as well as the details popup where the user can submit additional information.
    */
-  FEEDBACK = "feedback",
+  FEEDBACK = 'feedback',
 
   /**
    * This event is fired when the "stop streaming" button in the input field is clicked.
    */
-  STOP_STREAMING = "stopStreaming",
+  STOP_STREAMING = 'stopStreaming',
 
   /**
    * This event is fired whenever the public state returned by ChatInstance.getState() changes.
    * This includes changes to viewState, showUnreadIndicator, and other persisted state.
    */
-  STATE_CHANGE = "state:change",
+  STATE_CHANGE = 'state:change',
 
   /**
    * Fired if the disclaimer is accepted.
    */
-  DISCLAIMER_ACCEPTED = "disclaimerAccepted",
+  DISCLAIMER_ACCEPTED = 'disclaimerAccepted',
 
   /**
    * Fired when a user clicks on navigation items in the chat header (homescreen button or overflow menu).
    */
-  HEADER_MENU_CLICK = "header:menuClick",
+  HEADER_MENU_CLICK = 'header:menuClick',
 }
 
 /**
@@ -248,22 +248,22 @@ export enum ViewChangeReason {
    * Indicates the Carbon AI Chat has loaded for the first time and a view is trying to open. If openChatByDefault is
    * true then the main window will be trying to open, otherwise the launcher will be trying to open.
    */
-  WEB_CHAT_LOADED = "webChatLoaded",
+  WEB_CHAT_LOADED = 'webChatLoaded',
 
   /**
    * Indicates the user clicked on our built-in launcher button that opened the main window.
    */
-  LAUNCHER_CLICKED = "launcherClicked",
+  LAUNCHER_CLICKED = 'launcherClicked',
 
   /**
    * Indicates the user clicked on our built-in minimize button that closed the launcher.
    */
-  MAIN_WINDOW_MINIMIZED = "mainWindowMinimized",
+  MAIN_WINDOW_MINIMIZED = 'mainWindowMinimized',
 
   /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.
    */
-  CALLED_CHANGE_VIEW = "calledChangeView",
+  CALLED_CHANGE_VIEW = 'calledChangeView',
 }
 
 /**
@@ -275,62 +275,62 @@ export enum MessageSendSource {
   /**
    * The user has entered a value from the main input on the message list.
    */
-  MESSAGE_INPUT = "messageInput",
+  MESSAGE_INPUT = 'messageInput',
 
   /**
    * The user has entered a value from the input on the home screen.
    */
-  HOME_SCREEN_INPUT = "homeScreenInput",
+  HOME_SCREEN_INPUT = 'homeScreenInput',
 
   /**
    * The user clicked a button from an option response.
    */
-  OPTION_BUTTON = "optionButton",
+  OPTION_BUTTON = 'optionButton',
 
   /**
    * The user selected a value from a dropdown for an option response.
    */
-  OPTION_DROP_DOWN = "optionDropDown",
+  OPTION_DROP_DOWN = 'optionDropDown',
 
   /**
    * The message was sent as an event history update.
    */
-  HISTORY_UPDATE = "historyUpdate",
+  HISTORY_UPDATE = 'historyUpdate',
 
   /**
    * An external call to the public "instance.send" method was made.
    */
-  INSTANCE_SEND = "instanceSend",
+  INSTANCE_SEND = 'instanceSend',
 
   /**
    * The user chose a value from the date picker.
    */
-  DATE_PICKER = "datePicker",
+  DATE_PICKER = 'datePicker',
 
   /**
    * The user clicked a post back button from a button response.
    */
-  POST_BACK_BUTTON = "postBackButton",
+  POST_BACK_BUTTON = 'postBackButton',
 
   /**
    * The user clicked a starter from the home screen.
    */
-  HOME_SCREEN_STARTER = "homeScreenStarter",
+  HOME_SCREEN_STARTER = 'homeScreenStarter',
 
   /**
    * A default request for the welcome message was made.
    */
-  WELCOME_REQUEST = "welcomeRequest",
+  WELCOME_REQUEST = 'welcomeRequest',
 
   /**
    * This is used for message events.
    */
-  EVENT = "event",
+  EVENT = 'event',
 
   /**
    * Some other source.
    */
-  OTHER = "other",
+  OTHER = 'other',
 }
 
 /**
@@ -962,19 +962,19 @@ export enum FeedbackInteractionType {
   /**
    * Indicates the details popup was opened after the user clicked one of the feedback buttons.
    */
-  DETAILS_OPENED = "detailsOpened",
+  DETAILS_OPENED = 'detailsOpened',
 
   /**
    * Indicates the details popup was closed after the user clicked the "X" button to close it or if the user clicked the
    * feedback button that opened it.
    */
-  DETAILS_CLOSED = "detailsClosed",
+  DETAILS_CLOSED = 'detailsClosed',
 
   /**
    * Indicates feedback was submitted. This includes both when the details panel is open and submitted as well as when
    * the user clicks a feedback button and the details are not shown.
    */
-  SUBMITTED = "submitted",
+  SUBMITTED = 'submitted',
 }
 
 /**
@@ -1047,17 +1047,17 @@ export enum HeaderMenuClickType {
   /**
    * The homescreen/back button was clicked.
    */
-  HOMESCREEN_BUTTON = "homescreenButton",
+  HOMESCREEN_BUTTON = 'homescreenButton',
 
   /**
    * The overflow menu button was clicked (menu opened).
    */
-  OVERFLOW_MENU_OPENED = "overflowMenuOpened",
+  OVERFLOW_MENU_OPENED = 'overflowMenuOpened',
 
   /**
    * An item in the overflow menu was clicked.
    */
-  OVERFLOW_MENU_ITEM = "overflowMenuItem",
+  OVERFLOW_MENU_ITEM = 'overflowMenuItem',
 }
 
 /**
@@ -1099,17 +1099,17 @@ export enum MainWindowOpenReason {
   /**
    * Indicates the user clicked on our built-in launcher button that opened the main window.
    */
-  DEFAULT_LAUNCHER = "default_launcher",
+  DEFAULT_LAUNCHER = 'default_launcher',
 
   /**
    * Indicates the main window was opened because {@link PublicConfig.openChatByDefault} was set to true.
    */
-  OPEN_BY_DEFAULT = "open_by_default",
+  OPEN_BY_DEFAULT = 'open_by_default',
 
   /**
    * Indicates the main window was opened as a result of session history.
    */
-  SESSION_HISTORY = "session_history",
+  SESSION_HISTORY = 'session_history',
 }
 
 /**
@@ -1121,10 +1121,10 @@ export enum MainWindowCloseReason {
   /**
    * Indicates the user clicked on our built-in minimize button that closed to the launcher.
    */
-  DEFAULT_MINIMIZE = "default_minimize",
+  DEFAULT_MINIMIZE = 'default_minimize',
 
   /**
    * Indicates the user clicked the close and restart button that minimized to the launcher.
    */
-  MAIN_WINDOW_CLOSED_AND_RESTARTED = "main_window_closed_and_restarted",
+  MAIN_WINDOW_CLOSED_AND_RESTARTED = 'main_window_closed_and_restarted',
 }

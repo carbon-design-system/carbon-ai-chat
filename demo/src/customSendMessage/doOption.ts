@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
+import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
 
-import { RESPONSE_MAP } from "./responseMap";
+import { RESPONSE_MAP } from './responseMap';
 
 function doOption(instance: ChatInstance) {
   const options = Object.keys(RESPONSE_MAP).map((key) => ({
@@ -21,16 +21,16 @@ function doOption(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.OPTION,
-          title: "Select a response to view it in action (dropdown).",
+          title: 'Select a response to view it in action (dropdown).',
           options,
         },
         {
           response_type: MessageResponseTypes.OPTION,
-          title: "Select a response to view it in action (button).",
+          title: 'Select a response to view it in action (button).',
           description:
-            "If under 5 items, default is buttons. If over, moves to dropdown.",
+            'If under 5 items, default is buttons. If over, moves to dropdown.',
           options,
-          preference: "button",
+          preference: 'button',
         },
       ],
     },

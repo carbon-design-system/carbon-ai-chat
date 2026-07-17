@@ -7,22 +7,22 @@
  *  @license
  */
 
-import React, { Suspense, useMemo, useRef, useState } from "react";
+import React, { Suspense, useMemo, useRef, useState } from 'react';
 
-import { ScrollElementIntoViewFunction } from "../../MessagesComponent";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { AppState } from "../../../../types/state/AppState";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
-import InlineError from "../../../components/util/InlineError";
-import { CitationCard } from "../util/citations/CitationCard";
-import { ConversationalSearchText } from "./ConversationalSearchText";
+import { ScrollElementIntoViewFunction } from '../../MessagesComponent';
+import { useSelector } from '../../../hooks/useSelector';
+import { shallowEqual } from '../../../store/appStore';
+import { AppState } from '../../../../types/state/AppState';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { SkeletonPlaceholder } from '../../../components/util/SkeletonPicker';
+import InlineError from '../../../components/util/InlineError';
+import { CitationCard } from '../util/citations/CitationCard';
+import { ConversationalSearchText } from './ConversationalSearchText';
 import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
-} from "../../../../types/messaging/Messages";
-import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
+} from '../../../../types/messaging/Messages';
+import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
 
 interface ConversationalSearchProps {
   /**
@@ -56,14 +56,14 @@ function ConversationalSearch({
       conversationalSearch_streamingIncomplete:
         state.languagePack.conversationalSearch_streamingIncomplete,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   const messageItem = localMessageItem.item;
 
   const sortedCitations = useMemo(
     () => sortCitations(messageItem.citations),
-    [messageItem.citations],
+    [messageItem.citations]
   );
 
   function scrollCitations() {
@@ -72,7 +72,7 @@ function ConversationalSearch({
     // still in view.
     setTimeout(
       () => scrollElementIntoView(scrollIntoViewArea.current, 32, 64),
-      50,
+      50
     );
   }
 
@@ -121,8 +121,7 @@ function ConversationalSearch({
           <Carousel
             nextBtnText={languagePack.carousel_nextNavButton}
             previousBtnText={languagePack.carousel_prevNavButton}
-            onChange={onChangeHandler}
-          >
+            onChange={onChangeHandler}>
             <div>{tiles}</div>
           </Carousel>
         </Suspense>
@@ -160,7 +159,7 @@ function sortCitations(citations: ConversationalSearchItemCitation[]) {
   }
   const withRanges = citations.filter((citation) => citation.ranges?.length);
   const withoutRanges = citations.filter(
-    (citation) => !citation.ranges?.length,
+    (citation) => !citation.ranges?.length
   );
   return withRanges.concat(withoutRanges);
 }

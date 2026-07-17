@@ -10,18 +10,18 @@
 /**
  * Represents a position in the layout (start or end)
  */
-export type StartOrEnd = "start" | "end";
+export type StartOrEnd = 'start' | 'end';
 
 /**
  * Corner style options
  */
-export type CornerStyle = "round" | "square";
+export type CornerStyle = 'round' | 'square';
 
 /**
  * Corner position identifiers
  */
 export type CornerPosition =
-  "start-start" | "start-end" | "end-start" | "end-end";
+  'start-start' | 'start-end' | 'end-start' | 'end-end';
 
 /**
  * Configuration for corner styles
@@ -58,7 +58,7 @@ export interface SlotContentState {
  * Keys for tracking initial state completion
  */
 export type InitialStateKey =
-  "inputAndMessagesAtMaxWidth" | "shouldRenderHistory" | "hasSlotContent";
+  'inputAndMessagesAtMaxWidth' | 'shouldRenderHistory' | 'hasSlotContent';
 
 /**
  * State tracking for input and messages width

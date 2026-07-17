@@ -27,31 +27,31 @@
  */
 
 // Side-effect imports — register the custom elements used in this example.
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/web-components/es/components/notification/actionable-notification.js";
-import "@carbon/web-components/es/components/notification/actionable-notification-button.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/web-components/es/components/notification/actionable-notification.js';
+import '@carbon/web-components/es/components/notification/actionable-notification-button.js';
 
 import {
   type ChatInstance,
   type PublicConfig,
   type RenderUserDefinedState,
-} from "@carbon/ai-chat";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
-import { html, LitElement, nothing, render } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/defs.js';
+import { html, LitElement, nothing, render } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
 import {
   customSendMessage,
   scenarioBus,
   type ScenarioCompleteDetail,
-} from "./customSendMessage";
+} from './customSendMessage';
 
-type StepKind = "NOT-STARTED" | "IN-PROGRESS" | "SUCCEEDED";
+type StepKind = 'NOT-STARTED' | 'IN-PROGRESS' | 'SUCCEEDED';
 
 interface StepsCardPayload {
-  user_defined_type: "steps_card";
+  user_defined_type: 'steps_card';
   title: string;
   status: string;
   showFooter: boolean;
@@ -80,7 +80,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   // Light DOM so global Carbon styles apply to slotted user-defined content;
   // host CSS (sizing, toast stack) lives in index.html for the same reason.
@@ -110,11 +110,11 @@ export class Demo extends LitElement {
     // The scenarioBus is the named, typed channel between the mock back end
     // (which knows when a scenario finishes) and this host (which owns the
     // toast UI). Subscribe once on mount; unsubscribe on unmount.
-    scenarioBus.addEventListener("complete", this.boundScenarioComplete);
+    scenarioBus.addEventListener('complete', this.boundScenarioComplete);
   }
 
   disconnectedCallback() {
-    scenarioBus.removeEventListener("complete", this.boundScenarioComplete);
+    scenarioBus.removeEventListener('complete', this.boundScenarioComplete);
     super.disconnectedCallback();
   }
 
@@ -130,11 +130,11 @@ export class Demo extends LitElement {
   // Lit reconciles the template internally and the `<cds-aichat-card-steps>`
   // element keeps its identity across ticks.
   private renderUserDefinedResponse = (
-    state: RenderUserDefinedState,
+    state: RenderUserDefinedState
   ): HTMLElement | null => {
     const payload = state.messageItem?.user_defined as
       StepsCardPayload | undefined;
-    if (payload?.user_defined_type !== "steps_card") {
+    if (payload?.user_defined_type !== 'steps_card') {
       return null;
     }
     const key = state.fullMessage?.id;
@@ -143,9 +143,9 @@ export class Demo extends LitElement {
     }
     let host = this.cardHosts.get(key);
     if (!host) {
-      host = document.createElement("div");
+      host = document.createElement('div');
       // Spacing rule lives with the host page; see index.html.
-      host.className = "steps-card-container";
+      host.className = 'steps-card-container';
       this.cardHosts.set(key, host);
     }
     render(this.stepsCardTemplate(payload), host);
@@ -178,8 +178,7 @@ export class Demo extends LitElement {
           payload.showFooter
             ? html`<cds-aichat-card-footer
                 size="md"
-                .actions=${[]}
-              ></cds-aichat-card-footer>`
+                .actions=${[]}></cds-aichat-card-footer>`
             : nothing
         }
       </cds-aichat-card>
@@ -204,8 +203,7 @@ export class Demo extends LitElement {
               kind="success"
               title="Steps demo complete"
               subtitle="View the finished card in the conversation."
-              @cds-notification-closed=${() => this.dismiss(toast.toastID)}
-            >
+              @cds-notification-closed=${() => this.dismiss(toast.toastID)}>
               <cds-actionable-notification-button
                 slot="action"
                 @click=${() =>
@@ -213,7 +211,7 @@ export class Demo extends LitElement {
                 >View message</cds-actionable-notification-button
               >
             </cds-actionable-notification>
-          `,
+          `
         )}
       </div>
     `;
@@ -227,8 +225,7 @@ export class Demo extends LitElement {
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
         .onBeforeRender=${this.onBeforeRender}
-        .renderUserDefinedResponse=${this.renderUserDefinedResponse}
-      ></cds-aichat-custom-element>
+        .renderUserDefinedResponse=${this.renderUserDefinedResponse}></cds-aichat-custom-element>
       ${this.renderToasts()}
     `;
   }

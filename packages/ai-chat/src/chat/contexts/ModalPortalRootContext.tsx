@@ -7,7 +7,7 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
 /**
  * This context provides access to the portal root element that acts as the host element for instances of

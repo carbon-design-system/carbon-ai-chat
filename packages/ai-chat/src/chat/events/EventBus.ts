@@ -12,28 +12,28 @@
  * the event is fired.
  */
 
-import cloneDeep from "lodash-es/cloneDeep.js";
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
-import { BusEvent, BusEventType } from "../../types/events/eventBusTypes";
-import { asArray, asyncForEach } from "../utils/lang/arrayUtils";
+import { BusEvent, BusEventType } from '../../types/events/eventBusTypes';
+import { asArray, asyncForEach } from '../utils/lang/arrayUtils';
 import {
   consoleError,
   consoleLog,
   consoleWarn,
   debugLog,
   isEnableDebugLog,
-} from "../utils/miscUtils";
+} from '../utils/miscUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
-} from "../utils/resolvablePromise";
+} from '../utils/resolvablePromise';
 import {
   ChatInstance,
   EventBusHandler,
   TypeAndHandler,
-} from "../../types/instance/ChatInstance";
+} from '../../types/instance/ChatInstance';
 
-const HANDLER_NOT_FUNCTION = "The event handler is not a function.";
+const HANDLER_NOT_FUNCTION = 'The event handler is not a function.';
 
 class EventBus {
   /**
@@ -66,12 +66,12 @@ class EventBus {
    * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
   async fire<T extends BusEvent>(busEvent: T, instance: ChatInstance) {
-    logEvent("Before fire", busEvent);
+    logEvent('Before fire', busEvent);
     const { type } = busEvent;
 
     if (!type) {
       throw new Error(
-        `Attempted to fire an event with no type! ${JSON.stringify(busEvent)}`,
+        `Attempted to fire an event with no type! ${JSON.stringify(busEvent)}`
       );
     }
 
@@ -80,7 +80,7 @@ class EventBus {
       if (result && !(result instanceof Promise)) {
         consoleWarn(
           `An event handler for event ${type} returned a non-promise. This might be a mistake.`,
-          result,
+          result
         );
       }
       return result;
@@ -88,7 +88,7 @@ class EventBus {
 
     if (this.eventsTypesRunning.has(type)) {
       throw new Error(
-        `An event of type ${type} is already running. Please make sure that you have resolved the Promises for any earlier events that were fired.`,
+        `An event of type ${type} is already running. Please make sure that you have resolved the Promises for any earlier events that were fired.`
       );
     }
 
@@ -118,7 +118,7 @@ class EventBus {
       }
     }
 
-    logEvent("After fire", busEvent);
+    logEvent('After fire', busEvent);
   }
 
   /**
@@ -130,7 +130,7 @@ class EventBus {
    * @param instance The current instance of the Carbon AI Chat that is passed to the event handlers
    */
   fireSync<T extends BusEvent>(busEvent: T, instance: ChatInstance) {
-    logEvent("Before fire", busEvent);
+    logEvent('Before fire', busEvent);
 
     const { type } = busEvent;
 
@@ -142,7 +142,7 @@ class EventBus {
       handlersCopy.forEach((handler) => handler(busEvent, instance));
     }
 
-    logEvent("After fire", busEvent);
+    logEvent('After fire', busEvent);
   }
 
   /**
@@ -174,11 +174,11 @@ class EventBus {
     data.forEach(({ type, handler }) => {
       if (!type) {
         throw new Error(
-          `Attempted to listen to an event with no type: "${type}"!`,
+          `Attempted to listen to an event with no type: "${type}"!`
         );
       }
 
-      if (typeof handler === "function") {
+      if (typeof handler === 'function') {
         if (!this.handlersByType.has(type)) {
           this.handlersByType.set(type, []);
         }
@@ -226,7 +226,7 @@ class EventBus {
   once(handlers: TypeAndHandler | TypeAndHandler[]) {
     const data = asArray(handlers);
     data.forEach(({ type, handler }) => {
-      if (typeof handler === "function") {
+      if (typeof handler === 'function') {
         const onceHandler = (event: BusEvent, instance: ChatInstance) => {
           this.off({ type, handler: onceHandler });
           return handler(event, instance);
@@ -246,7 +246,7 @@ class EventBus {
     this.handlersByType.forEach((listeners, type) => {
       console.group(`Event ${type} (${listeners.length})`);
       listeners.forEach((listener) => {
-        consoleLog("Listener", listener);
+        consoleLog('Listener', listener);
       });
       console.groupEnd();
     });

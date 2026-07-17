@@ -7,9 +7,9 @@
  *  @license
  */
 
-@use "@carbon/layout";
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/utilities/convert" as *;
+@use '@carbon/layout';
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/utilities/convert' as *;
 
 :host(#{$prefix}-workspace-shell-body) {
   display: block;

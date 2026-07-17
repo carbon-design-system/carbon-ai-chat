@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { waitFor } from "@testing-library/react";
-import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
-import actions from "../../../../src/chat/store/actions";
+import { waitFor } from '@testing-library/react';
+import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
+import actions from '../../../../src/chat/store/actions';
 import {
   createBaseConfig,
   mockCustomSendMessage,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../../test_helpers";
+} from '../../../test_helpers';
 
-describe("activeResponseId public state", () => {
+describe('activeResponseId public state', () => {
   beforeEach(() => {
     setupBeforeEach();
   });
@@ -27,7 +27,7 @@ describe("activeResponseId public state", () => {
     setupAfterEach();
   });
 
-  it("tracks added messages and streaming chunks", async () => {
+  it('tracks added messages and streaming chunks', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -36,24 +36,24 @@ describe("activeResponseId public state", () => {
 
     // Receiving a message sets activeResponseId
     await instance.messaging.addMessage({
-      id: "resp-1",
+      id: 'resp-1',
       output: { generic: [] },
     });
-    expect(instance.getState().activeResponseId).toBe("resp-1");
+    expect(instance.getState().activeResponseId).toBe('resp-1');
 
     // Streaming chunk updates activeResponseId immediately
     await instance.messaging.addMessageChunk({
       partial_item: {
         response_type: MessageResponseTypes.TEXT,
-        text: "hi",
-        streaming_metadata: { id: "item-1" },
+        text: 'hi',
+        streaming_metadata: { id: 'item-1' },
       },
-      streaming_metadata: { response_id: "stream-123" },
+      streaming_metadata: { response_id: 'stream-123' },
     });
-    expect(instance.getState().activeResponseId).toBe("stream-123");
+    expect(instance.getState().activeResponseId).toBe('stream-123');
   });
 
-  it("clears on send and updates when response arrives", async () => {
+  it('clears on send and updates when response arrives', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -61,39 +61,39 @@ describe("activeResponseId public state", () => {
       // Simulate async backend so we can observe the cleared state
       await new Promise((resolve) => setTimeout(resolve, 0));
       await inst.messaging.addMessage({
-        id: "resp-2",
+        id: 'resp-2',
         output: { generic: [] },
       });
     });
 
     // Prime with an existing response
     await instance.messaging.addMessage({
-      id: "resp-prime",
+      id: 'resp-prime',
       output: { generic: [] },
     });
-    expect(instance.getState().activeResponseId).toBe("resp-prime");
+    expect(instance.getState().activeResponseId).toBe('resp-prime');
 
-    const sendPromise = instance.send("hello");
+    const sendPromise = instance.send('hello');
 
     // Immediately after send, active response should be cleared
     expect(instance.getState().activeResponseId).toBeNull();
 
     // Once the response is added, activeResponseId should update
     await sendPromise;
-    expect(instance.getState().activeResponseId).toBe("resp-2");
+    expect(instance.getState().activeResponseId).toBe('resp-2');
   });
 
-  it("sets the active response from hydrated history and clears on restart", async () => {
+  it('sets the active response from hydrated history and clears on restart', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     await instance.messaging.insertHistory([
       {
         message: {
-          id: "hist-1",
+          id: 'hist-1',
           output: {
             generic: [
-              { response_type: MessageResponseTypes.TEXT, text: "one" },
+              { response_type: MessageResponseTypes.TEXT, text: 'one' },
             ],
           },
         } as any,
@@ -101,10 +101,10 @@ describe("activeResponseId public state", () => {
       },
       {
         message: {
-          id: "hist-2",
+          id: 'hist-2',
           output: {
             generic: [
-              { response_type: MessageResponseTypes.TEXT, text: "two" },
+              { response_type: MessageResponseTypes.TEXT, text: 'two' },
             ],
           },
         } as any,
@@ -113,14 +113,14 @@ describe("activeResponseId public state", () => {
     ]);
 
     await waitFor(() =>
-      expect(instance.getState().activeResponseId).toBe("hist-2"),
+      expect(instance.getState().activeResponseId).toBe('hist-2')
     );
 
     store.dispatch(actions.restartConversation());
     expect(instance.getState().activeResponseId).toBeNull();
   });
 
-  it("sets activeResponseId from customLoadHistory when last message is a response", async () => {
+  it('sets activeResponseId from customLoadHistory when last message is a response', async () => {
     const config = {
       ...createBaseConfig(),
       messaging: {
@@ -129,10 +129,10 @@ describe("activeResponseId public state", () => {
           return [
             {
               message: {
-                id: "hist-a",
+                id: 'hist-a',
                 output: {
                   generic: [
-                    { response_type: MessageResponseTypes.TEXT, text: "old" },
+                    { response_type: MessageResponseTypes.TEXT, text: 'old' },
                   ],
                 },
               } as any,
@@ -140,10 +140,10 @@ describe("activeResponseId public state", () => {
             },
             {
               message: {
-                id: "hist-b",
+                id: 'hist-b',
                 output: {
                   generic: [
-                    { response_type: MessageResponseTypes.TEXT, text: "new" },
+                    { response_type: MessageResponseTypes.TEXT, text: 'new' },
                   ],
                 },
               } as any,
@@ -165,38 +165,38 @@ describe("activeResponseId public state", () => {
           ];
         expect(instance.getState().activeResponseId).toBe(lastId ?? null);
       },
-      { timeout: 5000 },
+      { timeout: 5000 }
     );
   });
 
-  it("updates when messages are removed", async () => {
+  it('updates when messages are removed', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     await instance.messaging.addMessage({
-      id: "resp-1",
+      id: 'resp-1',
       output: { generic: [] },
     });
     await instance.messaging.addMessage({
-      id: "resp-2",
+      id: 'resp-2',
       output: { generic: [] },
     });
 
-    expect(instance.getState().activeResponseId).toBe("resp-2");
+    expect(instance.getState().activeResponseId).toBe('resp-2');
 
-    await instance.messaging.removeMessages(["resp-2"]);
-    expect(instance.getState().activeResponseId).toBe("resp-1");
+    await instance.messaging.removeMessages(['resp-2']);
+    expect(instance.getState().activeResponseId).toBe('resp-1');
   });
 
-  it("clearConversation resets activeResponseId", async () => {
+  it('clearConversation resets activeResponseId', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     await instance.messaging.addMessage({
-      id: "resp-clear",
+      id: 'resp-clear',
       output: { generic: [] },
     });
-    expect(instance.getState().activeResponseId).toBe("resp-clear");
+    expect(instance.getState().activeResponseId).toBe('resp-clear');
 
     await instance.messaging.clearConversation();
     expect(instance.getState().activeResponseId).toBeNull();

@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { HistoryItem } from "../messaging/History";
-import type { MessageResponse, StreamChunk } from "../messaging/Messages";
-import { BusEventSend } from "../events/eventBusTypes";
+import { HistoryItem } from '../messaging/History';
+import type { MessageResponse, StreamChunk } from '../messaging/Messages';
+import { BusEventSend } from '../events/eventBusTypes';
 
 /**
  * Lifecycle state passed to {@link ChatInstanceMessaging.upsertMessage} to describe the
@@ -30,7 +30,7 @@ export enum MessageState {
    * "stop streaming" affordance remains available while a message is in this state if
    * any item carries `streaming_metadata.cancellable: true`.
    */
-  STREAMING = "streaming",
+  STREAMING = 'streaming',
 
   /**
    * The message has reached its final shape. Carbon AI Chat fires
@@ -38,7 +38,7 @@ export enum MessageState {
    * transitions into this state from any other state, including the case where no
    * message with this ID previously existed.
    */
-  COMPLETE = "complete",
+  COMPLETE = 'complete',
 
   /**
    * The message terminated in an error condition. The chat displays the message as-is
@@ -46,7 +46,7 @@ export enum MessageState {
    * when a message transitions into this state. Treat `ERROR` as terminal — subsequent
    * upserts targeting the same id are still accepted but should be rare.
    */
-  ERROR = "error",
+  ERROR = 'error',
 }
 
 /**
@@ -62,7 +62,7 @@ export enum MessageState {
  * @experimental
  */
 export type UpsertMessageUpdater = (
-  previous: MessageResponse | undefined,
+  previous: MessageResponse | undefined
 ) => Promise<MessageResponse> | MessageResponse;
 
 /**
@@ -74,17 +74,17 @@ export enum CancellationReason {
   /**
    * User clicked the "stop streaming" button during message streaming.
    */
-  STOP_STREAMING = "Stop streaming",
+  STOP_STREAMING = 'Stop streaming',
 
   /**
    * User restarted or cleared the conversation.
    */
-  CONVERSATION_RESTARTED = "Conversation restarted",
+  CONVERSATION_RESTARTED = 'Conversation restarted',
 
   /**
    * Message request exceeded the configured timeout duration.
    */
-  TIMEOUT = "Request timeout",
+  TIMEOUT = 'Request timeout',
 }
 
 /**
@@ -140,7 +140,7 @@ export interface ChatInstanceMessaging {
   upsertMessage: (
     messageID: string,
     state: MessageState,
-    updater: UpsertMessageUpdater,
+    updater: UpsertMessageUpdater
   ) => Promise<void>;
 
   /**

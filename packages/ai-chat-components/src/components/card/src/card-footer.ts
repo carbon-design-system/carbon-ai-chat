@@ -7,23 +7,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html, nothing, PropertyValues } from "lit";
-import { property } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { repeat } from "lit/directives/repeat.js";
-import "@carbon/web-components/es/components/button/button.js";
-import "@carbon/web-components/es/components/icon-button/icon-button.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import { LitElement, html, nothing, PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { repeat } from 'lit/directives/repeat.js';
+import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
-} from "@carbon/web-components/es/components/button/button.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./card-footer.scss?lit";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
+} from '@carbon/web-components/es/components/button/button.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './card-footer.scss?lit';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
 
 export type Action = {
   label: string;
@@ -50,7 +50,7 @@ class CardFooter extends LitElement {
    * Sets default slot value to footer
    */
   @property({ type: String, reflect: true })
-  slot = "footer";
+  slot = 'footer';
 
   /** Card actions to render */
   @property({ type: Array })
@@ -59,7 +59,7 @@ class CardFooter extends LitElement {
   @property({ type: String })
   size?: BUTTON_SIZE = BUTTON_SIZE.LARGE;
 
-  @property({ type: Boolean, attribute: "is-icon-button", reflect: true })
+  @property({ type: Boolean, attribute: 'is-icon-button', reflect: true })
   isIconButton = false;
 
   private handleAction(action: Action) {
@@ -67,21 +67,21 @@ class CardFooter extends LitElement {
       action.onClick();
     }
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-card-footer-action", {
+      new CustomEvent('cds-aichat-card-footer-action', {
         detail: action,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   updated(changedProperties: PropertyValues) {
-    if (changedProperties.has("actions")) {
+    if (changedProperties.has('actions')) {
       if (!this.actions || this.actions.length === 0) {
         return;
       }
       const allActionsHaveNoLabels = this.actions.every(
-        (action) => !action.label,
+        (action) => !action.label
       );
       this.isIconButton = allActionsHaveNoLabels;
     }
@@ -100,22 +100,20 @@ class CardFooter extends LitElement {
                 this.actions.length > 2,
             })}
             data-rounded="bottom"
-            ?data-stacked=${this.actions.length > 2}
-          >
+            ?data-stacked=${this.actions.length > 2}>
             ${repeat(
               this.actions,
               (action) => action.id,
               (action) =>
                 html`<cds-button
-                  kind=${action.kind ?? "secondary"}
+                  kind=${action.kind ?? 'secondary'}
                   size=${ifDefined(this.size)}
                   ?disabled=${action.disabled || action.isViewing}
                   class=${classMap({
                     [`${prefix}-card-footer__action-viewing`]:
                       action.isViewing ?? false,
                   })}
-                  @click=${() => this.handleAction(action)}
-                >
+                  @click=${() => this.handleAction(action)}>
                   ${action.label}
                   ${
                     action.icon
@@ -123,14 +121,14 @@ class CardFooter extends LitElement {
                           action.icon,
                           !action.isViewing
                             ? {
-                                slot: "icon",
+                                slot: 'icon',
                                 class: `${prefix}-card-footer__action-icon`,
                               }
-                            : undefined,
+                            : undefined
                         )
                       : nothing
                   }
-                </cds-button> `,
+                </cds-button> `
             )}
           </div>
         `
@@ -140,25 +138,23 @@ class CardFooter extends LitElement {
               [`${prefix}-card-footer__icon-actions`]: true,
             })}
             data-rounded="bottom-right"
-            ?data-stacked=${this.actions.length > 2}
-          >
+            ?data-stacked=${this.actions.length > 2}>
             ${repeat(
               this.actions,
               (action) => action.id,
               (action) =>
                 html`<cds-icon-button
-                  kind=${action.kind ?? "ghost"}
+                  kind=${action.kind ?? 'ghost'}
                   size=${ifDefined(this.size)}
                   ?disabled=${action.disabled}
-                  @click=${() => this.handleAction(action)}
-                >
+                  @click=${() => this.handleAction(action)}>
                   ${
                     action.icon
-                      ? iconLoader(action.icon, { slot: "icon" })
+                      ? iconLoader(action.icon, { slot: 'icon' })
                       : nothing
                   }
                   <span slot="tooltip-content">${action.tooltipText}</span>
-                </cds-icon-button> `,
+                </cds-icon-button> `
             )}
           </div>
         `;

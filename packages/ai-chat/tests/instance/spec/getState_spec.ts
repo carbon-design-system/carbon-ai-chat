@@ -12,15 +12,15 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
-import { BusEventType } from "../../../src/types/events/eventBusTypes";
-import { ViewType } from "../../../src/types/instance/apiTypes";
+} from '../../test_helpers';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
+import { ViewType } from '../../../src/types/instance/apiTypes';
 
-describe("ChatInstance.getState", () => {
+describe('ChatInstance.getState', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("exposes flattened persisted state", async () => {
+  it('exposes flattened persisted state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -31,18 +31,18 @@ describe("ChatInstance.getState", () => {
     expect(state.viewState).toEqual(reduxPersisted.viewState);
     expect(state.showUnreadIndicator).toBe(reduxPersisted.showUnreadIndicator);
     expect(state.humanAgent.isConnected).toBe(
-      reduxPersisted.humanAgentState.isConnected,
+      reduxPersisted.humanAgentState.isConnected
     );
     expect(state.humanAgent.isSuspended).toBe(
-      reduxPersisted.humanAgentState.isSuspended,
+      reduxPersisted.humanAgentState.isSuspended
     );
     expect(state.humanAgent.isConnecting).toBe(
-      store.getState().humanAgentState.isConnecting,
+      store.getState().humanAgentState.isConnecting
     );
-    expect(state).not.toHaveProperty("persistedToBrowserStorage");
+    expect(state).not.toHaveProperty('persistedToBrowserStorage');
   });
 
-  it("freezes the persisted snapshot", async () => {
+  it('freezes the persisted snapshot', async () => {
     const config = createBaseConfig();
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -58,7 +58,7 @@ describe("ChatInstance.getState", () => {
     }).toThrow();
   });
 
-  it("fires STATE_CHANGE event when state changes", async () => {
+  it('fires STATE_CHANGE event when state changes', async () => {
     const config = createBaseConfig();
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -71,7 +71,7 @@ describe("ChatInstance.getState", () => {
     });
 
     // Change the view state which should trigger STATE_CHANGE
-    await instance.changeView("mainWindow" as ViewType);
+    await instance.changeView('mainWindow' as ViewType);
 
     // Should have received at least one STATE_CHANGE event
     expect(stateChangeEvents.length).toBeGreaterThan(0);
@@ -83,7 +83,7 @@ describe("ChatInstance.getState", () => {
     expect(lastEvent.newState.viewState.mainWindow).toBe(true);
   });
 
-  it("provides both previous and new state in STATE_CHANGE event", async () => {
+  it('provides both previous and new state in STATE_CHANGE event', async () => {
     const config = createBaseConfig();
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -104,7 +104,7 @@ describe("ChatInstance.getState", () => {
     expect(stateChangeEvent.newState.showUnreadIndicator).toBe(true);
   });
 
-  it("does not fire STATE_CHANGE event when state does not change", async () => {
+  it('does not fire STATE_CHANGE event when state does not change', async () => {
     const config = createBaseConfig();
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -126,7 +126,7 @@ describe("ChatInstance.getState", () => {
     expect(stateChangeEvents.length).toBe(initialCount);
   });
 
-  it("STATE_CHANGE event state is frozen", async () => {
+  it('STATE_CHANGE event state is frozen', async () => {
     const config = createBaseConfig();
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 

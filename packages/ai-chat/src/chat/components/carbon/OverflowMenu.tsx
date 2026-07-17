@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonOverflowMenuElement from "@carbon/web-components/es/components/overflow-menu/overflow-menu.js";
+import CarbonOverflowMenuElement from '@carbon/web-components/es/components/overflow-menu/overflow-menu.js';
 const OverflowMenu = createComponent({
-  tagName: "cds-overflow-menu",
+  tagName: 'cds-overflow-menu',
   elementClass: CarbonOverflowMenuElement,
   react: React,
 });

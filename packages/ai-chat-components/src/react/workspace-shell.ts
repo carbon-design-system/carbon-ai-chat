@@ -7,50 +7,50 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatWorkspaceShell from "../components/workspace-shell/src/workspace-shell.js";
-import CDSAIChatWorkspaceShellHeader from "../components/workspace-shell/src/workspace-shell-header.js";
-import CDSAIChatWorkspaceShellBody from "../components/workspace-shell/src/workspace-shell-body.js";
-import CDSAIChatWorkspaceShellFooter from "../components/workspace-shell/src/workspace-shell-footer.js";
+import CDSAIChatWorkspaceShell from '../components/workspace-shell/src/workspace-shell.js';
+import CDSAIChatWorkspaceShellHeader from '../components/workspace-shell/src/workspace-shell-header.js';
+import CDSAIChatWorkspaceShellBody from '../components/workspace-shell/src/workspace-shell-body.js';
+import CDSAIChatWorkspaceShellFooter from '../components/workspace-shell/src/workspace-shell-footer.js';
 
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const WorkspaceShell = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-workspace-shell",
+    tagName: 'cds-aichat-workspace-shell',
     elementClass: CDSAIChatWorkspaceShell,
     react: React,
-  }),
+  })
 );
 
 const WorkspaceShellHeader = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-workspace-shell-header",
+    tagName: 'cds-aichat-workspace-shell-header',
     elementClass: CDSAIChatWorkspaceShellHeader,
     react: React,
-  }),
+  })
 );
 
 const WorkspaceShellBody = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-workspace-shell-body",
+    tagName: 'cds-aichat-workspace-shell-body',
     elementClass: CDSAIChatWorkspaceShellBody,
     react: React,
-  }),
+  })
 );
 
 const WorkspaceShellFooter = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-workspace-shell-footer",
+    tagName: 'cds-aichat-workspace-shell-footer',
     elementClass: CDSAIChatWorkspaceShellFooter,
     react: React,
     events: {
-      onFooterClicked: "cds-aichat-workspace-shell-footer-clicked",
+      onFooterClicked: 'cds-aichat-workspace-shell-footer-clicked',
     },
-  }),
+  })
 );
 
 export default WorkspaceShell;

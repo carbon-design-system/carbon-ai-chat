@@ -15,11 +15,11 @@
  * - Inconsistent formatting
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const REPO_ROOT = path.join(__dirname, "..");
-const ROOT_AGENTS_FILE = "AGENTS.md";
+const REPO_ROOT = path.join(__dirname, '..');
+const ROOT_AGENTS_FILE = 'AGENTS.md';
 
 let errors = 0;
 let warnings = 0;
@@ -42,7 +42,7 @@ function info(message) {
 function validateFileExists(file) {
   const fullPath = path.join(REPO_ROOT, file);
   if (!fs.existsSync(fullPath)) {
-    error("validation", `File not found: ${file}`);
+    error('validation', `File not found: ${file}`);
     return false;
   }
   return true;
@@ -65,8 +65,8 @@ function extractLinks(content) {
 
 // Normalize markdown link targets by stripping anchors and :line suffixes.
 function normalizeLinkTarget(url) {
-  const withoutAnchor = url.split("#")[0];
-  return withoutAnchor.replace(/:(\d+)(?=$)/, "");
+  const withoutAnchor = url.split('#')[0];
+  return withoutAnchor.replace(/:(\d+)(?=$)/, '');
 }
 
 // Resolve a documentation path reference either relative to the current file or repo root.
@@ -89,19 +89,19 @@ function resolveDocPath(file, referencePath) {
 // Skip links that are examples/placeholders rather than real repo references.
 function shouldSkipDocReference(referencePath) {
   return (
-    referencePath.includes("path/to/") ||
-    referencePath.includes("issue #") ||
-    referencePath === "PR.md" ||
-    referencePath === "src/foo/Bar.ts" ||
-    referencePath === "../AGENTS.md" ||
-    referencePath === "../docs/AGENTS.md" ||
-    referencePath === "./ChatContainer.md" ||
-    referencePath === "docs/release-notes.md" ||
-    referencePath === "../../tests/store/spec/reactReduxShim_spec.tsx" ||
-    referencePath.startsWith("<") ||
-    referencePath.includes("<file>") ||
-    referencePath.includes("<slug>") ||
-    referencePath.includes("<component>")
+    referencePath.includes('path/to/') ||
+    referencePath.includes('issue #') ||
+    referencePath === 'PR.md' ||
+    referencePath === 'src/foo/Bar.ts' ||
+    referencePath === '../AGENTS.md' ||
+    referencePath === '../docs/AGENTS.md' ||
+    referencePath === './ChatContainer.md' ||
+    referencePath === 'docs/release-notes.md' ||
+    referencePath === '../../tests/store/spec/reactReduxShim_spec.tsx' ||
+    referencePath.startsWith('<') ||
+    referencePath.includes('<file>') ||
+    referencePath.includes('<slug>') ||
+    referencePath.includes('<component>')
   );
 }
 
@@ -111,12 +111,12 @@ function validateInternalLinks(file, content) {
 
   for (const link of links) {
     // Skip external links
-    if (link.url.startsWith("http://") || link.url.startsWith("https://")) {
+    if (link.url.startsWith('http://') || link.url.startsWith('https://')) {
       continue;
     }
 
     // Skip anchor-only links
-    if (link.url.startsWith("#")) {
+    if (link.url.startsWith('#')) {
       continue;
     }
 
@@ -129,7 +129,7 @@ function validateInternalLinks(file, content) {
     if (!targetPath) {
       error(
         file,
-        `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} not found`,
+        `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} not found`
       );
     }
   }
@@ -156,7 +156,7 @@ function validateFileReferences(file, content) {
   const refs = extractFileReferences(content);
 
   for (const ref of refs) {
-    if (shouldSkipDocReference(ref.path) || ref.path.includes("example")) {
+    if (shouldSkipDocReference(ref.path) || ref.path.includes('example')) {
       continue;
     }
 
@@ -171,14 +171,14 @@ function validateFileReferences(file, content) {
 // Check for required sections in main AGENTS.md files
 function validateRequiredSections(file, content) {
   // Only check main package AGENTS.md files
-  if (!file.endsWith("AGENTS.md") || file.includes("src/")) {
+  if (!file.endsWith('AGENTS.md') || file.includes('src/')) {
     return;
   }
 
-  const requiredSections = ["Related Guidance", "Definition of done"];
+  const requiredSections = ['Related Guidance', 'Definition of done'];
 
   for (const section of requiredSections) {
-    const regex = new RegExp(`^##+ ${section}`, "m");
+    const regex = new RegExp(`^##+ ${section}`, 'm');
     if (!regex.test(content)) {
       warn(file, `Missing recommended section: "${section}"`);
     }
@@ -187,18 +187,18 @@ function validateRequiredSections(file, content) {
 
 // Check for emoji in mode names (should be removed per PLAN-01)
 function validateNoEmojiInModes(file, content) {
-  if (file !== "AGENTS.md") {
+  if (file !== 'AGENTS.md') {
     return;
   }
 
   const emojiRegex = /["'][\p{Emoji}]/u;
   if (emojiRegex.test(content)) {
-    const lines = content.split("\n");
+    const lines = content.split('\n');
     lines.forEach((line, idx) => {
-      if (line.includes("mode") && emojiRegex.test(line)) {
+      if (line.includes('mode') && emojiRegex.test(line)) {
         warn(
           file,
-          `Line ${idx + 1}: Mode name contains emoji (should be removed per PLAN-01)`,
+          `Line ${idx + 1}: Mode name contains emoji (should be removed per PLAN-01)`
         );
       }
     });
@@ -211,15 +211,15 @@ function validatePathNotation(file, content) {
 
   for (const link of links) {
     // Skip external links
-    if (link.url.startsWith("http://") || link.url.startsWith("https://")) {
+    if (link.url.startsWith('http://') || link.url.startsWith('https://')) {
       continue;
     }
 
     // Check for inconsistent path notation
-    if (link.url.startsWith("/") && !link.url.startsWith("http")) {
+    if (link.url.startsWith('/') && !link.url.startsWith('http')) {
       warn(
         file,
-        `Absolute path in link: [${link.text}](${link.url}) - prefer relative paths`,
+        `Absolute path in link: [${link.text}](${link.url}) - prefer relative paths`
       );
     }
   }
@@ -241,7 +241,7 @@ function discoverAgentsFiles() {
     }
 
     const fullPath = path.join(REPO_ROOT, file);
-    const content = fs.readFileSync(fullPath, "utf-8");
+    const content = fs.readFileSync(fullPath, 'utf-8');
     discovered.add(file);
 
     const links = extractLinks(content);
@@ -249,14 +249,14 @@ function discoverAgentsFiles() {
 
     for (const link of links) {
       if (
-        link.url.startsWith("http://") ||
-        link.url.startsWith("https://") ||
-        link.url.startsWith("#")
+        link.url.startsWith('http://') ||
+        link.url.startsWith('https://') ||
+        link.url.startsWith('#')
       ) {
         continue;
       }
 
-      const urlWithoutAnchor = link.url.split("#")[0];
+      const urlWithoutAnchor = link.url.split('#')[0];
       if (!urlWithoutAnchor) {
         continue;
       }
@@ -266,9 +266,9 @@ function discoverAgentsFiles() {
 
       if (
         fs.existsSync(targetPath) &&
-        (relativePath === "AGENTS.md" ||
-          relativePath.startsWith("AGENTS_") ||
-          relativePath.endsWith("/AGENTS.md"))
+        (relativePath === 'AGENTS.md' ||
+          relativePath.startsWith('AGENTS_') ||
+          relativePath.endsWith('/AGENTS.md'))
       ) {
         queue.push(relativePath);
       }
@@ -287,7 +287,7 @@ function validateFile(file) {
   }
 
   const fullPath = path.join(REPO_ROOT, file);
-  const content = fs.readFileSync(fullPath, "utf-8");
+  const content = fs.readFileSync(fullPath, 'utf-8');
 
   validateInternalLinks(file, content);
   validateFileReferences(file, content);
@@ -297,32 +297,32 @@ function validateFile(file) {
 }
 
 // Run validation
-console.log("🔍 Validating AGENTS.md files...\n");
+console.log('🔍 Validating AGENTS.md files...\n');
 
 const agentsFiles = discoverAgentsFiles();
 info(
-  `Discovered ${agentsFiles.length} AGENTS documentation files from ${ROOT_AGENTS_FILE}.`,
+  `Discovered ${agentsFiles.length} AGENTS documentation files from ${ROOT_AGENTS_FILE}.`
 );
 
 for (const file of agentsFiles) {
   validateFile(file);
 }
 
-console.log("\n" + "=".repeat(60));
+console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors, ${warnings} warnings`);
-console.log("=".repeat(60));
+console.log('='.repeat(60));
 
 if (errors > 0) {
-  console.error("\n❌ Validation failed. Please fix errors above.");
+  console.error('\n❌ Validation failed. Please fix errors above.');
   process.exit(1);
 }
 
 if (warnings > 0) {
   console.warn(
-    "\n  Validation passed with warnings. Consider addressing them.",
+    '\n  Validation passed with warnings. Consider addressing them.'
   );
   process.exit(0);
 }
 
-console.log("\n✨ All checks passed!");
+console.log('\n✨ All checks passed!');
 process.exit(0);

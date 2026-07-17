@@ -12,13 +12,13 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.updateAssistantUnreadIndicatorVisibility", () => {
+describe('ChatInstance.updateAssistantUnreadIndicatorVisibility', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should update assistant unread indicator visibility to true in Redux state", async () => {
+  it('should update assistant unread indicator visibility to true in Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -29,7 +29,7 @@ describe("ChatInstance.updateAssistantUnreadIndicatorVisibility", () => {
     expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(true);
   });
 
-  it("should update assistant unread indicator visibility to false in Redux state", async () => {
+  it('should update assistant unread indicator visibility to false in Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -40,7 +40,7 @@ describe("ChatInstance.updateAssistantUnreadIndicatorVisibility", () => {
     expect(state.persistedToBrowserStorage.showUnreadIndicator).toBe(false);
   });
 
-  it("should toggle unread indicator visibility and maintain correct Redux state", async () => {
+  it('should toggle unread indicator visibility and maintain correct Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 

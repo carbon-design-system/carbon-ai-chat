@@ -26,37 +26,37 @@
  * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/cancelling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
-import inputItemToLocalItem from "../schema/inputItemToLocalItem";
-import actions from "../store/actions";
-import { deepFreeze } from "../utils/lang/objectUtils";
-import { MessageLoadingManager } from "../utils/messageServiceUtils";
+import inputItemToLocalItem from '../schema/inputItemToLocalItem';
+import actions from '../store/actions';
+import { deepFreeze } from '../utils/lang/objectUtils';
+import { MessageLoadingManager } from '../utils/messageServiceUtils';
 import {
   getLastAssistantResponseWithContext,
   THREAD_ID_MAIN,
-} from "../utils/messageUtils";
-import { safeFetchTextWithTimeout } from "../utils/miscUtils";
+} from '../utils/messageUtils';
+import { safeFetchTextWithTimeout } from '../utils/miscUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
-} from "../utils/resolvablePromise";
-import { resetStopStreamingButton } from "../utils/streamingUtils";
-import { ServiceManager } from "./ServiceManager";
-import { InboundStreamingCoordinator } from "./InboundStreamingCoordinator";
-import { OutboundMessageCoordinator } from "./OutboundMessageCoordinator";
+} from '../utils/resolvablePromise';
+import { resetStopStreamingButton } from '../utils/streamingUtils';
+import { ServiceManager } from './ServiceManager';
+import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
+import { OutboundMessageCoordinator } from './OutboundMessageCoordinator';
 import {
   MessageInputType,
   MessageRequest,
   MessageResponse,
-} from "../../types/messaging/Messages";
-import { SendOptions } from "../../types/instance/ChatInstance";
+} from '../../types/messaging/Messages';
+import { SendOptions } from '../../types/instance/ChatInstance';
 import {
   BusEventType,
   MessageSendSource,
-} from "../../types/events/eventBusTypes";
-import { OnErrorType, PublicConfig } from "../../types/config/PublicConfig";
-import { LanguagePack } from "../../types/config/PublicConfig";
-import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
-import { CancellationReason } from "../../types/config/MessagingConfig";
+} from '../../types/events/eventBusTypes';
+import { OnErrorType, PublicConfig } from '../../types/config/PublicConfig';
+import { LanguagePack } from '../../types/config/PublicConfig';
+import { MessageErrorState } from '../../types/messaging/LocalMessageItem';
+import { CancellationReason } from '../../types/config/MessagingConfig';
 
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
@@ -224,7 +224,7 @@ class MessageService {
     this.messageLoadingManager = new MessageLoadingManager();
     this.inboundStreaming = new InboundStreamingCoordinator(
       this.messageAbortControllers,
-      () => this.moveToNextQueueItem(),
+      () => this.moveToNextQueueItem()
     );
     this.outboundCoordinator = new OutboundMessageCoordinator(
       this.serviceManager,
@@ -235,7 +235,7 @@ class MessageService {
       () => this.moveToNextQueueItem(),
       (pendingRequest, received) =>
         this.processSuccess(pendingRequest, received),
-      () => this.serviceManager.store.getState().config.public.messaging || {},
+      () => this.serviceManager.store.getState().config.public.messaging || {}
     );
     this.queue = {
       waiting: [],
@@ -257,7 +257,7 @@ class MessageService {
    */
   private async processSuccess(
     current: PendingMessageRequest,
-    received?: MessageResponse,
+    received?: MessageResponse
   ) {
     const { isProcessed } = current;
 
@@ -287,7 +287,7 @@ class MessageService {
         await this.serviceManager.actions.receive(
           received,
           Boolean(current.message.history.is_welcome_request),
-          message,
+          message
         );
       }
       this.messageLoadingManager.end();
@@ -321,7 +321,7 @@ class MessageService {
       // Pass streamingMessageID to keep button visible if there's an active stream
       resetStopStreamingButton(
         this.serviceManager.store,
-        this.inboundStreaming.streamingMessageID,
+        this.inboundStreaming.streamingMessageID
       );
       this.moveToNextQueueItem();
     }
@@ -334,14 +334,14 @@ class MessageService {
    */
   private async sendToAssistant(
     current: PendingMessageRequest,
-    startLoading: (() => void) | null,
+    startLoading: (() => void) | null
   ) {
     const state = this.serviceManager.store.getState();
     const { customSendMessage } = state.config.public.messaging;
     await this.outboundCoordinator.send(
       current,
       customSendMessage,
-      startLoading,
+      startLoading
     );
   }
 
@@ -406,7 +406,7 @@ class MessageService {
 
     const startLoading = this.buildStartLoading(
       message,
-      loadingIndicatorTimeout,
+      loadingIndicatorTimeout
     );
     const originalUserText = message.history?.label || message.input.text;
 
@@ -421,26 +421,26 @@ class MessageService {
         data: message,
         source,
       },
-      this.serviceManager.instance,
+      this.serviceManager.instance
     );
   }
 
   private commitOutgoingMessage(
     current: PendingMessageRequest,
-    originalUserText: string,
+    originalUserText: string
   ) {
     const { message } = current;
     const localMessage = inputItemToLocalItem(
       message,
       originalUserText,
-      current.localMessageID,
+      current.localMessageID
     );
 
     // If history.silent is set to true, we don't add the message to the redux store as we do not want to show it, so
     // we don't need to update it here either.
     if (!message.history.silent) {
       this.serviceManager.store.dispatch(
-        actions.updateLocalMessageItem(localMessage),
+        actions.updateLocalMessageItem(localMessage)
       );
       this.serviceManager.store.dispatch(actions.updateMessage(message));
     }
@@ -451,7 +451,7 @@ class MessageService {
     const { message, source } = current;
     await this.serviceManager.eventBus.fire(
       { type: BusEventType.SEND, data: message, source },
-      this.serviceManager.instance,
+      this.serviceManager.instance
     );
   }
 
@@ -469,7 +469,7 @@ class MessageService {
     source: MessageSendSource,
     localMessageID: string,
     sendMessagePromise: ResolvablePromise<void>,
-    requestOptions: SendOptions = {},
+    requestOptions: SendOptions = {}
   ) {
     // Create AbortController immediately so it can be aborted even if message is still waiting
     const controller = new AbortController();
@@ -511,7 +511,7 @@ class MessageService {
    */
   private buildStartLoading(
     message: MessageRequest<any>,
-    loadingIndicatorTimeoutMS?: number,
+    loadingIndicatorTimeoutMS?: number
   ): (() => void) | null {
     const loadingTimeout = loadingIndicatorTimeoutMS || 0;
     if (!loadingTimeout && !this.timeoutMS) {
@@ -532,11 +532,11 @@ class MessageService {
           this.cancelMessageRequestByID(
             message.id,
             true,
-            CancellationReason.TIMEOUT,
+            CancellationReason.TIMEOUT
           );
         },
         loadingTimeout,
-        this.timeoutMS,
+        this.timeoutMS
       );
   }
 
@@ -553,7 +553,7 @@ class MessageService {
    */
   private setMessageErrorState(
     pendingRequest: PendingMessageRequest,
-    errorState: MessageErrorState,
+    errorState: MessageErrorState
   ) {
     const { message } = pendingRequest;
     // Find the current state for the message. Note that we want to look up the current state from the store which
@@ -573,7 +573,7 @@ class MessageService {
         // eslint-disable-next-line default-case
         switch (errorState) {
           case MessageErrorState.FAILED: {
-            announceMessageID = "errors_ariaMessageFailed";
+            announceMessageID = 'errors_ariaMessageFailed';
             break;
           }
         }
@@ -581,12 +581,12 @@ class MessageService {
         // Announce the change if necessary.
         if (announceMessageID) {
           this.serviceManager.store.dispatch(
-            actions.announceMessage({ messageID: announceMessageID }),
+            actions.announceMessage({ messageID: announceMessageID })
           );
         }
 
         this.serviceManager.store.dispatch(
-          actions.setMessageErrorState(message.id, errorState),
+          actions.setMessageErrorState(message.id, errorState)
         );
 
         // After updating store get the updated message back from store and use it within the messageService. If we
@@ -612,7 +612,7 @@ class MessageService {
     message: MessageRequest<any>,
     source: MessageSendSource,
     localMessageID?: string,
-    requestOptions?: SendOptions,
+    requestOptions?: SendOptions
   ): Promise<MessageResponse | any> {
     message.history.timestamp = message.history.timestamp || Date.now();
 
@@ -631,7 +631,7 @@ class MessageService {
       source,
       localMessageID,
       sendMessagePromise,
-      requestOptions,
+      requestOptions
     );
     this.runQueueIfReady();
 
@@ -643,20 +643,20 @@ class MessageService {
    * Cancels all message requests including any that are running now and any that are waiting in the queue.
    */
   public async cancelAllMessageRequests(
-    reason: string = CancellationReason.CONVERSATION_RESTARTED,
+    reason: string = CancellationReason.CONVERSATION_RESTARTED
   ) {
     while (this.queue.waiting.length) {
       await this.cancelMessageRequestByID(
         this.queue.waiting[0].message.id,
         false,
-        reason,
+        reason
       );
     }
     if (this.queue.current) {
       await this.cancelMessageRequestByID(
         this.queue.current.message.id,
         false,
-        reason,
+        reason
       );
       this.clearCurrentQueueItem();
     }
@@ -674,7 +674,7 @@ class MessageService {
       this.queue.current,
       messageID,
       itemID,
-      this.lastProcessedMessageID,
+      this.lastProcessedMessageID
     );
   }
 
@@ -690,14 +690,14 @@ class MessageService {
    * Also handles streaming messages that may have been cleared from the queue.
    */
   public async cancelCurrentMessageRequest(
-    reason: string = CancellationReason.STOP_STREAMING,
+    reason: string = CancellationReason.STOP_STREAMING
   ) {
     // If there's a streaming message, cancel it even if not in queue
     if (this.inboundStreaming.streamingMessageID) {
       await this.cancelMessageRequestByID(
         this.inboundStreaming.streamingMessageID,
         false,
-        reason,
+        reason
       );
       return;
     }
@@ -706,7 +706,7 @@ class MessageService {
       await this.cancelMessageRequestByID(
         this.queue.current.message.id,
         false,
-        reason,
+        reason
       );
       this.clearCurrentQueueItem();
     }
@@ -714,7 +714,7 @@ class MessageService {
 
   private findPendingRequestForCancellation(
     responseId: string,
-    streamingEntry?: { requestId?: string },
+    streamingEntry?: { requestId?: string }
   ) {
     if (
       this.queue.current?.message.id === responseId ||
@@ -734,7 +734,7 @@ class MessageService {
     }
 
     const index = this.queue.waiting.findIndex(
-      (item) => item.message.id === responseId,
+      (item) => item.message.id === responseId
     );
     if (index !== -1) {
       const [pendingRequest] = this.queue.waiting.splice(index, 1);
@@ -746,7 +746,7 @@ class MessageService {
   private findAbortControllerForCancellation(
     responseId: string,
     streamingEntry: { requestId?: string; controller?: AbortController } | null,
-    pendingRequest?: PendingMessageRequest,
+    pendingRequest?: PendingMessageRequest
   ) {
     return (
       this.messageAbortControllers.get(responseId) ||
@@ -765,7 +765,7 @@ class MessageService {
     pendingRequest: PendingMessageRequest | undefined,
     controller: AbortController | undefined,
     logError: boolean,
-    reason: string,
+    reason: string
   ) {
     if (!pendingRequest && !controller) {
       return;
@@ -786,7 +786,7 @@ class MessageService {
       if (reason === CancellationReason.TIMEOUT) {
         this.outboundCoordinator.rejectFinalErrorOnMessage(
           pendingRequest,
-          reason,
+          reason
         );
         if (logError) {
           this.serviceManager.actions.errorOccurred({
@@ -818,7 +818,7 @@ class MessageService {
   public async cancelMessageRequestByID(
     messageID: string,
     logError: boolean,
-    reason = "Message was cancelled",
+    reason = 'Message was cancelled'
   ) {
     // messageID may be an item_id or response_id; resolve to whichever streaming id we tracked.
     const responseId = this.inboundStreaming.resolveResponseId(messageID);
@@ -828,12 +828,12 @@ class MessageService {
 
     const pendingRequest = this.findPendingRequestForCancellation(
       responseId,
-      streamingEntry,
+      streamingEntry
     );
     const controller = this.findAbortControllerForCancellation(
       responseId,
       streamingEntry,
-      pendingRequest,
+      pendingRequest
     );
 
     await this.handleCancellationResolution(
@@ -841,7 +841,7 @@ class MessageService {
       pendingRequest,
       controller,
       logError,
-      reason,
+      reason
     );
 
     if (!pendingRequest && wasStreamingCurrent) {

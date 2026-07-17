@@ -7,28 +7,28 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
-import CDSAIChatChainOfThought from "../components/chain-of-thought/src/chain-of-thought.js";
+import CDSAIChatChainOfThought from '../components/chain-of-thought/src/chain-of-thought.js';
 import {
   type ChainOfThoughtOnToggle,
   ChainOfThoughtStepStatus,
   type ChainOfThoughtStepToggleEventDetail,
   type ChainOfThoughtToggleEventDetail,
-} from "../components/chain-of-thought/defs.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+} from '../components/chain-of-thought/defs.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ChainOfThought = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-chain-of-thought",
+    tagName: 'cds-aichat-chain-of-thought',
     elementClass: CDSAIChatChainOfThought,
     react: React,
     events: {
-      onToggle: "chain-of-thought-toggled",
-      onStepToggle: "chain-of-thought-step-toggled",
+      onToggle: 'chain-of-thought-toggled',
+      onStepToggle: 'chain-of-thought-step-toggled',
     },
-  }),
+  })
 );
 
 export type {

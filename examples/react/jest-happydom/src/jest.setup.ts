@@ -1,5 +1,5 @@
-import "@testing-library/jest-dom";
-import { loadAllLazyDeps } from "@carbon/ai-chat/server";
+import '@testing-library/jest-dom';
+import { loadAllLazyDeps } from '@carbon/ai-chat/server';
 
 // Preload every lazily imported dependency (CodeMirror, DataTable,
 // Day.js locales, etc.) once before the suite runs. That keeps
@@ -16,8 +16,8 @@ beforeAll(async () => {
  * verify the markup around the snippet without CodeMirror blowing up. Skip
  * this mock as well if your tests avoid rendering code responses.
  */
-jest.mock("@codemirror/view", () => {
-  const actual = jest.requireActual("@codemirror/view");
+jest.mock('@codemirror/view', () => {
+  const actual = jest.requireActual('@codemirror/view');
 
   class MockEditorView {
     dom: unknown;
@@ -41,7 +41,7 @@ jest.mock("@codemirror/view", () => {
  * (which depends on complex browser APIs that aren't available under happy-dom).
  */
 jest.mock(
-  "@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js",
+  '@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js',
   () => {
     const createRuntime = async () => {
       class MockCompartment {}
@@ -64,9 +64,9 @@ jest.mock(
         }),
         applyLanguageSupport() {},
         updateReadOnlyConfiguration() {},
-        createEditorView: ({ doc = "" }) => {
+        createEditorView: ({ doc = '' }) => {
           const lines =
-            typeof doc === "string" ? doc.split(/\r\n|\r|\n/).length : 0;
+            typeof doc === 'string' ? doc.split(/\r\n|\r|\n/).length : 0;
           return {
             state: { doc: { lines } },
             destroy() {},
@@ -80,7 +80,7 @@ jest.mock(
       loadCodeMirrorRuntime: () => createRuntime(),
       loadCodeSnippetDeps: () => createRuntime(),
     };
-  },
+  }
 );
 
 beforeEach(() => {

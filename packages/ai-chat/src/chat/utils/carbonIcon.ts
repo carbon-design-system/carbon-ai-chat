@@ -11,10 +11,10 @@
  * Creates a React component from a Carbon icon object
  */
 
-import { createElement, FunctionComponent } from "react";
+import { createElement, FunctionComponent } from 'react';
 
 type CarbonIcon = {
-  elem: "svg";
+  elem: 'svg';
   attrs: {
     viewBox: string;
     width?: number;
@@ -38,12 +38,12 @@ function kebabToCamel(str: string): string {
 }
 
 function transformProps(
-  props: Record<string, unknown>,
+  props: Record<string, unknown>
 ): Record<string, unknown> {
   const transformed: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(props)) {
     // Keep aria-* and data-* attributes in kebab-case as React expects them
-    if (key.startsWith("aria-") || key.startsWith("data-")) {
+    if (key.startsWith('aria-') || key.startsWith('data-')) {
       transformed[key] = value;
     } else {
       const camelKey = kebabToCamel(key);
@@ -63,26 +63,26 @@ function transformProps(
  */
 
 export function carbonIconToReact(
-  icon: CarbonIcon,
+  icon: CarbonIcon
 ): FunctionComponent<CarbonIconProps> {
   return function IconComponent(props = {}) {
     const transformedProps = transformProps(props as Record<string, unknown>);
 
     return createElement(
-      "svg",
+      'svg',
       {
         ...icon.attrs,
         width: icon.attrs.width || 16,
         height: icon.attrs.height || 16,
-        fill: icon.attrs.fill || "currentColor",
+        fill: icon.attrs.fill || 'currentColor',
         ...transformedProps,
       },
       icon.content.map((child, i) =>
         createElement(child.elem, {
           key: i,
           ...transformProps(child.attrs || {}),
-        }),
-      ),
+        })
+      )
     );
   };
 }

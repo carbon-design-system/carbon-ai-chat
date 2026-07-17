@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React, { ReactNode } from "react";
-import ReactDOM from "react-dom";
+import React, { ReactNode } from 'react';
+import ReactDOM from 'react-dom';
 
 import {
   ChatInstance,
   WriteableElements,
-} from "../../types/instance/ChatInstance";
-import { RenderWriteableElementResponse } from "../../types/component/ChatContainer";
+} from '../../types/instance/ChatInstance';
+import { RenderWriteableElementResponse } from '../../types/component/ChatContainer';
 
 interface WriteableElementsPortalsContainer {
   /**
@@ -51,12 +51,11 @@ function WriteableElementsPortalsContainer({
           return responseItem ? (
             <WriteableElementsComponentPortal
               key={key}
-              hostElement={chatInstance.writeableElements[key]}
-            >
+              hostElement={chatInstance.writeableElements[key]}>
               {responseItem}
             </WriteableElementsComponentPortal>
           ) : null;
-        },
+        }
       )}
     </>
   );
@@ -79,6 +78,6 @@ function WriteableElementsComponentPortal({
 }
 
 const WriteableElementsPortalsContainerExport = React.memo(
-  WriteableElementsPortalsContainer,
+  WriteableElementsPortalsContainer
 );
 export { WriteableElementsPortalsContainerExport as WriteableElementsPortalsContainer };

@@ -1,13 +1,17 @@
 # Watch State
 
-Shows how to observe `ChatInstance` state externally by reading `instance.getState()` once and then subscribing to `BusEventType.STATE_CHANGE` to keep a parent React component in sync.
+Shows how to observe `ChatInstance` state externally by reading
+`instance.getState()` once and then subscribing to `BusEventType.STATE_CHANGE`
+to keep a parent React component in sync.
 
 ## What this example shows
 
 - Calling `instance.getState()` in `onBeforeRender` to seed local React state.
-- Subscribing to `BusEventType.STATE_CHANGE` and reacting to changes in `homeScreenState.isHomeScreenOpen` and `activeResponseId`.
+- Subscribing to `BusEventType.STATE_CHANGE` and reacting to changes in
+  `homeScreenState.isHomeScreenOpen` and `activeResponseId`.
 - Rendering the current view ("Homescreen" vs "Chat View") outside the chat UI.
-- Passing `activeResponseId` into a `renderUserDefinedResponseFactory` so user-defined responses can adapt to active-response state.
+- Passing `activeResponseId` into a `renderUserDefinedResponseFactory` so
+  user-defined responses can adapt to active-response state.
 - A `homescreen` config block with starter buttons to drive view transitions.
 
 ## When to use this pattern
@@ -31,7 +35,10 @@ Shows how to observe `ChatInstance` state externally by reading `instance.getSta
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 
@@ -43,6 +50,7 @@ npm run build --workspace=@carbon/ai-chat
 npm run start --workspace=@carbon/ai-chat-examples-react-watch-state
 ```
 
-(Replace `start` with `dev` or `test` if this example's package.json defines those instead.)
+(Replace `start` with `dev` or `test` if this example's package.json defines
+those instead.)
 
 See [../README.md](../README.md) for the full setup walkthrough.

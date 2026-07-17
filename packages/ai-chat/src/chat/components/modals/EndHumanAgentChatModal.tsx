@@ -7,13 +7,13 @@
  *  @license
  */
 
-import React from "react";
-import { useSelector } from "../../hooks/useSelector";
+import React from 'react';
+import { useSelector } from '../../hooks/useSelector';
 
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { AppState } from "../../../types/state/AppState";
-import { shallowEqual } from "../../store/appStore";
-import { ConfirmModal, ConfirmModalButtonProps } from "./ConfirmModal";
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { AppState } from '../../../types/state/AppState';
+import { shallowEqual } from '../../store/appStore';
+import { ConfirmModal, ConfirmModalButtonProps } from './ConfirmModal';
 
 interface EndHumanAgentChatModalProps extends ConfirmModalButtonProps {
   /**
@@ -48,7 +48,7 @@ function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
       agent_confirmCancelRequestYes:
         state.languagePack.agent_confirmCancelRequestYes,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const serviceManager = useServiceManager();
   const { isConnected, isSuspended } = useSelector(
@@ -56,7 +56,7 @@ function EndHumanAgentChatModal(props: EndHumanAgentChatModalProps) {
       isConnected: state.persistedToBrowserStorage.humanAgentState.isConnected,
       isSuspended: state.persistedToBrowserStorage.humanAgentState.isSuspended,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   const useTitle =

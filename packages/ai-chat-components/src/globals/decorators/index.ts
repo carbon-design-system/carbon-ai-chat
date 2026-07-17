@@ -7,4 +7,4 @@
  *  @license
  */
 
-export { carbonElement } from "./carbon-element.js";
+export { carbonElement } from './carbon-element.js';

@@ -13,7 +13,7 @@ import {
   MessageRequest,
   MessageResponseTypes,
   StreamChunk,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -47,7 +47,7 @@ Quam scelerisque platea ridiculus sem placerat pharetra sed. Porttitor per massa
 - Venenatis
 
 ` +
-  "\n```python\n" +
+  '\n```python\n' +
   `import random
 
 def generate_lorem_ipsum(paragraphs=1):
@@ -78,16 +78,16 @@ def generate_lorem_ipsum(paragraphs=1):
 # Example usage
 print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 ` +
-  "\n\n```";
+  '\n\n```';
 
 const WORD_DELAY = 40;
 
 async function doFakeTextStreaming(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = crypto.randomUUID();
-  const words = TEXT.split(" ");
+  const words = TEXT.split(' ');
   let isCanceled = false;
   const timeouts: number[] = [];
 
@@ -97,7 +97,7 @@ async function doFakeTextStreaming(
     // Clear all pending timeouts
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -108,7 +108,7 @@ async function doFakeTextStreaming(
               response_type: MessageResponseTypes.TEXT,
               text: `${word} `,
               streaming_metadata: {
-                id: "1",
+                id: '1',
                 cancellable: true,
               },
             },
@@ -128,7 +128,7 @@ async function doFakeTextStreaming(
         response_type: MessageResponseTypes.TEXT,
         text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
         streaming_metadata: {
-          id: "1",
+          id: '1',
         },
       };
       instance.messaging.addMessageChunk({
@@ -152,9 +152,9 @@ async function doFakeTextStreaming(
       // Send stream_stopped marker
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
+        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
         streaming_metadata: {
-          id: "1",
+          id: '1',
           stream_stopped: true,
         },
       };
@@ -166,16 +166,16 @@ async function doFakeTextStreaming(
       } as StreamChunk);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -188,7 +188,7 @@ async function customSendMessage(
     });
   } else {
     switch (request.input.text) {
-      case "text":
+      case 'text':
         instance.messaging.addMessage({
           output: {
             generic: [
@@ -205,7 +205,7 @@ async function customSendMessage(
                     /**
                      * A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
                      */
-                    id: "1",
+                    id: '1',
 
                     /**
                      * Indicates if the user should be asked for additional detailed information when providing positive feedback.
@@ -228,7 +228,7 @@ async function customSendMessage(
           },
         });
         break;
-      case "stream text":
+      case 'stream text':
         doFakeTextStreaming(instance as ChatInstance, requestOptions.signal);
         break;
       default:

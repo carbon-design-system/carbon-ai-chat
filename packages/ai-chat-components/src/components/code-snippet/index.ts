@@ -7,7 +7,7 @@
  *  @license
  */
 
-import "./src/code-snippet.js";
-export { default } from "./src/code-snippet.js";
-export type { Action } from "./src/code-snippet.js";
-export { CODE_SNIPPET_TYPE } from "@carbon/web-components/es/components/code-snippet/defs.js";
+import './src/code-snippet.js';
+export { default } from './src/code-snippet.js';
+export type { Action } from './src/code-snippet.js';
+export { CODE_SNIPPET_TYPE } from '@carbon/web-components/es/components/code-snippet/defs.js';

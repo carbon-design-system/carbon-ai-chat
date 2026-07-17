@@ -38,14 +38,14 @@ class NamespaceService {
  */
 function getSuffix(namespace?: string) {
   const computedName = computeNamespaceName(namespace);
-  return computedName?.length ? `--${namespace}` : "";
+  return computedName?.length ? `--${namespace}` : '';
 }
 
 /**
  * Given a namespace, trims and returns. If no namespace provided, returns an empty string.
  */
 function computeNamespaceName(namespace?: string) {
-  return namespace ? namespace.trim() : "";
+  return namespace ? namespace.trim() : '';
 }
 
 export { NamespaceService, getSuffix };

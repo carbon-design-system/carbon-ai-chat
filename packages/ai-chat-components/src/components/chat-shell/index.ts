@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/shell.js";
-import "./src/panel.js";
-import "./src/chat-header.js";
+import './src/shell.js';
+import './src/panel.js';
+import './src/chat-header.js';
 
-export { default as CdsAiChatChatHeader } from "./src/chat-header.js";
+export { default as CdsAiChatChatHeader } from './src/chat-header.js';

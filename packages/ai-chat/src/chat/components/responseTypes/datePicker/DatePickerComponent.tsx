@@ -7,45 +7,45 @@
  *  @license
  */
 
-import Checkmark32 from "@carbon/icons/es/checkmark/32.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
-import Button from "../../../components/carbon/Button";
+import Checkmark32 from '@carbon/icons/es/checkmark/32.js';
+import { carbonIconToReact } from '../../../utils/carbonIcon';
+import Button from '../../../components/carbon/Button';
 import {
   DatePickerInput,
   DatePicker,
-} from "../../../components/carbon/DatePicker";
-import { DATE_PICKER_INPUT_KIND } from "@carbon/web-components/es/components/date-picker/defs.js";
-import dayjs from "dayjs";
-import { BaseOptions } from "flatpickr/dist/types/options";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useIntl } from "../../../hooks/useIntl";
-import { useSelector } from "../../../hooks/useSelector";
+} from '../../../components/carbon/DatePicker';
+import { DATE_PICKER_INPUT_KIND } from '@carbon/web-components/es/components/date-picker/defs.js';
+import dayjs from 'dayjs';
+import { BaseOptions } from 'flatpickr/dist/types/options';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useIntl } from '../../../hooks/useIntl';
+import { useSelector } from '../../../hooks/useSelector';
 import {
   applyDynamicStyles,
   clearDynamicStyles,
-} from "../../../utils/cspStyleUtils";
+} from '../../../utils/cspStyleUtils';
 
-import { ScrollElementIntoViewFunction } from "../../../components-legacy/MessagesComponent";
-import { useOnMount } from "../../../hooks/useOnMount";
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import { AppState } from "../../../../types/state/AppState";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { ScrollElementIntoViewFunction } from '../../../components-legacy/MessagesComponent';
+import { useOnMount } from '../../../hooks/useOnMount';
+import { useServiceManager } from '../../../hooks/useServiceManager';
+import { AppState } from '../../../../types/state/AppState';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 
-import { ENGLISH_US_DATE_FORMAT } from "../../../utils/constants";
+import { ENGLISH_US_DATE_FORMAT } from '../../../utils/constants';
 import {
   sanitizeDateFormat,
   toAssistantDateFormat,
   toUserDateFormat,
-} from "../../../utils/dateUtils";
-import { uuid, UUIDType } from "../../../utils/lang/uuid";
-import { loadDayjsLocale } from "../../../utils/languageUtils";
-import { createMessageRequestForDate } from "../../../utils/messageUtils";
-import { consoleError } from "../../../utils/miscUtils";
+} from '../../../utils/dateUtils';
+import { uuid, UUIDType } from '../../../utils/lang/uuid';
+import { loadDayjsLocale } from '../../../utils/languageUtils';
+import { createMessageRequestForDate } from '../../../utils/messageUtils';
+import { consoleError } from '../../../utils/miscUtils';
 import {
   DateItem,
   MessageResponse,
-} from "../../../../types/messaging/Messages";
-import { MessageSendSource } from "../../../../types/events/eventBusTypes";
+} from '../../../../types/messaging/Messages';
+import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 
 const Checkmark = carbonIconToReact(Checkmark32);
 
@@ -75,10 +75,10 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const serviceManager = useServiceManager();
   const { formatMessage } = useIntl();
   const webChatLocale = useSelector(
-    (state: AppState) => state.config.public.locale || "en",
+    (state: AppState) => state.config.public.locale || 'en'
   );
   const originalMessage = useSelector(
-    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID],
+    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID]
   ) as MessageResponse;
   const uuidRef = useRef(uuid(UUIDType.MISCELLANEOUS));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -86,7 +86,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const [flatpickrFormat, setFlatpickrFormat] = useState<string>();
   const [userDisplayFormat, setUserDisplayFormat] = useState<string>();
   const [flatpickrLocale, setFlatpickrLocale] =
-    useState<BaseOptions["locale"]>();
+    useState<BaseOptions['locale']>();
   const [dayjsLocale, setDayjsLocale] = useState<string>();
   const datePickerRef = useRef<any>(null);
   const valueForAssistantRef = useRef<string>(undefined);
@@ -98,14 +98,14 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     datePicker: HTMLElement | null;
   }>({ calendar: null, container: null, datePicker: null });
   const inputLabel = formatMessage(
-    { id: "datePicker_chooseDate" },
+    { id: 'datePicker_chooseDate' },
     {
       format: userDisplayFormat,
-    },
+    }
   );
-  const confirmButtonLabel = formatMessage({ id: "datePicker_confirmDate" });
+  const confirmButtonLabel = formatMessage({ id: 'datePicker_confirmDate' });
   const isDateInfoReady = Boolean(
-    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale,
+    flatpickrFormat && userDisplayFormat && flatpickrLocale && dayjsLocale
   );
 
   /**
@@ -134,7 +134,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     const request = createMessageRequestForDate(
       valueForAssistantRef.current,
       userDisplayValue,
-      responseID,
+      responseID
     );
 
     serviceManager.actions.sendWithCatch(
@@ -142,7 +142,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       MessageSendSource.DATE_PICKER,
       {
         setValueSelectedForMessageID: localMessageID,
-      },
+      }
     );
   }, [localMessage, serviceManager, userDisplayValue]);
 
@@ -156,21 +156,21 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     }
 
     const container = root.querySelector(
-      "#floating-menu-container",
+      '#floating-menu-container'
     ) as HTMLElement | null;
     const calendar = container?.querySelector(
-      ".cds--date-picker__calendar",
+      '.cds--date-picker__calendar'
     ) as HTMLElement | null;
 
     if (calendar) {
-      applyDynamicStyles(calendar, "date-picker-calendar", {
-        position: "unset",
+      applyDynamicStyles(calendar, 'date-picker-calendar', {
+        position: 'unset',
       });
       styledElementsRef.current.calendar = calendar;
     }
     if (container) {
-      applyDynamicStyles(container, "date-picker-container", {
-        position: "unset",
+      applyDynamicStyles(container, 'date-picker-container', {
+        position: 'unset',
       });
       styledElementsRef.current.container = container;
     }
@@ -178,14 +178,14 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     if (calendar) {
       const onAnimationEnd = () => {
         scrollElementIntoView(calendar, 0, 24);
-        calendar.removeEventListener("animationend", onAnimationEnd);
+        calendar.removeEventListener('animationend', onAnimationEnd);
       };
-      calendar.addEventListener("animationend", onAnimationEnd);
+      calendar.addEventListener('animationend', onAnimationEnd);
     }
 
-    applyDynamicStyles(datePicker, "date-picker-host", {
-      display: "flex",
-      "flex-direction": "column",
+    applyDynamicStyles(datePicker, 'date-picker-host', {
+      display: 'flex',
+      'flex-direction': 'column',
     });
     styledElementsRef.current.datePicker = datePicker;
   }, [scrollElementIntoView]);
@@ -198,9 +198,9 @@ function DatePickerComponent(props: DatePickerComponentProps) {
     const styled = styledElementsRef;
     return () => {
       const { calendar, container, datePicker } = styled.current;
-      clearDynamicStyles(calendar, "date-picker-calendar");
-      clearDynamicStyles(container, "date-picker-container");
-      clearDynamicStyles(datePicker, "date-picker-host");
+      clearDynamicStyles(calendar, 'date-picker-calendar');
+      clearDynamicStyles(container, 'date-picker-container');
+      clearDynamicStyles(datePicker, 'date-picker-host');
     };
   }, []);
 
@@ -225,9 +225,9 @@ function DatePickerComponent(props: DatePickerComponentProps) {
       }
     } catch {
       consoleError(
-        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`,
+        `Locale ${dayjsLocale} is not recognized by Carbon AI Chat. Defaulting to English(US).`
       );
-      setDateInfoForLocale("en");
+      setDateInfoForLocale('en');
     }
   });
 
@@ -251,23 +251,20 @@ function DatePickerComponent(props: DatePickerComponentProps) {
               setUserDisplayValue(toUserDateFormat(date, userDisplayFormat));
               setIsCalendarOpen(false);
             }
-          }}
-        >
+          }}>
           <DatePickerInput
             id={uuidRef.current}
             disabled={disabled}
             kind={DATE_PICKER_INPUT_KIND.SINGLE}
             label-text={inputLabel}
             placeholder={userDisplayFormat}
-            warn-text=""
-          ></DatePickerInput>
+            warn-text=""></DatePickerInput>
         </DatePicker>
       )}
       {!disabled && !isCalendarOpen && userDisplayValue && (
         <Button
           className="cds-aichat--date-picker__confirm-button"
-          onClick={handlerSendDate}
-        >
+          onClick={handlerSendDate}>
           <Checkmark slot="icon" />
           {confirmButtonLabel}
         </Button>
@@ -282,8 +279,8 @@ function DatePickerComponent(props: DatePickerComponentProps) {
  */
 function calcFlatpickrLocale(localeValue: string) {
   // flatpickr does support the locale zh-tw, but it won't recognize it unless it has an underscore instead of a dash.
-  if (localeValue === "zh-tw") {
-    return "zh_tw";
+  if (localeValue === 'zh-tw') {
+    return 'zh_tw';
   }
 
   // For the flatpickr library, if the value provided contains a region in the locale, only the language will be
@@ -291,26 +288,26 @@ function calcFlatpickrLocale(localeValue: string) {
   //
   // flatpickr - https://github.com/flatpickr/flatpickr/tree/master/src/l10n
   return (
-    localeValue.includes("-") ? localeValue.split("-")[0] : localeValue
-  ) as BaseOptions["locale"];
+    localeValue.includes('-') ? localeValue.split('-')[0] : localeValue
+  ) as BaseOptions['locale'];
 }
 
 /**
  * Returns a date format that would be valid for the flatpickr library used in the carbon date picker component.
  */
 function getFlatpickrDateFormat(format: string) {
-  const dash = format.includes("-") ? "-" : "/";
+  const dash = format.includes('-') ? '-' : '/';
   const firstChar = format.toLocaleLowerCase().trim()[0];
 
-  if (firstChar === "m") {
+  if (firstChar === 'm') {
     return `m${dash}d${dash}Y`;
   }
 
-  if (firstChar === "d") {
+  if (firstChar === 'd') {
     return `d${dash}m${dash}Y`;
   }
 
-  if (firstChar === "y") {
+  if (firstChar === 'y') {
     return `Y${dash}m${dash}d`;
   }
 

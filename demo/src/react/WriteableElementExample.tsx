@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "./WriteableElementExample.css"; // Assuming styles are in a separate CSS file
+import './WriteableElementExample.css'; // Assuming styles are in a separate CSS file
 
-import React from "react";
+import React from 'react';
 interface WriteableElementExampleProps {
   location: string;
   parentStateText: string;
@@ -19,13 +19,13 @@ function WriteableElementExample({
   location,
   parentStateText,
 }: WriteableElementExampleProps) {
-  let classNames = "writeable-element-external";
-  if (location === "aiTooltipAfterDescriptionElement") {
-    classNames += " writeable-element-external--not-rounded";
+  let classNames = 'writeable-element-external';
+  if (location === 'aiTooltipAfterDescriptionElement') {
+    classNames += ' writeable-element-external--not-rounded';
   }
 
   // Special compact display for header fixed actions
-  if (location === "headerFixedActionsElement") {
+  if (location === 'headerFixedActionsElement') {
     return (
       <div className="writeable-element-external writeable-element-external--compact">
         {location}

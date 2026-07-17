@@ -7,11 +7,11 @@
  *  @license
  */
 
-import React, { useState } from "react";
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
-import Maximize16 from "@carbon/icons-react/es/Maximize.js";
-import "./OutstandingOrdersCard.css";
+import React, { useState } from 'react';
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
+import Maximize16 from '@carbon/icons-react/es/Maximize.js';
+import './OutstandingOrdersCard.css';
 
 interface OutstandingOrdersCardProps {
   workspaceId: string;
@@ -23,15 +23,15 @@ export function OutstandingOrdersCard({
   onMaximize,
 }: OutstandingOrdersCardProps) {
   const handleMaximize = () => {
-    console.log("Maximize clicked, opening workspace with ID:", workspaceId);
+    console.log('Maximize clicked, opening workspace with ID:', workspaceId);
     onMaximize();
   };
 
   const [toolbarActions] = useState([
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "sm",
+      size: 'sm',
       onClick: handleMaximize,
     },
   ]);

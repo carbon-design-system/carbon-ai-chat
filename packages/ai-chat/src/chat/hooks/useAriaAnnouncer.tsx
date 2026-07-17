@@ -11,9 +11,9 @@
  * This is a React hook that will provided access to the {@link AriaAnnouncerFunctionType}.
  */
 
-import { useContext } from "react";
+import { useContext } from 'react';
 
-import { AriaAnnouncerContext } from "../contexts/AriaAnnouncerContext";
+import { AriaAnnouncerContext } from '../contexts/AriaAnnouncerContext';
 
 function useAriaAnnouncer() {
   return useContext(AriaAnnouncerContext);

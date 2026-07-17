@@ -1,22 +1,34 @@
 # Theme Plex override
 
-React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's built-in Plex font with a custom web font by configuring `@carbon/styles` at compile time.
+React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's
+built-in Plex font with a custom web font by configuring `@carbon/styles` at
+compile time.
 
 ## What this example shows
 
-- Disabling Carbon's automatic Plex `@font-face` generation via `$css--font-face: false` in the `@carbon/styles` SCSS entry point.
-- Substituting a custom web font (Permanent Marker) for all three Carbon font-family keys (`sans`, `mono`, `serif`) using `$font-families`.
-- Declaring a local `@font-face` rule that serves the replacement font from a bundled `.woff2` asset.
-- Mounting `ChatContainer` with a `PublicConfig` object defined outside the component to avoid re-mount churn.
-- Implementing a mock backend via `customSendMessage` that sends and receives messages.
-- Capturing the `ChatInstance` in `onBeforeRender` and subscribing to `STATE_CHANGE` and `FEEDBACK` bus events.
-- Rendering custom response content with `renderUserDefinedResponse`, re-computed off `activeResponseId`.
+- Disabling Carbon's automatic Plex `@font-face` generation via
+  `$css--font-face: false` in the `@carbon/styles` SCSS entry point.
+- Substituting a custom web font (Permanent Marker) for all three Carbon
+  font-family keys (`sans`, `mono`, `serif`) using `$font-families`.
+- Declaring a local `@font-face` rule that serves the replacement font from a
+  bundled `.woff2` asset.
+- Mounting `ChatContainer` with a `PublicConfig` object defined outside the
+  component to avoid re-mount churn.
+- Implementing a mock backend via `customSendMessage` that sends and receives
+  messages.
+- Capturing the `ChatInstance` in `onBeforeRender` and subscribing to
+  `STATE_CHANGE` and `FEEDBACK` bus events.
+- Rendering custom response content with `renderUserDefinedResponse`,
+  re-computed off `activeResponseId`.
 
 ## When to use this pattern
 
-- You want to replace Carbon's default IBM Plex font with a brand or product font.
-- Your application already bundles a custom web font and you need Carbon's CSS output to use it instead of Plex.
-- You need a reference for overriding SCSS configuration variables before `@carbon/styles` generates its output.
+- You want to replace Carbon's default IBM Plex font with a brand or product
+  font.
+- Your application already bundles a custom web font and you need Carbon's CSS
+  output to use it instead of Plex.
+- You need a reference for overriding SCSS configuration variables before
+  `@carbon/styles` generates its output.
 
 ## APIs and props demonstrated
 
@@ -37,7 +49,10 @@ React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's bui
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

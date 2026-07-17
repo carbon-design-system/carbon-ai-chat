@@ -19,11 +19,11 @@ type Equals<A, B> =
 type AssertTrue<T extends true> = T;
 
 // Value-side export maps (enums and runtime exports)
-type ClientValues = typeof import("../../../src/aiChatEntry");
-type ServerValues = typeof import("../../../src/serverEntry");
+type ClientValues = typeof import('../../../src/aiChatEntry');
+type ServerValues = typeof import('../../../src/serverEntry');
 
 // 1) Server exports must be a subset of client exports (additive changes allowed on client)
-type ServerOnlyAllowedKeys = "loadAllLazyDeps";
+type ServerOnlyAllowedKeys = 'loadAllLazyDeps';
 type _NoExtraServerExports = AssertTrue<
   Equals<
     Exclude<
@@ -45,14 +45,14 @@ type _AllSharedExact = AssertTrue<
 >;
 
 // 3) Server must not export React component values
-type ForbiddenComponentKeys = "ChatContainer" | "ChatCustomElement";
+type ForbiddenComponentKeys = 'ChatContainer' | 'ChatCustomElement';
 type _ServerHasNoComponents = AssertTrue<
   Equals<Extract<keyof ServerValues, ForbiddenComponentKeys>, never>
 >;
 
 // Keep a minimal runtime test so Jest reports a passing spec when compilation succeeds.
-describe("API compatibility (server vs client)", () => {
-  it("compiles with matching export surface", () => {
+describe('API compatibility (server vs client)', () => {
+  it('compiles with matching export surface', () => {
     expect(true).toBe(true);
   });
 });

@@ -31,15 +31,15 @@ export class HeaderCollapsibleManager {
 
   constructor(
     private readonly shellRoot: ShadowRoot,
-    private readonly hostElement: HTMLElement,
+    private readonly hostElement: HTMLElement
   ) {
     // Check if header already has collapsible attribute at initialization
     const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
-      'slot[name="header"]',
+      'slot[name="header"]'
     );
     const headerElement = headerSlot?.assignedElements()[0] as HTMLElement;
     this.hadInitialAttribute =
-      headerElement?.hasAttribute("collapsible") || false;
+      headerElement?.hasAttribute('collapsible') || false;
   }
 
   /**
@@ -82,7 +82,7 @@ export class HeaderCollapsibleManager {
    * Set up ResizeObserver to monitor all relevant elements
    */
   private setupResizeObserver(): void {
-    if (typeof ResizeObserver === "undefined") {
+    if (typeof ResizeObserver === 'undefined') {
       return;
     }
 
@@ -117,7 +117,7 @@ export class HeaderCollapsibleManager {
    */
   private setupSlotChangeListener(): void {
     const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
-      'slot[name="header"]',
+      'slot[name="header"]'
     );
 
     if (headerSlot) {
@@ -125,7 +125,7 @@ export class HeaderCollapsibleManager {
         // Reset expanded height when slot content changes
         this.reset();
       };
-      headerSlot.addEventListener("slotchange", this.slotChangeHandler);
+      headerSlot.addEventListener('slotchange', this.slotChangeHandler);
     }
   }
 
@@ -135,10 +135,10 @@ export class HeaderCollapsibleManager {
   private removeSlotChangeListener(): void {
     if (this.slotChangeHandler) {
       const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
-        'slot[name="header"]',
+        'slot[name="header"]'
       );
       if (headerSlot) {
-        headerSlot.removeEventListener("slotchange", this.slotChangeHandler);
+        headerSlot.removeEventListener('slotchange', this.slotChangeHandler);
       }
       this.slotChangeHandler = undefined;
     }
@@ -151,15 +151,15 @@ export class HeaderCollapsibleManager {
     const totalHeight = this.hostElement.offsetHeight;
 
     // Get individual slot heights
-    const toolbarHeight = this.getSlotHeight("toolbar");
-    const notificationHeight = this.getSlotHeight("notification");
-    const currentHeaderHeight = this.getSlotHeight("header");
-    const footerHeight = this.getSlotHeight("footer");
+    const toolbarHeight = this.getSlotHeight('toolbar');
+    const notificationHeight = this.getSlotHeight('notification');
+    const currentHeaderHeight = this.getSlotHeight('header');
+    const footerHeight = this.getSlotHeight('footer');
 
     // Store the expanded header height ONCE when we first see it expanded
     // Never update it after that to avoid flip-flopping
     const headerElement = this.getHeaderElement();
-    const isCurrentlyCollapsed = headerElement?.hasAttribute("collapsible");
+    const isCurrentlyCollapsed = headerElement?.hasAttribute('collapsible');
 
     // Only store expanded height if we don't have one yet AND header is not collapsed
     if (
@@ -212,7 +212,7 @@ export class HeaderCollapsibleManager {
    */
   private getHeaderElement(): HTMLElement | null {
     const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
-      'slot[name="header"]',
+      'slot[name="header"]'
     );
     return (headerSlot?.assignedElements()[0] as HTMLElement) || null;
   }
@@ -222,12 +222,12 @@ export class HeaderCollapsibleManager {
    */
   private getSlotHeight(slotName: string): number {
     const slot = this.shellRoot.querySelector<HTMLSlotElement>(
-      `slot[name="${slotName}"]`,
+      `slot[name="${slotName}"]`
     );
     const elements = slot?.assignedElements() || [];
     return elements.reduce(
       (sum, el) => sum + (el as HTMLElement).offsetHeight,
-      0,
+      0
     );
   }
 
@@ -241,11 +241,11 @@ export class HeaderCollapsibleManager {
     }
 
     const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
-      'slot[name="header"]',
+      'slot[name="header"]'
     );
     const headerElement = headerSlot?.assignedElements()[0] as HTMLElement;
 
-    if (!headerElement?.hasAttribute("collapsible")) {
+    if (!headerElement?.hasAttribute('collapsible')) {
       return false;
     }
 
@@ -258,18 +258,18 @@ export class HeaderCollapsibleManager {
    */
   updateHeaderCollapsible(shouldCollapse: boolean): void {
     const headerSlot = this.shellRoot.querySelector<HTMLSlotElement>(
-      'slot[name="header"]',
+      'slot[name="header"]'
     );
     const headerElement = headerSlot?.assignedElements()[0] as HTMLElement;
 
     if (headerElement && !this.hasManualOverride()) {
-      const currentlyHasAttr = headerElement.hasAttribute("collapsible");
+      const currentlyHasAttr = headerElement.hasAttribute('collapsible');
 
       if (shouldCollapse && !currentlyHasAttr) {
-        headerElement.setAttribute("collapsible", "");
+        headerElement.setAttribute('collapsible', '');
         this.isManagerControlled = true;
       } else if (!shouldCollapse && currentlyHasAttr) {
-        headerElement.removeAttribute("collapsible");
+        headerElement.removeAttribute('collapsible');
         this.isManagerControlled = false;
       }
     }

@@ -7,4 +7,4 @@
  *  @license
  */
 
-import "./src/toolbar";
+import './src/toolbar';

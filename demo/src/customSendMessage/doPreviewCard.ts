@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { ChatInstance, MessageResponseTypes } from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { ChatInstance, MessageResponseTypes } from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 function doPreviewCard(
   instance: ChatInstance,
-  preferredLocation?: "start" | "end",
+  preferredLocation?: 'start' | 'end'
 ) {
   const workspaceId = uuid();
 
@@ -21,10 +21,10 @@ function doPreviewCard(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "Here is a plan for optimizing excess inventory.",
+          text: 'Here is a plan for optimizing excess inventory.',
         },
         {
-          title: "Optimizing excess inventory",
+          title: 'Optimizing excess inventory',
           subtitle: `Workspace id ${workspaceId} Created on: ${new Date().toLocaleDateString()}`,
           response_type: MessageResponseTypes.PREVIEW_CARD,
           workspace_options: {
@@ -32,7 +32,7 @@ function doPreviewCard(
           },
           workspace_id: workspaceId,
           additional_data: {
-            data: "some additional data for the workspace",
+            data: 'some additional data for the workspace',
           },
         },
       ],

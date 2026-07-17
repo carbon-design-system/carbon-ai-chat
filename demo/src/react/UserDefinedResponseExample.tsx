@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "./UserDefinedResponseStyles.css";
+import './UserDefinedResponseStyles.css';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 interface UserDefinedExampleProps {
   text: string;
@@ -36,7 +36,7 @@ function UserDefinedResponseExample({
         The following is some text passed along for use by the back-end: {text}.
       </p>
       <p>
-        And here is a value being set by the parent container state:{" "}
+        And here is a value being set by the parent container state:{' '}
         {parentStateText}.
       </p>
       <p>And here is a value being set by local state: {timestamp}.</p>

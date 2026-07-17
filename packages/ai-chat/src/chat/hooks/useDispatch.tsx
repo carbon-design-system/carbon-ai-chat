@@ -13,8 +13,8 @@
  * Returns the store's `dispatch` function.
  */
 
-import type { DispatchFunction, UnknownAction } from "../store/appStore";
-import { useStore } from "./useStore";
+import type { DispatchFunction, UnknownAction } from '../store/appStore';
+import { useStore } from './useStore';
 
 export function useDispatch<
   ActionType extends UnknownAction = UnknownAction,

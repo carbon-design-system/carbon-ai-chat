@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "../../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '../../../../globals/scss/chat-theme';
 
 .cds-aichat--clickable-image {
   position: relative;
