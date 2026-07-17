@@ -24,7 +24,7 @@ jobs:
           fetch-depth: "0"
           ref: ${{ github.event.client_payload.branch }}
       - name: Use Node.js version from .nvmrc
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
@@ -37,7 +37,7 @@ jobs:
         run: echo "PRE_RELEASE=true" >> $GITHUB_ENV
       - name: Get version of web components from package.json
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        uses: martinbeentjes/npm-get-version-action@3cf273023a0dda27efcd3164bdfb51908dd46a5b # v1.3.1
         with:
           path: packages/ai-chat
 
@@ -45,7 +45,7 @@ jobs:
       # ie. chat.carbondesignsystem.com/tag/next/docs/index.html
       - name: Upload typedoc to COS under the `next` folder
         if: ${{ env.PRE_RELEASE }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -61,7 +61,7 @@ jobs:
       # ie. chat.carbondesignsystem.com/tag/latest/docs/index.html
       - name: Upload typedoc to COS under the `latest` folder
         if: ${{ !env.PRE_RELEASE }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -76,7 +76,7 @@ jobs:
       # Upload the CDN artifacts to versioned folder
       # ie. chat.carbondesignsystem.com/version/v.1.0.0/docs/index.html
       - name: Upload typedoc to COS under the versioned folder
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks
         env:
@@ -92,7 +92,7 @@ jobs:
       # ie. chat.carbondesignsystem.com/tag/next/demo/index.html
       - name: Upload demo to COS under the `next` folder
         if: ${{ env.PRE_RELEASE }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -108,7 +108,7 @@ jobs:
       # ie. chat.carbondesignsystem.com/tag/latest/demo/index.html
       - name: Upload demo to COS under the `latest` folder
         if: ${{ !env.PRE_RELEASE }}
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
@@ -123,7 +123,7 @@ jobs:
       # Upload the CDN artifacts to versioned folder
       # ie. chat.carbondesignsystem.com/version/v1.x.0/demo/index.html
       - name: Upload demo to COS under the versioned folder
-        uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311 # master
         with:
           args: --acl public-read --follow-symlinks
         env:
