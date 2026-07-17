@@ -6,7 +6,7 @@ title: Overview
 
 Carbon AI Chat is a backend-agnostic chat UI designed for modern AI-based flows. This page shows you how to install it, configure it, and connect it to your server.
 
-Try different settings in the [demo](../../demo/index.html), which shows the full-featured chat interface with its many customization options and response types.
+Try our [demo](../../demo/index.html), which shows the full-featured chat interface with its many customization options and response types.
 
 ## Using the API
 
