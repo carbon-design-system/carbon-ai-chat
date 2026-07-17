@@ -20,12 +20,16 @@ A {@link StructuredData} payload has two parts: `fields`, an array of typed {@li
 ```typescript
 const data: StructuredData = {
   fields: [
-    { id: "rating", type: "number", value: 4 },
-    { id: "topics", type: "multi_select", value: ["billing", "shipping"] },
+    { id: "rating", value: 4 },
+    { id: "topics", value: ["billing", "shipping"] },
   ],
   user_defined: { source_widget: "checkout-page" },
 };
 ```
+
+Each field's `value` is carried as `unknown` — the chat never inspects it, so put whatever your backend needs there and narrow it yourself in {@link PublicConfigMessaging.customSendMessage}.
+
+`type` is optional, and only three values mean anything to the chat: `file` (see [File uploads](#file-uploads) below), and `mention` / `command` (produced by the {@link InputConfig.mention} and {@link InputConfig.command} input nodes). You may set `type` to any other string to tag a field for your own code, but the chat treats it as an opaque pass-through hint.
 
 ## Setting structured data from the host
 
@@ -35,7 +39,7 @@ Call {@link ChatInstanceInput.updateStructuredData} with an updater that receive
 // Add a field, preserving anything already pending.
 instance.input.updateStructuredData((prev) => ({
   ...prev,
-  fields: [...(prev?.fields ?? []), { id: "rating", type: "number", value: 4 }],
+  fields: [...(prev?.fields ?? []), { id: "rating", value: 4 }],
 }));
 ```
 

@@ -91,7 +91,7 @@ export interface ChatInstanceInput {
    *   ...prev,
    *   fields: [
    *     ...(prev?.fields ?? []),
-   *     { id: "rating", type: "number", value: 4 },
+   *     { id: "rating", value: 4 },
    *   ],
    * }));
    * ```
@@ -99,7 +99,7 @@ export interface ChatInstanceInput {
    * @example Replace all pending structured data
    * ```ts
    * instance.input.updateStructuredData(() => ({
-   *   fields: [{ id: "selection", type: "multi_select", value: ["a", "b"] }],
+   *   fields: [{ id: "selection", value: ["billing", "shipping"] }],
    * }));
    * ```
    *

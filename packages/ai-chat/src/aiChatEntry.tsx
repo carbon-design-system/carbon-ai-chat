@@ -301,7 +301,6 @@ export {
   StructuredData,
   StructuredField,
   StructuredFieldType,
-  StructuredFieldValue,
   InlineFile,
   ExternalFileReference,
   FileFieldValue,

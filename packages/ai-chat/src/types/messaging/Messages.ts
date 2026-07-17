@@ -166,22 +166,29 @@ interface EventInputData<TNameType extends string = string> {
 /**
  * The type of a structured field.
  *
+ * Only three values carry meaning to the chat itself:
+ *
+ * - `"file"` — drives the upload merge logic and in-flight upload tracking.
+ * - `"mention"` — produced by the mention input node.
+ * - `"command"` — produced by the command input node.
+ *
+ * Any other string is accepted and passed through untouched — a free-form hint
+ * for your own {@link PublicConfigMessaging.customSendMessage}, which the chat
+ * never inspects. The three named members exist only so they keep
+ * autocompleting; describe every other backend widget type however your
+ * backend already names it.
+ *
  * @experimental
  * @category Messaging
  */
 type StructuredFieldType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "boolean"
-  | "select"
-  | "multi_select"
-  | "date"
-  | "datetime"
   | "file"
   | "mention"
   | "command"
-  | "unknown";
+  // `string & {}` widens to any string while keeping the three literals in
+  // autocomplete — a plain `| string` would collapse the whole union to `string`.
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {});
 
 /**
  * Represents an inline file — the actual File object to be uploaded.
@@ -270,31 +277,15 @@ interface ExternalFileReference {
 type FileFieldValue = InlineFile | ExternalFileReference;
 
 /**
- * The value of a structured field. The actual type depends on the field's
- * {@link StructuredFieldType}.
- *
- * @experimental
- * @category Messaging
- */
-type StructuredFieldValue =
-  | string // text, textarea, select, date, datetime
-  | number // number
-  | boolean // boolean
-  | string[] // multi_select
-  | FileFieldValue // file (single)
-  | FileFieldValue[] // file (multiple)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | any; // unknown / user_defined escape hatch
-
-/**
- * A single typed field within a {@link StructuredData} payload.
+ * A single field within a {@link StructuredData} payload.
  *
  * @experimental
  * @category Messaging
  */
 interface StructuredField {
   /**
-   * Unique identifier for this field.
+   * Unique identifier for this field. Read it back in
+   * {@link PublicConfigMessaging.customSendMessage} to find the field you sent.
    */
   id: string;
 
@@ -304,27 +295,33 @@ interface StructuredField {
   label?: string;
 
   /**
-   * The type of field.
+   * The type of field. Only `"file"`, `"mention"`, and `"command"` mean
+   * anything to the chat (see {@link StructuredFieldType}); any other value is
+   * carried through untouched for your own
+   * {@link PublicConfigMessaging.customSendMessage} to interpret.
    */
   type?: StructuredFieldType;
 
   /**
-   * The value of the field.
+   * The value of the field, carried untyped. For a `"file"` field it is a
+   * {@link FileFieldValue}; for every other field it is whatever your backend
+   * needs — narrow it yourself in
+   * {@link PublicConfigMessaging.customSendMessage}.
    */
-  value: StructuredFieldValue;
+  value: unknown;
 }
 
 /**
  * Structured data that can be sent alongside or instead of plain text input.
- * Supports typed fields for common input patterns (text, select, multi-select,
- * file, etc.) as well as an escape hatch for arbitrary user-defined data.
+ * Carries an array of {@link StructuredField} entries plus `user_defined`, an
+ * escape hatch for arbitrary host-defined data.
  *
  * @experimental
  * @category Messaging
  */
 interface StructuredData {
   /**
-   * Typed fields with known structures (recommended for most use cases).
+   * The structured fields carried with the message.
    */
   fields?: StructuredField[];
 
@@ -354,8 +351,8 @@ interface MessageInput extends BaseMessageInput {
 
   /**
    * Structured data that can be sent alongside or instead of plain text input.
-   * Supports typed fields (text, select, multi-select, file, etc.) and an
-   * escape hatch for arbitrary user-defined data.
+   * Carries an array of structured fields and an escape hatch for arbitrary
+   * user-defined data.
    *
    * @experimental
    */
@@ -2440,7 +2437,6 @@ export {
   StructuredData,
   StructuredField,
   StructuredFieldType,
-  StructuredFieldValue,
   InlineFile,
   ExternalFileReference,
   FileFieldValue,
