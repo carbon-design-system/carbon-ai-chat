@@ -4,7 +4,7 @@ title: Using with Angular
 
 ## Overview
 
-Angular renders the Carbon AI Chat web components directly. The [web component guide](./WebComponent.md) is your main reference. Its setup, configuration, {@link ChatInstance} API, and customization all apply unchanged. This page covers only the Angular-specific wiring. You register the custom elements. You also switch to the `es-custom` build if you use `carbon-angular-components`.
+Angular renders the Carbon AI Chat web components directly. The [web component guide](./WebComponent.md) is your main reference. Its setup, configuration, {@link ChatInstance} API, and customization all apply unchanged. This page covers only the Angular-specific wiring: registering the custom elements, and switching to the `es-custom` build if you use `carbon-angular-components`.
 
 > **Note**: This page covers only what's specific to Angular. For theming, layout, slotting your own content, and the rest of the shared configuration, see [UI customization](./Customization.md).
 
