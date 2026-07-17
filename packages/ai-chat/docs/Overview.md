@@ -18,7 +18,7 @@ See the [React](./React.md), [web component](./WebComponent.md), and [Angular](.
 
 ## Configuration
 
-Each component takes {@link PublicConfig} options as props that control how the chat looks and behaves before your users see it. Set where the chat renders along with its size, frame, and corners ({@link LayoutConfig}); choose which surfaces appear — the {@link LauncherConfig launcher} (IBM's or your own), {@link HeaderConfig header}, {@link HomeScreenConfig home screen}, and {@link InputConfig input}; control how the chat reaches your server ({@link PublicConfigMessaging}); and set its theme, language, and assistant identity. See {@link PublicConfig} for every option.
+Each component accepts {@link PublicConfig} options as props that control how the chat looks and behaves before your users see it. Set where the chat renders along with its size, frame, and corners ({@link LayoutConfig}); choose which surfaces appear — the {@link LauncherConfig launcher} (IBM's or your own), {@link HeaderConfig header}, {@link HomeScreenConfig home screen}, and {@link InputConfig input}; control how the chat reaches your server ({@link PublicConfigMessaging}); and set its theme, language, and assistant identity. See {@link PublicConfig} for every option.
 
 ## Instance methods
 
