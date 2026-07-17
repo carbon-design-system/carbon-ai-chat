@@ -12,6 +12,7 @@
   - [Stable release](#stable-release)
   - [Post release](#post-release)
   - [Patch release](#patch-release)
+  - [Alpha release](#alpha-release)
 - [Troubleshooting](#troubleshooting)
   - [Force publish](#force-publish)
   - [Tag already exists](#tag-already-exists)
@@ -306,6 +307,29 @@ patch release:
       [subsequent prerelease](#subsequent-prerelease), and
       [stable release](#stable-release) publishes, except instead of selecting `minor` in the type of semver release, select `patch`
       ![Screenshot of release workflow with patch](https://github.com/user-attachments/assets/1fa292ba-8b7b-4609-9ec1-dac278b98388)
+
+### Alpha release
+
+Alpha releases are rare, off-cadence previews of an in-progress feature, cut straight from a feature integration branch (e.g. `feat/prompt-line`) and handed to specific teams for validation. They are independent of the biweekly `next` / `latest` cadence.
+
+An alpha release publishes `@carbon/ai-chat` and `@carbon/ai-chat-components` to npm under the **`alpha`** dist-tag, and publishes the demo, documentation, both Storybooks, and the components bundle under `chat.carbondesignsystem.com/tag/alpha`. It deliberately does **not** create a git tag, GitHub release, changelog, `versions.js` update, or release PR, and it never commits or pushes — the version bumps happen only in the throwaway workflow runner, so the branch it runs from is left untouched.
+
+To publish an alpha:
+
+- [ ] Go to the [Release alpha workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-alpha.yml) and choose "Run workflow".
+- [ ] **Select the feature branch** you want to publish from (e.g. `feat/prompt-line`) — the alpha is built from whatever branch you select.
+- [ ] Leave `dry run` checked for the first run. The workflow computes the alpha versions and builds everything, but publishes nothing. Check the log to confirm the planned versions (e.g. `@carbon/ai-chat -> 1.18.0-alpha.0` and `@carbon/ai-chat-components -> 1.8.0-alpha.0`).
+- [ ] Leave `bump` as `minor` unless the alpha previews a patch release, in which case select `patch`.
+- [ ] If the versions look right, run the workflow again with `dry run` unchecked to publish to npm and the CDN.
+- [ ] Confirm the publish:
+  - [ ] `npm view @carbon/ai-chat dist-tags` and `npm view @carbon/ai-chat-components dist-tags` show the new `alpha` version, and `latest` / `next` are unchanged.
+  - [ ] The sites are live: [demo](https://chat.carbondesignsystem.com/tag/alpha/demo/index.html), [documentation](https://chat.carbondesignsystem.com/tag/alpha/docs/documents/Overview.html), [Web Components Storybook](https://chat.carbondesignsystem.com/components/storybook/tag/alpha/index.html), and [React Storybook](https://chat.carbondesignsystem.com/components/storybook/react/tag/alpha/index.html).
+
+A few things to know:
+
+- Alpha versions auto-increment per package from what is already published on npm — the first alpha of a base version is `alpha.0`, and re-running produces `alpha.1`, `alpha.2`, and so on. There is no git tag or committed bump to keep in sync.
+- `@carbon/ai-chat@alpha` pins the exact `@carbon/ai-chat-components` alpha built in the same run, so installers get a self-consistent alpha stack rather than the stable components.
+- Alpha is unlisted in the version-selector dropdowns on the stable `latest` / `next` sites by design; the "Alpha" entry only appears when viewing the alpha site itself.
 
 ## Troubleshooting
 
