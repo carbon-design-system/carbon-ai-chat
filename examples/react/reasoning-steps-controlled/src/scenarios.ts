@@ -223,7 +223,14 @@ export async function runControlledReasoningScenario(
   // the assistant message replaces the "Thinking..." affordance cleanly.
   instance.updateIsMessageLoadingCounter("decrease");
 
+  // Keep asserting the parent `open_state: CLOSE` on the final snapshot too, so
+  // the message stays in controlled mode at completion. Dropping it would flip
+  // the panel to auto mode and desync its open/closed state after the user has
+  // toggled it mid-stream.
   await streamText(instance, responseID, FINAL_TEXT, signal, {
-    reasoning: { steps: collectedSteps },
+    reasoning: {
+      open_state: ReasoningStepOpenState.CLOSE,
+      steps: collectedSteps,
+    },
   });
 }

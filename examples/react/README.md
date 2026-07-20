@@ -866,6 +866,80 @@ React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's bui
 
 </details>
 
+### [Upsert message / Reasoning steps](./upsert-message-reasoning-steps/README.md)
+
+Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the default behavior) and a single long-form `reasoning.content` trace — picked from a dropdown on the welcome message, all delivered through `upsertMessage`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-reasoning-steps`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                             | Package / kind              | Role in this example                                               |
+| ---------------------------------- | --------------------------- | ------------------------------------------------------------------ |
+| `ChatCustomElement`                | `@carbon/ai-chat` component | Mounts the chat UI.                                                |
+| `PublicConfig`                     | `@carbon/ai-chat` type      | Config shape.                                                      |
+| `customSendMessage`                | `messaging` prop            | Dispatches to scenario runners.                                    |
+| `MessageResponseTypes.OPTION`      | `@carbon/ai-chat`           | Welcome-message scenario picker.                                   |
+| `OptionItemPreference.DROPDOWN`    | `@carbon/ai-chat` enum      | Renders scenario picker as a dropdown.                             |
+| `ReasoningStep`                    | `@carbon/ai-chat` type      | Individual reasoning step payload.                                 |
+| `MessageResponseOptions`           | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,content}`.            |
+| `MessageResponse`                  | `@carbon/ai-chat` type      | Full snapshot returned by each upsert updater.                     |
+| `MessageState`                     | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.              |
+| `instance.messaging.upsertMessage` | `ChatInstance` API          | Inserts + updates the welcome and the streamed reasoning in place. |
+| `CustomSendMessageOptions.signal`  | `@carbon/ai-chat`           | Abort signal for cancellation.                                     |
+
+</details>
+
+### [Upsert message / Reasoning steps (controlled)](./upsert-message-reasoning-steps-controlled/README.md)
+
+Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the parent reasoning panel stays collapsed via `reasoning.open_state: CLOSE`, every individual step is pre-expanded, and a custom "Thinking..." indicator driven by `instance.updateIsMessageLoadingCounter` replaces the default reasoning UI.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-reasoning-steps-controlled`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                     | Package / kind              | Role in this example                                       |
+| ------------------------------------------ | --------------------------- | ---------------------------------------------------------- |
+| `ChatCustomElement`                        | `@carbon/ai-chat` component | Mounts the chat UI.                                        |
+| `PublicConfig`                             | `@carbon/ai-chat` type      | Config shape.                                              |
+| `customSendMessage`                        | `messaging` prop            | Runs the controlled reasoning scenario.                    |
+| `ReasoningStep` / `ReasoningStepOpenState` | `@carbon/ai-chat` types     | Reasoning payloads + controlled open-state values.         |
+| `MessageResponseOptions`                   | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,open_state}`. |
+| `MessageResponse`                          | `@carbon/ai-chat` type      | Full snapshot returned by each upsert updater.             |
+| `MessageState`                             | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.      |
+| `instance.messaging.upsertMessage`         | `ChatInstance` API          | Inserts + updates the welcome and the reasoning in place.  |
+| `instance.updateIsMessageLoadingCounter`   | `ChatInstance` API          | Custom loading label that replaces the default UI.         |
+| `CustomSendMessageOptions.signal`          | `@carbon/ai-chat`           | Abort signal for cancellation.                             |
+
+</details>
+
+### [Upsert message / Reasoning with streaming generic items](./upsert-message-reasoning-with-streaming-generic-items/README.md)
+
+Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text` field is streamed token by token, followed by a `user_defined` summary card appended when the step finishes — all delivered through `upsertMessage`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-reasoning-with-streaming-generic-items`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                                            | Package / kind              | Role in this example                                                            |
+| ----------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| `ChatContainer`                                                   | `@carbon/ai-chat` component | Mounts the chat UI.                                                             |
+| `PublicConfig`                                                    | `@carbon/ai-chat` type      | Config shape.                                                                   |
+| `renderUserDefinedResponse`                                       | `ChatContainer` prop        | Renders the `user_defined` summary card inside each reasoning step.             |
+| `RenderUserDefinedState`                                          | `@carbon/ai-chat` type      | Callback argument shape.                                                        |
+| `ReasoningStep` with `content: GenericItem[]`                     | `@carbon/ai-chat` type      | Per-step array of inline response items.                                        |
+| `MessageResponseTypes.TEXT` / `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum      | Item kinds composed into the step's content array.                              |
+| `UserDefinedItem`                                                 | `@carbon/ai-chat` type      | The appended summary card payload.                                              |
+| `MessageResponseOptions` / `MessageResponse`                      | `@carbon/ai-chat` types     | Snapshot + `message_options` re-sent with updated `reasoning.steps` per upsert. |
+| `MessageState`                                                    | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.                           |
+| `instance.messaging.upsertMessage`                                | `ChatInstance` API          | Inserts + updates the welcome and the streamed steps in place.                  |
+| `CustomSendMessageOptions.signal`                                 | `@carbon/ai-chat`           | Abort signal for cancellation.                                                  |
+
+</details>
+
 ### [Upsert message user defined](./upsert-message-user-defined/README.md)
 
 Progressively updates a `user_defined` steps-card widget inside a single assistant message using `ChatInstance.messaging.upsertMessage`, and pops a Carbon toast (with a "View message" action wired to `instance.scrollToMessage`) when the run completes.
