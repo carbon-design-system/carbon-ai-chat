@@ -8,7 +8,7 @@ Render your own content in slots throughout the chat, including the chat footer,
 
 ## Writing to a slot
 
-Write to slots as portals from your application, using frameworks such as [React](./React.md), [Angular](./Angular.md), Vue, or [web components](./WebComponent.md), and access them through {@link ChatInstance.writeableElements}. For a list of the available slots, see {@link WriteableElementName | the slot list}.
+Write to slots as portals from your application, using frameworks such as [React](./React.md), [Angular](./Angular.md), Vue, or [web components](./WebComponent.md). For a list of the available slots, see {@link WriteableElementName | the slot list}. Access slots through {@link ChatInstance.writeableElements}.
 
 Some slots are layout-specific: {@link WriteableElementName.PROMPT_LINE_ACTIONS_END | the prompt-line actions slot} renders only when the input uses the expanded layout ({@link InputConfig.expanded}), and the default (compact) layout hides any content written to it.
 
