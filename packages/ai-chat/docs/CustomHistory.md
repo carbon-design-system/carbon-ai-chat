@@ -8,7 +8,7 @@ Restore past conversations by loading custom history when the chat opens. Histor
 
 > **Note**: The Carbon AI Chat handles only UI-level history, which displays past messages. It has no recommended way to store LLM-friendly conversation history.
 
-This guide covers loading history data into the chat. It also covers the built-in history panel. That panel lets users browse and switch between past conversations.
+This guide covers loading history data into the chat. It also covers the built-in history panel that lets users browse and switch between past conversations.
 
 ## History data structure
 
@@ -108,7 +108,7 @@ async function switchToConversation(conversationId: string) {
 
 ## The history panel
 
-The sections above load history into the current conversation. The history panel is the UI for browsing past conversations and switching between them. You enable it through config. You render its contents yourself through a slot.
+The sections above load history into the current conversation. The history panel is the UI for browsing past conversations and switching between them. You enable it through configuration and render its contents yourself through a slot.
 
 ### Enabling the panel
 
