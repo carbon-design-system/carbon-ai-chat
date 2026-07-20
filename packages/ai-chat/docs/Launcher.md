@@ -6,11 +6,11 @@ title: Launcher
 
 The launcher is the corner button that welcomes users and opens the chat. Configure it through the {@link PublicConfig.launcher | launcher config}, supply your own button in its place, or leave it out of the layout entirely.
 
-The launcher is optional, so you can leave it out completely: set `launcher.isOn: false` and {@link PublicConfig.openChatByDefault | open the chat directly} instead. That combination is the common setup for a custom-element or embedded layout that carries no launcher at all.
+The launcher is optional. Turn it off with `launcher.isOn: false` and open the chat directly with {@link PublicConfig.openChatByDefault | openChatByDefault} — the common setup for embedded layouts with no launcher.
 
 ## Configure the launcher
 
-Pass a {@link LauncherConfig | launcher config} on the {@link PublicConfig.launcher | launcher} property. From there you can toggle the launcher's visibility with {@link LauncherConfig.isOn | isOn}, force the unread dot to appear with {@link LauncherConfig.showUnreadIndicator | showUnreadIndicator}, and override the launcher icon separately for each device through {@link LauncherConfig.desktop | desktop} and {@link LauncherConfig.mobile | mobile}. Each of those device configs accepts an {@link LauncherCallToActionConfig.avatarUrlOverride | avatarUrlOverride} that replaces the icon shown on the launcher.
+Pass a {@link LauncherConfig | launcher config} on the {@link PublicConfig.launcher | launcher} property. From there you can toggle the launcher's visibility with {@link LauncherConfig.isOn | isOn}, force the unread dot to appear with {@link LauncherConfig.showUnreadIndicator | showUnreadIndicator}, and override the launcher icon separately for each device through {@link LauncherConfig.desktop | desktop} and {@link LauncherConfig.mobile | mobile}.
 
 ```ts
 import type { PublicConfig } from "@carbon/ai-chat";
