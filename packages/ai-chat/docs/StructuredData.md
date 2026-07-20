@@ -15,7 +15,7 @@ Structured data is request-side only: it travels on {@link MessageInput.structur
 
 ## The shape
 
-A {@link StructuredData | structured data} payload has two parts: `fields` is an array of typed {@link StructuredField | field} entries, each with an `id`, an optional `label`, a {@link StructuredFieldType | type} such as `text`, `select`, `multi_select`, or `file`, and a `value`, while `user_defined` is an escape hatch for any data that doesn't fit a typed field.
+A {@link StructuredData | structured data} payload has two parts. `fields` is an array of typed {@link StructuredField | field} entries, each with an `id`, an optional `label`, a {@link StructuredFieldType | type} such as `text`, `select`, `multi_select`, or `file`, and a `value`. `user_defined` is an escape hatch for any data that doesn't fit a typed field.
 
 ```typescript
 const data: StructuredData = {
