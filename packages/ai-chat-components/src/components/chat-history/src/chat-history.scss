@@ -35,8 +35,6 @@
   align-items: center;
   justify-content: space-between;
   border-block-end: convert.rem(1px) solid theme.$border-subtle-00;
-  @include type.type-style("body-compact-01");
-
   font-weight: 600;
   inline-size: 100%;
   letter-spacing: 0.1px;
@@ -48,6 +46,8 @@
   }
 
   .#{$prefix}--history-header__title {
+    @include type.type-style("heading-compact-01");
+
     overflow: hidden;
     inline-size: 100%;
     margin-inline-start: layout.$spacing-04;
@@ -158,7 +158,7 @@
   position: relative;
 
   .#{$cds-prefix}--side-nav__link {
-    @include type.type-style("body-01");
+    @include type.type-style("body-compact-01");
 
     position: relative;
     display: flex;
@@ -271,7 +271,7 @@
   }
 
   input {
-    @include type.type-style("body-01");
+    @include type.type-style("body-compact-01");
 
     overflow: hidden;
     flex-grow: 2;
@@ -305,7 +305,7 @@
   .#{$cds-prefix}--side-nav__link-subtitle {
     @include type.type-style("label-01");
 
-    color: theme.$text-secondary;
+    color: theme.$text-placeholder;
     padding-block-start: layout.$spacing-01;
   }
 }
