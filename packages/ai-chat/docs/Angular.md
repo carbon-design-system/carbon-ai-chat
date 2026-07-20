@@ -26,7 +26,7 @@ yarn add @carbon/ai-chat
 
 ## Basic example
 
-Register the custom elements with `CUSTOM_ELEMENTS_SCHEMA`. Import the web component, then use it in your template. Angular attribute binding only passes strings. So set complex configuration — objects, arrays, functions — as element properties through a `ViewChild`. Set `onBeforeRender` the same way to capture the {@link ChatInstance}:
+Register the custom elements with `CUSTOM_ELEMENTS_SCHEMA`, then import the web component and use it in your template. Because Angular attribute binding only passes strings, set complex configuration — objects, arrays, functions — as element properties through a `ViewChild`, and set `onBeforeRender` the same way to capture the {@link ChatInstance}:
 
 ```typescript
 import {
