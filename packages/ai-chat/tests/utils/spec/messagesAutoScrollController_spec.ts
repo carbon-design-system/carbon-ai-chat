@@ -1168,6 +1168,76 @@ describe("MessagesScrollController", () => {
     controller.disconnect();
   });
 
+  it("collapse announcement: restores the pin synchronously when the shrink capped scrollTop", async () => {
+    // Geometry chosen so that after the collapse the content can no longer reach the pin:
+    // scrollHeight 600 with clientHeight 500 caps scrollTop at 100, below the 140 pin.
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    const pinnable = createRealPinnableMessage("req-1", 200, 80);
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+    h.setMessages([createPortableMessage({ id: "ui-0" }), pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+    expect(h.container.scrollTop).toBe(140); // pinned
+    h.setSpacerHeight.mockClear();
+
+    // Simulate the browser capping scrollTop against the collapsed content.
+    h.container.scrollTop = 100;
+
+    h.container.dispatchEvent(
+      new CustomEvent("reasoning-animation-start", {
+        bubbles: true,
+        detail: { open: false },
+      }),
+    );
+
+    // Handled synchronously — the pin is restored in the same task, before any paint.
+    expect(h.container.scrollTop).toBe(140);
+
+    controller.disconnect();
+  });
+
+  it("collapse announcement: leaves the user alone when they have deliberately scrolled away", async () => {
+    const h = createHarness({
+      scrollTop: 0,
+      clientHeight: 500,
+      scrollHeight: 1000,
+      offsetHeight: 500,
+      rectTop: 0,
+    });
+
+    const pinnable = createRealPinnableMessage("req-1", 200, 80);
+    const controller = new MessagesScrollController(h.host);
+    h.setMessages([]);
+    controller.connect();
+    h.setMessages([createPortableMessage({ id: "ui-0" }), pinnable]);
+    controller.onHostUpdated(null);
+    await flushFrames();
+
+    // User scrolls up and the scroll listener latches the scroll-away.
+    h.container.scrollTop = 0;
+    h.container.dispatchEvent(new Event("scroll"));
+
+    h.container.dispatchEvent(
+      new CustomEvent("reasoning-animation-start", {
+        bubbles: true,
+        detail: { open: false },
+      }),
+    );
+
+    expect(h.container.scrollTop).toBe(0); // not yanked back to the pin
+
+    controller.disconnect();
+  });
+
   it("settle reconcile: a scroll-away latched by the scroll listener suppresses a re-pin resolveStreamEndAction would otherwise make", async () => {
     const h = createHarness({
       scrollTop: 0,

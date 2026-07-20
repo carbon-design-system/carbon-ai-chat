@@ -35,6 +35,32 @@ class CDSAIChatReasoningSteps extends LitElement {
     super.connectedCallback();
   }
 
+  /**
+   * Announce a collapse synchronously, from `attributeChangedCallback`, so consumers can react
+   * within the same task — before the browser lays out and paints the smaller container.
+   *
+   * This cannot be done from Lit's `willUpdate`/`updated`: the host sets the `open` attribute
+   * directly, so the CSS collapse applies the moment the attribute lands, whereas Lit's update
+   * is async (microtask). By then the element already measures 0 and any consumer reacting to
+   * the shrink is a frame late — which is exactly what produces a visible one-frame jump.
+   */
+  attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null,
+  ) {
+    if (name === "open" && old !== null && value === null) {
+      this.dispatchEvent(
+        new CustomEvent("reasoning-animation-start", {
+          bubbles: true,
+          composed: true,
+          detail: { open: false },
+        }),
+      );
+    }
+    super.attributeChangedCallback(name, old, value);
+  }
+
   updated(changedProperties: Map<PropertyKey, unknown>) {
     if (changedProperties.has("controlled")) {
       this.propagateControlled();

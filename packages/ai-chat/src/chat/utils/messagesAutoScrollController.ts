@@ -982,6 +982,12 @@ export class MessagesScrollController {
     // snippets after CodeMirror init / font load (`code-snippet-render-end`). Both bubble up
     // to this scroll container, letting us recalculate scroll geometry against the final
     // layout instead of polling animation frames.
+    // Fires before a reasoning container collapses, so we can reserve space up front rather
+    // than reacting a frame too late.
+    scrollContainer?.addEventListener(
+      "reasoning-animation-start",
+      this.handleContentLayoutWillShrink,
+    );
     scrollContainer?.addEventListener(
       "reasoning-animation-end",
       this.handleContentLayoutSettled,
@@ -1013,6 +1019,10 @@ export class MessagesScrollController {
       this.messageResizeObserverState = null;
     }
     const scrollContainer = this.host.getScrollContainer();
+    scrollContainer?.removeEventListener(
+      "reasoning-animation-start",
+      this.handleContentLayoutWillShrink,
+    );
     scrollContainer?.removeEventListener(
       "reasoning-animation-end",
       this.handleContentLayoutSettled,
@@ -1244,6 +1254,61 @@ export class MessagesScrollController {
     });
     if (decision !== null) {
       this.userScrolledAwayFromPin = decision;
+    }
+  };
+
+  /**
+   * Reserve spacer space BEFORE an announced collapse removes content (`reasoning-animation-start`,
+   * dispatched while the collapsing element is still at full height).
+   *
+   * The grow-only spacer is otherwise purely reactive: the ResizeObserver and the settle event
+   * both fire *after* layout, so an instant collapse drops `scrollHeight` below
+   * `pinnedScrollTop + clientHeight` for one frame. The browser caps `scrollTop`, the viewport
+   * visibly jumps to the top, and the next frame restores it — a two-frame flash. Projecting the
+   * post-collapse geometry and growing the spacer now keeps `pinnedScrollTop` reachable
+   * throughout, so no cap ever happens and the collapse reflows exactly once.
+   */
+  private handleContentLayoutWillShrink = (): void => {
+    const scrollElement = this.host.getScrollContainer();
+    const spacerElem = this.host.getSpacer();
+    if (!scrollElement || !spacerElem || !this.pinnedMessageId) {
+      return;
+    }
+
+    // The collapse styles have already applied (the event is dispatched from
+    // `attributeChangedCallback`), so this measures the POST-collapse layout. What matters is
+    // that we run now, in the same task, rather than from the ResizeObserver, which fires only
+    // after layout AND paint.
+    //
+    // Derive the true content height from the spacer's offset rather than `scrollHeight`
+    // (floored at `clientHeight`, so it under-reports once content falls below the viewport),
+    // and size against `pinnedScrollTop` rather than the live `scrollTop` (which the browser
+    // may already have capped). Grow-only: never shrink here, the settle pass trims.
+    const scrollerRect = scrollElement.getBoundingClientRect();
+    const spacerRect = spacerElem.getBoundingClientRect();
+    const contentHeightWithoutSpacer =
+      spacerRect.top - scrollerRect.top + scrollElement.scrollTop;
+    const requiredSpacerHeight = Math.max(
+      0,
+      Math.ceil(
+        this.pinnedScrollTop +
+          scrollElement.clientHeight -
+          contentHeightWithoutSpacer,
+      ),
+    );
+    if (requiredSpacerHeight > this.domSpacerHeight) {
+      this.domSpacerHeight = requiredSpacerHeight;
+      this.host.setSpacerHeight(this.domSpacerHeight);
+    }
+
+    // Forcing layout above may have let the browser cap scrollTop against the briefly-shorter
+    // content. The spacer is restored now, so put the pin back in the same task; because no
+    // paint has happened in between, the user never sees the intermediate position.
+    if (
+      !this.userScrolledAwayFromPin &&
+      scrollElement.scrollTop < this.pinnedScrollTop
+    ) {
+      scrollElement.scrollTop = this.pinnedScrollTop;
     }
   };
 
