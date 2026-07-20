@@ -8,7 +8,7 @@ Open an overlay panel with your own content at any time — for pre-chat forms, 
 
 ## Opening a panel
 
-Use a panel for pre-chat forms, post-chat feedback, or multi-step flows, and open it from an event, a `user_defined` response, or an action a user takes on your website.
+Open a panel from an event, a `user_defined` response, or an action a user takes on your website.
 
 Decide whether the panel acts as a secondary view that users can dismiss quickly, or a primary interface that temporarily takes over the chat. When {@link DefaultCustomPanelConfigOptions.hideBackButton | hideBackButton} is `false` (the default), the main chat header stays visible and the panel gets its own header with a back button and title. Use this mode when a user drills into more detail or can dismiss the panel.
 
