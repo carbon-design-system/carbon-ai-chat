@@ -432,206 +432,6 @@ React example that rehydrates a conversation containing multiple `user_defined` 
 
 </details>
 
-### [Input / Code snippet](./input-code-snippet/README.md)
-
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-code-snippet`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                           | Package / kind                       | Role in this example                                                            |
-| -------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
-| `ChatCustomElement`              | `@carbon/ai-chat` component          | Mounts the chat UI as a fullscreen surface.                                     |
-| `PublicConfig`                   | `@carbon/ai-chat` type               | Types the config object passed to `ChatCustomElement`.                          |
-| `RenderUserDefinedInputNode`     | `@carbon/ai-chat` type               | Types the `renderUserDefinedInputNode` callback.                                |
-| `Extension`                      | `@tiptap/core` type                  | Types the custom Tiptap node registered on the input.                           |
-| `renderInLightDom`               | `@carbon/ai-chat` helper             | Bridges the snippet web component into the page's light DOM.                    |
-| `renderUserDefinedInputNode`     | component prop                       | Renders the custom `codeSnippetBlock` node inside the sent user message bubble. |
-| `input.tiptap.extensions`        | config prop                          | Registers the host-authored `codeSnippetBlock` Tiptap node on the input.        |
-| `layout.showFrame`               | config prop                          | Hides the default frame so the chat fills the viewport.                         |
-| `openChatByDefault`              | config prop                          | Mounts straight into the conversation, no launcher.                             |
-| `messaging.customSendMessage`    | config prop                          | Mock backend; confirms whether the outgoing text contained a fenced block.      |
-| `Node.create`                    | `@tiptap/core` API                   | Authors the `codeSnippetBlock` block atom node.                                 |
-| `InputRule`                      | `@tiptap/core` API                   | Triggers the node swap when the user finishes typing three backticks.           |
-| `addKeyboardShortcuts` / keydown | `@tiptap/core` / DOM                 | Escape exits the block to a new paragraph below.                                |
-| `<cds-aichat-code-snippet>`      | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble.   |
-| `CodeSnippet`                    | `@carbon/ai-chat-components/react`   | React wrapper for the snippet, used in the sent message bubble.                 |
-| `Card`                           | `@carbon/ai-chat-components/react`   | React wrapper for the card that frames the editable snippet.                    |
-
-</details>
-
-### [Input / Custom render](./input-custom-render/README.md)
-
-The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-custom-render`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                | Package / kind              | Role in this example                                                          |
-| ------------------------------------- | --------------------------- | ----------------------------------------------------------------------------- |
-| `ChatCustomElement`                   | `@carbon/ai-chat` component | Mounts the chat UI inside the docked sidebar container.                       |
-| `PublicConfig`                        | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                        |
-| `ChatInstance`                        | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so the tile handler can drive the input.         |
-| `RenderUserDefinedInputNode`          | `@carbon/ai-chat` type      | Types the `renderUserDefinedInputNode` callback.                              |
-| `Extension`                           | `@carbon/ai-chat` type      | Types the custom Tiptap node registered on the input.                         |
-| `renderInLightDom`                    | `@carbon/ai-chat` helper    | Bridges the node view's `Tile` into the page's light DOM.                     |
-| `renderUserDefinedInputNode`          | component prop              | Renders the custom `tileChip` node inside the sent user message bubble.       |
-| `input.tiptap.extensions`             | config prop                 | Registers the host-authored `tileChip` Tiptap node on the input.              |
-| `instance.input.updateContent`        | instance method             | Clears the input and injects the clicked tile as a custom node.               |
-| `instance.input.updateStructuredData` | instance method             | Replaces the pending structured data with metadata describing the tile.       |
-| `onBeforeRender`                      | component prop              | Captures the `ChatInstance` used by the tile-click handler.                   |
-| `layout.showFrame`                    | config prop                 | Hides the default frame so the chat fills the sidebar.                        |
-| `openChatByDefault`                   | config prop                 | Mounts straight into the conversation, no launcher.                           |
-| `messaging.customSendMessage`         | config prop                 | Reads `request.input.structured_data` and echoes the submitted tile.          |
-| `Node.create`                         | `@tiptap/core` API          | Authors the custom `tileChip` inline atom node.                               |
-| `Tile` / `ClickableTile`              | `@carbon/react` component   | The Carbon tile rendered in the page grid, the input, and the message bubble. |
-
-</details>
-
-### [Input / File upload](./input-file-upload/README.md)
-
-`ChatCustomElement` with file attachments enabled, using a mock `onFileUpload` handler that simulates a server upload and echoes back file metadata.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-file-upload`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                 | Package / kind              | Role in this example                                        |
-| -------------------------------------- | --------------------------- | ----------------------------------------------------------- |
-| `ChatCustomElement`                    | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
-| `PublicConfig`                         | `@carbon/ai-chat` type      | Types the config.                                           |
-| `ExternalFileReference`                | `@carbon/ai-chat` type      | Server-assigned file reference returned by the mock upload. |
-| `StructuredData`                       | `@carbon/ai-chat` type      | Wraps the file reference returned from `onFileUpload`.      |
-| `StructuredField`                      | `@carbon/ai-chat` type      | Typed entry inside `StructuredData.fields`.                 |
-| `MessageRequest`                       | `@carbon/ai-chat` type      | Inspected for `structured_data` to echo files.              |
-| `ChatInstance`                         | `@carbon/ai-chat` type      | Used by the mock server response helper.                    |
-| `MessageResponseTypes`                 | `@carbon/ai-chat` enum      | `TEXT` used to echo file metadata.                          |
-| `upload.is_on`                         | config prop                 | Enables attachments.                                        |
-| `upload.onFileUpload`                  | config prop                 | Mock upload handler returning `StructuredData`.             |
-| `upload.accept` (documented)           | config prop                 | Optional MIME/extension allowlist.                          |
-| `upload.maxFileSizeBytes` (documented) | config prop                 | Optional per-file size cap.                                 |
-| `upload.maxFiles` (documented)         | config prop                 | Optional per-message file count cap.                        |
-| `messaging.customSendMessage`          | config prop                 | Mock backend; forwards file messages to the echo helper.    |
-| `instance.messaging.addMessage`        | instance method             | Injects the echoed text response.                           |
-
-</details>
-
-### [Input / Mentions & commands](./input-mentions-and-commands/README.md)
-
-`ChatCustomElement` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-mentions-and-commands`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                  | Package / kind              | Role in this example                                                     |
-| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| `ChatCustomElement`                     | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                           |
-| `PublicConfig`                          | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                   |
-| `ChatInstance`                          | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                        | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.                               |
-| `input.mention`                         | config prop                 | Registers the `@`-mention trigger config on the input.                   |
-| `input.command`                         | config prop                 | Registers the `/`-command trigger config on the input.                   |
-| `mention.trigger` / `command.trigger`   | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
-| `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
-| `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
-| `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
-| `mention.onRemove` / `command.onRemove` | config prop                 | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
-| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
-| `instance.input.updateStructuredData`   | instance method             | Adds and removes mention/command picks on the message's structured data. |
-| `layout.showFrame`                      | config prop                 | Hides the default frame so the chat fills the host.                      |
-| `openChatByDefault`                     | config prop                 | Mounts straight into the conversation, no launcher.                      |
-| `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
-
-</details>
-
-### [Input / Mentions & commands (custom render)](./input-mentions-and-commands-custom-render/README.md)
-
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-mentions-and-commands-custom-render`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                                  | Package / kind              | Role in this example                                                     |
-| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| `ChatCustomElement`                     | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                           |
-| `PublicConfig`                          | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                   |
-| `ChatInstance`                          | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
-| `SuggestionItem`                        | `@carbon/ai-chat` type      | Shape of each entry; passed to `renderCustomToken`.                      |
-| `input.mention`                         | config prop                 | Registers the `@`-mention trigger config on the input.                   |
-| `input.command`                         | config prop                 | Registers the `/`-command trigger config on the input.                   |
-| `mention.renderCustomToken`             | config prop                 | Returns a React node rendered in place of the default mention chip.      |
-| `mention.trigger` / `command.trigger`   | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
-| `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
-| `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
-| `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
-| `mention.onRemove` / `command.onRemove` | config prop                 | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
-| `Tag`                                   | `@carbon/react` component   | Visual chip used inside the custom token renderer.                       |
-| `Tooltip`                               | `@carbon/react` component   | Hover affordance wrapping the custom mention chip.                       |
-| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
-| `instance.input.updateStructuredData`   | instance method             | Adds and removes mention/command picks on the message's structured data. |
-| `layout.showFrame`                      | config prop                 | Hides the default frame so the chat fills the host.                      |
-| `openChatByDefault`                     | config prop                 | Mounts straight into the conversation, no launcher.                      |
-| `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
-
-</details>
-
-### [Input / Typeahead](./input-typeahead/README.md)
-
-`ChatCustomElement` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-typeahead`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                        | Package / kind              | Role in this example                                   |
-| ----------------------------- | --------------------------- | ------------------------------------------------------ |
-| `ChatCustomElement`           | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.         |
-| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`. |
-| `SuggestionItem`              | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.             |
-| `input.autocomplete`          | config prop                 | Registers the typeahead behavior on the input.         |
-| `autocomplete.items`          | config prop                 | Async filter that returns matching `SuggestionItem`s.  |
-| `autocomplete.debounceMs`     | config prop                 | Coalesces keystrokes before calling `items`.           |
-| `layout.showFrame`            | config prop                 | Hides the default frame so the chat fills the host.    |
-| `openChatByDefault`           | config prop                 | Mounts straight into the conversation, no launcher.    |
-| `messaging.customSendMessage` | config prop                 | Mock backend echoing the user's message.               |
-
-</details>
-
-### [Input / Typeahead (custom list)](./input-typeahead-custom/README.md)
-
-`ChatCustomElement` with `input.autocomplete` whose dropdown is replaced by a fully custom React component supplied through `renderCustomList`.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-input-typeahead-custom`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol                          | Package / kind              | Role in this example                                                            |
-| ------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
-| `ChatCustomElement`             | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                                  |
-| `PublicConfig`                  | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                          |
-| `SuggestionItem`                | `@carbon/ai-chat` type      | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
-| `CustomListProps`               | `@carbon/ai-chat` type      | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
-| `input.autocomplete`            | config prop                 | Registers the typeahead behavior on the input.                                  |
-| `autocomplete.renderCustomList` | config prop                 | Returns a React node that replaces the default dropdown.                        |
-| `autocomplete.items`            | config prop                 | Async filter providing entries to the custom list.                              |
-| `autocomplete.debounceMs`       | config prop                 | Coalesces keystrokes before calling `items`.                                    |
-| `layout.showFrame`              | config prop                 | Hides the default frame so the chat fills the host.                             |
-| `openChatByDefault`             | config prop                 | Mounts straight into the conversation, no launcher.                             |
-| `messaging.customSendMessage`   | config prop                 | Mock backend echoing the user's message.                                        |
-
-</details>
-
 ### [Integrations / watsonx.ai](./integrations-watsonx/README.md)
 
 Connects `ChatCustomElement` to IBM watsonx.ai for real streaming text generation, using a small Express proxy to handle IAM auth and CORS.
@@ -723,6 +523,206 @@ Render your own content beneath an assistant message — here a copy button — 
 | `messaging.customSendMessage`             | `@carbon/ai-chat` config prop    | Mock backend that attaches the footer slot.       |
 | `message_item_options.custom_footer_slot` | `@carbon/ai-chat` message field  | Enables the footer and carries `additional_data`. |
 | `layout.showFrame` / `openChatByDefault`  | `@carbon/ai-chat` config props   | Full-screen baseline.                             |
+
+</details>
+
+### [Prompt line / Code snippet](./prompt-line-code-snippet/README.md)
+
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-code-snippet`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                           | Package / kind                       | Role in this example                                                            |
+| -------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
+| `ChatCustomElement`              | `@carbon/ai-chat` component          | Mounts the chat UI as a fullscreen surface.                                     |
+| `PublicConfig`                   | `@carbon/ai-chat` type               | Types the config object passed to `ChatCustomElement`.                          |
+| `RenderUserDefinedInputNode`     | `@carbon/ai-chat` type               | Types the `renderUserDefinedInputNode` callback.                                |
+| `Extension`                      | `@tiptap/core` type                  | Types the custom Tiptap node registered on the input.                           |
+| `renderInLightDom`               | `@carbon/ai-chat` helper             | Bridges the snippet web component into the page's light DOM.                    |
+| `renderUserDefinedInputNode`     | component prop                       | Renders the custom `codeSnippetBlock` node inside the sent user message bubble. |
+| `input.tiptap.extensions`        | config prop                          | Registers the host-authored `codeSnippetBlock` Tiptap node on the input.        |
+| `layout.showFrame`               | config prop                          | Hides the default frame so the chat fills the viewport.                         |
+| `openChatByDefault`              | config prop                          | Mounts straight into the conversation, no launcher.                             |
+| `messaging.customSendMessage`    | config prop                          | Mock backend; confirms whether the outgoing text contained a fenced block.      |
+| `Node.create`                    | `@tiptap/core` API                   | Authors the `codeSnippetBlock` block atom node.                                 |
+| `InputRule`                      | `@tiptap/core` API                   | Triggers the node swap when the user finishes typing three backticks.           |
+| `addKeyboardShortcuts` / keydown | `@tiptap/core` / DOM                 | Escape exits the block to a new paragraph below.                                |
+| `<cds-aichat-code-snippet>`      | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble.   |
+| `CodeSnippet`                    | `@carbon/ai-chat-components/react`   | React wrapper for the snippet, used in the sent message bubble.                 |
+| `Card`                           | `@carbon/ai-chat-components/react`   | React wrapper for the card that frames the editable snippet.                    |
+
+</details>
+
+### [Prompt line / Custom render](./prompt-line-custom-render/README.md)
+
+The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-custom-render`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                | Package / kind              | Role in this example                                                          |
+| ------------------------------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| `ChatCustomElement`                   | `@carbon/ai-chat` component | Mounts the chat UI inside the docked sidebar container.                       |
+| `PublicConfig`                        | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                        |
+| `ChatInstance`                        | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so the tile handler can drive the input.         |
+| `RenderUserDefinedInputNode`          | `@carbon/ai-chat` type      | Types the `renderUserDefinedInputNode` callback.                              |
+| `Extension`                           | `@carbon/ai-chat` type      | Types the custom Tiptap node registered on the input.                         |
+| `renderInLightDom`                    | `@carbon/ai-chat` helper    | Bridges the node view's `Tile` into the page's light DOM.                     |
+| `renderUserDefinedInputNode`          | component prop              | Renders the custom `tileChip` node inside the sent user message bubble.       |
+| `input.tiptap.extensions`             | config prop                 | Registers the host-authored `tileChip` Tiptap node on the input.              |
+| `instance.input.updateContent`        | instance method             | Clears the input and injects the clicked tile as a custom node.               |
+| `instance.input.updateStructuredData` | instance method             | Replaces the pending structured data with metadata describing the tile.       |
+| `onBeforeRender`                      | component prop              | Captures the `ChatInstance` used by the tile-click handler.                   |
+| `layout.showFrame`                    | config prop                 | Hides the default frame so the chat fills the sidebar.                        |
+| `openChatByDefault`                   | config prop                 | Mounts straight into the conversation, no launcher.                           |
+| `messaging.customSendMessage`         | config prop                 | Reads `request.input.structured_data` and echoes the submitted tile.          |
+| `Node.create`                         | `@tiptap/core` API          | Authors the custom `tileChip` inline atom node.                               |
+| `Tile` / `ClickableTile`              | `@carbon/react` component   | The Carbon tile rendered in the page grid, the input, and the message bubble. |
+
+</details>
+
+### [Prompt line / File upload](./prompt-line-file-upload/README.md)
+
+`ChatCustomElement` with file attachments enabled, using a mock `onFileUpload` handler that simulates a server upload and echoes back file metadata.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-file-upload`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                 | Package / kind              | Role in this example                                        |
+| -------------------------------------- | --------------------------- | ----------------------------------------------------------- |
+| `ChatCustomElement`                    | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
+| `PublicConfig`                         | `@carbon/ai-chat` type      | Types the config.                                           |
+| `ExternalFileReference`                | `@carbon/ai-chat` type      | Server-assigned file reference returned by the mock upload. |
+| `StructuredData`                       | `@carbon/ai-chat` type      | Wraps the file reference returned from `onFileUpload`.      |
+| `StructuredField`                      | `@carbon/ai-chat` type      | Typed entry inside `StructuredData.fields`.                 |
+| `MessageRequest`                       | `@carbon/ai-chat` type      | Inspected for `structured_data` to echo files.              |
+| `ChatInstance`                         | `@carbon/ai-chat` type      | Used by the mock server response helper.                    |
+| `MessageResponseTypes`                 | `@carbon/ai-chat` enum      | `TEXT` used to echo file metadata.                          |
+| `upload.is_on`                         | config prop                 | Enables attachments.                                        |
+| `upload.onFileUpload`                  | config prop                 | Mock upload handler returning `StructuredData`.             |
+| `upload.accept` (documented)           | config prop                 | Optional MIME/extension allowlist.                          |
+| `upload.maxFileSizeBytes` (documented) | config prop                 | Optional per-file size cap.                                 |
+| `upload.maxFiles` (documented)         | config prop                 | Optional per-message file count cap.                        |
+| `messaging.customSendMessage`          | config prop                 | Mock backend; forwards file messages to the echo helper.    |
+| `instance.messaging.addMessage`        | instance method             | Injects the echoed text response.                           |
+
+</details>
+
+### [Prompt line / Mentions & commands](./prompt-line-mentions-and-commands/README.md)
+
+`ChatCustomElement` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-mentions-and-commands`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                  | Package / kind              | Role in this example                                                     |
+| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `ChatCustomElement`                     | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                           |
+| `PublicConfig`                          | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                   |
+| `ChatInstance`                          | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.                               |
+| `input.mention`                         | config prop                 | Registers the `@`-mention trigger config on the input.                   |
+| `input.command`                         | config prop                 | Registers the `/`-command trigger config on the input.                   |
+| `mention.trigger` / `command.trigger`   | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
+| `mention.onRemove` / `command.onRemove` | config prop                 | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
+| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | instance method             | Adds and removes mention/command picks on the message's structured data. |
+| `layout.showFrame`                      | config prop                 | Hides the default frame so the chat fills the host.                      |
+| `openChatByDefault`                     | config prop                 | Mounts straight into the conversation, no launcher.                      |
+| `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
+
+</details>
+
+### [Prompt line / Mentions & commands (custom render)](./prompt-line-mentions-and-commands-custom-render/README.md)
+
+The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-mentions-and-commands-custom-render`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                  | Package / kind              | Role in this example                                                     |
+| --------------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `ChatCustomElement`                     | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                           |
+| `PublicConfig`                          | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                   |
+| `ChatInstance`                          | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so `onSelect` can update structured data.   |
+| `SuggestionItem`                        | `@carbon/ai-chat` type      | Shape of each entry; passed to `renderCustomToken`.                      |
+| `input.mention`                         | config prop                 | Registers the `@`-mention trigger config on the input.                   |
+| `input.command`                         | config prop                 | Registers the `/`-command trigger config on the input.                   |
+| `mention.renderCustomToken`             | config prop                 | Returns a React node rendered in place of the default mention chip.      |
+| `mention.trigger` / `command.trigger`   | config prop                 | Character (`@` or `/`) that opens the suggestion list.                   |
+| `command.triggerPosition`               | config prop                 | `"start"` constrains commands to the beginning of the line.              |
+| `mention.items` / `command.items`       | config prop                 | Async filter (or static list) narrowing items as the user types.         |
+| `mention.onSelect` / `command.onSelect` | config prop                 | Hook that runs when the user picks a suggestion.                         |
+| `mention.onRemove` / `command.onRemove` | config prop                 | Mirror of `onSelect`, fired when a user deletes a chip from the input.   |
+| `Tag`                                   | `@carbon/react` component   | Visual chip used inside the custom token renderer.                       |
+| `Tooltip`                               | `@carbon/react` component   | Hover affordance wrapping the custom mention chip.                       |
+| `onBeforeRender`                        | component prop              | Captures the `ChatInstance` ref used in `onSelect` / `onRemove`.         |
+| `instance.input.updateStructuredData`   | instance method             | Adds and removes mention/command picks on the message's structured data. |
+| `layout.showFrame`                      | config prop                 | Hides the default frame so the chat fills the host.                      |
+| `openChatByDefault`                     | config prop                 | Mounts straight into the conversation, no launcher.                      |
+| `messaging.customSendMessage`           | config prop                 | Reads `request.input.structured_data` and echoes the picks.              |
+
+</details>
+
+### [Prompt line / Typeahead](./prompt-line-typeahead/README.md)
+
+`ChatCustomElement` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-typeahead`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                        | Package / kind              | Role in this example                                   |
+| ----------------------------- | --------------------------- | ------------------------------------------------------ |
+| `ChatCustomElement`           | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.         |
+| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`. |
+| `SuggestionItem`              | `@carbon/ai-chat` type      | Shape of each entry returned from `items`.             |
+| `input.autocomplete`          | config prop                 | Registers the typeahead behavior on the input.         |
+| `autocomplete.items`          | config prop                 | Async filter that returns matching `SuggestionItem`s.  |
+| `autocomplete.debounceMs`     | config prop                 | Coalesces keystrokes before calling `items`.           |
+| `layout.showFrame`            | config prop                 | Hides the default frame so the chat fills the host.    |
+| `openChatByDefault`           | config prop                 | Mounts straight into the conversation, no launcher.    |
+| `messaging.customSendMessage` | config prop                 | Mock backend echoing the user's message.               |
+
+</details>
+
+### [Prompt line / Typeahead (custom list)](./prompt-line-typeahead-custom/README.md)
+
+`ChatCustomElement` with `input.autocomplete` whose dropdown is replaced by a fully custom React component supplied through `renderCustomList`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-typeahead-custom`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                          | Package / kind              | Role in this example                                                            |
+| ------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| `ChatCustomElement`             | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                                  |
+| `PublicConfig`                  | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                          |
+| `SuggestionItem`                | `@carbon/ai-chat` type      | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
+| `CustomListProps`               | `@carbon/ai-chat` type      | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
+| `input.autocomplete`            | config prop                 | Registers the typeahead behavior on the input.                                  |
+| `autocomplete.renderCustomList` | config prop                 | Returns a React node that replaces the default dropdown.                        |
+| `autocomplete.items`            | config prop                 | Async filter providing entries to the custom list.                              |
+| `autocomplete.debounceMs`       | config prop                 | Coalesces keystrokes before calling `items`.                                    |
+| `layout.showFrame`              | config prop                 | Hides the default frame so the chat fills the host.                             |
+| `openChatByDefault`             | config prop                 | Mounts straight into the conversation, no launcher.                             |
+| `messaging.customSendMessage`   | config prop                 | Mock backend echoing the user's message.                                        |
 
 </details>
 
@@ -863,6 +863,80 @@ React integration of `@carbon/ai-chat` demonstrating how to replace Carbon's bui
 | `instance.on`                 | instance method             | Attaches bus event handlers.                                     |
 | `$css--font-face`             | `@carbon/styles` SCSS var   | Set to `false` to suppress Plex `@font-face` generation.         |
 | `$font-families`              | `@carbon/styles` SCSS var   | Overrides the `sans`, `mono`, and `serif` font-family stacks.    |
+
+</details>
+
+### [Upsert message / Reasoning steps](./upsert-message-reasoning-steps/README.md)
+
+Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the default behavior) and a single long-form `reasoning.content` trace — picked from a dropdown on the welcome message, all delivered through `upsertMessage`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-reasoning-steps`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                             | Package / kind              | Role in this example                                               |
+| ---------------------------------- | --------------------------- | ------------------------------------------------------------------ |
+| `ChatCustomElement`                | `@carbon/ai-chat` component | Mounts the chat UI.                                                |
+| `PublicConfig`                     | `@carbon/ai-chat` type      | Config shape.                                                      |
+| `customSendMessage`                | `messaging` prop            | Dispatches to scenario runners.                                    |
+| `MessageResponseTypes.OPTION`      | `@carbon/ai-chat`           | Welcome-message scenario picker.                                   |
+| `OptionItemPreference.DROPDOWN`    | `@carbon/ai-chat` enum      | Renders scenario picker as a dropdown.                             |
+| `ReasoningStep`                    | `@carbon/ai-chat` type      | Individual reasoning step payload.                                 |
+| `MessageResponseOptions`           | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,content}`.            |
+| `MessageResponse`                  | `@carbon/ai-chat` type      | Full snapshot returned by each upsert updater.                     |
+| `MessageState`                     | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.              |
+| `instance.messaging.upsertMessage` | `ChatInstance` API          | Inserts + updates the welcome and the streamed reasoning in place. |
+| `CustomSendMessageOptions.signal`  | `@carbon/ai-chat`           | Abort signal for cancellation.                                     |
+
+</details>
+
+### [Upsert message / Reasoning steps (controlled)](./upsert-message-reasoning-steps-controlled/README.md)
+
+Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the parent reasoning panel stays collapsed via `reasoning.open_state: CLOSE`, every individual step is pre-expanded, and a custom "Thinking..." indicator driven by `instance.updateIsMessageLoadingCounter` replaces the default reasoning UI.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-reasoning-steps-controlled`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                     | Package / kind              | Role in this example                                       |
+| ------------------------------------------ | --------------------------- | ---------------------------------------------------------- |
+| `ChatCustomElement`                        | `@carbon/ai-chat` component | Mounts the chat UI.                                        |
+| `PublicConfig`                             | `@carbon/ai-chat` type      | Config shape.                                              |
+| `customSendMessage`                        | `messaging` prop            | Runs the controlled reasoning scenario.                    |
+| `ReasoningStep` / `ReasoningStepOpenState` | `@carbon/ai-chat` types     | Reasoning payloads + controlled open-state values.         |
+| `MessageResponseOptions`                   | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,open_state}`. |
+| `MessageResponse`                          | `@carbon/ai-chat` type      | Full snapshot returned by each upsert updater.             |
+| `MessageState`                             | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.      |
+| `instance.messaging.upsertMessage`         | `ChatInstance` API          | Inserts + updates the welcome and the reasoning in place.  |
+| `instance.updateIsMessageLoadingCounter`   | `ChatInstance` API          | Custom loading label that replaces the default UI.         |
+| `CustomSendMessageOptions.signal`          | `@carbon/ai-chat`           | Abort signal for cancellation.                             |
+
+</details>
+
+### [Upsert message / Reasoning with streaming generic items](./upsert-message-reasoning-with-streaming-generic-items/README.md)
+
+Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text` field is streamed token by token, followed by a `user_defined` summary card appended when the step finishes — all delivered through `upsertMessage`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-upsert-message-reasoning-with-streaming-generic-items`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol                                                            | Package / kind              | Role in this example                                                            |
+| ----------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| `ChatContainer`                                                   | `@carbon/ai-chat` component | Mounts the chat UI.                                                             |
+| `PublicConfig`                                                    | `@carbon/ai-chat` type      | Config shape.                                                                   |
+| `renderUserDefinedResponse`                                       | `ChatContainer` prop        | Renders the `user_defined` summary card inside each reasoning step.             |
+| `RenderUserDefinedState`                                          | `@carbon/ai-chat` type      | Callback argument shape.                                                        |
+| `ReasoningStep` with `content: GenericItem[]`                     | `@carbon/ai-chat` type      | Per-step array of inline response items.                                        |
+| `MessageResponseTypes.TEXT` / `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum      | Item kinds composed into the step's content array.                              |
+| `UserDefinedItem`                                                 | `@carbon/ai-chat` type      | The appended summary card payload.                                              |
+| `MessageResponseOptions` / `MessageResponse`                      | `@carbon/ai-chat` types     | Snapshot + `message_options` re-sent with updated `reasoning.steps` per upsert. |
+| `MessageState`                                                    | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.                           |
+| `instance.messaging.upsertMessage`                                | `ChatInstance` API          | Inserts + updates the welcome and the streamed steps in place.                  |
+| `CustomSendMessageOptions.signal`                                 | `@carbon/ai-chat`           | Abort signal for cancellation.                                                  |
 
 </details>
 

@@ -20,12 +20,16 @@ A {@link StructuredData | structured data} payload has two parts. `fields` is an
 ```typescript
 const data: StructuredData = {
   fields: [
-    { id: "rating", type: "number", value: 4 },
-    { id: "topics", type: "multi_select", value: ["billing", "shipping"] },
+    { id: "rating", value: 4 },
+    { id: "topics", value: ["billing", "shipping"] },
   ],
   user_defined: { source_widget: "checkout-page" },
 };
 ```
+
+Each field's `value` is carried as `unknown` — the chat never inspects it, so put whatever your backend needs there and narrow it yourself in {@link PublicConfigMessaging.customSendMessage}.
+
+`type` is optional, and only three values mean anything to the chat: `file` (see [File uploads](#file-uploads) below), and `mention` / `command` (produced by the {@link InputConfig.mention} and {@link InputConfig.command} input nodes). You may set `type` to any other string to tag a field for your own code, but the chat treats it as an opaque pass-through hint.
 
 ## Setting structured data from the host
 
@@ -35,7 +39,7 @@ Call {@link ChatInstanceInput.updateStructuredData | updateStructuredData} with 
 // Add a field, preserving anything already pending.
 instance.input.updateStructuredData((prev) => ({
   ...prev,
-  fields: [...(prev?.fields ?? []), { id: "rating", type: "number", value: 4 }],
+  fields: [...(prev?.fields ?? []), { id: "rating", value: 4 }],
 }));
 ```
 
@@ -108,4 +112,4 @@ A `file` field's value is a {@link FileFieldValue | file value}, one of two type
 
 - [Message format](./MessageFormat.md) — the request and response shapes, including `input.structured_data`.
 - [Server communication](./CustomServer.md) — wire the chat to your server.
-- File upload examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/file-upload) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/file-upload).
+- File upload examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/prompt-line-file-upload) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/prompt-line-file-upload).

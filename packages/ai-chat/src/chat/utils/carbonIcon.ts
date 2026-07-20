@@ -75,7 +75,9 @@ export function carbonIconToReact(
         width: icon.attrs.width || 16,
         height: icon.attrs.height || 16,
         fill: icon.attrs.fill || "currentColor",
+        focusable: "false",
         tabIndex: -1,
+        style: { pointerEvents: "none" },
         ...transformedProps,
       },
       icon.content.map((child, i) =>

@@ -18,7 +18,7 @@ import {
  * Mock `InputConfig.mention` / `InputConfig.command` fixtures and callbacks
  * for the demo.
  *
- * Mirrors `examples/*\/input-mentions-and-commands`: the `onSelect`/`onRemove`
+ * Mirrors `examples/*\/prompt-line-mentions-and-commands`: the `onSelect`/`onRemove`
  * pair keeps the message's structured-data sidecar in sync with the editor
  * via `instance.input.updateStructuredData`, and `doMentionCommandResponse`
  * echoes any `mention`/`command` fields back as a text message.

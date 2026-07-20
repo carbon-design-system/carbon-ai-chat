@@ -8,6 +8,10 @@ We mirror the voice of [carbondesignsystem.com](https://carbondesignsystem.com/g
 
 Write the fewest words that convey the idea. Every word a reader skips is a word you should have cut. Your primary audience is mid-level front-end developers. If you can explain a concept with code instead of prose, prefer code.
 
+Write so a developer gets it on the first read. Aim for a Flesch-Kincaid grade between 8 and 11 — plain enough that no one slows down or re-reads, but not so clipped it reads like a checklist. The levers are sentence length and word choice, both covered in Word economy below. Keep most sentences short and one-idea, but let a sentence run when the idea needs it. Prose that scores below 8 is usually chopped into fragments that read worse, not better. One habit matters most for API docs. Refer to a symbol with a `{@link}`, then use plain words for it. The scorer strips `{@link}` links, so each reference is free. Carry the meaning in the plain words around it. A dotted name like `InputConfig.updateStructuredData` written as plain text or inline code still counts as one long word. Repeat it and you push the page toward a graduate reading level.
+
+Measure any doc with `npm run reading-level -- <file>`. It reports the Flesch-Kincaid grade. Keep docs between grade 8 and 11.
+
 ## Voice — constant
 
 Voice is who we are; it never changes. Carbon's voice:

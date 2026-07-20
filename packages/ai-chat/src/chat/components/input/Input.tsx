@@ -505,6 +505,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       rawInputValueRef.current = text;
       sendCurrentValue();
     },
+    onSendItem: (text) => {
+      onSendInput(text);
+    },
   });
 
   useInputImperativeHandle({

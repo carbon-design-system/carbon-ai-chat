@@ -106,7 +106,7 @@ The chat history also includes specialized panel components for organizing and d
     </tr>
     <tr>
       <td><code>{'<cds-aichat-history-panel-item>'}</code></td>
-      <td>Individual chat conversation item with title, selection state, and actions menu.</td>
+      <td>Individual chat conversation item with title, selection state, and actions menu. Supports inline rename with optional validation via <code>rename-invalid</code> and <code>rename-invalid-message</code>.</td>
     </tr>
     <tr>
       <td><code>{'<cds-aichat-history-search-item>'}</code></td>
@@ -224,7 +224,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 <script>
   // Listen for history item actions
-  document.addEventListener('history-item-action', (event) => {
+  document.addEventListener('history-item-menu-action', (event) => {
     console.log('Action:', event.detail.action);
     console.log('Item ID:', event.detail.itemId);
     console.log('Item Name:', event.detail.itemName);
@@ -294,7 +294,7 @@ The chat history components emit several custom events that you can listen for t
       </td>
     </tr>
     <tr>
-      <td><code>history-item-action</code></td>
+      <td><code>history-item-menu-action</code></td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
         • <code>action</code> (string) - The text of the action clicked<br/>
@@ -302,6 +302,27 @@ The chat history components emit several custom events that you can listen for t
         • <code>itemName</code> (string) - The name of the history item<br/>
         • <code>element</code> (HTMLElement) - Reference to the element
       </td>
+    </tr>
+    <tr>
+      <td><code>history-panel-item-input-change</code></td>
+      <td>Bubbles up from the inner input on every keystroke while rename mode is active. Use this to validate the value and set <code>rename-invalid</code> / <code>rename-invalid-message</code> on the item.</td>
+      <td>
+        • <code>value</code> (string) - The current input value<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td><code>history-panel-item-input-save</code></td>
+      <td>Bubbles up from the inner input when the user saves the rename. The save button and Enter key are disabled while the input is invalid.</td>
+      <td>
+        • <code>newName</code> (string) - The new name entered<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td><code>history-panel-item-input-cancel</code></td>
+      <td>Bubbles up from the inner input when the user cancels renaming (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>None</td>
     </tr>
   </tbody>
 </table>
@@ -312,12 +333,11 @@ The chat history components emit several custom events that you can listen for t
 document.addEventListener('history-item-selected', (event) => {
   const { itemId, itemName } = event.detail;
   console.log(`Selected chat: ${itemName} (ID: ${itemId})`);
-  // Load the selected conversation
   loadConversation(itemId);
 });
 
 // Listen for item actions
-document.addEventListener('history-item-action', (event) => {
+document.addEventListener('history-item-menu-action', (event) => {
   const { action, itemId, itemName, element } = event.detail;
 
   switch(action) {
@@ -331,6 +351,23 @@ document.addEventListener('history-item-action', (event) => {
       console.log(`Pinning chat: ${itemName}`);
       break;
   }
+});
+
+// Validate the rename input on each keystroke
+document.addEventListener('history-panel-item-input-change', (event) => {
+  const { value, itemId } = event.detail;
+  const item = document.querySelector(`cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`);
+  if (!item) return;
+
+  const invalid = value.length > 75;
+  item.setAttribute('rename-invalid', invalid ? '' : null);
+  item.setAttribute('rename-invalid-message', invalid ? 'Title cannot exceed 75 characters.' : '');
+});
+
+// Persist the new name on save
+document.addEventListener('history-panel-item-input-save', (event) => {
+  const { newName, itemId } = event.detail;
+  updateChatName(itemId, newName);
 });
 ```
 
@@ -347,7 +384,7 @@ import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/
 import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
 
 // Listen for pin action
-document.addEventListener('history-item-action', (event) => {
+document.addEventListener('history-item-menu-action', (event) => {
   const { action, itemId } = event.detail;
 
   if (action === 'Pin') {
@@ -481,8 +518,16 @@ document.addEventListener('cds-search-input', (event) => {
   </thead>
   <tbody>
     <tr>
+      <td><code>history-panel-item-input-change</code></td>
+      <td>Fired on every keystroke. Use this to validate the value and reflect the result back via the <code>rename-invalid</code> and <code>rename-invalid-message</code> attributes on the parent <code>{'<cds-aichat-history-panel-item>'}</code>.</td>
+      <td>
+        • <code>value</code> (string) - The current input value<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
       <td><code>history-panel-item-input-save</code></td>
-      <td>Fired when the user saves a renamed history item.</td>
+      <td>Fired when the user saves a renamed history item. The save button and Enter key are disabled while the input is invalid.</td>
       <td>
         • <code>newName</code> (string) - The new name entered<br/>
         • <code>itemId</code> (string) - The ID of the item being renamed
@@ -490,7 +535,7 @@ document.addEventListener('cds-search-input', (event) => {
     </tr>
     <tr>
       <td><code>history-panel-item-input-cancel</code></td>
-      <td>Fired when the user cancels renaming a history item.</td>
+      <td>Fired when the user cancels renaming a history item (cancel button, Escape key, or focus-out with no valid change).</td>
       <td>None</td>
     </tr>
   </tbody>
@@ -498,15 +543,24 @@ document.addEventListener('cds-search-input', (event) => {
 
 **Example:**
 ```javascript
-// Listen for save
+// Validate on each keystroke and reflect state back to the item
+document.addEventListener('history-panel-item-input-change', (event) => {
+  const { value, itemId } = event.detail;
+  const item = document.querySelector(`cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`);
+  if (!item) return;
+
+  const invalid = value.length > 75;
+  item.renameInvalid = invalid;
+  item.renameInvalidMessage = invalid ? 'Title cannot exceed 75 characters.' : '';
+});
+
+// Persist the new name on save
 document.addEventListener('history-panel-item-input-save', (event) => {
   const { newName, itemId } = event.detail;
-  console.log(`Item ${itemId} renamed to: ${newName}`);
-  // Update the item name in your data store
   updateChatName(itemId, newName);
 });
 
-// Listen for cancel
+// Nothing to do on cancel — the item resets its own rename state
 document.addEventListener('history-panel-item-input-cancel', () => {
   console.log('Rename cancelled');
 });

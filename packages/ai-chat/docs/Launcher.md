@@ -4,13 +4,13 @@ title: Launcher
 
 ## Overview
 
-The launcher is the corner button that welcomes users and opens the chat. Configure it through {@link PublicConfig.launcher}, supply your own button, or skip it entirely.
+The launcher is the corner button that welcomes users and opens the chat. Configure it through the {@link PublicConfig.launcher | launcher config}, supply your own button in its place, or leave it out of the layout entirely.
 
-A launcher is optional. Turn it off with `launcher.isOn: false` and open the chat directly with {@link PublicConfig.openChatByDefault} — the common setup for a custom-element or embedded layout that has no launcher at all.
+The launcher is optional. Turn it off with `launcher.isOn: false` and open the chat directly with {@link PublicConfig.openChatByDefault | openChatByDefault} — the common setup for embedded layouts with no launcher.
 
 ## Configure the launcher
 
-Pass a {@link LauncherConfig} on {@link PublicConfig.launcher}. Toggle the launcher with {@link LauncherConfig.isOn}, force the unread dot with {@link LauncherConfig.showUnreadIndicator}, and override the launcher icon per device with {@link LauncherConfig.desktop} / {@link LauncherConfig.mobile} (see {@link LauncherCallToActionConfig.avatarUrlOverride}).
+Pass a {@link LauncherConfig | launcher config} on the {@link PublicConfig.launcher | launcher} property. From there you can toggle the launcher's visibility with {@link LauncherConfig.isOn | isOn}, force the unread dot to appear with {@link LauncherConfig.showUnreadIndicator | showUnreadIndicator}, and override the launcher icon separately for each device through {@link LauncherConfig.desktop | desktop} and {@link LauncherConfig.mobile | mobile}.
 
 ```ts
 import type { PublicConfig } from "@carbon/ai-chat";
@@ -25,13 +25,13 @@ const config: PublicConfig = {
 
 ## Provide your own launcher
 
-To render your own launcher instead of the built-in one, import the launcher stylesheet and apply the float classes yourself, driving open and close from the chat's view-change methods:
+To render your own launcher in place of the built-in one, import the launcher stylesheet, apply the float classes yourself, and drive the open and close transitions from the chat's view-change methods:
 
 ```css
 @import "@carbon/ai-chat/css/chat-launcher-layout.css";
 ```
 
-Use the {@link ChatCustomElementProps.onViewChange} and {@link ChatCustomElementProps.onViewPreChange} methods to react to the chat opening and closing — prefer these over the {@link BusEventType.VIEW_CHANGE} and {@link BusEventType.VIEW_PRE_CHANGE} bus events. For the full pattern, see [Floating layout](./Layout.md#floating-layout) and the custom-element-as-float examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-element-as-float) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float).
+React to the chat opening and closing with the {@link ChatCustomElementProps.onViewChange | onViewChange} and {@link ChatCustomElementProps.onViewPreChange | onViewPreChange} methods, and prefer them over the matching {@link BusEventType.VIEW_CHANGE | VIEW_CHANGE} and {@link BusEventType.VIEW_PRE_CHANGE | VIEW_PRE_CHANGE} bus events. For the full pattern, see [Floating layout](./Layout.md#floating-layout) and the custom-element-as-float examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-element-as-float) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float).
 
 ## Launcher layout tokens
 
@@ -44,7 +44,7 @@ Use the {@link ChatCustomElementProps.onViewChange} and {@link ChatCustomElement
 
 ## Launcher color tokens
 
-Defaults are Carbon theme tokens and vary by theme.
+The defaults are Carbon theme tokens, so they vary from one theme to another.
 
 | Token                                                            | Default                  | Description                   |
 | ---------------------------------------------------------------- | ------------------------ | ----------------------------- |

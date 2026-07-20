@@ -178,7 +178,7 @@ The chat history React components emit several custom events that you can listen
     </tr>
     <tr>
       <td><code>onMenuAction</code></td>
-      <td><code>history-item-action</code></td>
+      <td><code>history-item-menu-action</code></td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
         • <code>action</code> (string) - The text of the action clicked<br/>
@@ -187,12 +187,38 @@ The chat history React components emit several custom events that you can listen
         • <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
+    <tr>
+      <td><code>onRenameChange</code></td>
+      <td><code>history-panel-item-input-change</code></td>
+      <td>Bubbles up from the inner input on every keystroke while rename mode is active. Use this to validate the value and pass the result back via <code>renameInvalid</code> and <code>renameInvalidMessage</code> props.</td>
+      <td>
+        • <code>value</code> (string) - The current input value<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td><code>onRenameSave</code></td>
+      <td><code>history-panel-item-input-save</code></td>
+      <td>Bubbles up from the inner input when the user saves the rename. The save button and Enter key are disabled while the input is invalid.</td>
+      <td>
+        • <code>newName</code> (string) - The new name entered<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td><code>onRenameCancel</code></td>
+      <td><code>history-panel-item-input-cancel</code></td>
+      <td>Bubbles up from the inner input when the user cancels renaming (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>None</td>
+    </tr>
   </tbody>
 </table>
 
 **Example:**
 ```jsx
 function ChatHistory() {
+  const [items, setItems] = useState(chatItems);
+
   const handleItemSelected = (event) => {
     const { itemId, itemName } = event.detail;
     console.log(`Selected chat: ${itemName} (ID: ${itemId})`);
@@ -218,13 +244,41 @@ function ChatHistory() {
     }
   };
 
+  const handleRenameChange = (event) => {
+    const { value, itemId } = event.detail;
+    const invalid = value.length > 75;
+    setItems(prev => prev.map(item =>
+      item.id === itemId
+        ? { ...item, renameInvalid: invalid, renameInvalidMessage: invalid ? 'Title cannot exceed 75 characters.' : '' }
+        : item
+    ));
+  };
+
+  const handleRenameSave = (event) => {
+    const { newName, itemId } = event.detail;
+    setItems(prev => prev.map(item =>
+      item.id === itemId ? { ...item, name: newName } : item
+    ));
+  };
+
   return (
-    <HistoryPanelItem
-      id="chat-1"
-      name="My conversation"
-      onSelected={handleItemSelected}
-      onMenuAction={handleItemAction}
-    />
+    <HistoryPanelItems>
+      {items.map(item => (
+        <HistoryPanelItem
+          key={item.id}
+          id={item.id}
+          name={item.name}
+          rename={item.rename}
+          renameInvalid={item.renameInvalid}
+          renameInvalidMessage={item.renameInvalidMessage ?? ''}
+          actions={historyItemActions}
+          onSelected={handleItemSelected}
+          onMenuAction={handleItemAction}
+          onRenameChange={handleRenameChange}
+          onRenameSave={handleRenameSave}
+        />
+      ))}
+    </HistoryPanelItems>
   );
 }
 ```
@@ -430,9 +484,18 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
+      <td><code>onChange</code></td>
+      <td><code>history-panel-item-input-change</code></td>
+      <td>Fired on every keystroke. Use this to validate the value and reflect the result back via <code>invalid</code> and <code>invalidMessage</code> props.</td>
+      <td>
+        • <code>value</code> (string) - The current input value<br/>
+        • <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
       <td><code>onSave</code></td>
       <td><code>history-panel-item-input-save</code></td>
-      <td>Fired when the user saves a renamed history item.</td>
+      <td>Fired when the user saves a renamed history item. The save button and Enter key are disabled while the input is invalid.</td>
       <td>
         • <code>newName</code> (string) - The new name entered<br/>
         • <code>itemId</code> (string) - The ID of the item being renamed
@@ -441,47 +504,46 @@ function ChatHistory() {
     <tr>
       <td><code>onCancel</code></td>
       <td><code>history-panel-item-input-cancel</code></td>
-      <td>Fired when the user cancels renaming a history item.</td>
+      <td>Fired when the user cancels renaming a history item (cancel button, Escape key, or focus-out with no valid change).</td>
       <td>None</td>
-    </tr>
-    <tr>
-      <td><code>onRenameCancel</code></td>
-      <td><code>history-panel-item-input-cancel</code></td>
-      <td>Fired when the user cancels renaming a history item.</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <td><code>onRenameSave</code></td>
-      <td><code>history-panel-item-input-save</code></td>
-      <td>Fired when the user saves a renamed history item.</td>
-      <td>
-        • <code>newName</code> (string) - The new name entered<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
-      </td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
 ```jsx
-function ChatHistory() {
-  const handleInputSave = (event) => {
+function RenameInput() {
+  const [invalid, setInvalid] = useState(false);
+  const [invalidMessage, setInvalidMessage] = useState('');
+
+  const handleChange = (event) => {
+    const { value } = event.detail;
+    const isInvalid = value.length > 75;
+    setInvalid(isInvalid);
+    setInvalidMessage(isInvalid ? 'Title cannot exceed 75 characters.' : '');
+  };
+
+  const handleSave = (event) => {
     const { newName, itemId } = event.detail;
     console.log(`Item ${itemId} renamed to: ${newName}`);
     // Update the item name in your data store
     updateChatName(itemId, newName);
   };
 
-  const handleInputCancel = () => {
+  const handleCancel = () => {
     console.log('Rename cancelled');
+    // Nothing to do — the parent item resets its own rename state
   };
 
   return (
     <HistoryPanelItemInput
       value="Current title"
       itemId="chat-1"
-      onSave={handleInputSave}
-      onCancel={handleInputCancel}
+      invalid={invalid}
+      invalidMessage={invalidMessage}
+      onChange={handleChange}
+      onSave={handleSave}
+      onCancel={handleCancel}
     />
   );
 }

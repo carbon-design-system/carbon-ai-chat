@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -35,6 +35,32 @@ class CDSAIChatReasoningSteps extends LitElement {
     super.connectedCallback();
   }
 
+  /**
+   * Announce a collapse synchronously, from `attributeChangedCallback`, so consumers can react
+   * within the same task — before the browser lays out and paints the smaller container.
+   *
+   * This cannot be done from Lit's `willUpdate`/`updated`: the host sets the `open` attribute
+   * directly, so the CSS collapse applies the moment the attribute lands, whereas Lit's update
+   * is async (microtask). By then the element already measures 0 and any consumer reacting to
+   * the shrink is a frame late — which is exactly what produces a visible one-frame jump.
+   */
+  attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null,
+  ) {
+    if (name === "open" && old !== null && value === null) {
+      this.dispatchEvent(
+        new CustomEvent("reasoning-animation-start", {
+          bubbles: true,
+          composed: true,
+          detail: { open: false },
+        }),
+      );
+    }
+    super.attributeChangedCallback(name, old, value);
+  }
+
   updated(changedProperties: Map<PropertyKey, unknown>) {
     if (changedProperties.has("controlled")) {
       this.propagateControlled();
@@ -42,6 +68,10 @@ class CDSAIChatReasoningSteps extends LitElement {
 
     if (changedProperties.has("open")) {
       this.propagateOpen();
+      // Skip the initial render (no previous value) — only announce real toggles.
+      if (changedProperties.get("open") !== undefined) {
+        this.emitAnimationEndWhenSettled();
+      }
     }
 
     this.markLastVisibleStep();
@@ -88,6 +118,49 @@ class CDSAIChatReasoningSteps extends LitElement {
     if (lastVisible) {
       lastVisible.setAttribute("data-last-item", "");
     }
+  }
+
+  /**
+   * The wrapper animates `grid-template-rows` when the container expands/collapses.
+   * We wait for any in-flight transition on the wrapper to finish, then emit a composed
+   * event so consumers (e.g. the message list's scroll manager) can recalculate scroll
+   * geometry against the settled layout.
+   *
+   * Using the Web Animations API (`getAnimations`) handles both cases with one path: when
+   * a transition runs we resolve on its `finished` promise, and when nothing animates
+   * (reduced motion, or an auto-collapse that snaps without a transition) there are no
+   * animations so we emit immediately. The rAF lets the just-changed style flush so a
+   * pending transition is registered before we read it.
+   */
+  private emitAnimationEndWhenSettled() {
+    requestAnimationFrame(() => {
+      const wrapper = this.shadowRoot?.querySelector<HTMLElement>(
+        `.${baseClass}__wrapper`,
+      );
+      const emit = () =>
+        this.dispatchEvent(
+          new CustomEvent("reasoning-animation-end", {
+            bubbles: true,
+            composed: true,
+            detail: { open: this.open },
+          }),
+        );
+      // Only the `grid-template-rows` transition changes block size; awaiting the
+      // wrapper's opacity/padding transitions too can delay the emit well past the
+      // height settling. If it is not animating, the height is already final.
+      const animations = (wrapper?.getAnimations?.() ?? []).filter(
+        (animation): animation is CSSTransition =>
+          animation instanceof CSSTransition &&
+          animation.transitionProperty === "grid-template-rows",
+      );
+      if (!animations.length) {
+        emit();
+        return;
+      }
+      Promise.allSettled(
+        animations.map((animation) => animation.finished),
+      ).then(emit);
+    });
   }
 
   render() {

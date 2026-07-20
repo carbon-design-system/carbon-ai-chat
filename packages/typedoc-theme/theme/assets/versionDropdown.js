@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,8 +12,8 @@
   function getCurrentVersionInfo() {
     const path = window.location.pathname;
 
-    // Check if we're on a tag (latest/next)
-    const tagMatch = path.match(/\/tag\/(latest|next)\//);
+    // Check if we're on a tag (latest/next/alpha)
+    const tagMatch = path.match(/\/tag\/(latest|next|alpha)\//);
     if (tagMatch) {
       return { type: "tag", value: tagMatch[1] };
     }
@@ -117,6 +117,17 @@
         href: `https://chat.carbondesignsystem.com${getVersionPath({ type: "tag", value: "next" })}`,
         selected: currentInfo.type === "tag" && currentInfo.value === "next",
       });
+
+      // Add an "Alpha" option only when viewing an alpha site, so alpha stays
+      // unlisted on the stable latest/next docs.
+      if (currentInfo.type === "tag" && currentInfo.value === "alpha") {
+        options.push({
+          label: "Alpha",
+          value: "tag:alpha",
+          href: `https://chat.carbondesignsystem.com${getVersionPath({ type: "tag", value: "alpha" })}`,
+          selected: true,
+        });
+      }
 
       // Add all version options from the array
       // If current version is "latest" tag, select the first version in the array

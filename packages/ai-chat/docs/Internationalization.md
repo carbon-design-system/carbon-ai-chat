@@ -8,9 +8,9 @@ Translate the chat's built-in text, format dates and times for a region, and ren
 
 ## Languages
 
-Most content that displays in Carbon AI Chat originates from an assistant and displays in the language it was written in. However, some text is hard-coded — for example, the "Type something..." placeholder in the input field or "Choose a date" on the date picker. These display in English by default, but you can change them.
+Most content in Carbon AI Chat originates from an assistant, so it displays in whatever language the assistant wrote it in. Some text is hard-coded, however, such as the "Type something..." placeholder in the input field or "Choose a date" on the date picker; these strings display in English by default, but you can change them.
 
-To change any text string, pass a {@link PublicConfig.strings} prop to the React or web component. Provide a partial language pack object; it merges with the defaults. The available string keys come from the {@link LanguagePack} type.
+To change any text string, pass a {@link PublicConfig.strings | strings} prop to the React or web component, providing a partial language pack object that merges with the defaults. The {@link LanguagePack} type lists the available string keys.
 
 Language packs use the [ICU Message Format](http://userguide.icu-project.org/formatparse/messages).
 
@@ -29,15 +29,15 @@ Example (Lit web component):
 
 ## Locales
 
-Carbon AI Chat also supports locales with a more specific region code (e.g. `en-gb`). The region goes beyond the language and controls things like date and time formatting. For example, UK English dates use the `dd/mm/yyyy` format, while US English dates use `mm/dd/yyyy`.
+Carbon AI Chat also supports locales that carry a more specific region code, such as `en-gb`. The region code does more than set the language; it also controls formatting such as dates and times. UK English dates use the `dd/mm/yyyy` format, for instance, while US English dates use `mm/dd/yyyy`.
 
 Carbon AI Chat supports the locales the [dayjs library](https://github.com/iamkun/dayjs/tree/dev/src/locale) provides.
 
-Switch the locale by updating {@link PublicConfig.locale} with the appropriate region code.
+To switch the locale, set {@link PublicConfig.locale | locale} to the appropriate region code.
 
 ## Bi-directional support
 
-Some languages are read from left to right (`ltr`), and others from right to left (`rtl`). The Carbon AI Chat renders text in the same direction as the page based on the `dir` attribute on the `<html>` tag.
+Some languages read from left to right (`ltr`) while others read from right to left (`rtl`), and Carbon AI Chat renders text in the same direction as the page by following the `dir` attribute on the `<html>` tag.
 
 ## Related
 

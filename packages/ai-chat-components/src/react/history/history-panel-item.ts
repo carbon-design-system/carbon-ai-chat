@@ -22,6 +22,7 @@ const HistoryPanelItem = withWebComponentBridge(
       onSelected: "history-item-selected",
       onRenameCancel: "history-panel-item-input-cancel",
       onRenameSave: "history-panel-item-input-save",
+      onRenameChange: "history-panel-item-input-change",
     },
   }),
 );
