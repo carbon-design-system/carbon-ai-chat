@@ -4,7 +4,7 @@ title: Home screen
 
 ## Overview
 
-The home screen is an optional landing view that appears before the first message, and while many use it to offer sample prompts, it is also room to introduce your assistant. Configure the home screen through {@link PublicConfig.homescreen | homescreen} with a {@link HomeScreenConfig | home screen config} object, and enable it by setting {@link HomeScreenConfig.isOn | isOn}.
+The home screen is an optional landing view that appears before the first message, and while many use it to offer sample prompts, it is also room to introduce your assistant. Configure the home screen through {@link PublicConfig.homescreen | homescreen} with a {@link HomeScreenConfig | home screen config} object. Enable it by setting {@link HomeScreenConfig.isOn | isOn}.
 
 ```ts
 import type { PublicConfig } from "@carbon/ai-chat";
