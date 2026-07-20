@@ -1,3 +1,12 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
 /* eslint-disable */
 import React from "react";
 
@@ -192,9 +201,7 @@ const FeedbackButtonsWithDetailsDemo = ({
     const categories = isPositive
       ? reactPositiveCategories
       : reactNegativeCategories;
-    const placeholder = isPositive
-      ? "What worked well?"
-      : "How could this be improved?";
+    const placeholder = "Add a comment";
 
     return (
       <Feedback
@@ -204,14 +211,12 @@ const FeedbackButtonsWithDetailsDemo = ({
         isOpen={isPositive ? state.isPositiveOpen : state.isNegativeOpen}
         isReadonly={state.isSubmitted}
         categories={categories}
+        showBody
         showTextArea
         showPrompt
-        title={isPositive ? "Tell us what worked" : "Tell us what went wrong"}
-        prompt={
-          isPositive
-            ? "Share what made this response helpful."
-            : "Share what missed the mark so we can improve."
-        }
+        title="Additional feedback"
+        body="Why did you choose this rating?"
+        prompt="Add a comment"
         placeholder={placeholder}
         cancelLabel="Close"
         submitLabel="Submit"
@@ -267,8 +272,8 @@ export const Default = {
     isNegativeSelected: false,
     isPositiveDisabled: false,
     isNegativeDisabled: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
+    positiveLabel: "I like this response",
+    negativeLabel: "I dislike this response",
   },
   render: (args) =>
     renderButtons(args, {
@@ -286,8 +291,8 @@ export const Default = {
 
 export const WithDetailsPanel = {
   args: {
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
+    positiveLabel: "I like this response",
+    negativeLabel: "I dislike this response",
     panelID: "feedback-panel-example",
     hasPositiveDetails: true,
     hasNegativeDetails: true,
