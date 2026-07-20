@@ -25,7 +25,7 @@ The inject-your-own-content areas render through your framework using the {@link
 Pick the area you want to customize:
 
 - [Theming](./Theming.md) — inherit or inject a Carbon theme and override colors.
-- [Layout](./Layout.md) — layout modes, sizing and placement tokens, the floating layout, and corner rounding.
+- [Layout](./Layout.md) — layout modes, sizing and placement CSS custom properties, the floating layout, and corner rounding.
 - [Launcher](./Launcher.md) — configure or replace the launcher and style its tokens.
 - [Header](./Header.md) — title, buttons, menus, and the AI label in the header bar.
 - [Home screen](./Homescreen.md) — the optional landing view with greeting and starter prompts.
