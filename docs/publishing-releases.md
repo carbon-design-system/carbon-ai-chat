@@ -320,6 +320,7 @@ To publish an alpha:
 - [ ] **Select the feature branch** you want to publish from (e.g. `feat/prompt-line`) — the alpha is built from whatever branch you select.
 - [ ] Leave `dry run` checked for the first run. The workflow computes the alpha versions and builds everything, but publishes nothing. Check the log to confirm the planned versions (e.g. `@carbon/ai-chat -> 1.18.0-alpha.0` and `@carbon/ai-chat-components -> 1.8.0-alpha.0`).
 - [ ] Leave `bump` as `minor` unless the alpha previews a patch release, in which case select `patch`.
+- [ ] If the branch will not land in the next release — say the alpha runs while `1.18.0` is already in flight but the feature ships in `1.19.0` — set the base explicitly instead of relying on `bump`. The two packages version independently, so fill in **both** `ai-chat-base` (e.g. `1.19.0`) and `components-base` (e.g. `1.9.0`): filling in only one fails the run, so that an alpha never pairs one package's release with another's. A base that is not ahead of the package's current version also fails.
 - [ ] If the versions look right, run the workflow again with `dry run` unchecked to publish to npm and the CDN.
 - [ ] Confirm the publish:
   - [ ] `npm view @carbon/ai-chat dist-tags` and `npm view @carbon/ai-chat-components dist-tags` show the new `alpha` version, and `latest` / `next` are unchanged.

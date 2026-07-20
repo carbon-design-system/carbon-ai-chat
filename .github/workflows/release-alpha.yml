@@ -27,12 +27,20 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: "Base bump off the current stable version (the alpha previews the next minor or patch)."
+        description: "Base bump off the current stable version (the alpha previews the next minor or patch). Ignored for a package with an explicit base below."
         type: choice
         options:
           - minor
           - patch
         default: minor
+      ai-chat-base:
+        description: "Exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Leave both base inputs blank to derive from `bump`; setting one requires the other."
+        type: string
+        default: ""
+      components-base:
+        description: "Exact base version for @carbon/ai-chat-components, e.g. 1.9.0. The two packages version independently, so this must be set whenever `ai-chat-base` is."
+        type: string
+        default: ""
       dry-run:
         description: "Dry run? Computes versions and builds everything, but publishes nothing to npm or the CDN."
         type: boolean
@@ -69,6 +77,8 @@ jobs:
       - name: Compute alpha versions
         env:
           BUMP: ${{ inputs.bump }}
+          AI_CHAT_BASE: ${{ inputs.ai-chat-base }}
+          COMPONENTS_BASE: ${{ inputs.components-base }}
         run: node scripts/compute-alpha-versions.js
 
       # Apply the versions in the runner checkout only (no commit, no tag). Pin
