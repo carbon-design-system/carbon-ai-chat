@@ -31,6 +31,8 @@ export interface resultItem {
   isPinned: boolean;
   selected?: boolean;
   rename?: boolean;
+  renameInvalid?: boolean;
+  renameInvalidMessage?: string;
   messages?: any[];
 }
 

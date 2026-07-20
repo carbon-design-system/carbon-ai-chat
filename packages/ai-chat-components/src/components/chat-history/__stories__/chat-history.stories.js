@@ -114,6 +114,10 @@ class ChatHistoryDemo extends LitElement {
     this.addEventListener("history-delete-confirm", this._handleDeleteConfirm);
     this.addEventListener("history-item-selected", this._handleSelectChat);
     this.addEventListener(
+      "history-panel-item-input-change",
+      this._handleRenameChange,
+    );
+    this.addEventListener(
       "history-panel-item-input-save",
       this._handleRenameSave,
     );
@@ -274,6 +278,41 @@ class ChatHistoryDemo extends LitElement {
     this.requestUpdate();
   };
 
+  _handleRenameChange = (event) => {
+    const { itemId, value } = event.detail;
+
+    if (itemId) {
+      const invalid = value.length > 75;
+
+      this.pinnedItems = this.pinnedItems.map((chat) =>
+        chat.id === itemId
+          ? {
+              ...chat,
+              renameInvalid: invalid,
+              renameInvalidMessage: invalid
+                ? "Title cannot exceed 75 characters."
+                : "",
+            }
+          : chat,
+      );
+
+      this.regularItems = this.regularItems.map((section) => ({
+        ...section,
+        chats: section.chats.map((chat) =>
+          chat.id === itemId
+            ? {
+                ...chat,
+                renameInvalid: invalid,
+                renameInvalidMessage: invalid
+                  ? "Title cannot exceed 75 characters."
+                  : "",
+              }
+            : chat,
+        ),
+      }));
+    }
+  };
+
   _handleRenameSave = (event) => {
     const itemId = event.detail.itemId;
 
@@ -421,6 +460,10 @@ class ChatHistoryDemo extends LitElement {
                                       name="${item.name}"
                                       ?selected=${item.selected}
                                       ?rename=${item.rename}
+                                      ?rename-invalid=${item.renameInvalid}
+                                      rename-invalid-message=${
+                                        item.renameInvalidMessage ?? ""
+                                      }
                                       overflow-menu-label="${
                                         this.overflowMenuLabel
                                       }"
@@ -447,6 +490,10 @@ class ChatHistoryDemo extends LitElement {
                                     id="${chat.id}"
                                     name="${chat.name}"
                                     ?selected=${chat.selected}
+                                    ?rename-invalid=${item.renameInvalid}
+                                    rename-invalid-message=${
+                                      item.renameInvalidMessage ?? ""
+                                    }
                                     overflow-menu-label="${
                                       this.overflowMenuLabel
                                     }"

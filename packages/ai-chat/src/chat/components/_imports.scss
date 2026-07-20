@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "responseTypes/imports" as responseTypes;
 @use "header/imports" as header;
 @use "panels/imports" as panels;
 @use "modals/imports" as modals;

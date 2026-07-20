@@ -42,6 +42,12 @@ export interface Action {
  * Chat History panel item.
  *
  * @element cds-aichat-history-panel-item
+ * @fires history-panel-item-input-change
+ *   Bubbles up from the inner input component on every input value change when `rename` is true.
+ * @fires history-panel-item-input-cancel
+ *   Bubbles up from the inner input component when the rename is canceled.
+ * @fires history-panel-item-input-save
+ *   Bubbles up from the inner input component when the rename is saved.
  *
  */
 @carbonElement(`${prefix}-history-panel-item`)
@@ -91,6 +97,22 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
    */
   @property({ type: Boolean, reflect: true, attribute: "show-actions" })
   showActions = false;
+
+  /**
+   * `true` if the rename input is in an invalid state.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "rename-invalid" })
+  renameInvalid = false;
+
+  /**
+   * Error message to display below the rename input when it is invalid.
+   */
+  @property({
+    type: String,
+    reflect: true,
+    attribute: "rename-invalid-message",
+  })
+  renameInvalidMessage = "";
 
   /**
    * `true` if the parent menu is expanded.
@@ -394,12 +416,16 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
     if (this.input) {
       this.input.addEventListener("history-panel-item-input-cancel", () => {
         this.rename = false;
+        this.renameInvalid = false;
+        this.renameInvalidMessage = "";
       });
 
       this.input.addEventListener("history-panel-item-input-save", (event) => {
         const newName = (event as CustomEvent).detail.newName;
         this.name = newName;
         this.rename = false;
+        this.renameInvalid = false;
+        this.renameInvalidMessage = "";
       });
     }
   }
@@ -461,6 +487,8 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
               <cds-aichat-history-panel-item-input
                 value="${name}"
                 item-id="${id}"
+                ?invalid=${this.renameInvalid}
+                invalid-message="${this.renameInvalidMessage}"
               ></cds-aichat-history-panel-item-input>
             `
       }

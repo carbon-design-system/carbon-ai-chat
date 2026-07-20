@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -50,8 +50,8 @@ export class VersionDropdown extends LitElement {
   private getCurrentVersionInfo(): VersionInfo {
     const path = window.location.pathname;
 
-    // Check if we're on a tag (latest/next)
-    const tagMatch = path.match(/\/tag\/(latest|next)\//);
+    // Check if we're on a tag (latest/next/alpha)
+    const tagMatch = path.match(/\/tag\/(latest|next|alpha)\//);
     if (tagMatch) {
       return { type: "tag", value: tagMatch[1] };
     }
