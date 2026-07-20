@@ -15,7 +15,7 @@ Structured data is request-side only: it travels on {@link MessageInput.structur
 
 ## The shape
 
-A {@link StructuredData | structured data} payload has two parts. `fields` is an array of typed {@link StructuredField | field} entries, each with an `id`, an optional `label`, a {@link StructuredFieldType | type} such as `text`, `select`, `multi_select`, or `file`, and a `value`. `user_defined` is an escape hatch for any data that doesn't fit a typed field.
+A {@link StructuredData | structured data} payload has two parts. `fields` is an array of {@link StructuredField | field} entries, each with an `id`, a `value`, and an optional `label` and {@link StructuredFieldType | type}. `user_defined` is an escape hatch for any data that doesn't fit a field.
 
 ```typescript
 const data: StructuredData = {
@@ -49,11 +49,20 @@ Host data and upload contributions stay separate: uploads merge on top of what y
 
 Inside {@link PublicConfigMessaging.customSendMessage | customSendMessage}, read the payload off the request. It clears after each send, so the next message starts clean.
 
+Because `value` is `unknown`, narrow it before you use it:
+
 ```typescript
 async function customSendMessage(request, requestOptions, instance) {
   const fields = request.input.structured_data?.fields ?? [];
+
   const rating = fields.find((field) => field.id === "rating")?.value;
-  // ...handle the structured input alongside request.input.text
+  if (typeof rating === "number") {
+    // ...handle the rating alongside request.input.text
+  }
+
+  const files = fields
+    .filter((field) => field.type === "file")
+    .map((field) => field.value as FileFieldValue);
 }
 ```
 
