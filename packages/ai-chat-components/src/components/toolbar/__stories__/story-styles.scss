@@ -49,3 +49,8 @@
 .bold {
   @include type.type-style("heading-compact-01");
 }
+
+cds-aichat-toolbar {
+  background: theme.$chat-header-background;
+  border-block-end: 1px solid theme.$border-subtle-00;
+}

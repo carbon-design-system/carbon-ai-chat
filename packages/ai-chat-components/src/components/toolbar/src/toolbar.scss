@@ -24,8 +24,6 @@ $block-class: #{$prefix}-toolbar;
   @include rounded-modifiers;
 
   display: block;
-  background: theme.$chat-header-background;
-  border-block-end: 1px solid theme.$border-subtle-00;
   border-start-end-radius: var(--cds-aichat-border-radius, 0);
   border-start-start-radius: var(--cds-aichat-border-radius, 0);
   max-inline-size: 100%;
