@@ -13,25 +13,29 @@
 # It never commits or pushes: the version bumps happen only in the throwaway
 # runner checkout, so the branch it runs from is left untouched.
 #
-# Run it from the branch you want to publish: Actions -> Release alpha ->
-# "Run workflow" -> pick the feature branch. A workflow_dispatch run uses (and
-# checks out) the selected ref, so the alpha is built from that branch's code.
+# This workflow is NOT dispatched directly — it is called by `release-start.yml`
+# with `type: alpha`. npm trusted publishing authenticates the publish via OIDC,
+# and npm validates the *calling* workflow's filename rather than the one that
+# runs `npm publish`; a package can only have one trusted publisher configured.
+# Routing the alpha through `release-start.yml` (the same caller the RC / stable
+# releases use) is therefore what makes the npm publish authorized at all.
+# Dispatching this file on its own would fail with a 404 on the publish step.
+#
+# Run it from the branch you want to publish: Actions -> Release start ->
+# "Run workflow" -> pick the feature branch, choose `type: alpha`. The run uses
+# (and checks out) the selected ref, so the alpha is built from that branch.
 name: Release alpha
-run-name: "Release alpha (${{ inputs.bump }}) dry-run:${{ inputs.dry-run }} from ${{ github.ref_name }}"
 
 concurrency:
   group: release-alpha
   cancel-in-progress: false
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       bump:
         description: "Base bump off the current stable version (the alpha previews the next minor or patch). Ignored for a package with an explicit base below."
-        type: choice
-        options:
-          - minor
-          - patch
+        type: string
         default: minor
       ai-chat-base:
         description: "Exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Leave both base inputs blank to derive from `bump`; setting one requires the other."

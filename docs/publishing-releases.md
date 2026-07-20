@@ -13,6 +13,7 @@
   - [Post release](#post-release)
   - [Patch release](#patch-release)
   - [Alpha release](#alpha-release)
+    - [Why alphas run from the release workflow](#why-alphas-run-from-the-release-workflow)
 - [Troubleshooting](#troubleshooting)
   - [Force publish](#force-publish)
   - [Tag already exists](#tag-already-exists)
@@ -316,11 +317,12 @@ An alpha release publishes `@carbon/ai-chat` and `@carbon/ai-chat-components` to
 
 To publish an alpha:
 
-- [ ] Go to the [Release alpha workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-alpha.yml) and choose "Run workflow".
+- [ ] Go to the [release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml) and choose "Run workflow" — the same workflow used for RCs and stable releases, not a separate one. See [Why alphas run from the release workflow](#why-alphas-run-from-the-release-workflow) below.
 - [ ] **Select the feature branch** you want to publish from (e.g. `feat/prompt-line`) — the alpha is built from whatever branch you select.
+- [ ] Set `type` to `alpha`. The `force publish` option does not apply and is ignored.
 - [ ] Leave `dry run` checked for the first run. The workflow computes the alpha versions and builds everything, but publishes nothing. Check the log to confirm the planned versions (e.g. `@carbon/ai-chat -> 1.18.0-alpha.0` and `@carbon/ai-chat-components -> 1.8.0-alpha.0`).
-- [ ] Leave `bump` as `minor` unless the alpha previews a patch release, in which case select `patch`.
-- [ ] If the branch will not land in the next release — say the alpha runs while `1.18.0` is already in flight but the feature ships in `1.19.0` — set the base explicitly instead of relying on `bump`. The two packages version independently, so fill in **both** `ai-chat-base` (e.g. `1.19.0`) and `components-base` (e.g. `1.9.0`): filling in only one fails the run, so that an alpha never pairs one package's release with another's. A base that is not ahead of the package's current version also fails.
+- [ ] Leave `semver-type` as `minor` unless the alpha previews a patch release, in which case select `patch`.
+- [ ] If the branch will not land in the next release — say the alpha runs while `1.18.0` is already in flight but the feature ships in `1.19.0` — set the base explicitly instead of relying on `semver-type`. The two packages version independently, so fill in **both** `ai-chat-base` (e.g. `1.19.0`) and `components-base` (e.g. `1.9.0`): filling in only one fails the run, so that an alpha never pairs one package's release with another's. A base that is not ahead of the package's current version also fails.
 - [ ] If the versions look right, run the workflow again with `dry run` unchecked to publish to npm and the CDN.
 - [ ] Confirm the publish:
   - [ ] `npm view @carbon/ai-chat dist-tags` and `npm view @carbon/ai-chat-components dist-tags` show the new `alpha` version, and `latest` / `next` are unchanged.
@@ -331,6 +333,19 @@ A few things to know:
 - Alpha versions auto-increment per package from what is already published on npm — the first alpha of a base version is `alpha.0`, and re-running produces `alpha.1`, `alpha.2`, and so on. There is no git tag or committed bump to keep in sync.
 - `@carbon/ai-chat@alpha` pins the exact `@carbon/ai-chat-components` alpha built in the same run, so installers get a self-consistent alpha stack rather than the stable components.
 - Alpha is unlisted in the version-selector dropdowns on the stable `latest` / `next` sites by design; the "Alpha" entry only appears when viewing the alpha site itself.
+
+#### Why alphas run from the release workflow
+
+Alphas are dispatched from `release-start.yml` — the same entry point as RCs and stable releases — rather than from their own workflow, and that is load-bearing rather than cosmetic.
+
+We publish to npm with [trusted publishing](https://docs.npmjs.com/trusted-publishers): the runner authenticates over OIDC as GitHub Actions instead of using a long-lived npm token. npm ties that trust to a specific workflow **filename**, and two of its rules constrain the layout:
+
+- A package can only have **one** trusted publisher configured at a time, so `release-alpha.yml` cannot simply be registered alongside the release workflow.
+- When a workflow uses `workflow_call`, npm validates the **calling** workflow's filename, not the one that actually runs `npm publish`.
+
+So `release-base.yml` (RC / stable) and `release-alpha.yml` (alpha) are both reusable workflows invoked from `release-start.yml`, letting them share that single trusted identity. Dispatching `release-alpha.yml` directly would build everything and then fail on the publish step with `npm error 404 ... PUT .../@carbon%2fai-chat-components` — npm's way of saying the identity is not authorized to write that package.
+
+The corollary: **if the trusted publisher is ever re-pointed at a different workflow filename, the alpha breaks with it.** Keep the npm setting and this entry point in sync.
 
 ## Troubleshooting
 

@@ -1,12 +1,19 @@
-# Publish minor or patch releases, both rc (release candidates) and full releases
-name: Release start - minor / patch
+# Publish minor or patch releases, both rc (release candidates) and full
+# releases, plus off-cadence `alpha` previews cut from a feature branch.
+#
+# Every npm publish in this repo has to be dispatched from this file: npm
+# trusted publishing validates the *calling* workflow's filename over OIDC, and
+# a package can only have one trusted publisher configured. `release-base.yml`
+# and `release-alpha.yml` are both reusable workflows called from here so they
+# share that single trusted identity.
+name: Release start - minor / patch / alpha
 run-name: ${{ inputs.type }} - dry-run:${{ inputs.dry-run }}
 
 on:
   workflow_dispatch:
     inputs:
       semver-type:
-        description: 'Specify the type of semver release'
+        description: "Specify the type of semver release. For `alpha`, this is the bump the alpha previews off the current version."
         required: true
         type: choice
         default: minor
@@ -21,10 +28,13 @@ on:
         # Full release (ie. v1.0.0 -> v1.1.0)
         # First RC (ie. v1.0.0 -> v1.1.0-rc.0)
         # Subsequent RC (ie v1.1.0-rc.0 -> v1.1.0-rc.1)
+        # Alpha (ie. v1.0.0 -> v1.1.0-alpha.0, published under the `alpha`
+        # dist-tag from a feature branch — see release-alpha.yml)
         options:
           - full release
           - first rc
           - subsequent rc
+          - alpha
       dry-run:
         # Check dry run to test run lerna and confirm package version bumps
         required: true
@@ -33,17 +43,40 @@ on:
         default: true
       force-publish:
         # May need to force publish at times when lerna doesn't detect changes
-        description: "Force publish?"
+        description: "Force publish? Ignored for `alpha`."
         type: boolean
         default: false
+      ai-chat-base:
+        # Alpha only. See release-alpha.yml / scripts/compute-alpha-versions.js.
+        description: "Alpha only: exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Blank derives it from `semver-type`; setting one base requires the other."
+        type: string
+        default: ""
+      components-base:
+        description: "Alpha only: exact base version for @carbon/ai-chat-components, e.g. 1.9.0. The two packages version independently, so this must be set whenever `ai-chat-base` is."
+        type: string
+        default: ""
 
 jobs:
   Release:
     # trigger the input data to the `release-base` workflow and trigger it
+    if: ${{ inputs.type != 'alpha' }}
     uses: ./.github/workflows/release-base.yml
     with:
       semver-type: ${{ inputs.semver-type }}
       type: ${{ inputs.type }}
       dry-run: ${{ inputs.dry-run }}
       force-publish: ${{ inputs.force-publish}}
+    secrets: inherit
+
+  # Alphas skip lerna, the git tag, the changelog and the release PR entirely;
+  # `release-alpha.yml` only bumps versions inside the runner checkout, publishes
+  # to the `alpha` dist-tag and uploads the sites under `tag/alpha`.
+  Alpha:
+    if: ${{ inputs.type == 'alpha' }}
+    uses: ./.github/workflows/release-alpha.yml
+    with:
+      bump: ${{ inputs.semver-type }}
+      ai-chat-base: ${{ inputs.ai-chat-base }}
+      components-base: ${{ inputs.components-base }}
+      dry-run: ${{ inputs.dry-run }}
     secrets: inherit
