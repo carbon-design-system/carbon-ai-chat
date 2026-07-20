@@ -20,7 +20,7 @@ For a one-shot, non-streaming insert, use {@link ChatInstanceMessaging.addMessag
 
 Stream updates to single message items with a {@link PartialItemChunk | PartialItemChunk}. Each chunk carries a {@link DeepPartial} of a {@link GenericItem} in `partial_item`, a per-message `streaming_metadata.response_id`, and a `streaming_metadata` on the item whose `id` picks the item to update and whose optional `cancellable` flag shows the "stop streaming" button. See {@link PartialItemChunk} and {@link StreamChunk} for the full field reference.
 
-The chat stores partial chunks raw in the item's internal chunks list. At draw time, the render layer joins them for {@link TextItem | TextItem} and {@link ConversationalSearchItem | ConversationalSearchItem} only, concatenating the `text` fields; it doesn't auto-join other response types. If you stream non-text items, include the fully built state in the {@link CompleteItemChunk | CompleteItemChunk} or {@link FinalResponseChunk | FinalResponseChunk}. To stream several items at once in one message, give each a different item ID.
+The chat stores partial chunks raw in the item's internal chunks list. At draw time, the render layer joins them for {@link TextItem | TextItem} and {@link ConversationalSearchItem | ConversationalSearchItem} only, concatenating the `text` fields. Other response types are not auto-joined. If you stream non-text items, include the fully built state in the {@link CompleteItemChunk | CompleteItemChunk} or {@link FinalResponseChunk | FinalResponseChunk}. To stream several items at once in one message, give each a different item ID.
 
 Example:
 
