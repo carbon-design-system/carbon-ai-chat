@@ -14,7 +14,7 @@ Try our [demo](../../demo/index.html), which shows the full-featured chat interf
 
 This package provides both React and web component versions of Carbon AI Chat. Each framework exports two versions. One uses a float layout — the classic launcher with the chat in the lower-right corner for customer service use cases. The other renders the chat into a container element you choose (sidebar, fullscreen, and so on), growing responsively to fill it.
 
-See the [React](./React.md), [web component](./WebComponent.md), and [Angular](./Angular.md) docs.
+See the [React](./React.md) and [web component](./WebComponent.md) docs. Angular is supported through the web component version — see the [Angular](./Angular.md) docs for the framework-specific wiring.
 
 ## Configuration
 
@@ -38,7 +38,11 @@ For details, see the [connect to your server](./CustomServer.md) guide.
 
 ## Customizing the view
 
-You can customize Carbon AI Chat at three levels, from quickest to deepest: configure behavior and appearance through {@link PublicConfig} props, restyle with a Carbon [theme](./Theming.md) and CSS custom-property tokens for color, sizing, and placement, or inject your own content into [slots](./WriteableElements.md), [custom panels](./CustomPanels.md), [responses](./Responses.md), and [message footers](./CustomMessageFooter.md).
+Customize Carbon AI Chat at three levels, from the quickest to the most involved:
+
+- **Configure** — set behavior and appearance through {@link PublicConfig} props.
+- **Restyle** — apply a Carbon [theme](./Theming.md) and override CSS custom-property tokens for color, sizing, and placement.
+- **Inject your own content** — render your own markup into [slots](./WriteableElements.md), [custom panels](./CustomPanels.md), [responses](./Responses.md), and [message footers](./CustomMessageFooter.md).
 
 See [UI customization](./Customization.md).
 
@@ -56,7 +60,7 @@ Translate built-in text, format dates for a region, and support right-to-left la
 
 ## Cookies and GDPR
 
-The Carbon AI Chat does not use any cookies. It uses the browser's transient session storage for required behavior to track the Carbon AI Chat's state as you move from page to page — for example, whether the home screen should be visible, and so on.
+The Carbon AI Chat does not use any cookies. It uses the browser's temporary session storage for required behavior to track the Carbon AI Chat's state as you move from page to page — for example, whether the home screen should be visible, and so on.
 
 ## Related
 
