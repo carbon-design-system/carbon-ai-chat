@@ -12,7 +12,7 @@ import {
   LayoutConfig,
   PublicConfig,
 } from "../config/PublicConfig";
-import { ThemeState } from "./AppState";
+import { ThemeState } from "./ThemeState";
 import ObjectMap from "../utilities/ObjectMap";
 import { LauncherConfig } from "../config/LauncherConfig";
 

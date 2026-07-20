@@ -105,6 +105,7 @@ import { CarbonTheme } from "../../types/config/PublicConfig";
 import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
 import {
   hasReasoningContent,
+  resolveReasoningContainerOpen,
   synthesizeReasoningLocalMessageItem,
 } from "../utils/reasoningContent";
 
@@ -907,20 +908,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
   }
 
   private getReasoningContainerOpen(reasoning?: ReasoningStepsData) {
-    const containerOpenState = reasoning?.open_state;
-    const hasExplicitContainerState =
-      typeof containerOpenState !== "undefined" &&
-      containerOpenState !== ReasoningStepOpenState.DEFAULT;
-
-    if (typeof this.state.manualReasoningOpen === "boolean") {
-      return this.state.manualReasoningOpen;
-    }
-
-    if (hasExplicitContainerState) {
-      return containerOpenState === ReasoningStepOpenState.OPEN;
-    }
-
-    return this.state.autoReasoningContainerOpen ?? true;
+    return resolveReasoningContainerOpen({
+      manualReasoningOpen: this.state.manualReasoningOpen,
+      autoReasoningContainerOpen: this.state.autoReasoningContainerOpen,
+      containerOpenState: reasoning?.open_state,
+    });
   }
 
   private getReasoningContainerId() {

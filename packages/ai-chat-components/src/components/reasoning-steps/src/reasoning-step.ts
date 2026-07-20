@@ -83,6 +83,15 @@ class CDSAIChatReasoningStep extends LitElement {
     ) {
       this.updatePanelInertState();
     }
+
+    // Announce when a real open/close toggle has settled so the scroll manager can
+    // recalculate geometry. Skip the initial render (no previous value).
+    if (
+      changedProperties.has("open") &&
+      changedProperties.get("open") !== undefined
+    ) {
+      this.emitAnimationEndWhenSettled();
+    }
   }
 
   private getTriggerElement(): HTMLButtonElement | null {
@@ -219,6 +228,49 @@ class CDSAIChatReasoningStep extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * The panel animates `grid-template-rows` when the step expands/collapses. We wait for
+   * any in-flight transition on the panel to finish, then emit a composed event so
+   * consumers (e.g. the message list's scroll manager) can recalculate scroll geometry
+   * against the settled layout.
+   *
+   * Using the Web Animations API (`getAnimations`) handles both cases with one path: when a
+   * transition runs we resolve on its `finished` promise, and when nothing animates (reduced
+   * motion, or a collapse that snaps without a transition) there are no animations so we emit
+   * immediately. The rAF lets the just-changed style flush so a pending transition is
+   * registered before we read it.
+   */
+  private emitAnimationEndWhenSettled() {
+    requestAnimationFrame(() => {
+      const panel = this.shadowRoot?.querySelector<HTMLElement>(
+        `.${baseClass}__panel`,
+      );
+      const emit = () =>
+        this.dispatchEvent(
+          new CustomEvent("reasoning-animation-end", {
+            bubbles: true,
+            composed: true,
+            detail: { open: this.open },
+          }),
+        );
+      // Only the `grid-template-rows` transition changes block size; awaiting the
+      // panel's opacity/padding transitions too can delay the emit well past the
+      // height settling. If it is not animating, the height is already final.
+      const animations = (panel?.getAnimations?.() ?? []).filter(
+        (animation): animation is CSSTransition =>
+          animation instanceof CSSTransition &&
+          animation.transitionProperty === "grid-template-rows",
+      );
+      if (!animations.length) {
+        emit();
+        return;
+      }
+      Promise.allSettled(
+        animations.map((animation) => animation.finished),
+      ).then(emit);
+    });
   }
 
   private renderPanel() {
