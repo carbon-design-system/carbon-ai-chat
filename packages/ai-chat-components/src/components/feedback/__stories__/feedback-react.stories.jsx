@@ -133,9 +133,9 @@ export const Default = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Provide feedback",
-    body: "Help us improve by sharing your thoughts",
-    placeholder: "Tell us more...",
+    title: "Additional feedback",
+    body: "Why did you choose this rating?",
+    placeholder: "Add a comment",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -163,9 +163,9 @@ export const WithCategories = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "What went wrong?",
-    body: "Select all that apply and provide details",
-    placeholder: "Please describe the issue...",
+    title: "Additional feedback",
+    body: "Why did you choose this rating?",
+    placeholder: "Add a comment",
     primaryLabel: "Submit",
     showTextArea: true,
     showBody: true,
@@ -195,8 +195,8 @@ export const WithDisclaimer = {
     isOpen: true,
     isReadonly: false,
     title: "Additional feedback",
-    body: "Help us improve by sharing your thoughts",
-    placeholder: "Your feedback...",
+    body: "Why did you choose this rating?",
+    placeholder: "Add a comment",
     disclaimer:
       "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
     disclaimerCheckbox:
@@ -227,7 +227,7 @@ export const ReadOnly = {
   args: {
     isOpen: true,
     isReadonly: true,
-    title: "Your feedback",
+    title: "Additional feedback",
     showTextArea: true,
     showBody: false,
     maxLength: 1000,
