@@ -4,13 +4,13 @@ title: Layout
 
 ## Overview
 
-Control where the chat renders. Size it with CSS custom properties. Float it in a corner of the page. Round its corners.
+Control where the chat renders, size it through CSS custom properties, float it in the corner of the page, and round its corners.
 
 ## Layout modes
 
-The standard way to use Carbon AI Chat is the custom element. Use {@link ChatCustomElement} in React, or `cds-aichat-custom-element` as a web component. You size and place the element in your DOM. The chat grows to fill it. Use it as a sidebar, a full-screen view, or a panel nested in your UI.
+The standard way to use Carbon AI Chat is the custom element. Use {@link ChatCustomElement} in React, or `cds-aichat-custom-element` as a web component. You size and place the element in your DOM and the chat grows to fill it. Use it as a sidebar, a full-screen view, or a panel nested in your UI.
 
-The classic floating widget is the same custom element with the exported [float layout classes](#floating-layout) applied. It's a launcher in the corner and a window that opens on click. The classes are exported on purpose. Apply them yourself to drive the open and close behavior. {@link ChatContainer} and `cds-aichat-container` wire those classes for you. Reach for them only when you'd rather skip that work.
+The classic floating widget is the same custom element with the exported [float layout classes](#floating-layout) applied. It's a launcher in the corner and a window that opens on click. The classes are exported on purpose so that you can apply them yourself to drive the open and close behavior. {@link ChatContainer} and `cds-aichat-container` wire those classes for you. Reach for them only when you'd rather skip that work.
 
 For more, see the [React](./React.md) and [web components](./WebComponent.md) guides.
 
@@ -39,7 +39,7 @@ You can also set these tokens from config through {@link LayoutConfig.customProp
 
 ## Floating layout
 
-To float the chat, apply the exported float classes to your custom element. Also import the float stylesheet:
+To float the chat, apply the exported float classes to your custom element and import the float stylesheet:
 
 ```css
 @import "@carbon/ai-chat/css/chat-float-layout.css";
@@ -53,7 +53,7 @@ The classes drive the floating widget:
 - `cds-aichat-float--close` — hidden.
 - `cds-aichat-float--mobile` — mobile placement.
 
-Toggle the classes as the chat opens and closes. Use the {@link ChatCustomElementProps.onViewChange | onViewChange} and {@link ChatCustomElementProps.onViewPreChange | onViewPreChange} methods. Prefer these over the {@link BusEventType.VIEW_CHANGE | VIEW_CHANGE} and {@link BusEventType.VIEW_PRE_CHANGE | VIEW_PRE_CHANGE} bus events. For a full working pattern, see the custom-element-as-float examples. They cover open and close animations: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-element-as-float) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float). {@link ChatContainer} applies these classes for you, if you'd rather not wire them yourself.
+Toggle the classes as the chat opens and closes. Use the {@link ChatCustomElementProps.onViewChange | onViewChange} and {@link ChatCustomElementProps.onViewPreChange | onViewPreChange} methods. Prefer these over the {@link BusEventType.VIEW_CHANGE | VIEW_CHANGE} and {@link BusEventType.VIEW_PRE_CHANGE | VIEW_PRE_CHANGE} bus events. For a full working pattern with open and close animations, see the [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-element-as-float) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float) custom-element-as-float examples. {@link ChatContainer} applies these classes for you, if you'd rather not wire them yourself.
 
 Size and placement of the floating container come from these tokens:
 
@@ -70,7 +70,7 @@ Size and placement of the floating container come from these tokens:
 | `--cds-aichat-top-position`    | `auto`                                                                    | Distance from the top of the viewport         |
 | `--cds-aichat-left-position`   | `auto`                                                                    | Distance from the left of the viewport        |
 
-> **Note:** In RTL, placement uses logical `inset-inline`. It still reads the same `--cds-aichat-right-position` and `--cds-aichat-left-position` tokens. To mirror placement, override those tokens under `[dir="rtl"]`.
+> **Note:** RTL uses logical `inset-inline` placement while still reading the same `--cds-aichat-right-position` and `--cds-aichat-left-position` tokens. To mirror placement, override those tokens under `[dir="rtl"]`.
 
 The launcher that opens the floating window has its own configuration and styling tokens. See [Launcher](./Launcher.md).
 
@@ -102,7 +102,7 @@ Use `data-stacked` when children stack vertically. Without `data-stacked`, `data
 
 ### Per-corner configuration
 
-Configure corners one at a time with {@link LayoutConfig.corners | corners}. Pass a single {@link CornersType} value to round every corner. Or pass a {@link PerCornerConfig} object to control each corner:
+Configure corners one at a time with {@link LayoutConfig.corners | corners}. Pass a single {@link CornersType} value to round every corner or pass a {@link PerCornerConfig} object to control each corner:
 
 **Simple configuration (all corners the same):**
 
