@@ -4,11 +4,11 @@ title: Adding messages (experimental)
 
 ## Overview
 
-{@link ChatInstanceMessaging.upsertMessage | upsertMessage} inserts or updates one message. A stable `messageID` names it. One method covers inserting, streaming, correcting, and regenerating a message. You pass an updater. It gets the message's current value and returns what replaces it.
+{@link ChatInstanceMessaging.upsertMessage | upsertMessage} inserts or updates one message by a stable `messageID`. One method covers inserting, streaming, correcting, and regenerating — you pass an updater that receives the current message and returns what replaces it.
 
 Prefer this flow for new code, but note it's experimental. Its behavior and the updater signature may still change. For a settled API, the stable {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} flow is still fully supported. See [Adding messages (legacy)](./AddMessageChunk.md).
 
-The examples below call `instance.messaging`. So you need a {@link ChatInstance} first. Get one from the `onBeforeRender` prop.
+The examples below call `instance.messaging`, so get a {@link ChatInstance | ChatInstance} from the `onBeforeRender` prop first.
 
 Reach for `upsertMessage` over {@link ChatInstanceMessaging.addMessage | addMessage} or {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} when you want to:
 
