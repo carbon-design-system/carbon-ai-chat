@@ -16,7 +16,7 @@ Connect the Carbon AI Chat to your own server. It supports streaming results, no
 1. **Exchanging messages** — receive a {@link MessageRequest | message request} when a user sends a message, and deliver a {@link MessageResponse | message response} back. This page shows how to wire that up with {@link PublicConfigMessaging.customSendMessage | customSendMessage}.
 2. **Persisting history** — restore past conversations when the chat reopens. See [Conversation history](./CustomHistory.md).
 
-This page is the entry point. Where you go next depends on what you build:
+Where you go next depends on what you build:
 
 - [Message format](./MessageFormat.md) — the shape of the requests you receive and responses you return (for server / API authors).
 - [Adding messages (legacy)](./AddMessageChunk.md) — the stable chunk-based streaming flow.
@@ -39,9 +39,9 @@ The chat passes this function three parameters:
 
 The function can return nothing, or it can return a promise. If you return a promise, the chat does this:
 
-1. Sets up a message queue, passing the next message to your function only after the current one completes.
-2. Shows a loading indicator if the message takes a while to return (or to return its first chunk if streaming).
-3. Throws a visible error and passes an abort signal if the wait exceeds the `messaging.messageTimeoutSecs` timeout, which you set in your {@link PublicConfig} with {@link PublicConfigMessaging.messageTimeoutSecs | messageTimeoutSecs}.
+1. Set up a message queue, passing the next message to your function only after the current one completes.
+2. Show a loading indicator if the message takes a while to return (or to return its first chunk if streaming).
+3. Throw a visible error and pass an abort signal if the wait exceeds the `messaging.messageTimeoutSecs` timeout, which you set in your {@link PublicConfig} with {@link PublicConfigMessaging.messageTimeoutSecs | messageTimeoutSecs}.
 
 If you do not return a promise, the chat does not queue your messages, and it skips the loading indicator when no first chunk comes back.
 
