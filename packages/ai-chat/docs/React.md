@@ -61,7 +61,7 @@ function App() {
 
 ## Using ChatCustomElement
 
-Use {@link ChatCustomElement} to render the chat inside a custom element, so you control where it renders. This component renders an element in your React app and uses it as the custom element for the chat. See {@link ChatCustomElementProps} for the accepted props.
+Use {@link ChatCustomElement} to render Carbon AI Chat inside a custom element you size and place. This component renders an element in your React app and uses it as the custom element for the chat. See {@link ChatCustomElementProps} for the accepted props.
 
 This component requires a `className` prop that sets the size and position of the chat when open. By default, the element's dimensions are 0x0, so it takes up no space while keeping any fixed-position launcher visible.
 
@@ -185,7 +185,7 @@ function renderUserDefinedResponse(
 }
 ```
 
-The renderer can also read your app's state or stream. Wrap the prop in `useCallback` so it changes only when your state does, and read {@link RenderUserDefinedState.partialItems | partialItems} for streaming — see [the streaming model](./Responses.md#streaming-and-updates) for how `partialItems` and chunk correlation work. For runnable versions, see the [basic](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic) and [streaming](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/reasoning-with-streaming-generic-items) examples.
+The renderer can also read your app's state, or drive streaming. Wrap the prop in `useCallback` so it changes only when your state does, and read {@link RenderUserDefinedState.partialItems | partialItems} for streaming — see [the streaming model](./Responses.md#streaming-and-updates) for how `partialItems` and chunk correlation work. For runnable versions, see the [basic](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/basic) and [streaming](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/reasoning-with-streaming-generic-items) examples.
 
 ## Slots
 
