@@ -4,17 +4,17 @@ title: Custom panels
 
 ## Overview
 
-Open an overlay panel with your own content — for pre-chat forms, post-chat feedback, or multi-step flows — at any time.
+Open an overlay panel with your own content at any time — for pre-chat forms, post-chat feedback, or multi-step flows.
 
 ## Opening a panel
 
-Use a panel for pre-chat forms, post-chat feedback, or multi-step flows. You can open it from an event, a `user_defined` response, or an action a user takes on your website.
+Open a panel from an event, a `user_defined` response, or an action a user takes on your website.
 
-Decide whether the panel acts as a secondary view users can dismiss quickly, or a primary interface that temporarily takes over the chat. When {@link DefaultCustomPanelConfigOptions.hideBackButton} is `false` (the default), the main chat header stays visible and the panel gets its own header with a back button and title. Use this mode when a user drills into more detail or can dismiss the panel.
+Decide whether the panel acts as a secondary view that users can dismiss quickly, or a primary interface that temporarily takes over the chat. When {@link DefaultCustomPanelConfigOptions.hideBackButton | hideBackButton} is `false` (the default), the main chat header stays visible and the panel gets its own header with a back button and title. Use this mode when a user drills into more detail or can dismiss the panel.
 
-When you set `hideBackButton` to `true`, your panel does not get a secondary header. Use this mode when the user must complete an action to continue.
+When you set `hideBackButton` to `true`, your panel does not get a secondary header, so use this mode when the user must complete an action to continue.
 
-Control custom panels through {@link ChatInstance.customPanels}. Use {@link CustomPanels.getPanel} with {@link PanelType} to get the default panel, then call {@link CustomPanelInstance.open} and {@link CustomPanelInstance.close} as needed. The default panel overlays the chat content window, and {@link DefaultCustomPanelConfigOptions} describes its options.
+Control custom panels through {@link ChatInstance.customPanels | customPanels}. Use {@link CustomPanels.getPanel | getPanel} with a {@link PanelType} to get the default panel, then call {@link CustomPanelInstance.open | open} and {@link CustomPanelInstance.close | close} as needed. The default panel overlays the chat content window, and {@link DefaultCustomPanelConfigOptions | its configuration options} describe what you can set.
 
 Example:
 
@@ -41,11 +41,11 @@ panel.open({
 panel.close();
 ```
 
-The custom panel renders content through the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT} slot. See [Slots](./WriteableElements.md) for how to render into a slot.
+The panel renders its content through the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT | custom panel slot}, and [Slots](./WriteableElements.md) explains how to render into a slot.
 
 ### Align rounded corners in a panel
 
-Custom panel content can use `data-rounded` attributes to align with the panel's corner rounding.
+Custom panel content can use `data-rounded` attributes to match the panel's corner rounding.
 
 ```ts
 const panelElement =
@@ -72,7 +72,7 @@ See [Rounded corners](./Layout.md#rounded-corners).
 
 ## Related
 
-- [Slots](./WriteableElements.md) — the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT} slot a panel renders through.
-- [Layout](./Layout.md) — corner-rounding tokens used by `data-rounded`.
+- [Slots](./WriteableElements.md) — the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT | custom panel slot} a panel renders through.
+- [Layout](./Layout.md) — corner-rounding tokens `data-rounded` uses.
 - [Using with React](./React.md) — get the {@link ChatInstance} in a React app.
 - [Using as a Web component](./WebComponent.md) — get the {@link ChatInstance} with the web component.
