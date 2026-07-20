@@ -13,7 +13,7 @@ Style `text` responses to match your theme. Use Markdown or HTML returned from y
 Extend how the chat parses and renders Markdown through the {@link PublicConfigMarkdown `markdown`} config. Use {@link PublicConfigMarkdown.markdownItPlugins `markdownItPlugins`} to register [markdown-it](https://github.com/markdown-it/markdown-it) plugins after the built-ins. These plugins add token types the renderer does not understand out of the box. Examples include math, diagrams, and custom embeds. Use {@link CustomMarkdownRenderers `customRenderers`} to change how specific elements draw. Overrides come in three kinds:
 
 - **Element replacements** — render `table` and `codeBlock` through your own component instead of the default Carbon one. Return a React node (or an `HTMLElement` for web components), or `null` to fall back to the default.
-- **Attribute transforms** — for `link` and `image`, you rewrite attributes while the framework renders the element and its children. It also keeps the link `target="_blank"` safety default. Edit a link's `href`, `target`, or `rel`. Add context-aware query params. Or resolve an image `src` to an authenticated CDN URL. Return the overrides, or `null` to keep the defaults.
+- **Attribute transforms** — `link` and `image` keep the framework rendering the element and its children (the link `target="_blank"` safety default is also preserved) while you rewrite attributes. Edit a link's `href`, `target`, or `rel`, add context-aware query params, or resolve an image `src` to an authenticated CDN URL. Return the overrides, or `null` to keep the defaults.
 - **Behavior hook** — `checklist` makes task-list checkboxes actionable. Provide an `onToggle` callback to persist and react to toggles. Add an optional `getChecked` source of truth so a persisted state survives streaming re-renders.
 
 For working setups, see the `markdown-plugin`, `markdown-override`, and `workspace-table-markdown-override` projects under [examples](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples).
@@ -38,7 +38,7 @@ To show custom content, return this from your server (a user-defined card):
 }
 ```
 
-The `user_defined_type` field is a unique name for each UI component. Your renderer switches on it to decide what to draw. The `user_defined` response injects into a slot in the chat's shadow DOM. Style it from global CSS. It also inherits some styling from the chat, such as fonts. You can use Carbon components alongside your own components.
+The `user_defined_type` field is a unique name for each UI component. Your renderer switches on it to decide what to draw. The `user_defined` response injects into a slot within the chat's shadow DOM. You can style it from global CSS, and it inherits some styling from the chat, such as fonts. You can use Carbon components alongside your own custom components.
 
 Example render for the `promo-card` response:
 
@@ -62,7 +62,7 @@ Prefer {@link ChatInstanceMessaging.upsertMessage | upsertMessage} to insert, st
 
 {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} is the stable streaming path. It is fully supported with no deprecation, and the right choice if you prefer a settled API. If you stream with it, read [Adding messages (legacy)](./AddMessageChunk.md) first. The model is the same in every framework:
 
-- {@link RenderUserDefinedState.partialItems | `partialItems`} is an array of every chunk received, **not** concatenated for you. The streaming API sends string chunks, not partial JSON. So stringify your JSON. Then concatenate and parse the chunks in your renderer with `try`/`catch` or an optimistic parser.
+- {@link RenderUserDefinedState.partialItems | `partialItems`} is an array of every chunk received, **not** concatenated for you. The streaming API sends string chunks, not partial JSON. So stringify your JSON, then concatenate and parse the chunks in your renderer with `try`/`catch` or an optimistic parser.
 - Include `streaming_metadata.response_id` for the message and {@link ItemStreamingMetadata.id | `id`} for each item so chunks correlate correctly.
 
 ## Related
