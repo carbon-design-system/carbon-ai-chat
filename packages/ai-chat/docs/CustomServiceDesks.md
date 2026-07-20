@@ -27,7 +27,7 @@ If the service desk runs on a different domain from your website, make sure it s
 
 ## Basic example
 
-Say you built a service integration that meets the service desk API. To make Carbon AI Chat use it, write a factory function that creates a new instance of your integration. The example below shows an empty integration that doesn't talk to a service desk; it's there to show how to register an integration with Carbon AI Chat.
+If you implement a service integration that satisfies the service desk API, getting the Carbon AI Chat to use it requires a factory function to create a new instance of your integration. The example shows an empty integration (that doesn't communicate with a service desk) to show how to register an integration with the Carbon AI Chat.
 
 ```tsx
 // Your custom service desk integration which can be located anywhere in your codebase.
@@ -104,7 +104,7 @@ The `serviceDeskFactory` config property expects a factory function that returns
 
 ### Communicating from your service desk to the Carbon AI Chat
 
-The factory receives a callback object in {@link ServiceDeskFactoryParameters}. You call these callbacks inside your service desk code to send information back to Carbon AI Chat.
+The factory receives a callback object in {@link ServiceDeskFactoryParameters}. These callbacks are the functions you call inside your service desk code to communicate information back to the Carbon AI Chat.
 
 ### Interaction flow
 
