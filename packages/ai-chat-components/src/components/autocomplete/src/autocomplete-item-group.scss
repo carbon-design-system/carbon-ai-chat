@@ -31,5 +31,7 @@ $block-class: #{$prefix}-autocomplete-item-group;
   .#{$block-class}__items {
     display: flex;
     flex-direction: column;
+    padding: 0;
+    margin: 0;
   }
 }

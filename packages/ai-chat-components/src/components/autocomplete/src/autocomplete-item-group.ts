@@ -53,6 +53,14 @@ class AutocompleteItemGroupElement extends LitElement {
   startIndex = 0;
 
   /**
+   * The currently focused item index across the whole list.
+   * Items whose absolute index matches will render as active.
+   * @internal
+   */
+  @property({ type: Number, attribute: false })
+  focusedIndex = -1;
+
+  /**
    * The current text in the input (used to highlight the typed portion)
    */
   @property({ type: String, attribute: false })
@@ -100,30 +108,32 @@ class AutocompleteItemGroupElement extends LitElement {
     this.isRTL = isDirectionRTL();
 
     return html`
-      <div class="${blockClass}" role="listbox" aria-label="${this.title}">
+      <li role="group" aria-label="${this.title}" class="${blockClass}">
         ${
           this.title
             ? html` <div class="${blockClass}__title">${this.title}</div> `
             : null
         }
-        <div class="${blockClass}__items">
+        <ul class="${blockClass}__items">
           ${this.items.map((item, index) => {
+            const absoluteIndex = this.startIndex + index;
             const isLastItem =
               this.lastGroup && index === this.items.length - 1;
             return html`
               <cds-aichat-autocomplete-item
                 .item="${item}"
-                .index="${this.startIndex + index}"
+                .index="${absoluteIndex}"
                 .inputText="${this.inputText}"
                 .isRTL="${this.isRTL}"
                 .enableSendButton="${this.enableSendButton}"
+                .isActive="${this.focusedIndex === absoluteIndex}"
                 ?last-item="${isLastItem}"
                 @click="${this._handleItemClick}"
               ></cds-aichat-autocomplete-item>
             `;
           })}
-        </div>
-      </div>
+        </ul>
+      </li>
     `;
   }
 }
