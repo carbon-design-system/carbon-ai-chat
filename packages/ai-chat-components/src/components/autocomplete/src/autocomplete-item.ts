@@ -208,6 +208,7 @@ class AutocompleteItemElement extends LitElement {
                   @click="${this._handleSendClick}"
                   @keydown="${this._handleSendKeydown}"
                   aria-label="Send ${this.item.label}"
+                  tabindex="-1"
                 >
                   ${iconLoader(SendFilled16, { slot: "icon" })}
                   <span slot="tooltip-content">Send message</span>

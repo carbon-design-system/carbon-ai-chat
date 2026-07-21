@@ -358,6 +358,7 @@ export class AutocompleteController {
     this._detachEditorKeyHandler();
     if (editorDom) {
       editorDom.addEventListener("keydown", this._handleEditorKeyDown, true);
+      editorDom.addEventListener("focusout", this._handleEditorFocusOut);
       this._editorDomBound = editorDom;
     }
   }
@@ -368,6 +369,10 @@ export class AutocompleteController {
         "keydown",
         this._handleEditorKeyDown,
         true,
+      );
+      this._editorDomBound.removeEventListener(
+        "focusout",
+        this._handleEditorFocusOut,
       );
       this._editorDomBound = null;
     }
@@ -398,6 +403,16 @@ export class AutocompleteController {
         cancelable: true,
       }),
     );
+  };
+
+  private _handleEditorFocusOut = (event: FocusEvent): void => {
+    const relatedTarget = event.relatedTarget as Node | null;
+    // If focus moved into the list element (or inside it), keep the overlay
+    // open — the user is interacting with it.
+    if (relatedTarget && this._listElement?.contains(relatedTarget)) {
+      return;
+    }
+    this.dismiss();
   };
 
   // ---------------------------------------------------------------------

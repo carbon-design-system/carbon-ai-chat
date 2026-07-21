@@ -270,8 +270,6 @@ class AutocompleteElement extends LitElement {
       return;
     }
 
-    console.log("hmmm", event.key);
-
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
