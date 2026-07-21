@@ -95,7 +95,7 @@ See the custom-node examples: [React](https://github.com/carbon-design-system/ca
 
 ## Slots and send events
 
-Render your own content around the input with five slots. They are {@link WriteableElementName.BEFORE_INPUT_ELEMENT | BEFORE_INPUT_ELEMENT}, {@link WriteableElementName.AFTER_INPUT_ELEMENT | AFTER_INPUT_ELEMENT}, {@link WriteableElementName.PROMPT_LINE_SEND_BUTTON_START | PROMPT_LINE_SEND_BUTTON_START}, {@link WriteableElementName.PROMPT_LINE_ACTIONS_END | PROMPT_LINE_ACTIONS_END} (expanded layout only), and {@link WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT | HOME_SCREEN_BEFORE_INPUT_ELEMENT} — see [Slots](./WriteableElements.md). A send from the prompt line fires {@link BusEventType.PRE_SEND | PRE_SEND} and {@link BusEventType.SEND | SEND} from both the home screen and the message list, always with {@link MessageSendSource.MESSAGE_INPUT | MESSAGE_INPUT} as the source. Message handling itself lives in [Server communication](./CustomServer.md).
+Render your own content around the input with five slots. They are {@link WriteableElementName.BEFORE_INPUT_ELEMENT | BEFORE_INPUT_ELEMENT}, {@link WriteableElementName.AFTER_INPUT_ELEMENT | AFTER_INPUT_ELEMENT}, {@link WriteableElementName.PROMPT_LINE_SEND_BUTTON_START | PROMPT_LINE_SEND_BUTTON_START}, {@link WriteableElementName.PROMPT_LINE_ACTIONS_END | PROMPT_LINE_ACTIONS_END} (expanded layout only), and {@link WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT | HOME_SCREEN_BEFORE_INPUT_ELEMENT} — see [Slots](./WriteableElements.md). A send from the prompt line fires {@link BusEventType.PRE_SEND | PRE_SEND} and {@link BusEventType.SEND | SEND} from both the home screen and the message list. Message handling itself lives in [Server communication](./CustomServer.md).
 
 ## Related
 
