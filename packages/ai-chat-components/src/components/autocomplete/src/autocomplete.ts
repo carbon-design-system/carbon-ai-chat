@@ -206,7 +206,7 @@ class AutocompleteElement extends LitElement {
 
   firstUpdated() {
     const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
-      `.${prefix}__live-regions`,
+      `.${blockClass}__live-region`,
     );
     this._announcer.connect(Array.from(regions));
   }
@@ -269,6 +269,8 @@ class AutocompleteElement extends LitElement {
     if (totalItems === 0) {
       return;
     }
+
+    console.log("hmmm", event.key);
 
     switch (event.key) {
       case "ArrowDown":
@@ -363,7 +365,7 @@ class AutocompleteElement extends LitElement {
 
   private _handleClickOutside = (event: MouseEvent) => {
     if (!this.contains(event.target as Node)) {
-      // this._dismiss();
+      this._dismiss();
     }
   };
 
