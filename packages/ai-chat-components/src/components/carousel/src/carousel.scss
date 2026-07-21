@@ -17,7 +17,7 @@ $blockClass: #{$prefix}-carousel;
 
 .#{$blockClass} {
   &__controls {
-    @include type.type-style("label-02");
+    @include type.type-style("body-compact-01");
 
     display: flex;
     align-items: center;
