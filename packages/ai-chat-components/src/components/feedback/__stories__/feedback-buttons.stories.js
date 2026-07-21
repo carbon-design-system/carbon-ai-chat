@@ -71,8 +71,8 @@ class FeedbackButtonsDetailsDemo extends LitElement {
     this.hasPositiveDetails = false;
     this.hasNegativeDetails = true;
     this.panelId = "feedback-panel-demo";
-    this.positiveLabel = "Thumbs up";
-    this.negativeLabel = "Thumbs down";
+    this.positiveLabel = "I like this response";
+    this.negativeLabel = "I dislike this response";
 
     this._isFeedbackSubmitted = false;
     this._isPositiveSelected = false;
@@ -131,9 +131,7 @@ class FeedbackButtonsDetailsDemo extends LitElement {
     const label = isPositive ? "positive" : "negative";
     const isOpen = isPositive ? this._isPositiveOpen : this._isNegativeOpen;
     const categories = isPositive ? positiveCategories : negativeCategories;
-    const placeholder = isPositive
-      ? "What worked well?"
-      : "How could this be improved?";
+    const placeholder = "Add a comment";
 
     return html`
       <cds-aichat-feedback
@@ -143,15 +141,13 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         ?is-readonly=${this._isFeedbackSubmitted}
         .categories=${categories}
         .initialValues=${this._feedbackInitialValues(isPositive)}
-        title=${isPositive ? "Tell us what worked" : "Tell us what went wrong"}
-        prompt=${
-          isPositive
-            ? "Share what made this response helpful."
-            : "Share what missed the mark so we can improve."
-        }
+        title="Additional feedback"
+        body="Why did you choose this rating?"
+        prompt="Add a comment"
         text-area-placeholder=${placeholder}
         cancel-label="Close"
         submit-label="Submit"
+        show-body
         show-text-area
         show-prompt
         @feedback-close=${() => this._handlePanelClose(isPositive)}
@@ -322,8 +318,8 @@ export const Default = {
     isNegativeSelected: false,
     isPositiveDisabled: false,
     isNegativeDisabled: false,
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
+    positiveLabel: "I like this response",
+    negativeLabel: "I dislike this response",
   },
   render: (args) => html`
     <div style="padding: 2rem;">
@@ -350,8 +346,8 @@ export const Default = {
 
 export const WithDetailsPanel = {
   args: {
-    positiveLabel: "Thumbs up",
-    negativeLabel: "Thumbs down",
+    positiveLabel: "I like this response",
+    negativeLabel: "I dislike this response",
     panelID: "feedback-panel-example",
     hasPositiveDetails: true,
     hasNegativeDetails: true,

@@ -21,6 +21,8 @@ Use `<Feedback>` to collect structured feedback on AI responses in React. It sup
 
 **Note:** The `showTextArea` and `showBody` props default to `false`. You must explicitly set them to `true` to enable the text area and body text display.
 
+**Note:** When `disclaimerCheckbox` is set, the submit button is disabled until the user checks the checkbox.
+
 ### Getting started
 
 Here's a quick example to get you started.
@@ -32,8 +34,8 @@ function FeedbackExample() {
   return (
     <Feedback
       isOpen
-      title="Provide feedback"
-      body="Help us improve this response"
+      title="Additional feedback"
+      body="Why did you choose this rating?"
       categories={["Accurate", "Helpful", "Too verbose", "Inappropriate"]}
       primaryLabel="Submit"
       showTextArea={true}
@@ -136,11 +138,20 @@ Control visibility of UI elements:
 
 #### Legal Disclaimer
 
-Add a legal notice at the bottom of the panel using markdown:
+Add a legal notice at the bottom of the panel using the `disclaimer` prop. The text supports markdown.
 
 ```jsx
 <Feedback
   disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy)."
+/>
+```
+
+To require the user to explicitly acknowledge the disclaimer before submitting, pass a `disclaimerCheckbox` prop with the checkbox label. The submit button remains **disabled** until the checkbox is checked.
+
+```jsx
+<Feedback
+  disclaimer="By submitting feedback, you agree to our Privacy Policy."
+  disclaimerCheckbox="I have read and agree to the Privacy Policy."
 />
 ```
 

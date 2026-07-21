@@ -97,6 +97,12 @@
   color: theme.$text-secondary;
 }
 
+.#{$prefix}--disclaimer-checkbox {
+  @include type.type-style("helper-text-01");
+
+  color: theme.$text-secondary;
+}
+
 .#{$prefix}--buttons {
   display: flex;
   inline-size: 100%;
