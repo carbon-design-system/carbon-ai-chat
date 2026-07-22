@@ -544,9 +544,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    * Renders the error message component if an error is provided.
    */
   const renderErrorMessage = () => {
-    // Whether the prompt line has alternate layout for expanded mode and/or message actions
-    const actionsLayout = expanded || showUploadButton || effectiveActions;
-
     if (overMaxLength) {
       const errorText = intl.formatMessage(
         { id: "input_maxCharCountExceeded" },
@@ -559,7 +556,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           >
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-              actionsLayout={actionsLayout}
               title="Error: Max character count exceeded"
               description={errorText}
               collapsible={true}
@@ -582,7 +578,6 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         <AnnounceOnMountComponent announceOnce={announcement}>
           <ErrorMessage
             fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-            actionsLayout={actionsLayout}
             title={error.title}
             description={error?.description}
             collapsible={error?.collapsible}
