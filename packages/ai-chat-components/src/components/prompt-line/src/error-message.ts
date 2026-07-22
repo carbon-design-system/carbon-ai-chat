@@ -60,12 +60,6 @@ class ErrorMessage extends LitElement {
   collapsible = false;
 
   /**
-   * Whether the prompt line has alternate layout for expanded mode and/or message actions.
-   */
-  @property({ type: Boolean, reflect: true, attribute: "actions-layout" })
-  actionsLayout = false;
-
-  /**
    * Whether the error message is in fullscreen layout.
    */
   @property({ type: Boolean, attribute: "fullscreen" })
@@ -123,7 +117,7 @@ class ErrorMessage extends LitElement {
             !hasChevron
               ? ` ${blockClass}__warning-icon-and-text--no-chevron`
               : ""
-          }"
+          }${this._isExpanded ? ` ${blockClass}__text-overflow-gradient` : ""}"
         >
           ${this.fullscreen ? null : warningIcon}
           <div
