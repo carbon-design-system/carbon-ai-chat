@@ -69,6 +69,12 @@ class CDSAIChatHistoryToolbar extends LitElement {
   closeButtonLabelText = "Clear search";
 
   /**
+   * Toggles the native autofocus attribute on the text input
+   */
+  @property({ type: Boolean, reflect: true })
+  autofocus;
+
+  /**
    * Optional attributes to pass to the cds-search component.
    * Allows customization of search behavior and appearance.
    *
@@ -135,6 +141,7 @@ class CDSAIChatHistoryToolbar extends LitElement {
           ? html`<cds-search
               close-button-label-text=${effectiveCloseButtonLabel}
               ${searchAttributes ? spread(searchAttributes as any) : nothing}
+              autofocus=${this.autofocus}
             ></cds-search>`
           : nothing
       }
