@@ -569,17 +569,19 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 | ----------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------- |
 | `ChatCustomElement`           | `@carbon/ai-chat` component            | Mounts the chat UI at the fullscreen baseline.                                      |
 | `PublicConfig`                | `@carbon/ai-chat` type                 | Types the config object passed to `ChatCustomElement`.                              |
-| `StartersConfig`              | `@carbon/ai-chat` type                 | Shape of the `input.starters` object (items + renderCustomList).                    |
+| `StartersConfig`              | `@carbon/ai-chat` type                 | Shape of the `input.starters` object (items + renderCustomList + isOn).             |
 | `CustomListProps`             | `@carbon/ai-chat` type                 | Props received by the `renderCustomList` callback.                                  |
 | `input.expanded`              | config prop                            | Switches the prompt line to the expanded (two-row) layout.                          |
 | `input.starters`              | config prop                            | Shows the starter list on empty-editor focus; auto-sends on selection.              |
 | `starters.items`              | config prop                            | Static list of conversation-starter prompts.                                        |
 | `starters.renderCustomList`   | config prop                            | Replaces the built-in list UI with one that includes a "Prompt suggestions" header. |
-| `input.actions`               | config prop                            | Inline icon buttons rendered in the expanded actions row.                           |
+| `starters.isOn`               | config prop                            | Toggles the starters list on/off without removing the config.                       |
+| `input.actions`               | config prop                            | Single toggle action that enables or disables the starters list.                    |
 | `CDSAIChatAutocomplete`       | `@carbon/ai-chat-components` component | Renders the starter dropdown with `headerConfig`.                                   |
 | `layout.showFrame`            | config prop                            | Hides the default frame so the chat fills the host.                                 |
 | `openChatByDefault`           | config prop                            | Mounts straight into the conversation, no launcher.                                 |
 | `messaging.customSendMessage` | config prop                            | Mock backend echoing the user's message.                                            |
+| `cds-aichat-prompt-change`    | event                                  | Fires when the editor content changes; used to disable the toggle when not empty.   |
 
 </details>
 

@@ -486,8 +486,11 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 | `input.starters`              | property       | Shows the starter list on empty-editor focus; auto-sends on selection.               |
 | `starters.items`              | property       | Static list of conversation-starter prompts.                                         |
 | `starters.renderCustomList`   | property       | Imperatively creates `<cds-aichat-autocomplete>` with a "Prompt suggestions" header. |
-| `input.actions`               | property       | Inline icon buttons rendered in the expanded actions row.                            |
+| `starters.isOn`               | property       | Toggles the starters list on/off without removing the config.                        |
+| `input.actions`               | property       | Single toggle action that enables or disables the starters list.                     |
 | `<cds-aichat-autocomplete>`   | custom element | Renders the starter dropdown with `headerConfig`.                                    |
+| `onBeforeRender`              | property       | Subscribes to `cds-aichat-prompt-change` to track editor content.                    |
+| `cds-aichat-prompt-change`    | event          | Fires when the editor content changes; used to disable the toggle when not empty.    |
 
 </details>
 

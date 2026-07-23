@@ -7,7 +7,9 @@
 - Using `input.expanded: true` so the editor occupies its own full-width row and the action buttons render inline beneath it.
 - Configuring `input.starters` so the suggestion list appears immediately when the editor is focused and empty — no typing required. Selecting a starter inserts the text and auto-sends in one action.
 - Using `starters.renderCustomList` to imperatively create a `<cds-aichat-autocomplete>` element with a `headerConfig`, adding a "Prompt suggestions" title above the list. The send-arrow is hidden (`enableSendButton: false`) because auto-send already handles submission.
-- Configuring four dummy `input.actions` (Add, Download, Share, Settings) that each `alert()` when clicked, using `@carbon/icons` descriptors for the icon property.
+- Using `starters.isOn` to toggle the starters list on and off without removing the config — keeping the rich editor alive so re-enabling is instant.
+- Configuring a single `input.actions` toggle button (Chat icon) that enables or disables the starters list. The action is disabled while the input has text because starters only trigger on an empty editor.
+- Listening to the `cds-aichat-prompt-change` event via `onBeforeRender` to track whether the editor has any text.
 
 ## When to use this pattern
 
@@ -28,8 +30,11 @@
 | `input.starters`              | property       | Shows the starter list on empty-editor focus; auto-sends on selection.               |
 | `starters.items`              | property       | Static list of conversation-starter prompts.                                         |
 | `starters.renderCustomList`   | property       | Imperatively creates `<cds-aichat-autocomplete>` with a "Prompt suggestions" header. |
-| `input.actions`               | property       | Inline icon buttons rendered in the expanded actions row.                            |
+| `starters.isOn`               | property       | Toggles the starters list on/off without removing the config.                        |
+| `input.actions`               | property       | Single toggle action that enables or disables the starters list.                     |
 | `<cds-aichat-autocomplete>`   | custom element | Renders the starter dropdown with `headerConfig`.                                    |
+| `onBeforeRender`              | property       | Subscribes to `cds-aichat-prompt-change` to track editor content.                    |
+| `cds-aichat-prompt-change`    | event          | Fires when the editor content changes; used to disable the toggle when not empty.    |
 
 ## Run it
 

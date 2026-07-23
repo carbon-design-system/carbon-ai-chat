@@ -17,6 +17,10 @@
  * The starters appear immediately when the editor is focused and empty (no
  * typing required). Selecting an item auto-sends in one action.
  *
+ * A single toggle action enables or disables the starters list.
+ * The action is disabled while the input has text because starters only trigger
+ * on an empty editor.
+ *
  * APIs exercised:
  *   - `ChatCustomElement`
  *   - `PublicConfig.layout.showFrame`

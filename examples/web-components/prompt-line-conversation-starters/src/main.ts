@@ -15,19 +15,23 @@
  * header by setting `headerConfig` on `<cds-aichat-autocomplete>`.
  *
  * The starters appear immediately when the editor is focused and empty (no
- * typing required). Selecting an item inserts the text AND auto-sends in one
- * action. The send-arrow is hidden (`enable-send-button` attribute absent/false)
- * because auto-send already handles submission.
+ * typing required). Selecting an item auto-sends in one action.
+ *
+ * A single toggle action enables or disables the starters list.
+ * The action is disabled while the input has text because starters only trigger
+ * on an empty editor.
  *
  * APIs exercised:
  *   - `<cds-aichat-custom-element>`
  *   - `PublicConfig.layout.showFrame`
  *   - `PublicConfig.openChatByDefault`
  *   - `PublicConfig.input.expanded`
- *   - `PublicConfig.input.starters` as `StartersConfig` (items + renderCustomList)
+ *   - `PublicConfig.input.starters` as `StartersConfig` (items + renderCustomList + isOn)
  *   - `starters.renderCustomList` (adds the "Prompt suggestions" header)
- *   - `PublicConfig.input.actions` (four dummy icon-button actions)
+ *   - `starters.isOn` (toggled by the Chat action button)
+ *   - `PublicConfig.input.actions` (one toggle action that enables/disables starters)
  *   - `<cds-aichat-autocomplete>` from `@carbon/ai-chat-components`
+ *   - `cds-aichat-prompt-change` event (tracks whether the input has text)
  *
  * Start reading at: `STARTER_ITEMS`, `config`, and the `Demo` class below.
  */
@@ -38,14 +42,11 @@ import "@carbon/ai-chat-components/es/components/autocomplete/src/autocomplete.j
 
 import { type CustomListProps, type PublicConfig } from "@carbon/ai-chat";
 import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 
 import { customSendMessage } from "./customSendMessage";
 
-import Add16 from "@carbon/icons/es/add/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Settings16 from "@carbon/icons/es/settings/16.js";
+import Chat16 from "@carbon/icons/es/chat/16.js";
 
 /**
  * The four conversation-starter prompts. Replace with a dynamic source
@@ -75,7 +76,7 @@ function renderStarterList({ items, onSelect, onDismiss }: CustomListProps) {
   starters.style.setProperty("--cds-aichat-autocomplete-max-height", "328px");
   starters.items = items;
   starters.headerConfig = { showHeader: true, title: "Prompt suggestions" };
-  starters.attached = true;
+  starters.attached = false;
   starters.enableSendButton = false;
   starters.addEventListener(
     "cds-aichat-autocomplete-select",
@@ -86,56 +87,6 @@ function renderStarterList({ items, onSelect, onDismiss }: CustomListProps) {
   return starters;
 }
 
-const config: PublicConfig = {
-  // Route outbound turns through a local mock — swap for a real backend.
-  messaging: { customSendMessage },
-  layout: {
-    // Hide the default chat frame so the custom element fills the host
-    // element — required for the canonical fullscreen surface.
-    showFrame: false,
-  },
-  // Auto-open on mount so readers land directly in the chat view.
-  openChatByDefault: true,
-  input: {
-    // Expanded layout: the editor occupies its own full-width row, with
-    // the action buttons and send control on a second row beneath it.
-    expanded: true,
-
-    // StartersConfig: items appear when the editor is empty and focused
-    // (no typing required). renderCustomList adds the "Prompt suggestions"
-    // header. Selecting an item inserts the text AND auto-sends.
-    starters: {
-      items: STARTER_ITEMS,
-      renderCustomList: renderStarterList,
-    },
-
-    // Four inline action buttons in the expanded actions row.
-    // Each alerts on click — swap onClick for real handlers.
-    actions: [
-      {
-        text: "Add",
-        icon: Add16,
-        onClick: () => window.alert("Add action clicked"),
-      },
-      {
-        text: "Download",
-        icon: Download16,
-        onClick: () => window.alert("Download action clicked"),
-      },
-      {
-        text: "Share",
-        icon: Share16,
-        onClick: () => window.alert("Share action clicked"),
-      },
-      {
-        text: "Settings",
-        icon: Settings16,
-        onClick: () => window.alert("Settings action clicked"),
-      },
-    ],
-  },
-};
-
 @customElement("my-app")
 export class Demo extends LitElement {
   static styles = css`
@@ -145,14 +96,83 @@ export class Demo extends LitElement {
     }
   `;
 
+  /** Whether the conversation starters list is currently active. */
+  @state()
+  accessor startersEnabled: boolean = true;
+
+  /**
+   * Whether the prompt editor has any text. When true the toggle action is
+   * disabled because starters only trigger on an empty editor.
+   */
+  @state()
+  accessor inputHasText: boolean = false;
+
+  /**
+   * Handles `cds-aichat-prompt-change` events bubbled up from the prompt line.
+   * The event is `bubbles: true, composed: true` so it reaches this `@`-binding
+   * on `<cds-aichat-custom-element>` even though the prompt line lives inside a
+   * shadow root.
+   */
+  private _onPromptChange = (e: CustomEvent<{ rawValue: string }>): void => {
+    this.inputHasText = e.detail.rawValue.length > 0;
+  };
+
+  get config(): PublicConfig {
+    return {
+      // Route outbound turns through a local mock — swap for a real backend.
+      messaging: { customSendMessage },
+      layout: {
+        // Hide the default chat frame so the custom element fills the host
+        // element — required for the canonical fullscreen surface.
+        showFrame: false,
+      },
+      // Auto-open on mount so readers land directly in the chat view.
+      openChatByDefault: true,
+      input: {
+        // Expanded layout: the editor occupies its own full-width row, with
+        // the action buttons and send control on a second row beneath it.
+        expanded: true,
+
+        // StartersConfig: items appear when the editor is empty and focused
+        // (no typing required). renderCustomList adds the "Prompt suggestions"
+        // header. Selecting an item inserts the text AND auto-sends.
+        // `isOn: false` suppresses the list without removing the config, keeping
+        // the rich editor alive so toggling back on is instant.
+        starters: {
+          items: STARTER_ITEMS,
+          renderCustomList: renderStarterList,
+          isOn: this.startersEnabled,
+        },
+
+        // Single toggle action: enables or disables the conversation starters.
+        // Disabled when the input has text because starters only trigger on an
+        // empty editor.
+        actions: [
+          {
+            text: this.startersEnabled
+              ? "Hide conversation starters"
+              : "Show conversation starters",
+            icon: Chat16,
+            onClick: () => {
+              this.startersEnabled = !this.startersEnabled;
+            },
+            disabled: this.inputHasText,
+          },
+        ],
+      },
+    };
+  }
+
   render() {
+    const cfg = this.config;
     return html`
       <cds-aichat-custom-element
         class="chat-custom-element"
-        .messaging=${config.messaging}
-        .layout=${config.layout}
-        .openChatByDefault=${config.openChatByDefault}
-        .input=${config.input}
+        .messaging=${cfg.messaging}
+        .layout=${cfg.layout}
+        .openChatByDefault=${cfg.openChatByDefault}
+        .input=${cfg.input}
+        @cds-aichat-prompt-change=${this._onPromptChange}
       ></cds-aichat-custom-element>
     `;
   }
