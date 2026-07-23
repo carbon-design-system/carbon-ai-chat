@@ -151,6 +151,70 @@
         "rules": {
           "@typescript-eslint/no-non-null-assertion": "off"
         }
+      },
+      {
+        "files": [
+          "packages/ai-chat/src/chat/services/**/*.ts",
+          "packages/ai-chat/src/chat/services/**/*.tsx",
+          "packages/ai-chat/src/chat/store/**/*.ts",
+          "packages/ai-chat/src/chat/store/**/*.tsx",
+          "packages/ai-chat/src/chat/events/**/*.ts",
+          "packages/ai-chat/src/chat/events/**/*.tsx",
+          "packages/ai-chat/src/chat/instance/**/*.ts",
+          "packages/ai-chat/src/chat/instance/**/*.tsx",
+          "packages/ai-chat/src/chat/schema/**/*.ts",
+          "packages/ai-chat/src/chat/schema/**/*.tsx",
+          "packages/ai-chat/src/chat/sdk/**/*.ts",
+          "packages/ai-chat/src/chat/sdk/**/*.tsx"
+        ],
+        "rules": {
+          "no-restricted-imports": [
+            "error",
+            {
+              "paths": [
+                {
+                  "name": "react",
+                  "message": "This directory is part of the framework-agnostic SDK core and must not import React. See packages/ai-chat/AGENTS.md's \"SDK boundary\" note."
+                },
+                {
+                  "name": "react-dom",
+                  "message": "This directory is part of the framework-agnostic SDK core and must not import React. See packages/ai-chat/AGENTS.md's \"SDK boundary\" note."
+                },
+                {
+                  "name": "lit",
+                  "message": "This directory is part of the framework-agnostic SDK core and must not import Lit. See packages/ai-chat/AGENTS.md's \"SDK boundary\" note."
+                },
+                {
+                  "name": "@lit/react",
+                  "message": "This directory is part of the framework-agnostic SDK core and must not import Lit. See packages/ai-chat/AGENTS.md's \"SDK boundary\" note."
+                }
+              ],
+              "patterns": [
+                {
+                  "group": [
+                    "@carbon/ai-chat-components",
+                    "@carbon/ai-chat-components/*"
+                  ],
+                  "message": "This directory is part of the framework-agnostic SDK core and must not import the component package (Lit can ride in through it). Host styling belongs in src/chat/boot/. See packages/ai-chat/AGENTS.md's \"SDK boundary\" note."
+                },
+                {
+                  "group": [
+                    "**/components/**",
+                    "**/components-legacy/**",
+                    "**/hooks/**",
+                    "**/providers/**",
+                    "**/contexts/**",
+                    "**/hocs/**",
+                    "**/AppShell*",
+                    "**/utils-react/**",
+                    "**/boot/**"
+                  ],
+                  "message": "This directory is part of the framework-agnostic SDK core and must not import view-layer or app-boot modules. See packages/ai-chat/AGENTS.md's \"SDK boundary\" note."
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "rules": {

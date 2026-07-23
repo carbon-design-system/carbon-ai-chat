@@ -38,11 +38,22 @@ Load only what you need:
   - `languages/` — `intl-messageformat` string bundles. Adding a key means adding it to every locale file in the same PR; English is the source of truth.
   - `components/` vs `components-legacy/` — **always author new UI in `components/`**. `components-legacy/` is closed to new components; bug fixes and refactoring transitions out are welcome. Lift to `@carbon/ai-chat-components` when a component has no chat-specific state.
   - `ai-chat-components/` — React bindings (`@lit/react`) around the sibling package's Lit components.
+  - `sdk/` — the internal `ChatSDK` lifecycle facade (`acquireChatSDK`, `ChatSDK`) and the curated state layer (`valueStore.ts`, `slotStates.ts`, `messagesState.ts`, `toPublicMessage.ts`) behind the `sdk/index.ts` barrel. Framework-agnostic by construction — becomes `@carbon/ai-chat/sdk` in 2.0, the headless surface a shell (or a consumer composing their own chat from `@carbon/ai-chat-components` elements) drives. See the [SDK boundary](#sdk-boundary) note below.
+  - `boot/` — the shipped app's boot pipeline (`appBoot.ts`: boot-container styling, `mergePublicConfig` defaults, the accidental-remount diagnostic). Shell plumbing run _around_ `acquireChatSDK`, deliberately outside `sdk/` — a compose-your-own consumer never calls any of it.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
 - [src/web-components/](src/web-components/) — Lit hosts. Kept thin: bridge props/events/slots to the React core.
 - [src/types/](src/types/) — public type surface. Anything exported through `aiChatEntry.tsx` is public API; treat edits with semver discipline. **Read [src/types/AGENTS.md](src/types/AGENTS.md) before editing** — TypeDoc output ships as the public docs site.
 - [tests/](tests/) — Jest specs in `spec/` folders under `tests/<area>/`. Setup in `setup.ts`; shared fixtures in `test_helpers.ts`. See [tests.md](references/tests.md).
 - [docs/](docs/) — consumer-facing docs published via TypeDoc. See [docs/AGENTS.md](docs/AGENTS.md) before editing.
+
+## SDK boundary
+
+`src/chat/{services,store,events,instance,schema,sdk}/` must stay framework-agnostic (no React, no Lit, no view-layer imports) so it can become the headless `@carbon/ai-chat/sdk` export in 2.0 without a rewrite. The split to keep in mind: `sdk/` is the surface a shell — or a consumer composing their own chat — drives (`acquireChatSDK`, lifecycle, curated state stores); anything only the shipped app's boot needs (container CSS, config defaults, remount diagnostics) belongs in `src/chat/boot/`, which is shell territory and off-limits to the fenced directories. Two mechanical guards enforce the boundary:
+
+- **ESLint fence** — root `package.json`'s `eslintConfig.overrides` bans direct `react`/`react-dom`/`lit`/`@lit/react` imports, any import of `@carbon/ai-chat-components` (Lit can ride in through it), and any import of a view or boot directory (`components/`, `components-legacy/`, `hooks/`, `providers/`, `contexts/`, `hocs/`, `AppShell*`, `utils-react/`, `boot/`) from those directories. This check is per-file and non-transitive.
+- **Import-graph spec** (`tests/sdk/spec/sdkBoundary_spec.ts`) — walks every module transitively reachable from the `sdk/index.ts` barrel and fails on any runtime react/lit/component-package import (sole exception: the component package's import-free per-component `defs.js` enum modules), any import (even type-only) of a view-layer or boot module, or a type-only react-ish import outside an exact, intentionally-shrinking allowlist of public-types files that unavoidably carry a `ReactNode`-shaped callback type today. This catches leaks the per-file lint fence can't, since it also follows type-only imports several files deep.
+
+`src/chat/utils/` is deliberately **not** fenced — it legitimately mixes core and view utilities; the graph spec's transitive walk covers whatever of it the sdk barrel actually reaches.
 
 ## Build, test, lint
 

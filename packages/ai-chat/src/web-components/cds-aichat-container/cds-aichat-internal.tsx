@@ -23,6 +23,7 @@ import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import type { RenderUserDefinedInputNode } from "../../types/component/ChatContainer";
+import type { ChatSlotStates } from "../../chat/sdk/slotStates.js";
 
 /**
  * Structural `hasChanged` for object properties: Lit defaults to identity, which
@@ -72,8 +73,8 @@ class ChatContainerInternal extends LitElement {
   onBeforeRender: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI Chat is called. This function can return a Promise
-   * which will cause Carbon AI Chat to wait for it before rendering.
+   * This function is called once, after the first render of Carbon AI Chat has committed. It does not gate
+   * rendering — its return value is not awaited.
    */
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
@@ -86,8 +87,38 @@ class ChatContainerInternal extends LitElement {
   @property({ attribute: false })
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
+  /**
+   * Called on every mount/attach of Carbon AI Chat (see the public `onAttach` prop). `remount` is
+   * `false` on the first boot and `true` on each reuse re-attach.
+   */
+  @property()
+  onAttach?: (instance: ChatInstance, details: { remount: boolean }) => void;
+
+  /**
+   * @internal Internal-only channel that hands the framework-agnostic slot-state stores down to
+   * `cds-aichat-container`. Not part of the public API — never document or reflect as an
+   * attribute.
+   */
+  @property()
+  onSlotStatesReady?: (slotStates: ChatSlotStates) => void;
+
+
   firstUpdated() {
-    if (this.config) {
+    // The isConnected guard: Lit still runs update cycles on a disconnected element, and
+    // rendering there would boot the chat into a detached shadow root that no future
+    // disconnectedCallback tears down. connectedCallback picks the render up on reconnect.
+    if (this.isConnected && this.config) {
+      this.renderReactApp();
+    }
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Covers the two renders updated()/firstUpdated() skip while disconnected: a reconnect after
+    // a real disconnect tore the root down (no firstUpdated re-fires, and unchanged properties
+    // mean no updated() either), and property changes that arrived while detached. Before the
+    // first update cycle there is nothing to render yet — firstUpdated handles that.
+    if (this.config && this.hasUpdated) {
       this.renderReactApp();
     }
   }
@@ -97,8 +128,11 @@ class ChatContainerInternal extends LitElement {
     // property on this host is forwarded to `ChatAppEntry`, so deriving the
     // trigger from the live `changedProperties` set — rather than a
     // hand-maintained list of names — means a newly-added forwarded prop can't be
-    // silently dropped from the re-render path.
-    if (this.config && changedProperties.size > 0) {
+    // silently dropped from the re-render path. The isConnected guard keeps a
+    // property update on a detached element (updates still run while
+    // disconnected) from silently re-booting the chat into a detached shadow
+    // root with no teardown path; connectedCallback re-renders on reconnect.
+    if (this.isConnected && this.config && changedProperties.size > 0) {
       this.renderReactApp();
     }
   }
@@ -122,6 +156,8 @@ class ChatContainerInternal extends LitElement {
         onBeforeRender={this.onBeforeRender}
         onAfterRender={this.onAfterRender}
         renderUserDefinedInputNode={this.renderUserDefinedInputNode}
+        onAttach={this.onAttach}
+        onSlotStatesReady={this.onSlotStatesReady}
         container={container}
         element={this.element}
         chatWrapper={this}
@@ -146,8 +182,23 @@ class ChatContainerInternal extends LitElement {
   }
 
   disconnectedCallback(): void {
-    this.root?.unmount();
     super.disconnectedCallback();
+    // A disconnect can be transient — the browser fires disconnectedCallback then
+    // connectedCallback synchronously when an element is merely moved in the DOM. Defer teardown
+    // to a microtask and only run it if the element is still disconnected, so a move/reconnect
+    // keeps the live React root instead of tearing it down and re-booting.
+    queueMicrotask(() => {
+      if (this.isConnected) {
+        return;
+      }
+      this.root?.unmount();
+      // Remove and null both so a later reconnect rebuilds cleanly via `ensureReactRoot`;
+      // leaving `root` set would make a subsequent render() throw on an unmounted root, and
+      // leaving the node in the shadow root would stack a second one on rebuild.
+      this.reactContainer?.remove();
+      this.root = undefined;
+      this.reactContainer = undefined;
+    });
   }
 }
 

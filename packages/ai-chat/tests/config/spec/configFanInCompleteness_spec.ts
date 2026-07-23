@@ -71,6 +71,7 @@ const REACTIVE_BACKBONE_FIELDS = new Set<string>([
   "keyboardShortcuts",
   "markdown",
   "persistedState",
+  "featureFlags",
 ]);
 
 const ALL_FIELDS = FLATTENED_PUBLIC_CONFIG_FIELDS.map((field) => field.name);

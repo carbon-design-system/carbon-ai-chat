@@ -19,7 +19,7 @@ import {
 } from "../../types/messaging/LocalMessageItem";
 import { FileStatusValue } from "./constants";
 import { findLastWithMap } from "./lang/arrayUtils";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { uuid } from "./uuid";
 import type { JSONContent } from "@tiptap/core";
 import {
   HumanAgentMessageType,

@@ -371,7 +371,7 @@ function createChatInstance({
 
     destroy: () => {
       debugLog("Called instance.destroy");
-      serviceManager.actions.unloadServices();
+      serviceManager.onDestroy?.();
     },
   };
 

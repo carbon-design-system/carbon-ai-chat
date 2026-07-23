@@ -35,6 +35,34 @@ import { UploadConfig } from "./UploadConfig";
  */
 
 /**
+ * Opt-in access to behaviors slated to become the default — a breaking change — in the next major
+ * release. Enabling a flag here adopts that behavior early so you can migrate ahead of the upgrade.
+ * This mirrors the feature-flag convention used across `@carbon/react`. Individual flags are marked
+ * `@experimental` while they are still stabilizing. Consumed by {@link PublicConfig.featureFlags}.
+ *
+ * @category Config
+ */
+export interface PublicConfigFeatureFlags {
+  /**
+   * Reuse the live in-memory chat instance across a host unmount/remount instead of cold-booting a
+   * new one, so the conversation survives a remount (React StrictMode, a changing `key`, conditional
+   * rendering, or a props refactor). This is in-session only: the instance is held in memory and is
+   * not persisted across a full page reload. Becomes the default in 2.0. Defaults to `false`.
+   *
+   * @experimental Still stabilizing; the behavior may change before it becomes the default in 2.0.
+   */
+  reuseInstance?: boolean;
+
+  /**
+   * How long, in milliseconds, to keep a reused instance alive after its last host unmounts before
+   * disposing it. A remount within this window reuses the instance; after it, the instance is torn
+   * down. Only applies when {@link PublicConfigFeatureFlags.reuseInstance} is enabled. Defaults to
+   * 3000.
+   */
+  reuseInstanceGraceMs?: number;
+}
+
+/**
  * Configuration interface for Carbon AI Chat.
  *
  * @category Config
@@ -125,6 +153,13 @@ export interface PublicConfig {
    * by users using a screen reader.
    */
   namespace?: string;
+
+  /**
+   * Opt into behaviors slated to become the default in the next major release, following the
+   * feature-flag convention used across `@carbon/react`. See {@link PublicConfigFeatureFlags}.
+   * Enabling a flag here adopts a breaking change early to prepare for the upgrade.
+   */
+  featureFlags?: PublicConfigFeatureFlags;
 
   /**
    * Indicates if Carbon AI Chat should sanitize HTML from the assistant.

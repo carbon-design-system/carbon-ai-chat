@@ -63,7 +63,7 @@ import {
   outputItemToLocalItem,
 } from "../schema/outputItemToLocalItem";
 import { isResponseWithNestedItems, streamItemID } from "../utils/messageUtils";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { uuid } from "../utils/uuid";
 
 /**
  * Miscellaneous utilities to help in reducers.

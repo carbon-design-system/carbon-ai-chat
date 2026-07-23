@@ -22,6 +22,11 @@ import { ChatCustomElement } from "../../../src/react/ChatCustomElement";
 import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
 import { enLanguagePack } from "../../../src/types/config/LanguagePack";
+import { ChatInstance } from "../../../src/types/instance/ChatInstance";
+import {
+  peekReuseEntry,
+  __resetReuseInstanceRegistry,
+} from "../../../src/chat/services/reuseInstanceRegistry";
 
 describe("ChatCustomElement prop forwarding", () => {
   afterEach(() => {
@@ -71,5 +76,89 @@ describe("ChatCustomElement prop forwarding", () => {
     expect(wrapper?.tagName).toBe("DIV");
     expect(wrapper?.classList.contains("my-custom-chat")).toBe(true);
     expect(wrapper?.id).toBe("custom-chat-id");
+  });
+});
+
+describe("ChatCustomElement reuse re-attach visibility", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    __resetReuseInstanceRegistry();
+    jest.clearAllMocks();
+  });
+
+  function reuseProps(namespace: string) {
+    return {
+      ...createBaseTestProps(),
+      className: "sized-chat",
+      namespace,
+      featureFlags: { reuseInstance: true, reuseInstanceGraceMs: 100000 },
+    };
+  }
+
+  it("seeds a fresh element's hidden class from the preserved (closed) view state on re-attach", async () => {
+    const namespace = "custom-element-reattach-hidden";
+    let instance: ChatInstance | null = null;
+
+    const first = render(
+      React.createElement(ChatCustomElement, {
+        ...reuseProps(namespace),
+        onAttach: (i: ChatInstance) => {
+          instance = i;
+        },
+      }),
+    );
+    await waitFor(() => expect(instance).not.toBeNull());
+
+    // Close the chat, then confirm the mounted element reflects it.
+    await instance!.changeView({ launcher: true, mainWindow: false });
+    const firstWrapper = document.querySelector(".sized-chat") as HTMLElement;
+    await waitFor(() =>
+      expect(firstWrapper.classList.contains("cds-aichat--hidden")).toBe(true),
+    );
+
+    // Unmount + remount within the grace window: the fresh element must adopt the closed state
+    // immediately, without waiting for a view-change event that never re-fires.
+    first.unmount();
+    await waitFor(() => expect(peekReuseEntry(namespace)?.refCount).toBe(0));
+
+    render(React.createElement(ChatCustomElement, reuseProps(namespace)));
+    await waitFor(() => expect(peekReuseEntry(namespace)?.refCount).toBe(1));
+
+    await waitFor(() => {
+      const wrappers = document.querySelectorAll(".sized-chat");
+      const fresh = wrappers[wrappers.length - 1] as HTMLElement;
+      expect(fresh.classList.contains("cds-aichat--hidden")).toBe(true);
+    });
+  });
+
+  it("keeps view changes flowing to the remounted element (handlers re-subscribed per attach)", async () => {
+    const namespace = "custom-element-reattach-viewchange";
+    let instance: ChatInstance | null = null;
+
+    const first = render(
+      React.createElement(ChatCustomElement, {
+        ...reuseProps(namespace),
+        onAttach: (i: ChatInstance) => {
+          instance = i;
+        },
+      }),
+    );
+    await waitFor(() => expect(instance).not.toBeNull());
+    await instance!.changeView({ launcher: true, mainWindow: false });
+
+    first.unmount();
+    await waitFor(() => expect(peekReuseEntry(namespace)?.refCount).toBe(0));
+
+    render(React.createElement(ChatCustomElement, reuseProps(namespace)));
+    await waitFor(() => expect(peekReuseEntry(namespace)?.refCount).toBe(1));
+
+    // Open the chat on the persistent instance: the fresh element's re-subscribed default
+    // handler must clear its hidden class.
+    await instance!.changeView({ launcher: false, mainWindow: true });
+    await waitFor(() => {
+      const wrappers = document.querySelectorAll(".sized-chat");
+      const fresh = wrappers[wrappers.length - 1] as HTMLElement;
+      expect(fresh.classList.contains("cds-aichat--hidden")).toBe(false);
+    });
   });
 });

@@ -44,7 +44,7 @@ import { HistoryItem, HistoryNote } from "../../types/messaging/History";
 import { asyncForEach } from "../utils/lang/arrayUtils";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { sleep } from "../utils/lang/promiseUtils";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { uuid } from "../utils/uuid";
 import {
   addDefaultsToMessage,
   createMessageRequestForText,
@@ -116,10 +116,7 @@ import { PublicChatState } from "../../types/instance/PublicChatState";
 import { OnErrorData, OnErrorType } from "../../types/config/ErrorConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import type { Editor, JSONContent } from "@tiptap/core";
-import {
-  getRawText,
-  textToDoc,
-} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+import { getRawText, textToDoc } from "../utils/promptLineDoc";
 
 /**
  * Module-scoped flag so the deprecation warning for `updateRawValue` is
@@ -2390,8 +2387,6 @@ class ChatActionsImpl {
     serviceManager.mainWindow = undefined;
     serviceManager.appWindow = undefined;
     serviceManager.inputComponent = undefined;
-    serviceManager.container = undefined;
-    serviceManager.customHostElement = undefined;
   }
 
   /**

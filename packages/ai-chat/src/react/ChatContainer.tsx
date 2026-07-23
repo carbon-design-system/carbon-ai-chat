@@ -21,9 +21,16 @@ import { createPortal } from "react-dom";
 
 import ChatAppEntry from "../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { ChatContainerProps } from "../types/component/ChatContainer";
+import {
+  ChatContainerProps,
+  OnAttachDetails,
+} from "../types/component/ChatContainer";
 import { ChatInstance } from "../types/instance/ChatInstance";
-import { BusEventType } from "../types/events/eventBusTypes";
+import {
+  BusEventType,
+  BusEventViewChange,
+  BusEventViewPreChange,
+} from "../types/events/eventBusTypes";
 import {
   FLATTENED_PUBLIC_CONFIG_FIELDS,
   FlattenedConfigSource,
@@ -83,6 +90,7 @@ function ChatContainer(
   const {
     onBeforeRender,
     onAfterRender,
+    onAttach,
     onViewChange,
     onViewPreChange,
     renderUserDefinedResponse,
@@ -322,42 +330,91 @@ function ChatContainer(
     };
   }, [wrapper]);
 
+  // The view-change hooks are subscribed as stable trampolines that read the LATEST props: the
+  // instance (and its event bus) outlives a mount under `reuseInstance`, so subscribing the raw
+  // props would pin the first mount's closures on the persistent instance forever while the
+  // remounted host's handlers never fire.
+  const latestViewHandlersRef = useRef({ onViewPreChange, onViewChange });
+  latestViewHandlersRef.current = { onViewPreChange, onViewChange };
+  const viewPreChangeTrampolineRef = useRef(
+    (event: BusEventViewPreChange, instance: ChatInstance) =>
+      latestViewHandlersRef.current.onViewPreChange?.(event, instance),
+  );
+  const viewChangeTrampolineRef = useRef(
+    (event: BusEventViewChange, instance: ChatInstance) =>
+      latestViewHandlersRef.current.onViewChange?.(event, instance),
+  );
+  const subscribedInstanceRef = useRef<ChatInstance | null>(null);
+
+  // Unsubscribe this mount's trampolines on unmount; the instance may live on in the registry.
+  useEffect(
+    () => () => {
+      const instance = subscribedInstanceRef.current;
+      if (instance) {
+        instance.off({
+          type: BusEventType.VIEW_PRE_CHANGE,
+          handler: viewPreChangeTrampolineRef.current,
+        });
+        instance.off({
+          type: BusEventType.VIEW_CHANGE,
+          handler: viewChangeTrampolineRef.current,
+        });
+        subscribedInstanceRef.current = null;
+      }
+    },
+    [],
+  );
+
+  // Fires on every attach (first boot and each reuse re-attach). Re-projects the instance's
+  // writeable-element slots into this mount's shadow tree — so slotted content follows the
+  // instance across remounts — subscribes the view-change hooks, then hands the instance to the
+  // consumer's `onAttach`.
+  const onAttachOverride = useCallback(
+    (instance: ChatInstance, details: OnAttachDetails) => {
+      const slots: HTMLElement[] = Object.entries(
+        instance.writeableElements,
+      ).map((writeableElement) => {
+        const [key, element] = writeableElement;
+        element.setAttribute("slot", key); // Assign slot attributes dynamically
+        return element;
+      });
+      setWriteableElementSlots(slots);
+
+      // Opt-in view-change observation hooks. The float container manages its own visibility,
+      // so there is no default handler — a trampoline is only subscribed when the consumer
+      // provides the prop. Guarded per instance so a StrictMode double-attach of the same
+      // instance does not double-subscribe.
+      if (subscribedInstanceRef.current !== instance) {
+        if (latestViewHandlersRef.current.onViewPreChange) {
+          instance.on({
+            type: BusEventType.VIEW_PRE_CHANGE,
+            handler: viewPreChangeTrampolineRef.current,
+          });
+        }
+        if (latestViewHandlersRef.current.onViewChange) {
+          instance.on({
+            type: BusEventType.VIEW_CHANGE,
+            handler: viewChangeTrampolineRef.current,
+          });
+        }
+        subscribedInstanceRef.current = instance;
+      }
+
+      onAttach?.(instance, details);
+    },
+    [onAttach],
+  );
+
   const onBeforeRenderOverride = useCallback(
     (instance: ChatInstance) => {
       if (instance) {
-        const addWriteableElementSlots = () => {
-          const slots: HTMLElement[] = Object.entries(
-            instance.writeableElements,
-          ).map((writeableElement) => {
-            const [key, element] = writeableElement;
-            element.setAttribute("slot", key); // Assign slot attributes dynamically
-            return element;
-          });
-          setWriteableElementSlots(slots);
-        };
-
-        addWriteableElementSlots();
-
-        // Opt-in view-change observation hooks. The float container manages
-        // its own visibility, so there is no default handler — a prop is only
-        // subscribed when the consumer provides it.
-        if (onViewPreChange) {
-          instance.on({
-            type: BusEventType.VIEW_PRE_CHANGE,
-            handler: onViewPreChange,
-          });
-        }
-        if (onViewChange) {
-          instance.on({
-            type: BusEventType.VIEW_CHANGE,
-            handler: onViewChange,
-          });
-        }
-
-        onBeforeRender?.(instance);
+        // Return the consumer's promise so it actually gates the first render, per the
+        // documented onBeforeRender contract.
+        return onBeforeRender?.(instance);
       }
+      return undefined;
     },
-    [onBeforeRender, onViewChange, onViewPreChange],
+    [onBeforeRender],
   );
 
   // If we are in SSR mode, just short circuit here. This prevents all of our window.* and document.* stuff from trying
@@ -383,6 +440,7 @@ function ChatContainer(
             renderWriteableElements={renderWriteableElements}
             onBeforeRender={onBeforeRenderOverride}
             onAfterRender={onAfterRender}
+            onAttach={onAttachOverride}
             container={container}
             setParentInstance={setCurrentInstance}
             element={element}

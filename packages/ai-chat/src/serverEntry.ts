@@ -135,7 +135,10 @@ export {
   UpsertMessageUpdater,
 } from "./types/config/MessagingConfig";
 
-export { PublicConfig } from "./types/config/PublicConfig";
+export {
+  PublicConfig,
+  PublicConfigFeatureFlags,
+} from "./types/config/PublicConfig";
 export { CarbonTheme } from "./types/config/CarbonTheme";
 export { DisclaimerPublicConfig } from "./types/config/DisclaimerConfig";
 export {
@@ -313,6 +316,7 @@ export {
   MarkdownRendererCodeBlockData,
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
+  OnAttachDetails,
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
   RenderUserDefinedResponse,

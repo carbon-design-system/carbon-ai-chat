@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,7 +17,7 @@ import {
   TextItem,
   WithBodyAndFooter,
 } from "../../types/messaging/Messages";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { uuid } from "../utils/uuid";
 import {
   createMessageResponseForItem,
   isButtonResponseType,

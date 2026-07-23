@@ -17,10 +17,10 @@ import React, {
 
 import { ChatInstance } from "../types/instance/ChatInstance";
 import {
-  BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
 } from "../types/events/eventBusTypes";
+import { OnAttachDetails } from "../types/component/ChatContainer";
 import { ChatContainer, ChatContainerProps } from "./ChatContainer";
 import { FLATTENED_PUBLIC_CONFIG_FIELDS } from "../web-components/shared/flattenedPublicConfig";
 import { isBrowser } from "../chat/utils/browserUtils";
@@ -148,6 +148,7 @@ function ChatCustomElement(
   const {
     onBeforeRender,
     onAfterRender,
+    onAttach,
     onViewChange,
     onViewPreChange,
     renderUserDefinedResponse,
@@ -183,40 +184,37 @@ function ChatCustomElement(
     setElementReady(true);
   }, []);
 
-  const onBeforeRenderOverride = useCallback(
-    async (instance: ChatInstance) => {
-      /**
-       * A default handler for the "view:change" event. This will be used to show or hide the Carbon AI Chat main window
-       * by adding/removing a CSS class that sets the element size to 0x0 when hidden.
-       */
-      function defaultViewChangeHandler(event: BusEventViewChange) {
-        const el = containerRef.current;
-        if (el) {
-          if (event.newViewState.mainWindow) {
-            // Show: remove the hidden class, let the provided className handle sizing
-            el.classList.remove("cds-aichat--hidden");
-          } else {
-            // Hide: add the hidden class to set size to 0x0
-            el.classList.add("cds-aichat--hidden");
-          }
-        }
+  // Show or hide the custom element by toggling the 0x0 sizing class.
+  const applyVisibility = useCallback((mainWindowOpen: boolean) => {
+    const el = containerRef.current;
+    if (el) {
+      el.classList.toggle("cds-aichat--hidden", !mainWindowOpen);
+    }
+  }, []);
+
+  // The default view-change handler when the consumer provides none. Passed through to
+  // ChatContainer as the effective onViewChange so its per-attach trampoline (re)subscribes it on
+  // every mount — a reuse re-attach of a fresh element then shows/hides correctly, which a
+  // boot-once subscription on this component would not.
+  const defaultViewChangeHandler = useCallback(
+    (event: BusEventViewChange) =>
+      applyVisibility(event.newViewState.mainWindow),
+    [applyVisibility],
+  );
+
+  // On a reuse re-attach the initial view change does not re-fire (the view state is already
+  // established in the preserved store), so seed this fresh element's visibility from the current
+  // state — otherwise a chat that was closed at unmount would reappear full-size until the next
+  // toggle. Then hand off to the consumer's onAttach.
+  const onAttachOverride = useCallback(
+    (instance: ChatInstance, details: OnAttachDetails) => {
+      if (details.remount && !onViewChange) {
+        // Only when using the default handler; a consumer onViewChange owns its element sizing.
+        applyVisibility(Boolean(instance.getState().viewState.mainWindow));
       }
-
-      if (onViewPreChange) {
-        instance.on({
-          type: BusEventType.VIEW_PRE_CHANGE,
-          handler: onViewPreChange,
-        });
-      }
-
-      instance.on({
-        type: BusEventType.VIEW_CHANGE,
-        handler: onViewChange || defaultViewChangeHandler,
-      });
-
-      return onBeforeRender?.(instance);
+      onAttach?.(instance, details);
     },
-    [onViewPreChange, onViewChange, onBeforeRender],
+    [applyVisibility, onAttach, onViewChange],
   );
 
   return (
@@ -231,8 +229,11 @@ function ChatCustomElement(
           // Flattened PublicConfig fields, split from the shared field table.
           {...(configProps as ChatContainerProps)}
           // ChatContainer-specific props (not part of PublicConfig).
-          onBeforeRender={onBeforeRenderOverride}
+          onBeforeRender={onBeforeRender}
           onAfterRender={onAfterRender}
+          onAttach={onAttachOverride}
+          onViewPreChange={onViewPreChange}
+          onViewChange={onViewChange ?? defaultViewChangeHandler}
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderUserDefinedInputNode={renderUserDefinedInputNode}
           renderCustomMessageFooter={renderCustomMessageFooter}

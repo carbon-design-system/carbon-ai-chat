@@ -69,17 +69,6 @@ class ServiceManager {
   actions: ChatActionsImpl;
 
   /**
-   * The optional custom element for rendering provided in the publicConfig.
-   */
-  customHostElement: HTMLElement;
-
-  /**
-   * The entire wrapping element for the chat that includes styles and render. This is the element that
-   * is either appended to the body or the custom element. It includes the main window, and the launcher.
-   */
-  container: HTMLElement;
-
-  /**
    * The event bus on which events can be fired.
    */
   eventBus: EventBus;
@@ -174,6 +163,15 @@ class ServiceManager {
    * the current value on first `get()`.
    */
   slotStates?: ChatSlotStates;
+
+  /**
+   * Teardown hook installed by the lifecycle layer (`sdk/ChatSDK.ts`'s `acquireChatSDK`) during
+   * cold boot. `ChatInstanceImpl.destroy` calls it so the instance can trigger a full teardown —
+   * including reuse-registry eviction — without the core naming the SDK facade. Deliberately a bare
+   * `() => void` rather than a facade reference: the core must not depend on the layer built on top
+   * of it, or `sdk/` could not be lifted out as `@carbon/ai-chat/sdk` in 2.0.
+   */
+  onDestroy?: () => void;
 
   /**
    * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available

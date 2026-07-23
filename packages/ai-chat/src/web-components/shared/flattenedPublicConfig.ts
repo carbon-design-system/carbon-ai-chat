@@ -115,6 +115,10 @@ export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
   { name: "persistedState", options: { attribute: false, type: Object } },
   { name: "layout", options: { type: Object } },
   { name: "messaging", options: { type: Object } },
+  {
+    name: "featureFlags",
+    options: { type: Object, attribute: "feature-flags" },
+  },
   { name: "isReadonly", options: { type: Boolean, attribute: "is-readonly" } },
   {
     name: "persistFeedback",

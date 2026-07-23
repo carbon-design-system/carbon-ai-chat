@@ -30,6 +30,7 @@ import {
   BusEventViewPreChange,
 } from "../../types/events/eventBusTypes";
 import type {
+  OnAttachDetails,
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
@@ -110,10 +111,10 @@ class ChatCustomElement extends FlattenedConfigElement {
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI Chat is called.
-   *
-   * Like `onBeforeRender`, it receives the {@link ChatInstance}; use it when you need the instance only after the
-   * first render has completed.
+   * This function is called once, after the first render of Carbon AI Chat has committed. Like
+   * `onBeforeRender`, it receives the {@link ChatInstance}; use it when you need the instance only after the
+   * initial render has completed. Unlike `onBeforeRender`, this does not gate rendering — its return value is
+   * not awaited.
    */
   @property({ attribute: false })
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
@@ -155,6 +156,14 @@ class ChatCustomElement extends FlattenedConfigElement {
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
+
+  /**
+   * Called on every mount/attach of Carbon AI Chat — the first boot and each reuse re-attach (see
+   * `featureFlags.reuseInstance`). Receives the same {@link ChatInstance}; capture it here (it
+   * survives remounts) and use `details.remount` to run one-time setup only on the first attach.
+   */
+  @property({ attribute: false })
+  onAttach?: (instance: ChatInstance, details: OnAttachDetails) => void;
 
   /**
    * Optional callback to render user defined responses. When provided, the inner cds-aichat-container
@@ -210,11 +219,7 @@ class ChatCustomElement extends FlattenedConfigElement {
   private _instance!: ChatInstance;
 
   private defaultViewChangeHandler = (event: BusEventViewChange) => {
-    if (event.newViewState.mainWindow) {
-      this.classList.remove("cds-aichat--hidden");
-    } else {
-      this.classList.add("cds-aichat--hidden");
-    }
+    this.classList.toggle("cds-aichat--hidden", !event.newViewState.mainWindow);
   };
 
   private userDefinedHandler = (
@@ -315,6 +320,10 @@ class ChatCustomElement extends FlattenedConfigElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // A transient DOM move runs disconnected -> connected while the inner React root survives
+    // (see cds-aichat-internal's deferred teardown), so onAttach does not re-fire — re-wire
+    // from the retained instance instead. No-ops before first boot.
+    this.registerInstanceHandlers();
     this.addEventListener(
       "cds-aichat-markdown-plugin-host-mount",
       this.handlePluginHostMount,
@@ -346,46 +355,111 @@ class ChatCustomElement extends FlattenedConfigElement {
       host.remove();
     }
     this._pluginHosts.clear();
+    this.removeInstanceHandlers();
     super.disconnectedCallback();
   }
 
-  private onBeforeRenderOverride = async (instance: ChatInstance) => {
+  /**
+   * The bus handlers this element currently has registered on the instance, so they can be
+   * `off()`d on disconnect and re-registered on the next attach — under `reuseInstance` the
+   * event bus outlives the element, and an orphaned default view-change handler would keep
+   * toggling visibility classes on a detached node forever.
+   */
+  private _instanceHandlers: Array<{
+    type: BusEventType;
+    handler: (...args: unknown[]) => unknown;
+  }> = [];
+
+  /**
+   * Fires on every attach — cold boot and each reuse re-attach. All per-element wiring lives
+   * here (not in the boot-once `onBeforeRender` path) so a fresh element adopting a reused
+   * instance still captures the instance, re-registers its show/hide view-change handler, and
+   * re-derives its writeable-element slots.
+   */
+  private onAttachOverride = (
+    instance: ChatInstance,
+    details: OnAttachDetails,
+  ) => {
     this._instance = instance;
-    if (this.onViewPreChange) {
-      this._instance.on({
-        type: BusEventType.VIEW_PRE_CHANGE,
-        handler: this.onViewPreChange,
-      });
+    this.registerInstanceHandlers();
+    this.addWriteableElementSlots();
+    if (details.remount && !this.onViewChange) {
+      // On a reuse re-attach the initial view change does not re-fire, so seed this fresh
+      // element's visibility from the current state — otherwise a chat closed at unmount would
+      // reappear full-size until the next toggle. Only when using the default handler; a consumer
+      // onViewChange owns its own element sizing.
+      this.classList.toggle(
+        "cds-aichat--hidden",
+        !instance.getState().viewState.mainWindow,
+      );
     }
-    this._instance.on({
-      type: BusEventType.VIEW_CHANGE,
-      handler: this.onViewChange || this.defaultViewChangeHandler,
-    });
+    this.onAttach?.(instance, details);
+  };
+
+  private onBeforeRenderOverride = async (instance: ChatInstance) => {
+    // Per-element wiring happens in `onAttachOverride`, which ChatAppEntry always fires first
+    // (and again on each reuse re-attach, which never reaches this boot-once path).
+    await this.onBeforeRender?.(instance);
+  };
+
+  /** (Re-)registers this element's bus handlers on the instance, replacing any prior set. */
+  private registerInstanceHandlers() {
+    this.removeInstanceHandlers();
+    if (!this._instance) {
+      return;
+    }
+    const register = (
+      type: BusEventType,
+      handler: (...args: unknown[]) => unknown,
+    ) => {
+      this._instance.on({ type, handler });
+      this._instanceHandlers.push({ type, handler });
+    };
+
+    if (this.onViewPreChange) {
+      register(
+        BusEventType.VIEW_PRE_CHANGE,
+        this.onViewPreChange as (...args: unknown[]) => unknown,
+      );
+    }
+    register(
+      BusEventType.VIEW_CHANGE,
+      (this.onViewChange || this.defaultViewChangeHandler) as (
+        ...args: unknown[]
+      ) => unknown,
+    );
 
     if (!this.renderUserDefinedResponse) {
       // Legacy path: custom-element tracks slot names for manual slotting.
       // When renderUserDefinedResponse is set, the inner cds-aichat-container handles everything.
-      this._instance.on({
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: this.userDefinedHandler,
-      });
-      this._instance.on({
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        handler: this.userDefinedHandler,
-      });
+      register(
+        BusEventType.USER_DEFINED_RESPONSE,
+        this.userDefinedHandler as (...args: unknown[]) => unknown,
+      );
+      register(
+        BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        this.userDefinedHandler as (...args: unknown[]) => unknown,
+      );
     }
 
     if (!this.renderCustomMessageFooter) {
       // Legacy path: custom-element tracks slot names for manual slotting.
       // When renderCustomMessageFooter is set, the inner cds-aichat-container handles everything.
-      this._instance.on({
-        type: BusEventType.CUSTOM_FOOTER_SLOT,
-        handler: this.customFooterHandler,
-      });
+      register(
+        BusEventType.CUSTOM_FOOTER_SLOT,
+        this.customFooterHandler as (...args: unknown[]) => unknown,
+      );
     }
-    this.addWriteableElementSlots();
-    await this.onBeforeRender?.(instance);
-  };
+  }
+
+  private removeInstanceHandlers() {
+    if (this._instance) {
+      for (const { type, handler } of this._instanceHandlers) {
+        this._instance.off({ type, handler });
+      }
+    }
+    this._instanceHandlers = [];
+  }
 
   private addWriteableElementSlots() {
     this._writeableElementSlots = Object.keys(this._instance.writeableElements);
@@ -398,6 +472,7 @@ class ChatCustomElement extends FlattenedConfigElement {
         .header=${this.resolvedConfig.header}
         .onAfterRender=${this.onAfterRender}
         .onBeforeRender=${this.onBeforeRenderOverride}
+        .onAttach=${this.onAttachOverride}
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
@@ -455,9 +530,19 @@ interface CdsAiChatCustomElementAttributes extends Omit<
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
 
   /**
-   * This function is called after the render function of Carbon AI Chat is called.
+   * This function is called once, after the first render of Carbon AI Chat has committed. It receives the
+   * {@link ChatInstance}; use it when you need the instance only after the initial render has completed. Its
+   * return value is not awaited (it does not gate rendering).
    */
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * Called on every mount/attach of Carbon AI Chat — the first boot and each reuse re-attach (see
+   * {@link PublicConfigFeatureFlags.reuseInstance}). Receives the same {@link ChatInstance}; capture it
+   * here (it survives remounts) and use {@link OnAttachDetails.remount} to run one-time setup only on the
+   * first attach.
+   */
+  onAttach?: (instance: ChatInstance, details: OnAttachDetails) => void;
 
   /**
    * Called before a view change (the chat opening or closing) and awaited before the change proceeds. Use it to update
