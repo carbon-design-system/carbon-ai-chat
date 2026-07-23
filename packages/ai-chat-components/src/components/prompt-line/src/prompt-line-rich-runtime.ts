@@ -86,7 +86,7 @@ class RichController implements PromptLineController {
     host.setAttribute("role", "textbox");
     host.setAttribute("aria-multiline", "true");
     host.setAttribute("spellcheck", "true");
-    host.setAttribute("tabindex", "0");
+    host.setAttribute("tabindex", "-1");
     if (init.ariaLabel) {
       host.setAttribute("aria-label", init.ariaLabel);
     }
@@ -326,6 +326,7 @@ class RichController implements PromptLineController {
       this._editor.commands.setTextSelection({ from, to });
     }
     if (wasFocused) {
+      this._focusFromMouse = true;
       this._editor.commands.focus();
     }
   }

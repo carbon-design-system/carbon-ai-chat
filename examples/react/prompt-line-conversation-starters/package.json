@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-prompt-line-conversation-starters",
   "private": true,
-  "version": "1.17.0",
+  "version": "1.18.0-rc.0",
   "type": "module",
   "description": "An example demonstrating conversation starter suggestions in the prompt line autocomplete using the expanded layout.",
   "scripts": {
@@ -12,13 +12,16 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.17.0",
-    "@carbon/ai-chat-components": "^1.7.0",
+    "@carbon/ai-chat": "^1.18.0-rc.0",
+    "@carbon/ai-chat-components": "^1.8.0-rc.0",
     "@carbon/icons-react": "^11.53.0",
     "@carbon/web-components": "^2.58.1",
+    "build": "^0.1.4",
     "lit": "^3.1.0",
+    "npm": "^12.0.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "run": "^1.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

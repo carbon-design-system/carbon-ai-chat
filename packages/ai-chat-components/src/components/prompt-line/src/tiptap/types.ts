@@ -179,6 +179,15 @@ export interface StartersConfig extends Pick<
 > {
   /** The starter prompts to display. */
   items: SuggestionItem[];
+  /**
+   * Controls whether the starters list is active. Defaults to `true`.
+   *
+   * When true, the list appears automatically whenever the editor is focused
+   * and empty. Set to false to suppress the list without removing the config
+   * entirely. Keeping the config present with isOn: false leaves the editor
+   * intact and lets you toggle the list on and off instantly.
+   */
+  isOn?: boolean;
 }
 
 /**

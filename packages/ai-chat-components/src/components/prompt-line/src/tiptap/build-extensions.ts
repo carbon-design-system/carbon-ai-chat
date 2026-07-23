@@ -53,7 +53,9 @@ export function buildCarbonExtensions(
     out.push(carbonAutocomplete(configs.autocomplete));
   }
   if (configs.starters?.items.length) {
-    out.push(carbonStarterTrigger(configs.starters.items));
+    out.push(
+      carbonStarterTrigger(configs.starters.items, configs.starters.isOn),
+    );
   }
   return out;
 }

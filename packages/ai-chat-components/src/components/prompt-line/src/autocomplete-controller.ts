@@ -14,6 +14,7 @@ import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 
 import "../../autocomplete/src/autocomplete.js";
+import type { StarterTriggerStorage } from "./tiptap/carbon-starter-trigger.js";
 import { resolveShowTriggerInChip } from "./tiptap/carbon-mention.js";
 import { projectRawValue } from "./tiptap/json-utils.js";
 import type PromptLineElement from "./prompt-line.js";
@@ -133,6 +134,8 @@ export class AutocompleteController {
       >
     >,
   ): void {
+    const prevIsOn = this._starters?.isOn;
+
     if ("mention" in next) {
       this._mention = next.mention;
     }
@@ -154,6 +157,26 @@ export class AutocompleteController {
     if (this._trigger) {
       // Re-resolve items against the new configs.
       this._kickoffResolve(this._trigger);
+    }
+    // isOn toggled: push the new value into the Tiptap extension storage, then
+    // either re-focus the editor (enable path — starters show on focus) or fire
+    // a no-op transaction so onTransaction → maybeEmit clears the trigger
+    // immediately (disable path).
+    if ("starters" in next && prevIsOn !== this._starters?.isOn) {
+      const editor = this._promptLine?.getEditor();
+      const storage = (editor?.storage as unknown as Record<string, unknown>)
+        ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
+      if (storage && editor) {
+        storage.isOn = this._starters?.isOn !== false;
+        if (storage.isOn) {
+          editor.view.dom.dispatchEvent(
+            new PointerEvent("pointerdown", { bubbles: true }),
+          );
+          editor.view.dom.focus({ preventScroll: true });
+        } else {
+          editor.view.dispatch(editor.state.tr);
+        }
+      }
     }
   }
 

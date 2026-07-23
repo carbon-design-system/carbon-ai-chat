@@ -15,8 +15,7 @@
  * header.
  *
  * The starters appear immediately when the editor is focused and empty (no
- * typing required). Selecting an item inserts the text AND auto-sends in one
- * action. The send-arrow is hidden so there is no duplicate send affordance.
+ * typing required). Selecting an item auto-sends in one action.
  *
  * APIs exercised:
  *   - `ChatCustomElement`
@@ -25,7 +24,7 @@
  *   - `PublicConfig.input.expanded`
  *   - `PublicConfig.input.starters` as `StartersConfig` (items + renderCustomList)
  *   - `starters.renderCustomList` (adds the "Prompt suggestions" header)
- *   - `PublicConfig.input.actions` (four dummy icon-button actions)
+ *   - `PublicConfig.input.actions` (one toggle action that enables/disables starters)
  *   - `CDSAIChatAutocomplete` from `@carbon/ai-chat-components`
  *
  * Start reading at: `App()` and the `useMemo`'d `config`.
@@ -38,8 +37,8 @@ import {
   StartersConfig,
 } from "@carbon/ai-chat";
 import CDSAIChatAutocomplete from "@carbon/ai-chat-components/es/react/autocomplete.js";
-import { Add, Download, Share, Settings } from "@carbon/icons-react";
-import React, { useMemo } from "react";
+import { Chat } from "@carbon/icons-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
@@ -47,7 +46,7 @@ import "@carbon/styles/css/styles.css";
 import "./App.css";
 
 /**
- * The four conversation-starter prompts. Replace with a dynamic source
+ * Example conversation-starter prompts. Replace with a dynamic source
  * (e.g. a fetch call) for production use.
  */
 const STARTER_ITEMS = [
@@ -62,8 +61,7 @@ const STARTER_ITEMS = [
  *
  * Wraps `CDSAIChatAutocomplete` to add the "Prompt suggestions" header via
  * `headerConfig`. The send-arrow is hidden (`enableSendButton={false}`)
- * because selecting an item already auto-sends — one interaction, no
- * ambiguity.
+ * because selecting an item already auto-sends.
  */
 function StarterList(props: CustomListProps) {
   const { items, onSelect, onDismiss } = props;
@@ -71,7 +69,7 @@ function StarterList(props: CustomListProps) {
     <CDSAIChatAutocomplete
       items={items}
       headerConfig={{ showHeader: true, title: "Prompt suggestions" }}
-      attached
+      attached={false}
       enableSendButton={false}
       className="starter-list"
       onSelect={(e: CustomEvent<{ item: (typeof STARTER_ITEMS)[number] }>) =>
@@ -84,6 +82,26 @@ function StarterList(props: CustomListProps) {
 
 function App() {
   const renderCustomList = useMemo(() => StarterList, []);
+
+  const [startersEnabled, setStartersEnabled] = useState(true);
+  const [inputHasText, setInputHasText] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) {
+      return;
+    }
+    const onPromptChange = (e: Event) => {
+      const { rawValue } = (e as CustomEvent<{ rawValue: string }>).detail;
+      setInputHasText(rawValue.length > 0);
+    };
+    el.addEventListener("cds-aichat-prompt-change", onPromptChange);
+    return () => {
+      el.removeEventListener("cds-aichat-prompt-change", onPromptChange);
+    };
+  }, []);
 
   const starters: StartersConfig = useMemo(
     () => ({ items: STARTER_ITEMS, renderCustomList }),
@@ -108,39 +126,34 @@ function App() {
 
         // StartersConfig: items appear when the editor is empty and focused
         // (no typing required). renderCustomList adds the "Prompt suggestions"
-        // header. Selecting an item inserts the text AND auto-sends.
-        starters,
+        // header. Selecting an item auto-sends the message.
+        // `isOn: false` suppresses the list without removing the config, keeping
+        // the rich editor alive so toggling back on is instant.
+        starters: { ...starters, isOn: startersEnabled },
 
-        // Four inline action buttons in the expanded actions row.
-        // Each alerts on click — swap onClick for real handlers.
+        // Single toggle action: enables or disables the conversation starters.
+        // Disabled when the input has text because starters only trigger on an
+        // empty editor.
         actions: [
           {
-            text: "Add",
-            icon: Add,
-            onClick: () => window.alert("Add action clicked"),
-          },
-          {
-            text: "Download",
-            icon: Download,
-            onClick: () => window.alert("Download action clicked"),
-          },
-          {
-            text: "Share",
-            icon: Share,
-            onClick: () => window.alert("Share action clicked"),
-          },
-          {
-            text: "Settings",
-            icon: Settings,
-            onClick: () => window.alert("Settings action clicked"),
+            text: startersEnabled
+              ? "Hide conversation starters"
+              : "Show conversation starters",
+            icon: Chat,
+            onClick: () => setStartersEnabled((prev) => !prev),
+            disabled: inputHasText,
           },
         ],
       },
     }),
-    [starters],
+    [starters, startersEnabled, inputHasText],
   );
 
-  return <ChatCustomElement className="chat-custom-element" {...config} />;
+  return (
+    <div ref={containerRef}>
+      <ChatCustomElement className="chat-custom-element" {...config} />
+    </div>
+  );
 }
 
 const root = createRoot(document.querySelector("#root") as Element);
