@@ -47,7 +47,6 @@ import { createRoot } from "react-dom/client";
 
 import { customSendMessage } from "./customSendMessage";
 import "@carbon/styles/css/styles.css";
-import "./App.css";
 
 /**
  * Example conversation-starter prompts. Replace with a dynamic source

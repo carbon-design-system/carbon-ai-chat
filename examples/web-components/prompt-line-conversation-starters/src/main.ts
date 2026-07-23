@@ -71,9 +71,6 @@ const STARTER_ITEMS = [
  */
 function renderStarterList({ items, onSelect, onDismiss }: CustomListProps) {
   const starters = document.createElement("cds-aichat-autocomplete") as any;
-  // Set the CSS custom property on the host so the dropdown height matches
-  // the React example's App.css `.starter-list` rule.
-  starters.style.setProperty("--cds-aichat-autocomplete-max-height", "328px");
   starters.items = items;
   starters.headerConfig = { showHeader: true, title: "Prompt suggestions" };
   starters.attached = false;
