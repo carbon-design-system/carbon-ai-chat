@@ -31,24 +31,24 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from "@carbon/ai-chat-components/es/react/feedback.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { SystemMessage } from "../components/SystemMessage";
+import { SystemMessage } from "../components/responseTypes/message/SystemMessage";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
-import { AudioComponent } from "../components/messages/AudioComponent";
-import { ButtonItemComponent } from "../components/ButtonItemComponent";
-import { CardItemComponent } from "../components/messages/CardItemComponent";
+import { AudioComponent } from "../components/responseTypes/media/AudioComponent";
+import { ButtonItemComponent } from "../components/responseTypes/button/ButtonItemComponent";
+import { CardItemComponent } from "../components/responseTypes/card/CardItemComponent";
 import { PreviewCardComponent } from "./responseTypes/previewCard/PreviewCardComponent";
-import { CarouselItemComponent } from "../components/messages/CarouselItemComponent";
+import { CarouselItemComponent } from "../components/responseTypes/card/CarouselItemComponent";
 import { ConversationalSearch } from "./responseTypes/conversationalSearch/ConversationalSearch";
-import UserDefinedResponse from "../components/UserDefinedResponse";
+import UserDefinedResponse from "../components/responseTypes/userDefined/UserDefinedResponse";
 import CustomFooterSlot from "./responseTypes/custom/CustomFooterSlot";
 import { DatePickerComponent } from "../components/responseTypes/datePicker/DatePickerComponent";
-import InlineError from "../components/util/InlineError";
+import InlineError from "../components/responseTypes/error/InlineError";
 import { GridItemComponent } from "./responseTypes/grid/GridItemComponent";
 import { IFrameMessage } from "./responseTypes/iframe/IFrameMessage";
 import { Image } from "./responseTypes/image/Image";
 import { OptionComponent } from "../components/responseTypes/options/OptionComponent";
-import { MarkdownWithErrorHandling } from "../components/util/MarkdownWithErrorHandling";
-import { VideoComponent } from "../components/messages/VideoComponent";
+import { MarkdownWithErrorHandling } from "../components/helpers/MarkdownWithErrorHandling/MarkdownWithErrorHandling";
+import { VideoComponent } from "../components/responseTypes/media/VideoComponent";
 import { useSelector } from "../hooks/useSelector";
 import { shallowEqual } from "../store/appStore";
 import { AppState } from "../../types/state/AppState";
@@ -99,7 +99,7 @@ import {
   VideoItem,
   PreviewCardItem,
 } from "../../types/messaging/Messages";
-import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
+import { MarkdownWithDefaults } from "../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults";
 import { MessageRichUserContent } from "./MessageRichUserContent";
 import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
 import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";

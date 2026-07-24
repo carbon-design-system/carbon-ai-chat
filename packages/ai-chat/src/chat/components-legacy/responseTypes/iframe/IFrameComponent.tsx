@@ -15,8 +15,8 @@ import { useSelector } from "../../../hooks/useSelector";
 import { shallowEqual } from "../../../store/appStore";
 import { AppState } from "../../../../types/state/AppState";
 import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
-import { MountChildrenOnDelay } from "../../../components/util/MountChildrenOnDelay";
-import InlineError from "../../../components/util/InlineError";
+import { MountChildrenOnDelay } from "../../../components/helpers/MountChildrenOnDelay/MountChildrenOnDelay";
+import InlineError from "../../../components/responseTypes/error/InlineError";
 
 interface IFrameComponentProps {
   /**

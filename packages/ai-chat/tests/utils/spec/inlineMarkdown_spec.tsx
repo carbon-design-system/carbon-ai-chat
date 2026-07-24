@@ -10,7 +10,7 @@
 import React from "react";
 import { render } from "@testing-library/react";
 
-import { renderInlineMarkdown } from "../../../src/chat/components/util/inline-markdown";
+import { renderInlineMarkdown } from "../../../src/chat/components/helpers/InlineMarkdown/InlineMarkdown";
 
 function renderInline(text: string) {
   return render(<div data-testid="root">{renderInlineMarkdown(text)}</div>);

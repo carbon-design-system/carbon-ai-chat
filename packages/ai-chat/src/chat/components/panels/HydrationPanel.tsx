@@ -10,8 +10,8 @@
 import React from "react";
 
 import Loading from "../carbon/Loading";
-import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
-import { MountChildrenOnDelay } from "../util/MountChildrenOnDelay";
+import { AnnounceOnMountComponent } from "../helpers/AnnounceOnMountComponent/AnnounceOnMountComponent";
+import { MountChildrenOnDelay } from "../helpers/MountChildrenOnDelay/MountChildrenOnDelay";
 import type { AppState } from "../../../types/state/AppState";
 import { useSelector } from "../../hooks/useSelector";
 

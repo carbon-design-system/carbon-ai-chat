@@ -17,7 +17,7 @@ import { useServiceManager } from "../../../hooks/useServiceManager";
 import actions from "../../../store/actions";
 import { AppState } from "../../../../types/state/AppState";
 import { getURLHostName } from "../../../utils/browserUtils";
-import VisuallyHidden from "../../../components/util/VisuallyHidden";
+import VisuallyHidden from "../../../components/helpers/VisuallyHidden/VisuallyHidden";
 import { ClickableImage } from "../util/ClickableImage";
 import { IFrameItem } from "../../../../types/messaging/Messages";
 

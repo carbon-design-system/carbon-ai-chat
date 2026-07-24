@@ -8,7 +8,7 @@
  */
 
 import React, { forwardRef, Ref, useMemo, useRef, useState } from "react";
-import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
+import { AnnounceOnMountComponent } from "../helpers/AnnounceOnMountComponent/AnnounceOnMountComponent";
 import PromptLineShell from "@carbon/ai-chat-components/es/react/prompt-line-shell.js";
 import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
 import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";

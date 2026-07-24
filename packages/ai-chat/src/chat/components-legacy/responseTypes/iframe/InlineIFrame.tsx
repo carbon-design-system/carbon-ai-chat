@@ -17,7 +17,7 @@ import {
 } from "../../../utils/cspStyleUtils";
 import { getMediaDimensions } from "../../../utils/messageUtils";
 import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
-import InlineError from "../../../components/util/InlineError";
+import InlineError from "../../../components/responseTypes/error/InlineError";
 import { IFrameComponent } from "./IFrameComponent";
 import { IFrameItem } from "../../../../types/messaging/Messages";
 import { AppState } from "../../../../types/state/AppState";

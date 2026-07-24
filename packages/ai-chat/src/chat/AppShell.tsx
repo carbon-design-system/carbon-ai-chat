@@ -37,7 +37,7 @@ import { Input } from "./components/input/Input";
 import { AppShellWriteableElements } from "./AppShellWriteableElements";
 import { EndHumanAgentChatModal } from "./components/modals/EndHumanAgentChatModal";
 import { RequestScreenShareModal } from "./components/modals/RequestScreenShareModal";
-import WriteableElement from "./components/util/WriteableElement";
+import WriteableElement from "./components/helpers/WriteableElement/WriteableElement";
 import { createUnmappingMemoizer } from "./utils/memoizerUtils";
 import { WriteableElementName } from "./utils/constants";
 import { LocalMessageItem } from "../types/messaging/LocalMessageItem";

@@ -13,6 +13,14 @@
 
 $message-bar-width: 3px;
 
+.cds-aichat--icon-holder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--message {
     position: relative;

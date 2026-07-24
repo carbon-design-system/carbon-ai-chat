@@ -6,13 +6,8 @@
  */
 
 @use "responseTypes/imports" as responseTypes;
+@use "helpers/imports" as helpers;
 @use "header/imports" as header;
 @use "panels/imports" as panels;
 @use "modals/imports" as modals;
-@use "util/imports" as utils;
 @use "homeScreen/imports" as homescreen;
-@use "messages/imports" as messages;
-@use "BodyMessageComponents";
-@use "FooterButtonComponents";
-@use "util/TextBlock/TextBlock.scss" as textblock;
-@use "SystemMessage";

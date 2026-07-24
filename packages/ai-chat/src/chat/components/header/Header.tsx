@@ -28,7 +28,7 @@ import React, {
   useRef,
 } from "react";
 import { AISlug } from "../carbon/AISlug";
-import WriteableElement from "../util/WriteableElement";
+import WriteableElement from "../helpers/WriteableElement/WriteableElement";
 import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
 import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
 import { useSelector } from "../../hooks/useSelector";

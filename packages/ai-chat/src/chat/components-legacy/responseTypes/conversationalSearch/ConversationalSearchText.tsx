@@ -18,7 +18,7 @@ import {
   ConversationalSearchItemCitation,
 } from "../../../../types/messaging/Messages";
 import { AppState } from "../../../../types/state/AppState";
-import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
+import { MarkdownWithDefaults } from "../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults";
 import { useCounter } from "../../../hooks/useCounter";
 import { useSelector } from "../../../hooks/useSelector";
 import { useServiceManager } from "../../../hooks/useServiceManager";

@@ -14,8 +14,8 @@ import { useSelector } from "../../../hooks/useSelector";
 import { shallowEqual } from "../../../store/appStore";
 import { AppState } from "../../../../types/state/AppState";
 import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { SkeletonPlaceholder } from "../../../components/util/SkeletonPicker";
-import InlineError from "../../../components/util/InlineError";
+import { SkeletonPlaceholder } from "../../../components/helpers/SkeletonPicker/SkeletonPicker";
+import InlineError from "../../../components/responseTypes/error/InlineError";
 import { CitationCard } from "../util/citations/CitationCard";
 import { ConversationalSearchText } from "./ConversationalSearchText";
 import {

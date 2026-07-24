@@ -14,7 +14,7 @@ import { AriaAnnouncerManager } from "@carbon/ai-chat-components/es/globals/util
 import { AnnounceMessage } from "../../../types/state/AppState";
 import HasIntl from "../../../types/utilities/HasIntl";
 import { nodeToText } from "../../utils/domUtils";
-import VisuallyHidden from "../util/VisuallyHidden";
+import VisuallyHidden from "../helpers/VisuallyHidden/VisuallyHidden";
 
 /**
  * Holds the visually-hidden ARIA live regions used for screen-reader

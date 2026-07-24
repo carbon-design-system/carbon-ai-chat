@@ -22,7 +22,7 @@ import { useServiceManager } from "../../hooks/useServiceManager";
 import { AppState } from "../../../types/state/AppState";
 
 import { WriteableElementName } from "../../utils/constants";
-import WriteableElement from "../util/WriteableElement";
+import WriteableElement from "../helpers/WriteableElement/WriteableElement";
 import { MessageSendSource } from "../../../types/events/eventBusTypes";
 import { SendOptions } from "../../../types/instance/ChatInstance";
 import { PageObjectId } from "../../../testing/PageObjectId";

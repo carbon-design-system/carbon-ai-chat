@@ -12,7 +12,7 @@ import IntlMessageFormat from "intl-messageformat";
 
 import { useIntl } from "../../hooks/useIntl";
 import { isNil } from "../../utils/lang/langUtils";
-import { MarkdownWithDefaults } from "../../components/util/MarkdownWithDefaults";
+import { MarkdownWithDefaults } from "../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults";
 import { AgentAvailability } from "../../../types/config/ServiceDeskConfig";
 import { LanguagePack } from "../../../types/config/LanguagePack";
 

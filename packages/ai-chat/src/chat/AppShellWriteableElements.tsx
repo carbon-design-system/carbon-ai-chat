@@ -9,7 +9,7 @@
 
 import React, { useMemo } from "react";
 
-import WriteableElement from "./components/util/WriteableElement";
+import WriteableElement from "./components/helpers/WriteableElement/WriteableElement";
 import { WriteableElementName } from "../types/instance/WriteableElements";
 import { HasServiceManager } from "./hocs/withServiceManager";
 import { useSelector } from "./hooks/useSelector";

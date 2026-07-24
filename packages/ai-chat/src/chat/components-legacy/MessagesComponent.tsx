@@ -15,10 +15,10 @@ import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
 import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
 import { MessagesScrollHandle } from "./MessagesScrollHandle";
 import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
-import { ProcessingWithText } from "../components/util/ProcessingWithText";
+import { ProcessingWithText } from "../components/helpers/ProcessingWithText/ProcessingWithText";
 import { MessagesView } from "./MessagesView";
-import { SystemMessage } from "../components/SystemMessage";
-import WriteableElement from "../components/util/WriteableElement";
+import { SystemMessage } from "../components/responseTypes/message/SystemMessage";
+import WriteableElement from "../components/helpers/WriteableElement/WriteableElement";
 import {
   HasServiceManager,
   withServiceManager,

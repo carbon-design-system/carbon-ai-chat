@@ -16,7 +16,7 @@ import ChatButton, {
   CHAT_BUTTON_SIZE,
 } from "../carbon/ChatButton";
 import { ErrorMessage } from "./ErrorMessage";
-import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
+import { MarkdownWithDefaults } from "../helpers/MarkdownWithDefaults/MarkdownWithDefaults";
 import { useCarbonTheme } from "../../hooks/useCarbonTheme";
 import { carbonIconToReact } from "../../utils/carbonIcon";
 import { LanguagePack } from "../../../types/config/LanguagePack";

@@ -22,8 +22,8 @@ import React, { KeyboardEvent, PureComponent } from "react";
 
 import { nodeToText } from "../utils/domUtils";
 import { Avatar } from "./Avatar";
-import { InlineError } from "../components/util/InlineError";
-import VisuallyHidden from "../components/util/VisuallyHidden";
+import { InlineError } from "../components/responseTypes/error/InlineError";
+import VisuallyHidden from "../components/helpers/VisuallyHidden/VisuallyHidden";
 
 // Inline helper components (previously in util/IconHolder.tsx and util/ImageWithFallback.tsx)
 function IconHolder({ icon }: { icon: React.ReactNode }) {
@@ -102,7 +102,7 @@ import {
 import { LanguagePack } from "../../types/config/LanguagePack";
 import { ResponseUserAvatar } from "./ResponseUserAvatar";
 import { CarbonTheme } from "../../types/config/CarbonTheme";
-import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
+import { MarkdownWithDefaults } from "../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults";
 import {
   hasReasoningContent,
   resolveReasoningContainerOpen,

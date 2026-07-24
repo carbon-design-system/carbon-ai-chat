@@ -37,7 +37,7 @@ jest.mock("@carbon/ai-chat-components/es/react/markdown.js", () => ({
 import { StoreProvider } from "../../../src/chat/providers/StoreProvider";
 import actions from "../../../src/chat/store/actions";
 import { MarkdownConfig } from "../../../src/types/config/MarkdownConfig";
-import { MarkdownWithDefaults } from "../../../src/chat/components/util/MarkdownWithDefaults";
+import { MarkdownWithDefaults } from "../../../src/chat/components/helpers/MarkdownWithDefaults/MarkdownWithDefaults";
 import { makeConfigStore } from "../../test_helpers";
 
 function renderWithStore(ui: ReactElement, markdownConfig?: MarkdownConfig) {

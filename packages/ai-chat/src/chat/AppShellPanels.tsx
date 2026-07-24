@@ -18,8 +18,8 @@ import IFramePanel from "./components/panels/IFramePanel";
 import ViewSourcePanel from "./components/panels/ViewSourcePanel";
 import CatastrophicErrorPanel from "./components/panels/CatastrophicErrorPanel";
 import { PanelWithFocus } from "./components/panels/PanelWithFocus";
-import { BodyMessageComponents } from "./components/BodyMessageComponents";
-import { FooterButtonComponents } from "./components/FooterButtonComponents";
+import { BodyMessageComponents } from "./components/responseTypes/message/BodyMessageComponents";
+import { FooterButtonComponents } from "./components/responseTypes/button/FooterButtonComponents";
 import { MessageTypeComponent } from "./components-legacy/MessageTypeComponent";
 import { Header } from "./components/header/Header";
 import { useSelector } from "./hooks/useSelector";
@@ -36,7 +36,7 @@ import type { MessageTypeComponentProps } from "../types/messaging/MessageTypeCo
 import { HasServiceManager } from "./hocs/withServiceManager";
 import { shallowEqual } from "./store/appStore";
 import { BusEventType } from "../types/events/eventBusTypes";
-import WriteableElement from "./components/util/WriteableElement";
+import WriteableElement from "./components/helpers/WriteableElement/WriteableElement";
 import { PageObjectId } from "../testing/PageObjectId";
 
 interface AppShellPanelsProps extends HasServiceManager {

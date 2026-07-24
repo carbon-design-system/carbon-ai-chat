@@ -97,3 +97,6 @@ packages/ai-chat-components/scss
 
 # Plan working files (per-feature throwaway, see AGENTS_PLAN_AUTHORING.md)
 /PLAN*.md
+
+.github/issue-drafts
+

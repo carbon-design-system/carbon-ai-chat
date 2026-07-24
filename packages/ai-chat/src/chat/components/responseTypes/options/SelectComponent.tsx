@@ -22,7 +22,7 @@ import {
   SingleOption,
 } from "../../../../types/messaging/Messages";
 import { DROPDOWN_SIZE } from "@carbon/web-components/es/components/dropdown/defs.js";
-import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
+import { TextBlock } from "../../../components/helpers/TextBlock/TextBlock";
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
