@@ -1,0 +1,117 @@
+{/*
+Template for `src/components/<name>/__stories__/<name>-react.mdx` — the
+React-wrapper Storybook Overview (port 7007).
+
+Same shape and same section order as overview-lit.template.mdx. Three
+differences, and only three:
+
+  1. `<ArgTypes>` takes the *module ref* (`{Stories.Default}`), not a tag string —
+     it documents the wrapper's camelCase props and `on*` handlers.
+  2. Code blocks are `jsx`, using the wrapper components and camelCase props
+     (`isFlush`, not `is-flush`).
+  3. The import block pulls from `es/react/`, not `es/components/`.
+
+Copy this file into the component's `__stories__/` folder, rename it, delete
+this comment, and replace every placeholder:
+
+  <name>        kebab-case folder, e.g. `card`
+  <Component>   wrapper component name in PascalCase, e.g. `Card`
+  <Part>        a sub-component's name, e.g. `CardFooter`
+
+Keep headings, story names, and prose in sync with the Lit Overview — the two
+docs describe one component. No CDN block. Rules and tone live in storybook.md.
+*/}
+
+import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./<name>-react.stories";
+
+<Meta of={Stories} />
+
+# <Component>
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/<name>) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+{/* REQUIRED. One or two task-led sentences, then the live render — nothing else
+above the Canvas. */}
+
+Use `<Component>` to <what it does and when to reach for it>.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+{/* OPTIONAL. Mirror the Lit Overview, restated in React terms (prop names, not
+attribute names). */}
+
+- **<Capability>**: <what it gives the consumer>
+
+## Customization
+
+{/* OPTIONAL. Same content as the Lit Overview with `jsx` snippets. */}
+
+For the modifier system (`data-rounded`, `data-stacked`) and shared CSS custom
+properties, see [Styling & Modifiers](/docs/introduction-styling-modifiers--overview).
+
+### <Knob name>
+
+<What it controls and when to change it.>
+
+```jsx
+<<Component> <prop>={<value>} />
+```
+
+## Examples
+
+{/* OPTIONAL. One `###` per composition, matching the Lit Overview's examples.
+Each snippet is a complete, runnable function component with its imports —
+that's what a React consumer copies. */}
+
+### <Composition name>
+
+<One sentence: what this shows and when to use it.>
+
+```jsx
+import { <Component>, <Part> } from "@carbon/ai-chat-components/es/react/<name>.js";
+
+function <Composition>() {
+  const handle<Verb> = (event) => {
+    console.log(event.detail);
+  };
+
+  return (
+    <<Component>>
+      <div slot="<slot>"><Content></div>
+      <<Part> <property>={[{ id: "<id>", label: "<Label>" }]} on<Verb>={handle<Verb>} />
+    </<Component>>
+  );
+}
+```
+
+## Component API
+
+{/* REQUIRED. The React side passes the *module ref*, so each documented
+sub-component needs its own story export to point at. */}
+
+### `<<Component>>`
+
+<ArgTypes of={Stories.Default} />
+
+### `<<Part>>`
+
+<ArgTypes of={Stories.<Part>Story} />
+
+## JSX (via import)
+
+{/* REQUIRED. */}
+
+```jsx
+import <Component> from "@carbon/ai-chat-components/es/react/<name>.js";
+```
+
+## Feedback
+
+{/* REQUIRED. One line, verbatim. */}
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
