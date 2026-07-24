@@ -9,7 +9,11 @@
 
 import type { AppStore } from "../store/appStore";
 import { IntlShape } from "../utils/i18n";
-import { AriaAnnouncerFunctionType } from "../contexts/AriaAnnouncerContext";
+import {
+  AriaAnnouncerFunctionType,
+  InputFunctions,
+  MainWindowFunctions,
+} from "../utils/viewHandles.js";
 
 import { EventBus } from "../events/EventBus";
 import { AppState } from "../../types/state/AppState";
@@ -24,10 +28,9 @@ import { UserSessionStorageService } from "./UserSessionStorageService";
 import { ChatInstance } from "../../types/instance/ChatInstance";
 import { WriteableElements } from "../../types/instance/WriteableElements";
 import { BusEvent } from "../../types/events/eventBusTypes";
-import { MainWindowFunctions } from "../AppShell";
 import { ChatActionsImpl } from "./ChatActionsImpl";
 import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import type { InputFunctions } from "../components/input/Input";
+import { ChatSlotStates } from "../sdk/slotStates.js";
 
 export interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -150,6 +153,27 @@ class ServiceManager {
    * determine if a restart occurred during the operation and if the results should be ignored.
    */
   restartCount = 0;
+
+  /**
+   * Unsubscribe handles for the store subscriptions registered in `loadServices`. Captured so that
+   * `ChatActionsImpl.unloadServices` can tear them down on disposal; a disposed instance leaves zero
+   * live store listeners.
+   */
+  storeUnsubscribers: Array<() => void> = [];
+
+  /**
+   * Set once this service manager has been disposed via `unloadServices`. Guards against
+   * double-teardown so disposal is idempotent.
+   */
+  disposed = false;
+
+  /**
+   * Framework-agnostic slot-projection state for the user-defined-response and custom-footer portal
+   * surfaces. Created once via `attachSlotStateTracking` during boot; the value stores hang off the
+   * manager so the accumulated slot state survives a host remount — a remounting subscriber reads
+   * the current value on first `get()`.
+   */
+  slotStates?: ChatSlotStates;
 
   /**
    * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available

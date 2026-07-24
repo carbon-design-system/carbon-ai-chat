@@ -11,7 +11,7 @@ import Checkmark16 from "@carbon/icons/es/checkmark/16.js";
 import Headset16 from "@carbon/icons/es/headset/16.js";
 import HelpDesk16 from "@carbon/icons/es/help-desk/16.js";
 import Logout16 from "@carbon/icons/es/logout/16.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+import { carbonIconToReact } from "../../../utils-react/carbonIcon";
 import Card from "@carbon/ai-chat-components/es/react/card.js";
 import Button from "../../../components/carbon/Button";
 import React, { ReactNode, useState } from "react";

@@ -16,7 +16,7 @@ import IconButton from "../carbon/IconButton";
 import { BUTTON_KIND } from "../carbon/Button";
 import Menu from "../carbon/Menu";
 import MenuItem from "../carbon/MenuItem";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 import { useFloatingMenuPosition } from "./useFloatingMenuPosition";
 import type { ToolbarAction } from "../../../types/config/HeaderConfig";
 

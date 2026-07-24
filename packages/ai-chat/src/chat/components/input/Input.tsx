@@ -18,7 +18,7 @@ import type { FileUpload } from "@carbon/ai-chat-components/es/components/prompt
 import { FileStatusValue } from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
 import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
 import { useChatAutocomplete } from "@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js";
-import type { Editor, JSONContent } from "@tiptap/core";
+import type { JSONContent } from "@tiptap/core";
 import actions from "../../store/actions";
 import {
   selectIsInputToHumanAgent,
@@ -44,10 +44,11 @@ import IconButton from "../carbon/IconButton";
 import { BUTTON_KIND } from "../carbon/Button";
 import Add16 from "@carbon/icons/es/add--large/16.js";
 import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import { carbonIconToReact } from "../../utils-react/carbonIcon";
 import { InputActionsMenu } from "./InputActionsMenu";
 import { InputActionsInline } from "./InputActionsInline";
 import type { ToolbarAction } from "../../../types/config/HeaderConfig";
+import type { InputFunctions } from "../../utils/viewHandles";
 import { WriteableElementName } from "../../../types/instance/WriteableElements";
 import PromptLineWriteableSlot from "./PromptLineWriteableSlot";
 
@@ -182,50 +183,6 @@ interface InputProps {
      */
     collapsible?: boolean;
   };
-}
-
-/**
- * Functions exposed by the Input component via ref.
- */
-interface InputFunctions {
-  /**
-   * Requests focus on the input field.
-   */
-  requestFocus: () => boolean;
-
-  /**
-   * Returns true if the input field currently has focus.
-   */
-  hasFocus: () => boolean;
-
-  /**
-   * Replace the entire input content. Throws if the editor is not currently
-   * rendered.
-   */
-  setContent: (
-    next: JSONContent | string | ((prev: JSONContent) => JSONContent),
-  ) => void;
-
-  /**
-   * Insert content at the cursor or at `options.at` (a PM document offset).
-   * Throws if the editor is not currently rendered.
-   */
-  insertContent: (
-    content: JSONContent | string,
-    options?: { at?: number },
-  ) => void;
-
-  /**
-   * Probe-style access to the live Tiptap editor. Returns `null` when the
-   * editor is not mounted. Never triggers a load.
-   */
-  getEditor: () => Editor | null;
-
-  /**
-   * Loads Tiptap on demand (upgrading the textarea in place), then resolves
-   * with the live editor. Rejects when the input surface is not mounted.
-   */
-  ensureEditor: () => Promise<Editor>;
 }
 
 /**
@@ -744,4 +701,5 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 }
 
 const InputExport = React.memo(forwardRef(Input));
-export { InputExport as Input, InputFunctions };
+export { InputExport as Input };
+export type { InputFunctions };

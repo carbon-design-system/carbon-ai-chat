@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -66,12 +66,16 @@ interface HumanAgentService {
    * programmatically from an instance method.
    * @param showHumanAgentLeftMessage Indicates if the chat should show the "agent left" message.
    * @param showAssistantReturnMessage Indicates if the chat should show the "bot return" message.
+   * @param options Optional settings for how the chat is ended.
+   * @param options.forceEnd When true, skips the cancellable pre:endChat event so the chat always
+   * ends. Used by service teardown, where a host listener must not be able to veto the disconnect.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
   endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage?: boolean,
     showAssistantReturnMessage?: boolean,
+    options?: { forceEnd?: boolean },
   ): Promise<void>;
 
   /**

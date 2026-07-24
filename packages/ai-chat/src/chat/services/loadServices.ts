@@ -56,27 +56,33 @@ function createServiceManager(appConfig: AppConfig) {
     serviceManager,
     publicConfig,
   );
-  serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
-  serviceManager.store.subscribe(fireStateChangeEvent(serviceManager));
-  // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
-  // strings or locale change. Boot's `setIntl` below seeds the formatter before
-  // first paint (no dispatch fires during boot, so this subscription can't).
-  serviceManager.store.subscribe(refreshLocalizationOnChange(serviceManager));
+  // Capture every store-subscription handle in `storeUnsubscribers` so `unloadServices` can tear
+  // them down on disposal.
+  serviceManager.storeUnsubscribers.push(
+    serviceManager.store.subscribe(copyToSessionStorage(serviceManager)),
+    serviceManager.store.subscribe(fireStateChangeEvent(serviceManager)),
+    // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
+    // strings or locale change. Boot's `setIntl` below seeds the formatter before
+    // first paint (no dispatch fires during boot, so this subscription can't).
+    serviceManager.store.subscribe(refreshLocalizationOnChange(serviceManager)),
+  );
 
   // Subscribe to theme changes to start/stop the theme watcher as needed
   let currentOriginalTheme =
     serviceManager.store.getState().config.derived.themeWithDefaults
       .originalCarbonTheme;
 
-  serviceManager.store.subscribe(() => {
-    const newOriginalTheme =
-      serviceManager.store.getState().config.derived.themeWithDefaults
-        .originalCarbonTheme;
-    if (newOriginalTheme !== currentOriginalTheme) {
-      serviceManager.themeWatcherService.onThemeChange(newOriginalTheme);
-      currentOriginalTheme = newOriginalTheme;
-    }
-  });
+  serviceManager.storeUnsubscribers.push(
+    serviceManager.store.subscribe(() => {
+      const newOriginalTheme =
+        serviceManager.store.getState().config.derived.themeWithDefaults
+          .originalCarbonTheme;
+      if (newOriginalTheme !== currentOriginalTheme) {
+        serviceManager.themeWatcherService.onThemeChange(newOriginalTheme);
+        currentOriginalTheme = newOriginalTheme;
+      }
+    }),
+  );
   serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
   serviceManager.themeWatcherService = new ThemeWatcherService(
     serviceManager.store,

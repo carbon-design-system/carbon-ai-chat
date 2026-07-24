@@ -9,7 +9,7 @@
 
 import Link16 from "@carbon/icons/es/link/16.js";
 import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import { carbonIconToReact } from "../../../../utils/carbonIcon";
+import { carbonIconToReact } from "../../../../utils-react/carbonIcon";
 import React, { useLayoutEffect, useRef } from "react";
 
 import { useSelector } from "../../../../hooks/useSelector";

@@ -18,12 +18,10 @@ import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
 import { FileStatusValue } from "../config/ServiceDeskConfig";
 import {
   BUTTON_KIND,
+  BUTTON_KIND as _CHAT_BUTTON_KIND,
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/defs.js";
-import {
-  CHAT_BUTTON_KIND as _CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
+import { CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE } from "@carbon/ai-chat-components/es/components/chat-button/defs.js";
 import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
 import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
 import type { JSONContent } from "@tiptap/core";

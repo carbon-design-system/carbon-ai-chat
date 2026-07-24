@@ -12,7 +12,7 @@
  */
 
 import UserAvatar32 from "@carbon/icons/es/user--avatar/32.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
+import { carbonIconToReact } from "../utils-react/carbonIcon";
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { ResponseUserProfile } from "../../types/messaging/Messages";

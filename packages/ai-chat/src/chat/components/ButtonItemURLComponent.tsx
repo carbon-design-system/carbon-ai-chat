@@ -9,7 +9,7 @@
 
 import Launch16 from "@carbon/icons/es/launch/16.js";
 import Link from "./carbon/Link";
-import { carbonIconToReact } from "../utils/carbonIcon";
+import { carbonIconToReact } from "../utils-react/carbonIcon";
 import React from "react";
 
 import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
