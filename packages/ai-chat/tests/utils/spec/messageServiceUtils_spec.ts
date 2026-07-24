@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { MessageLoadingManager } from "../../../src/chat/utils/messageServiceUtils";
+import { MessageLoadingManager } from '../../../src/chat/utils/messageServiceUtils';
 
-describe("MessageLoadingManager", () => {
+describe('MessageLoadingManager', () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -18,7 +18,7 @@ describe("MessageLoadingManager", () => {
     jest.useRealTimers();
   });
 
-  it("triggers silent loading and end callbacks", () => {
+  it('triggers silent loading and end callbacks', () => {
     const manager = new MessageLoadingManager();
     const onExceeded = jest.fn();
     const onEnd = jest.fn();
@@ -34,7 +34,7 @@ describe("MessageLoadingManager", () => {
     expect(onTimeout).not.toHaveBeenCalled();
   });
 
-  it("triggers timeout callback", () => {
+  it('triggers timeout callback', () => {
     const manager = new MessageLoadingManager();
     const onTimeout = jest.fn();
 

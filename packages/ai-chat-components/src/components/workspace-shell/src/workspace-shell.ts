@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { LitElement, html, PropertyValues } from "lit";
-import { property } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./workspace-shell.scss?lit";
-import { HeaderCollapsibleManager } from "./header-collapsible-manager.js";
+import { LitElement, html, PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './workspace-shell.scss?lit';
+import { HeaderCollapsibleManager } from './header-collapsible-manager.js';
 
 /**
  * Workspace Shell.
@@ -36,7 +36,7 @@ class CDSAIChatWorkspaceShell extends LitElement {
    * body would have less space than the header.
    *
    */
-  @property({ type: Boolean, attribute: "auto-collapsible-header" })
+  @property({ type: Boolean, attribute: 'auto-collapsible-header' })
   autoCollapsibleHeader = false;
 
   /**
@@ -58,7 +58,7 @@ class CDSAIChatWorkspaceShell extends LitElement {
     super.updated(changedProperties);
 
     // If autoCollapsibleHeader changes, setup or teardown manager
-    if (changedProperties.has("autoCollapsibleHeader")) {
+    if (changedProperties.has('autoCollapsibleHeader')) {
       if (this.autoCollapsibleHeader) {
         this.setupHeaderCollapsibleManager();
       } else {
@@ -76,12 +76,12 @@ class CDSAIChatWorkspaceShell extends LitElement {
     }
 
     const headerSlot = this.shadowRoot.querySelector<HTMLSlotElement>(
-      'slot[name="header"]',
+      'slot[name="header"]'
     );
     const headerElement = headerSlot?.assignedElements()[0] as HTMLElement;
 
     if (headerElement) {
-      headerElement.removeAttribute("collapsible");
+      headerElement.removeAttribute('collapsible');
     }
   }
 
@@ -108,12 +108,12 @@ class CDSAIChatWorkspaceShell extends LitElement {
 
       this.headerCollapsibleManager = new HeaderCollapsibleManager(
         this.shadowRoot,
-        this,
+        this
       );
 
       this.headerCollapsibleManager.connect((state) => {
         this.headerCollapsibleManager?.updateHeaderCollapsible(
-          state.shouldCollapse,
+          state.shouldCollapse
         );
       });
     });

@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { JSX } from "typedoc";
+import { JSX } from 'typedoc';
 
 function itemContainsActive(item, currentUrl) {
   if (item.path === currentUrl) {
@@ -13,7 +13,7 @@ function itemContainsActive(item, currentUrl) {
   }
 
   return !!item.children?.some((child) =>
-    itemContainsActive(child, currentUrl),
+    itemContainsActive(child, currentUrl)
   );
 }
 
@@ -34,7 +34,7 @@ function promoteTypeReferenceCategories(tree) {
   const result = [];
 
   tree.forEach((item) => {
-    if (item.text === "Type reference" && item.children?.length) {
+    if (item.text === 'Type reference' && item.children?.length) {
       item.children.forEach((child) => {
         result.push({
           ...child,
@@ -56,7 +56,7 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
   const childHasActive =
     hasChildren &&
     item.children.some((child) => itemContainsActive(child, props.url));
-  const expanded = isActive || childHasActive ? "" : undefined;
+  const expanded = isActive || childHasActive ? '' : undefined;
 
   if (!hasChildren) {
     if (!href) {
@@ -65,24 +65,24 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
 
     if (depth === 0) {
       return JSX.createElement(
-        "cds-side-nav-link",
+        'cds-side-nav-link',
         {
           href,
-          active: isActive ? "" : undefined,
-          "aria-current": isActive ? "page" : undefined,
+          active: isActive ? '' : undefined,
+          'aria-current': isActive ? 'page' : undefined,
         },
-        item.text,
+        item.text
       );
     }
 
     return JSX.createElement(
-      "cds-side-nav-menu-item",
+      'cds-side-nav-menu-item',
       {
         href,
-        active: isActive ? "" : undefined,
-        "aria-current": isActive ? "page" : undefined,
+        active: isActive ? '' : undefined,
+        'aria-current': isActive ? 'page' : undefined,
       },
-      item.text,
+      item.text
     );
   }
 
@@ -93,7 +93,7 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
   if (depth === 0) {
     if (item.path) {
       return JSX.createElement(
-        "cds-side-nav-menu",
+        'cds-side-nav-menu',
         {
           title: item.text,
           expanded,
@@ -101,31 +101,31 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
         // The accordion is itself a page. Label its self-link "Overview" so it
         // doesn't repeat the accordion title (which is `item.text`).
         JSX.createElement(
-          "cds-side-nav-menu-item",
+          'cds-side-nav-menu-item',
           {
             href,
-            active: isActive ? "" : undefined,
-            "aria-current": isActive ? "page" : undefined,
+            active: isActive ? '' : undefined,
+            'aria-current': isActive ? 'page' : undefined,
           },
-          "Overview",
+          'Overview'
         ),
-        ...children,
+        ...children
       );
     }
 
     return JSX.createElement(
-      "cds-side-nav-menu",
+      'cds-side-nav-menu',
       {
         title: item.text,
         expanded,
       },
-      ...children,
+      ...children
     );
   }
 
   if (item.path) {
     return JSX.createElement(
-      "cds-side-nav-menu",
+      'cds-side-nav-menu',
       {
         title: item.text,
         expanded,
@@ -133,32 +133,32 @@ function renderCarbonNavItem(context, props, item, depth = 0) {
       // The accordion is itself a page. Label its self-link "Overview" so it
       // doesn't repeat the accordion title (which is `item.text`).
       JSX.createElement(
-        "cds-side-nav-menu-item",
+        'cds-side-nav-menu-item',
         {
           href,
-          active: isActive ? "" : undefined,
-          "aria-current": isActive ? "page" : undefined,
+          active: isActive ? '' : undefined,
+          'aria-current': isActive ? 'page' : undefined,
         },
-        "Overview",
+        'Overview'
       ),
-      ...children,
+      ...children
     );
   }
 
   return JSX.createElement(
-    "cds-side-nav-menu",
+    'cds-side-nav-menu',
     {
       title: item.text,
       expanded,
     },
-    ...children,
+    ...children
   );
 }
 
 export function getNavigationGroups(context, props) {
   const navigationTree = normalizeNavigationTree(
     context.getNavigation(props.project),
-    props.project.name,
+    props.project.name
   );
 
   const promotedTree = promoteTypeReferenceCategories(navigationTree);
@@ -168,9 +168,9 @@ export function getNavigationGroups(context, props) {
 
   promotedTree.forEach((item) => {
     // Check if this is a migration document
-    if (item.text.toLowerCase().startsWith("migration")) {
+    if (item.text.toLowerCase().startsWith('migration')) {
       migrationItems.push(item);
-    } else if (item.text.endsWith(" types")) {
+    } else if (item.text.endsWith(' types')) {
       typeItems.push(item);
     } else {
       regularItems.push(item);
@@ -187,9 +187,9 @@ export function getNavigationGroups(context, props) {
   // the frontmatter title, which matches the navigation item's `text`, so
   // we key the map by title.
   const projectDocumentPaths =
-    context.options.getValue("projectDocuments") || [];
+    context.options.getValue('projectDocuments') || [];
   const projectDocumentBasenames = projectDocumentPaths.map((p) =>
-    p.split("/").pop(),
+    p.split('/').pop()
   );
   const documentOrderMap = new Map();
   (props.project.documents || []).forEach((doc) => {
@@ -197,7 +197,7 @@ export function getNavigationGroups(context, props) {
     if (!sourcePath) {
       return;
     }
-    const sourceBasename = sourcePath.split("/").pop();
+    const sourceBasename = sourcePath.split('/').pop();
     const orderIndex = projectDocumentBasenames.indexOf(sourceBasename);
     if (orderIndex !== -1) {
       documentOrderMap.set(doc.name, orderIndex);
@@ -236,20 +236,20 @@ export function getNavigationGroups(context, props) {
 function renderVersionsDropdown() {
   // Create a wrapper div for the dropdown with padding
   return JSX.createElement(
-    "div",
+    'div',
     {
-      id: "versions-dropdown-wrapper",
-      style: "padding: 1rem;",
+      id: 'versions-dropdown-wrapper',
+      style: 'padding: 1rem;',
     },
     JSX.createElement(
-      "cds-dropdown",
+      'cds-dropdown',
       {
-        id: "versions-dropdown",
-        "title-text": "Select @carbon/ai-chat version",
-        size: "sm",
-      },
+        id: 'versions-dropdown',
+        'title-text': 'Select @carbon/ai-chat version',
+        size: 'sm',
+      }
       // Dropdown items will be populated dynamically by versionDropdown.js
-    ),
+    )
   );
 }
 
@@ -275,24 +275,24 @@ export function carbonNavigation(context, props, groups) {
 
   if (renderedRegular.length > 0) {
     children.push(
-      JSX.createElement("cds-side-nav-divider", { key: "regular-divider" }),
-      ...renderedRegular,
+      JSX.createElement('cds-side-nav-divider', { key: 'regular-divider' }),
+      ...renderedRegular
     );
   }
 
   if (renderedMigrations.length > 0) {
     children.push(
-      JSX.createElement("cds-side-nav-divider", { key: "migrations-divider" }),
-      ...renderedMigrations,
+      JSX.createElement('cds-side-nav-divider', { key: 'migrations-divider' }),
+      ...renderedMigrations
     );
   }
 
   if (renderedTypes.length > 0) {
     children.push(
-      JSX.createElement("cds-side-nav-divider", { key: "types-divider" }),
-      ...renderedTypes,
+      JSX.createElement('cds-side-nav-divider', { key: 'types-divider' }),
+      ...renderedTypes
     );
   }
 
-  return JSX.createElement("cds-side-nav-items", null, ...children);
+  return JSX.createElement('cds-side-nav-items', null, ...children);
 }

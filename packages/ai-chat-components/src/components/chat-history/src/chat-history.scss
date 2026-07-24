@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/utilities/convert";
-@use "@carbon/web-components/scss/components/ui-shell/side-nav";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/utilities/convert';
+@use '@carbon/web-components/scss/components/ui-shell/side-nav';
 
 :host(#{$prefix}-history-shell) {
   position: relative;
@@ -46,7 +46,7 @@
   }
 
   .#{$prefix}--history-header__title {
-    @include type.type-style("heading-compact-01");
+    @include type.type-style('heading-compact-01');
 
     overflow: hidden;
     inline-size: 100%;
@@ -88,7 +88,7 @@
   .#{$prefix}--history-content__results-count {
     display: block;
     padding: layout.$spacing-04 0 layout.$spacing-02 layout.$spacing-04;
-    @include type.type-style("label-01");
+    @include type.type-style('label-01');
   }
 }
 
@@ -139,7 +139,7 @@
   }
 
   .#{$cds-prefix}--side-nav__submenu-title {
-    @include type.type-style("label-01");
+    @include type.type-style('label-01');
 
     padding-inline-start: layout.$spacing-02;
   }
@@ -158,7 +158,7 @@
   position: relative;
 
   .#{$cds-prefix}--side-nav__link {
-    @include type.type-style("body-compact-01");
+    @include type.type-style('body-compact-01');
 
     position: relative;
     display: flex;
@@ -209,7 +209,7 @@
   button.#{$cds-prefix}--side-nav__link:before {
     position: absolute;
     background-color: theme.$border-interactive;
-    content: "";
+    content: '';
     inline-size: 3px;
     inset-block: 0;
     inset-inline-start: 0;
@@ -250,7 +250,7 @@
       padding-inline-start: layout.$spacing-05;
 
       .#{$prefix}__invalid-message-text {
-        @include type.type-style("body-compact-01");
+        @include type.type-style('body-compact-01');
 
         flex-grow: 1;
         color: theme.$support-error;
@@ -271,7 +271,7 @@
   }
 
   input {
-    @include type.type-style("body-compact-01");
+    @include type.type-style('body-compact-01');
 
     overflow: hidden;
     flex-grow: 2;
@@ -303,7 +303,7 @@
   }
 
   .#{$cds-prefix}--side-nav__link-subtitle {
-    @include type.type-style("label-01");
+    @include type.type-style('label-01');
 
     color: theme.$text-placeholder;
     padding-block-start: layout.$spacing-01;
@@ -360,7 +360,7 @@
       var(--#{$prefix}-border-radius-end-end, 0)
       var(--#{$prefix}-border-radius-end-start, 0);
     background: theme.$background;
-    content: "";
+    content: '';
     inset: 0;
     opacity: 0.95;
   }
@@ -371,13 +371,13 @@
   }
 
   h1 {
-    @include type.type-style("heading-03");
+    @include type.type-style('heading-03');
 
     margin: 0 0 layout.$spacing-03 0;
   }
 
   span {
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
   }
 
   .#{$prefix}--history-delete-panel__actions {

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,8 +12,8 @@ import {
   ChatInstance,
   MessageResponseTypes,
   WidthOptions,
-} from "@carbon/ai-chat";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/ai-chat';
+import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
 
 function doCard(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -23,7 +23,7 @@ function doCard(instance: ChatInstance) {
           body: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "##### Carbon Design System Component",
+              text: '##### Carbon Design System Component',
             },
             {
               response_type: MessageResponseTypes.TEXT,
@@ -37,7 +37,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "**Release:**",
+                          text: '**Release:**',
                         },
                       ],
                     },
@@ -45,7 +45,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "v11.45.0",
+                          text: 'v11.45.0',
                         },
                       ],
                     },
@@ -54,10 +54,10 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "1",
+                  width: '1',
                 },
                 {
-                  width: "1",
+                  width: '1',
                 },
               ],
               response_type: MessageResponseTypes.GRID,
@@ -65,27 +65,27 @@ function doCard(instance: ChatInstance) {
           ],
           footer: [
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.PRIMARY,
-              label: "OK",
+              label: 'OK',
               button_type: ButtonItemType.CUSTOM_EVENT,
               response_type: MessageResponseTypes.BUTTON,
-              custom_event_name: "alert_button",
+              custom_event_name: 'alert_button',
               // Pass any extra meta data you want here and it will be included in the event payload.
               user_defined: {
-                text: "OK!",
+                text: 'OK!',
               },
             },
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.DANGER,
-              label: "Cancel",
+              label: 'Cancel',
               button_type: ButtonItemType.CUSTOM_EVENT,
               response_type: MessageResponseTypes.BUTTON,
-              custom_event_name: "alert_button",
+              custom_event_name: 'alert_button',
               // Pass any extra meta data you want here and it will be included in the event payload.
               user_defined: {
-                text: "Cancel!",
+                text: 'Cancel!',
               },
             },
           ],
@@ -96,7 +96,7 @@ function doCard(instance: ChatInstance) {
           body: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "##### Carbon Component with max_width: WidthOptions.SMALL on card",
+              text: '##### Carbon Component with max_width: WidthOptions.SMALL on card',
             },
             {
               response_type: MessageResponseTypes.TEXT,
@@ -110,7 +110,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "**Release:**",
+                          text: '**Release:**',
                         },
                       ],
                     },
@@ -118,7 +118,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "v11.45.0",
+                          text: 'v11.45.0',
                         },
                       ],
                     },
@@ -127,10 +127,10 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "1",
+                  width: '1',
                 },
                 {
-                  width: "1",
+                  width: '1',
                 },
               ],
               response_type: MessageResponseTypes.GRID,
@@ -138,9 +138,9 @@ function doCard(instance: ChatInstance) {
           ],
           footer: [
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.GHOST,
-              label: "View Carbon Docs",
+              label: 'View Carbon Docs',
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },
@@ -152,7 +152,7 @@ function doCard(instance: ChatInstance) {
           body: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "##### Carbon Component with max_width: WidthOptions.MEDIUM on card",
+              text: '##### Carbon Component with max_width: WidthOptions.MEDIUM on card',
             },
             {
               response_type: MessageResponseTypes.TEXT,
@@ -166,7 +166,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "**Release:**",
+                          text: '**Release:**',
                         },
                       ],
                     },
@@ -174,7 +174,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "v11.45.0",
+                          text: 'v11.45.0',
                         },
                       ],
                     },
@@ -183,10 +183,10 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "1",
+                  width: '1',
                 },
                 {
-                  width: "1",
+                  width: '1',
                 },
               ],
               response_type: MessageResponseTypes.GRID,
@@ -194,9 +194,9 @@ function doCard(instance: ChatInstance) {
           ],
           footer: [
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.GHOST,
-              label: "View Carbon Docs",
+              label: 'View Carbon Docs',
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },
@@ -208,7 +208,7 @@ function doCard(instance: ChatInstance) {
           body: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "##### Carbon Component with max_width: WidthOptions.LARGE on card",
+              text: '##### Carbon Component with max_width: WidthOptions.LARGE on card',
             },
             {
               response_type: MessageResponseTypes.TEXT,
@@ -222,7 +222,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "**Release:**",
+                          text: '**Release:**',
                         },
                       ],
                     },
@@ -230,7 +230,7 @@ function doCard(instance: ChatInstance) {
                       items: [
                         {
                           response_type: MessageResponseTypes.TEXT,
-                          text: "v11.45.0",
+                          text: 'v11.45.0',
                         },
                       ],
                     },
@@ -239,10 +239,10 @@ function doCard(instance: ChatInstance) {
               ],
               columns: [
                 {
-                  width: "1",
+                  width: '1',
                 },
                 {
-                  width: "1",
+                  width: '1',
                 },
               ],
               response_type: MessageResponseTypes.GRID,
@@ -250,23 +250,23 @@ function doCard(instance: ChatInstance) {
           ],
           footer: [
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.GHOST,
-              label: "View Carbon Docs 1",
+              label: 'View Carbon Docs 1',
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.GHOST,
-              label: "View Carbon Docs 2",
+              label: 'View Carbon Docs 2',
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },
             {
-              url: "https://ibm.com/",
+              url: 'https://ibm.com/',
               kind: BUTTON_KIND.GHOST,
-              label: "View Carbon Docs 3",
+              label: 'View Carbon Docs 3',
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
             },

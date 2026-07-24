@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { DeepPartial } from "../../types/utilities/DeepPartial";
+import { DeepPartial } from '../../types/utilities/DeepPartial';
 
 import {
   AnnounceMessage,
@@ -20,17 +20,17 @@ import {
   PersistedState,
   ThemeState,
   ViewState,
-} from "../../types/state/AppState";
-import type { StructuredData } from "../../types/messaging/Messages";
+} from '../../types/state/AppState';
+import type { StructuredData } from '../../types/messaging/Messages';
 import {
   CustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
-} from "../../types/instance/apiTypes";
+} from '../../types/instance/apiTypes';
 import {
   LocalMessageItem,
   LocalMessageUIState,
   MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
+} from '../../types/messaging/LocalMessageItem';
 import {
   ConversationalSearchItemCitation,
   GenericItem,
@@ -42,79 +42,79 @@ import {
   MessageResponseOptions,
   MessageUIStateInternal,
   SearchResult,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 
-const CHANGE_STATE = "CHANGE_STATE";
-const HYDRATE_CHAT = "HYDRATE_CHAT";
-const HYDRATE_MESSAGE_HISTORY = "HYDRATE_MESSAGE_HISTORY";
-const ADD_LOCAL_MESSAGE_ITEM = "ADD_LOCAL_MESSAGE_ITEM";
-const REMOVE_MESSAGES = "REMOVE_MESSAGES";
-const UPDATE_LOCAL_MESSAGE_ITEM = "UPDATE_LOCAL_MESSAGE_ITEM";
-const SET_APP_STATE_VALUE = "SET_APP_STATE_VALUE";
-const ADD_IS_LOADING_COUNTER = "ADD_IS_LOADING_COUNTER";
-const RESET_IS_LOADING_COUNTER = "RESET_IS_LOADING_COUNTER";
-const ADD_IS_HYDRATING_COUNTER = "ADD_IS_HYDRATING_COUNTER";
-const RESET_IS_HYDRATING_COUNTER = "RESET_IS_HYDRATING_COUNTER";
-const SET_VIEW_STATE = "SET_VIEW_STATE";
-const SET_VIEW_CHANGING = "SET_VIEW_CHANGING";
-const SET_INITIAL_VIEW_CHANGE_COMPLETE = "SET_INITIAL_VIEW_CHANGE_COMPLETE";
-const MESSAGE_SET_OPTION_SELECTED = "MESSAGE_SET_OPTION_SELECTED";
-const SET_MESSAGE_UI_PROPERTY = "SET_MESSAGE_UI_PROPERTY";
+const CHANGE_STATE = 'CHANGE_STATE';
+const HYDRATE_CHAT = 'HYDRATE_CHAT';
+const HYDRATE_MESSAGE_HISTORY = 'HYDRATE_MESSAGE_HISTORY';
+const ADD_LOCAL_MESSAGE_ITEM = 'ADD_LOCAL_MESSAGE_ITEM';
+const REMOVE_MESSAGES = 'REMOVE_MESSAGES';
+const UPDATE_LOCAL_MESSAGE_ITEM = 'UPDATE_LOCAL_MESSAGE_ITEM';
+const SET_APP_STATE_VALUE = 'SET_APP_STATE_VALUE';
+const ADD_IS_LOADING_COUNTER = 'ADD_IS_LOADING_COUNTER';
+const RESET_IS_LOADING_COUNTER = 'RESET_IS_LOADING_COUNTER';
+const ADD_IS_HYDRATING_COUNTER = 'ADD_IS_HYDRATING_COUNTER';
+const RESET_IS_HYDRATING_COUNTER = 'RESET_IS_HYDRATING_COUNTER';
+const SET_VIEW_STATE = 'SET_VIEW_STATE';
+const SET_VIEW_CHANGING = 'SET_VIEW_CHANGING';
+const SET_INITIAL_VIEW_CHANGE_COMPLETE = 'SET_INITIAL_VIEW_CHANGE_COMPLETE';
+const MESSAGE_SET_OPTION_SELECTED = 'MESSAGE_SET_OPTION_SELECTED';
+const SET_MESSAGE_UI_PROPERTY = 'SET_MESSAGE_UI_PROPERTY';
 const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
-  "SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY";
+  'SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY';
 const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
-  "SET_MESSAGE_RESPONSE_HISTORY_PROPERTY";
-const MERGE_HISTORY = "MERGE_HISTORY";
-const SET_LAUNCHER_PROPERTY = "SET_LAUNCHER_PROPERTY";
-const ANNOUNCE_MESSAGE = "ANNOUNCE_MESSAGE";
-const SET_CHAT_MESSAGES_PROPERTY = "SET_CHAT_MESSAGES_PROPERTY";
-const RESTART_CONVERSATION = "RESTART_CONVERSATION";
-const ACCEPTED_DISCLAIMER = "ACCEPTED_DISCLAIMER";
-const ADD_MESSAGE = "ADD_MESSAGE";
-const UPDATE_CATASTROPHIC_ERROR_PANEL = "UPDATE_CATASTROPHIC_ERROR_PANEL";
+  'SET_MESSAGE_RESPONSE_HISTORY_PROPERTY';
+const MERGE_HISTORY = 'MERGE_HISTORY';
+const SET_LAUNCHER_PROPERTY = 'SET_LAUNCHER_PROPERTY';
+const ANNOUNCE_MESSAGE = 'ANNOUNCE_MESSAGE';
+const SET_CHAT_MESSAGES_PROPERTY = 'SET_CHAT_MESSAGES_PROPERTY';
+const RESTART_CONVERSATION = 'RESTART_CONVERSATION';
+const ACCEPTED_DISCLAIMER = 'ACCEPTED_DISCLAIMER';
+const ADD_MESSAGE = 'ADD_MESSAGE';
+const UPDATE_CATASTROPHIC_ERROR_PANEL = 'UPDATE_CATASTROPHIC_ERROR_PANEL';
 const UPDATE_HAS_SENT_NON_WELCOME_MESSAGE =
-  "UPDATE_HAS_SENT_NON_WELCOME_MESSAGE";
-const UPDATE_PERSISTED_STATE = "UPDATE_PERSISTED_STATE";
-const SET_HOME_SCREEN_IS_OPEN = "SET_HOME_SCREEN_IS_OPEN";
-const UPDATE_MESSAGE = "UPDATE_MESSAGE";
-const UPSERT_MESSAGE = "UPSERT_MESSAGE";
-const SET_LAUNCHER_MINIMIZED = "SET_LAUNCHER_MINIMIZED";
-const CLOSE_IFRAME_PANEL = "CLOSE_IFRAME_PANEL";
-const OPEN_IFRAME_CONTENT = "OPEN_IFRAME_CONTENT";
+  'UPDATE_HAS_SENT_NON_WELCOME_MESSAGE';
+const UPDATE_PERSISTED_STATE = 'UPDATE_PERSISTED_STATE';
+const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
+const UPDATE_MESSAGE = 'UPDATE_MESSAGE';
+const UPSERT_MESSAGE = 'UPSERT_MESSAGE';
+const SET_LAUNCHER_MINIMIZED = 'SET_LAUNCHER_MINIMIZED';
+const CLOSE_IFRAME_PANEL = 'CLOSE_IFRAME_PANEL';
+const OPEN_IFRAME_CONTENT = 'OPEN_IFRAME_CONTENT';
 const SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN =
-  "SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN";
-const SET_CUSTOM_PANEL_OPTIONS = "SET_CUSTOM_PANEL_OPTIONS";
-const SET_WORKSPACE_PANEL_OPTIONS = "SET_WORKSPACE_PANEL_OPTIONS";
-const SET_WORKSPACE_PANEL_DATA = "SET_WORKSPACE_PANEL_DATA";
-const SET_CUSTOM_PANEL_OPEN = "SET_CUSTOM_PANEL_OPEN";
-const SET_WORKSPACE_PANEL_OPEN = "SET_WORKSPACE_PANEL_OPEN";
-const SET_HISTORY_PANEL_OPEN = "SET_HISTORY_PANEL_OPEN";
-const SET_HISTORY_PANEL_OPTIONS = "SET_HISTORY_PANEL_OPTIONS";
-const TOGGLE_HOME_SCREEN = "GO_BACK_TO_HOME";
-const UPDATE_INPUT_STATE = "UPDATE_INPUT_STATE";
-const SET_IS_BROWSER_PAGE_VISIBLE = "SET_IS_PAGE_VISIBLE";
-const ADD_INPUT_FILE = "ADD_INPUT_FILE";
-const CLEAR_INPUT_FILES = "CLEAR_INPUT_FILES";
-const REMOVE_INPUT_FILE = "REMOVE_INPUT_FILE";
-const REMOVE_LOCAL_MESSAGE_ITEM = "REMOVE_LOCAL_MESSAGE_ITEM";
-const FILE_UPLOAD_INPUT_ERROR = "FILE_UPLOAD_INPUT_ERROR";
-const ADD_NESTED_MESSAGES = "ADD_NESTED_MESSAGES";
-const SET_RESPONSE_PANEL_IS_OPEN = "SET_RESPONSE_PANEL_IS_OPEN";
-const SET_RESPONSE_PANEL_CONTENT = "SET_PANEL_RESPONSE_CONTENT";
-const STREAMING_ADD_CHUNK = "STREAMING_ADD_CHUNK";
-const STREAMING_START = "STREAMING_START";
-const STREAMING_MERGE_MESSAGE_OPTIONS = "STREAMING_MERGE_MESSAGE_OPTIONS";
-const SET_STOP_STREAMING_BUTTON_VISIBLE = "SET_STOP_STREAMING_BUTTON_VISIBLE";
-const SET_STOP_STREAMING_BUTTON_DISABLED = "SET_STOP_STREAMING_BUTTON_DISABLED";
-const SET_STREAM_ID = "SET_STREAM_ID";
-const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
-const SET_IS_RESTARTING = "SET_IS_RESTARTING";
-const SET_ACTIVE_RESPONSE_ID = "SET_ACTIVE_RESPONSE_ID";
-const UPDATE_STRUCTURED_DATA = "UPDATE_STRUCTURED_DATA";
-const CLEAR_STRUCTURED_DATA = "CLEAR_STRUCTURED_DATA";
-const ADD_PENDING_UPLOAD = "ADD_PENDING_UPLOAD";
-const UPDATE_PENDING_UPLOAD = "UPDATE_PENDING_UPLOAD";
-const REMOVE_PENDING_UPLOAD = "REMOVE_PENDING_UPLOAD";
+  'SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN';
+const SET_CUSTOM_PANEL_OPTIONS = 'SET_CUSTOM_PANEL_OPTIONS';
+const SET_WORKSPACE_PANEL_OPTIONS = 'SET_WORKSPACE_PANEL_OPTIONS';
+const SET_WORKSPACE_PANEL_DATA = 'SET_WORKSPACE_PANEL_DATA';
+const SET_CUSTOM_PANEL_OPEN = 'SET_CUSTOM_PANEL_OPEN';
+const SET_WORKSPACE_PANEL_OPEN = 'SET_WORKSPACE_PANEL_OPEN';
+const SET_HISTORY_PANEL_OPEN = 'SET_HISTORY_PANEL_OPEN';
+const SET_HISTORY_PANEL_OPTIONS = 'SET_HISTORY_PANEL_OPTIONS';
+const TOGGLE_HOME_SCREEN = 'GO_BACK_TO_HOME';
+const UPDATE_INPUT_STATE = 'UPDATE_INPUT_STATE';
+const SET_IS_BROWSER_PAGE_VISIBLE = 'SET_IS_PAGE_VISIBLE';
+const ADD_INPUT_FILE = 'ADD_INPUT_FILE';
+const CLEAR_INPUT_FILES = 'CLEAR_INPUT_FILES';
+const REMOVE_INPUT_FILE = 'REMOVE_INPUT_FILE';
+const REMOVE_LOCAL_MESSAGE_ITEM = 'REMOVE_LOCAL_MESSAGE_ITEM';
+const FILE_UPLOAD_INPUT_ERROR = 'FILE_UPLOAD_INPUT_ERROR';
+const ADD_NESTED_MESSAGES = 'ADD_NESTED_MESSAGES';
+const SET_RESPONSE_PANEL_IS_OPEN = 'SET_RESPONSE_PANEL_IS_OPEN';
+const SET_RESPONSE_PANEL_CONTENT = 'SET_PANEL_RESPONSE_CONTENT';
+const STREAMING_ADD_CHUNK = 'STREAMING_ADD_CHUNK';
+const STREAMING_START = 'STREAMING_START';
+const STREAMING_MERGE_MESSAGE_OPTIONS = 'STREAMING_MERGE_MESSAGE_OPTIONS';
+const SET_STOP_STREAMING_BUTTON_VISIBLE = 'SET_STOP_STREAMING_BUTTON_VISIBLE';
+const SET_STOP_STREAMING_BUTTON_DISABLED = 'SET_STOP_STREAMING_BUTTON_DISABLED';
+const SET_STREAM_ID = 'SET_STREAM_ID';
+const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
+const SET_IS_RESTARTING = 'SET_IS_RESTARTING';
+const SET_ACTIVE_RESPONSE_ID = 'SET_ACTIVE_RESPONSE_ID';
+const UPDATE_STRUCTURED_DATA = 'UPDATE_STRUCTURED_DATA';
+const CLEAR_STRUCTURED_DATA = 'CLEAR_STRUCTURED_DATA';
+const ADD_PENDING_UPLOAD = 'ADD_PENDING_UPLOAD';
+const UPDATE_PENDING_UPLOAD = 'UPDATE_PENDING_UPLOAD';
+const REMOVE_PENDING_UPLOAD = 'REMOVE_PENDING_UPLOAD';
 
 interface UnknownAction {
   type: string;
@@ -181,7 +181,7 @@ const actions = {
     messageItem: LocalMessageItem,
     message: Message,
     addMessage: boolean,
-    addAfterID?: string,
+    addAfterID?: string
   ) {
     return {
       type: ADD_LOCAL_MESSAGE_ITEM,
@@ -227,7 +227,7 @@ const actions = {
   },
 
   updateCatastrophicErrorPanel(
-    panelState: Partial<CatastrophicErrorPanelState>,
+    panelState: Partial<CatastrophicErrorPanelState>
   ) {
     return {
       type: UPDATE_CATASTROPHIC_ERROR_PANEL,
@@ -314,7 +314,7 @@ const actions = {
   setMessageUIProperty<TPropertyName extends keyof LocalMessageUIState>(
     localMessageID: string,
     propertyName: TPropertyName,
-    propertyValue: LocalMessageUIState[TPropertyName],
+    propertyValue: LocalMessageUIState[TPropertyName]
   ) {
     return {
       type: SET_MESSAGE_UI_PROPERTY,
@@ -329,7 +329,7 @@ const actions = {
    */
   setLauncherProperty<TPropertyName extends keyof PersistedState>(
     propertyName: TPropertyName,
-    propertyValue: PersistedState[TPropertyName],
+    propertyValue: PersistedState[TPropertyName]
   ) {
     return { type: SET_LAUNCHER_PROPERTY, propertyName, propertyValue };
   },
@@ -347,7 +347,7 @@ const actions = {
   >(
     messageID: string,
     propertyName: TPropertyName,
-    propertyValue: MessageResponseHistory[TPropertyName],
+    propertyValue: MessageResponseHistory[TPropertyName]
   ) {
     return {
       type: SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
@@ -370,7 +370,7 @@ const actions = {
   >(
     messageID: string,
     propertyName: TPropertyName,
-    propertyValue: MessageUIStateInternal[TPropertyName],
+    propertyValue: MessageUIStateInternal[TPropertyName]
   ) {
     return {
       type: SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
@@ -385,7 +385,7 @@ const actions = {
    */
   mergeMessageHistory(
     messageID: string,
-    history: MessageResponseHistory | MessageRequestHistory,
+    history: MessageResponseHistory | MessageRequestHistory
   ) {
     return { type: MERGE_HISTORY, messageID, history };
   },
@@ -393,8 +393,8 @@ const actions = {
   setMessageErrorState(messageID: string, errorState: MessageErrorState) {
     return actions.setMessageResponseHistoryProperty(
       messageID,
-      "error_state",
-      errorState,
+      'error_state',
+      errorState
     );
   },
 
@@ -402,7 +402,7 @@ const actions = {
    * Marks the given message to indicate that it has been announced and doesn't need to be announced again.
    */
   setMessageWasAnnounced(messageID: string) {
-    return actions.setMessageUIProperty(messageID, "needsAnnouncement", false);
+    return actions.setMessageUIProperty(messageID, 'needsAnnouncement', false);
   },
 
   /**
@@ -418,7 +418,7 @@ const actions = {
    */
   setChatMessagesStateProperty<TPropertyName extends keyof ChatMessagesState>(
     propertyName: TPropertyName,
-    propertyValue: ChatMessagesState[TPropertyName],
+    propertyValue: ChatMessagesState[TPropertyName]
   ) {
     return { type: SET_CHAT_MESSAGES_PROPERTY, propertyName, propertyValue };
   },
@@ -452,7 +452,7 @@ const actions = {
   setViewSourcePanelIsOpen(
     isOpen: boolean,
     citationItem?: ConversationalSearchItemCitation,
-    relatedSearchResult?: SearchResult,
+    relatedSearchResult?: SearchResult
   ) {
     return {
       type: SET_CONVERSATIONAL_SEARCH_CITATION_PANEL_IS_OPEN,
@@ -471,7 +471,7 @@ const actions = {
   },
 
   setWorkspaceCustomPanelConfigOptions(
-    options: Partial<WorkspaceCustomPanelConfigOptions>,
+    options: Partial<WorkspaceCustomPanelConfigOptions>
   ): SetWorkspacePanelOptionsAction {
     return {
       type: SET_WORKSPACE_PANEL_OPTIONS,
@@ -518,7 +518,7 @@ const actions = {
    */
   updateInputState(
     newState: Partial<InputState>,
-    isInputToHumanAgent: boolean,
+    isInputToHumanAgent: boolean
   ) {
     return { type: UPDATE_INPUT_STATE, newState, isInputToHumanAgent };
   },
@@ -557,7 +557,7 @@ const actions = {
   fileUploadInputError(
     fileID: string,
     errorMessage: string,
-    isInputToHumanAgent: boolean,
+    isInputToHumanAgent: boolean
   ) {
     return {
       type: FILE_UPLOAD_INPUT_ERROR,
@@ -584,7 +584,7 @@ const actions = {
 
   setResponsePanelContent(
     localMessageItem: LocalMessageItem,
-    isMessageForInput = false,
+    isMessageForInput = false
   ) {
     return {
       type: SET_RESPONSE_PANEL_CONTENT,
@@ -605,7 +605,7 @@ const actions = {
    */
   streamingMergeMessageOptions(
     messageID: string,
-    message_options: DeepPartial<MessageResponseOptions>,
+    message_options: DeepPartial<MessageResponseOptions>
   ) {
     return {
       type: STREAMING_MERGE_MESSAGE_OPTIONS,
@@ -620,7 +620,7 @@ const actions = {
   streamingAddChunk(
     fullMessageID: string,
     chunkItem: DeepPartial<GenericItem>,
-    isCompleteItem: boolean,
+    isCompleteItem: boolean
   ) {
     return {
       type: STREAMING_ADD_CHUNK,
@@ -656,7 +656,7 @@ const actions = {
    */
   updateStructuredData(
     structuredData: StructuredData | undefined,
-    isInputToHumanAgent: boolean,
+    isInputToHumanAgent: boolean
   ) {
     return {
       type: UPDATE_STRUCTURED_DATA,
@@ -677,8 +677,8 @@ const actions = {
    * Adds a new pending upload entry to the input state.
    */
   addPendingUpload(
-    upload: import("../../types/state/AppState").PendingUpload,
-    isInputToHumanAgent: boolean,
+    upload: import('../../types/state/AppState').PendingUpload,
+    isInputToHumanAgent: boolean
   ) {
     return { type: ADD_PENDING_UPLOAD, upload, isInputToHumanAgent };
   },
@@ -688,8 +688,8 @@ const actions = {
    */
   updatePendingUpload(
     uploadId: string,
-    patch: Partial<import("../../types/state/AppState").PendingUpload>,
-    isInputToHumanAgent: boolean,
+    patch: Partial<import('../../types/state/AppState').PendingUpload>,
+    isInputToHumanAgent: boolean
   ) {
     return {
       type: UPDATE_PENDING_UPLOAD,

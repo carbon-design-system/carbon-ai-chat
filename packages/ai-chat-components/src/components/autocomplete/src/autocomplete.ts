@@ -7,27 +7,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
-import prefix from "../../../globals/settings.js";
-import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
+import prefix from '../../../globals/settings.js';
+import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
 
-import styles from "./autocomplete.scss?lit";
-import "./autocomplete-item.js";
-import "./autocomplete-item-group.js";
+import styles from './autocomplete.scss?lit';
+import './autocomplete-item.js';
+import './autocomplete-item-group.js';
 
 import type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../prompt-line/src/tiptap/types.js";
+} from '../../prompt-line/src/tiptap/types.js';
 export type {
   SuggestionItem,
   SuggestionItemGroup,
-} from "../../prompt-line/src/tiptap/types.js";
+} from '../../prompt-line/src/tiptap/types.js';
 
 const blockClass = `${prefix}-autocomplete`;
 
@@ -64,7 +64,7 @@ export interface AutocompleteI18n {
   itemNavigation: (
     label: string,
     description: string | undefined,
-    position: string,
+    position: string
   ) => string;
   /**
    * Announced when an item is selected/inserted.
@@ -81,14 +81,14 @@ export interface AutocompleteI18n {
 
 /** Default English strings — used as the fallback value for `i18n`. */
 export const defaultAutocompleteI18n: AutocompleteI18n = {
-  noSuggestions: "No suggestions.",
+  noSuggestions: 'No suggestions.',
   suggestionsAvailable: (count) =>
-    `${count} suggestion${count === 1 ? "" : "s"}. Use up and down arrows to move, Enter to pick, Escape to close.`,
+    `${count} suggestion${count === 1 ? '' : 's'}. Use up and down arrows to move, Enter to pick, Escape to close.`,
   itemNavigation: (label, description, position) =>
-    `${label}${description ? `, ${description}` : ""}, ${position}`,
+    `${label}${description ? `, ${description}` : ''}, ${position}`,
   itemInserted: (label) => `${label} inserted.`,
-  suggestionsClosed: "Suggestions closed.",
-  listboxLabel: "Autocomplete options",
+  suggestionsClosed: 'Suggestions closed.',
+  listboxLabel: 'Autocomplete options',
 };
 
 /**
@@ -147,13 +147,13 @@ class AutocompleteElement extends LitElement {
   /**
    * The current text in the input (used to apply styling to indicate what user has already typed)
    */
-  @property({ type: String, attribute: "input-text", reflect: true })
-  inputText = "";
+  @property({ type: String, attribute: 'input-text', reflect: true })
+  inputText = '';
 
   /**
    * Whether to render the send button inside autocomplete items.
    */
-  @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
+  @property({ type: Boolean, reflect: true, attribute: 'enable-send-button' })
   enableSendButton = true;
 
   /**
@@ -189,14 +189,14 @@ class AutocompleteElement extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener("keydown", this._handleKeydown);
-    document.addEventListener("click", this._handleClickOutside);
+    this.addEventListener('keydown', this._handleKeydown);
+    document.addEventListener('click', this._handleClickOutside);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener("keydown", this._handleKeydown);
-    document.removeEventListener("click", this._handleClickOutside);
+    this.removeEventListener('keydown', this._handleKeydown);
+    document.removeEventListener('click', this._handleClickOutside);
     this._announcer.disconnect();
     if (this._moveAnnouncePending !== null) {
       clearTimeout(this._moveAnnouncePending);
@@ -206,7 +206,7 @@ class AutocompleteElement extends LitElement {
 
   firstUpdated() {
     const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
-      `.${blockClass}__live-region`,
+      `.${blockClass}__live-region`
     );
     this._announcer.connect(Array.from(regions));
   }
@@ -215,7 +215,7 @@ class AutocompleteElement extends LitElement {
     super.updated(changedProperties);
 
     const itemsChanged =
-      changedProperties.has("items") || changedProperties.has("groups");
+      changedProperties.has('items') || changedProperties.has('groups');
 
     if (itemsChanged) {
       const totalItems = this._getTotalItemCount();
@@ -240,7 +240,7 @@ class AutocompleteElement extends LitElement {
     const flatCount = this.items.length;
     const groupedCount = this.groups.reduce(
       (sum, group) => sum + group.items.length,
-      0,
+      0
     );
     return flatCount + groupedCount;
   }
@@ -271,40 +271,40 @@ class AutocompleteElement extends LitElement {
     }
 
     switch (event.key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         event.preventDefault();
         this._focusedIndex = Math.min(this._focusedIndex + 1, totalItems - 1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
-      case "ArrowUp":
+      case 'ArrowUp':
         event.preventDefault();
         this._focusedIndex = Math.max(this._focusedIndex - 1, 0);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
-      case "Home":
+      case 'Home':
         event.preventDefault();
         this._focusedIndex = 0;
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
-      case "End":
+      case 'End':
         event.preventDefault();
         this._focusedIndex = totalItems - 1;
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
-      case "Escape":
+      case 'Escape':
         event.preventDefault();
         this._dismiss();
         break;
 
-      case "Enter":
+      case 'Enter':
         event.preventDefault();
         this._handleItemClick(this._focusedIndex);
         break;
@@ -327,7 +327,7 @@ class AutocompleteElement extends LitElement {
       }
       const position = `${index + 1} of ${total}`;
       this._announcer.announce(
-        this.i18n.itemNavigation(item.label, item.description, position),
+        this.i18n.itemNavigation(item.label, item.description, position)
       );
     }, 50);
   }
@@ -351,13 +351,13 @@ class AutocompleteElement extends LitElement {
 
     this.dispatchEvent(
       new CustomEvent<AutocompleteSendEventDetail>(
-        "cds-aichat-autocomplete-send",
+        'cds-aichat-autocomplete-send',
         {
           detail: { text: item.label },
           bubbles: true,
           composed: true,
-        },
-      ),
+        }
+      )
     );
   }
 
@@ -370,26 +370,26 @@ class AutocompleteElement extends LitElement {
   private _scrollActiveItemIntoView(): void {
     this.updateComplete.then(() => {
       const itemsContainer = this.shadowRoot?.querySelector(
-        `.${blockClass}__items`,
+        `.${blockClass}__items`
       );
       const itemArray = this._flatItemElements(itemsContainer);
       const targetItem = itemArray[this._focusedIndex] as
         HTMLElement | undefined;
       if (targetItem) {
-        targetItem.scrollIntoView({ block: "nearest" });
+        targetItem.scrollIntoView({ block: 'nearest' });
       }
     });
   }
 
   private _flatItemElements(container: Element | null | undefined): Element[] {
     return Array.from(container?.children ?? []).flatMap((child) => {
-      if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM") {
+      if (child.tagName === 'CDS-AICHAT-AUTOCOMPLETE-ITEM') {
         return [child];
       }
-      if (child.tagName === "CDS-AICHAT-AUTOCOMPLETE-ITEM-GROUP") {
+      if (child.tagName === 'CDS-AICHAT-AUTOCOMPLETE-ITEM-GROUP') {
         return Array.from(
-          child.shadowRoot?.querySelectorAll("cds-aichat-autocomplete-item") ??
-            [],
+          child.shadowRoot?.querySelectorAll('cds-aichat-autocomplete-item') ??
+            []
         );
       }
       return [];
@@ -400,13 +400,13 @@ class AutocompleteElement extends LitElement {
     this._announcer.announce(this.i18n.itemInserted(item.label));
     this.dispatchEvent(
       new CustomEvent<AutocompleteSelectEventDetail>(
-        "cds-aichat-autocomplete-select",
+        'cds-aichat-autocomplete-select',
         {
           detail: { item },
           bubbles: true,
           composed: true,
-        },
-      ),
+        }
+      )
     );
   }
 
@@ -414,10 +414,10 @@ class AutocompleteElement extends LitElement {
     this._openAnnounced = false;
     this._announcer.announce(this.i18n.suggestionsClosed);
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-autocomplete-dismiss", {
+      new CustomEvent('cds-aichat-autocomplete-dismiss', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -449,13 +449,11 @@ class AutocompleteElement extends LitElement {
       <div
         class="${blockClass}__live-region"
         aria-live="polite"
-        aria-atomic="false"
-      ></div>
+        aria-atomic="false"></div>
       <div
         class="${blockClass}__live-region"
         aria-live="polite"
-        aria-atomic="false"
-      ></div>
+        aria-atomic="false"></div>
     `;
 
     if (totalItems === 0) {
@@ -476,15 +474,14 @@ class AutocompleteElement extends LitElement {
                   </span>
                 </div>
               `
-            : ""
+            : ''
         }
 
         <ul
           class="${blockClass}__items"
           role="listbox"
           aria-label="${this.i18n.listboxLabel}"
-          id="${blockClass}-listbox"
-        >
+          id="${blockClass}-listbox">
           <!-- Render flat items first -->
           ${this.items.map((item, idx) => {
             const itemIndex = currentIndex++;
@@ -502,8 +499,7 @@ class AutocompleteElement extends LitElement {
                 ?first-item="${isFirstItem}"
                 ?last-item="${isLastItem}"
                 @click="${() => this._handleItemClick(itemIndex)}"
-                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
-              ></cds-aichat-autocomplete-item>
+                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"></cds-aichat-autocomplete-item>
             `;
           })}
 
@@ -525,8 +521,7 @@ class AutocompleteElement extends LitElement {
                 @cds-aichat-autocomplete-item-click="${
                   this._handleGroupItemClick
                 }"
-                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"
-              ></cds-aichat-autocomplete-item-group>
+                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"></cds-aichat-autocomplete-item-group>
             `;
           })}
         </ul>
@@ -537,7 +532,7 @@ class AutocompleteElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-autocomplete": AutocompleteElement;
+    'cds-aichat-autocomplete': AutocompleteElement;
   }
 }
 

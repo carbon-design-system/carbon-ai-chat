@@ -28,12 +28,12 @@
  * assignments below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { type WCMarkdown } from "@carbon/ai-chat";
-import markdownItKatex from "@vscode/markdown-it-katex";
+import { type WCMarkdown } from '@carbon/ai-chat';
+import markdownItKatex from '@vscode/markdown-it-katex';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 // Stable reference — a fresh array reference each render would rebuild the
 // chat's markdown-it instance and wipe any plugin-managed state.
@@ -41,7 +41,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
   markdownItPlugins: [markdownItKatex],
 };
 
-const el = document.querySelector("cds-aichat-custom-element") as
+const el = document.querySelector('cds-aichat-custom-element') as
   | (HTMLElement & {
       messaging?: { customSendMessage: typeof customSendMessage };
       layout?: { showFrame?: boolean };

@@ -7,10 +7,10 @@
  *  @license
  */
 
-import type { FileUpload } from "../config/ServiceDeskConfig";
-import type { StructuredData } from "../messaging/Messages";
-import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
-import type { JSONContent } from "@tiptap/core";
+import type { FileUpload } from '../config/ServiceDeskConfig';
+import type { StructuredData } from '../messaging/Messages';
+import type { FileUploadCapabilities } from '../instance/FileUploadCapabilities';
+import type { JSONContent } from '@tiptap/core';
 
 /**
  * The status of a single pending file upload.
@@ -22,9 +22,9 @@ import type { JSONContent } from "@tiptap/core";
  * @internal
  */
 export enum PendingUploadStatus {
-  UPLOADING = "uploading",
-  COMPLETE = "complete",
-  ERROR = "error",
+  UPLOADING = 'uploading',
+  COMPLETE = 'complete',
+  ERROR = 'error',
 }
 
 /**

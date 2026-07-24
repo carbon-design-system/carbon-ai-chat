@@ -1,19 +1,24 @@
 # History / Float
 
-`ChatContainer` with the history feature enabled, using the `historyPanelElement` slot to render a custom conversation picker in the default float layout.
+`ChatContainer` with the history feature enabled, using the
+`historyPanelElement` slot to render a custom conversation picker in the default
+float layout.
 
 ## What this example shows
 
 - Turning on the built-in history panel via `history.isOn: true`.
 - Wiring `customLoadHistory` alongside `customSendMessage` under `messaging`.
 - Rendering a custom history panel UI into the `historyPanelElement` slot.
-- Using `instance.messaging.clearConversation()` + `instance.messaging.insertHistory()` to swap conversations from the UI.
+- Using `instance.messaging.clearConversation()` +
+  `instance.messaging.insertHistory()` to swap conversations from the UI.
 
 ## When to use this pattern
 
-- You want a floating chat widget that lets users browse and restore past conversations.
+- You want a floating chat widget that lets users browse and restore past
+  conversations.
 - You need a reference for mounting React content inside a chat slot.
-- You need an example of programmatic conversation replacement through `ChatInstance`.
+- You need an example of programmatic conversation replacement through
+  `ChatInstance`.
 
 ## APIs and props demonstrated
 
@@ -32,11 +37,15 @@
 
 ## Chat history configuration
 
-For information on how to set up chat history view the [chat-history-fullscreen/README.md](../chat-history-fullscreen/README.md) guide.
+For information on how to set up chat history view the
+[chat-history-fullscreen/README.md](../chat-history-fullscreen/README.md) guide.
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

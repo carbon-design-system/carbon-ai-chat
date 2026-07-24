@@ -36,26 +36,26 @@
  * @experimental
  */
 
-import type { Editor, Extension, JSONContent } from "@tiptap/core";
-import { css, html, LitElement, unsafeCSS } from "lit";
-import { property } from "lit/decorators.js";
+import type { Editor, Extension, JSONContent } from '@tiptap/core';
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property } from 'lit/decorators.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
-import { adoptOnRoot } from "../../shared/dynamic-css-var-sheet.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
+import { adoptOnRoot } from '../../shared/dynamic-css-var-sheet.js';
 import {
   type PromptLineController,
   type PromptLineControllerInit,
   type SetContentUpdater,
   TextareaController,
-} from "./prompt-line-controller.js";
+} from './prompt-line-controller.js';
 import {
   getRichRuntimeIfLoaded,
   loadRichRuntime,
-} from "./prompt-line-rich-loader.js";
-import { getRawText } from "./tiptap/json-utils.js";
+} from './prompt-line-rich-loader.js';
+import { getRawText } from './tiptap/json-utils.js';
 
-import styles from "./prompt-line.scss?lit";
+import styles from './prompt-line.scss?lit';
 
 @carbonElement(`${prefix}-prompt-line`)
 export class PromptLineElement extends LitElement {
@@ -95,22 +95,22 @@ export class PromptLineElement extends LitElement {
 
   /** Placeholder text shown when the surface is empty. */
   @property({ type: String })
-  placeholder = "";
+  placeholder = '';
 
   /** Accessible label for the editing surface. */
-  @property({ type: String, attribute: "aria-label", reflect: true })
-  override ariaLabel = "";
+  @property({ type: String, attribute: 'aria-label', reflect: true })
+  override ariaLabel = '';
 
   /** Test id, applied to the inner editable element. */
-  @property({ type: String, attribute: "test-id" })
-  testId = "";
+  @property({ type: String, attribute: 'test-id' })
+  testId = '';
 
   /** Focus the surface on mount. */
   @property({ type: Boolean })
   override autofocus = false;
 
   private _controller: PromptLineController | null = null;
-  private _mode: "textarea" | "rich" = "textarea";
+  private _mode: 'textarea' | 'rich' = 'textarea';
   private _editorHost: HTMLElement | null = null;
   private _lastExtensionsRef: Extension[] | null = null;
   /** Sticky latch — once rich is wanted it never reverts. */
@@ -140,11 +140,11 @@ export class PromptLineElement extends LitElement {
     if (warmRuntime) {
       // Runtime already loaded (e.g. preloaded at boot) — mount rich directly,
       // no textarea flash.
-      this._mode = "rich";
+      this._mode = 'rich';
       this._controller = warmRuntime.createRichController();
       this._controller.mount(host, this._makeInit());
     } else {
-      this._mode = "textarea";
+      this._mode = 'textarea';
       this._controller = new TextareaController();
       this._controller.mount(host, this._makeInit());
       if (this._richLatched) {
@@ -163,43 +163,43 @@ export class PromptLineElement extends LitElement {
       return;
     }
     if (
-      (changed.has("rich") || changed.has("extensions")) &&
+      (changed.has('rich') || changed.has('extensions')) &&
       this._wantsRich()
     ) {
       this._richLatched = true;
-      if (this._mode === "textarea") {
+      if (this._mode === 'textarea') {
         void this._upgradeToRich();
       }
     }
     if (
-      changed.has("extensions") &&
+      changed.has('extensions') &&
       this.extensions !== this._lastExtensionsRef
     ) {
       this._lastExtensionsRef = this.extensions;
-      if (this._mode === "rich") {
+      if (this._mode === 'rich') {
         this._controller.setExtensions(this.extensions);
       }
     }
-    if (changed.has("disabled")) {
+    if (changed.has('disabled')) {
       this._controller.setEditable(!this.disabled);
     }
-    if (changed.has("content") && !changed.has("extensions")) {
-      this._controller.setContent(this.content ?? "");
+    if (changed.has('content') && !changed.has('extensions')) {
+      this._controller.setContent(this.content ?? '');
     }
-    if (changed.has("placeholder")) {
+    if (changed.has('placeholder')) {
       this._controller.setPlaceholder(this.placeholder);
     }
-    if (changed.has("testId")) {
+    if (changed.has('testId')) {
       this._controller.setTestId(this.testId);
     }
-    if (changed.has("ariaLabel")) {
+    if (changed.has('ariaLabel')) {
       this._controller.setAriaLabel(this.ariaLabel);
     }
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._failRichReady(new Error("Input is not currently rendered"));
+    this._failRichReady(new Error('Input is not currently rendered'));
     this._controller?.destroy();
     this._controller = null;
     this._editorHost?.remove();
@@ -232,7 +232,7 @@ export class PromptLineElement extends LitElement {
    * upgrade.
    */
   ensureEditor(): Promise<Editor> {
-    if (this._mode === "rich") {
+    if (this._mode === 'rich') {
       const editor = this._controller?.getEditor();
       if (editor) {
         return Promise.resolve(editor);
@@ -240,7 +240,7 @@ export class PromptLineElement extends LitElement {
     }
     // Connected but not yet rendered, or already torn down — nothing to upgrade.
     if (!this._editorHost || !this._controller) {
-      return Promise.reject(new Error("Input is not currently rendered"));
+      return Promise.reject(new Error('Input is not currently rendered'));
     }
     this._richLatched = true;
     if (!this._richReady) {
@@ -259,7 +259,7 @@ export class PromptLineElement extends LitElement {
    * being `null`.
    */
   getValue(): string {
-    return this._controller?.getValue() ?? "";
+    return this._controller?.getValue() ?? '';
   }
 
   override focus(): void {
@@ -285,7 +285,7 @@ export class PromptLineElement extends LitElement {
 
   insertContent(
     content: JSONContent | string,
-    opts: { at?: number } = {},
+    opts: { at?: number } = {}
   ): void {
     this._controller?.insertContent(content, opts);
   }
@@ -315,16 +315,16 @@ export class PromptLineElement extends LitElement {
   }
 
   private _mountEditorHost(): HTMLElement {
-    const host = document.createElement("div");
-    host.setAttribute("slot", "editor");
-    host.dataset.aichatEditorHost = "";
+    const host = document.createElement('div');
+    host.setAttribute('slot', 'editor');
+    host.dataset.aichatEditorHost = '';
     this.appendChild(host);
     this._editorHost = host;
 
     // Defer an upgrade requested mid-IME-composition so we don't tear the
     // field out from under the user.
-    host.addEventListener("compositionstart", this._onCompositionStart);
-    host.addEventListener("compositionend", this._onCompositionEnd);
+    host.addEventListener('compositionstart', this._onCompositionStart);
+    host.addEventListener('compositionend', this._onCompositionEnd);
 
     const root = host.getRootNode();
     if (root instanceof ShadowRoot || root instanceof Document) {
@@ -349,11 +349,11 @@ export class PromptLineElement extends LitElement {
   private _makeInit(valueOverride?: string): PromptLineControllerInit {
     const value =
       valueOverride ??
-      (typeof this.content === "string"
+      (typeof this.content === 'string'
         ? this.content
         : this.content
           ? getRawText(this.content)
-          : "");
+          : '');
     return {
       value,
       // On an upgrade we seed losslessly from the textarea's plain text, so
@@ -392,7 +392,7 @@ export class PromptLineElement extends LitElement {
 
   /** Lazily load Tiptap and swap the textarea for the rich editor in place. */
   private async _upgradeToRich(): Promise<void> {
-    if (this._mode === "rich" || this._upgrading) {
+    if (this._mode === 'rich' || this._upgrading) {
       return;
     }
     this._upgrading = true;
@@ -404,9 +404,9 @@ export class PromptLineElement extends LitElement {
         this._failRichReady(
           new Error(
             module
-              ? "Input is not currently rendered"
-              : "Input editor runtime is unavailable",
-          ),
+              ? 'Input is not currently rendered'
+              : 'Input editor runtime is unavailable'
+          )
         );
         return;
       }
@@ -421,7 +421,7 @@ export class PromptLineElement extends LitElement {
       // A failed runtime load or mount must reject pending `ensureEditor()`
       // callers rather than leave them hanging.
       this._failRichReady(
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error(String(error))
       );
     } finally {
       this._upgrading = false;
@@ -440,14 +440,14 @@ export class PromptLineElement extends LitElement {
 
     previous.destroy();
     this._controller = rich;
-    this._mode = "rich";
+    this._mode = 'rich';
     rich.mount(host, this._makeInit(value));
 
     // Map plain-text caret offsets into the seeded doc. `textToDoc` makes one
     // paragraph per line, so a position costs +1 for the doc/first-paragraph
     // start plus +1 for every newline before it (each opens a new paragraph).
     const toDocPos = (offset: number): number =>
-      offset + 1 + (value.slice(0, offset).split("\n").length - 1);
+      offset + 1 + (value.slice(0, offset).split('\n').length - 1);
     rich.setTextSelection({
       from: toDocPos(selection.from),
       to: toDocPos(selection.to),
@@ -461,7 +461,7 @@ export class PromptLineElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-prompt-line": PromptLineElement;
+    'cds-aichat-prompt-line': PromptLineElement;
   }
 }
 

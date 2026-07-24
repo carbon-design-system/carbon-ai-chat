@@ -9,15 +9,15 @@
 
 $css--plex: true !default;
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/type";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/type';
 
 $blockClass: #{$prefix}-carousel;
 
 .#{$blockClass} {
   &__controls {
-    @include type.type-style("body-compact-01");
+    @include type.type-style('body-compact-01');
 
     display: flex;
     align-items: center;

@@ -1,18 +1,26 @@
 # Human agent
 
-`ChatCustomElement` wired to a mock service desk via `serviceDeskFactory`, demonstrating how to hand off to a live agent while keeping the factory stable across re-renders.
+`ChatCustomElement` wired to a mock service desk via `serviceDeskFactory`,
+demonstrating how to hand off to a live agent while keeping the factory stable
+across re-renders.
 
 ## What this example shows
 
-- Providing a `serviceDeskFactory` that returns a `MockServiceDesk` implementing the `ServiceDesk` interface.
-- Using `useMemo` to keep the factory reference stable (because changing it tears down active agent sessions).
-- Passing runtime user data into the factory so the `MockServiceDesk` can identify the user.
-- Integrating service desk hand-off with a standard `customSendMessage` mock backend.
+- Providing a `serviceDeskFactory` that returns a `MockServiceDesk` implementing
+  the `ServiceDesk` interface.
+- Using `useMemo` to keep the factory reference stable (because changing it
+  tears down active agent sessions).
+- Passing runtime user data into the factory so the `MockServiceDesk` can
+  identify the user.
+- Integrating service desk hand-off with a standard `customSendMessage` mock
+  backend.
 
 ## When to use this pattern
 
-- You need a template for wiring Carbon AI Chat to a live-agent / service desk backend.
-- You have runtime-dependent factory parameters (e.g., user ID) and need a safe memoization pattern.
+- You need a template for wiring Carbon AI Chat to a live-agent / service desk
+  backend.
+- You have runtime-dependent factory parameters (e.g., user ID) and need a safe
+  memoization pattern.
 
 ## APIs and props demonstrated
 
@@ -30,7 +38,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

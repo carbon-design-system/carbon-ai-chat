@@ -20,11 +20,11 @@
  * `references/code-review.md`).
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const REPO_ROOT = path.join(__dirname, "..");
-const ROOT_AGENTS_FILE = "AGENTS.md";
+const REPO_ROOT = path.join(__dirname, '..');
+const ROOT_AGENTS_FILE = 'AGENTS.md';
 
 let errors = 0;
 let warnings = 0;
@@ -47,7 +47,7 @@ function info(message) {
 function validateFileExists(file) {
   const fullPath = path.join(REPO_ROOT, file);
   if (!fs.existsSync(fullPath)) {
-    error("validation", `File not found: ${file}`);
+    error('validation', `File not found: ${file}`);
     return false;
   }
   return true;
@@ -70,28 +70,28 @@ function extractLinks(content) {
 
 // Normalize markdown link targets by stripping anchors and :line suffixes.
 function normalizeLinkTarget(url) {
-  const withoutAnchor = url.split("#")[0];
-  return withoutAnchor.replace(/:(\d+)(?=$)/, "");
+  const withoutAnchor = url.split('#')[0];
+  return withoutAnchor.replace(/:(\d+)(?=$)/, '');
 }
 
 // Extract package root from AGENTS.md file path for context-aware resolution
 function getPackageRoot(agentsFile) {
-  if (agentsFile.startsWith("packages/ai-chat-components/")) {
-    return "packages/ai-chat-components";
+  if (agentsFile.startsWith('packages/ai-chat-components/')) {
+    return 'packages/ai-chat-components';
   }
-  if (agentsFile.startsWith("packages/ai-chat/")) {
-    return "packages/ai-chat";
+  if (agentsFile.startsWith('packages/ai-chat/')) {
+    return 'packages/ai-chat';
   }
-  if (agentsFile.startsWith("packages/typedoc-theme/")) {
-    return "packages/typedoc-theme";
+  if (agentsFile.startsWith('packages/typedoc-theme/')) {
+    return 'packages/typedoc-theme';
   }
-  if (agentsFile.startsWith("demo/")) {
-    return "demo";
+  if (agentsFile.startsWith('demo/')) {
+    return 'demo';
   }
-  if (agentsFile.startsWith("examples/")) {
+  if (agentsFile.startsWith('examples/')) {
     // Return the specific example directory (e.g., examples/react/basic-float)
     const match = agentsFile.match(/^(examples\/[^/]+\/[^/]+)/);
-    return match ? match[1] : "examples";
+    return match ? match[1] : 'examples';
   }
   return null;
 }
@@ -110,11 +110,11 @@ function findFileRecursive(dir, filename) {
 
       // Skip node_modules, dist, and other build artifacts
       if (
-        entry.name === "node_modules" ||
-        entry.name === "dist" ||
-        entry.name === "es" ||
-        entry.name === "es-custom" ||
-        entry.name === ".git"
+        entry.name === 'node_modules' ||
+        entry.name === 'dist' ||
+        entry.name === 'es' ||
+        entry.name === 'es-custom' ||
+        entry.name === '.git'
       ) {
         continue;
       }
@@ -169,7 +169,7 @@ function resolveDocPath(file, referencePath) {
     }
 
     // Try common subdirectories within package
-    const commonDirs = ["src", "tests", "docs", "tasks", "theme"];
+    const commonDirs = ['src', 'tests', 'docs', 'tasks', 'theme'];
     for (const dir of commonDirs) {
       const subPath = path.join(REPO_ROOT, packageRoot, dir, referencePath);
       if (fs.existsSync(subPath)) {
@@ -179,13 +179,13 @@ function resolveDocPath(file, referencePath) {
 
     // For references with subdirectories (e.g., "store/actions.ts", "layouts/default.js"),
     // search recursively within the package
-    if (referencePath.includes("/") || referencePath.includes("\\")) {
+    if (referencePath.includes('/') || referencePath.includes('\\')) {
       const found = findFileRecursive(
         path.join(REPO_ROOT, packageRoot),
-        path.basename(referencePath),
+        path.basename(referencePath)
       );
       // Verify the found file matches the full relative path
-      if (found && found.endsWith(referencePath.replace(/\\/g, "/"))) {
+      if (found && found.endsWith(referencePath.replace(/\\/g, '/'))) {
         return found;
       }
     }
@@ -193,10 +193,10 @@ function resolveDocPath(file, referencePath) {
 
   // 4. For simple filenames (no path separators), search recursively
   // but only in relevant directories to avoid false matches
-  if (!referencePath.includes("/") && !referencePath.includes("\\")) {
+  if (!referencePath.includes('/') && !referencePath.includes('\\')) {
     const searchRoots = packageRoot
       ? [packageRoot]
-      : ["packages", "demo", "examples"];
+      : ['packages', 'demo', 'examples'];
 
     for (const root of searchRoots) {
       const searchPath = path.join(REPO_ROOT, root);
@@ -213,27 +213,27 @@ function resolveDocPath(file, referencePath) {
 // Skip links that are examples/placeholders rather than real repo references.
 function shouldSkipDocReference(referencePath) {
   return (
-    referencePath.includes("path/to/") ||
-    referencePath.includes("issue #") ||
-    referencePath === "PR.md" ||
-    referencePath === "PLAN.md" ||
+    referencePath.includes('path/to/') ||
+    referencePath.includes('issue #') ||
+    referencePath === 'PR.md' ||
+    referencePath === 'PLAN.md' ||
     /^PLAN-\d+.*\.md$/.test(referencePath) || // PLAN-1-title.md, PLAN-1.md, etc.
-    referencePath === "src/foo/Bar.ts" ||
-    referencePath === "../AGENTS.md" ||
-    referencePath === "../docs/AGENTS.md" ||
-    referencePath === "./ChatContainer.md" ||
-    referencePath === "docs/release-notes.md" ||
-    referencePath === "../../tests/store/spec/reactReduxShim_spec.tsx" ||
-    referencePath.startsWith("<") ||
-    referencePath.includes("<file>") ||
-    referencePath.includes("<slug>") ||
-    referencePath.includes("<component>") ||
-    referencePath.includes("<thing>") ||
-    referencePath.includes("<name>") ||
+    referencePath === 'src/foo/Bar.ts' ||
+    referencePath === '../AGENTS.md' ||
+    referencePath === '../docs/AGENTS.md' ||
+    referencePath === './ChatContainer.md' ||
+    referencePath === 'docs/release-notes.md' ||
+    referencePath === '../../tests/store/spec/reactReduxShim_spec.tsx' ||
+    referencePath.startsWith('<') ||
+    referencePath.includes('<file>') ||
+    referencePath.includes('<slug>') ||
+    referencePath.includes('<component>') ||
+    referencePath.includes('<thing>') ||
+    referencePath.includes('<name>') ||
     // Skip file naming patterns (not actual files)
-    referencePath.startsWith(".") || // .stories.js, .test.ts, etc.
-    referencePath.startsWith("-") || // -react.stories.jsx, etc.
-    referencePath.includes("*") // wildcards
+    referencePath.startsWith('.') || // .stories.js, .test.ts, etc.
+    referencePath.startsWith('-') || // -react.stories.jsx, etc.
+    referencePath.includes('*') // wildcards
   );
 }
 
@@ -243,9 +243,9 @@ function isAgentsDocTarget(target) {
   const base = path.basename(target);
   const parent = path.basename(path.dirname(target));
   return (
-    base === "AGENTS.md" ||
-    (base.startsWith("AGENTS_") && base.endsWith(".md")) ||
-    (parent === "references" && base.endsWith(".md"))
+    base === 'AGENTS.md' ||
+    (base.startsWith('AGENTS_') && base.endsWith('.md')) ||
+    (parent === 'references' && base.endsWith('.md'))
   );
 }
 
@@ -255,12 +255,12 @@ function validateInternalLinks(file, content) {
 
   for (const link of links) {
     // Skip external links
-    if (link.url.startsWith("http://") || link.url.startsWith("https://")) {
+    if (link.url.startsWith('http://') || link.url.startsWith('https://')) {
       continue;
     }
 
     // Skip anchor-only links
-    if (link.url.startsWith("#")) {
+    if (link.url.startsWith('#')) {
       continue;
     }
 
@@ -281,7 +281,7 @@ function validateInternalLinks(file, content) {
       if (!fs.existsSync(strictPath)) {
         error(
           file,
-          `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} does not resolve relative to ${path.dirname(file) || "."}`,
+          `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} does not resolve relative to ${path.dirname(file) || '.'}`
         );
       }
       continue;
@@ -295,7 +295,7 @@ function validateInternalLinks(file, content) {
     if (!targetPath) {
       error(
         file,
-        `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} not found`,
+        `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} not found`
       );
     }
   }
@@ -322,7 +322,7 @@ function validateFileReferences(file, content) {
   const refs = extractFileReferences(content);
 
   for (const ref of refs) {
-    if (shouldSkipDocReference(ref.path) || ref.path.includes("example")) {
+    if (shouldSkipDocReference(ref.path) || ref.path.includes('example')) {
       continue;
     }
 
@@ -340,15 +340,15 @@ function validatePathNotation(file, content) {
 
   for (const link of links) {
     // Skip external links
-    if (link.url.startsWith("http://") || link.url.startsWith("https://")) {
+    if (link.url.startsWith('http://') || link.url.startsWith('https://')) {
       continue;
     }
 
     // Check for inconsistent path notation
-    if (link.url.startsWith("/") && !link.url.startsWith("http")) {
+    if (link.url.startsWith('/') && !link.url.startsWith('http')) {
       warn(
         file,
-        `Absolute path in link: [${link.text}](${link.url}) - prefer relative paths`,
+        `Absolute path in link: [${link.text}](${link.url}) - prefer relative paths`
       );
     }
   }
@@ -370,7 +370,7 @@ function discoverAgentsFiles() {
     }
 
     const fullPath = path.join(REPO_ROOT, file);
-    const content = fs.readFileSync(fullPath, "utf-8");
+    const content = fs.readFileSync(fullPath, 'utf-8');
     discovered.add(file);
 
     const links = extractLinks(content);
@@ -378,14 +378,14 @@ function discoverAgentsFiles() {
 
     for (const link of links) {
       if (
-        link.url.startsWith("http://") ||
-        link.url.startsWith("https://") ||
-        link.url.startsWith("#")
+        link.url.startsWith('http://') ||
+        link.url.startsWith('https://') ||
+        link.url.startsWith('#')
       ) {
         continue;
       }
 
-      const urlWithoutAnchor = link.url.split("#")[0];
+      const urlWithoutAnchor = link.url.split('#')[0];
       if (!urlWithoutAnchor) {
         continue;
       }
@@ -397,11 +397,11 @@ function discoverAgentsFiles() {
       const parentDir = path.basename(path.dirname(targetPath));
       if (
         fs.existsSync(targetPath) &&
-        (basename === "AGENTS.md" ||
+        (basename === 'AGENTS.md' ||
           // Legacy topic siblings (kept for resilience; superseded by references/).
-          (basename.startsWith("AGENTS_") && basename.endsWith(".md")) ||
+          (basename.startsWith('AGENTS_') && basename.endsWith('.md')) ||
           // Topic docs now live as kebab-case files under a references/ subfolder.
-          (parentDir === "references" && basename.endsWith(".md")))
+          (parentDir === 'references' && basename.endsWith('.md')))
       ) {
         queue.push(relativePath);
       }
@@ -420,7 +420,7 @@ function validateFile(file) {
   }
 
   const fullPath = path.join(REPO_ROOT, file);
-  const content = fs.readFileSync(fullPath, "utf-8");
+  const content = fs.readFileSync(fullPath, 'utf-8');
 
   validateInternalLinks(file, content);
   validateFileReferences(file, content);
@@ -428,32 +428,32 @@ function validateFile(file) {
 }
 
 // Run validation
-console.log("🔍 Validating AGENTS.md files...\n");
+console.log('🔍 Validating AGENTS.md files...\n');
 
 const agentsFiles = discoverAgentsFiles();
 info(
-  `Discovered ${agentsFiles.length} AGENTS documentation files from ${ROOT_AGENTS_FILE}.`,
+  `Discovered ${agentsFiles.length} AGENTS documentation files from ${ROOT_AGENTS_FILE}.`
 );
 
 for (const file of agentsFiles) {
   validateFile(file);
 }
 
-console.log("\n" + "=".repeat(60));
+console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors, ${warnings} warnings`);
-console.log("=".repeat(60));
+console.log('='.repeat(60));
 
 if (errors > 0) {
-  console.error("\n❌ Validation failed. Please fix errors above.");
+  console.error('\n❌ Validation failed. Please fix errors above.');
   process.exit(1);
 }
 
 if (warnings > 0) {
   console.warn(
-    "\n  Validation passed with warnings. Consider addressing them.",
+    '\n  Validation passed with warnings. Consider addressing them.'
   );
   process.exit(0);
 }
 
-console.log("\n✨ All checks passed!");
+console.log('\n✨ All checks passed!');
 process.exit(0);

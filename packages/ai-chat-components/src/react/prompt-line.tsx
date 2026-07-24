@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
-import PromptLineElement from "../components/prompt-line/src/prompt-line.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import PromptLineElement from '../components/prompt-line/src/prompt-line.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 /**
  * React wrapper for `<cds-aichat-prompt-line>`. Mirrors the WC's prompt-line
@@ -29,20 +29,20 @@ import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
  */
 const PromptLine = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-prompt-line",
+    tagName: 'cds-aichat-prompt-line',
     elementClass: PromptLineElement,
     react: React,
     events: {
-      onChange: "cds-aichat-prompt-change",
-      onFocus: "cds-aichat-prompt-focus",
-      onBlur: "cds-aichat-prompt-blur",
-      onTyping: "cds-aichat-prompt-typing",
-      onKeyDown: "cds-aichat-prompt-keydown",
-      onSendIntent: "cds-aichat-prompt-send-intent",
-      onTriggerChange: "cds-aichat-trigger-change",
-      onLightDomPortal: "cds-aichat-light-dom-portal",
+      onChange: 'cds-aichat-prompt-change',
+      onFocus: 'cds-aichat-prompt-focus',
+      onBlur: 'cds-aichat-prompt-blur',
+      onTyping: 'cds-aichat-prompt-typing',
+      onKeyDown: 'cds-aichat-prompt-keydown',
+      onSendIntent: 'cds-aichat-prompt-send-intent',
+      onTriggerChange: 'cds-aichat-trigger-change',
+      onLightDomPortal: 'cds-aichat-light-dom-portal',
     },
-  }),
+  })
 );
 
 export default PromptLine;

@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-error-message;
 
@@ -36,7 +36,7 @@ $block-class: #{$prefix}-error-message;
     display: block;
     background: theme.$border-subtle-00;
     block-size: 1px;
-    content: "";
+    content: '';
     inline-size: calc(100% + #{layout.$spacing-03} + #{layout.$spacing-03});
     inset-block-end: 0;
     inset-inline-start: calc(-1 * #{layout.$spacing-03});
@@ -60,7 +60,7 @@ $block-class: #{$prefix}-error-message;
   z-index: 1;
   display: block;
   block-size: layout.$spacing-04;
-  content: "";
+  content: '';
   inline-size: 100%;
   inset-block-end: 0;
   inset-inline-start: 0;
@@ -85,7 +85,7 @@ $block-class: #{$prefix}-error-message;
 }
 
 .#{$block-class}__text {
-  @include type.type-style("helper-text-01");
+  @include type.type-style('helper-text-01');
 
   overflow: hidden;
   flex: 1;

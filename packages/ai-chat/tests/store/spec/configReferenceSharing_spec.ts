@@ -21,8 +21,8 @@
 import {
   createAppConfig,
   reconcileAppConfigReferences,
-} from "../../../src/chat/store/doCreateStore";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+} from '../../../src/chat/store/doCreateStore';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 /**
  * Builds a fully-formed PublicConfig with fresh object references on every call,
@@ -30,23 +30,23 @@ import { PublicConfig } from "../../../src/types/config/PublicConfig";
  */
 function buildPublicConfig(): PublicConfig {
   return {
-    header: { name: "Assistant", showRestartButton: true },
+    header: { name: 'Assistant', showRestartButton: true },
     layout: { showFrame: true },
     launcher: { isOn: true },
     input: { isDisabled: false, isVisible: true },
     homescreen: { isOn: false },
-    assistantName: "Assistant",
-    locale: "en",
+    assistantName: 'Assistant',
+    locale: 'en',
   } as PublicConfig;
 }
 
-describe("reconcileAppConfigReferences", () => {
-  it("returns next as-is when there is no previous config (boot)", () => {
+describe('reconcileAppConfigReferences', () => {
+  it('returns next as-is when there is no previous config (boot)', () => {
     const next = createAppConfig(buildPublicConfig());
     expect(reconcileAppConfigReferences(null, next)).toBe(next);
   });
 
-  it("reuses every reference when nothing changed", () => {
+  it('reuses every reference when nothing changed', () => {
     const prev = createAppConfig(buildPublicConfig());
     // A structurally-fresh but value-equal rebuild.
     const next = createAppConfig(buildPublicConfig());
@@ -59,7 +59,7 @@ describe("reconcileAppConfigReferences", () => {
     expect(reconciled.derived).toBe(prev.derived);
   });
 
-  it("preserves unrelated references when only input.isDisabled changes", () => {
+  it('preserves unrelated references when only input.isDisabled changes', () => {
     const prev = createAppConfig(buildPublicConfig());
 
     const nextPublic = buildPublicConfig();
@@ -86,11 +86,11 @@ describe("reconcileAppConfigReferences", () => {
     expect(reconciled.derived).toBe(prev.derived);
   });
 
-  it("issues a fresh derived.header (only) when the header config changes", () => {
+  it('issues a fresh derived.header (only) when the header config changes', () => {
     const prev = createAppConfig(buildPublicConfig());
 
     const nextPublic = buildPublicConfig();
-    nextPublic.header = { ...nextPublic.header, name: "Changed" };
+    nextPublic.header = { ...nextPublic.header, name: 'Changed' };
     const next = createAppConfig(nextPublic);
 
     const reconciled = reconcileAppConfigReferences(prev, next);
@@ -98,17 +98,17 @@ describe("reconcileAppConfigReferences", () => {
     // The changed derived sub-object gets a new reference...
     expect(reconciled.derived).not.toBe(prev.derived);
     expect(reconciled.derived.header).not.toBe(prev.derived.header);
-    expect(reconciled.derived.header.name).toBe("Changed");
+    expect(reconciled.derived.header.name).toBe('Changed');
 
     // ...while the unchanged derived siblings are preserved.
     expect(reconciled.derived.layout).toBe(prev.derived.layout);
     expect(reconciled.derived.launcher).toBe(prev.derived.launcher);
     expect(reconciled.derived.themeWithDefaults).toBe(
-      prev.derived.themeWithDefaults,
+      prev.derived.themeWithDefaults
     );
   });
 
-  it("does not churn value-equal sub-objects when only a function prop changes", () => {
+  it('does not churn value-equal sub-objects when only a function prop changes', () => {
     const basePublic = buildPublicConfig();
     const prevPublic: PublicConfig = {
       ...basePublic,

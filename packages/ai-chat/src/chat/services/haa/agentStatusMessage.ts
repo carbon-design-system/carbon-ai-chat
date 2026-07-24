@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { IntlShape } from "../../utils/i18n";
+import { IntlShape } from '../../utils/i18n';
 
 import {
   HumanAgentMessageType,
   ResponseUserProfile,
-} from "../../../types/messaging/Messages";
-import { LanguagePack } from "../../../types/config/LanguagePack";
+} from '../../../types/messaging/Messages';
+import { LanguagePack } from '../../../types/config/LanguagePack';
 
 /**
  * Calculates the text to display for a given agent message type.
@@ -21,70 +21,70 @@ import { LanguagePack } from "../../../types/config/LanguagePack";
 function getHumanAgentStatusMessageText(
   agentMessageType: HumanAgentMessageType,
   responseUserProfile: ResponseUserProfile,
-  intl: IntlShape,
+  intl: IntlShape
 ) {
   const name = responseUserProfile?.nickname;
 
   let messageKey: keyof LanguagePack;
   switch (agentMessageType) {
     case HumanAgentMessageType.HUMAN_AGENT_JOINED: {
-      messageKey = name ? "agent_agentJoinedName" : "agent_agentJoinedNoName";
+      messageKey = name ? 'agent_agentJoinedName' : 'agent_agentJoinedNoName';
       break;
     }
     case HumanAgentMessageType.RELOAD_WARNING: {
-      messageKey = "agent_youConnectedWarning";
+      messageKey = 'agent_youConnectedWarning';
       break;
     }
     case HumanAgentMessageType.HUMAN_AGENT_LEFT_CHAT: {
-      messageKey = name ? "agent_agentLeftChat" : "agent_agentLeftChatNoName";
+      messageKey = name ? 'agent_agentLeftChat' : 'agent_agentLeftChatNoName';
       break;
     }
     case HumanAgentMessageType.HUMAN_AGENT_ENDED_CHAT: {
-      messageKey = name ? "agent_agentEndedChat" : "agent_agentEndedChatNoName";
+      messageKey = name ? 'agent_agentEndedChat' : 'agent_agentEndedChatNoName';
       break;
     }
     case HumanAgentMessageType.TRANSFER_TO_HUMAN_AGENT: {
-      messageKey = name ? "agent_transferring" : "agent_transferringNoName";
+      messageKey = name ? 'agent_transferring' : 'agent_transferringNoName';
       break;
     }
     case HumanAgentMessageType.USER_ENDED_CHAT: {
-      messageKey = "agent_youEndedChat";
+      messageKey = 'agent_youEndedChat';
       break;
     }
     case HumanAgentMessageType.CHAT_WAS_ENDED: {
-      messageKey = "agent_conversationWasEnded";
+      messageKey = 'agent_conversationWasEnded';
       break;
     }
     case HumanAgentMessageType.DISCONNECTED: {
-      messageKey = "agent_disconnected";
+      messageKey = 'agent_disconnected';
       break;
     }
     case HumanAgentMessageType.RECONNECTED: {
-      messageKey = "agent_reconnected";
+      messageKey = 'agent_reconnected';
       break;
     }
     case HumanAgentMessageType.SHARING_REQUESTED: {
-      messageKey = "agent_sharingRequested";
+      messageKey = 'agent_sharingRequested';
       break;
     }
     case HumanAgentMessageType.SHARING_ACCEPTED: {
-      messageKey = "agent_sharingAccepted";
+      messageKey = 'agent_sharingAccepted';
       break;
     }
     case HumanAgentMessageType.SHARING_DECLINED: {
-      messageKey = "agent_sharingDeclined";
+      messageKey = 'agent_sharingDeclined';
       break;
     }
     case HumanAgentMessageType.SHARING_CANCELLED: {
-      messageKey = "agent_sharingCancelled";
+      messageKey = 'agent_sharingCancelled';
       break;
     }
     case HumanAgentMessageType.SHARING_ENDED: {
-      messageKey = "agent_sharingEnded";
+      messageKey = 'agent_sharingEnded';
       break;
     }
     default:
-      return "";
+      return '';
   }
 
   return (

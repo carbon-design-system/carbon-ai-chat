@@ -9,31 +9,31 @@
    IMPORTS & SETUP
    ============================================================================ */
 
-@use "sass:meta";
-@use "@carbon/styles/scss/themes";
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
+@use 'sass:meta';
+@use '@carbon/styles/scss/themes';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
 
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/utilities/ai-gradient" as *;
-@use "../globals/scss/chat-theme";
-@use "../globals/scss/chat-float-layout";
-@use "../globals/scss/chat-explainability-popover";
-@use "../globals/scss/max-width-utilities";
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/utilities/ai-gradient' as *;
+@use '../globals/scss/chat-theme';
+@use '../globals/scss/chat-float-layout';
+@use '../globals/scss/chat-explainability-popover';
+@use '../globals/scss/max-width-utilities';
 
-@use "./components/imports" as components;
-@use "./components-legacy/imports" as legacyComponents;
+@use './components/imports' as components;
+@use './components-legacy/imports' as legacyComponents;
 
 /*
 Chat custom css properties
 */
 
-@use "@carbon/colors";
+@use '@carbon/colors';
 
 // Import shared tokens from @carbon/ai-chat-components
 // These are the public configurable tokens that are shared across both packages
-@use "@carbon/ai-chat-components/scss/custom-properties" as shared-tokens;
+@use '@carbon/ai-chat-components/scss/custom-properties' as shared-tokens;
 
 .cds-aichat--container--render {
   box-sizing: border-box;
@@ -227,12 +227,12 @@ Chat custom css properties
    Main container wrapper and accessibility features
    ============================================================================ */
 
-.cds-aichat--container--render[dir="rtl"] {
+.cds-aichat--container--render[dir='rtl'] {
   direction: rtl;
 }
 
 /* ARIA live region for screen reader announcements */
-.cds-aichat--container--render > div > div[role="log"] {
+.cds-aichat--container--render > div > div[role='log'] {
   position: absolute;
   overflow: hidden;
   block-size: 1px;
@@ -258,7 +258,7 @@ Chat custom css properties
   -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
   text-rendering: optimizelegibility;
   visibility: visible;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 /* ============================================================================
@@ -294,13 +294,13 @@ Chat custom css properties
    Right-to-left language support and icon handling
    ============================================================================ */
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--direction-has-reversible-svg
   svg {
   transform: scaleX(-1);
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--direction-has-reversible-svg.cds-aichat--reverse-icon
   svg {
   transform: scaleX(1);

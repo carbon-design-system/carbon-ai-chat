@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,28 +7,28 @@
  *  @license
  */
 
-import { ViewType } from "../../../src/types/instance/apiTypes";
-import actions from "../../../src/chat/store/actions";
+import { ViewType } from '../../../src/types/instance/apiTypes';
+import actions from '../../../src/chat/store/actions';
 import {
   createBaseConfig,
   renderChatAndGetInstance,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.destroySession", () => {
+describe('ChatInstance.destroySession', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have destroySession method available", async () => {
+  it('should have destroySession method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.destroySession).toBe("function");
+    expect(typeof instance.destroySession).toBe('function');
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -36,21 +36,21 @@ describe("ChatInstance.destroySession", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  it("should resolve successfully with keepOpenState=true", async () => {
+  it('should resolve successfully with keepOpenState=true', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     await expect(instance.destroySession(true)).resolves.not.toThrow();
   });
 
-  it("should resolve successfully with keepOpenState=false", async () => {
+  it('should resolve successfully with keepOpenState=false', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     await expect(instance.destroySession(false)).resolves.not.toThrow();
   });
 
-  it("should reset persisted browser storage when called", async () => {
+  it('should reset persisted browser storage when called', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -67,9 +67,9 @@ describe("ChatInstance.destroySession", () => {
     // Verify disclaimer was accepted
     state = store.getState();
     const hostname =
-      typeof window !== "undefined" ? window.location.hostname : "localhost";
+      typeof window !== 'undefined' ? window.location.hostname : 'localhost';
     expect(state.persistedToBrowserStorage.disclaimersAccepted[hostname]).toBe(
-      true,
+      true
     );
 
     // Now destroy the session with keepOpenState=false
@@ -86,7 +86,7 @@ describe("ChatInstance.destroySession", () => {
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
   });
 
-  it("should preserve view state when keepOpenState=true", async () => {
+  it('should preserve view state when keepOpenState=true', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -104,9 +104,9 @@ describe("ChatInstance.destroySession", () => {
     // Verify disclaimer was accepted
     state = store.getState();
     const hostname =
-      typeof window !== "undefined" ? window.location.hostname : "localhost";
+      typeof window !== 'undefined' ? window.location.hostname : 'localhost';
     expect(state.persistedToBrowserStorage.disclaimersAccepted[hostname]).toBe(
-      true,
+      true
     );
 
     // Destroy session with keepOpenState=true
@@ -120,11 +120,11 @@ describe("ChatInstance.destroySession", () => {
 
     // But view state should be preserved
     expect(state.persistedToBrowserStorage.viewState).toEqual(
-      originalViewState,
+      originalViewState
     );
   });
 
-  it("should clear hasSentNonWelcomeMessage flag", async () => {
+  it('should clear hasSentNonWelcomeMessage flag', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -141,11 +141,11 @@ describe("ChatInstance.destroySession", () => {
     // Verify the flag has been reset
     state = store.getState();
     expect(state.persistedToBrowserStorage.hasSentNonWelcomeMessage).toBe(
-      false,
+      false
     );
   });
 
-  it("should reset homeScreenState", async () => {
+  it('should reset homeScreenState', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -155,7 +155,7 @@ describe("ChatInstance.destroySession", () => {
     // Verify the state is set
     let state = store.getState();
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(true);
 
     // Destroy session
@@ -164,11 +164,11 @@ describe("ChatInstance.destroySession", () => {
     // Verify homeScreenState has been reset
     state = store.getState();
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(false);
   });
 
-  it("should complete successfully and clear all persistent state", async () => {
+  it('should complete successfully and clear all persistent state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -183,7 +183,7 @@ describe("ChatInstance.destroySession", () => {
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
     expect(state.persistedToBrowserStorage.hasSentNonWelcomeMessage).toBe(true);
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(true);
 
     // Destroy session
@@ -193,10 +193,10 @@ describe("ChatInstance.destroySession", () => {
     state = store.getState();
     expect(state.persistedToBrowserStorage.disclaimersAccepted).toEqual({});
     expect(state.persistedToBrowserStorage.hasSentNonWelcomeMessage).toBe(
-      false,
+      false
     );
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(false);
     expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
     expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);

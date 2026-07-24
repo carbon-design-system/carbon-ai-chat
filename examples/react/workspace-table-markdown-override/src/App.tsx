@@ -40,18 +40,18 @@ import {
   type MarkdownRendererTableArgs,
   PanelType,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import Card from "@carbon/ai-chat-components/es/react/card";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar";
-import { Maximize } from "@carbon/icons-react";
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import Card from '@carbon/ai-chat-components/es/react/card';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar';
+import { Maximize } from '@carbon/icons-react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { InlineTablePreview } from "./InlineTablePreview";
-import { type TableData } from "./tableData";
-import { WorkspaceTable } from "./WorkspaceTable";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { InlineTablePreview } from './InlineTablePreview';
+import { type TableData } from './tableData';
+import { WorkspaceTable } from './WorkspaceTable';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -85,14 +85,14 @@ function App() {
     () => ({
       customRenderers: {
         table: ({ headers, rows, slotName }: MarkdownRendererTableArgs) => {
-          const title = "Orders";
+          const title = 'Orders';
           // The toolbar exposes `actions: Action[]` — an array of objects,
           // NOT JSX children — and renders each as a `cds-icon-button` with
           // a tooltip. We supply the Carbon Maximize icon and an onClick
           // that opens the workspace panel.
           const actions = [
             {
-              text: "Open in workspace",
+              text: 'Open in workspace',
               icon: Maximize,
               onClick: () => {
                 const data: TableData = {
@@ -105,7 +105,7 @@ function App() {
                   ?.getPanel(PanelType.WORKSPACE)
                   .open({
                     title,
-                    preferredLocation: "end",
+                    preferredLocation: 'end',
                     workspaceId: slotName,
                   });
               },
@@ -125,7 +125,7 @@ function App() {
         },
       },
     }),
-    [],
+    []
   );
 
   // Only built when there is workspace data — `null` means the panel is
@@ -152,6 +152,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

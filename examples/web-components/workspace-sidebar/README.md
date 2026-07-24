@@ -1,19 +1,30 @@
 # Workspace (sidebar)
 
-Workspace feature wrapped in a right-hand sliding sidebar — built on the shipped `cds-aichat-sidebar` layout classes — with an external app header and launcher button, expanding wider when the workspace panel opens.
+Workspace feature wrapped in a right-hand sliding sidebar — built on the shipped
+`cds-aichat-sidebar` layout classes — with an external app header and launcher
+button, expanding wider when the workspace panel opens.
 
 ## What this example shows
 
-- Importing `@carbon/ai-chat/css/chat-sidebar-layout.css` for the base sidebar classes (`cds-aichat-sidebar`, `--closing`, `--closed`), then layering local `--expanded` / `--expanding` / `--contracting` modifiers on top.
-- Hosting `cds-aichat-custom-element` inside a fixed right-side sidebar that slides in/out based on `VIEW_CHANGE` / `VIEW_PRE_CHANGE` events.
-- Expanding the sidebar width when the workspace opens and contracting on close, coordinated with `WORKSPACE_PRE_OPEN` / `WORKSPACE_PRE_CLOSE` / `WORKSPACE_OPEN` / `WORKSPACE_CLOSE`.
-- Toggling chat visibility from an external header button via `instance.changeView(ViewType.LAUNCHER | ViewType.MAIN_WINDOW)`.
-- Rendering `<outstanding-orders-card>` slots with a maximize-to-workspace action via the `renderUserDefinedResponse` callback.
-- Rendering one of four workspace views (inventory report/status, outstanding orders, SQL editor) in the `workspacePanelElement` slot.
+- Importing `@carbon/ai-chat/css/chat-sidebar-layout.css` for the base sidebar
+  classes (`cds-aichat-sidebar`, `--closing`, `--closed`), then layering local
+  `--expanded` / `--expanding` / `--contracting` modifiers on top.
+- Hosting `cds-aichat-custom-element` inside a fixed right-side sidebar that
+  slides in/out based on `VIEW_CHANGE` / `VIEW_PRE_CHANGE` events.
+- Expanding the sidebar width when the workspace opens and contracting on close,
+  coordinated with `WORKSPACE_PRE_OPEN` / `WORKSPACE_PRE_CLOSE` /
+  `WORKSPACE_OPEN` / `WORKSPACE_CLOSE`.
+- Toggling chat visibility from an external header button via
+  `instance.changeView(ViewType.LAUNCHER | ViewType.MAIN_WINDOW)`.
+- Rendering `<outstanding-orders-card>` slots with a maximize-to-workspace
+  action via the `renderUserDefinedResponse` callback.
+- Rendering one of four workspace views (inventory report/status, outstanding
+  orders, SQL editor) in the `workspacePanelElement` slot.
 
 ## When to use this pattern
 
-- Apps that want the chat docked in a sidebar chrome (with their own header/launcher button) rather than the default float.
+- Apps that want the chat docked in a sidebar chrome (with their own
+  header/launcher button) rather than the default float.
 - UIs where the workspace panel should visually widen the sidebar while open.
 
 ## APIs and props demonstrated
@@ -52,7 +63,10 @@ Workspace feature wrapped in a right-hand sliding sidebar — built on the shipp
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

@@ -9,17 +9,17 @@
 
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import "../src/card";
-import "../src/card-footer";
-import "../src/card-steps";
-import "../../toolbar/src/toolbar";
-import { Default as CardDefault, WithActions } from "./card.stories";
-import { html } from "lit";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
-import styles from "./story-styles.scss?lit";
-import { action } from "storybook/actions";
-import { previewCardFooterPresets, toolbarActions } from "./story-data";
+import '../src/card';
+import '../src/card-footer';
+import '../src/card-steps';
+import '../../toolbar/src/toolbar';
+import { Default as CardDefault, WithActions } from './card.stories';
+import { html } from 'lit';
+import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/icon-indicator.js';
+import styles from './story-styles.scss?lit';
+import { action } from 'storybook/actions';
+import { previewCardFooterPresets, toolbarActions } from './story-data';
 
 const aiContent = html`
   <div slot="body-text" class="ai-label-body">
@@ -33,13 +33,13 @@ const aiContent = html`
 `;
 
 const maxWidthWrapper = (width, storyFn) => {
-  return width === "unset"
+  return width === 'unset'
     ? storyFn()
     : html`<div style="max-width: ${width}">${storyFn()}</div>`;
 };
 
 export default {
-  title: "Components/Card/Preview Card",
+  title: 'Components/Card/Preview Card',
   decorators: [
     (story) => html`
       <style>
@@ -54,20 +54,20 @@ export const Small = {
   argTypes: {
     ...CardDefault.argTypes,
     footerActions: {
-      control: "select",
+      control: 'select',
       options: Object.keys(previewCardFooterPresets),
       description: WithActions.argTypes.footerActions.description,
     },
     aiLabel: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Toggles display of the AI label decorator, which shows AI-powered content.",
+        'Toggles display of the AI label decorator, which shows AI-powered content.',
     },
   },
   args: {
     ...CardDefault.args,
     isFlush: true,
-    footerActions: "2 ghost icon buttons",
+    footerActions: '2 ghost icon buttons',
     aiLabel: true,
   },
   render: (args) =>
@@ -76,8 +76,7 @@ export const Small = {
       () => html`
         <cds-aichat-card
           ?is-layered=${args.isLayered}
-          ?is-flush=${args.isFlush}
-        >
+          ?is-flush=${args.isFlush}>
           <div slot="body" class="preview-card preview-card-small">
             <h4>Document title</h4>
             <p>Subtitle</p>
@@ -89,10 +88,9 @@ export const Small = {
                     size="md"
                     .actions=${previewCardFooterPresets[args.footerActions]}
                     @cds-aichat-card-footer-action=${(e) =>
-                      action("action")(e.detail)}
-                  ></cds-aichat-card-footer>
+                      action('action')(e.detail)}></cds-aichat-card-footer>
                 `
-              : ""
+              : ''
           }
           ${
             args.aiLabel
@@ -100,14 +98,13 @@ export const Small = {
                   size="mini"
                   autoalign
                   alignment="bottom-right"
-                  slot="decorator"
-                >
+                  slot="decorator">
                   ${aiContent}
                 </cds-ai-label>`
-              : ""
+              : ''
           }
         </cds-aichat-card>
-      `,
+      `
     ),
 };
 
@@ -119,8 +116,8 @@ export const Default = {
     ...Small.args,
     isFlush: true,
     aiLabel: true,
-    footerActions: "1 ghost button with icon",
-    maxWidth: "lg",
+    footerActions: '1 ghost button with icon',
+    maxWidth: 'lg',
   },
   render: (args) =>
     maxWidthWrapper(
@@ -128,8 +125,7 @@ export const Default = {
       () => html`
         <cds-aichat-card
           ?is-layered=${args.isLayered}
-          ?is-flush=${args.isFlush}
-        >
+          ?is-flush=${args.isFlush}>
           <div slot="header" class="preview-card preview-card-default">
             <h4>Document title</h4>
             <p>Subtitle</p>
@@ -152,10 +148,9 @@ export const Default = {
                     size="md"
                     .actions=${previewCardFooterPresets[args.footerActions]}
                     @cds-aichat-card-footer-action=${(e) =>
-                      action("action")(e.detail)}
-                  ></cds-aichat-card-footer>
+                      action('action')(e.detail)}></cds-aichat-card-footer>
                 `
-              : ""
+              : ''
           }
           ${
             args.aiLabel
@@ -163,14 +158,13 @@ export const Default = {
                   size="mini"
                   autoalign
                   alignment="bottom-right"
-                  slot="decorator"
-                >
+                  slot="decorator">
                   ${aiContent}
                 </cds-ai-label>`
-              : ""
+              : ''
           }
         </cds-aichat-card>
-      `,
+      `
     ),
 };
 
@@ -178,15 +172,15 @@ export const WithToolbar = {
   argTypes: {
     ...Default.argTypes,
     aiLabel: {
-      control: "boolean",
-      description: "Toggles display of the AI label in the toolbar area.",
+      control: 'boolean',
+      description: 'Toggles display of the AI label in the toolbar area.',
     },
   },
   args: {
     isLayered: false,
     isFlush: true,
-    maxWidth: "lg",
-    footerActions: "none",
+    maxWidth: 'lg',
+    footerActions: 'none',
     aiLabel: true,
   },
   render: (args) =>
@@ -195,14 +189,12 @@ export const WithToolbar = {
       () => html`
         <cds-aichat-card
           ?is-layered=${args.isLayered}
-          ?is-flush=${args.isFlush}
-        >
+          ?is-flush=${args.isFlush}>
           <div slot="header" class="preview-card">
             <cds-aichat-toolbar
               class="preview-card-toolbar"
               overflow
-              .actions=${toolbarActions}
-            >
+              .actions=${toolbarActions}>
               <div slot="title">
                 <h4>
                   <span class="truncated-text"> Resource consumption </span>
@@ -215,11 +207,10 @@ export const WithToolbar = {
                       size="2xs"
                       autoalign
                       alignment="bottom"
-                      slot="decorator"
-                    >
+                      slot="decorator">
                       ${aiContent}
                     </cds-ai-label>`
-                  : ""
+                  : ''
               }
             </cds-aichat-toolbar>
           </div>
@@ -240,13 +231,12 @@ export const WithToolbar = {
                     size="md"
                     .actions=${previewCardFooterPresets[args.footerActions]}
                     @cds-aichat-card-footer-action=${(e) =>
-                      action("action")(e.detail)}
-                  ></cds-aichat-card-footer>
+                      action('action')(e.detail)}></cds-aichat-card-footer>
                 `
-              : ""
+              : ''
           }
         </cds-aichat-card>
-      `,
+      `
     ),
 };
 
@@ -257,39 +247,39 @@ export const WithSteps = {
   args: {
     ...WithToolbar.args,
     isFlush: true,
-    footerActions: "1 ghost button with icon",
+    footerActions: '1 ghost button with icon',
   },
   render: (args) => {
     const steps = [
       {
-        label: "Step 1",
-        kind: ICON_INDICATOR_KIND["IN-PROGRESS"],
-        title: "Estimate inventory needs in all locations",
-        description: "In progress...",
+        label: 'Step 1',
+        kind: ICON_INDICATOR_KIND['IN-PROGRESS'],
+        title: 'Estimate inventory needs in all locations',
+        description: 'In progress...',
       },
       {
-        label: "Step 2",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Identify locations with excess inventory",
-        description: "Not started",
+        label: 'Step 2',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Identify locations with excess inventory',
+        description: 'Not started',
       },
       {
-        label: "Step 3",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Prepare multiple rebalancing scenarios",
-        description: "Not started",
+        label: 'Step 3',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Prepare multiple rebalancing scenarios',
+        description: 'Not started',
       },
       {
-        label: "Step 4",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Rank rebalancing scenarios for speed and cost",
-        description: "Not started",
+        label: 'Step 4',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Rank rebalancing scenarios for speed and cost',
+        description: 'Not started',
       },
       {
-        label: "Step 5",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Prepare recommendations",
-        description: "Not started",
+        label: 'Step 5',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Prepare recommendations',
+        description: 'Not started',
       },
     ];
 
@@ -301,16 +291,16 @@ export const WithSteps = {
     const progressSteps = () => {
       const proceed = () => {
         steps[currentStep].kind = ICON_INDICATOR_KIND.SUCCEEDED;
-        steps[currentStep].description = "Completed successfully";
+        steps[currentStep].description = 'Completed successfully';
         currentStep++;
 
         if (steps[currentStep]) {
-          steps[currentStep].kind = ICON_INDICATOR_KIND["IN-PROGRESS"];
-          steps[currentStep].description = "In progress...";
+          steps[currentStep].kind = ICON_INDICATOR_KIND['IN-PROGRESS'];
+          steps[currentStep].description = 'In progress...';
           stepsEl.steps = [...steps];
           setTimeout(proceed, timeSteps[currentStep]);
         } else {
-          statusEl.textContent = "Status: completed";
+          statusEl.textContent = 'Status: completed';
           args.showFooter = true;
           stepsEl.steps = [...steps];
         }
@@ -320,8 +310,8 @@ export const WithSteps = {
     };
 
     const onRendered = () => {
-      stepsEl = document.querySelector("#steps-el");
-      statusEl = document.querySelector("#status-label");
+      stepsEl = document.querySelector('#steps-el');
+      statusEl = document.querySelector('#status-label');
 
       if (stepsEl && statusEl) {
         progressSteps();
@@ -335,8 +325,7 @@ export const WithSteps = {
       () => html`
         <cds-aichat-card
           ?is-layered=${args.isLayered}
-          ?is-flush=${args.isFlush}
-        >
+          ?is-flush=${args.isFlush}>
           <div slot="header" class="preview-card">
             <cds-aichat-toolbar class="preview-card-toolbar">
               <div slot="title">
@@ -352,12 +341,11 @@ export const WithSteps = {
                         size="mini"
                         autoalign
                         alignment="bottom"
-                        slot="decorator"
-                      >
+                        slot="decorator">
                         ${aiContent}
                       </cds-ai-label>
                     `
-                  : ""
+                  : ''
               }
             </cds-aichat-toolbar>
           </div>
@@ -365,17 +353,15 @@ export const WithSteps = {
           <div slot="body" class="preview-card preview-card-steps">
             <cds-aichat-card-steps
               id="steps-el"
-              .steps=${steps}
-            ></cds-aichat-card-steps>
+              .steps=${steps}></cds-aichat-card-steps>
           </div>
 
           <cds-aichat-card-footer
             size="md"
             .actions=${previewCardFooterPresets[args.footerActions]}
-            @cds-aichat-card-footer-action=${(e) => action("action")(e.detail)}
-          ></cds-aichat-card-footer>
+            @cds-aichat-card-footer-action=${(e) => action('action')(e.detail)}></cds-aichat-card-footer>
         </cds-aichat-card>
-      `,
+      `
     );
   },
 };
@@ -383,48 +369,48 @@ export const WithSteps = {
 export const CardSteps = {
   argTypes: {
     numberOfSteps: {
-      control: { type: "number", min: 1, max: 10 },
-      name: "Number of Steps",
+      control: { type: 'number', min: 1, max: 10 },
+      name: 'Number of Steps',
       description:
-        "Number of steps to display in the card steps component. this is a storybook control. which multiplies the steps array passed to the component.",
+        'Number of steps to display in the card steps component. this is a storybook control. which multiplies the steps array passed to the component.',
     },
     maxWidth: {
-      control: { type: "radio" },
-      options: ["unset", "sm", "md", "lg"],
-      mapping: { unset: "unset", sm: "291px", md: "438px", lg: "535px" },
+      control: { type: 'radio' },
+      options: ['unset', 'sm', 'md', 'lg'],
+      mapping: { unset: 'unset', sm: '291px', md: '438px', lg: '535px' },
       description: CardDefault.argTypes.maxWidth.description,
     },
     label: {
-      control: { type: "text" },
-      description: "Label for each step in the card steps component.",
+      control: { type: 'text' },
+      description: 'Label for each step in the card steps component.',
     },
     kind: {
-      control: { type: "select" },
-      options: [...Object.keys(ICON_INDICATOR_KIND), "none"],
+      control: { type: 'select' },
+      options: [...Object.keys(ICON_INDICATOR_KIND), 'none'],
       mapping: {
         ...ICON_INDICATOR_KIND,
-        none: "none",
+        none: 'none',
       },
       description:
-        "Kind of step indicator to display. Options include `ICON_INDICATOR_KIND` values.",
+        'Kind of step indicator to display. Options include `ICON_INDICATOR_KIND` values.',
     },
     title: {
-      control: { type: "text" },
-      description: "Title for each step in the card steps component.",
+      control: { type: 'text' },
+      description: 'Title for each step in the card steps component.',
     },
     description: {
-      control: { type: "text" },
-      description: "Description for each step in the card steps component.",
+      control: { type: 'text' },
+      description: 'Description for each step in the card steps component.',
     },
   },
 
   args: {
     numberOfSteps: 1,
-    maxWidth: "lg",
-    label: "Step 1",
-    kind: "IN-PROGRESS",
-    title: "Estimate inventory needs in all locations",
-    description: "In progress...",
+    maxWidth: 'lg',
+    label: 'Step 1',
+    kind: 'IN-PROGRESS',
+    title: 'Estimate inventory needs in all locations',
+    description: 'In progress...',
   },
 
   render: (args) => {
@@ -439,7 +425,7 @@ export const CardSteps = {
       args.maxWidth,
       () => html`
         <cds-aichat-card-steps .steps=${steps}></cds-aichat-card-steps>
-      `,
+      `
     );
   },
 };

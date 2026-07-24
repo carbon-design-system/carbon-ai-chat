@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,29 +12,29 @@ import {
   renderChatAndGetInstance,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.serviceDesk", () => {
+describe('ChatInstance.serviceDesk', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have serviceDesk property available", async () => {
+  it('should have serviceDesk property available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     expect(instance.serviceDesk).toBeDefined();
-    expect(typeof instance.serviceDesk).toBe("object");
+    expect(typeof instance.serviceDesk).toBe('object');
   });
 
-  describe("endConversation", () => {
-    it("should have endConversation method available", async () => {
+  describe('endConversation', () => {
+    it('should have endConversation method available', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
-      expect(typeof instance.serviceDesk.endConversation).toBe("function");
+      expect(typeof instance.serviceDesk.endConversation).toBe('function');
     });
 
-    it("should return a Promise", async () => {
+    it('should return a Promise', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
@@ -42,37 +42,37 @@ describe("ChatInstance.serviceDesk", () => {
       expect(result).toBeInstanceOf(Promise);
     });
 
-    it("should resolve successfully", async () => {
+    it('should resolve successfully', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       await expect(
-        instance.serviceDesk.endConversation(),
+        instance.serviceDesk.endConversation()
       ).resolves.not.toThrow();
     });
 
-    it("should handle multiple calls gracefully", async () => {
+    it('should handle multiple calls gracefully', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       await expect(
-        instance.serviceDesk.endConversation(),
+        instance.serviceDesk.endConversation()
       ).resolves.not.toThrow();
       await expect(
-        instance.serviceDesk.endConversation(),
+        instance.serviceDesk.endConversation()
       ).resolves.not.toThrow();
     });
   });
 
-  describe("updateIsSuspended", () => {
-    it("should have updateIsSuspended method available", async () => {
+  describe('updateIsSuspended', () => {
+    it('should have updateIsSuspended method available', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
-      expect(typeof instance.serviceDesk.updateIsSuspended).toBe("function");
+      expect(typeof instance.serviceDesk.updateIsSuspended).toBe('function');
     });
 
-    it("should return a Promise", async () => {
+    it('should return a Promise', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
@@ -80,30 +80,30 @@ describe("ChatInstance.serviceDesk", () => {
       expect(result).toBeInstanceOf(Promise);
     });
 
-    it("should accept boolean values", async () => {
+    it('should accept boolean values', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       await expect(
-        instance.serviceDesk.updateIsSuspended(true),
+        instance.serviceDesk.updateIsSuspended(true)
       ).resolves.not.toThrow();
       await expect(
-        instance.serviceDesk.updateIsSuspended(false),
+        instance.serviceDesk.updateIsSuspended(false)
       ).resolves.not.toThrow();
     });
 
-    it("should handle suspend state changes", async () => {
+    it('should handle suspend state changes', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       // Test suspending
       await expect(
-        instance.serviceDesk.updateIsSuspended(true),
+        instance.serviceDesk.updateIsSuspended(true)
       ).resolves.not.toThrow();
 
       // Test unsuspending
       await expect(
-        instance.serviceDesk.updateIsSuspended(false),
+        instance.serviceDesk.updateIsSuspended(false)
       ).resolves.not.toThrow();
     });
   });

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,7 +12,7 @@
  * "null".
  */
 function isEmptyString(value: string) {
-  return !value || value === "null";
+  return !value || value === 'null';
 }
 
 /**
@@ -22,7 +22,7 @@ function isEmptyString(value: string) {
  * @param str A string for the title or body of the search card.
  */
 function convertToEmptyStringIfStringifiedNull(str: string) {
-  return str === "null" ? null : str;
+  return str === 'null' ? null : str;
 }
 
 /**
@@ -32,7 +32,7 @@ function convertToEmptyStringIfStringifiedNull(str: string) {
  * @param str A string for the title or body of the search card.
  */
 function convertPossibleStringifiedArrayToFirstString(str: string): string {
-  if (typeof str === "string" && str.startsWith('["') && str.endsWith('"]')) {
+  if (typeof str === 'string' && str.startsWith('["') && str.endsWith('"]')) {
     try {
       [str] = JSON.parse(str);
     } catch (error) {

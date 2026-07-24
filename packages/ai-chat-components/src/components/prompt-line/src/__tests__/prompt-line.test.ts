@@ -7,14 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect, fixture, html, oneEvent } from "@open-wc/testing";
-import { Extension } from "@tiptap/core";
+import { expect, fixture, html, oneEvent } from '@open-wc/testing';
+import { Extension } from '@tiptap/core';
 
-import "../prompt-line.js";
-import { PROMPT_LINE_MAX_BLOCK_SIZE } from "../prompt-line-constants.js";
-import type PromptLineElement from "../prompt-line.js";
-import { carbonMention } from "../tiptap/carbon-mention.js";
-import type { SuggestionItem } from "../tiptap/types.js";
+import '../prompt-line.js';
+import { PROMPT_LINE_MAX_BLOCK_SIZE } from '../prompt-line-constants.js';
+import type PromptLineElement from '../prompt-line.js';
+import { carbonMention } from '../tiptap/carbon-mention.js';
+import type { SuggestionItem } from '../tiptap/types.js';
 
 async function makePromptLine(
   attrs: Partial<{
@@ -23,16 +23,15 @@ async function makePromptLine(
     ariaLabel: string;
     rich: boolean;
     testId: string;
-  }> = {},
+  }> = {}
 ): Promise<PromptLineElement> {
   const el = await fixture<PromptLineElement>(html`
     <cds-aichat-prompt-line
       ?disabled=${attrs.disabled ?? false}
       ?rich=${attrs.rich ?? false}
-      placeholder=${attrs.placeholder ?? ""}
-      aria-label=${attrs.ariaLabel ?? "test prompt"}
-      test-id=${attrs.testId ?? ""}
-    ></cds-aichat-prompt-line>
+      placeholder=${attrs.placeholder ?? ''}
+      aria-label=${attrs.ariaLabel ?? 'test prompt'}
+      test-id=${attrs.testId ?? ''}></cds-aichat-prompt-line>
   `);
   await el.updateComplete;
   await Promise.resolve();
@@ -47,7 +46,7 @@ function getTextarea(el: PromptLineElement): HTMLTextAreaElement {
 function typeInto(el: PromptLineElement, value: string): void {
   const ta = getTextarea(el);
   ta.value = value;
-  ta.dispatchEvent(new InputEvent("input", { bubbles: true }));
+  ta.dispatchEvent(new InputEvent('input', { bubbles: true }));
 }
 
 /**
@@ -65,115 +64,115 @@ async function waitForRich(el: PromptLineElement): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
-  throw new Error("rich editor did not load");
+  throw new Error('rich editor did not load');
 }
 
-describe("<cds-aichat-prompt-line> (textarea mode)", function () {
-  it("renders a textarea and getEditor() is null", async () => {
+describe('<cds-aichat-prompt-line> (textarea mode)', function () {
+  it('renders a textarea and getEditor() is null', async () => {
     const el = await makePromptLine();
     expect(getTextarea(el)).to.not.equal(null);
     expect(el.getEditor()).to.equal(null);
   });
 
-  it("caps the textarea height and scrolls past the cap", async () => {
+  it('caps the textarea height and scrolls past the cap', async () => {
     const el = await makePromptLine();
     const ta = getTextarea(el);
     const style = getComputedStyle(ta);
     expect(style.maxHeight).to.equal(PROMPT_LINE_MAX_BLOCK_SIZE);
-    expect(style.overflowY).to.equal("auto");
+    expect(style.overflowY).to.equal('auto');
   });
 
-  it("projects the editor host into light DOM with slot=editor", async () => {
+  it('projects the editor host into light DOM with slot=editor', async () => {
     const el = await makePromptLine();
     const host = el.querySelector('[slot="editor"]') as HTMLElement;
     expect(host).to.not.equal(null);
-    expect(host.dataset.aichatEditorHost).to.equal("");
-    expect(host.querySelector("textarea")).to.not.equal(null);
+    expect(host.dataset.aichatEditorHost).to.equal('');
+    expect(host.querySelector('textarea')).to.not.equal(null);
   });
 
-  it("applies test-id to the textarea (Playwright .fill target)", async () => {
-    const el = await makePromptLine({ testId: "input_field" });
-    expect(getTextarea(el).getAttribute("data-testid")).to.equal("input_field");
+  it('applies test-id to the textarea (Playwright .fill target)', async () => {
+    const el = await makePromptLine({ testId: 'input_field' });
+    expect(getTextarea(el).getAttribute('data-testid')).to.equal('input_field');
   });
 
-  it("setContent / clearContent / insertContent drive the value", async () => {
+  it('setContent / clearContent / insertContent drive the value', async () => {
     const el = await makePromptLine();
-    el.setContent("alpha");
-    expect(getTextarea(el).value).to.equal("alpha");
+    el.setContent('alpha');
+    expect(getTextarea(el).value).to.equal('alpha');
     el.setContent((prev) => {
       void prev;
       return {
-        type: "doc",
+        type: 'doc',
         content: [
-          { type: "paragraph", content: [{ type: "text", text: "beta" }] },
+          { type: 'paragraph', content: [{ type: 'text', text: 'beta' }] },
         ],
       };
     });
-    expect(getTextarea(el).value).to.equal("beta");
+    expect(getTextarea(el).value).to.equal('beta');
     el.clearContent();
-    expect(getTextarea(el).value).to.equal("");
+    expect(getTextarea(el).value).to.equal('');
     getTextarea(el).setSelectionRange(0, 0);
-    el.setContent("ac");
+    el.setContent('ac');
     getTextarea(el).setSelectionRange(1, 1);
-    el.insertContent("b");
-    expect(getTextarea(el).value).to.equal("abc");
+    el.insertContent('b');
+    expect(getTextarea(el).value).to.equal('abc');
   });
 
-  it("emits cds-aichat-prompt-change with rawValue on input", async () => {
+  it('emits cds-aichat-prompt-change with rawValue on input', async () => {
     const el = await makePromptLine();
     let received: { rawValue: string } | null = null;
-    el.addEventListener("cds-aichat-prompt-change", (event) => {
+    el.addEventListener('cds-aichat-prompt-change', (event) => {
       received = (event as CustomEvent).detail;
     });
-    typeInto(el, "typed");
+    typeInto(el, 'typed');
     expect(received).to.not.equal(null);
-    expect(received!.rawValue).to.equal("typed");
+    expect(received!.rawValue).to.equal('typed');
   });
 
-  it("Enter sends when non-empty; Shift-Enter does not", async () => {
+  it('Enter sends when non-empty; Shift-Enter does not', async () => {
     const el = await makePromptLine();
-    typeInto(el, "hello");
+    typeInto(el, 'hello');
     setTimeout(() =>
       getTextarea(el).dispatchEvent(
-        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-      ),
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      )
     );
-    const event = await oneEvent(el, "cds-aichat-prompt-send-intent");
+    const event = await oneEvent(el, 'cds-aichat-prompt-send-intent');
     expect(event).to.not.equal(null);
 
     let sentOnShift = false;
-    el.addEventListener("cds-aichat-prompt-send-intent", () => {
+    el.addEventListener('cds-aichat-prompt-send-intent', () => {
       sentOnShift = true;
     });
     getTextarea(el).dispatchEvent(
-      new KeyboardEvent("keydown", {
-        key: "Enter",
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
         shiftKey: true,
         bubbles: true,
-      }),
+      })
     );
     expect(sentOnShift).to.equal(false);
   });
 
-  it("does not send on Enter while an IME composition is active", async () => {
+  it('does not send on Enter while an IME composition is active', async () => {
     const el = await makePromptLine();
-    typeInto(el, "にほん");
+    typeInto(el, 'にほん');
     let sent = false;
-    el.addEventListener("cds-aichat-prompt-send-intent", () => {
+    el.addEventListener('cds-aichat-prompt-send-intent', () => {
       sent = true;
     });
     // The Enter that commits an IME candidate carries isComposing=true.
     getTextarea(el).dispatchEvent(
-      new KeyboardEvent("keydown", {
-        key: "Enter",
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
         isComposing: true,
         bubbles: true,
-      }),
+      })
     );
     expect(sent).to.equal(false);
   });
 
-  it("disabled toggles the textarea readOnly state", async () => {
+  it('disabled toggles the textarea readOnly state', async () => {
     const el = await makePromptLine();
     expect(getTextarea(el).readOnly).to.equal(false);
     el.disabled = true;
@@ -182,8 +181,8 @@ describe("<cds-aichat-prompt-line> (textarea mode)", function () {
   });
 });
 
-describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
-  it("upgrades to a Tiptap editor when rich is set", async () => {
+describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
+  it('upgrades to a Tiptap editor when rich is set', async () => {
     const el = await makePromptLine();
     expect(el.getEditor()).to.equal(null);
     el.rich = true;
@@ -191,31 +190,31 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
     const editor = el.getEditor();
     expect(editor).to.not.equal(null);
     const host = el.querySelector('[slot="editor"]') as HTMLElement;
-    expect(host.querySelector(".ProseMirror")).to.not.equal(null);
-    expect(host.querySelector("textarea")).to.equal(null);
+    expect(host.querySelector('.ProseMirror')).to.not.equal(null);
+    expect(host.querySelector('textarea')).to.equal(null);
   });
 
-  it("caps the rich content height at the same value as the textarea", async () => {
+  it('caps the rich content height at the same value as the textarea', async () => {
     const el = await makePromptLine();
     el.rich = true;
     await waitForRich(el);
     const pm = el.querySelector('[slot="editor"] .ProseMirror') as HTMLElement;
     const style = getComputedStyle(pm);
     expect(style.maxHeight).to.equal(PROMPT_LINE_MAX_BLOCK_SIZE);
-    expect(style.overflowY).to.equal("auto");
+    expect(style.overflowY).to.equal('auto');
   });
 
-  it("preserves the typed value across the upgrade", async () => {
+  it('preserves the typed value across the upgrade', async () => {
     const el = await makePromptLine();
-    typeInto(el, "carry over");
+    typeInto(el, 'carry over');
     el.rich = true;
     await waitForRich(el);
-    expect(el.getEditor()!.getText()).to.equal("carry over");
+    expect(el.getEditor()!.getText()).to.equal('carry over');
   });
 
-  it("maps the caret to the right doc position on a multi-line upgrade", async () => {
+  it('maps the caret to the right doc position on a multi-line upgrade', async () => {
     const el = await makePromptLine();
-    typeInto(el, "line1\nline2");
+    typeInto(el, 'line1\nline2');
     // Caret after "li" on the second line (plain-text offset 8).
     getTextarea(el).setSelectionRange(8, 8);
     el.rich = true;
@@ -227,13 +226,13 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
     expect(to).to.equal(10);
   });
 
-  it("defers the upgrade until IME composition ends", async () => {
+  it('defers the upgrade until IME composition ends', async () => {
     const el = await makePromptLine();
     const host = el.querySelector('[slot="editor"]') as HTMLElement;
 
     // Begin an IME composition, then request the rich upgrade.
     host.dispatchEvent(
-      new CompositionEvent("compositionstart", { bubbles: true }),
+      new CompositionEvent('compositionstart', { bubbles: true })
     );
     el.rich = true;
     await el.updateComplete;
@@ -250,19 +249,19 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
 
     // Ending composition runs the deferred upgrade.
     host.dispatchEvent(
-      new CompositionEvent("compositionend", { bubbles: true }),
+      new CompositionEvent('compositionend', { bubbles: true })
     );
     await waitForRich(el);
     expect(el.getEditor()).to.not.equal(null);
   });
 
-  it("mounts rich directly when rich is set from the start", async () => {
+  it('mounts rich directly when rich is set from the start', async () => {
     const el = await makePromptLine({ rich: true });
     await waitForRich(el);
     expect(el.getEditor()).to.not.equal(null);
   });
 
-  it("is sticky — clearing rich keeps the editor", async () => {
+  it('is sticky — clearing rich keeps the editor', async () => {
     const el = await makePromptLine({ rich: true });
     await waitForRich(el);
     el.rich = false;
@@ -276,13 +275,13 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
   // silent — otherwise sending strips the just-captured mention/command fields
   // from the host's structured_data sidecar before the message is built. See
   // issue #1619.
-  it("does NOT fire a mention onRemove when clearContent() wipes the doc", async () => {
+  it('does NOT fire a mention onRemove when clearContent() wipes the doc', async () => {
     const removed: SuggestionItem[] = [];
     const el = await makePromptLine();
     el.extensions = [
       carbonMention({
-        trigger: "@",
-        items: [{ id: "u1", label: "Alice" }],
+        trigger: '@',
+        items: [{ id: 'u1', label: 'Alice' }],
         onRemove: (item) => removed.push(item),
       }),
     ];
@@ -291,8 +290,8 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
 
     // Insert a mention chip programmatically (does not fire onSelect/onRemove).
     el.getEditor()!.commands.insertContent({
-      type: "mention",
-      attrs: { id: "u1", label: "Alice", value: "u1", data: null },
+      type: 'mention',
+      attrs: { id: 'u1', label: 'Alice', value: 'u1', data: null },
     });
     await Promise.resolve();
 
@@ -300,56 +299,56 @@ describe("<cds-aichat-prompt-line> (rich upgrade)", function () {
     await Promise.resolve();
 
     expect(removed).to.have.lengthOf(0);
-    expect(el.getEditor()!.getText()).to.equal("");
+    expect(el.getEditor()!.getText()).to.equal('');
   });
 });
 
-describe("<cds-aichat-prompt-line> ensureEditor()", function () {
-  it("loads Tiptap on demand and resolves the live editor", async () => {
+describe('<cds-aichat-prompt-line> ensureEditor()', function () {
+  it('loads Tiptap on demand and resolves the live editor', async () => {
     const el = await makePromptLine();
     expect(el.getEditor()).to.equal(null);
     const editor = await el.ensureEditor();
     expect(editor).to.not.equal(null);
     expect(editor).to.equal(el.getEditor());
     const host = el.querySelector('[slot="editor"]') as HTMLElement;
-    expect(host.querySelector(".ProseMirror")).to.not.equal(null);
-    expect(host.querySelector("textarea")).to.equal(null);
+    expect(host.querySelector('.ProseMirror')).to.not.equal(null);
+    expect(host.querySelector('textarea')).to.equal(null);
   });
 
-  it("preserves already-typed text through the on-demand upgrade", async () => {
+  it('preserves already-typed text through the on-demand upgrade', async () => {
     const el = await makePromptLine();
-    typeInto(el, "carry over");
+    typeInto(el, 'carry over');
     const editor = await el.ensureEditor();
-    expect(editor.getText()).to.equal("carry over");
+    expect(editor.getText()).to.equal('carry over');
   });
 
-  it("returns the same editor when already rich", async () => {
+  it('returns the same editor when already rich', async () => {
     const el = await makePromptLine({ rich: true });
     await waitForRich(el);
     const editor = await el.ensureEditor();
     expect(editor).to.equal(el.getEditor());
   });
 
-  it("shares one instance across concurrent callers", async () => {
+  it('shares one instance across concurrent callers', async () => {
     const el = await makePromptLine();
     const [a, b] = await Promise.all([el.ensureEditor(), el.ensureEditor()]);
     expect(a).to.equal(b);
   });
 });
 
-describe("<cds-aichat-prompt-line> staged extensions", function () {
-  it("does not force rich — setting extensions keeps the textarea", async () => {
+describe('<cds-aichat-prompt-line> staged extensions', function () {
+  it('does not force rich — setting extensions keeps the textarea', async () => {
     const el = await makePromptLine();
-    el.extensions = [Extension.create({ name: "stagedNoop" })];
+    el.extensions = [Extension.create({ name: 'stagedNoop' })];
     await el.updateComplete;
     await Promise.resolve();
     expect(el.getEditor()).to.equal(null);
     expect(getTextarea(el)).to.not.equal(null);
   });
 
-  it("installs the staged extensions when the editor mounts on demand", async () => {
+  it('installs the staged extensions when the editor mounts on demand', async () => {
     const el = await makePromptLine();
-    el.extensions = [Extension.create({ name: "stagedMarker" })];
+    el.extensions = [Extension.create({ name: 'stagedMarker' })];
     await el.updateComplete;
     await Promise.resolve();
     // Still a textarea — staging alone never loads Tiptap.
@@ -358,6 +357,6 @@ describe("<cds-aichat-prompt-line> staged extensions", function () {
     const editor = await el.ensureEditor();
     expect(editor).to.not.equal(null);
     const names = editor.extensionManager.extensions.map((ext) => ext.name);
-    expect(names).to.include("stagedMarker");
+    expect(names).to.include('stagedMarker');
   });
 });

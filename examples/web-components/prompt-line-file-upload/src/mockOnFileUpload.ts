@@ -33,8 +33,8 @@ import {
   MessageResponseTypes,
   StructuredData,
   StructuredField,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 /**
  * Mock `UploadConfig.onFileUpload` handler.
@@ -49,7 +49,7 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 // your storage backend and returns the server-assigned reference.
 async function mockOnFileUpload(
   file: File,
-  abortSignal: AbortSignal,
+  abortSignal: AbortSignal
 ): Promise<StructuredData> {
   // The chat passes an `AbortSignal` so the user can cancel an in-flight
   // upload from the attachment chip; we wire `setTimeout`/`abort` together
@@ -58,22 +58,22 @@ async function mockOnFileUpload(
     const timer = setTimeout(resolve, 1000);
 
     abortSignal.addEventListener(
-      "abort",
+      'abort',
       () => {
         clearTimeout(timer);
-        reject(new DOMException("Upload aborted", "AbortError"));
+        reject(new DOMException('Upload aborted', 'AbortError'));
       },
-      { once: true },
+      { once: true }
     );
   });
 
   // Shape required by the chat: `type: "reference"` + a stable `id` is
   // what `customSendMessage` uses to look the file back up on the next turn.
   const reference: ExternalFileReference = {
-    type: "reference",
+    type: 'reference',
     id: uuid(),
     name: file.name,
-    mime_type: file.type || "application/octet-stream",
+    mime_type: file.type || 'application/octet-stream',
     size: file.size,
   };
 
@@ -83,8 +83,8 @@ async function mockOnFileUpload(
   const contributedData: StructuredData = {
     fields: [
       {
-        id: "file",
-        type: "file",
+        id: 'file',
+        type: 'file',
         value: reference,
       } satisfies StructuredField,
     ],
@@ -98,7 +98,7 @@ async function mockOnFileUpload(
  */
 function formatBytes(bytes: number): string {
   if (bytes === 0) {
-    return "0 bytes";
+    return '0 bytes';
   }
   if (bytes < 1024) {
     return `${bytes} bytes`;
@@ -121,10 +121,10 @@ function formatBytes(bytes: number): string {
 // metadata so the demo is self-contained.
 function doFileUploadResponse(
   request: MessageRequest,
-  instance: ChatInstance,
+  instance: ChatInstance
 ): void {
   const fields = request.input.structured_data?.fields ?? [];
-  const fileFields = fields.filter((f) => f.type === "file");
+  const fileFields = fields.filter((f) => f.type === 'file');
 
   if (fileFields.length === 0) {
     return;
@@ -138,14 +138,14 @@ function doFileUploadResponse(
     const value = field.value;
     if (Array.isArray(value)) {
       for (const v of value) {
-        if (v && typeof v === "object" && v.type === "reference") {
+        if (v && typeof v === 'object' && v.type === 'reference') {
           refs.push(v as ExternalFileReference);
         }
       }
     } else if (
       value &&
-      typeof value === "object" &&
-      (value as ExternalFileReference).type === "reference"
+      typeof value === 'object' &&
+      (value as ExternalFileReference).type === 'reference'
     ) {
       refs.push(value as ExternalFileReference);
     }
@@ -157,13 +157,13 @@ function doFileUploadResponse(
 
   const lines: string[] = [
     refs.length === 1
-      ? "📎 **File received by the mock server:**"
+      ? '📎 **File received by the mock server:**'
       : `📎 **${refs.length} files received by the mock server:**`,
-    "",
+    '',
   ];
 
   for (const ref of refs) {
-    lines.push(`**${ref.name ?? "unnamed"}**`);
+    lines.push(`**${ref.name ?? 'unnamed'}**`);
     lines.push(`- Server ID: \`${ref.id}\``);
     if (ref.mime_type) {
       lines.push(`- Type: ${ref.mime_type}`);
@@ -171,7 +171,7 @@ function doFileUploadResponse(
     if (ref.size !== undefined) {
       lines.push(`- Size: ${formatBytes(ref.size)}`);
     }
-    lines.push("");
+    lines.push('');
   }
 
   instance.messaging.addMessage({
@@ -179,7 +179,7 @@ function doFileUploadResponse(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: lines.join("\n").trimEnd(),
+          text: lines.join('\n').trimEnd(),
         },
       ],
     },

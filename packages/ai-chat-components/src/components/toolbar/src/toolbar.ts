@@ -7,25 +7,25 @@
  *  @license
  */
 
-import { LitElement, html, nothing } from "lit";
-import { property, state, query } from "lit/decorators.js";
-import { repeat } from "lit/directives/repeat.js";
-import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/overflow-menu/index.js";
-import { OVERFLOW_MENU_SIZE } from "@carbon/web-components/es/components/overflow-menu/defs.js";
-import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./toolbar.scss?lit";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import "../../truncated-text/index.js";
-import { BaseOverflowMenuItem } from "../../../typings/overflow-menu.js";
-import { PageObjectId } from "../../../testing/PageObjectId.js";
+import { LitElement, html, nothing } from 'lit';
+import { property, state, query } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/overflow-menu/index.js';
+import { OVERFLOW_MENU_SIZE } from '@carbon/web-components/es/components/overflow-menu/defs.js';
+import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './toolbar.scss?lit';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import '../../truncated-text/index.js';
+import { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
+import { PageObjectId } from '../../../testing/PageObjectId.js';
 
 const blockClass = `${prefix}-toolbar`;
-import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/defs.js";
+import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js';
 
 /**
  * Actions that display in the toolbar.
@@ -75,7 +75,7 @@ class CDSAIChatToolbar extends LitElement {
   actions: Action[] = [];
 
   /** Should actions be overflowing. */
-  @property({ type: Boolean, attribute: "overflow", reflect: true })
+  @property({ type: Boolean, attribute: 'overflow', reflect: true })
   overflow = false;
 
   @property({ type: String })
@@ -102,17 +102,17 @@ class CDSAIChatToolbar extends LitElement {
 
   private resizeObserver?: ResizeObserver;
 
-  private static readonly OVERFLOW_MENU_LABEL = "Options";
+  private static readonly OVERFLOW_MENU_LABEL = 'Options';
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.addEventListener("keydown", this._handleToolbarKeydown);
+    this.addEventListener('keydown', this._handleToolbarKeydown);
   }
 
   disconnectedCallback() {
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
-    this.removeEventListener("keydown", this._handleToolbarKeydown);
+    this.removeEventListener('keydown', this._handleToolbarKeydown);
     super.disconnectedCallback();
   }
 
@@ -199,13 +199,13 @@ class CDSAIChatToolbar extends LitElement {
    * Returns the focused overflow menu item (if exists) by traversing shadow DOM
    */
   private findFocusedOverflowMenuItem(activeElem: Element): Element | null {
-    if (activeElem.tagName.toLowerCase() === "cds-overflow-menu-item") {
+    if (activeElem.tagName.toLowerCase() === 'cds-overflow-menu-item') {
       return activeElem;
     }
 
     if (activeElem?.shadowRoot?.activeElement) {
       return this.findFocusedOverflowMenuItem(
-        activeElem.shadowRoot.activeElement,
+        activeElem.shadowRoot.activeElement
       );
     }
 
@@ -213,7 +213,7 @@ class CDSAIChatToolbar extends LitElement {
   }
 
   private _handleToolbarKeydown = (event: KeyboardEvent) => {
-    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
       return;
     }
 
@@ -221,20 +221,20 @@ class CDSAIChatToolbar extends LitElement {
 
     if (document.activeElement) {
       focusedMenuItem = this.findFocusedOverflowMenuItem(
-        document.activeElement,
+        document.activeElement
       );
     }
 
     if (focusedMenuItem) {
       event.preventDefault();
-      const menuBody = focusedMenuItem.closest("cds-overflow-menu-body");
+      const menuBody = focusedMenuItem.closest('cds-overflow-menu-body');
 
       if (!menuBody) {
         return;
       }
 
       const items = Array.from(
-        menuBody.querySelectorAll("cds-overflow-menu-item:not([disabled])"),
+        menuBody.querySelectorAll('cds-overflow-menu-item:not([disabled])')
       ) as HTMLElement[];
 
       const currentIndex = items.indexOf(focusedMenuItem as HTMLElement);
@@ -242,7 +242,7 @@ class CDSAIChatToolbar extends LitElement {
         return;
       }
 
-      const direction = event.key === "ArrowDown" ? 1 : -1;
+      const direction = event.key === 'ArrowDown' ? 1 : -1;
       const nextIndex =
         (currentIndex + direction + items.length) % items.length;
       items[nextIndex]?.focus();
@@ -256,7 +256,7 @@ class CDSAIChatToolbar extends LitElement {
    * - divider: Only applicable in menu context
    */
   private renderIconButton = (action: Action) => {
-    const tooltipAlign = this.isRTL ? "bottom-start" : "bottom-end";
+    const tooltipAlign = this.isRTL ? 'bottom-start' : 'bottom-end';
 
     return html`
       <cds-icon-button
@@ -264,16 +264,15 @@ class CDSAIChatToolbar extends LitElement {
         data-testid=${action.testId || nothing}
         @click=${action.onClick}
         href=${action.href || nothing}
-        target=${action.href ? action.target || "_self" : nothing}
+        target=${action.href ? action.target || '_self' : nothing}
         size=${action.size || BUTTON_SIZE.MEDIUM}
         align=${tooltipAlign}
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
-        ?disabled=${action.disabled}
-      >
+        ?disabled=${action.disabled}>
         ${iconLoader(action.icon, {
-          slot: "icon",
+          slot: 'icon',
         })}
         <span slot="tooltip-content">${action.text}</span>
       </cds-icon-button>
@@ -306,11 +305,10 @@ class CDSAIChatToolbar extends LitElement {
                       <cds-aichat-truncated-text
                         lines="1"
                         type="tooltip"
-                        align=${this.isRTL ? "bottom-end" : "bottom-start"}
+                        align=${this.isRTL ? 'bottom-end' : 'bottom-start'}
                         value="${[this.titleText, this.nameText]
                           .filter(Boolean)
-                          .join(" ")}"
-                      >
+                          .join(' ')}">
                         ${
                           this.titleText
                             ? html`<span
@@ -339,8 +337,7 @@ class CDSAIChatToolbar extends LitElement {
         <div
           class="${blockClass}__end"
           data-rounded="top-right"
-          data-floating-menu-container
-        >
+          data-floating-menu-container>
           <div class="${blockClass}__actions-container">
             <div class="${blockClass}__decorator-container">
               <slot name="decorator"></slot>
@@ -348,24 +345,23 @@ class CDSAIChatToolbar extends LitElement {
             ${repeat(
               showInitialActions ? this.actions : visibleActions,
               (action) => action.text,
-              this.renderIconButton,
+              this.renderIconButton
             )}
             ${
               showOverflowMenu
                 ? html`
                     <cds-overflow-menu
                       size=${this.getOverflowMenuSize()}
-                      align=${this.isRTL ? "bottom-start" : "bottom-end"}
+                      align=${this.isRTL ? 'bottom-start' : 'bottom-end'}
                       data-offset
                       ?data-hidden=${hiddenActions.length === 0}
                       kind="ghost"
                       close-on-activation
                       enter-delay-ms="0"
-                      leave-delay-ms="0"
-                    >
+                      leave-delay-ms="0">
                       ${iconLoader(OverflowMenuVertical16, {
                         class: `${blockClass}-overflow-icon`,
-                        slot: "icon",
+                        slot: 'icon',
                       })}
                       <span slot="tooltip-content"
                         >${CDSAIChatToolbar.OVERFLOW_MENU_LABEL}</span
@@ -379,7 +375,7 @@ class CDSAIChatToolbar extends LitElement {
                               @click=${item.onClick}
                               href=${item.href || nothing}
                               target=${
-                                item.href ? item.target || "_self" : nothing
+                                item.href ? item.target || '_self' : nothing
                               }
                               ?disabled=${item.disabled}
                               ?danger=${item.danger}
@@ -387,11 +383,10 @@ class CDSAIChatToolbar extends LitElement {
                                 item.dangerDescription || nothing
                               }
                               ?divider=${item.divider}
-                              data-testid=${item.testId || nothing}
-                            >
+                              data-testid=${item.testId || nothing}>
                               ${item.text}
                             </cds-overflow-menu-item>
-                          `,
+                          `
                         )}
                       </cds-overflow-menu-body>
                     </cds-overflow-menu>

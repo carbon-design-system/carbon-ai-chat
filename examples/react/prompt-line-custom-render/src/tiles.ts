@@ -34,28 +34,28 @@ interface Tile {
 
 const tiles: Tile[] = [
   {
-    id: "summarize-thread",
-    label: "Summarize thread",
-    description: "Condense the current conversation into a short recap.",
-    value: "summarize-thread",
+    id: 'summarize-thread',
+    label: 'Summarize thread',
+    description: 'Condense the current conversation into a short recap.',
+    value: 'summarize-thread',
   },
   {
-    id: "draft-reply",
-    label: "Draft a reply",
-    description: "Generate a suggested response to the latest message.",
-    value: "draft-reply",
+    id: 'draft-reply',
+    label: 'Draft a reply',
+    description: 'Generate a suggested response to the latest message.',
+    value: 'draft-reply',
   },
   {
-    id: "translate-es",
-    label: "Translate to Spanish",
-    description: "Translate the selected content into Spanish.",
-    value: "translate-es",
+    id: 'translate-es',
+    label: 'Translate to Spanish',
+    description: 'Translate the selected content into Spanish.',
+    value: 'translate-es',
   },
   {
-    id: "extract-actions",
-    label: "Extract action items",
-    description: "Pull out every task and owner mentioned so far.",
-    value: "extract-actions",
+    id: 'extract-actions',
+    label: 'Extract action items',
+    description: 'Pull out every task and owner mentioned so far.',
+    value: 'extract-actions',
   },
 ];
 

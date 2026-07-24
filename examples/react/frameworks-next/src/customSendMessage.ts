@@ -29,7 +29,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to the Next.js + Carbon AI Chat example.
 
@@ -38,10 +38,10 @@ Send any message to receive an echo response from the mock backend. The chat its
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Carbon AI Chat issues an empty-string request on first load so the host can post a welcome message before the user types.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

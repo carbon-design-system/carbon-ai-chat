@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,10 +11,10 @@ import {
   ChatInstance,
   CustomSendMessageOptions,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { CODE } from "./constants";
-import { doTextStreaming } from "./doText";
+import { CODE } from './constants';
+import { doTextStreaming } from './doText';
 
 function doCode(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -31,7 +31,7 @@ function doCode(instance: ChatInstance) {
 
 function doCodeStreaming(
   instance: ChatInstance,
-  requestOptions?: CustomSendMessageOptions,
+  requestOptions?: CustomSendMessageOptions
 ) {
   doTextStreaming(
     instance,
@@ -42,7 +42,7 @@ function doCodeStreaming(
     undefined,
     undefined,
     undefined,
-    requestOptions,
+    requestOptions
   );
 }
 

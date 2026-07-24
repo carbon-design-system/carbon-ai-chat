@@ -18,37 +18,37 @@
  * exposed on `ChatInstance.serviceManager`, which snapshots `.intl` at boot).
  */
 
-import { waitFor } from "@testing-library/react";
+import { waitFor } from '@testing-library/react';
 
-import { makeConfigStore, applyConfigChange } from "../../test_helpers";
-import { refreshLocalizationOnChange } from "../../../src/chat/store/subscriptions";
-import actions from "../../../src/chat/store/actions";
-import { buildLanguagePack } from "../../../src/chat/store/doCreateStore";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import { makeConfigStore, applyConfigChange } from '../../test_helpers';
+import { refreshLocalizationOnChange } from '../../../src/chat/store/subscriptions';
+import actions from '../../../src/chat/store/actions';
+import { buildLanguagePack } from '../../../src/chat/store/doCreateStore';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-const BASE_CONFIG: PublicConfig = { locale: "en" };
+const BASE_CONFIG: PublicConfig = { locale: 'en' };
 
-describe("refreshLocalizationOnChange", () => {
-  it("rebuilds the intl formatter when the languagePack slice changes", () => {
+describe('refreshLocalizationOnChange', () => {
+  it('rebuilds the intl formatter when the languagePack slice changes', () => {
     const store = makeConfigStore(BASE_CONFIG);
     const serviceManager = { store } as unknown as ServiceManager;
     store.subscribe(refreshLocalizationOnChange(serviceManager));
 
     store.dispatch(
       actions.setAppStateValue(
-        "languagePack",
-        buildLanguagePack({ input_placeholder: "Custom placeholder" }),
-      ),
+        'languagePack',
+        buildLanguagePack({ input_placeholder: 'Custom placeholder' })
+      )
     );
 
     // A strings-only change is applied synchronously (no locale reload).
-    expect(serviceManager.intl.formatMessage({ id: "input_placeholder" })).toBe(
-      "Custom placeholder",
+    expect(serviceManager.intl.formatMessage({ id: 'input_placeholder' })).toBe(
+      'Custom placeholder'
     );
   });
 
-  it("does not touch the formatter when an unrelated slice changes", () => {
+  it('does not touch the formatter when an unrelated slice changes', () => {
     const store = makeConfigStore(BASE_CONFIG);
     const serviceManager = { store } as unknown as ServiceManager;
     store.subscribe(refreshLocalizationOnChange(serviceManager));
@@ -58,16 +58,16 @@ describe("refreshLocalizationOnChange", () => {
     expect(serviceManager.intl).toBeUndefined();
   });
 
-  it("switches the intl locale when config.locale changes at runtime", async () => {
+  it('switches the intl locale when config.locale changes at runtime', async () => {
     const store = makeConfigStore(BASE_CONFIG);
     const serviceManager = { store } as unknown as ServiceManager;
     store.subscribe(refreshLocalizationOnChange(serviceManager));
 
-    applyConfigChange(store, { ...BASE_CONFIG, locale: "de" });
+    applyConfigChange(store, { ...BASE_CONFIG, locale: 'de' });
 
     // A locale change reloads the dayjs locale data (async) before rebuilding.
     await waitFor(() => {
-      expect(serviceManager.intl?.locale).toBe("de");
+      expect(serviceManager.intl?.locale).toBe('de');
     });
   });
 });

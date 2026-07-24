@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 3017;
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: './tests',
   timeout: 60 * 1000,
   retries: process.env.CI ? 1 : 0,
   webServer: {
@@ -22,8 +22,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     headless: true,
-    screenshot: "only-on-failure",
-    video: "retain-on-failure",
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

@@ -20,12 +20,12 @@
  * Start reading at: the `config` constant below, then `App()`.
  */
 
-import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
+import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 /**
  * Define your config outside your React component, or wrap it in useMemo /
@@ -46,6 +46,6 @@ function App() {
   return <ChatContainer {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

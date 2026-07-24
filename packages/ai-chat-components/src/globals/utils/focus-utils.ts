@@ -62,21 +62,21 @@ function getDeepActiveElement(): Element | null {
  */
 function isElementInvisible(
   element: Element,
-  exceptions: string[] = ["dialog", "[popover]"],
+  exceptions: string[] = ['dialog', '[popover]']
 ): boolean {
   if (!element || !(element instanceof HTMLElement)) {
     return false;
   }
 
-  if (exceptions.length > 0 && element.matches(exceptions.join(","))) {
+  if (exceptions.length > 0 && element.matches(exceptions.join(','))) {
     return false;
   }
 
   const computedStyle = window.getComputedStyle(element);
   const isStyleHidden =
-    computedStyle.display === "none" || computedStyle.visibility === "hidden";
+    computedStyle.display === 'none' || computedStyle.visibility === 'hidden';
   const isAttributeHidden = element.matches(
-    '[disabled], [hidden], [inert], [aria-hidden="true"]',
+    '[disabled], [hidden], [inert], [aria-hidden="true"]'
   );
 
   return isStyleHidden || isAttributeHidden;
@@ -105,7 +105,7 @@ function isFocusable(element: Element): boolean {
   }
 
   const isDisabledCustomElement =
-    element.localName.includes("-") &&
+    element.localName.includes('-') &&
     element.matches('[disabled], [aria-disabled="true"]');
 
   if (isDisabledCustomElement) {
@@ -127,7 +127,7 @@ function isFocusable(element: Element): boolean {
  */
 function tryFocus(
   element: Element | null | undefined,
-  exceptions?: string[],
+  exceptions?: string[]
 ): boolean {
   if (!element || !(element instanceof HTMLElement)) {
     return false;
@@ -174,7 +174,7 @@ function* walkComposedTree(
   node: Node,
   whatToShow = 0,
   filter: (node: Node) => boolean = () => true,
-  skipNode: (node: Node) => boolean = () => false,
+  skipNode: (node: Node) => boolean = () => false
 ): IterableIterator<Node> {
   if ((whatToShow && node.nodeType !== whatToShow) || skipNode(node)) {
     return;
@@ -204,7 +204,7 @@ function* walkComposedTree(
  * @returns A tuple containing the first and last focusable children. If no focusable children are found, `null` is returned for both
  */
 function getFirstAndLastFocusableChildren(
-  walker: IterableIterator<HTMLElement>,
+  walker: IterableIterator<HTMLElement>
 ): [first: HTMLElement | null, last: HTMLElement | null] {
   let firstFocusableChild: HTMLElement | null = null;
   let lastFocusableChild: HTMLElement | null = null;
@@ -232,7 +232,7 @@ function getFirstAndLastFocusableChildren(
  */
 function focusElementAfterRepaint(
   searchRoot: Document | Element | ShadowRoot | DocumentFragment,
-  selector: string,
+  selector: string
 ): void {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {

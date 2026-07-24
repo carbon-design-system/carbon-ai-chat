@@ -7,15 +7,15 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 interface ChatBubbleProps {
   /**
    * Theme variant for the chat bubble
    */
-  theme: "dark" | "light";
+  theme: 'dark' | 'light';
 
   label: string;
 }
@@ -26,7 +26,7 @@ interface ChatBubbleProps {
  */
 function ChatBubble({ theme, label }: ChatBubbleProps) {
   const chatBubbleID = uuid();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   // Dark theme gradient definitions
   const darkGradients = (
@@ -37,8 +37,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={35.499}
         y1={54.31}
         y2={54.31}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#393939" />
         <stop offset={1} stopColor="#262626" />
       </linearGradient>
@@ -48,8 +47,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={70.691}
         y1={-3.968}
         y2={68.921}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#6f6f6f" />
         <stop offset={0.19} stopColor="#6c6c6c" />
         <stop offset={0.316} stopColor="#636363" />
@@ -64,8 +62,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={60.902}
         y1={36.198}
         y2={36.198}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#525252" />
         <stop offset={1} stopColor="#393939" />
       </linearGradient>
@@ -75,8 +72,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={63.056}
         y1={5.723}
         y2={33.517}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0.777} stopColor="#8d8d8d" />
         <stop offset={0.806} stopColor="#8a8a8a" stopOpacity={0.967} />
         <stop offset={0.839} stopColor="gray" stopOpacity={0.872} />
@@ -97,8 +93,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={61.44}
         y1={66.99}
         y2={60.01}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#c6c6c6" />
         <stop offset={0.78} stopColor="#e0e0e0" />
       </linearGradient>
@@ -108,8 +103,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={53.04}
         y1={44.06}
         y2={86.58}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#525252" stopOpacity={0.05} />
         <stop offset={1} stopOpacity={0.1} />
       </linearGradient>
@@ -119,8 +113,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={35.5}
         y1={54.31}
         y2={54.31}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#a4a4a4" />
         <stop offset={1} stopColor="#bebebe" />
       </linearGradient>
@@ -130,8 +123,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={70.69}
         y1={-3.97}
         y2={68.92}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#f4f4f4" />
         <stop offset={0.52} stopColor="#e0e0e0" />
         <stop offset={0.56} stopColor="#d8d8d8" />
@@ -153,8 +145,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={61.39}
         y1={36.2}
         y2={36.2}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#e0e0e0" />
         <stop offset={1} stopColor="#c6c6c6" />
       </linearGradient>
@@ -164,8 +155,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={55.37}
         y1={15.75}
         y2={37.5}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0} stopColor="#fff" />
         <stop offset={0.05} stopColor="#fdfdfd" />
         <stop offset={0.3} stopColor="#f6f6f6" />
@@ -193,8 +183,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         x2={63.06}
         y1={5.72}
         y2={33.52}
-        gradientUnits="userSpaceOnUse"
-      >
+        gradientUnits="userSpaceOnUse">
         <stop offset={0.78} stopColor="#fff" />
         <stop offset={0.8} stopColor="#fefefe" stopOpacity={0.98} />
         <stop offset={0.82} stopColor="#fcfcfc" stopOpacity={0.93} />
@@ -213,8 +202,7 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 80 80"
-      aria-label={label}
-    >
+      aria-label={label}>
       <defs>{isDark ? darkGradients : lightGradients}</defs>
       {!isDark && <path d="M0 0h80v80H0z" fill="none" />}
       {!isDark && (
@@ -229,15 +217,15 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         opacity={isDark ? 0.25 : undefined}
       />
       <path
-        fill={`url(#${chatBubbleID}-${isDark ? "a" : "c"})`}
+        fill={`url(#${chatBubbleID}-${isDark ? 'a' : 'c'})`}
         d="m32.663 52.846-2.258 4.227a1.138 1.138 0 0 1-.358.35l2.837-1.649a1.148 1.148 0 0 0 .358-.35L35.5 51.2Z"
       />
       <path
-        fill={`url(#${chatBubbleID}-${isDark ? "b" : "d"})`}
+        fill={`url(#${chatBubbleID}-${isDark ? 'b' : 'd'})`}
         d="M63.454 26.582 20.631 1.858a1.006 1.006 0 0 0-1.014-.1l-3.973 2.3a1.006 1.006 0 0 1 1.014.1l42.823 24.725a3.148 3.148 0 0 1 1.419 2.462l-.1 36.084a1 1 0 0 1-.419.907l3.973-2.3a1 1 0 0 0 .419-.907l.1-36.084a3.145 3.145 0 0 0-1.419-2.463Z"
       />
       <path
-        fill={`url(#${chatBubbleID}-${isDark ? "c" : "e"})`}
+        fill={`url(#${chatBubbleID}-${isDark ? 'c' : 'e'})`}
         d="M59.481 28.883a3.151 3.151 0 0 1 1.419 2.462l-.1 36.084c-.009.9-.647 1.26-1.424.812l-26.695-15.4-2.257 4.226a.9.9 0 0 1-1.333.273 3.086 3.086 0 0 1-1.224-1.527l-2.322-7.092-9-5.2a3.143 3.143 0 0 1-1.421-2.461l.1-36.084c0-.9.641-1.272 1.431-.816Z"
       />
       {!isDark && (
@@ -253,19 +241,19 @@ function ChatBubble({ theme, label }: ChatBubbleProps) {
         />
       )}
       <path
-        fill={isDark ? "#6f6f6f" : `url(#${chatBubbleID}-h)`}
+        fill={isDark ? '#6f6f6f' : `url(#${chatBubbleID}-h)`}
         d="m57.995 37.068-.011 3.902-39.952-23.066.011-3.902 39.952 23.066z"
       />
       <path
-        fill={isDark ? "#6f6f6f" : `url(#${chatBubbleID}-i)`}
+        fill={isDark ? '#6f6f6f' : `url(#${chatBubbleID}-i)`}
         d="M57.995 45.114l-.011 3.903-39.952-23.066.011-3.903 39.952 23.066z"
       />
       <path
-        fill={isDark ? "#6f6f6f" : `url(#${chatBubbleID}-j)`}
+        fill={isDark ? '#6f6f6f' : `url(#${chatBubbleID}-j)`}
         d="m44.62 45.041-.011 3.902-26.577-15.344.011-3.902L44.62 45.041z"
       />
       <path
-        fill={`url(#${chatBubbleID}-${isDark ? "d" : "k"})`}
+        fill={`url(#${chatBubbleID}-${isDark ? 'd' : 'k'})`}
         d="M60.756 30.548a2.507 2.507 0 0 1 .146.8l-.011 3.952a3.98 3.98 0 0 1 .413-.125l.011-3.826a3.541 3.541 0 0 0-1.628-2.821L16.864 3.8a1.976 1.976 0 0 0-.445-.192l-.775.45c.006 0 .015 0 .021-.008a.722.722 0 0 1 .188-.071h.015a.822.822 0 0 1 .151-.015h.101a1.087 1.087 0 0 1 .233.051c.014 0 .027.01.041.015a1.654 1.654 0 0 1 .264.121l21.411 12.37 21.412 12.362a3.155 3.155 0 0 1 1.275 1.665Z"
       />
     </svg>

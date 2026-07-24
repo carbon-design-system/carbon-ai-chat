@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,25 +7,25 @@
  *  @license
  */
 
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import React, { useState } from "react";
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import React, { useState } from 'react';
 
-import { useServiceManager } from "../../../../hooks/useServiceManager";
-import actions from "../../../../store/actions";
-import { HasClassName } from "../../../../../types/utilities/HasClassName";
+import { useServiceManager } from '../../../../hooks/useServiceManager';
+import actions from '../../../../store/actions';
+import { HasClassName } from '../../../../../types/utilities/HasClassName';
 import {
   CitationCardContent,
   CitationCardProps,
   CitationType,
-} from "./CitationCardContent";
-import { CitationClickableCard } from "./CitationClickableCard";
+} from './CitationCardContent';
+import { CitationClickableCard } from './CitationClickableCard';
 
 /**
  * Shows a Citation Card that will add an onClick handler to open up content that doesn't fit in the card IF NEEDED.
  */
 
 interface ExpandToPanelCardProps
-  extends HasClassName, Omit<CitationCardProps, "type"> {}
+  extends HasClassName, Omit<CitationCardProps, 'type'> {}
 
 function ExpandToPanelCard({
   className,
@@ -41,14 +41,14 @@ function ExpandToPanelCard({
   // contents in the tile. If it can't fit the contents then it needs to be a clickable tile that can expand into a
   // panel.
   const [isExpandable, setIsExpandable] = useState(
-    Boolean(relatedSearchResult?.body),
+    Boolean(relatedSearchResult?.body)
   );
 
   function onViewSourcePanelButtonClick() {
     // If a search result is provided we want to show that in the panel with the citation text highlighted, otherwise
     // just show the citation.
     serviceManager.store.dispatch(
-      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult),
+      actions.setViewSourcePanelIsOpen(true, citation, relatedSearchResult)
     );
   }
 
@@ -77,8 +77,7 @@ function ExpandToPanelCard({
         className={className}
         title={title}
         onClick={onViewSourcePanelButtonClick}
-        onSelectCitation={onSelectCitation}
-      >
+        onSelectCitation={onSelectCitation}>
         {renderTile()}
       </CitationClickableCard>
     );

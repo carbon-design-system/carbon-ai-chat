@@ -29,8 +29,8 @@ import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Builds a single `HistoryItem` for either a user request or assistant response so the example can fabricate a realistic conversation. Replace with a real production implementation.
 function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
@@ -71,17 +71,17 @@ function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
 // Resolves the history payload for the selected chat. Replace with a real production implementation that fetches by conversation id from the back-end.
 async function customLoadHistory(
   _instance: ChatInstance,
-  requestText = "Let's use this as the master invoice document.",
+  requestText = "Let's use this as the master invoice document."
 ) {
   // Canned assistant replies that vary content/markdown shape so the picker shows visible differences across fake conversations.
   const responseTexts = [
-    "**Bold text** with some *italic* formatting.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nSed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.\n\n## Heading\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "Quick single line with `code` snippet.",
-    "### Another heading\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n- Bullet point one\n- Bullet point two\n- Bullet point three",
-    "Simple text without formatting.",
-    "Medium length paragraph about something interesting. This text should be long enough to span multiple lines but not too overwhelming to read in the chat interface.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n> This is a blockquote with some important information that stands out from the regular text.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    '**Bold text** with some *italic* formatting.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nSed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.\n\n## Heading\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    'Quick single line with `code` snippet.',
+    '### Another heading\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n- Bullet point one\n- Bullet point two\n- Bullet point three',
+    'Simple text without formatting.',
+    'Medium length paragraph about something interesting. This text should be long enough to span multiple lines but not too overwhelming to read in the chat interface.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n> This is a blockquote with some important information that stands out from the regular text.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     "Here's a detailed response with formatting:\n\n1. First point\n2. Second point\n3. Third point\n\nAnd some additional context below.",
   ];
 

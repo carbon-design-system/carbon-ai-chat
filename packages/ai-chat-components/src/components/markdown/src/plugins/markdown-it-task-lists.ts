@@ -17,24 +17,24 @@
  * - [X] Checked task (uppercase also supported)
  */
 
-import MarkdownIt from "markdown-it";
-import type StateCore from "markdown-it/lib/rules_core/state_core.mjs";
-import type Token from "markdown-it/lib/token.mjs";
+import MarkdownIt from 'markdown-it';
+import type StateCore from 'markdown-it/lib/rules_core/state_core.mjs';
+import type Token from 'markdown-it/lib/token.mjs';
 
 function markdownItTaskLists(md: MarkdownIt) {
-  md.core.ruler.after("inline", "task-lists", (state: StateCore) => {
+  md.core.ruler.after('inline', 'task-lists', (state: StateCore) => {
     const tokens = state.tokens;
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
 
       // Look for list items
-      if (token.type !== "inline") {
+      if (token.type !== 'inline') {
         continue;
       }
 
       // Check if we're inside a list item
-      if (i < 2 || tokens[i - 2].type !== "list_item_open") {
+      if (i < 2 || tokens[i - 2].type !== 'list_item_open') {
         continue;
       }
 
@@ -45,7 +45,7 @@ function markdownItTaskLists(md: MarkdownIt) {
 
       // Check if the first child starts with task list syntax
       const firstChild = children[0];
-      if (firstChild.type !== "text") {
+      if (firstChild.type !== 'text') {
         continue;
       }
 
@@ -54,39 +54,39 @@ function markdownItTaskLists(md: MarkdownIt) {
         continue;
       }
 
-      const checked = match[1] !== " ";
+      const checked = match[1] !== ' ';
       const listItemToken = tokens[i - 2];
 
       // Add task-list-item class to the list item
       const attrs = listItemToken.attrs || [];
-      const classIndex = attrs.findIndex(([key]) => key === "class");
+      const classIndex = attrs.findIndex(([key]) => key === 'class');
       if (classIndex >= 0) {
-        attrs[classIndex][1] += " task-list-item";
+        attrs[classIndex][1] += ' task-list-item';
       } else {
-        attrs.push(["class", "task-list-item"]);
+        attrs.push(['class', 'task-list-item']);
       }
       listItemToken.attrs = attrs;
 
       const checkboxOpenToken: Token = new state.Token(
-        "task_checkbox_open",
-        "cds-checkbox",
-        1,
+        'task_checkbox_open',
+        'cds-checkbox',
+        1
       );
-      checkboxOpenToken.content = "";
+      checkboxOpenToken.content = '';
       // Stamp the list item's source line as a stable identity so a consumer
       // `checklist` renderer can correlate toggles across re-renders/streaming.
       const itemLine = listItemToken.map?.[0];
       checkboxOpenToken.attrs = [
-        ["checked", checked ? "true" : "false"],
-        ["data-cds-aichat-checklist-id", String(itemLine ?? "")],
+        ['checked', checked ? 'true' : 'false'],
+        ['data-cds-aichat-checklist-id', String(itemLine ?? '')],
       ];
 
       const checkboxCloseToken: Token = new state.Token(
-        "task_checkbox_close",
-        "cds-checkbox",
-        -1,
+        'task_checkbox_close',
+        'cds-checkbox',
+        -1
       );
-      checkboxCloseToken.content = "";
+      checkboxCloseToken.content = '';
 
       // Remove the checkbox syntax from the text
       firstChild.content = firstChild.content.slice(match[0].length);

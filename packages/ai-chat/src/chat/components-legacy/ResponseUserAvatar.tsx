@@ -11,14 +11,14 @@
  * Displays an image for a human agent's avatar or a default icon if no image is available.
  */
 
-import UserAvatar32 from "@carbon/icons/es/user--avatar/32.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import UserAvatar32 from '@carbon/icons/es/user--avatar/32.js';
+import { carbonIconToReact } from '../utils/carbonIcon';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { ResponseUserProfile } from "../../types/messaging/Messages";
-import { applyDynamicStyles, clearDynamicStyles } from "../utils/cspStyleUtils";
-import { useSelector } from "../hooks/useSelector";
-import { AppState } from "../../types/state/AppState";
+import { ResponseUserProfile } from '../../types/messaging/Messages';
+import { applyDynamicStyles, clearDynamicStyles } from '../utils/cspStyleUtils';
+import { useSelector } from '../hooks/useSelector';
+import { AppState } from '../../types/state/AppState';
 
 interface ResponseUserAvatarProps {
   /**
@@ -44,7 +44,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
   // Subscribe only to the single string this avatar renders, so it re-renders
   // only when that string changes — not on any language-pack edit.
   const agentAriaHumanAgentAvatar = useSelector(
-    (state: AppState) => state.languagePack.agent_ariaHumanAgentAvatar,
+    (state: AppState) => state.languagePack.agent_ariaHumanAgentAvatar
   );
   const agentName = responseUserProfile?.nickname;
   const avatarUrl = responseUserProfile?.profile_picture_url;
@@ -59,11 +59,11 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
     if (!node || !width || !height) {
       return undefined;
     }
-    applyDynamicStyles(node, "avatar", {
-      "inline-size": width,
-      "block-size": height,
+    applyDynamicStyles(node, 'avatar', {
+      'inline-size': width,
+      'block-size': height,
     });
-    return () => clearDynamicStyles(node, "avatar");
+    return () => clearDynamicStyles(node, 'avatar');
   }, [width, height]);
 
   // If the avatar Url changes, then hasError should reset to allow an attempt at loading the new avatar url.
@@ -89,8 +89,7 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
       <div
         aria-label={agentAriaHumanAgentAvatar}
         className="cds-aichat--response-user-avatar__circle"
-        ref={avatarRef}
-      >
+        ref={avatarRef}>
         <div className="cds-aichat--response-user-avatar__letter">
           {agentName.charAt(0)}
         </div>
@@ -100,8 +99,8 @@ function ResponseUserAvatar(props: ResponseUserAvatarProps) {
     // If the agentName contains any non-ASCII characters, then show the default agent avatar.
     component = (
       <UserAvatar
-        width={width ? Number(width.replace("px", "")) : undefined}
-        height={height ? Number(height.replace("px", "")) : undefined}
+        width={width ? Number(width.replace('px', '')) : undefined}
+        height={height ? Number(height.replace('px', '')) : undefined}
         aria-label={agentAriaHumanAgentAvatar}
       />
     );

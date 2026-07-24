@@ -2,7 +2,9 @@
 
 # Example README template
 
-Copy the body below into `<slug>/README.md` and fill in every section. Do not leave `<...>` placeholders. See [AGENTS.md](AGENTS.md) for the Indexer contract that drives required sections.
+Copy the body below into `<slug>/README.md` and fill in every section. Do not
+leave `<...>` placeholders. See [AGENTS.md](AGENTS.md) for the Indexer contract
+that drives required sections.
 
 ---
 
@@ -25,11 +27,16 @@ Copy the body below into `<slug>/README.md` and fill in every section. Do not le
 | ------ | ---- | -------------------- |
 | …      | …    | …                    |
 
-List every public API, prop, event, slot, hook, custom-element tag, or attribute the example exercises. Column headers differ by flavor — see the flavor `AGENTS.md`.
+List every public API, prop, event, slot, hook, custom-element tag, or attribute
+the example exercises. Column headers differ by flavor — see the flavor
+`AGENTS.md`.
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server fails with missing-module errors. See [../AGENTS.md](../AGENTS.md) for setup.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server fails with missing-module errors. See
+[../AGENTS.md](../AGENTS.md) for setup.
 
 From the repository root:
 

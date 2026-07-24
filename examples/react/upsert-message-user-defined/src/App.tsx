@@ -26,18 +26,18 @@
  * Start reading at: the `config` constant, then `App()`, then `customSendMessage.ts`.
  */
 
-import { ChatCustomElement, ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import { ActionableNotification } from "@carbon/react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { ChatCustomElement, ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import { ActionableNotification } from '@carbon/react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import {
   customSendMessage,
   scenarioBus,
   ScenarioCompleteDetail,
-} from "./customSendMessage";
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
-import "@carbon/styles/css/styles.css";
+} from './customSendMessage';
+import { renderUserDefinedResponse } from './renderUserDefinedResponse';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -79,8 +79,8 @@ function App() {
         { toastID: crypto.randomUUID(), messageID },
       ]);
     };
-    scenarioBus.addEventListener("complete", handler);
-    return () => scenarioBus.removeEventListener("complete", handler);
+    scenarioBus.addEventListener('complete', handler);
+    return () => scenarioBus.removeEventListener('complete', handler);
   }, []);
 
   const dismiss = useCallback((toastID: string) => {
@@ -92,7 +92,7 @@ function App() {
       instanceRef.current?.scrollToMessage(messageID);
       dismiss(toastID);
     },
-    [dismiss],
+    [dismiss]
   );
 
   return (
@@ -125,6 +125,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

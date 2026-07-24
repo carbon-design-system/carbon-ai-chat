@@ -1,19 +1,27 @@
 # Prompt line / Typeahead
 
-`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
+`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated
+list filters as the user types and renders the matches in a dropdown above the
+input.
 
 ## What this example shows
 
-- Configuring `input.autocomplete` with a single resolver — autocomplete has no trigger character; the dropdown opens whenever there is input and filters as the user types.
-- Resolving suggestions asynchronously from an `items` callback that filters a canned list by case-insensitive label match.
+- Configuring `input.autocomplete` with a single resolver — autocomplete has no
+  trigger character; the dropdown opens whenever there is input and filters as
+  the user types.
+- Resolving suggestions asynchronously from an `items` callback that filters a
+  canned list by case-insensitive label match.
 - Using `debounceMs: 150` to coalesce rapid keystrokes before invoking `items`.
 - Returning an empty array when no entries match to suppress the dropdown.
 
 ## When to use this pattern
 
-- You want inline autocomplete suggestions while the user composes a message, without a dedicated trigger character.
-- You have a small, locally-known set of suggestions (commands, FAQs, canned prompts) that filter by substring.
-- You need a starting point for fetching suggestions from a remote source — swap the canned filter for a network call inside `items`.
+- You want inline autocomplete suggestions while the user composes a message,
+  without a dedicated trigger character.
+- You have a small, locally-known set of suggestions (commands, FAQs, canned
+  prompts) that filter by substring.
+- You need a starting point for fetching suggestions from a remote source — swap
+  the canned filter for a network call inside `items`.
 
 ## APIs and props demonstrated
 
@@ -31,7 +39,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

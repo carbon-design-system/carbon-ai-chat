@@ -24,20 +24,20 @@
  * suppressed while the side nav is the persistent desktop sidebar.
  */
 (function () {
-  "use strict";
+  'use strict';
 
   // Carbon's side-nav responsive breakpoint. Above it the nav is a persistent
   // sidebar; below it the nav is an off-canvas drawer toggled by the header
   // menu button.
-  const persistentSideNav = window.matchMedia("(min-width: 66rem)");
+  const persistentSideNav = window.matchMedia('(min-width: 66rem)');
 
   // The navigable items. Focus is only intercepted when it originates from one
   // of these, so the version dropdown (also a child of the side nav) keeps its
   // own focus handling.
   const NAV_ITEM_TAGS = new Set([
-    "CDS-SIDE-NAV-LINK",
-    "CDS-SIDE-NAV-MENU",
-    "CDS-SIDE-NAV-MENU-ITEM",
+    'CDS-SIDE-NAV-LINK',
+    'CDS-SIDE-NAV-MENU',
+    'CDS-SIDE-NAV-MENU-ITEM',
   ]);
 
   function isPersistentNavItemFocus(event) {
@@ -46,7 +46,7 @@
     }
     const path = event.composedPath();
     return (
-      path.some((node) => node.nodeName === "CDS-SIDE-NAV") &&
+      path.some((node) => node.nodeName === 'CDS-SIDE-NAV') &&
       path.some((node) => NAV_ITEM_TAGS.has(node.nodeName))
     );
   }
@@ -60,6 +60,6 @@
     }
   }
 
-  document.addEventListener("focusin", suppressSideNavFocus, true);
-  document.addEventListener("focusout", suppressSideNavFocus, true);
+  document.addEventListener('focusin', suppressSideNavFocus, true);
+  document.addEventListener('focusout', suppressSideNavFocus, true);
 })();

@@ -36,15 +36,15 @@
  * Start reading at: the `Node.create` call below.
  */
 
-import { renderInLightDom } from "@carbon/ai-chat";
-import { Node, mergeAttributes, type Extension } from "@tiptap/core";
+import { renderInLightDom } from '@carbon/ai-chat';
+import { Node, mergeAttributes, type Extension } from '@tiptap/core';
 
-import { buildTileCard } from "./tileCard";
+import { buildTileCard } from './tileCard';
 
 // The node type name. Kept distinct from the chat's built-in node types
 // (doc / paragraph / text / hardBreak / mention / command) so the chat routes
 // it to `renderUserDefinedInputNode` when the message is sent.
-const TILE_CHIP_NODE = "tileChip";
+const TILE_CHIP_NODE = 'tileChip';
 
 /**
  * `Node.create` (from `@tiptap/core`) defines a custom Tiptap node — this is a
@@ -59,7 +59,7 @@ const TILE_CHIP_NODE = "tileChip";
  */
 const tileChipNodeImpl = Node.create({
   name: TILE_CHIP_NODE,
-  group: "inline",
+  group: 'inline',
   inline: true,
   atom: true,
   selectable: false,
@@ -70,26 +70,26 @@ const tileChipNodeImpl = Node.create({
   addAttributes() {
     return {
       tileId: { default: null },
-      label: { default: "" },
-      description: { default: "" },
-      value: { default: "" },
+      label: { default: '' },
+      description: { default: '' },
+      value: { default: '' },
     };
   },
 
   // Serialized text for the node. The chat's send button enables when the
   // editor has non-empty text, so the node must contribute text here.
   renderText({ node }) {
-    return node.attrs.value || node.attrs.label || "";
+    return node.attrs.value || node.attrs.label || '';
   },
 
   // Standard Tiptap HTML (de)serialization for the node's schema. Not what the
   // user sees — that's `addNodeView` below — but Tiptap requires it.
   parseHTML() {
-    return [{ tag: "span[data-tile-chip]" }];
+    return [{ tag: 'span[data-tile-chip]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["span", mergeAttributes(HTMLAttributes, { "data-tile-chip": "" })];
+    return ['span', mergeAttributes(HTMLAttributes, { 'data-tile-chip': '' })];
   },
 
   // `addNodeView` is the standard Tiptap hook for rendering a node with your
@@ -104,8 +104,8 @@ const tileChipNodeImpl = Node.create({
       // `<cds-tile>` element, so it carries its own look across that boundary.
       const { container } = renderInLightDom({
         content: buildTileCard(
-          String(node.attrs.label ?? ""),
-          String(node.attrs.description ?? ""),
+          String(node.attrs.label ?? ''),
+          String(node.attrs.description ?? '')
         ),
         // The portal event must reach the listener on the chat wrapper.
         // `editor.view.dom` is already mounted under it, so dispatch from

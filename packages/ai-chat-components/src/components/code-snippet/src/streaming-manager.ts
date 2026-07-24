@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { extractSlotContent, extractTextContent } from "./dom-utils.js";
+import { extractSlotContent, extractTextContent } from './dom-utils.js';
 
 interface StreamingManagerConfig {
   getSlot(): HTMLSlotElement | null | undefined;
@@ -19,13 +19,13 @@ export class StreamingManager {
   private observer: MutationObserver | null = null;
   private pendingFrame: number | null = null;
   private hasExtractedInitial = false;
-  private cachedContent = "";
+  private cachedContent = '';
 
   constructor(private readonly config: StreamingManagerConfig) {}
 
   reset(initialContent?: string) {
     this.hasExtractedInitial = false;
-    if (typeof initialContent === "string") {
+    if (typeof initialContent === 'string') {
       this.cachedContent = initialContent;
     }
   }
@@ -92,7 +92,7 @@ export class StreamingManager {
       // Skip elements with slot attribute - they're for named slots
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
-        if (element.hasAttribute("slot")) {
+        if (element.hasAttribute('slot')) {
           continue;
         }
       }
@@ -129,7 +129,7 @@ export class StreamingManager {
     const rawContent = slot
       ? extractSlotContent(slot)
       : extractTextContent(host);
-    const normalized = rawContent.replace(/\r\n/g, "\n").trim();
+    const normalized = rawContent.replace(/\r\n/g, '\n').trim();
 
     if (normalized === this.cachedContent) {
       return;

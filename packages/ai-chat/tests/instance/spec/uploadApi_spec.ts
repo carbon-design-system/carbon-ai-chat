@@ -13,24 +13,24 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
-import actions from "../../../src/chat/store/actions";
+} from '../../test_helpers';
+import actions from '../../../src/chat/store/actions';
 import {
   PendingUploadStatus,
   type PendingUpload,
-} from "../../../src/types/state/AppState";
-import type { StructuredData } from "../../../src/types/messaging/Messages";
+} from '../../../src/types/state/AppState';
+import type { StructuredData } from '../../../src/types/messaging/Messages';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function makePendingUpload(
-  overrides: Partial<PendingUpload> = {},
+  overrides: Partial<PendingUpload> = {}
 ): PendingUpload {
   return {
-    id: "upload-1",
-    file: new File(["content"], "test.pdf", { type: "application/pdf" }),
+    id: 'upload-1',
+    file: new File(['content'], 'test.pdf', { type: 'application/pdf' }),
     status: PendingUploadStatus.UPLOADING,
     ...overrides,
   };
@@ -40,7 +40,7 @@ function makePendingUpload(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("upload API – Redux store lifecycle", () => {
+describe('upload API – Redux store lifecycle', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -48,7 +48,7 @@ describe("upload API – Redux store lifecycle", () => {
   // ADD_PENDING_UPLOAD
   // -------------------------------------------------------------------------
 
-  it("ADD_PENDING_UPLOAD adds an entry to pendingUploads", async () => {
+  it('ADD_PENDING_UPLOAD adds an entry to pendingUploads', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -57,13 +57,13 @@ describe("upload API – Redux store lifecycle", () => {
 
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(1);
-    expect(state.assistantInputState.pendingUploads[0].id).toBe("upload-1");
+    expect(state.assistantInputState.pendingUploads[0].id).toBe('upload-1');
     expect(state.assistantInputState.pendingUploads[0].status).toBe(
-      PendingUploadStatus.UPLOADING,
+      PendingUploadStatus.UPLOADING
     );
   });
 
-  it("ADD_PENDING_UPLOAD does not affect pendingStructuredData while status is uploading", async () => {
+  it('ADD_PENDING_UPLOAD does not affect pendingStructuredData while status is uploading', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -75,13 +75,13 @@ describe("upload API – Redux store lifecycle", () => {
     expect(state.assistantInputState.pendingStructuredData).toBeUndefined();
   });
 
-  it("ADD_PENDING_UPLOAD with status=complete and contributedData rebuilds pendingStructuredData", async () => {
+  it('ADD_PENDING_UPLOAD with status=complete and contributedData rebuilds pendingStructuredData', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     const contributedData: StructuredData = {
       fields: [
-        { id: "doc", type: "file", value: { type: "reference", id: "ref-1" } },
+        { id: 'doc', type: 'file', value: { type: 'reference', id: 'ref-1' } },
       ],
     };
     const upload = makePendingUpload({
@@ -92,7 +92,7 @@ describe("upload API – Redux store lifecycle", () => {
 
     const state = store.getState();
     expect(state.assistantInputState.pendingStructuredData).toEqual(
-      contributedData,
+      contributedData
     );
   });
 
@@ -100,7 +100,7 @@ describe("upload API – Redux store lifecycle", () => {
   // UPDATE_PENDING_UPLOAD
   // -------------------------------------------------------------------------
 
-  it("UPDATE_PENDING_UPLOAD transitions status from uploading to complete", async () => {
+  it('UPDATE_PENDING_UPLOAD transitions status from uploading to complete', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -109,18 +109,18 @@ describe("upload API – Redux store lifecycle", () => {
     const contributedData: StructuredData = {
       fields: [
         {
-          id: "resume",
-          type: "file",
-          value: { type: "reference", id: "ref-2" },
+          id: 'resume',
+          type: 'file',
+          value: { type: 'reference', id: 'ref-2' },
         },
       ],
     };
     store.dispatch(
       actions.updatePendingUpload(
-        "upload-1",
+        'upload-1',
         { status: PendingUploadStatus.COMPLETE, contributedData },
-        false,
-      ),
+        false
+      )
     );
 
     const state = store.getState();
@@ -129,7 +129,7 @@ describe("upload API – Redux store lifecycle", () => {
     expect(upload.contributedData).toEqual(contributedData);
   });
 
-  it("UPDATE_PENDING_UPLOAD rebuilds pendingStructuredData after completion", async () => {
+  it('UPDATE_PENDING_UPLOAD rebuilds pendingStructuredData after completion', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -138,64 +138,64 @@ describe("upload API – Redux store lifecycle", () => {
     const contributedData: StructuredData = {
       fields: [
         {
-          id: "attachment",
-          type: "file",
-          value: { type: "reference", id: "ref-3" },
+          id: 'attachment',
+          type: 'file',
+          value: { type: 'reference', id: 'ref-3' },
         },
       ],
     };
     store.dispatch(
       actions.updatePendingUpload(
-        "upload-1",
+        'upload-1',
         { status: PendingUploadStatus.COMPLETE, contributedData },
-        false,
-      ),
+        false
+      )
     );
 
     const state = store.getState();
     expect(state.assistantInputState.pendingStructuredData).toEqual(
-      contributedData,
+      contributedData
     );
   });
 
-  it("UPDATE_PENDING_UPLOAD transitions status to error and sets errorMessage", async () => {
+  it('UPDATE_PENDING_UPLOAD transitions status to error and sets errorMessage', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
     store.dispatch(
       actions.updatePendingUpload(
-        "upload-1",
-        { status: PendingUploadStatus.ERROR, errorMessage: "Network failure" },
-        false,
-      ),
+        'upload-1',
+        { status: PendingUploadStatus.ERROR, errorMessage: 'Network failure' },
+        false
+      )
     );
 
     const state = store.getState();
     const upload = state.assistantInputState.pendingUploads[0];
     expect(upload.status).toBe(PendingUploadStatus.ERROR);
-    expect(upload.errorMessage).toBe("Network failure");
+    expect(upload.errorMessage).toBe('Network failure');
     // An errored upload contributes nothing to pendingStructuredData.
     expect(state.assistantInputState.pendingStructuredData).toBeUndefined();
   });
 
-  it("UPDATE_PENDING_UPLOAD ignores unknown uploadId", async () => {
+  it('UPDATE_PENDING_UPLOAD ignores unknown uploadId', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
     store.dispatch(
       actions.updatePendingUpload(
-        "does-not-exist",
+        'does-not-exist',
         { status: PendingUploadStatus.COMPLETE },
-        false,
-      ),
+        false
+      )
     );
 
     const state = store.getState();
     // Original upload is unchanged.
     expect(state.assistantInputState.pendingUploads[0].status).toBe(
-      PendingUploadStatus.UPLOADING,
+      PendingUploadStatus.UPLOADING
     );
   });
 
@@ -203,24 +203,24 @@ describe("upload API – Redux store lifecycle", () => {
   // REMOVE_PENDING_UPLOAD
   // -------------------------------------------------------------------------
 
-  it("REMOVE_PENDING_UPLOAD removes the entry from pendingUploads", async () => {
+  it('REMOVE_PENDING_UPLOAD removes the entry from pendingUploads', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
-    store.dispatch(actions.removePendingUpload("upload-1", false));
+    store.dispatch(actions.removePendingUpload('upload-1', false));
 
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(0);
   });
 
-  it("REMOVE_PENDING_UPLOAD clears pendingStructuredData when the removed upload was the only contributor", async () => {
+  it('REMOVE_PENDING_UPLOAD clears pendingStructuredData when the removed upload was the only contributor', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     const contributedData: StructuredData = {
       fields: [
-        { id: "doc", type: "file", value: { type: "reference", id: "ref-4" } },
+        { id: 'doc', type: 'file', value: { type: 'reference', id: 'ref-4' } },
       ],
     };
     store.dispatch(
@@ -229,27 +229,27 @@ describe("upload API – Redux store lifecycle", () => {
           status: PendingUploadStatus.COMPLETE,
           contributedData,
         }),
-        false,
-      ),
+        false
+      )
     );
     // Confirm it was merged in.
     expect(store.getState().assistantInputState.pendingStructuredData).toEqual(
-      contributedData,
+      contributedData
     );
 
-    store.dispatch(actions.removePendingUpload("upload-1", false));
+    store.dispatch(actions.removePendingUpload('upload-1', false));
 
     expect(
-      store.getState().assistantInputState.pendingStructuredData,
+      store.getState().assistantInputState.pendingStructuredData
     ).toBeUndefined();
   });
 
-  it("REMOVE_PENDING_UPLOAD ignores unknown uploadId", async () => {
+  it('REMOVE_PENDING_UPLOAD ignores unknown uploadId', async () => {
     const { store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
-    store.dispatch(actions.removePendingUpload("does-not-exist", false));
+    store.dispatch(actions.removePendingUpload('does-not-exist', false));
 
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(1);
@@ -259,22 +259,22 @@ describe("upload API – Redux store lifecycle", () => {
   // Merge with manualStructuredData
   // -------------------------------------------------------------------------
 
-  it("pendingStructuredData merges manualStructuredData with upload contributedData", async () => {
+  it('pendingStructuredData merges manualStructuredData with upload contributedData', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     // Set manual structured data (host-page fields).
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "user_id", value: "user-123" }],
+      fields: [{ id: 'user_id', value: 'user-123' }],
     }));
 
     // Add a completed upload with its own contribution.
     const contributedData: StructuredData = {
       fields: [
         {
-          id: "attachment",
-          type: "file",
-          value: { type: "reference", id: "ref-5" },
+          id: 'attachment',
+          type: 'file',
+          value: { type: 'reference', id: 'ref-5' },
         },
       ],
     };
@@ -284,35 +284,35 @@ describe("upload API – Redux store lifecycle", () => {
           status: PendingUploadStatus.COMPLETE,
           contributedData,
         }),
-        false,
-      ),
+        false
+      )
     );
 
     const state = store.getState();
     expect(state.assistantInputState.pendingStructuredData?.fields).toEqual([
-      { id: "user_id", value: "user-123" },
+      { id: 'user_id', value: 'user-123' },
       {
-        id: "attachment",
-        type: "file",
-        value: { type: "reference", id: "ref-5" },
+        id: 'attachment',
+        type: 'file',
+        value: { type: 'reference', id: 'ref-5' },
       },
     ]);
   });
 
-  it("removing an upload reverts pendingStructuredData to manualStructuredData only", async () => {
+  it('removing an upload reverts pendingStructuredData to manualStructuredData only', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "user_id", value: "user-123" }],
+      fields: [{ id: 'user_id', value: 'user-123' }],
     }));
 
     const contributedData: StructuredData = {
       fields: [
         {
-          id: "attachment",
-          type: "file",
-          value: { type: "reference", id: "ref-6" },
+          id: 'attachment',
+          type: 'file',
+          value: { type: 'reference', id: 'ref-6' },
         },
       ],
     };
@@ -322,17 +322,17 @@ describe("upload API – Redux store lifecycle", () => {
           status: PendingUploadStatus.COMPLETE,
           contributedData,
         }),
-        false,
-      ),
+        false
+      )
     );
 
     // Remove the upload.
-    store.dispatch(actions.removePendingUpload("upload-1", false));
+    store.dispatch(actions.removePendingUpload('upload-1', false));
 
     const state = store.getState();
     // Only the manual data remains.
     expect(state.assistantInputState.pendingStructuredData?.fields).toEqual([
-      { id: "user_id", value: "user-123" },
+      { id: 'user_id', value: 'user-123' },
     ]);
   });
 
@@ -340,7 +340,7 @@ describe("upload API – Redux store lifecycle", () => {
   // Send guard
   // -------------------------------------------------------------------------
 
-  it("doSend is blocked while an upload is in progress", async () => {
+  it('doSend is blocked while an upload is in progress', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -348,24 +348,24 @@ describe("upload API – Redux store lifecycle", () => {
     store.dispatch(
       actions.addPendingUpload(
         makePendingUpload({ status: PendingUploadStatus.UPLOADING }),
-        false,
-      ),
+        false
+      )
     );
 
     mockCustomSendMessage.mockClear();
-    await instance.send("hello");
+    await instance.send('hello');
 
     // customSendMessage should NOT have been called because the upload is in progress.
     expect(mockCustomSendMessage).not.toHaveBeenCalled();
   });
 
-  it("doSend proceeds once all uploads are complete", async () => {
+  it('doSend proceeds once all uploads are complete', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     const contributedData: StructuredData = {
       fields: [
-        { id: "doc", type: "file", value: { type: "reference", id: "ref-7" } },
+        { id: 'doc', type: 'file', value: { type: 'reference', id: 'ref-7' } },
       ],
     };
     // Add a completed upload.
@@ -375,12 +375,12 @@ describe("upload API – Redux store lifecycle", () => {
           status: PendingUploadStatus.COMPLETE,
           contributedData,
         }),
-        false,
-      ),
+        false
+      )
     );
 
     mockCustomSendMessage.mockClear();
-    await instance.send("hello");
+    await instance.send('hello');
 
     expect(mockCustomSendMessage).toHaveBeenCalled();
     const sentMessage = mockCustomSendMessage.mock.calls[0][0];
@@ -392,12 +392,12 @@ describe("upload API – Redux store lifecycle", () => {
   // CLEAR_STRUCTURED_DATA clears uploads too
   // -------------------------------------------------------------------------
 
-  it("CLEAR_STRUCTURED_DATA clears pendingUploads and manualStructuredData", async () => {
+  it('CLEAR_STRUCTURED_DATA clears pendingUploads and manualStructuredData', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "x", value: "y" }],
+      fields: [{ id: 'x', value: 'y' }],
     }));
     store.dispatch(
       actions.addPendingUpload(
@@ -405,8 +405,8 @@ describe("upload API – Redux store lifecycle", () => {
           status: PendingUploadStatus.COMPLETE,
           contributedData: { fields: [] },
         }),
-        false,
-      ),
+        false
+      )
     );
 
     store.dispatch(actions.clearStructuredData(false));
@@ -421,38 +421,38 @@ describe("upload API – Redux store lifecycle", () => {
   // getState().input.hasInFlightUploads
   // -------------------------------------------------------------------------
 
-  it("getState().input.hasInFlightUploads is false when no uploads are pending", async () => {
+  it('getState().input.hasInFlightUploads is false when no uploads are pending', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     expect(instance.getState().input.hasInFlightUploads).toBe(false);
   });
 
-  it("getState().input.hasInFlightUploads is true while an upload is in progress", async () => {
+  it('getState().input.hasInFlightUploads is true while an upload is in progress', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     store.dispatch(
       actions.addPendingUpload(
         makePendingUpload({ status: PendingUploadStatus.UPLOADING }),
-        false,
-      ),
+        false
+      )
     );
 
     expect(instance.getState().input.hasInFlightUploads).toBe(true);
   });
 
-  it("getState().input.hasInFlightUploads is false once all uploads complete", async () => {
+  it('getState().input.hasInFlightUploads is false once all uploads complete', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     store.dispatch(actions.addPendingUpload(makePendingUpload(), false));
     store.dispatch(
       actions.updatePendingUpload(
-        "upload-1",
+        'upload-1',
         { status: PendingUploadStatus.COMPLETE },
-        false,
-      ),
+        false
+      )
     );
 
     expect(instance.getState().input.hasInFlightUploads).toBe(false);

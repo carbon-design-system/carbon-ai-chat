@@ -24,11 +24,11 @@
  * for the suite.
  */
 
-import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
+import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   // a `customSendMessage` keeps the example self-contained — Vite's dev

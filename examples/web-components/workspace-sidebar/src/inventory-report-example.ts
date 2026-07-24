@@ -24,42 +24,42 @@
  * Start reading at: `handleClose` and the `toolbarActions` array.
  */
 
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/button/index.js";
-import { PanelType } from "@carbon/ai-chat";
-import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/web-components/es/components/tag/index.js";
-import "@carbon/web-components/es/components/button/button.js";
-import "@carbon/web-components/es/components/tag/tag.js";
-import "@carbon/web-components/es/components/icon-button/icon-button.js";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
-import "@carbon/web-components/es/components/notification/inline-notification.js";
-import "@carbon/web-components/es/components/layer/layer.js";
-import "@carbon/web-components/es/components/data-table/table.js";
-import "@carbon/web-components/es/components/data-table/table-head.js";
-import "@carbon/web-components/es/components/data-table/table-header-row.js";
-import "@carbon/web-components/es/components/data-table/table-header-cell.js";
-import "@carbon/web-components/es/components/data-table/table-body.js";
-import "@carbon/web-components/es/components/data-table/table-row.js";
-import "@carbon/web-components/es/components/data-table/table-cell.js";
-import "@carbon/web-components/es/components/data-table/table-toolbar.js";
-import "@carbon/web-components/es/components/data-table/table-toolbar-content.js";
-import "@carbon/web-components/es/components/data-table/table-toolbar-search.js";
-import "@carbon/web-components/es/components/data-table/table-header-title.js";
-import "@carbon/web-components/es/components/data-table/table-header-description.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/button/index.js';
+import { PanelType } from '@carbon/ai-chat';
+import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import '@carbon/web-components/es/components/notification/inline-notification.js';
+import '@carbon/web-components/es/components/layer/layer.js';
+import '@carbon/web-components/es/components/data-table/table.js';
+import '@carbon/web-components/es/components/data-table/table-head.js';
+import '@carbon/web-components/es/components/data-table/table-header-row.js';
+import '@carbon/web-components/es/components/data-table/table-header-cell.js';
+import '@carbon/web-components/es/components/data-table/table-body.js';
+import '@carbon/web-components/es/components/data-table/table-row.js';
+import '@carbon/web-components/es/components/data-table/table-cell.js';
+import '@carbon/web-components/es/components/data-table/table-toolbar.js';
+import '@carbon/web-components/es/components/data-table/table-toolbar-content.js';
+import '@carbon/web-components/es/components/data-table/table-toolbar-search.js';
+import '@carbon/web-components/es/components/data-table/table-header-title.js';
+import '@carbon/web-components/es/components/data-table/table-header-description.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 //icons
-import Version16 from "@carbon/icons/es/version/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import Edit16 from "@carbon/icons/es/edit/16.js";
+import Version16 from '@carbon/icons/es/version/16.js';
+import Download16 from '@carbon/icons/es/download/16.js';
+import Share16 from '@carbon/icons/es/share/16.js';
+import Launch16 from '@carbon/icons/es/launch/16.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+import Edit16 from '@carbon/icons/es/edit/16.js';
 
-@customElement("inventory-report-example")
+@customElement('inventory-report-example')
 class InventoryReportExample extends LitElement {
   static styles = css`
     pre {
@@ -72,16 +72,16 @@ class InventoryReportExample extends LitElement {
   `;
 
   @property({ type: String })
-  accessor location: string = "";
+  accessor location: string = '';
 
   @property({ type: Object })
   accessor instance: any = null;
 
   @property({ type: String })
-  accessor valueFromParent: string = "";
+  accessor valueFromParent: string = '';
 
   @property({ type: String })
-  accessor workspaceId: string = "";
+  accessor workspaceId: string = '';
 
   @property({ type: Object })
   accessor additionalData: any = null;
@@ -90,40 +90,40 @@ class InventoryReportExample extends LitElement {
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Version",
+      text: 'Version',
       icon: Version16,
-      size: "md",
-      onClick: () => alert("Version clicked"),
+      size: 'md',
+      onClick: () => alert('Version clicked'),
     },
     {
-      text: "Download",
+      text: 'Download',
       icon: Download16,
-      size: "md",
-      onClick: () => alert("Download clicked"),
+      size: 'md',
+      onClick: () => alert('Download clicked'),
     },
     {
-      text: "Share",
+      text: 'Share',
       icon: Share16,
-      size: "md",
-      onClick: () => alert("Share clicked"),
+      size: 'md',
+      onClick: () => alert('Share clicked'),
     },
     {
-      text: "Launch",
+      text: 'Launch',
       icon: Launch16,
-      size: "md",
-      onClick: () => alert("Launch clicked"),
+      size: 'md',
+      onClick: () => alert('Launch clicked'),
     },
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
-      onClick: () => alert("Maximize clicked"),
+      size: 'md',
+      onClick: () => alert('Maximize clicked'),
     },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
+      size: 'md',
       onClick: this.handleClose.bind(this),
     },
   ];
@@ -131,22 +131,22 @@ class InventoryReportExample extends LitElement {
   @property({ type: Array })
   accessor footerActions: any[] = [
     {
-      id: "evaluate",
-      label: "Evaluate plan",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'evaluate',
+      label: 'Evaluate plan',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "run",
-      label: "Run plan",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'run',
+      label: 'Run plan',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ];
 
@@ -159,19 +159,19 @@ class InventoryReportExample extends LitElement {
   handleWorkspaceFooterClick(event: any) {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
-      case "evaluate":
+      case 'evaluate':
         // Replace with a real production implementation; alert stands in for an evaluate-plan workflow.
         alert(
-          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "run":
+      case 'run':
         // Replace with a real production implementation; alert stands in for a run-plan workflow.
         alert(
-          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "cancel":
+      case 'cancel':
         this.handleClose();
         break;
       default:
@@ -181,59 +181,59 @@ class InventoryReportExample extends LitElement {
 
   render() {
     const tableHeaders = [
-      { text: "Name" },
-      { text: "Role" },
-      { text: "Location" },
-      { text: "Status" },
+      { text: 'Name' },
+      { text: 'Role' },
+      { text: 'Location' },
+      { text: 'Status' },
     ];
 
     const tableRows = [
       {
         cells: [
-          { text: "Jordan Smith" },
-          { text: "Conversation Designer" },
-          { text: "Austin, TX" },
-          { text: "Active" },
+          { text: 'Jordan Smith' },
+          { text: 'Conversation Designer' },
+          { text: 'Austin, TX' },
+          { text: 'Active' },
         ],
       },
       {
         cells: [
-          { text: "Priya Patel" },
-          { text: "Applied Scientist" },
-          { text: "Bengaluru, IN" },
-          { text: "Active" },
+          { text: 'Priya Patel' },
+          { text: 'Applied Scientist' },
+          { text: 'Bengaluru, IN' },
+          { text: 'Active' },
         ],
       },
       {
         cells: [
-          { text: "Lee Chen" },
-          { text: "Product Manager" },
-          { text: "Singapore" },
-          { text: "Paused" },
+          { text: 'Lee Chen' },
+          { text: 'Product Manager' },
+          { text: 'Singapore' },
+          { text: 'Paused' },
         ],
       },
       {
         cells: [
-          { text: "Morgan Reyes" },
-          { text: "Researcher" },
-          { text: "Toronto, CA" },
-          { text: "Active" },
+          { text: 'Morgan Reyes' },
+          { text: 'Researcher' },
+          { text: 'Toronto, CA' },
+          { text: 'Active' },
         ],
       },
       {
         cells: [
-          { text: "Samira Khan" },
-          { text: "Engineer" },
-          { text: "San Jose, CA" },
-          { text: "Active" },
+          { text: 'Samira Khan' },
+          { text: 'Engineer' },
+          { text: 'San Jose, CA' },
+          { text: 'Active' },
         ],
       },
       {
         cells: [
-          { text: "Alex Kim" },
-          { text: "Designer" },
-          { text: "Seoul, KR" },
-          { text: "Inactive" },
+          { text: 'Alex Kim' },
+          { text: 'Designer' },
+          { text: 'Seoul, KR' },
+          { text: 'Inactive' },
         ],
       },
     ];
@@ -242,8 +242,7 @@ class InventoryReportExample extends LitElement {
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
-        .actions=${this.toolbarActions}
-      >
+        .actions=${this.toolbarActions}>
         <div slot="title" data-fixed>Optimizing excess inventory</div>
         <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
@@ -261,13 +260,11 @@ class InventoryReportExample extends LitElement {
         subtitle="Notification Subtitle"
         kind="warning"
         low-contrast=""
-        hide-close-button
-      >
+        hide-close-button>
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header
         title-text="Optimizing excess inventory plan"
-        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}
-      >
+        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}>
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
@@ -277,7 +274,7 @@ class InventoryReportExample extends LitElement {
           <cds-tag size="sm" type="gray">Phase: Viewing</cds-tag>
         </div>
         <cds-button kind="tertiary" slot="header-action">
-          Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+          Edit Plan ${iconLoader(Edit16, { slot: 'icon' })}
         </cds-button>
       </cds-aichat-workspace-shell-header>
       <cds-aichat-workspace-shell-body>
@@ -292,7 +289,7 @@ class InventoryReportExample extends LitElement {
         <br />
         <h4>Data Flow Demonstration:</h4>
         <p>
-          Workspace ID: <strong>${this.workspaceId || "Not provided"}</strong>
+          Workspace ID: <strong>${this.workspaceId || 'Not provided'}</strong>
         </p>
         <br />
         <h4>Additional Data from Preview Card:</h4>
@@ -316,8 +313,7 @@ class InventoryReportExample extends LitElement {
               <cds-table-toolbar-content>
                 <cds-table-toolbar-search
                   placeholder="Filter table"
-                  persistent
-                ></cds-table-toolbar-search>
+                  persistent></cds-table-toolbar-search>
                 <cds-button>Add new</cds-button>
               </cds-table-toolbar-content>
             </cds-table-toolbar>
@@ -327,7 +323,7 @@ class InventoryReportExample extends LitElement {
                   (header) =>
                     html`<cds-table-header-cell
                       >${header.text}</cds-table-header-cell
-                    >`,
+                    >`
                 )}
               </cds-table-header-row>
             </cds-table-head>
@@ -337,10 +333,10 @@ class InventoryReportExample extends LitElement {
                   <cds-table-row>
                     ${row.cells.map(
                       (cell) =>
-                        html`<cds-table-cell>${cell.text}</cds-table-cell>`,
+                        html`<cds-table-cell>${cell.text}</cds-table-cell>`
                     )}
                   </cds-table-row>
-                `,
+                `
               )}
             </cds-table-body>
           </cds-table>
@@ -351,8 +347,7 @@ class InventoryReportExample extends LitElement {
         .actions=${this.footerActions}
         @cds-aichat-workspace-shell-footer-clicked=${
           this.handleWorkspaceFooterClick
-        }
-      >
+        }>
       </cds-aichat-workspace-shell-footer>
     </cds-aichat-workspace-shell>`;
   }

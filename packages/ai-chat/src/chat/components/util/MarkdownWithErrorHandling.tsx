@@ -7,15 +7,15 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
-import { AppState } from "../../../types/state/AppState";
-import { LocalMessageItemStreamingState } from "../../../types/messaging/LocalMessageItem";
-import InlineError from "./InlineError";
-import { MarkdownWithDefaults } from "./MarkdownWithDefaults";
-import { TextItem } from "../../../types/messaging/Messages";
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
+import { AppState } from '../../../types/state/AppState';
+import { LocalMessageItemStreamingState } from '../../../types/messaging/LocalMessageItem';
+import InlineError from './InlineError';
+import { MarkdownWithDefaults } from './MarkdownWithDefaults';
+import { TextItem } from '../../../types/messaging/Messages';
 
 interface MarkdownWithErrorHandlingProps {
   /**
@@ -51,13 +51,13 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
       conversationalSearch_streamingIncomplete:
         state.languagePack.conversationalSearch_streamingIncomplete,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   let textToUse;
   if (streamingState && !streamingState.isDone) {
     // If we're streaming, then concatenate all the chunks together.
-    textToUse = streamingState.chunks.map((chunk) => chunk.text).join("");
+    textToUse = streamingState.chunks.map((chunk) => chunk.text).join('');
   } else {
     textToUse = text;
   }

@@ -23,14 +23,14 @@
  * Start reading at: the `config` constant and the `Demo` element below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { CANNED_SUGGESTIONS } from "./suggestions";
+import { customSendMessage } from './customSendMessage';
+import { CANNED_SUGGESTIONS } from './suggestions';
 
 const config: PublicConfig = {
   // Route every outbound user turn through the local mock so the example runs
@@ -53,7 +53,7 @@ const config: PublicConfig = {
       // without changing the surrounding shape.
       items: async (query: string) =>
         CANNED_SUGGESTIONS.filter((s) =>
-          s.label.toLowerCase().includes(query.toLowerCase()),
+          s.label.toLowerCase().includes(query.toLowerCase())
         ),
       // Debounce keystrokes so we do not invoke `items` on every character
       // when this resolver is later wired to a remote endpoint.
@@ -62,7 +62,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -78,8 +78,7 @@ export class Demo extends LitElement {
         .messaging=${config.messaging}
         .input=${config.input}
         .layout=${config.layout}
-        .openChatByDefault=${config.openChatByDefault}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${config.openChatByDefault}></cds-aichat-custom-element>
     `;
   }
 }

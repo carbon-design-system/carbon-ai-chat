@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { useCallback } from "react";
-import { getCSSVariableValue } from "../utils/colors";
-import actions from "../store/actions";
-import { ServiceManager } from "../services/ServiceManager";
+import { useCallback } from 'react';
+import { getCSSVariableValue } from '../utils/colors';
+import actions from '../store/actions';
+import { ServiceManager } from '../services/ServiceManager';
 
 interface UseHistoryMobileDetectionProps {
   container: HTMLElement | null;
@@ -49,7 +49,7 @@ export function useHistoryMobileDetection({
       // Helper to parse CSS length value with fallback
       const parseCSSLength = (
         variableName: string,
-        fallback: number,
+        fallback: number
       ): number => {
         const value = getCSSVariableValue(variableName, container);
         if (!value) {
@@ -60,10 +60,10 @@ export function useHistoryMobileDetection({
       };
 
       const messagesMinWidth = parseCSSLength(
-        "--cds-aichat-messages-min-width",
-        320,
+        '--cds-aichat-messages-min-width',
+        320
       );
-      const historyWidth = parseCSSLength("--cds-aichat-history-width", 320);
+      const historyWidth = parseCSSLength('--cds-aichat-history-width', 320);
       const requiredWidthForHistory = messagesMinWidth + historyWidth;
       const shouldBeMobile = isFloatMode || width < requiredWidthForHistory;
 
@@ -83,10 +83,10 @@ export function useHistoryMobileDetection({
         // If startClosed is true, preserve current state
 
         serviceManager.store.dispatch(
-          actions.setHistoryPanelOptions(shouldBeMobile, newIsOpen),
+          actions.setHistoryPanelOptions(shouldBeMobile, newIsOpen)
         );
       }
     },
-    [container, useCustomHostElement, serviceManager],
+    [container, useCustomHostElement, serviceManager]
   );
 }

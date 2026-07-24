@@ -7,21 +7,21 @@
  *  @license
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
   transformStarterItems,
   transformSuggestionConfig,
-} from "@carbon/ai-chat-components/es/react/utils/transformSuggestionConfig.js";
-import type { Extension } from "@tiptap/core";
+} from '@carbon/ai-chat-components/es/react/utils/transformSuggestionConfig.js';
+import type { Extension } from '@tiptap/core';
 import type {
   TriggerSuggestionConfig,
   SuggestionItem,
   AutocompleteConfig,
-} from "../../types/config/InputConfig";
+} from '../../types/config/InputConfig';
 import {
   getBuildCarbonExtensionsIfLoaded,
   loadBuildCarbonExtensions,
-} from "../components/input/buildExtensionsLoader";
+} from '../components/input/buildExtensionsLoader';
 
 interface UseInputExtensionsArgs {
   mention: TriggerSuggestionConfig | undefined;
@@ -62,19 +62,19 @@ function useInputExtensions({
 }: UseInputExtensionsArgs) {
   const normalizedMention = useMemo(
     () => transformSuggestionConfig(mention),
-    [mention],
+    [mention]
   );
   const normalizedCommand = useMemo(
     () => transformSuggestionConfig(command),
-    [command],
+    [command]
   );
   const normalizedAutocomplete = useMemo(
     () => transformSuggestionConfig(autocomplete),
-    [autocomplete],
+    [autocomplete]
   );
   const normalizedStarters = useMemo(
     () => transformStarterItems(starters),
-    [starters],
+    [starters]
   );
 
   // Re-render once the builder chunk resolves (cold rich path); the synchronous

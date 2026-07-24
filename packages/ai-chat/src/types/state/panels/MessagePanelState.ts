@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { GenericItem } from "../../messaging/Messages";
-import { LocalMessageItem } from "../../messaging/LocalMessageItem";
+import { GenericItem } from '../../messaging/Messages';
+import { LocalMessageItem } from '../../messaging/LocalMessageItem';
 
 /**
  * The state of the panel surfaced by response types, either with or without user input.

@@ -15,7 +15,7 @@
  * (`findChildren`, `findChildrenByType`) on a live `Editor`.
  */
 
-import type { Editor, JSONContent } from "@tiptap/core";
+import type { Editor, JSONContent } from '@tiptap/core';
 
 /**
  * Return a new JSONContent tree with every node whose type matches one of
@@ -26,7 +26,7 @@ export function removeNodesByType(
   ...types: string[]
 ): JSONContent {
   const filter = new Set(types);
-  return mapNodes(json, (node) => (filter.has(node.type ?? "") ? null : node));
+  return mapNodes(json, (node) => (filter.has(node.type ?? '') ? null : node));
 }
 
 /**
@@ -39,15 +39,15 @@ export function removeNodesByType(
  */
 export function mapNodes(
   json: JSONContent,
-  fn: (node: JSONContent) => JSONContent | null,
+  fn: (node: JSONContent) => JSONContent | null
 ): JSONContent {
   const walked = walk(json, fn);
-  return walked ?? { type: "doc", content: [{ type: "paragraph" }] };
+  return walked ?? { type: 'doc', content: [{ type: 'paragraph' }] };
 }
 
 function walk(
   node: JSONContent,
-  fn: (node: JSONContent) => JSONContent | null,
+  fn: (node: JSONContent) => JSONContent | null
 ): JSONContent | null {
   let next: JSONContent = node;
   if (node.content && node.content.length > 0) {
@@ -69,7 +69,7 @@ function walk(
  */
 export function findNodesByType(
   json: JSONContent,
-  type: string,
+  type: string
 ): JSONContent[] {
   const matches: JSONContent[] = [];
   walkAll(json, (node) => {
@@ -105,25 +105,25 @@ function walkAll(node: JSONContent, visit: (node: JSONContent) => void): void {
 export function getRawText(json: JSONContent): string {
   const parts: string[] = [];
   collect(json, parts, /* topLevel */ true, /* paragraphIndex */ { count: 0 });
-  return parts.join("");
+  return parts.join('');
 }
 
 function collect(
   node: JSONContent,
   out: string[],
   topLevel: boolean,
-  paragraphIndex: { count: number },
+  paragraphIndex: { count: number }
 ): void {
   switch (node.type) {
-    case "text":
-      out.push(node.text ?? "");
+    case 'text':
+      out.push(node.text ?? '');
       return;
-    case "hardBreak":
-      out.push("\n");
+    case 'hardBreak':
+      out.push('\n');
       return;
-    case "paragraph":
+    case 'paragraph':
       if (paragraphIndex.count > 0) {
-        out.push("\n");
+        out.push('\n');
       }
       paragraphIndex.count += 1;
       if (node.content) {
@@ -132,7 +132,7 @@ function collect(
         }
       }
       return;
-    case "doc":
+    case 'doc':
       if (node.content) {
         for (const child of node.content) {
           collect(child, out, topLevel, paragraphIndex);
@@ -142,10 +142,10 @@ function collect(
     default: {
       // Atom nodes like mention/command — pull `value` (or `label`) off attrs.
       const attrs = (node.attrs ?? {}) as Record<string, unknown>;
-      const value = typeof attrs.value === "string" ? attrs.value : null;
-      const label = typeof attrs.label === "string" ? attrs.label : null;
+      const value = typeof attrs.value === 'string' ? attrs.value : null;
+      const label = typeof attrs.label === 'string' ? attrs.label : null;
       if (value !== null || label !== null) {
-        out.push(value ?? label ?? "");
+        out.push(value ?? label ?? '');
         return;
       }
       // Fall through: walk children.
@@ -174,13 +174,13 @@ export function projectRawValue(editor: Editor): string {
  */
 export function textToDoc(text: string): JSONContent {
   return {
-    type: "doc",
+    type: 'doc',
     content: text
-      .split("\n")
+      .split('\n')
       .map((line) =>
         line
-          ? { type: "paragraph", content: [{ type: "text", text: line }] }
-          : { type: "paragraph" },
+          ? { type: 'paragraph', content: [{ type: 'text', text: line }] }
+          : { type: 'paragraph' }
       ),
   };
 }

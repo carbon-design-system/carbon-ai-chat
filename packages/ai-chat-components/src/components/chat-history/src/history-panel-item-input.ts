@@ -7,31 +7,31 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property, query } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import prefix from "../../../globals/settings.js";
+import { LitElement, html } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import prefix from '../../../globals/settings.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
-import HostListener from "@carbon/web-components/es/globals/decorators/host-listener.js";
-import HostListenerMixin from "@carbon/web-components/es/globals/mixins/host-listener.js";
-import Checkmark16 from "@carbon/icons/es/checkmark/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import WarningFilled16 from "@carbon/icons/es/warning--filled/16.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import FocusMixin from '@carbon/web-components/es/globals/mixins/focus.js';
+import HostListener from '@carbon/web-components/es/globals/decorators/host-listener.js';
+import HostListenerMixin from '@carbon/web-components/es/globals/mixins/host-listener.js';
+import Checkmark16 from '@carbon/icons/es/checkmark/16.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+import WarningFilled16 from '@carbon/icons/es/warning--filled/16.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 type TooltipAlignment =
-  | "top"
-  | "top-left"
-  | "top-right"
-  | "bottom"
-  | "bottom-left"
-  | "bottom-right"
-  | "left"
-  | "right";
+  | 'top'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'left'
+  | 'right';
 
 /**
  * Chat History panel item input.
@@ -47,13 +47,13 @@ type TooltipAlignment =
  */
 @carbonElement(`${prefix}-history-panel-item-input`)
 class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
-  FocusMixin(LitElement),
+  FocusMixin(LitElement)
 ) {
   /**
    * Label for cancel button
    */
   @property()
-  cancelLabel = "Cancel";
+  cancelLabel = 'Cancel';
 
   /**
    * Text that will be read by a screen reader when visiting this control
@@ -65,7 +65,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
    * label for save button
    */
   @property()
-  saveLabel = "Save";
+  saveLabel = 'Save';
 
   /**
    * tooltipAlignment from the standard tooltip
@@ -88,22 +88,22 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
   /**
    * `true` if the input is in an invalid state.
    */
-  @property({ type: Boolean, attribute: "invalid" })
+  @property({ type: Boolean, attribute: 'invalid' })
   invalid = false;
 
   /**
    * Error message text to display when the input is invalid.
    */
-  @property({ type: String, attribute: "invalid-message" })
-  invalidMessage = "";
+  @property({ type: String, attribute: 'invalid-message' })
+  invalidMessage = '';
 
   /**
    * id from the parent history panel item
    */
-  @property({ type: String, attribute: "item-id" })
+  @property({ type: String, attribute: 'item-id' })
   itemId;
 
-  @query("input") input!: HTMLInputElement;
+  @query('input') input!: HTMLInputElement;
 
   /**
    * Flag to track if an action has been triggered to prevent focusout from executing an additional action
@@ -118,7 +118,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
   /**
    * Initial value of the input
    */
-  private _initialValue = "";
+  private _initialValue = '';
 
   /**
    * `true` if the input value has changed from its initial value and is not invalid.
@@ -140,7 +140,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
     this._valueChanged = this.value !== this._initialValue;
 
     const inputChangeEvent = new CustomEvent(
-      "history-panel-item-input-change",
+      'history-panel-item-input-change',
       {
         bubbles: true,
         composed: true,
@@ -148,7 +148,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
           value: this.value,
           itemId: this.itemId,
         },
-      },
+      }
     );
     this.dispatchEvent(inputChangeEvent);
   }
@@ -163,8 +163,8 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       composed: true,
     };
     const inputCancelEvent = new CustomEvent(
-      "history-panel-item-input-cancel",
-      init,
+      'history-panel-item-input-cancel',
+      init
     );
     this.dispatchEvent(inputCancelEvent);
   }
@@ -183,8 +183,8 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
       },
     };
     const inputSaveEvent = new CustomEvent(
-      "history-panel-item-input-save",
-      init,
+      'history-panel-item-input-save',
+      init
     );
     this.dispatchEvent(inputSaveEvent);
   }
@@ -194,9 +194,9 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
    */
   private _handleActionButtonClick = (event: Event) => {
     const target = event.currentTarget as HTMLElement;
-    if (target.className === "rename-action--cancel") {
+    if (target.className === 'rename-action--cancel') {
       this._handleCancel();
-    } else if (target.className === "rename-action--save") {
+    } else if (target.className === 'rename-action--save') {
       this._handleSave();
     }
   };
@@ -208,10 +208,10 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
    */
   private _handleKeydown = (event: KeyboardEvent) => {
     switch (event.key) {
-      case "Escape":
+      case 'Escape':
         this._handleCancel();
         break;
-      case "Enter":
+      case 'Enter':
         if (this._canSave) {
           this._handleSave();
         } else {
@@ -229,7 +229,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
    * * @param event The event.
    */
   private _handleActionButtonKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       this._handleActionButtonClick(event);
     }
@@ -240,7 +240,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
    *
    * @param event The event.
    */
-  @HostListener("focusout")
+  @HostListener('focusout')
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- https://github.com/carbon-design-system/carbon/issues/20071
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   protected _handleFocusOut(event: FocusEvent) {
@@ -261,7 +261,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
   connectedCallback() {
     super.connectedCallback();
     this._initialValue = this.value;
-    this.tooltipAlignment = this.tooltipAlignment ?? "top";
+    this.tooltipAlignment = this.tooltipAlignment ?? 'top';
   }
 
   firstUpdated() {
@@ -301,11 +301,11 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
             <input type="text" placeholder="${placeholder}" value="${value}" @input="${handleInput}" @keydown=${handleKeydown} aria-label="${labelText}" ?data-invalid=${invalid}></input>
             <div class="${prefix}--history-panel-item--rename__actions">
               <cds-icon-button class="rename-action--cancel" align="${tooltipAlignment}" size="sm" kind="ghost" @click=${handleActionButtonClick} @keydown=${handleActionButtonKeyDown}>
-                ${iconLoader(Close16, { slot: "icon" })}
+                ${iconLoader(Close16, { slot: 'icon' })}
                 <span slot="tooltip-content">${cancelLabel}</span>
               </cds-icon-button>
               <cds-icon-button class="rename-action--save" align="${tooltipAlignment}" size="sm" kind="ghost" @click=${handleActionButtonClick} @keydown=${handleActionButtonKeyDown} ?disabled=${!canSave}>
-                ${iconLoader(Checkmark16, { slot: "icon" })}
+                ${iconLoader(Checkmark16, { slot: 'icon' })}
                 <span slot="tooltip-content">${saveLabel}</span>
               </cds-icon-button>
             </div>
@@ -313,8 +313,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
           ${
             invalid && invalidMessage
               ? html`<div
-                  class="${prefix}--history-panel-item-input__invalid-message-container"
-                >
+                  class="${prefix}--history-panel-item-input__invalid-message-container">
                   <div class="${prefix}__invalid-message-text">
                     ${invalidMessage}
                   </div>

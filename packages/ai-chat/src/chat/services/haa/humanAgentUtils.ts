@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { BusEventType } from "../../../types/events/eventBusTypes";
-import { outputItemToLocalItem } from "../../schema/outputItemToLocalItem";
-import actions from "../../store/actions";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
-import { conditionalSetTimeout } from "../../utils/browserUtils";
-import { asyncForEach } from "../../utils/lang/arrayUtils";
-import { deepFreeze } from "../../utils/lang/objectUtils";
-import { createMessageResponseForItem } from "../../utils/messageUtils";
-import { ServiceManager } from "../ServiceManager";
-import { getHumanAgentStatusMessageText } from "./agentStatusMessage";
+import { BusEventType } from '../../../types/events/eventBusTypes';
+import { outputItemToLocalItem } from '../../schema/outputItemToLocalItem';
+import actions from '../../store/actions';
+import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import { conditionalSetTimeout } from '../../utils/browserUtils';
+import { asyncForEach } from '../../utils/lang/arrayUtils';
+import { deepFreeze } from '../../utils/lang/objectUtils';
+import { createMessageResponseForItem } from '../../utils/messageUtils';
+import { ServiceManager } from '../ServiceManager';
+import { getHumanAgentStatusMessageText } from './agentStatusMessage';
 import {
   HumanAgentMessageType,
   ResponseUserProfile,
@@ -25,8 +25,8 @@ import {
   MessageResponseTypes,
   TextItem,
   SystemMessageItem,
-} from "../../../types/messaging/Messages";
-import { LanguagePack } from "../../../types/config/LanguagePack";
+} from '../../../types/messaging/Messages';
+import { LanguagePack } from '../../../types/config/LanguagePack';
 
 /**
  * A simple pairing of local messages to the original messages that they belong to.
@@ -50,12 +50,12 @@ async function createHumanAgentLocalMessage(
   agentMessageType: HumanAgentMessageType,
   serviceManager: ServiceManager,
   responseUserProfile?: ResponseUserProfile,
-  fireEvents = true,
+  fireEvents = true
 ) {
   const text = getHumanAgentStatusMessageText(
     agentMessageType,
     responseUserProfile,
-    serviceManager.intl,
+    serviceManager.intl
   );
 
   const result = createHumanAgentLocalMessageForType(agentMessageType);
@@ -94,7 +94,7 @@ async function createHumanAgentLocalMessage(
  * Creates an empty skeleton of a {@link LocalMessageItem} with the given agent message type.
  */
 function createHumanAgentLocalMessageForType(
-  agentMessageType: HumanAgentMessageType,
+  agentMessageType: HumanAgentMessageType
 ) {
   // Define message types that should use SystemMessageItem with 'agent' variant
   const agentVariantTypes = [
@@ -122,13 +122,13 @@ function createHumanAgentLocalMessageForType(
     const messageItem: SystemMessageItem = {
       response_type: MessageResponseTypes.SYSTEM,
       agent_message_type: agentMessageType,
-      variant: "agent",
-      title: "", // Will be set by createHumanAgentLocalMessage
+      variant: 'agent',
+      title: '', // Will be set by createHumanAgentLocalMessage
     };
     const originalMessage = createMessageResponseForItem(messageItem);
     const localMessage = outputItemToLocalItem(
       messageItem,
-      originalMessage,
+      originalMessage
     ) as LocalMessageItem<SystemMessageItem>;
 
     return { localMessage, originalMessage };
@@ -139,13 +139,13 @@ function createHumanAgentLocalMessageForType(
     const messageItem: SystemMessageItem = {
       response_type: MessageResponseTypes.SYSTEM,
       agent_message_type: agentMessageType,
-      variant: "default",
-      title: "", // Will be set by createHumanAgentLocalMessage
+      variant: 'default',
+      title: '', // Will be set by createHumanAgentLocalMessage
     };
     const originalMessage = createMessageResponseForItem(messageItem);
     const localMessage = outputItemToLocalItem(
       messageItem,
-      originalMessage,
+      originalMessage
     ) as LocalMessageItem<SystemMessageItem>;
 
     return { localMessage, originalMessage };
@@ -159,7 +159,7 @@ function createHumanAgentLocalMessageForType(
   const originalMessage = createMessageResponseForItem(messageItem);
   const localMessage = outputItemToLocalItem(
     messageItem,
-    originalMessage,
+    originalMessage
   ) as LocalMessageItem<TextItem>;
 
   return { localMessage, originalMessage };
@@ -191,7 +191,7 @@ function createAssistantReturnMessage(languagePack: LanguagePack) {
 async function addMessages(
   messagePairs: LocalAndOriginalMessagesPair[],
   showLiveMessages: boolean,
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ) {
   if (showLiveMessages) {
     // Add to the redux store and fire any custom response events that are needed.
@@ -201,17 +201,17 @@ async function addMessages(
         await asyncForEach(localMessages, async (localMessage, index) => {
           await serviceManager.actions.handleUserDefinedResponseItems(
             localMessage,
-            originalMessage,
+            originalMessage
           );
           serviceManager.store.dispatch(
             actions.addLocalMessageItem(
               localMessage,
               originalMessage,
-              index === 0,
-            ),
+              index === 0
+            )
           );
         });
-      },
+      }
     );
   }
 }
@@ -227,10 +227,10 @@ async function addMessages(
 async function addAssistantReturnMessage(
   botReturnDelay: number,
   wasSuspended: boolean,
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ) {
   const botReturn = createAssistantReturnMessage(
-    serviceManager.store.getState().languagePack,
+    serviceManager.store.getState().languagePack
   );
   if (botReturn) {
     const initialRestartCount = serviceManager.restartCount;
@@ -240,7 +240,7 @@ async function addAssistantReturnMessage(
         addMessages(
           [toPair([botReturn.localMessage], botReturn.originalMessage)],
           !wasSuspended,
-          serviceManager,
+          serviceManager
         );
       }
     }, botReturnDelay);
@@ -262,18 +262,18 @@ async function addHumanAgentEndChatMessage(
   responseUserProfile: ResponseUserProfile,
   fireEvents: boolean,
   wasSuspended: boolean,
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ) {
   const endChatMessage = await createHumanAgentLocalMessage(
     agentMessageType,
     serviceManager,
     responseUserProfile,
-    fireEvents,
+    fireEvents
   );
   await addMessages(
     [toPair([endChatMessage.localMessage], endChatMessage.originalMessage)],
     !wasSuspended,
-    serviceManager,
+    serviceManager
   );
 }
 

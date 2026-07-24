@@ -28,22 +28,22 @@
  * Start reading at: `runReasoningStepsScenario` for the discrete-steps flow.
  */
 
-import type { ChatInstance } from "@carbon/ai-chat";
+import type { ChatInstance } from '@carbon/ai-chat';
 import {
   MessageResponseTypes,
   MessageState,
   type MessageResponse,
   type MessageResponseOptions,
   type ReasoningStep,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 export const scenarios = {
-  "Reasoning steps": {
-    text: "Reasoning steps will auto-open while the model provides reasoning steps, and then auto-open the active reasoning step.\n\nIt will then hide once user-facing content starts streaming back.\n\nThis is the default behavior.",
+  'Reasoning steps': {
+    text: 'Reasoning steps will auto-open while the model provides reasoning steps, and then auto-open the active reasoning step.\n\nIt will then hide once user-facing content starts streaming back.\n\nThis is the default behavior.',
   },
-  "Reasoning content": {
-    text: "Reasoning content can stream in as a single trace without individual steps. Use this when you want a long-form rationale instead of expandable steps.",
+  'Reasoning content': {
+    text: 'Reasoning content can stream in as a single trace without individual steps. Use this when you want a long-form rationale instead of expandable steps.',
   },
 };
 
@@ -57,7 +57,7 @@ export const scenarioOptions = Object.keys(scenarios).map((key) => {
 // what a model server would emit as it streams its reasoning trace.
 const REASONING_STEPS = [
   {
-    title: "Read the user request",
+    title: 'Read the user request',
     content: `Scanning the prompt to classify intent and pull out any parameters before choosing an example response.
 
 Parsed request:
@@ -70,7 +70,7 @@ Parsed request:
 \`\`\``,
   },
   {
-    title: "Pick a scenario",
+    title: 'Pick a scenario',
     content: `Matching the parsed selection against the registered demo scenarios and resolving the handler to invoke.
 
 \`\`\`ts
@@ -80,10 +80,10 @@ await scenario.run({ signal });
   },
   {
     // Intentionally left without content to demonstrate the no-body step state.
-    title: "Considering options",
+    title: 'Considering options',
   },
   {
-    title: "Fetching data",
+    title: 'Fetching data',
     content: `Calling the retrieval service for supporting facts, then normalizing the hits before ranking them.
 
 Request:
@@ -105,7 +105,7 @@ const ranked = results
 \`\`\``,
   },
   {
-    title: "Prepare the response",
+    title: 'Prepare the response',
     content: `Assembling the final answer from the ranked sources and formatting it for display.
 
 \`\`\`ts
@@ -118,10 +118,10 @@ return {
 ];
 
 const REASONING_TRACE_CONTENT = REASONING_STEPS.map(
-  (step) => step.content || step.title,
-).join("\n\n");
+  (step) => step.content || step.title
+).join('\n\n');
 
-const TEXT_STREAM_ID = "text-1";
+const TEXT_STREAM_ID = 'text-1';
 const WORD_DELAY = 40;
 const REASONING_STEP_DELAY = 3000;
 
@@ -140,7 +140,7 @@ function buildSnapshot(
   responseID: string,
   text: string,
   messageOptions: MessageResponseOptions,
-  cancellable: boolean,
+  cancellable: boolean
 ): MessageResponse {
   return {
     id: responseID,
@@ -162,28 +162,28 @@ function buildSnapshot(
 function createShellMessage(
   instance: ChatInstance,
   responseID: string,
-  messageOptions?: MessageResponseOptions,
+  messageOptions?: MessageResponseOptions
 ) {
   // First upsert is STREAMING: seed an empty-text shell so the message exists
   // before reasoning updates arrive.
   return instance.messaging.upsertMessage(
     responseID,
     MessageState.STREAMING,
-    () => buildSnapshot(responseID, "", messageOptions ?? {}, false),
+    () => buildSnapshot(responseID, '', messageOptions ?? {}, false)
   );
 }
 
 function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   // STREAMING upsert that advances `message_options.reasoning` while the
   // user-facing text is still empty.
   return instance.messaging.upsertMessage(
     responseID,
     MessageState.STREAMING,
-    () => buildSnapshot(responseID, "", messageOptions, true),
+    () => buildSnapshot(responseID, '', messageOptions, true)
   );
 }
 
@@ -192,11 +192,11 @@ async function streamText(
   responseID: string,
   text: string,
   signal?: AbortSignal,
-  finalMessageOptions?: MessageResponseOptions,
+  finalMessageOptions?: MessageResponseOptions
 ) {
-  const words = text.split(" ");
+  const words = text.split(' ');
   let isCanceled = false;
-  let accumulated = "";
+  let accumulated = '';
   const timeouts: number[] = [];
 
   // The abort handler must clear every queued `setTimeout` because each word
@@ -206,7 +206,7 @@ async function streamText(
     isCanceled = true;
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -227,8 +227,8 @@ async function streamText(
                 responseID,
                 snapshotText,
                 finalMessageOptions ?? {},
-                true,
-              ),
+                true
+              )
           );
         }
       }, index * WORD_DELAY);
@@ -243,11 +243,11 @@ async function streamText(
       await instance.messaging.upsertMessage(
         responseID,
         MessageState.COMPLETE,
-        () => buildSnapshot(responseID, text, finalMessageOptions ?? {}, false),
+        () => buildSnapshot(responseID, text, finalMessageOptions ?? {}, false)
       );
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
@@ -255,7 +255,7 @@ async function streamReasoningContentFirst(
   instance: ChatInstance,
   responseID: string,
   content: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const tokens = content.match(/\S+\s*/g) ?? [content];
   let isCanceled = false;
@@ -265,10 +265,10 @@ async function streamReasoningContentFirst(
     isCanceled = true;
   };
 
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
-    let partial = "";
+    let partial = '';
     for (const token of tokens) {
       if (isCanceled) {
         break;
@@ -280,7 +280,7 @@ async function streamReasoningContentFirst(
       await sleep(WORD_DELAY);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 
   return !isCanceled;
@@ -288,7 +288,7 @@ async function streamReasoningContentFirst(
 
 export async function runReasoningStepsScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = uuid();
   const collectedSteps: ReasoningStep[] = [];
@@ -306,27 +306,27 @@ export async function runReasoningStepsScenario(
   await streamText(
     instance,
     responseID,
-    scenarios["Reasoning steps"].text,
+    scenarios['Reasoning steps'].text,
     signal,
-    { reasoning: { steps: [...collectedSteps] } },
+    { reasoning: { steps: [...collectedSteps] } }
   );
 }
 
 export async function runReasoningContentScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = uuid();
 
   await createShellMessage(instance, responseID, {
-    reasoning: { content: "" },
+    reasoning: { content: '' },
   });
 
   const completed = await streamReasoningContentFirst(
     instance,
     responseID,
     REASONING_TRACE_CONTENT,
-    signal,
+    signal
   );
 
   if (!completed) {
@@ -336,22 +336,22 @@ export async function runReasoningContentScenario(
   await streamText(
     instance,
     responseID,
-    scenarios["Reasoning content"].text,
+    scenarios['Reasoning content'].text,
     signal,
-    { reasoning: { content: REASONING_TRACE_CONTENT } },
+    { reasoning: { content: REASONING_TRACE_CONTENT } }
   );
 }
 
 export async function runScenario(
   scenario: ScenarioKey,
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   switch (scenario) {
-    case "Reasoning steps":
+    case 'Reasoning steps':
       await runReasoningStepsScenario(instance, signal);
       return;
-    case "Reasoning content":
+    case 'Reasoning content':
       await runReasoningContentScenario(instance, signal);
       return;
     default:

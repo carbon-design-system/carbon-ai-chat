@@ -7,4 +7,4 @@
  *  @license
  */
 
-declare module "@carbon/icons/es/ai-launch/16.js";
+declare module '@carbon/icons/es/ai-launch/16.js';

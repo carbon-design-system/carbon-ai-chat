@@ -24,8 +24,8 @@
  * Start reading at: `App()` and the `VIEW_CHANGE` handler.
  */
 
-import "@carbon/ai-chat/css/chat-float-layout.css";
-import "@carbon/ai-chat/css/chat-launcher-layout.css";
+import '@carbon/ai-chat/css/chat-float-layout.css';
+import '@carbon/ai-chat/css/chat-launcher-layout.css';
 
 import {
   BusEventViewChange,
@@ -33,16 +33,16 @@ import {
   ChatInstance,
   PublicConfig,
   ViewType,
-} from "@carbon/ai-chat";
-import { AiLaunch } from "@carbon/icons-react";
-import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
-import React, { useEffect, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import { AiLaunch } from '@carbon/icons-react';
+import ChatButton from '@carbon/ai-chat-components/es/react/chat-button.js';
+import React, { useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
-type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
+type FloatPhase = 'idle' | 'opening' | 'open' | 'closing' | 'closed';
 
 const config: PublicConfig = {
   messaging: {
@@ -53,7 +53,7 @@ const config: PublicConfig = {
 };
 
 function App() {
-  const [phase, setPhase] = useState<FloatPhase>("idle");
+  const [phase, setPhase] = useState<FloatPhase>('idle');
   // The launcher is not shown until onAfterRender fires, so instanceRef.current
   // is always set when handleLauncherClick is called.
   const [chatReady, setChatReady] = useState(false);
@@ -66,11 +66,11 @@ function App() {
   // When prefers-reduced-motion is set there is no CSS animation, so
   // animationend will never fire. Advance the phase immediately in that case.
   useEffect(() => {
-    if (phase !== "opening" && phase !== "closing") {
+    if (phase !== 'opening' && phase !== 'closing') {
       return;
     }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setPhase(phase === "opening" ? "open" : "closed");
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setPhase(phase === 'opening' ? 'open' : 'closed');
     }
   }, [phase]);
 
@@ -91,26 +91,26 @@ function App() {
   function onViewChange(event: BusEventViewChange) {
     if (event.newViewState.mainWindow) {
       hasEverOpenedRef.current = true;
-      setPhase("opening");
+      setPhase('opening');
     } else if (hasEverOpenedRef.current) {
-      setPhase("closing");
+      setPhase('closing');
     }
   }
 
   function getFloatClass(): string {
     switch (phase) {
-      case "opening":
+      case 'opening':
         // --open supplies position:fixed + dimensions; --opening adds the animation.
-        return "cds-aichat-float--open cds-aichat-float--opening";
-      case "open":
-        return "cds-aichat-float--open";
-      case "closing":
+        return 'cds-aichat-float--open cds-aichat-float--opening';
+      case 'open':
+        return 'cds-aichat-float--open';
+      case 'closing':
         // Keep --open so the widget stays positioned while the close animation plays.
-        return "cds-aichat-float--open cds-aichat-float--closing";
-      case "idle":
-      case "closed":
+        return 'cds-aichat-float--open cds-aichat-float--closing';
+      case 'idle':
+      case 'closed':
       default:
-        return "cds-aichat-float--close";
+        return 'cds-aichat-float--close';
     }
   }
 
@@ -118,17 +118,17 @@ function App() {
     // Hide the launcher while the float is opening, open, or closing.
     // visibility:hidden (from --hidden) preserves layout so the entrance
     // animation does not replay when the launcher reappears.
-    const hidden = phase !== "idle" && phase !== "closed";
+    const hidden = phase !== 'idle' && phase !== 'closed';
     return hidden
-      ? "cds-aichat-launcher cds-aichat-launcher--hidden"
-      : "cds-aichat-launcher";
+      ? 'cds-aichat-launcher cds-aichat-launcher--hidden'
+      : 'cds-aichat-launcher';
   }
 
   function handleFloatAnimationEnd() {
-    if (phase === "opening") {
-      setPhase("open");
-    } else if (phase === "closing") {
-      setPhase("closed");
+    if (phase === 'opening') {
+      setPhase('open');
+    } else if (phase === 'closing') {
+      setPhase('closed');
     }
   }
 
@@ -155,8 +155,7 @@ function App() {
           iconDescription="Open chat"
           kind="primary"
           size="lg"
-          onClick={handleLauncherClick}
-        >
+          onClick={handleLauncherClick}>
           <AiLaunch slot="icon" />
         </ChatButton>
       )}
@@ -164,6 +163,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

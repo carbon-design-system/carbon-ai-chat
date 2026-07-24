@@ -7,28 +7,28 @@
  *  @license
  */
 
-import ScreenOff16 from "@carbon/icons/es/screen--off/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import Button, { BUTTON_KIND } from "../../components/carbon/Button";
-import CDSButton from "@carbon/web-components/es/components/button/button.js";
-import cx from "classnames";
+import ScreenOff16 from '@carbon/icons/es/screen--off/16.js';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import Button, { BUTTON_KIND } from '../../components/carbon/Button';
+import CDSButton from '@carbon/web-components/es/components/button/button.js';
+import cx from 'classnames';
 import React, {
   forwardRef,
   RefObject,
   useImperativeHandle,
   useRef,
-} from "react";
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
+} from 'react';
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
 
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { selectHumanAgentDisplayState } from "../../store/selectors";
-import { AppState } from "../../../types/state/AppState";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { doFocusRef } from "../../utils/domUtils";
-import { AnnounceOnMountComponent } from "../../components/util/AnnounceOnMountComponent";
-import { ResponseUserAvatar } from "../ResponseUserAvatar";
-import { AvailabilityMessage } from "./AvailabilityMessage";
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { selectHumanAgentDisplayState } from '../../store/selectors';
+import { AppState } from '../../../types/state/AppState';
+import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
+import { doFocusRef } from '../../utils/domUtils';
+import { AnnounceOnMountComponent } from '../../components/util/AnnounceOnMountComponent';
+import { ResponseUserAvatar } from '../ResponseUserAvatar';
+import { AvailabilityMessage } from './AvailabilityMessage';
 
 const ScreenOff = carbonIconToReact(ScreenOff16);
 
@@ -46,7 +46,7 @@ interface HumanAgentBannerProps {
  */
 function HumanAgentBanner(
   props: HumanAgentBannerProps,
-  ref: RefObject<HasRequestFocus | null>,
+  ref: RefObject<HasRequestFocus | null>
 ) {
   const { onButtonClick } = props;
   const languagePack = useSelector(
@@ -60,14 +60,14 @@ function HumanAgentBanner(
       agent_sharingStopSharingButton:
         state.languagePack.agent_sharingStopSharingButton,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const serviceManager = useServiceManager();
   const persistedHumanAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
+    (state: AppState) => state.persistedToBrowserStorage.humanAgentState
   );
   const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState,
+    (state: AppState) => state.humanAgentState
   );
   const { isConnecting, availability, isScreenSharing } = humanAgentState;
   const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
@@ -123,10 +123,9 @@ function HumanAgentBanner(
 
   return (
     <div
-      className={cx("cds-aichat--human-agent-banner", {
-        "cds-aichat--human-agent-banner--connected": !isConnecting,
-      })}
-    >
+      className={cx('cds-aichat--human-agent-banner', {
+        'cds-aichat--human-agent-banner--connected': !isConnecting,
+      })}>
       {displayState.isConnectingOrConnected && (
         <div className="cds-aichat--human-agent-banner__body">
           {avatar}
@@ -144,8 +143,7 @@ function HumanAgentBanner(
             ref={buttonRef}
             className="cds-aichat--human-agent-banner__button cds-aichat--human-agent-banner__cancel-button"
             onClick={onButtonClick}
-            size="sm"
-          >
+            size="sm">
             {buttonLabel}
           </Button>
         </div>
@@ -155,8 +153,7 @@ function HumanAgentBanner(
           className="cds-aichat--human-agent-banner__button cds-aichat--human-agent-banner__stop-sharing-button"
           kind={BUTTON_KIND.DANGER}
           size="sm"
-          onClick={onStopSharing}
-        >
+          onClick={onStopSharing}>
           <ScreenOff slot="icon" />
           {languagePack.agent_sharingStopSharingButton}
         </Button>

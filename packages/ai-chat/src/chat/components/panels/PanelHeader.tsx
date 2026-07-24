@@ -7,17 +7,17 @@
  *  @license
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
-import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
-import IconButton from "../carbon/IconButton";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/defs.js";
-import { MarkdownWithDefaults } from "../util/MarkdownWithDefaults";
-import { isDirectionRTL } from "../../utils/domUtils";
-import { carbonIconToReact } from "../../utils/carbonIcon";
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
+import ChevronLeft16 from '@carbon/icons/es/chevron--left/16.js';
+import CloseLarge16 from '@carbon/icons/es/close--large/16.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
+import IconButton from '../carbon/IconButton';
+import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
+import { MarkdownWithDefaults } from '../util/MarkdownWithDefaults';
+import { isDirectionRTL } from '../../utils/domUtils';
+import { carbonIconToReact } from '../../utils/carbonIcon';
 
 const ChevronDown = carbonIconToReact(ChevronDown16);
 const ChevronLeft = carbonIconToReact(ChevronLeft16);
@@ -28,8 +28,8 @@ interface PanelHeaderProps {
   openFromSide?: boolean;
   showBackButton?: boolean;
   labelBackButton?: string;
-  backButtonType?: "minimize" | "close";
-  backButtonPosition?: "start" | "end";
+  backButtonType?: 'minimize' | 'close';
+  backButtonPosition?: 'start' | 'end';
   onClickBack?: () => void;
 }
 
@@ -42,8 +42,8 @@ function PanelHeader({
   openFromSide,
   showBackButton = true,
   labelBackButton,
-  backButtonType = "minimize",
-  backButtonPosition = "end",
+  backButtonType = 'minimize',
+  backButtonPosition = 'end',
   onClickBack,
 }: PanelHeaderProps) {
   const { backButtonIcon, BackButtonIcon } = useMemo(() => {
@@ -54,7 +54,7 @@ function PanelHeader({
     };
 
     const iconKey =
-      backButtonType === "close" ? "close" : openFromSide ? "side" : "down";
+      backButtonType === 'close' ? 'close' : openFromSide ? 'side' : 'down';
     const selected = icons[iconKey];
 
     return {
@@ -64,15 +64,15 @@ function PanelHeader({
   }, [backButtonType, openFromSide]);
 
   const toolbarActions = useMemo(() => {
-    if (!showBackButton || backButtonPosition === "start") {
+    if (!showBackButton || backButtonPosition === 'start') {
       return [];
     }
 
     return [
       {
-        text: labelBackButton ?? "",
+        text: labelBackButton ?? '',
         icon: backButtonIcon,
-        size: "md",
+        size: 'md',
         onClick: () => onClickBack?.(),
       },
     ];
@@ -84,13 +84,13 @@ function PanelHeader({
     backButtonIcon,
   ]);
 
-  const tooltipAlign = isDirectionRTL() ? "bottom-end" : "bottom-start";
+  const tooltipAlign = isDirectionRTL() ? 'bottom-end' : 'bottom-start';
 
   return (
     <div data-floating-menu-container>
       <Toolbar actions={toolbarActions}>
         <div slot="title">{title && <MarkdownWithDefaults text={title} />}</div>
-        {showBackButton && backButtonPosition === "start" && (
+        {showBackButton && backButtonPosition === 'start' && (
           <div slot="navigation">
             <IconButton
               data-rounded="top-left"
@@ -99,8 +99,7 @@ function PanelHeader({
               align={tooltipAlign}
               enterDelayMs={0}
               leaveDelayMs={0}
-              onClick={() => onClickBack?.()}
-            >
+              onClick={() => onClickBack?.()}>
               <BackButtonIcon slot="icon" />
               {labelBackButton && (
                 <span slot="tooltip-content">{labelBackButton}</span>

@@ -22,13 +22,13 @@
  * Start reading at: the `config` constant and `./customSendMessage.ts`.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -43,7 +43,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -58,8 +58,7 @@ export class Demo extends LitElement {
         class="chat-custom-element"
         .messaging=${config.messaging}
         .layout=${config.layout}
-        .openChatByDefault=${config.openChatByDefault}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${config.openChatByDefault}></cds-aichat-custom-element>
     `;
   }
 }

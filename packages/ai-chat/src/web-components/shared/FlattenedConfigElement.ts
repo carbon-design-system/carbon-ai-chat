@@ -17,14 +17,14 @@
  * from that same table, so each config field is defined in exactly one place.
  */
 
-import { LitElement } from "lit";
-import type { PropertyDeclaration, PropertyDeclarations } from "lit";
+import { LitElement } from 'lit';
+import type { PropertyDeclaration, PropertyDeclarations } from 'lit';
 
-import { PublicConfig } from "../../types/config/PublicConfig";
+import { PublicConfig } from '../../types/config/PublicConfig';
 import {
   FLATTENED_PUBLIC_CONFIG_FIELDS,
   resolveFlattenedConfig,
-} from "./flattenedPublicConfig";
+} from './flattenedPublicConfig';
 
 /**
  * Builds the Lit `static properties` object from the shared field table plus
@@ -34,7 +34,7 @@ import {
 function buildFlattenedProperties(): PropertyDeclarations {
   const properties: Record<string, PropertyDeclaration> = {
     config: { attribute: false, type: Object },
-    aiDisabled: { type: Boolean, attribute: "ai-disabled" },
+    aiDisabled: { type: Boolean, attribute: 'ai-disabled' },
   };
   for (const field of FLATTENED_PUBLIC_CONFIG_FIELDS) {
     properties[field.name] = field.options;

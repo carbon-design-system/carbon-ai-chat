@@ -7,22 +7,22 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAICarousel from "../components/carousel/src/carousel";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge";
+import CDSAICarousel from '../components/carousel/src/carousel';
+import { withWebComponentBridge } from './utils/withWebComponentBridge';
 
 const Carousel = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-carousel",
+    tagName: 'cds-aichat-carousel',
     elementClass: CDSAICarousel,
     react: React,
     events: {
-      onChange: "cds-aichat-carousel-onchange",
+      onChange: 'cds-aichat-carousel-onchange',
     },
-  }),
+  })
 );
 
 export { Carousel };

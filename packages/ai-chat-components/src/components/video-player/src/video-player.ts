@@ -7,29 +7,29 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html } from "lit";
-import { property, state, query } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./video-player.scss?lit";
+import { LitElement, html } from 'lit';
+import { property, state, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './video-player.scss?lit';
 
-import { detectVideoSource, VideoSource } from "./utils/url-detector.js";
-import { BaseProvider } from "./providers/base-provider.js";
-import { NativeVideoProvider } from "./providers/native-video-provider.js";
-import { YouTubeProvider } from "./providers/youtube-provider.js";
-import { VimeoProvider } from "./providers/vimeo-provider.js";
-import { KalturaProvider } from "./providers/kaltura-provider.js";
+import { detectVideoSource, VideoSource } from './utils/url-detector.js';
+import { BaseProvider } from './providers/base-provider.js';
+import { NativeVideoProvider } from './providers/native-video-provider.js';
+import { YouTubeProvider } from './providers/youtube-provider.js';
+import { VimeoProvider } from './providers/vimeo-provider.js';
+import { KalturaProvider } from './providers/kaltura-provider.js';
 import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
+} from '../../shared/dynamic-css-var-sheet.js';
 
 const LOADING_TIMEOUT_MS = 10000; // 10 seconds
 
-const INSTANCE_ATTR = "data-cds-aichat-video-player-id";
+const INSTANCE_ATTR = 'data-cds-aichat-video-player-id';
 let instanceCounter = 0;
 
 /**
@@ -48,13 +48,13 @@ class VideoPlayer extends LitElement {
    * Video source URL (required)
    */
   @property({ type: String })
-  source = "";
+  source = '';
 
   /**
    * ARIA label for accessibility
    */
-  @property({ type: String, attribute: "aria-label" })
-  ariaLabel = "Video player";
+  @property({ type: String, attribute: 'aria-label' })
+  ariaLabel = 'Video player';
 
   /**
    * Whether the video should be playing
@@ -65,56 +65,56 @@ class VideoPlayer extends LitElement {
   /**
    * Aspect ratio as padding-top percentage (default: 56.25 for 16:9)
    */
-  @property({ type: Number, attribute: "aspect-ratio-percentage" })
+  @property({ type: Number, attribute: 'aspect-ratio-percentage' })
   aspectRatioPercentage = 56.25;
 
   /**
    * Subtitle tracks for native video files
    */
-  @property({ type: Array, attribute: "subtitle-tracks" })
+  @property({ type: Array, attribute: 'subtitle-tracks' })
   subtitleTracks: Array<{
     src: string;
     language: string;
     label: string;
-    kind?: "subtitles" | "captions" | "descriptions";
+    kind?: 'subtitles' | 'captions' | 'descriptions';
     default?: boolean;
   }> = [];
 
   /**
    * Generic error message to display when video fails to load
    */
-  @property({ type: String, attribute: "error-message" })
-  errorMessage = "Failed to load video";
+  @property({ type: String, attribute: 'error-message' })
+  errorMessage = 'Failed to load video';
 
   /**
    * Status message announced when video starts loading
    */
-  @property({ type: String, attribute: "loading-status-message" })
-  loadingStatusMessage = "Video player loading";
+  @property({ type: String, attribute: 'loading-status-message' })
+  loadingStatusMessage = 'Video player loading';
 
   /**
    * Status message announced when video is ready
    */
-  @property({ type: String, attribute: "ready-status-message" })
-  readyStatusMessage = "Video player ready";
+  @property({ type: String, attribute: 'ready-status-message' })
+  readyStatusMessage = 'Video player ready';
 
   /**
    * Label suffix for loading state (e.g., "Loading")
    */
-  @property({ type: String, attribute: "loading-label" })
-  loadingLabel = "Loading";
+  @property({ type: String, attribute: 'loading-label' })
+  loadingLabel = 'Loading';
 
   /**
    * Label suffix for ready state (e.g., "Ready")
    */
-  @property({ type: String, attribute: "ready-label" })
-  readyLabel = "Ready";
+  @property({ type: String, attribute: 'ready-label' })
+  readyLabel = 'Ready';
 
   /**
    * Label suffix for error state (e.g., "Error")
    */
-  @property({ type: String, attribute: "error-label" })
-  errorLabel = "Error";
+  @property({ type: String, attribute: 'error-label' })
+  errorLabel = 'Error';
 
   /**
    * Internal state: loading status
@@ -138,7 +138,7 @@ class VideoPlayer extends LitElement {
    * Internal state: current status message for screen readers
    */
   @state()
-  private statusMessage = "";
+  private statusMessage = '';
 
   /**
    * Query the provider container element
@@ -157,7 +157,7 @@ class VideoPlayer extends LitElement {
 
   private syncAspectRatioVar(): void {
     setVarsForSelector(this.instanceSelector, {
-      "--video-player-aspect-ratio": `${this.aspectRatioPercentage}%`,
+      '--video-player-aspect-ratio': `${this.aspectRatioPercentage}%`,
     });
   }
 
@@ -212,7 +212,7 @@ class VideoPlayer extends LitElement {
       // Set loading timeout
       this.loadingTimeout = setTimeout(() => {
         if (this.isLoading) {
-          this.handleError(new Error("Video loading timeout"));
+          this.handleError(new Error('Video loading timeout'));
         }
       }, LOADING_TIMEOUT_MS);
 
@@ -220,7 +220,7 @@ class VideoPlayer extends LitElement {
       this.provider = this.createProvider(this.source);
 
       if (!this.provider) {
-        throw new Error("Unsupported video source");
+        throw new Error('Unsupported video source');
       }
 
       // Set up event handlers
@@ -255,7 +255,7 @@ class VideoPlayer extends LitElement {
       await this.provider.load(this.source);
     } catch (error) {
       this.handleError(
-        error instanceof Error ? error : new Error("Unknown error"),
+        error instanceof Error ? error : new Error('Unknown error')
       );
     } finally {
       this.isLoadingVideo = false;
@@ -276,10 +276,10 @@ class VideoPlayer extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-video-player-ready", {
+      new CustomEvent('cds-aichat-video-player-ready', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -288,10 +288,10 @@ class VideoPlayer extends LitElement {
    */
   private handlePlay(): void {
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-video-player-play", {
+      new CustomEvent('cds-aichat-video-player-play', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -300,10 +300,10 @@ class VideoPlayer extends LitElement {
    */
   private handlePause(): void {
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-video-player-pause", {
+      new CustomEvent('cds-aichat-video-player-pause', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -313,7 +313,7 @@ class VideoPlayer extends LitElement {
   private handleError(_error: Error): void {
     this.isLoading = false;
     this.hasError = true;
-    this.statusMessage = ""; // Clear to avoid duplicate announcements with error div
+    this.statusMessage = ''; // Clear to avoid duplicate announcements with error div
 
     if (this.loadingTimeout) {
       clearTimeout(this.loadingTimeout);
@@ -322,11 +322,11 @@ class VideoPlayer extends LitElement {
 
     // Always use the generic error message, regardless of the actual error
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-video-player-error", {
+      new CustomEvent('cds-aichat-video-player-error', {
         bubbles: true,
         composed: true,
         detail: { message: this.errorMessage },
-      }),
+      })
     );
   }
 
@@ -359,13 +359,13 @@ class VideoPlayer extends LitElement {
   updated(changedProperties: Map<string, any>): void {
     super.updated(changedProperties);
 
-    if (changedProperties.has("aspectRatioPercentage")) {
+    if (changedProperties.has('aspectRatioPercentage')) {
       this.syncAspectRatioVar();
     }
 
     // Reload video if source changes (but not on first update, which is handled by firstUpdated)
     if (
-      changedProperties.has("source") &&
+      changedProperties.has('source') &&
       this.source &&
       this.providerContainer &&
       !this.hasUpdated // Prevent duplicate load on first render
@@ -374,7 +374,7 @@ class VideoPlayer extends LitElement {
     }
 
     // Handle play/pause changes
-    if (changedProperties.has("playing") && this.provider && this.isReady) {
+    if (changedProperties.has('playing') && this.provider && this.isReady) {
       if (this.playing) {
         this.provider.play();
       } else {
@@ -410,8 +410,7 @@ class VideoPlayer extends LitElement {
       <div
         class="${prefix}--video-player__error"
         role="alert"
-        aria-live="assertive"
-      >
+        aria-live="assertive">
         <p class="${prefix}--video-player__error-message">
           ${this.errorMessage}
         </p>
@@ -427,8 +426,7 @@ class VideoPlayer extends LitElement {
       <div
         class="${prefix}--video-player"
         role="region"
-        aria-label=${this.ariaLabel}
-      >
+        aria-label=${this.ariaLabel}>
         ${
           this.statusMessage
             ? html`
@@ -436,22 +434,20 @@ class VideoPlayer extends LitElement {
                   class="${prefix}--video-player__status"
                   role="status"
                   aria-live="polite"
-                  aria-atomic="true"
-                >
+                  aria-atomic="true">
                   ${this.statusMessage}
                 </div>
               `
-            : ""
+            : ''
         }
         <div class="${prefix}--video-player__container">
-          ${this.hasError ? this.renderError() : ""}
+          ${this.hasError ? this.renderError() : ''}
           <div
             class="${classMap({
               [`${prefix}--video-player__provider`]: true,
               [`${prefix}--video-player__provider--hidden`]: this.hasError,
               [`${prefix}--video-player__provider--ready`]: this.isReady,
-            })}"
-          ></div>
+            })}"></div>
         </div>
       </div>
     `;

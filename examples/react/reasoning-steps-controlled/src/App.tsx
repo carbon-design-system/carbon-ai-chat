@@ -24,12 +24,12 @@
  * Start reading at: `App()`, then `./scenarios.ts` for the runner.
  */
 
-import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
+import { ChatCustomElement, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -47,6 +47,6 @@ function App() {
   return <ChatCustomElement className="chat-custom-element" {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

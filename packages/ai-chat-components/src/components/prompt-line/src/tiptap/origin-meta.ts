@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type { Transaction } from "@tiptap/pm/state";
+import type { Transaction } from '@tiptap/pm/state';
 
 /**
  * Tag a transaction as host-originated so the value-sync extension (and any
@@ -16,8 +16,8 @@ import type { Transaction } from "@tiptap/pm/state";
  * meta key is shared with consumer code that dispatches transactions via
  * `getEditor()?.view.dispatch(tr)` and wants to opt out of the change loop.
  */
-const HOST_ORIGIN_META_KEY = "aichatOrigin";
-const HOST_ORIGIN_VALUE = "host";
+const HOST_ORIGIN_META_KEY = 'aichatOrigin';
+const HOST_ORIGIN_VALUE = 'host';
 
 export function setHostOriginMeta(tr: Transaction): Transaction {
   return tr.setMeta(HOST_ORIGIN_META_KEY, HOST_ORIGIN_VALUE);

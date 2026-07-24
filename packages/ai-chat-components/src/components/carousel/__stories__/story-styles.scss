@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/styles/scss/_carbon-utilities.scss" as carousel;
+@use '@carbon/styles/scss/_carbon-utilities.scss' as carousel;
 
 :host {
   @include carousel.carousel;

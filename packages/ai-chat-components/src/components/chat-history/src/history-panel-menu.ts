@@ -7,11 +7,11 @@
  *  @license
  */
 
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import CDSSideNavMenu from "@carbon/web-components/es/components/ui-shell/side-nav-menu.js";
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import CDSSideNavMenu from '@carbon/web-components/es/components/ui-shell/side-nav-menu.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History panel menu.

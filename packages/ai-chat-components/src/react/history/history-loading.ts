@@ -7,17 +7,17 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSAIChatHistoryLoading from "../../components/chat-history/src/history-loading.js";
-import { withWebComponentBridge } from "../utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatHistoryLoading from '../../components/chat-history/src/history-loading.js';
+import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryLoading = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-history-loading",
+    tagName: 'cds-aichat-history-loading',
     elementClass: CDSAIChatHistoryLoading,
     react: React,
-  }),
+  })
 );
 
 export default HistoryLoading;

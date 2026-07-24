@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
  *  @license
  */
 
-import path from "path";
-import { promisify } from "util";
-import * as sass from "sass";
-import { createFilter } from "@rollup/pluginutils";
+import path from 'path';
+import { promisify } from 'util';
+import * as sass from 'sass';
+import { createFilter } from '@rollup/pluginutils';
 
 const renderSass = promisify(sass.render);
 const noop = (s) => s;
@@ -21,7 +21,7 @@ const noop = (s) => s;
  */
 function transformToTemplate(css) {
   return `import { css } from 'lit';export default css([${JSON.stringify(
-    css,
+    css
   )}])`;
 }
 
@@ -40,7 +40,7 @@ export default function LitSCSS({
 } = {}) {
   const filter = createFilter(include, exclude);
   return {
-    name: "lit-scss",
+    name: 'lit-scss',
 
     /**
      * Enqueues the module contents for loading.
@@ -81,7 +81,7 @@ export default function LitSCSS({
       return {
         code: transformToTemplate(await preprocessor(css.toString(), id)),
         map: {
-          mappings: "",
+          mappings: '',
         },
       };
     },

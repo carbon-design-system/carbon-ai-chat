@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
 
-describe("Config Focus", () => {
+describe('Config Focus', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -24,11 +24,11 @@ describe("Config Focus", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("shouldTakeFocusIfOpensAutomatically", () => {
-    it("should store shouldTakeFocusIfOpensAutomatically: true in Redux state", async () => {
+  describe('shouldTakeFocusIfOpensAutomatically', () => {
+    it('should store shouldTakeFocusIfOpensAutomatically: true in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         shouldTakeFocusIfOpensAutomatically: true,
@@ -45,17 +45,17 @@ describe("Config Focus", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.public.shouldTakeFocusIfOpensAutomatically).toBe(
-        true,
+        true
       );
     });
 
-    it("should store shouldTakeFocusIfOpensAutomatically: false in Redux state", async () => {
+    it('should store shouldTakeFocusIfOpensAutomatically: false in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         shouldTakeFocusIfOpensAutomatically: false,
@@ -72,17 +72,17 @@ describe("Config Focus", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.public.shouldTakeFocusIfOpensAutomatically).toBe(
-        false,
+        false
       );
     });
 
-    it("should use default shouldTakeFocusIfOpensAutomatically value when not specified", async () => {
+    it('should use default shouldTakeFocusIfOpensAutomatically value when not specified', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // shouldTakeFocusIfOpensAutomatically intentionally omitted
@@ -99,13 +99,13 @@ describe("Config Focus", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.public.shouldTakeFocusIfOpensAutomatically).toBe(
-        true,
+        true
       ); // default value
     });
   });

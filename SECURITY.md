@@ -30,6 +30,8 @@ We prefer all communications to be in English.
 
 ## Comments on this policy
 
-If you have suggestions on how this process could be improved please [submit a pull request](https://github.com/carbon-design-system/carbon-ai-chat/pulls)
-or [file an issue](https://github.com/carbon-design-system/carbon-ai-chat/issues/new) to
-discuss.
+If you have suggestions on how this process could be improved please
+[submit a pull request](https://github.com/carbon-design-system/carbon-ai-chat/pulls)
+or
+[file an issue](https://github.com/carbon-design-system/carbon-ai-chat/issues/new)
+to discuss.

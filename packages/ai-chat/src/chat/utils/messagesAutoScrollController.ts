@@ -7,8 +7,8 @@
  *  @license
  */
 
-import throttle from "lodash-es/throttle.js";
-import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
+import throttle from 'lodash-es/throttle.js';
+import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
 
 /**
  * Framework-agnostic scroll/spacer engine extracted from `MessagesComponent`.
@@ -152,14 +152,14 @@ function doScrollElement(
   element: Element,
   scrollTop: number,
   scrollLeft: number,
-  animate = false,
+  animate = false
 ): void {
   if (element) {
     if (animate && element.scroll) {
       element.scroll({
         top: scrollTop,
         left: scrollLeft,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     } else {
       element.scrollTop = scrollTop;
@@ -190,25 +190,25 @@ function getScrollBottom(element: HTMLElement | null): number {
 type AutoScrollAction =
   | {
       scrollTop: number;
-      type: "scroll_to_top";
+      type: 'scroll_to_top';
     }
   | {
       preferAnimate: boolean;
       scrollTop: number;
-      type: "scroll_to_bottom";
+      type: 'scroll_to_bottom';
     }
   | {
-      type: "reset_to_top";
+      type: 'reset_to_top';
     }
   | {
       message: PortableMessage;
-      type: "pin_message";
+      type: 'pin_message';
     }
   | {
-      type: "recalculate_spacer";
+      type: 'recalculate_spacer';
     }
   | {
-      type: "noop";
+      type: 'noop';
     };
 
 interface ResolveAutoScrollActionParams {
@@ -245,10 +245,10 @@ interface StreamingTransition {
   wasStreaming: boolean;
 }
 
-type StreamEndAction = "re_pin_and_scroll" | "recalculate_and_preserve_scroll";
+type StreamEndAction = 're_pin_and_scroll' | 'recalculate_and_preserve_scroll';
 
 interface PublicSpacerReconciliationAction {
-  type: "noop" | "recalculate_spacer_preserve_scroll";
+  type: 'noop' | 'recalculate_spacer_preserve_scroll';
 }
 
 /**
@@ -296,13 +296,13 @@ function findLastPinnable(messages: PortableMessage[]): PortableMessage | null {
 function calculateBaseScrollTop(
   targetRect: DOMRect,
   scrollerRect: DOMRect,
-  currentScrollTop: number,
+  currentScrollTop: number
 ): number {
   const targetOffsetWithinScroller =
     targetRect.top - scrollerRect.top + currentScrollTop;
   return Math.max(
     0,
-    Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA),
+    Math.floor(targetOffsetWithinScroller + AUTO_SCROLL_EXTRA)
   );
 }
 
@@ -314,7 +314,7 @@ function calculateBaseScrollTop(
 function adjustScrollTopForTallMessage(
   baseScrollTop: number,
   targetHeight: number,
-  scrollerHeight: number,
+  scrollerHeight: number
 ): number {
   const isVeryTall =
     targetHeight > scrollerHeight * TALL_MESSAGE_THRESHOLD_RATIO;
@@ -337,7 +337,7 @@ function calculateSpacerDeficit(
   spacerElem: HTMLElement,
   scrollElement: HTMLElement,
   scrollerRect: DOMRect,
-  finalScrollTop: number,
+  finalScrollTop: number
 ): number {
   const spacerRect = spacerElem.getBoundingClientRect();
   const spacerOffset =
@@ -373,7 +373,7 @@ function computeGrowOnlySpacerHeight(params: {
   const contentHeightWithoutSpacer = scrollHeight - currentSpacerHeight;
   const minSpacerForPin = Math.max(
     0,
-    pinnedScrollTop + clientHeight - contentHeightWithoutSpacer,
+    pinnedScrollTop + clientHeight - contentHeightWithoutSpacer
   );
   return Math.max(currentSpacerHeight, minSpacerForPin);
 }
@@ -452,9 +452,9 @@ function resolveStreamEndAction({
     Math.abs(scrollTop - pinnedScrollTop) > nearPinThresholdPx;
 
   if (!scrolledAway || wasBrowserCapped) {
-    return "re_pin_and_scroll";
+    return 're_pin_and_scroll';
   }
-  return "recalculate_and_preserve_scroll";
+  return 'recalculate_and_preserve_scroll';
 }
 
 /**
@@ -517,9 +517,9 @@ function resolvePublicSpacerReconciliationAction({
   pinnedMessageId: string | null;
 }): PublicSpacerReconciliationAction {
   if (!pinnedMessageId) {
-    return { type: "noop" };
+    return { type: 'noop' };
   }
-  return { type: "recalculate_spacer_preserve_scroll" };
+  return { type: 'recalculate_spacer_preserve_scroll' };
 }
 
 /**
@@ -541,12 +541,12 @@ function resolveAutoScrollAction({
   const { scrollToBottom, scrollToTop } = options;
 
   if (scrollToTop !== undefined) {
-    return { type: "scroll_to_top", scrollTop: scrollToTop };
+    return { type: 'scroll_to_top', scrollTop: scrollToTop };
   }
 
   if (scrollToBottom !== undefined) {
     return {
-      type: "scroll_to_bottom",
+      type: 'scroll_to_bottom',
       scrollTop:
         scrollElement.scrollHeight -
         scrollElement.offsetHeight -
@@ -557,7 +557,7 @@ function resolveAutoScrollAction({
 
   if (!messages.length) {
     // Without messages, clear stale browser-restored positions.
-    return { type: "reset_to_top" };
+    return { type: 'reset_to_top' };
   }
 
   const candidate = findLastPinnable(messages);
@@ -565,16 +565,16 @@ function resolveAutoScrollAction({
   // `candidate.element` may be null when the row hasn't mounted yet — a missing
   // element means there is nothing to pin.
   if (candidate?.element && candidate.id !== pinnedMessageId) {
-    return { type: "pin_message", message: candidate };
+    return { type: 'pin_message', message: candidate };
   }
 
   if (pinnedMessageId) {
     // Keep the current pin stable when layout changes but target has not changed.
-    return { type: "recalculate_spacer" };
+    return { type: 'recalculate_spacer' };
   }
 
   // Nothing to pin and no pinned target to maintain.
-  return { type: "noop" };
+  return { type: 'noop' };
 }
 
 function pinMessageAndScroll({
@@ -599,19 +599,19 @@ function pinMessageAndScroll({
   const baseScrollTop = calculateBaseScrollTop(
     targetRect,
     scrollerRect,
-    scrollElement.scrollTop,
+    scrollElement.scrollTop
   );
   const scrollTop = adjustScrollTopForTallMessage(
     baseScrollTop,
     targetRect.height,
-    scrollerRect.height,
+    scrollerRect.height
   );
 
   const deficit = calculateSpacerDeficit(
     spacerElem,
     scrollElement,
     scrollerRect,
-    scrollTop,
+    scrollTop
   );
 
   // Spacer must be written before setting scrollTop so the target position is reachable.
@@ -690,7 +690,7 @@ function processResizeEntries(
   config: {
     significantChangeThreshold: number;
     onSignificantResize: (delta: number) => void;
-  },
+  }
 ): void {
   let totalDelta = 0;
   let hasSignificantChange = false;
@@ -767,7 +767,7 @@ function createMessageResizeObserver(config: {
  */
 function updateObservedMessages(
   state: MessageResizeObserverState,
-  messageElements: HTMLElement[],
+  messageElements: HTMLElement[]
 ): void {
   const { observer, messageSizes } = state;
 
@@ -820,7 +820,7 @@ function hasNewNonStreamingResponse(messages: PortableMessage[]): boolean {
  */
 function applySafariScrollAnchoringRestore(
   currentScrollTop: number,
-  snapshot: number | null,
+  snapshot: number | null
 ): number | null {
   return getAnchoringRestoreTarget({
     currentScrollTop,
@@ -957,7 +957,7 @@ export class MessagesScrollController {
           // never once the user has deliberately scrolled away, otherwise a transient shrink
           // (a reasoning step collapsing) would look like a browser cap and yank them back down.
           const scrollDelta = Math.abs(
-            scrollElement.scrollTop - this.pinnedScrollTop,
+            scrollElement.scrollTop - this.pinnedScrollTop
           );
           const hasScrolledAway = scrollDelta > 50;
           if (
@@ -985,21 +985,21 @@ export class MessagesScrollController {
     // Fires before a reasoning container collapses, so we can reserve space up front rather
     // than reacting a frame too late.
     scrollContainer?.addEventListener(
-      "reasoning-animation-start",
-      this.handleContentLayoutWillShrink,
+      'reasoning-animation-start',
+      this.handleContentLayoutWillShrink
     );
     scrollContainer?.addEventListener(
-      "reasoning-animation-end",
-      this.handleContentLayoutSettled,
+      'reasoning-animation-end',
+      this.handleContentLayoutSettled
     );
     scrollContainer?.addEventListener(
-      "code-snippet-render-end",
-      this.handleContentLayoutSettled,
+      'code-snippet-render-end',
+      this.handleContentLayoutSettled
     );
 
     // Track deliberate user scroll-away so auto-scroll can disengage. Passive: we only read
     // scroll geometry, never call preventDefault.
-    scrollContainer?.addEventListener("scroll", this.handleUserScroll, {
+    scrollContainer?.addEventListener('scroll', this.handleUserScroll, {
       passive: true,
     });
 
@@ -1020,18 +1020,18 @@ export class MessagesScrollController {
     }
     const scrollContainer = this.host.getScrollContainer();
     scrollContainer?.removeEventListener(
-      "reasoning-animation-start",
-      this.handleContentLayoutWillShrink,
+      'reasoning-animation-start',
+      this.handleContentLayoutWillShrink
     );
     scrollContainer?.removeEventListener(
-      "reasoning-animation-end",
-      this.handleContentLayoutSettled,
+      'reasoning-animation-end',
+      this.handleContentLayoutSettled
     );
     scrollContainer?.removeEventListener(
-      "code-snippet-render-end",
-      this.handleContentLayoutSettled,
+      'code-snippet-render-end',
+      this.handleContentLayoutSettled
     );
-    scrollContainer?.removeEventListener("scroll", this.handleUserScroll);
+    scrollContainer?.removeEventListener('scroll', this.handleUserScroll);
     if (this.layoutSettledRafId !== null) {
       cancelAnimationFrame(this.layoutSettledRafId);
       this.layoutSettledRafId = null;
@@ -1104,7 +1104,7 @@ export class MessagesScrollController {
       this.doAutoScrollInternal();
     },
     WINDOW_RESIZE_THROTTLE_MS,
-    { leading: true, trailing: true },
+    { leading: true, trailing: true }
   );
 
   // --------------------------------------------------------------------------
@@ -1158,7 +1158,7 @@ export class MessagesScrollController {
    */
   private executePinAndScroll(
     message: PortableMessage,
-    scrollElement: HTMLElement,
+    scrollElement: HTMLElement
   ): void {
     const result = pinMessageAndScroll({
       message,
@@ -1181,7 +1181,7 @@ export class MessagesScrollController {
     this.userScrolledAwayFromPin = false;
 
     debugAutoScroll(
-      `[autoScroll] Pinned message, scrollTop=${result.scrollTop}, spacer=${result.currentSpacerHeight}px`,
+      `[autoScroll] Pinned message, scrollTop=${result.scrollTop}, spacer=${result.currentSpacerHeight}px`
     );
   }
 
@@ -1190,7 +1190,7 @@ export class MessagesScrollController {
    * the message for pinning and scrolling.
    */
   private async waitForMessageComponentLayout(
-    message: PortableMessage,
+    message: PortableMessage
   ): Promise<void> {
     const targetElem = message?.element;
     if (!targetElem) {
@@ -1293,8 +1293,8 @@ export class MessagesScrollController {
       Math.ceil(
         this.pinnedScrollTop +
           scrollElement.clientHeight -
-          contentHeightWithoutSpacer,
-      ),
+          contentHeightWithoutSpacer
+      )
     );
     if (requiredSpacerHeight > this.domSpacerHeight) {
       this.domSpacerHeight = requiredSpacerHeight;
@@ -1353,13 +1353,13 @@ export class MessagesScrollController {
       maxScrollTop: scrollElement.scrollHeight - scrollElement.clientHeight,
     });
 
-    if (streamEndAction === "re_pin_and_scroll") {
+    if (streamEndAction === 're_pin_and_scroll') {
       this.executePinAndScroll(
         {
           id: this.pinnedMessageId as string,
           element: pinnedElement,
         } as PortableMessage,
-        scrollElement,
+        scrollElement
       );
     } else {
       this.executeRecalculateSpacer(scrollElement);
@@ -1368,7 +1368,7 @@ export class MessagesScrollController {
 
   private async executeResolvedAutoScrollAction(
     options: ScrollOptions,
-    scrollElement: HTMLElement,
+    scrollElement: HTMLElement
   ): Promise<void> {
     const messages = this.host.getMessages();
     const action = resolveAutoScrollAction({
@@ -1379,10 +1379,10 @@ export class MessagesScrollController {
     });
 
     switch (action.type) {
-      case "scroll_to_top":
+      case 'scroll_to_top':
         doScrollElement(scrollElement, action.scrollTop, 0);
         return;
-      case "scroll_to_bottom": {
+      case 'scroll_to_bottom': {
         // During streaming `scrollHeight` includes the blank spacer, so
         // `scrollHeight - offsetHeight` points into blank spacer territory.
         // Subtract domSpacerHeight to land at the bottom of real content.
@@ -1394,22 +1394,22 @@ export class MessagesScrollController {
           scrollElement,
           scrollTop,
           0,
-          action.preferAnimate && !isStreaming,
+          action.preferAnimate && !isStreaming
         );
         return;
       }
-      case "reset_to_top":
+      case 'reset_to_top':
         // No messages — scroll to top so the browser doesn't restore a stale position.
         scrollElement.scrollTop = 0;
         return;
-      case "pin_message":
+      case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
         if (!scrollElement.isConnected) {
           return;
         }
         this.executePinAndScroll(action.message, scrollElement);
         return;
-      case "recalculate_spacer":
+      case 'recalculate_spacer':
         this.executeRecalculateSpacer(scrollElement);
         return;
       default:
@@ -1418,12 +1418,12 @@ export class MessagesScrollController {
   }
 
   private reconcileSpacerAfterPublicDoAutoScroll(
-    scrollElement: HTMLElement,
+    scrollElement: HTMLElement
   ): void {
     const reconciliationAction = resolvePublicSpacerReconciliationAction({
       pinnedMessageId: this.pinnedMessageId,
     });
-    if (reconciliationAction.type === "noop") {
+    if (reconciliationAction.type === 'noop') {
       return;
     }
 
@@ -1476,7 +1476,7 @@ export class MessagesScrollController {
 
     const restoreTarget = applySafariScrollAnchoringRestore(
       el.scrollTop,
-      snapshot,
+      snapshot
     );
 
     if (restoreTarget !== null) {
@@ -1502,7 +1502,7 @@ export class MessagesScrollController {
 
     const restoreTarget = applySafariScrollAnchoringRestore(
       scrollElement.scrollTop,
-      snapshot,
+      snapshot
     );
 
     if (restoreTarget !== null) {
@@ -1535,7 +1535,7 @@ export class MessagesScrollController {
 
       // A deliberate scroll-away disengages the stream-end re-pin as well.
       const streamEndAction: StreamEndAction = this.userScrolledAwayFromPin
-        ? "recalculate_and_preserve_scroll"
+        ? 'recalculate_and_preserve_scroll'
         : resolveStreamEndAction({
             nearPinThresholdPx: STREAM_END_NEAR_PIN_THRESHOLD_PX,
             pinnedScrollTop: this.pinnedScrollTop,
@@ -1544,13 +1544,13 @@ export class MessagesScrollController {
               scrollElement.scrollHeight - scrollElement.clientHeight,
           });
 
-      if (streamEndAction === "re_pin_and_scroll") {
+      if (streamEndAction === 're_pin_and_scroll') {
         this.executePinAndScroll(
           {
             id: this.pinnedMessageId as string,
             element: pinnedElement,
           } as PortableMessage,
-          scrollElement,
+          scrollElement
         );
       } else {
         // Preserve the user's pre-commit position when they are away from pin.
@@ -1570,7 +1570,7 @@ export class MessagesScrollController {
 
   private scheduleAutoScroll = (
     options: ScrollOptions = {},
-    includePublicSpacerReconciliation = false,
+    includePublicSpacerReconciliation = false
   ): void => {
     requestAnimationFrame(() => {
       void (async () => {
@@ -1599,7 +1599,7 @@ export class MessagesScrollController {
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       // eslint-disable-next-line no-console
-      console.error("An error occurred while attempting to scroll.", error);
+      console.error('An error occurred while attempting to scroll.', error);
     }
   };
 
@@ -1614,7 +1614,7 @@ export class MessagesScrollController {
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       // eslint-disable-next-line no-console
-      console.error("An error occurred while attempting to scroll.", error);
+      console.error('An error occurred while attempting to scroll.', error);
     }
   };
 
@@ -1625,7 +1625,7 @@ export class MessagesScrollController {
   private doAutoScrollThrottled = throttle(
     this.doAutoScrollInternal,
     AUTO_SCROLL_THROTTLE_MS,
-    { leading: true, trailing: true },
+    { leading: true, trailing: true }
   );
 
   /**
@@ -1650,7 +1650,7 @@ export class MessagesScrollController {
     element: HTMLElement,
     paddingTop = 8,
     paddingBottom = 8,
-    animate = false,
+    animate = false
   ): void => {
     const scrollElement = this.host.getScrollContainer();
 
@@ -1687,7 +1687,7 @@ export class MessagesScrollController {
         scrollElement,
         bottomDistanceFromTop - scrollElement.offsetHeight,
         0,
-        animate,
+        animate
       );
     }
   };
@@ -1700,7 +1700,7 @@ export class MessagesScrollController {
    */
   doScrollToMessageElement(
     messageElement: HTMLElement | null,
-    animate = false,
+    animate = false
   ): void {
     try {
       if (messageElement) {
@@ -1719,7 +1719,7 @@ export class MessagesScrollController {
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
       // eslint-disable-next-line no-console
-      console.error("An error occurred while attempting to scroll.", error);
+      console.error('An error occurred while attempting to scroll.', error);
     }
   }
 

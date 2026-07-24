@@ -7,29 +7,29 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, PropertyValues, html, nothing } from "lit";
-import { property, state } from "lit/decorators.js";
+import { LitElement, PropertyValues, html, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
 // @ts-ignore
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./shell.scss?lit";
-import { PanelManager } from "./panel-manager.js";
-import { WorkspaceManager } from "./workspace-manager.js";
-import { CornerManager } from "./corner-manager.js";
-import { SlotObserver } from "./slot-observer.js";
-import { InitializationManager } from "./initialization-manager.js";
-import { ResizeObserverManager } from "./resize-observer-manager.js";
-import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
-import type { StartOrEnd, SlotConfig } from "./types.js";
-import "./panel.js";
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './shell.scss?lit';
+import { PanelManager } from './panel-manager.js';
+import { WorkspaceManager } from './workspace-manager.js';
+import { CornerManager } from './corner-manager.js';
+import { SlotObserver } from './slot-observer.js';
+import { InitializationManager } from './initialization-manager.js';
+import { ResizeObserverManager } from './resize-observer-manager.js';
+import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
+import type { StartOrEnd, SlotConfig } from './types.js';
+import './panel.js';
 import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
+} from '../../shared/dynamic-css-var-sheet.js';
 
-const INSTANCE_ATTR = "data-cds-aichat-shell-id";
+const INSTANCE_ATTR = 'data-cds-aichat-shell-id';
 let shellInstanceCounter = 0;
 
 @carbonElement(`${prefix}-shell`)
@@ -40,144 +40,144 @@ class CDSAIChatShell extends LitElement {
    * @internal
    */
   private static readonly OBSERVED_SLOTS: readonly SlotConfig[] = [
-    { name: "header", stateKey: "hasHeaderContent" },
-    { name: "header-after", stateKey: "hasHeaderAfterContent" },
-    { name: "footer", stateKey: "hasFooterContent" },
-    { name: "input-after", stateKey: "hasInputAfterContent" },
-    { name: "input", stateKey: "hasInputContent" },
-    { name: "input-before", stateKey: "hasInputBeforeContent" },
+    { name: 'header', stateKey: 'hasHeaderContent' },
+    { name: 'header-after', stateKey: 'hasHeaderAfterContent' },
+    { name: 'footer', stateKey: 'hasFooterContent' },
+    { name: 'input-after', stateKey: 'hasInputAfterContent' },
+    { name: 'input', stateKey: 'hasInputContent' },
+    { name: 'input-before', stateKey: 'hasInputBeforeContent' },
   ];
 
   /**
    * Enables AI-specific theming for the chat shell
    */
-  @property({ type: Boolean, attribute: "ai-enabled", reflect: true })
+  @property({ type: Boolean, attribute: 'ai-enabled', reflect: true })
   aiEnabled = false;
 
   /**
    * Shows a frame border around the chat shell
    */
-  @property({ type: Boolean, attribute: "show-frame", reflect: true })
+  @property({ type: Boolean, attribute: 'show-frame', reflect: true })
   showFrame = false;
 
   /**
    * Sets the corner style for all corners. Individual corner-* attributes override this value.
    * Values: "round" or "square". Defaults to "square".
    */
-  @property({ type: String, attribute: "corner-all", reflect: true })
-  cornerAll: "round" | "square" = "square";
+  @property({ type: String, attribute: 'corner-all', reflect: true })
+  cornerAll: 'round' | 'square' = 'square';
 
   /**
    * Controls the start-start corner (top-left in LTR, top-right in RTL).
    * Values: "round" or "square". Overrides cornerAll if set.
    */
-  @property({ type: String, attribute: "corner-start-start", reflect: true })
-  cornerStartStart?: "round" | "square";
+  @property({ type: String, attribute: 'corner-start-start', reflect: true })
+  cornerStartStart?: 'round' | 'square';
 
   /**
    * Controls the start-end corner (top-right in LTR, top-left in RTL).
    * Values: "round" or "square". Overrides cornerAll if set.
    */
-  @property({ type: String, attribute: "corner-start-end", reflect: true })
-  cornerStartEnd?: "round" | "square";
+  @property({ type: String, attribute: 'corner-start-end', reflect: true })
+  cornerStartEnd?: 'round' | 'square';
 
   /**
    * Controls the end-start corner (bottom-left in LTR, bottom-right in RTL).
    * Values: "round" or "square". Overrides cornerAll if set.
    */
-  @property({ type: String, attribute: "corner-end-start", reflect: true })
-  cornerEndStart?: "round" | "square";
+  @property({ type: String, attribute: 'corner-end-start', reflect: true })
+  cornerEndStart?: 'round' | 'square';
 
   /**
    * Controls the end-end corner (bottom-right in LTR, bottom-left in RTL).
    * Values: "round" or "square". Overrides cornerAll if set.
    */
-  @property({ type: String, attribute: "corner-end-end", reflect: true })
-  cornerEndEnd?: "round" | "square";
+  @property({ type: String, attribute: 'corner-end-end', reflect: true })
+  cornerEndEnd?: 'round' | 'square';
 
   /**
    * Shows the history panel in the chat shell
    */
-  @property({ type: Boolean, attribute: "show-history", reflect: true })
+  @property({ type: Boolean, attribute: 'show-history', reflect: true })
   showHistory = false;
 
   /**
    * Shows the workspace panel in the chat shell
    */
-  @property({ type: Boolean, attribute: "show-workspace", reflect: true })
+  @property({ type: Boolean, attribute: 'show-workspace', reflect: true })
   showWorkspace = false;
 
   /**
    * Determines the location of the workspace panel ("start" or "end")
    */
-  @property({ type: String, attribute: "workspace-location", reflect: true })
-  workspaceLocation: StartOrEnd = "start";
+  @property({ type: String, attribute: 'workspace-location', reflect: true })
+  workspaceLocation: StartOrEnd = 'start';
 
   /**
    * Determines the location of the history panel ("start" or "end")
    */
-  @property({ type: String, attribute: "history-location", reflect: true })
-  historyLocation: StartOrEnd = "start";
+  @property({ type: String, attribute: 'history-location', reflect: true })
+  historyLocation: StartOrEnd = 'start';
 
   /**
    * ARIA label for the workspace region
    */
-  @property({ type: String, attribute: "workspace-aria-label" })
-  workspaceAriaLabel = "Workspace panel";
+  @property({ type: String, attribute: 'workspace-aria-label' })
+  workspaceAriaLabel = 'Workspace panel';
 
   /**
    * ARIA label for the history region
    */
-  @property({ type: String, attribute: "history-aria-label" })
-  historyAriaLabel = "Conversation history";
+  @property({ type: String, attribute: 'history-aria-label' })
+  historyAriaLabel = 'Conversation history';
 
   /**
    * ARIA label for the messages region
    */
-  @property({ type: String, attribute: "messages-aria-label" })
-  messagesAriaLabel = "Chat messages";
+  @property({ type: String, attribute: 'messages-aria-label' })
+  messagesAriaLabel = 'Chat messages';
 
   /**
    * Announcement text for when a panel opens
    */
-  @property({ type: String, attribute: "panel-opened-announcement" })
-  panelOpenedAnnouncement = "Panel opened";
+  @property({ type: String, attribute: 'panel-opened-announcement' })
+  panelOpenedAnnouncement = 'Panel opened';
 
   /**
    * Announcement text for when a panel closes
    */
-  @property({ type: String, attribute: "panel-closed-announcement" })
-  panelClosedAnnouncement = "Panel closed";
+  @property({ type: String, attribute: 'panel-closed-announcement' })
+  panelClosedAnnouncement = 'Panel closed';
 
   /**
    * Announcement text for when workspace opens
    */
-  @property({ type: String, attribute: "workspace-opened-announcement" })
-  workspaceOpenedAnnouncement = "Workspace opened";
+  @property({ type: String, attribute: 'workspace-opened-announcement' })
+  workspaceOpenedAnnouncement = 'Workspace opened';
 
   /**
    * Announcement text for when workspace closes
    */
-  @property({ type: String, attribute: "workspace-closed-announcement" })
-  workspaceClosedAnnouncement = "Workspace closed, returned to chat";
+  @property({ type: String, attribute: 'workspace-closed-announcement' })
+  workspaceClosedAnnouncement = 'Workspace closed, returned to chat';
 
   /**
    * Announcement text for when history becomes visible
    */
-  @property({ type: String, attribute: "history-shown-announcement" })
-  historyShownAnnouncement = "Conversation history is now visible";
+  @property({ type: String, attribute: 'history-shown-announcement' })
+  historyShownAnnouncement = 'Conversation history is now visible';
 
   /**
    * Announcement text for when history becomes hidden
    */
-  @property({ type: String, attribute: "history-hidden-announcement" })
-  historyHiddenAnnouncement = "Conversation history is now hidden";
+  @property({ type: String, attribute: 'history-hidden-announcement' })
+  historyHiddenAnnouncement = 'Conversation history is now hidden';
 
   /**
    * Constrains content to a maximum width. When false, input and related
    * slots will extend to full container width without max-width constraints.
    */
-  @property({ type: Boolean, attribute: "content-max-width", reflect: true })
+  @property({ type: Boolean, attribute: 'content-max-width', reflect: true })
   contentMaxWidth = false;
 
   /**
@@ -309,13 +309,13 @@ class CDSAIChatShell extends LitElement {
 
     // Check if the event target is the internal workspace panel
     // or if it's a child of the internal panel
-    if (target?.hasAttribute("data-internal-panel")) {
+    if (target?.hasAttribute('data-internal-panel')) {
       return;
     }
 
     // Also check if the target is inside an internal panel
     const closestPanel = target?.closest?.(
-      "cds-aichat-panel[data-internal-panel]",
+      'cds-aichat-panel[data-internal-panel]'
     );
     if (closestPanel) {
       return;
@@ -334,13 +334,13 @@ class CDSAIChatShell extends LitElement {
 
     // Check if the event target is the internal workspace panel
     // or if it's a child of the internal panel
-    if (target?.hasAttribute("data-internal-panel")) {
+    if (target?.hasAttribute('data-internal-panel')) {
       return;
     }
 
     // Also check if the target is inside an internal panel
     const closestPanel = target?.closest?.(
-      "cds-aichat-panel[data-internal-panel]",
+      'cds-aichat-panel[data-internal-panel]'
     );
     if (closestPanel) {
       return;
@@ -371,7 +371,7 @@ class CDSAIChatShell extends LitElement {
    */
   private handleWorkspaceVisibilityChange = (
     visible: boolean,
-    inPanel: boolean,
+    inPanel: boolean
   ): void => {
     // Don't announce during initialization
     if (!this.initializationManager?.isInitializationComplete()) {
@@ -383,15 +383,15 @@ class CDSAIChatShell extends LitElement {
     if (!inPanel) {
       // Add extra delay to allow button state changes to be announced first
       // This prevents the workspace announcement from being interrupted
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         window.setTimeout(() => {
           if (visible) {
             this.ariaAnnouncerManager?.announce(
-              this.workspaceOpenedAnnouncement,
+              this.workspaceOpenedAnnouncement
             );
           } else {
             this.ariaAnnouncerManager?.announce(
-              this.workspaceClosedAnnouncement,
+              this.workspaceClosedAnnouncement
             );
           }
         }, 100); // 100ms delay before queuing the announcement (which has its own 250ms delay)
@@ -402,39 +402,39 @@ class CDSAIChatShell extends LitElement {
   private getWidgetClasses(): string {
     const workspaceState = this.workspaceManager?.getState();
     const hasAnyRoundedCorner =
-      this.cornerAll === "round" ||
-      this.cornerStartStart === "round" ||
-      this.cornerStartEnd === "round" ||
-      this.cornerEndStart === "round" ||
-      this.cornerEndEnd === "round";
+      this.cornerAll === 'round' ||
+      this.cornerStartStart === 'round' ||
+      this.cornerStartEnd === 'round' ||
+      this.cornerEndStart === 'round' ||
+      this.cornerEndEnd === 'round';
     return [
-      "shell",
-      this._isInitializing ? "initializing" : "",
-      this.aiEnabled ? "ai-theme" : "",
-      this.showFrame ? "" : "frameless",
-      hasAnyRoundedCorner ? "rounded" : "",
+      'shell',
+      this._isInitializing ? 'initializing' : '',
+      this.aiEnabled ? 'ai-theme' : '',
+      this.showFrame ? '' : 'frameless',
+      hasAnyRoundedCorner ? 'rounded' : '',
       this.hasHeaderContent || this.hasHeaderAfterContent
-        ? "has-header-content"
-        : "",
-      this.hasFooterContent ? "has-footer-content" : "",
-      workspaceState?.isCheckingExpansion ? "workspace-checking" : "",
-      workspaceState?.isContracting ? "workspace-closing" : "",
-      workspaceState?.isExpanding ? "workspace-opening" : "",
+        ? 'has-header-content'
+        : '',
+      this.hasFooterContent ? 'has-footer-content' : '',
+      workspaceState?.isCheckingExpansion ? 'workspace-checking' : '',
+      workspaceState?.isContracting ? 'workspace-closing' : '',
+      workspaceState?.isExpanding ? 'workspace-opening' : '',
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
   }
 
   private getInputAndMessagesClasses(): string {
     return [
-      "input-and-messages",
-      this.hasInputBeforeContent ? "has-input-before-content" : "",
-      this.hasInputContent ? "has-input-content" : "",
-      this.hasInputAfterContent ? "has-input-after-content" : "",
-      this.inputAndMessagesAtMaxWidth ? "at-max-width" : "",
+      'input-and-messages',
+      this.hasInputBeforeContent ? 'has-input-before-content' : '',
+      this.hasInputContent ? 'has-input-content' : '',
+      this.hasInputAfterContent ? 'has-input-after-content' : '',
+      this.inputAndMessagesAtMaxWidth ? 'at-max-width' : '',
     ]
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
   }
 
   private renderSlot(name: string, className: string, condition = true) {
@@ -444,9 +444,9 @@ class CDSAIChatShell extends LitElement {
 
     // Determine if this slot has content
     const hasContent = this.getSlotContentState(name);
-    const classes = [className, hasContent ? "has-content" : ""]
+    const classes = [className, hasContent ? 'has-content' : '']
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     return html`
       <div class=${classes} part="slot-${name}" data-panel-slot=${name}>
@@ -457,19 +457,19 @@ class CDSAIChatShell extends LitElement {
 
   private getSlotContentState(slotName: string): boolean {
     switch (slotName) {
-      case "header":
+      case 'header':
         return this.hasHeaderContent;
-      case "header-after":
+      case 'header-after':
         return this.hasHeaderAfterContent;
-      case "footer":
+      case 'footer':
         return this.hasFooterContent;
-      case "input-after":
+      case 'input-after':
         return this.hasInputAfterContent;
-      case "input":
+      case 'input':
         return this.hasInputContent;
-      case "input-before":
+      case 'input-before':
         return this.hasInputBeforeContent;
-      case "messages":
+      case 'messages':
         return true; // messages slot is always considered to have content
       default:
         return false;
@@ -494,16 +494,14 @@ class CDSAIChatShell extends LitElement {
         part="slot-workspace"
         data-panel-slot="workspace"
         role="region"
-        aria-label=${this.workspaceAriaLabel}
-      >
+        aria-label=${this.workspaceAriaLabel}>
         <div
           class=${
             workspaceState?.contentVisible
-              ? "workspace-content"
-              : "workspace-content workspace-content--hidden"
+              ? 'workspace-content'
+              : 'workspace-content workspace-content--hidden'
           }
-          ?inert=${!workspaceState?.contentVisible}
-        >
+          ?inert=${!workspaceState?.contentVisible}>
           <slot name="workspace"></slot>
         </div>
       </div>
@@ -518,8 +516,8 @@ class CDSAIChatShell extends LitElement {
     // When switching from container to panel view, don't animate
     // Only animate when opening from closed state
     const animationOnOpen = this.suppressWorkspacePanelOpenAnimation
-      ? "none"
-      : "slide-in-from-bottom";
+      ? 'none'
+      : 'slide-in-from-bottom';
 
     return html`
       <cds-aichat-panel
@@ -532,11 +530,10 @@ class CDSAIChatShell extends LitElement {
         animation-on-open=${animationOnOpen}
         animation-on-close=${
           this.suppressWorkspacePanelCloseAnimation
-            ? "none"
-            : "slide-out-to-bottom"
+            ? 'none'
+            : 'slide-out-to-bottom'
         }
-        @closeend=${this.handleWorkspacePanelCloseEnd}
-      >
+        @closeend=${this.handleWorkspacePanelCloseEnd}>
         <div slot="body" class="workspace-slot">
           <slot name="workspace"></slot>
         </div>
@@ -547,23 +544,23 @@ class CDSAIChatShell extends LitElement {
   private renderHeader() {
     return html`
       <div class="header-with-header-after">
-        ${this.renderHeaderSlot("header", "header")}
-        ${this.renderHeaderSlot("header-after", "header-after")}
+        ${this.renderHeaderSlot('header', 'header')}
+        ${this.renderHeaderSlot('header-after', 'header-after')}
       </div>
     `;
   }
 
   private renderHeaderSlot(name: string, className: string) {
     const hasContent =
-      name === "header"
+      name === 'header'
         ? this.hasHeaderContent
-        : name === "header-after"
+        : name === 'header-after'
           ? this.hasHeaderAfterContent
           : false;
 
-    const classes = [className, hasContent ? "has-content" : ""]
+    const classes = [className, hasContent ? 'has-content' : '']
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     return html`
       <div class=${classes} part="slot-${name}" data-panel-slot=${name}>
@@ -573,17 +570,16 @@ class CDSAIChatShell extends LitElement {
   }
 
   private renderMessagesSection() {
-    const maxWidthClass = this.contentMaxWidth ? "messages-max-width" : "";
+    const maxWidthClass = this.contentMaxWidth ? 'messages-max-width' : '';
     return html`
       <div
         class=${this.getInputAndMessagesClasses()}
         role="region"
-        aria-label=${this.messagesAriaLabel}
-      >
-        ${this.renderSlot("messages", "messages")}
-        ${this.renderSlot("input-before", `input-before ${maxWidthClass}`)}
-        ${this.renderSlot("input", `input ${maxWidthClass}`)}
-        ${this.renderSlot("input-after", `input-after ${maxWidthClass}`)}
+        aria-label=${this.messagesAriaLabel}>
+        ${this.renderSlot('messages', 'messages')}
+        ${this.renderSlot('input-before', `input-before ${maxWidthClass}`)}
+        ${this.renderSlot('input', `input ${maxWidthClass}`)}
+        ${this.renderSlot('input-after', `input-after ${maxWidthClass}`)}
       </div>
     `;
   }
@@ -595,9 +591,8 @@ class CDSAIChatShell extends LitElement {
     return html`<div
       class="history"
       role="region"
-      aria-label=${this.historyAriaLabel}
-    >
-      ${this.renderSlot("history", "history")}
+      aria-label=${this.historyAriaLabel}>
+      ${this.renderSlot('history', 'history')}
     </div>`;
   }
 
@@ -608,13 +603,11 @@ class CDSAIChatShell extends LitElement {
         <div
           class="visually-hidden"
           aria-live="polite"
-          aria-atomic="true"
-        ></div>
+          aria-atomic="true"></div>
         <div
           class="visually-hidden"
           aria-live="polite"
-          aria-atomic="true"
-        ></div>
+          aria-atomic="true"></div>
         <div class="main-chat">
           ${this.renderHeader()}
           <div class="main-content">
@@ -622,7 +615,7 @@ class CDSAIChatShell extends LitElement {
               ${this.renderHistory()} ${this.renderWorkspaceInline()}
               ${this.renderMessagesSection()}
             </div>
-            ${this.renderSlot("footer", "footer")}
+            ${this.renderSlot('footer', 'footer')}
           </div>
         </div>
         <div class="panels open" part="slot-panels">
@@ -635,7 +628,7 @@ class CDSAIChatShell extends LitElement {
 
   protected firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
-    const widgetRoot = this.renderRoot.querySelector<HTMLElement>(".shell");
+    const widgetRoot = this.renderRoot.querySelector<HTMLElement>('.shell');
     if (!widgetRoot) {
       return;
     }
@@ -647,7 +640,7 @@ class CDSAIChatShell extends LitElement {
 
     // Initialize aria announcer manager
     const ariaLiveRegions = this.renderRoot.querySelectorAll<HTMLDivElement>(
-      '[aria-live="polite"]',
+      '[aria-live="polite"]'
     );
     if (ariaLiveRegions.length >= 2) {
       this.ariaAnnouncerManager = new AriaAnnouncerManager();
@@ -655,8 +648,8 @@ class CDSAIChatShell extends LitElement {
     }
 
     // Listen for panel open/close events
-    this.addEventListener("openend", this.handlePanelOpen);
-    this.addEventListener("closeend", this.handlePanelClose);
+    this.addEventListener('openend', this.handlePanelOpen);
+    this.addEventListener('closeend', this.handlePanelClose);
 
     // Initialize corner manager
     this.cornerManager = new CornerManager(this._shellSelector, {
@@ -679,7 +672,7 @@ class CDSAIChatShell extends LitElement {
     // Initialize slot observer
     this.slotObserver = new SlotObserver(
       this.renderRoot as ShadowRoot,
-      CDSAIChatShell.OBSERVED_SLOTS,
+      CDSAIChatShell.OBSERVED_SLOTS
     );
     this.slotObserver.connect(() => {
       // Update cached slot state
@@ -692,7 +685,7 @@ class CDSAIChatShell extends LitElement {
       this.hasInputBeforeContent = state?.hasInputBeforeContent || false;
 
       // Mark initialization complete
-      this.initializationManager?.markStateSet("hasSlotContent");
+      this.initializationManager?.markStateSet('hasSlotContent');
 
       this.requestUpdate();
     });
@@ -700,13 +693,13 @@ class CDSAIChatShell extends LitElement {
     // Initialize resize observer manager
     this.resizeObserverManager = new ResizeObserverManager(
       this.renderRoot as ShadowRoot,
-      this,
+      this
     );
 
     // Observe header height
     this.resizeObserverManager.observeHeaderHeight((height) => {
       setVarsForSelector(this._shellSelector, {
-        "--cds-aichat-header-height": `${height}px`,
+        '--cds-aichat-header-height': `${height}px`,
       });
     });
 
@@ -720,8 +713,8 @@ class CDSAIChatShell extends LitElement {
       },
       () => {
         // Initial measurement callback
-        this.initializationManager?.markStateSet("inputAndMessagesAtMaxWidth");
-      },
+        this.initializationManager?.markStateSet('inputAndMessagesAtMaxWidth');
+      }
     );
 
     // Observe main content body width
@@ -736,11 +729,11 @@ class CDSAIChatShell extends LitElement {
           if (this.initializationManager?.isInitializationComplete()) {
             if (shouldRenderHistory && !wasVisible) {
               this.ariaAnnouncerManager?.announce(
-                this.historyShownAnnouncement,
+                this.historyShownAnnouncement
               );
             } else if (!shouldRenderHistory && wasVisible) {
               this.ariaAnnouncerManager?.announce(
-                this.historyHiddenAnnouncement,
+                this.historyHiddenAnnouncement
               );
             }
           }
@@ -750,8 +743,8 @@ class CDSAIChatShell extends LitElement {
       },
       () => {
         // Initial measurement callback
-        this.initializationManager?.markStateSet("shouldRenderHistory");
-      },
+        this.initializationManager?.markStateSet('shouldRenderHistory');
+      }
     );
 
     // Observe CSS properties
@@ -761,7 +754,7 @@ class CDSAIChatShell extends LitElement {
 
     // Initialize panel manager
     const panelsSlot = this.renderRoot.querySelector<HTMLSlotElement>(
-      'slot[name="panels"]',
+      'slot[name="panels"]'
     );
     if (panelsSlot) {
       this.panelManager = new PanelManager(panelsSlot, widgetRoot);
@@ -780,7 +773,7 @@ class CDSAIChatShell extends LitElement {
       },
       {
         onWorkspaceVisibilityChange: this.handleWorkspaceVisibilityChange,
-      },
+      }
     );
     this.workspaceManager.connect();
 
@@ -792,11 +785,11 @@ class CDSAIChatShell extends LitElement {
 
     // Update corner manager when corner properties change
     if (
-      changedProperties.has("cornerAll") ||
-      changedProperties.has("cornerStartStart") ||
-      changedProperties.has("cornerStartEnd") ||
-      changedProperties.has("cornerEndStart") ||
-      changedProperties.has("cornerEndEnd")
+      changedProperties.has('cornerAll') ||
+      changedProperties.has('cornerStartStart') ||
+      changedProperties.has('cornerStartEnd') ||
+      changedProperties.has('cornerEndStart') ||
+      changedProperties.has('cornerEndEnd')
     ) {
       this.cornerManager?.updateCorners({
         cornerAll: this.cornerAll,
@@ -807,7 +800,7 @@ class CDSAIChatShell extends LitElement {
       });
     }
     // Restart history observer when showHistory changes
-    if (changedProperties.has("showHistory")) {
+    if (changedProperties.has('showHistory')) {
       // Re-observe main content body width with new showHistory value
       this.resizeObserverManager?.observeMainContentBodyWidth(
         this.showHistory,
@@ -819,30 +812,30 @@ class CDSAIChatShell extends LitElement {
             // Announce history visibility changes
             if (shouldRenderHistory && !wasVisible) {
               this.ariaAnnouncerManager?.announce(
-                this.historyShownAnnouncement,
+                this.historyShownAnnouncement
               );
             } else if (!shouldRenderHistory && wasVisible) {
               this.ariaAnnouncerManager?.announce(
-                this.historyHiddenAnnouncement,
+                this.historyHiddenAnnouncement
               );
             }
 
             this.requestUpdate();
           }
-        },
+        }
       );
     }
 
     // Update workspace manager when relevant properties change
     if (
-      changedProperties.has("showWorkspace") ||
-      changedProperties.has("showHistory") ||
-      changedProperties.has("workspaceLocation") ||
-      changedProperties.has("cornerAll") ||
-      changedProperties.has("cornerStartStart") ||
-      changedProperties.has("cornerStartEnd") ||
-      changedProperties.has("cornerEndStart") ||
-      changedProperties.has("cornerEndEnd")
+      changedProperties.has('showWorkspace') ||
+      changedProperties.has('showHistory') ||
+      changedProperties.has('workspaceLocation') ||
+      changedProperties.has('cornerAll') ||
+      changedProperties.has('cornerStartStart') ||
+      changedProperties.has('cornerStartEnd') ||
+      changedProperties.has('cornerEndStart') ||
+      changedProperties.has('cornerEndEnd')
     ) {
       this.workspaceManager?.updateConfig({
         showWorkspace: this.showWorkspace,
@@ -867,8 +860,8 @@ class CDSAIChatShell extends LitElement {
     this.cancelWorkspacePanelOpenSchedule();
 
     // Clean up event listeners
-    this.removeEventListener("openend", this.handlePanelOpen);
-    this.removeEventListener("closeend", this.handlePanelClose);
+    this.removeEventListener('openend', this.handlePanelOpen);
+    this.removeEventListener('closeend', this.handlePanelClose);
 
     super.disconnectedCallback();
   }
@@ -938,7 +931,7 @@ class CDSAIChatShell extends LitElement {
     }
     this.workspacePanelOpenScheduled = true;
 
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       this.workspacePanelOpenScheduled = false;
       this.workspacePanelOpen = true;
       return;
@@ -961,7 +954,7 @@ class CDSAIChatShell extends LitElement {
   private cancelWorkspacePanelOpenSchedule(): void {
     if (
       this.workspacePanelOpenRafId !== null &&
-      typeof window !== "undefined"
+      typeof window !== 'undefined'
     ) {
       window.cancelAnimationFrame(this.workspacePanelOpenRafId);
     }

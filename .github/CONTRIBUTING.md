@@ -2,9 +2,9 @@
 
 ## Our contribution model
 
-Carbon AI Chat is an **open source** project at IBM. We pride ourselves on
-open and inclusive design and development. If you're curious about our
-contribution process, you're in the right place. Thank you for your interest!
+Carbon AI Chat is an **open source** project at IBM. We pride ourselves on open
+and inclusive design and development. If you're curious about our contribution
+process, you're in the right place. Thank you for your interest!
 
 This project is made possible not just by the Carbon team, but by community
 members who’ve generously contributed their time to give back.
@@ -68,8 +68,9 @@ Great job on getting to this point! Now it's time to code :computer:
 
 #### Find or create an issue
 
-Check the [issues list](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-for anything you'd like to work on. If something exists, comment to claim it.
+Check the
+[issues list](https://github.com/carbon-design-system/carbon-ai-chat/issues) for
+anything you'd like to work on. If something exists, comment to claim it.
 
 No issue yet?
 [Create one](https://github.com/carbon-design-system/carbon-ai-chat/issues/new/choose).
@@ -95,7 +96,9 @@ git pull origin main
 git checkout -b <your_branch_name>
 ```
 
-Note: Create a new branch for each issue or PR. Before creating a branch, always fetch the latest changes from upstream/main and merge them into your local main. This keeps your main branch—and your new branch—up to date.
+Note: Create a new branch for each issue or PR. Before creating a branch, always
+fetch the latest changes from upstream/main and merge them into your local main.
+This keeps your main branch—and your new branch—up to date.
 
 ```sh
 git checkout main
@@ -117,8 +120,7 @@ npm run build
 ```
 
 To start coding, navigate to the package you'll be working on. For example, if
-contributing to AI Chat (i.e., `@carbon/ai-chat`), run the following
-commands:
+contributing to AI Chat (i.e., `@carbon/ai-chat`), run the following commands:
 
 ```sh
 # Start the demo development server.

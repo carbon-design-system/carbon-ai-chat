@@ -16,25 +16,25 @@
  * can't drift apart.
  */
 
-import React from "react";
-import { render } from "@testing-library/react";
-import type { JSONContent } from "@tiptap/core";
+import React from 'react';
+import { render } from '@testing-library/react';
+import type { JSONContent } from '@tiptap/core';
 
 import {
   MessageRichUserContent,
   INPUT_NODE_SLOT_ATTR,
-} from "../../../src/chat/components-legacy/MessageRichUserContent";
-import { collectInputNodeSlots } from "../../../src/chat/components/portals/InputNodePortalsContainer";
-import { StoreProvider } from "../../../src/chat/providers/StoreProvider";
-import { createAppStore } from "../../../src/chat/store/appStore";
-import type { MessageRequest } from "../../../src/types/messaging/Messages";
+} from '../../../src/chat/components-legacy/MessageRichUserContent';
+import { collectInputNodeSlots } from '../../../src/chat/components/portals/InputNodePortalsContainer';
+import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
+import { createAppStore } from '../../../src/chat/store/appStore';
+import type { MessageRequest } from '../../../src/types/messaging/Messages';
 
-const MESSAGE_ID = "msg-1";
+const MESSAGE_ID = 'msg-1';
 
 function messageWith(content: JSONContent): MessageRequest {
   return {
     id: MESSAGE_ID,
-    input: { text: "", display_content: content },
+    input: { text: '', display_content: content },
   } as unknown as MessageRequest;
 }
 
@@ -52,11 +52,11 @@ function renderedSlotKeys(content: JSONContent): string[] {
         content={content}
         message={messageWith(content)}
       />
-    </StoreProvider>,
+    </StoreProvider>
   );
   return Array.from(
-    container.querySelectorAll(`[${INPUT_NODE_SLOT_ATTR}]`),
-  ).map((el) => el.getAttribute(INPUT_NODE_SLOT_ATTR) ?? "");
+    container.querySelectorAll(`[${INPUT_NODE_SLOT_ATTR}]`)
+  ).map((el) => el.getAttribute(INPUT_NODE_SLOT_ATTR) ?? '');
 }
 
 /** Slot keys as `InputNodePortalsContainer` computes them, in document order. */
@@ -64,18 +64,18 @@ function walkedSlotKeys(content: JSONContent): string[] {
   return collectInputNodeSlots(content, MESSAGE_ID).map((s) => s.slotKey);
 }
 
-describe("rich user message slot-key contract", () => {
-  it("agrees on a mixed paragraph with a mention and a custom inline node", () => {
+describe('rich user message slot-key contract', () => {
+  it('agrees on a mixed paragraph with a mention and a custom inline node', () => {
     const content: JSONContent = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
-            { type: "text", text: "Hi " },
-            { type: "mention", attrs: { id: "u1", label: "Alice" } },
-            { type: "text", text: " see " },
-            { type: "taskCard", attrs: { label: "Ship it" } },
+            { type: 'text', text: 'Hi ' },
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: ' see ' },
+            { type: 'taskCard', attrs: { label: 'Ship it' } },
           ],
         },
       ],
@@ -85,21 +85,21 @@ describe("rich user message slot-key contract", () => {
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
   });
 
-  it("agrees on top-level custom blocks and an opaque blockquote", () => {
+  it('agrees on top-level custom blocks and an opaque blockquote', () => {
     const content: JSONContent = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
-          content: [{ type: "text", text: "intro" }],
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'intro' }],
         },
-        { type: "fileBlock", attrs: { label: "report.pdf" } },
+        { type: 'fileBlock', attrs: { label: 'report.pdf' } },
         {
-          type: "blockquote",
+          type: 'blockquote',
           content: [
             {
-              type: "paragraph",
-              content: [{ type: "text", text: "quoted" }],
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'quoted' }],
             },
           ],
         },
@@ -113,16 +113,16 @@ describe("rich user message slot-key contract", () => {
     expect(renderedSlotKeys(content)).toEqual(walkedSlotKeys(content));
   });
 
-  it("agrees that command nodes and pure-text docs produce no slots", () => {
+  it('agrees that command nodes and pure-text docs produce no slots', () => {
     const content: JSONContent = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
-            { type: "text", text: "run " },
-            { type: "command", attrs: { id: "c1", label: "deploy" } },
-            { type: "widget", attrs: { label: "w" } },
+            { type: 'text', text: 'run ' },
+            { type: 'command', attrs: { id: 'c1', label: 'deploy' } },
+            { type: 'widget', attrs: { label: 'w' } },
           ],
         },
       ],
@@ -134,30 +134,30 @@ describe("rich user message slot-key contract", () => {
     // emits nothing; the bubble emits a `<MarkdownWithDefaults>` with no
     // `<slot>`, so there is nothing to project and nothing to keep in sync.
     const pureText: JSONContent = {
-      type: "doc",
+      type: 'doc',
       content: [
-        { type: "paragraph", content: [{ type: "text", text: "just text" }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'just text' }] },
       ],
     };
     expect(walkedSlotKeys(pureText)).toEqual([]);
   });
 
-  it("agrees when custom nodes sit in multiple paragraphs", () => {
+  it('agrees when custom nodes sit in multiple paragraphs', () => {
     const content: JSONContent = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
-            { type: "text", text: "a" },
-            { type: "chip", attrs: { label: "one" } },
+            { type: 'text', text: 'a' },
+            { type: 'chip', attrs: { label: 'one' } },
           ],
         },
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
-            { type: "chip", attrs: { label: "two" } },
-            { type: "text", text: "b" },
+            { type: 'chip', attrs: { label: 'two' } },
+            { type: 'text', text: 'b' },
           ],
         },
       ],

@@ -1,88 +1,88 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
  */
-import { action } from "storybook/actions";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Version16 from "@carbon/icons/es/version/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import Close16 from "@carbon/icons/es/close/16.js";
+import { action } from 'storybook/actions';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Version16 from '@carbon/icons/es/version/16.js';
+import Download16 from '@carbon/icons/es/download/16.js';
+import Share16 from '@carbon/icons/es/share/16.js';
+import Launch16 from '@carbon/icons/es/launch/16.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+import Close16 from '@carbon/icons/es/close/16.js';
 
 export const actionLists = {
-  "Advanced list": [
+  'Advanced list': [
     {
-      text: "Version",
-      icon: iconLoader(Version16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Version',
+      icon: iconLoader(Version16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Download",
-      icon: iconLoader(Download16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Download',
+      icon: iconLoader(Download16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Share",
-      icon: iconLoader(Share16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Share',
+      icon: iconLoader(Share16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Launch",
-      icon: iconLoader(Launch16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Launch',
+      icon: iconLoader(Launch16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Maximize",
-      icon: iconLoader(Maximize16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Maximize',
+      icon: iconLoader(Maximize16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      icon: iconLoader(Close16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
   ],
-  "Basic list": [
+  'Basic list': [
     {
-      text: "Launch",
-      icon: iconLoader(Launch16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Launch',
+      icon: iconLoader(Launch16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Maximize",
-      icon: iconLoader(Maximize16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      text: 'Maximize',
+      icon: iconLoader(Maximize16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      icon: iconLoader(Close16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
   ],
-  "Close only": [
+  'Close only': [
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
-      icon: iconLoader(Close16, { slot: "icon" }),
-      size: "md",
-      onClick: action("onClick"),
+      icon: iconLoader(Close16, { slot: 'icon' }),
+      size: 'md',
+      onClick: action('onClick'),
     },
   ],
   None: [],
@@ -90,146 +90,146 @@ export const actionLists = {
 
 export const FooterActionList = {
   None: undefined,
-  "One button": [
+  'One button': [
     {
-      id: "primary",
-      label: "Primary",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'primary',
+      label: 'Primary',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
   ],
-  "A danger button": [
+  'A danger button': [
     {
-      id: "danger",
-      label: "Danger",
-      kind: "danger",
-      payload: { test: "value" },
+      id: 'danger',
+      label: 'Danger',
+      kind: 'danger',
+      payload: { test: 'value' },
     },
   ],
-  "A ghost button": [
+  'A ghost button': [
     {
-      id: "ghost",
-      label: "Ghost",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'ghost',
+      label: 'Ghost',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ],
-  "Two buttons": [
+  'Two buttons': [
     {
-      id: "secondary",
-      label: "Secondary",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'secondary',
+      label: 'Secondary',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "primary",
-      label: "Primary",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'primary',
+      label: 'Primary',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
   ],
-  "With disabled button": [
+  'With disabled button': [
     {
-      id: "secondary",
-      label: "Secondary",
-      kind: "secondary",
+      id: 'secondary',
+      label: 'Secondary',
+      kind: 'secondary',
       disabled: true,
-      payload: { test: "value" },
+      payload: { test: 'value' },
     },
     {
-      id: "primary",
-      label: "Primary",
-      kind: "primary",
+      id: 'primary',
+      label: 'Primary',
+      kind: 'primary',
       disabled: true,
-      payload: { test: "value" },
+      payload: { test: 'value' },
     },
   ],
-  "Danger actions": [
+  'Danger actions': [
     {
-      id: "secondary",
-      label: "Cancel",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'secondary',
+      label: 'Cancel',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "danger",
-      label: "Delete",
-      kind: "danger",
-      payload: { test: "value" },
-    },
-  ],
-  "Two buttons with one ghost": [
-    {
-      id: "ghost",
-      label: "Ghost",
-      kind: "ghost",
-      payload: { test: "value" },
-    },
-    {
-      id: "primary",
-      label: "Primary",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'danger',
+      label: 'Delete',
+      kind: 'danger',
+      payload: { test: 'value' },
     },
   ],
-  "Three buttons": [
+  'Two buttons with one ghost': [
     {
-      id: "secondary",
-      label: "Secondary",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'ghost',
+      label: 'Ghost',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
     {
-      id: "tertiary",
-      label: "Tertiary",
-      kind: "tertiary",
-      payload: { test: "value" },
-    },
-    {
-      id: "primary",
-      label: "Primary",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'primary',
+      label: 'Primary',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
   ],
-  "Three buttons with one ghost": [
+  'Three buttons': [
     {
-      id: "secondary",
-      label: "Secondary",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'secondary',
+      label: 'Secondary',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "primary",
-      label: "Primary",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'tertiary',
+      label: 'Tertiary',
+      kind: 'tertiary',
+      payload: { test: 'value' },
     },
     {
-      id: "ghost",
-      label: "Ghost",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'primary',
+      label: 'Primary',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
   ],
-  "Three buttons with one danger": [
+  'Three buttons with one ghost': [
     {
-      id: "ghost",
-      label: "Ghost",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'secondary',
+      label: 'Secondary',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "secondary",
-      label: "Secondary",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'primary',
+      label: 'Primary',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "danger",
-      label: "Danger",
-      kind: "danger",
-      payload: { test: "value" },
+      id: 'ghost',
+      label: 'Ghost',
+      kind: 'ghost',
+      payload: { test: 'value' },
+    },
+  ],
+  'Three buttons with one danger': [
+    {
+      id: 'ghost',
+      label: 'Ghost',
+      kind: 'ghost',
+      payload: { test: 'value' },
+    },
+    {
+      id: 'secondary',
+      label: 'Secondary',
+      kind: 'secondary',
+      payload: { test: 'value' },
+    },
+    {
+      id: 'danger',
+      label: 'Danger',
+      kind: 'danger',
+      payload: { test: 'value' },
     },
   ],
 };

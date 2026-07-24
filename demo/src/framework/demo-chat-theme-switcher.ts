@@ -7,17 +7,17 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
 // Dropdown values as strings for boolean mapping
-const AI_ON = "true";
-const AI_OFF = "false";
+const AI_ON = 'true';
+const AI_OFF = 'false';
 
-@customElement("demo-chat-theme-switcher")
+@customElement('demo-chat-theme-switcher')
 export class DemoChatThemeSwitcher extends LitElement {
   @property({ type: Object })
   accessor config!: PublicConfig;
@@ -26,14 +26,14 @@ export class DemoChatThemeSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     // Emit a custom event `config-changed` with the new theme value
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           aiEnabled: customEvent.detail.item.value === AI_ON,
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      }),
+      })
     );
   };
 
@@ -41,8 +41,7 @@ export class DemoChatThemeSwitcher extends LitElement {
     return html`<cds-dropdown
       value="${String(this.config?.aiEnabled ?? true)}"
       title-text="AI theme"
-      @cds-dropdown-selected=${this.dropdownSelected}
-    >
+      @cds-dropdown-selected=${this.dropdownSelected}>
       <cds-dropdown-item value="${AI_ON}">Enable AI theme</cds-dropdown-item>
       <cds-dropdown-item value="${AI_OFF}">Disable AI theme</cds-dropdown-item>
     </cds-dropdown>`;
@@ -52,6 +51,6 @@ export class DemoChatThemeSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-chat-theme-switcher": DemoChatThemeSwitcher;
+    'demo-chat-theme-switcher': DemoChatThemeSwitcher;
   }
 }

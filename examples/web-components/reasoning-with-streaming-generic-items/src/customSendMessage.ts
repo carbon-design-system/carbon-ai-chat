@@ -17,9 +17,9 @@ import {
   ReasoningStep,
   StreamChunk,
   UserDefinedItem,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-const TEXT_STREAM_ID = "final-text";
+const TEXT_STREAM_ID = 'final-text';
 const WORD_DELAY = 50;
 const STEP_GAP = 600;
 
@@ -32,26 +32,26 @@ interface StepPlan {
 
 const STEP_PLANS: StepPlan[] = [
   {
-    title: "Read the user request",
+    title: 'Read the user request',
     body: "Scanning the message for the user's goal and any required tools.",
-    summary: "Detected a request for an example walkthrough.",
-    citations: ["session-context"],
+    summary: 'Detected a request for an example walkthrough.',
+    citations: ['session-context'],
   },
   {
-    title: "Gather supporting context",
-    body: "Fetching documents from the knowledge base that match the goal.",
-    summary: "Pulled 3 supporting documents from the mock retrieval service.",
-    citations: ["doc-123", "doc-456", "doc-789"],
+    title: 'Gather supporting context',
+    body: 'Fetching documents from the knowledge base that match the goal.',
+    summary: 'Pulled 3 supporting documents from the mock retrieval service.',
+    citations: ['doc-123', 'doc-456', 'doc-789'],
   },
   {
-    title: "Draft the response",
-    body: "Composing a short answer that cites the supporting documents.",
-    summary: "Drafted a 2-sentence response with inline citations.",
+    title: 'Draft the response',
+    body: 'Composing a short answer that cites the supporting documents.',
+    summary: 'Drafted a 2-sentence response with inline citations.',
   },
 ];
 
 const FINAL_TEXT =
-  "Here is the response. Each reasoning step above streamed a TextItem into its content array and then appended a user_defined summary card.";
+  'Here is the response. Each reasoning step above streamed a TextItem into its content array and then appended a user_defined summary card.';
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => {
@@ -61,7 +61,7 @@ function sleep(ms: number) {
 
 function makeStepContent(
   streamedText: string,
-  summary?: StepPlan,
+  summary?: StepPlan
 ): GenericItem[] {
   const content: GenericItem[] = [
     {
@@ -73,7 +73,7 @@ function makeStepContent(
     const userDefined: UserDefinedItem = {
       response_type: MessageResponseTypes.USER_DEFINED,
       user_defined: {
-        user_defined_type: "reasoning_summary",
+        user_defined_type: 'reasoning_summary',
         summary: summary.summary,
         citations: summary.citations,
       },
@@ -94,12 +94,12 @@ function cloneSteps(steps: ReasoningStep[]): ReasoningStep[] {
 function createShellMessage(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID },
     },
     partial_response: { message_options: messageOptions },
@@ -110,12 +110,12 @@ function createShellMessage(
 function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID, cancellable: true },
     },
     partial_response: { message_options: messageOptions },
@@ -128,14 +128,14 @@ async function streamFinalText(
   responseID: string,
   text: string,
   finalMessageOptions: MessageResponseOptions,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
-  const words = text.split(" ");
+  const words = text.split(' ');
   let canceled = false;
   const onAbort = () => {
     canceled = true;
   };
-  signal?.addEventListener("abort", onAbort);
+  signal?.addEventListener('abort', onAbort);
 
   try {
     for (let i = 0; i < words.length; i += 1) {
@@ -175,7 +175,7 @@ async function streamFinalText(
       },
     });
   } finally {
-    signal?.removeEventListener("abort", onAbort);
+    signal?.removeEventListener('abort', onAbort);
   }
 }
 
@@ -206,8 +206,8 @@ async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
     await sleep(STEP_GAP);
 
     // 2. Stream the TextItem body for this step word-by-word.
-    const words = plan.body.split(" ");
-    let partial = "";
+    const words = plan.body.split(' ');
+    let partial = '';
 
     for (let w = 0; w < words.length; w += 1) {
       if (signal?.aborted) {
@@ -241,7 +241,7 @@ async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
     responseID,
     FINAL_TEXT,
     { reasoning: { steps: cloneSteps(steps) } },
-    signal,
+    signal
   );
 }
 
@@ -261,9 +261,9 @@ function sendWelcome(instance: ChatInstance) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  const trimmed = request.input.text?.trim() ?? "";
+  const trimmed = request.input.text?.trim() ?? '';
   if (!trimmed) {
     sendWelcome(instance);
     return;

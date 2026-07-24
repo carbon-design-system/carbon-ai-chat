@@ -33,24 +33,24 @@
  * to sidestep the [Tiptap stacking caveat](https://github.com/ueberdosis/tiptap/issues/2219).
  */
 
-import type { Editor, Range } from "@tiptap/core";
-import Mention from "@tiptap/extension-mention";
-import type { Node as PMNode } from "@tiptap/pm/model";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import type { Editor, Range } from '@tiptap/core';
+import Mention from '@tiptap/extension-mention';
+import type { Node as PMNode } from '@tiptap/pm/model';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 
-import { isHostOrigin } from "./origin-meta.js";
-import { CarbonTokenNodeView } from "./token-node-view.js";
-import { dispatchTriggerChange } from "./trigger-utils.js";
-import type { SuggestionItem, TriggerSuggestionConfig } from "./types.js";
+import { isHostOrigin } from './origin-meta.js';
+import { CarbonTokenNodeView } from './token-node-view.js';
+import { dispatchTriggerChange } from './trigger-utils.js';
+import type { SuggestionItem, TriggerSuggestionConfig } from './types.js';
 
 interface BuildOptions {
-  defaultName: "mention" | "command";
+  defaultName: 'mention' | 'command';
   defaultPluginKeyName: string;
 }
 
 function buildTriggerExtension(
   config: TriggerSuggestionConfig,
-  build: BuildOptions,
+  build: BuildOptions
 ) {
   const name = config.name ?? build.defaultName;
   const pluginKey = new PluginKey(`${build.defaultPluginKeyName}_${name}`);
@@ -106,7 +106,7 @@ function buildTriggerExtension(
             const removed = diffRemovedTokens(
               prevState.doc,
               view.state.doc,
-              name,
+              name
             );
             for (const item of removed) {
               onRemove(item);
@@ -118,11 +118,11 @@ function buildTriggerExtension(
       return [...parentPlugins, removalPlugin];
     },
   }).configure({
-    HTMLAttributes: { "data-token-type": name },
+    HTMLAttributes: { 'data-token-type': name },
     suggestion: {
       char: config.trigger,
       pluginKey,
-      startOfLine: config.triggerPosition === "start",
+      startOfLine: config.triggerPosition === 'start',
       items: ({ query }) => resolveItems(config, query),
       command: ({ editor, range, props }) => {
         const item = props as SuggestionItem;
@@ -142,14 +142,14 @@ function buildTriggerExtension(
                 trigger: resolveShowTriggerInChip(
                   item,
                   config,
-                  build.defaultName === "command",
+                  build.defaultName === 'command'
                 )
                   ? config.trigger
                   : null,
                 data: stripPresentationFields(item),
               },
             },
-            { type: "text", text: " " },
+            { type: 'text', text: ' ' },
           ])
           .run();
         config.onSelect?.(item);
@@ -184,7 +184,7 @@ function emitTrigger(
   type: string,
   query: string,
   range: Range,
-  postEmit?: () => void,
+  postEmit?: () => void
 ): void {
   dispatchTriggerChange(editor, {
     type,
@@ -202,7 +202,7 @@ function emitTrigger(
  */
 function collectTokenAttrsById(
   doc: PMNode,
-  name: string,
+  name: string
 ): Map<string, Record<string, unknown>[]> {
   const byId = new Map<string, Record<string, unknown>[]>();
   doc.descendants((node) => {
@@ -244,7 +244,7 @@ function attrsToItem(attrs: Record<string, unknown>): SuggestionItem {
 function diffRemovedTokens(
   before: PMNode,
   after: PMNode,
-  name: string,
+  name: string
 ): SuggestionItem[] {
   const beforeById = collectTokenAttrsById(before, name);
   const afterById = collectTokenAttrsById(after, name);
@@ -260,13 +260,13 @@ function diffRemovedTokens(
 
 async function resolveItems(
   config: TriggerSuggestionConfig,
-  query: string,
+  query: string
 ): Promise<SuggestionItem[]> {
   const minQueryLength = config.minQueryLength ?? 0;
   if (query.length < minQueryLength) {
     return [];
   }
-  if (typeof config.items === "function") {
+  if (typeof config.items === 'function') {
     return Promise.resolve(config.items(query));
   }
   if (!query) {
@@ -274,7 +274,7 @@ async function resolveItems(
   }
   const lower = query.toLowerCase();
   return config.items.filter((item) =>
-    item.label.toLowerCase().includes(lower),
+    item.label.toLowerCase().includes(lower)
   );
 }
 
@@ -287,14 +287,14 @@ async function resolveItems(
  */
 export function resolveShowTriggerInChip(
   item: SuggestionItem,
-  config: Pick<TriggerSuggestionConfig, "showTriggerInChip">,
-  isCommand: boolean,
+  config: Pick<TriggerSuggestionConfig, 'showTriggerInChip'>,
+  isCommand: boolean
 ): boolean {
   return item.showTriggerInChip ?? config.showTriggerInChip ?? isCommand;
 }
 
 function stripPresentationFields(
-  item: SuggestionItem,
+  item: SuggestionItem
 ): Record<string, unknown> {
   const {
     id: _id,
@@ -318,14 +318,14 @@ function stripPresentationFields(
 
 export function carbonMention(config: TriggerSuggestionConfig) {
   return buildTriggerExtension(config, {
-    defaultName: "mention",
-    defaultPluginKeyName: "carbonMentionSuggestion",
+    defaultName: 'mention',
+    defaultPluginKeyName: 'carbonMentionSuggestion',
   });
 }
 
 export function carbonCommand(config: TriggerSuggestionConfig) {
   return buildTriggerExtension(config, {
-    defaultName: "command",
-    defaultPluginKeyName: "carbonCommandSuggestion",
+    defaultName: 'command',
+    defaultPluginKeyName: 'carbonCommandSuggestion',
   });
 }

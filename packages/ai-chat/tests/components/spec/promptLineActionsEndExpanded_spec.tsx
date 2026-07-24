@@ -14,23 +14,23 @@
  * only when `input.expanded` is set and omitted in the default compact layout.
  */
 
-import { waitFor } from "@testing-library/react";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
+import { waitFor } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 
 import {
   createBaseConfig,
   renderChatAndGetInstance,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-const PROMPT_LINE_SHELL = "cds-aichat-prompt-line-shell";
+const PROMPT_LINE_SHELL = 'cds-aichat-prompt-line-shell';
 const SLOT_SELECTOR = 'slot[name="promptLineActionsEnd"]';
 
 // The chat renders inside the `cds-aichat-react` shadow root, so DOM queries
 // must start there and pierce nested shadow roots.
 function chatRoot(): ShadowRoot | null {
-  return document.querySelector("cds-aichat-react")?.shadowRoot ?? null;
+  return document.querySelector('cds-aichat-react')?.shadowRoot ?? null;
 }
 
 function find(selector: string): Element | null {
@@ -38,11 +38,11 @@ function find(selector: string): Element | null {
   return root ? deepQuerySelector(root, selector) : null;
 }
 
-describe("promptLineActionsEnd expanded gating", () => {
+describe('promptLineActionsEnd expanded gating', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("renders the promptLineActionsEnd slot in the expanded layout", async () => {
+  it('renders the promptLineActionsEnd slot in the expanded layout', async () => {
     const config = createBaseConfig();
     config.input = { ...config.input, expanded: true };
 
@@ -53,7 +53,7 @@ describe("promptLineActionsEnd expanded gating", () => {
     });
   });
 
-  it("omits the promptLineActionsEnd slot in the default (compact) layout", async () => {
+  it('omits the promptLineActionsEnd slot in the default (compact) layout', async () => {
     const config = createBaseConfig();
 
     await renderChatAndGetInstance(config);

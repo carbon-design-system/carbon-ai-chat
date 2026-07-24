@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,7 +13,7 @@
  */
 export const observeResize = (
   observer: ResizeObserver,
-  elem: Element,
+  elem: Element
 ): { release(): null } | null => {
   if (!elem) {
     return null;
@@ -52,10 +52,10 @@ export function extractTextContent(element: Element): string {
   const textContent = Array.from(element.childNodes)
     .filter(
       (node) =>
-        node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE,
+        node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE
     )
-    .map((node) => node.textContent || "")
-    .join("");
+    .map((node) => node.textContent || '')
+    .join('');
 
   return textContent;
 }
@@ -71,10 +71,10 @@ export function extractSlotContent(slot: HTMLSlotElement): string {
       // Filter out elements that have a slot attribute (they're for named slots)
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
-        return !element.hasAttribute("slot");
+        return !element.hasAttribute('slot');
       }
       return true;
     })
-    .map((node) => node.textContent || "")
-    .join("");
+    .map((node) => node.textContent || '')
+    .join('');
 }

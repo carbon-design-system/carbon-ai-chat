@@ -1,16 +1,22 @@
 # Basic / Float
 
-Minimal React example of the float / launcher layout: mounts `ChatContainer` with a mock streaming backend. This is the canonical reference for the float chat shape.
+Minimal React example of the float / launcher layout: mounts `ChatContainer`
+with a mock streaming backend. This is the canonical reference for the float
+chat shape.
 
 ## What this example shows
 
-- Mounting `ChatContainer` with a `PublicConfig` object defined outside the component to avoid re-mount churn.
-- Implementing a mock backend via `customSendMessage` that streams a response one word at a time using `addMessageChunk`.
+- Mounting `ChatContainer` with a `PublicConfig` object defined outside the
+  component to avoid re-mount churn.
+- Implementing a mock backend via `customSendMessage` that streams a response
+  one word at a time using `addMessageChunk`.
 
 ## When to use this pattern
 
-- You want the simplest possible starting point for a React + Carbon AI Chat app.
-- You need a reference for sending and receiving streaming messages with a mock backend.
+- You want the simplest possible starting point for a React + Carbon AI Chat
+  app.
+- You need a reference for sending and receiving streaming messages with a mock
+  backend.
 
 ## APIs and props demonstrated
 
@@ -24,7 +30,10 @@ Minimal React example of the float / launcher layout: mounts `ChatContainer` wit
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

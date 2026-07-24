@@ -22,8 +22,8 @@
  * Start reading at: the `beforeAll` block.
  */
 
-import "@testing-library/jest-dom";
-import { loadAllLazyDeps } from "@carbon/ai-chat/server";
+import '@testing-library/jest-dom';
+import { loadAllLazyDeps } from '@carbon/ai-chat/server';
 
 // jsdom cannot evaluate dynamic `import()` reliably during a test tick;
 // preloading the shared lazy bundle here keeps every spec deterministic and

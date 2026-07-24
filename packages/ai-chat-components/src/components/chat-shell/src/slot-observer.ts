@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { SlotConfig, SlotContentState } from "./types.js";
+import { SlotConfig, SlotContentState } from './types.js';
 
 /**
  * Observes and tracks slot content changes in the chat shell.
@@ -28,7 +28,7 @@ export class SlotObserver {
 
   constructor(
     private readonly shellRoot: ShadowRoot,
-    private readonly observedSlots: readonly SlotConfig[],
+    private readonly observedSlots: readonly SlotConfig[]
   ) {}
 
   /**
@@ -45,7 +45,7 @@ export class SlotObserver {
    */
   disconnect(): void {
     this.slots.forEach((slot) => {
-      slot.removeEventListener("slotchange", this.handleSlotChange);
+      slot.removeEventListener('slotchange', this.handleSlotChange);
     });
     this.slots = [];
     this.onChangeCallback = undefined;
@@ -63,7 +63,7 @@ export class SlotObserver {
    */
   hasSlotContent(slotName: string): boolean {
     const slot = this.shellRoot.querySelector<HTMLSlotElement>(
-      `slot[name="${slotName}"]`,
+      `slot[name="${slotName}"]`
     );
     if (!slot) {
       return false;
@@ -97,7 +97,7 @@ export class SlotObserver {
       if (child.nodeType === Node.ELEMENT_NODE) {
         const childElement = child as Element;
         // Check slot elements recursively - they may have assigned content
-        if (childElement.tagName.toLowerCase() === "slot") {
+        if (childElement.tagName.toLowerCase() === 'slot') {
           const slotElement = childElement as HTMLSlotElement;
           const assignedNodes = slotElement.assignedNodes({ flatten: true });
           return assignedNodes.some((node) => {
@@ -134,10 +134,7 @@ export class SlotObserver {
    */
   private updateSlotStates(forceCallback = false): void {
     const previousStates = new Map(
-      this.observedSlots.map(({ stateKey }) => [
-        stateKey,
-        this.state[stateKey],
-      ]),
+      this.observedSlots.map(({ stateKey }) => [stateKey, this.state[stateKey]])
     );
 
     this.observedSlots.forEach(({ name, stateKey }) => {
@@ -145,7 +142,7 @@ export class SlotObserver {
     });
 
     const hasChanged = this.observedSlots.some(
-      ({ stateKey }) => previousStates.get(stateKey) !== this.state[stateKey],
+      ({ stateKey }) => previousStates.get(stateKey) !== this.state[stateKey]
     );
 
     if ((hasChanged || forceCallback) && this.onChangeCallback) {
@@ -159,12 +156,12 @@ export class SlotObserver {
   private observeSlotChanges(): void {
     this.slots = this.observedSlots
       .map(({ name }) =>
-        this.shellRoot.querySelector<HTMLSlotElement>(`slot[name="${name}"]`),
+        this.shellRoot.querySelector<HTMLSlotElement>(`slot[name="${name}"]`)
       )
       .filter((slot): slot is HTMLSlotElement => slot !== null);
 
     this.slots.forEach((slot) => {
-      slot.addEventListener("slotchange", this.handleSlotChange);
+      slot.addEventListener('slotchange', this.handleSlotChange);
     });
   }
 

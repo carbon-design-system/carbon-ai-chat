@@ -7,49 +7,49 @@
  *  @license
  */
 
-import React, { forwardRef, Ref, useMemo, useRef, useState } from "react";
-import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
-import PromptLineShell from "@carbon/ai-chat-components/es/react/prompt-line-shell.js";
-import InputSendControl from "@carbon/ai-chat-components/es/react/input-send-control.js";
-import FileUploads from "@carbon/ai-chat-components/es/react/file-uploads.js";
-import PromptLine from "@carbon/ai-chat-components/es/react/prompt-line.js";
-import ErrorMessage from "@carbon/ai-chat-components/es/react/error-message.js";
-import type { FileUpload } from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
-import { FileStatusValue } from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
-import { useChatAutocomplete } from "@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js";
-import type { Editor, JSONContent } from "@tiptap/core";
-import actions from "../../store/actions";
+import React, { forwardRef, Ref, useMemo, useRef, useState } from 'react';
+import { AnnounceOnMountComponent } from '../util/AnnounceOnMountComponent';
+import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
+import InputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+import FileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
+import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
+import ErrorMessage from '@carbon/ai-chat-components/es/react/error-message.js';
+import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
+import { FileStatusValue } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import { useChatAutocomplete } from '@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js';
+import type { Editor, JSONContent } from '@tiptap/core';
+import actions from '../../store/actions';
 import {
   selectIsInputToHumanAgent,
   selectLanguagePack,
-} from "../../store/selectors";
-import { ChatWidthBreakpoint, AppState } from "../../../types/state/AppState";
-import { useSelector } from "../../hooks/useSelector";
-import { BusEventType } from "../../../types/events/eventBusTypes";
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { useIntl } from "../../hooks/useIntl";
-import { useAriaAnnouncer } from "../../hooks/useAriaAnnouncer";
-import { validateFileSelection } from "../../utils/fileUploadValidation";
-import { useInputConfig } from "../../hooks/useInputConfig";
-import { useRichSurface } from "./useRichSurface";
-import { useInputValueSync } from "./useInputValueSync";
-import { useInputImperativeHandle } from "./useInputImperativeHandle";
-import { PageObjectId } from "../../../testing/PageObjectId";
-import { consoleError } from "../../utils/miscUtils";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '../../store/selectors';
+import { ChatWidthBreakpoint, AppState } from '../../../types/state/AppState';
+import { useSelector } from '../../hooks/useSelector';
+import { BusEventType } from '../../../types/events/eventBusTypes';
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { useIntl } from '../../hooks/useIntl';
+import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
+import { validateFileSelection } from '../../utils/fileUploadValidation';
+import { useInputConfig } from '../../hooks/useInputConfig';
+import { useRichSurface } from './useRichSurface';
+import { useInputValueSync } from './useInputValueSync';
+import { useInputImperativeHandle } from './useInputImperativeHandle';
+import { PageObjectId } from '../../../testing/PageObjectId';
+import { consoleError } from '../../utils/miscUtils';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Upload button
-import IconButton from "../carbon/IconButton";
-import { BUTTON_KIND } from "../carbon/Button";
-import Add16 from "@carbon/icons/es/add--large/16.js";
-import Attachment16 from "@carbon/icons/es/attachment/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import { InputActionsMenu } from "./InputActionsMenu";
-import { InputActionsInline } from "./InputActionsInline";
-import type { ToolbarAction } from "../../../types/config/HeaderConfig";
-import { WriteableElementName } from "../../../types/instance/WriteableElements";
-import PromptLineWriteableSlot from "./PromptLineWriteableSlot";
+import IconButton from '../carbon/IconButton';
+import { BUTTON_KIND } from '../carbon/Button';
+import Add16 from '@carbon/icons/es/add--large/16.js';
+import Attachment16 from '@carbon/icons/es/attachment/16.js';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import { InputActionsMenu } from './InputActionsMenu';
+import { InputActionsInline } from './InputActionsInline';
+import type { ToolbarAction } from '../../../types/config/HeaderConfig';
+import { WriteableElementName } from '../../../types/instance/WriteableElements';
+import PromptLineWriteableSlot from './PromptLineWriteableSlot';
 
 const AddIcon = carbonIconToReact(Add16);
 
@@ -203,7 +203,7 @@ interface InputFunctions {
    * rendered.
    */
   setContent: (
-    next: JSONContent | string | ((prev: JSONContent) => JSONContent),
+    next: JSONContent | string | ((prev: JSONContent) => JSONContent)
   ) => void;
 
   /**
@@ -212,7 +212,7 @@ interface InputFunctions {
    */
   insertContent: (
     content: JSONContent | string,
-    options?: { at?: number },
+    options?: { at?: number }
   ) => void;
 
   /**
@@ -276,24 +276,24 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     () =>
       ({ count }: { count: number }) =>
         intl.formatMessage(
-          { id: "fileSharing_ariaAnnounceFilesAdded" },
-          { count },
+          { id: 'fileSharing_ariaAnnounceFilesAdded' },
+          { count }
         ),
-    [intl],
+    [intl]
   );
   const getFilesUploadingText = useMemo(
     () =>
       ({ count }: { count: number }) =>
         intl.formatMessage(
-          { id: "fileSharing_ariaAnnounceFilesUploading" },
-          { count },
+          { id: 'fileSharing_ariaAnnounceFilesUploading' },
+          { count }
         ),
-    [intl],
+    [intl]
   );
 
   // Get chat width breakpoint and height to determine autocomplete settings
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint,
+    (state: AppState) => state.chatWidthBreakpoint
   );
   const chatHeight = useSelector((state: AppState) => state.chatHeight);
 
@@ -364,7 +364,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       (pendingUploads != null &&
         pendingUploads.length > 0 &&
         !pendingUploads.every((u) => u.isError)),
-    [rawInputValue, pendingUploads],
+    [rawInputValue, pendingUploads]
   );
 
   /**
@@ -375,7 +375,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
       store.dispatch(
-        actions.updateInputState({ focused: true }, isInputToHumanAgent),
+        actions.updateInputState({ focused: true }, isInputToHumanAgent)
       );
     }
 
@@ -387,9 +387,9 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         const key = shortcutConfig.key;
         store.dispatch(
           actions.announceMessage({
-            messageID: "input_keyboardShortcutAnnouncement",
+            messageID: 'input_keyboardShortcutAnnouncement',
             messageValues: { key },
-          }),
+          })
         );
         setHasAnnouncedShortcut(true);
       }
@@ -403,7 +403,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
       store.dispatch(
-        actions.updateInputState({ focused: false }, isInputToHumanAgent),
+        actions.updateInputState({ focused: false }, isInputToHumanAgent)
       );
     }
   };
@@ -429,7 +429,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     const files = Array.from(input.files || []);
     // Reset early so re-selecting the same file fires `change` again, even if
     // every file is rejected below.
-    input.value = "";
+    input.value = '';
     if (files.length === 0) {
       return;
     }
@@ -441,7 +441,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
         accept: allowedFileUploadTypes,
         maxFileSizeBytes,
         maxFiles,
-      },
+      }
     );
 
     // Validation failures block the user, so announce them assertively.
@@ -476,7 +476,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       });
       await serviceManager.messageService.cancelCurrentMessageRequest();
     } catch (error) {
-      consoleError("Error stopping stream:", error);
+      consoleError('Error stopping stream:', error);
       store.dispatch(actions.setStopStreamingButtonDisabled(false));
     }
   };
@@ -546,14 +546,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const renderErrorMessage = () => {
     if (overMaxLength) {
       const errorText = intl.formatMessage(
-        { id: "input_maxCharCountExceeded" },
-        { max: maxInputChars, current: rawInputValue.length },
+        { id: 'input_maxCharCountExceeded' },
+        { max: maxInputChars, current: rawInputValue.length }
       );
       return (
         <div slot="field-messaging">
           <AnnounceOnMountComponent
-            announceOnce={`Error: Max character count exceeded. ${errorText}`}
-          >
+            announceOnce={`Error: Max character count exceeded. ${errorText}`}>
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
               title="Error: Max character count exceeded"
@@ -595,7 +594,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const editorPlaceholder =
     placeholder ||
     (disableInput ? undefined : languagePack.input_placeholder) ||
-    "";
+    '';
 
   const hasError = hasErrorProp || overMaxLength;
 
@@ -604,8 +603,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       rounded={rounded}
       expanded={expanded}
       hasError={hasError}
-      disabled={disableInput}
-    >
+      disabled={disableInput}>
       <PromptLine
         slot="editor"
         ref={promptLineRef}
@@ -642,7 +640,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               ref={fileInputRef}
               hidden
               tabIndex={-1}
-              accept={allowedFileUploadTypes || ""}
+              accept={allowedFileUploadTypes || ''}
               multiple={allowMultipleFileUploads}
               disabled={showUploadButtonDisabled}
               onChange={handleFileSelect}
@@ -667,8 +665,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               kind={BUTTON_KIND.GHOST}
               size="sm"
               disabled={showUploadButtonDisabled}
-              onClick={() => fileInputRef.current?.click()}
-            >
+              onClick={() => fileInputRef.current?.click()}>
               <AddIcon slot="icon" />
               <span slot="tooltip-content">
                 {languagePack.input_uploadButtonLabel}

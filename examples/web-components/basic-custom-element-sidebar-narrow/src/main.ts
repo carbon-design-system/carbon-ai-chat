@@ -35,9 +35,9 @@
  * and the view-change handlers.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/ai-chat/css/chat-sidebar-layout.css";
-import "./styles.css";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/ai-chat/css/chat-sidebar-layout.css';
+import './styles.css';
 
 import {
   BusEventType,
@@ -48,13 +48,13 @@ import {
   type BusEventViewPreChange,
   type ChatInstance,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
+} from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import AiLaunch20 from '@carbon/icons/es/ai-launch/20.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 // Hold the view transition long enough for the 240ms slide-out CSS transition
 // to visibly finish before the chat unmounts.
@@ -77,7 +77,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   // Disable shadow DOM so the document-level sidebar-layout CSS imported from
   // @carbon/ai-chat (and the local styles.css) applies to the host elements.
@@ -164,11 +164,11 @@ export class Demo extends LitElement {
   getSidebarClassName() {
     // The closing modifier wins while the animation plays, otherwise the closed
     // modifier applies once the panel is shut.
-    let className = "cds-aichat-sidebar";
+    let className = 'cds-aichat-sidebar';
     if (this.sideBarClosing) {
-      className += " cds-aichat-sidebar--closing";
+      className += ' cds-aichat-sidebar--closing';
     } else if (!this.sideBarOpen) {
-      className += " cds-aichat-sidebar--closed";
+      className += ' cds-aichat-sidebar--closed';
     }
     return className;
   }
@@ -187,12 +187,11 @@ export class Demo extends LitElement {
                   class="app-header__button"
                   @click=${this.handleHeaderButtonClick}
                   ?disabled=${this.clickInProgress}
-                  aria-label="Toggle AI Chat"
-                >
+                  aria-label="Toggle AI Chat">
                   ${iconLoader(AiLaunch20)}
                 </button>
               `
-            : ""
+            : ''
         }
       </header>
       <div class=${this.getSidebarClassName()}>
@@ -201,8 +200,7 @@ export class Demo extends LitElement {
           .messaging=${config.messaging}
           .layout=${config.layout}
           .openChatByDefault=${config.openChatByDefault}
-          class="chat-custom-element"
-        ></cds-aichat-custom-element>
+          class="chat-custom-element"></cds-aichat-custom-element>
       </div>
     `;
   }

@@ -15,8 +15,8 @@
  * actually declares the type.
  */
 
-import { Converter, Comment, CommentTag } from "typedoc";
-import ts from "typescript";
+import { Converter, Comment, CommentTag } from 'typedoc';
+import ts from 'typescript';
 
 export function load(app) {
   const programs = [];
@@ -99,9 +99,9 @@ function collectReflectionsByName(project) {
 }
 
 const MODULE_LEVEL_TAGS = new Set([
-  "packageDocumentation",
-  "module",
-  "showCategories",
+  'packageDocumentation',
+  'module',
+  'showCategories',
 ]);
 
 function readLeadingJSDocAsComment(node) {
@@ -115,7 +115,7 @@ function readLeadingJSDocAsComment(node) {
       return false;
     }
     const inLeading = leadingRanges.some(
-      (r) => r.pos <= n.pos && r.end <= nodeStart,
+      (r) => r.pos <= n.pos && r.end <= nodeStart
     );
     if (!inLeading) {
       return false;
@@ -132,14 +132,14 @@ function readLeadingJSDocAsComment(node) {
   }
 
   const summaryText = extractCommentText(jsDoc.comment);
-  const summary = summaryText ? [{ kind: "text", text: summaryText }] : [];
+  const summary = summaryText ? [{ kind: 'text', text: summaryText }] : [];
   const blockTags = [];
 
   for (const tag of jsDoc.tags ?? []) {
-    const tagName = "@" + tag.tagName.text;
+    const tagName = '@' + tag.tagName.text;
     const text = extractCommentText(tag.comment);
     blockTags.push(
-      new CommentTag(tagName, text ? [{ kind: "text", text }] : []),
+      new CommentTag(tagName, text ? [{ kind: 'text', text }] : [])
     );
   }
 
@@ -151,13 +151,13 @@ function readLeadingJSDocAsComment(node) {
 
 function extractCommentText(comment) {
   if (!comment) {
-    return "";
+    return '';
   }
-  if (typeof comment === "string") {
+  if (typeof comment === 'string') {
     return comment;
   }
   if (Array.isArray(comment)) {
-    return comment.map((p) => p.text ?? "").join("");
+    return comment.map((p) => p.text ?? '').join('');
   }
-  return "";
+  return '';
 }

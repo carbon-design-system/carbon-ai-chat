@@ -15,4 +15,4 @@
  * the textarea→rich swap stays imperceptible. Keep them reading this one
  * constant so they can't drift.
  */
-export const PROMPT_LINE_MAX_BLOCK_SIZE = "157px";
+export const PROMPT_LINE_MAX_BLOCK_SIZE = '157px';
