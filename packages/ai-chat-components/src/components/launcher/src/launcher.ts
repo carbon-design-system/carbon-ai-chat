@@ -142,6 +142,13 @@ class CDSAIChatLauncher extends LitElement {
     );
   }
 
+  /**
+   * Moves focus to the launcher button.
+   */
+  requestFocus() {
+    this.shadowRoot?.querySelector<HTMLElement>("cds-aichat-button")?.focus();
+  }
+
   render() {
     const tabIndex = this.launcherHidden ? -1 : undefined;
     const tooltipPosition = isDirectionRTL()
