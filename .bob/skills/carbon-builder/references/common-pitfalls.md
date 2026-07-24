@@ -99,6 +99,89 @@ export name returned by MCP. If the name cannot be confirmed, tell the user.
 
 ---
 
+## Carbon Labs
+
+### 9) Using deprecated `@carbon/labs-react` guidance for modern Labs work
+
+```js
+// ❌ Wrong — deprecated package; do not use for new Labs guidance
+import { UIShell } from "@carbon/labs-react";
+```
+
+```js
+// ✅ Correct — verify the current package for the requested Labs feature
+import { ... } from '@carbon-labs/react-ui-shell';
+import { ... } from '@carbon-labs/react-resizer';
+import { ... } from '@carbon-labs/react-whats-new';
+import { ... } from '@carbon-labs/react-processing';
+import { ... } from '@carbon-labs/react-animated-header';
+```
+
+Do not infer modern Labs imports from old examples. Verify the exact `@carbon-labs/*` package
+before generating code.
+
+### 10) Assuming all Labs components share one package or one setup path
+
+```js
+// ❌ Wrong — guessing a generic Labs package or reusing one package for unrelated features
+import { WhatsNew, Resizer } from "@carbon-labs/react-ui-shell";
+```
+
+```js
+// ✅ Correct — treat each Labs package as package-specific until verified
+import { ... } from '@carbon-labs/react-whats-new';
+import { ... } from '@carbon-labs/react-resizer';
+```
+
+UIShell, Resizer, What's New, and Processing may live in different packages and may have
+different setup requirements.
+
+### 11) Assuming the Carbon baseline alone styles Labs packages correctly
+
+Some Labs packages need more than the standard React baseline. If the component renders but
+looks partially unstyled, verify whether the package requires its own SCSS import in addition
+to `@use '@carbon/react'`.
+
+```scss
+/* ✅ Baseline first */
+@use "@carbon/react";
+
+/* Add package-specific Labs SCSS only when the package requires it */
+@use "@carbon-labs/react-processing/scss/index";
+```
+
+Do not invent SCSS paths — verify the package-specific import first.
+
+### 12) Missing required host theme attributes such as `data-carbon-theme`
+
+Some Labs packages rely on explicit host theme attributes rather than inheriting everything
+from stable Carbon wrappers.
+
+```jsx
+// ✅ Example pattern when package guidance requires it
+<div data-carbon-theme="g100">
+  <LabsComponent />
+</div>
+```
+
+If a Labs component appears structurally correct but colors, layers, or spacing are wrong,
+verify whether the host container needs `data-carbon-theme`.
+
+### 13) Assuming stable Carbon verification is enough for Labs components
+
+Labs APIs and styling assumptions can differ from stable Carbon. A component that compiles is
+not necessarily integrated correctly.
+
+Always verify:
+
+- exact package name
+- import path
+- package-specific SCSS requirements
+- theme attributes such as `data-carbon-theme`
+- rendered styling and behavior after setup
+
+---
+
 ## CDN and Fonts
 
 ### 7) Loading IBM Plex from Google Fonts or any non-IBM CDN
