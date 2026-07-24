@@ -16,12 +16,9 @@
     "@carbon/ai-chat-components": "^1.8.0-rc.0",
     "@carbon/icons-react": "^11.53.0",
     "@carbon/web-components": "^2.58.1",
-    "build": "^0.1.4",
     "lit": "^3.1.0",
-    "npm": "^12.0.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "run": "^1.5.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
