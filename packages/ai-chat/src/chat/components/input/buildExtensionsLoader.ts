@@ -17,25 +17,25 @@
  */
 
 type BuildExtensionsModule =
-  typeof import("@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js");
+  typeof import('@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js');
 
-type BuildCarbonExtensions = BuildExtensionsModule["buildCarbonExtensions"];
+type BuildCarbonExtensions = BuildExtensionsModule['buildCarbonExtensions'];
 
 let modulePromise: Promise<BuildExtensionsModule | null> | null = null;
 let loaded: BuildExtensionsModule | null = null;
 
 /** Load (once) the curated-extension builder chunk. `null` outside a browser. */
 export function loadBuildCarbonExtensions(): Promise<BuildExtensionsModule | null> {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return Promise.resolve(null);
   }
   if (!modulePromise) {
     modulePromise =
-      import("@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js").then(
+      import('@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js').then(
         (module) => {
           loaded = module;
           return module;
-        },
+        }
       );
   }
   return modulePromise;

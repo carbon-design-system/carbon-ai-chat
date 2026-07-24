@@ -7,113 +7,113 @@
  *  @license
  */
 
-import "../index";
-import "../../toolbar/index";
-import "@carbon/web-components/es/components/button/button.js";
-import "@carbon/web-components/es/components/tag/tag.js";
-import "@carbon/web-components/es/components/icon-button/icon-button.js";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
-import "@carbon/web-components/es/components/notification/inline-notification.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import { action } from "storybook/actions";
-import { html } from "lit";
-import Edit16 from "@carbon/icons/es/edit/16.js";
-import { actionLists, FooterActionList } from "./story-data";
-import { getHeaderDescription, getBodyContent } from "./story-helper";
-import styles from "./story-styles.scss?lit";
+import '../index';
+import '../../toolbar/index';
+import '@carbon/web-components/es/components/button/button.js';
+import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import '@carbon/web-components/es/components/notification/inline-notification.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import { action } from 'storybook/actions';
+import { html } from 'lit';
+import Edit16 from '@carbon/icons/es/edit/16.js';
+import { actionLists, FooterActionList } from './story-data';
+import { getHeaderDescription, getBodyContent } from './story-helper';
+import styles from './story-styles.scss?lit';
 
 export default {
-  title: "Components/Workspace shell",
-  component: "cds-aichat-workspace-shell",
+  title: 'Components/Workspace shell',
+  component: 'cds-aichat-workspace-shell',
   argTypes: {
     toolbarTitle: {
-      control: "text",
-      description: "Title text for the Toolbar Component",
+      control: 'text',
+      description: 'Title text for the Toolbar Component',
     },
     toolbarAction: {
       control: {
-        type: "select",
+        type: 'select',
       },
       options: Object.keys(actionLists),
       mapping: actionLists,
       description:
-        "Select which predefined set of actions to render in the Toolbar component.",
+        'Select which predefined set of actions to render in the Toolbar component.',
     },
     toolbarOverflow: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Provides an option to overflow actions into an overflow menu when the cds-aichat-toolbar component is used in the toolbar slot.",
+        'Provides an option to overflow actions into an overflow menu when the cds-aichat-toolbar component is used in the toolbar slot.',
     },
     notificationTitle: {
-      control: "text",
-      description: "Title text for the Notification Component",
+      control: 'text',
+      description: 'Title text for the Notification Component',
     },
     notificationSubTitle: {
-      control: "text",
-      description: "SubTitle text for the Notification Component",
+      control: 'text',
+      description: 'SubTitle text for the Notification Component',
     },
     headerTitle: {
-      control: "text",
-      description: "Title text for the Header Component",
+      control: 'text',
+      description: 'Title text for the Header Component',
     },
     headerSubTitle: {
-      control: "text",
-      description: "SubTitle text for the Header Component",
+      control: 'text',
+      description: 'SubTitle text for the Header Component',
     },
     headerDescription: {
       control: {
-        type: "select",
+        type: 'select',
       },
-      options: ["basic", "withTags"],
+      options: ['basic', 'withTags'],
       mapping: {
-        basic: "basic",
-        withTags: "withTags",
+        basic: 'basic',
+        withTags: 'withTags',
       },
-      description: "Defines the type of description text in Header Component",
+      description: 'Defines the type of description text in Header Component',
     },
     showHeaderAction: {
-      control: "boolean",
-      description: "Toggles whether header actions are shown",
+      control: 'boolean',
+      description: 'Toggles whether header actions are shown',
     },
     autoCollapsibleHeader: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Enable automatic header collapsible behavior based on available space. Note: This prop is currently experimental and is subject to future changes.",
+        'Enable automatic header collapsible behavior based on available space. Note: This prop is currently experimental and is subject to future changes.',
     },
     bodyContent: {
       control: {
-        type: "select",
+        type: 'select',
       },
-      options: ["short", "long"],
+      options: ['short', 'long'],
       mapping: {
-        short: "short",
-        long: "long",
+        short: 'short',
+        long: 'long',
       },
-      description: "Defines the content in Body Component",
+      description: 'Defines the content in Body Component',
     },
     footerAction: {
       control: {
-        type: "select",
+        type: 'select',
       },
       options: Object.keys(FooterActionList),
-      description: "Defines the actions slot in Footer component ",
+      description: 'Defines the actions slot in Footer component ',
     },
   },
   parameters: {
     controls: {
       sort: [
-        "toolbarTitle",
-        "toolbarAction",
-        "toolbarOverflow",
-        "notificationTitle",
-        "notificationSubTitle",
-        "headerTitle",
-        "headerSubTitle",
-        "headerDescription",
-        "showHeaderAction",
-        "autoCollapsibleHeader",
-        "bodyContent",
-        "footerAction",
+        'toolbarTitle',
+        'toolbarAction',
+        'toolbarOverflow',
+        'notificationTitle',
+        'notificationSubTitle',
+        'headerTitle',
+        'headerSubTitle',
+        'headerDescription',
+        'showHeaderAction',
+        'autoCollapsibleHeader',
+        'bodyContent',
+        'footerAction',
       ],
     },
   },
@@ -128,29 +128,27 @@ export default {
 };
 export const Default = {
   args: {
-    toolbarTitle: "Title",
-    toolbarAction: "Advanced list",
+    toolbarTitle: 'Title',
+    toolbarAction: 'Advanced list',
     toolbarOverflow: true,
-    notificationTitle: "Title",
-    notificationSubTitle: "Message",
-    headerTitle: "Title",
-    headerSubTitle: "Sub title",
-    headerDescription: "withTags",
+    notificationTitle: 'Title',
+    notificationSubTitle: 'Message',
+    headerTitle: 'Title',
+    headerSubTitle: 'Sub title',
+    headerDescription: 'withTags',
     showHeaderAction: true,
     autoCollapsibleHeader: false,
-    bodyContent: "short",
-    footerAction: "Three buttons with one ghost",
+    bodyContent: 'short',
+    footerAction: 'Three buttons with one ghost',
   },
   render: (args) => {
     return html` <cds-aichat-workspace-shell
-      ?auto-collapsible-header=${args.autoCollapsibleHeader}
-    >
+      ?auto-collapsible-header=${args.autoCollapsibleHeader}>
       <cds-aichat-toolbar
         slot="toolbar"
         ?overflow=${args.toolbarOverflow}
         .actions=${args.toolbarAction}
-        titleText=${args.toolbarTitle}
-      >
+        titleText=${args.toolbarTitle}>
         <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
           <div slot="body-text">
             <p class="secondary">
@@ -166,19 +164,17 @@ export const Default = {
         .title="${args.notificationTitle}"
         .subtitle="${args.notificationSubTitle}"
         kind="warning"
-        hide-close-button
-      >
+        hide-close-button>
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header
         title-text="${args.headerTitle}"
-        subtitle-text="${args.headerSubTitle}"
-      >
+        subtitle-text="${args.headerSubTitle}">
         ${getHeaderDescription(args.headerDescription)}
         ${
           args.showHeaderAction &&
           html`
             <cds-button kind="tertiary" slot="header-action">
-              Edit Plan ${iconLoader(Edit16, { slot: "icon" })}
+              Edit Plan ${iconLoader(Edit16, { slot: 'icon' })}
             </cds-button>
           `
         }
@@ -187,13 +183,12 @@ export const Default = {
         ${getBodyContent(args.bodyContent)}
       </cds-aichat-workspace-shell-body>
       ${
-        args.footerAction !== "None" &&
+        args.footerAction !== 'None' &&
         html`
           <cds-aichat-workspace-shell-footer
             @cds-aichat-workspace-shell-footer-clicked=${(e) =>
-              action("action")(e.detail)}
-            .actions=${FooterActionList[args.footerAction]}
-          >
+              action('action')(e.detail)}
+            .actions=${FooterActionList[args.footerAction]}>
           </cds-aichat-workspace-shell-footer>
         `
       }

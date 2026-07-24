@@ -1,17 +1,22 @@
 # History / Host-driven
 
-`ChatCustomElement` with a `customLoadHistory` implementation and a manual "insert history" button that swaps in a randomly-sized conversation via `ChatInstance.messaging`.
+`ChatCustomElement` with a `customLoadHistory` implementation and a manual
+"insert history" button that swaps in a randomly-sized conversation via
+`ChatInstance.messaging`.
 
 ## What this example shows
 
 - Wiring `customLoadHistory` alongside `customSendMessage` under `messaging`.
 - Capturing the `ChatInstance` in `onBeforeRender`.
-- Programmatically loading and swapping conversations using `instance.messaging.clearConversation()` and `instance.messaging.insertHistory()`.
+- Programmatically loading and swapping conversations using
+  `instance.messaging.clearConversation()` and
+  `instance.messaging.insertHistory()`.
 
 ## When to use this pattern
 
 - You want to see how history payloads are shaped for `insertHistory`.
-- You need to programmatically clear and inject conversations without the built-in history panel.
+- You need to programmatically clear and inject conversations without the
+  built-in history panel.
 
 ## APIs and props demonstrated
 
@@ -29,7 +34,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

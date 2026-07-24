@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,10 +11,10 @@
  * This is a high order component that will inject a {@link ServiceManager} in to a component.
  */
 
-import React, { useContext } from "react";
+import React, { useContext } from 'react';
 
-import { ServiceManagerContext } from "../contexts/ServiceManagerContext";
-import { ServiceManager } from "../services/ServiceManager";
+import { ServiceManagerContext } from '../contexts/ServiceManagerContext';
+import { ServiceManager } from '../services/ServiceManager';
 
 /**
  * A simple interface that represents an injected service manager.
@@ -27,10 +27,10 @@ interface HasServiceManager {
 }
 
 function withServiceManager<P extends HasServiceManager>(
-  Component: React.ComponentType<P>,
+  Component: React.ComponentType<P>
 ) {
   // 1. OuterProps = everything in P except serviceManager
-  type OuterProps = Omit<P, "serviceManager">;
+  type OuterProps = Omit<P, 'serviceManager'>;
 
   // 2. Tell forwardRef what ref type (here unknown) and what props (OuterProps) look like
   const Wrapped = React.forwardRef<unknown, OuterProps>((props, ref) => {
@@ -46,7 +46,7 @@ function withServiceManager<P extends HasServiceManager>(
 
   // 3. (Optional) for better React DevTools display
   Wrapped.displayName = `withServiceManager(${
-    Component.displayName || Component.name || "Component"
+    Component.displayName || Component.name || 'Component'
   })`;
 
   return Wrapped;

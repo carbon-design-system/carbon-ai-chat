@@ -7,17 +7,17 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSAIChatHistoryShell from "../../components/chat-history/src/history-shell.js";
-import { withWebComponentBridge } from "../utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatHistoryShell from '../../components/chat-history/src/history-shell.js';
+import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryShell = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-history-shell",
+    tagName: 'cds-aichat-history-shell',
     elementClass: CDSAIChatHistoryShell,
     react: React,
-  }),
+  })
 );
 
 export default HistoryShell;

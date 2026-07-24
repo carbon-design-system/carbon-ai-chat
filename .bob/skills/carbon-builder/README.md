@@ -1,9 +1,10 @@
 # Carbon Builder Skill
 
-A portable AI skill that turns any AI agent into an expert Carbon Design System engineer.
-It retrieves live component examples, variants, props, and documentation from the
-**carbon-mcp** MCP server, generates production-quality Carbon React and Web Components
-UI code, and builds Carbon Charts across all supported frameworks.
+A portable AI skill that turns any AI agent into an expert Carbon Design System
+engineer. It retrieves live component examples, variants, props, and
+documentation from the **carbon-mcp** MCP server, generates production-quality
+Carbon React and Web Components UI code, and builds Carbon Charts across all
+supported frameworks.
 
 ```text
       +-------------------+        +----------------------+        +----------------------+
@@ -33,12 +34,13 @@ carbon-builder-skill-v1.0.0.zip
         └── *.md
 ```
 
-**To install:** download the zip, unzip it, and copy or move the `carbon-builder/` directory
-to the appropriate path for your client (see [Installation](#installation) below).
+**To install:** download the zip, unzip it, and copy or move the
+`carbon-builder/` directory to the appropriate path for your client (see
+[Installation](#installation) below).
 
-When a new version is released, download the updated zip and replace the `carbon-builder/`
-directory in all locations where you installed it. Start a new agent session to pick up
-the changes.
+When a new version is released, download the updated zip and replace the
+`carbon-builder/` directory in all locations where you installed it. Start a new
+agent session to pick up the changes.
 
 ---
 
@@ -63,8 +65,8 @@ carbon-builder/
 
 ## Prerequisites
 
-Before using this skill, configure the **carbon-mcp MCP server** in your agent. The skill
-relies on three tools the server exposes:
+Before using this skill, configure the **carbon-mcp MCP server** in your agent.
+The skill relies on three tools the server exposes:
 
 | Tool          | Purpose                                                                   |
 | ------------- | ------------------------------------------------------------------------- |
@@ -76,16 +78,18 @@ See the carbon-mcp server documentation for installation and configuration.
 
 **Carbon v11 note for generated React apps:**
 
-- Use `@carbon/react/scss/` SCSS imports — never `@carbon/styles/css/styles.css` (see `references/framework-rules.md` Rule 5)
-- `@carbon/styles` is a transitive dependency of `@carbon/react`; no separate install is required
+- Use `@carbon/react/scss/` SCSS imports — never `@carbon/styles/css/styles.css`
+  (see `references/framework-rules.md` Rule 5)
+- `@carbon/styles` is a transitive dependency of `@carbon/react`; no separate
+  install is required
 - Add `sass` to devDependencies if SCSS compilation is not already configured
 
 ---
 
 ## Single SKILL.md — Cross-client compatibility
 
-This skill uses a single `SKILL.md` file across all clients. Different clients parse the
-YAML frontmatter differently:
+This skill uses a single `SKILL.md` file across all clients. Different clients
+parse the YAML frontmatter differently:
 
 | Frontmatter field           | Claude Code             | IBM Bob                                   | Other clients        |
 | --------------------------- | ----------------------- | ----------------------------------------- | -------------------- |
@@ -96,15 +100,17 @@ YAML frontmatter differently:
 | `allowed-tools`             | ✅ enforced             | not enforced — Bob uses MCP server config | ignored              |
 | `license`, `author`, `tags` | ignored                 | ignored                                   | rendered as raw text |
 
-**Bob note:** `allowed-tools` has no effect in Bob. Tool access is governed by which tools
-are registered in the MCP server configuration. The skill instructions constrain which
-tools the agent calls.
+**Bob note:** `allowed-tools` has no effect in Bob. Tool access is governed by
+which tools are registered in the MCP server configuration. The skill
+instructions constrain which tools the agent calls.
 
-**Other clients:** Clients that do not parse YAML frontmatter render the frontmatter block
-as raw text. This is cosmetic only — all actionable instructions live below the delimiter.
+**Other clients:** Clients that do not parse YAML frontmatter render the
+frontmatter block as raw text. This is cosmetic only — all actionable
+instructions live below the delimiter.
 
-**Reference files:** Claude Code and IBM Bob auto-load the `references/` directory on
-demand. All other clients require the reference content to be manually inlined.
+**Reference files:** Claude Code and IBM Bob auto-load the `references/`
+directory on demand. All other clients require the reference content to be
+manually inlined.
 
 ---
 
@@ -112,11 +118,12 @@ demand. All other clients require the reference content to be manually inlined.
 
 ### IBM Bob
 
-IBM Bob supports skills natively. Place the skill in `.bob/skills/` at your project root
-(project-scoped) or in `~/.bob/skills/` (global).
+IBM Bob supports skills natively. Place the skill in `.bob/skills/` at your
+project root (project-scoped) or in `~/.bob/skills/` (global).
 
-> **Requires Advanced mode.** By default Bob requests approval before activating a skill.
-> Configure Auto-Approve in Bob's settings to suppress the confirmation prompt.
+> **Requires Advanced mode.** By default Bob requests approval before activating
+> a skill. Configure Auto-Approve in Bob's settings to suppress the confirmation
+> prompt.
 
 **Project-scoped:**
 
@@ -125,8 +132,8 @@ mkdir -p /path/to/your-project/.bob/skills
 cp -r carbon-builder /path/to/your-project/.bob/skills/
 ```
 
-Commit `.bob/skills/carbon-builder/` to your repository so the skill is shared across the
-team without each developer needing to install it separately.
+Commit `.bob/skills/carbon-builder/` to your repository so the skill is shared
+across the team without each developer needing to install it separately.
 
 **Global:**
 
@@ -135,8 +142,9 @@ mkdir -p ~/.bob/skills
 cp -r carbon-builder ~/.bob/skills/
 ```
 
-Bob reads `name` and `description` from `SKILL.md` to determine when to activate the skill.
-The `references/` files are automatically available to Bob once the skill is active.
+Bob reads `name` and `description` from `SKILL.md` to determine when to activate
+the skill. The `references/` files are automatically available to Bob once the
+skill is active.
 
 Verify the skill is visible by running `/list-skills` inside Bob.
 
@@ -144,8 +152,9 @@ Verify the skill is visible by running `/list-skills` inside Bob.
 
 ### Claude Code
 
-Claude Code discovers skills automatically from `.claude/skills/` at your project root.
-No additional configuration is needed beyond having carbon-mcp configured as an MCP server.
+Claude Code discovers skills automatically from `.claude/skills/` at your
+project root. No additional configuration is needed beyond having carbon-mcp
+configured as an MCP server.
 
 **Project-scoped (recommended for teams):**
 
@@ -155,8 +164,9 @@ mkdir -p /path/to/your-project/.claude/skills
 cp -r carbon-builder /path/to/your-project/.claude/skills/
 ```
 
-Commit `.claude/skills/carbon-builder/` to your repository so the skill is version-tracked
-alongside the project and available to every developer on the team without a separate install.
+Commit `.claude/skills/carbon-builder/` to your repository so the skill is
+version-tracked alongside the project and available to every developer on the
+team without a separate install.
 
 **Global (available in all projects on this machine):**
 
@@ -169,8 +179,8 @@ cp -r carbon-builder ~/.claude/skills/
 
 ### Cursor
 
-Cursor uses MDC-format rule files in `.cursor/rules/`. Create a rule file with the skill
-content:
+Cursor uses MDC-format rule files in `.cursor/rules/`. Create a rule file with
+the skill content:
 
 ```bash
 mkdir -p .cursor/rules
@@ -189,8 +199,8 @@ alwaysApply: false
 [paste any reference file content from the references/ directory you want included]
 ```
 
-> Cursor does not auto-load the `references/` directory. Inline the content of any
-> reference files you need directly into the MDC file, or create additional
+> Cursor does not auto-load the `references/` directory. Inline the content of
+> any reference files you need directly into the MDC file, or create additional
 > `.mdc` rule files with `alwaysApply: false`.
 
 Ensure carbon-mcp is configured as an MCP server in Cursor's settings.
@@ -199,7 +209,8 @@ Ensure carbon-mcp is configured as an MCP server in Cursor's settings.
 
 ### Windsurf (Codeium)
 
-Windsurf supports custom rules in `.windsurf/rules/`. Create a Markdown rule file:
+Windsurf supports custom rules in `.windsurf/rules/`. Create a Markdown rule
+file:
 
 ```bash
 mkdir -p .windsurf/rules
@@ -210,11 +221,12 @@ Create `.windsurf/rules/carbon-builder.md`:
 ```markdown
 # Carbon Builder
 
-[paste the body of SKILL.md here — everything below the closing --- of the frontmatter]
+[paste the body of SKILL.md here — everything below the closing --- of the
+frontmatter]
 ```
 
-Windsurf activates rules based on description match and workspace context. Inline
-reference file content as needed for full protocol coverage.
+Windsurf activates rules based on description match and workspace context.
+Inline reference file content as needed for full protocol coverage.
 
 Ensure carbon-mcp is configured as an MCP server in Windsurf's settings.
 
@@ -222,8 +234,9 @@ Ensure carbon-mcp is configured as an MCP server in Windsurf's settings.
 
 ### GitHub Copilot
 
-Copilot uses a single `.github/copilot-instructions.md` for custom instructions. Append
-the skill content to that file (run from the directory where you unzipped the download):
+Copilot uses a single `.github/copilot-instructions.md` for custom instructions.
+Append the skill content to that file (run from the directory where you unzipped
+the download):
 
 ```bash
 mkdir -p .github
@@ -231,22 +244,24 @@ mkdir -p .github
 awk '/^---/{f++} f==2{print}' carbon-builder/SKILL.md >> .github/copilot-instructions.md
 ```
 
-> Copilot does not support multi-file skill structures. For full coverage, also append
-> the content of each file in `carbon-builder/references/` to `copilot-instructions.md`.
+> Copilot does not support multi-file skill structures. For full coverage, also
+> append the content of each file in `carbon-builder/references/` to
+> `copilot-instructions.md`.
 
 ---
 
 ### Cline (VS Code)
 
-Cline reads project rules from `.clinerules` at the project root (run from the directory
-where you unzipped the download):
+Cline reads project rules from `.clinerules` at the project root (run from the
+directory where you unzipped the download):
 
 ```bash
 awk '/^---/{f++} f==2{print}' carbon-builder/SKILL.md > .clinerules
 ```
 
-Cline supports MCP servers natively. Ensure carbon-mcp is configured in Cline's MCP
-settings. Append reference file content to `.clinerules` for complete protocol coverage.
+Cline supports MCP servers natively. Ensure carbon-mcp is configured in Cline's
+MCP settings. Append reference file content to `.clinerules` for complete
+protocol coverage.
 
 ---
 
@@ -260,23 +275,23 @@ Add the skill instructions as a custom system prompt in `.continue/config.json`:
 }
 ```
 
-Configure carbon-mcp as an MCP server in the same config file. Inline reference file
-content directly into the system message for full coverage.
+Configure carbon-mcp as an MCP server in the same config file. Inline reference
+file content directly into the system message for full coverage.
 
 ---
 
 ### Aider
 
-Aider reads `CONVENTIONS.md` from the project root as a system-level instruction file
-(run from the directory where you unzipped the download):
+Aider reads `CONVENTIONS.md` from the project root as a system-level instruction
+file (run from the directory where you unzipped the download):
 
 ```bash
 awk '/^---/{f++} f==2{print}' carbon-builder/SKILL.md > CONVENTIONS.md
 ```
 
-Aider supports MCP servers via `--mcp-server` (recent versions). Confirm your Aider
-version supports MCP before configuring carbon-mcp. Without MCP, the three tools are
-unavailable and the skill degrades to static guidance only.
+Aider supports MCP servers via `--mcp-server` (recent versions). Confirm your
+Aider version supports MCP before configuring carbon-mcp. Without MCP, the three
+tools are unavailable and the skill degrades to static guidance only.
 
 ---
 
@@ -325,8 +340,9 @@ The skill activates when the user asks about:
 - IBM Plex font, Carbon spacing tokens, Carbon typography
 - AI Chat (Watson/watsonx) integration or example code
 - Carbon Design System documentation (usage, style, accessibility, content)
-- Carbon Charts — bar, line, pie, donut, area, scatter, bubble, combo, radar, treemap,
-  heatmap, gauge, or meter in React, Angular, Vue, Svelte, vanilla JS, or HTML
+- Carbon Charts — bar, line, pie, donut, area, scatter, bubble, combo, radar,
+  treemap, heatmap, gauge, or meter in React, Angular, Vue, Svelte, vanilla JS,
+  or HTML
 
 ---
 
@@ -360,9 +376,9 @@ Build a donut chart with custom data using Carbon Charts
 
 ## Reference Files
 
-The `references/` directory contains detailed protocols. Claude Code and IBM Bob load
-these automatically. For all other clients, inline the relevant content into the client's
-instruction file.
+The `references/` directory contains detailed protocols. Claude Code and IBM Bob
+load these automatically. For all other clients, inline the relevant content
+into the client's instruction file.
 
 | File                           | Contents                                                                                |
 | ------------------------------ | --------------------------------------------------------------------------------------- |

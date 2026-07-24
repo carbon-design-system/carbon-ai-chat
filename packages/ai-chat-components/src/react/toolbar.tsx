@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React, { ComponentType } from "react";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import { createComponent } from '@lit/react';
+import React, { ComponentType } from 'react';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatToolbar, { Action } from "../components/toolbar/src/toolbar.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
-import { transformReactIconToCarbonIcon } from "../globals/utils/iconTransform.js";
+import CDSAIChatToolbar, { Action } from '../components/toolbar/src/toolbar.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
 
 /**
  * Toolbar action interface that accepts both CarbonIcon and React icon components.
@@ -24,7 +24,7 @@ import { transformReactIconToCarbonIcon } from "../globals/utils/iconTransform.j
  *
  * Works with both React and web component implementations.
  */
-export interface ToolbarAction extends Omit<Action, "icon"> {
+export interface ToolbarAction extends Omit<Action, 'icon'> {
   /**
    * Either an icon from `@carbon/icons` or from `@carbon/icons-react`.
    */
@@ -34,10 +34,10 @@ export interface ToolbarAction extends Omit<Action, "icon"> {
 // Base toolbar component from @lit/react
 const BaseToolbar = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-toolbar",
+    tagName: 'cds-aichat-toolbar',
     elementClass: CDSAIChatToolbar,
     react: React,
-  }),
+  })
 );
 
 /**
@@ -97,7 +97,7 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
       ...action,
       icon: transformReactIconToCarbonIcon(
         action.icon,
-        getSizeInPixels(action.size),
+        getSizeInPixels(action.size)
       ),
       // Preserve testId if provided
       testId: action.testId,
@@ -107,7 +107,7 @@ const Toolbar = React.forwardRef<any, any>((props, ref) => {
   return <BaseToolbar ref={ref} actions={transformedActions} {...restProps} />;
 });
 
-Toolbar.displayName = "Toolbar";
+Toolbar.displayName = 'Toolbar';
 
 export type { Action };
 

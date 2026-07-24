@@ -1,21 +1,38 @@
 # Prompt line / Custom render
 
-The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
+The chat sits in a docked sidebar while the page body holds a grid of clickable
+Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile
+as a custom Tiptap node, and attaches the tile to the message's structured data;
+on send the tile is rendered inside the message bubble.
 
 ## What this example shows
 
-- Registering a host-authored Tiptap node on the chat input via `PublicConfig.input.tiptap.extensions` — its node view renders a Carbon `<cds-tile>`.
-- Bridging a node view's content into the page's light DOM with `renderInLightDom`, so the self-styled `<cds-tile>` displays correctly even though the editor runs inside the chat's shadow root.
-- Driving the input from outside the chat with `instance.input.updateContent` — a single fresh document atomically clears the previous tile and injects the clicked one.
-- Replacing the pending structured data with `instance.input.updateStructuredData`, using the `user_defined` escape hatch, so only the most recently clicked tile rides along with the next send.
-- Rendering the custom node inside the sent user message bubble with `renderUserDefinedInputNode`, which the chat routes for any node type it does not recognize.
-- Reading the tile back out of `request.input.structured_data.user_defined` in `customSendMessage` and echoing which tile was submitted.
+- Registering a host-authored Tiptap node on the chat input via
+  `PublicConfig.input.tiptap.extensions` — its node view renders a Carbon
+  `<cds-tile>`.
+- Bridging a node view's content into the page's light DOM with
+  `renderInLightDom`, so the self-styled `<cds-tile>` displays correctly even
+  though the editor runs inside the chat's shadow root.
+- Driving the input from outside the chat with `instance.input.updateContent` —
+  a single fresh document atomically clears the previous tile and injects the
+  clicked one.
+- Replacing the pending structured data with
+  `instance.input.updateStructuredData`, using the `user_defined` escape hatch,
+  so only the most recently clicked tile rides along with the next send.
+- Rendering the custom node inside the sent user message bubble with
+  `renderUserDefinedInputNode`, which the chat routes for any node type it does
+  not recognize.
+- Reading the tile back out of `request.input.structured_data.user_defined` in
+  `customSendMessage` and echoing which tile was submitted.
 
 ## When to use this pattern
 
-- Your host page has affordances (tiles, cards, menu items) that should compose a structured message rather than free-form text.
-- You want a picked item to appear as a rich, host-styled component in the input and in the sent bubble, not as plain text.
-- You need a sidecar (`structured_data`) describing the user's selection alongside — or instead of — the message text.
+- Your host page has affordances (tiles, cards, menu items) that should compose
+  a structured message rather than free-form text.
+- You want a picked item to appear as a rich, host-styled component in the input
+  and in the sent bubble, not as plain text.
+- You need a sidecar (`structured_data`) describing the user's selection
+  alongside — or instead of — the message text.
 
 ## APIs and props demonstrated
 
@@ -40,7 +57,10 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

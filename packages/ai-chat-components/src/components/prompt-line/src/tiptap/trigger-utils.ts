@@ -22,9 +22,9 @@
  * range was actually exited.
  */
 
-import type { Editor } from "@tiptap/core";
+import type { Editor } from '@tiptap/core';
 
-import type { TriggerChangeEventDetail } from "./types.js";
+import type { TriggerChangeEventDetail } from './types.js';
 
 const lastDetailByEditor = new WeakMap<
   Editor,
@@ -38,7 +38,7 @@ const lastDetailByEditor = new WeakMap<
  */
 export function dispatchTriggerChange(
   editor: Editor,
-  detail: TriggerChangeEventDetail | null,
+  detail: TriggerChangeEventDetail | null
 ): void {
   const previous = lastDetailByEditor.get(editor) ?? null;
   if (areDetailsEqual(previous, detail)) {
@@ -46,17 +46,17 @@ export function dispatchTriggerChange(
   }
   lastDetailByEditor.set(editor, detail);
   editor.view.dom.dispatchEvent(
-    new CustomEvent("cds-aichat-trigger-change", {
+    new CustomEvent('cds-aichat-trigger-change', {
       detail,
       bubbles: true,
       composed: true,
-    }),
+    })
   );
 }
 
 function areDetailsEqual(
   a: TriggerChangeEventDetail | null,
-  b: TriggerChangeEventDetail | null,
+  b: TriggerChangeEventDetail | null
 ): boolean {
   if (a === null || b === null) {
     return a === b;

@@ -7,18 +7,18 @@
  *  @license
  */
 
-import AISkeletonPlaceholder from "../carbon/AISkeletonPlaceholder";
-import AISkeletonText from "../carbon/AISkeletonText";
-import CarbonSkeletonText from "../carbon/SkeletonText";
-import CarbonSkeletonPlaceholder from "../carbon/SkeletonPlaceholder";
-import React from "react";
-import { useSelector } from "../../hooks/useSelector";
+import AISkeletonPlaceholder from '../carbon/AISkeletonPlaceholder';
+import AISkeletonText from '../carbon/AISkeletonText';
+import CarbonSkeletonText from '../carbon/SkeletonText';
+import CarbonSkeletonPlaceholder from '../carbon/SkeletonPlaceholder';
+import React from 'react';
+import { useSelector } from '../../hooks/useSelector';
 
-import { AppState } from "../../../types/state/AppState";
+import { AppState } from '../../../types/state/AppState';
 
 function SkeletonText(props: any) {
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
   return aiEnabled ? (
     <AISkeletonText {...props} />
@@ -29,7 +29,7 @@ function SkeletonText(props: any) {
 
 function SkeletonPlaceholder(props: any) {
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
   return aiEnabled ? (
     <AISkeletonPlaceholder {...props} />

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -24,7 +24,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `calc(100vh - 4rem)`.
    */
-  height = "height",
+  height = 'height',
 
   /**
    * Float layout only.
@@ -33,7 +33,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `640px`.
    */
-  max_height = "max-height",
+  max_height = 'max-height',
 
   /**
    * Float layout only.
@@ -42,7 +42,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `min(380px, var(--cds-aichat-max-width))`.
    */
-  width = "width",
+  width = 'width',
 
   /**
    * Float layout only.
@@ -51,7 +51,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `max(150px, calc(min(256px, 100vh) - var(--cds-aichat-bottom-position)))`.
    */
-  min_height = "min-height",
+  min_height = 'min-height',
 
   /**
    * Float layout only.
@@ -60,7 +60,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to the inherited value of `--cds-aichat-max-width` (not explicitly set).
    */
-  max_width = "max-width",
+  max_width = 'max-width',
 
   /**
    * Float layout only.
@@ -69,7 +69,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `99999`.
    */
-  z_index = "z-index",
+  z_index = 'z-index',
 
   /**
    * Float layout only.
@@ -78,7 +78,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `48px`.
    */
-  bottom_position = "bottom-position",
+  bottom_position = 'bottom-position',
 
   /**
    * Float layout only.
@@ -87,7 +87,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `32px`.
    */
-  right_position = "right-position",
+  right_position = 'right-position',
 
   /**
    * Float layout only.
@@ -96,7 +96,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `auto`.
    */
-  top_position = "top-position",
+  top_position = 'top-position',
 
   /**
    * Float layout only.
@@ -105,7 +105,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `auto`.
    */
-  left_position = "left-position",
+  left_position = 'left-position',
 
   /**
    * Float layout only.
@@ -114,7 +114,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `56px`.
    */
-  launcher_default_size = "launcher-default-size",
+  launcher_default_size = 'launcher-default-size',
 
   /**
    * Float layout only.
@@ -123,7 +123,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `48px`.
    */
-  launcher_position_bottom = "launcher-position-bottom",
+  launcher_position_bottom = 'launcher-position-bottom',
 
   /**
    * Float layout only.
@@ -132,7 +132,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `32px`.
    */
-  launcher_position_right = "launcher-position-right",
+  launcher_position_right = 'launcher-position-right',
 
   /**
    * Float layout only.
@@ -141,7 +141,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `280px`.
    */
-  launcher_extended_width = "launcher-extended-width",
+  launcher_extended_width = 'launcher-extended-width',
 
   /**
    * Shared token.
@@ -150,7 +150,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `672px`.
    */
-  messages_max_width = "messages-max-width",
+  messages_max_width = 'messages-max-width',
 
   /**
    * Shared token.
@@ -159,7 +159,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `320px`.
    */
-  messages_min_width = "messages-min-width",
+  messages_min_width = 'messages-min-width',
 
   /**
    * Shared token.
@@ -168,7 +168,7 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `480px`.
    */
-  workspace_min_width = "workspace-min-width",
+  workspace_min_width = 'workspace-min-width',
 
   /*
   /**
@@ -187,96 +187,96 @@ export enum LayoutCustomProperties {
    *
    * Defaults to `424px`.
    */
-  card_max_width = "card-max-width",
+  card_max_width = 'card-max-width',
 
   /**
    * Shared token.
    *
    * Launcher button background color.
    */
-  launcher_color_background = "launcher-color-background",
+  launcher_color_background = 'launcher-color-background',
 
   /**
    * Shared token.
    *
    * Launcher avatar/icon color.
    */
-  launcher_color_avatar = "launcher-color-avatar",
+  launcher_color_avatar = 'launcher-color-avatar',
 
   /**
    * Shared token.
    *
    * Launcher hover state background color.
    */
-  launcher_color_background_hover = "launcher-color-background-hover",
+  launcher_color_background_hover = 'launcher-color-background-hover',
 
   /**
    * Shared token.
    *
    * Launcher active state background color.
    */
-  launcher_color_background_active = "launcher-color-background-active",
+  launcher_color_background_active = 'launcher-color-background-active',
 
   /**
    * Shared token.
    *
    * Launcher focus border color.
    */
-  launcher_color_focus_border = "launcher-color-focus-border",
+  launcher_color_focus_border = 'launcher-color-focus-border',
 
   /**
    * Shared token.
    *
    * Launcher text color on mobile.
    */
-  launcher_mobile_color_text = "launcher-mobile-color-text",
+  launcher_mobile_color_text = 'launcher-mobile-color-text',
 
   /**
    * Shared token.
    *
    * Expanded launcher message text color.
    */
-  launcher_expanded_message_color_text = "launcher-expanded-message-color-text",
+  launcher_expanded_message_color_text = 'launcher-expanded-message-color-text',
 
   /**
    * Shared token.
    *
    * Expanded launcher message background color.
    */
-  launcher_expanded_message_color_background = "launcher-expanded-message-color-background",
+  launcher_expanded_message_color_background = 'launcher-expanded-message-color-background',
 
   /**
    * Shared token.
    *
    * Expanded launcher message hover background color.
    */
-  launcher_expanded_message_color_background_hover = "launcher-expanded-message-color-background-hover",
+  launcher_expanded_message_color_background_hover = 'launcher-expanded-message-color-background-hover',
 
   /**
    * Shared token.
    *
    * Expanded launcher message active background color.
    */
-  launcher_expanded_message_color_background_active = "launcher-expanded-message-color-background-active",
+  launcher_expanded_message_color_background_active = 'launcher-expanded-message-color-background-active',
 
   /**
    * Shared token.
    *
    * Expanded launcher message focus border color.
    */
-  launcher_expanded_message_color_focus_border = "launcher-expanded-message-color-focus-border",
+  launcher_expanded_message_color_focus_border = 'launcher-expanded-message-color-focus-border',
 
   /**
    * Shared token.
    *
    * Unread indicator background color.
    */
-  unread_indicator_color_background = "unread-indicator-color-background",
+  unread_indicator_color_background = 'unread-indicator-color-background',
 
   /**
    * Shared token.
    *
    * Unread indicator text color.
    */
-  unread_indicator_color_text = "unread-indicator-color-text",
+  unread_indicator_color_text = 'unread-indicator-color-text',
 }

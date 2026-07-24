@@ -12,7 +12,7 @@
  */
 
 function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof navigator !== "undefined";
+  return typeof window !== 'undefined' && typeof navigator !== 'undefined';
 }
 
 let screenWidth = 0;

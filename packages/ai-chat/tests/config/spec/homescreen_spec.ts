@@ -7,20 +7,20 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { HomeScreenConfig } from "../../../src/types/config/HomeScreenConfig";
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { doCreateStore } from "../../../src/chat/store/doCreateStore";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { NamespaceService } from "../../../src/chat/services/NamespaceService";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { HomeScreenConfig } from '../../../src/types/config/HomeScreenConfig';
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+import { doCreateStore } from '../../../src/chat/store/doCreateStore';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { NamespaceService } from '../../../src/chat/services/NamespaceService';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-describe("Config Homescreen", () => {
+describe('Config Homescreen', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -30,19 +30,19 @@ describe("Config Homescreen", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("homescreen", () => {
-    it("should store complete homescreen config in Redux state", async () => {
+  describe('homescreen', () => {
+    it('should store complete homescreen config in Redux state', async () => {
       const homescreen: HomeScreenConfig = {
         isOn: true,
-        greeting: "Welcome to the assistant!",
+        greeting: 'Welcome to the assistant!',
         starters: {
           isOn: true,
           buttons: [
-            { label: "Get started", isSelected: true },
-            { label: "What can you do?" },
+            { label: 'Get started', isSelected: true },
+            { label: 'What can you do?' },
           ],
         },
         customContentOnly: false,
@@ -65,7 +65,7 @@ describe("Config Homescreen", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -73,10 +73,10 @@ describe("Config Homescreen", () => {
       expect(state.config.public.homescreen).toEqual(homescreen);
     });
 
-    it("should store partial homescreen config (isOn + greeting)", async () => {
+    it('should store partial homescreen config (isOn + greeting)', async () => {
       const homescreen: HomeScreenConfig = {
         isOn: true,
-        greeting: "Hello!",
+        greeting: 'Hello!',
       };
 
       const props: Partial<ChatContainerProps> = {
@@ -95,7 +95,7 @@ describe("Config Homescreen", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -103,7 +103,7 @@ describe("Config Homescreen", () => {
       expect(state.config.public.homescreen).toEqual(homescreen);
     });
 
-    it("should handle undefined homescreen in Redux state", async () => {
+    it('should handle undefined homescreen in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // homescreen intentionally omitted
@@ -120,7 +120,7 @@ describe("Config Homescreen", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -128,35 +128,35 @@ describe("Config Homescreen", () => {
       expect(state.config.public.homescreen).toBeUndefined();
     });
 
-    describe("Dynamic Homescreen Config Updates", () => {
+    describe('Dynamic Homescreen Config Updates', () => {
       let serviceManager: ServiceManager;
 
       beforeEach(() => {
         const initialConfig: PublicConfig = {
-          assistantName: "Test Assistant",
+          assistantName: 'Test Assistant',
         };
 
         const store = doCreateStore(initialConfig, {} as ServiceManager);
         serviceManager = {
           store,
-          namespace: new NamespaceService("test"),
+          namespace: new NamespaceService('test'),
           messageService: { timeoutMS: 30000 } as any,
           humanAgentService: null,
         } as ServiceManager;
       });
 
-      it("should handle homescreen config changes dynamically", async () => {
+      it('should handle homescreen config changes dynamically', async () => {
         const previousConfig: PublicConfig = {
           homescreen: {
             isOn: true,
-            greeting: "Old greeting",
+            greeting: 'Old greeting',
           },
         };
 
         const newConfig: PublicConfig = {
           homescreen: {
             isOn: false,
-            greeting: "New greeting",
+            greeting: 'New greeting',
             customContentOnly: true,
           },
         };
@@ -164,20 +164,20 @@ describe("Config Homescreen", () => {
         await applyConfigChangesDynamically(
           previousConfig,
           newConfig,
-          serviceManager,
+          serviceManager
         );
 
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.homescreen?.isOn).toBe(false);
-        expect(state.config.public.homescreen?.greeting).toBe("New greeting");
+        expect(state.config.public.homescreen?.greeting).toBe('New greeting');
         expect(state.config.public.homescreen?.customContentOnly).toBe(true);
       });
 
-      it("should handle homescreen config changes dynamically when made undefined", async () => {
+      it('should handle homescreen config changes dynamically when made undefined', async () => {
         const previousConfig: PublicConfig = {
           homescreen: {
             isOn: true,
-            greeting: "Old greeting",
+            greeting: 'Old greeting',
           },
         };
 
@@ -186,13 +186,13 @@ describe("Config Homescreen", () => {
         await applyConfigChangesDynamically(
           previousConfig,
           newConfig,
-          serviceManager,
+          serviceManager
         );
 
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.homescreen?.isOn).toBe(undefined);
         expect(
-          state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
+          state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
         ).toBe(false);
       });
     });

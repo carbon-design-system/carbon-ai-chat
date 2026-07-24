@@ -7,17 +7,17 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { CarbonTheme } from "../../../src/types/config/CarbonTheme";
-import { CornersType } from "../../../src/types/config/CornersType";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
+import { CornersType } from '../../../src/types/config/CornersType';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
-describe("Config Theme", () => {
+describe('Config Theme', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -27,11 +27,11 @@ describe("Config Theme", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("theme", () => {
-    it("should store complete theme in Redux state", async () => {
+  describe('theme', () => {
+    it('should store complete theme in Redux state', async () => {
       const layout = {
         corners: CornersType.SQUARE,
       };
@@ -54,7 +54,7 @@ describe("Config Theme", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -73,7 +73,7 @@ describe("Config Theme", () => {
       });
     });
 
-    it("should store partial theme in Redux state", async () => {
+    it('should store partial theme in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         injectCarbonTheme: CarbonTheme.WHITE,
@@ -90,14 +90,14 @@ describe("Config Theme", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults).toEqual({
-        derivedCarbonTheme: "white",
-        originalCarbonTheme: "white",
+        derivedCarbonTheme: 'white',
+        originalCarbonTheme: 'white',
         corners: {
           startStart: CornersType.ROUND,
           startEnd: CornersType.ROUND,
@@ -109,7 +109,7 @@ describe("Config Theme", () => {
       });
     });
 
-    it("should store theme with default values in Redux state", async () => {
+    it('should store theme with default values in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
       };
@@ -125,13 +125,13 @@ describe("Config Theme", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults).toEqual({
-        derivedCarbonTheme: "white",
+        derivedCarbonTheme: 'white',
         originalCarbonTheme: null,
         corners: {
           startStart: CornersType.ROUND,
@@ -144,7 +144,7 @@ describe("Config Theme", () => {
       });
     });
 
-    it("should use default theme when not specified", async () => {
+    it('should use default theme when not specified', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // theme intentionally omitted
@@ -161,23 +161,23 @@ describe("Config Theme", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
       expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        "white",
+        'white'
       );
       expect(
-        state.config.derived.themeWithDefaults.originalCarbonTheme,
+        state.config.derived.themeWithDefaults.originalCarbonTheme
       ).toEqual(null);
     });
 
     // When injectCarbonTheme is unset, it inherits tokens from host
 
-    it("should properly set derivedCarbonTheme and originalCarbonTheme in Redux state", async () => {
+    it('should properly set derivedCarbonTheme and originalCarbonTheme in Redux state', async () => {
       const layout = {
         corners: CornersType.SQUARE,
       };
@@ -200,16 +200,16 @@ describe("Config Theme", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        CarbonTheme.G90,
+        CarbonTheme.G90
       );
       expect(
-        state.config.derived.themeWithDefaults.originalCarbonTheme,
+        state.config.derived.themeWithDefaults.originalCarbonTheme
       ).toEqual(CarbonTheme.G90);
       expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(true);
       expect(state.config.derived.themeWithDefaults.corners).toEqual({
@@ -220,7 +220,7 @@ describe("Config Theme", () => {
       });
     });
 
-    it("should preserve derivedCarbonTheme during dynamic config updates in inherit mode", async () => {
+    it('should preserve derivedCarbonTheme during dynamic config updates in inherit mode', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // No injectCarbonTheme - inherit mode
@@ -238,7 +238,7 @@ describe("Config Theme", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const serviceManager = (capturedInstance as any).serviceManager;
@@ -246,10 +246,10 @@ describe("Config Theme", () => {
 
       // Simulate ThemeWatcherService setting a detected theme
       store.dispatch({
-        type: "UPDATE_THEME_STATE",
+        type: 'UPDATE_THEME_STATE',
         themeState: {
           originalCarbonTheme: null,
-          derivedCarbonTheme: "g10",
+          derivedCarbonTheme: 'g10',
           aiEnabled: true,
           corners: {
             startStart: CornersType.ROUND,
@@ -262,30 +262,30 @@ describe("Config Theme", () => {
 
       let state: AppState = store.getState();
       expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        "g10",
+        'g10'
       );
 
       // Simulate dynamic config update (e.g., toggling aiEnabled).
       await applyConfigChangesDynamically(
         { aiEnabled: true }, // previous
         { aiEnabled: false }, // next
-        serviceManager,
+        serviceManager
       );
 
       // Check that derivedCarbonTheme was preserved
       state = store.getState();
       expect(
-        state.config.derived.themeWithDefaults.originalCarbonTheme,
+        state.config.derived.themeWithDefaults.originalCarbonTheme
       ).toEqual(null);
       expect(state.config.derived.themeWithDefaults.derivedCarbonTheme).toEqual(
-        "g10",
+        'g10'
       ); // Should be preserved
       expect(state.config.derived.themeWithDefaults.aiEnabled).toEqual(false); // Should be updated
     });
   });
 });
 
-it("should store per-corner config in Redux state", async () => {
+it('should store per-corner config in Redux state', async () => {
   const layout = {
     corners: {
       startStart: CornersType.ROUND,
@@ -313,7 +313,7 @@ it("should store per-corner config in Redux state", async () => {
     () => {
       expect(capturedInstance).not.toBeNull();
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 
   const store = (capturedInstance as any).serviceManager.store;
@@ -326,7 +326,7 @@ it("should store per-corner config in Redux state", async () => {
   });
 });
 
-it("should handle partial per-corner config with defaults", async () => {
+it('should handle partial per-corner config with defaults', async () => {
   const layout = {
     corners: {
       startStart: CornersType.SQUARE,
@@ -351,7 +351,7 @@ it("should handle partial per-corner config with defaults", async () => {
     () => {
       expect(capturedInstance).not.toBeNull();
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 
   const store = (capturedInstance as any).serviceManager.store;
@@ -364,7 +364,7 @@ it("should handle partial per-corner config with defaults", async () => {
   });
 });
 
-it("should force all corners to square when showFrame is false", async () => {
+it('should force all corners to square when showFrame is false', async () => {
   const layout = {
     showFrame: false,
     corners: {
@@ -391,7 +391,7 @@ it("should force all corners to square when showFrame is false", async () => {
     () => {
       expect(capturedInstance).not.toBeNull();
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 
   const store = (capturedInstance as any).serviceManager.store;

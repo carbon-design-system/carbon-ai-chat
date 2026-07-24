@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -14,77 +14,77 @@ import {
   Launch16,
   Maximize16,
   Close16,
-} from "@carbon/icons";
-import { action } from "storybook/actions";
+} from '@carbon/icons';
+import { action } from 'storybook/actions';
 
 export const actionLists = {
-  "Advanced list": [
+  'Advanced list': [
     {
-      text: "Version",
+      text: 'Version',
       icon: Version16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Download",
+      text: 'Download',
       icon: Download16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Share",
+      text: 'Share',
       icon: Share16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Launch",
+      text: 'Launch',
       icon: Launch16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
   ],
-  "Basic list": [
+  'Basic list': [
     {
-      text: "Launch",
+      text: 'Launch',
       icon: Launch16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
   ],
-  "Close only": [
+  'Close only': [
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
-      onClick: action("onClick"),
+      size: 'md',
+      onClick: action('onClick'),
     },
   ],
   None: [],

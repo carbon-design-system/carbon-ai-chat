@@ -27,8 +27,8 @@
  * Start reading at: `onBeforeRender` and the view-change handlers.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/ai-chat/css/chat-sidebar-layout.css";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/ai-chat/css/chat-sidebar-layout.css';
 
 import {
   BusEventType,
@@ -46,19 +46,19 @@ import {
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
+} from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import AiLaunch20 from '@carbon/icons/es/ai-launch/20.js';
 
-import { customSendMessage } from "./customSendMessage";
-import "./inventory-report-example";
-import "./inventory-status-example";
-import "./outstanding-orders-example";
-import "./outstanding-orders-card";
-import "./sql-editor-example";
-import "./styles.css";
+import { customSendMessage } from './customSendMessage';
+import './inventory-report-example';
+import './inventory-status-example';
+import './outstanding-orders-example';
+import './outstanding-orders-card';
+import './sql-editor-example';
+import './styles.css';
 
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -76,7 +76,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   // Disable shadow DOM so the document-level sidebar-layout CSS imported from
   // @carbon/ai-chat (and the local styles.css) applies to the host elements.
@@ -110,7 +110,7 @@ export class Demo extends LitElement {
   accessor workspaceExpanded: boolean = false;
 
   @state()
-  accessor workspaceAnimating: "expanding" | "contracting" | null = null;
+  accessor workspaceAnimating: 'expanding' | 'contracting' | null = null;
 
   @state()
   accessor clickInProgress: boolean = false;
@@ -174,19 +174,19 @@ export class Demo extends LitElement {
     // Debug log of the pre-open payload so developers can see the data shape during integration.
     console.log(
       data,
-      "This event can be used to load additional resources into the workspace while displaying a manual loading state.",
+      'This event can be used to load additional resources into the workspace while displaying a manual loading state.'
     );
     // Trace marker that pairs with the contraction log below so the expand/contract sequence is observable.
-    console.log("Expanding sidebar - workspace opening");
+    console.log('Expanding sidebar - workspace opening');
     // Apply the expanding modifier first so the width transition fires alongside the panel's own open animation.
-    this.workspaceAnimating = "expanding";
+    this.workspaceAnimating = 'expanding';
     this.workspaceExpanded = true;
   };
 
   workspacePanelOpenHandler = (event: BusEvent) => {
     const { data } = event as BusEventWorkspaceOpen;
     // Debug log so integrators can see the resolved open payload that downstream components consume.
-    console.log(data, "Workspace panel opened");
+    console.log(data, 'Workspace panel opened');
 
     // Pull the workspaceId and additionalData out of the event so renderWorkspaceElement can route on type.
     const { workspaceId, additionalData } = data;
@@ -198,16 +198,16 @@ export class Demo extends LitElement {
 
   workspacePanelPreCloseHandler = () => {
     // Trace marker so the contract phase is visible in the console alongside the expand log.
-    console.log("Contracting sidebar - workspace closing");
+    console.log('Contracting sidebar - workspace closing');
     // Switch to the contracting modifier before the panel hides so the width transition is in flight when it disappears.
-    this.workspaceAnimating = "contracting";
+    this.workspaceAnimating = 'contracting';
     this.workspaceExpanded = false;
   };
 
   workspacePanelCloseHandler = (event: BusEvent) => {
     const { data } = event as BusEventWorkspaceClose;
     // Debug log so the close payload is visible during integration.
-    console.log(data, "Workspace panel closed");
+    console.log(data, 'Workspace panel closed');
 
     // Reset workspace state so renderWorkspaceElement returns empty html on the next render.
     this.workspaceType = null;
@@ -239,7 +239,7 @@ export class Demo extends LitElement {
 
   handleTransitionEnd = (event: TransitionEvent) => {
     // Only the width transition signals expand/contract completion; other transitions like right/left would clear too early.
-    if (event.propertyName === "width") {
+    if (event.propertyName === 'width') {
       this.workspaceAnimating = null;
     }
   };
@@ -272,14 +272,14 @@ export class Demo extends LitElement {
    * streaming state, and element lifecycle.
    */
   renderUserDefinedCallback = (
-    state: RenderUserDefinedState,
+    state: RenderUserDefinedState
   ): HTMLElement | null => {
     const messageItem = state.messageItem as UserDefinedItem | undefined;
 
     if (
-      messageItem?.user_defined?.user_defined_type === "outstanding_orders_card"
+      messageItem?.user_defined?.user_defined_type === 'outstanding_orders_card'
     ) {
-      const el = document.createElement("outstanding-orders-card") as any;
+      const el = document.createElement('outstanding-orders-card') as any;
       el.workspaceId = messageItem.user_defined?.workspace_id;
       el.additionalData = messageItem.user_defined?.additional_data;
       el.onMaximize = () => {
@@ -313,34 +313,30 @@ export class Demo extends LitElement {
     }
 
     switch (this.workspaceType) {
-      case "inventory_report":
+      case 'inventory_report':
         return html`<inventory-report-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
           location="workspace"
-          valueFromParent="Hello from parent!"
-        ></inventory-report-example>`;
-      case "inventory_status":
+          valueFromParent="Hello from parent!"></inventory-report-example>`;
+      case 'inventory_status':
         return html`<inventory-status-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
-          location="workspace"
-        ></inventory-status-example>`;
-      case "outstanding_orders":
+          location="workspace"></inventory-status-example>`;
+      case 'outstanding_orders':
         return html`<outstanding-orders-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
           .additionalData=${this.workspaceAdditionalData}
-          location="workspace"
-        ></outstanding-orders-example>`;
-      case "sql_editor":
+          location="workspace"></outstanding-orders-example>`;
+      case 'sql_editor':
         return html`<sql-editor-example
           .instance=${this.instance}
           .workspaceId=${this.workspaceId}
-          .additionalData=${this.workspaceAdditionalData}
-        ></sql-editor-example>`;
+          .additionalData=${this.workspaceAdditionalData}></sql-editor-example>`;
       default:
         return html``;
     }
@@ -349,19 +345,19 @@ export class Demo extends LitElement {
   getSidebarClassName() {
     // Compose the shipped `cds-aichat-sidebar` base class with this example's
     // workspace expand/contract modifiers.
-    let className = "cds-aichat-sidebar";
+    let className = 'cds-aichat-sidebar';
     if (this.workspaceExpanded) {
-      className += " cds-aichat-sidebar--expanded";
+      className += ' cds-aichat-sidebar--expanded';
     }
-    if (this.workspaceAnimating === "expanding") {
-      className += " cds-aichat-sidebar--expanding";
-    } else if (this.workspaceAnimating === "contracting") {
-      className += " cds-aichat-sidebar--contracting";
+    if (this.workspaceAnimating === 'expanding') {
+      className += ' cds-aichat-sidebar--expanding';
+    } else if (this.workspaceAnimating === 'contracting') {
+      className += ' cds-aichat-sidebar--contracting';
     }
     if (this.sideBarClosing) {
-      className += " cds-aichat-sidebar--closing";
+      className += ' cds-aichat-sidebar--closing';
     } else if (!this.sideBarOpen) {
-      className += " cds-aichat-sidebar--closed";
+      className += ' cds-aichat-sidebar--closed';
     }
     return className;
   }
@@ -378,26 +374,23 @@ export class Demo extends LitElement {
                   class="app-header__button"
                   @click=${this.handleHeaderButtonClick}
                   ?disabled=${this.clickInProgress}
-                  aria-label="Toggle AI Chat"
-                >
+                  aria-label="Toggle AI Chat">
                   ${iconLoader(AiLaunch20)}
                 </button>
               `
-            : ""
+            : ''
         }
       </header>
       <div
         class=${this.getSidebarClassName()}
-        @transitionend=${this.handleTransitionEnd}
-      >
+        @transitionend=${this.handleTransitionEnd}>
         <cds-aichat-custom-element
           .onBeforeRender=${this.onBeforeRender}
           .messaging=${config.messaging}
           .layout=${config.layout}
           .openChatByDefault=${config.openChatByDefault}
           .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-          class="chat-custom-element"
-        >
+          class="chat-custom-element">
           <div slot="workspacePanelElement">
             ${this.renderWorkspaceElement()}
           </div>

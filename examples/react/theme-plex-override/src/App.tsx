@@ -13,19 +13,19 @@ import {
   ChatInstance,
   FeedbackInteractionType,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
 // These functions hook up to your back-end.
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 // This function returns a React component for user defined responses.
-import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
+import { renderUserDefinedResponseFactory } from './renderUserDefinedResponse';
 
 // Import the SCSS with the Plex font override — this must come before any
 // other @carbon/styles import so the $css--font-face and $font-families
 // configuration takes effect first.
-import "./styles.scss";
+import './styles.scss';
 
 /**
  * Define your config outside your React component, or wrap it in useMemo /
@@ -81,7 +81,7 @@ function App() {
 
   const renderUserDefinedResponse = useMemo(
     () => renderUserDefinedResponseFactory(activeResponseId),
-    [activeResponseId],
+    [activeResponseId]
   );
 
   return (
@@ -94,6 +94,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

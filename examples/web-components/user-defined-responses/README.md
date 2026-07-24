@@ -1,18 +1,26 @@
 # User-defined responses
 
-Lit example that renders `user_defined` responses through the `renderUserDefinedResponse` callback and tracks the most recent message via `STATE_CHANGE` and `activeResponseId`.
+Lit example that renders `user_defined` responses through the
+`renderUserDefinedResponse` callback and tracks the most recent message via
+`STATE_CHANGE` and `activeResponseId`.
 
 ## What this example shows
 
 - Mounting `<cds-aichat-custom-element>`.
-- Returning an `HTMLElement` from `renderUserDefinedResponse` for `user_defined` message items.
-- Subscribing to `BusEventType.STATE_CHANGE` to track the chat's `activeResponseId` and update tracked DOM nodes when the latest message changes.
-- Tracking the rendered nodes in a `Map` so the parent component can mutate their content as `activeResponseId` flips.
+- Returning an `HTMLElement` from `renderUserDefinedResponse` for `user_defined`
+  message items.
+- Subscribing to `BusEventType.STATE_CHANGE` to track the chat's
+  `activeResponseId` and update tracked DOM nodes when the latest message
+  changes.
+- Tracking the rendered nodes in a `Map` so the parent component can mutate
+  their content as `activeResponseId` flips.
 
 ## When to use this pattern
 
-- Your backend emits `user_defined` response types and you want to render them with your own DOM (or another web component).
-- You need to highlight or specially treat the latest response (e.g. show "in-progress" UI on the most recent message only).
+- Your backend emits `user_defined` response types and you want to render them
+  with your own DOM (or another web component).
+- You need to highlight or specially treat the latest response (e.g. show
+  "in-progress" UI on the most recent message only).
 
 ## APIs and props demonstrated
 
@@ -31,7 +39,9 @@ Lit example that renders `user_defined` responses through the `renderUserDefined
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors.
 
 From the repository root:
 

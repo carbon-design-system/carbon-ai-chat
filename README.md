@@ -2,7 +2,8 @@
   Carbon AI Chat
 </h1>
 
-> Carbon AI Chat is an opinionated but extensible chat application that's available as both React and web components.
+> Carbon AI Chat is an opinionated but extensible chat application that's
+> available as both React and web components.
 
 ## Getting started
 
@@ -16,7 +17,8 @@ or
 yarn add @carbon/ai-chat
 ```
 
-This will install the package that contains both the web component and React versions of the chat application.
+This will install the package that contains both the web component and React
+versions of the chat application.
 
 ## 📖 Documentation
 
@@ -27,21 +29,30 @@ This will install the package that contains both the web component and React ver
 
 ## Carbon AI Chat components
 
-You may make use of individual React and web components from `@carbon/ai-chat` with `@carbon/ai-chat-components`.
+You may make use of individual React and web components from `@carbon/ai-chat`
+with `@carbon/ai-chat-components`.
 
-This is helpful if you are creating your our Carbon compliant chat widget, or if you want to use existing components when extending Carbon AI chat.
+This is helpful if you are creating your our Carbon compliant chat widget, or if
+you want to use existing components when extending Carbon AI chat.
 
 The available AI Chat components are viewable in our storybooks
 
-For React: https://chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
+For React:
+https://chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
 
-For web components: https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
+For web components:
+https://chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
 
 [See the @carbon/ai-chat-components README.md](./packages/ai-chat-components/README.md).
 
 ## Peer dependency changes
 
-This `@carbon/ai-chat` package uses peer dependencies to avoid bundling dependencies that you may already have installed or may want to control the version of. [See the peer dependency changes documentation](./docs/peer-dependency-changes.md) for a detailed history of all peer dependency additions, removals, and version updates across package versions.
+This `@carbon/ai-chat` package uses peer dependencies to avoid bundling
+dependencies that you may already have installed or may want to control the
+version of.
+[See the peer dependency changes documentation](./docs/peer-dependency-changes.md)
+for a detailed history of all peer dependency additions, removals, and version
+updates across package versions.
 
 ## Related tools
 
@@ -53,8 +64,9 @@ Licensed under the [Apache 2.0 License](/LICENSE).
 
 ## <picture><source height="20" width="20" media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ibm-telemetry/telemetry-js/main/docs/images/ibm-telemetry-dark.svg"><source height="20" width="20" media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/ibm-telemetry/telemetry-js/main/docs/images/ibm-telemetry-light.svg"><img height="20" width="20" alt="IBM Telemetry" src="https://raw.githubusercontent.com/ibm-telemetry/telemetry-js/main/docs/images/ibm-telemetry-light.svg"></picture> IBM Telemetry
 
-This package uses IBM Telemetry to collect de-identified and anonymized metrics data. By installing
-this package as a dependency you are agreeing to telemetry collection. To opt out, see
+This package uses IBM Telemetry to collect de-identified and anonymized metrics
+data. By installing this package as a dependency you are agreeing to telemetry
+collection. To opt out, see
 [Opting out of IBM Telemetry data collection](https://github.com/ibm-telemetry/telemetry-js/tree/main#opting-out-of-ibm-telemetry-data-collection).
 For more information on the data being collected, please see the
 [IBM Telemetry documentation](https://github.com/ibm-telemetry/telemetry-js/tree/main#ibm-telemetry-collection-basics).

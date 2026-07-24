@@ -1,18 +1,27 @@
 # Workspace
 
-Demonstrates the workspace panel feature: chat messages can open rich side-by-side content (inventory report, inventory status, outstanding orders, SQL editor) in a dedicated `workspacePanelElement` slot.
+Demonstrates the workspace panel feature: chat messages can open rich
+side-by-side content (inventory report, inventory status, outstanding orders,
+SQL editor) in a dedicated `workspacePanelElement` slot.
 
 ## What this example shows
 
-- Mounting `cds-aichat-custom-element` full-screen with `showFrame: false` and a chat-messages max-width.
-- Subscribing to `WORKSPACE_PRE_OPEN`, `WORKSPACE_OPEN`, and `WORKSPACE_CLOSE` bus events to track the active workspace.
-- Rendering one of four Lit workspace views into the `workspacePanelElement` slot based on `additionalData.type`.
-- Using `renderUserDefinedResponse` to inject an `<outstanding-orders-card>` whose "maximize" action opens the workspace via `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
+- Mounting `cds-aichat-custom-element` full-screen with `showFrame: false` and a
+  chat-messages max-width.
+- Subscribing to `WORKSPACE_PRE_OPEN`, `WORKSPACE_OPEN`, and `WORKSPACE_CLOSE`
+  bus events to track the active workspace.
+- Rendering one of four Lit workspace views into the `workspacePanelElement`
+  slot based on `additionalData.type`.
+- Using `renderUserDefinedResponse` to inject an `<outstanding-orders-card>`
+  whose "maximize" action opens the workspace via
+  `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
 
 ## When to use this pattern
 
-- Assistants that need to open full-size artifacts (dashboards, reports, editors) alongside the chat.
-- Custom-element hosts that control chat sizing and want inline workspace content without a separate launcher layout.
+- Assistants that need to open full-size artifacts (dashboards, reports,
+  editors) alongside the chat.
+- Custom-element hosts that control chat sizing and want inline workspace
+  content without a separate launcher layout.
 
 ## APIs and props demonstrated
 
@@ -40,7 +49,10 @@ Demonstrates the workspace panel feature: chat messages can open rich side-by-si
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

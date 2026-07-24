@@ -1,19 +1,25 @@
 # Custom message footer
 
-Render your own content beneath an assistant message — here a copy button — with the `renderCustomMessageFooter` render prop.
+Render your own content beneath an assistant message — here a copy button — with
+the `renderCustomMessageFooter` render prop.
 
 ## What this example shows
 
-- Attaching a `custom_footer_slot` to an assistant message from `customSendMessage`, with `additional_data` that drives the footer.
-- Rendering a footer with `renderCustomMessageFooter`, which returns a React component for the slot.
-- Reading `additional_data` in the footer to decide whether to show the action (here, an `allow_copy` flag that enables the copy button).
-- Hosting the chat full screen with `ChatCustomElement`, `layout.showFrame: false`, and `openChatByDefault`.
+- Attaching a `custom_footer_slot` to an assistant message from
+  `customSendMessage`, with `additional_data` that drives the footer.
+- Rendering a footer with `renderCustomMessageFooter`, which returns a React
+  component for the slot.
+- Reading `additional_data` in the footer to decide whether to show the action
+  (here, an `allow_copy` flag that enables the copy button).
+- Hosting the chat full screen with `ChatCustomElement`,
+  `layout.showFrame: false`, and `openChatByDefault`.
 
 ## When to use this pattern
 
 - You want per-message actions (copy, share, rate) under assistant responses.
 - Your backend decides, per message, which footer actions to offer.
-- You need the footer UI to live in your own component, styled with your app's CSS.
+- You need the footer UI to live in your own component, styled with your app's
+  CSS.
 
 ## APIs and props demonstrated
 
@@ -28,7 +34,10 @@ Render your own content beneath an assistant message — here a copy button — 
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

@@ -14,19 +14,19 @@ import {
   PropertyValues,
   TemplateResult,
   unsafeCSS,
-} from "lit";
-import { property, state } from "lit/decorators.js";
+} from 'lit';
+import { property, state } from 'lit/decorators.js';
 
-import "@carbon/web-components/es/components/icon-button/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import WarningFilled16 from "@carbon/icons/es/warning--filled/16.js";
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
+import '@carbon/web-components/es/components/icon-button/index.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import WarningFilled16 from '@carbon/icons/es/warning--filled/16.js';
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
+import ChevronUp16 from '@carbon/icons/es/chevron--up/16.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
 
-import styles from "./error-message.scss?lit";
+import styles from './error-message.scss?lit';
 
 const blockClass = `${prefix}-error-message`;
 
@@ -44,25 +44,25 @@ class ErrorMessage extends LitElement {
   /**
    * The error title text to display.
    */
-  @property({ type: String, attribute: "title" })
-  title = "";
+  @property({ type: String, attribute: 'title' })
+  title = '';
 
   /**
    * The error description text to display.
    */
-  @property({ type: String, attribute: "description" })
-  description = "";
+  @property({ type: String, attribute: 'description' })
+  description = '';
 
   /**
    * Whether the error message is collapsible.
    */
-  @property({ type: Boolean, attribute: "collapsible" })
+  @property({ type: Boolean, attribute: 'collapsible' })
   collapsible = false;
 
   /**
    * Whether the error message is in fullscreen layout.
    */
-  @property({ type: Boolean, attribute: "fullscreen" })
+  @property({ type: Boolean, attribute: 'fullscreen' })
   fullscreen = false;
 
   /**
@@ -73,7 +73,7 @@ class ErrorMessage extends LitElement {
 
   protected updated(changedProps: PropertyValues) {
     super.updated(changedProps);
-    if (changedProps.has("collapsible")) {
+    if (changedProps.has('collapsible')) {
       this._isExpanded = !this.collapsible;
     }
   }
@@ -95,7 +95,7 @@ class ErrorMessage extends LitElement {
     let expandButton: TemplateResult | null = null;
     if (hasChevron) {
       const icon = this._isExpanded ? ChevronUp16 : ChevronDown16;
-      const label = `${this._isExpanded ? "Collapse" : "Expand"} error message`;
+      const label = `${this._isExpanded ? 'Collapse' : 'Expand'} error message`;
 
       expandButton = html`<cds-icon-button
         class="${blockClass}__chevron"
@@ -103,9 +103,8 @@ class ErrorMessage extends LitElement {
         size="sm"
         align="top-end"
         aria-label="${label}"
-        @click="${this._handleClickExpanded}"
-      >
-        ${iconLoader(icon, { slot: "icon", focusable: "true", tabindex: "-1" })}
+        @click="${this._handleClickExpanded}">
+        ${iconLoader(icon, { slot: 'icon', focusable: 'true', tabindex: '-1' })}
         <span slot="tooltip-content">${label}</span>
       </cds-icon-button>`;
     }
@@ -116,17 +115,15 @@ class ErrorMessage extends LitElement {
           class="${blockClass}__warning-icon-and-text${
             !hasChevron
               ? ` ${blockClass}__warning-icon-and-text--no-chevron`
-              : ""
-          }${this._isExpanded ? ` ${blockClass}__text-overflow-gradient` : ""}"
-        >
+              : ''
+          }${this._isExpanded ? ` ${blockClass}__text-overflow-gradient` : ''}">
           ${this.fullscreen ? null : warningIcon}
           <div
             class="${blockClass}__text${
-              this._isExpanded ? ` ${blockClass}__text--expanded` : ""
-            }"
-          >
+              this._isExpanded ? ` ${blockClass}__text--expanded` : ''
+            }">
             ${this.title}<br />
-            ${this._isExpanded ? this.description : ""}
+            ${this._isExpanded ? this.description : ''}
           </div>
           ${this.fullscreen ? warningIcon : null}
         </div>
@@ -138,7 +135,7 @@ class ErrorMessage extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-error-message": ErrorMessage;
+    'cds-aichat-error-message': ErrorMessage;
   }
 }
 

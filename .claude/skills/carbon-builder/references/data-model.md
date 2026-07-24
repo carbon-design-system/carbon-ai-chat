@@ -29,10 +29,11 @@
 | `rag_id`          | string | Unique identifier referenced in AI Chat client system prompts         |
 | `last_updated`    | string | ISO timestamp — use for freshness validation                          |
 
-**Stripped fields (never reach the client):** `search_blob`, `component_aliases_text`,
-`search_tokens`, `variant_tokens`, `variants_summary`, `imports_tokens`,
-`component_aliases`, `prop_enum_catalog`, `doc_kind`, `all_variants`, `all_variants_note`.
-Do not reference these fields in code or reasoning.
+**Stripped fields (never reach the client):** `search_blob`,
+`component_aliases_text`, `search_tokens`, `variant_tokens`, `variants_summary`,
+`imports_tokens`, `component_aliases`, `prop_enum_catalog`, `doc_kind`,
+`all_variants`, `all_variants_note`. Do not reference these fields in code or
+reasoning.
 
 ### variants[] schema
 
@@ -61,11 +62,12 @@ Each element in `variants[]` is one of two shapes:
 | `example_omitted`    | `true` — signals the example was compacted server-side                                    |
 | `requery_hint`       | `{ query: string, filters: { variant_id: string } }` — use this to fetch the full example |
 
-> **Protocol:** When you encounter `example_omitted: true`, do NOT increase `size`.
-> Make one follow-up `code_search` call using **exactly** `requery_hint.query` as the
-> query and `requery_hint.filters` merged into your existing filters (add
-> `component_type` and `component_id` to avoid cross-component matches).
-> Example follow-up: `code_search(query: requery_hint.query, filters: { ...requery_hint.filters, component_id: "modal", component_type: "React" })`.
+> **Protocol:** When you encounter `example_omitted: true`, do NOT increase
+> `size`. Make one follow-up `code_search` call using **exactly**
+> `requery_hint.query` as the query and `requery_hint.filters` merged into your
+> existing filters (add `component_type` and `component_id` to avoid
+> cross-component matches). Example follow-up:
+> `code_search(query: requery_hint.query, filters: { ...requery_hint.filters, component_id: "modal", component_type: "React" })`.
 
 **Stripped from all variants (never present):** `props_schema`, `example_text`,
 `example_plain`, `example_tokens`, `props_catalog_text`, `props_literal_norm`,
@@ -76,8 +78,8 @@ Each element in `variants[]` is one of two shapes:
 
 ## code_search — Icon & Pictogram Results
 
-Icons live in a separate index. Setting `component_type` returns zero results — omit it.
-Use `filters: { asset_type: "icon" }` or `{ asset_type: "pictogram" }`.
+Icons live in a separate index. Setting `component_type` returns zero results —
+omit it. Use `filters: { asset_type: "icon" }` or `{ asset_type: "pictogram" }`.
 
 ### Icon source fields
 
@@ -97,13 +99,14 @@ Use `filters: { asset_type: "icon" }` or `{ asset_type: "pictogram" }`.
 | `rag_id`            | Unique identifier                                                                          |
 | `last_updated`      | ISO timestamp                                                                              |
 
-**Do not use from icon results:** `search_tokens`, `variant_tokens`, `variants_summary`,
-`sizes[]` (contains raw SVG — too large for code gen), `keywords[]`, `urls`, `repo`.
-These are present but are search-index artifacts or SVG data — not useful for code generation.
+**Do not use from icon results:** `search_tokens`, `variant_tokens`,
+`variants_summary`, `sizes[]` (contains raw SVG — too large for code gen),
+`keywords[]`, `urls`, `repo`. These are present but are search-index artifacts
+or SVG data — not useful for code generation.
 
-> **Export name is NOT always the title-cased display name.**
-> `"chart--bullet"` → `ChartBullet`, `"battery--empty"` → `BatteryEmpty`,
-> `"ai--governance"` → `AiGovernance`. Always use `import` field verbatim.
+> **Export name is NOT always the title-cased display name.** `"chart--bullet"`
+> → `ChartBullet`, `"battery--empty"` → `BatteryEmpty`, `"ai--governance"` →
+> `AiGovernance`. Always use `import` field verbatim.
 
 ---
 
@@ -132,10 +135,11 @@ These are present but are search-index artifacts or SVG data — not useful for 
 | `breadcrumbs[]`       | array   | Navigation path, e.g. `["components", "modal", "usage"]`       |
 | `last_crawled_at`     | string  | ISO timestamp — use for freshness validation                   |
 
-> **`chunk_text` is often sparse.** The intro section in particular contains mostly
-> navigation boilerplate. When chunk_text is thin, use `page_url` or `anchor_url` to
-> direct the user to the canonical documentation page. Do not retry with larger `size` —
-> try a more specific `page_type` or `section_heading` term instead.
+> **`chunk_text` is often sparse.** The intro section in particular contains
+> mostly navigation boilerplate. When chunk_text is thin, use `page_url` or
+> `anchor_url` to direct the user to the canonical documentation page. Do not
+> retry with larger `size` — try a more specific `page_type` or
+> `section_heading` term instead.
 
 ---
 
@@ -162,10 +166,10 @@ results come from a different index with a richer schema.
 | `mcp_id`              | Unique MCP-scoped identifier                                                       |
 | `last_crawled_at`     | ISO timestamp                                                                      |
 
-> **Query strategy for AI Chat docs differs from standard docs:**
-> Do NOT set `component_id` or other component filters — the AI Chat docs index
-> does not use these and they produce zero results. Query by API symbol name,
-> type name, or migration keyword directly.
+> **Query strategy for AI Chat docs differs from standard docs:** Do NOT set
+> `component_id` or other component filters — the AI Chat docs index does not
+> use these and they produce zero results. Query by API symbol name, type name,
+> or migration keyword directly.
 
 ---
 
@@ -173,8 +177,9 @@ results come from a different index with a richer schema.
 
 ### tool_policy block (present in every response)
 
-Every `get_charts` response includes a `tool_policy` block. Follow its `instruction` field.
-It enforces the hard rule: no `code_search` for charts, and no `docs_search` for interfaces.
+Every `get_charts` response includes a `tool_policy` block. Follow its
+`instruction` field. It enforces the hard rule: no `code_search` for charts, and
+no `docs_search` for interfaces.
 
 ```json
 {
@@ -257,9 +262,9 @@ It enforces the hard rule: no `code_search` for charts, and no `docs_search` for
 
 ## meta object (budget condensing only)
 
-The `meta` object is **only present when the server's response budget guard fires**
-(`MCP_RESPONSE_BUDGET_ENABLED=true`, which is disabled by default). Do not expect
-it in standard responses. When present:
+The `meta` object is **only present when the server's response budget guard
+fires** (`MCP_RESPONSE_BUDGET_ENABLED=true`, which is disabled by default). Do
+not expect it in standard responses. When present:
 
 | Field                       | Description                                                                   |
 | --------------------------- | ----------------------------------------------------------------------------- |
@@ -269,9 +274,9 @@ it in standard responses. When present:
 | `follow_up_calls[]`         | Exact `code_search` argument objects to retrieve omitted content              |
 | `next_step`                 | Plain-text instruction: `"Run code_search with one of meta.follow_up_calls…"` |
 
-> **The `example_omitted: true` / `requery_hint` pattern on individual variant stubs
-> fires unconditionally — it does not require budget condensing to be enabled.**
-> This is the primary follow-up signal; treat it as always-active.
+> **The `example_omitted: true` / `requery_hint` pattern on individual variant
+> stubs fires unconditionally — it does not require budget condensing to be
+> enabled.** This is the primary follow-up signal; treat it as always-active.
 
 ---
 

@@ -11,13 +11,13 @@ import {
   ChatInstance,
   MessageResponseTypes,
   SystemMessageVariant,
-} from "@carbon/ai-chat";
-import { MARKDOWN } from "./constants";
+} from '@carbon/ai-chat';
+import { MARKDOWN } from './constants';
 
 function doSystemMessage(
   instance: ChatInstance,
   inline?: boolean,
-  variant?: SystemMessageVariant,
+  variant?: SystemMessageVariant
 ) {
   if (inline) {
     instance.messaging.addMessage({
@@ -25,7 +25,7 @@ function doSystemMessage(
         generic: [
           {
             response_type: MessageResponseTypes.SYSTEM,
-            title: "This is a system message",
+            title: 'This is a system message',
           },
           {
             response_type: MessageResponseTypes.TEXT,
@@ -35,14 +35,14 @@ function doSystemMessage(
       },
     });
   }
-  if (variant === "agent") {
+  if (variant === 'agent') {
     instance.messaging.addMessage({
       output: {
         generic: [
           {
             response_type: MessageResponseTypes.SYSTEM,
-            title: "Agent joined the chat",
-            variant: "agent",
+            title: 'Agent joined the chat',
+            variant: 'agent',
           },
         ],
       },
@@ -58,14 +58,14 @@ function doSystemMessage(
       },
     });
   }
-  if (variant === "date") {
+  if (variant === 'date') {
     instance.messaging.addMessage({
       output: {
         generic: [
           {
             response_type: MessageResponseTypes.SYSTEM,
-            title: "Monday, June 14th 2025",
-            variant: "date",
+            title: 'Monday, June 14th 2025',
+            variant: 'date',
           },
         ],
       },
@@ -86,8 +86,8 @@ function doSystemMessage(
         generic: [
           {
             response_type: MessageResponseTypes.SYSTEM,
-            title: "This is a system message",
-            variant: "default",
+            title: 'This is a system message',
+            variant: 'default',
           },
         ],
       },

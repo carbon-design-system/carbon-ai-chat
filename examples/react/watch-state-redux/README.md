@@ -1,18 +1,23 @@
 # Watch state (Redux Toolkit)
 
-Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` bus event so any component can read chat state through `useSelector`.
+Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE`
+bus event so any component can read chat state through `useSelector`.
 
 ## What this example shows
 
-- Bridging `BusEventType.STATE_CHANGE` into a Redux Toolkit slice with `dispatch`.
+- Bridging `BusEventType.STATE_CHANGE` into a Redux Toolkit slice with
+  `dispatch`.
 - Seeding the store from `instance.getState()` before any events fire.
-- Reading mirrored state in components via a narrow, typed `useSelector` selector.
+- Reading mirrored state in components via a narrow, typed `useSelector`
+  selector.
 - Why the integration is one-way (chat → Redux) instead of Redux → chat.
 
 ## When to use this pattern
 
-- Your application already uses Redux Toolkit and you want chat state available alongside the rest of your app state.
-- You want components decoupled from the `ChatInstance` to read chat state via selectors.
+- Your application already uses Redux Toolkit and you want chat state available
+  alongside the rest of your app state.
+- You want components decoupled from the `ChatInstance` to read chat state via
+  selectors.
 - You want chat state visible in Redux DevTools alongside your other slices.
 
 ## APIs and props demonstrated
@@ -36,7 +41,10 @@ Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` b
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

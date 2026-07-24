@@ -16,31 +16,31 @@
  * the named catch `<slot>` so content can later be projected into it.
  */
 
-import React from "react";
-import { render } from "@testing-library/react";
+import React from 'react';
+import { render } from '@testing-library/react';
 
-import PromptLineWriteableSlot from "../../../src/chat/components/input/PromptLineWriteableSlot";
-import { WriteableElementName } from "../../../src/types/instance/WriteableElements";
+import PromptLineWriteableSlot from '../../../src/chat/components/input/PromptLineWriteableSlot';
+import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 
-describe("PromptLineWriteableSlot", () => {
-  it("renders a marked, hidden floating-menu container around the named catch slot when empty", () => {
+describe('PromptLineWriteableSlot', () => {
+  it('renders a marked, hidden floating-menu container around the named catch slot when empty', () => {
     const { container } = render(
       <PromptLineWriteableSlot
         slotName={WriteableElementName.PROMPT_LINE_ACTIONS_END}
         wrapperSlot="message-actions"
-      />,
+      />
     );
 
-    const wrapper = container.querySelector("[data-prompt-line-slot]");
+    const wrapper = container.querySelector('[data-prompt-line-slot]');
     expect(wrapper).not.toBeNull();
     // Projects into the prompt-line-shell `message-actions` slot.
-    expect(wrapper?.getAttribute("slot")).toBe("message-actions");
+    expect(wrapper?.getAttribute('slot')).toBe('message-actions');
     // Stays a real (positioning) box for Carbon tooltip/popover anchoring.
-    expect(wrapper?.hasAttribute("data-floating-menu-container")).toBe(true);
+    expect(wrapper?.hasAttribute('data-floating-menu-container')).toBe(true);
     // No content yet -> collapsed so it adds no flex gap before the prompt line.
-    expect(wrapper?.hasAttribute("hidden")).toBe(true);
+    expect(wrapper?.hasAttribute('hidden')).toBe(true);
 
-    const slot = wrapper?.querySelector("slot");
-    expect(slot?.getAttribute("name")).toBe("promptLineActionsEnd");
+    const slot = wrapper?.querySelector('slot');
+    expect(slot?.getAttribute('name')).toBe('promptLineActionsEnd');
   });
 });

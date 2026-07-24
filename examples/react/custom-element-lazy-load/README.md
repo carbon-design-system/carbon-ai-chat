@@ -1,14 +1,20 @@
 # Custom element / Lazy load
 
-Code-split `ChatCustomElement` with a `ChatShell` overlay that covers both bundle download and chat initialization, producing a seamless full-screen loading experience.
+Code-split `ChatCustomElement` with a `ChatShell` overlay that covers both
+bundle download and chat initialization, producing a seamless full-screen
+loading experience.
 
 ## What this example shows
 
-- Code-splitting `ChatCustomElement` with `React.lazy` + dynamic `import("@carbon/ai-chat")`, deferred 3 s for demo purposes.
-- Using a fixed `ChatShell` overlay (from `@carbon/ai-chat-components`) during both loading phases:
-  1. while the bundle downloads (`Suspense` fallback is `null` because the overlay handles it),
+- Code-splitting `ChatCustomElement` with `React.lazy` + dynamic
+  `import("@carbon/ai-chat")`, deferred 3 s for demo purposes.
+- Using a fixed `ChatShell` overlay (from `@carbon/ai-chat-components`) during
+  both loading phases:
+  1. while the bundle downloads (`Suspense` fallback is `null` because the
+     overlay handles it),
   2. while `ChatCustomElement` initializes (until `onAfterRender` fires).
-- Suppressing the built-in launcher and minimize button for a pure full-screen layout.
+- Suppressing the built-in launcher and minimize button for a pure full-screen
+  layout.
 - Wiring a mock backend through `customSendMessage`.
 
 ## When to use this pattern
@@ -35,7 +41,10 @@ Code-split `ChatCustomElement` with a `ChatShell` overlay that covers both bundl
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,12 +7,12 @@
  *  @license
  */
 
-import CDSButton from "@carbon/web-components/es/components/button/button.js";
-import AiLaunch24 from "@carbon/icons/es/ai-launch/24.js";
-import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import cx from "classnames";
+import CDSButton from '@carbon/web-components/es/components/button/button.js';
+import AiLaunch24 from '@carbon/icons/es/ai-launch/24.js';
+import ChatLaunch24 from '@carbon/icons/es/chat--launch/24.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import cx from 'classnames';
 import React, {
   RefObject,
   useCallback,
@@ -20,19 +20,19 @@ import React, {
   useImperativeHandle,
   useRef,
   useState,
-} from "react";
+} from 'react';
 
-import { usePrevious } from "../../hooks/usePrevious";
+import { usePrevious } from '../../hooks/usePrevious';
 import Button, {
   BUTTON_KIND,
   BUTTON_SIZE,
   BUTTON_TOOLTIP_POSITION,
   BUTTON_TYPE,
-} from "../../components/carbon/Button";
-import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
-import { prefersReducedMotion } from "../../utils/prefersReducedMotion";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '../../components/carbon/Button';
+import { doFocusRef, isDirectionRTL } from '../../utils/domUtils';
+import { prefersReducedMotion } from '../../utils/prefersReducedMotion';
+import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Upper bound for the launcher extended open/close animations
 // (`$duration-moderate-01` = 150ms, plus a fade stage) with a generous buffer.
@@ -45,10 +45,10 @@ const ChatLaunch = carbonIconToReact(ChatLaunch24);
 const CloseIcon = carbonIconToReact(Close16);
 
 export enum LauncherOpenState {
-  Opening = "opening",
-  Open = "open",
-  Closing = "closing",
-  Closed = "closed",
+  Opening = 'opening',
+  Open = 'open',
+  Closing = 'closing',
+  Closed = 'closed',
 }
 
 type LauncherHandle = HasRequestFocus & {
@@ -106,7 +106,7 @@ function Launcher(props: LauncherProps) {
 
   const [callToActionOpenState, setCallToActionOpenState] =
     useState<LauncherOpenState>(() =>
-      extended ? LauncherOpenState.Open : LauncherOpenState.Closed,
+      extended ? LauncherOpenState.Open : LauncherOpenState.Closed
     );
 
   const textHolderRef = useRef<HTMLDivElement | null>(null);
@@ -128,7 +128,7 @@ function Launcher(props: LauncherProps) {
     ariaLabelSuffix,
   ]
     .filter(Boolean)
-    .join(". ");
+    .join('. ');
 
   const launcherAvatar = launcherAvatarUrl ? (
     // eslint-disable-next-line jsx-a11y/alt-text
@@ -223,8 +223,8 @@ function Launcher(props: LauncherProps) {
           }
         };
 
-        element.addEventListener("animationend", handleAnimationEnd);
-        element.addEventListener("animationcancel", handleAnimationEnd);
+        element.addEventListener('animationend', handleAnimationEnd);
+        element.addEventListener('animationcancel', handleAnimationEnd);
         // Safety net: if `animationend` is never dispatched (e.g. element
         // re-parented, display hidden mid-animation, future CSS edit drops
         // the animation), still advance the state machine.
@@ -233,8 +233,8 @@ function Launcher(props: LauncherProps) {
         }, LAUNCHER_ANIMATION_TIMEOUT_MS);
 
         cleanup = () => {
-          element.removeEventListener("animationend", handleAnimationEnd);
-          element.removeEventListener("animationcancel", handleAnimationEnd);
+          element.removeEventListener('animationend', handleAnimationEnd);
+          element.removeEventListener('animationcancel', handleAnimationEnd);
           clearTimeout(timeoutId);
         };
       }
@@ -261,15 +261,15 @@ function Launcher(props: LauncherProps) {
           }
         };
 
-        element.addEventListener("animationend", handleAnimationEnd);
-        element.addEventListener("animationcancel", handleAnimationEnd);
+        element.addEventListener('animationend', handleAnimationEnd);
+        element.addEventListener('animationcancel', handleAnimationEnd);
         const timeoutId = setTimeout(() => {
           setCallToActionOpenState(LauncherOpenState.Closed);
         }, LAUNCHER_ANIMATION_TIMEOUT_MS);
 
         cleanup = () => {
-          element.removeEventListener("animationend", handleAnimationEnd);
-          element.removeEventListener("animationcancel", handleAnimationEnd);
+          element.removeEventListener('animationend', handleAnimationEnd);
+          element.removeEventListener('animationcancel', handleAnimationEnd);
           clearTimeout(timeoutId);
         };
       }
@@ -285,18 +285,17 @@ function Launcher(props: LauncherProps) {
   return (
     <div
       ref={extendedContainerRef}
-      className={cx("cds-aichat-launcher", {
-        "cds-aichat-launcher--opening":
+      className={cx('cds-aichat-launcher', {
+        'cds-aichat-launcher--opening':
           callToActionOpenState === LauncherOpenState.Opening,
-        "cds-aichat-launcher--open":
+        'cds-aichat-launcher--open':
           callToActionOpenState === LauncherOpenState.Open,
-        "cds-aichat-launcher--closing":
+        'cds-aichat-launcher--closing':
           callToActionOpenState === LauncherOpenState.Closing,
-        "cds-aichat-launcher--closed":
+        'cds-aichat-launcher--closed':
           callToActionOpenState === LauncherOpenState.Closed,
-        "cds-aichat-launcher--hidden": launcherHidden,
-      })}
-    >
+        'cds-aichat-launcher--hidden': launcherHidden,
+      })}>
       <Button
         className="cds-aichat--launcher-extended__close-button"
         kind={BUTTON_KIND.SECONDARY}
@@ -304,8 +303,7 @@ function Launcher(props: LauncherProps) {
         aria-label={closeButtonLabel}
         onClick={handleDismiss}
         tooltipPosition={tooltipPosition}
-        tooltip-text={closeButtonLabel}
-      >
+        tooltip-text={closeButtonLabel}>
         <CloseIcon aria-label={closeButtonLabel} slot="icon" />
       </Button>
       <Button
@@ -320,17 +318,14 @@ function Launcher(props: LauncherProps) {
         ref={handleButtonRef}
         tabIndex={buttonTabIndex}
         type={BUTTON_TYPE.BUTTON}
-        tooltipPosition={tooltipPosition}
-      >
+        tooltipPosition={tooltipPosition}>
         <div className="cds-aichat--launcher__wrapper">
           <div
             className="cds-aichat--launcher-extended__text-holder"
-            ref={textHolderRef}
-          >
+            ref={textHolderRef}>
             <div
               className="cds-aichat--launcher-extended__greeting"
-              ref={greetingMessageRef}
-            >
+              ref={greetingMessageRef}>
               {shouldShowGreeting && (
                 <div className="cds-aichat--launcher-extended__greeting-text">
                   {launcherGreetingMessage}
@@ -344,7 +339,7 @@ function Launcher(props: LauncherProps) {
         </div>
         {(unreadMessageCount !== 0 || showUnreadIndicator) && (
           <div className="cds-aichat--count-indicator">
-            {unreadMessageCount !== 0 ? unreadMessageCount : ""}
+            {unreadMessageCount !== 0 ? unreadMessageCount : ''}
           </div>
         )}
       </Button>

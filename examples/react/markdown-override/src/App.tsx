@@ -35,9 +35,9 @@ import {
   type MarkdownRendererLinkArgs,
   type MarkdownRendererTableArgs,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import Card from "@carbon/ai-chat-components/es/react/card";
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet";
+} from '@carbon/ai-chat';
+import Card from '@carbon/ai-chat-components/es/react/card';
+import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet';
 import {
   Table,
   TableBody,
@@ -45,12 +45,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@carbon/react";
-import React, { useMemo, useReducer, useRef } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/react';
+import React, { useMemo, useReducer, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -65,7 +65,7 @@ const config: PublicConfig = {
 // The image the `image` override resolves the markdown's `app-image:lions`
 // reference to — the same photo the demo site uses for its "image" utterance.
 const DEMO_IMAGE =
-  "https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg";
+  'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg';
 
 function App() {
   // Checklist state lives in a ref so the `customRenderers` object below can
@@ -123,11 +123,11 @@ function App() {
         link: ({ href }: MarkdownRendererLinkArgs) => {
           try {
             const url = new URL(href);
-            url.searchParams.set("utm_source", "ai-chat");
+            url.searchParams.set('utm_source', 'ai-chat');
             return {
               href: url.toString(),
-              target: "_self",
-              rel: "noopener noreferrer",
+              target: '_self',
+              rel: 'noopener noreferrer',
             };
           } catch {
             return null;
@@ -138,14 +138,14 @@ function App() {
         // example does not enable HTML sanitization; a sanitized/CSP setup
         // would instead delegate a click listener on the host.
         image: ({ src, attributes }: MarkdownRendererImageArgs) => {
-          if (src.startsWith("app-image:")) {
+          if (src.startsWith('app-image:')) {
             return {
               src: DEMO_IMAGE,
               attributes: {
                 ...attributes,
                 style:
-                  "cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;",
-                title: "Click me",
+                  'cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;',
+                title: 'Click me',
                 onclick: "alert('You clicked the image!')",
               },
             };
@@ -159,14 +159,14 @@ function App() {
           onToggle: ({ id, label, checked }) => {
             checklistState.current[id] = checked;
             console.log(
-              `[checklist] "${label}" → ${checked ? "done" : "todo"}`,
+              `[checklist] "${label}" → ${checked ? 'done' : 'todo'}`
             );
             forceUpdate();
           },
         },
       },
     }),
-    [],
+    []
   );
 
   return (
@@ -178,6 +178,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

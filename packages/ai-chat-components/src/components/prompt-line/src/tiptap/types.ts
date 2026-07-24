@@ -13,8 +13,8 @@
  * `carbonStarterTrigger`) and the shell consume these types directly.
  */
 
-import type { ComponentType, ReactNode } from "react";
-import type { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import type { ComponentType, ReactNode } from 'react';
+import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 /**
  * Single list-item shape used by both the autocomplete-list-manager and the
@@ -117,7 +117,7 @@ export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
 
   /** Whether the trigger must appear at the start of the input/line, or
    *  anywhere. Defaults to "anywhere". */
-  triggerPosition?: "start" | "anywhere";
+  triggerPosition?: 'start' | 'anywhere';
 
   /**
    * Override the schema-node name. Threaded through `Mention.extend({ name })`

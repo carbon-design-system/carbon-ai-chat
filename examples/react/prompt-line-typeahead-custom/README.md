@@ -1,19 +1,27 @@
 # Prompt line / Typeahead (custom list)
 
-`ChatCustomElement` with `input.autocomplete` whose dropdown is replaced by a fully custom React component supplied through `renderCustomList`.
+`ChatCustomElement` with `input.autocomplete` whose dropdown is replaced by a
+fully custom React component supplied through `renderCustomList`.
 
 ## What this example shows
 
-- Replacing the built-in autocomplete dropdown with a custom React component via `autocomplete.renderCustomList`.
-- Wiring the custom list to the host editor through the `items`, `query`, `onSelect`, and `onDismiss` props passed to the renderer.
-- Driving keyboard navigation (Arrow Up/Down, Enter, Escape) from a `document` keydown listener inside the custom list.
-- Resetting the highlighted index whenever the items array changes so a new query starts from the top of the list.
+- Replacing the built-in autocomplete dropdown with a custom React component via
+  `autocomplete.renderCustomList`.
+- Wiring the custom list to the host editor through the `items`, `query`,
+  `onSelect`, and `onDismiss` props passed to the renderer.
+- Driving keyboard navigation (Arrow Up/Down, Enter, Escape) from a `document`
+  keydown listener inside the custom list.
+- Resetting the highlighted index whenever the items array changes so a new
+  query starts from the top of the list.
 
 ## When to use this pattern
 
-- The default autocomplete dropdown does not match your app's visual language and you need full control over markup and styling.
-- You want to surface richer per-item content (icons, multiple description lines, badges) than the default chip layout supports.
-- You need a custom keyboard or selection model alongside the standard typeahead behavior.
+- The default autocomplete dropdown does not match your app's visual language
+  and you need full control over markup and styling.
+- You want to surface richer per-item content (icons, multiple description
+  lines, badges) than the default chip layout supports.
+- You need a custom keyboard or selection model alongside the standard typeahead
+  behavior.
 
 ## APIs and props demonstrated
 
@@ -33,7 +41,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

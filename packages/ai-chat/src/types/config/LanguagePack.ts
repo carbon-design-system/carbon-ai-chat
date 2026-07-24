@@ -7,7 +7,7 @@
  *  @license
  */
 
-import enLanguagePackData from "../../chat/languages/en.json";
+import enLanguagePackData from '../../chat/languages/en.json';
 
 /**
  * The raw strings used for {@link PublicConfig.strings}. Presented in ICU format.

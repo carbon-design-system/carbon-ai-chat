@@ -33,12 +33,12 @@ import {
   ChatInstance,
   PublicConfig,
   SuggestionItem,
-} from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useRef } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { mentionItems, commandItems } from "./suggestions";
+import { customSendMessage } from './customSendMessage';
+import { mentionItems, commandItems } from './suggestions';
 
 function App() {
   const instanceRef = useRef<ChatInstance | null>(null);
@@ -59,13 +59,13 @@ function App() {
       input: {
         // `@` for people anywhere in the message.
         mention: {
-          trigger: "@",
+          trigger: '@',
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
             }
             return mentionItems.filter((m) =>
-              m.label.toLowerCase().includes(query.toLowerCase()),
+              m.label.toLowerCase().includes(query.toLowerCase())
             );
           },
           onSelect: (item: SuggestionItem) => {
@@ -78,7 +78,7 @@ function App() {
                 {
                   id: item.id,
                   label: item.label,
-                  type: "mention",
+                  type: 'mention',
                   value: item.id,
                 },
               ],
@@ -95,7 +95,7 @@ function App() {
                 return prev;
               }
               const index = prev.fields.findIndex(
-                (field) => field.type === "mention" && field.id === item.id,
+                (field) => field.type === 'mention' && field.id === item.id
               );
               if (index === -1) {
                 return prev;
@@ -108,9 +108,9 @@ function App() {
         },
         // `/` for slash commands constrained to the start of the line.
         command: {
-          trigger: "/",
+          trigger: '/',
           // Slash commands only fire at the very start of the message.
-          triggerPosition: "start",
+          triggerPosition: 'start',
           items: commandItems,
           onSelect: (item: SuggestionItem) => {
             // Mirror the pick into the message's structured-data sidecar so
@@ -122,7 +122,7 @@ function App() {
                 {
                   id: item.id,
                   label: item.label,
-                  type: "command",
+                  type: 'command',
                   value: item.id,
                 },
               ],
@@ -136,7 +136,7 @@ function App() {
                 return prev;
               }
               const index = prev.fields.findIndex(
-                (field) => field.type === "command" && field.id === item.id,
+                (field) => field.type === 'command' && field.id === item.id
               );
               if (index === -1) {
                 return prev;
@@ -149,7 +149,7 @@ function App() {
         },
       },
     }),
-    [],
+    []
   );
 
   return (
@@ -161,6 +161,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

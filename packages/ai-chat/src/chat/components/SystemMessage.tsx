@@ -7,16 +7,16 @@
  *  @license
  */
 
-import React from "react";
-import { useSelector } from "../hooks/useSelector";
-import { AppState } from "../../types/state/AppState";
+import React from 'react';
+import { useSelector } from '../hooks/useSelector';
+import { AppState } from '../../types/state/AppState';
 import {
   Message,
   MessageResponseTypes,
   SystemMessageItem,
   SystemMessageVariant,
-} from "../../types/messaging/Messages";
-import { isResponse } from "../utils/messageUtils";
+} from '../../types/messaging/Messages';
+import { isResponse } from '../utils/messageUtils';
 
 interface SystemMessageProps {
   /**
@@ -45,7 +45,7 @@ function SystemMessage({
   responseStopped = false,
 }: SystemMessageProps) {
   const messages_responseStopped = useSelector(
-    (state: AppState) => state.languagePack.messages_responseStopped,
+    (state: AppState) => state.languagePack.messages_responseStopped
   );
 
   if (responseStopped) {
@@ -62,7 +62,7 @@ function SystemMessage({
 
   // System message response - find the single system message item
   const systemItem = message.output.generic.find(
-    (item) => item.response_type === MessageResponseTypes.SYSTEM,
+    (item) => item.response_type === MessageResponseTypes.SYSTEM
   ) as SystemMessageItem | undefined;
 
   if (!systemItem) {
@@ -70,27 +70,26 @@ function SystemMessage({
   }
 
   const title = systemItem.title;
-  const variant: SystemMessageVariant = systemItem.variant ?? "default";
+  const variant: SystemMessageVariant = systemItem.variant ?? 'default';
 
   const className = standalone
-    ? "cds-aichat--system-message-standalone"
-    : "cds-aichat--system-message-inline";
+    ? 'cds-aichat--system-message-standalone'
+    : 'cds-aichat--system-message-inline';
 
   // `date` / `agent` apply only to standalone system lines; inline always uses default styling
   const variantClassName = standalone
-    ? variant === "date"
+    ? variant === 'date'
       ? `${className}--date`
-      : variant === "agent"
+      : variant === 'agent'
         ? `${className}--agent`
-        : ""
-    : "";
+        : ''
+    : '';
 
   return (
     <div
       className={`${className} ${variantClassName}`}
       role="status"
-      aria-live="polite"
-    >
+      aria-live="polite">
       <div className={`${className}-text`}>{title}</div>
     </div>
   );

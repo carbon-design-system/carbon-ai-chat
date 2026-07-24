@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from "@open-wc/testing";
-import "../index.js";
+import { html, fixture, expect } from '@open-wc/testing';
+import '../index.js';
 
-describe("history delete focus restore", () => {
-  it("delete panel _getFocusDetailForDeletedItem picks next row and selected state", async () => {
+describe('history delete focus restore', () => {
+  it('delete panel _getFocusDetailForDeletedItem picks next row and selected state', async () => {
     const host = await fixture(html`
       <cds-aichat-history-shell>
         <cds-aichat-history-content>
@@ -21,12 +21,10 @@ describe("history delete focus restore", () => {
                 <cds-aichat-history-panel-item
                   id="a"
                   name="A"
-                  selected
-                ></cds-aichat-history-panel-item>
+                  selected></cds-aichat-history-panel-item>
                 <cds-aichat-history-panel-item
                   id="b"
-                  name="B"
-                ></cds-aichat-history-panel-item>
+                  name="B"></cds-aichat-history-panel-item>
               </cds-aichat-history-panel-menu>
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
@@ -36,15 +34,15 @@ describe("history delete focus restore", () => {
     `);
 
     const deletePanel = host.querySelector(
-      "cds-aichat-history-delete-panel",
+      'cds-aichat-history-delete-panel'
     ) as HTMLElement;
-    const detail = (deletePanel as any)._getFocusDetailForDeletedItem("a");
-    expect(detail.itemId).to.equal("a");
-    expect(detail.nextItemId).to.equal("b");
+    const detail = (deletePanel as any)._getFocusDetailForDeletedItem('a');
+    expect(detail.itemId).to.equal('a');
+    expect(detail.nextItemId).to.equal('b');
     expect(detail.deletedItemWasSelected).to.be.true;
   });
 
-  it("cds-aichat-history-shell dispatches history-item-selected on next item after delete", async () => {
+  it('cds-aichat-history-shell dispatches history-item-selected on next item after delete', async () => {
     const shell = await fixture(html`
       <cds-aichat-history-shell>
         <cds-aichat-history-content>
@@ -54,25 +52,22 @@ describe("history delete focus restore", () => {
                 <cds-aichat-history-panel-item
                   id="first"
                   name="First"
-                  selected
-                ></cds-aichat-history-panel-item>
+                  selected></cds-aichat-history-panel-item>
                 <cds-aichat-history-panel-item
                   id="second"
-                  name="Second"
-                ></cds-aichat-history-panel-item>
+                  name="Second"></cds-aichat-history-panel-item>
               </cds-aichat-history-panel-menu>
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
         </cds-aichat-history-content>
         <cds-aichat-history-delete-panel
-          item-id="first"
-        ></cds-aichat-history-delete-panel>
+          item-id="first"></cds-aichat-history-delete-panel>
       </cds-aichat-history-shell>
     `);
 
-    const deletePanel = shell.querySelector("cds-aichat-history-delete-panel")!;
+    const deletePanel = shell.querySelector('cds-aichat-history-delete-panel')!;
 
-    deletePanel.addEventListener("history-delete-confirm", () => {
+    deletePanel.addEventListener('history-delete-confirm', () => {
       shell
         .querySelector(`cds-aichat-history-panel-item[id="first"]`)
         ?.remove();
@@ -82,10 +77,10 @@ describe("history delete focus restore", () => {
     const onSelected = (e: Event) => {
       selectedDetail = (e as CustomEvent).detail;
     };
-    shell.addEventListener("history-item-selected", onSelected);
+    shell.addEventListener('history-item-selected', onSelected);
 
     const dangerBtn = deletePanel.shadowRoot?.querySelector(
-      "cds-aichat-button[kind=danger]",
+      'cds-aichat-button[kind=danger]'
     ) as HTMLElement;
     expect(dangerBtn).to.exist;
     dangerBtn.click();
@@ -96,15 +91,15 @@ describe("history delete focus restore", () => {
       });
     });
 
-    expect(selectedDetail?.itemId).to.equal("second");
-    expect(selectedDetail?.itemName).to.equal("Second");
+    expect(selectedDetail?.itemId).to.equal('second');
+    expect(selectedDetail?.itemName).to.equal('Second');
 
-    shell.removeEventListener("history-item-selected", onSelected);
+    shell.removeEventListener('history-item-selected', onSelected);
   });
 });
 
-describe("history panel item overflow menu positioning", () => {
-  it("flips the overflow menu body upward when there is not enough space below", async () => {
+describe('history panel item overflow menu positioning', () => {
+  it('flips the overflow menu body upward when there is not enough space below', async () => {
     const createRect = (rect: Partial<DOMRect>): DOMRect =>
       ({
         x: 0,
@@ -123,27 +118,26 @@ describe("history panel item overflow menu positioning", () => {
       <cds-aichat-history-content>
         <cds-aichat-history-panel-item
           id="with-menu"
-          name="With menu"
-        ></cds-aichat-history-panel-item>
+          name="With menu"></cds-aichat-history-panel-item>
       </cds-aichat-history-content>
     `);
     const item = host.querySelector(
-      "cds-aichat-history-panel-item",
+      'cds-aichat-history-panel-item'
     ) as HTMLElement & {
       actions: unknown[];
       updateComplete: Promise<boolean>;
       _adjustMenuPosition: () => void;
     };
-    item.actions = [{ text: "Delete" }, { text: "Rename" }];
+    item.actions = [{ text: 'Delete' }, { text: 'Rename' }];
     await item.updateComplete;
 
     const overflowMenu = item.shadowRoot?.querySelector(
-      "cds-overflow-menu",
+      'cds-overflow-menu'
     ) as HTMLElement;
     const overflowMenuBody = item.shadowRoot?.querySelector(
-      "cds-overflow-menu-body",
+      'cds-overflow-menu-body'
     ) as HTMLElement;
-    const flippedClass = "cds-aichat--history-overflow-menu-body--flipped";
+    const flippedClass = 'cds-aichat--history-overflow-menu-body--flipped';
 
     host.getBoundingClientRect = () => createRect({ top: 0, bottom: 120 });
     overflowMenu.getBoundingClientRect = () =>
@@ -162,14 +156,13 @@ describe("history panel item overflow menu positioning", () => {
   });
 });
 
-describe("history panel item rename invalid state", () => {
-  it("passes rename-invalid and rename-invalid-message through to the input element", async () => {
+describe('history panel item rename invalid state', () => {
+  it('passes rename-invalid and rename-invalid-message through to the input element', async () => {
     const item = await fixture(html`
       <cds-aichat-history-panel-item
         id="item-1"
         name="My chat"
-        rename
-      ></cds-aichat-history-panel-item>
+        rename></cds-aichat-history-panel-item>
     `);
 
     const panelItem = item as HTMLElement & {
@@ -179,17 +172,17 @@ describe("history panel item rename invalid state", () => {
     };
 
     panelItem.renameInvalid = true;
-    panelItem.renameInvalidMessage = "Title cannot exceed 75 characters.";
+    panelItem.renameInvalidMessage = 'Title cannot exceed 75 characters.';
     await panelItem.updateComplete;
 
     const inputEl = panelItem.shadowRoot?.querySelector(
-      "cds-aichat-history-panel-item-input",
+      'cds-aichat-history-panel-item-input'
     ) as HTMLElement & { invalid: boolean; invalidMessage: string };
 
     expect(inputEl).to.exist;
     expect(inputEl.invalid).to.be.true;
     expect(inputEl.invalidMessage).to.equal(
-      "Title cannot exceed 75 characters.",
+      'Title cannot exceed 75 characters.'
     );
   });
 });

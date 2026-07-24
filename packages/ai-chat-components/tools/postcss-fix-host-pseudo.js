@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,22 +7,22 @@
  *  @license
  */
 
-import postcss from "postcss";
-import parser from "postcss-selector-parser";
+import postcss from 'postcss';
+import parser from 'postcss-selector-parser';
 
 const pseudoElementNames = [
-  "first-line",
-  "first-letter",
-  "selection",
-  "inactive-selection",
-  "spelling-error",
-  "grammar-error",
-  "before",
-  "after",
-  "marker",
-  "placeholder",
+  'first-line',
+  'first-letter',
+  'selection',
+  'inactive-selection',
+  'spelling-error',
+  'grammar-error',
+  'before',
+  'after',
+  'marker',
+  'placeholder',
 ];
-const rePseudoElements = new RegExp(`::?(${pseudoElementNames.join("|")})`);
+const rePseudoElements = new RegExp(`::?(${pseudoElementNames.join('|')})`);
 
 /**
  * Below Sass code yields `:hover:host(cds-foo) svg` and `:host(cds-foo):hover svg` selectors.
@@ -56,30 +56,30 @@ const rePseudoElements = new RegExp(`::?(${pseudoElementNames.join("|")})`);
  */
 // eslint-disable-next-line prefer-arrow-callback
 export default postcss.plugin(
-  "fix-host-pseudo",
+  'fix-host-pseudo',
   function postCssPluginFixHostPseudo() {
     return function fixHostPseudo(css) {
       css.walkRules(async (rule) => {
         await parser((selectors) => {
           selectors.walkPseudos((pseudo) => {
-            if (pseudo.value === ":host") {
+            if (pseudo.value === ':host') {
               if (
                 pseudo.nodes.length !== 1 ||
-                pseudo.first.type !== "selector"
+                pseudo.first.type !== 'selector'
               ) {
                 // eslint-disable-next-line no-console
                 console.warn(
-                  "Found :host() with more than one child or with a non-selector child. Skipping...",
+                  'Found :host() with more than one child or with a non-selector child. Skipping...'
                 );
               } else {
                 const pseudosToMove = [];
                 for (
                   let precedingNode = pseudo.prev();
-                  precedingNode && precedingNode.type !== "combinator";
+                  precedingNode && precedingNode.type !== 'combinator';
                   precedingNode = precedingNode.prev()
                 ) {
                   if (
-                    precedingNode.type !== "pseudo" ||
+                    precedingNode.type !== 'pseudo' ||
                     !rePseudoElements.test(precedingNode.value)
                   ) {
                     pseudosToMove.unshift(precedingNode);
@@ -87,11 +87,11 @@ export default postcss.plugin(
                 }
                 for (
                   let followingNode = pseudo.next();
-                  followingNode && followingNode.type !== "combinator";
+                  followingNode && followingNode.type !== 'combinator';
                   followingNode = followingNode.next()
                 ) {
                   if (
-                    followingNode.type !== "pseudo" ||
+                    followingNode.type !== 'pseudo' ||
                     !rePseudoElements.test(followingNode.value)
                   ) {
                     pseudosToMove.push(followingNode);
@@ -99,8 +99,8 @@ export default postcss.plugin(
                 }
                 pseudosToMove.forEach((item) => {
                   const newNode = item.clone();
-                  newNode.spaces.before = "";
-                  newNode.spaces.after = "";
+                  newNode.spaces.before = '';
+                  newNode.spaces.after = '';
                   pseudo.first.append(newNode);
                   item.remove();
                 });
@@ -110,5 +110,5 @@ export default postcss.plugin(
         }).process(rule);
       });
     };
-  },
+  }
 );

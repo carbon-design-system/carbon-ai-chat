@@ -121,19 +121,19 @@ export abstract class BaseProvider {
   /**
    * Get the full aria-label for a given state
    */
-  protected getStateLabel(state: "loading" | "ready" | "error"): string {
-    const baseLabel = this.config.ariaLabel || "Audio player";
-    let suffix = "";
+  protected getStateLabel(state: 'loading' | 'ready' | 'error'): string {
+    const baseLabel = this.config.ariaLabel || 'Audio player';
+    let suffix = '';
 
     switch (state) {
-      case "loading":
-        suffix = this.config.loadingLabel || "Loading";
+      case 'loading':
+        suffix = this.config.loadingLabel || 'Loading';
         break;
-      case "ready":
-        suffix = this.config.readyLabel || "Ready";
+      case 'ready':
+        suffix = this.config.readyLabel || 'Ready';
         break;
-      case "error":
-        suffix = this.config.errorLabel || "Error";
+      case 'error':
+        suffix = this.config.errorLabel || 'Error';
         break;
     }
 
@@ -146,7 +146,7 @@ export abstract class BaseProvider {
    */
   protected abstract updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void;
 
   /**
@@ -154,7 +154,7 @@ export abstract class BaseProvider {
    */
   destroy(): void {
     if (this.container) {
-      this.container.innerHTML = "";
+      this.container.innerHTML = '';
       this.container = null;
     }
     this.readyCallback = null;

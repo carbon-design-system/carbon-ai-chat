@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import packageJson from "../../../package.json";
+import packageJson from '../../../package.json';
 
 /**
  * Renders the component(s) script tag content and returns back the string
@@ -22,7 +22,7 @@ function _renderScript(components: Array<any>, tag: string) {
       ? [components] // wrap string/object into array
       : [];
 
-  let scripts = "";
+  let scripts = '';
   list.forEach((component) => {
     scripts += `<script type="module" src="https://chat.carbondesignsystem.com/components/version/${tag}/${component}.min.js"></script>\n`;
   });

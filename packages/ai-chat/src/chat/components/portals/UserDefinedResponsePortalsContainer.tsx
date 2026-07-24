@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React, { ReactNode, useRef, useEffect } from "react";
-import ReactDOM from "react-dom";
+import React, { ReactNode, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 
-import { ChatInstance } from "../../../types/instance/ChatInstance";
+import { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
   RenderUserDefinedResponse,
   RenderUserDefinedState,
-} from "../../../types/component/ChatContainer";
+} from '../../../types/component/ChatContainer';
 
 interface UserDefinedResponsePortalsContainer {
   /**
@@ -84,8 +84,8 @@ function UserDefinedResponsePortalsContainer({
 
     if (!hostElement) {
       // Create a new slot element
-      hostElement = document.createElement("div");
-      hostElement.setAttribute("slot", slot);
+      hostElement = document.createElement('div');
+      hostElement.setAttribute('slot', slot);
 
       // Add it to the chat wrapper
       if (chatWrapper) {
@@ -107,12 +107,11 @@ function UserDefinedResponsePortalsContainer({
           return (
             <UserDefinedResponseComponentPortal
               key={slot}
-              hostElement={hostElement}
-            >
+              hostElement={hostElement}>
               {renderUserDefinedResponse(slotState, chatInstance)}
             </UserDefinedResponseComponentPortal>
           );
-        },
+        }
       )
     : null;
 }
@@ -134,6 +133,6 @@ function UserDefinedResponseComponentPortal({
 }
 
 const UserDefinedResponsePortalsContainerExport = React.memo(
-  UserDefinedResponsePortalsContainer,
+  UserDefinedResponsePortalsContainer
 );
 export { UserDefinedResponsePortalsContainerExport as UserDefinedResponsePortalsContainer };

@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { waitFor } from "@testing-library/react";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
+import { waitFor } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
-import { BusEventType } from "../../../src/types/events/eventBusTypes";
+} from '../../test_helpers';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 
 /**
  * Walks the nested shadow roots looking for the rendered prompt-line,
@@ -25,13 +25,13 @@ import { BusEventType } from "../../../src/types/events/eventBusTypes";
 async function findPromptLine(): Promise<Element> {
   return waitFor(
     () => {
-      const promptLine = deepQuerySelector(document, "cds-aichat-prompt-line");
+      const promptLine = deepQuerySelector(document, 'cds-aichat-prompt-line');
       if (!promptLine) {
-        throw new Error("prompt-line not mounted");
+        throw new Error('prompt-line not mounted');
       }
       return promptLine;
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 }
 
@@ -42,19 +42,19 @@ async function findPromptLine(): Promise<Element> {
  * the same focus-tracking pipeline as a real focus event.
  */
 async function dispatchPromptFocusEvent(
-  type: "cds-aichat-prompt-focus" | "cds-aichat-prompt-blur",
+  type: 'cds-aichat-prompt-focus' | 'cds-aichat-prompt-blur'
 ): Promise<void> {
   const promptLine = await findPromptLine();
   promptLine.dispatchEvent(
-    new CustomEvent(type, { bubbles: true, composed: true }),
+    new CustomEvent(type, { bubbles: true, composed: true })
   );
 }
 
-describe("ChatInstance.input.focused (PublicInputState)", () => {
+describe('ChatInstance.input.focused (PublicInputState)', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("starts as false before any focus/blur event", async () => {
+  it('starts as false before any focus/blur event', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -62,18 +62,18 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
     expect(store.getState().assistantInputState.focused).toBe(false);
   });
 
-  it("flips to true on cds-aichat-input-focus and back to false on blur", async () => {
+  it('flips to true on cds-aichat-input-focus and back to false on blur', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
+    await dispatchPromptFocusEvent('cds-aichat-prompt-focus');
 
     await waitFor(() => {
       expect(store.getState().assistantInputState.focused).toBe(true);
     });
     expect(instance.getState().input.focused).toBe(true);
 
-    await dispatchPromptFocusEvent("cds-aichat-prompt-blur");
+    await dispatchPromptFocusEvent('cds-aichat-prompt-blur');
 
     await waitFor(() => {
       expect(store.getState().assistantInputState.focused).toBe(false);
@@ -81,7 +81,7 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
     expect(instance.getState().input.focused).toBe(false);
   });
 
-  it("fires STATE_CHANGE with focused transitions in previousState/newState", async () => {
+  it('fires STATE_CHANGE with focused transitions in previousState/newState', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -100,18 +100,18 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
       },
     });
 
-    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
+    await dispatchPromptFocusEvent('cds-aichat-prompt-focus');
     await waitFor(() => {
       expect(transitions).toContainEqual({ prev: false, next: true });
     });
 
-    await dispatchPromptFocusEvent("cds-aichat-prompt-blur");
+    await dispatchPromptFocusEvent('cds-aichat-prompt-blur');
     await waitFor(() => {
       expect(transitions).toContainEqual({ prev: true, next: false });
     });
   });
 
-  it("does NOT fire STATE_CHANGE when the same focus state dispatches twice", async () => {
+  it('does NOT fire STATE_CHANGE when the same focus state dispatches twice', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -127,21 +127,21 @@ describe("ChatInstance.input.focused (PublicInputState)", () => {
       },
     });
 
-    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
-    await dispatchPromptFocusEvent("cds-aichat-prompt-focus");
+    await dispatchPromptFocusEvent('cds-aichat-prompt-focus');
+    await dispatchPromptFocusEvent('cds-aichat-prompt-focus');
 
     await waitFor(() => {
       expect(focusFlips).toEqual([true]);
     });
   });
 
-  it("public input.focused is included in the frozen public snapshot", async () => {
+  it('public input.focused is included in the frozen public snapshot', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     const snapshot = instance.getState().input;
     expect(Object.isFrozen(snapshot)).toBe(true);
-    expect(snapshot).toHaveProperty("focused");
-    expect(typeof snapshot.focused).toBe("boolean");
+    expect(snapshot).toHaveProperty('focused');
+    expect(typeof snapshot.focused).toBe('boolean');
   });
 });

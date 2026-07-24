@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./processing.scss?lit";
-import { carbonElement } from "../../../globals/decorators";
-import prefix from "../../../globals/settings.js";
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './processing.scss?lit';
+import { carbonElement } from '../../../globals/decorators';
+import prefix from '../../../globals/settings.js';
 
 /**
  * Processing component
@@ -24,14 +24,14 @@ class CDSAIChatProcessing extends LitElement {
   static styles = [commonStyles, styles];
 
   /** Enables the linear looping animation variant. */
-  @property({ type: Boolean, attribute: "loop" })
+  @property({ type: Boolean, attribute: 'loop' })
   loop = false;
 
   /**
    * Removes the ~1s entry delay so the dots appear immediately. Composes with
    * both the looping and non-looping variants.
    */
-  @property({ type: Boolean, attribute: "quick-load" })
+  @property({ type: Boolean, attribute: 'quick-load' })
   quickLoad = false;
 
   render() {
@@ -53,7 +53,7 @@ class CDSAIChatProcessing extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-processing": CDSAIChatProcessing;
+    'cds-aichat-processing': CDSAIChatProcessing;
   }
 }
 

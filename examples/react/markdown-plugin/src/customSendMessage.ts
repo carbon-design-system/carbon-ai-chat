@@ -21,7 +21,7 @@ import {
   type CustomSendMessageOptions,
   type MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const KATEX_REPLY = `Plugins can introduce new token types. This example registers [\`@vscode/markdown-it-katex\`](https://www.npmjs.com/package/@vscode/markdown-it-katex) so the renderer understands LaTeX math.
 
@@ -34,7 +34,7 @@ Plugin output is mounted into a light-DOM slot so the KaTeX stylesheet loaded by
 async function customSendMessage(
   _request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   instance.messaging.addMessage({
     output: {

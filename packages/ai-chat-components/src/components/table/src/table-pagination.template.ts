@@ -7,13 +7,13 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/pagination/index.js";
-import "@carbon/web-components/es/components/select/index.js";
+import '@carbon/web-components/es/components/pagination/index.js';
+import '@carbon/web-components/es/components/select/index.js';
 
-import { html } from "lit";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { TableRowContent } from "./table.js";
-import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { TableRowContent } from './table.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 
 // Import only the constants, not the class
 const POSSIBLE_PAGE_SIZES = [5, 10, 15, 20, 50];
@@ -67,7 +67,7 @@ function tablePaginationTemplate(props: TablePaginationProps) {
 
   // Page sizes will only be included if the page size is less than the total number of rows.
   const supportedPageSizes = POSSIBLE_PAGE_SIZES.filter(
-    (pageSize) => pageSize < totalRows,
+    (pageSize) => pageSize < totalRows
   );
 
   return html`<cds-pagination
@@ -82,13 +82,10 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     .formatStatusWithDeterminateTotal=${ifDefined(getPaginationStatusText)}
     @cds-pagination-changed-current=${handlePageChangeEvent}
     @cds-page-sizes-select-changed=${handlePageSizeChangeEvent}
-    forward-text-tooltip-position=${isDirectionRTL() ? "right" : "left"}
-  >
+    forward-text-tooltip-position=${isDirectionRTL() ? 'right' : 'left'}>
     ${supportedPageSizes.map(
       (pageSize) =>
-        html`<cds-select-item value="${pageSize}"
-          >${pageSize}</cds-select-item
-        >`,
+        html`<cds-select-item value="${pageSize}">${pageSize}</cds-select-item>`
     )}
     <cds-select-item value="${totalRows}">${totalRows}</cds-select-item>
   </cds-pagination>`;

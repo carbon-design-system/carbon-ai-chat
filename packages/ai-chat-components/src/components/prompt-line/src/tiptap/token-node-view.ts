@@ -18,18 +18,18 @@
  * which is shared with the chat-side rich user message bubble.
  */
 
-import type { Node as PMNode } from "@tiptap/pm/model";
-import type { EditorView, NodeView } from "@tiptap/pm/view";
+import type { Node as PMNode } from '@tiptap/pm/model';
+import type { EditorView, NodeView } from '@tiptap/pm/view';
 
-import { renderTokenChip, type TokenChipAttrs } from "./render-token-chip.js";
-import type { TriggerSuggestionConfig } from "./types.js";
+import { renderTokenChip, type TokenChipAttrs } from './render-token-chip.js';
+import type { TriggerSuggestionConfig } from './types.js';
 
 export interface CarbonTokenNodeViewOptions {
   /**
    * Custom renderer from the trigger-suggestion config. When omitted, the
    * default text chip is used.
    */
-  renderCustomToken?: TriggerSuggestionConfig["renderCustomToken"];
+  renderCustomToken?: TriggerSuggestionConfig['renderCustomToken'];
 }
 
 export class CarbonTokenNodeView implements NodeView {
@@ -38,14 +38,14 @@ export class CarbonTokenNodeView implements NodeView {
   constructor(
     node: PMNode,
     view: EditorView,
-    options: CarbonTokenNodeViewOptions,
+    options: CarbonTokenNodeViewOptions
   ) {
     this.dom = renderTokenChip({
       attrs: node.attrs as TokenChipAttrs,
       config: { renderCustomToken: options.renderCustomToken },
       type: node.type.name,
       dispatchTarget: view.dom,
-      context: "composer",
+      context: 'composer',
     });
   }
 

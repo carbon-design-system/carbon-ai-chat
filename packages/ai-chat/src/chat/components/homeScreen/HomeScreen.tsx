@@ -10,22 +10,22 @@
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
-import ArrowRight16 from "@carbon/icons/es/arrow--right/16.js";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import cx from "classnames";
-import React from "react";
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
+} from '@carbon/ai-chat-components/es/react/chat-button.js';
+import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import cx from 'classnames';
+import React from 'react';
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
 
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { AppState } from "../../../types/state/AppState";
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { AppState } from '../../../types/state/AppState';
 
-import { WriteableElementName } from "../../utils/constants";
-import WriteableElement from "../util/WriteableElement";
-import { MessageSendSource } from "../../../types/events/eventBusTypes";
-import { SendOptions } from "../../../types/instance/ChatInstance";
-import { PageObjectId } from "../../../testing/PageObjectId";
+import { WriteableElementName } from '../../utils/constants';
+import WriteableElement from '../util/WriteableElement';
+import { MessageSendSource } from '../../../types/events/eventBusTypes';
+import { SendOptions } from '../../../types/instance/ChatInstance';
+import { PageObjectId } from '../../../testing/PageObjectId';
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -37,7 +37,7 @@ interface HomeScreenProps {
   onSendInput: (
     text: string,
     source: MessageSendSource,
-    options?: SendOptions,
+    options?: SendOptions
   ) => Promise<void>;
 
   /**
@@ -58,25 +58,25 @@ function HomeScreenComponent({
       homeScreen_returnToAssistant:
         state.languagePack.homeScreen_returnToAssistant,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const serviceManager = useServiceManager();
 
   // Active home-screen config (derived/combined config). Selected here instead of
   // threaded from AppShell so HomeScreen owns its own data dependency.
   const homescreen = useSelector(
-    (state: AppState) => state.config.public.homescreen,
+    (state: AppState) => state.config.public.homescreen
   );
 
   const showBackToAssistant = useSelector(
     (state: AppState) =>
-      state.persistedToBrowserStorage.homeScreenState.showBackToAssistant,
+      state.persistedToBrowserStorage.homeScreenState.showBackToAssistant
   );
 
   const ArrowRight = carbonIconToReact(ArrowRight16);
 
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
 
   const homeScreenWriteableElement =
@@ -92,26 +92,23 @@ function HomeScreenComponent({
   return (
     <div
       data-testid={PageObjectId.HOME_SCREEN_PANEL}
-      className={cx("cds-aichat--home-screen", {
-        "cds-aichat--home-screen--background-ai-theme": aiEnabled,
-        "cds-aichat--home-screen--hydration-complete": isHydrated,
-      })}
-    >
+      className={cx('cds-aichat--home-screen', {
+        'cds-aichat--home-screen--background-ai-theme': aiEnabled,
+        'cds-aichat--home-screen--hydration-complete': isHydrated,
+      })}>
       <div
         className="cds-aichat--home-screen__content"
         role="dialog"
-        aria-label={languagePack.homeScreen_ariaHomeScreenContent}
-      >
+        aria-label={languagePack.homeScreen_ariaHomeScreenContent}>
         <div className="cds-aichat--home-screen__body-wrapper">
           <div
-            className={cx("cds-aichat--home-screen__body", {
-              "cds-aichat--home-screen__body--no-custom-content":
+            className={cx('cds-aichat--home-screen__body', {
+              'cds-aichat--home-screen__body--no-custom-content':
                 !hasCustomContent,
-              "cds-aichat--home-screen__body--custom-content": hasCustomContent,
-              "cds-aichat--home-screen__body--custom-content-only":
+              'cds-aichat--home-screen__body--custom-content': hasCustomContent,
+              'cds-aichat--home-screen__body--custom-content-only':
                 customContentOnly,
-            })}
-          >
+            })}>
             <div className="cds-aichat--home-screen__initial-content">
               {!customContentOnly && (
                 <h2 className="cds-aichat--home-screen__greeting">
@@ -120,18 +117,16 @@ function HomeScreenComponent({
               )}
               {!customContentOnly && homeScreenWithStarters && (
                 <div
-                  className={cx("cds-aichat--home-screen__starters", {
+                  className={cx('cds-aichat--home-screen__starters', {
                     // If there are more than 5 starters, animate in all starters at once.
-                    "cds-aichat--home-screen__starters--animate-group":
+                    'cds-aichat--home-screen__starters--animate-group':
                       starters.buttons.length > 5,
-                  })}
-                >
+                  })}>
                   {starters.buttons.map((starter, index) => (
                     <div
                       // eslint-disable-next-line react/no-array-index-key
                       key={index}
-                      className="cds-aichat--home-screen__starter-wrapper"
-                    >
+                      className="cds-aichat--home-screen__starter-wrapper">
                       <ChatButton
                         size={CHAT_BUTTON_SIZE.SMALL}
                         kind={CHAT_BUTTON_KIND.TERTIARY}
@@ -140,10 +135,9 @@ function HomeScreenComponent({
                         onClick={() =>
                           onSendInput(
                             starter.label,
-                            MessageSendSource.HOME_SCREEN_STARTER,
+                            MessageSendSource.HOME_SCREEN_STARTER
                           )
-                        }
-                      >
+                        }>
                         {starter.label}
                       </ChatButton>
                     </div>
@@ -153,13 +147,12 @@ function HomeScreenComponent({
             </div>
           </div>
           <div
-            className={cx("cds-aichat--home-screen__custom-content", {
-              "cds-aichat--home-screen__custom-content--custom-content-only":
+            className={cx('cds-aichat--home-screen__custom-content', {
+              'cds-aichat--home-screen__custom-content--custom-content-only':
                 customContentOnly,
-              "cds-aichat--home-screen__custom-content--animation":
+              'cds-aichat--home-screen__custom-content--animation':
                 hasCustomContent || customContentOnly,
-            })}
-          >
+            })}>
             <WriteableElement
               slotName={WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT}
               id={`homeScreenAfterStartersElement${serviceManager.namespace.suffix}`}
@@ -171,8 +164,7 @@ function HomeScreenComponent({
             size={CHAT_BUTTON_SIZE.SMALL}
             kind={CHAT_BUTTON_KIND.SECONDARY}
             className="cds-aichat--home-screen__back-button"
-            onClick={onToggleHomeScreen}
-          >
+            onClick={onToggleHomeScreen}>
             <span className="cds-aichat--home-screen__back-button-content">
               <span className="cds-aichat--home-screen__back-button-content-text">
                 {languagePack.homeScreen_returnToAssistant}

@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-autocomplete;
 
@@ -46,7 +46,7 @@ $block-class: #{$prefix}-autocomplete;
   }
 
   .#{$block-class}__title {
-    @include type.type-style("heading-compact-01");
+    @include type.type-style('heading-compact-01');
 
     color: theme.$text-primary;
   }

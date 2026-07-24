@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/components/button" as button;
-@use "../../../globals/scss/vars" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/components/button' as button;
+@use '../../../globals/scss/vars' as *;
 
 // -----------------------------------------------------------
 // Host
@@ -131,7 +131,7 @@
   display: block;
   background: theme.$border-subtle-00;
   block-size: 1px;
-  content: "";
+  content: '';
   inline-size: calc(100% + #{layout.$spacing-05} + #{layout.$spacing-03});
   inset-block-end: 0;
   inset-inline-start: calc(-1 * #{layout.$spacing-03});
@@ -150,7 +150,7 @@
   align-items: center;
 }
 
-:host(:not([expanded])) ::slotted([slot="message-actions"]) {
+:host(:not([expanded])) ::slotted([slot='message-actions']) {
   align-self: flex-start;
   // !important required to override global CSS reset (common.scss) that sets
   // margin: 0 on all divs including slotted elements
@@ -163,7 +163,7 @@
 // (`data-prompt-line-slot`), which owns its own host content layout. With a
 // single action this is visually identical to the previous block flow; with
 // several (e.g. the expanded inline actions) they sit in a gapped row.
-::slotted([slot="message-actions"]:not([data-prompt-line-slot])) {
+::slotted([slot='message-actions']:not([data-prompt-line-slot])) {
   display: flex;
   align-items: center;
   gap: layout.$spacing-03;
@@ -195,7 +195,7 @@
 // Inner .ProseMirror styles are applied directly via JS in
 // _initProseMirror (CSSOM) — see prompt-line-shell.ts.
 // -----------------------------------------------------------
-::slotted([slot="editor"]) {
+::slotted([slot='editor']) {
   position: relative;
   z-index: 2;
   overflow: visible;
@@ -213,7 +213,7 @@
 // adjacent-child rule below. Stretch back to the full container width by
 // offsetting inline-start by the start padding and widening by start padding +
 // end padding + end margin (3x $spacing-03).
-::slotted([slot="autocomplete-content"]) {
+::slotted([slot='autocomplete-content']) {
   position: absolute;
   z-index: 10;
   inline-size: calc(100% + #{layout.$spacing-03} * 3);
@@ -222,7 +222,7 @@
 }
 
 // Add gap when autocomplete is not attached (fullscreen layout)
-::slotted([slot="autocomplete-content"]:not([attached])) {
+::slotted([slot='autocomplete-content']:not([attached])) {
   inset-block-end: calc(100% + #{layout.$spacing-03});
 }
 
@@ -242,7 +242,7 @@
 // slotted (with only its hidden live regions) while empty so screen-reader
 // announcements survive removal of the last file; gating on `has-uploads`
 // keeps it from adding spacing when there is nothing to show.
-::slotted([slot="file-uploads"][has-uploads]) {
+::slotted([slot='file-uploads'][has-uploads]) {
   display: flex;
   flex-basis: 100%;
   flex-wrap: wrap;
@@ -322,7 +322,7 @@
 // width to measure against. Actions left-align inside it; the send control sits at
 // the inline end with a fixed gap below.
 .#{$prefix}--input-container--expanded
-  ::slotted([slot="message-actions"]:not([data-prompt-line-slot])) {
+  ::slotted([slot='message-actions']:not([data-prompt-line-slot])) {
   flex: 1 1 1px;
   min-inline-size: 0;
 }

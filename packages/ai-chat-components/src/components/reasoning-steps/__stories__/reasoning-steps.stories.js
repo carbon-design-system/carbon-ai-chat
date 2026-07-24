@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,64 +7,58 @@
  *  @license
  */
 
-import "../src/reasoning-steps";
-import "../src/reasoning-step";
-import "../../markdown/src/markdown";
-import { html, css, LitElement, nothing } from "lit";
+import '../src/reasoning-steps';
+import '../src/reasoning-step';
+import '../../markdown/src/markdown';
+import { html, css, LitElement, nothing } from 'lit';
 
 const defaultSteps = [
   {
-    title: "Understand the request",
+    title: 'Understand the request',
     open: true,
     body: html`<cds-aichat-markdown
       .markdown=${`Parsed the user's intent and restated it as a concise objective to make
-sure downstream steps share the same goal.`}
-    ></cds-aichat-markdown>`,
+sure downstream steps share the same goal.`}></cds-aichat-markdown>`,
   },
   {
-    title: "Review retrieved context",
+    title: 'Review retrieved context',
     open: false,
     body: html`<cds-aichat-markdown
       .markdown=${`Checked the documents and conversation history to identify facts that are
-relevant to the objective and noted confidence levels.`}
-    ></cds-aichat-markdown>`,
+relevant to the objective and noted confidence levels.`}></cds-aichat-markdown>`,
   },
   {
-    title: "Draft an answer",
+    title: 'Draft an answer',
     open: false,
     body: html`<cds-aichat-markdown
       .markdown=${`Combined the prompt with trusted context and generated a structured
-response with bullet points summarizing each insight.`}
-    ></cds-aichat-markdown>`,
+response with bullet points summarizing each insight.`}></cds-aichat-markdown>`,
   },
   {
-    title: "Validate the response",
+    title: 'Validate the response',
     open: false,
     body: html`<cds-aichat-markdown
       .markdown=${`Compared the answer with the original request, double-checked citations,
-and ensured tone guidelines were followed.`}
-    ></cds-aichat-markdown>`,
+and ensured tone guidelines were followed.`}></cds-aichat-markdown>`,
   },
 ];
 
 const mixedSteps = [
   {
-    title: "Detect missing data",
+    title: 'Detect missing data',
     open: true,
     body: html`<cds-aichat-markdown
       .markdown=${`Noticed the prompt referenced an attachment that was not available, so I
-documented the gap before drafting an answer.`}
-    ></cds-aichat-markdown>`,
+documented the gap before drafting an answer.`}></cds-aichat-markdown>`,
   },
   {
-    title: "Awaiting supporting citations",
+    title: 'Awaiting supporting citations',
   },
   {
-    title: "Ready for escalation",
+    title: 'Ready for escalation',
     body: html`<cds-aichat-markdown
       .markdown=${`The final recommendation needs human approval. I summarized the findings
-and highlighted the open questions to review.`}
-    ></cds-aichat-markdown>`,
+and highlighted the open questions to review.`}></cds-aichat-markdown>`,
   },
 ];
 
@@ -74,13 +68,13 @@ const logToggleEvent = (event) => {
     .find(
       (node) =>
         node instanceof HTMLElement &&
-        node.tagName?.toLowerCase() === "cds-aichat-reasoning-step",
+        node.tagName?.toLowerCase() === 'cds-aichat-reasoning-step'
     );
   const title =
-    stepElement?.getAttribute?.("title") ||
+    stepElement?.getAttribute?.('title') ||
     stepElement?.title ||
-    "Reasoning step";
-  const state = event.detail?.open ? "open" : "closed";
+    'Reasoning step';
+  const state = event.detail?.open ? 'open' : 'closed';
   console.log(`[Reasoning step] ${title} is now ${state}.`, event.detail);
 };
 
@@ -88,17 +82,15 @@ const renderSteps = (args, steps) => html`
   <cds-aichat-reasoning-steps
     ?open=${args.open}
     ?controlled=${args.controlled}
-    @cds-aichat-reasoning-step-toggled=${logToggleEvent}
-  >
+    @cds-aichat-reasoning-step-toggled=${logToggleEvent}>
     ${steps.map(
       (step) => html`
         <cds-aichat-reasoning-step
           title=${step.title}
-          ?open=${step.open ?? false}
-        >
+          ?open=${step.open ?? false}>
           ${step.body ?? nothing}
         </cds-aichat-reasoning-step>
-      `,
+      `
     )}
   </cds-aichat-reasoning-steps>
 `;
@@ -138,35 +130,32 @@ class ControlledReasoningStepsDemo extends LitElement {
     super();
     this.steps = [
       {
-        id: "gather-context",
-        title: "Gather relevant context",
+        id: 'gather-context',
+        title: 'Gather relevant context',
         body: html`<cds-aichat-markdown
           .markdown=${`Pulled customer profile data, product catalog entries, and the latest
-troubleshooting articles that match the request.`}
-        ></cds-aichat-markdown>`,
+troubleshooting articles that match the request.`}></cds-aichat-markdown>`,
       },
       {
-        id: "draft-plan",
-        title: "Draft plan",
+        id: 'draft-plan',
+        title: 'Draft plan',
         body: html`<cds-aichat-markdown
           .markdown=${`Proposed a three-step plan that addresses the user's main objective
-while calling out any assumptions.`}
-        ></cds-aichat-markdown>`,
+while calling out any assumptions.`}></cds-aichat-markdown>`,
       },
       {
-        id: "risk-check",
-        title: "Run risk checks",
+        id: 'risk-check',
+        title: 'Run risk checks',
         body: html`<cds-aichat-markdown
           .markdown=${`<ul>
   <li>Verified we are not leaking PII.</li>
   <li>Ensured rate limits are respected.</li>
   <li>Confirmed tone aligns with support guidelines.</li>
-</ul>`}
-        ></cds-aichat-markdown>`,
+</ul>`}></cds-aichat-markdown>`,
       },
       {
-        id: "handoff",
-        title: "Ready for human review",
+        id: 'handoff',
+        title: 'Ready for human review',
       },
     ];
     this.openSteps = new Set([this.steps[0].id]);
@@ -183,7 +172,7 @@ while calling out any assumptions.`}
           Collapse all
         </button>
         <button type="button" @click=${() => this._toggleWrapper()}>
-          ${this.wrapperOpen ? "Hide all" : "Show all"}
+          ${this.wrapperOpen ? 'Hide all' : 'Show all'}
         </button>
       </div>
       <cds-aichat-reasoning-steps ?open=${this.wrapperOpen} controlled>
@@ -195,11 +184,10 @@ while calling out any assumptions.`}
               ?open=${this.openSteps.has(step.id)}
               controlled
               @cds-aichat-reasoning-step-beingtoggled=${(event) =>
-                this._handleControlledToggle(event, step.id)}
-            >
+                this._handleControlledToggle(event, step.id)}>
               ${step.body ?? nothing}
             </cds-aichat-reasoning-step>
-          `,
+          `
         )}
       </cds-aichat-reasoning-steps>
     `;
@@ -233,33 +221,33 @@ while calling out any assumptions.`}
   }
 }
 
-if (!customElements.get("cds-aichat-reasoning-steps-controlled-demo")) {
+if (!customElements.get('cds-aichat-reasoning-steps-controlled-demo')) {
   customElements.define(
-    "cds-aichat-reasoning-steps-controlled-demo",
-    ControlledReasoningStepsDemo,
+    'cds-aichat-reasoning-steps-controlled-demo',
+    ControlledReasoningStepsDemo
   );
 }
 
 export default {
-  title: "Components/Reasoning steps",
-  component: "cds-aichat-reasoning-steps",
+  title: 'Components/Reasoning steps',
+  component: 'cds-aichat-reasoning-steps',
   parameters: {
     docs: {
       description: {
         component:
-          "Displays a list of reasoning steps. Supports auto-open/close behavior or fully controlled state managed by the host.",
+          'Displays a list of reasoning steps. Supports auto-open/close behavior or fully controlled state managed by the host.',
       },
     },
   },
   argTypes: {
     open: {
-      control: "boolean",
-      description: "Whether the reasoning steps wrapper is expanded.",
+      control: 'boolean',
+      description: 'Whether the reasoning steps wrapper is expanded.',
     },
     controlled: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "When true, each child step must be controlled by the host application.",
+        'When true, each child step must be controlled by the host application.',
     },
   },
   args: {

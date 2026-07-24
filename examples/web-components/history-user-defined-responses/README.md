@@ -1,20 +1,32 @@
 # History / User-defined responses
 
-Lit example that rehydrates a conversation containing multiple `user_defined` cards via `customLoadHistory` + `insertHistory`, then uses `instance.getState()` and `BusEventType.STATE_CHANGE` to highlight only the most-recent card as active.
+Lit example that rehydrates a conversation containing multiple `user_defined`
+cards via `customLoadHistory` + `insertHistory`, then uses `instance.getState()`
+and `BusEventType.STATE_CHANGE` to highlight only the most-recent card as
+active.
 
 ## What this example shows
 
-- Pre-loading a transcript of three `user_defined` cards through `customLoadHistory` and `instance.messaging.insertHistory`.
-- Auto-rehydrating in `onBeforeRender` (no host button) by pairing `clearConversation` with `insertHistory`.
-- Reading the initial `activeResponseId` from `instance.getState()` and keeping it in sync via `BusEventType.STATE_CHANGE`.
-- Tracking each rendered `HTMLElement` in a `Map` and mutating its content imperatively in `updated()` so all cards refresh when `activeResponseId` flips.
-- Sending a new `user_defined` message live and watching the active highlight move from the previous active card to the new one.
+- Pre-loading a transcript of three `user_defined` cards through
+  `customLoadHistory` and `instance.messaging.insertHistory`.
+- Auto-rehydrating in `onBeforeRender` (no host button) by pairing
+  `clearConversation` with `insertHistory`.
+- Reading the initial `activeResponseId` from `instance.getState()` and keeping
+  it in sync via `BusEventType.STATE_CHANGE`.
+- Tracking each rendered `HTMLElement` in a `Map` and mutating its content
+  imperatively in `updated()` so all cards refresh when `activeResponseId`
+  flips.
+- Sending a new `user_defined` message live and watching the active highlight
+  move from the previous active card to the new one.
 
 ## When to use this pattern
 
-- You rehydrate conversations that contain host-rendered `user_defined` cards and need an "active/latest" flag for custom UI on those cards.
-- You want to verify that `STATE_CHANGE` wiring stays correct after `insertHistory`, not just after live `customSendMessage` traffic.
-- You want a single active highlight across many simultaneously-visible custom cards.
+- You rehydrate conversations that contain host-rendered `user_defined` cards
+  and need an "active/latest" flag for custom UI on those cards.
+- You want to verify that `STATE_CHANGE` wiring stays correct after
+  `insertHistory`, not just after live `customSendMessage` traffic.
+- You want a single active highlight across many simultaneously-visible custom
+  cards.
 
 ## APIs and props demonstrated
 
@@ -38,7 +50,9 @@ Lit example that rehydrates a conversation containing multiple `user_defined` ca
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors.
 
 From the repository root:
 

@@ -7,10 +7,10 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
 interface ReasoningSummaryData {
-  user_defined_type: "reasoning_summary";
+  user_defined_type: 'reasoning_summary';
   summary: string;
   citations?: string[];
 }

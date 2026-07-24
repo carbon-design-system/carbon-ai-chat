@@ -7,24 +7,24 @@
  *  @license
  */
 
-import actions from "../../../src/chat/store/actions";
-import { PersistableState } from "../../../src/types/config/PersistedStateConfig";
+import actions from '../../../src/chat/store/actions';
+import { PersistableState } from '../../../src/types/config/PersistedStateConfig';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
 const HOSTNAME =
-  typeof window !== "undefined" ? window.location.hostname : "localhost";
+  typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 
-describe("PublicConfig.persistedState", () => {
+describe('PublicConfig.persistedState', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  describe("initialState", () => {
-    it("hydrates the store from initialState instead of sessionStorage", async () => {
+  describe('initialState', () => {
+    it('hydrates the store from initialState instead of sessionStorage', async () => {
       const config = {
         ...createBaseConfig(),
         persistedState: {
@@ -50,8 +50,8 @@ describe("PublicConfig.persistedState", () => {
     });
   });
 
-  describe("onStateChange", () => {
-    it("reports persisted-state changes with a version-free PersistableState", async () => {
+  describe('onStateChange', () => {
+    it('reports persisted-state changes with a version-free PersistableState', async () => {
       const onStateChange = jest.fn();
       const config = {
         ...createBaseConfig(),
@@ -67,11 +67,11 @@ describe("PublicConfig.persistedState", () => {
       const emitted: PersistableState =
         onStateChange.mock.calls[onStateChange.mock.calls.length - 1][0];
       expect(emitted.disclaimersAccepted[HOSTNAME]).toBe(true);
-      expect(emitted).not.toHaveProperty("version");
-      expect(emitted).not.toHaveProperty("wasLoadedFromBrowser");
+      expect(emitted).not.toHaveProperty('version');
+      expect(emitted).not.toHaveProperty('wasLoadedFromBrowser');
     });
 
-    it("does not fire for non-persisted state changes", async () => {
+    it('does not fire for non-persisted state changes', async () => {
       const onStateChange = jest.fn();
       const config = {
         ...createBaseConfig(),
@@ -83,7 +83,7 @@ describe("PublicConfig.persistedState", () => {
       // No await between the clear and the assert, so no async boot task can
       // interleave: this isolates the single synchronous dispatch below.
       onStateChange.mockClear();
-      store.dispatch(actions.setAppStateValue("isBrowserPageVisible", false));
+      store.dispatch(actions.setAppStateValue('isBrowserPageVisible', false));
 
       expect(onStateChange).not.toHaveBeenCalled();
     });

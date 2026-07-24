@@ -15,10 +15,10 @@
  * let the chat skip the item).
  */
 
-import { RenderUserDefinedState } from "@carbon/ai-chat";
-import React from "react";
+import { RenderUserDefinedState } from '@carbon/ai-chat';
+import React from 'react';
 
-import { StepsCard, StepsCardData } from "./StepsCard";
+import { StepsCard, StepsCardData } from './StepsCard';
 
 function renderUserDefinedResponse(state: RenderUserDefinedState) {
   const { messageItem } = state;
@@ -27,7 +27,7 @@ function renderUserDefinedResponse(state: RenderUserDefinedState) {
   }
 
   switch (messageItem.user_defined?.user_defined_type) {
-    case "steps_card":
+    case 'steps_card':
       return (
         <StepsCard
           data={messageItem.user_defined as unknown as StepsCardData}

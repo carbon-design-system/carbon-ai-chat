@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,9 +13,9 @@
  * Provides the {@link ServiceManager} instance via {@link ServiceManagerContext}.
  */
 
-import React, { ReactNode, type JSX } from "react";
-import { ServiceManagerContext } from "../contexts/ServiceManagerContext";
-import { ServiceManager } from "../services/ServiceManager";
+import React, { ReactNode, type JSX } from 'react';
+import { ServiceManagerContext } from '../contexts/ServiceManagerContext';
+import { ServiceManager } from '../services/ServiceManager';
 
 interface ServiceManagerProviderProps {
   /** The service manager instance to provide. */

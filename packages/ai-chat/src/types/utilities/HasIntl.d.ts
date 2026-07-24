@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { IntlShape } from "../../chat/utils/i18n";
+import { IntlShape } from '../../chat/utils/i18n';
 
 /**
  * A simple interface for objects that have a reference to an injected intl property.

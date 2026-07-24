@@ -32,14 +32,14 @@ import {
   ChatInstance,
   PublicConfig,
   SuggestionItem,
-} from "@carbon/ai-chat";
-import "@carbon/styles/css/styles.css";
-import { Tag, Tooltip } from "@carbon/react";
-import React, { useCallback, useMemo, useRef } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import '@carbon/styles/css/styles.css';
+import { Tag, Tooltip } from '@carbon/react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { mentionItems, commandItems } from "./suggestions";
+import { customSendMessage } from './customSendMessage';
+import { mentionItems, commandItems } from './suggestions';
 
 function App() {
   const instanceRef = useRef<ChatInstance | null>(null);
@@ -68,13 +68,13 @@ function App() {
         // declare the @-mention trigger that this example exists to
         // demonstrate alongside the default-rendered /-command trigger.
         mention: {
-          trigger: "@",
+          trigger: '@',
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
             }
             return mentionItems.filter((m) =>
-              m.label.toLowerCase().includes(query.toLowerCase()),
+              m.label.toLowerCase().includes(query.toLowerCase())
             );
           },
           onSelect: (item: SuggestionItem) => {
@@ -88,7 +88,7 @@ function App() {
                 {
                   id: item.id,
                   label: item.label,
-                  type: "mention",
+                  type: 'mention',
                   value: item.id,
                 },
               ],
@@ -104,7 +104,7 @@ function App() {
                 return prev;
               }
               const index = prev.fields.findIndex(
-                (field) => field.type === "mention" && field.id === item.id,
+                (field) => field.type === 'mention' && field.id === item.id
               );
               if (index === -1) {
                 return prev;
@@ -123,8 +123,7 @@ function App() {
             <Tooltip
               label={item.description ?? item.label}
               align="top"
-              autoAlign
-            >
+              autoAlign>
               <Tag size="sm" type="purple">
                 @{item.label}
               </Tag>
@@ -132,10 +131,10 @@ function App() {
           ),
         },
         command: {
-          trigger: "/",
+          trigger: '/',
           // commands only make sense at the start of the input,
           // so suppress the picker when "/" appears mid-line.
-          triggerPosition: "start",
+          triggerPosition: 'start',
           items: commandItems,
           onSelect: (item: SuggestionItem) => {
             // mirror the mention path so commands also land in
@@ -147,7 +146,7 @@ function App() {
                 {
                   id: item.id,
                   label: item.label,
-                  type: "command",
+                  type: 'command',
                   value: item.id,
                 },
               ],
@@ -161,7 +160,7 @@ function App() {
                 return prev;
               }
               const index = prev.fields.findIndex(
-                (field) => field.type === "command" && field.id === item.id,
+                (field) => field.type === 'command' && field.id === item.id
               );
               if (index === -1) {
                 return prev;
@@ -177,7 +176,7 @@ function App() {
         },
       },
     }),
-    [],
+    []
   );
 
   return (
@@ -189,6 +188,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

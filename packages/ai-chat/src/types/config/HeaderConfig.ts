@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ToolbarAction as _ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
+import type { ToolbarAction as _ToolbarAction } from '@carbon/ai-chat-components/es/react/toolbar.js';
 
 /**
  * A single custom action button, used by both the chat header toolbar
@@ -70,27 +70,27 @@ export enum MinimizeButtonIconType {
   /**
    * This shows an "X" icon.
    */
-  CLOSE = "close",
+  CLOSE = 'close',
 
   /**
    * This shows a "-" icon.
    */
-  MINIMIZE = "minimize",
+  MINIMIZE = 'minimize',
 
   /**
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
-  SIDE_PANEL_LEFT = "side-panel-left",
+  SIDE_PANEL_LEFT = 'side-panel-left',
 
   /**
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
-  SIDE_PANEL_RIGHT = "side-panel-right",
+  SIDE_PANEL_RIGHT = 'side-panel-right',
 
   /**
    * This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
    */
-  SIDE_PANEL_DOWN = "side-panel-down",
+  SIDE_PANEL_DOWN = 'side-panel-down',
 }
 
 /**

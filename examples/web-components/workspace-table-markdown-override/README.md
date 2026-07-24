@@ -1,20 +1,38 @@
 # Workspace table markdown override
 
-`<cds-aichat-custom-element>` mounted directly in page light DOM and configured with `markdown.customRenderers.table` so every markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a Carbon Maximize icon button that opens the workspace panel and renders the same data inside a full-size `<cds-aichat-table>` — the same component the chat uses by default for inline markdown tables, so the workspace view matches the inline preview.
+`<cds-aichat-custom-element>` mounted directly in page light DOM and configured
+with `markdown.customRenderers.table` so every markdown table renders inside a
+`cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a
+Carbon Maximize icon button that opens the workspace panel and renders the same
+data inside a full-size `<cds-aichat-table>` — the same component the chat uses
+by default for inline markdown tables, so the workspace view matches the inline
+preview.
 
 ## What this example shows
 
-- Replacing the default markdown table renderer with `customRenderers.table` and returning a cached `HTMLElement` so streaming re-renders don't churn the DOM.
-- Driving the card header with `<cds-aichat-toolbar>` and an `actions` property — the toolbar renders each action as a `cds-icon-button` with a tooltip, right-aligned automatically.
-- Capturing the chat instance in `onBeforeRender` so the renderer can call `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)` on click.
-- Assigning a Lit element (`<workspace-table-content>`) to `instance.writeableElements.workspacePanelElement`; the element renders `<cds-aichat-table>` inside a `<cds-aichat-workspace-shell>` so it fills the panel and gets a toolbar with a close action.
-- Setting the table's `default-page-size` to the row count so the pagination bar is suppressed — all rows render and the workspace shell body's `overflow: auto` provides the vertical scrollbar.
-- Cleaning up workspace content on the `BusEventType.WORKSPACE_CLOSE` event so the next open starts fresh.
+- Replacing the default markdown table renderer with `customRenderers.table` and
+  returning a cached `HTMLElement` so streaming re-renders don't churn the DOM.
+- Driving the card header with `<cds-aichat-toolbar>` and an `actions` property
+  — the toolbar renders each action as a `cds-icon-button` with a tooltip,
+  right-aligned automatically.
+- Capturing the chat instance in `onBeforeRender` so the renderer can call
+  `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)` on click.
+- Assigning a Lit element (`<workspace-table-content>`) to
+  `instance.writeableElements.workspacePanelElement`; the element renders
+  `<cds-aichat-table>` inside a `<cds-aichat-workspace-shell>` so it fills the
+  panel and gets a toolbar with a close action.
+- Setting the table's `default-page-size` to the row count so the pagination bar
+  is suppressed — all rows render and the workspace shell body's
+  `overflow: auto` provides the vertical scrollbar.
+- Cleaning up workspace content on the `BusEventType.WORKSPACE_CLOSE` event so
+  the next open starts fresh.
 
 ## When to use this pattern
 
-- You want long markdown tables to surface as a compact inline preview, with a one-click "expand" into a full-size Carbon table for browsing.
-- You need a starting point for any markdown element that should open into the workspace panel (charts, code editors, image galleries, etc.).
+- You want long markdown tables to surface as a compact inline preview, with a
+  one-click "expand" into a full-size Carbon table for browsing.
+- You need a starting point for any markdown element that should open into the
+  workspace panel (charts, code editors, image galleries, etc.).
 
 ## APIs and props demonstrated
 
@@ -42,7 +60,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

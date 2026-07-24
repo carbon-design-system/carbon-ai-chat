@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -27,14 +27,10 @@ declare global {
   interface PromiseConstructor {
     all<T1>(values: [T1 | PromiseLike<T1>]): Promise<[T1]>;
     all<T1, T2>(
-      values: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>],
+      values: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>]
     ): Promise<[T1, T2]>;
     all<T1, T2, T3>(
-      values: [
-        T1 | PromiseLike<T1>,
-        T2 | PromiseLike<T2>,
-        T3 | PromiseLike<T3>,
-      ],
+      values: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>]
     ): Promise<[T1, T2, T3]>;
     all<T1, T2, T3, T4>(
       values: [
@@ -42,7 +38,7 @@ declare global {
         T2 | PromiseLike<T2>,
         T3 | PromiseLike<T3>,
         T4 | PromiseLike<T4>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4]>;
     all<T1, T2, T3, T4, T5>(
       values: [
@@ -51,7 +47,7 @@ declare global {
         T3 | PromiseLike<T3>,
         T4 | PromiseLike<T4>,
         T5 | PromiseLike<T5>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4, T5]>;
     all<T1, T2, T3, T4, T5, T6>(
       values: [
@@ -61,7 +57,7 @@ declare global {
         T4 | PromiseLike<T4>,
         T5 | PromiseLike<T5>,
         T6 | PromiseLike<T6>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4, T5, T6]>;
     all<T1, T2, T3, T4, T5, T6, T7>(
       values: [
@@ -72,7 +68,7 @@ declare global {
         T5 | PromiseLike<T5>,
         T6 | PromiseLike<T6>,
         T7 | PromiseLike<T7>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4, T5, T6, T7]>;
     all<T1, T2, T3, T4, T5, T6, T7, T8>(
       values: [
@@ -84,7 +80,7 @@ declare global {
         T6 | PromiseLike<T6>,
         T7 | PromiseLike<T7>,
         T8 | PromiseLike<T8>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4, T5, T6, T7, T8]>;
     all<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
       values: [
@@ -97,7 +93,7 @@ declare global {
         T7 | PromiseLike<T7>,
         T8 | PromiseLike<T8>,
         T9 | PromiseLike<T9>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4, T5, T6, T7, T8, T9]>;
     all<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
       values: [
@@ -111,7 +107,7 @@ declare global {
         T8 | PromiseLike<T8>,
         T9 | PromiseLike<T9>,
         T10 | PromiseLike<T10>,
-      ],
+      ]
     ): Promise<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]>;
   }
 }

@@ -11,12 +11,12 @@
  * This file contains the subscription functions that run against the redux store.
  */
 
-import { ServiceManager } from "../services/ServiceManager";
-import { BusEventType } from "../../types/events/eventBusTypes";
-import { PublicChatState } from "../../types/instance/PublicChatState";
-import isEqual from "lodash-es/isEqual.js";
-import { refreshLocalization } from "../utils/intlUtils";
-import { toPersistableState } from "./persistenceUtils";
+import { ServiceManager } from '../services/ServiceManager';
+import { BusEventType } from '../../types/events/eventBusTypes';
+import { PublicChatState } from '../../types/instance/PublicChatState';
+import isEqual from 'lodash-es/isEqual.js';
+import { refreshLocalization } from '../utils/intlUtils';
+import { toPersistableState } from './persistenceUtils';
 
 /**
  * Persists `persistedToBrowserStorage` whenever it changes. By default this writes to the browser's
@@ -42,11 +42,11 @@ function copyToSessionStorage(serviceManager: ServiceManager) {
         persistedStateConfig?.onStateChange
       ) {
         persistedStateConfig.onStateChange?.(
-          toPersistableState(persistedToBrowserStorage),
+          toPersistableState(persistedToBrowserStorage)
         );
       } else {
         serviceManager.userSessionStorageService.persistSession(
-          persistedToBrowserStorage,
+          persistedToBrowserStorage
         );
       }
     }
@@ -70,7 +70,7 @@ function fireStateChangeEvent(serviceManager: ServiceManager) {
           previousState,
           newState,
         },
-        serviceManager.instance,
+        serviceManager.instance
       );
 
       previousState = newState;

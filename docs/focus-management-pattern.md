@@ -2,17 +2,27 @@
 
 ## Overview
 
-This document describes a reusable pattern for implementing focus management in web components. The pattern allows parent components (like `@carbon/ai-chat`) to request focus without understanding the internal structure of child components (like `@carbon/ai-chat-components`).
+This document describes a reusable pattern for implementing focus management in
+web components. The pattern allows parent components (like `@carbon/ai-chat`) to
+request focus without understanding the internal structure of child components
+(like `@carbon/ai-chat-components`).
 
 ## Focus Management Utilities
 
-The `@carbon/ai-chat-components` package provides comprehensive focus management utilities in `@carbon/ai-chat-components/es/globals/utils/focus-utils` that handle complex scenarios including:
+The `@carbon/ai-chat-components` package provides comprehensive focus management
+utilities in `@carbon/ai-chat-components/es/globals/utils/focus-utils` that
+handle complex scenarios including:
 
-- **Visibility checks**: Elements hidden via CSS (`display: none`, `visibility: hidden`)
-- **Accessibility attributes**: Elements with `[hidden]`, `[inert]`, or `[aria-hidden="true"]`
-- **Disabled states**: Both native and custom elements with `[disabled]` or `[aria-disabled="true"]`
-- **Focusability validation**: Standard focusable elements and custom elements with shadow DOM
-- **Shadow DOM traversal**: Proper handling of shadow boundaries and `delegatesFocus`
+- **Visibility checks**: Elements hidden via CSS (`display: none`,
+  `visibility: hidden`)
+- **Accessibility attributes**: Elements with `[hidden]`, `[inert]`, or
+  `[aria-hidden="true"]`
+- **Disabled states**: Both native and custom elements with `[disabled]` or
+  `[aria-disabled="true"]`
+- **Focusability validation**: Standard focusable elements and custom elements
+  with shadow DOM
+- **Shadow DOM traversal**: Proper handling of shadow boundaries and
+  `delegatesFocus`
 
 ### Available Utilities
 
@@ -23,12 +33,13 @@ import {
   isElementInvisible,
   walkComposedTree,
   getFirstAndLastFocusableChildren,
-} from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+} from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
 ```
 
 #### `tryFocus(element, exceptions?)`
 
-Enhanced focus utility that validates visibility, accessibility, and focusability before attempting to set focus.
+Enhanced focus utility that validates visibility, accessibility, and
+focusability before attempting to set focus.
 
 ```typescript
 /**
@@ -41,7 +52,8 @@ const focused = tryFocus(element);
 
 #### `isFocusable(element)`
 
-Checks if an element is focusable, including support for custom elements with shadow DOM.
+Checks if an element is focusable, including support for custom elements with
+shadow DOM.
 
 ```typescript
 /**
@@ -53,7 +65,8 @@ const canFocus = isFocusable(element);
 
 #### `isElementInvisible(element, exceptions?)`
 
-Checks if an element should be ignored due to visibility or accessibility attributes.
+Checks if an element should be ignored due to visibility or accessibility
+attributes.
 
 ```typescript
 /**
@@ -66,7 +79,8 @@ const invisible = isElementInvisible(element);
 
 #### `walkComposedTree(node, whatToShow?, filter?, skipNode?)`
 
-Traverses the composed tree (including shadow DOM) to find elements matching criteria.
+Traverses the composed tree (including shadow DOM) to find elements matching
+criteria.
 
 ```typescript
 /**
@@ -79,7 +93,7 @@ Traverses the composed tree (including shadow DOM) to find elements matching cri
 for (const element of walkComposedTree(
   root,
   NodeFilter.SHOW_ELEMENT,
-  isFocusable,
+  isFocusable
 )) {
   // Process focusable elements
 }
@@ -101,11 +115,15 @@ const [first, last] = getFirstAndLastFocusableChildren(walker);
 
 ### Core Concept
 
-Each web component that contains focusable elements should implement a `requestFocus()` method that:
+Each web component that contains focusable elements should implement a
+`requestFocus()` method that:
 
-1. **Returns a boolean**: `true` if focus was successfully set, `false` if no focusable element was found
-2. **Encapsulates internal logic**: The component decides which element to focus based on its own priority rules
-3. **Enables fallback behavior**: Parent components can try alternative focus targets if the method returns `false`
+1. **Returns a boolean**: `true` if focus was successfully set, `false` if no
+   focusable element was found
+2. **Encapsulates internal logic**: The component decides which element to focus
+   based on its own priority rules
+3. **Enables fallback behavior**: Parent components can try alternative focus
+   targets if the method returns `false`
 
 ### Method Signature
 
@@ -200,10 +218,10 @@ export interface ComponentHandle {
 ### Parent Component Usage
 
 ```tsx
-import { useRef } from "react";
+import { useRef } from 'react';
 import ChatHeader, {
   ChatHeaderHandle,
-} from "@carbon/ai-chat-components/react/chat-header";
+} from '@carbon/ai-chat-components/react/chat-header';
 
 function ParentComponent() {
   const headerRef = useRef<ChatHeaderHandle>(null);
@@ -251,13 +269,15 @@ The `cds-aichat-chat-header` component implements the following focus priority:
 
 4. **Any Other Focusable Element** (Fallback)
    - Generic focusable elements as last resort
-   - Includes: buttons, links, inputs, selects, textareas, elements with tabindex
+   - Includes: buttons, links, inputs, selects, textareas, elements with
+     tabindex
 
 ### Rationale
 
 #### Why Fixed Actions First?
 
-The close button (typically in fixed-actions) is the most critical control for accessibility:
+The close button (typically in fixed-actions) is the most critical control for
+accessibility:
 
 - Users with screen readers need a reliable way to exit the chat
 - Keyboard users need a predictable focus target
@@ -270,7 +290,8 @@ Navigation controls (back button, overflow menu) are the next most important:
 
 - They provide access to other parts of the interface
 - They're typically always visible
-- They're less critical than the close button but more important than content actions
+- They're less critical than the close button but more important than content
+  actions
 
 #### Why Actions Array Third?
 
@@ -290,12 +311,16 @@ The generic fallback ensures we always try to focus something:
 
 ### Customization Considerations
 
-The priority order is designed for the typical chat header use case, but developers can customize behavior by:
+The priority order is designed for the typical chat header use case, but
+developers can customize behavior by:
 
-1. **Controlling slot content**: Place the most important button in the fixed-actions slot
-2. **Using fixedActions property**: Buttons passed via this property are rendered in fixed-actions
+1. **Controlling slot content**: Place the most important button in the
+   fixed-actions slot
+2. **Using fixedActions property**: Buttons passed via this property are
+   rendered in fixed-actions
 3. **Disabling buttons**: Disabled buttons are automatically skipped
-4. **Custom focus handling**: Parent components can implement their own logic based on the boolean return value
+4. **Custom focus handling**: Parent components can implement their own logic
+   based on the boolean return value
 
 ## Benefits of This Pattern
 
@@ -331,7 +356,8 @@ The priority order is designed for the typical chat header use case, but develop
 
 ## Future Applications
 
-This pattern should be applied to other web components as they are created. **Always use the shared `tryFocus` utility** for consistent behavior:
+This pattern should be applied to other web components as they are created.
+**Always use the shared `tryFocus` utility** for consistent behavior:
 
 ### Input Component (Future)
 
@@ -406,8 +432,10 @@ requestFocus(): boolean {
 
 Each component should test:
 
-1. **Successful focus**: Verify `requestFocus()` returns `true` when focusable elements exist
-2. **Failed focus**: Verify `requestFocus()` returns `false` when no focusable elements exist
+1. **Successful focus**: Verify `requestFocus()` returns `true` when focusable
+   elements exist
+2. **Failed focus**: Verify `requestFocus()` returns `false` when no focusable
+   elements exist
 3. **Priority order**: Verify correct element receives focus based on priority
 4. **Disabled elements**: Verify disabled elements are skipped
 5. **Shadow DOM**: Verify focus works correctly with shadow DOM boundaries
@@ -416,15 +444,17 @@ Each component should test:
 
 Parent components should test:
 
-1. **Fallback behavior**: Verify fallback focus targets are used when `requestFocus()` returns `false`
-2. **Multiple components**: Verify focus management works with multiple child components
+1. **Fallback behavior**: Verify fallback focus targets are used when
+   `requestFocus()` returns `false`
+2. **Multiple components**: Verify focus management works with multiple child
+   components
 3. **Dynamic content**: Verify focus management works when content changes
 
 ## Example Test
 
 ```typescript
-describe("ChatHeader requestFocus", () => {
-  it("should focus close button first", async () => {
+describe('ChatHeader requestFocus', () => {
+  it('should focus close button first', async () => {
     const header = await fixture(html`
       <cds-aichat-chat-header>
         <button slot="fixed-actions" id="close">Close</button>
@@ -435,10 +465,10 @@ describe("ChatHeader requestFocus", () => {
     const result = header.requestFocus();
 
     expect(result).to.be.true;
-    expect(document.activeElement?.id).to.equal("close");
+    expect(document.activeElement?.id).to.equal('close');
   });
 
-  it("should return false when no focusable elements exist", async () => {
+  it('should return false when no focusable elements exist', async () => {
     const header = await fixture(html`
       <cds-aichat-chat-header></cds-aichat-chat-header>
     `);
@@ -448,7 +478,7 @@ describe("ChatHeader requestFocus", () => {
     expect(result).to.be.false;
   });
 
-  it("should skip disabled buttons", async () => {
+  it('should skip disabled buttons', async () => {
     const header = await fixture(html`
       <cds-aichat-chat-header>
         <button slot="fixed-actions" disabled>Close</button>
@@ -459,7 +489,7 @@ describe("ChatHeader requestFocus", () => {
     const result = header.requestFocus();
 
     expect(result).to.be.true;
-    expect(document.activeElement?.id).to.equal("back");
+    expect(document.activeElement?.id).to.equal('back');
   });
 });
 ```
@@ -492,14 +522,25 @@ requestFocus(): boolean {
 
 ## Best Practices
 
-1. **Always use the shared utilities**: Import from `@carbon/ai-chat-components/es/globals/utils/focus-utils`
+1. **Always use the shared utilities**: Import from
+   `@carbon/ai-chat-components/es/globals/utils/focus-utils`
 2. **Don't reinvent the wheel**: The utilities handle edge cases you might miss
-3. **Test with assistive technology**: Verify focus management works with screen readers
-4. **Consider exceptions**: Use the `exceptions` parameter for special cases like dialogs or popovers
-5. **Document priority order**: Clearly comment why elements are focused in a specific order
+3. **Test with assistive technology**: Verify focus management works with screen
+   readers
+4. **Consider exceptions**: Use the `exceptions` parameter for special cases
+   like dialogs or popovers
+5. **Document priority order**: Clearly comment why elements are focused in a
+   specific order
 
 ## Conclusion
 
-This generic focus management pattern, combined with the comprehensive utilities in `@carbon/ai-chat-components`, provides a robust solution for managing focus across web components. By implementing `requestFocus()` consistently and using the shared `tryFocus` utility, we create a predictable and accessible user experience while maintaining proper separation of concerns between parent and child components.
+This generic focus management pattern, combined with the comprehensive utilities
+in `@carbon/ai-chat-components`, provides a robust solution for managing focus
+across web components. By implementing `requestFocus()` consistently and using
+the shared `tryFocus` utility, we create a predictable and accessible user
+experience while maintaining proper separation of concerns between parent and
+child components.
 
-The utilities handle complex scenarios including visibility, accessibility attributes, disabled states, and shadow DOM traversal, ensuring consistent and reliable focus management throughout the application.
+The utilities handle complex scenarios including visibility, accessibility
+attributes, disabled states, and shadow DOM traversal, ensuring consistent and
+reliable focus management throughout the application.

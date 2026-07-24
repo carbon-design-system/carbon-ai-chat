@@ -7,21 +7,21 @@
  *  @license
  */
 
-import { CornersType } from "../../src/types/config/CornersType";
+import { CornersType } from '../../src/types/config/CornersType';
 
 // Import the utility functions - we need to export them from doCreateStore first
 // For now, we'll test them through the public API
 
-describe("Corner Utility Functions", () => {
-  describe("Type Guards and Normalization", () => {
-    it("should identify simple CornersType values", () => {
+describe('Corner Utility Functions', () => {
+  describe('Type Guards and Normalization', () => {
+    it('should identify simple CornersType values', () => {
       // These tests will verify the behavior through the store
       // Once we export the utility functions, we can test them directly
-      expect(CornersType.ROUND).toBe("round");
-      expect(CornersType.SQUARE).toBe("square");
+      expect(CornersType.ROUND).toBe('round');
+      expect(CornersType.SQUARE).toBe('square');
     });
 
-    it("should handle per-corner configuration objects", () => {
+    it('should handle per-corner configuration objects', () => {
       const perCornerConfig = {
         startStart: CornersType.ROUND,
         startEnd: CornersType.SQUARE,
@@ -35,7 +35,7 @@ describe("Corner Utility Functions", () => {
       expect(perCornerConfig.endEnd).toBe(CornersType.ROUND);
     });
 
-    it("should handle partial per-corner configurations", () => {
+    it('should handle partial per-corner configurations', () => {
       const partialConfig: {
         startStart?: CornersType;
         startEnd?: CornersType;
@@ -54,17 +54,17 @@ describe("Corner Utility Functions", () => {
     });
   });
 
-  describe("Corner Configuration Validation", () => {
-    it("should accept valid CornersType enum values", () => {
+  describe('Corner Configuration Validation', () => {
+    it('should accept valid CornersType enum values', () => {
       const validValues = [CornersType.ROUND, CornersType.SQUARE];
 
       validValues.forEach((value) => {
-        expect(typeof value).toBe("string");
-        expect(["round", "square"]).toContain(value);
+        expect(typeof value).toBe('string');
+        expect(['round', 'square']).toContain(value);
       });
     });
 
-    it("should validate per-corner config structure", () => {
+    it('should validate per-corner config structure', () => {
       const validConfig = {
         startStart: CornersType.ROUND,
         startEnd: CornersType.ROUND,
@@ -73,18 +73,18 @@ describe("Corner Utility Functions", () => {
       };
 
       // Verify all required properties exist
-      expect(validConfig).toHaveProperty("startStart");
-      expect(validConfig).toHaveProperty("startEnd");
-      expect(validConfig).toHaveProperty("endStart");
-      expect(validConfig).toHaveProperty("endEnd");
+      expect(validConfig).toHaveProperty('startStart');
+      expect(validConfig).toHaveProperty('startEnd');
+      expect(validConfig).toHaveProperty('endStart');
+      expect(validConfig).toHaveProperty('endEnd');
 
       // Verify all values are valid CornersType
       Object.values(validConfig).forEach((value) => {
-        expect(["round", "square"]).toContain(value);
+        expect(['round', 'square']).toContain(value);
       });
     });
 
-    it("should handle mixed corner types in per-corner config", () => {
+    it('should handle mixed corner types in per-corner config', () => {
       const mixedConfig = {
         startStart: CornersType.ROUND,
         startEnd: CornersType.SQUARE,
@@ -93,10 +93,10 @@ describe("Corner Utility Functions", () => {
       };
 
       const roundCorners = Object.entries(mixedConfig).filter(
-        ([, value]) => value === CornersType.ROUND,
+        ([, value]) => value === CornersType.ROUND
       );
       const squareCorners = Object.entries(mixedConfig).filter(
-        ([, value]) => value === CornersType.SQUARE,
+        ([, value]) => value === CornersType.SQUARE
       );
 
       expect(roundCorners).toHaveLength(2);
@@ -104,13 +104,13 @@ describe("Corner Utility Functions", () => {
     });
   });
 
-  describe("Default Values", () => {
-    it("should use ROUND as default corner type", () => {
+  describe('Default Values', () => {
+    it('should use ROUND as default corner type', () => {
       const defaultCorner = CornersType.ROUND;
-      expect(defaultCorner).toBe("round");
+      expect(defaultCorner).toBe('round');
     });
 
-    it("should handle undefined corners gracefully", () => {
+    it('should handle undefined corners gracefully', () => {
       const config: { corners?: string } = {};
       expect(config.corners).toBeUndefined();
 
@@ -120,15 +120,15 @@ describe("Corner Utility Functions", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle empty per-corner config object", () => {
+  describe('Edge Cases', () => {
+    it('should handle empty per-corner config object', () => {
       const emptyConfig = {};
 
       expect(Object.keys(emptyConfig)).toHaveLength(0);
-      expect(emptyConfig).not.toHaveProperty("startStart");
+      expect(emptyConfig).not.toHaveProperty('startStart');
     });
 
-    it("should handle null and undefined values", () => {
+    it('should handle null and undefined values', () => {
       expect(null).toBeNull();
       expect(undefined).toBeUndefined();
 
@@ -142,7 +142,7 @@ describe("Corner Utility Functions", () => {
       expect(undefinedCorner).toBe(CornersType.ROUND);
     });
 
-    it("should differentiate between simple and per-corner configs", () => {
+    it('should differentiate between simple and per-corner configs', () => {
       const simpleConfig = CornersType.ROUND;
       const perCornerConfig = {
         startStart: CornersType.ROUND,
@@ -151,8 +151,8 @@ describe("Corner Utility Functions", () => {
         endEnd: CornersType.ROUND,
       };
 
-      expect(typeof simpleConfig).toBe("string");
-      expect(typeof perCornerConfig).toBe("object");
+      expect(typeof simpleConfig).toBe('string');
+      expect(typeof perCornerConfig).toBe('object');
       expect(perCornerConfig).not.toBeNull();
     });
   });

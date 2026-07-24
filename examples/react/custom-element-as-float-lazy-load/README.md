@@ -1,19 +1,27 @@
 # Custom element / As float (lazy load)
 
-Code-split `ChatCustomElement` rendered as a floating widget with a custom launcher, a `ChatShell` overlay covering both bundle-download and initialization phases, and session-based auto-mount.
+Code-split `ChatCustomElement` rendered as a floating widget with a custom
+launcher, a `ChatShell` overlay covering both bundle-download and initialization
+phases, and session-based auto-mount.
 
 ## What this example shows
 
-- Code-splitting `ChatCustomElement` with `React.lazy` + dynamic `import("@carbon/ai-chat")`, deferred 3 s for demo purposes.
-- Driving a float-phase state machine (`idle`, `opening`, `open`, `closing`, `closed`) via `onViewChange` and `onAnimationEnd`.
-- Reading the prior session with `readCarbonChatSession()` to auto-mount when the user had the chat open before.
-- Covering both loading phases with a `ChatShell` fixed overlay (Suspense fallback is `null`).
-- Using `@carbon/ai-chat-components`' React `ChatButton` and `ChatShell` wrappers.
+- Code-splitting `ChatCustomElement` with `React.lazy` + dynamic
+  `import("@carbon/ai-chat")`, deferred 3 s for demo purposes.
+- Driving a float-phase state machine (`idle`, `opening`, `open`, `closing`,
+  `closed`) via `onViewChange` and `onAnimationEnd`.
+- Reading the prior session with `readCarbonChatSession()` to auto-mount when
+  the user had the chat open before.
+- Covering both loading phases with a `ChatShell` fixed overlay (Suspense
+  fallback is `null`).
+- Using `@carbon/ai-chat-components`' React `ChatButton` and `ChatShell`
+  wrappers.
 - Honoring `prefers-reduced-motion` by skipping intermediate animation phases.
 
 ## When to use this pattern
 
-- You want a floating chat widget whose bundle is only downloaded on first user interaction (or on session resume).
+- You want a floating chat widget whose bundle is only downloaded on first user
+  interaction (or on session resume).
 - You need a seamless visual during both bundle download and chat boot.
 - You need a custom launcher plus lazy loading.
 
@@ -43,7 +51,10 @@ Code-split `ChatCustomElement` rendered as a floating widget with a custom launc
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

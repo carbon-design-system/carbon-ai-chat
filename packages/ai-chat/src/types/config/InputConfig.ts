@@ -12,15 +12,15 @@
 // the upstream symbols directly) so TypeDoc resolution stays pointed at our
 // JSDoc + `@category` placement; see [../AGENTS.md](../AGENTS.md) for the
 // cross-package re-export rule.
-import type { Extension } from "@tiptap/core";
+import type { Extension } from '@tiptap/core';
 import type {
   BaseSuggestionConfig as _BaseSuggestionConfig,
   TriggerSuggestionConfig as _TriggerSuggestionConfig,
   AutocompleteConfig as _AutocompleteConfig,
   SuggestionItem as _SuggestionItem,
   CustomListProps as _CustomListProps,
-} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
-import type { ToolbarAction } from "./HeaderConfig";
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import type { ToolbarAction } from './HeaderConfig';
 
 /**
  * Fields shared by every Carbon suggestion config (mention, command,

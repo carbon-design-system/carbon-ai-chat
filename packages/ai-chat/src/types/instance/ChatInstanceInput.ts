@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { StructuredData } from "../messaging/Messages";
-import type { Editor, JSONContent } from "@tiptap/core";
+import { StructuredData } from '../messaging/Messages';
+import type { Editor, JSONContent } from '@tiptap/core';
 
 /**
  * Methods for controlling the input field.
@@ -73,7 +73,7 @@ export interface ChatInstanceInput {
    * @experimental
    */
   updateContent: (
-    updater: (previous: JSONContent) => JSONContent,
+    updater: (previous: JSONContent) => JSONContent
   ) => Promise<void>;
 
   /**
@@ -112,8 +112,8 @@ export interface ChatInstanceInput {
    */
   updateStructuredData: (
     updater: (
-      previous: StructuredData | undefined,
-    ) => StructuredData | undefined,
+      previous: StructuredData | undefined
+    ) => StructuredData | undefined
   ) => void;
 
   /**

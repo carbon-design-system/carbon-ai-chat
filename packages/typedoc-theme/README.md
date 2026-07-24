@@ -37,12 +37,14 @@ Example:
   a Carbon UI Shell layout.
 - On every render, copies the theme's JS/CSS assets from `theme/assets/` into
   `<out>/assets/`.
-- Copies `@carbon/styles/css/styles.min.css` into `<out>/assets/carbon-styles.min.css`
-  (resolved via Node's module resolution, so npm hoisting works).
+- Copies `@carbon/styles/css/styles.min.css` into
+  `<out>/assets/carbon-styles.min.css` (resolved via Node's module resolution,
+  so npm hoisting works).
 - If `versionsFile` is set, copies that file to `<out>/versions.js` for the
   versions dropdown to consume.
 
 ## References
 
 - TypeDoc theme basics: https://typedoc.org/guides/themes/
-- Default theme source: https://github.com/TypeStrong/typedoc/tree/master/src/lib/output/themes/default
+- Default theme source:
+  https://github.com/TypeStrong/typedoc/tree/master/src/lib/output/themes/default

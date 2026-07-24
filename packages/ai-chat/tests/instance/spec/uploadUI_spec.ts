@@ -12,27 +12,27 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
-import { waitFor } from "@testing-library/react";
-import type { StructuredData } from "../../../src/types/messaging/Messages";
-import type { PublicConfig } from "../../../src/types/config/PublicConfig";
-import { PendingUploadStatus } from "../../../src/types/state/AppState";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
+} from '../../test_helpers';
+import { waitFor } from '@testing-library/react';
+import type { StructuredData } from '../../../src/types/messaging/Messages';
+import type { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { PendingUploadStatus } from '../../../src/types/state/AppState';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeFile(name = "test.pdf"): File {
-  return new File(["content"], name, { type: "application/pdf" });
+function makeFile(name = 'test.pdf'): File {
+  return new File(['content'], name, { type: 'application/pdf' });
 }
 
 function queryFileUploaderItem(): Element | null {
-  const chatElement = document.querySelector("cds-aichat-react");
+  const chatElement = document.querySelector('cds-aichat-react');
   if (!chatElement?.shadowRoot) {
     return null;
   }
-  return deepQuerySelector(chatElement.shadowRoot, "cds-file-uploader-item");
+  return deepQuerySelector(chatElement.shadowRoot, 'cds-file-uploader-item');
 }
 
 /**
@@ -41,8 +41,8 @@ function queryFileUploaderItem(): Element | null {
 function createUploadConfig(
   onFileUpload: (
     file: File,
-    signal: AbortSignal,
-  ) => Promise<StructuredData> = jest.fn().mockResolvedValue({}),
+    signal: AbortSignal
+  ) => Promise<StructuredData> = jest.fn().mockResolvedValue({})
 ): PublicConfig {
   return {
     ...createBaseConfig(),
@@ -57,7 +57,7 @@ function createUploadConfig(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("upload UI wiring – handleFileSelectedForUpload", () => {
+describe('upload UI wiring – handleFileSelectedForUpload', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -65,13 +65,13 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
   // handleFileSelectedForUpload – happy path
   // -------------------------------------------------------------------------
 
-  it("dispatches ADD_PENDING_UPLOAD with status=uploading when a file is selected", async () => {
+  it('dispatches ADD_PENDING_UPLOAD with status=uploading when a file is selected', async () => {
     const onFileUpload = jest.fn().mockImplementation(
-      () => new Promise(() => {}), // never resolves — keeps status as "uploading"
+      () => new Promise(() => {}) // never resolves — keeps status as "uploading"
     );
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     const file = makeFile();
@@ -81,25 +81,25 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(1);
     expect(state.assistantInputState.pendingUploads[0].status).toBe(
-      PendingUploadStatus.UPLOADING,
+      PendingUploadStatus.UPLOADING
     );
     expect(state.assistantInputState.pendingUploads[0].file).toBe(file);
 
     await waitFor(() => {
       const item = queryFileUploaderItem();
       expect(item).not.toBeNull();
-      expect(item?.getAttribute("state")).toBe("uploading");
+      expect(item?.getAttribute('state')).toBe('uploading');
     });
   });
 
-  it("transitions to status=complete and populates contributedData on success", async () => {
+  it('transitions to status=complete and populates contributedData on success', async () => {
     const contributedData: StructuredData = {
-      fields: [{ id: "file-ref", type: "file", value: "ref-123" }],
+      fields: [{ id: 'file-ref', type: 'file', value: 'ref-123' }],
     };
     const onFileUpload = jest.fn().mockResolvedValue(contributedData);
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     const file = makeFile();
@@ -108,27 +108,27 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(1);
     expect(state.assistantInputState.pendingUploads[0].status).toBe(
-      PendingUploadStatus.COMPLETE,
+      PendingUploadStatus.COMPLETE
     );
     expect(state.assistantInputState.pendingUploads[0].contributedData).toEqual(
-      contributedData,
+      contributedData
     );
 
     await waitFor(() => {
       const item = queryFileUploaderItem();
       expect(item).not.toBeNull();
-      expect(item?.getAttribute("state")).toBe("edit");
+      expect(item?.getAttribute('state')).toBe('edit');
     });
   });
 
-  it("merges contributedData into pendingStructuredData after successful upload", async () => {
+  it('merges contributedData into pendingStructuredData after successful upload', async () => {
     const contributedData: StructuredData = {
-      fields: [{ id: "attachment", type: "file", value: "ref-abc" }],
+      fields: [{ id: 'attachment', type: 'file', value: 'ref-abc' }],
     };
     const onFileUpload = jest.fn().mockResolvedValue(contributedData);
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     await serviceManager.actions.handleFileSelectedForUpload(makeFile());
@@ -136,7 +136,7 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     const state = store.getState();
     expect(state.assistantInputState.pendingStructuredData).toBeDefined();
     expect(state.assistantInputState.pendingStructuredData.fields).toEqual(
-      contributedData.fields,
+      contributedData.fields
     );
   });
 
@@ -144,13 +144,13 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
   // handleFileSelectedForUpload – error path
   // -------------------------------------------------------------------------
 
-  it("transitions to status=error and sets errorMessage when onFileUpload rejects", async () => {
+  it('transitions to status=error and sets errorMessage when onFileUpload rejects', async () => {
     const onFileUpload = jest
       .fn()
-      .mockRejectedValue(new Error("Upload failed"));
+      .mockRejectedValue(new Error('Upload failed'));
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     await serviceManager.actions.handleFileSelectedForUpload(makeFile());
@@ -158,28 +158,28 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(1);
     expect(state.assistantInputState.pendingUploads[0].status).toBe(
-      PendingUploadStatus.ERROR,
+      PendingUploadStatus.ERROR
     );
     expect(state.assistantInputState.pendingUploads[0].errorMessage).toBe(
-      "Upload failed",
+      'Upload failed'
     );
 
     await waitFor(() => {
       const item = queryFileUploaderItem();
       expect(item).not.toBeNull();
-      expect(item?.getAttribute("state")).toBe("edit");
-      expect(item?.hasAttribute("invalid")).toBe(true);
-      expect((item as any)?.errorSubject).toBe("Upload failed");
+      expect(item?.getAttribute('state')).toBe('edit');
+      expect(item?.hasAttribute('invalid')).toBe(true);
+      expect((item as any)?.errorSubject).toBe('Upload failed');
     });
   });
 
-  it("does not set pendingStructuredData when upload errors", async () => {
+  it('does not set pendingStructuredData when upload errors', async () => {
     const onFileUpload = jest
       .fn()
-      .mockRejectedValue(new Error("Network error"));
+      .mockRejectedValue(new Error('Network error'));
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     await serviceManager.actions.handleFileSelectedForUpload(makeFile());
@@ -192,18 +192,18 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
   // handleFileSelectedForUpload – abort path
   // -------------------------------------------------------------------------
 
-  it("silently ignores the error when the upload is aborted mid-flight", async () => {
+  it('silently ignores the error when the upload is aborted mid-flight', async () => {
     const onFileUpload = jest.fn().mockImplementation(
       (_file: File, signal: AbortSignal) =>
         new Promise<StructuredData>((_resolve, reject) => {
-          signal.addEventListener("abort", () =>
-            reject(new DOMException("Aborted", "AbortError")),
+          signal.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError'))
           );
-        }),
+        })
     );
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     const file = makeFile();
@@ -228,7 +228,7 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
   // handleFileSelectedForUpload – guard: no config
   // -------------------------------------------------------------------------
 
-  it("does nothing when UploadConfig.is_on is false", async () => {
+  it('does nothing when UploadConfig.is_on is false', async () => {
     const onFileUpload = jest.fn().mockResolvedValue({});
     const config: PublicConfig = {
       ...createBaseConfig(),
@@ -244,7 +244,7 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     expect(store.getState().assistantInputState.pendingUploads).toHaveLength(0);
   });
 
-  it("does nothing when onFileUpload is not provided", async () => {
+  it('does nothing when onFileUpload is not provided', async () => {
     const config: PublicConfig = {
       ...createBaseConfig(),
       upload: { is_on: true },
@@ -262,9 +262,9 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
   // Startup validation
   // -------------------------------------------------------------------------
 
-  it("logs an error at startup when is_on=true but onFileUpload is missing", async () => {
+  it('logs an error at startup when is_on=true but onFileUpload is missing', async () => {
     const consoleSpy = jest
-      .spyOn(console, "error")
+      .spyOn(console, 'error')
       .mockImplementation(() => {});
 
     const config: PublicConfig = {
@@ -276,23 +276,23 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
     await renderChatAndGetInstanceWithStore(config);
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("onFileUpload is not provided"),
+      expect.stringContaining('onFileUpload is not provided')
     );
 
     consoleSpy.mockRestore();
   });
 
-  it("does not log an error at startup when is_on=true and onFileUpload is provided", async () => {
+  it('does not log an error at startup when is_on=true and onFileUpload is provided', async () => {
     const consoleSpy = jest
-      .spyOn(console, "error")
+      .spyOn(console, 'error')
       .mockImplementation(() => {});
 
     await renderChatAndGetInstanceWithStore(
-      createUploadConfig(jest.fn().mockResolvedValue({})),
+      createUploadConfig(jest.fn().mockResolvedValue({}))
     );
 
     const uploadErrors = consoleSpy.mock.calls.filter((args) =>
-      String(args[0]).includes("onFileUpload"),
+      String(args[0]).includes('onFileUpload')
     );
     expect(uploadErrors).toHaveLength(0);
 
@@ -303,12 +303,12 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
   // Multiple files
   // -------------------------------------------------------------------------
 
-  it("handles multiple files independently — each gets its own pendingUpload entry", async () => {
+  it('handles multiple files independently — each gets its own pendingUpload entry', async () => {
     const contributedData1: StructuredData = {
-      fields: [{ id: "f1", type: "file", value: "ref-1" }],
+      fields: [{ id: 'f1', type: 'file', value: 'ref-1' }],
     };
     const contributedData2: StructuredData = {
-      fields: [{ id: "f2", type: "file", value: "ref-2" }],
+      fields: [{ id: 'f2', type: 'file', value: 'ref-2' }],
     };
     const onFileUpload = jest
       .fn()
@@ -316,24 +316,24 @@ describe("upload UI wiring – handleFileSelectedForUpload", () => {
       .mockResolvedValueOnce(contributedData2);
 
     const { store, serviceManager } = await renderChatAndGetInstanceWithStore(
-      createUploadConfig(onFileUpload),
+      createUploadConfig(onFileUpload)
     );
 
     await Promise.all([
-      serviceManager.actions.handleFileSelectedForUpload(makeFile("a.pdf")),
-      serviceManager.actions.handleFileSelectedForUpload(makeFile("b.pdf")),
+      serviceManager.actions.handleFileSelectedForUpload(makeFile('a.pdf')),
+      serviceManager.actions.handleFileSelectedForUpload(makeFile('b.pdf')),
     ]);
 
     const state = store.getState();
     expect(state.assistantInputState.pendingUploads).toHaveLength(2);
     expect(
       state.assistantInputState.pendingUploads.every(
-        (u) => u.status === PendingUploadStatus.COMPLETE,
-      ),
+        (u) => u.status === PendingUploadStatus.COMPLETE
+      )
     ).toBe(true);
     // Both fields should be merged into pendingStructuredData
     expect(state.assistantInputState.pendingStructuredData.fields).toHaveLength(
-      2,
+      2
     );
   });
 });

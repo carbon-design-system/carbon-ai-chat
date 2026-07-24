@@ -18,10 +18,10 @@
  * `renderTokenChip` is a thin token-specific wrapper over this primitive.
  */
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 /** Wire event for the generic light-DOM portal handshake. */
-export const LIGHT_DOM_PORTAL_EVENT = "cds-aichat-light-dom-portal";
+export const LIGHT_DOM_PORTAL_EVENT = 'cds-aichat-light-dom-portal';
 
 export interface RenderInLightDomArgs {
   /**
@@ -56,7 +56,7 @@ export interface RenderInLightDomArgs {
    * `display: block` child in an inline line-box, adding the parent's
    * line-height as phantom leading.
    */
-  containerTag?: "span" | "div";
+  containerTag?: 'span' | 'div';
 }
 
 export interface RenderInLightDomResult {
@@ -84,7 +84,7 @@ export interface LightDomPortalEventDetail {
   /** Set when the caller passed a `ReactNode`. */
   reactNode?: ReactNode;
   /** Tag the listener should use for the page-light-DOM `slot` host element. */
-  hostTag?: "span" | "div";
+  hostTag?: 'span' | 'div';
 }
 
 /**
@@ -92,11 +92,11 @@ export interface LightDomPortalEventDetail {
  * Returns the shadow-side `container` to place where the content belongs.
  */
 export function renderInLightDom(
-  args: RenderInLightDomArgs,
+  args: RenderInLightDomArgs
 ): RenderInLightDomResult {
-  const containerTag = args.containerTag ?? "span";
+  const containerTag = args.containerTag ?? 'span';
   const container = document.createElement(containerTag);
-  container.className = "cds-aichat--light-dom-portal-container";
+  container.className = 'cds-aichat--light-dom-portal-container';
 
   const detail: LightDomPortalEventDetail = {
     container,
@@ -110,7 +110,7 @@ export function renderInLightDom(
 
   const event = new CustomEvent<LightDomPortalEventDetail>(
     LIGHT_DOM_PORTAL_EVENT,
-    { detail, bubbles: true, composed: true },
+    { detail, bubbles: true, composed: true }
   );
 
   (args.dispatchTarget ?? container).dispatchEvent(event);

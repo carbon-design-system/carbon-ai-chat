@@ -7,61 +7,58 @@
  *  @license
  */
 
-import "../src/processing";
-import { html } from "lit";
+import '../src/processing';
+import { html } from 'lit';
 
 export default {
-  title: "Components/Processing",
-  component: "cds-aichat-processing",
+  title: 'Components/Processing',
+  component: 'cds-aichat-processing',
 };
 const argTypes = {
   loop: Boolean,
   quickLoad: Boolean,
   carbonTheme: {
-    control: { type: "select" },
-    options: ["g100", "g90", "g10", "white"],
+    control: { type: 'select' },
+    options: ['g100', 'g90', 'g10', 'white'],
   },
 };
 export const QuickLoad = {
   args: {
     quickLoad: true,
     loop: true,
-    carbonTheme: "g10",
+    carbonTheme: 'g10',
   },
   argTypes: argTypes,
   render: (args) =>
     html`<cds-aichat-processing
       ?quick-load=${args.quickLoad}
       ?loop=${args.loop}
-      carbonTheme=${args.carbonTheme}
-    />`,
+      carbonTheme=${args.carbonTheme} />`,
 };
 
 export const LinearLoop = {
   args: {
     loop: true,
-    carbonTheme: "g10",
+    carbonTheme: 'g10',
   },
   argTypes: argTypes,
   render: (args) =>
     html`<cds-aichat-processing
       ?quick-load=${args.quickLoad}
       ?loop=${args.loop}
-      carbonTheme=${args.carbonTheme}
-    />`,
+      carbonTheme=${args.carbonTheme} />`,
 };
 
 export const LinearNoLoop = {
   args: {
     loop: false,
-    carbonTheme: "g10",
+    carbonTheme: 'g10',
   },
   argTypes: argTypes,
   render: (args) => {
     return html` <cds-aichat-processing
       ?quick-load=${args.quickLoad}
       ?loop=${args.loop}
-      carbonTheme=${args.carbonTheme}
-    />`;
+      carbonTheme=${args.carbonTheme} />`;
   },
 };

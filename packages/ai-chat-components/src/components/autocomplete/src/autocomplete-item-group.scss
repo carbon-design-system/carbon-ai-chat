@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-autocomplete-item-group;
 
@@ -19,7 +19,7 @@ $block-class: #{$prefix}-autocomplete-item-group;
   }
 
   .#{$block-class}__title {
-    @include type.type-style("label-01");
+    @include type.type-style('label-01');
 
     color: theme.$text-helper;
     padding-block-end: layout.$spacing-02;

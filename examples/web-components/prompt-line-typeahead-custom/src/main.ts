@@ -24,16 +24,16 @@
  * Start reading at: `./custom-suggestion-list.ts` and the `Demo` below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "./custom-suggestion-list";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import './custom-suggestion-list';
 
-import { type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { CANNED_SUGGESTIONS } from "./suggestions";
-import type { CustomSuggestionList } from "./custom-suggestion-list";
+import { customSendMessage } from './customSendMessage';
+import { CANNED_SUGGESTIONS } from './suggestions';
+import type { CustomSuggestionList } from './custom-suggestion-list';
 
 const config: PublicConfig = {
   // Route outbound messages through the local mock instead of a hosted backend so the example runs offline.
@@ -50,7 +50,7 @@ const config: PublicConfig = {
       // Async resolver keeps the contract identical to a real network-backed suggestion source.
       items: async (query: string) =>
         CANNED_SUGGESTIONS.filter((s) =>
-          s.label.toLowerCase().includes(query.toLowerCase()),
+          s.label.toLowerCase().includes(query.toLowerCase())
         ),
       // Wait 150ms after the last keystroke to avoid firing the resolver on every character.
       debounceMs: 150,
@@ -58,7 +58,7 @@ const config: PublicConfig = {
       // keeping the chat in charge of when to show, update, and tear it down.
       renderCustomList: ({ items, query, onSelect, onDismiss }) => {
         const list = document.createElement(
-          "custom-suggestion-list",
+          'custom-suggestion-list'
         ) as CustomSuggestionList;
         list.items = items;
         list.query = query;
@@ -71,7 +71,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -87,8 +87,7 @@ export class Demo extends LitElement {
         .messaging=${config.messaging}
         .input=${config.input}
         .layout=${config.layout}
-        .openChatByDefault=${config.openChatByDefault}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${config.openChatByDefault}></cds-aichat-custom-element>
     `;
   }
 }

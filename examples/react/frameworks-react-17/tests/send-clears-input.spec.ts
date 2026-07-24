@@ -5,8 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId } from "@carbon/ai-chat/server";
-import { test, expect } from "@playwright/test";
+import { PageObjectId } from '@carbon/ai-chat/server';
+import { test, expect } from '@playwright/test';
 
 /**
  * Regression guard for issue #1382.
@@ -20,8 +20,8 @@ import { test, expect } from "@playwright/test";
  * for, and the only one we can automate that matches the customer-reported
  * setup.
  */
-test("send button clears the input field on React 17", async ({ page }) => {
-  await page.goto("/");
+test('send button clears the input field on React 17', async ({ page }) => {
+  await page.goto('/');
 
   const launcher = page.getByTestId(PageObjectId.LAUNCHER);
   await expect(launcher).toBeVisible({ timeout: 10000 });
@@ -31,15 +31,15 @@ test("send button clears the input field on React 17", async ({ page }) => {
   await expect(input).toBeVisible({ timeout: 10000 });
 
   await input.click();
-  await input.fill("hello from react 17");
+  await input.fill('hello from react 17');
 
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
 
-  await expect(input).toHaveText("");
+  await expect(input).toHaveText('');
 });
 
-test("enter key clears the input field on React 17", async ({ page }) => {
-  await page.goto("/");
+test('enter key clears the input field on React 17', async ({ page }) => {
+  await page.goto('/');
 
   const launcher = page.getByTestId(PageObjectId.LAUNCHER);
   await expect(launcher).toBeVisible({ timeout: 10000 });
@@ -49,8 +49,8 @@ test("enter key clears the input field on React 17", async ({ page }) => {
   await expect(input).toBeVisible({ timeout: 10000 });
 
   await input.click();
-  await input.fill("hello from react 17 via enter");
-  await input.press("Enter");
+  await input.fill('hello from react 17 via enter');
+  await input.press('Enter');
 
-  await expect(input).toHaveText("");
+  await expect(input).toHaveText('');
 });

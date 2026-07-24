@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { HomeScreenConfig } from "../../types/config/HomeScreenConfig";
+import { HomeScreenConfig } from '../../types/config/HomeScreenConfig';
 
 /**
  * Returns a copy of the given config, but removes any starters that are empty.
@@ -20,7 +20,7 @@ function withoutEmptyStarters(config: HomeScreenConfig): HomeScreenConfig {
       starters: {
         ...config.starters,
         buttons: config.starters.buttons.filter((button) =>
-          Boolean(button.label?.trim()),
+          Boolean(button.label?.trim())
         ),
       },
     };

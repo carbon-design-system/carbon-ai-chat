@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -10,15 +10,15 @@
 import {
   HumanAgentsOnlineStatus,
   ScreenShareState,
-} from "../../../types/config/ServiceDeskConfig";
-import { FileUpload } from "../../../types/config/ServiceDeskConfig";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
-import { ServiceManager } from "../ServiceManager";
+} from '../../../types/config/ServiceDeskConfig';
+import { FileUpload } from '../../../types/config/ServiceDeskConfig';
+import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import { ServiceManager } from '../ServiceManager';
 import {
   ConnectToHumanAgentItem,
   Message,
   MessageResponse,
-} from "../../../types/messaging/Messages";
+} from '../../../types/messaging/Messages';
 
 /**
  * This is the public contract between the chat widget and the human agent service. This interface allows us to keep
@@ -56,7 +56,7 @@ interface HumanAgentService {
    */
   startChat(
     localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
-    originalMessage: Message,
+    originalMessage: Message
   ): Promise<void>;
 
   /**
@@ -71,7 +71,7 @@ interface HumanAgentService {
   endChat(
     endedByUser: boolean,
     showHumanAgentLeftMessage?: boolean,
-    showAssistantReturnMessage?: boolean,
+    showAssistantReturnMessage?: boolean
   ): Promise<void>;
 
   /**
@@ -105,7 +105,7 @@ interface HumanAgentService {
    * so it can perform a more specific check.
    */
   checkAreAnyHumanAgentsOnline(
-    connectMessage: MessageResponse,
+    connectMessage: MessageResponse
   ): Promise<HumanAgentsOnlineStatus>;
 
   /**
@@ -131,7 +131,7 @@ interface HumanAgentService {
    */
   handleHydration(
     allowReconnect: boolean,
-    allowEndChatMessages: boolean,
+    allowEndChatMessages: boolean
   ): Promise<void>;
 }
 
@@ -139,7 +139,7 @@ interface HumanAgentService {
  * The type signature of the "createService" function in the implementation.
  */
 type CreateHumanAgentServiceFunction = (
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ) => HumanAgentService;
 
 // TODO: Moved used for HumanAgentsOnlineStatus export to use the package.

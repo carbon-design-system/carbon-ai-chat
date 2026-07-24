@@ -1,19 +1,32 @@
 # Prompt line / Mentions & commands (custom render)
 
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a Carbon `Tag` wrapped in a `Tooltip` showing the user's description on hover. Commands keep the default chip rendering.
+The Mentions & Commands example with a `renderCustomToken` supplied for
+mentions: each picked user appears in the input as a Carbon `Tag` wrapped in a
+`Tooltip` showing the user's description on hover. Commands keep the default
+chip rendering.
 
 ## What this example shows
 
-- Replacing the default mention chip with a custom inline element via `mention.renderCustomToken`, returning a `Tooltip`-wrapped Carbon `Tag`.
-- Mixing custom and default token rendering across the two slots — only `input.mention` sets `renderCustomToken`, so commands fall back to the built-in chip.
-- Using Carbon React's `Tooltip` with `autoAlign` so the popover escapes the editor's scroll-overflow clipping by positioning relative to the viewport.
-- Persisting selections via `instance.input.updateStructuredData` (same flow as the non-custom example) so the custom rendering does not change the structured-data wire format, with a symmetric `onRemove` that drops a chip's field when it is deleted before sending.
+- Replacing the default mention chip with a custom inline element via
+  `mention.renderCustomToken`, returning a `Tooltip`-wrapped Carbon `Tag`.
+- Mixing custom and default token rendering across the two slots — only
+  `input.mention` sets `renderCustomToken`, so commands fall back to the
+  built-in chip.
+- Using Carbon React's `Tooltip` with `autoAlign` so the popover escapes the
+  editor's scroll-overflow clipping by positioning relative to the viewport.
+- Persisting selections via `instance.input.updateStructuredData` (same flow as
+  the non-custom example) so the custom rendering does not change the
+  structured-data wire format, with a symmetric `onRemove` that drops a chip's
+  field when it is deleted before sending.
 
 ## When to use this pattern
 
-- You need richer in-input affordances for mentions (avatars, tooltips, status badges) than the default chip provides.
-- Your design system already has a token/chip primitive (Carbon `Tag`, in this example) that you want to reuse.
-- You want to customize one suggestion type's rendering while leaving others on the default chip.
+- You need richer in-input affordances for mentions (avatars, tooltips, status
+  badges) than the default chip provides.
+- Your design system already has a token/chip primitive (Carbon `Tag`, in this
+  example) that you want to reuse.
+- You want to customize one suggestion type's rendering while leaving others on
+  the default chip.
 
 ## APIs and props demonstrated
 
@@ -41,7 +54,10 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

@@ -24,27 +24,27 @@
  * projection, shadow-DOM PageObjectId lookup, custom response render).
  */
 
-import React from "react";
-import { waitFor } from "@testing-library/react";
+import React from 'react';
+import { waitFor } from '@testing-library/react';
 import {
   ChatContainer,
   PageObjectId,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
-import { TEST_TIMEOUT, WAIT_FOR_TIMEOUT } from "./constants";
+} from '@carbon/ai-chat';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import { TEST_TIMEOUT, WAIT_FOR_TIMEOUT } from './constants';
 import {
   closeChat,
   openChat,
   renderChatContainer,
   waitForChatElement,
-} from "./helpers";
+} from './helpers';
 
 // happy-dom (unlike many minimal DOM stubs) implements shadow DOM and
 // runs Lit upgrades, so PageObjectId-based queries inside shadowRoot
 // behave the same as in a real browser.
-describe("ChatContainer", () => {
-  it("should render the chat component", async () => {
+describe('ChatContainer', () => {
+  it('should render the chat component', async () => {
     // Render ChatContainer with an inline customSendMessage so we can inject a deterministic
     // AI response without hitting a backend or wiring up WebSocket plumbing.
     const { container } = await renderChatContainer(
@@ -56,7 +56,7 @@ describe("ChatContainer", () => {
                 generic: [
                   {
                     response_type: MessageResponseTypes.TEXT,
-                    text: "Hello! How can I help you today?",
+                    text: 'Hello! How can I help you today?',
                   },
                 ],
               },
@@ -69,7 +69,7 @@ describe("ChatContainer", () => {
             <div data-testid="custom-header">Custom Header Content</div>
           ),
         }}
-      />,
+      />
     );
 
     // renderChatContainer waits for the widget to be ready, so the element is guaranteed here.
@@ -77,7 +77,7 @@ describe("ChatContainer", () => {
     expect(customElement).toBeInTheDocument();
   });
 
-  it("should open chat when launcher is clicked", async () => {
+  it('should open chat when launcher is clicked', async () => {
     // Exercise the full launcher interaction so we know happy-dom can open the floating widget
     // and expose the same shadow-rooted surface users see in production.
     const { container } = await renderChatContainer(
@@ -89,14 +89,14 @@ describe("ChatContainer", () => {
                 generic: [
                   {
                     response_type: MessageResponseTypes.TEXT,
-                    text: "Welcome! How can I help you?",
+                    text: 'Welcome! How can I help you?',
                   },
                 ],
               },
             });
           },
         }}
-      />,
+      />
     );
 
     const customElement = await waitForChatElement(container);
@@ -113,16 +113,16 @@ describe("ChatContainer", () => {
       () =>
         deepQuerySelector(
           shadowRoot,
-          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`
         ),
-      { timeout: WAIT_FOR_TIMEOUT },
+      { timeout: WAIT_FOR_TIMEOUT }
     );
     expect(mainPanel).toBeTruthy();
 
     const inputField = await waitFor(
       () =>
         deepQuerySelector(shadowRoot, `[data-testid="${PageObjectId.INPUT}"]`),
-      { timeout: WAIT_FOR_TIMEOUT },
+      { timeout: WAIT_FOR_TIMEOUT }
     );
     expect(inputField).toBeTruthy();
 
@@ -130,9 +130,9 @@ describe("ChatContainer", () => {
       () =>
         deepQuerySelector(
           shadowRoot,
-          `[data-testid="${PageObjectId.INPUT_SEND}"]`,
+          `[data-testid="${PageObjectId.INPUT_SEND}"]`
         ),
-      { timeout: WAIT_FOR_TIMEOUT },
+      { timeout: WAIT_FOR_TIMEOUT }
     );
     expect(sendButton).toBeTruthy();
 
@@ -141,14 +141,14 @@ describe("ChatContainer", () => {
     await closeChat(customElement);
   });
 
-  it("should render slotted content", async () => {
+  it('should render slotted content', async () => {
     // Render custom header content via `renderWriteableElements` so we can assert that
     // slot wiring behaves the same under happy-dom as it does in browsers.
     const { container } = await renderChatContainer(
       <ChatContainer
         messaging={{
           customSendMessage(_request, _requestOptions, _instance) {
-            console.log("customSendMessage");
+            console.log('customSendMessage');
           },
         }}
         renderWriteableElements={{
@@ -156,26 +156,26 @@ describe("ChatContainer", () => {
             <div data-testid="custom-header">Custom Header Content</div>
           ),
         }}
-      />,
+      />
     );
 
     // Slot assertions happen outside the widget's shadow DOM: Carbon copies whatever we
     // provide into light DOM slots, so we only need to make sure our authored nodes exist.
     const slotWrapper = await waitFor(() =>
-      container.querySelector('[slot="headerBottomElement"]'),
+      container.querySelector('[slot="headerBottomElement"]')
     );
     expect(slotWrapper).toBeInTheDocument();
 
     const customHeader = slotWrapper?.querySelector(
-      '[data-testid="custom-header"]',
+      '[data-testid="custom-header"]'
     );
     expect(customHeader).toBeInTheDocument();
-    expect(customHeader).toHaveTextContent("Custom Header Content");
+    expect(customHeader).toHaveTextContent('Custom Header Content');
 
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("should render PageObjectId elements in shadow DOM", async () => {
+  it('should render PageObjectId elements in shadow DOM', async () => {
     // Minimal render that only needs the launcher so we can document how PageObjectId
     // selectors map to real DOM elements inside the custom element's shadow tree.
     const { container } = await renderChatContainer(
@@ -187,14 +187,14 @@ describe("ChatContainer", () => {
                 generic: [
                   {
                     response_type: MessageResponseTypes.TEXT,
-                    text: "Test message",
+                    text: 'Test message',
                   },
                 ],
               },
             });
           },
         }}
-      />,
+      />
     );
 
     const customElement = await waitForChatElement(container);
@@ -202,7 +202,7 @@ describe("ChatContainer", () => {
     // Lit hosts expose `updateComplete` as a Promise that resolves once
     // the element has finished its current render. Awaiting it here avoids
     // racing against the launcher's first paint inside happy-dom.
-    if (typeof (customElement as any).updateComplete !== "undefined") {
+    if (typeof (customElement as any).updateComplete !== 'undefined') {
       await (customElement as any).updateComplete;
     }
 
@@ -213,7 +213,7 @@ describe("ChatContainer", () => {
     // `deepQuerySelector` to walk every boundary.
     const launcher = deepQuerySelector(
       shadowRoot,
-      `[data-testid="${PageObjectId.LAUNCHER}"]`,
+      `[data-testid="${PageObjectId.LAUNCHER}"]`
     );
     expect(launcher).toBeTruthy();
 
@@ -221,7 +221,7 @@ describe("ChatContainer", () => {
   });
 
   it(
-    "should render a user-defined response type",
+    'should render a user-defined response type',
     async () => {
       // Demonstrate how to test custom user_defined response types. The
       // renderUserDefinedResponse prop receives the message state and returns
@@ -235,7 +235,7 @@ describe("ChatContainer", () => {
       // listener does not fire there, so the send button stays disabled);
       // the public instance API exercises the same customSendMessage path
       // without that dependency.
-      const CUSTOM_TYPE = "my-custom-response";
+      const CUSTOM_TYPE = 'my-custom-response';
 
       let chatInstance: any = null;
 
@@ -253,7 +253,7 @@ describe("ChatContainer", () => {
                       response_type: MessageResponseTypes.USER_DEFINED,
                       user_defined: {
                         user_defined_type: CUSTOM_TYPE,
-                        text: "Custom response content",
+                        text: 'Custom response content',
                       },
                     },
                   ],
@@ -270,7 +270,7 @@ describe("ChatContainer", () => {
               <div data-testid="custom-response">{item.user_defined.text}</div>
             );
           }}
-        />,
+        />
       );
 
       const customElement = await waitForChatElement(container);
@@ -279,24 +279,24 @@ describe("ChatContainer", () => {
       await waitFor(
         () => {
           if (!chatInstance) {
-            throw new Error("Chat instance not yet captured");
+            throw new Error('Chat instance not yet captured');
           }
           return chatInstance;
         },
-        { timeout: WAIT_FOR_TIMEOUT },
+        { timeout: WAIT_FOR_TIMEOUT }
       );
 
-      await chatInstance.send("Hello");
+      await chatInstance.send('Hello');
 
       // The rendered output is portaled into the light DOM of the host element,
       // not the shadow root — query from customElement, not shadowRoot.
       const customResponse = await waitFor(
         () => customElement.querySelector('[data-testid="custom-response"]'),
-        { timeout: WAIT_FOR_TIMEOUT },
+        { timeout: WAIT_FOR_TIMEOUT }
       );
       expect(customResponse).toBeTruthy();
-      expect(customResponse).toHaveTextContent("Custom response content");
+      expect(customResponse).toHaveTextContent('Custom response content');
     },
-    TEST_TIMEOUT,
+    TEST_TIMEOUT
   );
 });

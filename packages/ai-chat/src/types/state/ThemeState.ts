@@ -7,8 +7,8 @@
  *  @license
  */
 
-import type { CarbonTheme } from "../config/CarbonTheme";
-import type { CornersType } from "../../chat/utils/constants";
+import type { CarbonTheme } from '../config/CarbonTheme';
+import type { CornersType } from '../../chat/utils/constants';
 
 /**
  * The theme state.

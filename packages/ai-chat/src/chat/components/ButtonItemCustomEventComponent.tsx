@@ -7,17 +7,17 @@
  *  @license
  */
 
-import TouchInteraction16 from "@carbon/icons/es/touch--interaction/16.js";
-import { carbonIconToReact } from "../utils/carbonIcon";
-import React, { useCallback } from "react";
-import { useSelector } from "../hooks/useSelector";
+import TouchInteraction16 from '@carbon/icons/es/touch--interaction/16.js';
+import { carbonIconToReact } from '../utils/carbonIcon';
+import React, { useCallback } from 'react';
+import { useSelector } from '../hooks/useSelector';
 
-import { useServiceManager } from "../hooks/useServiceManager";
-import { selectInputIsReadonly } from "../store/selectors";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { ButtonItem, MessageResponse } from "../../types/messaging/Messages";
-import { BusEventType } from "../../types/events/eventBusTypes";
-import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
+import { useServiceManager } from '../hooks/useServiceManager';
+import { selectInputIsReadonly } from '../store/selectors';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { ButtonItem, MessageResponse } from '../../types/messaging/Messages';
+import { BusEventType } from '../../types/events/eventBusTypes';
+import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 
 /**
  * This component is for a button response type where the button_type is "custom_event" that fires an event when

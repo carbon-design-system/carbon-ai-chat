@@ -29,8 +29,8 @@ import {
   MessageResponseTypes,
   PartialItemChunkWithId,
   StreamChunk,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -51,10 +51,10 @@ const WORD_DELAY = 40;
 // Replace with a real production implementation.
 async function doFakeTextStreaming(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = uuid();
-  const words = TEXT.split(" ");
+  const words = TEXT.split(' ');
   let isCanceled = false;
   let lastStreamedIndex = -1;
   const timeouts: number[] = [];
@@ -65,7 +65,7 @@ async function doFakeTextStreaming(
     isCanceled = true;
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -77,7 +77,7 @@ async function doFakeTextStreaming(
               response_type: MessageResponseTypes.TEXT,
               text: `${word} `,
               streaming_metadata: {
-                id: "1",
+                id: '1',
                 cancellable: true,
               },
             },
@@ -103,7 +103,7 @@ async function doFakeTextStreaming(
         response_type: MessageResponseTypes.TEXT,
         text: TEXT,
         streaming_metadata: {
-          id: "1",
+          id: '1',
         },
       };
       instance.messaging.addMessageChunk({
@@ -126,13 +126,13 @@ async function doFakeTextStreaming(
     } else {
       const streamedText =
         lastStreamedIndex >= 0
-          ? words.slice(0, lastStreamedIndex + 1).join(" ") + " "
-          : "";
+          ? words.slice(0, lastStreamedIndex + 1).join(' ') + ' '
+          : '';
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: streamedText,
         streaming_metadata: {
-          id: "1",
+          id: '1',
           stream_stopped: true,
         },
       };
@@ -155,7 +155,7 @@ async function doFakeTextStreaming(
       } as StreamChunk);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
@@ -163,11 +163,11 @@ async function doFakeTextStreaming(
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Empty input text is the synthetic "hello" the chat sends when it opens;
   // respond with a non-streamed welcome message instead of running the stream.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

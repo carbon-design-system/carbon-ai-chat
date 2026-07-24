@@ -12,12 +12,12 @@
  * navigates to a new page, the state of the window, thread and other UI state items will remain in tact.
  */
 
-import { VERSION } from "../utils/environmentVariables";
-import { PersistedState } from "../../types/state/AppState";
-import { IS_SESSION_STORAGE } from "../utils/browserUtils";
-import { consoleError } from "../utils/miscUtils";
-import mockStorage from "./mockStorage";
-import { ServiceManager } from "./ServiceManager";
+import { VERSION } from '../utils/environmentVariables';
+import { PersistedState } from '../../types/state/AppState';
+import { IS_SESSION_STORAGE } from '../utils/browserUtils';
+import { consoleError } from '../utils/miscUtils';
+import mockStorage from './mockStorage';
+import { ServiceManager } from './ServiceManager';
 
 // We use sessionStorage instead of localStorage to not have to have a public cookie policy that must be accepted in EU.
 const storage: Storage = IS_SESSION_STORAGE()
@@ -62,7 +62,7 @@ class UserSessionStorageService {
     try {
       storage.setItem(this.getSessionKey(), JSON.stringify(session));
     } catch (error) {
-      consoleError("Error in persistSession", error);
+      consoleError('Error in persistSession', error);
     }
   }
 
@@ -73,7 +73,7 @@ class UserSessionStorageService {
     try {
       storage.removeItem(this.getSessionKey());
     } catch (error) {
-      consoleError("Error in clearSession", error);
+      consoleError('Error in clearSession', error);
     }
   }
 
@@ -84,7 +84,7 @@ class UserSessionStorageService {
    * correct bucket.
    */
   getSessionKey() {
-    return `CARBON_CHAT_SESSION${this.serviceManager?.namespace?.suffix || ""}`;
+    return `CARBON_CHAT_SESSION${this.serviceManager?.namespace?.suffix || ''}`;
   }
 }
 

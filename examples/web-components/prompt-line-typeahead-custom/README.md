@@ -1,19 +1,28 @@
 # Prompt line / Typeahead (custom list)
 
-`<cds-aichat-custom-element>` with `input.autocomplete` whose dropdown is replaced by a fully custom Lit element supplied through `renderCustomList`.
+`<cds-aichat-custom-element>` with `input.autocomplete` whose dropdown is
+replaced by a fully custom Lit element supplied through `renderCustomList`.
 
 ## What this example shows
 
-- Replacing the built-in autocomplete dropdown with a custom Lit element via `autocomplete.renderCustomList`.
-- Constructing the custom list imperatively in the renderer (`document.createElement`, set properties, attach callbacks) and returning the element instance.
-- Wiring the custom list to the host editor through `items`, `query`, and the `onSelect` / `onDismiss` callbacks passed via `setCallbacks`.
-- Driving keyboard navigation (Arrow Up/Down, Enter, Escape) from a `document` keydown listener registered in the element's `connectedCallback`.
+- Replacing the built-in autocomplete dropdown with a custom Lit element via
+  `autocomplete.renderCustomList`.
+- Constructing the custom list imperatively in the renderer
+  (`document.createElement`, set properties, attach callbacks) and returning the
+  element instance.
+- Wiring the custom list to the host editor through `items`, `query`, and the
+  `onSelect` / `onDismiss` callbacks passed via `setCallbacks`.
+- Driving keyboard navigation (Arrow Up/Down, Enter, Escape) from a `document`
+  keydown listener registered in the element's `connectedCallback`.
 
 ## When to use this pattern
 
-- The default autocomplete dropdown does not match your app's visual language and you need full control over markup and styling.
-- You want to surface richer per-item content (icons, multiple description lines, badges) than the default chip layout supports.
-- You need a custom keyboard or selection model alongside the standard typeahead behavior.
+- The default autocomplete dropdown does not match your app's visual language
+  and you need full control over markup and styling.
+- You want to surface richer per-item content (icons, multiple description
+  lines, badges) than the default chip layout supports.
+- You need a custom keyboard or selection model alongside the standard typeahead
+  behavior.
 
 ## APIs and props demonstrated
 
@@ -34,7 +43,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

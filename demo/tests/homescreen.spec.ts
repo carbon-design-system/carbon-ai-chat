@@ -5,8 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId } from "@carbon/ai-chat/server";
-import { test, expect } from "@playwright/test";
+import { PageObjectId } from '@carbon/ai-chat/server';
+import { test, expect } from '@playwright/test';
 import {
   destroyChatSession,
   expectNoCspViolations,
@@ -16,10 +16,10 @@ import {
   waitForSetChatConfigApplied,
   setupAccessibilityChecker,
   checkAccessibility,
-} from "./utils";
+} from './utils';
 
 // Import types for window.setChatConfig without emitting runtime code
-import type {} from "../types/window";
+import type {} from '../types/window';
 
 // Setup accessibility checker before all tests
 test.beforeAll(() => {
@@ -40,16 +40,16 @@ test.afterEach(async ({ page }) => {
   await destroyChatSession(page);
 });
 
-test("homescreen from disabled to enabled", async ({ page }) => {
+test('homescreen from disabled to enabled', async ({ page }) => {
   // Phase 1: Enable homescreen
   await page.evaluate(async () => {
     if (window.setChatConfig) {
       await window.setChatConfig({
         homescreen: {
           isOn: true,
-          greeting: "Homescreen Now Enabled!",
+          greeting: 'Homescreen Now Enabled!',
         },
-        header: { title: "With Homescreen" },
+        header: { title: 'With Homescreen' },
         openChatByDefault: true,
       });
     }
@@ -65,23 +65,23 @@ test("homescreen from disabled to enabled", async ({ page }) => {
   await expect(page.getByTestId(PageObjectId.HOME_SCREEN_PANEL)).toBeVisible({
     timeout: 10000,
   });
-  await expect(page.getByText("Homescreen Now Enabled!")).toBeVisible();
+  await expect(page.getByText('Homescreen Now Enabled!')).toBeVisible();
 
   // Run accessibility check on the chat widget
   const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
-  await checkAccessibility(chatWidget, "Homescreen - Enabled State");
+  await checkAccessibility(chatWidget, 'Homescreen - Enabled State');
 });
 
-test("homescreen greeting updates", async ({ page }) => {
+test('homescreen greeting updates', async ({ page }) => {
   // Phase 1: Set initial homescreen with greeting
   await page.evaluate(async () => {
     if (window.setChatConfig) {
       await window.setChatConfig({
         homescreen: {
           isOn: true,
-          greeting: "Initial Greeting",
+          greeting: 'Initial Greeting',
         },
-        header: { title: "Test Chat" },
+        header: { title: 'Test Chat' },
         openChatByDefault: true,
       });
     }
@@ -95,9 +95,9 @@ test("homescreen greeting updates", async ({ page }) => {
       await window.setChatConfig({
         homescreen: {
           isOn: true,
-          greeting: "Updated Greeting Message",
+          greeting: 'Updated Greeting Message',
         },
-        header: { title: "Test Chat" },
+        header: { title: 'Test Chat' },
         openChatByDefault: true,
       });
     }
@@ -113,9 +113,9 @@ test("homescreen greeting updates", async ({ page }) => {
   await expect(page.getByTestId(PageObjectId.HOME_SCREEN_PANEL)).toBeVisible({
     timeout: 10000,
   });
-  await expect(page.getByText("Updated Greeting Message")).toBeVisible();
+  await expect(page.getByText('Updated Greeting Message')).toBeVisible();
 
   // Run accessibility check on the chat widget
   const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
-  await checkAccessibility(chatWidget, "Homescreen - Updated Greeting");
+  await checkAccessibility(chatWidget, 'Homescreen - Updated Greeting');
 });

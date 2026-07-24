@@ -1,18 +1,28 @@
 # Upsert message / Reasoning with streaming generic items
 
-Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text` field is streamed token by token, followed by a `user_defined` summary card appended when the step finishes — all delivered through `upsertMessage`.
+Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text`
+field is streamed token by token, followed by a `user_defined` summary card
+appended when the step finishes — all delivered through `upsertMessage`.
 
 ## What this example shows
 
-- Setting `ReasoningStep.content` to an array of `GenericItem` instead of a markdown string.
-- Streaming the inner `TextItem`'s `text` by re-sending the full `message_options.reasoning.steps` on each `upsertMessage` snapshot as it grows (the snapshot replaces the stored message rather than appending).
-- Appending a `UserDefinedItem` (`response_type: "user_defined"`) onto that same array when the step is done.
-- Rendering the appended user_defined item through the `renderUserDefinedResponse` callback so it appears inside the reasoning step.
+- Setting `ReasoningStep.content` to an array of `GenericItem` instead of a
+  markdown string.
+- Streaming the inner `TextItem`'s `text` by re-sending the full
+  `message_options.reasoning.steps` on each `upsertMessage` snapshot as it grows
+  (the snapshot replaces the stored message rather than appending).
+- Appending a `UserDefinedItem` (`response_type: "user_defined"`) onto that same
+  array when the step is done.
+- Rendering the appended user_defined item through the
+  `renderUserDefinedResponse` callback so it appears inside the reasoning step.
 
 ## When to use this pattern
 
-- You want richer per-step content than markdown allows — e.g., a citation card, a small chart, or any custom React component — without leaving the reasoning step UI.
-- You're streaming step bodies and want the same `streaming → finalize` flow you already use for the message body.
+- You want richer per-step content than markdown allows — e.g., a citation card,
+  a small chart, or any custom React component — without leaving the reasoning
+  step UI.
+- You're streaming step bodies and want the same `streaming → finalize` flow you
+  already use for the message body.
 
 ## APIs and props demonstrated
 
@@ -32,7 +42,10 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

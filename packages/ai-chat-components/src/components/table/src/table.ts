@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { type CDSTableRow } from "@carbon/web-components";
-import { TemplateResult, LitElement, PropertyValues, html } from "lit";
-import { property, state } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators";
-import { tableSkeletonTemplate } from "./table-skeleton.template";
-import { loadTableRuntime } from "./table-loader.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./table.scss?lit";
-import prefix from "../../../globals/settings.js";
+import { type CDSTableRow } from '@carbon/web-components';
+import { TemplateResult, LitElement, PropertyValues, html } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators';
+import { tableSkeletonTemplate } from './table-skeleton.template';
+import { loadTableRuntime } from './table-loader.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './table.scss?lit';
+import prefix from '../../../globals/settings.js';
 
 type TableRuntimeModule = Awaited<ReturnType<typeof loadTableRuntime>>;
 
@@ -57,13 +57,13 @@ class CDSAIChatTable extends LitElement {
   /**
    * The optional table title.
    */
-  @property({ type: String, attribute: "table-title" })
+  @property({ type: String, attribute: 'table-title' })
   tableTitle?: string;
 
   /**
    * The optional table description.
    */
-  @property({ type: String, attribute: "table-description" })
+  @property({ type: String, attribute: 'table-description' })
   tableDescription?: string;
 
   /**
@@ -81,44 +81,44 @@ class CDSAIChatTable extends LitElement {
   /**
    * Whether or not the table content is loading. If it is then a skeleton state should be shown instead.
    */
-  @property({ type: Boolean, attribute: "loading" })
+  @property({ type: Boolean, attribute: 'loading' })
   loading = false;
 
   /**
    * The text used for the filter placeholder.
    */
-  @property({ type: String, attribute: "filter-placeholder-text" })
-  filterPlaceholderText = "Filter table...";
+  @property({ type: String, attribute: 'filter-placeholder-text' })
+  filterPlaceholderText = 'Filter table...';
 
   /**
    * The text used for the pagination's previous button tooltip.
    */
-  @property({ type: String, attribute: "previous-page-text" })
-  previousPageText = "Previous page";
+  @property({ type: String, attribute: 'previous-page-text' })
+  previousPageText = 'Previous page';
 
   /**
    * The text used for the pagination's next button tooltip.
    */
-  @property({ type: String, attribute: "next-page-text" })
-  nextPageText = "Next page";
+  @property({ type: String, attribute: 'next-page-text' })
+  nextPageText = 'Next page';
 
   /**
    * The text used for the pagination's item pre page text.
    */
-  @property({ type: String, attribute: "items-per-page-text" })
-  itemsPerPageText = "Items per page:";
+  @property({ type: String, attribute: 'items-per-page-text' })
+  itemsPerPageText = 'Items per page:';
 
   /**
    * The text used for the download button's accessible label.
    */
-  @property({ type: String, attribute: "download-label-text" })
-  downloadLabelText = "Download table data";
+  @property({ type: String, attribute: 'download-label-text' })
+  downloadLabelText = 'Download table data';
 
   /**
    * The locale. Used by the carbon table component to change the collator for sorting.
    */
-  @property({ type: String, attribute: "locale" })
-  locale = "en";
+  @property({ type: String, attribute: 'locale' })
+  locale = 'en';
 
   /**
    * The calculated default page size based on component width.
@@ -129,7 +129,7 @@ class CDSAIChatTable extends LitElement {
   @state()
   private _defaultPageSize = 5;
 
-  @property({ type: Number, attribute: "default-page-size" })
+  @property({ type: Number, attribute: 'default-page-size' })
   get defaultPageSize(): number {
     return this._defaultPageSize;
   }
@@ -258,7 +258,7 @@ class CDSAIChatTable extends LitElement {
    * @param _changedProperties - Map of properties that changed during the update
    */
   protected async firstUpdated(
-    _changedProperties: PropertyValues,
+    _changedProperties: PropertyValues
   ): Promise<void> {
     await this.updateComplete;
     this._updateDefaultPageSize();
@@ -270,7 +270,7 @@ class CDSAIChatTable extends LitElement {
    * mutate rows/headers rapidly, so skip subsequent updates until loading ends.
    */
   protected shouldUpdate(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has("loading")) {
+    if (changedProperties.has('loading')) {
       if (this.loading) {
         this.hasRenderedLoadingFrame = false;
       }
@@ -326,8 +326,8 @@ class CDSAIChatTable extends LitElement {
     // For streaming tables: happens when loading=true (before skeleton renders)
     // For non-streaming tables: happens when rows are first set
     if (
-      (changedProperties.has("loading") && this.loading) ||
-      (changedProperties.has("rows") &&
+      (changedProperties.has('loading') && this.loading) ||
+      (changedProperties.has('rows') &&
         this.rows !== undefined &&
         !this.loading)
     ) {
@@ -335,16 +335,16 @@ class CDSAIChatTable extends LitElement {
     }
 
     const loadingJustFinished =
-      changedProperties.has("loading") &&
-      changedProperties.get("loading") === true &&
+      changedProperties.has('loading') &&
+      changedProperties.get('loading') === true &&
       this.loading === false;
 
     // If the headers or rows has recently updated and both are defined than we should validate the table
     // data. This will likely only happen on the web components first render cycle when the props go from undefined to
     // defined.
     if (
-      (changedProperties.has("headers") ||
-        changedProperties.has("rows") ||
+      (changedProperties.has('headers') ||
+        changedProperties.has('rows') ||
         loadingJustFinished) &&
       !this.loading &&
       this.headers !== undefined &&
@@ -355,7 +355,7 @@ class CDSAIChatTable extends LitElement {
 
     // If the value of tableRows updated then initialize the internal rows arrays.
     if (
-      (changedProperties.has("rows") || loadingJustFinished) &&
+      (changedProperties.has('rows') || loadingJustFinished) &&
       !this.loading &&
       this.rows !== undefined
     ) {
@@ -468,7 +468,7 @@ class CDSAIChatTable extends LitElement {
       return this.tableRuntime;
     }
 
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return null;
     }
 
@@ -487,7 +487,7 @@ class CDSAIChatTable extends LitElement {
       this.requestUpdate();
       return runtime;
     } catch (error) {
-      console.error("Failed to load table runtime", error);
+      console.error('Failed to load table runtime', error);
       this.tableRuntimePromise = null;
       return null;
     }
@@ -543,7 +543,7 @@ class CDSAIChatTable extends LitElement {
   public _handleFilterEvent = (event: FilterEvent) => {
     // Record the new set of unfiltered row ids.
     this._filterVisibleRowIDs = new Set(
-      event?.detail?.unfilteredRows.map((row) => row.id),
+      event?.detail?.unfilteredRows.map((row) => row.id)
     );
 
     // Go back to the first page.
@@ -570,7 +570,7 @@ class CDSAIChatTable extends LitElement {
    */
   private _updateVisibleRows(
     page: number = this._currentPageNumber,
-    pageSize: number = this._currentPageSize,
+    pageSize: number = this._currentPageSize
   ) {
     // Set the current page number and only show the rows for that page.
     this._currentPageNumber = page;
@@ -578,7 +578,7 @@ class CDSAIChatTable extends LitElement {
     // Grab all the rows that have been rendered. It's necessary to grab them from the page because the cds-table puts
     // the rows in a specific order when sorting and we want to preserve that order.
     const rows: HTMLElement[] = Array.from(
-      this.renderRoot.querySelectorAll("cds-table-row"),
+      this.renderRoot.querySelectorAll('cds-table-row')
     );
 
     // This is similar to the carbon example here https://stackblitz.com/edit/github-kbd9xw-s3y3s6?file=index.html. I
@@ -592,11 +592,11 @@ class CDSAIChatTable extends LitElement {
     // Hide all the rows to start. Using a data attribute (not inline style)
     // so a strict CSP can drop style-src-attr 'unsafe-inline'; the matching
     // rule lives in table.scss.
-    rows.forEach((row) => row.toggleAttribute("data-hidden", true));
+    rows.forEach((row) => row.toggleAttribute('data-hidden', true));
 
     // Now filter the rows down to what is visible according to the filter.
     const filterVisibleRows = rows.filter((row) =>
-      this._filterVisibleRowIDs.has(row.id),
+      this._filterVisibleRowIDs.has(row.id)
     );
 
     // Now show all the rows that are within the current page.
@@ -605,7 +605,7 @@ class CDSAIChatTable extends LitElement {
     for (let index = pageStart; index <= pageEnd; index++) {
       // If there is a row at that index then show it. If there aren't enough rows to fill the page then there won't be
       // a row at that index.
-      filterVisibleRows[index]?.removeAttribute("data-hidden");
+      filterVisibleRows[index]?.removeAttribute('data-hidden');
     }
   }
 
@@ -632,23 +632,23 @@ class CDSAIChatTable extends LitElement {
 
     try {
       // Lazy load the CSV stringify function only when needed
-      const { stringify } = await import("csv-stringify/browser/esm/sync");
+      const { stringify } = await import('csv-stringify/browser/esm/sync');
 
       // Convert table data to CSV format
       const csvContent = stringify(tableArray);
 
       // Use data URL instead of Blob to avoid CSP issues with object-src
       const dataUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(
-        csvContent,
+        csvContent
       )}`;
 
       // Create and trigger download using anchor element. The native `hidden`
       // attribute is used (not an inline style) so a strict CSP can drop
       // style-src-attr 'unsafe-inline'; the link is removed synchronously
       // after click() so no flash is observed.
-      const link = document.createElement("a");
-      link.setAttribute("href", dataUrl);
-      link.setAttribute("download", "table-data.csv");
+      const link = document.createElement('a');
+      link.setAttribute('href', dataUrl);
+      link.setAttribute('download', 'table-data.csv');
       link.hidden = true;
       document.body.appendChild(link);
 
@@ -656,7 +656,7 @@ class CDSAIChatTable extends LitElement {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("Failed to download table data:", error);
+      console.error('Failed to download table data:', error);
       // Fallback: could show user notification or use alternative method
     }
   }
@@ -723,7 +723,7 @@ class CDSAIChatTable extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-table": CDSAIChatTable;
+    'cds-aichat-table': CDSAIChatTable;
   }
 }
 

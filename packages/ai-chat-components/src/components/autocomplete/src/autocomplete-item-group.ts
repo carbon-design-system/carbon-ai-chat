@@ -7,17 +7,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property, state } from 'lit/decorators.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
+import prefix from '../../../globals/settings.js';
 
-import styles from "./autocomplete-item-group.scss?lit";
-import "./autocomplete-item.js";
+import styles from './autocomplete-item-group.scss?lit';
+import './autocomplete-item.js';
 
-import type { SuggestionItem } from "../../prompt-line/src/types.js";
+import type { SuggestionItem } from '../../prompt-line/src/types.js';
 
 const blockClass = `${prefix}-autocomplete-item-group`;
 
@@ -37,7 +37,7 @@ class AutocompleteItemGroupElement extends LitElement {
    * The title displayed above the group of items
    */
   @property({ type: String })
-  title = "";
+  title = '';
 
   /**
    * Array of suggestion items to display in this group
@@ -64,19 +64,19 @@ class AutocompleteItemGroupElement extends LitElement {
    * The current text in the input (used to highlight the typed portion)
    */
   @property({ type: String, attribute: false })
-  inputText = "";
+  inputText = '';
 
   /**
    * Whether to render the send button for items in this group.
    */
-  @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
+  @property({ type: Boolean, reflect: true, attribute: 'enable-send-button' })
   enableSendButton = true;
 
   /**
    * Whether this is the last group in the autocomplete list.
    * @internal
    */
-  @property({ type: Boolean, reflect: true, attribute: "data-last-group" })
+  @property({ type: Boolean, reflect: true, attribute: 'data-last-group' })
   lastGroup = false;
 
   /**
@@ -90,11 +90,11 @@ class AutocompleteItemGroupElement extends LitElement {
     const index = target.index;
     if (index !== undefined) {
       this.dispatchEvent(
-        new CustomEvent("cds-aichat-autocomplete-item-click", {
+        new CustomEvent('cds-aichat-autocomplete-item-click', {
           detail: { index },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     }
   }
@@ -128,8 +128,7 @@ class AutocompleteItemGroupElement extends LitElement {
                 .enableSendButton="${this.enableSendButton}"
                 .isActive="${this.focusedIndex === absoluteIndex}"
                 ?last-item="${isLastItem}"
-                @click="${this._handleItemClick}"
-              ></cds-aichat-autocomplete-item>
+                @click="${this._handleItemClick}"></cds-aichat-autocomplete-item>
             `;
           })}
         </ul>
@@ -140,7 +139,7 @@ class AutocompleteItemGroupElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-autocomplete-item-group": AutocompleteItemGroupElement;
+    'cds-aichat-autocomplete-item-group': AutocompleteItemGroupElement;
   }
 }
 

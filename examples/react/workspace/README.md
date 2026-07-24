@@ -1,20 +1,31 @@
 # Workspace
 
-Renders custom content inside the built-in workspace panel of `ChatCustomElement`, driven by chat messages that include `PREVIEW_CARD` responses or user-defined cards with a "maximize" action.
+Renders custom content inside the built-in workspace panel of
+`ChatCustomElement`, driven by chat messages that include `PREVIEW_CARD`
+responses or user-defined cards with a "maximize" action.
 
 ## What this example shows
 
-- Subscribing to `WORKSPACE_PRE_OPEN`, `WORKSPACE_OPEN`, and `WORKSPACE_CLOSE` bus events to track which workspace is active.
-- Opening the workspace panel imperatively via `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
-- Emitting `MessageResponseTypes.PREVIEW_CARD` responses with `workspace_id` + `additional_data` to trigger the workspace.
-- Emitting `USER_DEFINED` cards (`outstanding_orders_card`) with a custom `OutstandingOrdersCard` preview + maximize handler.
-- Rendering different workspace bodies (inventory report, inventory status, outstanding orders, SQL editor) via `renderWriteableElements` keyed on `additionalData.type`.
-- `ChatCustomElement` with `layout.showFrame: false` and `openChatByDefault: true`.
+- Subscribing to `WORKSPACE_PRE_OPEN`, `WORKSPACE_OPEN`, and `WORKSPACE_CLOSE`
+  bus events to track which workspace is active.
+- Opening the workspace panel imperatively via
+  `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)`.
+- Emitting `MessageResponseTypes.PREVIEW_CARD` responses with `workspace_id` +
+  `additional_data` to trigger the workspace.
+- Emitting `USER_DEFINED` cards (`outstanding_orders_card`) with a custom
+  `OutstandingOrdersCard` preview + maximize handler.
+- Rendering different workspace bodies (inventory report, inventory status,
+  outstanding orders, SQL editor) via `renderWriteableElements` keyed on
+  `additionalData.type`.
+- `ChatCustomElement` with `layout.showFrame: false` and
+  `openChatByDefault: true`.
 
 ## When to use this pattern
 
-- You want to show rich, app-scoped content (tables, editors, reports) alongside the chat without leaving the page.
-- Your chat responses can carry a `workspace_id` and metadata pointing to an in-app view.
+- You want to show rich, app-scoped content (tables, editors, reports) alongside
+  the chat without leaving the page.
+- Your chat responses can carry a `workspace_id` and metadata pointing to an
+  in-app view.
 
 ## APIs and props demonstrated
 
@@ -37,7 +48,10 @@ Renders custom content inside the built-in workspace panel of `ChatCustomElement
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 
@@ -49,6 +63,7 @@ npm run build --workspace=@carbon/ai-chat
 npm run start --workspace=@carbon/ai-chat-examples-react-workspace
 ```
 
-(Replace `start` with `dev` or `test` if this example's package.json defines those instead.)
+(Replace `start` with `dev` or `test` if this example's package.json defines
+those instead.)
 
 See [../README.md](../README.md) for the full setup walkthrough.

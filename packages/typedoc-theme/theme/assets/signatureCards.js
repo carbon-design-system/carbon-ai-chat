@@ -28,7 +28,7 @@
  */
 (function () {
   const SELECTOR =
-    ".carbon-main-content div.tsd-signature, .carbon-main-content .tsd-type-declaration";
+    '.carbon-main-content div.tsd-signature, .carbon-main-content .tsd-type-declaration';
 
   function wrapInTiles() {
     // querySelectorAll returns document order, so outer elements wrap before
@@ -40,12 +40,12 @@
       }
       // Skip elements already inside a tile (e.g. a type declaration nested in
       // one we just wrapped) so we don't create nested tiles.
-      if (el.closest(".cds--tile")) {
+      if (el.closest('.cds--tile')) {
         return;
       }
-      el.dataset.carbonTile = "";
+      el.dataset.carbonTile = '';
 
-      const tile = document.createElement("div");
+      const tile = document.createElement('div');
       // No theme class on the tile: it inherits the surrounding `.cds--g10`
       // layer context (see .carbon-main-content in the layout), so `.cds--tile`
       // paints g10's layer-01 (white). Forcing `cds--white` here would re-base
@@ -54,7 +54,7 @@
       // `carbon-signature-tile` lets carbonTheme.css drop the tile's default
       // min-block-size so it hugs the block. Fenced-code tiles keep their
       // default sizing.
-      tile.className = "cds--tile carbon-signature-tile";
+      tile.className = 'cds--tile carbon-signature-tile';
 
       // Insert the tile where the element is, then move the element into it.
       el.parentNode.insertBefore(tile, el);
@@ -62,8 +62,8 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", wrapInTiles);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wrapInTiles);
   } else {
     wrapInTiles();
   }

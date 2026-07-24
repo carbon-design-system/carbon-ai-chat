@@ -33,13 +33,13 @@ export enum ViewType {
   /**
    * The launcher view is used to open the main window.
    */
-  LAUNCHER = "launcher",
+  LAUNCHER = 'launcher',
 
   /**
    * The main window view is used to ask WA questions and converse with an agent, as well as many other things. The
    * string value is kept camel case to align with the viewState mainWindow property.
    */
-  MAIN_WINDOW = "mainWindow",
+  MAIN_WINDOW = 'mainWindow',
 }
 
 /**
@@ -51,7 +51,7 @@ export enum PanelType {
   /**
    * Opens the panel so that it overlays the main chat content.
    */
-  DEFAULT = "default",
+  DEFAULT = 'default',
 
   /**
    * Opens the panel in the Workspace layout.
@@ -62,7 +62,7 @@ export enum PanelType {
    * On small screens, the panel behaves like `DEFAULT`.
    *
    */
-  WORKSPACE = "workspace",
+  WORKSPACE = 'workspace',
 
   /**
    * Opens the history panel.
@@ -71,7 +71,7 @@ export enum PanelType {
    * config.history.isMobile is true.
    *
    */
-  HISTORY = "history",
+  HISTORY = 'history',
 }
 
 export type PanelConfigOptionsByType = {
@@ -231,14 +231,14 @@ export interface DefaultCustomPanelConfigOptions {
    * Controls the icon used for the back button. Use "minimize" to indicate the
    * panel can be returned to, or "close" to indicate the panel will not return.
    */
-  backButtonType?: "minimize" | "close";
+  backButtonType?: 'minimize' | 'close';
 
   /**
    * Controls the position of the back button in the panel header.
    * Use "start" to position it at the beginning in the navigation slot,
    * or "end" to position it at the end in the toolbar actions.
    */
-  backButtonPosition?: "start" | "end";
+  backButtonPosition?: 'start' | 'end';
 
   /**
    * Shows the AI gradient background on your panel. Can be used with in concert with showFrame.
@@ -281,7 +281,7 @@ export interface WorkspaceCustomPanelConfigOptions {
   /**
    * Where the chat will attempt to render the workspace in logical terms. For a ltr layout "start" will render on the left and "end" will render on the right. If there is not enough room to render the workspace, it will be rendered as a panel overlaying the content with a back button.
    */
-  preferredLocation?: "start" | "end";
+  preferredLocation?: 'start' | 'end';
 
   /**
    * The ID of the workspace being opened. This will be included in WORKSPACE_PRE_CLOSE and WORKSPACE_CLOSE events.

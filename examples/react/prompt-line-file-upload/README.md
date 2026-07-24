@@ -1,18 +1,24 @@
 # Prompt line / File upload
 
-`ChatCustomElement` with file attachments enabled, using a mock `onFileUpload` handler that simulates a server upload and echoes back file metadata.
+`ChatCustomElement` with file attachments enabled, using a mock `onFileUpload`
+handler that simulates a server upload and echoes back file metadata.
 
 ## What this example shows
 
-- Enabling attachments with `upload.is_on: true` and providing an `onFileUpload` handler.
-- Simulating a 1-second upload with `AbortSignal` support and returning an `ExternalFileReference` wrapped in `StructuredData`.
-- Echoing attached file metadata back as a text message via `instance.messaging.addMessage` and `MessageResponseTypes.TEXT`.
-- Documenting the optional `accept`, `maxFileSizeBytes`, and `maxFiles` config knobs (commented in source).
+- Enabling attachments with `upload.is_on: true` and providing an `onFileUpload`
+  handler.
+- Simulating a 1-second upload with `AbortSignal` support and returning an
+  `ExternalFileReference` wrapped in `StructuredData`.
+- Echoing attached file metadata back as a text message via
+  `instance.messaging.addMessage` and `MessageResponseTypes.TEXT`.
+- Documenting the optional `accept`, `maxFileSizeBytes`, and `maxFiles` config
+  knobs (commented in source).
 
 ## When to use this pattern
 
 - You need a reference for wiring file uploads into a Carbon AI Chat React app.
-- You want to see how server-assigned file references flow back to the chat as `StructuredData`.
+- You want to see how server-assigned file references flow back to the chat as
+  `StructuredData`.
 
 ## APIs and props demonstrated
 
@@ -36,7 +42,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

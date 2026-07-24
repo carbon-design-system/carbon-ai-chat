@@ -1,6 +1,7 @@
 # Web component examples
 
-This folder contains examples for specific functionality using web components with Lit.
+This folder contains examples for specific functionality using web components
+with Lit.
 
 ## Run Examples from the Monorepo Root
 
@@ -10,7 +11,8 @@ Install dependencies once from the repository root:
 npm install
 ```
 
-Then build the required packages (needed once after install, and again after any local changes to `packages/`):
+Then build the required packages (needed once after install, and again after any
+local changes to `packages/`):
 
 ```bash
 npm run build --workspace=@carbon/ai-chat-components
@@ -29,9 +31,12 @@ npm run start --workspace=<workspace-name>
 
 ### [Basic / Custom element fullscreen](./basic-custom-element-fullscreen/README.md)
 
-Fullscreen chat driven by `<cds-aichat-custom-element>`, letting the host element control size and frame instead of the built-in floating container. This is the canonical baseline for non-float Lit examples.
+Fullscreen chat driven by `<cds-aichat-custom-element>`, letting the host
+element control size and frame instead of the built-in floating container. This
+is the canonical baseline for non-float Lit examples.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-fullscreen`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-fullscreen`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -48,9 +53,12 @@ Fullscreen chat driven by `<cds-aichat-custom-element>`, letting the host elemen
 
 ### [Basic / Custom element sidebar](./basic-custom-element-sidebar/README.md)
 
-Docked-sidebar chat driven by `<cds-aichat-custom-element>` that hosts the chat as a 360px side panel using the shipped `cds-aichat-sidebar` layout classes, with a host header bar and an open/close toggle.
+Docked-sidebar chat driven by `<cds-aichat-custom-element>` that hosts the chat
+as a 360px side panel using the shipped `cds-aichat-sidebar` layout classes,
+with a host header bar and an open/close toggle.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-sidebar`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-sidebar`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -72,9 +80,12 @@ Docked-sidebar chat driven by `<cds-aichat-custom-element>` that hosts the chat 
 
 ### [Basic / Custom element sidebar (narrow)](./basic-custom-element-sidebar-narrow/README.md)
 
-Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px side panel — below the 360px default — so the chat renders in its compact responsive layout.
+Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px
+side panel — below the 360px default — so the chat renders in its compact
+responsive layout.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-sidebar-narrow`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-custom-element-sidebar-narrow`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -97,9 +108,12 @@ Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px 
 
 ### [Basic / Float](./basic-float/README.md)
 
-Minimal Lit example of the float / launcher layout: mounts `<cds-aichat-container>` with a mock streaming `customSendMessage` backend. This is the canonical reference for the float chat shape.
+Minimal Lit example of the float / launcher layout: mounts
+`<cds-aichat-container>` with a mock streaming `customSendMessage` backend. This
+is the canonical reference for the float chat shape.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-float`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-basic-float`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -115,9 +129,12 @@ Minimal Lit example of the float / launcher layout: mounts `<cds-aichat-containe
 
 ### [Chain of thought](./chain-of-thought/README.md)
 
-Mocks a chain-of-thought tool trace: the assistant ships a complete `chain_of_thought` array on the final response, and the chat renders a drawer where each step's `request`, `response`, and `status` are inspectable.
+Mocks a chain-of-thought tool trace: the assistant ships a complete
+`chain_of_thought` array on the final response, and the chat renders a drawer
+where each step's `request`, `response`, and `status` are inspectable.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-chain-of-thought`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-chain-of-thought`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -136,9 +153,12 @@ Mocks a chain-of-thought tool trace: the assistant ships a complete `chain_of_th
 
 ### [Custom element / As float](./custom-element-as-float/README.md)
 
-Replicates the built-in float view by combining `<cds-aichat-custom-element>` with the shipped float/launcher CSS classes and a `<cds-aichat-button>` custom launcher.
+Replicates the built-in float view by combining `<cds-aichat-custom-element>`
+with the shipped float/launcher CSS classes and a `<cds-aichat-button>` custom
+launcher.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-element-as-float`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-element-as-float`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -161,9 +181,12 @@ Replicates the built-in float view by combining `<cds-aichat-custom-element>` wi
 
 ### [Custom element / As float (lazy load)](./custom-element-as-float-lazy-load/README.md)
 
-Floating-widget replica of `<cds-aichat-custom-element>` whose bundle is dynamically imported on first launcher click, with `<cds-aichat-shell>` acting as a crossfade fallback.
+Floating-widget replica of `<cds-aichat-custom-element>` whose bundle is
+dynamically imported on first launcher click, with `<cds-aichat-shell>` acting
+as a crossfade fallback.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-element-as-float-lazy-load`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-element-as-float-lazy-load`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -189,9 +212,11 @@ Floating-widget replica of `<cds-aichat-custom-element>` whose bundle is dynamic
 
 ### [Custom element / Lazy load](./custom-element-lazy-load/README.md)
 
-Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat-shell>` as a crossfade fallback until the chat is ready.
+Dynamically imports the `cds-aichat-custom-element` bundle and uses
+`<cds-aichat-shell>` as a crossfade fallback until the chat is ready.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-element-lazy-load`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-element-lazy-load`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -212,9 +237,11 @@ Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat
 
 ### [Feedback](./feedback/README.md)
 
-Lit example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInteractionType.SUBMITTED` events to the host page.
+Lit example that subscribes to `BusEventType.FEEDBACK` and forwards
+`FeedbackInteractionType.SUBMITTED` events to the host page.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-feedback`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-feedback`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -235,9 +262,11 @@ Lit example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInt
 
 ### [History / Float](./history-float/README.md)
 
-Float-layout chat that exposes a custom history panel slot backed by `customLoadHistory`, letting users switch between saved conversations.
+Float-layout chat that exposes a custom history panel slot backed by
+`customLoadHistory`, letting users switch between saved conversations.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-history-float`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-history-float`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -258,9 +287,11 @@ Float-layout chat that exposes a custom history panel slot backed by `customLoad
 
 ### [History / Fullscreen](./history-fullscreen/README.md)
 
-Fullscreen chat driven by `<cds-aichat-custom-element>` that exposes a custom history panel slot backed by `customLoadHistory`.
+Fullscreen chat driven by `<cds-aichat-custom-element>` that exposes a custom
+history panel slot backed by `customLoadHistory`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-history-fullscreen`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-history-fullscreen`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -284,9 +315,12 @@ Fullscreen chat driven by `<cds-aichat-custom-element>` that exposes a custom hi
 
 ### [History / Host-driven](./history-host-driven/README.md)
 
-Demonstrates one-shot conversation rehydration: a button clears the active conversation and re-seeds it with a random-length history returned by `customLoadHistory`.
+Demonstrates one-shot conversation rehydration: a button clears the active
+conversation and re-seeds it with a random-length history returned by
+`customLoadHistory`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-history-host-driven`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-history-host-driven`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -304,9 +338,13 @@ Demonstrates one-shot conversation rehydration: a button clears the active conve
 
 ### [History / User-defined responses](./history-user-defined-responses/README.md)
 
-Lit example that rehydrates a conversation containing multiple `user_defined` cards via `customLoadHistory` + `insertHistory`, then uses `instance.getState()` and `BusEventType.STATE_CHANGE` to highlight only the most-recent card as active.
+Lit example that rehydrates a conversation containing multiple `user_defined`
+cards via `customLoadHistory` + `insertHistory`, then uses `instance.getState()`
+and `BusEventType.STATE_CHANGE` to highlight only the most-recent card as
+active.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-history-user-defined-responses`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-history-user-defined-responses`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -333,9 +371,12 @@ Lit example that rehydrates a conversation containing multiple `user_defined` ca
 
 ### [Human agent](./human-agent/README.md)
 
-Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFactory`, showing how to hand off from bot to human and how to swap the factory reference when user data changes.
+Wires a mock service desk into `<cds-aichat-custom-element>` via
+`serviceDeskFactory`, showing how to hand off from bot to human and how to swap
+the factory reference when user data changes.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-human-agent`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-human-agent`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -351,9 +392,11 @@ Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFac
 
 ### [Integrations / watsonx.ai](./integrations-watsonx/README.md)
 
-Connects the chat to IBM watsonx.ai via a local Express proxy that streams tokens back with `@microsoft/fetch-event-source`.
+Connects the chat to IBM watsonx.ai via a local Express proxy that streams
+tokens back with `@microsoft/fetch-event-source`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-integrations-watsonx`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-integrations-watsonx`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -368,9 +411,14 @@ Connects the chat to IBM watsonx.ai via a local Express proxy that streams token
 
 ### [Markdown overrides (code block, table, link, image, checklist)](./markdown-override/README.md)
 
-`<cds-aichat-custom-element>` mounted directly in page light DOM and configured with `markdown.customRenderers` to demonstrate all five override hooks at once: replacing the fenced-code renderer (`codeBlock`), replacing the table renderer (`table`), rewriting link attributes (`link`), resolving and decorating images (`image`), and making task-list checkboxes actionable (`checklist`).
+`<cds-aichat-custom-element>` mounted directly in page light DOM and configured
+with `markdown.customRenderers` to demonstrate all five override hooks at once:
+replacing the fenced-code renderer (`codeBlock`), replacing the table renderer
+(`table`), rewriting link attributes (`link`), resolving and decorating images
+(`image`), and making task-list checkboxes actionable (`checklist`).
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-markdown-override`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-markdown-override`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -399,9 +447,12 @@ Connects the chat to IBM watsonx.ai via a local Express proxy that streams token
 
 ### [Markdown plugin (KaTeX)](./markdown-plugin/README.md)
 
-`<cds-aichat-custom-element>` mounted directly in page light DOM and configured with `.markdown = { markdownItPlugins: [markdownItKatex] }` so `@vscode/markdown-it-katex` extends the renderer with LaTeX math tokens.
+`<cds-aichat-custom-element>` mounted directly in page light DOM and configured
+with `.markdown = { markdownItPlugins: [markdownItKatex] }` so
+`@vscode/markdown-it-katex` extends the renderer with LaTeX math tokens.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-markdown-plugin`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-markdown-plugin`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -419,9 +470,11 @@ Connects the chat to IBM watsonx.ai via a local Express proxy that streams token
 
 ### [Custom message footer](./messages-custom-footer/README.md)
 
-Render your own content beneath an assistant message — here a copy button — with the `renderCustomMessageFooter` callback.
+Render your own content beneath an assistant message — here a copy button — with
+the `renderCustomMessageFooter` callback.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-messages-custom-footer`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-messages-custom-footer`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -440,9 +493,14 @@ Render your own content beneath an assistant message — here a copy button — 
 
 ### [Prompt line / Code snippet](./prompt-line-code-snippet/README.md)
 
-A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.
+A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
+into an editable `cds-aichat-code-snippet` block. The closing fence is implicit
+— it's added at send time, never typed. The block grows with content; the
+prompt-line shell's existing scrollbar takes over when it gets tall. Pressing
+`Escape` exits the block.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-code-snippet`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-code-snippet`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -469,9 +527,13 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 
 ### [Prompt line / Custom render](./prompt-line-custom-render/README.md)
 
-The chat sits in a docked sidebar while the page body holds a grid of clickable Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile as a custom Tiptap node, and attaches the tile to the message's structured data; on send the tile is rendered inside the message bubble.
+The chat sits in a docked sidebar while the page body holds a grid of clickable
+Carbon tiles. Clicking a tile clears the chat input, injects a copy of the tile
+as a custom Tiptap node, and attaches the tile to the message's structured data;
+on send the tile is rendered inside the message bubble.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-custom-render`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-custom-render`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -499,9 +561,12 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 
 ### [Prompt line / File upload](./prompt-line-file-upload/README.md)
 
-Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpload` handler that simulates a server round-trip and echoes the file metadata back in the assistant response.
+Enables file attachments on `<cds-aichat-custom-element>` with a mock
+`onFileUpload` handler that simulates a server round-trip and echoes the file
+metadata back in the assistant response.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-file-upload`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-file-upload`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -518,9 +583,12 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 
 ### [Prompt line / Mentions & commands](./prompt-line-mentions-and-commands/README.md)
 
-`<cds-aichat-custom-element>` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
+`<cds-aichat-custom-element>` configured with `input.mention` for `@`-picking
+team members anywhere in the message and `input.command` for `/`-commands
+constrained to the start of the line.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -548,9 +616,13 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 
 ### [Prompt line / Mentions & commands (custom render)](./prompt-line-mentions-and-commands-custom-render/README.md)
 
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a `<cds-tooltip>` showing the user's description on hover. Commands keep the default chip rendering.
+The Mentions & Commands example with a `renderCustomToken` supplied for
+mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a
+`<cds-tooltip>` showing the user's description on hover. Commands keep the
+default chip rendering.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands-custom-render`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-mentions-and-commands-custom-render`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -581,9 +653,12 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 
 ### [Prompt line / Typeahead](./prompt-line-typeahead/README.md)
 
-`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated list filters as the user types and renders the matches in a dropdown above the input.
+`<cds-aichat-custom-element>` configured with `input.autocomplete` so a curated
+list filters as the user types and renders the matches in a dropdown above the
+input.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-typeahead`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-typeahead`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -604,9 +679,11 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 
 ### [Prompt line / Typeahead (custom list)](./prompt-line-typeahead-custom/README.md)
 
-`<cds-aichat-custom-element>` with `input.autocomplete` whose dropdown is replaced by a fully custom Lit element supplied through `renderCustomList`.
+`<cds-aichat-custom-element>` with `input.autocomplete` whose dropdown is
+replaced by a fully custom Lit element supplied through `renderCustomList`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-typeahead-custom`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-typeahead-custom`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -630,9 +707,12 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 
 ### [Reasoning steps](./reasoning-steps/README.md)
 
-Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the default behavior) and a single long-form `reasoning.content` trace — picked from a dropdown on the welcome message.
+Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the
+default behavior) and a single long-form `reasoning.content` trace — picked from
+a dropdown on the welcome message.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-reasoning-steps`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-reasoning-steps`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -653,9 +733,13 @@ Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the d
 
 ### [Reasoning steps (controlled)](./reasoning-steps-controlled/README.md)
 
-Mocks a controlled reasoning-step flow: the parent reasoning panel stays collapsed via `reasoning.open_state: CLOSE`, every individual step is pre-expanded, and a custom "Thinking..." indicator driven by `instance.updateIsMessageLoadingCounter` replaces the default reasoning UI.
+Mocks a controlled reasoning-step flow: the parent reasoning panel stays
+collapsed via `reasoning.open_state: CLOSE`, every individual step is
+pre-expanded, and a custom "Thinking..." indicator driven by
+`instance.updateIsMessageLoadingCounter` replaces the default reasoning UI.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-reasoning-steps-controlled`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-reasoning-steps-controlled`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -675,9 +759,13 @@ Mocks a controlled reasoning-step flow: the parent reasoning panel stays collaps
 
 ### [Reasoning with Streaming Generic Items (web components)](./reasoning-with-streaming-generic-items/README.md)
 
-Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text` field is streamed token by token, followed by a `user_defined` summary card appended when the step finishes. The host app slots the summary card into the `cds-aichat-container` via the `USER_DEFINED_RESPONSE` bus event.
+Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text`
+field is streamed token by token, followed by a `user_defined` summary card
+appended when the step finishes. The host app slots the summary card into the
+`cds-aichat-container` via the `USER_DEFINED_RESPONSE` bus event.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-reasoning-with-streaming-generic-items`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-reasoning-with-streaming-generic-items`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -698,9 +786,12 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 
 ### [Theme Plex override](./theme-plex-override/README.md)
 
-Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace Carbon's built-in Plex font with a custom web font by configuring `@carbon/styles` at compile time.
+Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace
+Carbon's built-in Plex font with a custom web font by configuring
+`@carbon/styles` at compile time.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-theme-plex-override`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-theme-plex-override`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -724,9 +815,12 @@ Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace 
 
 ### [Upsert message / Reasoning steps](./upsert-message-reasoning-steps/README.md)
 
-Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the default behavior) and a single long-form `reasoning.content` trace — picked from a dropdown on the welcome message, all delivered through `upsertMessage`.
+Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the
+default behavior) and a single long-form `reasoning.content` trace — picked from
+a dropdown on the welcome message, all delivered through `upsertMessage`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-reasoning-steps`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-reasoning-steps`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -750,9 +844,13 @@ Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the d
 
 ### [Upsert message / Reasoning steps (controlled)](./upsert-message-reasoning-steps-controlled/README.md)
 
-Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the parent reasoning panel stays collapsed via `reasoning.open_state: CLOSE`, every individual step is pre-expanded, and a custom "Thinking..." indicator driven by `instance.updateIsMessageLoadingCounter` replaces the default reasoning UI.
+Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the
+parent reasoning panel stays collapsed via `reasoning.open_state: CLOSE`, every
+individual step is pre-expanded, and a custom "Thinking..." indicator driven by
+`instance.updateIsMessageLoadingCounter` replaces the default reasoning UI.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-reasoning-steps-controlled`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-reasoning-steps-controlled`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -775,9 +873,14 @@ Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the pa
 
 ### [Upsert message / Reasoning with streaming generic items (web components)](./upsert-message-reasoning-with-streaming-generic-items/README.md)
 
-Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text` field is streamed token by token, followed by a `user_defined` summary card appended when the step finishes — all delivered through `upsertMessage`. The host app slots the summary card into the `cds-aichat-container` via the `USER_DEFINED_RESPONSE` bus event.
+Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `text`
+field is streamed token by token, followed by a `user_defined` summary card
+appended when the step finishes — all delivered through `upsertMessage`. The
+host app slots the summary card into the `cds-aichat-container` via the
+`USER_DEFINED_RESPONSE` bus event.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-reasoning-with-streaming-generic-items`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-reasoning-with-streaming-generic-items`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -799,9 +902,13 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 
 ### [Upsert message user defined](./upsert-message-user-defined/README.md)
 
-Progressively updates a `user_defined` steps-card widget inside a single assistant message using `ChatInstance.messaging.upsertMessage`, and pops a Carbon toast (with a "View message" action wired to `instance.scrollToMessage`) when the run completes.
+Progressively updates a `user_defined` steps-card widget inside a single
+assistant message using `ChatInstance.messaging.upsertMessage`, and pops a
+Carbon toast (with a "View message" action wired to `instance.scrollToMessage`)
+when the run completes.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-user-defined`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-upsert-message-user-defined`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -826,9 +933,12 @@ Progressively updates a `user_defined` steps-card widget inside a single assista
 
 ### [User-defined responses](./user-defined-responses/README.md)
 
-Lit example that renders `user_defined` responses through the `renderUserDefinedResponse` callback and tracks the most recent message via `STATE_CHANGE` and `activeResponseId`.
+Lit example that renders `user_defined` responses through the
+`renderUserDefinedResponse` callback and tracks the most recent message via
+`STATE_CHANGE` and `activeResponseId`.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-user-defined-responses`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-user-defined-responses`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -850,9 +960,11 @@ Lit example that renders `user_defined` responses through the `renderUserDefined
 
 ### [Watch state](./watch-state/README.md)
 
-Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibility into the host UI.
+Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen
+visibility into the host UI.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-watch-state`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-watch-state`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -875,9 +987,12 @@ Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibilit
 
 ### [Workspace](./workspace/README.md)
 
-Demonstrates the workspace panel feature: chat messages can open rich side-by-side content (inventory report, inventory status, outstanding orders, SQL editor) in a dedicated `workspacePanelElement` slot.
+Demonstrates the workspace panel feature: chat messages can open rich
+side-by-side content (inventory report, inventory status, outstanding orders,
+SQL editor) in a dedicated `workspacePanelElement` slot.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-workspace`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-workspace`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -908,9 +1023,12 @@ Demonstrates the workspace panel feature: chat messages can open rich side-by-si
 
 ### [Workspace (sidebar)](./workspace-sidebar/README.md)
 
-Workspace feature wrapped in a right-hand sliding sidebar — built on the shipped `cds-aichat-sidebar` layout classes — with an external app header and launcher button, expanding wider when the workspace panel opens.
+Workspace feature wrapped in a right-hand sliding sidebar — built on the shipped
+`cds-aichat-sidebar` layout classes — with an external app header and launcher
+button, expanding wider when the workspace panel opens.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-workspace-sidebar`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-workspace-sidebar`
 
 <details>
 <summary>APIs and props demonstrated</summary>
@@ -951,9 +1069,16 @@ Workspace feature wrapped in a right-hand sliding sidebar — built on the shipp
 
 ### [Workspace table markdown override](./workspace-table-markdown-override/README.md)
 
-`<cds-aichat-custom-element>` mounted directly in page light DOM and configured with `markdown.customRenderers.table` so every markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a Carbon Maximize icon button that opens the workspace panel and renders the same data inside a full-size `<cds-aichat-table>` — the same component the chat uses by default for inline markdown tables, so the workspace view matches the inline preview.
+`<cds-aichat-custom-element>` mounted directly in page light DOM and configured
+with `markdown.customRenderers.table` so every markdown table renders inside a
+`cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a
+Carbon Maximize icon button that opens the workspace panel and renders the same
+data inside a full-size `<cds-aichat-table>` — the same component the chat uses
+by default for inline markdown tables, so the workspace view matches the inline
+preview.
 
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-workspace-table-markdown-override`
+**Start command:**
+`npm run start --workspace=@carbon/ai-chat-examples-web-components-workspace-table-markdown-override`
 
 <details>
 <summary>APIs and props demonstrated</summary>

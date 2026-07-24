@@ -25,20 +25,20 @@
  * Start reading at: `LazyChatCustomElement` below and `App()`.
  */
 
-import { PublicConfig } from "@carbon/ai-chat";
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import React, { Suspense, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { PublicConfig } from '@carbon/ai-chat';
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import React, { Suspense, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 // Artificial delay makes the lazy-load + crossfade phases observable on localhost.
 // Replace with a real production implementation (drop the timeout).
 const LazyChatCustomElement = React.lazy(() =>
   new Promise((resolve) => setTimeout(resolve, 3000)).then(() =>
-    import("@carbon/ai-chat").then((m) => ({ default: m.ChatCustomElement })),
-  ),
+    import('@carbon/ai-chat').then((m) => ({ default: m.ChatCustomElement }))
+  )
 );
 
 const config: PublicConfig = {
@@ -94,6 +94,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

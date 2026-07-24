@@ -7,10 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const { execSync } = require("child_process");
+const fs = require('fs');
+const { execSync } = require('child_process');
 
 /**
  * Public packages published under the `alpha` dist-tag. Each is versioned
@@ -20,20 +20,20 @@ const { execSync } = require("child_process");
  */
 const PACKAGES = [
   {
-    name: "@carbon/ai-chat-components",
-    dir: "packages/ai-chat-components",
-    envKey: "COMPONENTS_ALPHA",
-    baseEnvKey: "COMPONENTS_BASE",
+    name: '@carbon/ai-chat-components',
+    dir: 'packages/ai-chat-components',
+    envKey: 'COMPONENTS_ALPHA',
+    baseEnvKey: 'COMPONENTS_BASE',
   },
   {
-    name: "@carbon/ai-chat",
-    dir: "packages/ai-chat",
-    envKey: "AI_CHAT_ALPHA",
-    baseEnvKey: "AI_CHAT_BASE",
+    name: '@carbon/ai-chat',
+    dir: 'packages/ai-chat',
+    envKey: 'AI_CHAT_ALPHA',
+    baseEnvKey: 'AI_CHAT_BASE',
   },
 ];
 
-const bump = process.env.BUMP === "patch" ? "patch" : "minor";
+const bump = process.env.BUMP === 'patch' ? 'patch' : 'minor';
 
 /**
  * Returns the base release version the alpha is a preview of: the next minor
@@ -43,8 +43,8 @@ const bump = process.env.BUMP === "patch" ? "patch" : "minor";
  * @returns {string} The base version for the alpha prerelease.
  */
 function nextBase(version) {
-  const [major, minor, patch] = version.split("-")[0].split(".").map(Number);
-  return bump === "patch"
+  const [major, minor, patch] = version.split('-')[0].split('.').map(Number);
+  return bump === 'patch'
     ? `${major}.${minor}.${patch + 1}`
     : `${major}.${minor + 1}.0`;
 }
@@ -57,8 +57,8 @@ function nextBase(version) {
  * @returns {number} Negative if a < b, zero if equal, positive if a > b.
  */
 function compare(a, b) {
-  const left = a.split(".").map(Number);
-  const right = b.split(".").map(Number);
+  const left = a.split('.').map(Number);
+  const right = b.split('.').map(Number);
   for (let index = 0; index < 3; index++) {
     if (left[index] !== right[index]) {
       return left[index] - right[index];
@@ -77,13 +77,13 @@ function compare(a, b) {
  * @returns {string | undefined} The requested base version, if provided.
  */
 function requestedBase(pkg) {
-  const value = (process.env[pkg.baseEnvKey] || "").trim();
+  const value = (process.env[pkg.baseEnvKey] || '').trim();
   if (!value) {
     return undefined;
   }
   if (!/^\d+\.\d+\.\d+$/.test(value)) {
     throw new Error(
-      `Invalid base version "${value}" for ${pkg.name}: expected a plain x.y.z release version with no prerelease suffix.`,
+      `Invalid base version "${value}" for ${pkg.name}: expected a plain x.y.z release version with no prerelease suffix.`
     );
   }
   return value;
@@ -103,7 +103,7 @@ function assertCompleteOverride() {
     throw new Error(
       `Base versions must be set for every package or none. Missing: ${missing
         .map((pkg) => `${pkg.baseEnvKey} (${pkg.name})`)
-        .join(", ")}.`,
+        .join(', ')}.`
     );
   }
 }
@@ -118,8 +118,8 @@ function assertCompleteOverride() {
 function publishedVersions(name) {
   try {
     const output = execSync(`npm view ${name} versions --json`, {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
     });
     const parsed = JSON.parse(output);
     return Array.isArray(parsed) ? parsed : [parsed];
@@ -138,17 +138,17 @@ function publishedVersions(name) {
  */
 function computeAlpha(pkg) {
   const { version } = JSON.parse(
-    fs.readFileSync(`${pkg.dir}/package.json`, "utf8"),
+    fs.readFileSync(`${pkg.dir}/package.json`, 'utf8')
   );
   const override = requestedBase(pkg);
   const base = override || nextBase(version);
-  if (override && compare(override, version.split("-")[0]) <= 0) {
+  if (override && compare(override, version.split('-')[0]) <= 0) {
     throw new Error(
-      `Base version ${override} for ${pkg.name} is not ahead of its current version ${version}.`,
+      `Base version ${override} for ${pkg.name} is not ahead of its current version ${version}.`
     );
   }
   const alphaPattern = new RegExp(
-    `^${base.replace(/\./g, "\\.")}-alpha\\.(\\d+)$`,
+    `^${base.replace(/\./g, '\\.')}-alpha\\.(\\d+)$`
   );
   let highest = -1;
   for (const published of publishedVersions(pkg.name)) {
@@ -176,5 +176,5 @@ try {
 
 // Expose the computed versions to later GitHub Actions steps.
 if (process.env.GITHUB_ENV) {
-  fs.appendFileSync(process.env.GITHUB_ENV, `${envLines.join("\n")}\n`);
+  fs.appendFileSync(process.env.GITHUB_ENV, `${envLines.join('\n')}\n`);
 }

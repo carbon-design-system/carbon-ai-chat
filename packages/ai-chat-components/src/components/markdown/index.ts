@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "./src/markdown.js";
-export { default, CDSAIChatMarkdown } from "./src/markdown.js";
+import './src/markdown.js';
+export { default, CDSAIChatMarkdown } from './src/markdown.js';
 export type {
   MarkdownCustomRenderers,
   MarkdownRendererChecklist,
@@ -22,6 +22,6 @@ export type {
   MarkdownRendererLinkResult,
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
-} from "./src/markdown-renderer-types.js";
-export type { MarkdownItPlugin, TokenTree } from "./src/markdown-token-tree.js";
-export { markdownToMarkdownItTokens } from "./src/markdown-token-tree.js";
+} from './src/markdown-renderer-types.js';
+export type { MarkdownItPlugin, TokenTree } from './src/markdown-token-tree.js';
+export { markdownToMarkdownItTokens } from './src/markdown-token-tree.js';

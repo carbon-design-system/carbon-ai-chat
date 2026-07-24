@@ -5,8 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId, ViewType } from "@carbon/ai-chat/server";
-import { test, expect } from "@playwright/test";
+import { PageObjectId, ViewType } from '@carbon/ai-chat/server';
+import { test, expect } from '@playwright/test';
 import {
   setupAccessibilityChecker,
   checkAccessibility,
@@ -15,7 +15,7 @@ import {
   installCspGuard,
   installTestCsp,
   openChatViaLauncher,
-} from "./utils";
+} from './utils';
 
 // Setup accessibility checker before all tests
 test.beforeAll(() => {
@@ -23,7 +23,7 @@ test.beforeAll(() => {
 });
 
 // Import types for window.setChatConfig without emitting runtime code
-import type {} from "../types/window";
+import type {} from '../types/window';
 
 // Setup common to all tests
 test.beforeEach(async ({ page }) => {
@@ -37,10 +37,10 @@ test.beforeEach(async ({ page }) => {
   await installCspGuard(page);
 
   // Navigate to demo page first to get chatInstance
-  await page.goto("/");
+  await page.goto('/');
 
   // Wait for page to fully load and web component to initialize
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   // Wait for the chatInstance to be available on window
   await page.waitForFunction(() => Boolean(window.chatInstance), {
@@ -49,7 +49,7 @@ test.beforeEach(async ({ page }) => {
 
   await page.evaluate(() => {
     if (window.chatInstance) {
-      window.chatInstance.changeView("launcher" as ViewType);
+      window.chatInstance.changeView('launcher' as ViewType);
     }
   });
 });
@@ -63,10 +63,10 @@ test.afterEach(async ({ page }) => {
   await destroyChatSession(page);
 });
 
-test("smoke React", async ({ page }) => {
+test('smoke React', async ({ page }) => {
   test.slow();
   // Navigate to the app with float layout settings
-  await page.goto("/?settings=%7B%22layout%22%3A%22float%22%7D");
+  await page.goto('/?settings=%7B%22layout%22%3A%22float%22%7D');
 
   // Wait for the launcher to be visible
   await expect(page.getByTestId(PageObjectId.LAUNCHER)).toBeVisible({
@@ -84,25 +84,25 @@ test("smoke React", async ({ page }) => {
   const close = page.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible({ timeout: 10000 });
   await page.getByTestId(PageObjectId.INPUT).click();
-  await page.keyboard.type("text");
+  await page.keyboard.type('text');
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
-    "Carbon",
+  await expect(mainPanel.getByTestId('message-by-index-3')).toContainText(
+    'Carbon'
   );
 
   const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
-  await checkAccessibility(chatWidget, "React Chat - Main Panel");
+  await checkAccessibility(chatWidget, 'React Chat - Main Panel');
   await close.click();
 });
 
-test("smoke web component", async ({ page }) => {
+test('smoke web component', async ({ page }) => {
   // Navigate to the app with web component and float layout settings
   await page.goto(
-    "/?settings=%7B%22framework%22%3A%22web-component%22%2C%22layout%22%3A%22float%22%7D",
+    '/?settings=%7B%22framework%22%3A%22web-component%22%2C%22layout%22%3A%22float%22%7D'
   );
 
   // Wait for page to fully load and web component to initialize
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   // Wait for the chatInstance to be available on window
   await page.waitForFunction(() => Boolean(window.chatInstance), {
@@ -120,22 +120,22 @@ test("smoke web component", async ({ page }) => {
   const close = page.getByTestId(PageObjectId.CLOSE_CHAT);
   await expect(close).toBeVisible();
   await page.getByTestId(PageObjectId.INPUT).click();
-  await page.keyboard.type("text");
+  await page.keyboard.type('text');
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
-    "Carbon",
+  await expect(mainPanel.getByTestId('message-by-index-3')).toContainText(
+    'Carbon'
   );
 
   const chatWidget = page.getByTestId(PageObjectId.CHAT_WIDGET);
-  await checkAccessibility(chatWidget, "Web Component Chat - Main Panel");
+  await checkAccessibility(chatWidget, 'Web Component Chat - Main Panel');
 
   await close.click();
 });
 
-test("smoke react custom element", async ({ page }) => {
+test('smoke react custom element', async ({ page }) => {
   test.slow();
   // Navigate to the app with fullscreen layout to render the custom element
-  await page.goto("/");
+  await page.goto('/');
 
   await page.waitForFunction(() => Boolean(window.chatInstance), {
     timeout: 10000,
@@ -149,24 +149,24 @@ test("smoke react custom element", async ({ page }) => {
 
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.click();
-  await page.keyboard.type("text");
+  await page.keyboard.type('text');
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
-    "Carbon",
+  await expect(mainPanel.getByTestId('message-by-index-3')).toContainText(
+    'Carbon'
   );
   // Regression guard for issue #1382: clicking the send button must clear the
   // input field. The bug only reproduces on React 17/18 hosts, but we assert
   // here too to catch any future regression on React 19.
-  await expect(input).toHaveText("");
+  await expect(input).toHaveText('');
 });
 
-test("smoke web component custom element", async ({ page }) => {
+test('smoke web component custom element', async ({ page }) => {
   // Navigate to the web component demo using the fullscreen layout (custom element)
   await page.goto(
-    `/?settings=%7B"framework"%3A"web-component"%2C"layout"%3A"fullscreen"%2C"writeableElements"%3A"false"%2C"direction"%3A"default"%7D&config=%7B"aiEnabled"%3Atrue%2C"messaging"%3A%7B%7D%2C"header"%3A%7B"isOn"%3Afalse%7D%2C"layout"%3A%7B"showFrame"%3Afalse%7D%2C"launcher"%3A%7B"isOn"%3Atrue%7D%2C"openChatByDefault"%3Atrue%7D`,
+    `/?settings=%7B"framework"%3A"web-component"%2C"layout"%3A"fullscreen"%2C"writeableElements"%3A"false"%2C"direction"%3A"default"%7D&config=%7B"aiEnabled"%3Atrue%2C"messaging"%3A%7B%7D%2C"header"%3A%7B"isOn"%3Afalse%7D%2C"layout"%3A%7B"showFrame"%3Afalse%7D%2C"launcher"%3A%7B"isOn"%3Atrue%7D%2C"openChatByDefault"%3Atrue%7D`
   );
 
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState('domcontentloaded');
 
   await page.waitForFunction(() => Boolean(window.chatInstance), {
     timeout: 10000,
@@ -180,13 +180,13 @@ test("smoke web component custom element", async ({ page }) => {
 
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.click();
-  await page.keyboard.type("text");
+  await page.keyboard.type('text');
   await page.getByTestId(PageObjectId.INPUT_SEND).click();
-  await expect(mainPanel.getByTestId("message-by-index-3")).toContainText(
-    "Carbon",
+  await expect(mainPanel.getByTestId('message-by-index-3')).toContainText(
+    'Carbon'
   );
   // Regression guard for issue #1382: clicking the send button must clear the
   // input field. The bug only reproduces on React 17/18 hosts, but we assert
   // here too to catch any future regression on React 19.
-  await expect(input).toHaveText("");
+  await expect(input).toHaveText('');
 });

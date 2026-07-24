@@ -5,23 +5,23 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "sass:string";
+@use 'sass:string';
 
-@use "@carbon/styles/scss/type";
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/themes";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/colors";
-@use "@carbon/styles/scss/spacing";
-@use "@carbon/styles/scss/utilities/focus-outline" as *;
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
+@use '@carbon/styles/scss/type';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/themes';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/colors';
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
 
-:host-context([data-theme="white"]),
-:host-context([storybook-carbon-theme="white"]),
-:host-context([data-theme="g10"]),
-:host-context([storybook-carbon-theme="g10"]),
+:host-context([data-theme='white']),
+:host-context([storybook-carbon-theme='white']),
+:host-context([data-theme='g10']),
+:host-context([storybook-carbon-theme='g10']),
 :host {
   // Without this the custom element is inline by default. In text-flow
   // contexts (e.g. a contenteditable) the host then picks up the parent's
@@ -33,7 +33,7 @@
 
   // Automatically output all syntax-* tokens from the Carbon $white theme
   @each $token, $value in themes.$white {
-    @if string.index($token, "syntax-") == 1 {
+    @if string.index($token, 'syntax-') == 1 {
       --cds-#{$token}: #{$value};
     }
   }
@@ -66,7 +66,7 @@
 
   // Masking removed - was causing issues with scrollbars
   code {
-    @include type.type-style("code-01");
+    @include type.type-style('code-01');
   }
 }
 
@@ -76,12 +76,12 @@
   block-size: 100%;
 }
 
-:host-context([data-theme="g90"]),
-:host-context([storybook-carbon-theme="g90"]),
-:host-context([data-theme="g100"]),
-:host-context([storybook-carbon-theme="g100"]) {
+:host-context([data-theme='g90']),
+:host-context([storybook-carbon-theme='g90']),
+:host-context([data-theme='g100']),
+:host-context([storybook-carbon-theme='g100']) {
   @each $token, $value in themes.$g90 {
-    @if string.index($token, "syntax-") == 1 {
+    @if string.index($token, 'syntax-') == 1 {
       --cds-#{$token}: #{$value};
     }
   }
@@ -148,7 +148,7 @@
     motion(standard, productive);
 
   &:focus {
-    @include focus-outline("outline");
+    @include focus-outline('outline');
 
     outline-offset: 0;
   }
@@ -230,7 +230,7 @@
 .#{$prefix}--snippet__language,
 .#{$prefix}--snippet__header-separator,
 .#{$prefix}--snippet__linecount {
-  @include type.type-style("label-01");
+  @include type.type-style('label-01');
 }
 
 .#{$prefix}--snippet__header-separator {

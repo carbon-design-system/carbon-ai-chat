@@ -27,20 +27,20 @@
  * Start reading at: the `Demo` element below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   type ChatInstance,
   type PublicConfig,
   type SuggestionItem,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { mentionItems, commandItems } from "./suggestions";
+import { customSendMessage } from './customSendMessage';
+import { mentionItems, commandItems } from './suggestions';
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -70,13 +70,13 @@ export class Demo extends LitElement {
         // so a real implementation can swap to a network call without changing
         // the contract.
         mention: {
-          trigger: "@",
+          trigger: '@',
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
             }
             return mentionItems.filter((m) =>
-              m.label.toLowerCase().includes(query.toLowerCase()),
+              m.label.toLowerCase().includes(query.toLowerCase())
             );
           },
           onSelect: (item: SuggestionItem) => {
@@ -88,7 +88,7 @@ export class Demo extends LitElement {
                 {
                   id: `mention_${item.id}`,
                   label: item.label,
-                  type: "mention",
+                  type: 'mention',
                   value: item.id,
                 },
               ],
@@ -106,7 +106,7 @@ export class Demo extends LitElement {
               }
               const index = prev.fields.findIndex(
                 (field) =>
-                  field.type === "mention" && field.id === `mention_${item.id}`,
+                  field.type === 'mention' && field.id === `mention_${item.id}`
               );
               if (index === -1) {
                 return prev;
@@ -121,8 +121,8 @@ export class Demo extends LitElement {
         // `/` mid-sentence (e.g. URLs) does not open the picker. Static array
         // source — the picker filters the list internally as the user types.
         command: {
-          trigger: "/",
-          triggerPosition: "start",
+          trigger: '/',
+          triggerPosition: 'start',
           items: commandItems,
           onSelect: (item: SuggestionItem) => {
             // Persist the pick onto the structured-data sidecar so the host can read it from `MessageRequest`.
@@ -133,7 +133,7 @@ export class Demo extends LitElement {
                 {
                   id: `command_${item.id}`,
                   label: item.label,
-                  type: "command",
+                  type: 'command',
                   value: item.id,
                 },
               ],
@@ -149,7 +149,7 @@ export class Demo extends LitElement {
               }
               const index = prev.fields.findIndex(
                 (field) =>
-                  field.type === "command" && field.id === `command_${item.id}`,
+                  field.type === 'command' && field.id === `command_${item.id}`
               );
               if (index === -1) {
                 return prev;
@@ -173,8 +173,7 @@ export class Demo extends LitElement {
         .messaging=${cfg.messaging}
         .input=${cfg.input}
         .layout=${cfg.layout}
-        .openChatByDefault=${cfg.openChatByDefault}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${cfg.openChatByDefault}></cds-aichat-custom-element>
     `;
   }
 }

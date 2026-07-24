@@ -29,7 +29,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 // Replace with a real production implementation.
 const WELCOME_TEXT = `Welcome! This example mirrors ChatInstance state into a Redux Toolkit store.
@@ -40,11 +40,11 @@ Try sending a message to see the chat view, or click the home icon to see the ho
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // An empty input string is the synthetic "welcome" send the chat issues on
   // first open; emit the orientation copy instead of routing to a backend.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -65,7 +65,7 @@ async function customSendMessage(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "That is super great!",
+          text: 'That is super great!',
         },
       ],
     },
