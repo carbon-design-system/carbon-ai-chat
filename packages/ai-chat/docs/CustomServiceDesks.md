@@ -337,8 +337,7 @@ integration, and the service desk then reconnects however it needs to. Once the
 reconnect finishes or fails, {@link ServiceDesk.reconnect | reconnect} resolves
 with a boolean that tells Carbon AI Chat whether reconnection succeeded.
 
-> **Note:** The user can't interact with Carbon AI Chat until {@link
-> ServiceDesk.reconnect | reconnect} resolves, or the user chooses to disconnect
+> **Note:** The user can't interact with Carbon AI Chat until {@link ServiceDesk.reconnect | reconnect} resolves, or the user chooses to disconnect
 > from the service desk.
 
 If the integration needs to record state between page loads, it can use {@link
