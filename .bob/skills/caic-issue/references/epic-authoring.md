@@ -1,0 +1,82 @@
+# epic-authoring.md — authoring and running epics
+
+When to group work under an umbrella epic, how to structure one, and how to track its children.
+
+Load this when the user asks to "open an epic" or "plan out a big effort", when deciding whether a chunk of work is one issue or many, or when a plan's per-step breakdown needs projecting onto GitHub. Sub-issue mechanics live in the parent [caic-issue](../SKILL.md) skill.
+
+## Epic vs. plain issue
+
+An epic must pass a **two-part test** — it is _both_:
+
+1. **Too big for one issue** — the work splits into multiple child issues, often interdependent or sequenced.
+2. **Bounded and finishable** — it has a fixed scope and a describable done-state, so it can be closed.
+
+Fail either test and it is **not** an epic:
+
+- Fits in one PR → a plain issue.
+- Open-ended feature area that never completes ("Prompt line development") → a **label or project**, not an epic. An epic-as-label keeps accreting children, so `percent_completed` is meaningless and the issue never closes. Avoid this shape.
+
+## Structuring an epic
+
+File epics with the [EPIC.yaml](../../../../.github/ISSUE_TEMPLATE/EPIC.yaml) form. The body holds:
+
+- **Value proposition** — why we're doing this, framed from the user/stakeholder's side.
+- **Expected outcomes** — the done-state: the measurable result or observable change that tells you the epic is complete and can be closed.
+- **Out of scope** — what this epic deliberately excludes. This boundary is what keeps an epic from drifting into a feature-area bucket.
+- **Details / child work** — the parent link, plus what the sub-issue list can't show. See below.
+
+If you can't write a crisp "out of scope" and a concrete done-state, the work is probably a label, not an epic — see the test above.
+
+## Writing the Details section
+
+**Never restate the children as a bullet list.** GitHub renders every child with its live title and state; a hand-kept copy is stale the first time one moves, closes, or gets regrouped. Point at the list instead, then spend the section on what the sidebar can't show.
+
+When children group into sub-epics, give the grouping as a table — one row per sub-epic, one column for the surface it owns:
+
+```markdown
+Parent epic: #1486. The sub-issue list on this epic is the child record, so it is not restated here.
+
+Children that share a surface get a sub-epic. The rest stay flat.
+
+| Sub-epic | Surface                     |
+| -------- | --------------------------- |
+| #1930    | The writeable-element enum  |
+| #1931    | Event bus and send pipeline |
+```
+
+Keep the prose that carries judgment: sequencing, decisions settled so children don't re-litigate them, and known risks. That's the reason the section exists. Blockers between children are dependency links, not prose — see [Recording blockers](../SKILL.md#recording-blockers).
+
+## Adding children
+
+- Sub-issue creation and the database-**id** linking gotcha: see [caic-issue](../SKILL.md).
+- A sub-issue may have only **one** parent — a child can't belong to two epics at once.
+- Each child should be independently closeable and map to one PR's worth of work.
+
+## Tracking progress
+
+The parent's `sub_issues_summary` reports `total`, `completed`, and `percent_completed`. Read it with:
+
+```bash
+gh api repos/<owner>/<repo>/issues/<parent> --jq .sub_issues_summary
+```
+
+For the actual child list, paginate:
+
+```bash
+gh api --paginate "repos/<owner>/<repo>/issues/<parent>/sub_issues?per_page=100"
+```
+
+The summary count can lag a cached read; when the summary and the paginated list disagree, trust the list.
+
+## Grouping and ordering
+
+- Keep related children together and order them roughly in the sequence they'll be tackled, so the epic reads as a plan.
+- Ordering is intent; a hard blocker is a dependency link. Record it with the `blocked_by` API — see [Recording blockers](../SKILL.md#recording-blockers) — and keep the epic body for the reason, not `Blocked by: #N` in place of the link.
+- When a child grows its own multi-issue scope, spin it into its **own** epic and link the two — don't nest sub-issues arbitrarily deep or overload one epic past its bounded scope.
+
+## Related guidance
+
+- [caic-issue](../SKILL.md) — writing the child issues and wiring the sub-issue link
+- [caic-plan](../../caic-plan/SKILL.md) — when the effort needs a written implementation plan, not just an issue tree
+- [tone.md](../../../../references/tone.md) — voice and word economy for the epic body
+- [Root AGENTS.md](../../../../AGENTS.md) — repo overview and pointer index

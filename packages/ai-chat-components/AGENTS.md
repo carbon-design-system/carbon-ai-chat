@@ -38,6 +38,7 @@ Shared pieces: [src/components/shared/](src/components/shared/); design tokens /
 ## Authoring rules
 
 - **Prefix discipline**: see root [AGENTS.md Conventions](../../AGENTS.md#conventions). Package-specific addition — **tag naming**: Lit tags are `cds-<thing>` in the default build; don't hand-write the tag string in multiple places, read it from the shared prefix constant so the `es-custom` rewrite applies.
+- **Carbon flavor**: Lit elements use `@carbon/web-components`. `@carbon/react` is a devDependency for the `-react.stories.jsx` / `-react.mdx` files **only** — never import it into `src/`. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
 - **One element per file** under `src/`, re-exported from `index.ts`. Sub-parts (footer, step, etc.) get their own file and `import` line.
 - **Styles**: co-locate `.scss` next to the `.ts`. Use Carbon tokens from `@carbon/styles`; don't hardcode colors, spacing, or type. SCSS/RTL conventions (BEM, logical properties) live in root [AGENTS.md Conventions](../../AGENTS.md#conventions).
 - **Custom elements manifest**: after changing JSDoc, props, slots, events, or CSS parts, run `npm run custom-elements`. Storybook docs and the generated React wrappers read from it — stale manifests produce confusing Storybook output.
@@ -96,7 +97,7 @@ npm run test:react -- src/react/__tests__/<file>.test.ts
 - **Parent guidance**: [Root AGENTS.md](../../AGENTS.md)
 - **Voice and tone**: [tone.md](../../references/tone.md) - Voice and word economy for Storybook MDX and JSDoc
 - **Consumer package**: [../ai-chat/AGENTS.md](../ai-chat/AGENTS.md) - How React app uses these components
-- **Code reviews**: [../../references/code-review.md](../../references/code-review.md)
+- **Shipping gate**: [definition-of-done.md](../../references/definition-of-done.md)
 
 ## Definition of done
 

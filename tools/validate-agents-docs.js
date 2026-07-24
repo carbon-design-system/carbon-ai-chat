@@ -17,7 +17,7 @@
  * Discovery crawls from the root AGENTS.md, following links to other bare
  * AGENTS.md entry points and to per-directory topic docs, which live as
  * kebab-case files under a `references/` subfolder (e.g.
- * `references/code-review.md`).
+ * `references/code-patterns.md`).
  */
 
 const fs = require("fs");
