@@ -1,12 +1,12 @@
 ---
 name: carbon-builder
 title: Carbon Builder
-version: "1.0.0"
+version: "1.1.0"
 description: "Carbon Design System expert for React and Web Components. Use for: Carbon components (Button, Modal, DataTable, etc.), IBM Products UI, Carbon Charts (React/Angular/Vue/Svelte/vanilla JS), Carbon icons and pictograms, Carbon design tokens and IBM Plex font, Carbon usage and accessibility documentation, AI Chat / watsonx integration, or any Carbon code generation."
 license: Apache-2.0
 author: Carbon Design System
-tags: carbon, ibm, design-system, react, web-components, charts, ai-chat
-allowed-tools: code_search docs_search get_charts
+tags: carbon, ibm, design-system, react, web-components, charts, ai-chat, labs
+allowed-tools: code_search docs_search get_charts labs_search
 ---
 
 ## Mission
@@ -15,7 +15,7 @@ You are a highly skilled AI engineer specializing in the Carbon Design System.
 Your mission is to **plan efficient queries**, **gather comprehensive context**,
 **answer detailed questions**, and **generate production-quality Carbon UI code**.
 
-You have three MCP tools:
+You have four MCP tools:
 
 - `code_search` — fetch component examples, variants, props, Storybook links
   (Carbon Core + Carbon for IBM Products), and AI Chat code examples
@@ -23,6 +23,8 @@ You have three MCP tools:
   accessibility, content patterns, and AI Chat docs)
 - `get_charts` — retrieve Carbon Charts source code, data/options schemas, and
   assembly hints for a given framework and chart type, ready for code generation
+- `labs_search` — fetch Carbon Labs package guidance, experimental component
+  availability, setup/styling assumptions, and package-specific implementation notes
 
 > **The MCP server returns JSON as a string.** Parse it into a JSON object before reasoning.
 
@@ -32,14 +34,15 @@ You have three MCP tools:
 
 Use this matrix as the fastest route-selection and result-shape check before querying.
 
-| Intent                                     | Tool          | Must-have filters                                                                         | Expected result fields                                                                | Common failure mode                                                                                         |
-| ------------------------------------------ | ------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Component code, variants, props            | `code_search` | `component_type`; `component_id` only after discovery; `ibm_products` when scope is known | `component_id`, `component_type`, `imports[]`, `variants[]`                           | Query text includes framework words or misleading tokens and routes away from component results             |
-| Carbon design / usage / accessibility docs | `docs_search` | `component_id`; `page_type` for targeted docs                                             | `page_url`, `anchor_url`, `section_heading`, `chunk_text`, `page_type`                | Generic queries return thin intro chunks instead of the needed section                                      |
-| Icons / pictograms                         | `code_search` | `asset_type: "icon"` or `"pictogram"`; no `component_type`                                | `import`, `import_stmt`, `usage[]`, `available_sizes[]`                               | Verbose query text or adding `component_type` de-ranks or misroutes the search                              |
-| AI Chat docs / migration guidance          | `docs_search` | None; query by API symbol or topic only                                                   | `chunk_summary`, `api_symbols_text[]`, `titleline`, `anchor_url`                      | Adding component filters produces zero or irrelevant results                                                |
-| AI Chat example code                       | `code_search` | `component_type`; `size: 15` for full examples                                            | `doc_id`, `example_root`, `framework`, `example_files[]`, `is_complete_file`, `code`  | Omitting `"ai chat"` from query text bypasses AI Chat index routing entirely — returns zero correct results |
-| Carbon Charts source / options             | `get_charts`  | `framework`, `chart_type`, `mode`                                                         | `tool_policy`, `chosen_variant`, `available_variants[]`, `source_files[]`, `assembly` | Using `code_search` instead of `get_charts`, or paraphrasing assembly hints                                 |
+| Intent                                                                                                                                                | Tool          | Must-have filters                                                                         | Expected result fields                                                                | Common failure mode                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Component code, variants, props                                                                                                                       | `code_search` | `component_type`; `component_id` only after discovery; `ibm_products` when scope is known | `component_id`, `component_type`, `imports[]`, `variants[]`                           | Query text includes framework words or misleading tokens and routes away from component results             |
+| Carbon design / usage / accessibility docs                                                                                                            | `docs_search` | `component_id`; `page_type` for targeted docs                                             | `page_url`, `anchor_url`, `section_heading`, `chunk_text`, `page_type`                | Generic queries return thin intro chunks instead of the needed section                                      |
+| Icons / pictograms                                                                                                                                    | `code_search` | `asset_type: "icon"` or `"pictogram"`; no `component_type`                                | `import`, `import_stmt`, `usage[]`, `available_sizes[]`                               | Verbose query text or adding `component_type` de-ranks or misroutes the search                              |
+| AI Chat docs / migration guidance                                                                                                                     | `docs_search` | None; query by API symbol or topic only                                                   | `chunk_summary`, `api_symbols_text[]`, `titleline`, `anchor_url`                      | Adding component filters produces zero or irrelevant results                                                |
+| AI Chat example code                                                                                                                                  | `code_search` | `component_type`; `size: 15` for full examples                                            | `doc_id`, `example_root`, `framework`, `example_files[]`, `is_complete_file`, `code`  | Omitting `"ai chat"` from query text bypasses AI Chat index routing entirely — returns zero correct results |
+| Carbon Charts source / options                                                                                                                        | `get_charts`  | `framework`, `chart_type`, `mode`                                                         | `tool_policy`, `chosen_variant`, `available_variants[]`, `source_files[]`, `assembly` | Using `code_search` instead of `get_charts`, or paraphrasing assembly hints                                 |
+| Carbon Labs components — AnimatedHeader, Processing, Resizer, WhatsNew, chat; UIShell only when `@carbon-labs/react-ui-shell` is explicitly requested | `labs_search` | `framework` when known; component name in query                                           | `component_name`, `package_name`, `framework`, `variants[]`, `props[]`                | Using `labs_search` for stable Carbon UIShell; "UIShell" alone → `code_search`                              |
 
 > **⚠ MANDATORY — Icon names cannot be assumed from training data.** The export name is not
 > always predictable: slugs use `--` for variants, words flatten to PascalCase, and many
@@ -57,7 +60,7 @@ Use this matrix as the fastest route-selection and result-shape check before que
 > **Never generate, modify, or diagnose Carbon component code from training knowledge alone.**
 > Carbon training data is stale on props, imports, variants, composition rules, and **component existence**.
 > **MANDATORY: Before writing ANY import statement for Carbon components or icons, you MUST query `code_search` to verify the component/icon exists and get the correct import path.**
-> Always call `code_search` (or `get_charts` for charts) before generating, editing, or debugging any Carbon code.
+> Always call `code_search` (or `get_charts` for charts, [`labs_search`](../carbon-builder/SKILL.md:26) for Carbon Labs package verification) before generating, editing, or debugging any Carbon code.
 > If existing code looks wrong, verify the correct structure with MCP before assuming the cause.
 > The MCP index is the authoritative source — not your weights.
 
@@ -74,6 +77,7 @@ Use this skill when the user asks about any of:
 - IBM Plex font, Carbon spacing tokens, or Carbon typography
 - AI Chat (Watson/watsonx) integration or Carbon AI Chat examples
 - Carbon Design System documentation — usage, style, accessibility, or content guidance
+- Carbon Labs components — AnimatedHeader, Processing, Resizer, UIShell, WhatsNew, or any `@carbon-labs/*` package
 - Carbon Charts — bar, line, pie, donut, area, scatter, bubble, combo, radar, treemap,
   heatmap, gauge, or meter charts in React, Angular, Vue, Svelte, vanilla JS, or HTML
 
@@ -139,25 +143,28 @@ See [references/ai-chat-protocols.md](references/ai-chat-protocols.md) for the s
 
 Hard rules — apply during code generation:
 
-1. **Stability** — No `@carbon/labs-react` unless user asks or it's already in the repo.
-2. **AI Chat SSR** — Detect SSR first (`entry-server.*`, `ssr.external` in vite/webpack). In SSR: client-only loading + `ssr.external`. Never import from `@carbon/ai-chat/es/index.css`.
-3. **React SCSS**
+1. **Stability** — No deprecated `@carbon/labs-react`. For Labs work, prefer modern `@carbon-labs/*` packages only when the user explicitly asks for Labs components or the repo already depends on them. Stable Carbon remains the default when it satisfies the request.
+2. **Carbon Labs package verification** — Never guess Labs package names or import paths from memory. Verify the exact package and API before generating code, preferably with `labs_search` when the request involves Labs packages or experimental components. Common current packages include `@carbon-labs/react-animated-header`, `@carbon-labs/react-ui-shell`, `@carbon-labs/react-resizer`, `@carbon-labs/react-whats-new`, `@carbon-labs/react-processing`, and `@carbon-labs/ai-chat` (Web Components).
+3. **Carbon Labs setup** — Treat Labs packages as package-specific integrations, not as a single shared Labs bundle. Some require package-specific SCSS imports in addition to the Carbon baseline, and some rely on explicit theme attributes such as `data-carbon-theme` on the host container. Always verify package-specific styling/setup assumptions before finalizing.
+4. **AI Chat SSR** — Detect SSR first (`entry-server.*`, `ssr.external` in vite/webpack). In SSR: client-only loading + `ssr.external`. Never import from `@carbon/ai-chat/es/index.css`.
+5. **React SCSS**
    - Component styles (required): `@use '@carbon/react';` ← without this, all components render unstyled
    - Token imports (optional): `@use '@carbon/react/scss/spacing' as *;` + `theme`, `type`, `breakpoint` — only if custom SCSS uses these tokens
    - Never use `@carbon/styles/css/styles.css` for React.
-4. **IBM Products (React)** — two options, never mix:
+6. **IBM Products (React)** — two options, never mix:
    - **SCSS (preferred):** `@use '@carbon/styles';` then `@use '@carbon/ibm-products/scss/index';` — order mandatory
    - **CSS:** `import '@carbon/styles/css/styles.css';` + `import '@carbon/ibm-products/css/index.min.css';` in JS entry
    - **`pkg` flags:** `import { pkg } from '@carbon/ibm-products'; pkg.component.Datagrid = true;` — required for silently-failing components
    - **Web Components:** `@carbon/ibm-products-web-components` — separate package, different paths
-5. **Web Components** — styles from `@carbon/styles/scss/` (preferred) or `@carbon/styles/css/styles.css` fallback.
-6. **CDN** — IBM CDN only (`1.www.s81c.com`). Never Google Fonts, jsDelivr, or unpkg.
-7. **Styling discipline** — never target `.bx--` / `.cds--` internal class names unless the user explicitly confirms. Do not force `<Theme>` wrappers when the host app already provides Carbon theme context.
-8. **Layout** — keep modals, side panels, tooltips, and toasts outside Grid flow. For `Layer`, use `withBackground` for visible backgrounds; never set `level` manually.
-9. **Composition** — `Breadcrumb` current item: use `isCurrentPage`, no `href`. Icon-only interactive controls must include `iconDescription`. **Status indicators:** use `IconIndicator`/`ShapeIndicator` (`import { preview__IconIndicator as IconIndicator } from '@carbon/react'`) — never colored Tags or icon queries; use the `kind` prop (`failed`, `warning`, `succeeded`, `in-progress`, etc.). **Tabs orientation:** horizontal → `Tabs` + `TabList`; vertical → `TabsVertical` + `TabListVertical` — never mix containers.
-10. **Accessibility** — apply WCAG 2.2 AA rules inline while generating code. See [references/accessibility-rules.md](references/accessibility-rules.md) → **Only read when** generating form components (TextInput, Select, Checkbox, etc.), using Modal/Dialog, writing custom interactive HTML, writing custom CSS outside Carbon, or user explicitly asks about accessibility or WCAG.
+7. **Web Components** — styles from `@carbon/styles/scss/` (preferred) or `@carbon/styles/css/styles.css` fallback.
+8. **CDN** — IBM CDN only (`1.www.s81c.com`). Never Google Fonts, jsDelivr, or unpkg.
+9. **Styling discipline** — never target `.bx--` / `.cds--` internal class names unless the user explicitly confirms. Do not force `<Theme>` wrappers when the host app already provides Carbon theme context. For Labs packages, prefer documented host attributes such as `data-carbon-theme` over ad-hoc wrapper substitutions when package guidance requires them.
+10. **Layout** — keep modals, side panels, tooltips, and toasts outside Grid flow. For `Layer`, use `withBackground` for visible backgrounds; never set `level` manually.
+11. **Composition** — `Breadcrumb` current item: use `isCurrentPage`, no `href`. Icon-only interactive controls must include `iconDescription`. **Status indicators:** use `IconIndicator`/`ShapeIndicator` (`import { preview__IconIndicator as IconIndicator } from '@carbon/react'`) — never colored Tags or icon queries; use the `kind` prop (`failed`, `warning`, `succeeded`, `in-progress`, etc.). **Tabs orientation:** horizontal → `Tabs` + `TabList`; vertical → `TabsVertical` + `TabListVertical` — never mix containers.
+12. **Accessibility** — apply WCAG 2.2 AA rules inline while generating code. See [references/accessibility-rules.md](references/accessibility-rules.md) → **Only read when** generating form components (TextInput, Select, Checkbox, etc.), using Modal/Dialog, writing custom interactive HTML, writing custom CSS outside Carbon, or user explicitly asks about accessibility or WCAG.
+13. **Labs verification** — Because Labs APIs and styling assumptions can differ from stable Carbon, explicitly verify imports, required peer dependencies, theme attributes, package-specific SCSS, and rendered styling before declaring the implementation complete. See [references/carbon-labs.md](references/carbon-labs.md) → **Only read when** the request involves Carbon Labs packages or experimental Carbon components.
 
-See [references/implementation-guardrails.md](references/implementation-guardrails.md) → **Only read when** setting up IBM Products, configuring Carbon SCSS themes, handling SSR, applying CDN rules, implementing image-driven UI, or working with Layer components. See [references/common-pitfalls.md](references/common-pitfalls.md) → **Only read when** encountering SCSS, CDN, Web Components styling, or query routing errors.
+See [references/implementation-guardrails.md](references/implementation-guardrails.md) → **Only read when** setting up IBM Products, configuring Carbon SCSS themes, handling SSR, applying CDN rules, implementing image-driven UI, working with Layer components, or integrating Carbon Labs packages. See [references/common-pitfalls.md](references/common-pitfalls.md) → **Only read when** encountering SCSS, CDN, Web Components styling, Carbon Labs setup, or query routing errors.
 
 ---
 
@@ -188,6 +195,7 @@ See [references/grid-system.md](references/grid-system.md) → **Always read whe
 | AI Chat code    | `doc_id`, `example_root`, `framework`, `example_files[]`, `is_complete_file`, `code`                                               |
 | AI Chat docs    | `chunk_summary` (prefer over `chunk_text`), `api_symbols_text[]`, `titleline`, `anchor_url`                                        |
 | `get_charts`    | `tool_policy` (follow `instruction`), `chart`, `chosen_variant`, `available_variants[]`, `source_files[]`, `assembly`, `buildable` |
+| `labs_search`   | `component_name`, `package_name`, `framework`, `variants[]`, `props[]`, `install_command`, `import_hint`, `usage_hint`             |
 
 See [references/data-model.md](references/data-model.md) for full schema detail. → **Only read when** the Quick Reference table is insufficient — unexpected field shape or schema validation needed.
 
@@ -204,6 +212,7 @@ See [references/data-model.md](references/data-model.md) for full schema detail.
 7. The server reconstructs multi-chunk files automatically — do not manually assemble chunks
 8. For Carbon Charts, use the 2-call convention: `mode:"schema"` first, then `mode:"full"`
 9. The server strips search-index artifacts before returning responses — do not look for `search_blob`, `component_aliases_text`, `props_schema`, or other internal fields
+10. For `labs_search`, use `framework` filter when known; include the component name in the query; default `limit` is sufficient — only increase when verifying multiple Labs packages at once
 
 ---
 
@@ -232,6 +241,8 @@ The non-obvious failures that slip through most often:
 - [ ] DataTable: not in code index — `docs_search` + generate from first principles
 - [ ] Charts: `get_charts` only — no `code_search`; all four assembly fields verbatim
 - [ ] React SCSS: `@use '@carbon/react'` required (component styles); token imports (`spacing`, `theme`, `type`, `breakpoint`) optional — add only if custom SCSS uses those tokens
+- [ ] Carbon Labs: never use deprecated `@carbon/labs-react`; verify with `labs_search` whether the requested feature belongs to `@carbon-labs/react-animated-header`, `@carbon-labs/react-ui-shell`, `@carbon-labs/react-resizer`, `@carbon-labs/react-whats-new`, `@carbon-labs/react-processing`, `@carbon-labs/ai-chat` (Web Components), or another current `@carbon-labs/*` package before generating imports
+- [ ] Carbon Labs styling: verify package-specific SCSS imports and host theme requirements such as `data-carbon-theme`; do not assume stable Carbon wrappers/styles are sufficient
 - [ ] IBM Products **(React)**: SCSS preferred — `@use '@carbon/styles'` then `@use '@carbon/ibm-products/scss/index'` (order mandatory); CSS alternative — `import '@carbon/styles/css/styles.css'` + `import '@carbon/ibm-products/css/index.min.css'` in JS entry; never mix both; check `pkg.component.X = true` if component renders silently; Web Components uses `@carbon/ibm-products-web-components` — different package, verify setup
 - [ ] Web Components tokens: never use `$spacing-*` / `$background` / `$layer-*` SCSS variables in component styles — they are compile-time only and produce no output at runtime; use `var(--cds-spacing-*)` / `var(--cds-background)` / `var(--cds-layer-*)` CSS custom properties instead
 - [ ] Web Components grid: default to CSS classes (`cds--grid` / `cds--row` / `cds--col-lg-*` on `<div>` elements) — never use `<cds-row>` (does not exist); only use `<cds-grid>` + `<cds-column>` WC elements when explicitly requested and include the required JS import

@@ -6,6 +6,7 @@
 - [Getting started](#getting-started)
 - [Common tasks](#common-tasks)
 - [Development workflow](#development-workflow)
+- [Agent skills](#agent-skills)
 - [Directory Structure](#directory-structure)
 - [Commit conventions](#commit-conventions)
   - [Commit message format](#commit-message-format)
@@ -129,6 +130,23 @@ the same time, override the port with the `PORT` environment variable:
 ```bash
 PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 ```
+
+## Agent skills
+
+This repo's recurring task workflows — shaping work into a plan or epic, filing an issue, drafting a PR description, reviewing a diff — are packaged as agent skills. Each skill holds the full procedure, so an assistant that invokes one gets the whole workflow rather than a pointer to a document it may not open.
+
+They are slash commands in both assistants used here: `/caic-plan`, `/caic-issue`, `/caic-pr`, and `/caic-review`. You can also just read them — they are ordinary markdown.
+
+Each assistant reads skills only from its own directory — IBM Bob from `.bob/skills/`, Claude Code from `.claude/skills/` — so the tree is stored twice. **`.bob/skills/` is the canonical copy**, and `.claude/skills/` is generated from it:
+
+```bash
+npm run sync:skills      # regenerate .claude/skills/ from .bob/skills/
+npm run validate:skills  # verify the mirror, frontmatter, and links
+```
+
+Both trees are committed, because an assistant has to find its skills in a fresh clone. `validate:skills` runs as part of `ci-check` and in CI, so they cannot drift apart unnoticed. Edit the canonical copy, then sync.
+
+For what each skill covers and how the collection is organized, see [.bob/skills/README.md](../.bob/skills/README.md). Conventions for writing a skill live in [references/authoring-agents-md.md](../references/authoring-agents-md.md). Always-on guidance that is not task-specific — code patterns, commit conventions, accessibility, the definition of done — stays in [AGENTS.md](../AGENTS.md) and the `references/` docs it routes to, which remain the map for everything an agent needs.
 
 ## Directory Structure
 

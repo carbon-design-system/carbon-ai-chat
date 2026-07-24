@@ -7,12 +7,11 @@ Canonical home for repo-wide **code-authoring discipline** — how much code to 
 Before adding code, write the **least** the task needs. Trace the whole flow first, then walk this ladder and stop at the first rung that solves it:
 
 1. **Does it need to exist at all?** Speculative need → skip it and say so in one line (YAGNI).
-2. **Already in this codebase?** Reuse the existing helper, util, type, or pattern.
-3. **Does the stdlib do it?** Use it.
-4. **Native platform feature?** Prefer it — CSS over JS, a type/DB constraint over hand-rolled app code.
-5. **Already-installed dependency?** Use it; never add a new dependency for what a few lines can do.
-6. **Can it be one line?** Write the one-liner.
-7. **Only then**, the minimum code that works.
+2. **Already in this codebase?** Reuse the existing component, hook, helper, util, type, or pattern.
+3. **Does the platform do it?** Prefer the browser — CSS over JS for layout, state, and animation; a native element or DOM/JS built-in (`dialog`, `URL`, `Intl`, `AbortController`, `structuredClone`) over a hand-rolled equivalent.
+4. **Does Carbon or an already-installed dependency ship it?** Use the Carbon component, token, or existing dep; never add a new dependency for what a few lines can do.
+5. **Can it be one line?** Write the one-liner.
+6. **Only then**, the minimum code that works.
 
 Heuristics:
 
@@ -31,6 +30,30 @@ Heuristics:
 - **No premature abstraction** — no indirection, generality, config, or flag params for a single caller.
 - **Avoid cleverness** — no dense one-liners or nested ternaries when a plain version reads clearer.
 
+## Carbon flavor by area
+
+Rung 4 above says reach for Carbon; this says **which** Carbon. Both primary packages are Web Components only. React is legitimate in the demo, the React examples, and React-wrapper stories — "use Web Components" is not a repo-wide rule, it is a per-directory one.
+
+Pick by **the file you are editing**, never by the package's dependency list: `@carbon/ai-chat` peer-depends on `@carbon/web-components`, so that package appears in React examples that never import it directly.
+
+| Editing…                                                               | Carbon flavor                                      | MCP `filters.component_type` |
+| ---------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
+| `packages/ai-chat/src/`                                                | `@carbon/web-components` via `@lit/react` wrappers | `"Web Components"`           |
+| `packages/ai-chat-components/src/` Lit elements                        | `@carbon/web-components`                           | `"Web Components"`           |
+| `packages/ai-chat-components/**/__stories__/*-react.{stories.jsx,mdx}` | `@carbon/react` (Storybook only)                   | `"React"`                    |
+| `demo/src/react/`                                                      | `@carbon/react`                                    | `"React"`                    |
+| `demo/src/web-components/`                                             | `@carbon/web-components`                           | `"Web Components"`           |
+| `examples/react/`                                                      | `@carbon/react`                                    | `"React"`                    |
+| `examples/web-components/`                                             | `@carbon/web-components`                           | `"Web Components"`           |
+
+**`@carbon/react` is not a runtime dependency of either primary package.** Never import it into `packages/ai-chat/src/` or into a Lit element. In `@carbon/ai-chat-components` it is a devDependency serving the `-react` stories alone.
+
+`@carbon/web-components` lags `@carbon/react` for rarer and IBM Products components. When the component you need is missing, don't close the gap with a React import — substitute a supported Carbon component, compose from primitives in [packages/ai-chat-components/](../packages/ai-chat-components), or escalate to design.
+
+### The `carbon-builder` skill defaults to React
+
+The vendored `carbon-builder` skill instructs "Default to **React** unless the user specifies Web Components." That default is wrong for most of this repo, and the table above overrides it. Take its JSX verbatim only in the React rows; anywhere else treat a React snippet as a translation hint and rewrite it as Lit before saving. Pass `filters.component_type` on every Carbon MCP call, or results mix flavors and you adopt the wrong snippet.
+
 ## Naming & prefix discipline (build-breaking)
 
 Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re-prefixes (`cds--custom`) and a literal `cds--` slips through unchanged, breaking that bundle.
@@ -44,6 +67,19 @@ Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re
 - **BEM** with the `#{$prefix}--` prefix.
 - **No descendant nesting.** `&:hover`, `&--modifier`, and media queries are fine; `.a .b {}` is not.
 - **CSS logical properties for RTL.** Use `padding-block-start`, `inset-inline-end`, etc. — never physical properties (`padding-left`, `right`, …). This is the single shared RTL rule; accessibility and review docs link here for it.
+
+## Framework-agnostic logic
+
+**Default to writing logic as plain functions in plain modules** — no React and no Lit import in the file. Components stay a thin layer that renders and wires things up.
+
+- **Belongs in the component**: rendering, event/prop wiring, and the framework lifecycle it takes to _call_ the logic (hooks, reactive properties, effects).
+- **Belongs outside it**: parsing, formatting, validation, state transitions, sorting/filtering, message and streaming assembly, timing and geometry math.
+- **The test**: if you can only exercise it by rendering something, it's in the wrong place. Logic in a plain module is testable by calling it.
+- **Framework-agnostic ≠ DOM-free.** Touching `document`, measuring an element, or reading a media query is fine in a plain module — see the existing `utils/` helpers. It's the framework coupling to avoid, not the browser.
+
+Where it goes in `@carbon/ai-chat`: pure helpers in `src/chat/utils/`, stateful or side-effecting collaborators as services (see [packages/ai-chat/AGENTS.md](../packages/ai-chat/AGENTS.md)), state transitions in store reducers. In `@carbon/ai-chat-components`, prefer a sibling module over a method on the Lit element.
+
+Beyond testability, this is directional: the React layer is meant to get thinner over time, and logic that never imported React moves for free.
 
 ## Component placement
 
@@ -63,4 +99,4 @@ The shared RTL / logical-property rule is canonicalized above. For everything el
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks
 - [accessibility.md](accessibility.md) — announcer utilities and live-region patterns
-- [code-review.md](code-review.md) — review rubric that flags violations of these patterns
+- [definition-of-done.md](definition-of-done.md) — the gate to run before shipping a change

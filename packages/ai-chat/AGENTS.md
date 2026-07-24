@@ -12,6 +12,8 @@ The primary Carbon AI Chat app. Ships as:
 
 All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.
 
+**Carbon flavor**: `@carbon/web-components`, consumed through `@lit/react` wrappers — even though this package is a React tree. `@carbon/react` is not a dependency here; never import it. Full table → [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
+
 ## Topic-specific guidance
 
 Load only what you need:
@@ -86,4 +88,4 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 
 - [Root AGENTS.md](../../AGENTS.md) — monorepo conventions
 - [../ai-chat-components/AGENTS.md](../ai-chat-components/AGENTS.md) — Lit component authoring
-- [../../references/code-review.md](../../references/code-review.md) — review rubric
+- [definition-of-done.md](../../references/definition-of-done.md) — the gate before shipping
