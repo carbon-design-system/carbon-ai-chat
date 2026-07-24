@@ -21,9 +21,28 @@ File epics with the [EPIC.yaml](../.github/ISSUE_TEMPLATE/EPIC.yaml) form. The b
 - **Value proposition** — why we're doing this, framed from the user/stakeholder's side.
 - **Expected outcomes** — the done-state: the measurable result or observable change that tells you the epic is complete and can be closed.
 - **Out of scope** — what this epic deliberately excludes. This boundary is what keeps an epic from drifting into a feature-area bucket.
-- **Details / child work** — links to the living list of sub-issues that make up the effort.
+- **Details / child work** — the parent link, plus what the sub-issue list can't show. See below.
 
 If you can't write a crisp "out of scope" and a concrete done-state, the work is probably a label, not an epic — see the test above.
+
+## Writing the Details section
+
+**Never restate the children as a bullet list.** GitHub renders every child with its live title and state; a hand-kept copy is stale the first time one moves, closes, or gets regrouped. Point at the list instead, then spend the section on what the sidebar can't show.
+
+When children group into sub-epics, give the grouping as a table — one row per sub-epic, one column for the surface it owns:
+
+```markdown
+Parent epic: #1486. The sub-issue list on this epic is the child record, so it is not restated here.
+
+Children that share a surface get a sub-epic. The rest stay flat.
+
+| Sub-epic | Surface                     |
+| -------- | --------------------------- |
+| #1930    | The writeable-element enum  |
+| #1931    | Event bus and send pipeline |
+```
+
+Keep the prose that carries judgment: sequencing, decisions settled so children don't re-litigate them, and known risks. That's the reason the section exists. Blockers between children are dependency links, not prose — see [Recording blockers](issue-authoring.md#recording-blockers).
 
 ## Adding children
 
