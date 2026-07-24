@@ -41,7 +41,7 @@ import {
   StartersConfig,
 } from "@carbon/ai-chat";
 import CDSAIChatAutocomplete from "@carbon/ai-chat-components/es/react/autocomplete.js";
-import { Chat } from "@carbon/icons-react";
+import { Chat, ChatOff } from "@carbon/icons-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -66,7 +66,7 @@ const STARTER_ITEMS = [
  * `headerConfig`. The send-arrow is hidden (`enableSendButton={false}`)
  * because selecting an item already auto-sends.
  */
-function StarterList(props: CustomListProps) {
+function renderCustomList(props: CustomListProps) {
   const { items, onSelect, onDismiss } = props;
   return (
     <CDSAIChatAutocomplete
@@ -84,8 +84,6 @@ function StarterList(props: CustomListProps) {
 }
 
 function App() {
-  const renderCustomList = useMemo(() => StarterList, []);
-
   const [startersEnabled, setStartersEnabled] = useState(true);
   const [inputHasText, setInputHasText] = useState(false);
 
@@ -108,7 +106,8 @@ function App() {
 
   const starters: StartersConfig = useMemo(
     () => ({ items: STARTER_ITEMS, renderCustomList }),
-    [renderCustomList],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const config: PublicConfig = useMemo(
@@ -142,7 +141,7 @@ function App() {
             text: startersEnabled
               ? "Hide conversation starters"
               : "Show conversation starters",
-            icon: Chat,
+            icon: startersEnabled ? ChatOff : Chat,
             onClick: () => setStartersEnabled((prev) => !prev),
             disabled: inputHasText,
           },
