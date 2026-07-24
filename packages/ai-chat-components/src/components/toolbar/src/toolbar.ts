@@ -91,7 +91,14 @@ class CDSAIChatToolbar extends LitElement {
   @query(`.${blockClass}__actions-container`)
   private actionsContainer!: HTMLElement;
 
-  @state() private containerWidth = 0;
+  @query(`.${blockClass}__decorator-container`)
+  private decoratorContainer!: HTMLElement;
+
+  @query(`.${blockClass}__fixed-actions`)
+  private fixedActions!: HTMLElement;
+
+  @state()
+  private containerWidth = 0;
 
   private resizeObserver?: ResizeObserver;
 
@@ -145,8 +152,23 @@ class CDSAIChatToolbar extends LitElement {
         hiddenActions: [],
       };
     }
+
+    const actionsContainerWidth =
+      this.actionsContainer.getBoundingClientRect().width;
+    const overflowMenuIconWidth = 40;
+    const fixedActionsWidth =
+      this.fixedActions.getBoundingClientRect().width || 0;
+    const decoratorContainerWidth =
+      this.decoratorContainer.getBoundingClientRect().width || 0;
+    /**
+     * to properly gauge the container width we need to account for some additional variables
+     * 1. the size of the overflow menu icon, which should always be a constant
+     * 2. the size of any optional fixed width items
+     * 3. the size of any optional decorator items
+     */
     const containerWidth =
-      this.actionsContainer.getBoundingClientRect().width - 40; // subtract 40 to account for size of overflow menu button
+      actionsContainerWidth -
+      (overflowMenuIconWidth + fixedActionsWidth + decoratorContainerWidth);
     const children = this.actionsContainer.children;
     let currentWidth = 0;
     const visibleChildren: Element[] = [];
@@ -320,6 +342,9 @@ class CDSAIChatToolbar extends LitElement {
           data-floating-menu-container
         >
           <div class="${blockClass}__actions-container">
+            <div class="${blockClass}__decorator-container">
+              <slot name="decorator"></slot>
+            </div>
             ${repeat(
               showInitialActions ? this.actions : visibleActions,
               (action) => action.text,
@@ -373,12 +398,9 @@ class CDSAIChatToolbar extends LitElement {
                   `
                 : nothing
             }
-          </div>
-          <div data-fixed class="${blockClass}__fixed-actions">
-            <slot name="fixed-actions"></slot>
-          </div>
-          <div class="${blockClass}__decorator-container">
-            <slot name="decorator"></slot>
+            <div data-fixed class="${blockClass}__fixed-actions">
+              <slot name="fixed-actions"></slot>
+            </div>
           </div>
         </div>
       </div>
