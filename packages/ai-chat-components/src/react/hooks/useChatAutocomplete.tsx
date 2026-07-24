@@ -29,6 +29,7 @@ import {
 } from "../../components/prompt-line/src/autocomplete-controller.js";
 import type {
   AutocompleteConfig,
+  StartersConfig,
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
@@ -38,7 +39,7 @@ export interface UseChatAutocompleteOptions {
   mention?: TriggerSuggestionConfig;
   command?: TriggerSuggestionConfig;
   autocomplete?: AutocompleteConfig;
-  starters?: SuggestionItem[];
+  starters?: StartersConfig;
   /** Ref to the slotted `<cds-aichat-prompt-line>`. */
   promptLineRef: RefObject<PromptLineElement | null>;
   /** When true, starter selection inserts the text but does not auto-send. */

@@ -177,6 +177,7 @@ class AutocompleteElement extends LitElement {
   private _focusedIndex = 0;
 
   private _announcer = new AriaAnnouncerManager();
+  private _listboxEl: HTMLElement | null = null;
 
   /**
    * Pending arrow-move announcement timer. Held-key rapid fires are collapsed:
@@ -196,6 +197,7 @@ class AutocompleteElement extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener("keydown", this._handleKeydown);
+    this._listboxEl?.removeEventListener("mousedown", this._handleMousedown);
     document.removeEventListener("click", this._handleClickOutside);
     this._announcer.disconnect();
     if (this._moveAnnouncePending !== null) {
@@ -209,6 +211,10 @@ class AutocompleteElement extends LitElement {
       `.${blockClass}__live-region`,
     );
     this._announcer.connect(Array.from(regions));
+    this._listboxEl = this.renderRoot.querySelector<HTMLElement>(
+      `.${blockClass}__items`,
+    );
+    this._listboxEl?.addEventListener("mousedown", this._handleMousedown);
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -360,6 +366,14 @@ class AutocompleteElement extends LitElement {
       ),
     );
   }
+
+  private _handleMousedown = (event: MouseEvent) => {
+    // Prevent the editor from losing focus when the user clicks one of the list
+    // items. Without this, mousedown transfers focus away from the editor,
+    // carbonStarterTrigger.onTransaction fires, sees editor.isFocused === false,
+    // and dismisses the list before the click event can trigger onSelect.
+    event.preventDefault();
+  };
 
   private _handleClickOutside = (event: MouseEvent) => {
     if (!this.contains(event.target as Node)) {

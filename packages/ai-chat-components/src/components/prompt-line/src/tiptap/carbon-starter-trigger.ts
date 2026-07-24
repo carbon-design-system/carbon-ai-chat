@@ -23,20 +23,23 @@ import type { SuggestionItem } from "./types.js";
 
 export interface StarterTriggerStorage {
   items: SuggestionItem[];
+  isOn: boolean;
 }
 
 export function carbonStarterTrigger(
   initialItems: SuggestionItem[],
+  initialIsOn = true,
 ): Extension {
   return Extension.create<unknown, StarterTriggerStorage>({
     name: "carbonStarterTrigger",
 
     addStorage() {
-      return { items: initialItems };
+      return { items: initialItems, isOn: initialIsOn };
     },
 
     onCreate() {
       this.storage.items = initialItems;
+      this.storage.isOn = initialIsOn;
     },
 
     onUpdate() {
@@ -58,8 +61,14 @@ export function carbonStarterTrigger(
 }
 
 function maybeEmit(editor: Editor, forceClear = false): void {
+  const storage = (editor.storage as unknown as Record<string, unknown>)
+    .carbonStarterTrigger as StarterTriggerStorage | undefined;
   const isActive =
-    !forceClear && editor.isEditable && editor.isFocused && editor.isEmpty;
+    !forceClear &&
+    storage?.isOn !== false &&
+    editor.isEditable &&
+    editor.isFocused &&
+    editor.isEmpty;
   if (!isActive) {
     dispatchTriggerChange(editor, null);
     return;

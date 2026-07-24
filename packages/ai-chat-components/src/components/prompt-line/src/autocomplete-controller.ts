@@ -14,12 +14,14 @@ import { carbonElement } from "../../../globals/decorators/carbon-element.js";
 import prefix from "../../../globals/settings.js";
 
 import "../../autocomplete/src/autocomplete.js";
+import type { StarterTriggerStorage } from "./tiptap/carbon-starter-trigger.js";
 import { resolveShowTriggerInChip } from "./tiptap/carbon-mention.js";
 import { projectRawValue } from "./tiptap/json-utils.js";
 import type PromptLineElement from "./prompt-line.js";
 import type {
   AutocompleteConfig,
   CustomListProps,
+  StartersConfig,
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
@@ -43,7 +45,7 @@ export interface AutocompleteControllerOptions {
   mention?: TriggerSuggestionConfig;
   command?: TriggerSuggestionConfig;
   autocomplete?: AutocompleteConfig;
-  starters?: SuggestionItem[];
+  starters?: StartersConfig;
   /** When true, starter selection inserts text without firing onStarterSelected. */
   isSendDisabled?: boolean;
   /** Called after a starter is selected and inserted; consumer triggers send. */
@@ -63,7 +65,7 @@ export class AutocompleteController {
   private _mention?: TriggerSuggestionConfig;
   private _command?: TriggerSuggestionConfig;
   private _autocomplete?: AutocompleteConfig;
-  private _starters?: SuggestionItem[];
+  private _starters?: StartersConfig;
   private _isSendDisabled: boolean;
   private _onStarterSelected?: (text: string) => void;
   private _onChange: (state: AutocompleteControllerState) => void;
@@ -142,7 +144,22 @@ export class AutocompleteController {
       this._autocomplete = next.autocomplete;
     }
     if ("starters" in next) {
+      const prevIsOn = this._starters?.isOn !== false;
+      const isOn = next.starters?.isOn !== false;
       this._starters = next.starters;
+      // isOn toggled: push the new value into the Tiptap extension storage and
+      // fire a no-op transaction so onTransaction → maybeEmit re-evaluates.
+      // Focus state is unchanged — the list appears on the next focus if the
+      // editor is not currently focused, or immediately if it is.
+      if (prevIsOn !== isOn) {
+        const editor = this._promptLine?.getEditor();
+        const storage = (editor?.storage as unknown as Record<string, unknown>)
+          ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
+        if (storage && editor) {
+          storage.isOn = isOn;
+          editor.view.dispatch(editor.state.tr);
+        }
+      }
     }
     if ("isSendDisabled" in next) {
       this._isSendDisabled = Boolean(next.isSendDisabled);
@@ -162,6 +179,17 @@ export class AutocompleteController {
       return;
     }
     this._promptLine = promptLine;
+    // Reconcile the isOn flag into the newly attached prompt-line's storage.
+    if (promptLine) {
+      const isOn = this._starters?.isOn !== false;
+      const editor = promptLine.getEditor();
+      const storage = (editor?.storage as unknown as Record<string, unknown>)
+        ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
+      if (storage && editor && storage.isOn !== isOn) {
+        storage.isOn = isOn;
+        editor.view.dispatch(editor.state.tr);
+      }
+    }
     // Re-evaluate the key-forwarding handler — the editor DOM we were bound
     // to may now be gone, or a new one may need binding.
     this._refreshEditorKeyHandler();
@@ -435,7 +463,7 @@ export class AutocompleteController {
     trigger: TriggerChangeEventDetail,
   ): Promise<SuggestionItem[]> {
     if (trigger.type === "starter") {
-      return this._starters ?? [];
+      return this._starters?.items ?? [];
     }
     const config =
       trigger.type === "mention"
@@ -454,8 +482,11 @@ export class AutocompleteController {
   private _resolveRenderCustomList():
     ((props: CustomListProps) => HTMLElement | unknown) | undefined {
     const trigger = this._trigger;
-    if (!trigger || trigger.type === "starter") {
+    if (!trigger) {
       return undefined;
+    }
+    if (trigger.type === "starter") {
+      return this._starters?.renderCustomList;
     }
     const config =
       trigger.type === "mention"
@@ -561,8 +592,8 @@ class AutocompleteControllerElement extends LitElement {
   autocomplete?: AutocompleteConfig;
 
   /** Starter prompts shown when the editor is empty + focused + editable. */
-  @property({ type: Array, attribute: false })
-  starters?: SuggestionItem[];
+  @property({ attribute: false })
+  starters?: StartersConfig;
 
   /** When true, starter selection inserts text without firing the send event. */
   @property({ type: Boolean, attribute: "is-send-disabled" })
