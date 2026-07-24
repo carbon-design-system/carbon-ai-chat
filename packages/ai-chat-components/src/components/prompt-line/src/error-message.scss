@@ -12,6 +12,15 @@
 
 $block-class: #{$prefix}-error-message;
 
+// Mixin for directional gradients
+@mixin gradient-bg($direction, $color) {
+  background: linear-gradient(
+    $direction,
+    rgba(255, 255, 255, 0) 0%,
+    $color 100%
+  );
+}
+
 .#{$block-class} {
   position: relative;
   display: flex;
@@ -19,40 +28,43 @@ $block-class: #{$prefix}-error-message;
   align-items: flex-start;
   gap: layout.$spacing-03;
   inline-size: 100%;
+  padding-inline-start: layout.$spacing-03;
 
   &::after {
     position: absolute;
-    z-index: -1;
+    z-index: 0;
     display: block;
     background: theme.$border-subtle-00;
     block-size: 1px;
     content: "";
-    inline-size: calc(100% + #{layout.$spacing-05} + #{layout.$spacing-03});
+    inline-size: calc(100% + #{layout.$spacing-03} + #{layout.$spacing-03});
     inset-block-end: 0;
-    inset-inline-start: calc(-1 * #{layout.$spacing-05});
-  }
-}
-
-// In expanded mode or when the prompt line has message actions, the
-// container's inline start padding is $spacing-03 (not $spacing-05), so
-// the error message padding and separator line must be adjusted to match.
-:host([actions-layout]) {
-  .#{$block-class} {
-    padding-inline-start: layout.$spacing-03;
-
-    &::after {
-      inline-size: calc(100% + #{layout.$spacing-03} + #{layout.$spacing-03});
-      inset-inline-start: calc(-1 * #{layout.$spacing-03});
-    }
+    inset-inline-start: calc(-1 * #{layout.$spacing-03});
   }
 }
 
 .#{$block-class}__warning-icon-and-text {
+  position: relative;
+  z-index: 0;
   display: flex;
   flex: 1;
   align-items: flex-start;
   gap: layout.$spacing-05;
   margin-block-start: layout.$spacing-04;
+}
+
+.#{$block-class}__text-overflow-gradient::after {
+  @include gradient-bg(180deg, theme.$background);
+
+  position: absolute;
+  z-index: 1;
+  display: block;
+  block-size: layout.$spacing-04;
+  content: "";
+  inline-size: 100%;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  pointer-events: none;
 }
 
 .#{$block-class}__warning-icon-and-text--no-chevron {

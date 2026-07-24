@@ -15,7 +15,7 @@ import {
   type PropertyValues,
   unsafeCSS,
 } from "lit";
-import { property } from "lit/decorators.js";
+import { property, state } from "lit/decorators.js";
 
 import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
 import { carbonElement } from "../../../globals/decorators/carbon-element.js";
@@ -97,10 +97,25 @@ class FileUploadsElement extends LitElement {
   getFilesUploadingText: (args: { count: number }) => string = ({ count }) =>
     count === 1 ? "Uploading file." : `Uploading ${count} files.`;
 
+  /** Whether scrolling is required to view the entire width of all file upload items. */
+  @state() private _hasOverflow = false;
+
   private _announcer = new AriaAnnouncerManager();
 
   /** Previous-frame snapshot keyed by upload id, used to detect transitions. */
   private _snapshots = new Map<string, UploadSnapshot>();
+
+  private _resizeObserver = new ResizeObserver(() => {
+    this._checkOverflow();
+  });
+
+  private _checkOverflow() {
+    const container = this.renderRoot.querySelector<HTMLElement>(
+      `.${prefix}--file-uploads-container`,
+    );
+    this._hasOverflow =
+      !!container && container.scrollWidth > container.clientWidth;
+  }
 
   protected firstUpdated() {
     const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
@@ -113,6 +128,7 @@ class FileUploadsElement extends LitElement {
   }
 
   disconnectedCallback() {
+    this._resizeObserver.disconnect();
     this._announcer.disconnect();
     super.disconnectedCallback();
   }
@@ -121,6 +137,17 @@ class FileUploadsElement extends LitElement {
     if (changedProperties.has("uploads")) {
       this.toggleAttribute("has-uploads", this.uploads.length > 0);
       this._announceTransitions();
+
+      this._resizeObserver.disconnect();
+      const container = this.renderRoot.querySelector<HTMLElement>(
+        `.${prefix}--file-uploads-container`,
+      );
+      if (container) {
+        this._resizeObserver.observe(container);
+        this._checkOverflow();
+      } else {
+        this._hasOverflow = false;
+      }
     }
   }
 
@@ -213,17 +240,21 @@ class FileUploadsElement extends LitElement {
       ${
         this.uploads && this.uploads.length > 0
           ? html`
-              <div class="${prefix}--file-uploads-container">
-                ${this.uploads.map(
-                  (upload) => html`
-                    <cds-aichat-file-upload-item
-                      .upload="${upload}"
-                      remove-file-label="${this.removeFileLabel}"
-                      uploading-file-label="${this.uploadingFileLabel}"
-                      @cds-aichat-file-remove="${this._handleFileRemove}"
-                    ></cds-aichat-file-upload-item>
-                  `,
-                )}
+              <div
+                class="${prefix}--file-uploads-gradient-wrapper${this._hasOverflow ? ` ${prefix}--file-uploads-gradient-wrapper--overflow` : ""}"
+              >
+                <div class="${prefix}--file-uploads-container">
+                  ${this.uploads.map(
+                    (upload) => html`
+                      <cds-aichat-file-upload-item
+                        .upload="${upload}"
+                        remove-file-label="${this.removeFileLabel}"
+                        uploading-file-label="${this.uploadingFileLabel}"
+                        @cds-aichat-file-remove="${this._handleFileRemove}"
+                      ></cds-aichat-file-upload-item>
+                    `,
+                  )}
+                </div>
               </div>
             `
           : nothing
