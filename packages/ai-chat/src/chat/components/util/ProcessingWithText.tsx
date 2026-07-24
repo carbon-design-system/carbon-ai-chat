@@ -11,7 +11,7 @@ import cx from "classnames";
 import Processing from "@carbon/ai-chat-components/es/react/processing.js";
 import React from "react";
 import { AriaLiveMessage } from "../aria/AriaLiveMessage";
-import { CarbonTheme } from "../../../types/config/PublicConfig";
+import { CarbonTheme } from "../../../types/config/CarbonTheme";
 
 interface ProcessingWithTextProps {
   carbonTheme: CarbonTheme;

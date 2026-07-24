@@ -19,7 +19,8 @@ import {
   PerCornerConfig,
   ResolvedCornerConfig,
 } from "../../types/config/CornersType";
-import { LanguagePack, PublicConfig } from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
 import { mergeCSSVariables } from "../utils/styleUtils";
 import { reducers } from "./reducers";
@@ -43,8 +44,8 @@ import {
   VIEW_STATE_MAIN_WINDOW_OPEN,
   DEFAULT_HEADER,
 } from "./reducerUtils";
-import { enLanguagePack } from "../../types/config/PublicConfig";
-import { LayoutConfig } from "../../types/config/PublicConfig";
+import { enLanguagePack } from "../../types/config/LanguagePack";
+import { LayoutConfig } from "../../types/config/LayoutConfig";
 import { fromPersistableState } from "./persistenceUtils";
 
 /**

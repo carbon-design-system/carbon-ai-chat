@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { CarbonTheme } from "../config/PublicConfig";
+import type { CarbonTheme } from "../config/CarbonTheme";
 import type { CornersType } from "../../chat/utils/constants";
 
 /**

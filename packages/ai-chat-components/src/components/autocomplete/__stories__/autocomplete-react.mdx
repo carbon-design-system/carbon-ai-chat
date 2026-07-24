@@ -1,0 +1,125 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as AutocompleteReactStories from "./autocomplete-react.stories";
+
+<Meta of={AutocompleteReactStories} />
+
+# Autocomplete
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/autocomplete) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+
+## Table of Contents
+- [Overview](#overview)
+- [Customization](#customization)
+- [Events](#events)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+
+## Overview
+
+The `<Autocomplete>` component wraps the `cds-aichat-autocomplete` web component to display contextual suggestions for user input.
+
+The autocomplete component includes support for:
+- **Flat Suggestions** - Simple list of suggestion items
+- **Grouped Suggestions** - Organized suggestions with category headers
+- **Rich Content** - Support for avatars and descriptions
+- **Send Button** - Optional button to send message directly from suggestion list item
+- **Header** - Optional header with custom title
+
+### Getting started
+
+Here's a quick example to get you started.
+
+```jsx
+import CDSAIChatAutocomplete from "@carbon/ai-chat-components/es/react/autocomplete";
+
+const suggestions = [
+  {
+    id: "suggestion-1",
+    label: "When is the sun rising today?",
+  },
+  {
+    id: "suggestion-2",
+    label: "When is the sun setting today?",
+  }
+];
+
+function MyComponent() {
+  return (
+    <CDSAIChatAutocomplete
+      items={suggestions}
+      enableSendButton={true}
+      attached={true}
+      onSelect={(event) => {
+        console.log("Selected:", event.detail.item);
+      }}
+      onSend={(event) => {
+        console.log("Sent:", event.detail.text);
+      }}
+    />
+  );
+}
+```
+
+
+## Customization
+
+### Layout Tokens
+
+Use CSS custom properties to adjust layout sizing. Apply them to a wrapper around `<Autocomplete>` or to a parent selector.
+
+| Token | Description |
+| --- | --- |
+| `--cds-aichat-autocomplete-max-height` | Controls the maximum height of the autocomplete panel before it scrolls. |
+
+
+## Events
+
+The autocomplete React component emits the following custom events that you can listen for to handle user interactions:
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Prop</th>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onSelect</code></td>
+      <td><code>cds-aichat-autocomplete-select</code></td>
+      <td>Fired when a suggestion item is selected.</td>
+      <td>
+        • <code>item</code> (SuggestionItem) - The selected suggestion item
+      </td>
+    </tr>
+    <tr>
+      <td><code>onSend</code></td>
+      <td><code>cds-aichat-autocomplete-send</code></td>
+      <td>Fired when the send button is clicked for a suggestion item.</td>
+      <td>
+        • <code>text</code> (string) - The label text of the suggestion item
+      </td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td><code>cds-aichat-autocomplete-dismiss</code></td>
+      <td>Fired when the autocomplete panel is dismissed.</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Component API
+
+<ArgTypes of={AutocompleteReactStories.Default} />
+
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

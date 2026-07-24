@@ -1,0 +1,172 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * Vitest helpers for reaching into the Carbon AI Chat shadow DOM.
+ *
+ * Verifies: shared scaffolding used by `ChatContainer.test.tsx` to wait for
+ * the custom element to mount, drive the launcher, and dispatch input
+ * events from outside the widget's shadow root. Each helper resolves
+ * `PageObjectId` selectors via happy-dom.
+ */
+
+import { act, waitFor } from "@testing-library/react";
+import { PageObjectId } from "@carbon/ai-chat";
+import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
+import { WAIT_FOR_TIMEOUT } from "./constants";
+
+export async function waitForChatElement(
+  container: HTMLElement,
+): Promise<Element> {
+  return waitFor(
+    () => {
+      for (const el of Array.from(container.querySelectorAll("*"))) {
+        const shadowRoot = (el as HTMLElement).shadowRoot;
+        if (
+          shadowRoot?.querySelector(
+            `[data-testid="${PageObjectId.CHAT_WIDGET}"]`,
+          )
+        ) {
+          return el;
+        }
+      }
+      throw new Error("Chat element not rendered yet");
+    },
+    {
+      timeout: WAIT_FOR_TIMEOUT,
+    },
+  );
+}
+
+export async function openChat(customElement: Element): Promise<ShadowRoot> {
+  if (typeof (customElement as any).updateComplete !== "undefined") {
+    await (customElement as any).updateComplete;
+  }
+  const shadowRoot = (customElement as HTMLElement).shadowRoot;
+  if (!shadowRoot) {
+    throw new Error("Custom element shadow root not ready");
+  }
+  const { launcher, alreadyOpen } = await waitFor(
+    () => {
+      const button = shadowRoot.querySelector(
+        `[data-testid="${PageObjectId.LAUNCHER}"]`,
+      ) as HTMLElement | null;
+      const isMainPanelVisible = Boolean(
+        shadowRoot.querySelector(`[data-testid="${PageObjectId.MAIN_PANEL}"]`),
+      );
+
+      if (button) {
+        return { launcher: button, alreadyOpen: false } as const;
+      }
+
+      if (isMainPanelVisible) {
+        return { launcher: null, alreadyOpen: true } as const;
+      }
+
+      throw new Error("Launcher not ready");
+    },
+    { timeout: WAIT_FOR_TIMEOUT },
+  );
+
+  if (!alreadyOpen && launcher) {
+    await act(async () => {
+      launcher.click();
+      if (typeof (customElement as any).updateComplete !== "undefined") {
+        await (customElement as any).updateComplete;
+      }
+    });
+  }
+  await waitFor(
+    () =>
+      shadowRoot.querySelector(`[data-testid="${PageObjectId.CHAT_WIDGET}"]`),
+    { timeout: WAIT_FOR_TIMEOUT },
+  );
+  return shadowRoot;
+}
+
+export async function closeChat(customElement: Element) {
+  const shadowRoot = (customElement as HTMLElement).shadowRoot;
+  if (!shadowRoot) {
+    throw new Error("Custom element shadow root not ready");
+  }
+
+  const closeButton = await waitFor(
+    () => {
+      const button = deepQuerySelector(
+        shadowRoot,
+        `[data-testid="${PageObjectId.CLOSE_CHAT}"]`,
+      ) as HTMLElement | null;
+      if (!button) {
+        throw new Error("Close chat button not ready");
+      }
+      return button;
+    },
+    { timeout: WAIT_FOR_TIMEOUT },
+  );
+
+  await act(async () => {
+    closeButton.click();
+    if (typeof (customElement as any).updateComplete !== "undefined") {
+      await (customElement as any).updateComplete;
+    }
+  });
+}
+
+export async function sendUserMessage(
+  shadowRoot: ShadowRoot,
+  text: string,
+): Promise<void> {
+  const input = await waitFor(
+    () => {
+      const field = shadowRoot.querySelector(
+        `[data-testid="${PageObjectId.INPUT}"]`,
+      ) as HTMLElement | null;
+      if (!field) {
+        throw new Error("Input not ready");
+      }
+      return field;
+    },
+    { timeout: WAIT_FOR_TIMEOUT },
+  );
+
+  // The input lives inside a ProseMirror-backed web component
+  // (cds-aichat-prompt-line-shell). We can't drive it via `.value =` like a native
+  // <input>; instead we simulate the change event the editor emits, which
+  // updates React's input state and enables the send button.
+  await act(async () => {
+    input.dispatchEvent(
+      new CustomEvent("cds-aichat-input-change", {
+        detail: { rawValue: text },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  });
+
+  const sendButton = await waitFor(
+    () => {
+      const button = shadowRoot.querySelector(
+        `[data-testid="${PageObjectId.INPUT_SEND}"]`,
+      ) as HTMLElement | null;
+      if (!button || (button as HTMLButtonElement).disabled) {
+        throw new Error("Send button not ready");
+      }
+      return button;
+    },
+    { timeout: WAIT_FOR_TIMEOUT },
+  );
+
+  await act(async () => {
+    sendButton.click();
+  });
+
+  if (typeof (shadowRoot.host as any).updateComplete !== "undefined") {
+    await (shadowRoot.host as any).updateComplete;
+  }
+}

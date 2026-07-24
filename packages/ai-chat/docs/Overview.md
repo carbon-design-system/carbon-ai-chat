@@ -4,23 +4,21 @@ title: Overview
 
 ## Overview
 
-Carbon AI Chat is a backend agnostic chat UI design for modern AI based flows. This page shows you how to install it, configure it, and connect it to your server.
+Carbon AI Chat is a backend-agnostic chat UI designed for modern AI-based flows. This page shows you how to install it, configure it, and connect it to your server.
 
-You can experiment with different configuration options and settings with the [demo of the Carbon AI Chat](../../demo/index.html).
-
-The demo showcases the full featured chat interface with many available customization options and response types.
+Try our [demo](../../demo/index.html), which shows the full-featured chat interface with its many customization options and response types.
 
 ## Using the API
 
 ### Picking your component
 
-This package provides both React and web component versions of Carbon AI Chat. Each framework exports two versions. One uses a float layout — the classic launcher with chat in the lower-right corner for customer service use cases. The other renders the chat into a container element you choose (sidebar, fullscreen, etc), growing responsively to fill it.
+This package provides both React and web component versions of Carbon AI Chat. Each framework exports two versions. One uses a float layout — the classic launcher with the chat in the lower-right corner for customer service use cases. The other renders the chat into a container element you choose (sidebar, fullscreen, and so on), growing responsively to fill it.
 
-See the [React](./React.md), [web component](./WebComponent.md) and [Angular](./Angular.md) documentation.
+See the [React](./React.md) and [web component](./WebComponent.md) docs. Angular is supported through the web component version — see the [Angular](./Angular.md) docs for the framework-specific wiring.
 
 ## Configuration
 
-Each component accepts {@link PublicConfig}'s options as props that control how the chat looks and behaves before your users see it. Set where the chat renders along with its size, frame, and corners ({@link LayoutConfig}); which surfaces appear — the {@link LauncherConfig launcher} (IBM's or your own), {@link HeaderConfig header}, {@link HomeScreenConfig home screen}, and {@link InputConfig input}; how the chat reaches your server ({@link PublicConfigMessaging}); and its theme, language, and assistant identity. See {@link PublicConfig} for every option.
+Each component accepts {@link PublicConfig} options as props that control how the chat looks and behaves before your users see it. Set where the chat renders along with its size, frame, and corners ({@link LayoutConfig}); choose which surfaces appear — the {@link LauncherConfig launcher} (IBM's or your own), {@link HeaderConfig header}, {@link HomeScreenConfig home screen}, and {@link InputConfig input}; control how the chat reaches your server ({@link PublicConfigMessaging}); and set its theme, language, and assistant identity. See {@link PublicConfig} for every option.
 
 ## Instance methods
 
@@ -34,19 +32,23 @@ The Carbon AI Chat fires {@link BusEvent events} throughout its life cycle. Subs
 
 ## Connecting to your server
 
-The Carbon AI Chat can send messages and retrieve conversations from your server. It supports both streamed and non-streamed responses.
+The Carbon AI Chat can send messages to your server and retrieve conversations from it. It supports both streamed and non-streamed responses.
 
-For more information, see the [connect to your server](./CustomServer.md) documentation.
+For details, see the [connect to your server](./CustomServer.md) guide.
 
 ## Customizing the view
 
-Carbon AI Chat customizes at three levels, from quickest to deepest. Configure behavior and appearance through {@link PublicConfig} props, restyle with a Carbon [theme](./Theming.md) and CSS custom-property tokens for color, sizing, and placement, or inject your own content into [slots](./WriteableElements.md), [custom panels](./CustomPanels.md), [responses](./Responses.md), and [message footers](./CustomMessageFooter.md).
+Customize Carbon AI Chat at three levels, from the quickest to the most involved:
+
+- **Configure** — set behavior and appearance through {@link PublicConfig} props.
+- **Restyle** — apply a Carbon [theme](./Theming.md) and override CSS custom-property tokens for color, sizing, and placement.
+- **Inject your own content** — render your own markup into [slots](./WriteableElements.md), [custom panels](./CustomPanels.md), [responses](./Responses.md), and [message footers](./CustomMessageFooter.md).
 
 See [UI customization](./Customization.md).
 
 ## Service desks
 
-Extend Carbon AI Chat with human agent support with a [service desk](./CustomServiceDesks.md) integration.
+Add human agent support with a [service desk](./CustomServiceDesks.md) integration.
 
 ## Accessibility
 
@@ -58,7 +60,7 @@ Translate built-in text, format dates for a region, and support right-to-left la
 
 ## Cookies and GDPR
 
-The Carbon AI Chat does not use any cookies. It uses the browser's transient session storage for required behavior to track the state of the Carbon AI Chat as you navigate from page to page (e.g., should the home screen be visible, and so on).
+The Carbon AI Chat does not use any cookies. It uses the browser's temporary session storage for required behavior to track the Carbon AI Chat's state as you move from page to page — for example, whether the home screen should be visible, and so on.
 
 ## Related
 

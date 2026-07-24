@@ -458,3 +458,22 @@ export function markdownToTokenTree(
   const tree = diffTokenTree(lastTree, buildTokenTree(tokens));
   return { tree, md };
 }
+
+/**
+ * Parses markdown text into a flat array of markdown-it tokens using the default
+ * plugin set. `allowHtml` is the inverse of the renderer's `removeHtml` flag.
+ *
+ * Used by the chat-side rich user message bubble (inline markdown rendering),
+ * which needs the raw markdown-it tokens rather than a {@link TokenTree}.
+ */
+export function markdownToMarkdownItTokens(
+  fullText: string,
+  allowHtml = true,
+): Token[] {
+  const removeHtml = !allowHtml;
+  return parseMarkdown(
+    fullText,
+    getMarkdownIt(undefined, removeHtml),
+    removeHtml,
+  );
+}

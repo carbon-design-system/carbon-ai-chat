@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,7 +14,7 @@ import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-load
 // Export the actual class for the component that will *directly* be wrapped with React.
 import CDSAIChatToolbar, { Action } from "../components/toolbar/src/toolbar.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
-import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
+import { transformReactIconToCarbonIcon } from "../globals/utils/iconTransform.js";
 
 /**
  * Toolbar action interface that accepts both CarbonIcon and React icon components.
@@ -112,5 +112,3 @@ Toolbar.displayName = "Toolbar";
 export type { Action };
 
 export default Toolbar;
-
-// Made with Bob

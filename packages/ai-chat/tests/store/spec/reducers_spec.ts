@@ -18,7 +18,7 @@ import { AppState } from "../../../src/types/state/AppState";
 import {
   HeaderConfig,
   MinimizeButtonIconType,
-} from "../../../src/types/config/PublicConfig";
+} from "../../../src/types/config/HeaderConfig";
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,

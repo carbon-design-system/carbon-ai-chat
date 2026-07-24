@@ -251,6 +251,7 @@ async function postBuild() {
     { input: path.resolve(__dirname, "../src/globals/scss/_chat-float-layout.scss"), output: "chat-float-layout.css" },
     { input: path.resolve(__dirname, "../src/globals/scss/_chat-launcher-layout.scss"), output: "chat-launcher-layout.css" },
     { input: path.resolve(__dirname, "../src/globals/scss/_chat-explainability-popover.scss"), output: "chat-explainability-popover.css" },
+    { input: path.resolve(__dirname, "../src/globals/scss/_chat-sidebar-layout.scss"), output: "chat-sidebar-layout.css" },
   ];
   for (const entry of scssEntries) {
     const result = sass.compile(entry.input, {

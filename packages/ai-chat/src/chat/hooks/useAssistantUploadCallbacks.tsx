@@ -62,5 +62,3 @@ export function useAssistantUploadCallbacks({
     onRemoveAssistantUpload,
   };
 }
-
-// Made with Bob

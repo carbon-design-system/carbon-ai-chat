@@ -12,7 +12,7 @@ import {
   HumanAgentDisplayState,
   InputState,
 } from "../../types/state/AppState";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 
 const getAssistantInputState = (state: Pick<AppState, "assistantInputState">) =>
   state.assistantInputState;
@@ -139,6 +139,8 @@ type InputUploadAndStreamingFields = Pick<
   | "allowFileUploads"
   | "allowedFileUploadTypes"
   | "allowMultipleFileUploads"
+  | "maxFileSizeBytes"
+  | "maxFiles"
   | "files"
   | "pendingUploads"
   | "stopStreamingButtonState"
@@ -158,6 +160,8 @@ function selectInputUploadAndStreamingFields(
     allowFileUploads: slice.allowFileUploads,
     allowedFileUploadTypes: slice.allowedFileUploadTypes,
     allowMultipleFileUploads: slice.allowMultipleFileUploads,
+    maxFileSizeBytes: slice.maxFileSizeBytes,
+    maxFiles: slice.maxFiles,
     files: slice.files,
     pendingUploads: slice.pendingUploads,
     stopStreamingButtonState: slice.stopStreamingButtonState,

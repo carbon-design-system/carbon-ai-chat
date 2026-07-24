@@ -45,9 +45,9 @@ import {
 import { deepFreeze } from "../utils/lang/objectUtils";
 import {
   HeaderConfig,
-  LayoutConfig,
   MinimizeButtonIconType,
-} from "../../types/config/PublicConfig";
+} from "../../types/config/HeaderConfig";
+import { LayoutConfig } from "../../types/config/LayoutConfig";
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -63,7 +63,7 @@ import {
   outputItemToLocalItem,
 } from "../schema/outputItemToLocalItem";
 import { isResponseWithNestedItems, streamItemID } from "../utils/messageUtils";
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 /**
  * Miscellaneous utilities to help in reducers.
@@ -180,13 +180,16 @@ deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
   rawValue: "",
-  displayValue: "",
+  content: [],
+  focused: false,
   fieldVisible: null,
   isReadonly: null,
   files: [],
   allowFileUploads: false,
   allowMultipleFileUploads: false,
   allowedFileUploadTypes: null,
+  maxFileSizeBytes: undefined,
+  maxFiles: undefined,
   stopStreamingButtonState: {
     currentStreamID: null,
     isVisible: false,
@@ -517,8 +520,7 @@ function rebuildLocalItemsForUpsert(
     } else {
       // Build a fresh local item but preserve the resolved ID so React keys and slot
       // names remain stable.
-      localID =
-        matchedPrev?.ui_state.id ?? streamId ?? uuid(UUIDType.LOCAL_MESSAGE);
+      localID = matchedPrev?.ui_state.id ?? streamId ?? uuid();
       localItem = outputItemToLocalItem(item, message, false);
       localItem.ui_state.id = localID;
       localItem.fullMessageID = messageID;

@@ -25,7 +25,7 @@ import { waitFor } from "@testing-library/react";
 import "../../../src/web-components/cds-aichat-container";
 import { createBaseConfig } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
-import { enLanguagePack } from "../../../src/types/config/PublicConfig";
+import { enLanguagePack } from "../../../src/types/config/LanguagePack";
 
 describe("Web component: strings supplied through config", () => {
   afterEach(() => {

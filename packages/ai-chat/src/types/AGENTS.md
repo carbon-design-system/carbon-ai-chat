@@ -18,7 +18,7 @@ In scope: anything exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) or [..
 
 Quick check: after a build, the rendered TypeDoc page for the symbol should exist under `dist/docs/carbon-tsdocs/` or the symbol name should appear in the rendered shape of something that does.
 
-**Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and re-exported here. TypeDoc reads the JSDoc at the **declaration site**, not the re-export, so the bar below applies wherever the type is written — see [Cross-package re-exports](#cross-package-re-exports).
+**Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and surfaced here through a **local re-declaration**, not a transparent re-export. TypeDoc reads the JSDoc at the declaration site it sees — and the declaration site we want it to see is the local alias in this package, not the upstream source. The bar below therefore applies at the local declaration site you control. See [Cross-package re-exports](#cross-package-re-exports).
 
 ## Required tags
 
@@ -55,7 +55,7 @@ Symbols scheduled for removal. Include the replacement and target major: `@depre
 - **State purpose, not shape.** The signature shows the shape; JSDoc explains what it _means_ and when to use it.
 - **Document units and semantics of primitives.** `timeout: number` is useless without "milliseconds". `id: string` is useless without "must be unique across X".
 - **Complete sentences, ending in periods.** No note-form, no internal jargon, no ticket refs, no TODOs.
-- **Match the tone of existing types** ([messaging/Messages.ts](messaging/Messages.ts), [instance/ChatInstance.ts](instance/ChatInstance.ts)). JSDoc is product copy — follow [../../../../AGENTS_TONE.md](../../../../AGENTS_TONE.md) for voice and word economy.
+- **Match the tone of existing types** ([messaging/Messages.ts](messaging/Messages.ts), [instance/ChatInstance.ts](instance/ChatInstance.ts)). JSDoc is product copy — follow [../../../../references/tone.md](../../../../references/tone.md) for voice and word economy.
 
 ## Cross-linking
 
@@ -63,23 +63,95 @@ Use `{@link SymbolName}` for references to other exported symbols. TypeDoc runs 
 
 Prefer a `{@link}` over a plain backtick reference when the target is itself public — consumers get a clickable jump in the rendered docs and a resolvable symbol in the MCP index.
 
+**Link back to the consumer.** When you declare a type that is only reachable through another public symbol — a leaf config consumed by a parent config, an enum surfaced on a single property, a callback signature attached to one event — open the JSDoc with a sentence that `{@link}`s the consumer entry point. A reader who lands on the leaf in TypeDoc or the MCP index can then jump straight to where it's actually used. The existing `AutocompleteConfig` ("Live autocomplete config consumed by {@link InputConfig.autocomplete}") is the template.
+
+**External (third-party) types.** Symbols from `@tiptap/core` (`Editor`, `Extension`, `JSONContent`, `Node`, ...) are not exported from this package, so `{@link}` cannot resolve them and the build will fail. Reference them with plain backticks (e.g. `` `JSONContent` ``) and, where useful, link to tiptap's own docs by URL.
+
 ## Cross-package re-exports
 
-Some public types are declared in [@carbon/ai-chat-components](../../../ai-chat-components/) and re-exported unchanged through [../aiChatEntry.tsx](../aiChatEntry.tsx). Concrete example:
+Public types declared in [@carbon/ai-chat-components](../../../ai-chat-components/) are surfaced through a local re-declaration in this package, not a transparent re-export. JSDoc + `@category` live **here**, in `@carbon/ai-chat`, via that re-declaration. This way the upstream package doesn't need to carry our category vocabulary, and TypeDoc resolves to the JSDoc we own.
 
-- Declaration: [../../../ai-chat-components/src/components/chain-of-thought/defs.ts](../../../ai-chat-components/src/components/chain-of-thought/defs.ts) declares `ChainOfThoughtStepStatus` with `@category Messaging` and per-member JSDoc.
-- Used through: [messaging/Messages.ts](messaging/Messages.ts) imports it from `@carbon/ai-chat-components/es/components/chain-of-thought/defs.js`.
-- Re-exported: [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts) list it in the public export block.
+Third-party packages (`@tiptap/core`, etc.) are **never** re-declared or re-exported. Import them directly from the upstream package — both in this package's internal code and in consumer apps. See "External (third-party) types" in [Cross-linking](#cross-linking) for how to reference them in JSDoc.
 
-Rules:
+### Anti-pattern (silently broken)
 
-1. **JSDoc lives with the declaration**, in `@carbon/ai-chat-components`. TypeDoc picks it up from there. The re-export in [../aiChatEntry.tsx](../aiChatEntry.tsx) is a bare `export { X }` with no JSDoc of its own — a comment on the re-export line is ignored.
-2. **`@category` values are owned by this package.** Even though the tag is written in the components package, the allowed values are the `categoryOrder` list in [../../typedoc.json](../../typedoc.json). Cross-package categories that don't match fall into `*`.
-3. **No unexported symbols in the public surface.** If a type from `@carbon/ai-chat-components` is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — it must also be re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) so TypeDoc produces a page for it.
+`export type { X } from 'pkg'` and `export { X } from 'pkg'` are **not** category-applying. TypeDoc resolves through to the upstream source and reads its JSDoc — any comment block above your `export type {` line is ignored. Symbols re-exported this way without a `@category` tag in their upstream declaration land in TypeDoc's `*` ("Other types") catchall.
+
+### The pattern
+
+Re-declare upstream symbols at a local site you own, then re-export from [../aiChatEntry.tsx](../aiChatEntry.tsx) / [../serverEntry.ts](../serverEntry.ts) using the local alias.
+
+Write **full** consumer-facing JSDoc at the local re-declaration:
+
+```ts
+import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+
+/**
+ * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
+ * Selection inserts plain text rather than a schema node; no chip is
+ * rendered.
+ *
+ * @category Config
+ */
+export type AutocompleteConfig = _AutocompleteConfig;
+```
+
+For runtime values, use `export const`:
+
+```ts
+import { buildCarbonExtensions as _buildCarbonExtensions } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+
+/**
+ * Translate the Carbon-curated configs surfaced on {@link InputConfig} into
+ * a Tiptap `Extension` list. ...
+ *
+ * @category Utilities
+ */
+export const buildCarbonExtensions = _buildCarbonExtensions;
+```
+
+For an enum (need both runtime + type), declare both:
+
+```ts
+export const FileStatusValue = _FileStatusValue;
+export type FileStatusValue = _FileStatusValue;
+```
+
+### Where local re-declarations live
+
+Co-locate by topic — each re-declaration sits next to the public type that uses it:
+
+- Carbon input extension factories + JSONContent / light-DOM helpers → [utilities/inputUtils.ts](utilities/inputUtils.ts).
+- Carbon suggestion-config types (`SuggestionItem`, `TriggerSuggestionConfig`, ...) → [config/InputConfig.ts](config/InputConfig.ts), alongside `InputConfig`.
+- Service-desk-related symbols → [config/ServiceDeskConfig.ts](config/ServiceDeskConfig.ts) (e.g. `FileUpload`, `FileStatusValue`).
+- Header / toolbar symbols → [config/HeaderConfig.ts](config/HeaderConfig.ts) (e.g. `ToolbarAction`).
+
+### Internal imports use the local alias too
+
+When a property type inside this package references a **Carbon cross-package symbol**, import the **local re-declaration**, not the upstream source. This keeps TypeDoc's symbol resolution pointed at our JSDoc + `@category`:
+
+```ts
+// In a consumer of InputConfig.ts (e.g. useInputConfig.ts)
+import type { TriggerSuggestionConfig } from "../../types/config/InputConfig"; // ✓
+// import { TriggerSuggestionConfig } from "@carbon/ai-chat-components/...";    // ✗ resolves past our alias
+```
+
+### Other rules
+
+- **Unexported Carbon symbols in the public surface produce a TypeDoc warning.** If a Carbon type is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — but isn't re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx), `validation.notExported: true` in [../../typedoc.json](../../typedoc.json) warns. (Third-party types like `@tiptap/core`'s show as external references and are fine to import directly; see [Cross-linking](#cross-linking) for how to reference them in JSDoc.)
+- **`@category` values come from `categoryOrder`** in [../../typedoc.json](../../typedoc.json). A category outside that list lands in the `*` catchall.
 
 ## Property-level JSDoc
 
 Every public property and enum member needs its own JSDoc — `?` in the signature is not an explanation.
+
+## `@example` on public methods
+
+Every public **instance method** ships at least one titled `@example`. Scope: [`ChatInstance`](instance/ChatInstance.ts) (and the `ChatActions` it extends), [`ChatInstanceInput`](instance/ChatInstanceInput.ts), [`EventHandlers`](instance/EventHandlers.ts) (`on` / `off` / `once`), and [`ChatInstanceServiceDeskActions`](instance/ChatInstanceServiceDeskActions.ts).
+
+This is a **review gate**, not a build gate — TypeDoc validates `invalidLink` / `notExported`, not a missing `@example`, so a method with no example still compiles. Catch it in review and against the Definition of done below.
+
+Write the block to the shared criteria in [code-examples.md](../../references/code-examples.md): self-contained, minimal, realistically-typed values, one titled `@example` per distinct case, show what comes back, model the production-safe pattern. `{@link}` targets inside an example _are_ build-validated, so they must resolve.
 
 ## Prop stability
 
@@ -147,17 +219,35 @@ responseUserProfileTimeoutMS?: number;
 
 Why it works: units stated, default documented, `{@link}` resolves and will fail the build if it breaks.
 
+### Good — linking back to the consumer
+
+```ts
+import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+
+/**
+ * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
+ * Selection inserts plain text rather than a schema node; no chip is
+ * rendered.
+ *
+ * @category Config
+ */
+export type AutocompleteConfig = _AutocompleteConfig;
+```
+
+Why it works: the first sentence tells the reader where this type is reached from in the public API, so anyone landing on `AutocompleteConfig` in TypeDoc or the MCP index can jump straight to `InputConfig.autocomplete` to see it in context.
+
 ## Definition of done
 
 When you change anything under [.](.) (or a type in `@carbon/ai-chat-components` that crosses into this package's public surface):
 
 1. `npm run build --workspace=@carbon/ai-chat` — rollup + TypeDoc. The build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).
-3. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
+3. If you added or changed a public instance method, confirm it carries at least one titled `@example` that meets [code-examples.md](../../references/code-examples.md) (review gate — not build-enforced).
+4. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
 
 ## Related Guidance
 
 - **Parent guidance**: [packages/ai-chat/AGENTS.md](../../AGENTS.md)
-- **Voice and tone**: [AGENTS_TONE.md](../../../../AGENTS_TONE.md) - Voice and word economy for all public copy
+- **Voice and tone**: [tone.md](../../../../references/tone.md) - Voice and word economy for all public copy
 - **Store patterns**: [../chat/store/AGENTS.md](../chat/store/AGENTS.md) - For action/state types
-- **Documentation**: [../docs/AGENTS.md](../docs/AGENTS.md) - For public API docs
+- **Documentation**: [../../docs/AGENTS.md](../../docs/AGENTS.md) - For public API docs

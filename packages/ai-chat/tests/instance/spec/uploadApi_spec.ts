@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -265,7 +265,7 @@ describe("upload API – Redux store lifecycle", () => {
 
     // Set manual structured data (host-page fields).
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "user_id", type: "text", value: "user-123" }],
+      fields: [{ id: "user_id", value: "user-123" }],
     }));
 
     // Add a completed upload with its own contribution.
@@ -290,7 +290,7 @@ describe("upload API – Redux store lifecycle", () => {
 
     const state = store.getState();
     expect(state.assistantInputState.pendingStructuredData?.fields).toEqual([
-      { id: "user_id", type: "text", value: "user-123" },
+      { id: "user_id", value: "user-123" },
       {
         id: "attachment",
         type: "file",
@@ -304,7 +304,7 @@ describe("upload API – Redux store lifecycle", () => {
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "user_id", type: "text", value: "user-123" }],
+      fields: [{ id: "user_id", value: "user-123" }],
     }));
 
     const contributedData: StructuredData = {
@@ -332,7 +332,7 @@ describe("upload API – Redux store lifecycle", () => {
     const state = store.getState();
     // Only the manual data remains.
     expect(state.assistantInputState.pendingStructuredData?.fields).toEqual([
-      { id: "user_id", type: "text", value: "user-123" },
+      { id: "user_id", value: "user-123" },
     ]);
   });
 
@@ -397,7 +397,7 @@ describe("upload API – Redux store lifecycle", () => {
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "x", type: "text", value: "y" }],
+      fields: [{ id: "x", value: "y" }],
     }));
     store.dispatch(
       actions.addPendingUpload(
@@ -458,5 +458,3 @@ describe("upload API – Redux store lifecycle", () => {
     expect(instance.getState().input.hasInFlightUploads).toBe(false);
   });
 });
-
-// Made with Bob

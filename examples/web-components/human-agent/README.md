@@ -1,6 +1,6 @@
-# Human Agent
+# Human agent
 
-Wires a mock service desk into `<cds-aichat-container>` via `serviceDeskFactory`, showing how to hand off from bot to human and how to swap the factory reference when user data changes.
+Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFactory`, showing how to hand off from bot to human and how to swap the factory reference when user data changes.
 
 ## What this example shows
 
@@ -18,7 +18,7 @@ Wires a mock service desk into `<cds-aichat-container>` via `serviceDeskFactory`
 
 | Symbol                         | Kind           | Role in this example                                                         |
 | ------------------------------ | -------------- | ---------------------------------------------------------------------------- |
-| `<cds-aichat-container>`       | custom element | Mounts the chat UI.                                                          |
+| `<cds-aichat-custom-element>`  | custom element | Mounts the chat UI.                                                          |
 | `messaging.customSendMessage`  | property       | Mock backend that routes between bot replies and desk handoff.               |
 | `serviceDeskFactory`           | property       | Async factory returning a `MockServiceDesk`; rebuilt when user data changes. |
 | `ServiceDeskFactoryParameters` | type           | Parameters passed to each factory call.                                      |

@@ -18,6 +18,11 @@ body:
     validations:
       required: true
   - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: "What this epic deliberately does not cover. Bounding the scope is what separates an epic from an open-ended feature area."
+  - type: textarea
     id: details
     attributes:
       label: Details

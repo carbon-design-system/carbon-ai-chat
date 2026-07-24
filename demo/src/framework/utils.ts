@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,6 +15,14 @@ import {
 
 import { customSendMessage } from "../customSendMessage/customSendMessage";
 import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+import {
+  mentionItems,
+  commandItems,
+  mentionOnSelect,
+  mentionOnRemove,
+  commandOnSelect,
+  commandOnRemove,
+} from "../customSendMessage/doMentionCommand";
 import { KeyPairs, Settings } from "./types";
 import { DemoHeaderSwitcher } from "./demo-header-switcher";
 
@@ -97,6 +105,11 @@ function getSettings() {
       customSendMessage,
       ...config.messaging,
     },
+    input: {
+      ...config.input,
+      // Don't add autocomplete by default - let it be controlled via the switcher
+      // Only preserve suggestions if they were explicitly set in config
+    },
     // Expose service manager for testing/demo purposes
     exposeServiceManagerForTesting: true,
   };
@@ -113,6 +126,40 @@ function getSettings() {
       upload: {
         ...defaultConfig.upload,
         onFileUpload: mockOnFileUpload,
+      },
+    };
+  }
+
+  // Re-inject non-serializable mention/command callbacks when hydrating from
+  // URL. Functions are stripped during JSON serialization, so if a
+  // mention/command config is present but its callbacks are missing (e.g.
+  // after a page refresh), restore the mock fixtures/handlers.
+  if (defaultConfig.input?.mention && !defaultConfig.input.mention.onSelect) {
+    defaultConfig = {
+      ...defaultConfig,
+      input: {
+        ...defaultConfig.input,
+        mention: {
+          trigger: "@",
+          items: mentionItems,
+          onSelect: mentionOnSelect,
+          onRemove: mentionOnRemove,
+        },
+      },
+    };
+  }
+  if (defaultConfig.input?.command && !defaultConfig.input.command.onSelect) {
+    defaultConfig = {
+      ...defaultConfig,
+      input: {
+        ...defaultConfig.input,
+        command: {
+          trigger: "/",
+          triggerPosition: "start",
+          items: commandItems,
+          onSelect: commandOnSelect,
+          onRemove: commandOnRemove,
+        },
       },
     };
   }

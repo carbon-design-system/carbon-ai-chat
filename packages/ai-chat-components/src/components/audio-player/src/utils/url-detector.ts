@@ -79,5 +79,3 @@ export function isSoundCloudUrl(url: string): boolean {
 export function isNativeAudioUrl(url: string): boolean {
   return detectAudioSource(url) === AudioSource.NATIVE;
 }
-
-// Made with Bob

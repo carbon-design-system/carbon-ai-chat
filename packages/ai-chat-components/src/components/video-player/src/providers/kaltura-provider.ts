@@ -220,5 +220,3 @@ export class KalturaProvider extends BaseProvider {
     super.destroy();
   }
 }
-
-// Made with Bob

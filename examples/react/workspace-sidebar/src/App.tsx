@@ -7,6 +7,27 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Workspace sidebar
+ *
+ * Demonstrates: the workspace feature combined with a docked sidebar layout
+ * built on the library's shipped `cds-aichat-sidebar` classes and driven by
+ * `VIEW_CHANGE` / `VIEW_PRE_CHANGE` lifecycle hooks. Includes a custom host
+ * chrome and `CornersType.SQUARE` for the sidebar treatment. The workspace
+ * expand / contract modifiers compose on top of the shipped base class.
+ *
+ * APIs exercised:
+ *   - `ChatCustomElement` styled with the shipped sidebar-layout CSS
+ *     (`@carbon/ai-chat/css/chat-sidebar-layout.css`)
+ *   - `BusEventType.WORKSPACE_*` (open / pre-open / close)
+ *   - `BusEventType.VIEW_CHANGE` / `VIEW_PRE_CHANGE`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `App()` and the view-change handlers in
+ * `onBeforeRender`.
+ */
+
+import "@carbon/ai-chat/css/chat-sidebar-layout.css";
 import "./App.css";
 import {
   BusEvent,
@@ -55,8 +76,10 @@ const config: PublicConfig = {
     customSendMessage,
   },
   layout: {
+    // Square corners visually match the host sidebar chrome that hosts the chat.
     corners: CornersType.SQUARE,
   },
+  // Open the chat eagerly so the embedded sidebar layout is visible on first load.
   openChatByDefault: true,
 };
 
@@ -81,25 +104,25 @@ function App() {
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
 
-    // Handle workspace pre open event
+    // BusEventType.WORKSPACE_PRE_OPEN: begin sidebar expansion before the workspace panel renders so the host frame animates in sync.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
       handler: customWorkspacePreOpenHandler,
     });
 
-    // Handle workspace open event
+    // BusEventType.WORKSPACE_OPEN: capture the resolved workspaceId / additionalData payload and stash it for renderWriteableElements.
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: customWorkspaceOpenHandler,
     });
 
-    // Handle workspace pre-close event
+    // BusEventType.WORKSPACE_PRE_CLOSE: kick off sidebar contraction before the panel actually unmounts.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_CLOSE,
       handler: customWorkspacePreCloseHandler,
     });
 
-    // Handle workspace close event
+    // BusEventType.WORKSPACE_CLOSE: clear the stashed workspace data once the panel has finished closing.
     instance.on({
       type: BusEventType.WORKSPACE_CLOSE,
       handler: customWorkspaceCloseHandler,
@@ -115,9 +138,6 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  /**
-   * Listens for workspace panel pre open event.
-   */
   function customWorkspacePreOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspacePreOpen;
     console.log(
@@ -130,9 +150,6 @@ function App() {
     setWorkspaceExpanded(true);
   }
 
-  /**
-   * Listens for workspace panel open event.
-   */
   function customWorkspaceOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceOpen;
     console.log(data, "Workspace panel opened");
@@ -143,9 +160,6 @@ function App() {
     setWorkspaceData({ type, workspaceId, additionalData });
   }
 
-  /**
-   * Listens for workspace panel pre-close event.
-   */
   function customWorkspacePreCloseHandler() {
     // Contract sidebar when workspace is closing
     console.log("Contracting sidebar - workspace closing");
@@ -153,9 +167,6 @@ function App() {
     setWorkspaceExpanded(false);
   }
 
-  /**
-   * Listens for workspace panel close event.
-   */
   function customWorkspaceCloseHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceClose;
     console.log(data, "Workspace panel closed");
@@ -164,9 +175,6 @@ function App() {
     setWorkspaceData({ type: null });
   }
 
-  /**
-   * Listens for view changes on the AI chat.
-   */
   const onViewChange = (event: BusEventViewChange, _instance: ChatInstance) => {
     if (event.newViewState.mainWindow) {
       setSideBarOpen(true);
@@ -176,15 +184,13 @@ function App() {
     }
   };
 
-  /**
-   * Handles pre-view-change lifecycle for sidebar transitions.
-   */
   const onViewPreChange = async (
     event: BusEventViewPreChange,
     _instance: ChatInstance,
   ) => {
     if (!event.newViewState.mainWindow) {
       setSideBarClosing(true);
+      // Hold the view transition until the sidebar collapse animation has visibly completed.
       await sleep(250);
     }
   };
@@ -217,9 +223,6 @@ function App() {
     }
   };
 
-  /**
-   * Handler for user_defined response types.
-   */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
       const { messageItem } = state;
@@ -230,20 +233,19 @@ function App() {
               <OutstandingOrdersCard
                 workspaceId={messageItem.user_defined.workspace_id as string}
                 onMaximize={() => {
-                  // Open workspace using the customPanels API
                   const workspaceId = messageItem.user_defined
                     ?.workspace_id as string;
                   const additionalData =
                     messageItem.user_defined?.additional_data;
 
-                  // Set workspace data for rendering
+                  // Seed renderWriteableElements synchronously so the panel has content the moment it opens.
                   setWorkspaceData({
                     type: (additionalData as { type?: string })?.type || null,
                     workspaceId,
                     additionalData,
                   });
 
-                  // Open the workspace panel
+                  // customPanels.getPanel(PanelType.WORKSPACE): obtain the workspace panel handle so a user gesture can open it imperatively.
                   const panel = _instance.customPanels?.getPanel(
                     PanelType.WORKSPACE,
                   );
@@ -319,20 +321,21 @@ function App() {
     return { workspacePanelElement: component };
   }, [instance, workspaceData, stateText]);
 
-  // Build className for sidebar layout
-  let className = "sidebar";
+  // Build className for sidebar layout from the shipped `cds-aichat-sidebar`
+  // base class plus this example's workspace expand/contract modifiers.
+  let className = "cds-aichat-sidebar";
   if (workspaceExpanded) {
-    className += " sidebar--expanded";
+    className += " cds-aichat-sidebar--expanded";
   }
   if (workspaceAnimating === "expanding") {
-    className += " sidebar--expanding";
+    className += " cds-aichat-sidebar--expanding";
   } else if (workspaceAnimating === "contracting") {
-    className += " sidebar--contracting";
+    className += " cds-aichat-sidebar--contracting";
   }
   if (sideBarClosing) {
-    className += " sidebar--closing";
+    className += " cds-aichat-sidebar--closing";
   } else if (!sideBarOpen) {
-    className += " sidebar--closed";
+    className += " cds-aichat-sidebar--closed";
   }
 
   return (
@@ -370,5 +373,3 @@ function App() {
 const root = createRoot(document.querySelector("#root") as Element);
 
 root.render(<App />);
-
-// Made with Bob

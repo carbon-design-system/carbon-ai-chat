@@ -7,6 +7,23 @@
  *  @license
  */
 
+/**
+ * Workspace child: InventoryStatusExample.
+ *
+ * Demonstrates: the minimal workspace path mounted into the
+ * `workspacePanelElement` slot when a PREVIEW_CARD's
+ * `additional_data.type === "inventory_status"`. Renders the Hello-World
+ * variant of `cds-aichat-workspace-shell` and calls
+ * `instance.customPanels.getPanel(PanelType.WORKSPACE).close()` from the
+ * toolbar Close action and footer Cancel button.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`
+ *   - `cds-aichat-workspace-shell` / `cds-aichat-toolbar`
+ *
+ * Start reading at: `handleClose` and `handleWorkspaceFooterClick`.
+ */
+
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@carbon/web-components/es/components/button/index.js";
@@ -76,6 +93,7 @@ class InventoryStatusExample extends LitElement {
   ];
 
   handleClose() {
+    // Closing through customPanels fires WORKSPACE_CLOSE so the host in main.ts can clear its slot state.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
@@ -169,5 +187,3 @@ class InventoryStatusExample extends LitElement {
 }
 
 export default InventoryStatusExample;
-
-// Made with Bob

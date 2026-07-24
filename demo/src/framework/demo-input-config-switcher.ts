@@ -8,11 +8,83 @@
  */
 
 import "@carbon/web-components/es/components/dropdown/index.js";
+import "@carbon/web-components/es/components/checkbox/index.js";
 
-import { InputConfig, PublicConfig } from "@carbon/ai-chat";
+import { InputConfig, PublicConfig, ToolbarAction } from "@carbon/ai-chat";
+import Document16 from "@carbon/icons/es/document/16.js";
+import Language16 from "@carbon/icons/es/language/16.js";
+import Idea16 from "@carbon/icons/es/idea/16.js";
+import Edit16 from "@carbon/icons/es/edit/16.js";
+import MagicWand16 from "@carbon/icons/es/magic-wand/16.js";
+import Code16 from "@carbon/icons/es/code/16.js";
+import Image16 from "@carbon/icons/es/image/16.js";
+import Search16 from "@carbon/icons/es/search/16.js";
+import Microphone16 from "@carbon/icons/es/microphone/16.js";
+import Chat16 from "@carbon/icons/es/chat/16.js";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+import {
+  mentionItems,
+  commandItems,
+  mentionOnSelect,
+  mentionOnRemove,
+  commandOnSelect,
+  commandOnRemove,
+} from "../customSendMessage/doMentionCommand";
+
+const DEMO_MENU_OPTIONS: ToolbarAction[] = [
+  {
+    text: "Summarize conversation",
+    icon: Document16,
+    onClick: () => window.alert("Summarize conversation"),
+  },
+  {
+    text: "Translate last message",
+    icon: Language16,
+    onClick: () => window.alert("Translate last message"),
+  },
+  {
+    text: "Brainstorm ideas",
+    icon: Idea16,
+    onClick: () => window.alert("Brainstorm ideas"),
+  },
+  {
+    text: "Refine my writing",
+    icon: Edit16,
+    onClick: () => window.alert("Refine my writing"),
+  },
+  {
+    text: "Suggest a follow-up",
+    icon: MagicWand16,
+    onClick: () => window.alert("Suggest a follow-up"),
+  },
+  {
+    text: "Explain this code",
+    icon: Code16,
+    onClick: () => window.alert("Explain this code"),
+  },
+  {
+    text: "Describe an image",
+    icon: Image16,
+    onClick: () => window.alert("Describe an image"),
+  },
+  {
+    text: "Search the web",
+    icon: Search16,
+    onClick: () => window.alert("Search the web"),
+  },
+  {
+    text: "Dictate a message",
+    icon: Microphone16,
+    onClick: () => window.alert("Dictate a message"),
+  },
+  {
+    text: "Start a new chat",
+    icon: Chat16,
+    onClick: () => window.alert("Start a new chat"),
+  },
+];
 
 const DROPDOWN_DEFAULT = "default";
 const DROPDOWN_TRUE = "true";
@@ -115,9 +187,62 @@ export class DemoInputConfigSwitcher extends LitElement {
     }
   }
 
+  private _mentionDropdownValue(): string {
+    return this.config?.input?.mention ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
+  private _handleMentionDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (value === DROPDOWN_TRUE) {
+        next.mention = {
+          trigger: "@",
+          items: mentionItems,
+          onSelect: mentionOnSelect,
+          onRemove: mentionOnRemove,
+        };
+      } else {
+        delete next.mention;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
+  private _commandDropdownValue(): string {
+    return this.config?.input?.command ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
+  private _handleCommandDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (value === DROPDOWN_TRUE) {
+        next.command = {
+          trigger: "/",
+          triggerPosition: "start",
+          items: commandItems,
+          onSelect: commandOnSelect,
+          onRemove: commandOnRemove,
+        };
+      } else {
+        delete next.command;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
   private _handleBooleanDropdown(
     event: Event,
-    key: "isVisible" | "isDisabled",
+    key: "isVisible" | "isDisabled" | "expanded",
   ) {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
@@ -171,6 +296,125 @@ export class DemoInputConfigSwitcher extends LitElement {
     return upload.is_on ? DROPDOWN_TRUE : DROPDOWN_FALSE;
   }
 
+  private _autocompleteDropdownValue(): string {
+    const suggestions = this.config?.input?.suggestions;
+
+    // Check if autocomplete is explicitly enabled
+    if (suggestions && Array.isArray(suggestions)) {
+      const hasAutocomplete = suggestions.some(
+        (suggestion) =>
+          suggestion.type === "autocomplete" &&
+          suggestion.trigger === "" &&
+          suggestion.triggerPosition === "start",
+      );
+      return hasAutocomplete ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+    }
+
+    // Default is off (false)
+    return DROPDOWN_FALSE;
+  }
+
+  private _menuOptionsDropdownValue(): string {
+    const actions = this.config?.input?.actions;
+    if (actions === undefined) {
+      return DROPDOWN_DEFAULT;
+    }
+    return actions.length > 0 ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+  }
+
+  private _handleMenuOptionsDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (value === DROPDOWN_TRUE) {
+        next.actions = DEMO_MENU_OPTIONS;
+      } else if (value === DROPDOWN_FALSE) {
+        next.actions = [];
+      } else {
+        delete next.actions;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
+  private _handleAutocompleteDropdown(event: Event) {
+    const customEvent = event as CustomEvent;
+    const value = customEvent.detail.item.value as string;
+
+    if (value === DROPDOWN_TRUE) {
+      // Enable autocomplete - dispatch event to let parent handle it
+      this.dispatchEvent(
+        new CustomEvent("autocomplete-toggle", {
+          detail: { enabled: true },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    } else {
+      // Disable autocomplete
+      const newConfig = { ...this.config };
+
+      if (newConfig.input?.suggestions) {
+        // Remove autocomplete suggestions but keep other suggestions
+        newConfig.input.suggestions = newConfig.input.suggestions.filter(
+          (suggestion) =>
+            !(
+              suggestion.type === "autocomplete" &&
+              suggestion.trigger === "" &&
+              suggestion.triggerPosition === "start"
+            ),
+        );
+
+        // If no suggestions left, remove the suggestions array
+        if (newConfig.input.suggestions.length === 0) {
+          delete newConfig.input.suggestions;
+        }
+
+        // If input config is empty, remove it
+        if (Object.keys(newConfig.input).length === 0) {
+          delete newConfig.input;
+        }
+      }
+
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: newConfig,
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
+  }
+
+  private _handleErrorCheckbox(event: Event) {
+    const customEvent = event as CustomEvent;
+    const checked = customEvent.detail.checked as boolean;
+
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
+
+      if (checked) {
+        next.error = {
+          title: "Error: title goes here",
+          description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+            cillum dolore eu fugiat nulla pariatur.`,
+          collapsible: true,
+        };
+      } else {
+        delete next.error;
+      }
+
+      return this._normalizeInput(next);
+    });
+  }
+
   render() {
     const input = this.config?.input;
 
@@ -222,10 +466,10 @@ export class DemoInputConfigSwitcher extends LitElement {
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
-          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
             >Enable input field</cds-dropdown-item
           >
-          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
             >Disable input field</cds-dropdown-item
           >
         </cds-dropdown>
@@ -249,6 +493,92 @@ export class DemoInputConfigSwitcher extends LitElement {
             >Disable auto focus</cds-dropdown-item
           >
         </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._autocompleteDropdownValue()}"
+          title-text="Enable autocomplete suggestions"
+          @cds-dropdown-selected=${this._handleAutocompleteDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._menuOptionsDropdownValue()}"
+          title-text="Additional actions menu"
+          @cds-dropdown-selected=${this._handleMenuOptionsDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
+            Default
+          </cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable dummy menu options</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable menu options</cds-dropdown-item
+          >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._booleanDropdownValue(input?.expanded)}"
+          title-text="Expanded layout"
+          @cds-dropdown-selected=${(event: Event) =>
+            this._handleBooleanDropdown(event, "expanded")}
+        >
+          <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
+            Default
+          </cds-dropdown-item>
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable expanded layout</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable expanded layout</cds-dropdown-item
+          >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._mentionDropdownValue()}"
+          title-text="@mentions"
+          @cds-dropdown-selected=${this._handleMentionDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable @mentions</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable @mentions</cds-dropdown-item
+          >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-dropdown
+          value="${this._commandDropdownValue()}"
+          title-text="/commands"
+          @cds-dropdown-selected=${this._handleCommandDropdown}
+        >
+          <cds-dropdown-item value="${DROPDOWN_TRUE}"
+            >Enable /commands</cds-dropdown-item
+          >
+          <cds-dropdown-item value="${DROPDOWN_FALSE}"
+            >Disable /commands</cds-dropdown-item
+          >
+        </cds-dropdown>
+      </div>
+
+      <div class="input-section">
+        <cds-checkbox
+          ?checked="${this.config?.input?.error !== undefined}"
+          label-text="Show prompt line error"
+          @cds-checkbox-changed=${this._handleErrorCheckbox}
+        ></cds-checkbox>
       </div>
     `;
   }

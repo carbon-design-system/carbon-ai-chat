@@ -53,8 +53,9 @@ import {
   BusEventType,
   MessageSendSource,
 } from "../../types/events/eventBusTypes";
-import { OnErrorType, PublicConfig } from "../../types/config/PublicConfig";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { PublicConfig } from "../../types/config/PublicConfig";
+import { OnErrorType } from "../../types/config/ErrorConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { MessageErrorState } from "../../types/messaging/LocalMessageItem";
 import { CancellationReason } from "../../types/config/MessagingConfig";
 
@@ -802,6 +803,9 @@ class MessageService {
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();
         pendingRequest.isProcessed = true;
+        // Hide and re-enable the stop streaming button now that cancellation has
+        // completed; processSuccess/processError will short-circuit on isProcessed.
+        resetStopStreamingButton(this.serviceManager.store);
         if (pendingRequest === this.queue.current) {
           this.moveToNextQueueItem();
         }

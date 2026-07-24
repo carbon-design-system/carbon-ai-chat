@@ -1,0 +1,72 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+// Mixin for directional gradients
+@mixin gradient-bg($direction, $color) {
+  background: linear-gradient(
+    $direction,
+    rgba(255, 255, 255, 0) 0%,
+    $color 100%
+  );
+}
+
+:host {
+  display: block;
+}
+
+// Visually-hidden live regions used to announce upload state changes to
+// screen readers. Kept in the DOM whenever uploading is available so the
+// last file's removal still announces.
+.cds-aichat--file-uploads-live-region {
+  position: absolute;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  block-size: 1px;
+  clip: rect(0, 0, 0, 0);
+  inline-size: 1px;
+  white-space: nowrap;
+}
+
+.cds-aichat--file-uploads-gradient-wrapper {
+  position: relative;
+  z-index: 0;
+}
+
+.cds-aichat--file-uploads-gradient-wrapper--overflow::after {
+  position: absolute;
+  display: block;
+  content: "";
+  inline-size: layout.$spacing-05;
+  inset-block-end: 1px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  pointer-events: none;
+}
+
+.cds-aichat--file-uploads-gradient-wrapper--overflow:dir(ltr)::after {
+  @include gradient-bg(90deg, theme.$background);
+}
+
+.cds-aichat--file-uploads-gradient-wrapper--overflow:dir(rtl)::after {
+  @include gradient-bg(270deg, theme.$background);
+}
+
+.cds-aichat--file-uploads-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  cds-aichat-file-upload-item {
+    flex-shrink: 0;
+  }
+}

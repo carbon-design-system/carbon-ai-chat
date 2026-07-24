@@ -28,12 +28,14 @@ import {
   mergePublicConfig,
   performInitialViewChange,
 } from "./utils/chatBoot";
-import { UserDefinedResponsePortalsContainer } from "./components/UserDefinedResponsePortalsContainer";
+import { UserDefinedResponsePortalsContainer } from "./components/portals/UserDefinedResponsePortalsContainer";
 import {
   CustomFooterSlotState,
   CustomFooterPortalsContainer,
-} from "./components/CustomFooterPortalsContainer";
-import { WriteableElementsPortalsContainer } from "./components/WriteableElementsPortalsContainer";
+} from "./components/portals/CustomFooterPortalsContainer";
+import { WriteableElementsPortalsContainer } from "./components/portals/WriteableElementsPortalsContainer";
+import { LightDomPortalsContainer } from "./components/portals/LightDomPortalsContainer";
+import { InputNodePortalsContainer } from "./components/portals/InputNodePortalsContainer";
 
 import { useOnMount } from "./hooks/useOnMount";
 import appActions from "./store/actions";
@@ -41,10 +43,14 @@ import { consoleError, consoleWarn } from "./utils/miscUtils";
 import { isBrowser } from "./utils/browserUtils";
 
 import { applyConfigChangesDynamically } from "./utils/dynamicConfigUpdates";
+import { resolvePromptLineMode } from "./components/input/promptLineMode";
+import { preloadBuildCarbonExtensions } from "./components/input/buildExtensionsLoader";
+import { preloadPromptLineRich } from "@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line-rich-loader.js";
 
 import {
   RenderUserDefinedState,
   RenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
   RenderCustomMessageFooter,
   RenderWriteableElementResponse,
 } from "../types/component/ChatContainer";
@@ -70,6 +76,7 @@ interface AppProps {
   onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
   onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
   renderUserDefinedResponse?: RenderUserDefinedResponse;
+  renderUserDefinedInputNode?: RenderUserDefinedInputNode;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
   container: HTMLElement;
@@ -100,6 +107,7 @@ export function ChatAppEntry({
   onBeforeRender,
   onAfterRender,
   renderUserDefinedResponse,
+  renderUserDefinedInputNode,
   renderCustomMessageFooter,
   renderWriteableElements,
   container,
@@ -207,6 +215,18 @@ export function ChatAppEntry({
 
         if (onBeforeRender) {
           await onBeforeRender(instance);
+        }
+
+        // Warm the Tiptap chunks before the first render commits so a chat
+        // configured for the rich editor mounts it directly (no textarea→editor
+        // flash) and the prompt-line is present before hydration completes and
+        // before `onAfterRender` resolves. Lite chats skip this and never
+        // download Tiptap.
+        if (resolvePromptLineMode(publicConfig.input) === "rich") {
+          await Promise.all([
+            preloadPromptLineRich(),
+            preloadBuildCarbonExtensions(),
+          ]);
         }
 
         setServiceManager(serviceManager);
@@ -414,6 +434,16 @@ export function ChatAppEntry({
                 <WriteableElementsPortalsContainer
                   chatInstance={instance}
                   renderResponseMap={renderWriteableElements}
+                />
+              )}
+
+              <LightDomPortalsContainer chatWrapper={chatWrapper} />
+
+              {renderUserDefinedInputNode && (
+                <InputNodePortalsContainer
+                  chatInstance={instance}
+                  renderUserDefinedInputNode={renderUserDefinedInputNode}
+                  chatWrapper={chatWrapper}
                 />
               )}
             </AriaAnnouncerProvider>

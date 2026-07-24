@@ -32,7 +32,7 @@ import Button, {
 import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
 import { prefersReducedMotion } from "../../utils/prefersReducedMotion";
 import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { uuid } from "../../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 // Upper bound for the launcher extended open/close animations
 // (`$duration-moderate-01` = 150ms, plus a fade stage) with a generous buffer.

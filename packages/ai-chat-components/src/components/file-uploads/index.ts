@@ -1,0 +1,14 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import "./src/file-uploads.js";
+import "./src/file-upload-item.js";
+
+export { default as FileUploadsElement } from "./src/file-uploads.js";
+export { default as FileUploadItemElement } from "./src/file-upload-item.js";

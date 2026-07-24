@@ -125,5 +125,3 @@ export function isKalturaUrl(url: string): boolean {
 export function isNativeVideoUrl(url: string): boolean {
   return detectVideoSource(url) === VideoSource.NATIVE;
 }
-
-// Made with Bob

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { createRef, ref } from "lit/directives/ref.js";
@@ -235,6 +235,13 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
    */
   @state()
   private _isEditorLoading = true;
+
+  /**
+   * Set by `focusEditor()` when CodeMirror has not finished loading yet;
+   * drained from `createEditor()` once the editor view exists.
+   * @internal
+   */
+  private _focusOnEditorReady = false;
 
   /**
    * @internal
@@ -682,6 +689,11 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
       this.emitRenderSettled();
     });
 
+    if (this._focusOnEditorReady) {
+      this._focusOnEditorReady = false;
+      this.editorView.focus();
+    }
+
     // IBM Plex Mono is a web font that can arrive after first paint and reflow the code,
     // changing height. Re-measure and re-announce once fonts are ready.
     this.scheduleFontSettle();
@@ -814,6 +826,25 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     >
       <cds-skeleton-text lines="4"></cds-skeleton-text>
     </div>`;
+  }
+
+  /**
+   * Focus the editor surface — the contenteditable that accepts text input.
+   * Prefer this over `host.focus()`, which delegates via `delegatesFocus`
+   * to the first sequentially-focusable child in the shadow tree
+   * (`.cm-scroller`, focusable for accessibility but not editable). When
+   * CodeMirror is still loading, the call is queued and forwarded once
+   * the editor view is created. Useful right after inserting the snippet
+   * into a contenteditable host (e.g. a Tiptap atom block) so the next
+   * keystroke enters the editor instead of replacing the node.
+   */
+  focusEditor(): void {
+    if (this.editorView) {
+      this.editorView.focus();
+      return;
+    }
+    this._focusOnEditorReady = true;
+    void this.ensureCodeMirrorRuntime();
   }
 
   // Lifecycle methods
@@ -986,11 +1017,16 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
     const containerClasses = {
       [`${prefix}--snippet-container`]: true,
       [`${prefix}--snippet--codemirror`]: true,
-      [`${prefix}--snippet-container--collapsed`]: !expandedCode,
+      // Fill mode shows no expand affordance, so it is never a "collapsed"
+      // state. Applying `--collapsed` here would clip with `overflow-y: hidden`
+      // (it is defined later in the stylesheet and wins by source order),
+      // defeating fill mode's `overflow-y: auto` scroll.
+      [`${prefix}--snippet-container--collapsed`]:
+        !expandedCode && !this._isFillMode,
       [`${prefix}--snippet-container--fill-mode`]: this._isFillMode,
     };
 
-    return html` <div class="${prefix}--snippet">
+    return html`<div class="${prefix}--snippet">
       ${
         !this.hideHeader
           ? html`
@@ -1004,7 +1040,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
                 <slot name="decorator" slot="decorator"></slot>
               </cds-aichat-toolbar>
             `
-          : ""
+          : nothing
       }
 
       <div
@@ -1046,7 +1082,7 @@ class CDSAIChatCodeSnippet extends FocusMixin(LitElement) {
                 </cds-button>
               </div>
             `
-          : ``
+          : nothing
       }
       <div class="${prefix}--visually-hidden">
         <slot

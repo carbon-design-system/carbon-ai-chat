@@ -7,19 +7,47 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Workspace sidebar (Web components)
+ *
+ * Demonstrates: the workspace feature combined with a docked sidebar layout
+ * built on the library's shipped `cds-aichat-sidebar` classes and driven by
+ * `VIEW_CHANGE` lifecycle hooks. Includes a custom host chrome and
+ * `CornersType.SQUARE` for the sidebar treatment. The workspace expand /
+ * contract modifiers compose on top of the shipped base class.
+ *
+ * APIs exercised:
+ *   - `<cds-aichat-custom-element>` styled with the shipped sidebar-layout CSS
+ *     (`@carbon/ai-chat/css/chat-sidebar-layout.css`)
+ *   - `BusEventType.WORKSPACE_*` (open / pre-open / close)
+ *   - `BusEventType.VIEW_CHANGE`
+ *   - `CornersType.SQUARE`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `onBeforeRender` and the view-change handlers.
+ */
+
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import "@carbon/ai-chat/css/chat-sidebar-layout.css";
 
 import {
   BusEventType,
   CornersType,
   PanelType,
   ViewType,
+  type BusEvent,
+  type BusEventStateChange,
+  type BusEventViewChange,
+  type BusEventViewPreChange,
+  type BusEventWorkspaceClose,
+  type BusEventWorkspaceOpen,
+  type BusEventWorkspacePreOpen,
   type ChatInstance,
-  type MessageResponse,
   type PublicConfig,
+  type RenderUserDefinedState,
   type UserDefinedItem,
 } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
 import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
@@ -32,161 +60,29 @@ import "./outstanding-orders-card";
 import "./sql-editor-example";
 import "./styles.css";
 
-interface UserDefinedSlotsMap {
-  [key: string]: UserDefinedSlot;
-}
-
-interface UserDefinedSlot {
-  message: UserDefinedItem;
-  fullMessage: MessageResponse;
-}
-
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const config: PublicConfig = {
   messaging: {
+    // Wire the local mock backend instead of a real assistant so the example runs offline.
     customSendMessage,
   },
   layout: {
+    // Square corners visually fuse the chat into the docked sidebar so it reads as part of the host chrome.
     corners: CornersType.SQUARE,
   },
+  // Skip the launcher because the sidebar is the entire experience this example demonstrates.
   openChatByDefault: true,
 };
 
 @customElement("my-app")
 export class Demo extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    .app-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 48px;
-      background-color: #161616;
-      color: #f4f4f4;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1rem;
-      z-index: 10000;
-    }
-
-    .app-header__title {
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .app-header__button {
-      background: transparent;
-      border: none;
-      color: #f4f4f4;
-      cursor: pointer;
-      padding: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    .app-header__button:hover {
-      background-color: #353535;
-    }
-
-    .app-header__button:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
-    .sidebar {
-      position: fixed;
-      right: 0;
-      top: 48px;
-      height: calc(100vh - 48px);
-      width: 320px;
-      z-index: 9999;
-      transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
-      visibility: visible;
-    }
-
-    .sidebar .chat-custom-element {
-      height: 100%;
-      width: 100%;
-    }
-
-    .sidebar--expanded {
-      width: calc(100vw - 320px - 2rem);
-    }
-
-    .sidebar--expanding {
-      transition:
-        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    .sidebar--contracting {
-      transition:
-        right 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
-    }
-
-    .sidebar--closing {
-      right: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-    }
-
-    .sidebar--closed {
-      right: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-      visibility: hidden;
-    }
-
-    /* RTL support */
-    :host([dir="rtl"]) .sidebar {
-      right: auto;
-      left: 0;
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    :host([dir="rtl"]) .sidebar--expanded {
-      width: calc(100vw - 320px - 2rem);
-    }
-
-    :host([dir="rtl"]) .sidebar--expanding {
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    :host([dir="rtl"]) .sidebar--contracting {
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        width 400ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 70ms;
-    }
-
-    :host([dir="rtl"]) .sidebar--closing {
-      left: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-    }
-
-    :host([dir="rtl"]) .sidebar--closed {
-      right: auto;
-      left: calc(calc(320px + 1rem) * -1);
-      width: 320px;
-      transition:
-        left 70ms cubic-bezier(0.2, 0, 0.38, 0.9),
-        visibility 0s 0s;
-    }
-  `;
+  // Disable shadow DOM so the document-level sidebar-layout CSS imported from
+  // @carbon/ai-chat (and the local styles.css) applies to the host elements.
+  createRenderRoot() {
+    return this;
+  }
 
   @state()
   accessor instance!: ChatInstance;
@@ -202,9 +98,6 @@ export class Demo extends LitElement {
 
   @state()
   accessor workspaceAdditionalData: any = null;
-
-  @state()
-  accessor userDefinedSlotsMap: UserDefinedSlotsMap = {};
 
   // Sidebar state management
   @state()
@@ -223,147 +116,136 @@ export class Demo extends LitElement {
   accessor clickInProgress: boolean = false;
 
   onBeforeRender = (instance: ChatInstance) => {
-    // Set the instance in state.
+    // Cache the ChatInstance so toolbar and card actions can reach customPanels and changeView later.
     this.instance = instance;
     const initialState = instance.getState();
     this.activeResponseId = initialState.activeResponseId ?? null;
 
+    // Track activeResponseId so workspace components can correlate UI to the in-flight assistant turn.
     instance.on({
       type: BusEventType.STATE_CHANGE,
-      handler: (event: any) => {
-        if (
-          event.previousState?.activeResponseId !==
-          event.newState?.activeResponseId
-        ) {
-          this.activeResponseId = event.newState.activeResponseId ?? null;
+      handler: (event: BusEvent) => {
+        const { previousState, newState } = event as BusEventStateChange;
+        if (previousState?.activeResponseId !== newState?.activeResponseId) {
+          this.activeResponseId = newState.activeResponseId ?? null;
         }
       },
     });
 
-    // Register user defined response handler.
-    instance.on({
-      type: BusEventType.USER_DEFINED_RESPONSE,
-      handler: this.userDefinedHandler,
-    });
-
-    // Register workspace panel handlers.
+    // WORKSPACE_PRE_OPEN fires before the panel is shown so we can start the sidebar expand animation in lockstep.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
       handler: this.workspacePanelPreOpenHandler,
     });
 
+    // WORKSPACE_OPEN delivers the resolved workspaceId and additionalData payload that drives renderWorkspaceElement().
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: this.workspacePanelOpenHandler,
     });
 
+    // WORKSPACE_PRE_CLOSE lets the host start contracting the sidebar before the panel actually disappears.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_CLOSE,
       handler: this.workspacePanelPreCloseHandler,
     });
 
+    // WORKSPACE_CLOSE is the final hook for clearing workspace state once the panel is fully torn down.
     instance.on({
       type: BusEventType.WORKSPACE_CLOSE,
       handler: this.workspacePanelCloseHandler,
     });
 
-    // Register view change handlers
+    // VIEW_CHANGE toggles sideBarOpen so the sidebar slides in or out together with the chat mainWindow view.
     instance.on({
       type: BusEventType.VIEW_CHANGE,
       handler: this.onViewChange,
     });
 
+    // VIEW_PRE_CHANGE runs before the view actually changes so we can play the closing animation before the chat unmounts.
     instance.on({
       type: BusEventType.VIEW_PRE_CHANGE,
       handler: this.onViewPreChange,
     });
   };
 
-  /**
-   * Handles when the workspace panel is about to open.
-   */
-  workspacePanelPreOpenHandler = (event: any) => {
+  workspacePanelPreOpenHandler = (event: BusEvent) => {
+    const { data } = event as BusEventWorkspacePreOpen;
+    // Debug log of the pre-open payload so developers can see the data shape during integration.
     console.log(
-      event.data,
+      data,
       "This event can be used to load additional resources into the workspace while displaying a manual loading state.",
     );
-    // Expand sidebar when workspace is opening
+    // Trace marker that pairs with the contraction log below so the expand/contract sequence is observable.
     console.log("Expanding sidebar - workspace opening");
+    // Apply the expanding modifier first so the width transition fires alongside the panel's own open animation.
     this.workspaceAnimating = "expanding";
     this.workspaceExpanded = true;
   };
 
-  /**
-   * Handles when the workspace panel is opened.
-   */
-  workspacePanelOpenHandler = (event: any) => {
-    console.log(event.data, "Workspace panel opened");
+  workspacePanelOpenHandler = (event: BusEvent) => {
+    const { data } = event as BusEventWorkspaceOpen;
+    // Debug log so integrators can see the resolved open payload that downstream components consume.
+    console.log(data, "Workspace panel opened");
 
-    // Extract workspace data from the event
-    const { workspaceId, additionalData } = event.data;
+    // Pull the workspaceId and additionalData out of the event so renderWorkspaceElement can route on type.
+    const { workspaceId, additionalData } = data;
     this.workspaceId = workspaceId;
     this.workspaceAdditionalData = additionalData;
+    // additionalData.type is the discriminator used by the renderWorkspaceElement switch.
     this.workspaceType = (additionalData as { type?: string })?.type || null;
   };
 
-  /**
-   * Handles when the workspace panel is about to close.
-   */
   workspacePanelPreCloseHandler = () => {
-    // Contract sidebar when workspace is closing
+    // Trace marker so the contract phase is visible in the console alongside the expand log.
     console.log("Contracting sidebar - workspace closing");
+    // Switch to the contracting modifier before the panel hides so the width transition is in flight when it disappears.
     this.workspaceAnimating = "contracting";
     this.workspaceExpanded = false;
   };
 
-  /**
-   * Handles when the workspace panel is closed.
-   */
-  workspacePanelCloseHandler = (event: any) => {
-    console.log(event.data, "Workspace panel closed");
+  workspacePanelCloseHandler = (event: BusEvent) => {
+    const { data } = event as BusEventWorkspaceClose;
+    // Debug log so the close payload is visible during integration.
+    console.log(data, "Workspace panel closed");
 
-    // Clear workspace data when panel closes
+    // Reset workspace state so renderWorkspaceElement returns empty html on the next render.
     this.workspaceType = null;
     this.workspaceId = undefined;
     this.workspaceAdditionalData = null;
   };
 
-  /**
-   * Listens for view changes on the AI chat.
-   */
-  onViewChange = (event: any) => {
-    if (event.newViewState.mainWindow) {
+  onViewChange = (event: BusEvent) => {
+    const { newViewState } = event as BusEventViewChange;
+    if (newViewState.mainWindow) {
+      // mainWindow becoming visible means the sidebar should be considered fully opened.
       this.sideBarOpen = true;
     } else {
+      // After the closing animation finishes the chat is gone, so clear both flags to reach the closed resting state.
       this.sideBarOpen = false;
       this.sideBarClosing = false;
     }
   };
 
-  /**
-   * Handles pre-view-change lifecycle for sidebar transitions.
-   */
-  onViewPreChange = async (event: any) => {
-    if (!event.newViewState.mainWindow) {
+  onViewPreChange = async (event: BusEvent) => {
+    const { newViewState } = event as BusEventViewPreChange;
+    if (!newViewState.mainWindow) {
+      // Set the closing modifier so the slide-out CSS transition begins while the chat is still mounted.
       this.sideBarClosing = true;
+      // Awaiting holds the view transition until the 240ms CSS animation finishes so the chat does not pop out mid-slide.
       await sleep(250);
     }
   };
 
-  /**
-   * Handle transitionend to remove animation classes
-   */
   handleTransitionEnd = (event: TransitionEvent) => {
-    // Only handle width transitions
+    // Only the width transition signals expand/contract completion; other transitions like right/left would clear too early.
     if (event.propertyName === "width") {
       this.workspaceAnimating = null;
     }
   };
 
-  /**
-   * Handle header button click to toggle chat
-   */
   handleHeaderButtonClick = async () => {
+    // Guard against re-entry while the previous changeView is still resolving so the animation cannot get stuck mid-transition.
     if (!this.instance || this.clickInProgress) {
       return;
     }
@@ -371,10 +253,13 @@ export class Demo extends LitElement {
     this.clickInProgress = true;
     try {
       const state = this.instance.getState();
+      // Debug log so the toggle source-of-truth is visible during integration.
       console.log({ viewState: state.viewState });
       if (state.viewState.mainWindow) {
+        // Currently open, so closing the chat is the inverse action; LAUNCHER hides the mainWindow.
         await this.instance.changeView(ViewType.LAUNCHER);
       } else {
+        // Currently closed, so re-open by switching to the MAIN_WINDOW view.
         await this.instance.changeView(ViewType.MAIN_WINDOW);
       }
     } finally {
@@ -383,81 +268,45 @@ export class Demo extends LitElement {
   };
 
   /**
-   * Each user defined event is tied to a slot deeply rendered within AI chat that is generated at runtime.
-   * Here we make sure we store all these slots along with their relevant data in order to be able to dynamically
-   * render the content to be slotted when this.renderUserDefinedSlots() is called in the render function.
+   * Callback to render user_defined responses. The library manages event listening, slot tracking,
+   * streaming state, and element lifecycle.
    */
-  userDefinedHandler = (event: any) => {
-    const { data } = event;
-    this.userDefinedSlotsMap[data.slot] = {
-      message: data.message,
-      fullMessage: data.fullMessage,
-    };
-    this.requestUpdate();
+  renderUserDefinedCallback = (
+    state: RenderUserDefinedState,
+  ): HTMLElement | null => {
+    const messageItem = state.messageItem as UserDefinedItem | undefined;
+
+    if (
+      messageItem?.user_defined?.user_defined_type === "outstanding_orders_card"
+    ) {
+      const el = document.createElement("outstanding-orders-card") as any;
+      el.workspaceId = messageItem.user_defined?.workspace_id;
+      el.additionalData = messageItem.user_defined?.additional_data;
+      el.onMaximize = () => {
+        const workspaceId = messageItem.user_defined?.workspace_id as string;
+        const additionalData = messageItem.user_defined?.additional_data as {
+          type?: string;
+        };
+        // Seed local state synchronously so the slot has content the moment WORKSPACE_OPEN fires.
+        this.workspaceId = workspaceId;
+        this.workspaceAdditionalData = additionalData;
+        this.workspaceType = additionalData?.type || null;
+
+        // getPanel(PanelType.WORKSPACE) returns the workspace panel handle; calling open() triggers WORKSPACE_PRE_OPEN/WORKSPACE_OPEN.
+        const panel = this.instance.customPanels?.getPanel(PanelType.WORKSPACE);
+        if (panel) {
+          panel.open({
+            workspaceId,
+            additionalData,
+          });
+        }
+      };
+      return el;
+    }
+
+    return null;
   };
 
-  /**
-   * This renders each of the dynamically generated slots that were generated by the AI chat by calling
-   * this.renderUserDefinedResponse on each one.
-   */
-  renderUserDefinedSlots() {
-    const userDefinedSlotsKeyArray = Object.keys(this.userDefinedSlotsMap);
-    return userDefinedSlotsKeyArray.map((slot) => {
-      return this.renderUserDefinedResponse(slot);
-    });
-  }
-
-  /**
-   * Here we process a single item from this.userDefinedSlotsMap. We go ahead and use a switch statement to decide
-   * which element we should be rendering.
-   */
-  renderUserDefinedResponse(slot: keyof UserDefinedSlotsMap) {
-    const slotData = this.userDefinedSlotsMap[slot];
-    if (!slotData) {
-      return null;
-    }
-
-    const { message } = slotData;
-    const userDefinedMessage = message;
-
-    // Check the "type" we have used as our key.
-    switch (userDefinedMessage.user_defined?.user_defined_type) {
-      case "outstanding_orders_card":
-        return html`<div slot=${slot}>
-          <outstanding-orders-card
-            .workspaceId=${userDefinedMessage.user_defined?.workspace_id}
-            .additionalData=${userDefinedMessage.user_defined?.additional_data}
-            .onMaximize=${() => {
-              // Open workspace using the panels API
-              const workspaceId = userDefinedMessage.user_defined
-                ?.workspace_id as string;
-              const additionalData = userDefinedMessage.user_defined
-                ?.additional_data as { type?: string };
-              this.workspaceId = workspaceId;
-              this.workspaceAdditionalData = additionalData;
-              this.workspaceType = additionalData?.type || null;
-
-              // Use the customPanels API to open the workspace
-              const panel = this.instance.customPanels?.getPanel(
-                PanelType.WORKSPACE,
-              );
-              if (panel) {
-                panel.open({
-                  workspaceId,
-                  additionalData,
-                });
-              }
-            }}
-          ></outstanding-orders-card>
-        </div>`;
-      default:
-        return null;
-    }
-  }
-
-  /**
-   * Renders the workspace panel element when the workspace slot is set.
-   */
   renderWorkspaceElement() {
     if (!this.workspaceType) {
       return html``;
@@ -497,23 +346,22 @@ export class Demo extends LitElement {
     }
   }
 
-  /**
-   * Build className for sidebar layout
-   */
   getSidebarClassName() {
-    let className = "sidebar";
+    // Compose the shipped `cds-aichat-sidebar` base class with this example's
+    // workspace expand/contract modifiers.
+    let className = "cds-aichat-sidebar";
     if (this.workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += " cds-aichat-sidebar--expanded";
     }
     if (this.workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
+      className += " cds-aichat-sidebar--expanding";
     } else if (this.workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+      className += " cds-aichat-sidebar--contracting";
     }
     if (this.sideBarClosing) {
-      className += " sidebar--closing";
+      className += " cds-aichat-sidebar--closing";
     } else if (!this.sideBarOpen) {
-      className += " sidebar--closed";
+      className += " cds-aichat-sidebar--closed";
     }
     return className;
   }
@@ -547,9 +395,9 @@ export class Demo extends LitElement {
           .messaging=${config.messaging}
           .layout=${config.layout}
           .openChatByDefault=${config.openChatByDefault}
+          .renderUserDefinedResponse=${this.renderUserDefinedCallback}
           class="chat-custom-element"
         >
-          ${this.renderUserDefinedSlots()}
           <div slot="workspacePanelElement">
             ${this.renderWorkspaceElement()}
           </div>
@@ -558,5 +406,3 @@ export class Demo extends LitElement {
     `;
   }
 }
-
-// Made with Bob

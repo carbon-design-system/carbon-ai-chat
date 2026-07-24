@@ -73,6 +73,10 @@ export const Default = {
       description:
         "true if search should be turned off in chat history toolbar.",
     },
+    autofocus: {
+      control: "boolean",
+      description: "Toggles the native autofocus attribute on the text input",
+    },
     searchAttributes: {
       control: "object",
       description:
@@ -94,6 +98,7 @@ export const Default = {
   args: {
     HeaderTitle: "Chats",
     searchOff: false,
+    autofocus: false,
     searchAttributes: {
       "label-text": "Search",
       placeholder: "Search",
@@ -387,6 +392,7 @@ export const Default = {
         />
         <HistoryToolbar
           searchOff={args.searchOff}
+          autofocus={args.autofocus}
           searchAttributes={args.searchAttributes}
           onSearchInput={handleSearchInput}
         />

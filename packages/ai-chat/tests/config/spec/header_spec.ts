@@ -10,7 +10,7 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react";
 import { ChatContainer } from "../../../src/react/ChatContainer";
-import { MinimizeButtonIconType } from "../../../src/types/config/PublicConfig";
+import { MinimizeButtonIconType } from "../../../src/types/config/HeaderConfig";
 import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
 import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";

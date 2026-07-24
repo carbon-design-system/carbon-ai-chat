@@ -33,6 +33,7 @@ import type {
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
+  WCRenderUserDefinedInputNode,
 } from "../../types/component/ChatContainer";
 
 /**
@@ -168,6 +169,15 @@ class ChatCustomElement extends FlattenedConfigElement {
    */
   @property({ attribute: false })
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 
   // markdown is declared on the FlattenedConfigElement base; the attributes
   // interface narrows its type.
@@ -391,6 +401,7 @@ class ChatCustomElement extends FlattenedConfigElement {
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
+        .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}
       >
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`,
@@ -483,6 +494,14 @@ interface CdsAiChatCustomElementAttributes extends Omit<
    * manages all event listening, slot tracking, and element lifecycle.
    */
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
 }
 
 export { CdsAiChatCustomElementAttributes };

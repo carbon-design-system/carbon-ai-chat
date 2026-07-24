@@ -8,7 +8,7 @@
  */
 
 import { AgentAvailability } from "../config/ServiceDeskConfig";
-import { LanguagePack } from "../config/PublicConfig";
+import { LanguagePack } from "../config/LanguagePack";
 import { InputState } from "./InputState";
 
 /**

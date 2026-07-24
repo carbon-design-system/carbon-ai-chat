@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,6 +15,7 @@ import {
   StructuredData,
   StructuredField,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 const MOCK_UPLOAD_DELAY_MS = 2500;
 
@@ -47,7 +48,7 @@ async function mockOnFileUpload(
   // Build a mock external reference as if the server stored the file.
   const reference: ExternalFileReference = {
     type: "reference",
-    id: crypto.randomUUID(),
+    id: uuid(),
     name: file.name,
     mime_type: file.type || "application/octet-stream",
     size: file.size,
@@ -155,5 +156,3 @@ function doFileUploadResponse(
 }
 
 export { mockOnFileUpload, doFileUploadResponse };
-
-// Made with Bob

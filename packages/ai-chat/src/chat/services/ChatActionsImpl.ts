@@ -32,7 +32,6 @@ import {
 import {
   AppState,
   AppStateMessages,
-  InputState,
   PendingUploadStatus,
   ViewState,
   ViewType,
@@ -45,7 +44,7 @@ import { HistoryItem, HistoryNote } from "../../types/messaging/History";
 import { asyncForEach } from "../utils/lang/arrayUtils";
 import { deepFreeze } from "../utils/lang/objectUtils";
 import { sleep } from "../utils/lang/promiseUtils";
-import { uuid, UUIDType } from "../utils/lang/uuid";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 import {
   addDefaultsToMessage,
   createMessageRequestForText,
@@ -112,12 +111,61 @@ import {
   MessageSendSource,
   ViewChangeReason,
 } from "../../types/events/eventBusTypes";
-import {
-  PublicChatState,
-  SendOptions,
-} from "../../types/instance/ChatInstance";
-import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
+import { SendOptions } from "../../types/instance/ChatInstance";
+import { PublicChatState } from "../../types/instance/PublicChatState";
+import { OnErrorData, OnErrorType } from "../../types/config/ErrorConfig";
 import { DeepPartial } from "../../types/utilities/DeepPartial";
+import type { Editor, JSONContent } from "@tiptap/core";
+import {
+  getRawText,
+  textToDoc,
+} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+
+/**
+ * Module-scoped flag so the deprecation warning for `updateRawValue` is
+ * emitted at most once per browser session, regardless of how many
+ * times the host calls it.
+ */
+let hasWarnedAboutUpdateRawValueDeprecation = false;
+
+/**
+ * Returns true if the given JSONContent doc only contains `paragraph`,
+ * `text`, and `hardBreak` nodes, with no marks on any text node. Used to
+ * gate the deprecated `updateRawValue` path post-segment-drop: legacy
+ * docs that grew tokens / blocks throw; plain-text docs (including ones
+ * with `\n` from Shift+Enter) pass through.
+ */
+function isPlainTextDoc(json: JSONContent): boolean {
+  const allowed = new Set(["doc", "paragraph", "text", "hardBreak"]);
+  let ok = true;
+  const walk = (node: JSONContent | undefined): void => {
+    if (!ok || !node) {
+      return;
+    }
+    if (typeof node.type === "string" && !allowed.has(node.type)) {
+      ok = false;
+      return;
+    }
+    if (
+      node.type === "text" &&
+      Array.isArray(node.marks) &&
+      node.marks.length > 0
+    ) {
+      ok = false;
+      return;
+    }
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) {
+        walk(child);
+        if (!ok) {
+          return;
+        }
+      }
+    }
+  };
+  walk(json);
+  return ok;
+}
 
 /**
  * This class is responsible for handling various "actions" that the system can perform including actions that can
@@ -192,6 +240,15 @@ class ChatActionsImpl {
     options: AddMessageOptions;
     chunkPromise: ResolvablePromise<void>;
   }[] = [];
+
+  /**
+   * Reference-equality cache for the deep-cloned `input.content` returned by
+   * `getPublicChatState()`. The Redux content reference only changes when the
+   * editor emits a doc-changing transaction, so on Redux dispatches that
+   * leave it untouched we return the previous frozen clone unchanged.
+   */
+  private cachedInputContentSource: JSONContent | undefined = undefined;
+  private cachedInputContentClone: JSONContent | undefined = undefined;
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
@@ -355,8 +412,32 @@ class ChatActionsImpl {
     });
 
     const inputState = selectInputState(state);
+    // `content` is mirrored into Redux on every input-change event as
+    // Tiptap-native JSONContent so it reads quickly without traversing
+    // the live editor. Cache the cloned-and-frozen result keyed on the
+    // Redux reference so unrelated dispatches don't pay the deep-clone cost.
+    let inputContent: JSONContent;
+    if (inputState.content) {
+      if (
+        this.cachedInputContentSource === inputState.content &&
+        this.cachedInputContentClone
+      ) {
+        inputContent = this.cachedInputContentClone;
+      } else {
+        inputContent = deepFreeze(cloneDeep(inputState.content));
+        this.cachedInputContentSource = inputState.content;
+        this.cachedInputContentClone = inputContent;
+      }
+    } else {
+      inputContent = {
+        type: "doc",
+        content: [{ type: "paragraph" }],
+      } as JSONContent;
+    }
     const input = deepFreeze({
       rawValue: inputState.rawValue ?? "",
+      content: inputContent,
+      focused: Boolean(inputState.focused),
       structuredData: inputState.pendingStructuredData
         ? cloneDeep(inputState.pendingStructuredData)
         : undefined,
@@ -413,7 +494,191 @@ class ChatActionsImpl {
   }
 
   updateRawInputValue(updater: (previous: string) => string) {
-    this.updateInputValue("rawValue", updater);
+    if (typeof updater !== "function") {
+      consoleError("Input updater must be a function");
+      return;
+    }
+
+    // When the input is mounted, route through the JSONContent write
+    // pipeline so the deprecation policy applies (throw on docs that
+    // carry anything other than paragraph/text/hardBreak or marked text;
+    // one warning per session). When the input is not mounted, fall
+    // through to the legacy Redux path so server-side / pre-mount writes
+    // continue to work with the rawValue prop seed.
+    const ref = this.serviceManager.getInputFunctionsRef();
+    const editor = ref?.getEditor();
+    if (ref && editor) {
+      const currentJson = editor.getJSON();
+      if (!isPlainTextDoc(currentJson)) {
+        throw new Error(
+          "ChatInstance.input.updateRawValue cannot be used while the input contains non-text nodes or marked text. Use updateContent instead.",
+        );
+      }
+      if (!hasWarnedAboutUpdateRawValueDeprecation) {
+        hasWarnedAboutUpdateRawValueDeprecation = true;
+        consoleWarn(
+          "ChatInstance.input.updateRawValue is deprecated. Use updateContent.",
+        );
+      }
+      let previousRaw = getRawText(currentJson);
+      if (previousRaw === "\n") {
+        previousRaw = "";
+      }
+      let nextValue: string;
+      try {
+        nextValue = updater(previousRaw);
+      } catch (error) {
+        consoleError("An error occurred while updating the input value", error);
+        return;
+      }
+      if (typeof nextValue !== "string") {
+        nextValue =
+          nextValue === undefined || nextValue === null
+            ? ""
+            : String(nextValue);
+      }
+      if (nextValue === previousRaw) {
+        return;
+      }
+      ref.setContent(nextValue);
+      return;
+    }
+
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const inputState = selectInputState(state);
+    let previousValue = (inputState.rawValue ?? "") as string;
+
+    // Normalize: treat "\n" as empty string
+    if (previousValue === "\n") {
+      previousValue = "";
+    }
+
+    let nextValue: string;
+    try {
+      nextValue = updater(previousValue);
+    } catch (error) {
+      consoleError("An error occurred while updating the input value", error);
+      return;
+    }
+
+    if (typeof nextValue !== "string") {
+      nextValue =
+        nextValue === undefined || nextValue === null ? "" : String(nextValue);
+    }
+
+    if (nextValue === previousValue) {
+      return;
+    }
+
+    store.dispatch(
+      actions.updateInputState(
+        { rawValue: nextValue },
+        selectIsInputToHumanAgent(state),
+      ),
+    );
+  }
+
+  /**
+   * Replace the input content with the result of an updater that receives the
+   * current JSONContent doc.
+   *
+   * - When the rich Tiptap editor is mounted, the doc is applied directly, so
+   *   rich nodes and marks are preserved.
+   * - When the surface is the lightweight textarea and the updater returns a
+   *   doc with non-text nodes or marked text, the rich editor is loaded on
+   *   demand (upgrading in place, with any host `tiptap.extensions` installed)
+   *   and the returned promise resolves once the rich content is applied.
+   * - A plain-text result is staged through the pending `rawValue` whenever
+   *   there is no live editor — covering the mounted textarea, a hidden input,
+   *   and a not-yet-rendered input alike (the field is seeded on mount). This
+   *   is the behavior the deprecated `updateRawValue` provided.
+   *
+   * A non-text result throws when there is no surface to upgrade (the input is
+   * hidden or not yet rendered), because nothing can render rich content there.
+   */
+  async updateInputContent(
+    updater: (previous: JSONContent) => JSONContent,
+  ): Promise<void> {
+    if (typeof updater !== "function") {
+      consoleError("Input content updater must be a function");
+      return;
+    }
+
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const ref = this.serviceManager.getInputFunctionsRef();
+    const editor = ref?.getEditor() ?? null;
+
+    // The updater's `previous`: the live editor doc when rich, otherwise the doc
+    // rebuilt from the tracked `rawValue` (kept in lockstep with the textarea,
+    // and the same source of truth `updateRawValue` reads). This is also what a
+    // pending pre-mount seed reads back.
+    let previous: JSONContent;
+    if (editor) {
+      previous = editor.getJSON();
+    } else {
+      let previousRaw = (selectInputState(state).rawValue ?? "") as string;
+      // An empty textarea whose only keystroke was Enter reports a lone "\n"
+      // (the native newline the empty-Enter guard lets through). Treat it as
+      // empty so the updater sees an empty doc, not a spurious blank paragraph.
+      if (previousRaw === "\n") {
+        previousRaw = "";
+      }
+      previous = textToDoc(previousRaw);
+    }
+
+    let next: JSONContent;
+    try {
+      next = updater(previous);
+    } catch (error) {
+      consoleError("An error occurred while updating the input content", error);
+      return;
+    }
+
+    // Rich editor mounted: apply directly so rich nodes / marks survive.
+    if (editor) {
+      ref!.setContent(next);
+      return;
+    }
+
+    // No live editor. A plain-text result is staged through Redux: the Input
+    // mirrors `rawValue` into a mounted textarea and seeds the field on mount,
+    // so this one path covers the mounted-textarea, hidden, and pre-mount
+    // cases.
+    if (isPlainTextDoc(next)) {
+      store.dispatch(
+        actions.updateInputState(
+          { rawValue: getRawText(next), content: next },
+          selectIsInputToHumanAgent(state),
+        ),
+      );
+      return;
+    }
+
+    // Non-text result needs the rich editor. Upgrade a mounted textarea in
+    // place (loading Tiptap with any staged host extensions), then apply; reject
+    // when there is no surface to upgrade (hidden / not yet rendered).
+    if (!ref) {
+      throw new Error(
+        "ChatInstance.input.updateContent cannot seed non-text content before the input is rendered. Wait for the input to mount, or write plain text.",
+      );
+    }
+    await ref.ensureEditor();
+    ref.setContent(next);
+  }
+
+  /**
+   * Loads Tiptap on demand (upgrading the input surface to the rich editor in
+   * place), then resolves with the live `Editor`. Rejects when the input is not
+   * currently rendered.
+   */
+  ensureInputEditor(): Promise<Editor> {
+    const ref = this.serviceManager.getInputFunctionsRef();
+    if (!ref) {
+      return Promise.reject(new Error("Input is not currently rendered"));
+    }
+    return ref.ensureEditor();
   }
 
   /**
@@ -495,7 +760,7 @@ class ChatActionsImpl {
       return;
     }
 
-    const uploadId = uuid(UUIDType.FILE);
+    const uploadId = uuid();
     const controller = new AbortController();
     this.uploadAbortControllers.set(uploadId, controller);
 
@@ -538,57 +803,6 @@ class ChatActionsImpl {
     } finally {
       this.uploadAbortControllers.delete(uploadId);
     }
-  }
-
-  private updateInputValue(
-    field: "rawValue" | "displayValue",
-    updater: (previous: string) => string,
-  ) {
-    if (typeof updater !== "function") {
-      consoleError("Input updater must be a function");
-      return;
-    }
-
-    const { store } = this.serviceManager;
-    const state = store.getState();
-    const inputState = selectInputState(state);
-    let previousValue = (inputState[field] ?? "") as string;
-
-    // Normalize the previous value: treat "\n" as empty string
-    // This handles the case where the user manually deleted all input,
-    // leaving behind a newline character that should be treated as empty.
-    if (field === "rawValue" && previousValue === "\n") {
-      previousValue = "";
-    }
-
-    let nextValue: string;
-    try {
-      nextValue = updater(previousValue);
-    } catch (error) {
-      consoleError("An error occurred while updating the input value", error);
-      return;
-    }
-
-    if (typeof nextValue !== "string") {
-      nextValue =
-        nextValue === undefined || nextValue === null ? "" : String(nextValue);
-    }
-
-    if (nextValue === previousValue) {
-      return;
-    }
-
-    const payload: Partial<InputState> = { [field]: nextValue };
-
-    // When updating rawValue, always sync displayValue to keep them consistent.
-    // The component will re-render and apply any custom rendering (e.g., toDisplayHTML conversion).
-    if (field === "rawValue") {
-      payload.displayValue = nextValue;
-    }
-
-    store.dispatch(
-      actions.updateInputState(payload, selectIsInputToHumanAgent(state)),
-    );
   }
 
   /**
@@ -788,7 +1002,7 @@ class ChatActionsImpl {
 
     // Received messages should be given an id if they don't have one.
     if (!message.id) {
-      message.id = uuid(UUIDType.MESSAGE);
+      message.id = uuid();
     }
 
     const preReceiveEvent: BusEventPreReceive = {
@@ -1762,7 +1976,7 @@ class ChatActionsImpl {
    * Inserts a locally created {@link MessageResponse} message into the message system.
    */
   public async insertLocalMessageResponse(message: MessageResponse) {
-    message.id = uuid(UUIDType.MESSAGE);
+    message.id = uuid();
     await this.processMessageResponse(message, false, null);
   }
 

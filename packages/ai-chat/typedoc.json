@@ -51,7 +51,8 @@
     "categorizeByGroup": false,
     "hideGenerator": true,
     "validation": {
-        "invalidLink": true
+        "invalidLink": true,
+        "notExported": true
     },
     "treatValidationWarningsAsErrors": true
 }

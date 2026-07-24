@@ -21,7 +21,7 @@ import { render, waitFor } from "@testing-library/react";
 import { ChatCustomElement } from "../../../src/react/ChatCustomElement";
 import { createBaseTestProps } from "../../test_helpers";
 import { AppState } from "../../../src/types/state/AppState";
-import { enLanguagePack } from "../../../src/types/config/PublicConfig";
+import { enLanguagePack } from "../../../src/types/config/LanguagePack";
 
 describe("ChatCustomElement prop forwarding", () => {
   afterEach(() => {

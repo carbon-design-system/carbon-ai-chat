@@ -7,6 +7,25 @@
  *  @license
  */
 
+/**
+ * Mock backend for the custom-element-as-float-lazy-load example.
+ *
+ * Demonstrates: routing user input through `customSendMessage` to produce
+ * either a complete `addMessage` reply or a streamed sequence of
+ * `addMessageChunk` chunks terminated by a `final_response`.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.messaging.addMessage`
+ *   - `ChatInstance.messaging.addMessageChunk`
+ *   - `MessageResponseTypes.TEXT` / `MessageResponseTypes.USER_DEFINED`
+ *   - `StreamChunk` (`partial_item`, `complete_item`, `final_response`)
+ *   - `CustomSendMessageOptions.signal` for stop / restart cancellation
+ *
+ * Replace with a real production implementation.
+ *
+ * Start reading at: `customSendMessage` at the bottom of the file.
+ */
+
 import {
   ChatInstance,
   CustomSendMessageOptions,
@@ -14,6 +33,7 @@ import {
   MessageResponseTypes,
   StreamChunk,
 } from "@carbon/ai-chat";
+import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
@@ -86,15 +106,15 @@ async function doFakeTextStreaming(
   instance: ChatInstance,
   signal?: AbortSignal,
 ) {
-  const responseID = crypto.randomUUID();
+  const responseID = uuid();
   const words = TEXT.split(" ");
   let isCanceled = false;
   const timeouts: number[] = [];
 
-  // Listen to abort signal (handles both stop button and restart/clear)
+  // The signal aborts when the user clicks the stop button or triggers a
+  // restart/clear; flag the loop and drop any not-yet-emitted word chunks.
   const abortHandler = () => {
     isCanceled = true;
-    // Clear all pending timeouts
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
   signal?.addEventListener("abort", abortHandler);
@@ -149,7 +169,8 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker
+      // stream_stopped flags the partial response as user-aborted so the chat
+      // renders the stopped state instead of a normal completed message.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
         text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),

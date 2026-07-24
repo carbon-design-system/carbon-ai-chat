@@ -459,5 +459,3 @@ class VideoPlayer extends LitElement {
 }
 
 export default VideoPlayer;
-
-// Made with Bob

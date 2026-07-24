@@ -102,6 +102,11 @@ export function createCarbonTheme() {
       caretColor: "var(--cds-text-primary, #161616)",
     },
 
+    // The snippet's container element ([data-cds-aichat-snippet-id]) is the
+    // single source of truth for height. It declares its own min/max-block-size
+    // and overflow rules in code-snippet.scss; the scroller sits inside it and
+    // should inherit those bounds rather than fight them with its own
+    // independent floor/ceiling.
     ".cm-scroller": {
       fontFamily: "var(--cds-code-01-font-family, 'IBM Plex Mono', monospace)",
       fontSize: "var(--cds-code-01-font-size, 0.875rem)",

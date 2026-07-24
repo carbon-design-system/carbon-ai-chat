@@ -7,6 +7,22 @@
  *  @license
  */
 
+/**
+ * InventoryStatusExample workspace component.
+ *
+ * Demonstrates: the `workspacePanelElement` slot rendered when
+ * `additionalData.type === "inventory_status"`. Surfaces the
+ * `workspaceId` and `additionalData` payload received from
+ * WORKSPACE_OPEN and uses `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ * to close the workspace from a toolbar action.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *   - `<cds-aichat-workspace-shell>` and its header/body/footer slots
+ *
+ * Start reading at: `handleClose` and the render() workspace shell.
+ */
+
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import "@carbon/web-components/es/components/button/index.js";
@@ -76,6 +92,7 @@ class InventoryStatusExample extends LitElement {
   ];
 
   handleClose() {
+    // getPanel(PanelType.WORKSPACE) returns the workspace handle so the workspace can dismiss itself from inside the slot.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
@@ -84,11 +101,13 @@ class InventoryStatusExample extends LitElement {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
       case "evaluate":
+        // Replace with a real production implementation; alert stands in for an evaluate-plan workflow.
         alert(
           `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
         );
         break;
       case "run":
+        // Replace with a real production implementation; alert stands in for a run-plan workflow.
         alert(
           `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
         );
@@ -169,5 +188,3 @@ class InventoryStatusExample extends LitElement {
 }
 
 export default InventoryStatusExample;
-
-// Made with Bob

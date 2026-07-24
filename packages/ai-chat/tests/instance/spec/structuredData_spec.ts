@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -33,7 +33,7 @@ describe("ChatInstance.input.updateStructuredData", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     const structuredData: StructuredData = {
-      fields: [{ id: "rating", type: "number", value: 4 }],
+      fields: [{ id: "rating", value: 4 }],
     };
 
     instance.input.updateStructuredData(() => structuredData);
@@ -50,31 +50,28 @@ describe("ChatInstance.input.updateStructuredData", () => {
 
     // Set initial value
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "field1", type: "text", value: "hello" }],
+      fields: [{ id: "field1", value: "hello" }],
     }));
 
     // Update by appending a field
     const updater = jest.fn(
       (prev: StructuredData | undefined): StructuredData => ({
         ...prev,
-        fields: [
-          ...(prev?.fields ?? []),
-          { id: "field2", type: "number" as const, value: 42 },
-        ],
+        fields: [...(prev?.fields ?? []), { id: "field2", value: 42 }],
       }),
     );
 
     instance.input.updateStructuredData(updater);
 
     expect(updater).toHaveBeenCalledWith({
-      fields: [{ id: "field1", type: "text", value: "hello" }],
+      fields: [{ id: "field1", value: "hello" }],
     });
 
     const state = store.getState();
     expect(state.assistantInputState.pendingStructuredData).toEqual({
       fields: [
-        { id: "field1", type: "text", value: "hello" },
-        { id: "field2", type: "number", value: 42 },
+        { id: "field1", value: "hello" },
+        { id: "field2", value: 42 },
       ],
     });
   });
@@ -85,7 +82,7 @@ describe("ChatInstance.input.updateStructuredData", () => {
 
     // Set initial value
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "field1", type: "text", value: "hello" }],
+      fields: [{ id: "field1", value: "hello" }],
     }));
 
     expect(
@@ -100,28 +97,31 @@ describe("ChatInstance.input.updateStructuredData", () => {
     ).toBeUndefined();
   });
 
-  it("supports multi_select field type", async () => {
+  it("carries arbitrary field values as unknown and passes type hints through untouched", async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     instance.input.updateStructuredData(() => ({
       fields: [
         {
-          id: "features",
-          type: "multi_select",
-          value: ["feature-a", "feature-b"],
+          id: "priority",
+          // A free-form host hint the chat never inspects.
+          type: "radio",
+          value: { level: "high", weight: 3 },
         },
+        { id: "topics", value: ["billing", "shipping"] },
       ],
     }));
 
     const state = store.getState();
-    expect(
-      state.assistantInputState.pendingStructuredData?.fields?.[0],
-    ).toEqual({
-      id: "features",
-      type: "multi_select",
-      value: ["feature-a", "feature-b"],
-    });
+    expect(state.assistantInputState.pendingStructuredData?.fields).toEqual([
+      {
+        id: "priority",
+        type: "radio",
+        value: { level: "high", weight: 3 },
+      },
+      { id: "topics", value: ["billing", "shipping"] },
+    ]);
   });
 
   it("supports file field with ExternalFileReference", async () => {
@@ -190,7 +190,7 @@ describe("getState().input.structuredData", () => {
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
     const structuredData: StructuredData = {
-      fields: [{ id: "rating", type: "number", value: 5 }],
+      fields: [{ id: "rating", value: 5 }],
     };
 
     instance.input.updateStructuredData(() => structuredData);
@@ -204,7 +204,7 @@ describe("getState().input.structuredData", () => {
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "field1", type: "text", value: "hello" }],
+      fields: [{ id: "field1", value: "hello" }],
     }));
 
     const snapshot = instance.getState().input.structuredData;
@@ -225,7 +225,7 @@ describe("structured_data merge on send", () => {
     const { instance } = await renderChatAndGetInstanceWithStore(config);
 
     const structuredData: StructuredData = {
-      fields: [{ id: "rating", type: "number", value: 4 }],
+      fields: [{ id: "rating", value: 4 }],
     };
 
     instance.input.updateStructuredData(() => structuredData);
@@ -246,7 +246,7 @@ describe("structured_data merge on send", () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "rating", type: "number", value: 4 }],
+      fields: [{ id: "rating", value: 4 }],
     }));
 
     expect(
@@ -266,12 +266,12 @@ describe("structured_data merge on send", () => {
 
     // Set pending structured data in the store
     instance.input.updateStructuredData(() => ({
-      fields: [{ id: "store_field", type: "text", value: "from store" }],
+      fields: [{ id: "store_field", value: "from store" }],
     }));
 
     // Send a MessageRequest that already has structured_data
     const explicitStructuredData: StructuredData = {
-      fields: [{ id: "explicit_field", type: "text", value: "explicit" }],
+      fields: [{ id: "explicit_field", value: "explicit" }],
     };
 
     const sendHandler = jest.fn();
@@ -298,8 +298,8 @@ describe("structured_data merge on send", () => {
 
     const structuredData: StructuredData = {
       fields: [
-        { id: "name", type: "text", value: "John Doe" },
-        { id: "score", type: "number", value: 10 },
+        { id: "name", value: "John Doe" },
+        { id: "score", value: 10 },
       ],
     };
 
@@ -333,7 +333,7 @@ describe("structured_data merge on send", () => {
     instance.on([{ type: BusEventType.SEND, handler: sendHandler }]);
 
     const structuredData: StructuredData = {
-      fields: [{ id: "selection", type: "multi_select", value: ["a", "b"] }],
+      fields: [{ id: "selection", value: ["a", "b"] }],
     };
 
     await instance.send({
@@ -347,5 +347,3 @@ describe("structured_data merge on send", () => {
     expect(sentMessage.input.structured_data).toEqual(structuredData);
   });
 });
-
-// Made with Bob

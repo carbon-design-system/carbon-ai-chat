@@ -13,7 +13,7 @@
 
 import { ServiceManager } from "../services/ServiceManager";
 import { BusEventType } from "../../types/events/eventBusTypes";
-import { PublicChatState } from "../../types/instance/ChatInstance";
+import { PublicChatState } from "../../types/instance/PublicChatState";
 import isEqual from "lodash-es/isEqual.js";
 import { refreshLocalization } from "../utils/intlUtils";
 import { toPersistableState } from "./persistenceUtils";
@@ -63,7 +63,6 @@ function fireStateChangeEvent(serviceManager: ServiceManager) {
   return () => {
     const newState = serviceManager.actions.getPublicChatState();
 
-    // Use deep equality check to detect any changes in the state
     if (!isEqual(previousState, newState)) {
       serviceManager.eventBus.fireSync(
         {

@@ -4,29 +4,29 @@ title: Using with Angular
 
 ## Overview
 
-Angular renders the Carbon AI Chat web components directly, so the [web component guide](./WebComponent.md) is your main reference — its setup, configuration, {@link ChatInstance} API, and customization all apply unchanged. This page covers only the Angular-specific wiring: registering the custom elements, and switching to the `es-custom` build if you use `carbon-angular-components`.
+Angular renders the Carbon AI Chat web components directly. The [web component guide](./WebComponent.md) is your main reference. Its setup, configuration, {@link ChatInstance} API, and customization all apply unchanged. This page covers only the Angular-specific wiring: registering the custom elements, and switching to the `es-custom` build if you use `carbon-angular-components`.
 
-> **Note**: This page covers only what's specific to Angular. For theming, layout, slotting your own content, and the rest of the configuration shared across every framework, see [UI customization](./Customization.md).
+> **Note**: This page covers only what's specific to Angular. For theming, layout, slotting your own content, and the rest of the shared configuration, see [UI customization](./Customization.md).
 
 ## Installation
 
-Install using `npm`:
+Install with `npm`:
 
 ```
 npm install @carbon/ai-chat
 ```
 
-Or using `yarn`:
+Or with `yarn`:
 
 ```
 yarn add @carbon/ai-chat
 ```
 
-> **Note**: Install the required `peerDependencies`. See the [peer dependency changes](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/peer-dependency-changes.md) for a history of additions, removals, and version updates across releases.
+> **Note**: Install the required `peerDependencies`. See the [peer dependency changes](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/peer-dependency-changes.md) for additions, removals, and version updates across releases.
 
 ## Basic example
 
-Register the custom elements with `CUSTOM_ELEMENTS_SCHEMA`, import the web component, and use it in your template. Set complex configuration (objects, arrays, functions) as element properties through a `ViewChild` — Angular attribute binding only passes strings — and set `onBeforeRender` the same way to capture the {@link ChatInstance}:
+Register the custom elements with `CUSTOM_ELEMENTS_SCHEMA`, then import the web component and use it in your template. Because Angular attribute binding only passes strings, set complex configuration — objects, arrays, functions — as element properties through a `ViewChild`, and set `onBeforeRender` the same way to capture the {@link ChatInstance}:
 
 ```typescript
 import {
@@ -56,11 +56,11 @@ export class AppComponent {
 }
 ```
 
-This is the `cds-aichat-container` float layout; for custom sizing use `cds-aichat-custom-element` ({@link CdsAiChatCustomElementAttributes}). Everything else — configuration options, the {@link ChatInstance} API, and response rendering — works exactly as described in the [web component guide](./WebComponent.md).
+This example uses the `cds-aichat-container` float layout. For custom sizing, use `cds-aichat-custom-element` ({@link CdsAiChatCustomElementAttributes}). Everything else works just as the [web component guide](./WebComponent.md) describes: configuration options, the {@link ChatInstance} API, and response rendering.
 
 ## Using alongside carbon-angular-components
 
-`@carbon/ai-chat` builds on `@carbon/web-components`. When you also use `carbon-angular-components`, the shared `cds-` web-component names collide in the browser's custom-element registry. To avoid the clash, import from the `es-custom` build, which registers every component under a `cds-custom-` prefix:
+`@carbon/ai-chat` builds on `@carbon/web-components`. When you also use `carbon-angular-components`, the shared `cds-` web-component names collide in the browser's custom-element registry. To avoid the clash, import from the `es-custom` build. It registers every component under a `cds-custom-` prefix:
 
 ```typescript
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
@@ -74,9 +74,9 @@ import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index
 export class AppComponent {}
 ```
 
-The components, properties, and types are identical to the regular build — only the import paths and the `cds-custom-aichat-*` tag names change, and types come from `@carbon/ai-chat/es-custom`. See the [1.0.0 migration notes](./Migration-1.0.0.md#es-custom-folder) for details.
+The components, properties, and types match the regular build. Only the import paths and the `cds-custom-aichat-*` tag names change. Types come from `@carbon/ai-chat/es-custom`.
 
 ## Related
 
-- [Using as a Web component](./WebComponent.md) — the primary guide; everything here builds on it.
+- [Using as a Web component](./WebComponent.md) — the main guide; everything here builds on it.
 - [UI customization](./Customization.md) — theming, layout, and other configuration.

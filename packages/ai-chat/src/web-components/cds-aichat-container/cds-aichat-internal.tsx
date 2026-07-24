@@ -22,6 +22,7 @@ import ChatAppEntry from "../../chat/ChatAppEntry";
 import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
 import { PublicConfig } from "../../types/config/PublicConfig";
 import { ChatInstance } from "../../types/instance/ChatInstance";
+import type { RenderUserDefinedInputNode } from "../../types/component/ChatContainer";
 
 /**
  * Structural `hasChanged` for object properties: Lit defaults to identity, which
@@ -49,6 +50,10 @@ class ChatContainerInternal extends LitElement {
   /**
    * The config to use to load Carbon AI Chat. Note that the "onLoad" property is overridden by this component. If you
    * need to perform any actions after Carbon AI Chat been loaded, use the "onBeforeRender" or "onAfterRender" props.
+   *
+   * `serviceDeskFactory`, `serviceDesk`, and `strings` flow through this object —
+   * they live on `PublicConfig` and are populated by the parent web component's
+   * `resolvedConfig` getter.
    */
   @property({ type: Object, hasChanged: deepChanged })
   config: PublicConfig;
@@ -72,6 +77,14 @@ class ChatContainerInternal extends LitElement {
    */
   @property()
   onAfterRender: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * Internal renderer for custom TipTap node types in user message bubbles.
+   * The outer cds-aichat-container converts its WC-style callback (returns
+   * HTMLElement) to this React-style callback before passing it down.
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
   firstUpdated() {
     if (this.config) {
@@ -108,8 +121,10 @@ class ChatContainerInternal extends LitElement {
         config={this.config}
         onBeforeRender={this.onBeforeRender}
         onAfterRender={this.onAfterRender}
+        renderUserDefinedInputNode={this.renderUserDefinedInputNode}
         container={container}
         element={this.element}
+        chatWrapper={this}
       />,
     );
   }

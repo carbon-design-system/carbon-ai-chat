@@ -151,6 +151,49 @@ Chat custom css properties
   }
 }
 
+// Prompt-line writeable slots sit inside the input composer and double as
+// floating-menu containers for Carbon tooltips/popovers slotted into them, so they
+// need their own positioning context. Occupancy gating in PromptLineWriteableSlot
+// keeps an empty slot out of the flex flow (so it adds no gap before the prompt line
+// or send button) while leaving this a real, sized box whenever it has content.
+[data-prompt-line-slot] {
+  position: relative;
+}
+
+// When occupied, render the slot as a 32px-tall flex box so its content lines up
+// with the `sm` action / send buttons (a 16px icon centered in a 32px box) instead
+// of sizing to its own content height. Gated on :not([hidden]) so the occupancy
+// collapse (display:none via the `hidden` attribute) still wins while empty.
+[data-prompt-line-slot]:not([hidden]) {
+  display: flex;
+  align-items: center;
+  block-size: layout.$spacing-07;
+}
+
+// Expanded-layout inline actions row. The icon buttons sit at the start and
+// fill the available width so the overflow handler has a bounded box to measure
+// against. The buttons abut (no `gap`): the handler sums individual button
+// widths and ignores flex gaps, so a gap here would let it under-measure and
+// keep buttons visible past the edge. Trailing buttons that no longer fit are
+// collapsed via `data-hidden`.
+.cds-aichat-input-inline-actions {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.cds-aichat-input-inline-actions > [data-hidden] {
+  display: none;
+}
+
+// Measured invisibly on first layout (and on each actions change) so the
+// overflow state is applied before the row is shown — no flash of the "more"
+// trigger or of buttons that are about to collapse.
+.cds-aichat-input-inline-actions[data-measuring] {
+  visibility: hidden;
+}
+
 .cds-aichat--history-panel__content-container {
   block-size: 100%;
 
@@ -295,5 +338,3 @@ Chat custom css properties
     max-inline-size: 100%;
   }
 }
-
-// Made with Bob

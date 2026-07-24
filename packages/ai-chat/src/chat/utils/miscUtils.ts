@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,7 +16,7 @@ import { ErrorInfo } from "react";
 import { FileUpload } from "../../types/config/ServiceDeskConfig";
 import { FileStatusValue, WA_CONSOLE_PREFIX } from "./constants";
 import { resolveOrTimeout } from "./lang/promiseUtils";
-import { OnErrorData, OnErrorType } from "../../types/config/PublicConfig";
+import { OnErrorData, OnErrorType } from "../../types/config/ErrorConfig";
 
 /**
  * A global flag to indicate if we want to show debug messages in the browser console. This is generally set from

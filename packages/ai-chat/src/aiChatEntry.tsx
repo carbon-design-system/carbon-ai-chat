@@ -34,12 +34,18 @@ export {
 export {
   ChangeFunction,
   ChatInstance,
-  ChatInstanceInput,
-  ChatInstanceServiceDeskActions,
+  IncreaseOrDecrease,
+  SendOptions,
+} from "./types/instance/ChatInstance";
+export { ChatInstanceInput } from "./types/instance/ChatInstanceInput";
+export { ChatInstanceServiceDeskActions } from "./types/instance/ChatInstanceServiceDeskActions";
+export {
   EventBusHandler,
   EventHandlers,
-  FileUploadCapabilities,
-  IncreaseOrDecrease,
+  TypeAndHandler,
+} from "./types/instance/EventHandlers";
+export { FileUploadCapabilities } from "./types/instance/FileUploadCapabilities";
+export {
   PublicInputState,
   PublicCustomPanelsState,
   PublicHistoryPanelState,
@@ -47,11 +53,11 @@ export {
   PublicChatHumanAgentState,
   PublicChatState,
   PublicWorkspaceCustomPanelState,
-  SendOptions,
-  TypeAndHandler,
+} from "./types/instance/PublicChatState";
+export {
   WriteableElementName,
   WriteableElements,
-} from "./types/instance/ChatInstance";
+} from "./types/instance/WriteableElements";
 export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
 export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
 
@@ -135,28 +141,62 @@ export {
   UpsertMessageUpdater,
 } from "./types/config/MessagingConfig";
 
+export { PublicConfig } from "./types/config/PublicConfig";
+export { CarbonTheme } from "./types/config/CarbonTheme";
+export { DisclaimerPublicConfig } from "./types/config/DisclaimerConfig";
 export {
-  CarbonTheme,
   CustomMenuOption,
-  DisclaimerPublicConfig,
-  enLanguagePack,
   HeaderConfig,
-  HistoryConfig,
-  InputConfig,
-  LanguagePack,
-  LayoutConfig,
   MinimizeButtonIconType,
-  OnErrorData,
-  OnErrorType,
-  PublicConfig,
-  PublicConfigMessaging,
-  UploadConfig,
-} from "./types/config/PublicConfig";
+  ToolbarAction,
+} from "./types/config/HeaderConfig";
+export { HistoryConfig } from "./types/config/HistoryConfig";
+export type {
+  InputConfig,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+  SuggestionItem,
+  CustomListProps,
+} from "./types/config/InputConfig";
+export { enLanguagePack, LanguagePack } from "./types/config/LanguagePack";
+export { LayoutConfig } from "./types/config/LayoutConfig";
+export { OnErrorData, OnErrorType } from "./types/config/ErrorConfig";
+export { PublicConfigMessaging } from "./types/config/PublicConfigMessaging";
+export { UploadConfig } from "./types/config/UploadConfig";
 
 export {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from "./types/config/ShortcutConfig";
+
+// Carbon Tiptap extension factories and JSONContent / light-DOM helpers.
+// Local re-declarations live in `./types/utilities/inputUtils` so we own the
+// JSDoc + `@category` placement; see [src/types/AGENTS.md](./types/AGENTS.md)
+// for the cross-package re-export rule. Raw `@tiptap/core` types (`Editor`,
+// `Extension`, `JSONContent`, `Node`, ...) are not re-exported — import those
+// from `@tiptap/core` directly. The Carbon suggestion-config types are
+// exported from `./types/config/InputConfig` alongside `InputConfig`.
+export type {
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+} from "./types/utilities/inputUtils";
+
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  buildCarbonExtensions,
+  setHostOriginMeta,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+  textToDoc,
+  renderTokenChip,
+  renderInLightDom,
+} from "./types/utilities/inputUtils";
 
 export { DeepPartial } from "./types/utilities/DeepPartial";
 export type { default as ObjectMap } from "./types/utilities/ObjectMap";
@@ -245,6 +285,8 @@ export {
   HumanAgentMessageType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
   ReasoningSteps,
   ReasoningStep,
   ReasoningStepOpenState,
@@ -259,7 +301,6 @@ export {
   StructuredData,
   StructuredField,
   StructuredFieldType,
-  StructuredFieldValue,
   InlineFile,
   ExternalFileReference,
   FileFieldValue,
@@ -308,6 +349,9 @@ export {
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+  WCRenderUserDefinedInputNode,
 } from "./types/component/ChatContainer";
 
 export type {

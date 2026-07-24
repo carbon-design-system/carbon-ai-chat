@@ -17,7 +17,7 @@ import {
 } from "../../../src/types/messaging/Messages";
 import { MessageSendSource } from "../../../src/types/events/eventBusTypes";
 import { resolvablePromise } from "../../../src/chat/utils/resolvablePromise";
-import { OnErrorType } from "../../../src/types/config/PublicConfig";
+import { OnErrorType } from "../../../src/types/config/ErrorConfig";
 import { CancellationReason } from "../../../src/types/config/MessagingConfig";
 
 const createMessage = (id: string): MessageRequest<any> => ({
@@ -32,7 +32,10 @@ const createMessage = (id: string): MessageRequest<any> => ({
   },
 });
 
-const createServiceManagerStub = (customSendMessage = jest.fn()) => {
+const createServiceManagerStub = (
+  customSendMessage = jest.fn(),
+  stopStreamingButtonState = { isVisible: false, isDisabled: false },
+) => {
   const store = {
     dispatch: jest.fn(),
     getState: () => ({
@@ -52,10 +55,7 @@ const createServiceManagerStub = (customSendMessage = jest.fn()) => {
       },
       assistantMessageState: { messageIDs: [] as string[] },
       assistantInputState: {
-        stopStreamingButtonState: {
-          isVisible: false,
-          isDisabled: false,
-        },
+        stopStreamingButtonState,
       },
       allMessagesByID: {},
       targetViewState: {},
@@ -374,13 +374,71 @@ describe("MessageService", () => {
 
       await expect(sendMessagePromise).resolves.toBeUndefined();
 
-      // Verify no additional system message was created (ResponseStopped handles it)
+      // Verify no additional system message was created
+      // (MessageTypeComponent renders the stopped message inline via stream_stopped metadata)
       const finalDispatchCount = (serviceManager.store.dispatch as jest.Mock)
         .mock.calls.length;
       const newDispatches = finalDispatchCount - initialDispatchCount;
 
       // Should only have stop button visibility changes, not system message
       expect(newDispatches).toBeLessThan(5);
+    });
+
+    it("hides and re-enables the stop streaming button when cancelling a streaming message", async () => {
+      const serviceManager = createServiceManagerStub(jest.fn(), {
+        isVisible: true,
+        isDisabled: true,
+      });
+      const messageService = new MessageService(serviceManager, {
+        messaging: {
+          customSendMessage: jest.fn().mockResolvedValue(undefined),
+          messageTimeoutSecs: 0,
+          messageLoadingIndicatorTimeoutSecs: 0,
+        },
+      } as any);
+
+      const sendMessagePromise = resolvablePromise<void>();
+      const pendingRequest: PendingMessageRequest = {
+        localMessageID: "local-1",
+        message: createMessage("m-1"),
+        sendMessagePromise,
+        requestOptions: {},
+        timeFirstRequest: 0,
+        timeLastRequest: 0,
+        trackData: {
+          numErrors: 0,
+          lastRequestTime: 0,
+          totalRequestTime: 0,
+        },
+        isProcessed: false,
+        source: MessageSendSource.MESSAGE_INPUT,
+        sendMessageController: new AbortController(),
+        isStreaming: true,
+      };
+
+      (messageService as any).queue.current = pendingRequest;
+      messageService.markCurrentMessageAsStreaming("resp-1", "item-1");
+
+      await messageService.cancelMessageRequestByID(
+        "item-1",
+        false,
+        CancellationReason.STOP_STREAMING,
+      );
+
+      const dispatchCalls = (serviceManager.store.dispatch as jest.Mock).mock
+        .calls;
+      const visibilityToggle = dispatchCalls.find(
+        (call: any) =>
+          call[0]?.type === "SET_STOP_STREAMING_BUTTON_VISIBLE" &&
+          call[0]?.isVisible === false,
+      );
+      const disabledToggle = dispatchCalls.find(
+        (call: any) =>
+          call[0]?.type === "SET_STOP_STREAMING_BUTTON_DISABLED" &&
+          call[0]?.isDisabled === false,
+      );
+      expect(visibilityToggle).toBeDefined();
+      expect(disabledToggle).toBeDefined();
     });
 
     it("handles cancellation with USER_CANCELLED reason", async () => {

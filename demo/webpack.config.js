@@ -105,7 +105,15 @@ export default async (_env, args) => {
         },
         {
           test: /\.css$/,
+          resourceQuery: { not: [/raw/] },
           use: [MiniCssExtractPlugin.loader, "css-loader"],
+        },
+        {
+          // `?raw` CSS imports return the stylesheet text so it can be adopted
+          // into a shadow root via Lit's `unsafeCSS` (see web-components/demo-app.ts).
+          test: /\.css$/,
+          resourceQuery: /raw/,
+          type: "asset/source",
         },
       ],
     },

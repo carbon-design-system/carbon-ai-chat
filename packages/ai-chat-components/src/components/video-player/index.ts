@@ -10,5 +10,3 @@
 import "./src/video-player.js";
 
 export { default as VideoPlayer } from "./src/video-player.js";
-
-// Made with Bob

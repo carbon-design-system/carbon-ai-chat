@@ -9,12 +9,15 @@
 
 import { createComponent } from "@lit/react";
 import React from "react";
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonIconButtonElement from "@carbon/web-components/es/components/icon-button/icon-button.js";
+export {
+  ICON_BUTTON_SIZE,
+  ICON_BUTTON_TOOLTIP_ALIGNMENT,
+} from "@carbon/web-components/es/components/icon-button/defs.js";
+import CDSIconButtonElement from "@carbon/web-components/es/components/icon-button/icon-button.js";
 
 const IconButton = createComponent({
   tagName: "cds-icon-button",
-  elementClass: CarbonIconButtonElement,
+  elementClass: CDSIconButtonElement,
   react: React,
 });
 

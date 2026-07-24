@@ -112,6 +112,10 @@ function createServiceManager(appConfig: AppConfig) {
       [WriteableElementName.BEFORE_INPUT_ELEMENT]:
         document.createElement("div"),
       [WriteableElementName.AFTER_INPUT_ELEMENT]: document.createElement("div"),
+      [WriteableElementName.PROMPT_LINE_ACTIONS_END]:
+        document.createElement("div"),
+      [WriteableElementName.PROMPT_LINE_SEND_BUTTON_START]:
+        document.createElement("div"),
       [WriteableElementName.FOOTER_ELEMENT]: document.createElement("div"),
       [WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT]:
         document.createElement("div"),

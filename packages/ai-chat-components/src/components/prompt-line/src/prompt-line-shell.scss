@@ -1,0 +1,347 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "@carbon/layout";
+@use "@carbon/styles/scss/motion";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button" as button;
+@use "../../../globals/scss/vars" as *;
+
+// -----------------------------------------------------------
+// Host
+// -----------------------------------------------------------
+:host {
+  position: relative;
+  display: block;
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  inline-size: 100%;
+}
+
+// -----------------------------------------------------------
+// Shell (outermost wrapper inside shadow DOM)
+// -----------------------------------------------------------
+.#{$prefix}--prompt-line-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+}
+
+// -----------------------------------------------------------
+// Input container (border, background, padding)
+// -----------------------------------------------------------
+.#{$prefix}--input-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+  align-items: center;
+  background-color: theme.$chat-prompt-background;
+  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  color: theme.$text-primary;
+  inline-size: 100%;
+  min-block-size: 0;
+  outline: button.$button-border-width solid transparent;
+  outline-offset: -2px;
+  padding-inline: layout.$spacing-03 layout.$spacing-03;
+}
+
+:host(:not([disabled])) .#{$prefix}--input-container--expanded {
+  border-block-end: 1px solid theme.$border-strong;
+
+  &:focus-within {
+    box-shadow: 0 4px 8px 0 theme.$ai-drop-shadow;
+  }
+}
+
+// When prompt line is not in fullscreen layout (rounded), the enabled state border and
+// drop shadow appear above the shell instead of below.
+:host(:not([rounded]):not([disabled])) .#{$prefix}--input-container--expanded {
+  border-block-end: none;
+
+  &:focus-within {
+    box-shadow: 0 -4px 8px 0 theme.$ai-drop-shadow;
+  }
+}
+
+:host(:not([rounded]):not([disabled]):not([has-error]):not([has-file-uploads]))
+  .#{$prefix}--input-container--expanded {
+  border-block-start: 1px solid theme.$border-subtle;
+}
+
+.#{$prefix}--input-container:focus-within {
+  box-shadow: 0 4px 8px 0 theme.$ai-drop-shadow;
+}
+
+// Focus outline for non-expanded state — uses :focus-within so no JS class toggle needed.
+// Kept adjacent to the base rule (ahead of higher-specificity :host variants)
+// so stylelint's no-descending-specificity rule is satisfied.
+.#{$prefix}--input-container:not(
+    .#{$prefix}--input-container--expanded
+  ):focus-within {
+  outline-color: theme.$focus;
+}
+
+// Rounded container when at max width
+:host([rounded]) .#{$prefix}--input-container {
+  border-radius: layout.$spacing-03;
+}
+
+// Error state
+:host([has-error]) .#{$prefix}--input-container {
+  border: 1px solid theme.$support-error;
+}
+
+// Non-rounded shell with file uploads — round the top corners to visually
+// contain the upload chips.
+:host(:not([rounded])[has-file-uploads]) .#{$prefix}--input-container {
+  border-start-end-radius: layout.$spacing-03;
+  border-start-start-radius: layout.$spacing-03;
+}
+
+// Message actions visible — reduce start padding
+.#{$prefix}--input-container--has-message-actions {
+  padding-inline-start: layout.$spacing-03;
+}
+
+// -----------------------------------------------------------
+// Uploads + autocomplete row
+// Takes the full width of the input container so the field and send-control
+// below wrap onto their own row. Parent `.input-container` already has
+// `flex-wrap: wrap`, so setting `flex-basis: 100%` here is enough to force
+// the row break.
+// -----------------------------------------------------------
+.#{$prefix}--input-uploads-and-autocomplete {
+  position: relative;
+  box-sizing: border-box;
+  flex-basis: 100%;
+}
+
+.#{$prefix}--input-uploads-and-autocomplete--has-uploads::after {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  background: theme.$border-subtle-00;
+  block-size: 1px;
+  content: "";
+  inline-size: calc(100% + #{layout.$spacing-05} + #{layout.$spacing-03});
+  inset-block-end: 0;
+  inset-inline-start: calc(-1 * #{layout.$spacing-03});
+}
+
+// -----------------------------------------------------------
+// Text + actions row — message actions sit beside the editor and share the
+// row with the send control. `flex: 1 0` lets it consume all remaining space
+// next to send. In the expanded variant this collapses to `display: contents`
+// so the editor and actions reflow onto their own rows (see the expanded
+// block at the end of this file).
+// -----------------------------------------------------------
+.#{$prefix}--input-text-and-actions {
+  display: flex;
+  flex: 1 0;
+  align-items: center;
+}
+
+:host(:not([expanded])) ::slotted([slot="message-actions"]) {
+  align-self: flex-start;
+  // !important required to override global CSS reset (common.scss) that sets
+  // margin: 0 on all divs including slotted elements
+  // stylelint-disable-next-line declaration-no-important
+  margin-block-start: layout.$spacing-04 !important;
+}
+
+// Lay the real action container's buttons out in a row with consistent
+// spacing. Scoped to exclude the writeable passthrough wrapper
+// (`data-prompt-line-slot`), which owns its own host content layout. With a
+// single action this is visually identical to the previous block flow; with
+// several (e.g. the expanded inline actions) they sit in a gapped row.
+::slotted([slot="message-actions"]:not([data-prompt-line-slot])) {
+  display: flex;
+  align-items: center;
+  gap: layout.$spacing-03;
+}
+
+.#{$prefix}--input-container
+  > *:not(:last-child):not(.#{$prefix}--field-messaging-container) {
+  margin-inline-end: layout.$spacing-03;
+}
+
+// -----------------------------------------------------------
+// Text area wrapper (contains slot + placeholder + sizer)
+// -----------------------------------------------------------
+.#{$prefix}--input-text-area {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  flex: 1 0;
+  align-items: center;
+  inline-size: 100%;
+  margin-block: layout.$spacing-03;
+  min-block-size: layout.$spacing-08;
+  padding-block: layout.$spacing-03;
+  padding-inline: layout.$spacing-03;
+}
+
+// -----------------------------------------------------------
+// Editor slot (ProseMirror, light DOM)
+// Inner .ProseMirror styles are applied directly via JS in
+// _initProseMirror (CSSOM) — see prompt-line-shell.ts.
+// -----------------------------------------------------------
+::slotted([slot="editor"]) {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+  flex: 1 0;
+  inline-size: 100%;
+  min-block-size: 0;
+}
+
+// -----------------------------------------------------------
+// Autocomplete slot (light DOM, positioned above input)
+// -----------------------------------------------------------
+// The autocomplete lives inside `.--input-uploads-and-autocomplete`, which is
+// itself inset by the container's `padding-inline: layout.$spacing-03` on each
+// side, plus a `margin-inline-end: layout.$spacing-03` applied by the
+// adjacent-child rule below. Stretch back to the full container width by
+// offsetting inline-start by the start padding and widening by start padding +
+// end padding + end margin (3x $spacing-03).
+::slotted([slot="autocomplete-content"]) {
+  position: absolute;
+  z-index: 10;
+  inline-size: calc(100% + #{layout.$spacing-03} * 3);
+  inset-block-end: 100%;
+  inset-inline-start: calc(-1 * #{layout.$spacing-03});
+}
+
+// Add gap when autocomplete is not attached (fullscreen layout)
+::slotted([slot="autocomplete-content"]:not([attached])) {
+  inset-block-end: calc(100% + #{layout.$spacing-03});
+}
+
+// -----------------------------------------------------------
+// Field messaging row (used for error message)
+// -----------------------------------------------------------
+.#{$prefix}--field-messaging-container {
+  flex-basis: 100%;
+  inline-size: 100%;
+  margin-inline: 0;
+}
+
+// -----------------------------------------------------------
+// File uploads slot
+// -----------------------------------------------------------
+// Only lay out / space the slot once it actually has files. The element stays
+// slotted (with only its hidden live regions) while empty so screen-reader
+// announcements survive removal of the last file; gating on `has-uploads`
+// keeps it from adding spacing when there is nothing to show.
+::slotted([slot="file-uploads"][has-uploads]) {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  inline-size: 100%;
+  margin-block-start: layout.$spacing-03;
+  margin-inline-start: layout.$spacing-03;
+  max-block-size: 200px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+// -----------------------------------------------------------
+// Send control slot
+// -----------------------------------------------------------
+.#{$prefix}--input-send-control-container {
+  display: flex;
+  flex: 0 1;
+  align-self: flex-start;
+  gap: layout.$spacing-03;
+  margin-block-start: layout.$spacing-04;
+}
+
+// -----------------------------------------------------------
+// Expanded variant
+// The editor fills its own full-width row; the message actions and send
+// control drop to a second row beneath it (actions to the start, send pushed
+// to the end). The reflow is achieved purely by collapsing the
+// `--input-text-and-actions` wrapper to `display: contents` — which promotes
+// the editor and the slotted actions to flex items of `--input-container` —
+// then ordering them. No run-time DOM change: the same markup renders both
+// layouts. `--input-uploads-and-autocomplete` keeps `flex-basis: 100%`, so
+// the rows stack as: uploads → editor → (actions … send).
+// Higher-specificity rules live here (after the base rules they extend) to
+// satisfy stylelint's no-descending-specificity.
+// -----------------------------------------------------------
+// The editor sits on its own full-width row, so the larger start inset the base
+// rule reserves for inline content no longer applies. Match the end padding for a
+// symmetric gutter (the `--has-message-actions` rule already does this when real
+// actions exist; this covers the no-actions case too).
+.#{$prefix}--input-container--expanded {
+  padding-inline-start: layout.$spacing-03;
+}
+
+.#{$prefix}--input-container--expanded .#{$prefix}--input-text-and-actions {
+  display: contents;
+  gap: layout.$spacing-03;
+}
+
+.#{$prefix}--input-container--expanded .#{$prefix}--input-text-area {
+  flex-basis: 100%;
+  border-radius: layout.$spacing-02;
+  margin-block-end: 0;
+  outline: button.$button-border-width solid transparent;
+  outline-offset: -2px;
+}
+
+// Focus outline for expanded state — only on text area, and only when focus
+// arrived via keyboard navigation. `prompt-line-shell` listens for
+// `cds-aichat-prompt-focus` and reads `event.detail.keyboard`; the rich runtime
+// sets that flag when no pointer/touch event preceded the focus. The shell
+// toggles `--keyboard-focus` on the shadow-DOM text-area node, which this rule
+// targets directly.
+.#{$prefix}--input-container--expanded
+  .#{$prefix}--input-text-area--keyboard-focus {
+  outline-color: theme.$focus;
+}
+
+// The actions track takes the row's free space next to the send control (the
+// writeable passthrough slot is excluded). The small positive `flex-basis` is
+// what drops this track (and the send control after it) onto the row beneath the
+// editor: the editor row is exactly 100% wide, so a `flex-basis: 0` track would
+// still fit beside it and never wrap, while any non-zero basis overflows that row
+// and forces the break. The basis is kept tiny so the track plus the send control
+// still fit on one row (a large basis would bump the send control to a third row);
+// `flex-grow: 1` then makes the rendered width fill the row regardless, and
+// `min-inline-size: 0` lets it shrink so the host's overflow handler has a bounded
+// width to measure against. Actions left-align inside it; the send control sits at
+// the inline end with a fixed gap below.
+.#{$prefix}--input-container--expanded
+  ::slotted([slot="message-actions"]:not([data-prompt-line-slot])) {
+  flex: 1 1 1px;
+  min-inline-size: 0;
+}
+
+.#{$prefix}--input-container--expanded
+  .#{$prefix}--input-send-control-container {
+  // Size to the send button and never shrink. With no real actions nothing fills
+  // the row, so `margin-inline-start: auto` pushes the send control to the inline
+  // end on its own.
+  flex: 0 0 auto;
+  margin-block: layout.$spacing-03;
+  margin-inline-start: auto;
+}
+
+// With real actions the actions track (flex: 1 1 0) grows to fill the row and
+// pushes the send control to the inline end; replace the auto margin with a fixed
+// 2rem gap from the actions. Higher specificity + later position keeps stylelint's
+// no-descending-specificity satisfied.
+.#{$prefix}--input-container--expanded.#{$prefix}--input-container--has-message-actions
+  .#{$prefix}--input-send-control-container {
+  margin-inline-start: layout.$spacing-07;
+}

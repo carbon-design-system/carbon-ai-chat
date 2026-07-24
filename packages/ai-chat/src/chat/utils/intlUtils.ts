@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 
 import { createIntl } from "./i18n";
 import { loadLocale } from "./languageUtils";
-import { LanguagePack } from "../../types/config/PublicConfig";
+import { LanguagePack } from "../../types/config/LanguagePack";
 import { ServiceManager } from "../services/ServiceManager";
 
 /**

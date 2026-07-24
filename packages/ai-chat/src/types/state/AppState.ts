@@ -45,7 +45,7 @@ export type { FileUpload } from "../config/ServiceDeskConfig";
 // ─── Local imports (used only for the interfaces defined below) ──────────────
 import type { AppConfig } from "./AppConfig";
 import type { MarkdownConfig } from "../config/MarkdownConfig";
-import { LanguagePack } from "../config/PublicConfig";
+import { LanguagePack } from "../config/LanguagePack";
 import type { InputState } from "./InputState";
 import type { HumanAgentState } from "./HumanAgentState";
 import type { PersistedState } from "./PersistedState";

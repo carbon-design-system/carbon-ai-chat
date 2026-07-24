@@ -17,11 +17,9 @@ import {
 import { reducers } from "../../../src/chat/store/reducers";
 import { ServiceManager } from "../../../src/chat/services/ServiceManager";
 import { AppState } from "../../../src/types/state/AppState";
-import {
-  PublicConfig,
-  enLanguagePack,
-  CarbonTheme,
-} from "../../../src/types/config/PublicConfig";
+import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import { enLanguagePack } from "../../../src/types/config/LanguagePack";
+import { CarbonTheme } from "../../../src/types/config/CarbonTheme";
 
 // Mock ServiceManager for testing
 const createMockServiceManager = (initialState: AppState): ServiceManager => {

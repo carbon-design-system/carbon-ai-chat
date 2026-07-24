@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -57,10 +57,7 @@ const localeLoaders = {
     import("dayjs/locale/de-ch.js" as any).then((mod) =>
       normalizeModuleInterop(mod),
     ),
-  en: () =>
-    import("dayjs/locale/en.js" as any).then((mod) =>
-      normalizeModuleInterop(mod),
-    ),
+  en: () => enLocaleData,
   "en-au": () =>
     import("dayjs/locale/en-au.js" as any).then((mod) =>
       normalizeModuleInterop(mod),

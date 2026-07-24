@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,7 +11,7 @@ import { createComponent } from "@lit/react";
 import React from "react";
 import CdsAiChatChatHeader from "../components/chat-shell/src/chat-header.js";
 import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
-import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
+import { transformReactIconToCarbonIcon } from "../globals/utils/iconTransform.js";
 import type { ToolbarAction } from "./toolbar.js";
 
 export interface ChatHeaderProps {
@@ -148,5 +148,3 @@ const ChatHeader = React.forwardRef<any, any>((props, ref) => {
 ChatHeader.displayName = "ChatHeader";
 
 export default ChatHeader;
-
-// Made with Bob

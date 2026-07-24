@@ -25,7 +25,7 @@ import {
 import { ViewState } from "../instance/apiTypes";
 import { FileUpload } from "../config/ServiceDeskConfig";
 import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { PublicChatState } from "../instance/ChatInstance";
+import { PublicChatState } from "../instance/PublicChatState";
 import { MessageState } from "../config/MessagingConfig";
 
 /** @category Events */

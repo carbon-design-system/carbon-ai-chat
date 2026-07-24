@@ -74,5 +74,3 @@ export default () => {
     },
   };
 };
-
-// Made with Bob

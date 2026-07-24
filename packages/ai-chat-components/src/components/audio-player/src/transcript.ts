@@ -138,5 +138,3 @@ class Transcript extends LitElement {
 }
 
 export default Transcript;
-
-// Made with Bob

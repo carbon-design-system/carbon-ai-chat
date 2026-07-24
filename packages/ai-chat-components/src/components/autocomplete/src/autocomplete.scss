@@ -1,0 +1,77 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use "../../../globals/scss/vars" as *;
+@use "../../../globals/scss/modifiers" as *;
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+
+$block-class: #{$prefix}-autocomplete;
+
+:host {
+  @include rounded-modifiers;
+  --cds-aichat-border-radius-start-start: #{layout.$spacing-03};
+  --cds-aichat-border-radius-start-end: #{layout.$spacing-03};
+  --cds-aichat-border-radius-end-start: #{layout.$spacing-03};
+  --cds-aichat-border-radius-end-end: #{layout.$spacing-03};
+  --cds-aichat-autocomplete-max-height: none;
+
+  .#{$block-class} {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid theme.$chat-prompt-border-start;
+    background: theme.$chat-prompt-background;
+    border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+    border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+    border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
+    border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
+    max-block-size: var(--cds-aichat-autocomplete-max-height);
+  }
+
+  .#{$block-class}__header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    border-block-end: 1px solid theme.$border-subtle-00;
+    gap: layout.$spacing-05;
+    min-block-size: layout.$spacing-08;
+    padding-block: 0;
+    padding-inline: layout.$spacing-05;
+  }
+
+  .#{$block-class}__title {
+    @include type.type-style("heading-compact-01");
+
+    color: theme.$text-primary;
+  }
+
+  .#{$block-class}__items {
+    flex: 1 1 auto;
+    padding: 0;
+    margin: 0;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+
+  .#{$block-class}__live-region {
+    position: absolute;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    block-size: 1px;
+    clip: rect(0, 0, 0, 0);
+    inline-size: 1px;
+    white-space: nowrap;
+  }
+}
+
+:host([attached]) {
+  --cds-aichat-border-radius-end-start: 0;
+  --cds-aichat-border-radius-end-end: 0;
+}

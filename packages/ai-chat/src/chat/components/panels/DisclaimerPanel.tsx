@@ -16,7 +16,7 @@ import { useSelector } from "../../hooks/useSelector";
 import { shallowEqual } from "../../store/appStore";
 import { PageObjectId } from "../../../testing/PageObjectId";
 import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
-import { CarbonTheme } from "../../../types/config/PublicConfig";
+import { CarbonTheme } from "../../../types/config/CarbonTheme";
 
 interface DisclaimerPanelProps {
   disclaimerHTML?: string;

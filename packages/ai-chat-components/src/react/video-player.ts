@@ -30,5 +30,3 @@ const VideoPlayer = withWebComponentBridge(
 
 export { VideoPlayer };
 export default VideoPlayer;
-
-// Made with Bob

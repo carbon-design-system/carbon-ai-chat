@@ -10,7 +10,7 @@
 import React, { useMemo } from "react";
 
 import WriteableElement from "./components/util/WriteableElement";
-import { WriteableElementName } from "../types/instance/ChatInstance";
+import { WriteableElementName } from "../types/instance/WriteableElements";
 import { HasServiceManager } from "./hocs/withServiceManager";
 import { useSelector } from "./hooks/useSelector";
 import { AppState } from "../types/state/AppState";

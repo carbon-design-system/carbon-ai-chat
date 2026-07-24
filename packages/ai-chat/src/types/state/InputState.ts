@@ -9,7 +9,8 @@
 
 import type { FileUpload } from "../config/ServiceDeskConfig";
 import type { StructuredData } from "../messaging/Messages";
-import type { FileUploadCapabilities } from "../instance/ChatInstance";
+import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
+import type { JSONContent } from "@tiptap/core";
 
 /**
  * The status of a single pending file upload.
@@ -89,13 +90,28 @@ interface StopStreamingButtonState {
 interface InputState extends FileUploadCapabilities {
   /**
    * The canonical raw text value currently inside the input field.
+   * ProseMirror's document is the internal source of truth; this is the
+   * serialized output.
    */
   rawValue: string;
 
   /**
-   * The formatted/markup value currently rendered inside the input field.
+   * Tiptap-native `JSONContent` projection of the editor doc — kept in
+   * lockstep with `rawValue` (both update from the same input-change
+   * event).
+   *
+   * @experimental
    */
-  displayValue: string;
+  content: JSONContent;
+
+  /**
+   * Whether the input editor currently has focus. Mirrors the
+   * `cds-aichat-input-focus` / `cds-aichat-input-blur` events emitted by
+   * the input web component.
+   *
+   * @experimental
+   */
+  focused: boolean;
 
   /**
    * Runtime override for input-field visibility. `null` means "no override":

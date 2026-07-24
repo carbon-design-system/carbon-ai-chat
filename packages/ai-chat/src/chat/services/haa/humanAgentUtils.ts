@@ -26,7 +26,7 @@ import {
   TextItem,
   SystemMessageItem,
 } from "../../../types/messaging/Messages";
-import { LanguagePack } from "../../../types/config/PublicConfig";
+import { LanguagePack } from "../../../types/config/LanguagePack";
 
 /**
  * A simple pairing of local messages to the original messages that they belong to.

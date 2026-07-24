@@ -35,8 +35,8 @@ import {
   ChatInstance,
   IncreaseOrDecrease,
   SendOptions,
-  TypeAndHandler,
 } from "../../types/instance/ChatInstance";
+import { TypeAndHandler } from "../../types/instance/EventHandlers";
 import { AddMessageOptions } from "../../types/config/MessagingConfig";
 import {
   MessageSendSource,
@@ -184,6 +184,16 @@ function createChatInstance({
       updateStructuredData: (updater) => {
         debugLog("Called instance.input.updateStructuredData");
         serviceManager.actions.updateStructuredData(updater);
+      },
+
+      updateContent: (updater) => {
+        debugLog("Called instance.input.updateContent");
+        return serviceManager.actions.updateInputContent(updater);
+      },
+
+      getEditor: () => {
+        debugLog("Called instance.input.getEditor()");
+        return serviceManager.actions.ensureInputEditor();
       },
     },
 

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LanguagePack } from "../config/PublicConfig";
+import { LanguagePack } from "../config/LanguagePack";
 
 /**
  * This interface represents a piece of text that can be translated using a language pack. A piece of code that
@@ -32,6 +32,13 @@ interface AnnounceMessage {
    * optional parameters that are necessary for formatting the message with the given id are specified here.
    */
   messageValues?: Record<string, any>;
+
+  /**
+   * When true, the message is announced through an assertive live region that interrupts whatever the screen
+   * reader is currently reading. Reserve this for errors that block the user's progress (for example, a rejected
+   * file upload). Defaults to polite.
+   */
+  assertive?: boolean;
 }
 
 export type { AnnounceMessage };

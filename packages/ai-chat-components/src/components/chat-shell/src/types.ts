@@ -75,5 +75,3 @@ export interface BodyState {
   shouldRenderHistory: boolean;
   width: number;
 }
-
-// Made with Bob

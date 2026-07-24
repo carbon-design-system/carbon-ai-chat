@@ -295,6 +295,7 @@ export class DemoBody extends LitElement {
     // Listen for config and settings changes
     this.addEventListener("config-changed", this._onConfigChanged);
     this.addEventListener("settings-changed", this._onSettingsChanged);
+    this.addEventListener("autocomplete-toggle", this._onAutocompleteToggle);
 
     // Expose the setChatConfig function globally for external use
     window.setChatConfig = this._setChatConfig;
@@ -455,6 +456,47 @@ export class DemoBody extends LitElement {
     if (this.settings.framework === "react") {
       this._renderReactApp();
     }
+  };
+
+  /**
+   * Handle autocomplete toggle event from demo-autocomplete-switcher
+   */
+  private _onAutocompleteToggle = async (event: Event) => {
+    event.stopPropagation();
+    const customEvent = event as CustomEvent<{ enabled: boolean }>;
+    const { enabled } = customEvent.detail;
+
+    const { RESPONSE_MAP } = await import("../customSendMessage/responseMap");
+    const responseMapKeys = Object.keys(RESPONSE_MAP);
+
+    const responseMapAutocomplete = {
+      items: async (query: string) => {
+        const q = query.toLowerCase();
+        return responseMapKeys
+          .filter((key) => key.toLowerCase().includes(q))
+          .map((key) => ({ id: key, label: key, value: key }));
+      },
+    };
+
+    const newConfig = { ...this.config };
+
+    if (enabled) {
+      newConfig.input = {
+        ...newConfig.input,
+        autocomplete: responseMapAutocomplete,
+      };
+    } else if (newConfig.input?.autocomplete) {
+      const { autocomplete: _autocomplete, ...rest } = newConfig.input;
+      newConfig.input = rest;
+    }
+
+    // Dispatch config-changed event
+    const configEvent = new CustomEvent<PublicConfig>("config-changed", {
+      detail: newConfig,
+    });
+    await this._processConfigChange(configEvent, {
+      triggerSetChatConfigMode: true,
+    });
   };
 
   /**

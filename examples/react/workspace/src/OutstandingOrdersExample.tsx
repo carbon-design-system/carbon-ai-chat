@@ -7,6 +7,21 @@
  *  @license
  */
 
+/**
+ * Workspace component for the workspace example (outstanding orders table).
+ *
+ * Demonstrates: the `workspacePanelElement` writeable element reading the
+ * `additional_data.orders` array forwarded by the `OutstandingOrdersCard`
+ * maximize action and rendering it as a Carbon `Table`.
+ *
+ * APIs exercised:
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody`
+ *   - `Toolbar`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `OutstandingOrdersExample()`.
+ */
+
 import React, { useState } from "react";
 import { ChatInstance, PanelType } from "@carbon/ai-chat";
 import WorkspaceShell, {
@@ -48,6 +63,7 @@ export function OutstandingOrdersExample({
   // Get orders from additionalData, fallback to empty array
   const orders = additionalData?.orders || [];
 
+  // instance.customPanels.getPanel(PanelType.WORKSPACE) returns the active workspace panel handle so the close toolbar action can dismiss it.
   const panel = instance.customPanels?.getPanel(PanelType.WORKSPACE);
 
   const handleClose = () => {
@@ -117,5 +133,3 @@ export function OutstandingOrdersExample({
     </WorkspaceShell>
   );
 }
-
-// Made with Bob

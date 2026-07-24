@@ -57,16 +57,22 @@ describe("render hardening", () => {
     );
     expect(messageBagRenders).toBe(1);
 
-    // Two keystrokes (rawValue/displayValue updates), exactly what Input.tsx
+    // Two keystrokes (rawValue/content updates), exactly what Input.tsx
     // dispatches as the user types.
     act(() => {
       store.dispatch(
-        actions.updateInputState({ rawValue: "h", displayValue: "h" }, false),
+        actions.updateInputState(
+          { rawValue: "h", content: { type: "doc", content: [] } },
+          false,
+        ),
       );
     });
     act(() => {
       store.dispatch(
-        actions.updateInputState({ rawValue: "hi", displayValue: "hi" }, false),
+        actions.updateInputState(
+          { rawValue: "hi", content: { type: "doc", content: [] } },
+          false,
+        ),
       );
     });
     expect(messageBagRenders).toBe(1);

@@ -301,9 +301,9 @@ describe("config-change re-render counts", () => {
 
   // Regression: AppShell subscribes to the file-upload + streaming subset of
   // the active input slice (via selectInputUploadAndStreamingFields +
-  // shallowEqual) rather than the whole slice. A `rawValue` / `displayValue`
+  // shallowEqual) rather than the whole slice. A `rawValue` / `content`
   // update dispatched on every keystroke must NOT re-render that subscriber.
-  it("a rawValue/displayValue update does NOT re-render selectInputUploadAndStreamingFields subscribers", () => {
+  it("a rawValue/content update does NOT re-render selectInputUploadAndStreamingFields subscribers", () => {
     const store = makeStore(BASE_CONFIG);
     let uploadProbeRenders = 0;
 
@@ -323,12 +323,18 @@ describe("config-change re-render counts", () => {
     // Simulate Input.tsx writing the value on each keystroke.
     act(() => {
       store.dispatch(
-        actions.updateInputState({ rawValue: "h", displayValue: "h" }, false),
+        actions.updateInputState(
+          { rawValue: "h", content: { type: "doc", content: [] } },
+          false,
+        ),
       );
     });
     act(() => {
       store.dispatch(
-        actions.updateInputState({ rawValue: "hi", displayValue: "hi" }, false),
+        actions.updateInputState(
+          { rawValue: "hi", content: { type: "doc", content: [] } },
+          false,
+        ),
       );
     });
 

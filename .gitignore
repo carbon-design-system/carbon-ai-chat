@@ -82,12 +82,18 @@ test-results
 
 # NextJS cache filees
 .next
+next-env.d.ts
 
 packages/ai-chat-components/scss
-.bob
-.claude
+.bob/*
+!.bob/skills/
+.claude/*
+!.claude/skills/
 
 .playwright-mcp
 
 # PR description draft (per-PR throwaway, see AGENTS_PR.md)
 /PR.md
+
+# Plan working files (per-feature throwaway, see AGENTS_PLAN_AUTHORING.md)
+/PLAN*.md

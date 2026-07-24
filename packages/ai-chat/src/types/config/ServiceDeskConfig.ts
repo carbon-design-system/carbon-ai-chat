@@ -14,54 +14,35 @@ import {
   MessageRequest,
   MessageResponse,
 } from "../messaging/Messages";
-import type {
-  ChatInstance,
-  FileUploadCapabilities,
-} from "../instance/ChatInstance";
+import type { ChatInstance } from "../instance/ChatInstance";
+import type { FileUploadCapabilities } from "../instance/FileUploadCapabilities";
+
+// Canonical declarations live in @carbon/ai-chat-components; local
+// re-declarations here own the consumer-facing JSDoc + `@category` so
+// TypeDoc reads them at the local site. See [../AGENTS.md](../AGENTS.md)
+// for the cross-package re-export rule.
+import {
+  FileStatusValue as _FileStatusValue,
+  type FileUpload as _FileUpload,
+} from "@carbon/ai-chat-components/es/components/prompt-line/src/types.js";
 
 /**
- * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
+ * Lifecycle status for a {@link FileUpload}. Values:
+ * `EDIT` (selected but not yet sent), `UPLOADING` (transfer in progress),
+ * `COMPLETE` (processing finished), `SUCCESS` (upload finished cleanly).
  *
  * @category Service desk
  */
-export enum FileStatusValue {
-  COMPLETE = "complete",
-  EDIT = "edit",
-  UPLOADING = "uploading",
-  SUCCESS = "success",
-}
+export const FileStatusValue = _FileStatusValue;
+export type FileStatusValue = _FileStatusValue;
 
 /**
- * An interface that represents a file to upload and its current upload status.
+ * Represents a file the user has selected for upload, including its current
+ * {@link FileStatusValue} and any error metadata.
  *
  * @category Service desk
  */
-export interface FileUpload {
-  /**
-   * A unique ID for the file.
-   */
-  id: string;
-
-  /**
-   * The file to upload.
-   */
-  file: File;
-
-  /**
-   * The current upload status.
-   */
-  status: FileStatusValue;
-
-  /**
-   * Indicates if the file contains an error or failed to upload.
-   */
-  isError?: boolean;
-
-  /**
-   * If the file failed to upload, this is an optional error message to display.
-   */
-  errorMessage?: string;
-}
+export type FileUpload = _FileUpload;
 
 /**
  * The section of the public config that contains configuration options for service desk integrations.

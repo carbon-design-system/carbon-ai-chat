@@ -21,11 +21,12 @@ import {
   BUTTON_SIZE,
 } from "@carbon/web-components/es/components/button/defs.js";
 import {
-  CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE,
+  CHAT_BUTTON_KIND as _CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE,
 } from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
+import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
 import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
+import type { JSONContent } from "@tiptap/core";
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -165,20 +166,29 @@ interface EventInputData<TNameType extends string = string> {
 /**
  * The type of a structured field.
  *
+ * Only three values carry meaning to the chat itself:
+ *
+ * - `"file"` — drives the upload merge logic and in-flight upload tracking.
+ * - `"mention"` — produced by the mention input node.
+ * - `"command"` — produced by the command input node.
+ *
+ * Any other string is accepted and passed through untouched — a free-form hint
+ * for your own {@link PublicConfigMessaging.customSendMessage}, which the chat
+ * never inspects. The three named members exist only so they keep
+ * autocompleting; describe every other backend widget type however your
+ * backend already names it.
+ *
  * @experimental
  * @category Messaging
  */
 type StructuredFieldType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "boolean"
-  | "select"
-  | "multi_select"
-  | "date"
-  | "datetime"
   | "file"
-  | "unknown";
+  | "mention"
+  | "command"
+  // `string & {}` widens to any string while keeping the three literals in
+  // autocomplete — a plain `| string` would collapse the whole union to `string`.
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {});
 
 /**
  * Represents an inline file — the actual File object to be uploaded.
@@ -267,31 +277,15 @@ interface ExternalFileReference {
 type FileFieldValue = InlineFile | ExternalFileReference;
 
 /**
- * The value of a structured field. The actual type depends on the field's
- * {@link StructuredFieldType}.
- *
- * @experimental
- * @category Messaging
- */
-type StructuredFieldValue =
-  | string // text, textarea, select, date, datetime
-  | number // number
-  | boolean // boolean
-  | string[] // multi_select
-  | FileFieldValue // file (single)
-  | FileFieldValue[] // file (multiple)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | any; // unknown / user_defined escape hatch
-
-/**
- * A single typed field within a {@link StructuredData} payload.
+ * A single field within a {@link StructuredData} payload.
  *
  * @experimental
  * @category Messaging
  */
 interface StructuredField {
   /**
-   * Unique identifier for this field.
+   * Unique identifier for this field. Read it back in
+   * {@link PublicConfigMessaging.customSendMessage} to find the field you sent.
    */
   id: string;
 
@@ -301,27 +295,33 @@ interface StructuredField {
   label?: string;
 
   /**
-   * The type of field.
+   * The type of field. Only `"file"`, `"mention"`, and `"command"` mean
+   * anything to the chat (see {@link StructuredFieldType}); any other value is
+   * carried through untouched for your own
+   * {@link PublicConfigMessaging.customSendMessage} to interpret.
    */
   type?: StructuredFieldType;
 
   /**
-   * The value of the field.
+   * The value of the field, carried untyped. For a `"file"` field it is a
+   * {@link FileFieldValue}; for every other field it is whatever your backend
+   * needs — narrow it yourself in
+   * {@link PublicConfigMessaging.customSendMessage}.
    */
-  value: StructuredFieldValue;
+  value: unknown;
 }
 
 /**
  * Structured data that can be sent alongside or instead of plain text input.
- * Supports typed fields for common input patterns (text, select, multi-select,
- * file, etc.) as well as an escape hatch for arbitrary user-defined data.
+ * Carries an array of {@link StructuredField} entries plus `user_defined`, an
+ * escape hatch for arbitrary host-defined data.
  *
  * @experimental
  * @category Messaging
  */
 interface StructuredData {
   /**
-   * Typed fields with known structures (recommended for most use cases).
+   * The structured fields carried with the message.
    */
   fields?: StructuredField[];
 
@@ -351,12 +351,26 @@ interface MessageInput extends BaseMessageInput {
 
   /**
    * Structured data that can be sent alongside or instead of plain text input.
-   * Supports typed fields (text, select, multi-select, file, etc.) and an
-   * escape hatch for arbitrary user-defined data.
+   * Carries an array of structured fields and an escape hatch for arbitrary
+   * user-defined data.
    *
    * @experimental
    */
   structured_data?: StructuredData;
+
+  /**
+   * TipTap JSONContent captured when the user sent the message. When present,
+   * the user message bubble renders structurally; mention / command / custom
+   * nodes render via their respective renderers. Absent on plain-text /
+   * legacy messages — the bubble falls back to `text`.
+   *
+   * Snapshot semantics: this reflects what the user typed at send time. If a
+   * `pre:send` handler rewrites `input.text`, `display_content` does NOT
+   * auto-update.
+   *
+   * @experimental
+   */
+  display_content?: JSONContent;
 }
 
 /**
@@ -679,11 +693,14 @@ export interface ItemStreamingMetadata {
 }
 
 /**
- * Status of the chain of thought step.
+ * The processing status of a single chain-of-thought step, surfaced on
+ * {@link ChainOfThoughtStep.status}. An icon reflecting this status is rendered
+ * in the chain-of-thought view; when omitted, the UI assumes success.
  *
  * @category Messaging
  */
-export { ChainOfThoughtStepStatus };
+export const ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
+export type ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
 
 /**
  * A chain of thought step is meant to show tool calls and other steps made by your agent
@@ -1740,6 +1757,25 @@ enum ButtonItemKind {
 }
 
 /**
+ * The Carbon AI-chat button style applied to {@link ButtonItem.kind}. Selects
+ * the visual treatment (primary, secondary, tertiary, ...) for buttons rendered
+ * by the chat.
+ *
+ * @category Messaging
+ */
+export const CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
+export type CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
+
+/**
+ * The Carbon AI-chat button size applied to {@link ButtonItem.size}. Selects the
+ * height and padding scale for buttons rendered by the chat.
+ *
+ * @category Messaging
+ */
+export const CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
+export type CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
+
+/**
  * This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.
  *
  * @category Messaging
@@ -2401,7 +2437,6 @@ export {
   StructuredData,
   StructuredField,
   StructuredFieldType,
-  StructuredFieldValue,
   InlineFile,
   ExternalFileReference,
   FileFieldValue,

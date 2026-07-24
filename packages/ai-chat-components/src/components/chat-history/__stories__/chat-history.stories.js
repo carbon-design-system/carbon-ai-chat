@@ -56,6 +56,7 @@ class ChatHistoryDemo extends LitElement {
     searchTotalCount: { type: Number },
     searchValue: { type: String },
     searchOff: { type: Boolean, attribute: "search-off" },
+    autofocus: { type: Boolean },
     searchAttributes: { type: Object },
     overflowMenuLabel: { type: String, attribute: "overflow-menu-label" },
     selectedId: { type: String },
@@ -78,6 +79,7 @@ class ChatHistoryDemo extends LitElement {
     super();
     this.headerTitle = "Chats";
     this.searchOff = false;
+    this.autofocus = false;
     this.searchAttributes = {
       "label-text": "Search",
       placeholder: "Search",
@@ -386,6 +388,7 @@ class ChatHistoryDemo extends LitElement {
         ></cds-aichat-history-header>
         <cds-aichat-history-toolbar
           ?search-off=${this.searchOff}
+          ?autofocus=${this.autofocus}
           .searchAttributes=${this.searchAttributes}
         >
         </cds-aichat-history-toolbar>
@@ -553,6 +556,10 @@ export const Default = {
       description:
         "true if search should be turned off in chat history toolbar.",
     },
+    autofocus: {
+      control: "boolean",
+      description: "Toggles the native autofocus attribute on the text input",
+    },
     searchAttributes: {
       control: "object",
       description:
@@ -574,6 +581,7 @@ export const Default = {
   args: {
     HeaderTitle: "Chats",
     searchOff: false,
+    autofocus: false,
     searchAttributes: {
       "label-text": "Search",
       placeholder: "Search",
@@ -587,6 +595,7 @@ export const Default = {
     <cds-aichat-history-demo
       header-title="${args.HeaderTitle}"
       ?search-off=${args.searchOff}
+      ?autofocus=${args.autofocus}
       .searchAttributes=${args.searchAttributes}
       overflow-menu-label="${args.overflowMenuLabel}"
       ?show-close-action=${args.showCloseAction}

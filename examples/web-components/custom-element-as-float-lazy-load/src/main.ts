@@ -7,6 +7,25 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Custom element as float (lazy load) (Web components)
+ *
+ * Demonstrates: code-splitting the `<cds-aichat-custom-element>` bundle
+ * via dynamic import on first launcher click, with `<cds-aichat-shell>`
+ * acting as a crossfade fallback covering both bundle download and chat
+ * initialization. Uses `readCarbonChatSession` to auto-mount when an
+ * existing session is found.
+ *
+ * APIs exercised:
+ *   - Dynamic `import()` of the chat custom-element bundle
+ *   - `<cds-aichat-shell>` (overlay during bundle + init)
+ *   - `<cds-aichat-button>` (custom launcher)
+ *   - `BusEventType.VIEW_CHANGE` (phase machine)
+ *   - `readCarbonChatSession` for auto-mount
+ *
+ * Start reading at: the `Demo` element and the `loadChatBundle()` call.
+ */
+
 import "@carbon/ai-chat/css/chat-float-layout.css";
 import "@carbon/ai-chat/css/chat-launcher-layout.css";
 import "@carbon/ai-chat-components/es/components/chat-shell/index.js";
@@ -35,6 +54,8 @@ type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
 
 const config: PublicConfig = {
   messaging: {
+    // Mocked back-end so the example runs without a server. Replace with a
+    // real production implementation.
     customSendMessage,
   },
   // Suppress the built-in launcher — our custom cds-aichat-button acts as the launcher.
@@ -69,7 +90,9 @@ export class Demo extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    // Auto-load if a previous session was open.
+    // readCarbonChatSession told us at module load that the chat was open in
+    // the prior session, so kick off the lazy import without waiting for a
+    // launcher click — the user expects the chat to still be there.
     if (this._phase !== "idle") {
       void this._loadChat();
     }
@@ -95,6 +118,9 @@ export class Demo extends LitElement {
     }
     // The 3000 ms delay makes the lazy-loading behavior obvious on localhost and should be removed in a real implementation.
     await new Promise((resolve) => setTimeout(resolve, 3000));
+    // Dynamic import is the entire point of this example: the bundle stays
+    // out of the initial page load and is only fetched on first launcher
+    // click (or auto-mount via readCarbonChatSession).
     await import("@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js");
     this._chatLoaded = true;
   }

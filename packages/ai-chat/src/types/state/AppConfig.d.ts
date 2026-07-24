@@ -7,11 +7,9 @@
  *  @license
  */
 
-import {
-  HeaderConfig,
-  LayoutConfig,
-  PublicConfig,
-} from "../config/PublicConfig";
+import { PublicConfig } from "../config/PublicConfig";
+import { HeaderConfig } from "../config/HeaderConfig";
+import { LayoutConfig } from "../config/LayoutConfig";
 import { ThemeState } from "./ThemeState";
 import ObjectMap from "../utilities/ObjectMap";
 import { LauncherConfig } from "../config/LauncherConfig";

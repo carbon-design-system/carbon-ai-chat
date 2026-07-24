@@ -7,6 +7,25 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Workspace panel
+ *
+ * Demonstrates: the workspace feature for opening rich, side-by-side content
+ * (inventory, orders, SQL editor) via the `workspacePanelElement` slot.
+ * Subscribes to the `WORKSPACE_*` bus events and uses `customPanels.getPanel`
+ * to open the workspace from a `user_defined` response card's "maximize"
+ * action.
+ *
+ * APIs exercised:
+ *   - `ChatCustomElement`
+ *   - `BusEventType.WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_CLOSE`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *   - `renderUserDefinedResponse` for the maximize affordance
+ *   - `renderWriteableElements.workspacePanelElement`
+ *
+ * Start reading at: `App()` and the `onBeforeRender` workspace handlers.
+ */
+
 import {
   BusEvent,
   BusEventType,
@@ -46,11 +65,14 @@ const config: PublicConfig = {
     customSendMessage,
   },
   layout: {
+    // Hides the chat frame chrome so the workspace and chat sit flush in a fullscreen layout.
     showFrame: false,
     customProperties: {
+      // Caps message bubble width so wide screens still feel readable.
       "messages-max-width": `max(60vw, 672px)`,
     },
   },
+  // Auto-opens chat on load so the workspace flow can be exercised without a launcher click.
   openChatByDefault: true,
 };
 
@@ -66,19 +88,19 @@ function App() {
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
 
-    // Handle workspace pre open event
+    // Subscribes to BusEventType.WORKSPACE_PRE_OPEN so hosts can begin loading workspace resources before the panel animates in.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
       handler: customWorkspacePreOpenHandler,
     });
 
-    // Handle workspace open event
+    // Subscribes to BusEventType.WORKSPACE_OPEN to capture workspaceId/additionalData and select the writeable element to render.
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: customWorkspaceOpenHandler,
     });
 
-    // Handle workspace close event
+    // Subscribes to BusEventType.WORKSPACE_CLOSE so workspace state is cleared when the user dismisses the panel.
     instance.on({
       type: BusEventType.WORKSPACE_CLOSE,
       handler: customWorkspaceCloseHandler,
@@ -94,9 +116,6 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  /**
-   * Listens for workspace panel pre open event.
-   */
   function customWorkspacePreOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspacePreOpen;
     console.log(
@@ -105,9 +124,6 @@ function App() {
     );
   }
 
-  /**
-   * Listens for workspace panel open event.
-   */
   function customWorkspaceOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceOpen;
     console.log(data, "Workspace panel opened");
@@ -118,9 +134,6 @@ function App() {
     setWorkspaceData({ type, workspaceId, additionalData });
   }
 
-  /**
-   * Listens for workspace panel close event.
-   */
   function customWorkspaceCloseHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceClose;
     console.log(data, "Workspace panel closed");
@@ -129,9 +142,6 @@ function App() {
     setWorkspaceData({ type: null });
   }
 
-  /**
-   * Handler for user_defined response types.
-   */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
       const { messageItem } = state;
@@ -142,20 +152,19 @@ function App() {
               <OutstandingOrdersCard
                 workspaceId={messageItem.user_defined.workspace_id as string}
                 onMaximize={() => {
-                  // Open workspace using the customPanels API
                   const workspaceId = messageItem.user_defined
                     ?.workspace_id as string;
                   const additionalData =
                     messageItem.user_defined?.additional_data;
 
-                  // Set workspace data for rendering
+                  // Seeds workspaceData before opening so the writeable element resolves on the first render after the panel opens.
                   setWorkspaceData({
                     type: (additionalData as { type?: string })?.type || null,
                     workspaceId,
                     additionalData,
                   });
 
-                  // Open the workspace panel
+                  // instance.customPanels.getPanel(PanelType.WORKSPACE) hands back the workspace panel API so the host can open it imperatively from a card action.
                   const panel = _instance.customPanels?.getPanel(
                     PanelType.WORKSPACE,
                   );

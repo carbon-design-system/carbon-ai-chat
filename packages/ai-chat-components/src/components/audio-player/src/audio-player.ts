@@ -422,5 +422,3 @@ class AudioPlayer extends LitElement {
 }
 
 export default AudioPlayer;
-
-// Made with Bob

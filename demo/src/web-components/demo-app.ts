@@ -7,7 +7,6 @@
  *  @license
  */
 
-import "./DemoApp.css";
 import "@carbon/web-components/es/components/ai-skeleton/index.js";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
 import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
@@ -33,7 +32,11 @@ import {
   UserDefinedItem,
   ViewType,
 } from "@carbon/ai-chat";
-import { css, html, LitElement, PropertyValues } from "lit";
+// Raw CSS text of the shipped sidebar layout. demo-app keeps its shadow DOM, so
+// the compiled stylesheet is imported as a string (webpack `?raw` loader) and
+// adopted into `static styles` below via `unsafeCSS`.
+import sidebarLayoutCss from "@carbon/ai-chat/css/chat-sidebar-layout.css?raw";
+import { css, html, LitElement, PropertyValues, unsafeCSS } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DeepPartial } from "../types/DeepPartial";
 
@@ -63,67 +66,54 @@ interface CustomFooterSlot {
  */
 @customElement("demo-app")
 export class DemoApp extends LitElement {
-  static styles = css`
-    cds-ai-skeleton-placeholder {
-      width: 100%;
-    }
+  static styles = [
+    // Base / closing / closed sidebar positioning shipped by @carbon/ai-chat.
+    unsafeCSS(sidebarLayoutCss),
+    css`
+      :host {
+        /* Tuck the docked sidebar below the demo's 48px header. */
+        --cds-aichat-sidebar-inset-block-start: 48px;
+      }
 
-    .fullScreen {
-      position: fixed;
-      bottom: 0;
-      right: var(--chat-position-right);
-      left: var(--chat-position-left);
-      height: calc(100vh - 48px);
-      width: calc(100vw - 320px - 2rem);
-      z-index: 9999;
-    }
+      cds-ai-skeleton-placeholder {
+        width: 100%;
+      }
 
-    .sidebar {
-      position: fixed;
-      right: var(--chat-position-right);
-      left: var(--chat-position-left);
-      top: 48px;
-      height: calc(100vh - 48px);
-      width: 320px;
-      z-index: 9999;
-      /* Carbon motion token: motion.$duration-moderate-01 (240ms) or motion.$duration-fast-01 (70ms) for RTL with motion.motion(standard, productive) */
-      transition: var(--chat-sidebar-transition-property)
-        var(--chat-sidebar-transition-duration)
-        var(--chat-sidebar-transition-timing-function);
-      visibility: visible;
-    }
+      .fullScreen {
+        position: fixed;
+        bottom: 0;
+        inset-inline-end: 0;
+        height: calc(100vh - 48px);
+        width: calc(100vw - 320px - 2rem);
+        z-index: 9999;
+      }
 
-    .sidebar--expanded {
-      width: calc(100vw - 320px - 2rem);
-    }
+      /* Workspace expansion: widen the panel to make room for the workspace UI.
+         The 320px gutter is the demo's config nav-block width. */
+      .cds-aichat-sidebar--expanded {
+        width: calc(100vw - 320px - 2rem);
+      }
 
-    .sidebar--expanding {
-      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) or motion.$duration-fast-01 (70ms) for RTL, and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-      transition: var(--chat-sidebar-transition-property)
-        var(--chat-sidebar-transition-duration)
-        var(--chat-sidebar-expanding-transition-timing-function);
-    }
+      /* While expanding / contracting, transition width alongside the open/close
+         slide. inset-inline-end keeps the slide correct in RTL; width is
+         direction-agnostic and is what the transitionend handler watches for.
+         Carbon motion tokens: motion.$duration-moderate-02 (240ms) and
+         motion.$duration-slow-01 (400ms) with motion.motion(standard, productive). */
+      .cds-aichat-sidebar--expanding,
+      .cds-aichat-sidebar--contracting {
+        transition:
+          inset-inline-end 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
+          width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+      }
 
-    .sidebar--contracting {
-      /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) or motion.$duration-fast-01 (70ms) for RTL, and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-      transition: var(--chat-sidebar-transition-property)
-        var(--chat-sidebar-transition-duration)
-        var(--chat-sidebar-contracting-transition-timing-function);
-    }
-
-    .sidebar--closing {
-      right: var(--chat-sidebar-closing-right);
-      left: var(--chat-sidebar-closing-left);
-      width: 320px;
-    }
-
-    .sidebar--closed {
-      right: var(--chat-sidebar-closed-right);
-      left: var(--chat-sidebar-closed-left);
-      width: 320px;
-      visibility: hidden;
-    }
-  `;
+      /* Collapse the panel back to its base width while it slides out, so an
+         expanded panel does not slide off-screen at full expanded width. */
+      .cds-aichat-sidebar--closing,
+      .cds-aichat-sidebar--closed {
+        width: var(--cds-aichat-sidebar-width, 360px);
+      }
+    `,
+  ];
 
   @property({ type: Object })
   accessor settings!: Settings;
@@ -463,19 +453,21 @@ export class DemoApp extends LitElement {
   };
 
   getSideBarClassName() {
-    let className = "sidebar";
+    // Compose the shipped `cds-aichat-sidebar` base class with the demo's
+    // workspace expand/contract modifiers.
+    let className = "cds-aichat-sidebar";
     if (this.workspaceExpanded) {
-      className += " sidebar--expanded";
+      className += " cds-aichat-sidebar--expanded";
     }
     if (this.workspaceAnimating === "expanding") {
-      className += " sidebar--expanding";
+      className += " cds-aichat-sidebar--expanding";
     } else if (this.workspaceAnimating === "contracting") {
-      className += " sidebar--contracting";
+      className += " cds-aichat-sidebar--contracting";
     }
     if (this.sideBarClosing) {
-      className += " sidebar--closing";
+      className += " cds-aichat-sidebar--closing";
     } else if (!this.sideBarOpen) {
-      className += " sidebar--closed";
+      className += " cds-aichat-sidebar--closed";
     }
     return className;
   }

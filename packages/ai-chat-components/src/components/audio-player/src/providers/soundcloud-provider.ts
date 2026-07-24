@@ -227,5 +227,3 @@ export class SoundCloudProvider extends BaseProvider {
     super.destroy();
   }
 }
-
-// Made with Bob

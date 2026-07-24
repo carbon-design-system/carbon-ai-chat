@@ -7,6 +7,22 @@
  *  @license
  */
 
+/**
+ * Workspace child: SqlEditorExample.
+ *
+ * Demonstrates: the editable workspace path mounted into the
+ * `workspacePanelElement` slot when `additional_data.type === "sql_editor"`.
+ * Pairs `cds-aichat-code-snippet` (editable) with the workspace shell
+ * footer's Save/Cancel actions. Cancel calls
+ * `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`
+ *   - `cds-aichat-workspace-shell` / `cds-aichat-code-snippet`
+ *
+ * Start reading at: `handleClose` and `handleWorkspaceFooterClick`.
+ */
+
 import { LitElement, html, css } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import type { ChatInstance } from "@carbon/ai-chat";
@@ -145,6 +161,7 @@ LIMIT 100;`;
 
   connectedCallback() {
     super.connectedCallback();
+    // Debug wiring so payload shape from panel.open() is observable when the workspace mounts.
     console.log("SqlEditorExample rendered", {
       workspaceId: this.workspaceId,
       additionalData: this.additionalData,
@@ -152,6 +169,7 @@ LIMIT 100;`;
   }
 
   handleClose() {
+    // Closing through customPanels fires WORKSPACE_CLOSE so the host in main.ts can clear its slot state.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
@@ -165,11 +183,13 @@ LIMIT 100;`;
     const { id } = event.detail;
     switch (id) {
       case "save":
+        // Replace with a real production implementation.
         console.log("Saving SQL query:", this.sqlContent);
         alert("SQL query saved successfully!");
         this.hasChanges = false;
         break;
       case "cancel":
+        // Cancel routes through handleClose so it goes through the customPanels API rather than detaching the slot.
         this.handleClose();
         break;
       default:
@@ -224,5 +244,3 @@ LIMIT 100;`;
     `;
   }
 }
-
-// Made with Bob

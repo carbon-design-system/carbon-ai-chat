@@ -31,7 +31,7 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from "@carbon/ai-chat-components/es/react/feedback.js";
 import prefix from "@carbon/ai-chat-components/es/globals/settings.js";
-import { SystemMessage } from "../components/SystemMessage.js";
+import { SystemMessage } from "../components/SystemMessage";
 import { ConnectToHumanAgent } from "./responseTypes/humanAgent/ConnectToHumanAgent";
 import { AudioComponent } from "../components/messages/AudioComponent";
 import { ButtonItemComponent } from "../components/ButtonItemComponent";
@@ -100,6 +100,7 @@ import {
   PreviewCardItem,
 } from "../../types/messaging/Messages";
 import { MarkdownWithDefaults } from "../components/util/MarkdownWithDefaults";
+import { MessageRichUserContent } from "./MessageRichUserContent";
 import type { CDSAIChatChainOfThought } from "@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js";
 import Carousel from "@carbon/ai-chat-components/es/react/carousel.js";
 
@@ -243,10 +244,14 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
       // If this was user entered text, show the user's original text before showing the text that was actually sent to
       // the assistant.
       const userText = localMessageItem.ui_state.originalUserText || text;
+      const displayContent = originalMessage.input.display_content;
+      const isFile =
+        originalMessage.input.message_type ===
+        (InternalMessageRequestType.FILE as unknown as MessageInputType);
+
       return (
         <div className="cds-aichat--sent--text">
-          {originalMessage.input.message_type ===
-            (InternalMessageRequestType.FILE as unknown as MessageInputType) && (
+          {isFile && (
             <Attachment
               className="cds-aichat--sent-file-icon"
               aria-label={languagePack.fileSharing_fileIcon}
@@ -256,11 +261,18 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
               next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
               messages. */}
           <div role="heading" aria-level={2}>
-            <MarkdownWithDefaults
-              text={userText}
-              removeHTML
-              overrideSanitize={true}
-            ></MarkdownWithDefaults>
+            {displayContent && !isFile ? (
+              <MessageRichUserContent
+                content={displayContent}
+                message={originalMessage}
+              />
+            ) : (
+              <MarkdownWithDefaults
+                text={userText}
+                removeHTML
+                overrideSanitize={true}
+              ></MarkdownWithDefaults>
+            )}
           </div>
         </div>
       );
