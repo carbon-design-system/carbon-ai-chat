@@ -6,6 +6,16 @@
  */
 
 @use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+
+// Mixin for directional gradients
+@mixin gradient-bg($direction, $color) {
+  background: linear-gradient(
+    $direction,
+    rgba(255, 255, 255, 0) 0%,
+    $color 100%
+  );
+}
 
 :host {
   display: block;
@@ -24,6 +34,30 @@
   clip: rect(0, 0, 0, 0);
   inline-size: 1px;
   white-space: nowrap;
+}
+
+.cds-aichat--file-uploads-gradient-wrapper {
+  position: relative;
+  z-index: 0;
+}
+
+.cds-aichat--file-uploads-gradient-wrapper--overflow::after {
+  position: absolute;
+  display: block;
+  content: "";
+  inline-size: layout.$spacing-05;
+  inset-block-end: 1px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  pointer-events: none;
+}
+
+.cds-aichat--file-uploads-gradient-wrapper--overflow:dir(ltr)::after {
+  @include gradient-bg(90deg, theme.$background);
+}
+
+.cds-aichat--file-uploads-gradient-wrapper--overflow:dir(rtl)::after {
+  @include gradient-bg(270deg, theme.$background);
 }
 
 .cds-aichat--file-uploads-container {

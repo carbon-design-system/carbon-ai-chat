@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,6 +13,7 @@ import "@carbon/web-components/es/components/select/index.js";
 import { html } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { TableRowContent } from "./table.js";
+import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
 
 // Import only the constants, not the class
 const POSSIBLE_PAGE_SIZES = [5, 10, 15, 20, 50];
@@ -81,6 +82,7 @@ function tablePaginationTemplate(props: TablePaginationProps) {
     .formatStatusWithDeterminateTotal=${ifDefined(getPaginationStatusText)}
     @cds-pagination-changed-current=${handlePageChangeEvent}
     @cds-page-sizes-select-changed=${handlePageSizeChangeEvent}
+    forward-text-tooltip-position=${isDirectionRTL() ? "right" : "left"}
   >
     ${supportedPageSizes.map(
       (pageSize) =>
