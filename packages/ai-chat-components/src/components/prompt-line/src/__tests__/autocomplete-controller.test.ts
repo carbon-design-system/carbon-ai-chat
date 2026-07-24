@@ -558,4 +558,181 @@ describe("AutocompleteController", () => {
     await new Promise((r) => setTimeout(r, 20));
     expect(lastEmittedAfterDestroy).to.equal(false);
   });
+
+  describe("starters isOn flag", () => {
+    function makeStarterPromptLineStub() {
+      const storage: { carbonStarterTrigger: { isOn: boolean } } = {
+        carbonStarterTrigger: { isOn: true },
+      };
+      let dispatchCount = 0;
+      const view = {
+        dispatch(_tr: unknown) {
+          dispatchCount++;
+        },
+      };
+      const state = { tr: {} };
+      const editorWrapper = {
+        storage,
+        view,
+        state,
+        commands: { insertContent: () => {} },
+        chain: () => ({
+          focus: () => ({ insertContentAt: () => ({ run: () => {} }) }),
+        }),
+        isEmpty: true,
+        isFocused: true,
+        isEditable: true,
+      };
+      const promptLine = { getEditor: () => editorWrapper };
+      return { promptLine, storage, getDispatchCount: () => dispatchCount };
+    }
+
+    it("isOn:false suppresses the trigger while empty and focused", async () => {
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, isOn: false },
+        onChange: () => {},
+      });
+
+      const { promptLine, storage, getDispatchCount } =
+        makeStarterPromptLineStub();
+      storage.carbonStarterTrigger.isOn = true; // starts enabled
+
+      controller.setPromptLine(promptLine as any);
+      controller.setConfigs({ starters: { ...STARTERS, isOn: false } });
+
+      expect(storage.carbonStarterTrigger.isOn).to.equal(false);
+      expect(getDispatchCount()).to.equal(1);
+    });
+
+    it("toggling isOn false → true writes to storage and dispatches", () => {
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, isOn: false },
+        onChange: () => {},
+      });
+      const { promptLine, storage, getDispatchCount } =
+        makeStarterPromptLineStub();
+      storage.carbonStarterTrigger.isOn = false;
+
+      controller.setPromptLine(promptLine as any);
+      controller.setConfigs({ starters: { ...STARTERS, isOn: true } });
+
+      expect(storage.carbonStarterTrigger.isOn).to.equal(true);
+      expect(getDispatchCount()).to.equal(1);
+    });
+
+    it("toggling isOn true → true (no change) does not dispatch", () => {
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, isOn: true },
+        onChange: () => {},
+      });
+      const { promptLine, storage, getDispatchCount } =
+        makeStarterPromptLineStub();
+      storage.carbonStarterTrigger.isOn = true;
+
+      controller.setPromptLine(promptLine as any);
+      // same value — prevIsOn === isOn, so no dispatch expected
+      controller.setConfigs({ starters: { ...STARTERS, isOn: true } });
+
+      expect(getDispatchCount()).to.equal(0);
+    });
+
+    it("isOn:undefined is treated as true (same as omitting the flag)", () => {
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, isOn: false }, // starts false
+        onChange: () => {},
+      });
+      const { promptLine, storage, getDispatchCount } =
+        makeStarterPromptLineStub();
+      storage.carbonStarterTrigger.isOn = false;
+
+      controller.setPromptLine(promptLine as any);
+      controller.setConfigs({ starters: { ...STARTERS, isOn: undefined } });
+
+      expect(storage.carbonStarterTrigger.isOn).to.equal(true);
+      expect(getDispatchCount()).to.equal(1);
+    });
+  });
+
+  describe("starters renderCustomList", () => {
+    it("emits the starters renderCustomList through state when trigger type is starter", async () => {
+      let last: any = null;
+      const renderCustomList = (_props: CustomListProps) => null;
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, renderCustomList },
+        onChange: (state) => {
+          last = state;
+        },
+      });
+      controller.handleTriggerChange({
+        type: "starter",
+        query: "",
+        triggerOffset: 0,
+      });
+      await flush();
+      expect(last.renderCustomList).to.equal(renderCustomList);
+    });
+
+    it("does not leak starters renderCustomList when the active trigger is a different type", async () => {
+      let last: any = null;
+      const starterRender = (_props: CustomListProps) => null;
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, renderCustomList: starterRender },
+        mention: { trigger: "@", items: USERS },
+        onChange: (state) => {
+          last = state;
+        },
+      });
+      controller.handleTriggerChange({
+        type: "mention",
+        query: "",
+        triggerOffset: 0,
+      });
+      await flush();
+      // The mention config has no renderCustomList, so it must be undefined.
+      expect(last.renderCustomList).to.equal(undefined);
+    });
+  });
+
+  describe("editor identity across isOn flip", () => {
+    it("does not recreate the editor when isOn is toggled", () => {
+      const controller = new AutocompleteController({
+        starters: { ...STARTERS, isOn: true },
+        onChange: () => {},
+      });
+
+      const storage: { carbonStarterTrigger: { isOn: boolean } } = {
+        carbonStarterTrigger: { isOn: true },
+      };
+      const view = { dispatch: (_tr: unknown) => {} };
+      const state = { tr: {} };
+      const editorInstance = {
+        storage,
+        view,
+        state,
+        commands: { insertContent: () => {} },
+        chain: () => ({
+          focus: () => ({ insertContentAt: () => ({ run: () => {} }) }),
+        }),
+      };
+      // promptLine always returns the same editorInstance — if setConfigs were
+      // to recreate the editor, it would swap out the reference we hold.
+      const promptLine = {
+        getEditor() {
+          return editorInstance;
+        },
+      };
+
+      controller.setPromptLine(promptLine as any);
+      // Record the editor reference before the toggle.
+      const editorBefore = promptLine.getEditor();
+
+      controller.setConfigs({ starters: { ...STARTERS, isOn: false } });
+
+      // setConfigs must NOT replace the editor — so the reference afterwards is identical.
+      const editorAfter = promptLine.getEditor();
+      expect(editorBefore).to.equal(editorAfter);
+      // The dispatch was called (no recreation side-effect).
+      expect(storage.carbonStarterTrigger.isOn).to.equal(false);
+    });
+  });
 });

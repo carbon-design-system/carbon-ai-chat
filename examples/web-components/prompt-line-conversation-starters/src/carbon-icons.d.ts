@@ -7,12 +7,14 @@
  *  @license
  */
 
+import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+
 /*
  * TypeScript ambient declarations for `@carbon/icons/es/*` icon modules.
  * These modules export a single default object (a Carbon icon descriptor)
  * that is compatible with the `icon` field on `ToolbarAction`.
  */
 declare module "@carbon/icons/es/*" {
-  const icon: any;
+  const icon: CarbonIcon;
   export default icon;
 }

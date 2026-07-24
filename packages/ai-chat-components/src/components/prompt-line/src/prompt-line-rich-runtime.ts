@@ -325,8 +325,12 @@ class RichController implements PromptLineController {
       const to = Math.min(previousSelection.to, size);
       this._editor.commands.setTextSelection({ from, to });
     }
+
+    const wasKeyboardFocus = this._editor.view.dom.classList.contains(
+      PM_KEYBOARD_FOCUS_CLASS,
+    );
     if (wasFocused) {
-      this._focusFromMouse = true;
+      this._focusFromMouse = !wasKeyboardFocus;
       this._editor.commands.focus();
     }
   }

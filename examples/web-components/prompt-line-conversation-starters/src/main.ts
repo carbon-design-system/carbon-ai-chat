@@ -47,6 +47,7 @@ import { customElement, state } from "lit/decorators.js";
 import { customSendMessage } from "./customSendMessage";
 
 import Chat16 from "@carbon/icons/es/chat/16.js";
+import ChatOff16 from "@carbon/icons/es/chat--off/16.js";
 
 /**
  * The four conversation-starter prompts. Replace with a dynamic source
@@ -149,7 +150,7 @@ export class Demo extends LitElement {
             text: this.startersEnabled
               ? "Hide conversation starters"
               : "Show conversation starters",
-            icon: Chat16,
+            icon: this.startersEnabled ? ChatOff16 : Chat16,
             onClick: () => {
               this.startersEnabled = !this.startersEnabled;
             },
