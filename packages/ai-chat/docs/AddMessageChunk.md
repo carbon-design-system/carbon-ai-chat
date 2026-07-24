@@ -22,7 +22,8 @@ apply it with one call per update, see
 [Adding messages (experimental)](./UpsertMessage.md). It also covers regenerate
 and optimistic updates.
 
-> **Note:** Before you build on `addMessageChunk`, look at {@link ChatInstanceMessaging.upsertMessage | upsertMessage}. A single method inserts
+> **Note:** Before you build on `addMessageChunk`, look at {@link
+> ChatInstanceMessaging.upsertMessage | upsertMessage}. A single method inserts
 > or updates a message by ID through an updater function, covering streaming,
 > regenerate, post-stream corrections, and optimistic updates. It's the
 > recommended path for new code, but experimental — its semantics and updater
