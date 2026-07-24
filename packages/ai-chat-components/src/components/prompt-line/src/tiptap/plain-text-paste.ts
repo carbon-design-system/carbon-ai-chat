@@ -14,9 +14,9 @@
  * nodes.
  */
 
-import { Extension } from "@tiptap/core";
-import type { Schema } from "@tiptap/pm/model";
-import { Plugin } from "@tiptap/pm/state";
+import { Extension } from '@tiptap/core';
+import type { Schema } from '@tiptap/pm/model';
+import { Plugin } from '@tiptap/pm/state';
 
 function linesToNodes(schema: Schema, lines: string[]) {
   return lines.map((line) => {
@@ -31,13 +31,13 @@ function createPastePlugin(): Plugin {
   return new Plugin({
     props: {
       handlePaste(view, event, _slice) {
-        const text = event.clipboardData?.getData("text/plain");
+        const text = event.clipboardData?.getData('text/plain');
         if (text == null) {
           return false;
         }
 
         const { schema } = view.state;
-        const lines = text.replace(/\r\n?/g, "\n").split("\n");
+        const lines = text.replace(/\r\n?/g, '\n').split('\n');
         const nodes = linesToNodes(schema, lines);
 
         const { from, to } = view.state.selection;
@@ -53,13 +53,13 @@ function createPastePlugin(): Plugin {
         }
 
         // Block external drops to prevent rich content
-        const text = event.dataTransfer?.getData("text/plain");
+        const text = event.dataTransfer?.getData('text/plain');
         if (!text) {
           return true; // block the drop
         }
 
         const { schema } = view.state;
-        const lines = text.replace(/\r\n?/g, "\n").split("\n");
+        const lines = text.replace(/\r\n?/g, '\n').split('\n');
         const nodes = linesToNodes(schema, lines);
 
         const pos = view.posAtCoords({
@@ -80,7 +80,7 @@ function createPastePlugin(): Plugin {
 }
 
 export const PlainTextPaste = Extension.create({
-  name: "carbonPlainTextPaste",
+  name: 'carbonPlainTextPaste',
 
   addProseMirrorPlugins() {
     return [createPastePlugin()];

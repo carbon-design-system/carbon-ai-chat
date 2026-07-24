@@ -2,9 +2,10 @@
 
 ## Hard Rule
 
-**Never call `code_search` for Carbon Charts.** `get_charts` is the only authoritative
-retrieval tool for chart source code, data schemas, and options. This rule is
-non-negotiable — even if `code_search` appears to return chart-related results.
+**Never call `code_search` for Carbon Charts.** `get_charts` is the only
+authoritative retrieval tool for chart source code, data schemas, and options.
+This rule is non-negotiable — even if `code_search` appears to return
+chart-related results.
 
 ---
 
@@ -20,8 +21,8 @@ Provide exactly one of:
 
 **Supported frameworks:** `react`, `angular`, `vue`, `svelte`, `vanilla`, `html`
 
-**Chart type slugs:** `bar`, `line`, `pie`, `donut`, `area`, `scatter`, `bubble`,
-`combo`, `radar`, `treemap`, `heatmap`, `gauge`, `meter`
+**Chart type slugs:** `bar`, `line`, `pie`, `donut`, `area`, `scatter`,
+`bubble`, `combo`, `radar`, `treemap`, `heatmap`, `gauge`, `meter`
 
 > Use `bar` for both bar and column charts. Use `donut` for doughnut.
 
@@ -31,8 +32,8 @@ Provide exactly one of:
 
 ### Call 1 — `mode: "schema"` (fast, no source files)
 
-Purpose: discover available variants and understand the data/options shape before
-committing to a `mode: "full"` call.
+Purpose: discover available variants and understand the data/options shape
+before committing to a `mode: "full"` call.
 
 ```json
 {
@@ -57,11 +58,13 @@ Response fields to inspect:
 > **Variant IDs use the format `"examples-grouped"`, not just `"grouped"`.**
 > Copy the exact `variant_id` string from the response for Call 2.
 
-> Omit the `variant` argument in Call 1 to get the schema for the default variant.
+> Omit the `variant` argument in Call 1 to get the schema for the default
+> variant.
 
 ### Call 2 — `mode: "full"` + chosen variant
 
-Purpose: retrieve the complete source files and assembly hints for code generation.
+Purpose: retrieve the complete source files and assembly hints for code
+generation.
 
 ```json
 {
@@ -78,9 +81,9 @@ Purpose: retrieve the complete source files and assembly hints for code generati
 
 ## tool_policy block
 
-Every `get_charts` response includes a `tool_policy` block. Its `instruction` field
-reinforces the retrieval rules — follow it. It is a server-side enforcement signal,
-not optional guidance.
+Every `get_charts` response includes a `tool_policy` block. Its `instruction`
+field reinforces the retrieval rules — follow it. It is a server-side
+enforcement signal, not optional guidance.
 
 ```json
 {
@@ -96,8 +99,8 @@ not optional guidance.
 
 ## Assembly Hints (Use Verbatim)
 
-The `mode: "full"` response includes an `assembly` object. Use these fields **exactly
-as returned** — do not paraphrase, reconstruct, or substitute:
+The `mode: "full"` response includes an `assembly` object. Use these fields
+**exactly as returned** — do not paraphrase, reconstruct, or substitute:
 
 | Field                        | How to use                                                                                                                 |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -113,15 +116,19 @@ When using `get_charts` assembly fields:
 
 1. **Dependency Installation (Required First Step)**
    - Always run `assembly.install_command` in terminal before completion.
-   - Verify installation succeeds before applying or validating `assembly.styles_import`.
-   - Do not mark the task complete if package installation has not been confirmed.
+   - Verify installation succeeds before applying or validating
+     `assembly.styles_import`.
+   - Do not mark the task complete if package installation has not been
+     confirmed.
 2. **Styles Import**
-   - Add `assembly.styles_import` in the app entry module (for example `main.jsx`).
+   - Add `assembly.styles_import` in the app entry module (for example
+     `main.jsx`).
    - This import resolves only after dependencies are installed.
    - Never place it in SCSS or translate it to `@use` / `@import`.
 3. **Component Usage**
    - Use `chosen_variant.import_hint` for chart component imports.
-   - Use `chosen_variant.usage_hint` for usage structure and substitute data/options only.
+   - Use `chosen_variant.usage_hint` for usage structure and substitute
+     data/options only.
 4. **Completion Checklist**
    - Dependencies installed via terminal
    - Styles imported in app entry module
@@ -132,8 +139,8 @@ When using `get_charts` assembly fields:
 
 ## Source Files
 
-The `source_files[]` array in the `mode: "full"` response contains reassembled files.
-Each file has a `file_role`:
+The `source_files[]` array in the `mode: "full"` response contains reassembled
+files. Each file has a `file_role`:
 
 | `file_role`             | Meaning                                                              |
 | ----------------------- | -------------------------------------------------------------------- |
@@ -161,18 +168,20 @@ Each file has a `file_role`:
 | `options` | string/object | User-supplied options. Server merges on top of example options.                             |
 
 When `data` is supplied, inspect `result.user_data.instruction` for the exact
-merge/substitution guidance. When `options` is supplied, inspect `result.user_options.instruction`.
+merge/substitution guidance. When `options` is supplied, inspect
+`result.user_options.instruction`.
 
 ---
 
 ## TypeScript Interface Lookup (Hop Chain)
 
-Use this pattern **only** when the user asks about specific chart options that aren't
-covered in the standard example — e.g. "how do I configure the legend?" or
-"what toolbar options are available?". Do not run this on every chart request.
+Use this pattern **only** when the user asks about specific chart options that
+aren't covered in the standard example — e.g. "how do I configure the legend?"
+or "what toolbar options are available?". Do not run this on every chart
+request.
 
-**Never use `docs_search` for Carbon Charts interface details.**
-`get_charts` with `interface_names` is the only authoritative path.
+**Never use `docs_search` for Carbon Charts interface details.** `get_charts`
+with `interface_names` is the only authoritative path.
 
 ### Step 1 — Request the top-level interface alongside the chart
 
@@ -216,13 +225,15 @@ referenced by those interfaces that are still unresolved.
 }
 ```
 
-**Stop condition:** When `follow_up_interface_names` is absent or empty — all types resolved.
+**Stop condition:** When `follow_up_interface_names` is absent or empty — all
+types resolved.
 
 ---
 
 ## Buildability
 
-Every `mode: "full"` response includes a `buildable` boolean and a `status` field:
+Every `mode: "full"` response includes a `buildable` boolean and a `status`
+field:
 
 | `status`               | Meaning                                                  |
 | ---------------------- | -------------------------------------------------------- |
@@ -238,11 +249,14 @@ When `buildable: false`:
 
 ### Cross-Framework Recovery
 
-When the requested variant is not runnable, the server may include a `recovery` object
-with `strategy: "cross_framework_variant_donor"`. When present and `buildable: true`:
+When the requested variant is not runnable, the server may include a `recovery`
+object with `strategy: "cross_framework_variant_donor"`. When present and
+`buildable: true`:
 
-- Use the **requested framework's** `import_hint` and `usage_hint` for imports and template
-- Use the **recovery `source_files`** for the concrete data array and options object
+- Use the **requested framework's** `import_hint` and `usage_hint` for imports
+  and template
+- Use the **recovery `source_files`** for the concrete data array and options
+  object
 - Follow the instruction in `result.assembly.instruction` exactly
 
 ---
@@ -255,7 +269,8 @@ The chart_type + framework combination has no indexed manifest.
 
 Retry steps:
 
-1. Try a closely related chart type slug (e.g. `"column"` → `"bar"`, `"doughnut"` → `"donut"`)
+1. Try a closely related chart type slug (e.g. `"column"` → `"bar"`,
+   `"doughnut"` → `"donut"`)
 2. Try a different framework if the user permits
 3. Report to the user if no match is found — do not fall back to `code_search`
 
@@ -264,18 +279,21 @@ Retry steps:
 The manifest was found (Hop 1) but source code chunks are missing (Hop 2).
 
 - Report to the user; do not silently fall back to `code_search`
-- Try `mode: "schema"` to confirm the manifest exists and review available variants
+- Try `mode: "schema"` to confirm the manifest exists and review available
+  variants
 
 ### `variant_not_found: true`
 
-The requested variant_id was not found; the server substituted the closest match.
-`result.variant_note` explains which variant was used instead. Inform the user.
+The requested variant_id was not found; the server substituted the closest
+match. `result.variant_note` explains which variant was used instead. Inform the
+user.
 
 ---
 
 ## Variant Selection Priority (server-side)
 
-The server resolves variants in this order when no variant is explicitly requested:
+The server resolves variants in this order when no variant is explicitly
+requested:
 
 1. Exact match on `variant_id` (if requested)
 2. `variant_is_default: true`

@@ -17,24 +17,24 @@ export enum OnErrorType {
    * Indicates an error sending a message to the assistant. This error is only generated after all retries have
    * failed and the system has given up.
    */
-  MESSAGE_COMMUNICATION = "MESSAGE_COMMUNICATION",
+  MESSAGE_COMMUNICATION = 'MESSAGE_COMMUNICATION',
 
   /**
    * This indicates an error in one of the components that occurs as part of rendering the UI.
    */
-  RENDER = "RENDER",
+  RENDER = 'RENDER',
 
   /**
    * This indicates a known error with the configuration for a service desk. Fired when a connect_to_agent
    * response type is received, but none is configured.
    */
-  INTEGRATION_ERROR = "INTEGRATION_ERROR",
+  INTEGRATION_ERROR = 'INTEGRATION_ERROR',
 
   /**
    * This indicates that some error occurred while trying to hydrate the chat. This will prevent the chat from
    * functioning.
    */
-  HYDRATION = "HYDRATION",
+  HYDRATION = 'HYDRATION',
 }
 
 /**

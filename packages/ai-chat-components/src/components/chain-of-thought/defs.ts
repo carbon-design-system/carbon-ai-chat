@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -16,17 +16,17 @@ enum ChainOfThoughtStepStatus {
   /**
    * If the tool call is currently processing.
    */
-  PROCESSING = "processing",
+  PROCESSING = 'processing',
 
   /**
    * If the tool call failed.
    */
-  FAILURE = "failure",
+  FAILURE = 'failure',
 
   /**
    * If the tool call succeeded.
    */
-  SUCCESS = "success",
+  SUCCESS = 'success',
 }
 
 /**
@@ -41,7 +41,7 @@ type ChainOfThoughtOnToggle = (
   /**
    * Target element to scroll into view if needed.
    */
-  scrollToElement: HTMLElement,
+  scrollToElement: HTMLElement
 ) => void;
 
 /**

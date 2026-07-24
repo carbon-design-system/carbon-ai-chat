@@ -21,16 +21,16 @@
  * Enter without this builder.
  */
 
-import type { Extension } from "@tiptap/core";
+import type { Extension } from '@tiptap/core';
 
-import { carbonAutocomplete } from "./carbon-autocomplete.js";
-import { carbonCommand, carbonMention } from "./carbon-mention.js";
-import { carbonStarterTrigger } from "./carbon-starter-trigger.js";
+import { carbonAutocomplete } from './carbon-autocomplete.js';
+import { carbonCommand, carbonMention } from './carbon-mention.js';
+import { carbonStarterTrigger } from './carbon-starter-trigger.js';
 import type {
   AutocompleteConfig,
   SuggestionItem,
   TriggerSuggestionConfig,
-} from "./types.js";
+} from './types.js';
 
 export interface BuildCarbonExtensionsConfig {
   mention?: TriggerSuggestionConfig;
@@ -40,7 +40,7 @@ export interface BuildCarbonExtensionsConfig {
 }
 
 export function buildCarbonExtensions(
-  configs: BuildCarbonExtensionsConfig,
+  configs: BuildCarbonExtensionsConfig
 ): Extension[] {
   const out: Extension[] = [];
   if (configs.mention) {

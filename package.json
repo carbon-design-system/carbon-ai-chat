@@ -12,6 +12,7 @@
     "url": "https://github.com/carbon-design-system/carbon-ai-chat/issues"
   },
   "homepage": "https://github.com/carbon-design-system/carbon-ai-chat#readme",
+  "prettier": "prettier-config-carbon",
   "workspaces": [
     "demo",
     "examples/*/*",

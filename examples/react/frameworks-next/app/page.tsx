@@ -22,13 +22,13 @@
  */
 
 // `next/dynamic` with `ssr: false` is a client-only API, so this page must opt out of server rendering before importing it.
-"use client";
+'use client';
 
-import dynamic from "next/dynamic";
-import React from "react";
+import dynamic from 'next/dynamic';
+import React from 'react';
 
 // ChatContainer touches `window` and registers custom elements at module load, which crashes during Next.js server rendering. `ssr: false` defers the module to the browser bundle.
-const ChatExample = dynamic(() => import("@/src/ChatExample"), {
+const ChatExample = dynamic(() => import('@/src/ChatExample'), {
   ssr: false,
   loading: () => <p>Loading chat experience…</p>,
 });

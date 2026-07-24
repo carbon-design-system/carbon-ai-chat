@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { IFrameItem } from "../../messaging/Messages";
+import { IFrameItem } from '../../messaging/Messages';
 
 /**
  * The state of the iframe panel.

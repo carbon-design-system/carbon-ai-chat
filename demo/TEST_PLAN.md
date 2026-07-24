@@ -2,13 +2,15 @@
 
 ## Goals
 
-We should be looking for what here can can automate, and as we do, we can remove it from this list.
+We should be looking for what here can can automate, and as we do, we can remove
+it from this list.
 
 ## Testing Tracks
 
 ### Track 1: Core Configuration & Instance Control
 
-**Focus:** Test PublicConfig and ChatInstance methods NOT available through demo UI.
+**Focus:** Test PublicConfig and ChatInstance methods NOT available through demo
+UI.
 
 #### Demo UI Available Features (Test Normally)
 
@@ -17,9 +19,26 @@ We should be looking for what here can can automate, and as we do, we can remove
 - Chat instance controls (focus, scroll, input visibility, restart)
 - Slots, layout frame/content width settings
 - Writeable elements, layout frame/content width settings
-- Input "Expanded layout" toggle: editor fills its own full-width row; message actions + send control drop to a second row (actions to the start, send to the end); with the "Additional actions menu" enabled the `input.actions` render inline as icon buttons instead of in the "+" popover, and collapse into a "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow the window / use a small layout to verify; confirm the hidden actions are reachable and fire from the menu). Verify non-expanded is unchanged and that toggling live reflows correctly (incl. RTL).
-- Writeable element `promptLineActionsEnd`: its slotted content (the green swatch in the demo) appears only when the input "Expanded layout" toggle is on; it is absent in the default compact layout.
-- Input "@mentions" / "/commands" toggles: enable one (or both) and reload — confirm the toggle stays "Enable" (query-string round-trip re-injects the callbacks). With "@mentions" on, type `@` anywhere in the message and pick a suggestion — confirm a chip renders. With "/commands" on, type `/` at the start of a line and pick a suggestion — confirm a chip renders; typing `/` mid-message should NOT open the picker. Delete a chip before sending and confirm it doesn't show up in the echoed response. Send a message with a mention/command chip and confirm the mock backend echoes the mention/command names in a text message before the normal canned response for the typed text.
+- Input "Expanded layout" toggle: editor fills its own full-width row; message
+  actions + send control drop to a second row (actions to the start, send to the
+  end); with the "Additional actions menu" enabled the `input.actions` render
+  inline as icon buttons instead of in the "+" popover, and collapse into a
+  "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow
+  the window / use a small layout to verify; confirm the hidden actions are
+  reachable and fire from the menu). Verify non-expanded is unchanged and that
+  toggling live reflows correctly (incl. RTL).
+- Writeable element `promptLineActionsEnd`: its slotted content (the green
+  swatch in the demo) appears only when the input "Expanded layout" toggle is
+  on; it is absent in the default compact layout.
+- Input "@mentions" / "/commands" toggles: enable one (or both) and reload —
+  confirm the toggle stays "Enable" (query-string round-trip re-injects the
+  callbacks). With "@mentions" on, type `@` anywhere in the message and pick a
+  suggestion — confirm a chip renders. With "/commands" on, type `/` at the
+  start of a line and pick a suggestion — confirm a chip renders; typing `/`
+  mid-message should NOT open the picker. Delete a chip before sending and
+  confirm it doesn't show up in the echoed response. Send a message with a
+  mention/command chip and confirm the mock backend echoes the mention/command
+  names in a text message before the normal canned response for the typed text.
 
 #### setChatConfig Testing (Use `window.setChatConfig()`)
 
@@ -104,9 +123,12 @@ Test text (stream), html (stream), audio, video message types in:
 
 **iOS Safari (iPhone required):**
 
-- [ ] **Touch interactions:** Tap to send, touch scrolling, pinch zoom, button feedback
-- [ ] **Virtual keyboard:** Appearance/dismissal, focus behavior, viewport adjustment, auto-scroll
-- [ ] **Layout adaptation:** Portrait/landscape, different screen sizes, responsive headers/messages
+- [ ] **Touch interactions:** Tap to send, touch scrolling, pinch zoom, button
+      feedback
+- [ ] **Virtual keyboard:** Appearance/dismissal, focus behavior, viewport
+      adjustment, auto-scroll
+- [ ] **Layout adaptation:** Portrait/landscape, different screen sizes,
+      responsive headers/messages
 - [ ] **Performance:** Scroll performance, animation smoothness, memory usage
 
 **Chrome Mobile (Android required):**
@@ -119,8 +141,10 @@ Test text (stream), html (stream), audio, video message types in:
 #### Mobile-Specific Features
 
 - [ ] **Accessibility:** Voice input, high contrast mode
-- [ ] **Network handling:** Slow connections, offline/online transitions, retry mechanisms
-- [ ] **App behavior:** Full-screen mode, background/foreground transitions, session persistence
+- [ ] **Network handling:** Slow connections, offline/online transitions, retry
+      mechanisms
+- [ ] **App behavior:** Full-screen mode, background/foreground transitions,
+      session persistence
 
 ### Track 4: Human Agent Integration and Accessibility
 
@@ -129,7 +153,8 @@ Test text (stream), html (stream), audio, video message types in:
 #### ServiceDesk Configuration (`window.setChatConfig()`)
 
 - [ ] **Basic integration:** Configure serviceDeskFactory with mockServiceDesk
-- [ ] **Factory parameters:** Verify ServiceDeskFactoryParameters passed correctly
+- [ ] **Factory parameters:** Verify ServiceDeskFactoryParameters passed
+      correctly
 - [ ] **Service desk instance:** Verify ServiceDesk instance creation
 - [ ] **Multiple configurations:** Test switching between different configs
 
@@ -172,7 +197,8 @@ Send messages to agents and test responses:
 
 #### File Upload Testing
 
-- [ ] **Upload capabilities:** allowFileUploads, allowMultipleFileUploads, allowedFileUploadTypes
+- [ ] **Upload capabilities:** allowFileUploads, allowMultipleFileUploads,
+      allowedFileUploadTypes
 - [ ] **File validation:** .png acceptance, other file rejections
 - [ ] **Upload progress:** Status updates
 - [ ] **Error handling:** Files starting with "A" errors
@@ -200,7 +226,8 @@ Verify using `window.chatInstance.getState().humanAgent`:
 
 #### Service Desk Error Scenarios
 
-- [ ] **No service desk configured:** Test connect_to_agent without serviceDeskFactory
+- [ ] **No service desk configured:** Test connect_to_agent without
+      serviceDeskFactory
 - [ ] **Service desk creation failure:** Test factory throwing errors
 - [ ] **Connection timeouts:** Test connection timeout handling
 - [ ] **Agent disconnection:** Test unexpected agent disconnection
@@ -210,7 +237,8 @@ Verify using `window.chatInstance.getState().humanAgent`:
 
 **REQUIREMENT: Use IBM Equal Access Accessibility Checker in Chrome**
 
-- [ ] **IBM Equal Access Checker:** Run full scan in various states (open, closed, with messages)
+- [ ] **IBM Equal Access Checker:** Run full scan in various states (open,
+      closed, with messages)
 - [ ] **Keyboard navigation:** Tab, Enter, Space, Arrow keys
 - [ ] **Focus management:** Proper focus trapping and movement
 - [ ] **High contrast mode:** Visibility and usability
@@ -218,7 +246,9 @@ Verify using `window.chatInstance.getState().humanAgent`:
 
 ### IBM Equal Access Setup
 
-1. Install [IBM Equal Access Accessibility Checker](https://www.ibm.com/able/toolkit/tools/#develop) Chrome extension
+1. Install
+   [IBM Equal Access Accessibility Checker](https://www.ibm.com/able/toolkit/tools/#develop)
+   Chrome extension
 2. Open Chrome DevTools (F12) → "IBM Equal Access" tab
 3. Run scan on chat interface in various states
 4. Document violations with severity levels

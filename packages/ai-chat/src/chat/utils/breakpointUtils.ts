@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatWidthBreakpoint } from "../../types/state/AppState";
+import { ChatWidthBreakpoint } from '../../types/state/AppState';
 
 /**
  * Calculate the chat width breakpoint based on the container width
@@ -15,7 +15,7 @@ import { ChatWidthBreakpoint } from "../../types/state/AppState";
  * @returns The appropriate ChatWidthBreakpoint
  */
 export function calculateChatWidthBreakpoint(
-  width: number,
+  width: number
 ): ChatWidthBreakpoint {
   if (width >= 672 + 16 + 16) {
     return ChatWidthBreakpoint.WIDE;

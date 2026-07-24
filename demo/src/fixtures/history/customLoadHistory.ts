@@ -14,9 +14,9 @@ import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { pinnedHistoryItems } from "./chatHistoryData";
+import { pinnedHistoryItems } from './chatHistoryData';
 
 function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
   const randomId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
@@ -55,27 +55,27 @@ function generateHistoryItem(isResponse: boolean, text: string): HistoryItem {
 
 async function customLoadHistory(
   _instance: ChatInstance,
-  requestText = pinnedHistoryItems[1].name,
+  requestText = pinnedHistoryItems[1].name
 ) {
   const requestTexts = [
-    "Can you help me understand this document?",
-    "What are the key points from the meeting?",
-    "How do I configure the settings?",
-    "Show me the latest updates",
-    "Explain this concept in simple terms",
+    'Can you help me understand this document?',
+    'What are the key points from the meeting?',
+    'How do I configure the settings?',
+    'Show me the latest updates',
+    'Explain this concept in simple terms',
     "What's the status of the project?",
-    "Can you summarize this for me?",
-    "Help me troubleshoot this issue",
+    'Can you summarize this for me?',
+    'Help me troubleshoot this issue',
   ];
 
   const responseTexts = [
-    "**Bold text** with some *italic* formatting.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nSed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.\n\n## Heading\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "Quick single line with `code` snippet.",
-    "### Another heading\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n- Bullet point one\n- Bullet point two\n- Bullet point three",
-    "Simple text without formatting.",
-    "Medium length paragraph about something interesting. This text should be long enough to span multiple lines but not too overwhelming to read in the chat interface.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n> This is a blockquote with some important information that stands out from the regular text.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    '**Bold text** with some *italic* formatting.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nSed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.\n\n## Heading\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    'Quick single line with `code` snippet.',
+    '### Another heading\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n- Bullet point one\n- Bullet point two\n- Bullet point three',
+    'Simple text without formatting.',
+    'Medium length paragraph about something interesting. This text should be long enough to span multiple lines but not too overwhelming to read in the chat interface.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n> This is a blockquote with some important information that stands out from the regular text.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     "Here's a detailed response with formatting:\n\n1. First point\n2. Second point\n3. Third point\n\nAnd some additional context below.",
   ];
 

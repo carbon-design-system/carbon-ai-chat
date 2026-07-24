@@ -1,20 +1,38 @@
 # Workspace table markdown override
 
-`ChatCustomElement` configured with `markdown.customRenderers.table` so every markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar` header. The toolbar carries a Carbon Maximize icon button that opens the workspace panel and renders the same data inside a full-size `Table` (the React wrapper for `cds-aichat-table`) whose pagination page size adapts to the workspace's height.
+`ChatCustomElement` configured with `markdown.customRenderers.table` so every
+markdown table renders inside a `cds-aichat-card` with a `cds-aichat-toolbar`
+header. The toolbar carries a Carbon Maximize icon button that opens the
+workspace panel and renders the same data inside a full-size `Table` (the React
+wrapper for `cds-aichat-table`) whose pagination page size adapts to the
+workspace's height.
 
 ## What this example shows
 
-- Replacing the default markdown table renderer with `customRenderers.table` and returning JSX that wraps the table in a Carbon card.
-- Driving the card header with `<Toolbar slot="header" titleText="..." actions={[...]} />` so the maximize action renders as a `cds-icon-button` with a tooltip — right-aligned automatically by the toolbar layout.
-- Calling `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)` to display the same data in a workspace panel.
-- Rendering the workspace content through `renderWriteableElements.workspacePanelElement`. The workspace component sets the table's `defaultPageSize` to the row count, which suppresses the pagination bar — all rows render and the workspace shell body's `overflow: auto` provides the vertical scrollbar.
-- Cleaning up workspace state on the `BusEventType.WORKSPACE_CLOSE` event so the next open starts fresh.
+- Replacing the default markdown table renderer with `customRenderers.table` and
+  returning JSX that wraps the table in a Carbon card.
+- Driving the card header with
+  `<Toolbar slot="header" titleText="..." actions={[...]} />` so the maximize
+  action renders as a `cds-icon-button` with a tooltip — right-aligned
+  automatically by the toolbar layout.
+- Calling `instance.customPanels.getPanel(PanelType.WORKSPACE).open(...)` to
+  display the same data in a workspace panel.
+- Rendering the workspace content through
+  `renderWriteableElements.workspacePanelElement`. The workspace component sets
+  the table's `defaultPageSize` to the row count, which suppresses the
+  pagination bar — all rows render and the workspace shell body's
+  `overflow: auto` provides the vertical scrollbar.
+- Cleaning up workspace state on the `BusEventType.WORKSPACE_CLOSE` event so the
+  next open starts fresh.
 
 ## When to use this pattern
 
-- You want long markdown tables to surface as a compact inline preview, with a one-click "expand" into a richer Carbon DataTable for browsing.
-- You need a starting point for any markdown element that should open into the workspace panel (charts, code editors, image galleries, etc.).
-- You want pagination row count that adapts to its container size instead of being hard-coded.
+- You want long markdown tables to surface as a compact inline preview, with a
+  one-click "expand" into a richer Carbon DataTable for browsing.
+- You need a starting point for any markdown element that should open into the
+  workspace panel (charts, code editors, image galleries, etc.).
+- You want pagination row count that adapts to its container size instead of
+  being hard-coded.
 
 ## APIs and props demonstrated
 
@@ -41,7 +59,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

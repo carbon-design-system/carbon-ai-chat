@@ -28,7 +28,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const HINT_TEXT = `Three \`user_defined\` cards were pre-loaded from \`customLoadHistory\`. Only the last card reads "Is this the most recent message? Yes".
 
@@ -38,14 +38,14 @@ Type \`user_defined\` to send a new card and watch the active highlight move to 
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Empty text fires once on first open; the rehydrated history is the welcome here, so no extra message is added.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     return;
   }
 
-  if (request.input.text === "user_defined") {
+  if (request.input.text === 'user_defined') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -54,8 +54,8 @@ async function customSendMessage(
             response_type: MessageResponseTypes.USER_DEFINED,
             user_defined: {
               // user_defined_type is the discriminator the renderer switches on.
-              user_defined_type: "my_unique_identifier",
-              text: "A live user_defined card sent via customSendMessage.",
+              user_defined_type: 'my_unique_identifier',
+              text: 'A live user_defined card sent via customSendMessage.',
             },
           },
         ],

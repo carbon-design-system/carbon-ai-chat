@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "../../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '../../../../globals/scss/chat-theme';
 
 .carousel-container {
   max-inline-size: chat-theme.$card-max-width;

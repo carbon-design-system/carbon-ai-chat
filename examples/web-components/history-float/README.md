@@ -1,17 +1,25 @@
 # History / Float
 
-Float-layout chat that exposes a custom history panel slot backed by `customLoadHistory`, letting users switch between saved conversations.
+Float-layout chat that exposes a custom history panel slot backed by
+`customLoadHistory`, letting users switch between saved conversations.
 
 ## What this example shows
 
-- Enabling the built-in history feature with `history.isOn: true` on `<cds-aichat-container>`.
-- Supplying a `customLoadHistory` function alongside `customSendMessage` in `messaging`.
-- Rendering a custom history panel into the `historyPanelElement` slot via `<history-writeable-element-example>`.
-- Loading a named conversation by calling `instance.messaging.clearConversation()` followed by `instance.messaging.insertHistory()` when the slot dispatches `history-panel-load-chat`.
+- Enabling the built-in history feature with `history.isOn: true` on
+  `<cds-aichat-container>`.
+- Supplying a `customLoadHistory` function alongside `customSendMessage` in
+  `messaging`.
+- Rendering a custom history panel into the `historyPanelElement` slot via
+  `<history-writeable-element-example>`.
+- Loading a named conversation by calling
+  `instance.messaging.clearConversation()` followed by
+  `instance.messaging.insertHistory()` when the slot dispatches
+  `history-panel-load-chat`.
 
 ## When to use this pattern
 
-- You need a floating chat (the default container layout) with a curated list of prior conversations.
+- You need a floating chat (the default container layout) with a curated list of
+  prior conversations.
 - You want to show how slots can host app-owned UI beside the chat.
 
 ## APIs and props demonstrated
@@ -30,11 +38,15 @@ Float-layout chat that exposes a custom history panel slot backed by `customLoad
 
 ## Chat history configuration
 
-For information on how to set up chat history view the [chat-history-fullscreen/README.md](../chat-history-fullscreen/README.md) guide.
+For information on how to set up chat history view the
+[chat-history-fullscreen/README.md](../chat-history-fullscreen/README.md) guide.
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

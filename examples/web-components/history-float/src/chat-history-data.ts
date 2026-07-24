@@ -21,8 +21,8 @@
  * Start reading at: `historyItems` and `pinnedHistoryItems`.
  */
 
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Delete16 from "@carbon/icons/es/delete/16.js";
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Delete16 from '@carbon/icons/es/delete/16.js';
 
 export interface resultItem {
   id: string;
@@ -44,60 +44,60 @@ export interface resultItemSection {
 // Action menu entries for an unpinned chat row. Replace with a real production implementation wired to your conversation service.
 export const historyItemActions = [
   {
-    text: "Pin to top",
+    text: 'Pin to top',
   },
   {
-    text: "Rename",
+    text: 'Rename',
   },
   {
-    text: "Delete",
+    text: 'Delete',
     delete: true,
     divider: true,
-    icon: iconLoader(Delete16, { slot: "icon" }),
+    icon: iconLoader(Delete16, { slot: 'icon' }),
   },
 ];
 
 // Action menu entries for a pinned chat row. Pinned rows swap "Pin to top" for "Unpin" but otherwise mirror `historyItemActions`.
 export const pinnedHistoryItemActions = [
   {
-    text: "Unpin",
+    text: 'Unpin',
   },
   {
-    text: "Rename",
+    text: 'Rename',
   },
   {
-    text: "Delete",
+    text: 'Delete',
     delete: true,
     divider: true,
-    icon: iconLoader(Delete16, { slot: "icon" }),
+    icon: iconLoader(Delete16, { slot: 'icon' }),
   },
 ];
 
 // Seed list of pinned conversations rendered above the time-bucketed sections. Replace with a real production implementation.
 export const pinnedHistoryItems: resultItem[] = [
   {
-    id: "pinned-0",
+    id: 'pinned-0',
     name: "Here's the onboarding doc that includes all the information to get started.",
-    lastUpdated: "Feb 10, 6:30 PM",
+    lastUpdated: 'Feb 10, 6:30 PM',
     isPinned: true,
   },
   {
-    id: "pinned-1",
+    id: 'pinned-1',
     name: "Let's use this as the master invoice document.",
     selected: true,
-    lastUpdated: "Feb 10, 5:45 PM",
+    lastUpdated: 'Feb 10, 5:45 PM',
     isPinned: true,
   },
   {
-    id: "pinned-2",
-    name: "Noticed some discrepancies between these two files.",
-    lastUpdated: "Feb 10, 4:20 PM",
+    id: 'pinned-2',
+    name: 'Noticed some discrepancies between these two files.',
+    lastUpdated: 'Feb 10, 4:20 PM',
     isPinned: true,
   },
   {
-    id: "pinned-3",
-    name: "Do we need a PO number on every documentation here?",
-    lastUpdated: "Feb 10, 3:10 PM",
+    id: 'pinned-3',
+    name: 'Do we need a PO number on every documentation here?',
+    lastUpdated: 'Feb 10, 3:10 PM',
     isPinned: true,
   },
 ];
@@ -105,88 +105,88 @@ export const pinnedHistoryItems: resultItem[] = [
 // Time-bucketed conversations grouped by Today / Yesterday / Previous 7 days, matching the visual sections in the panel. Replace with a real production implementation.
 export const historyItems: resultItemSection[] = [
   {
-    section: "Today",
+    section: 'Today',
     chats: [
       {
-        id: "today-0",
+        id: 'today-0',
         name: "Here's the onboarding doc that includes all the information to get started.",
-        lastUpdated: "Feb 10, 6:30 PM",
+        lastUpdated: 'Feb 10, 6:30 PM',
         isPinned: false,
       },
       {
-        id: "today-1",
+        id: 'today-1',
         name: "Let's use this as the master invoice document.",
-        lastUpdated: "Feb 10, 5:45 PM",
+        lastUpdated: 'Feb 10, 5:45 PM',
         isPinned: false,
       },
       {
-        id: "today-2",
-        name: "Noticed some discrepancies between these two files.",
-        lastUpdated: "Feb 10, 4:20 PM",
+        id: 'today-2',
+        name: 'Noticed some discrepancies between these two files.',
+        lastUpdated: 'Feb 10, 4:20 PM',
         isPinned: false,
       },
       {
-        id: "today-3",
-        name: "Do we need a PO number on every documentation here?",
-        lastUpdated: "Feb 10, 3:10 PM",
+        id: 'today-3',
+        name: 'Do we need a PO number on every documentation here?',
+        lastUpdated: 'Feb 10, 3:10 PM',
         isPinned: false,
       },
     ],
   },
   {
-    section: "Yesterday",
+    section: 'Yesterday',
     chats: [
       {
-        id: "yesterday-0",
+        id: 'yesterday-0',
         name: "Here's the onboarding doc that includes all the information to get started.",
-        lastUpdated: "Feb 9, 8:15 PM",
+        lastUpdated: 'Feb 9, 8:15 PM',
         isPinned: false,
       },
       {
-        id: "yesterday-1",
+        id: 'yesterday-1',
         name: "Let's use this as the master invoice document.",
-        lastUpdated: "Feb 9, 6:30 PM",
+        lastUpdated: 'Feb 9, 6:30 PM',
         isPinned: false,
       },
       {
-        id: "yesterday-2",
-        name: "Noticed some discrepancies between these two files.",
-        lastUpdated: "Feb 9, 4:45 PM",
+        id: 'yesterday-2',
+        name: 'Noticed some discrepancies between these two files.',
+        lastUpdated: 'Feb 9, 4:45 PM',
         isPinned: false,
       },
       {
-        id: "yesterday-3",
+        id: 'yesterday-3',
         name: "Let's troubleshoot this.",
-        lastUpdated: "Feb 9, 2:20 PM",
+        lastUpdated: 'Feb 9, 2:20 PM',
         isPinned: false,
       },
     ],
   },
   {
-    section: "Previous 7 days",
+    section: 'Previous 7 days',
     chats: [
       {
-        id: "previous-0",
+        id: 'previous-0',
         name: "Here's the onboarding doc that includes all the information to get started.",
-        lastUpdated: "Feb 5, 7:00 PM",
+        lastUpdated: 'Feb 5, 7:00 PM',
         isPinned: false,
       },
       {
-        id: "previous-1",
+        id: 'previous-1',
         name: "Let's use this as the master invoice document.",
-        lastUpdated: "Feb 4, 4:30 PM",
+        lastUpdated: 'Feb 4, 4:30 PM',
         isPinned: false,
       },
       {
-        id: "previous-2",
-        name: "Noticed some discrepancies between these two files.",
-        lastUpdated: "Feb 4, 2:15 PM",
+        id: 'previous-2',
+        name: 'Noticed some discrepancies between these two files.',
+        lastUpdated: 'Feb 4, 2:15 PM',
         isPinned: false,
       },
       {
-        id: "previous-3",
+        id: 'previous-3',
         name: "Let's troubleshoot this.",
-        lastUpdated: "Feb 3, 11:45 AM",
+        lastUpdated: 'Feb 3, 11:45 AM',
         isPinned: false,
       },
     ],

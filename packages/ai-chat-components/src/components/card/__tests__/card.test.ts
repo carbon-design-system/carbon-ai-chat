@@ -1,15 +1,15 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import Card from "@carbon/ai-chat-components/es/components/card/src/card.js";
+import { html, fixture, expect } from '@open-wc/testing';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import Card from '@carbon/ai-chat-components/es/components/card/src/card.js';
 
 /**
  * This repository uses the @web/test-runner library for testing
@@ -28,10 +28,10 @@ const cardContent = html`
   </div>
 `;
 
-describe("card", function () {
-  it("should render with cds-aichat-card minimum attributes", async () => {
+describe('card', function () {
+  it('should render with cds-aichat-card minimum attributes', async () => {
     const el = await fixture<Card>(
-      html`<cds-aichat-card> ${cardContent} </cds-aichat-card>`,
+      html`<cds-aichat-card> ${cardContent} </cds-aichat-card>`
     );
     expect(el).to.be.instanceOf(Card);
     expect(el.shadowRoot).to.exist;

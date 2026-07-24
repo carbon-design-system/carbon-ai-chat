@@ -7,14 +7,14 @@
  *  @license
  */
 
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Link from "./carbon/Link";
-import { carbonIconToReact } from "../utils/carbonIcon";
-import React from "react";
+import Launch16 from '@carbon/icons/es/launch/16.js';
+import Link from './carbon/Link';
+import { carbonIconToReact } from '../utils/carbonIcon';
+import React from 'react';
 
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { ButtonItem } from "../../types/messaging/Messages";
-import { BaseButtonItemComponent } from "./BaseButtonItemComponent";
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { ButtonItem } from '../../types/messaging/Messages';
+import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 
 const LaunchIcon = carbonIconToReact(Launch16);
 
@@ -31,15 +31,14 @@ function ButtonItemURLComponent({
     localMessageItem.item;
 
   // If no image url is provided and should is a normal link, then render a carbon link.
-  if (!image_url && kind === "LINK") {
+  if (!image_url && kind === 'LINK') {
     return (
       <div className="cds-aichat--button-item">
         <Link
           className="cds-aichat--widget__break-word"
           href={url}
           target={target}
-          rel="noopener noreferrer"
-        >
+          rel="noopener noreferrer">
           <LaunchIcon slot="icon" className="icon" aria-label="Launch" />
           {label || url}
         </Link>

@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "./WriteableElementExample.css"; // Assuming styles are in a separate CSS file
+import './WriteableElementExample.css'; // Assuming styles are in a separate CSS file
 
-import { Tooltip } from "@carbon/react";
-import React from "react";
+import { Tooltip } from '@carbon/react';
+import React from 'react';
 interface WriteableElementExampleProps {
   location: string;
   parentStateText: string;
@@ -20,9 +20,9 @@ function WriteableElementExample({
   location,
   parentStateText,
 }: WriteableElementExampleProps) {
-  let classNames = "writeable-element-external";
-  if (location === "aiTooltipAfterDescriptionElement") {
-    classNames += " writeable-element-external--not-rounded";
+  let classNames = 'writeable-element-external';
+  if (location === 'aiTooltipAfterDescriptionElement') {
+    classNames += ' writeable-element-external--not-rounded';
   }
 
   // The header fixed actions and in-composer prompt-line slots sit inside tight
@@ -30,21 +30,21 @@ function WriteableElementExample({
   // hover/focus rather than a text block. The prompt-line swatches match the 32px
   // input controls; the header uses smaller (24px) icons, so its swatch is 24px.
   if (
-    location === "headerFixedActionsElement" ||
-    location === "promptLineActionsEnd" ||
-    location === "promptLineSendButtonStart"
+    location === 'headerFixedActionsElement' ||
+    location === 'promptLineActionsEnd' ||
+    location === 'promptLineSendButtonStart'
   ) {
-    let swatchClass = "writeable-element-external--swatch";
+    let swatchClass = 'writeable-element-external--swatch';
     // The header swatch sits at the top of the chat, so prefer pointing its
     // tooltip down into the chat body; the prompt-line swatches sit at the
     // bottom, so they prefer pointing up into the message area. `autoAlign`
     // (floating-ui) then flips/shifts from that preferred side to stay inside the
     // viewport — needed for the sidebar/float layouts and RTL, where a fixed side
     // would clip against the chat or page edge.
-    let swatchAlign: "top" | "bottom" = "top";
-    if (location === "headerFixedActionsElement") {
-      swatchClass += " writeable-element-external--swatch-header";
-      swatchAlign = "bottom";
+    let swatchAlign: 'top' | 'bottom' = 'top';
+    if (location === 'headerFixedActionsElement') {
+      swatchClass += ' writeable-element-external--swatch-header';
+      swatchAlign = 'bottom';
     }
     return (
       // `display: inline-block` on Carbon's tooltip trigger wrapper would add
@@ -55,8 +55,7 @@ function WriteableElementExample({
         className="writeable-element-external--swatch-tooltip"
         label={location}
         align={swatchAlign}
-        autoAlign
-      >
+        autoAlign>
         <button type="button" className={swatchClass} />
       </Tooltip>
     );

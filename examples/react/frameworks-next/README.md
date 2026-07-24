@@ -1,18 +1,24 @@
 # Frameworks / Next.js (App Router)
 
-Embeds `ChatContainer` inside a Next.js 16 App Router page, loading the chat as a client-only dynamic import so server rendering is skipped for browser-only dependencies.
+Embeds `ChatContainer` inside a Next.js 16 App Router page, loading the chat as
+a client-only dynamic import so server rendering is skipped for browser-only
+dependencies.
 
 ## What this example shows
 
 - App Router `app/layout.tsx` + `app/page.tsx` structure.
-- `next/dynamic` with `ssr: false` to defer `ChatContainer` to the client, with a `loading` placeholder.
-- `"use client"` in the chat module because `ChatContainer` touches `window` and custom elements.
+- `next/dynamic` with `ssr: false` to defer `ChatContainer` to the client, with
+  a `loading` placeholder.
+- `"use client"` in the chat module because `ChatContainer` touches `window` and
+  custom elements.
 - A minimal mocked backend (`customSendMessage`) that echoes the user's input.
 
 ## When to use this pattern
 
-- Your app is Next.js App Router and you want chat integrated without touching SSR.
-- You need a split between a thin Next page and a larger client component that owns the chat.
+- Your app is Next.js App Router and you want chat integrated without touching
+  SSR.
+- You need a split between a thin Next page and a larger client component that
+  owns the chat.
 
 ## APIs and props demonstrated
 
@@ -25,7 +31,10 @@ Embeds `ChatContainer` inside a Next.js 16 App Router page, loading the chat as 
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 
@@ -37,6 +46,7 @@ npm run build --workspace=@carbon/ai-chat
 npm run dev --workspace=@carbon/ai-chat-examples-react-frameworks-next
 ```
 
-(Replace `dev` with `build` or `start` as needed — this example also exposes `start` for the production server.)
+(Replace `dev` with `build` or `start` as needed — this example also exposes
+`start` for the production server.)
 
 See [../README.md](../README.md) for the full setup walkthrough.

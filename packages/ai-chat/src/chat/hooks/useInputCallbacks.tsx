@@ -7,26 +7,26 @@
  *  @license
  */
 
-import { useCallback, useMemo } from "react";
-import actions from "../store/actions";
-import { useSelector } from "./useSelector";
+import { useCallback, useMemo } from 'react';
+import actions from '../store/actions';
+import { useSelector } from './useSelector';
 import {
   selectIsInputToHumanAgent,
   selectInputState,
   selectInputIsReadonly,
   selectInputIsDisabled,
-} from "../store/selectors";
-import { shallowEqual } from "../store/appStore";
-import { createMessageRequestForText } from "../utils/messageUtils";
+} from '../store/selectors';
+import { shallowEqual } from '../store/appStore';
+import { createMessageRequestForText } from '../utils/messageUtils';
 import {
   BusEventType,
   MessageSendSource,
-} from "../../types/events/eventBusTypes";
-import type { ServiceManager } from "../services/ServiceManager";
-import type { AppState } from "../../types/state/AppState";
-import type { SendOptions } from "../../types/instance/ChatInstance";
-import type { MessagesComponentClass } from "../components-legacy/MessagesComponent";
-import type { JSONContent } from "@tiptap/core";
+} from '../../types/events/eventBusTypes';
+import type { ServiceManager } from '../services/ServiceManager';
+import type { AppState } from '../../types/state/AppState';
+import type { SendOptions } from '../../types/instance/ChatInstance';
+import type { MessagesComponentClass } from '../components-legacy/MessagesComponent';
+import type { JSONContent } from '@tiptap/core';
 
 interface UseInputCallbacksProps {
   serviceManager: ServiceManager;
@@ -44,7 +44,7 @@ interface UseInputCallbacksReturn {
     text: string,
     source: MessageSendSource,
     options?: SendOptions,
-    displayContent?: JSONContent,
+    displayContent?: JSONContent
   ) => Promise<void>;
   onRestart: () => Promise<void>;
   onClose: () => Promise<void>;
@@ -71,7 +71,7 @@ export function useInputCallbacks({
       text: string,
       source: MessageSendSource,
       options?: SendOptions,
-      displayContent?: JSONContent,
+      displayContent?: JSONContent
     ) => {
       // Read fresh state at call time — avoids closing over a stale render snapshot
       const currentState = serviceManager.store.getState();
@@ -83,7 +83,7 @@ export function useInputCallbacks({
       } else {
         const messageRequest = createMessageRequestForText(
           text,
-          displayContent,
+          displayContent
         );
         serviceManager.actions.sendWithCatch(messageRequest, source, {
           ...options,
@@ -96,11 +96,11 @@ export function useInputCallbacks({
 
       if (files.length) {
         serviceManager.store.dispatch(
-          actions.clearInputFiles(isInputToHumanAgent),
+          actions.clearInputFiles(isInputToHumanAgent)
         );
       }
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   const onRestart = useCallback(async () => {
@@ -108,9 +108,9 @@ export function useInputCallbacks({
   }, [serviceManager]);
 
   const onClose = useCallback(async () => {
-    await serviceManager.actions.changeView("launcher" as any, {
-      viewChangeReason: "main_window_minimized" as any,
-      mainWindowCloseReason: "default_minimize" as any,
+    await serviceManager.actions.changeView('launcher' as any, {
+      viewChangeReason: 'main_window_minimized' as any,
+      mainWindowCloseReason: 'default_minimize' as any,
     });
   }, [serviceManager]);
 
@@ -149,7 +149,7 @@ export function useInputCallbacks({
       }
       // Input focus will be handled by parent component
     } catch (error) {
-      console.error("An error occurred in requestInputFocus", error);
+      console.error('An error occurred in requestInputFocus', error);
     }
   }, [agentDisplayState, messagesRef]);
 

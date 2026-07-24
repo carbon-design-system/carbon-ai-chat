@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { useCallback } from "react";
-import CDSButton from "@carbon/web-components/es/components/button/button.js";
-import { IS_MOBILE } from "../utils/browserUtils";
-import { doFocusRef } from "../utils/domUtils";
-import { consoleError } from "../utils/miscUtils";
-import type { InputFunctions } from "../components/input/Input";
-import type { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
+import { useCallback } from 'react';
+import CDSButton from '@carbon/web-components/es/components/button/button.js';
+import { IS_MOBILE } from '../utils/browserUtils';
+import { doFocusRef } from '../utils/domUtils';
+import { consoleError } from '../utils/miscUtils';
+import type { InputFunctions } from '../components/input/Input';
+import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
 interface UseFocusManagerProps {
   shouldAutoFocus: boolean;
@@ -70,7 +70,7 @@ export function useFocusManager({
         }
       }
     } catch (error) {
-      consoleError("An error occurred in MainWindow.requestFocus", error);
+      consoleError('An error occurred in MainWindow.requestFocus', error);
     }
   }, [
     customPanelIsOpen,

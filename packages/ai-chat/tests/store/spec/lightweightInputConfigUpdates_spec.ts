@@ -18,39 +18,39 @@
  *  - an unrelated lightweight change does not replace `assistantInputState`.
  */
 
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 import {
   selectInputIsDisabled,
   selectInputIsReadonly,
-} from "../../../src/chat/store/selectors";
-import { createAppStore } from "../../../src/chat/store/appStore";
+} from '../../../src/chat/store/selectors';
+import { createAppStore } from '../../../src/chat/store/appStore';
 import {
   createAppConfig,
   createInitialState,
-} from "../../../src/chat/store/doCreateStore";
-import { reducers } from "../../../src/chat/store/reducers";
-import actions from "../../../src/chat/store/actions";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { AppState } from "../../../src/types/state/AppState";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+} from '../../../src/chat/store/doCreateStore';
+import { reducers } from '../../../src/chat/store/reducers';
+import actions from '../../../src/chat/store/actions';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { AppState } from '../../../src/types/state/AppState';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 function createStore(initialState: AppState) {
   return createAppStore(
     (
       state: AppState,
-      action: { type: string; [key: string]: unknown } | undefined,
+      action: { type: string; [key: string]: unknown } | undefined
     ): AppState =>
       action && reducers[action.type]
         ? reducers[action.type](state, action)
         : state,
-    initialState,
+    initialState
   );
 }
 
 function makeServiceManager(initialState: AppState): ServiceManager {
   return {
     store: createStore(initialState),
-    namespace: { suffix: "" },
+    namespace: { suffix: '' },
     messageService: { timeoutMS: 30000 },
   } as any;
 }
@@ -59,8 +59,8 @@ function initialAppState(config: PublicConfig): AppState {
   return createInitialState(createAppConfig(config));
 }
 
-describe("config-driven input flags", () => {
-  it("reflects an in-place input.isDisabled toggle through the effective selector", async () => {
+describe('config-driven input flags', () => {
+  it('reflects an in-place input.isDisabled toggle through the effective selector', async () => {
     // A fresh customSendMessage reference models a non-memoized consumer config.
     const prev: PublicConfig = {
       input: { isDisabled: false },
@@ -75,7 +75,7 @@ describe("config-driven input flags", () => {
     await applyConfigChangesDynamically(
       sm.store.getState().config.public,
       next,
-      sm,
+      sm
     );
 
     const state = sm.store.getState();
@@ -84,7 +84,7 @@ describe("config-driven input flags", () => {
     expect(selectInputIsReadonly(state)).toBe(false);
   });
 
-  it("re-enables the input via config", async () => {
+  it('re-enables the input via config', async () => {
     const prev: PublicConfig = { input: { isDisabled: true } };
     const next: PublicConfig = { input: { isDisabled: false } };
 
@@ -92,17 +92,17 @@ describe("config-driven input flags", () => {
     await applyConfigChangesDynamically(
       sm.store.getState().config.public,
       next,
-      sm,
+      sm
     );
 
     expect(selectInputIsDisabled(sm.store.getState())).toBe(false);
   });
 
-  it("does NOT replace assistantInputState when an unrelated lightweight field changes", async () => {
+  it('does NOT replace assistantInputState when an unrelated lightweight field changes', async () => {
     // assistantName is part of the lightweight bucket but does not touch the
     // input state; the input components must keep their existing state object.
-    const prev: PublicConfig = { assistantName: "Before" };
-    const next: PublicConfig = { assistantName: "After" };
+    const prev: PublicConfig = { assistantName: 'Before' };
+    const next: PublicConfig = { assistantName: 'After' };
 
     const sm = makeServiceManager(initialAppState(prev));
     const before = sm.store.getState().assistantInputState;
@@ -110,14 +110,14 @@ describe("config-driven input flags", () => {
     await applyConfigChangesDynamically(
       sm.store.getState().config.public,
       next,
-      sm,
+      sm
     );
 
     const after = sm.store.getState().assistantInputState;
     expect(after).toBe(before); // reference preserved — no avoidable re-render
   });
 
-  it("keeps an imperative isReadonly override across a later lightweight config change", async () => {
+  it('keeps an imperative isReadonly override across a later lightweight config change', async () => {
     // Models a host that mixes the deprecated imperative setter with declarative
     // config: instance.updateInputIsDisabled writes a non-null isReadonly slice
     // override. Config keeps the chat editable (isReadonly:false) and a separate
@@ -127,8 +127,8 @@ describe("config-driven input flags", () => {
     const sm = makeServiceManager(
       initialAppState({
         isReadonly: false,
-        assistantName: "Before",
-      }),
+        assistantName: 'Before',
+      })
     );
 
     // Imperative override marks the chat read-only (same dispatch as
@@ -140,12 +140,12 @@ describe("config-driven input flags", () => {
     // would have re-applied config.isReadonly=false and cleared the override.
     const next: PublicConfig = {
       isReadonly: false,
-      assistantName: "After",
+      assistantName: 'After',
     };
     await applyConfigChangesDynamically(
       sm.store.getState().config.public,
       next,
-      sm,
+      sm
     );
 
     const state = sm.store.getState();

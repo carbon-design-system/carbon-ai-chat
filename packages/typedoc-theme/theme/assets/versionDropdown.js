@@ -6,7 +6,7 @@
  */
 
 (function () {
-  "use strict";
+  'use strict';
 
   // Determine the current version and type from the URL
   function getCurrentVersionInfo() {
@@ -15,32 +15,32 @@
     // Check if we're on a tag (latest/next/alpha)
     const tagMatch = path.match(/\/tag\/(latest|next|alpha)\//);
     if (tagMatch) {
-      return { type: "tag", value: tagMatch[1] };
+      return { type: 'tag', value: tagMatch[1] };
     }
 
     // Check if we're on a versioned path
     const versionMatch = path.match(/\/version\/(v[\d.]+(?:-rc\.\d+)?)\//);
     if (versionMatch) {
-      return { type: "version", value: versionMatch[1] };
+      return { type: 'version', value: versionMatch[1] };
     }
 
     // Check if we're on localhost (with or without port)
     const hostname = window.location.hostname;
     if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "0.0.0.0"
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0'
     ) {
-      return { type: "local", value: "local" };
+      return { type: 'local', value: 'local' };
     }
 
     // Default to latest if we can't determine
-    return { type: "tag", value: "latest" };
+    return { type: 'tag', value: 'latest' };
   }
 
   // Get the base path for a given version
   function getVersionPath(versionInfo) {
-    if (versionInfo.type === "tag") {
+    if (versionInfo.type === 'tag') {
       return `/tag/${versionInfo.value}/docs/documents/Overview.html`;
     } else {
       return `/version/${versionInfo.value}/docs/documents/Overview.html`;
@@ -53,15 +53,15 @@
 
     // If we're on localhost, fetch from TypeDoc root
     // We need to find the base path from the current location
-    if (currentInfo.type === "local") {
+    if (currentInfo.type === 'local') {
       // Get the data-base attribute from the html element which tells us the path to root
       const htmlElement = document.documentElement;
-      const basePath = htmlElement.getAttribute("data-base") || "./";
-      return basePath + "versions.js";
+      const basePath = htmlElement.getAttribute('data-base') || './';
+      return basePath + 'versions.js';
     }
 
     // For deployed sites, always fetch from the canonical location
-    return "https://chat.carbondesignsystem.com/versions.js";
+    return 'https://chat.carbondesignsystem.com/versions.js';
   }
 
   // Fetch and populate the version dropdown
@@ -71,11 +71,11 @@
       const response = await fetch(versionsPath);
 
       if (!response.ok) {
-        console.warn("Failed to fetch versions.js from", versionsPath);
+        console.warn('Failed to fetch versions.js from', versionsPath);
         // Hide the dropdown wrapper if we can't fetch versions
-        const wrapper = document.getElementById("versions-dropdown-wrapper");
+        const wrapper = document.getElementById('versions-dropdown-wrapper');
         if (wrapper) {
-          wrapper.style.display = "none";
+          wrapper.style.display = 'none';
         }
         return;
       }
@@ -84,14 +84,14 @@
 
       // Extract the AI_CHAT_VERSIONS array from the file
       const match = text.match(
-        /export\s+const\s+AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);?/,
+        /export\s+const\s+AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);?/
       );
       if (!match) {
-        console.warn("Failed to parse versions.js");
+        console.warn('Failed to parse versions.js');
         // Hide the dropdown wrapper if we can't parse versions
-        const wrapper = document.getElementById("versions-dropdown-wrapper");
+        const wrapper = document.getElementById('versions-dropdown-wrapper');
         if (wrapper) {
-          wrapper.style.display = "none";
+          wrapper.style.display = 'none';
         }
         return;
       }
@@ -99,8 +99,8 @@
       // Clean up array string for valid JSON
       const arrayString = match[1]
         .replace(/'/g, '"') // Replace single quotes with double quotes
-        .replace(/,\s*\]/g, "]") // remove trailing comma
-        .replace(/\s+/g, " ") // collapse whitespace/newlines
+        .replace(/,\s*\]/g, ']') // remove trailing comma
+        .replace(/\s+/g, ' ') // collapse whitespace/newlines
         .trim();
       const versions = JSON.parse(arrayString);
 
@@ -112,19 +112,19 @@
 
       // Add "Pre-release" option for next tag
       options.push({
-        label: "Pre-release",
-        value: "tag:next",
-        href: `https://chat.carbondesignsystem.com${getVersionPath({ type: "tag", value: "next" })}`,
-        selected: currentInfo.type === "tag" && currentInfo.value === "next",
+        label: 'Pre-release',
+        value: 'tag:next',
+        href: `https://chat.carbondesignsystem.com${getVersionPath({ type: 'tag', value: 'next' })}`,
+        selected: currentInfo.type === 'tag' && currentInfo.value === 'next',
       });
 
       // Add an "Alpha" option only when viewing an alpha site, so alpha stays
       // unlisted on the stable latest/next docs.
-      if (currentInfo.type === "tag" && currentInfo.value === "alpha") {
+      if (currentInfo.type === 'tag' && currentInfo.value === 'alpha') {
         options.push({
-          label: "Alpha",
-          value: "tag:alpha",
-          href: `https://chat.carbondesignsystem.com${getVersionPath({ type: "tag", value: "alpha" })}`,
+          label: 'Alpha',
+          value: 'tag:alpha',
+          href: `https://chat.carbondesignsystem.com${getVersionPath({ type: 'tag', value: 'alpha' })}`,
           selected: true,
         });
       }
@@ -132,27 +132,27 @@
       // Add all version options from the array
       // If current version is "latest" tag, select the first version in the array
       const isLatest =
-        currentInfo.type === "tag" && currentInfo.value === "latest";
+        currentInfo.type === 'tag' && currentInfo.value === 'latest';
       options = options.concat(
         versions.map(function (version, index) {
           const isFirstVersion = index === 0;
           const selected =
-            (currentInfo.type === "version" && currentInfo.value === version) ||
+            (currentInfo.type === 'version' && currentInfo.value === version) ||
             (isLatest && isFirstVersion);
           return {
             label: version,
             value: version,
-            href: `https://chat.carbondesignsystem.com${getVersionPath({ type: "version", value: version })}`,
+            href: `https://chat.carbondesignsystem.com${getVersionPath({ type: 'version', value: version })}`,
             selected: selected,
           };
-        }),
+        })
       );
 
       // Add "Local" option if we're on localhost
-      if (currentInfo.type === "local") {
+      if (currentInfo.type === 'local') {
         options.unshift({
-          label: "Local",
-          value: "local",
+          label: 'Local',
+          value: 'local',
           href: window.location.href,
           selected: true,
         });
@@ -160,9 +160,9 @@
 
       // If there are no options, hide the dropdown wrapper and return
       if (options.length === 0) {
-        const wrapper = document.getElementById("versions-dropdown-wrapper");
+        const wrapper = document.getElementById('versions-dropdown-wrapper');
         if (wrapper) {
-          wrapper.style.display = "none";
+          wrapper.style.display = 'none';
         }
         return;
       }
@@ -171,12 +171,12 @@
       let selectedValue =
         options.find((opt) => opt.selected)?.value ||
         options[0]?.value ||
-        "local";
+        'local';
 
       // Find the dropdown element
-      const dropdown = document.getElementById("versions-dropdown");
+      const dropdown = document.getElementById('versions-dropdown');
       if (!dropdown) {
-        console.warn("Versions dropdown element not found");
+        console.warn('Versions dropdown element not found');
         return;
       }
 
@@ -185,36 +185,36 @@
 
       // Populate the dropdown with items
       options.forEach(function (option) {
-        const item = document.createElement("cds-dropdown-item");
-        item.setAttribute("value", option.value);
+        const item = document.createElement('cds-dropdown-item');
+        item.setAttribute('value', option.value);
         item.textContent = option.label;
         item.dataset.href = option.href;
         dropdown.appendChild(item);
       });
 
       // Add event listener for selection changes
-      dropdown.addEventListener("cds-dropdown-selected", function (event) {
+      dropdown.addEventListener('cds-dropdown-selected', function (event) {
         const selectedValue = event.detail?.item?.value ?? event.detail?.value;
         const selectedOption = options.find(
-          (opt) => opt.value === selectedValue,
+          (opt) => opt.value === selectedValue
         );
         if (selectedOption && selectedOption.href) {
           window.location.href = selectedOption.href;
         }
       });
     } catch (error) {
-      console.error("Error initializing version dropdown:", error);
+      console.error('Error initializing version dropdown:', error);
       // Hide the dropdown wrapper on error
-      const wrapper = document.getElementById("versions-dropdown-wrapper");
+      const wrapper = document.getElementById('versions-dropdown-wrapper');
       if (wrapper) {
-        wrapper.style.display = "none";
+        wrapper.style.display = 'none';
       }
     }
   }
 
   // Initialize when DOM is ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initVersionDropdown);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVersionDropdown);
   } else {
     initVersionDropdown();
   }

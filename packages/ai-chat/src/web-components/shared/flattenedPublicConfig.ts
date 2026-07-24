@@ -19,9 +19,9 @@
  * the build until that happens.
  */
 
-import type { ComplexAttributeConverter, PropertyDeclaration } from "lit";
+import type { ComplexAttributeConverter, PropertyDeclaration } from 'lit';
 
-import { PublicConfig } from "../../types/config/PublicConfig";
+import { PublicConfig } from '../../types/config/PublicConfig';
 
 /**
  * A single flattened-config field: a {@link PublicConfig} key plus the exact
@@ -51,7 +51,7 @@ const aiEnabledConverter: ComplexAttributeConverter<boolean | undefined> = {
       return undefined; // attribute absent -> leave undefined to use defaults
     }
     const v = String(value).trim().toLowerCase();
-    const falsey = v === "false" || v === "0" || v === "off" || v === "no";
+    const falsey = v === 'false' || v === '0' || v === 'off' || v === 'no';
     // Any presence that's not an explicit falsey string is treated as true.
     return !falsey;
   },
@@ -65,79 +65,79 @@ const aiEnabledConverter: ComplexAttributeConverter<boolean | undefined> = {
  * the exhaustiveness guard below) while type-checking every entry.
  */
 export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
-  { name: "onError", options: { attribute: false } },
+  { name: 'onError', options: { attribute: false } },
   {
-    name: "openChatByDefault",
-    options: { type: Boolean, attribute: "open-chat-by-default" },
+    name: 'openChatByDefault',
+    options: { type: Boolean, attribute: 'open-chat-by-default' },
   },
-  { name: "disclaimer", options: { type: Object } },
+  { name: 'disclaimer', options: { type: Object } },
   {
-    name: "disableCustomElementMobileEnhancements",
+    name: 'disableCustomElementMobileEnhancements',
     options: {
       type: Boolean,
-      attribute: "disable-custom-element-mobile-enhancements",
+      attribute: 'disable-custom-element-mobile-enhancements',
     },
   },
-  { name: "debug", options: { type: Boolean } },
+  { name: 'debug', options: { type: Boolean } },
   {
-    name: "exposeServiceManagerForTesting",
-    options: { type: Boolean, attribute: "expose-service-manager-for-testing" },
+    name: 'exposeServiceManagerForTesting',
+    options: { type: Boolean, attribute: 'expose-service-manager-for-testing' },
   },
   {
-    name: "injectCarbonTheme",
-    options: { type: String, attribute: "inject-carbon-theme" },
+    name: 'injectCarbonTheme',
+    options: { type: String, attribute: 'inject-carbon-theme' },
   },
   {
-    name: "aiEnabled",
-    options: { attribute: "ai-enabled", converter: aiEnabledConverter },
+    name: 'aiEnabled',
+    options: { attribute: 'ai-enabled', converter: aiEnabledConverter },
     resolveManually: true,
   },
-  { name: "serviceDeskFactory", options: { attribute: false } },
+  { name: 'serviceDeskFactory', options: { attribute: false } },
   {
-    name: "serviceDesk",
-    options: { type: Object, attribute: "service-desk" },
+    name: 'serviceDesk',
+    options: { type: Object, attribute: 'service-desk' },
   },
   {
-    name: "shouldTakeFocusIfOpensAutomatically",
+    name: 'shouldTakeFocusIfOpensAutomatically',
     options: {
       type: Boolean,
-      attribute: "should-take-focus-if-opens-automatically",
+      attribute: 'should-take-focus-if-opens-automatically',
     },
   },
-  { name: "namespace", options: { type: String } },
+  { name: 'namespace', options: { type: String } },
   {
-    name: "shouldSanitizeHTML",
-    options: { type: Boolean, attribute: "should-sanitize-html" },
+    name: 'shouldSanitizeHTML',
+    options: { type: Boolean, attribute: 'should-sanitize-html' },
   },
-  { name: "header", options: { type: Object } },
-  { name: "history", options: { type: Object } },
+  { name: 'header', options: { type: Object } },
+  { name: 'history', options: { type: Object } },
   // Carries the onStateChange callback, so it is property-only (no attribute).
-  { name: "persistedState", options: { attribute: false, type: Object } },
-  { name: "layout", options: { type: Object } },
-  { name: "messaging", options: { type: Object } },
-  { name: "isReadonly", options: { type: Boolean, attribute: "is-readonly" } },
+  { name: 'persistedState', options: { attribute: false, type: Object } },
+  { name: 'layout', options: { type: Object } },
+  { name: 'messaging', options: { type: Object } },
+  { name: 'isReadonly', options: { type: Boolean, attribute: 'is-readonly' } },
   {
-    name: "persistFeedback",
-    options: { type: Boolean, attribute: "persist-feedback" },
+    name: 'persistFeedback',
+    options: { type: Boolean, attribute: 'persist-feedback' },
   },
   {
-    name: "hideAvatar",
-    options: { type: Boolean, attribute: "hide-avatar" },
+    name: 'hideAvatar',
+    options: { type: Boolean, attribute: 'hide-avatar' },
   },
   {
-    name: "assistantName",
-    options: { type: String, attribute: "assistant-name" },
+    name: 'assistantName',
+    options: { type: String, attribute: 'assistant-name' },
   },
   // Note: no explicit `attribute` — Lit derives `assistantavatarurl`.
-  { name: "assistantAvatarUrl", options: { type: String } },
-  { name: "locale", options: { type: String } },
-  { name: "homescreen", options: { type: Object } },
-  { name: "launcher", options: { type: Object } },
-  { name: "input", options: { type: Object } },
-  { name: "upload", options: { attribute: false, type: Object } },
-  { name: "strings", options: { type: Object } },
-  { name: "keyboardShortcuts", options: { type: Object } },
-  { name: "markdown", options: { attribute: false } },
+  { name: 'assistantAvatarUrl', options: { type: String } },
+  { name: 'locale', options: { type: String } },
+  { name: 'homescreen', options: { type: Object } },
+  { name: 'launcher', options: { type: Object } },
+  { name: 'input', options: { type: Object } },
+  { name: 'upload', options: { attribute: false, type: Object } },
+  { name: 'strings', options: { type: Object } },
+  { name: 'keyboardShortcuts', options: { type: Object } },
+  { name: 'markdown', options: { attribute: false } },
 ] as const satisfies readonly FlattenedConfigFieldEntry[];
 
 /**
@@ -162,13 +162,13 @@ export interface FlattenedConfigSource extends Partial<PublicConfig> {
  * @returns The reconstructed `PublicConfig`.
  */
 export function resolveFlattenedConfig(
-  source: FlattenedConfigSource,
+  source: FlattenedConfigSource
 ): PublicConfig {
   const resolved: PublicConfig = { ...(source.config ?? {}) };
 
   for (const field of FLATTENED_PUBLIC_CONFIG_FIELDS) {
     // aiEnabled is resolved together with aiDisabled below.
-    if ("resolveManually" in field && field.resolveManually) {
+    if ('resolveManually' in field && field.resolveManually) {
       continue;
     }
     const value = source[field.name];
@@ -202,7 +202,7 @@ type Equals<A, B> =
     : false;
 type Expect<T extends true> = T;
 type FlattenedFieldName =
-  (typeof FLATTENED_PUBLIC_CONFIG_FIELDS)[number]["name"];
+  (typeof FLATTENED_PUBLIC_CONFIG_FIELDS)[number]['name'];
 
 // The `_` prefix matches the lint config's varsIgnorePattern; this alias only
 // exists to be type-checked.

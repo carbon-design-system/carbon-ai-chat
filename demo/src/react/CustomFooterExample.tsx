@@ -7,13 +7,13 @@
  *  @license
  */
 
-import React from "react";
-import { ChatInstance, MessageResponse, GenericItem } from "@carbon/ai-chat";
-import { IconButton } from "@carbon/react";
+import React from 'react';
+import { ChatInstance, MessageResponse, GenericItem } from '@carbon/ai-chat';
+import { IconButton } from '@carbon/react';
 
 // Using @carbon/icons-react for all icons
-import Copy16 from "@carbon/icons-react/es/Copy.js";
-import Export16 from "@carbon/icons-react/es/Export.js";
+import Copy16 from '@carbon/icons-react/es/Copy.js';
+import Export16 from '@carbon/icons-react/es/Export.js';
 
 interface CustomFooterExampleProps {
   slotName: string;
@@ -28,8 +28,8 @@ function CustomFooterExample({
   additionalData,
 }: CustomFooterExampleProps) {
   const handleCopy = () => {
-    let textToCopy = "";
-    if ("text" in messageItem && typeof messageItem.text === "string") {
+    let textToCopy = '';
+    if ('text' in messageItem && typeof messageItem.text === 'string') {
       textToCopy = messageItem.text;
     }
     if (textToCopy) {
@@ -40,7 +40,7 @@ function CustomFooterExample({
   const handleShare = () => {
     const url = additionalData?.custom_action_url as string;
     if (url) {
-      window.open(url, "_blank");
+      window.open(url, '_blank');
     }
   };
 
@@ -53,8 +53,7 @@ function CustomFooterExample({
           kind="ghost"
           label="Copy"
           size="sm"
-          onClick={handleCopy}
-        >
+          onClick={handleCopy}>
           <Copy16 />
         </IconButton>
       )}
@@ -65,8 +64,7 @@ function CustomFooterExample({
           kind="ghost"
           label="Share"
           size="sm"
-          onClick={handleShare}
-        >
+          onClick={handleShare}>
           <Export16 />
         </IconButton>
       )}

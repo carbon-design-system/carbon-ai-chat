@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { html, TemplateResult } from "lit";
-import { repeat } from "lit/directives/repeat.js";
-import type { Token } from "markdown-it";
+import { html, TemplateResult } from 'lit';
+import { repeat } from 'lit/directives/repeat.js';
+import type { Token } from 'markdown-it';
 
 import type {
   TableCellContent,
   TableRowContent,
-} from "../../../table/src/table.js";
-import { combineConsecutiveHtmlInline } from "./html-helpers.js";
-import { isTableAtStreamingTail } from "./streaming-table.js";
-import type { RenderTokenTreeOptions } from "../markdown-renderer-types.js";
-import type { TokenTree } from "../markdown-token-tree";
+} from '../../../table/src/table.js';
+import { combineConsecutiveHtmlInline } from './html-helpers.js';
+import { isTableAtStreamingTail } from './streaming-table.js';
+import type { RenderTokenTreeOptions } from '../markdown-renderer-types.js';
+import type { TokenTree } from '../markdown-token-tree';
 
 // Default localization functions for table pagination
 export const DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT = ({
@@ -56,24 +56,24 @@ export function extractTableData(tableNode: TokenTree): {
   const rows: TableCellData[][] = [];
 
   for (const child of tableNode.children) {
-    if (child.token.tag === "thead") {
+    if (child.token.tag === 'thead') {
       // Extract column headers
       for (const theadChild of child.children) {
-        if (theadChild.token.tag === "tr") {
+        if (theadChild.token.tag === 'tr') {
           for (const thChild of theadChild.children) {
-            if (thChild.token.tag === "th") {
+            if (thChild.token.tag === 'th') {
               headers.push(extractCellData(thChild));
             }
           }
         }
       }
-    } else if (child.token.tag === "tbody") {
+    } else if (child.token.tag === 'tbody') {
       // Extract data rows
       for (const tbodyChild of child.children) {
-        if (tbodyChild.token.tag === "tr") {
+        if (tbodyChild.token.tag === 'tr') {
           const row: TableCellData[] = [];
           for (const tdChild of tbodyChild.children) {
-            if (tdChild.token.tag === "td") {
+            if (tdChild.token.tag === 'td') {
               row.push(extractCellData(tdChild));
             }
           }
@@ -94,21 +94,21 @@ export function extractTableData(tableNode: TokenTree): {
  */
 export function extractTextContent(node: TokenTree): string {
   // Handle direct text tokens
-  if (node.token.type === "text") {
-    return node.token.content || "";
+  if (node.token.type === 'text') {
+    return node.token.content || '';
   }
 
   // Handle inline code
-  if (node.token.type === "code_inline") {
-    return node.token.content || "";
+  if (node.token.type === 'code_inline') {
+    return node.token.content || '';
   }
 
-  if (node.token.type === "softbreak" || node.token.type === "hardbreak") {
-    return "\n";
+  if (node.token.type === 'softbreak' || node.token.type === 'hardbreak') {
+    return '\n';
   }
 
   // Recursively extract text from child nodes
-  let text = "";
+  let text = '';
   for (const child of node.children) {
     text += extractTextContent(child);
   }
@@ -119,7 +119,7 @@ export function extractTextContent(node: TokenTree): string {
 function extractCellData(node: TokenTree): TableCellData {
   const text = extractTextContent(node);
   const tokens = extractRenderableChildren(node);
-  const hasRichContent = tokens.some((child) => child.token.type !== "text");
+  const hasRichContent = tokens.some((child) => child.token.type !== 'text');
 
   return {
     text,
@@ -131,7 +131,7 @@ function extractRenderableChildren(node: TokenTree): TokenTree[] {
   if (node.children.length === 1) {
     const onlyChild = node.children[0];
     if (
-      onlyChild.token.type === "inline" &&
+      onlyChild.token.type === 'inline' &&
       onlyChild.children &&
       onlyChild.children.length
     ) {
@@ -162,9 +162,9 @@ export function renderTable(
   options: RenderTokenTreeOptions,
   renderToken: (
     node: TokenTree,
-    options: RenderTokenTreeOptions,
+    options: RenderTokenTreeOptions
   ) => TemplateResult,
-  slotName: string | undefined,
+  slotName: string | undefined
 ): TemplateResult {
   const {
     streaming,
@@ -190,7 +190,7 @@ export function renderTable(
   ) {
     isLoading = isTableAtStreamingTail(
       parentContext.parentChildren,
-      parentContext.currentIndex,
+      parentContext.currentIndex
     );
   }
 
@@ -210,13 +210,13 @@ export function renderTable(
             parentChildren: normalizedTokens,
             currentIndex: index,
           },
-        }),
+        })
     )}`;
   };
 
   const createCellContent = (
     cell: TableCellData,
-    contextOverrides?: Record<string, unknown>,
+    contextOverrides?: Record<string, unknown>
   ): TableCellContent => ({
     text: cell.text,
     template: cell.tokens
@@ -232,7 +232,7 @@ export function renderTable(
   if (!isLoading) {
     const extractedData = extractTableData(node);
     headers = extractedData.headers.map((cell) =>
-      createCellContent(cell, { isInThead: true }),
+      createCellContent(cell, { isInThead: true })
     );
     tableRows = extractedData.rows.map((row) => ({
       cells: row.map((cell) => createCellContent(cell)),
@@ -257,8 +257,7 @@ export function renderTable(
       .locale=${tableLocale}
       .getPaginationSupplementalText=${tableGetPaginationSupplementalText}
       .getPaginationStatusText=${tableGetPaginationStatusText}
-      ...=${attrs}
-    ></cds-aichat-table>
+      ...=${attrs}></cds-aichat-table>
   </div>`;
 
   if (slotName !== undefined) {
@@ -269,7 +268,7 @@ export function renderTable(
     const { headers: dataHeaders, rows: dataRows } = extractTableData(node);
     options.recordCustomRender?.({
       slotName,
-      kind: "table",
+      kind: 'table',
       token,
       node,
       data: {

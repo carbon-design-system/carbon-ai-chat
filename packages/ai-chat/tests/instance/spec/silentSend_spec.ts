@@ -26,14 +26,14 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 import {
   BusEventType,
   MessageSendSource,
-} from "../../../src/types/events/eventBusTypes";
-import { createMessageRequestForText } from "../../../src/chat/utils/messageUtils";
+} from '../../../src/types/events/eventBusTypes';
+import { createMessageRequestForText } from '../../../src/chat/utils/messageUtils';
 
-describe("silent send – file-only messages are not shown in the UI", () => {
+describe('silent send – file-only messages are not shown in the UI', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -41,7 +41,7 @@ describe("silent send – file-only messages are not shown in the UI", () => {
   // silent: true → message NOT added to visible message list
   // -------------------------------------------------------------------------
 
-  it("does not add a message to the visible store when silent=true", async () => {
+  it('does not add a message to the visible store when silent=true', async () => {
     const { store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -49,9 +49,9 @@ describe("silent send – file-only messages are not shown in the UI", () => {
       store.getState().assistantMessageState.localMessageIDs.length;
 
     await serviceManager.actions.sendWithCatch(
-      createMessageRequestForText(""),
+      createMessageRequestForText(''),
       MessageSendSource.MESSAGE_INPUT,
-      { silent: true },
+      { silent: true }
     );
 
     const messagesAfter =
@@ -61,7 +61,7 @@ describe("silent send – file-only messages are not shown in the UI", () => {
     expect(messagesAfter).toBe(messagesBefore);
   });
 
-  it("sets history.silent=true on the outgoing message when silent=true", async () => {
+  it('sets history.silent=true on the outgoing message when silent=true', async () => {
     const { instance, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -76,9 +76,9 @@ describe("silent send – file-only messages are not shown in the UI", () => {
     ]);
 
     await serviceManager.actions.sendWithCatch(
-      createMessageRequestForText(""),
+      createMessageRequestForText(''),
       MessageSendSource.MESSAGE_INPUT,
-      { silent: true },
+      { silent: true }
     );
 
     expect(preSendMessages).toHaveLength(1);
@@ -89,7 +89,7 @@ describe("silent send – file-only messages are not shown in the UI", () => {
   // silent: false (or omitted) → message IS added to visible message list
   // -------------------------------------------------------------------------
 
-  it("adds a message to the visible store when silent=false (text send)", async () => {
+  it('adds a message to the visible store when silent=false (text send)', async () => {
     const { store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -97,9 +97,9 @@ describe("silent send – file-only messages are not shown in the UI", () => {
       store.getState().assistantMessageState.localMessageIDs.length;
 
     await serviceManager.actions.sendWithCatch(
-      createMessageRequestForText("Hello"),
+      createMessageRequestForText('Hello'),
       MessageSendSource.MESSAGE_INPUT,
-      { silent: false },
+      { silent: false }
     );
 
     const messagesAfter =
@@ -109,7 +109,7 @@ describe("silent send – file-only messages are not shown in the UI", () => {
     expect(messagesAfter).toBeGreaterThan(messagesBefore);
   });
 
-  it("adds a message to the visible store when no silent option is provided", async () => {
+  it('adds a message to the visible store when no silent option is provided', async () => {
     const { store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -117,8 +117,8 @@ describe("silent send – file-only messages are not shown in the UI", () => {
       store.getState().assistantMessageState.localMessageIDs.length;
 
     await serviceManager.actions.sendWithCatch(
-      createMessageRequestForText("Hello"),
-      MessageSendSource.MESSAGE_INPUT,
+      createMessageRequestForText('Hello'),
+      MessageSendSource.MESSAGE_INPUT
     );
 
     const messagesAfter =
@@ -132,18 +132,18 @@ describe("silent send – file-only messages are not shown in the UI", () => {
   // We verify the rule directly: empty text → silent, non-empty text → not silent
   // -------------------------------------------------------------------------
 
-  it("empty string is falsy — !text is true (file-only send should be silent)", () => {
-    const text = "";
+  it('empty string is falsy — !text is true (file-only send should be silent)', () => {
+    const text = '';
     expect(!text).toBe(true);
   });
 
-  it("non-empty string is truthy — !text is false (text send should not be silent)", () => {
-    const text = "Hello";
+  it('non-empty string is truthy — !text is false (text send should not be silent)', () => {
+    const text = 'Hello';
     expect(!text).toBe(false);
   });
 
-  it("whitespace-only string trimmed to empty is falsy", () => {
-    const text = "   ".trim();
+  it('whitespace-only string trimmed to empty is falsy', () => {
+    const text = '   '.trim();
     expect(!text).toBe(true);
   });
 
@@ -151,7 +151,7 @@ describe("silent send – file-only messages are not shown in the UI", () => {
   // Explicit silent option is always preserved (options?.silent ?? !text)
   // -------------------------------------------------------------------------
 
-  it("explicit silent:true is preserved even when text is non-empty", async () => {
+  it('explicit silent:true is preserved even when text is non-empty', async () => {
     const { store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -160,9 +160,9 @@ describe("silent send – file-only messages are not shown in the UI", () => {
 
     // Simulate a caller that explicitly passes silent:true with text
     await serviceManager.actions.sendWithCatch(
-      createMessageRequestForText("Hello"),
+      createMessageRequestForText('Hello'),
       MessageSendSource.MESSAGE_INPUT,
-      { silent: true },
+      { silent: true }
     );
 
     const messagesAfter =
@@ -172,7 +172,7 @@ describe("silent send – file-only messages are not shown in the UI", () => {
     expect(messagesAfter).toBe(messagesBefore);
   });
 
-  it("explicit silent:false is preserved even when text is empty", async () => {
+  it('explicit silent:false is preserved even when text is empty', async () => {
     const { store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
@@ -181,9 +181,9 @@ describe("silent send – file-only messages are not shown in the UI", () => {
 
     // Simulate a caller that explicitly passes silent:false with empty text
     await serviceManager.actions.sendWithCatch(
-      createMessageRequestForText(""),
+      createMessageRequestForText(''),
       MessageSendSource.MESSAGE_INPUT,
-      { silent: false },
+      { silent: false }
     );
 
     const messagesAfter =

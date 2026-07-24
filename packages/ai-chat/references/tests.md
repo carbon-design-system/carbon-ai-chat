@@ -2,7 +2,9 @@
 
 Load this when writing or fixing Jest tests in this package.
 
-Tests are organized by what they validate. Naming is `_spec.ts(x)` (not `.test.ts`); files live in `tests/<area>/spec/` (not colocated with source — opposite of `@carbon/ai-chat-components`).
+Tests are organized by what they validate. Naming is `_spec.ts(x)` (not
+`.test.ts`); files live in `tests/<area>/spec/` (not colocated with source —
+opposite of `@carbon/ai-chat-components`).
 
 ## Test categories
 
@@ -28,7 +30,8 @@ store.dispatch(someAction());
 expect(screen.getByText('expected')).toBeInTheDocument();
 ```
 
-Add when: new actions/reducers, new `useSelector`/`useDispatch` patterns, state-dependent component behavior.
+Add when: new actions/reducers, new `useSelector`/`useDispatch` patterns,
+state-dependent component behavior.
 
 ### Service example
 
@@ -42,11 +45,12 @@ const mockManager = {
   instance: mockInstance,
 };
 const service = new MessageService(mockManager);
-await service.sendMessage("test");
+await service.sendMessage('test');
 expect(mockManager.actions.addMessage).toHaveBeenCalled();
 ```
 
-Add when: new service methods, lifecycle changes (start/stop), complex orchestration.
+Add when: new service methods, lifecycle changes (start/stop), complex
+orchestration.
 
 ### Component tests
 
@@ -54,7 +58,8 @@ Add when: new React components, prop changes, user interaction flows.
 
 ### Integration tests
 
-Add when: new user-facing features, cross-component workflows, config-dependent behavior. Patterns live in [demo/AGENTS.md](../../../demo/AGENTS.md).
+Add when: new user-facing features, cross-component workflows, config-dependent
+behavior. Patterns live in [demo/AGENTS.md](../../../demo/AGENTS.md).
 
 ## Coverage
 
@@ -82,7 +87,8 @@ npx jest --watch                                            # watch mode
 npm run test:coverage --workspace=@carbon/ai-chat           # coverage report
 ```
 
-Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_helpers.ts` has shared fixtures.
+Test setup: `tests/setup.ts` installs DOM + testing-library setup;
+`tests/test_helpers.ts` has shared fixtures.
 
 ## Debugging failures
 

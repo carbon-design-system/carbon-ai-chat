@@ -4,19 +4,31 @@ title: Layout
 
 ## Overview
 
-Control where the chat renders, size it through CSS custom properties, float it in the corner of the page, and round its corners.
+Control where the chat renders, size it through CSS custom properties, float it
+in the corner of the page, and round its corners.
 
 ## Layout modes
 
-The standard way to use Carbon AI Chat is the custom element. Use {@link ChatCustomElement} in React, or `cds-aichat-custom-element` as a web component. You size and place the element in your DOM and the chat grows to fill it. Use it as a sidebar, a full-screen view, or a panel nested in your UI.
+The standard way to use Carbon AI Chat is the custom element. Use {@link
+ChatCustomElement} in React, or `cds-aichat-custom-element` as a web component.
+You size and place the element in your DOM and the chat grows to fill it. Use it
+as a sidebar, a full-screen view, or a panel nested in your UI.
 
-The classic floating widget is the same custom element with the exported [float layout classes](#floating-layout) applied. It's a launcher in the corner and a window that opens on click. The classes are exported on purpose so that you can apply them yourself to drive the open and close behavior. {@link ChatContainer} and `cds-aichat-container` wire those classes for you. Reach for them only when you'd rather skip that work.
+The classic floating widget is the same custom element with the exported
+[float layout classes](#floating-layout) applied. It's a launcher in the corner
+and a window that opens on click. The classes are exported on purpose so that
+you can apply them yourself to drive the open and close behavior. {@link
+ChatContainer} and `cds-aichat-container` wire those classes for you. Reach for
+them only when you'd rather skip that work.
 
-For more, see the [React](./React.md) and [web components](./WebComponent.md) guides.
+For more, see the [React](./React.md) and [web components](./WebComponent.md)
+guides.
 
 ## Layout CSS custom properties
 
-Size and place the chat by overriding its `--cds-aichat-*` custom properties in your own stylesheet. The properties inherit through the chat's shadow boundary. Set them on a host element and they flow into the chat:
+Size and place the chat by overriding its `--cds-aichat-*` custom properties in
+your own stylesheet. The properties inherit through the chat's shadow boundary.
+Set them on a host element and they flow into the chat:
 
 ```css
 .my-chat-host {
@@ -35,14 +47,17 @@ These shared tokens apply to both the floating and custom-element layouts:
 | `--cds-aichat-history-width`       | `320px` | Width of the history / conversation list panel                |
 | `--cds-aichat-card-max-width`      | `424px` | Maximum width for card components                             |
 
-You can also set these tokens from config through {@link LayoutConfig.customProperties | customProperties}, with keys from {@link LayoutCustomProperties}. Do this if you'd rather keep them out of a stylesheet.
+You can also set these tokens from config through {@link
+LayoutConfig.customProperties | customProperties}, with keys from {@link
+LayoutCustomProperties}. Do this if you'd rather keep them out of a stylesheet.
 
 ## Floating layout
 
-To float the chat, apply the exported float classes to your custom element and import the float stylesheet:
+To float the chat, apply the exported float classes to your custom element and
+import the float stylesheet:
 
 ```css
-@import "@carbon/ai-chat/css/chat-float-layout.css";
+@import '@carbon/ai-chat/css/chat-float-layout.css';
 ```
 
 The classes drive the floating widget:
@@ -53,7 +68,17 @@ The classes drive the floating widget:
 - `cds-aichat-float--close` — hidden.
 - `cds-aichat-float--mobile` — mobile placement.
 
-Toggle the classes as the chat opens and closes. Use the {@link ChatCustomElementProps.onViewChange | onViewChange} and {@link ChatCustomElementProps.onViewPreChange | onViewPreChange} methods. Prefer these over the {@link BusEventType.VIEW_CHANGE | VIEW_CHANGE} and {@link BusEventType.VIEW_PRE_CHANGE | VIEW_PRE_CHANGE} bus events. For a full working pattern with open and close animations, see the [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-element-as-float) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float) custom-element-as-float examples. {@link ChatContainer} applies these classes for you, if you'd rather not wire them yourself.
+Toggle the classes as the chat opens and closes. Use the {@link
+ChatCustomElementProps.onViewChange | onViewChange} and {@link
+ChatCustomElementProps.onViewPreChange | onViewPreChange} methods. Prefer these
+over the {@link BusEventType.VIEW_CHANGE | VIEW_CHANGE} and {@link
+BusEventType.VIEW_PRE_CHANGE | VIEW_PRE_CHANGE} bus events. For a full working
+pattern with open and close animations, see the
+[React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/custom-element-as-float)
+and
+[web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/custom-element-as-float)
+custom-element-as-float examples. {@link ChatContainer} applies these classes
+for you, if you'd rather not wire them yourself.
 
 Size and placement of the floating container come from these tokens:
 
@@ -70,18 +95,24 @@ Size and placement of the floating container come from these tokens:
 | `--cds-aichat-top-position`    | `auto`                                                                    | Distance from the top of the viewport         |
 | `--cds-aichat-left-position`   | `auto`                                                                    | Distance from the left of the viewport        |
 
-> **Note:** RTL uses logical `inset-inline` placement while still reading the same `--cds-aichat-right-position` and `--cds-aichat-left-position` tokens. To mirror placement, override those tokens under `[dir="rtl"]`.
+> **Note:** RTL uses logical `inset-inline` placement while still reading the
+> same `--cds-aichat-right-position` and `--cds-aichat-left-position` tokens. To
+> mirror placement, override those tokens under `[dir="rtl"]`.
 
-The launcher that opens the floating window has its own configuration and styling tokens. See [Launcher](./Launcher.md).
+The launcher that opens the floating window has its own configuration and
+styling tokens. See [Launcher](./Launcher.md).
 
 ## Rounded corners
 
-AI Chat components share a rounded-modifier system that keeps corners consistent across slotted content. You can use it two ways:
+AI Chat components share a rounded-modifier system that keeps corners consistent
+across slotted content. You can use it two ways:
 
 1. Read the rounded modifier tokens in your own CSS.
-2. Add `data-rounded` (and `data-stacked` when needed) so the system applies rounding for you.
+2. Add `data-rounded` (and `data-stacked` when needed) so the system applies
+   rounding for you.
 
-Built-in components already carry these attributes. Add `data-rounded` and `data-stacked` yourself only on your own slotted content.
+Built-in components already carry these attributes. Add `data-rounded` and
+`data-stacked` yourself only on your own slotted content.
 
 **Quick guide**
 
@@ -98,11 +129,15 @@ Supported values for `data-rounded`:
 - `top`, `top-left`, `top-right`
 - `bottom`, `bottom-left`, `bottom-right`
 
-Use `data-stacked` when children stack vertically. Without `data-stacked`, `data-rounded="top"` and `data-rounded="bottom"` round the first and last child in a horizontal row.
+Use `data-stacked` when children stack vertically. Without `data-stacked`,
+`data-rounded="top"` and `data-rounded="bottom"` round the first and last child
+in a horizontal row.
 
 ### Per-corner configuration
 
-Configure corners one at a time with {@link LayoutConfig.corners | corners}. Pass a single {@link CornersType} value to round every corner or pass a {@link PerCornerConfig} object to control each corner:
+Configure corners one at a time with {@link LayoutConfig.corners | corners}.
+Pass a single {@link CornersType} value to round every corner or pass a {@link
+PerCornerConfig} object to control each corner:
 
 **Simple configuration (all corners the same):**
 
@@ -131,7 +166,8 @@ import { CornersType, PerCornerConfig } from '@carbon/ai-chat';
 }
 ```
 
-**Partial configuration (unspecified corners fall back to {@link CornersType.ROUND}):**
+**Partial configuration (unspecified corners fall back to {@link
+CornersType.ROUND}):**
 
 ```typescript
 {
@@ -145,18 +181,22 @@ import { CornersType, PerCornerConfig } from '@carbon/ai-chat';
 }
 ```
 
-> **Note:** Corner names use CSS logical properties for RTL support. `startStart` means "block-start inline-start". It maps automatically to the correct physical corner based on text direction.
+> **Note:** Corner names use CSS logical properties for RTL support.
+> `startStart` means "block-start inline-start". It maps automatically to the
+> correct physical corner based on text direction.
 
 ### Corner CSS custom properties
 
-To round your own slotted content to match, read the per-corner radius tokens. Each is RTL-safe and defaults to `layout.$spacing-03` (`0.5rem` / `8px`):
+To round your own slotted content to match, read the per-corner radius tokens.
+Each is RTL-safe and defaults to `layout.$spacing-03` (`0.5rem` / `8px`):
 
 - `--cds-aichat-border-radius-start-start`
 - `--cds-aichat-border-radius-start-end`
 - `--cds-aichat-border-radius-end-start`
 - `--cds-aichat-border-radius-end-end`
 
-Apply them with the matching logical `border-*-radius` properties so rounding follows text direction:
+Apply them with the matching logical `border-*-radius` properties so rounding
+follows text direction:
 
 ```css
 .my-custom-surface {
@@ -173,7 +213,8 @@ Apply them with the matching logical `border-*-radius` properties so rounding fo
 }
 ```
 
-Or let the system apply rounding for you with `data-rounded`. Render this into a footer slot. It then inherits the correct rounding for the current layout:
+Or let the system apply rounding for you with `data-rounded`. Render this into a
+footer slot. It then inherits the correct rounding for the current layout:
 
 ```html
 <div class="my-footer-actions" data-rounded="bottom" data-stacked>
@@ -184,10 +225,17 @@ Or let the system apply rounding for you with `data-rounded`. Render this into a
 
 ## Related
 
-- [Launcher](./Launcher.md) — configure or replace the launcher and style its tokens.
-- [Header](./Header.md) — title, buttons, menus, and the AI label in the header bar.
-- [Home screen](./Homescreen.md) — the optional landing view with greeting and starter prompts.
-- [Theming](./Theming.md) — set colors, typography, and the Carbon theme that these layout tokens build on.
-- [UI customization](./Customization.md) — the hub for slotting your own content and tailoring the UI.
-- [Using with React](./React.md) — render the chat in a React app and choose a layout mode.
-- [Using as a Web component](./WebComponent.md) — render the chat as a custom element and choose a layout mode.
+- [Launcher](./Launcher.md) — configure or replace the launcher and style its
+  tokens.
+- [Header](./Header.md) — title, buttons, menus, and the AI label in the header
+  bar.
+- [Home screen](./Homescreen.md) — the optional landing view with greeting and
+  starter prompts.
+- [Theming](./Theming.md) — set colors, typography, and the Carbon theme that
+  these layout tokens build on.
+- [UI customization](./Customization.md) — the hub for slotting your own content
+  and tailoring the UI.
+- [Using with React](./React.md) — render the chat in a React app and choose a
+  layout mode.
+- [Using as a Web component](./WebComponent.md) — render the chat as a custom
+  element and choose a layout mode.

@@ -1,18 +1,25 @@
 # Tests / Jest (happy-dom)
 
-Jest + `@happy-dom/jest-environment` setup that exercises `ChatContainer` end-to-end, including shadow-DOM queries via `PageObjectId` selectors.
+Jest + `@happy-dom/jest-environment` setup that exercises `ChatContainer`
+end-to-end, including shadow-DOM queries via `PageObjectId` selectors.
 
 ## What this example shows
 
-- Running `@carbon/ai-chat` React components under Jest with `@happy-dom/jest-environment`.
-- Querying inside web-component shadow DOM (which happy-dom supports) using `PageObjectId` selectors exposed by `@carbon/ai-chat`.
-- Rendering `ChatContainer` with an inline `customSendMessage` that injects deterministic assistant replies via `instance.messaging.addMessage`.
-- Using `@testing-library/react` + `@testing-library/jest-dom` helpers (`waitFor`, etc.) against the shadow DOM.
+- Running `@carbon/ai-chat` React components under Jest with
+  `@happy-dom/jest-environment`.
+- Querying inside web-component shadow DOM (which happy-dom supports) using
+  `PageObjectId` selectors exposed by `@carbon/ai-chat`.
+- Rendering `ChatContainer` with an inline `customSendMessage` that injects
+  deterministic assistant replies via `instance.messaging.addMessage`.
+- Using `@testing-library/react` + `@testing-library/jest-dom` helpers
+  (`waitFor`, etc.) against the shadow DOM.
 
 ## When to use this pattern
 
-- You need shadow-DOM-aware Jest tests (e.g., assertions on rendered chat bubbles, buttons, etc.).
-- You want a reference for writing `PageObjectId`-driven integration tests for Carbon AI Chat.
+- You need shadow-DOM-aware Jest tests (e.g., assertions on rendered chat
+  bubbles, buttons, etc.).
+- You want a reference for writing `PageObjectId`-driven integration tests for
+  Carbon AI Chat.
 
 ## APIs and props demonstrated
 
@@ -29,7 +36,10 @@ Jest + `@happy-dom/jest-environment` setup that exercises `ChatContainer` end-to
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 
@@ -41,6 +51,8 @@ npm run build --workspace=@carbon/ai-chat
 npm run test --workspace=@carbon/ai-chat-examples-react-tests-jest-happydom
 ```
 
-(Use `npm run test:watch --workspace=@carbon/ai-chat-examples-react-tests-jest-happydom` for watch mode.)
+(Use
+`npm run test:watch --workspace=@carbon/ai-chat-examples-react-tests-jest-happydom`
+for watch mode.)
 
 See [../README.md](../README.md) for the full setup walkthrough.

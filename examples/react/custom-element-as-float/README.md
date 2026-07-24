@@ -1,19 +1,29 @@
 # Custom element / As float
 
-`ChatCustomElement` styled with the float layout CSS and driven by a custom `ChatButton` launcher, replicating `ChatContainer`'s built-in float experience with full control over animations and launcher behavior.
+`ChatCustomElement` styled with the float layout CSS and driven by a custom
+`ChatButton` launcher, replicating `ChatContainer`'s built-in float experience
+with full control over animations and launcher behavior.
 
 ## What this example shows
 
-- Importing `@carbon/ai-chat/css/chat-float-layout.css` and `chat-launcher-layout.css` to reuse the library's float classes (`cds-aichat-float--open`, `--opening`, `--closing`, `--close`, `cds-aichat-launcher`, `--hidden`).
-- Suppressing the built-in launcher with `launcher.isOn: false` and providing a custom `ChatButton` from `@carbon/ai-chat-components`.
-- Driving open/close state through a `phase` state machine and `onAnimationEnd` / `onViewChange` handlers.
+- Importing `@carbon/ai-chat/css/chat-float-layout.css` and
+  `chat-launcher-layout.css` to reuse the library's float classes
+  (`cds-aichat-float--open`, `--opening`, `--closing`, `--close`,
+  `cds-aichat-launcher`, `--hidden`).
+- Suppressing the built-in launcher with `launcher.isOn: false` and providing a
+  custom `ChatButton` from `@carbon/ai-chat-components`.
+- Driving open/close state through a `phase` state machine and `onAnimationEnd`
+  / `onViewChange` handlers.
 - Calling `instance.changeView(ViewType.MAIN_WINDOW)` to open the chat.
-- Handling `prefers-reduced-motion` by advancing the phase immediately when no animation will fire.
+- Handling `prefers-reduced-motion` by advancing the phase immediately when no
+  animation will fire.
 
 ## When to use this pattern
 
-- You want the float look-and-feel from `ChatContainer` but need custom launcher icon, position, or animation control.
-- You need precise control over when the chat mounts and how its open/close animations behave.
+- You want the float look-and-feel from `ChatContainer` but need custom launcher
+  icon, position, or animation control.
+- You need precise control over when the chat mounts and how its open/close
+  animations behave.
 
 ## APIs and props demonstrated
 
@@ -38,7 +48,10 @@
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

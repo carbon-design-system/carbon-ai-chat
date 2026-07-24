@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 export {
   BUTTON_KIND,
   BUTTON_TYPE,
   BUTTON_SIZE,
   BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TOOLTIP_POSITION,
-} from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/web-components/es/components/button/defs.js';
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CarbonButtonElement from "@carbon/web-components/es/components/button/button.js";
+import CarbonButtonElement from '@carbon/web-components/es/components/button/button.js';
 
 const Button = createComponent({
-  tagName: "cds-button",
+  tagName: 'cds-button',
   elementClass: CarbonButtonElement,
   react: React,
 });

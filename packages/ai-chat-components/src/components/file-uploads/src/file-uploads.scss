@@ -5,8 +5,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
 
 // Mixin for directional gradients
 @mixin gradient-bg($direction, $color) {
@@ -44,7 +44,7 @@
 .cds-aichat--file-uploads-gradient-wrapper--overflow::after {
   position: absolute;
   display: block;
-  content: "";
+  content: '';
   inline-size: layout.$spacing-05;
   inset-block-end: 1px;
   inset-block-start: 0;

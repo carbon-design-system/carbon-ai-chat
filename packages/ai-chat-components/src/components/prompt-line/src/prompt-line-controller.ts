@@ -29,15 +29,15 @@
  * so this module carries no Tiptap runtime.
  */
 
-import type { Editor, Extension, JSONContent } from "@tiptap/core";
+import type { Editor, Extension, JSONContent } from '@tiptap/core';
 
-import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
+import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
 import {
   adoptOnRoot,
   setVarsForSelector,
-} from "../../shared/dynamic-css-var-sheet.js";
-import { PROMPT_LINE_MAX_BLOCK_SIZE } from "./prompt-line-constants.js";
-import { getRawText, textToDoc } from "./tiptap/json-utils.js";
+} from '../../shared/dynamic-css-var-sheet.js';
+import { PROMPT_LINE_MAX_BLOCK_SIZE } from './prompt-line-constants.js';
+import { getRawText, textToDoc } from './tiptap/json-utils.js';
 
 /** Updater shape accepted by `setContent` for reduce-style edits. */
 export type SetContentUpdater = (prev: JSONContent) => JSONContent;
@@ -114,10 +114,10 @@ export interface PromptLineController {
 // governed by `style-src` not `style-src-attr`, matching ./tiptap/editor-styles).
 // ---------------------------------------------------------------------------
 
-const TA_GROW_CLASS = "cds-aichat--input-textarea-grow";
-const TA_FIELD_CLASS = "cds-aichat--input-textarea";
-const TA_MIRROR_CLASS = "cds-aichat--input-textarea-mirror";
-const TA_PHONE_CLASS = "cds-aichat--input-textarea--phone";
+const TA_GROW_CLASS = 'cds-aichat--input-textarea-grow';
+const TA_FIELD_CLASS = 'cds-aichat--input-textarea';
+const TA_MIRROR_CLASS = 'cds-aichat--input-textarea-mirror';
+const TA_PHONE_CLASS = 'cds-aichat--input-textarea--phone';
 
 let textareaRulesInstalled = false;
 
@@ -134,57 +134,57 @@ function ensureTextareaStyleRules(): void {
   // Cap the box at the shared max and clip the (unbounded) mirror past it; the
   // field below scrolls within that cap.
   setVarsForSelector(`.${TA_GROW_CLASS}`, {
-    display: "grid",
-    "inline-size": "100%",
-    "max-block-size": PROMPT_LINE_MAX_BLOCK_SIZE,
-    overflow: "hidden",
+    display: 'grid',
+    'inline-size': '100%',
+    'max-block-size': PROMPT_LINE_MAX_BLOCK_SIZE,
+    overflow: 'hidden',
   });
   setVarsForSelector(`.${TA_GROW_CLASS} > *`, {
-    "grid-area": "1 / 1 / 2 / 2",
+    'grid-area': '1 / 1 / 2 / 2',
   });
   // Shared typography + reset for both the field and the mirror.
   const shared: Record<string, string> = {
-    margin: "0",
-    padding: "0",
-    border: "none",
-    "white-space": "pre-wrap",
-    "word-wrap": "break-word",
-    "overflow-wrap": "break-word",
-    "font-family": "inherit",
-    "font-size": "var(--cds-body-01-font-size, 0.875rem)",
-    "font-weight": "var(--cds-body-01-font-weight, 400)",
-    "letter-spacing": "var(--cds-body-01-letter-spacing, 0.16px)",
-    "line-height": "var(--cds-body-01-line-height, 1.42857)",
+    margin: '0',
+    padding: '0',
+    border: 'none',
+    'white-space': 'pre-wrap',
+    'word-wrap': 'break-word',
+    'overflow-wrap': 'break-word',
+    'font-family': 'inherit',
+    'font-size': 'var(--cds-body-01-font-size, 0.875rem)',
+    'font-weight': 'var(--cds-body-01-font-weight, 400)',
+    'letter-spacing': 'var(--cds-body-01-letter-spacing, 0.16px)',
+    'line-height': 'var(--cds-body-01-line-height, 1.42857)',
   };
   setVarsForSelector(`.${TA_FIELD_CLASS}`, {
     ...shared,
-    appearance: "none",
-    background: "transparent",
-    color: "var(--cds-text-primary, #161616)",
-    outline: "none",
-    resize: "none",
+    appearance: 'none',
+    background: 'transparent',
+    color: 'var(--cds-text-primary, #161616)',
+    outline: 'none',
+    resize: 'none',
     // The field is its own scroll container past the cap so the browser keeps
     // the caret in view natively (an ancestor scroller would not track it).
-    "overflow-x": "hidden",
-    "overflow-y": "auto",
-    "inline-size": "100%",
-    "min-block-size": "0",
-    "max-block-size": PROMPT_LINE_MAX_BLOCK_SIZE,
+    'overflow-x': 'hidden',
+    'overflow-y': 'auto',
+    'inline-size': '100%',
+    'min-block-size': '0',
+    'max-block-size': PROMPT_LINE_MAX_BLOCK_SIZE,
   });
   setVarsForSelector(`.${TA_FIELD_CLASS}::placeholder`, {
-    color: "var(--cds-text-secondary, #525252)",
-    opacity: "1",
+    color: 'var(--cds-text-secondary, #525252)',
+    opacity: '1',
   });
   setVarsForSelector(`.${TA_MIRROR_CLASS}`, {
     ...shared,
-    visibility: "hidden",
-    "pointer-events": "none",
+    visibility: 'hidden',
+    'pointer-events': 'none',
   });
   setVarsForSelector(`.${TA_PHONE_CLASS}`, {
-    "font-size": "var(--cds-body-02-font-size, 1rem)",
-    "font-weight": "var(--cds-body-02-font-weight, 400)",
-    "letter-spacing": "var(--cds-body-02-letter-spacing, 0)",
-    "line-height": "var(--cds-body-02-line-height, 1.5)",
+    'font-size': 'var(--cds-body-02-font-size, 1rem)',
+    'font-weight': 'var(--cds-body-02-font-weight, 400)',
+    'letter-spacing': 'var(--cds-body-02-letter-spacing, 0)',
+    'line-height': 'var(--cds-body-02-line-height, 1.5)',
   });
   textareaRulesInstalled = true;
 }
@@ -215,29 +215,29 @@ export class TextareaController implements PromptLineController {
       adoptOnRoot(root);
     }
 
-    const wrap = document.createElement("div");
+    const wrap = document.createElement('div');
     wrap.className = TA_GROW_CLASS;
 
-    const textarea = document.createElement("textarea");
+    const textarea = document.createElement('textarea');
     textarea.className = TA_FIELD_CLASS;
     textarea.classList.toggle(TA_PHONE_CLASS, IS_PHONE);
-    textarea.setAttribute("rows", "1");
-    textarea.setAttribute("spellcheck", "true");
-    textarea.setAttribute("tabindex", "0");
+    textarea.setAttribute('rows', '1');
+    textarea.setAttribute('spellcheck', 'true');
+    textarea.setAttribute('tabindex', '0');
     textarea.placeholder = init.placeholder;
     textarea.value = init.value;
     textarea.readOnly = init.disabled;
     if (init.ariaLabel) {
-      textarea.setAttribute("aria-label", init.ariaLabel);
+      textarea.setAttribute('aria-label', init.ariaLabel);
     }
     if (init.testId) {
-      textarea.setAttribute("data-testid", init.testId);
+      textarea.setAttribute('data-testid', init.testId);
     }
 
-    const mirror = document.createElement("div");
+    const mirror = document.createElement('div');
     mirror.className = TA_MIRROR_CLASS;
     mirror.classList.toggle(TA_PHONE_CLASS, IS_PHONE);
-    mirror.setAttribute("aria-hidden", "true");
+    mirror.setAttribute('aria-hidden', 'true');
 
     wrap.appendChild(textarea);
     wrap.appendChild(mirror);
@@ -248,16 +248,16 @@ export class TextareaController implements PromptLineController {
     this._mirror = mirror;
     this._host = host;
 
-    textarea.addEventListener("input", this._onInput);
-    textarea.addEventListener("keydown", this._onKeydown);
-    textarea.addEventListener("focus", this._onFocus);
-    textarea.addEventListener("blur", this._onBlur);
+    textarea.addEventListener('input', this._onInput);
+    textarea.addEventListener('keydown', this._onKeydown);
+    textarea.addEventListener('focus', this._onFocus);
+    textarea.addEventListener('blur', this._onBlur);
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
-    host.addEventListener("pointerdown", this._setMouseFlag);
-    host.addEventListener("mousedown", this._setMouseFlag);
-    host.addEventListener("touchstart", this._setMouseFlag);
+    host.addEventListener('pointerdown', this._setMouseFlag);
+    host.addEventListener('mousedown', this._setMouseFlag);
+    host.addEventListener('touchstart', this._setMouseFlag);
 
     this._syncMirror();
   }
@@ -266,16 +266,16 @@ export class TextareaController implements PromptLineController {
     this._clearTypingTimer();
     const ta = this._textarea;
     if (ta) {
-      ta.removeEventListener("input", this._onInput);
-      ta.removeEventListener("keydown", this._onKeydown);
-      ta.removeEventListener("focus", this._onFocus);
-      ta.removeEventListener("blur", this._onBlur);
+      ta.removeEventListener('input', this._onInput);
+      ta.removeEventListener('keydown', this._onKeydown);
+      ta.removeEventListener('focus', this._onFocus);
+      ta.removeEventListener('blur', this._onBlur);
     }
     const host = this._host;
     if (host) {
-      host.removeEventListener("pointerdown", this._setMouseFlag);
-      host.removeEventListener("mousedown", this._setMouseFlag);
-      host.removeEventListener("touchstart", this._setMouseFlag);
+      host.removeEventListener('pointerdown', this._setMouseFlag);
+      host.removeEventListener('mousedown', this._setMouseFlag);
+      host.removeEventListener('touchstart', this._setMouseFlag);
     }
     this._wrap?.remove();
     this._wrap = null;
@@ -284,33 +284,33 @@ export class TextareaController implements PromptLineController {
   }
 
   getValue(): string {
-    return this._textarea?.value ?? "";
+    return this._textarea?.value ?? '';
   }
 
   setContent(next: JSONContent | string | SetContentUpdater): void {
-    if (typeof next === "function") {
+    if (typeof next === 'function') {
       const prev = textToDoc(this.getValue());
       this._setValue(getRawText((next as SetContentUpdater)(prev)), true);
       return;
     }
-    this._setValue(typeof next === "string" ? next : getRawText(next), true);
+    this._setValue(typeof next === 'string' ? next : getRawText(next), true);
   }
 
   insertContent(
     content: JSONContent | string,
-    opts: { at?: number } = {},
+    opts: { at?: number } = {}
   ): void {
     const ta = this._textarea;
     if (!ta) {
       return;
     }
-    const text = typeof content === "string" ? content : getRawText(content);
+    const text = typeof content === 'string' ? content : getRawText(content);
     const value = ta.value;
     const at =
-      typeof opts.at === "number"
+      typeof opts.at === 'number'
         ? Math.max(0, Math.min(opts.at, value.length))
         : (ta.selectionStart ?? value.length);
-    const end = typeof opts.at === "number" ? at : (ta.selectionEnd ?? at);
+    const end = typeof opts.at === 'number' ? at : (ta.selectionEnd ?? at);
     const nextValue = value.slice(0, at) + text + value.slice(end);
     const caret = at + text.length;
     this._setValue(nextValue, true);
@@ -318,7 +318,7 @@ export class TextareaController implements PromptLineController {
   }
 
   clearContent(): void {
-    this._setValue("", true);
+    this._setValue('', true);
   }
 
   getEditor(): Editor | null {
@@ -357,14 +357,14 @@ export class TextareaController implements PromptLineController {
       return;
     }
     const len = ta.value.length;
-    if (typeof pos === "number") {
+    if (typeof pos === 'number') {
       const p = Math.max(0, Math.min(pos, len));
       ta.setSelectionRange(p, p);
       return;
     }
     ta.setSelectionRange(
       Math.max(0, Math.min(pos.from, len)),
-      Math.max(0, Math.min(pos.to, len)),
+      Math.max(0, Math.min(pos.to, len))
     );
   }
 
@@ -390,9 +390,9 @@ export class TextareaController implements PromptLineController {
       return;
     }
     if (ariaLabel) {
-      ta.setAttribute("aria-label", ariaLabel);
+      ta.setAttribute('aria-label', ariaLabel);
     } else {
-      ta.removeAttribute("aria-label");
+      ta.removeAttribute('aria-label');
     }
   }
 
@@ -402,9 +402,9 @@ export class TextareaController implements PromptLineController {
       return;
     }
     if (testId) {
-      ta.setAttribute("data-testid", testId);
+      ta.setAttribute('data-testid', testId);
     } else {
-      ta.removeAttribute("data-testid");
+      ta.removeAttribute('data-testid');
     }
   }
 
@@ -436,7 +436,7 @@ export class TextareaController implements PromptLineController {
   // Shift-Enter inserts a newline, and Enter on an empty field falls through to
   // the native newline (matching `carbonChatEnter`'s empty guard).
   private _onKeydown = (event: KeyboardEvent): void => {
-    this._dispatch("cds-aichat-prompt-keydown", { originalEvent: event });
+    this._dispatch('cds-aichat-prompt-keydown', { originalEvent: event });
     // While an IME composition is active, Enter commits the candidate — let the
     // IME own it. ProseMirror suppresses its keymap the same way, so the rich
     // editor and the textarea agree. Without this, confirming a CJK candidate
@@ -444,15 +444,15 @@ export class TextareaController implements PromptLineController {
     if (event.isComposing) {
       return;
     }
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === 'Enter' && !event.shiftKey) {
       const isModEnter = event.metaKey || event.ctrlKey;
-      if (isModEnter || this.getValue() !== "") {
+      if (isModEnter || this.getValue() !== '') {
         event.preventDefault();
-        this._dispatch("cds-aichat-prompt-send-intent");
+        this._dispatch('cds-aichat-prompt-send-intent');
       }
       return;
     }
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       event.preventDefault();
       this._textarea?.blur();
     }
@@ -465,11 +465,11 @@ export class TextareaController implements PromptLineController {
   private _onFocus = (): void => {
     const wasMouseFocus = this._focusFromMouse;
     this._focusFromMouse = false;
-    this._dispatch("cds-aichat-prompt-focus", { keyboard: !wasMouseFocus });
+    this._dispatch('cds-aichat-prompt-focus', { keyboard: !wasMouseFocus });
   };
 
   private _onBlur = (): void => {
-    this._dispatch("cds-aichat-prompt-blur");
+    this._dispatch('cds-aichat-prompt-blur');
   };
 
   /** Programmatic value write: updates the field, mirror, and emits change. */
@@ -489,7 +489,7 @@ export class TextareaController implements PromptLineController {
     // Carry a plain-text doc as `content` so Redux / `getState().input.content`
     // stays consistent with the rich editor (which emits `editor.getJSON()`).
     const rawValue = this.getValue();
-    this._dispatch("cds-aichat-prompt-change", {
+    this._dispatch('cds-aichat-prompt-change', {
       rawValue,
       content: textToDoc(rawValue),
     });
@@ -505,12 +505,12 @@ export class TextareaController implements PromptLineController {
   private _markTyping(): void {
     if (!this._isTyping) {
       this._isTyping = true;
-      this._dispatch("cds-aichat-prompt-typing", { isTyping: true });
+      this._dispatch('cds-aichat-prompt-typing', { isTyping: true });
     }
     this._clearTypingTimer();
     this._typingTimer = setTimeout(() => {
       this._isTyping = false;
-      this._dispatch("cds-aichat-prompt-typing", { isTyping: false });
+      this._dispatch('cds-aichat-prompt-typing', { isTyping: false });
     }, TYPING_TIMEOUT_MS);
   }
 
@@ -527,7 +527,7 @@ export class TextareaController implements PromptLineController {
         detail,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 }

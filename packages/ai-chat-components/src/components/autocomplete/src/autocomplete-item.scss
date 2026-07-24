@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/utilities/focus-outline" as *;
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
 
 $block-class: #{$prefix}-autocomplete-item;
 
@@ -35,7 +35,7 @@ $block-class: #{$prefix}-autocomplete-item;
     }
 
     &:focus {
-      @include focus-outline("outline");
+      @include focus-outline('outline');
     }
 
     &--active,
@@ -60,7 +60,7 @@ $block-class: #{$prefix}-autocomplete-item;
   }
 
   .#{$block-class}__label {
-    @include type.type-style("body-compact-01");
+    @include type.type-style('body-compact-01');
   }
 
   .#{$block-class}__label-typed {
@@ -72,7 +72,7 @@ $block-class: #{$prefix}-autocomplete-item;
   }
 
   .#{$block-class}__description {
-    @include type.type-style("helper-text-01");
+    @include type.type-style('helper-text-01');
 
     color: theme.$text-helper;
   }
@@ -98,7 +98,7 @@ $block-class: #{$prefix}-autocomplete-item;
     display: block;
     background: theme.$border-subtle-00;
     block-size: 1px;
-    content: "";
+    content: '';
     inset-block-end: 0;
     inset-inline: layout.$spacing-05;
   }

@@ -16,27 +16,27 @@
  *    instance.send), while whole-chat `isReadonly` does block it.
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import {
   createBaseConfig,
   mockCustomSendMessage,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 import {
   selectInputIsDisabled,
   selectInputIsReadonly,
-} from "../../../src/chat/store/selectors";
+} from '../../../src/chat/store/selectors';
 
-describe("Disabling the assistant input", () => {
+describe('Disabling the assistant input', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("toggling input.isDisabled in place does not cancel requests or clear the session", async () => {
+  it('toggling input.isDisabled in place does not cancel requests or clear the session', async () => {
     // A fresh customSendMessage reference on each render models a non-memoized
     // consumer config.
     const baseProps = (isDisabled: boolean): Partial<ChatContainerProps> => ({
@@ -54,7 +54,7 @@ describe("Disabling the assistant input", () => {
       React.createElement(ChatContainer, {
         ...baseProps(false),
         onBeforeRender,
-      }),
+      })
     );
 
     await waitFor(() => expect(capturedInstance).not.toBeNull(), {
@@ -67,23 +67,23 @@ describe("Disabling the assistant input", () => {
 
     const cancelSpy = jest.spyOn(
       serviceManager.messageService,
-      "cancelAllMessageRequests",
+      'cancelAllMessageRequests'
     );
     const clearSpy = jest.spyOn(
       serviceManager.userSessionStorageService,
-      "clearSession",
+      'clearSession'
     );
 
     rerender(
       React.createElement(ChatContainer, {
         ...baseProps(true),
         onBeforeRender,
-      }),
+      })
     );
 
     await waitFor(
       () => expect(selectInputIsDisabled(store.getState())).toBe(true),
-      { timeout: 5000 },
+      { timeout: 5000 }
     );
 
     // Config is the source of truth; selectInputIsDisabled reads it directly.
@@ -92,7 +92,7 @@ describe("Disabling the assistant input", () => {
     expect(clearSpy).not.toHaveBeenCalled();
   });
 
-  it("input.isDisabled disables the editor but does NOT block programmatic send", async () => {
+  it('input.isDisabled disables the editor but does NOT block programmatic send', async () => {
     const config = createBaseConfig();
     config.input = { isDisabled: true };
 
@@ -102,10 +102,10 @@ describe("Disabling the assistant input", () => {
     expect(selectInputIsReadonly(store.getState())).toBe(false);
 
     // Input-scoped disable must not gate programmatic sends.
-    await expect(instance.send("hello")).resolves.not.toThrow();
+    await expect(instance.send('hello')).resolves.not.toThrow();
   });
 
-  it("whole-chat isReadonly DOES block programmatic send", async () => {
+  it('whole-chat isReadonly DOES block programmatic send', async () => {
     const config = createBaseConfig();
     config.isReadonly = true;
 
@@ -113,6 +113,6 @@ describe("Disabling the assistant input", () => {
 
     expect(selectInputIsReadonly(store.getState())).toBe(true);
 
-    await expect(instance.send("hello")).rejects.toThrow(/read only/i);
+    await expect(instance.send('hello')).rejects.toThrow(/read only/i);
   });
 });

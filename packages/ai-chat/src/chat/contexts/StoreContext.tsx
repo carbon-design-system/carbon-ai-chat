@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -18,8 +18,8 @@
  * - react-redux: https://github.com/reduxjs/react-redux (License: https://github.com/reduxjs/react-redux/blob/master/LICENSE.md)
  */
 
-import React from "react";
-import type { AppStore, UnknownAction } from "../store/appStore";
+import React from 'react';
+import type { AppStore, UnknownAction } from '../store/appStore';
 
 const StoreContext = React.createContext<AppStore<
   unknown,

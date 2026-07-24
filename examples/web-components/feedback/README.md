@@ -1,18 +1,23 @@
 # Feedback
 
-Lit example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInteractionType.SUBMITTED` events to the host page.
+Lit example that subscribes to `BusEventType.FEEDBACK` and forwards
+`FeedbackInteractionType.SUBMITTED` events to the host page.
 
 ## What this example shows
 
 - Mounting `<cds-aichat-custom-element>`.
 - Subscribing to `BusEventType.FEEDBACK` from inside `onBeforeRender`.
-- Detecting `FeedbackInteractionType.SUBMITTED` and surfacing the payload to the host (a `window.alert` stand-in for a telemetry call).
-- Configuring `message_item_options.feedback` on a server response so the chat renders the thumbs-up/thumbs-down widget.
+- Detecting `FeedbackInteractionType.SUBMITTED` and surfacing the payload to the
+  host (a `window.alert` stand-in for a telemetry call).
+- Configuring `message_item_options.feedback` on a server response so the chat
+  renders the thumbs-up/thumbs-down widget.
 
 ## When to use this pattern
 
-- You need to capture user feedback on individual messages and forward it to your own backend or telemetry pipeline.
-- You want a minimal reference for the `FEEDBACK` bus event independent of other concerns (state changes, user-defined responses).
+- You need to capture user feedback on individual messages and forward it to
+  your own backend or telemetry pipeline.
+- You want a minimal reference for the `FEEDBACK` bus event independent of other
+  concerns (state changes, user-defined responses).
 
 ## APIs and props demonstrated
 
@@ -30,7 +35,9 @@ Lit example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInt
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors.
 
 From the repository root:
 

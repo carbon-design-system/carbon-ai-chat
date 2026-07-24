@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { StructuredData } from "../messaging/Messages";
+import { StructuredData } from '../messaging/Messages';
 
 /**
  * Configuration for file upload behavior in the chat input.
@@ -62,6 +62,6 @@ export interface UploadConfig {
    */
   onFileUpload?: (
     file: File,
-    abortSignal: AbortSignal,
+    abortSignal: AbortSignal
   ) => Promise<StructuredData>;
 }

@@ -2,7 +2,8 @@
 
 ## Mandatory Grid Usage (Critical)
 
-**ALWAYS use Carbon Grid for all page layouts.** The Grid system is fundamental to all Carbon implementations.
+**ALWAYS use Carbon Grid for all page layouts.** The Grid system is fundamental
+to all Carbon implementations.
 
 ### Three mandatory requirements:
 
@@ -82,7 +83,8 @@ Use only for specialized interfaces requiring maximum content density:
 
 ## Vertical Spacing When Content Wraps (Critical)
 
-When grid content wraps to new rows, vertical spacing should match the horizontal gutter spacing.
+When grid content wraps to new rows, vertical spacing should match the
+horizontal gutter spacing.
 
 ### Spacing Rules:
 
@@ -169,7 +171,8 @@ When grid content wraps to new rows, vertical spacing should match the horizonta
 
 ## Logical Content Groups (Critical)
 
-**EVERY distinct logical content group MUST be placed in its own Grid component.**
+**EVERY distinct logical content group MUST be placed in its own Grid
+component.**
 
 ### What is a Logical Content Group?
 
@@ -180,7 +183,8 @@ When grid content wraps to new rows, vertical spacing should match the horizonta
 
 ### Critical Rule:
 
-Different logical content groups (that should NOT wrap together) MUST use separate Grid components.
+Different logical content groups (that should NOT wrap together) MUST use
+separate Grid components.
 
 ### Correct Example:
 
@@ -242,7 +246,8 @@ Different logical content groups (that should NOT wrap together) MUST use separa
 
 ## Nested Grid Pattern
 
-When a Column needs to contain multiple items that should wrap together, use a nested Grid inside that Column.
+When a Column needs to contain multiple items that should wrap together, use a
+nested Grid inside that Column.
 
 ### When to Use:
 
@@ -252,9 +257,11 @@ When a Column needs to contain multiple items that should wrap together, use a n
 
 ### Key Distinction:
 
-- **Nested Grids:** Grid within Column — for items that wrap together within a parent column
+- **Nested Grids:** Grid within Column — for items that wrap together within a
+  parent column
   - Structure: Outer Grid → Column → Inner Grid → Columns
-- **Separate Grids:** Multiple top-level Grids — for distinct logical sections that should NOT wrap together
+- **Separate Grids:** Multiple top-level Grids — for distinct logical sections
+  that should NOT wrap together
   - Structure: Grid → Columns, then separate Grid → Columns
 
 ### Example:
@@ -301,10 +308,12 @@ When a Column needs to contain multiple items that should wrap together, use a n
 
 ### Fuzzy Determination Approach:
 
-Instead of strict mathematical ceiling, use percentage-based determination with reasonable rounding:
+Instead of strict mathematical ceiling, use percentage-based determination with
+reasonable rounding:
 
 1. Measure the full width of the content group
-2. Calculate percentage of total grid width: `percentage = (content_width / grid_width) × 100`
+2. Calculate percentage of total grid width:
+   `percentage = (content_width / grid_width) × 100`
 3. Determine columns based on percentage ranges:
    - ~100% → 16 columns (full width)
    - ~75% → 12 columns (three-quarters)
@@ -334,7 +343,8 @@ Result: `<Column lg={5}>Content</Column>`
 - Prefer design-specified column counts when available
 - Use percentage-based fuzzy determination for calculated columns
 - Always verify calculations account for gutters
-- When column settings are calculated for lg, xlg or max, apply to lg unless otherwise instructed
+- When column settings are calculated for lg, xlg or max, apply to lg unless
+  otherwise instructed
 - Consider rounding to nearest reasonable column count, not always ceiling
 - Verify column spans add up correctly at each breakpoint
 

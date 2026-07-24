@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
  *  @license
  */
 
-import ObjectMap from "../../types/utilities/ObjectMap";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { Message } from "../../types/messaging/Messages";
-import { isStandaloneSystemMessage } from "./messageUtils";
+import ObjectMap from '../../types/utilities/ObjectMap';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { Message } from '../../types/messaging/Messages';
+import { isStandaloneSystemMessage } from './messageUtils';
 
 interface RenderableMessageMetadata {
   fullMessage: Message;
@@ -27,7 +27,7 @@ interface RenderableMessageMetadata {
 function buildRenderableMessageMetadata(
   localMessageItems: LocalMessageItem[],
   allMessagesByID: ObjectMap<Message>,
-  messageIDForInput: string,
+  messageIDForInput: string
 ): RenderableMessageMetadata[] {
   const metadata: RenderableMessageMetadata[] = [];
   let previousMessageID: string | null = null;

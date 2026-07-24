@@ -40,28 +40,28 @@ import {
   MessageResponse,
   MessageResponseTypes,
   MessageState,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Button click posts back this exact string; `customSendMessage` branches on it
 // to decide whether to start a scenario or reply with the welcome message.
-const START_TRIGGER = "Show me the upsert demo";
+const START_TRIGGER = 'Show me the upsert demo';
 
 // Five steps and ~21s total runtime exercise progressive updates over a realistic duration.
 const STEP_TIMINGS_MS = [6000, 2000, 1000, 8000, 4000];
 
 const STEPS: ReadonlyArray<{ label: string; title: string }> = [
-  { label: "Step 1", title: "Estimate inventory needs in all locations" },
-  { label: "Step 2", title: "Identify locations with excess inventory" },
-  { label: "Step 3", title: "Prepare multiple rebalancing scenarios" },
-  { label: "Step 4", title: "Rank rebalancing scenarios for speed and cost" },
-  { label: "Step 5", title: "Prepare recommendations" },
+  { label: 'Step 1', title: 'Estimate inventory needs in all locations' },
+  { label: 'Step 2', title: 'Identify locations with excess inventory' },
+  { label: 'Step 3', title: 'Prepare multiple rebalancing scenarios' },
+  { label: 'Step 4', title: 'Rank rebalancing scenarios for speed and cost' },
+  { label: 'Step 5', title: 'Prepare recommendations' },
 ];
 
-type StepKind = "NOT-STARTED" | "IN-PROGRESS" | "SUCCEEDED";
+type StepKind = 'NOT-STARTED' | 'IN-PROGRESS' | 'SUCCEEDED';
 
 interface StepsCardPayload {
-  user_defined_type: "steps_card";
+  user_defined_type: 'steps_card';
   title: string;
   status: string;
   showFooter: boolean;
@@ -91,13 +91,13 @@ function welcomeResponse(): MessageResponse {
         {
           response_type: MessageResponseTypes.TEXT,
           text:
-            "Click the button below to start a progressive-steps demo. " +
-            "Click it again while one is running — multiple runs progress concurrently.",
+            'Click the button below to start a progressive-steps demo. ' +
+            'Click it again while one is running — multiple runs progress concurrently.',
         },
         {
           response_type: MessageResponseTypes.BUTTON,
           button_type: ButtonItemType.POST_BACK,
-          label: "Start steps demo",
+          label: 'Start steps demo',
           // The chat sends `value.input.text` back as the next user request; the
           // `if` in `customSendMessage` matches on this exact string. `silent`
           // keeps that machine-readable trigger out of the visible transcript.
@@ -112,29 +112,29 @@ function welcomeResponse(): MessageResponse {
 // Pure function — different messageIDs never collide when concurrent scenarios overlap.
 function buildResponse(
   messageID: string,
-  completedCount: number,
+  completedCount: number
 ): MessageResponse {
   const done = completedCount >= STEPS.length;
   const payload: StepsCardPayload = {
-    user_defined_type: "steps_card",
-    title: "Optimizing excess inventory",
-    status: done ? "Status: completed" : "Status: running",
+    user_defined_type: 'steps_card',
+    title: 'Optimizing excess inventory',
+    status: done ? 'Status: completed' : 'Status: running',
     showFooter: done,
     steps: STEPS.map((step, index) => ({
       label: step.label,
       title: step.title,
       description:
         index < completedCount
-          ? "Completed successfully"
+          ? 'Completed successfully'
           : index === completedCount
-            ? "In progress..."
-            : "Not started",
+            ? 'In progress...'
+            : 'Not started',
       kind:
         index < completedCount
-          ? "SUCCEEDED"
+          ? 'SUCCEEDED'
           : index === completedCount
-            ? "IN-PROGRESS"
-            : "NOT-STARTED",
+            ? 'IN-PROGRESS'
+            : 'NOT-STARTED',
     })),
   };
 
@@ -144,7 +144,7 @@ function buildResponse(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "Working on this — keep typing if you want.",
+          text: 'Working on this — keep typing if you want.',
         },
         {
           response_type: MessageResponseTypes.USER_DEFINED,
@@ -165,14 +165,14 @@ function sleep(milliseconds: number) {
 // two distinct IDs, which the lifecycle coordinator parallelizes.
 async function runStepsScenario(
   instance: ChatInstance,
-  signal: AbortSignal | undefined,
+  signal: AbortSignal | undefined
 ) {
   const messageID = uuid();
 
   // Initial upsert: COMPLETE immediately so `pre:receive`/`receive` fire once
   // and the input stays usable — the user is not blocked by the long task.
   await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () =>
-    buildResponse(messageID, 0),
+    buildResponse(messageID, 0)
   );
 
   for (let i = 0; i < STEP_TIMINGS_MS.length; i += 1) {
@@ -186,23 +186,23 @@ async function runStepsScenario(
     await instance.messaging.upsertMessage(
       messageID,
       MessageState.COMPLETE,
-      () => buildResponse(messageID, i + 1),
+      () => buildResponse(messageID, i + 1)
     );
   }
 
   // Signal the host page so it can show its completion toast. One-line side
   // effect, co-located with the scenario — see `scenarioBus` above.
   scenarioBus.dispatchEvent(
-    new CustomEvent<ScenarioCompleteDetail>("complete", {
+    new CustomEvent<ScenarioCompleteDetail>('complete', {
       detail: { messageID },
-    }),
+    })
   );
 }
 
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   if (request.input.text === START_TRIGGER) {
     // Fire-and-forget so `customSendMessage` resolves immediately; this is

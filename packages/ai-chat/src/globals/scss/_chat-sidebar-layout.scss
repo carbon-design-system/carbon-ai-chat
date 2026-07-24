@@ -32,14 +32,14 @@
  * - --cds-aichat-sidebar-z-index           — stacking order (default 9999)
  */
 
-@use "@carbon/styles/scss/motion";
-@use "@carbon/layout";
-@use "@carbon/ai-chat-components/scss/utilities" as *;
+@use '@carbon/styles/scss/motion';
+@use '@carbon/layout';
+@use '@carbon/ai-chat-components/scss/utilities' as *;
 
 // Sidebar layout variables (only used in this file)
-$sidebar-width: get-var("sidebar-width", 360px);
-$sidebar-inset-block-start: get-var("sidebar-inset-block-start", 0);
-$sidebar-z-index: get-var("sidebar-z-index", 9999);
+$sidebar-width: get-var('sidebar-width', 360px);
+$sidebar-inset-block-start: get-var('sidebar-inset-block-start', 0);
+$sidebar-z-index: get-var('sidebar-z-index', 9999);
 
 // Distance the panel is parked off-screen: its own width plus a small gap so
 // box-shadows do not bleed back into the viewport.

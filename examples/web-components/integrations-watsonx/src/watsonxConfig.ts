@@ -19,7 +19,7 @@
  * Start reading at: `getWatsonxConfig`.
  */
 
-import { WatsonxConfig } from "./types";
+import { WatsonxConfig } from './types';
 
 export function getWatsonxConfig(): WatsonxConfig {
   // Vite replaces `process.env.*` at build time, so these reads work in the browser bundle.
@@ -28,17 +28,17 @@ export function getWatsonxConfig(): WatsonxConfig {
   const projectId = process.env.WATSONX_PROJECT_ID;
   const url = process.env.WATSONX_URL;
   // Fall back to a sensible default model so the demo runs even when the env var is omitted.
-  const modelId = process.env.WATSONX_MODEL_ID || "ibm/granite-3-8b-instruct";
+  const modelId = process.env.WATSONX_MODEL_ID || 'ibm/granite-3-8b-instruct';
 
   // Throw early so the chat surfaces a clear configuration error instead of an opaque network failure.
   if (!apiKey) {
-    throw new Error("WATSONX_API_KEY environment variable is required");
+    throw new Error('WATSONX_API_KEY environment variable is required');
   }
   if (!projectId) {
-    throw new Error("WATSONX_PROJECT_ID environment variable is required");
+    throw new Error('WATSONX_PROJECT_ID environment variable is required');
   }
   if (!url) {
-    throw new Error("WATSONX_URL environment variable is required");
+    throw new Error('WATSONX_URL environment variable is required');
   }
 
   return {

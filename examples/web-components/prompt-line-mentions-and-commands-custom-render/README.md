@@ -1,19 +1,37 @@
 # Prompt line / Mentions & commands (custom render)
 
-The Mentions & Commands example with a `renderCustomToken` supplied for mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a `<cds-tooltip>` showing the user's description on hover. Commands keep the default chip rendering.
+The Mentions & Commands example with a `renderCustomToken` supplied for
+mentions: each picked user appears in the input as a `<cds-tag>` wrapped in a
+`<cds-tooltip>` showing the user's description on hover. Commands keep the
+default chip rendering.
 
 ## What this example shows
 
-- Replacing the default mention chip with a custom inline element via `mention.renderCustomToken`, returning a `<cds-tooltip>`-wrapped `<cds-tag>`.
-- Mixing custom and default token rendering across the two slots — only `input.mention` sets `renderCustomToken`, so commands fall back to the built-in chip.
-- Using `<cds-tooltip autoalign>` so the popover escapes the editor's `overflow: auto` clip via `position: fixed`. With `align="top"` we request placement above the chip; on this chat-input surface the popover currently flips to the side — a Carbon WC behavior difference from the React `Tooltip` tracked at [carbon-ai-chat#1449](https://github.com/carbon-design-system/carbon-ai-chat/issues/1449) (sub-issue of #731).
-- Persisting selections via `instance.input.updateStructuredData` (same flow as the non-custom example) so the custom rendering does not change the structured-data wire format, with a symmetric `onRemove` that drops a chip's field when it is deleted before sending.
+- Replacing the default mention chip with a custom inline element via
+  `mention.renderCustomToken`, returning a `<cds-tooltip>`-wrapped `<cds-tag>`.
+- Mixing custom and default token rendering across the two slots — only
+  `input.mention` sets `renderCustomToken`, so commands fall back to the
+  built-in chip.
+- Using `<cds-tooltip autoalign>` so the popover escapes the editor's
+  `overflow: auto` clip via `position: fixed`. With `align="top"` we request
+  placement above the chip; on this chat-input surface the popover currently
+  flips to the side — a Carbon WC behavior difference from the React `Tooltip`
+  tracked at
+  [carbon-ai-chat#1449](https://github.com/carbon-design-system/carbon-ai-chat/issues/1449)
+  (sub-issue of #731).
+- Persisting selections via `instance.input.updateStructuredData` (same flow as
+  the non-custom example) so the custom rendering does not change the
+  structured-data wire format, with a symmetric `onRemove` that drops a chip's
+  field when it is deleted before sending.
 
 ## When to use this pattern
 
-- You need richer in-input affordances for mentions (avatars, tooltips, status badges) than the default chip provides.
-- Your design system already has a token/chip primitive (Carbon's `<cds-tag>`, in this example) that you want to reuse.
-- You want to customize one suggestion type's rendering while leaving others on the default chip.
+- You need richer in-input affordances for mentions (avatars, tooltips, status
+  badges) than the default chip provides.
+- Your design system already has a token/chip primitive (Carbon's `<cds-tag>`,
+  in this example) that you want to reuse.
+- You want to customize one suggestion type's rendering while leaving others on
+  the default chip.
 
 ## APIs and props demonstrated
 
@@ -41,7 +59,10 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

@@ -37,11 +37,11 @@ function badges(r) {
   const out = [];
   if (r.deprecated) {
     out.push(
-      `**Deprecated.**${r.deprecatedMessage ? ` ${r.deprecatedMessage}` : ""}`,
+      `**Deprecated.**${r.deprecatedMessage ? ` ${r.deprecatedMessage}` : ''}`
     );
   }
   if (r.experimental) {
-    out.push("**Experimental.**");
+    out.push('**Experimental.**');
   }
   return out;
 }
@@ -50,78 +50,78 @@ function renderExamples(examples, lines) {
   if (!examples.length) {
     return;
   }
-  lines.push("## Examples", "");
+  lines.push('## Examples', '');
   for (const example of examples) {
-    if (example.includes("```")) {
-      lines.push(example, "");
+    if (example.includes('```')) {
+      lines.push(example, '');
     } else {
-      lines.push("```ts", example, "```", "");
+      lines.push('```ts', example, '```', '');
     }
   }
 }
 
 function renderSymbol(r, byKey, meta) {
-  const lines = [`# ${r.name}`, ""];
+  const lines = [`# ${r.name}`, ''];
 
   const topBadges = badges(r);
   if (topBadges.length) {
-    lines.push(topBadges.join(" "), "");
+    lines.push(topBadges.join(' '), '');
   }
 
   lines.push(
     `- Kind: ${r.kind}`,
     `- Category: ${r.category}`,
     `- Reference: ${fullUrl(meta, r.url)}`,
-    "",
+    ''
   );
 
   if (r.summary) {
-    lines.push(r.summary, "");
+    lines.push(r.summary, '');
   }
   if (r.description) {
-    lines.push(r.description, "");
+    lines.push(r.description, '');
   }
 
   if (r.signature) {
-    lines.push("## Signature", "", "```ts", r.signature, "```", "");
+    lines.push('## Signature', '', '```ts', r.signature, '```', '');
   }
   if (r.signatures.length > 1) {
-    lines.push("## Overloads", "", "```ts", ...r.signatures, "```", "");
+    lines.push('## Overloads', '', '```ts', ...r.signatures, '```', '');
   }
 
   renderExamples(r.examples, lines);
 
   if (r.members.length) {
-    lines.push("## Members", "");
+    lines.push('## Members', '');
     for (const key of r.members) {
       const m = byKey.get(key);
       if (!m) {
         continue;
       }
-      lines.push(`### ${m.name}`, "");
+      lines.push(`### ${m.name}`, '');
       if (m.signature) {
-        lines.push("`" + m.signature + "`", "");
+        lines.push('`' + m.signature + '`', '');
       }
       const memberBadges = badges(m);
       if (memberBadges.length) {
-        lines.push(memberBadges.join(" "), "");
+        lines.push(memberBadges.join(' '), '');
       }
       if (m.summary) {
-        lines.push(m.summary, "");
+        lines.push(m.summary, '');
       }
       renderExamples(m.examples, lines);
-      lines.push(`[Reference](${fullUrl(meta, m.url)})`, "");
+      lines.push(`[Reference](${fullUrl(meta, m.url)})`, '');
     }
   }
 
   if (r.related.length) {
-    lines.push("## Related", "");
+    lines.push('## Related', '');
     for (const key of r.related) {
-      const top = key.split(".")[0];
+      const top = key.split('.')[0];
       lines.push(`- [${key}](./${top}.md)`);
     }
-    lines.push("");
+    lines.push('');
   }
 
-  return `${lines.join("\n").replace(/\n+$/, "")}\n`;
+  return `${lines.join('\n').replace(/\n+$/, '')}\n`;
 }

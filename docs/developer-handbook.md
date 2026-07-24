@@ -32,14 +32,14 @@ repository. You might have heard this setup described as a
 As a result, we use two pieces of tooling to help us manage installing
 dependencies and publishing our packages. These include:
 
-- [NPM workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) for handling
-  dependencies across all packages
+- [NPM workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) for
+  handling dependencies across all packages
 - [Lerna](https://lerna.js.org/) for publishing packages, tagging versions, and
   more
 
 In order for you to install all the dependencies in this project, you'll need to
-[install NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and run the following
-command in your terminal:
+[install NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+and run the following command in your terminal:
 
 ```bash
 npm install
@@ -62,7 +62,8 @@ Afterwards, you should be good to go!
 
 ## Common tasks
 
-Here are some of the top-level tasks in the root of the project that you might want to run:
+Here are some of the top-level tasks in the root of the project that you might
+want to run:
 
 | Command                                                           | Usage                                                                                                                           |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -84,8 +85,8 @@ Here are some of the top-level tasks in the root of the project that you might w
 The examples and demo depend on the compiled output of `@carbon/ai-chat` and
 `@carbon/ai-chat-components`. These packages are linked into `node_modules` via
 npm workspaces, but their `exports` point to built artifacts (`dist/es/` and
-`es/`) that don't exist until you run a build. After a fresh clone, always
-build before starting anything:
+`es/`) that don't exist until you run a build. After a fresh clone, always build
+before starting anything:
 
 ```bash
 npm run aiChat:build
@@ -96,11 +97,16 @@ npm run aiChat:build
 `npm run aiChat:start` is the primary command for active development on the
 packages. It first does a full build of both packages, then concurrently starts:
 
-- **`@carbon/ai-chat-components`**: `rollup --watch` (writes to `packages/ai-chat-components/es/`), plus Storybook on ports 6006 and 7007
-- **`@carbon/ai-chat`**: `rollup --watch` (writes to `packages/ai-chat/dist/es/`), plus TypeDoc watcher and a doc server on port 5001
+- **`@carbon/ai-chat-components`**: `rollup --watch` (writes to
+  `packages/ai-chat-components/es/`), plus Storybook on ports 6006 and 7007
+- **`@carbon/ai-chat`**: `rollup --watch` (writes to
+  `packages/ai-chat/dist/es/`), plus TypeDoc watcher and a doc server on port
+  5001
 - **Demo**: the demo dev server
 
-`@carbon/ai-chat`'s rollup watcher also watches `packages/ai-chat-components/es/**`, so a components rebuild automatically triggers an `@carbon/ai-chat` rebuild — you only need the one command.
+`@carbon/ai-chat`'s rollup watcher also watches
+`packages/ai-chat-components/es/**`, so a components rebuild automatically
+triggers an `@carbon/ai-chat` rebuild — you only need the one command.
 
 ```bash
 npm run aiChat:start
@@ -109,8 +115,8 @@ npm run aiChat:start
 ### Running an example alongside the development environment
 
 Each example in `examples/react/` and `examples/web-components/` has its own
-webpack dev server. To develop against a live package build, run
-`aiChat:start` in one terminal and the example in a second:
+webpack dev server. To develop against a live package build, run `aiChat:start`
+in one terminal and the example in a second:
 
 ```bash
 # Terminal 1
@@ -195,7 +201,8 @@ Must be one of the following:
 - **perf**: A code change that improves performance
 - **refactor**: A code change that neither fixes a bug nor adds a feature
 - **revert**: A code change that reverses a previous commit
-- **style**: Changes that affect only visual styling (CSS/SCSS) without changing logic
+- **style**: Changes that affect only visual styling (CSS/SCSS) without changing
+  logic
 - **test**: Adding missing tests or correcting existing tests
 
 ### Subject
@@ -270,8 +277,7 @@ prefix prevents potential conflicts with class names from the user.
 ```html
 <div
   class="cds--inline-notification cds--inline-notification--error"
-  role="alert"
->
+  role="alert">
   <div class="cds--inline-notification__details">...</div>
 </div>
 ```
@@ -349,26 +355,43 @@ right-to-left styling out of the box.
 
 ### Continuous integration and deployment
 
-GitHub Actions is used to automate the CI/CD (Continuous Integration and Continuous Deployment) workflows directly on open PRs and deployment / publishing of packages.
+GitHub Actions is used to automate the CI/CD (Continuous Integration and
+Continuous Deployment) workflows directly on open PRs and deployment /
+publishing of packages.
 
 Actions that are triggered upon opening a PR:
 
-- [CI check](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/ci.yml): Builds, runs styleint, prettier, tests, and license checks on the changes from the PR to ensure no issues are introduced.
-- [Deploy preview](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-previews.yml): Deploys a preview of the changes utilizing GitHub Pages. The link to the deploy preview will be commented on the PR. Once the PR has been merged, the action will automatically remove the deploy preview artifacts from GitHub Pages.
+- [CI check](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/ci.yml):
+  Builds, runs styleint, prettier, tests, and license checks on the changes from
+  the PR to ensure no issues are introduced.
+- [Deploy preview](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-previews.yml):
+  Deploys a preview of the changes utilizing GitHub Pages. The link to the
+  deploy preview will be commented on the PR. Once the PR has been merged, the
+  action will automatically remove the deploy preview artifacts from GitHub
+  Pages.
 
 Actions triggered upon merging a PR into the `main` branch:
 
-- [Deployment of canary Storybook environment](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-canary-storybook.yml): Deploys the canary Storybook environment to GitHub Pages to be used for testing.
+- [Deployment of canary Storybook environment](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/deploy-canary-storybook.yml):
+  Deploys the canary Storybook environment to GitHub Pages to be used for
+  testing.
   - There are a total of 3 testing environments:
     - Canary: Updated on every change merged to `main`
     - Staging: Updated on every publish of a release candidate
     - Latest: Production environment - updated on every full release
-- [Publish of canary CDN artifacts](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-canary-cdn.yml): Publishes canary CDN artifacts to be used for testing.
+- [Publish of canary CDN artifacts](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/publish-canary-cdn.yml):
+  Publishes canary CDN artifacts to be used for testing.
 
 ### Publishing
 
-Publishing of packages (both to NPM and CDN artifacts) are done within GitHub Actions as well. For more information, view the [publishing-releases.md](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/publishing-releases.md) documentation.
+Publishing of packages (both to NPM and CDN artifacts) are done within GitHub
+Actions as well. For more information, view the
+[publishing-releases.md](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/publishing-releases.md)
+documentation.
 
 ### Automated dependency updates
 
-Both Dependabot and Renovate are configured and used to automatically check for updates in the project dependencies and detect security vulnerabilities. PRs with the dependency updates are automatically opened against `main`. Ensure there are no introduced issues with the dependency update before merging in.
+Both Dependabot and Renovate are configured and used to automatically check for
+updates in the project dependencies and detect security vulnerabilities. PRs
+with the dependency updates are automatically opened against `main`. Ensure
+there are no introduced issues with the dependency update before merging in.

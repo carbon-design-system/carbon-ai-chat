@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "../../../globals/scss/chat-theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '../../../globals/scss/chat-theme';
 
 // Writeable element styling (used by AppShellWriteableElements)
 // Only apply max-width constraint when header is configured to constrain width
@@ -41,13 +41,13 @@
 
 // AI Label (slug) styling in decorator slot
 .cds-aichat--header__slug-description {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 .cds-aichat--header__slug-label {
   color: theme.$text-secondary;
   padding-block-end: layout.$spacing-04;
-  @include type.type-style("body-compact-01");
+  @include type.type-style('body-compact-01');
 }
 
 .cds-aichat--header__slug-title {

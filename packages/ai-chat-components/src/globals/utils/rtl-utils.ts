@@ -18,5 +18,5 @@ export function isDirectionRTL(): boolean {
     return false;
   }
 
-  return document.dir === "rtl" || document.documentElement.dir === "rtl";
+  return document.dir === 'rtl' || document.documentElement.dir === 'rtl';
 }

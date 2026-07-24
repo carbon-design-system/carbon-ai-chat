@@ -21,13 +21,13 @@
  * Start reading at: the `config` constant and the `Demo` element below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
-import { type PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { type PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -37,13 +37,12 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   render() {
     return html`
       <cds-aichat-container
-        .messaging=${config.messaging}
-      ></cds-aichat-container>
+        .messaging=${config.messaging}></cds-aichat-container>
     `;
   }
 }

@@ -7,16 +7,16 @@
  *  @license
  */
 
-import React, { useEffect, useMemo } from "react";
-import type CDSButton from "@carbon/web-components/es/components/button/button.js";
+import React, { useEffect, useMemo } from 'react';
+import type CDSButton from '@carbon/web-components/es/components/button/button.js';
 
-import Button from "../carbon/Button";
-import { ChatBubble } from "./ChatBubble";
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
-import { PageObjectId } from "../../../testing/PageObjectId";
-import { AppState, ChatWidthBreakpoint } from "../../../types/state/AppState";
-import { CarbonTheme } from "../../../types/config/CarbonTheme";
+import Button from '../carbon/Button';
+import { ChatBubble } from './ChatBubble';
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
+import { PageObjectId } from '../../../testing/PageObjectId';
+import { AppState, ChatWidthBreakpoint } from '../../../types/state/AppState';
+import { CarbonTheme } from '../../../types/config/CarbonTheme';
 
 interface DisclaimerPanelProps {
   disclaimerHTML?: string;
@@ -43,19 +43,19 @@ const DisclaimerPanel = ({
         state.languagePack.disclaimer_acceptance_label,
       disclaimer_accept: state.languagePack.disclaimer_accept,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const chatWidthBreakpoint = useSelector(
-    (state: AppState) => state.chatWidthBreakpoint,
+    (state: AppState) => state.chatWidthBreakpoint
   );
 
   const derivedCarbonTheme = useSelector(
     (state: AppState) =>
-      state.config.derived.themeWithDefaults.derivedCarbonTheme,
+      state.config.derived.themeWithDefaults.derivedCarbonTheme
   );
 
   const isOpen = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow,
+    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow
   );
 
   const isDarkTheme =
@@ -69,7 +69,7 @@ const DisclaimerPanel = ({
     if (!isOpen) {
       return undefined;
     }
-    const panelElement = disclaimerContent.current?.closest("cds-aichat-panel");
+    const panelElement = disclaimerContent.current?.closest('cds-aichat-panel');
     if (!panelElement) {
       return undefined;
     }
@@ -77,9 +77,9 @@ const DisclaimerPanel = ({
     // Trigger initial check by dispatching a fake scroll event
     // This will be picked up by the panel's scroll listener
     const checkInitialState = () => {
-      const panelBody = panelElement.shadowRoot?.querySelector(".panel-body");
+      const panelBody = panelElement.shadowRoot?.querySelector('.panel-body');
       if (panelBody) {
-        const scrollEvent = new Event("scroll", { bubbles: true });
+        const scrollEvent = new Event('scroll', { bubbles: true });
         panelBody.dispatchEvent(scrollEvent);
       }
     };
@@ -105,7 +105,7 @@ const DisclaimerPanel = ({
     }
   }, []);
 
-  const disclaimerDescriptionClassName = "cds-aichat--disclaimer__description";
+  const disclaimerDescriptionClassName = 'cds-aichat--disclaimer__description';
 
   // Memoize the returned object to prevent infinite re-renders
   return useMemo(
@@ -113,11 +113,10 @@ const DisclaimerPanel = ({
       body: (
         <div
           className="cds-aichat--panel-content cds-aichat--disclaimer__content"
-          ref={disclaimerContent}
-        >
+          ref={disclaimerContent}>
           <div className="cds-aichat--disclaimer__icon">
             <ChatBubble
-              theme={isDarkTheme ? "dark" : "light"}
+              theme={isDarkTheme ? 'dark' : 'light'}
               label={languagePack.disclaimer_icon_label}
             />
           </div>
@@ -136,11 +135,10 @@ const DisclaimerPanel = ({
           data-testid={PageObjectId.DISCLAIMER_ACCEPT_BUTTON}
           ref={disclaimerAcceptButtonRef}
           onClick={onAcceptDisclaimer}
-          size={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE ? "2xl" : "lg"}
+          size={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE ? '2xl' : 'lg'}
           disabled={!hasReadDisclaimer}
           role="button"
-          aria-label={languagePack.disclaimer_acceptance_label}
-        >
+          aria-label={languagePack.disclaimer_acceptance_label}>
           {languagePack.disclaimer_accept}
         </Button>
       ),
@@ -155,7 +153,7 @@ const DisclaimerPanel = ({
       chatWidthBreakpoint,
       hasReadDisclaimer,
       handleBodyScroll,
-    ],
+    ]
   );
 };
 

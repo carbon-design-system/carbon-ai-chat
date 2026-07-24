@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import { css, LitElement, PropertyValues } from "lit";
+import { createComponent } from '@lit/react';
+import { css, LitElement, PropertyValues } from 'lit';
 import React, {
   type HTMLAttributes,
   useCallback,
@@ -16,20 +16,20 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
-import { createPortal } from "react-dom";
+} from 'react';
+import { createPortal } from 'react-dom';
 
-import ChatAppEntry from "../chat/ChatAppEntry";
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { ChatContainerProps } from "../types/component/ChatContainer";
-import { ChatInstance } from "../types/instance/ChatInstance";
-import { BusEventType } from "../types/events/eventBusTypes";
+import ChatAppEntry from '../chat/ChatAppEntry';
+import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import { ChatContainerProps } from '../types/component/ChatContainer';
+import { ChatInstance } from '../types/instance/ChatInstance';
+import { BusEventType } from '../types/events/eventBusTypes';
 import {
   FLATTENED_PUBLIC_CONFIG_FIELDS,
   FlattenedConfigSource,
   resolveFlattenedConfig,
-} from "../web-components/shared/flattenedPublicConfig";
-import { isBrowser } from "../chat/utils/browserUtils";
+} from '../web-components/shared/flattenedPublicConfig';
+import { isBrowser } from '../chat/utils/browserUtils';
 
 /**
  * This component creates a custom element protected by a shadow DOM to render the React application into. It creates
@@ -42,7 +42,7 @@ import { isBrowser } from "../chat/utils/browserUtils";
  * Create a web component to host the React application. We do this so we can provide custom elements and user_defined responses as
  * slotted content so they maintain their own styling in a safe way.
  */
-@carbonElement("cds-aichat-react")
+@carbonElement('cds-aichat-react')
 class ChatContainerReact extends LitElement {
   static styles = css`
     :host {
@@ -57,17 +57,17 @@ class ChatContainerReact extends LitElement {
    */
   firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
-    this.dispatchEvent(new CustomEvent("shadow-ready", { bubbles: true }));
+    this.dispatchEvent(new CustomEvent('shadow-ready', { bubbles: true }));
   }
 }
 
 // Wrap the custom element as a React component
 const ReactChatContainer = React.memo(
   createComponent({
-    tagName: "cds-aichat-react",
+    tagName: 'cds-aichat-react',
     elementClass: ChatContainerReact,
     react: React,
-  }),
+  })
 );
 
 /**
@@ -78,7 +78,7 @@ const ReactChatContainer = React.memo(
  */
 function ChatContainer(
   props: ChatContainerProps &
-    Omit<HTMLAttributes<HTMLElement>, keyof ChatContainerProps>,
+    Omit<HTMLAttributes<HTMLElement>, keyof ChatContainerProps>
 ) {
   const {
     onBeforeRender,
@@ -111,8 +111,8 @@ function ChatContainer(
     // stability across unrelated host re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     FLATTENED_PUBLIC_CONFIG_FIELDS.map(
-      (field) => (rest as Record<string, unknown>)[field.name],
-    ),
+      (field) => (rest as Record<string, unknown>)[field.name]
+    )
   );
 
   // DOM pass-through props are whatever remains after removing the flattened
@@ -152,12 +152,12 @@ function ChatContainer(
     const handleShadowReady = () => {
       // Now we know shadowRoot is definitely available
       let reactElement = wrapperElement.shadowRoot.querySelector(
-        ".cds-aichat--react-app",
+        '.cds-aichat--react-app'
       ) as HTMLElement;
 
       if (!reactElement) {
-        reactElement = document.createElement("div");
-        reactElement.classList.add("cds-aichat--react-app");
+        reactElement = document.createElement('div');
+        reactElement.classList.add('cds-aichat--react-app');
         wrapperElement.shadowRoot.appendChild(reactElement);
       }
 
@@ -175,14 +175,14 @@ function ChatContainer(
     } else {
       // Wait for ready event
       eventListenerAdded = true;
-      wrapperElement.addEventListener("shadow-ready", handleShadowReady, {
+      wrapperElement.addEventListener('shadow-ready', handleShadowReady, {
         once: true,
       });
     }
 
     return () => {
       if (eventListenerAdded) {
-        wrapperElement.removeEventListener("shadow-ready", handleShadowReady);
+        wrapperElement.removeEventListener('shadow-ready', handleShadowReady);
       }
     };
   }, [container, wrapper, currentInstance]);
@@ -194,7 +194,7 @@ function ChatContainer(
     if (wrapper) {
       const combinedNodes: HTMLElement[] = [...writeableElementSlots];
       const currentNodes: HTMLElement[] = Array.from(
-        wrapper.childNodes,
+        wrapper.childNodes
       ) as HTMLElement[];
 
       // Append new nodes that aren't already in the container
@@ -241,9 +241,9 @@ function ChatContainer(
       // Plugin fallbacks forward an HTML string instead.
       if (detail.element) {
         const element = detail.element;
-        element.setAttribute("slot", detail.slotName);
+        element.setAttribute('slot', detail.slotName);
         if (!detail.isInline) {
-          element.style.marginBlockStart = "1rem";
+          element.style.marginBlockStart = '1rem';
         }
         if (element.parentElement !== wrapper) {
           wrapper.appendChild(element);
@@ -252,20 +252,20 @@ function ChatContainer(
       }
       let host = hosts.get(detail.slotName);
       if (!host) {
-        host = document.createElement(detail.isInline ? "span" : "div");
-        host.setAttribute("slot", detail.slotName);
+        host = document.createElement(detail.isInline ? 'span' : 'div');
+        host.setAttribute('slot', detail.slotName);
         // Match the spacing applied to direct children of
         // `.cds-aichat-markdown-stack`; shadow CSS doesn't reach this host
         // (we mounted it in page light DOM), so apply it inline. Inline
         // plugin output flows with text and gets no extra spacing.
         if (!detail.isInline) {
-          host.style.marginBlockStart = "1rem";
+          host.style.marginBlockStart = '1rem';
         }
         hosts.set(detail.slotName, host);
         wrapper.appendChild(host);
       }
-      if (host.innerHTML !== (detail.html ?? "")) {
-        host.innerHTML = detail.html ?? "";
+      if (host.innerHTML !== (detail.html ?? '')) {
+        host.innerHTML = detail.html ?? '';
       }
     };
     const handleUpdate = (event: Event) => {
@@ -291,29 +291,29 @@ function ChatContainer(
       }
     };
     wrapper.addEventListener(
-      "cds-aichat-markdown-plugin-host-mount",
-      handleMount,
+      'cds-aichat-markdown-plugin-host-mount',
+      handleMount
     );
     wrapper.addEventListener(
-      "cds-aichat-markdown-plugin-host-update",
-      handleUpdate,
+      'cds-aichat-markdown-plugin-host-update',
+      handleUpdate
     );
     wrapper.addEventListener(
-      "cds-aichat-markdown-plugin-host-unmount",
-      handleUnmount,
+      'cds-aichat-markdown-plugin-host-unmount',
+      handleUnmount
     );
     return () => {
       wrapper.removeEventListener(
-        "cds-aichat-markdown-plugin-host-mount",
-        handleMount,
+        'cds-aichat-markdown-plugin-host-mount',
+        handleMount
       );
       wrapper.removeEventListener(
-        "cds-aichat-markdown-plugin-host-update",
-        handleUpdate,
+        'cds-aichat-markdown-plugin-host-update',
+        handleUpdate
       );
       wrapper.removeEventListener(
-        "cds-aichat-markdown-plugin-host-unmount",
-        handleUnmount,
+        'cds-aichat-markdown-plugin-host-unmount',
+        handleUnmount
       );
       for (const host of hosts.values()) {
         host.remove();
@@ -327,10 +327,10 @@ function ChatContainer(
       if (instance) {
         const addWriteableElementSlots = () => {
           const slots: HTMLElement[] = Object.entries(
-            instance.writeableElements,
+            instance.writeableElements
           ).map((writeableElement) => {
             const [key, element] = writeableElement;
-            element.setAttribute("slot", key); // Assign slot attributes dynamically
+            element.setAttribute('slot', key); // Assign slot attributes dynamically
             return element;
           });
           setWriteableElementSlots(slots);
@@ -357,7 +357,7 @@ function ChatContainer(
         onBeforeRender?.(instance);
       }
     },
-    [onBeforeRender, onViewChange, onViewPreChange],
+    [onBeforeRender, onViewChange, onViewPreChange]
   );
 
   // If we are in SSR mode, just short circuit here. This prevents all of our window.* and document.* stuff from trying
@@ -388,7 +388,7 @@ function ChatContainer(
             element={element}
             chatWrapper={wrapper}
           />,
-          container,
+          container
         )}
     </>
   );

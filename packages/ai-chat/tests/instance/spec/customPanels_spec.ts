@@ -13,28 +13,28 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
-import { BusEventType } from "../../../src/types/events/eventBusTypes";
+} from '../../test_helpers';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {
   PanelType,
   DefaultCustomPanelConfigOptions,
   CustomPanelConfigOptions,
-} from "../../../src/types/instance/apiTypes";
-import { waitFor } from "@testing-library/react";
+} from '../../../src/types/instance/apiTypes';
+import { waitFor } from '@testing-library/react';
 
-describe("ChatInstance.customPanels", () => {
+describe('ChatInstance.customPanels', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have customPanels property available", async () => {
+  it('should have customPanels property available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     expect(instance.customPanels).toBeDefined();
-    expect(typeof instance.customPanels).toBe("object");
+    expect(typeof instance.customPanels).toBe('object');
   });
 
-  it("should provide custom panel management interface", async () => {
+  it('should provide custom panel management interface', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -44,7 +44,7 @@ describe("ChatInstance.customPanels", () => {
     expect(instance.customPanels).toBeTruthy();
   });
 
-  it("should be accessible without throwing errors", async () => {
+  it('should be accessible without throwing errors', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -56,7 +56,7 @@ describe("ChatInstance.customPanels", () => {
     }).not.toThrow();
   });
 
-  it("should maintain consistent reference", async () => {
+  it('should maintain consistent reference', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -67,20 +67,20 @@ describe("ChatInstance.customPanels", () => {
     expect(panels1).toBe(panels2);
   });
 
-  describe("getPanel", () => {
-    it("should return a custom panel instance", async () => {
+  describe('getPanel', () => {
+    it('should return a custom panel instance', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       const panel = instance.customPanels.getPanel();
 
       expect(panel).toBeDefined();
-      expect(typeof panel).toBe("object");
-      expect(typeof panel.open).toBe("function");
-      expect(typeof panel.close).toBe("function");
+      expect(typeof panel).toBe('object');
+      expect(typeof panel.open).toBe('function');
+      expect(typeof panel.close).toBe('function');
     });
 
-    it("should return the same panel instance on multiple calls", async () => {
+    it('should return the same panel instance on multiple calls', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
@@ -90,21 +90,21 @@ describe("ChatInstance.customPanels", () => {
       expect(panel1).toBe(panel2);
     });
 
-    it("should return the same default panel when requesting by PanelType", async () => {
+    it('should return the same default panel when requesting by PanelType', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
       const defaultPanel = instance.customPanels.getPanel();
       const explicitDefaultPanel = instance.customPanels.getPanel(
-        PanelType.DEFAULT,
+        PanelType.DEFAULT
       );
 
       expect(explicitDefaultPanel).toBe(defaultPanel);
     });
   });
 
-  describe("open", () => {
-    it("should open panel with default options and update Redux state", async () => {
+  describe('open', () => {
+    it('should open panel with default options and update Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -123,22 +123,22 @@ describe("ChatInstance.customPanels", () => {
       expect(state.customPanelState.options.title).toBeUndefined();
       expect(
         (state.customPanelState.options as DefaultCustomPanelConfigOptions)
-          .hideBackButton,
+          .hideBackButton
       ).toBe(false);
       expect(
         (state.customPanelState.options as DefaultCustomPanelConfigOptions)
-          .disableAnimation,
+          .disableAnimation
       ).toBe(false);
     });
 
-    it("should open panel with DefaultCustomPanelConfigOptions", async () => {
+    it('should open panel with DefaultCustomPanelConfigOptions', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
       const panel = instance.customPanels.getPanel();
 
       const defaultPanelOptions: DefaultCustomPanelConfigOptions = {
-        title: "Default Panel",
+        title: 'Default Panel',
         disableAnimation: true,
         hideBackButton: true,
       };
@@ -147,19 +147,19 @@ describe("ChatInstance.customPanels", () => {
 
       const state = store.getState();
       expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe("Default Panel");
+      expect(state.customPanelState.options.title).toBe('Default Panel');
       expect(state.customPanelState.options.hideBackButton).toBe(true);
       expect(state.customPanelState.options.disableAnimation).toBe(true);
     });
 
-    it("should open panel with legacy CustomPanelConfigOptions and update Redux state", async () => {
+    it('should open panel with legacy CustomPanelConfigOptions and update Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
       const panel = instance.customPanels.getPanel();
 
       const customOptions: CustomPanelConfigOptions = {
-        title: "Test Panel",
+        title: 'Test Panel',
         hideCloseButton: true,
         disableAnimation: true,
         hidePanelHeader: false,
@@ -178,21 +178,21 @@ describe("ChatInstance.customPanels", () => {
       const options = state.customPanelState
         .options as CustomPanelConfigOptions;
       expect(state.customPanelState.isOpen).toBe(true);
-      expect(options.title).toBe("Test Panel");
+      expect(options.title).toBe('Test Panel');
       expect(options.hideCloseButton).toBe(true);
       expect(options.disableAnimation).toBe(true);
       expect(options.hidePanelHeader).toBe(false);
       expect(options.hideBackButton).toBe(false);
     });
 
-    it("should open panel with openFromSide option", async () => {
+    it('should open panel with openFromSide option', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
       const panel = instance.customPanels.getPanel();
 
       const defaultPanelOptions: DefaultCustomPanelConfigOptions = {
-        title: "Side Panel",
+        title: 'Side Panel',
         openFromSide: true,
       };
 
@@ -200,14 +200,14 @@ describe("ChatInstance.customPanels", () => {
 
       const state = store.getState();
       expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe("Side Panel");
+      expect(state.customPanelState.options.title).toBe('Side Panel');
       expect(
         (state.customPanelState.options as DefaultCustomPanelConfigOptions)
-          .openFromSide,
+          .openFromSide
       ).toBe(true);
     });
 
-    it("should honor deprecated hideCloseButton option as override", async () => {
+    it('should honor deprecated hideCloseButton option as override', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -219,11 +219,11 @@ describe("ChatInstance.customPanels", () => {
       const state = store.getState();
       expect(
         (state.customPanelState.options as CustomPanelConfigOptions)
-          .hideCloseButton,
+          .hideCloseButton
       ).toBe(true);
     });
 
-    it("should disable default close action when disableDefaultCloseAction is true", async () => {
+    it('should disable default close action when disableDefaultCloseAction is true', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -243,7 +243,7 @@ describe("ChatInstance.customPanels", () => {
       expect(stateOptions.onClickClose).toBe(onClickClose);
     });
 
-    it("should wire onClickBack and onClickRestart callbacks into options", async () => {
+    it('should wire onClickBack and onClickRestart callbacks into options', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -263,8 +263,8 @@ describe("ChatInstance.customPanels", () => {
     });
   });
 
-  describe("close", () => {
-    it("should close panel and update Redux state", async () => {
+  describe('close', () => {
+    it('should close panel and update Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -283,7 +283,7 @@ describe("ChatInstance.customPanels", () => {
       expect(state.customPanelState.isOpen).toBe(false);
     });
 
-    it("should be able to open and close panel multiple times with correct Redux state", async () => {
+    it('should be able to open and close panel multiple times with correct Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -303,10 +303,10 @@ describe("ChatInstance.customPanels", () => {
       expect(state.customPanelState.isOpen).toBe(false);
 
       // Second open/close cycle with custom options
-      panel.open({ title: "Second Open" });
+      panel.open({ title: 'Second Open' });
       state = store.getState();
       expect(state.customPanelState.isOpen).toBe(true);
-      expect(state.customPanelState.options.title).toBe("Second Open");
+      expect(state.customPanelState.options.title).toBe('Second Open');
 
       panel.close();
       state = store.getState();
@@ -332,8 +332,8 @@ describe("ChatInstance.customPanels", () => {
     });
   });
 
-  describe("Events", () => {
-    it("should fire CUSTOM_PANEL_PRE_OPEN and CUSTOM_PANEL_OPEN events when opening panel", async () => {
+  describe('Events', () => {
+    it('should fire CUSTOM_PANEL_PRE_OPEN and CUSTOM_PANEL_OPEN events when opening panel', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();
@@ -365,7 +365,7 @@ describe("ChatInstance.customPanels", () => {
       await Promise.all([preOpenEventPromise, openEventPromise]);
     });
 
-    it("should fire CUSTOM_PANEL_PRE_CLOSE and CUSTOM_PANEL_CLOSE events when closing panel", async () => {
+    it('should fire CUSTOM_PANEL_PRE_CLOSE and CUSTOM_PANEL_CLOSE events when closing panel', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();
@@ -404,7 +404,7 @@ describe("ChatInstance.customPanels", () => {
       await Promise.all([preCloseEventPromise, closeEventPromise]);
     });
 
-    it("should fire events in correct sequence during open/close cycle", async () => {
+    it('should fire events in correct sequence during open/close cycle', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
       const panel = instance.customPanels.getPanel();
@@ -415,19 +415,19 @@ describe("ChatInstance.customPanels", () => {
       instance.on([
         {
           type: BusEventType.CUSTOM_PANEL_PRE_OPEN,
-          handler: () => eventSequence.push("PRE_OPEN"),
+          handler: () => eventSequence.push('PRE_OPEN'),
         },
         {
           type: BusEventType.CUSTOM_PANEL_OPEN,
-          handler: () => eventSequence.push("OPEN"),
+          handler: () => eventSequence.push('OPEN'),
         },
         {
           type: BusEventType.CUSTOM_PANEL_PRE_CLOSE,
-          handler: () => eventSequence.push("PRE_CLOSE"),
+          handler: () => eventSequence.push('PRE_CLOSE'),
         },
         {
           type: BusEventType.CUSTOM_PANEL_CLOSE,
-          handler: () => eventSequence.push("CLOSE"),
+          handler: () => eventSequence.push('CLOSE'),
         },
       ]);
 
@@ -438,14 +438,14 @@ describe("ChatInstance.customPanels", () => {
 
       // Wait for React to re-render and animations to complete
       await waitFor(() => {
-        expect(eventSequence).toContain("PRE_OPEN");
+        expect(eventSequence).toContain('PRE_OPEN');
       });
 
       await waitFor(
         () => {
-          expect(eventSequence).toContain("OPEN");
+          expect(eventSequence).toContain('OPEN');
         },
-        { timeout: 1000 },
+        { timeout: 1000 }
       );
 
       // Close the panel
@@ -453,21 +453,21 @@ describe("ChatInstance.customPanels", () => {
 
       // Wait for close animations to complete
       await waitFor(() => {
-        expect(eventSequence).toContain("PRE_CLOSE");
+        expect(eventSequence).toContain('PRE_CLOSE');
       });
 
       await waitFor(
         () => {
-          expect(eventSequence).toContain("CLOSE");
+          expect(eventSequence).toContain('CLOSE');
         },
-        { timeout: 1000 },
+        { timeout: 1000 }
       );
 
       // Verify event sequence
-      expect(eventSequence).toEqual(["PRE_OPEN", "OPEN", "PRE_CLOSE", "CLOSE"]);
+      expect(eventSequence).toEqual(['PRE_OPEN', 'OPEN', 'PRE_CLOSE', 'CLOSE']);
     });
 
-    it("should provide correct event context and instance in event handlers", async () => {
+    it('should provide correct event context and instance in event handlers', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();
@@ -493,7 +493,7 @@ describe("ChatInstance.customPanels", () => {
       await eventPromise;
     });
 
-    it("should allow event handlers to be removed", async () => {
+    it('should allow event handlers to be removed', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();
@@ -554,15 +554,15 @@ describe("ChatInstance.customPanels", () => {
       expect(eventCount).toBe(1);
     });
 
-    it("should handle multiple event listeners for the same event type", async () => {
+    it('should handle multiple event listeners for the same event type', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();
 
       const handlers = [
-        { fired: false, value: "handler1" },
-        { fired: false, value: "handler2" },
-        { fired: false, value: "handler3" },
+        { fired: false, value: 'handler1' },
+        { fired: false, value: 'handler2' },
+        { fired: false, value: 'handler3' },
       ];
 
       // Add multiple listeners for the same event
@@ -584,7 +584,7 @@ describe("ChatInstance.customPanels", () => {
       });
     });
 
-    it("should not fire events when closing an already closed panel", async () => {
+    it('should not fire events when closing an already closed panel', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();
@@ -613,7 +613,7 @@ describe("ChatInstance.customPanels", () => {
       expect(closeEventCount).toBe(1);
     });
 
-    it("should not fire open events when opening an already open panel", async () => {
+    it('should not fire open events when opening an already open panel', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
       const panel = instance.customPanels.getPanel();

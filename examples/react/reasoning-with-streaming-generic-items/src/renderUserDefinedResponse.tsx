@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { RenderUserDefinedState } from "@carbon/ai-chat";
-import React from "react";
+import { RenderUserDefinedState } from '@carbon/ai-chat';
+import React from 'react';
 
 import {
   ReasoningSummaryCard,
   ReasoningSummaryData,
-} from "./ReasoningSummaryCard";
+} from './ReasoningSummaryCard';
 
 function renderUserDefinedResponse(state: RenderUserDefinedState) {
   const { messageItem } = state;
@@ -22,7 +22,7 @@ function renderUserDefinedResponse(state: RenderUserDefinedState) {
   }
 
   switch (messageItem.user_defined?.user_defined_type) {
-    case "reasoning_summary":
+    case 'reasoning_summary':
       return (
         <ReasoningSummaryCard
           data={messageItem.user_defined as ReasoningSummaryData}

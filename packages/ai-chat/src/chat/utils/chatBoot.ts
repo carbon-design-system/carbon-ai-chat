@@ -7,15 +7,15 @@
  *  @license
  */
 
-import dayjs from "dayjs";
-import type React from "react";
-import LocalizedFormat from "dayjs/plugin/localizedFormat.js";
-import merge from "lodash-es/merge.js";
-import isEqual from "lodash-es/isEqual.js";
+import dayjs from 'dayjs';
+import type React from 'react';
+import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
+import merge from 'lodash-es/merge.js';
+import isEqual from 'lodash-es/isEqual.js';
 
-import { setVarsForSelector } from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
-import { createServiceManager } from "../services/loadServices";
+import { createServiceManager } from '../services/loadServices';
 
 let bootContainerRulesInstalled = false;
 
@@ -29,22 +29,22 @@ function ensureBootContainerStyleRules(): void {
   if (bootContainerRulesInstalled) {
     return;
   }
-  setVarsForSelector(".cds-aichat--boot-container--filled", {
-    width: "100% !important",
-    height: "100% !important",
+  setVarsForSelector('.cds-aichat--boot-container--filled', {
+    width: '100% !important',
+    height: '100% !important',
   });
-  setVarsForSelector(".cds-aichat--boot-container--collapsed", {
-    width: "0 !important",
-    height: "0 !important",
+  setVarsForSelector('.cds-aichat--boot-container--collapsed', {
+    width: '0 !important',
+    height: '0 !important',
   });
   bootContainerRulesInstalled = true;
 }
-import { ServiceManager } from "../services/ServiceManager";
-import { createChatInstance } from "../instance/ChatInstanceImpl";
-import { createAppConfig } from "../store/doCreateStore";
-import { setIntl } from "./intlUtils";
-import { consoleError } from "./miscUtils";
-import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
+import { ServiceManager } from '../services/ServiceManager';
+import { createChatInstance } from '../instance/ChatInstanceImpl';
+import { createAppConfig } from '../store/doCreateStore';
+import { setIntl } from './intlUtils';
+import { consoleError } from './miscUtils';
+import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
 
 import {
   BusEventChunkUserDefinedResponse,
@@ -53,11 +53,11 @@ import {
   BusEventCustomFooterSlot,
   MainWindowOpenReason,
   ViewChangeReason,
-} from "../../types/events/eventBusTypes";
-import { VIEW_STATE_ALL_CLOSED } from "../store/reducerUtils";
-import { PublicConfig } from "../../types/config/PublicConfig";
-import { ChatInstance } from "../../types/instance/ChatInstance";
-import { loadLocale } from "./languageUtils";
+} from '../../types/events/eventBusTypes';
+import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import { ChatInstance } from '../../types/instance/ChatInstance';
+import { loadLocale } from './languageUtils';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -65,7 +65,7 @@ import { loadLocale } from "./languageUtils";
  * branches. Callers can override any of these via the incoming partial config.
  */
 export const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
-  assistantName: "watsonx",
+  assistantName: 'watsonx',
   openChatByDefault: false,
   shouldTakeFocusIfOpensAutomatically: true,
   serviceDesk: {},
@@ -109,20 +109,20 @@ export async function initServiceManagerAndInstance(options: {
   serviceManager.customHostElement = customHostElement;
 
   ensureBootContainerStyleRules();
-  container.classList.add("cds-aichat--boot-container");
+  container.classList.add('cds-aichat--boot-container');
   container.classList.toggle(
-    "cds-aichat--boot-container--filled",
-    !!serviceManager.customHostElement,
+    'cds-aichat--boot-container--filled',
+    !!serviceManager.customHostElement
   );
   container.classList.toggle(
-    "cds-aichat--boot-container--collapsed",
-    !serviceManager.customHostElement,
+    'cds-aichat--boot-container--collapsed',
+    !serviceManager.customHostElement
   );
 
   // Load language and locale
   const languagePack = serviceManager.store.getState().languagePack;
   const localePack = await loadLocale(
-    serviceManager.store.getState().config.public.locale || "en",
+    serviceManager.store.getState().config.public.locale || 'en'
   );
 
   // Set up human agent service (created once here; may be recreated
@@ -140,8 +140,8 @@ export async function initServiceManagerAndInstance(options: {
   const uploadConfig = serviceManager.store.getState().config.public.upload;
   if (uploadConfig?.is_on && !uploadConfig.onFileUpload) {
     consoleError(
-      "[upload] UploadConfig.is_on is true but onFileUpload is not provided. " +
-        "File upload will be disabled. Please provide an onFileUpload handler in config.upload.",
+      '[upload] UploadConfig.is_on is true but onFileUpload is not provided. ' +
+        'File upload will be disabled. Please provide an onFileUpload handler in config.upload.'
     );
   }
 
@@ -181,7 +181,7 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
       targetViewState,
       { viewChangeReason },
       tryHydrating,
-      forceViewChange,
+      forceViewChange
     );
   }
 }
@@ -210,7 +210,7 @@ export function attachUserDefinedResponseHandlers(
         state?: any;
       };
     }>
-  >,
+  >
 ) {
   function userDefinedResponseHandler(event: BusEventUserDefinedResponse) {
     setBySlot((bySlot) => {
@@ -226,7 +226,7 @@ export function attachUserDefinedResponseHandlers(
   }
 
   function userDefinedChunkHandler(event: BusEventChunkUserDefinedResponse) {
-    if ("complete_item" in event.data.chunk) {
+    if ('complete_item' in event.data.chunk) {
       const messageItem = event.data.chunk.complete_item;
       setBySlot((bySlot) => {
         return {
@@ -236,7 +236,7 @@ export function attachUserDefinedResponseHandlers(
           },
         };
       });
-    } else if ("partial_item" in event.data.chunk) {
+    } else if ('partial_item' in event.data.chunk) {
       const itemChunk = event.data.chunk.partial_item;
       setBySlot((bySlot) => {
         return {
@@ -287,7 +287,7 @@ export function attachCustomFooterHandler(
         additionalData?: Record<string, unknown>;
       };
     }>
-  >,
+  >
 ) {
   function customFooterSlotHandler(event: BusEventCustomFooterSlot) {
     setBySlot((bySlot) => {

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -51,7 +51,7 @@ function resolvablePromise<
   TResolveType = void,
 >(): ResolvablePromise<TResolveType> {
   let resolveFunction: (
-    value?: TResolveType | PromiseLike<TResolveType>,
+    value?: TResolveType | PromiseLike<TResolveType>
   ) => void;
   let rejectFunction: (reason?: any) => void;
 

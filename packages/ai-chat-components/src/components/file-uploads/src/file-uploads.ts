@@ -14,23 +14,23 @@ import {
   nothing,
   type PropertyValues,
   unsafeCSS,
-} from "lit";
-import { property, state } from "lit/decorators.js";
+} from 'lit';
+import { property, state } from 'lit/decorators.js';
 
-import { AriaAnnouncerManager } from "../../../globals/utils/aria-announcer-manager.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
+import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
 import type {
   FileUpload,
   FileRemoveEventDetail,
-} from "../../prompt-line/src/types.js";
+} from '../../prompt-line/src/types.js';
 
-import "./file-upload-item.js";
-import styles from "./file-uploads.scss?lit";
+import './file-upload-item.js';
+import styles from './file-uploads.scss?lit';
 
 /** Minimal per-file state captured between renders to diff status transitions. */
 interface UploadSnapshot {
-  status: FileUpload["status"];
+  status: FileUpload['status'];
   isError: boolean;
 }
 
@@ -58,24 +58,24 @@ class FileUploadsElement extends LitElement {
   uploads: FileUpload[] = [];
 
   /** Label for the remove file button. */
-  @property({ type: String, attribute: "remove-file-label" })
-  removeFileLabel = "Remove file";
+  @property({ type: String, attribute: 'remove-file-label' })
+  removeFileLabel = 'Remove file';
 
   /** Label announced and shown while a file is uploading. */
-  @property({ type: String, attribute: "uploading-file-label" })
-  uploadingFileLabel = "Uploading file";
+  @property({ type: String, attribute: 'uploading-file-label' })
+  uploadingFileLabel = 'Uploading file';
 
   /** Announced when a file is removed from the upload list. */
-  @property({ type: String, attribute: "file-removed-label" })
-  fileRemovedLabel = "File removed.";
+  @property({ type: String, attribute: 'file-removed-label' })
+  fileRemovedLabel = 'File removed.';
 
   /** Announced when a file finishes uploading successfully. */
-  @property({ type: String, attribute: "upload-success-label" })
-  uploadSuccessLabel = "The file was uploaded successfully.";
+  @property({ type: String, attribute: 'upload-success-label' })
+  uploadSuccessLabel = 'The file was uploaded successfully.';
 
   /** Announced when a file fails to upload. */
-  @property({ type: String, attribute: "upload-failure-label" })
-  uploadFailureLabel = "There was an error uploading the file.";
+  @property({ type: String, attribute: 'upload-failure-label' })
+  uploadFailureLabel = 'There was an error uploading the file.';
 
   /**
    * Returns the announcement made when one or more files are added in the same
@@ -86,7 +86,7 @@ class FileUploadsElement extends LitElement {
    */
   @property({ type: Object, attribute: false })
   getFilesAddedText: (args: { count: number }) => string = ({ count }) =>
-    count === 1 ? "File added." : `${count} files added.`;
+    count === 1 ? 'File added.' : `${count} files added.`;
 
   /**
    * Returns the announcement made when one or more files begin uploading in the
@@ -95,7 +95,7 @@ class FileUploadsElement extends LitElement {
    */
   @property({ type: Object, attribute: false })
   getFilesUploadingText: (args: { count: number }) => string = ({ count }) =>
-    count === 1 ? "Uploading file." : `Uploading ${count} files.`;
+    count === 1 ? 'Uploading file.' : `Uploading ${count} files.`;
 
   /** Whether scrolling is required to view the entire width of all file upload items. */
   @state() private _hasOverflow = false;
@@ -111,7 +111,7 @@ class FileUploadsElement extends LitElement {
 
   private _checkOverflow() {
     const container = this.renderRoot.querySelector<HTMLElement>(
-      `.${prefix}--file-uploads-container`,
+      `.${prefix}--file-uploads-container`
     );
     this._hasOverflow =
       !!container && container.scrollWidth > container.clientWidth;
@@ -119,7 +119,7 @@ class FileUploadsElement extends LitElement {
 
   protected firstUpdated() {
     const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
-      `.${prefix}--file-uploads-live-region`,
+      `.${prefix}--file-uploads-live-region`
     );
     this._announcer.connect(Array.from(regions));
     // Seed from the initial uploads so the already-rendered set does not
@@ -134,13 +134,13 @@ class FileUploadsElement extends LitElement {
   }
 
   protected updated(changedProperties: PropertyValues) {
-    if (changedProperties.has("uploads")) {
-      this.toggleAttribute("has-uploads", this.uploads.length > 0);
+    if (changedProperties.has('uploads')) {
+      this.toggleAttribute('has-uploads', this.uploads.length > 0);
       this._announceTransitions();
 
       this._resizeObserver.disconnect();
       const container = this.renderRoot.querySelector<HTMLElement>(
-        `.${prefix}--file-uploads-container`,
+        `.${prefix}--file-uploads-container`
       );
       if (container) {
         this._resizeObserver.observe(container);
@@ -156,7 +156,7 @@ class FileUploadsElement extends LitElement {
       uploads.map((upload) => [
         upload.id,
         { status: upload.status, isError: Boolean(upload.isError) },
-      ]),
+      ])
     );
   }
 
@@ -186,7 +186,7 @@ class FileUploadsElement extends LitElement {
 
       if (!before) {
         // New item this frame.
-        if (upload.status === "uploading") {
+        if (upload.status === 'uploading') {
           uploadingCount += 1;
         } else if (isError) {
           this._announcer.announce(this.uploadFailureLabel);
@@ -196,14 +196,14 @@ class FileUploadsElement extends LitElement {
       } else if (!before.isError && isError) {
         this._announcer.announce(this.uploadFailureLabel);
       } else if (
-        before.status === "uploading" &&
-        upload.status !== "uploading" &&
+        before.status === 'uploading' &&
+        upload.status !== 'uploading' &&
         !isError
       ) {
         this._announcer.announce(this.uploadSuccessLabel);
       } else if (
-        before.status !== "uploading" &&
-        upload.status === "uploading"
+        before.status !== 'uploading' &&
+        upload.status === 'uploading'
       ) {
         // A staged file that begins uploading. Files staged in the input area
         // start in the "edit" state and flip to "uploading" once their upload
@@ -218,7 +218,7 @@ class FileUploadsElement extends LitElement {
     }
     if (uploadingCount > 0) {
       this._announcer.announce(
-        this.getFilesUploadingText({ count: uploadingCount }),
+        this.getFilesUploadingText({ count: uploadingCount })
       );
     }
 
@@ -241,8 +241,7 @@ class FileUploadsElement extends LitElement {
         this.uploads && this.uploads.length > 0
           ? html`
               <div
-                class="${prefix}--file-uploads-gradient-wrapper${this._hasOverflow ? ` ${prefix}--file-uploads-gradient-wrapper--overflow` : ""}"
-              >
+                class="${prefix}--file-uploads-gradient-wrapper${this._hasOverflow ? ` ${prefix}--file-uploads-gradient-wrapper--overflow` : ''}">
                 <div class="${prefix}--file-uploads-container">
                   ${this.uploads.map(
                     (upload) => html`
@@ -250,9 +249,8 @@ class FileUploadsElement extends LitElement {
                         .upload="${upload}"
                         remove-file-label="${this.removeFileLabel}"
                         uploading-file-label="${this.uploadingFileLabel}"
-                        @cds-aichat-file-remove="${this._handleFileRemove}"
-                      ></cds-aichat-file-upload-item>
-                    `,
+                        @cds-aichat-file-remove="${this._handleFileRemove}"></cds-aichat-file-upload-item>
+                    `
                   )}
                 </div>
               </div>
@@ -265,7 +263,7 @@ class FileUploadsElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-file-uploads": FileUploadsElement;
+    'cds-aichat-file-uploads': FileUploadsElement;
   }
 }
 

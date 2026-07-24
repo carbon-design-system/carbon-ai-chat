@@ -5,15 +5,15 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
 
 .cds-aichat--error-icon {
   fill: theme.$support-error;
   vertical-align: middle;
 }
 
-.cds-aichat--error-icon path[data-icon-path="inner-path"] {
+.cds-aichat--error-icon path[data-icon-path='inner-path'] {
   fill: theme.$icon-on-color;
   opacity: 1;
 }

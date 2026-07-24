@@ -1,13 +1,19 @@
 # Custom message footer
 
-Render your own content beneath an assistant message — here a copy button — with the `renderCustomMessageFooter` callback.
+Render your own content beneath an assistant message — here a copy button — with
+the `renderCustomMessageFooter` callback.
 
 ## What this example shows
 
-- Attaching a `custom_footer_slot` to an assistant message from `customSendMessage`, with `additional_data` that drives the footer.
-- Rendering a footer with the `renderCustomMessageFooter` callback, which returns an `HTMLElement` for the slot.
-- A `<custom-footer-example>` Lit element that reads `additional_data` to decide whether to show the action (here, an `allow_copy` flag that enables the copy button).
-- Hosting the chat full screen with `<cds-aichat-custom-element>`, `layout.showFrame: false`, and `openChatByDefault`.
+- Attaching a `custom_footer_slot` to an assistant message from
+  `customSendMessage`, with `additional_data` that drives the footer.
+- Rendering a footer with the `renderCustomMessageFooter` callback, which
+  returns an `HTMLElement` for the slot.
+- A `<custom-footer-example>` Lit element that reads `additional_data` to decide
+  whether to show the action (here, an `allow_copy` flag that enables the copy
+  button).
+- Hosting the chat full screen with `<cds-aichat-custom-element>`,
+  `layout.showFrame: false`, and `openChatByDefault`.
 
 ## When to use this pattern
 
@@ -29,7 +35,10 @@ Render your own content beneath an assistant message — here a copy button — 
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

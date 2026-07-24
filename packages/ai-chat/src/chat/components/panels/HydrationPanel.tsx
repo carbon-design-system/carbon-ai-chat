@@ -7,13 +7,13 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import Loading from "../carbon/Loading";
-import { AnnounceOnMountComponent } from "../util/AnnounceOnMountComponent";
-import { MountChildrenOnDelay } from "../util/MountChildrenOnDelay";
-import type { AppState } from "../../../types/state/AppState";
-import { useSelector } from "../../hooks/useSelector";
+import Loading from '../carbon/Loading';
+import { AnnounceOnMountComponent } from '../util/AnnounceOnMountComponent';
+import { MountChildrenOnDelay } from '../util/MountChildrenOnDelay';
+import type { AppState } from '../../../types/state/AppState';
+import { useSelector } from '../../hooks/useSelector';
 
 interface HydrationPanelProps {
   isHydrated: boolean;
@@ -23,7 +23,7 @@ const HydrationPanel: React.FC<HydrationPanelProps> = ({ isHydrated }) => {
   // Select only the one string this panel renders, so it never re-renders for an
   // unrelated language-pack change.
   const ariaWindowLoading = useSelector(
-    (state: AppState) => state.languagePack.window_ariaWindowLoading,
+    (state: AppState) => state.languagePack.window_ariaWindowLoading
   );
   return (
     <div className="cds-aichat--hydrating-container">

@@ -25,20 +25,20 @@
  * handlers are mode-agnostic.
  */
 
-import { Editor, type Extension, type JSONContent } from "@tiptap/core";
-import DocumentNode from "@tiptap/extension-document";
-import HardBreakNode from "@tiptap/extension-hard-break";
-import ParagraphNode from "@tiptap/extension-paragraph";
-import TextNode from "@tiptap/extension-text";
+import { Editor, type Extension, type JSONContent } from '@tiptap/core';
+import DocumentNode from '@tiptap/extension-document';
+import HardBreakNode from '@tiptap/extension-hard-break';
+import ParagraphNode from '@tiptap/extension-paragraph';
+import TextNode from '@tiptap/extension-text';
 
-import { IS_PHONE } from "../../../globals/utils/browser-utils.js";
-import { setVarsForSelector } from "../../shared/dynamic-css-var-sheet.js";
+import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
+import { setVarsForSelector } from '../../shared/dynamic-css-var-sheet.js';
 import type {
   PromptLineController,
   PromptLineControllerInit,
   SetContentUpdater,
-} from "./prompt-line-controller.js";
-import { applyEditorStyles } from "./tiptap/editor-styles.js";
+} from './prompt-line-controller.js';
+import { applyEditorStyles } from './tiptap/editor-styles.js';
 import {
   carbonChatEnter,
   HISTORY_DEFAULTS,
@@ -48,18 +48,18 @@ import {
   TypingIndicator,
   UndoRedo,
   ValueSync,
-} from "./tiptap/index.js";
-import { textToDoc } from "./tiptap/json-utils.js";
-import { setHostOriginMeta } from "./tiptap/origin-meta.js";
+} from './tiptap/index.js';
+import { textToDoc } from './tiptap/json-utils.js';
+import { setHostOriginMeta } from './tiptap/origin-meta.js';
 
-const PM_KEYBOARD_FOCUS_CLASS = "cds-aichat--input-pm-content--keyboard-focus";
+const PM_KEYBOARD_FOCUS_CLASS = 'cds-aichat--input-pm-content--keyboard-focus';
 
 let keyboardFocusRuleInstalled = false;
 function ensureKeyboardFocusRule(): void {
   if (keyboardFocusRuleInstalled) {
     return;
   }
-  setVarsForSelector(`.${PM_KEYBOARD_FOCUS_CLASS}`, { outline: "revert" });
+  setVarsForSelector(`.${PM_KEYBOARD_FOCUS_CLASS}`, { outline: 'revert' });
   keyboardFocusRuleInstalled = true;
 }
 
@@ -71,8 +71,8 @@ class RichController implements PromptLineController {
   private _editor: Editor | null = null;
   private _host: HTMLElement | null = null;
   private _extensions: Extension[] = [];
-  private _placeholder = "";
-  private _testId = "";
+  private _placeholder = '';
+  private _testId = '';
   private _disabled = false;
   private _focusFromMouse = false;
 
@@ -83,19 +83,19 @@ class RichController implements PromptLineController {
     this._testId = init.testId;
     this._disabled = init.disabled;
 
-    host.setAttribute("role", "textbox");
-    host.setAttribute("aria-multiline", "true");
-    host.setAttribute("spellcheck", "true");
-    host.setAttribute("tabindex", "0");
+    host.setAttribute('role', 'textbox');
+    host.setAttribute('aria-multiline', 'true');
+    host.setAttribute('spellcheck', 'true');
+    host.setAttribute('tabindex', '0');
     if (init.ariaLabel) {
-      host.setAttribute("aria-label", init.ariaLabel);
+      host.setAttribute('aria-label', init.ariaLabel);
     }
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
-    host.addEventListener("pointerdown", this._setMouseFlag);
-    host.addEventListener("mousedown", this._setMouseFlag);
-    host.addEventListener("touchstart", this._setMouseFlag);
+    host.addEventListener('pointerdown', this._setMouseFlag);
+    host.addEventListener('mousedown', this._setMouseFlag);
+    host.addEventListener('touchstart', this._setMouseFlag);
 
     ensureKeyboardFocusRule();
 
@@ -112,9 +112,9 @@ class RichController implements PromptLineController {
   destroy(): void {
     const host = this._host;
     if (host) {
-      host.removeEventListener("pointerdown", this._setMouseFlag);
-      host.removeEventListener("mousedown", this._setMouseFlag);
-      host.removeEventListener("touchstart", this._setMouseFlag);
+      host.removeEventListener('pointerdown', this._setMouseFlag);
+      host.removeEventListener('mousedown', this._setMouseFlag);
+      host.removeEventListener('touchstart', this._setMouseFlag);
     }
     this._editor?.destroy();
     this._editor = null;
@@ -122,7 +122,7 @@ class RichController implements PromptLineController {
   }
 
   getValue(): string {
-    return this._editor?.getText() ?? "";
+    return this._editor?.getText() ?? '';
   }
 
   setContent(next: JSONContent | string | SetContentUpdater): void {
@@ -130,7 +130,7 @@ class RichController implements PromptLineController {
     if (!editor) {
       return;
     }
-    if (typeof next === "function") {
+    if (typeof next === 'function') {
       const prev = editor.getJSON();
       this._dispatchSetContent((next as SetContentUpdater)(prev));
       return;
@@ -140,13 +140,13 @@ class RichController implements PromptLineController {
 
   insertContent(
     content: JSONContent | string,
-    opts: { at?: number } = {},
+    opts: { at?: number } = {}
   ): void {
     const editor = this._editor;
     if (!editor) {
       return;
     }
-    if (typeof opts.at === "number") {
+    if (typeof opts.at === 'number') {
       editor.commands.insertContentAt(opts.at, content);
       return;
     }
@@ -219,9 +219,9 @@ class RichController implements PromptLineController {
       return;
     }
     if (ariaLabel) {
-      this._host.setAttribute("aria-label", ariaLabel);
+      this._host.setAttribute('aria-label', ariaLabel);
     } else {
-      this._host.removeAttribute("aria-label");
+      this._host.removeAttribute('aria-label');
     }
   }
 
@@ -253,7 +253,7 @@ class RichController implements PromptLineController {
 
   private _createEditor(
     element: HTMLElement,
-    content: JSONContent | string | undefined,
+    content: JSONContent | string | undefined
   ): Editor {
     const baseExtensions: Extension[] = [
       DocumentNode as unknown as Extension,
@@ -281,22 +281,22 @@ class RichController implements PromptLineController {
   }
 
   private _wireEditorEvents(editor: Editor): void {
-    editor.on("focus", () => {
+    editor.on('focus', () => {
       const wasMouseFocus = this._focusFromMouse;
       this._focusFromMouse = false;
       if (!wasMouseFocus) {
         editor.view.dom.classList.add(PM_KEYBOARD_FOCUS_CLASS);
       }
-      this._dispatch("cds-aichat-prompt-focus", { keyboard: !wasMouseFocus });
+      this._dispatch('cds-aichat-prompt-focus', { keyboard: !wasMouseFocus });
     });
-    editor.on("blur", () => {
+    editor.on('blur', () => {
       editor.view.dom.classList.remove(PM_KEYBOARD_FOCUS_CLASS);
-      this._dispatch("cds-aichat-prompt-blur");
+      this._dispatch('cds-aichat-prompt-blur');
     });
     // Forward keydown for hosts wanting raw-key access. ValueSync /
     // TypingIndicator emit their own events; don't re-dispatch update here.
-    editor.view.dom.addEventListener("keydown", (event) => {
-      this._dispatch("cds-aichat-prompt-keydown", { originalEvent: event });
+    editor.view.dom.addEventListener('keydown', (event) => {
+      this._dispatch('cds-aichat-prompt-keydown', { originalEvent: event });
     });
   }
 
@@ -357,15 +357,15 @@ class RichController implements PromptLineController {
       return;
     }
     if (this._testId) {
-      editorDom.setAttribute("data-testid", this._testId);
+      editorDom.setAttribute('data-testid', this._testId);
     } else {
-      editorDom.removeAttribute("data-testid");
+      editorDom.removeAttribute('data-testid');
     }
   }
 
   private _dispatch(name: string, detail?: unknown): void {
     this._host?.dispatchEvent(
-      new CustomEvent(name, { detail, bubbles: true, composed: true }),
+      new CustomEvent(name, { detail, bubbles: true, composed: true })
     );
   }
 }

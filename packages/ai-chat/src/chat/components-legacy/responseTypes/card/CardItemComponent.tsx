@@ -7,24 +7,24 @@
  *  @license
  */
 
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import cx from "classnames";
-import React from "react";
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import cx from 'classnames';
+import React from 'react';
 
-import { useSelector } from "../../../hooks/useSelector";
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import { selectInputState } from "../../../store/selectors";
-import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { THROW_ERROR } from "../../../utils/constants";
-import { BodyMessageComponents } from "../../../components/BodyMessageComponents";
-import { FooterButtonComponents } from "../../../components/FooterButtonComponents";
+import { useSelector } from '../../../hooks/useSelector';
+import { useServiceManager } from '../../../hooks/useServiceManager';
+import { selectInputState } from '../../../store/selectors';
+import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { THROW_ERROR } from '../../../utils/constants';
+import { BodyMessageComponents } from '../../../components/BodyMessageComponents';
+import { FooterButtonComponents } from '../../../components/FooterButtonComponents';
 import {
   CardItem,
   MessageResponse,
   WidthOptions,
-} from "../../../../types/messaging/Messages";
-import { MessageTypeComponentProps } from "../../../../types/messaging/MessageTypeComponentProps";
+} from '../../../../types/messaging/Messages';
+import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
 
 interface CardItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem;
@@ -65,15 +65,14 @@ function CardItemComponent(props: CardItemComponentProps) {
 
   return (
     <Card
-      className={cx("cds-aichat--card-message-component", {
-        "cds-aichat--max-width-small":
+      className={cx('cds-aichat--card-message-component', {
+        'cds-aichat--max-width-small':
           !ignoreMaxWidth && item.max_width === WidthOptions.SMALL,
-        "cds-aichat--max-width-medium":
+        'cds-aichat--max-width-medium':
           !ignoreMaxWidth && item.max_width === WidthOptions.MEDIUM,
-        "cds-aichat--max-width-large":
+        'cds-aichat--max-width-large':
           !ignoreMaxWidth && item.max_width === WidthOptions.LARGE,
-      })}
-    >
+      })}>
       <div slot="body">
         <BodyMessageComponents
           message={localMessageItem}

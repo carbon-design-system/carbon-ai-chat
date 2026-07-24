@@ -7,10 +7,10 @@
  *  @license
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/layout";
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/layout';
 
 $block-class: #{$prefix}-toolbar;
 
@@ -85,13 +85,13 @@ $block-class: #{$prefix}-toolbar;
     min-inline-size: 0;
   }
 
-  ::slotted([slot="navigation"]) {
+  ::slotted([slot='navigation']) {
     display: flex;
     align-items: center;
     margin-block: auto;
   }
 
-  ::slotted([slot="decorator"]) {
+  ::slotted([slot='decorator']) {
     display: flex;
     align-items: center;
     justify-content: center;

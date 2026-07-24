@@ -7,14 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, type PropertyValues, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
+import { css, html, LitElement, type PropertyValues, unsafeCSS } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
 
-import styles from "./prompt-line-shell.scss?lit";
+import styles from './prompt-line-shell.scss?lit';
 
 /**
  * Layout-only composer chrome for the chat input. The shell defines five
@@ -55,7 +55,7 @@ class PromptLineShellElement extends LitElement {
   expanded = false;
 
   /** Whether the prompt line is in an error state */
-  @property({ type: Boolean, reflect: true, attribute: "has-error" })
+  @property({ type: Boolean, reflect: true, attribute: 'has-error' })
   hasError = false;
 
   /** Whether the prompt-line shell is disabled. */
@@ -77,24 +77,24 @@ class PromptLineShellElement extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener(
-      "cds-aichat-prompt-focus",
-      this._handlePromptFocus as EventListener,
+      'cds-aichat-prompt-focus',
+      this._handlePromptFocus as EventListener
     );
     this.addEventListener(
-      "cds-aichat-prompt-blur",
-      this._handlePromptBlur as EventListener,
+      'cds-aichat-prompt-blur',
+      this._handlePromptBlur as EventListener
     );
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener(
-      "cds-aichat-prompt-focus",
-      this._handlePromptFocus as EventListener,
+      'cds-aichat-prompt-focus',
+      this._handlePromptFocus as EventListener
     );
     this.removeEventListener(
-      "cds-aichat-prompt-blur",
-      this._handlePromptBlur as EventListener,
+      'cds-aichat-prompt-blur',
+      this._handlePromptBlur as EventListener
     );
     this._fileUploadsObserver?.disconnect();
   }
@@ -144,8 +144,7 @@ class PromptLineShellElement extends LitElement {
     const messageActionsContent = html`
       <slot
         name="message-actions"
-        @slotchange=${this._handleMessageActionsSlotChange}
-      ></slot>
+        @slotchange=${this._handleMessageActionsSlotChange}></slot>
     `;
 
     return html`
@@ -154,8 +153,7 @@ class PromptLineShellElement extends LitElement {
           <div class=${classMap(uploadsRowClasses)}>
             <slot
               name="file-uploads"
-              @slotchange=${this._handleFileUploadsSlotChange}
-            ></slot>
+              @slotchange=${this._handleFileUploadsSlotChange}></slot>
             <slot name="autocomplete-content"></slot>
           </div>
           <div class="${prefix}--field-messaging-container">
@@ -198,18 +196,18 @@ class PromptLineShellElement extends LitElement {
     // slotchange event).
     this._fileUploadsObserver?.disconnect();
     const slot = this.renderRoot?.querySelector(
-      `slot[name="file-uploads"]`,
+      `slot[name="file-uploads"]`
     ) as HTMLSlotElement | null;
     const el = slot?.assignedElements()[0];
     if (el) {
       if (!this._fileUploadsObserver) {
         this._fileUploadsObserver = new MutationObserver(() =>
-          this.requestUpdate(),
+          this.requestUpdate()
         );
       }
       this._fileUploadsObserver.observe(el, {
         attributes: true,
-        attributeFilter: ["has-uploads"],
+        attributeFilter: ['has-uploads'],
       });
     }
     this.requestUpdate();
@@ -224,31 +222,31 @@ class PromptLineShellElement extends LitElement {
    */
   private _updateHasMessageActions(): void {
     const slot = this.renderRoot?.querySelector(
-      `slot[name="message-actions"]`,
+      `slot[name="message-actions"]`
     ) as HTMLSlotElement | null;
     this._hasMessageActions = slot
       ? slot
           .assignedElements()
-          .some((element) => !element.hasAttribute("data-prompt-line-slot"))
+          .some((element) => !element.hasAttribute('data-prompt-line-slot'))
       : false;
   }
 
   private _updateHasFileUploads(): void {
     const slot = this.renderRoot?.querySelector(
-      `slot[name="file-uploads"]`,
+      `slot[name="file-uploads"]`
     ) as HTMLSlotElement | null;
 
     this._hasFileUploads = slot
-      ? slot.assignedElements().some((el) => el.hasAttribute("has-uploads"))
+      ? slot.assignedElements().some((el) => el.hasAttribute('has-uploads'))
       : false;
 
-    this.toggleAttribute("has-file-uploads", this._hasFileUploads);
+    this.toggleAttribute('has-file-uploads', this._hasFileUploads);
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-prompt-line-shell": PromptLineShellElement;
+    'cds-aichat-prompt-line-shell': PromptLineShellElement;
   }
 }
 

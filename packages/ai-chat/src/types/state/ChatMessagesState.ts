@@ -7,9 +7,9 @@
  *  @license
  */
 
-import type { LocalMessageItem } from "../messaging/LocalMessageItem";
-import ObjectMap from "../utilities/ObjectMap";
-import type { Message } from "../messaging/Messages";
+import type { LocalMessageItem } from '../messaging/LocalMessageItem';
+import ObjectMap from '../utilities/ObjectMap';
+import type { Message } from '../messaging/Messages';
 
 /**
  * The state information for a specific instance of a chat panel that contains a list of messages.

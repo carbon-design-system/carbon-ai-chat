@@ -7,19 +7,19 @@
  *  @license
  */
 
-import React, { Suspense } from "react";
-import { useSelector } from "../../hooks/useSelector";
+import React, { Suspense } from 'react';
+import { useSelector } from '../../hooks/useSelector';
 
-import { AppState } from "../../../types/state/AppState";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../types/messaging/LocalMessageItem";
+import { AppState } from '../../../types/state/AppState';
+import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 
-import { SkeletonPlaceholder } from "../util/SkeletonPicker";
-import { CardItemComponent } from "./CardItemComponent";
+import { SkeletonPlaceholder } from '../util/SkeletonPicker';
+import { CardItemComponent } from './CardItemComponent';
 import {
   CarouselItem,
   MessageResponse,
-} from "../../../types/messaging/Messages";
+} from '../../../types/messaging/Messages';
 
 interface CarouselItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<CarouselItem>;
@@ -45,7 +45,7 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
     renderMessageComponent,
   } = props;
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID,
+    (state: AppState) => state.allMessageItemsByID
   );
   const { itemsLocalMessageItemIDs } = localMessageItem.ui_state;
 

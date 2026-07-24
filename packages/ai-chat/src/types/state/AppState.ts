@@ -11,55 +11,55 @@
 // All 73 files that `import { X } from "./types/state/AppState"` resolve here
 // without any changes to those files.
 
-export type { AppStateMessages, ChatMessagesState } from "./ChatMessagesState";
+export type { AppStateMessages, ChatMessagesState } from './ChatMessagesState';
 export type {
   InputState,
   StopStreamingButtonState,
   PendingUpload,
-} from "./InputState";
-export { PendingUploadStatus } from "./InputState"; // enum (runtime value)
+} from './InputState';
+export { PendingUploadStatus } from './InputState'; // enum (runtime value)
 export type {
   HumanAgentState,
   HumanAgentDisplayState,
-} from "./HumanAgentState";
-export type { ThemeState } from "./ThemeState";
-export type { PersistedState } from "./PersistedState"; // public — @category Instance
-export type { AnnounceMessage } from "./AnnounceMessage";
-export { ChatWidthBreakpoint } from "./ChatWidthBreakpoint"; // enum (runtime value)
-export type { IFramePanelState } from "./panels/IFramePanelState";
-export type { ViewSourcePanelState } from "./panels/ViewSourcePanelState";
-export type { CustomPanelState } from "./panels/CustomPanelState";
-export type { WorkspacePanelState } from "./panels/WorkspacePanelState";
-export type { HistoryPanelState } from "./panels/HistoryPanelState";
-export type { MessagePanelState } from "./panels/MessagePanelState";
-export type { CatastrophicErrorPanelState } from "./panels/CatastrophicErrorPanelState"; // public — @category Instance
+} from './HumanAgentState';
+export type { ThemeState } from './ThemeState';
+export type { PersistedState } from './PersistedState'; // public — @category Instance
+export type { AnnounceMessage } from './AnnounceMessage';
+export { ChatWidthBreakpoint } from './ChatWidthBreakpoint'; // enum (runtime value)
+export type { IFramePanelState } from './panels/IFramePanelState';
+export type { ViewSourcePanelState } from './panels/ViewSourcePanelState';
+export type { CustomPanelState } from './panels/CustomPanelState';
+export type { WorkspacePanelState } from './panels/WorkspacePanelState';
+export type { HistoryPanelState } from './panels/HistoryPanelState';
+export type { MessagePanelState } from './panels/MessagePanelState';
+export type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState'; // public — @category Instance
 
 // Pass-throughs that real code imports via state/AppState — kept verbatim:
-export type { ViewState, CustomPanelConfigOptions } from "../instance/apiTypes";
+export type { ViewState, CustomPanelConfigOptions } from '../instance/apiTypes';
 export {
   ViewType,
   DefaultCustomPanelConfigOptions,
-} from "../instance/apiTypes"; // enums (runtime values)
-export type { FileUpload } from "../config/ServiceDeskConfig";
+} from '../instance/apiTypes'; // enums (runtime values)
+export type { FileUpload } from '../config/ServiceDeskConfig';
 
 // ─── Local imports (used only for the interfaces defined below) ──────────────
-import type { AppConfig } from "./AppConfig";
-import type { MarkdownConfig } from "../config/MarkdownConfig";
-import { LanguagePack } from "../config/LanguagePack";
-import type { InputState } from "./InputState";
-import type { HumanAgentState } from "./HumanAgentState";
-import type { PersistedState } from "./PersistedState";
-import type { AnnounceMessage } from "./AnnounceMessage";
-import { ChatWidthBreakpoint } from "./ChatWidthBreakpoint";
-import type { AppStateMessages } from "./ChatMessagesState";
-import type { ViewState } from "../instance/apiTypes";
-import type { CatastrophicErrorPanelState } from "./panels/CatastrophicErrorPanelState";
-import type { IFramePanelState } from "./panels/IFramePanelState";
-import type { ViewSourcePanelState } from "./panels/ViewSourcePanelState";
-import type { CustomPanelState } from "./panels/CustomPanelState";
-import type { WorkspacePanelState } from "./panels/WorkspacePanelState";
-import type { HistoryPanelState } from "./panels/HistoryPanelState";
-import type { MessagePanelState } from "./panels/MessagePanelState";
+import type { AppConfig } from './AppConfig';
+import type { MarkdownConfig } from '../config/MarkdownConfig';
+import { LanguagePack } from '../config/LanguagePack';
+import type { InputState } from './InputState';
+import type { HumanAgentState } from './HumanAgentState';
+import type { PersistedState } from './PersistedState';
+import type { AnnounceMessage } from './AnnounceMessage';
+import { ChatWidthBreakpoint } from './ChatWidthBreakpoint';
+import type { AppStateMessages } from './ChatMessagesState';
+import type { ViewState } from '../instance/apiTypes';
+import type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState';
+import type { IFramePanelState } from './panels/IFramePanelState';
+import type { ViewSourcePanelState } from './panels/ViewSourcePanelState';
+import type { CustomPanelState } from './panels/CustomPanelState';
+import type { WorkspacePanelState } from './panels/WorkspacePanelState';
+import type { HistoryPanelState } from './panels/HistoryPanelState';
+import type { MessagePanelState } from './panels/MessagePanelState';
 
 // ─── AppStatePanels ──────────────────────────────────────────────────────────
 

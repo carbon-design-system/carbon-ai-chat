@@ -1,20 +1,31 @@
 # Basic / Custom element sidebar (narrow)
 
-Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px side panel — below the 360px default — so the chat renders in its compact responsive layout.
+Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px
+side panel — below the 360px default — so the chat renders in its compact
+responsive layout.
 
 ## What this example shows
 
-- Overriding the `--cds-aichat-sidebar-width` custom property to `320px` so the panel sits below the `360px` default and the chat switches to its compact responsive layout.
-- Importing `@carbon/ai-chat/css/chat-sidebar-layout.css` to reuse the library's sidebar classes (`cds-aichat-sidebar`, `--closing`, `--closed`).
-- Mounting `<cds-aichat-custom-element>` inside a host element positioned as a fixed sidebar by those classes.
-- Toggling the chat open and closed from a host header button via `ChatInstance.changeView`.
-- Driving the slide-in and slide-out animation with the `VIEW_CHANGE` and `VIEW_PRE_CHANGE` bus events so the chat only unmounts after the CSS transition completes.
+- Overriding the `--cds-aichat-sidebar-width` custom property to `320px` so the
+  panel sits below the `360px` default and the chat switches to its compact
+  responsive layout.
+- Importing `@carbon/ai-chat/css/chat-sidebar-layout.css` to reuse the library's
+  sidebar classes (`cds-aichat-sidebar`, `--closing`, `--closed`).
+- Mounting `<cds-aichat-custom-element>` inside a host element positioned as a
+  fixed sidebar by those classes.
+- Toggling the chat open and closed from a host header button via
+  `ChatInstance.changeView`.
+- Driving the slide-in and slide-out animation with the `VIEW_CHANGE` and
+  `VIEW_PRE_CHANGE` bus events so the chat only unmounts after the CSS
+  transition completes.
 
 ## When to use this pattern
 
-- You want the chat docked as a side panel but have less than 360px of horizontal space to give it.
+- You want the chat docked as a side panel but have less than 360px of
+  horizontal space to give it.
 - You want to check the chat's compact, narrow-viewport rendering.
-- You need host UI (a header, a toggle button) to control when the chat is visible.
+- You need host UI (a header, a toggle button) to control when the chat is
+  visible.
 
 ## APIs and props demonstrated
 
@@ -34,7 +45,10 @@ Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px 
 
 ## Run it
 
-**Prerequisite — build the core packages first.** Examples consume the built output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step the dev server will fail with missing-module errors. Rebuild whenever you change anything under `packages/`.
+**Prerequisite — build the core packages first.** Examples consume the built
+output of `@carbon/ai-chat-components` and `@carbon/ai-chat`; without this step
+the dev server will fail with missing-module errors. Rebuild whenever you change
+anything under `packages/`.
 
 From the repository root:
 

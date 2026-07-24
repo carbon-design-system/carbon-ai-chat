@@ -7,12 +7,12 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/tooltip/index.js";
+import '@carbon/web-components/es/components/tooltip/index.js';
 
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-@customElement("writeable-element-example")
+@customElement('writeable-element-example')
 class WriteableElementExample extends LitElement {
   static styles = css`
     /* Block host + flex tooltip so the swatch's slot content is exactly the
@@ -57,15 +57,15 @@ class WriteableElementExample extends LitElement {
   `;
 
   @property({ type: String })
-  accessor location: string = "";
+  accessor location: string = '';
 
   @property({ type: String })
-  accessor valueFromParent: string = "";
+  accessor valueFromParent: string = '';
 
   render() {
-    let classNames = "external";
-    if (this.location === "aiTooltipAfterDescriptionElement") {
-      classNames += " writeable-element-external--not-rounded";
+    let classNames = 'external';
+    if (this.location === 'aiTooltipAfterDescriptionElement') {
+      classNames += ' writeable-element-external--not-rounded';
     }
 
     // The header fixed actions and in-composer prompt-line slots sit inside tight
@@ -74,27 +74,26 @@ class WriteableElementExample extends LitElement {
     // 32px input controls; the header uses smaller (24px) icons, so its swatch is
     // 24px.
     if (
-      this.location === "headerFixedActionsElement" ||
-      this.location === "promptLineActionsEnd" ||
-      this.location === "promptLineSendButtonStart"
+      this.location === 'headerFixedActionsElement' ||
+      this.location === 'promptLineActionsEnd' ||
+      this.location === 'promptLineSendButtonStart'
     ) {
-      const isHeader = this.location === "headerFixedActionsElement";
+      const isHeader = this.location === 'headerFixedActionsElement';
       const swatchClass = isHeader
-        ? "external--swatch external--swatch-header"
-        : "external--swatch";
+        ? 'external--swatch external--swatch-header'
+        : 'external--swatch';
       // The header swatch sits at the top of the chat, so prefer pointing its
       // tooltip down into the chat body; the prompt-line swatches sit at the
       // bottom, so they prefer pointing up into the message area. `autoalign`
       // (floating-ui) then flips/shifts from that preferred side to stay inside
       // the viewport — needed for the sidebar/float layouts and RTL, where a
       // fixed side would clip against the chat or page edge.
-      const align = isHeader ? "bottom" : "top";
+      const align = isHeader ? 'bottom' : 'top';
       return html`<cds-tooltip align="${align}" autoalign>
         <button
           type="button"
           class="${swatchClass}"
-          aria-label=${this.location}
-        ></button>
+          aria-label=${this.location}></button>
         <cds-tooltip-content>${this.location}</cds-tooltip-content>
       </cds-tooltip>`;
     }

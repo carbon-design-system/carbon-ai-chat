@@ -7,16 +7,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./transcript.scss?lit";
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
-import "../../../components/markdown/index.js";
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './transcript.scss?lit';
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
+import ChevronUp16 from '@carbon/icons/es/chevron--up/16.js';
+import '../../../components/markdown/index.js';
 
 /**
  * Transcript component for displaying text transcripts for audio/video content.
@@ -33,31 +33,31 @@ class Transcript extends LitElement {
    * The transcript text (supports markdown)
    */
   @property({ type: String })
-  text = "";
+  text = '';
 
   /**
    * Optional label for the transcript (defaults to "Transcript")
    */
   @property({ type: String })
-  label = "Transcript";
+  label = 'Transcript';
 
   /**
    * Optional language code
    */
   @property({ type: String })
-  language = "";
+  language = '';
 
   /**
    * Label for showing transcript
    */
-  @property({ type: String, attribute: "show-label" })
-  showLabel = "Show";
+  @property({ type: String, attribute: 'show-label' })
+  showLabel = 'Show';
 
   /**
    * Label for hiding transcript
    */
-  @property({ type: String, attribute: "hide-label" })
-  hideLabel = "Hide";
+  @property({ type: String, attribute: 'hide-label' })
+  hideLabel = 'Hide';
 
   /**
    * Controlled expanded status
@@ -76,11 +76,11 @@ class Transcript extends LitElement {
    */
   private handleToggle(): void {
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-transcript-toggle", {
+      new CustomEvent('cds-aichat-transcript-toggle', {
         bubbles: true,
         composed: true,
         detail: { expanded: !this.expanded },
-      }),
+      })
     );
   }
 
@@ -101,8 +101,7 @@ class Transcript extends LitElement {
           aria-expanded="${this.expanded}"
           aria-controls="${this.contentId}"
           aria-label="${toggleLabel}"
-          type="button"
-        >
+          type="button">
           <span class="${prefix}--transcript__toggle-label" aria-hidden="true">
             ${displayLabel}
             ${
@@ -110,7 +109,7 @@ class Transcript extends LitElement {
                 ? html`<span class="${prefix}--transcript__language">
                     (${this.language})
                   </span>`
-                : ""
+                : ''
             }
           </span>
           ${iconLoader(icon)}
@@ -122,15 +121,13 @@ class Transcript extends LitElement {
                   id="${this.contentId}"
                   class="${prefix}--transcript__content"
                   role="region"
-                  aria-label="${displayLabel}"
-                >
+                  aria-label="${displayLabel}">
                   <cds-aichat-markdown
                     markdown=${this.text}
-                    sanitize-html
-                  ></cds-aichat-markdown>
+                    sanitize-html></cds-aichat-markdown>
                 </div>
               `
-            : ""
+            : ''
         }
       </div>
     `;

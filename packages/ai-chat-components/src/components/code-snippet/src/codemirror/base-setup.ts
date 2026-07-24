@@ -7,24 +7,24 @@
  * @license
  */
 
-import { lineNumbers, drawSelection, keymap } from "@codemirror/view";
+import { lineNumbers, drawSelection, keymap } from '@codemirror/view';
 import {
   foldGutter,
   indentOnInput,
   syntaxHighlighting,
   defaultHighlightStyle,
   foldKeymap,
-} from "@codemirror/language";
-import { defaultKeymap } from "@codemirror/commands";
-import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
-import { lintKeymap } from "@codemirror/lint";
-import { Extension } from "@codemirror/state";
+} from '@codemirror/language';
+import { defaultKeymap } from '@codemirror/commands';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+import { lintKeymap } from '@codemirror/lint';
+import { Extension } from '@codemirror/state';
 import {
   createCarbonFoldMarker,
   carbonFoldMarkerKeyHandler,
-} from "./marker-utils.js";
-import { createCarbonHighlightStyle } from "./theme.js";
-import { createDiffDecorator } from "./diff-decorator.js";
+} from './marker-utils.js';
+import { createCarbonHighlightStyle } from './theme.js';
+import { createDiffDecorator } from './diff-decorator.js';
 
 export interface BaseCodeMirrorSetupOptions {
   foldCollapseLabel?: string;
@@ -45,11 +45,11 @@ export interface BaseCodeMirrorSetupOptions {
  * can render a leaner surface for short, static snippets.
  */
 export function baseCodeMirrorSetup(
-  options: BaseCodeMirrorSetupOptions = {},
+  options: BaseCodeMirrorSetupOptions = {}
 ): Extension {
   const {
-    foldCollapseLabel = "Collapse code block",
-    foldExpandLabel = "Expand code block",
+    foldCollapseLabel = 'Collapse code block',
+    foldExpandLabel = 'Expand code block',
     enableDiffDecorator = false,
     hideLineNumbers = false,
     hideFold = false,

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 interface UseResizeObserverProps {
   containerRef: React.RefObject<HTMLElement | null>;

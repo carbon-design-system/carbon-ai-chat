@@ -27,13 +27,13 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT =
-  "Welcome! Every reply in this example includes a custom footer — the copy button beneath this message. Send anything to see another.";
+  'Welcome! Every reply in this example includes a custom footer — the copy button beneath this message. Send anything to see another.';
 
 const REPLY_TEXT =
-  "Here is a reply with a custom footer. Use the copy button to copy this text.";
+  'Here is a reply with a custom footer. Use the copy button to copy this text.';
 
 // Each footer needs its own `slot_name`. A slot name uniquely identifies a single footer
 // instance, so every message must use a different value — reusing one name across messages
@@ -64,11 +64,11 @@ function textWithFooter(text: string) {
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // The chat sends one empty-input turn when it opens; greet the user with a
   // footer already attached so the buttons are visible from first paint.
-  const text = request.input.text === "" ? WELCOME_TEXT : REPLY_TEXT;
+  const text = request.input.text === '' ? WELCOME_TEXT : REPLY_TEXT;
   instance.messaging.addMessage({
     output: {
       generic: [textWithFooter(text)],

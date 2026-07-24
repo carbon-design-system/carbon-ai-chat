@@ -15,38 +15,38 @@
  * newly-added config field cannot be silently dropped or leaked onto the host.
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
 
-import { ChatCustomElement } from "../../../src/react/ChatCustomElement";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { enLanguagePack } from "../../../src/types/config/LanguagePack";
+import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { enLanguagePack } from '../../../src/types/config/LanguagePack';
 
-describe("ChatCustomElement prop forwarding", () => {
+describe('ChatCustomElement prop forwarding', () => {
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
     jest.clearAllMocks();
   });
 
-  it("forwards flattened config to the chat and DOM attributes to the wrapper element", async () => {
+  it('forwards flattened config to the chat and DOM attributes to the wrapper element', async () => {
     let capturedInstance: any = null;
 
     render(
       React.createElement(ChatCustomElement, {
         ...createBaseTestProps(),
-        className: "my-custom-chat",
-        id: "custom-chat-id",
+        className: 'my-custom-chat',
+        id: 'custom-chat-id',
         // Flattened PublicConfig fields — must reach the chat through the inner
         // ChatContainer's shared reconstruction.
-        namespace: "custom-ns",
-        strings: { input_placeholder: "Custom element placeholder" },
+        namespace: 'custom-ns',
+        strings: { input_placeholder: 'Custom element placeholder' },
         // An arbitrary DOM attribute — must stay on the wrapper element.
-        "aria-label": "custom chat region",
+        'aria-label': 'custom chat region',
         onBeforeRender: (instance: any) => {
           capturedInstance = instance;
         },
-      }),
+      })
     );
 
     await waitFor(() => expect(capturedInstance).not.toBeNull(), {
@@ -55,21 +55,21 @@ describe("ChatCustomElement prop forwarding", () => {
 
     const state: AppState = capturedInstance.serviceManager.store.getState();
     // Flattened config fields reached the chat.
-    expect(state.config.public.namespace).toBe("custom-ns");
+    expect(state.config.public.namespace).toBe('custom-ns');
     expect(state.languagePack.input_placeholder).toBe(
-      "Custom element placeholder",
+      'Custom element placeholder'
     );
     // An unspecified string keeps its default (config folded, not replaced).
     expect(state.languagePack.launcher_isOpen).toBe(
-      enLanguagePack.launcher_isOpen,
+      enLanguagePack.launcher_isOpen
     );
 
     // className, id, and the arbitrary DOM attribute landed on the wrapper
     // element — not swallowed into config, not pushed onto the inner host.
     const wrapper = document.querySelector('[aria-label="custom chat region"]');
     expect(wrapper).not.toBeNull();
-    expect(wrapper?.tagName).toBe("DIV");
-    expect(wrapper?.classList.contains("my-custom-chat")).toBe(true);
-    expect(wrapper?.id).toBe("custom-chat-id");
+    expect(wrapper?.tagName).toBe('DIV');
+    expect(wrapper?.classList.contains('my-custom-chat')).toBe(true);
+    expect(wrapper?.id).toBe('custom-chat-id');
   });
 });

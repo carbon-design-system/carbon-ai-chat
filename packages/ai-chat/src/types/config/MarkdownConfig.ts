@@ -7,16 +7,16 @@
  *  @license
  */
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 import type {
   MarkdownRendererChecklist,
   MarkdownRendererImageArgs,
   MarkdownRendererImageResult,
   MarkdownRendererLinkArgs,
   MarkdownRendererLinkResult,
-} from "@carbon/ai-chat-components/es/components/markdown/index.js";
+} from '@carbon/ai-chat-components/es/components/markdown/index.js';
 
-import type { MarkdownItPlugin } from "./PublicConfig";
+import type { MarkdownItPlugin } from './PublicConfig';
 
 /**
  * Resolved markdown config consumed by `MarkdownWithDefaults`. The element
@@ -38,10 +38,10 @@ export interface MarkdownConfig {
     table?: (args: unknown) => ReactNode | HTMLElement | null;
     codeBlock?: (args: unknown) => ReactNode | HTMLElement | null;
     link?: (
-      args: MarkdownRendererLinkArgs,
+      args: MarkdownRendererLinkArgs
     ) => MarkdownRendererLinkResult | null;
     image?: (
-      args: MarkdownRendererImageArgs,
+      args: MarkdownRendererImageArgs
     ) => MarkdownRendererImageResult | null;
     checklist?: MarkdownRendererChecklist;
   };

@@ -7,14 +7,14 @@
  *  @license
  */
 
-import Button, { BUTTON_KIND } from "../carbon/Button";
-import FocusTrap from "focus-trap-react";
-import React, { Component, createRef, KeyboardEvent, RefObject } from "react";
-import type CarbonButtonElement from "@carbon/web-components/es/components/button/button.js";
+import Button, { BUTTON_KIND } from '../carbon/Button';
+import FocusTrap from 'focus-trap-react';
+import React, { Component, createRef, KeyboardEvent, RefObject } from 'react';
+import type CarbonButtonElement from '@carbon/web-components/es/components/button/button.js';
 
-import { ModalPortal } from "./ModalPortal";
-import { HasServiceManager } from "../../hocs/withServiceManager";
-import { AriaLiveMessage } from "../aria/AriaLiveMessage";
+import { ModalPortal } from './ModalPortal';
+import { HasServiceManager } from '../../hocs/withServiceManager';
+import { AriaLiveMessage } from '../aria/AriaLiveMessage';
 
 /**
  * This component is a panel that is display in the messages list when the user clicks the "end chat" button that is
@@ -90,7 +90,7 @@ class ConfirmModal extends Component<
    * A keyboard listener added to both buttons that will close the panel if the user presses escape.
    */
   private onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       this.props.onCancel();
     }
   };
@@ -102,7 +102,7 @@ class ConfirmModal extends Component<
     this.noButtonRef = createRef<CarbonButtonElement>();
   }
   componentDidMount(): void {
-    customElements.whenDefined("cds-button").then(() => {
+    customElements.whenDefined('cds-button').then(() => {
       this.setState({ focusTrapActive: true });
       const timer = setTimeout(() => {
         try {
@@ -110,7 +110,7 @@ class ConfirmModal extends Component<
           if (this.noButtonRef.current) {
             const innerButton =
               this.noButtonRef.current.shadowRoot?.querySelector(
-                "button",
+                'button'
               ) as HTMLElement;
             if (innerButton && innerButton.offsetParent !== null) {
               innerButton.focus();
@@ -119,19 +119,19 @@ class ConfirmModal extends Component<
           }
 
           // Fallback to DOM traversal if ref doesn't work
-          const aiChat = document.querySelector("cds-aichat-react");
-          const layer = aiChat?.shadowRoot?.querySelector("cds-layer");
+          const aiChat = document.querySelector('cds-aichat-react');
+          const layer = aiChat?.shadowRoot?.querySelector('cds-layer');
           const buttonNo = layer?.querySelector(
-            ".cds-aichat--confirm-modal__no-button",
+            '.cds-aichat--confirm-modal__no-button'
           );
           const innerButton = buttonNo?.shadowRoot?.querySelector(
-            "button",
+            'button'
           ) as HTMLElement;
           if (innerButton && innerButton.offsetParent !== null) {
             innerButton.focus();
           }
         } catch (error) {
-          console.warn("Manual focus failed:", error);
+          console.warn('Manual focus failed:', error);
         }
       }, 100);
 
@@ -158,26 +158,22 @@ class ConfirmModal extends Component<
             tabbableOptions: {
               getShadowRoot: true,
             },
-          }}
-        >
+          }}>
           <div
             className="cds-aichat--confirm-modal"
             role="dialog"
             aria-labelledby={`cds-aichat--confirm-modal__title${serviceManager.namespace.suffix}`}
-            aria-describedby={`cds-aichat--confirm-modal__message${serviceManager.namespace.suffix}`}
-          >
+            aria-describedby={`cds-aichat--confirm-modal__message${serviceManager.namespace.suffix}`}>
             <div className="cds-aichat--confirm-modal__container">
               <AriaLiveMessage message={modalAnnounceMessage} />
               <div
                 className="cds-aichat--confirm-modal__title"
-                id={`cds-aichat--confirm-modal__title${serviceManager.namespace.suffix}`}
-              >
+                id={`cds-aichat--confirm-modal__title${serviceManager.namespace.suffix}`}>
                 {title}
               </div>
               <div
                 className="cds-aichat--confirm-modal__message"
-                id={`cds-aichat--confirm-modal__message${serviceManager.namespace.suffix}`}
-              >
+                id={`cds-aichat--confirm-modal__message${serviceManager.namespace.suffix}`}>
                 {message}
               </div>
               <div className="cds-aichat--confirm-modal__button-container">
@@ -188,8 +184,7 @@ class ConfirmModal extends Component<
                   onClick={this.onNoClick}
                   onKeyDown={this.onKeyDown}
                   size="md"
-                  tab-index="0"
-                >
+                  tab-index="0">
                   {cancelButtonLabel}
                 </Button>
                 <Button
@@ -197,8 +192,7 @@ class ConfirmModal extends Component<
                   onClick={this.onYesClick}
                   onKeyDown={this.onKeyDown}
                   size="md"
-                  tab-index="0"
-                >
+                  tab-index="0">
                   {confirmButtonLabel}
                 </Button>
               </div>

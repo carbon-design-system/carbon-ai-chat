@@ -7,17 +7,17 @@
  *  @license
  */
 
-import { CustomPanels, ViewState, ViewType } from "./apiTypes";
-import { ChatInstanceMessaging } from "../config/MessagingConfig";
-import type { CatastrophicErrorPanelState } from "../state/AppState";
-import { MessageRequest } from "../messaging/Messages";
-import type { ServiceManager } from "../../chat/services/ServiceManager";
-import { AutoScrollOptions } from "../utilities/HasDoAutoScroll";
-import type { EventHandlers } from "./EventHandlers";
-import type { PublicChatState } from "./PublicChatState";
-import type { ChatInstanceInput } from "./ChatInstanceInput";
-import type { ChatInstanceServiceDeskActions } from "./ChatInstanceServiceDeskActions";
-import type { WriteableElements } from "./WriteableElements";
+import { CustomPanels, ViewState, ViewType } from './apiTypes';
+import { ChatInstanceMessaging } from '../config/MessagingConfig';
+import type { CatastrophicErrorPanelState } from '../state/AppState';
+import { MessageRequest } from '../messaging/Messages';
+import type { ServiceManager } from '../../chat/services/ServiceManager';
+import { AutoScrollOptions } from '../utilities/HasDoAutoScroll';
+import type { EventHandlers } from './EventHandlers';
+import type { PublicChatState } from './PublicChatState';
+import type { ChatInstanceInput } from './ChatInstanceInput';
+import type { ChatInstanceServiceDeskActions } from './ChatInstanceServiceDeskActions';
+import type { WriteableElements } from './WriteableElements';
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
@@ -96,7 +96,7 @@ interface ChatActions {
    */
   send: (
     message: MessageRequest | string,
-    options?: SendOptions,
+    options?: SendOptions
   ) => Promise<void>;
 
   /**
@@ -175,7 +175,7 @@ interface ChatActions {
    * ```
    */
   updateCatastrophicErrorPanel: (
-    panelState: CatastrophicErrorPanelState,
+    panelState: CatastrophicErrorPanelState
   ) => void;
 
   /**
@@ -243,7 +243,7 @@ interface ChatActions {
    */
   updateIsMessageLoadingCounter: (
     direction: IncreaseOrDecrease,
-    message?: string,
+    message?: string
   ) => void;
 
   /**
@@ -289,7 +289,7 @@ interface ChatActions {
 /**
  * @category Instance
  */
-export type IncreaseOrDecrease = "increase" | "decrease" | "reset" | undefined;
+export type IncreaseOrDecrease = 'increase' | 'decrease' | 'reset' | undefined;
 
 /**
  * This interface represents the options for when a MessageRequest is sent to the server with the send method.

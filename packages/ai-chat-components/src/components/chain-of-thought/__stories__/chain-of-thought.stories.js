@@ -7,18 +7,18 @@
  *  @license
  */
 
-import "../src/chain-of-thought";
-import "../src/chain-of-thought-step";
-import "../src/tool-call-data";
-import "../src/chain-of-thought-toggle";
-import "../../markdown/src/markdown";
-import { html, nothing } from "lit";
+import '../src/chain-of-thought';
+import '../src/chain-of-thought-step';
+import '../src/tool-call-data';
+import '../src/chain-of-thought-toggle';
+import '../../markdown/src/markdown';
+import { html, nothing } from 'lit';
 
 const sampleSteps = [
   {
-    title: "Search Documentation",
-    description: "Searching the product documentation for relevant information",
-    tool_name: "documentation_search",
+    title: 'Search Documentation',
+    description: 'Searching the product documentation for relevant information',
+    tool_name: 'documentation_search',
     request: {
       args: `\`\`\`
 {
@@ -47,12 +47,12 @@ const sampleSteps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Query Database",
-    description: "Fetching user-specific configuration data",
-    tool_name: "database_query",
+    title: 'Query Database',
+    description: 'Fetching user-specific configuration data',
+    tool_name: 'database_query',
     request: {
       args: `\`\`\`
 {
@@ -72,12 +72,12 @@ const sampleSteps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Generate Response",
-    description: "Synthesizing the information into a final answer",
-    tool_name: "response_generator",
+    title: 'Generate Response',
+    description: 'Synthesizing the information into a final answer',
+    tool_name: 'response_generator',
     request: {
       args: `\`\`\`
 {
@@ -94,14 +94,14 @@ const sampleSteps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
 ];
 
 const stepsWithDifferentStatuses = [
   {
-    title: "Validate Input",
-    tool_name: "input_validator",
+    title: 'Validate Input',
+    tool_name: 'input_validator',
     request: {
       args: `\`\`\`
 {
@@ -115,11 +115,11 @@ const stepsWithDifferentStatuses = [
 { "valid": true }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Send Email",
-    tool_name: "email_sender",
+    title: 'Send Email',
+    tool_name: 'email_sender',
     request: {
       args: `\`\`\`
 {
@@ -133,11 +133,11 @@ const stepsWithDifferentStatuses = [
 { "error": "SMTP connection timeout" }
 \`\`\``,
     },
-    status: "failure",
+    status: 'failure',
   },
   {
-    title: "Retry Send Email",
-    tool_name: "email_sender",
+    title: 'Retry Send Email',
+    tool_name: 'email_sender',
     request: {
       args: `\`\`\`
 {
@@ -147,16 +147,16 @@ const stepsWithDifferentStatuses = [
 }
 \`\`\``,
     },
-    status: "processing",
+    status: 'processing',
   },
 ];
 
 const stepsWithComplexResponses = [
   {
-    title: "Analyze Data",
+    title: 'Analyze Data',
     description:
-      "Running statistical analysis on the provided dataset to identify trends and patterns.",
-    tool_name: "data_analyzer",
+      'Running statistical analysis on the provided dataset to identify trends and patterns.',
+    tool_name: 'data_analyzer',
     request: {
       args: `\`\`\`
 {
@@ -181,7 +181,7 @@ const stepsWithComplexResponses = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
 ];
 
@@ -192,17 +192,15 @@ const renderStep = (step) => {
   return html`
     <cds-aichat-chain-of-thought-step
       title=${step.title}
-      status=${step.status ?? "success"}
+      status=${step.status ?? 'success'}
       ?open=${step.open ?? false}
-      step-number=${step.stepNumber ?? ""}
-    >
-      <cds-aichat-tool-call-data tool-name=${step.tool_name ?? ""}>
+      step-number=${step.stepNumber ?? ''}>
+      <cds-aichat-tool-call-data tool-name=${step.tool_name ?? ''}>
         ${
           step.description
             ? html`<div slot="description">
                 <cds-aichat-markdown
-                  .markdown=${step.description}
-                ></cds-aichat-markdown>
+                  .markdown=${step.description}></cds-aichat-markdown>
               </div>`
             : nothing
         }
@@ -210,8 +208,7 @@ const renderStep = (step) => {
           requestMarkdown
             ? html`<div slot="input">
                 <cds-aichat-markdown
-                  .markdown=${requestMarkdown}
-                ></cds-aichat-markdown>
+                  .markdown=${requestMarkdown}></cds-aichat-markdown>
               </div>`
             : nothing
         }
@@ -219,8 +216,7 @@ const renderStep = (step) => {
           responseMarkdown
             ? html`<div slot="output">
                 <cds-aichat-markdown
-                  .markdown=${responseMarkdown}
-                ></cds-aichat-markdown>
+                  .markdown=${responseMarkdown}></cds-aichat-markdown>
               </div>`
             : nothing
         }
@@ -247,35 +243,33 @@ const renderChainOfThought = (args, steps) => {
       ?open=${args.open}
       open-label-text=${args.openLabelText}
       closed-label-text=${args.closedLabelText}
-      @chain-of-thought-toggle=${syncPanelOpen(panelId)}
-    ></cds-aichat-chain-of-thought-toggle>
+      @chain-of-thought-toggle=${syncPanelOpen(panelId)}></cds-aichat-chain-of-thought-toggle>
     <cds-aichat-chain-of-thought
       id=${panelId}
       panel-id=${panelId}
-      ?open=${args.open}
-    >
+      ?open=${args.open}>
       ${steps.map((step, index) =>
-        renderStep({ ...step, stepNumber: index + 1 }),
+        renderStep({ ...step, stepNumber: index + 1 })
       )}
     </cds-aichat-chain-of-thought>
   `;
 };
 
 export default {
-  title: "Components/Chain of thought",
-  component: "cds-aichat-chain-of-thought",
+  title: 'Components/Chain of thought',
+  component: 'cds-aichat-chain-of-thought',
   argTypes: {
     open: {
-      control: "boolean",
-      description: "Whether the chain of thought panel is open",
+      control: 'boolean',
+      description: 'Whether the chain of thought panel is open',
     },
     openLabelText: {
-      control: "text",
-      description: "Text when the panel is expanded",
+      control: 'text',
+      description: 'Text when the panel is expanded',
     },
     closedLabelText: {
-      control: "text",
-      description: "Text when the panel is collapsed",
+      control: 'text',
+      description: 'Text when the panel is collapsed',
     },
   },
 };
@@ -283,8 +277,8 @@ export default {
 export const Default = {
   args: {
     open: false,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, sampleSteps),
 };
@@ -292,8 +286,8 @@ export const Default = {
 export const WithStepsOpen = {
   args: {
     open: true,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) =>
     renderChainOfThought(args, [
@@ -305,8 +299,8 @@ export const WithStepsOpen = {
 export const WithDifferentStatuses = {
   args: {
     open: true,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, stepsWithDifferentStatuses),
 };
@@ -314,8 +308,8 @@ export const WithDifferentStatuses = {
 export const WithComplexResponses = {
   args: {
     open: true,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, stepsWithComplexResponses),
 };

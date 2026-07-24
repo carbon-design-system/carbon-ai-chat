@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import prefix from "../../../globals/settings.js";
-import { property } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import "@carbon/web-components/es/components/skeleton-text/skeleton-text.js";
+import { LitElement, html } from 'lit';
+import prefix from '../../../globals/settings.js';
+import { property } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import '@carbon/web-components/es/components/skeleton-text/skeleton-text.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History loading state.
@@ -27,7 +27,7 @@ class CDSAIChatHistoryLoading extends LitElement {
    * Sets default slot value to content
    */
   @property({ type: String, reflect: true })
-  slot = "content";
+  slot = 'content';
 
   render() {
     return html` <div class="${prefix}--history-loading__results">

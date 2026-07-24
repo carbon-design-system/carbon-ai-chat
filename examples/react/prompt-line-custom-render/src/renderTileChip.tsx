@@ -23,11 +23,11 @@
  * Start reading at: the `renderTileChip` callback below.
  */
 
-import { RenderUserDefinedInputNode } from "@carbon/ai-chat";
-import { Tile } from "@carbon/react";
-import React from "react";
+import { RenderUserDefinedInputNode } from '@carbon/ai-chat';
+import { Tile } from '@carbon/react';
+import React from 'react';
 
-import { TILE_CHIP_NODE } from "./tileChipNode";
+import { TILE_CHIP_NODE } from './tileChipNode';
 
 const renderTileChip: RenderUserDefinedInputNode = ({ node }) => {
   if (node.type !== TILE_CHIP_NODE) {
@@ -37,8 +37,8 @@ const renderTileChip: RenderUserDefinedInputNode = ({ node }) => {
 
   return (
     <Tile className="tile-chip">
-      <strong>{String(node.attrs?.label ?? "")}</strong>
-      <span>{String(node.attrs?.description ?? "")}</span>
+      <strong>{String(node.attrs?.label ?? '')}</strong>
+      <span>{String(node.attrs?.description ?? '')}</span>
     </Tile>
   );
 };

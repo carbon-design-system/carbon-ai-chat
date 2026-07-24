@@ -24,17 +24,17 @@
  * Start reading at: `chatStateSlice` and `selectIsHomeScreenOpen`.
  */
 
-import type { PublicChatState } from "@carbon/ai-chat";
+import type { PublicChatState } from '@carbon/ai-chat';
 import {
   configureStore,
   createSlice,
   type PayloadAction,
-} from "@reduxjs/toolkit";
+} from '@reduxjs/toolkit';
 import {
   type TypedUseSelectorHook,
   useDispatch,
   useSelector,
-} from "react-redux";
+} from 'react-redux';
 
 interface ChatStateSlice {
   // Holds the most recent PublicChatState snapshot, or null before the bridge
@@ -45,7 +45,7 @@ interface ChatStateSlice {
 const initialState: ChatStateSlice = { snapshot: null };
 
 const chatStateSlice = createSlice({
-  name: "chatState",
+  name: 'chatState',
   initialState,
   reducers: {
     // STATE_CHANGE delivers full PublicChatState snapshots, not diffs, so the

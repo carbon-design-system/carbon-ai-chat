@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 // Base container
 .cds-aichat--text-block {
@@ -28,7 +28,7 @@
 
 // Title styling
 .cds-aichat--text-block__title {
-  @include type.type-style("body-02");
+  @include type.type-style('body-02');
 
   font-weight: 400;
   min-block-size: unset;
@@ -36,7 +36,7 @@
 
 // Description styling
 .cds-aichat--text-block__description {
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 
   color: theme.$text-secondary;
   min-block-size: unset;
@@ -48,7 +48,7 @@
 
 // URL styling
 .cds-aichat--text-block__url {
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 
   color: theme.$link-primary;
   min-block-size: unset;
@@ -70,7 +70,7 @@
 // Markdown mode uses body-01 for both title and description
 .cds-aichat--text-block--markdown .cds-aichat--text-block__title,
 .cds-aichat--text-block--markdown .cds-aichat--text-block__description {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
 // Spacing for markdown mode (from Metablock)
@@ -101,7 +101,7 @@
 }
 
 // RTL support
-.cds-aichat--container--render[dir="rtl"] .cds-aichat--text-block__title,
-.cds-aichat--container--render[dir="rtl"] .cds-aichat--text-block__description {
+.cds-aichat--container--render[dir='rtl'] .cds-aichat--text-block__title,
+.cds-aichat--container--render[dir='rtl'] .cds-aichat--text-block__description {
   text-align: end;
 }

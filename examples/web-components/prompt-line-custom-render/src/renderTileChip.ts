@@ -22,10 +22,10 @@
  * Start reading at: the `renderTileChip` callback below.
  */
 
-import { WCRenderUserDefinedInputNode } from "@carbon/ai-chat";
+import { WCRenderUserDefinedInputNode } from '@carbon/ai-chat';
 
-import { buildTileCard } from "./tileCard";
-import { TILE_CHIP_NODE } from "./tileChipNode";
+import { buildTileCard } from './tileCard';
+import { TILE_CHIP_NODE } from './tileChipNode';
 
 const renderTileChip: WCRenderUserDefinedInputNode = ({ node }) => {
   if (node.type !== TILE_CHIP_NODE) {
@@ -34,8 +34,8 @@ const renderTileChip: WCRenderUserDefinedInputNode = ({ node }) => {
   }
 
   return buildTileCard(
-    String(node.attrs?.label ?? ""),
-    String(node.attrs?.description ?? ""),
+    String(node.attrs?.label ?? ''),
+    String(node.attrs?.description ?? '')
   );
 };
 

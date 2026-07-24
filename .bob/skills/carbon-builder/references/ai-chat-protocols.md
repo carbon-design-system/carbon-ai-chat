@@ -2,21 +2,24 @@
 
 ## File Completeness Rule (Must Follow)
 
-When the user's intent is **anything related to Carbon AI Chat examples** — they say
-"chat", "AI chat", "Carbon AI chat", "React AI chat", "web components AI chat",
-"AI chat history example", "chat custom element example", "watsonx example",
-"load history", etc. — follow this protocol **before** answering, explaining, or
-generating any code:
+When the user's intent is **anything related to Carbon AI Chat examples** — they
+say "chat", "AI chat", "Carbon AI chat", "React AI chat", "web components AI
+chat", "AI chat history example", "chat custom element example", "watsonx
+example", "load history", etc. — follow this protocol **before** answering,
+explaining, or generating any code:
 
 ### Step 1 — Fetch the full file list
 
-Issue a **single, explicit `code_search`** call targeting the example root and framework.
+Issue a **single, explicit `code_search`** call targeting the example root and
+framework.
 
 Required in the query:
 
 - The phrase `"ai chat"`
-- The framework: `"react"` or `"web components"` (default to React if unspecified)
-- The example root: `"basic"`, `"custom-element"`, `"history"`, `"watsonx"`, or `"watch-state"`
+- The framework: `"react"` or `"web components"` (default to React if
+  unspecified)
+- The example root: `"basic"`, `"custom-element"`, `"history"`, `"watsonx"`, or
+  `"watch-state"`
 
 Always set:
 
@@ -28,8 +31,8 @@ Always set:
 After the call, read `example_files` on the top hit. If present, treat it as the
 **authoritative file list** and proceed.
 
-If `example_files` is missing or incomplete, issue follow-up file-targeted queries for
-any missing filenames. Common files to check for:
+If `example_files` is missing or incomplete, issue follow-up file-targeted
+queries for any missing filenames. Common files to check for:
 
 - `App.tsx`
 - `customSendMessage.ts`
@@ -49,8 +52,8 @@ Only after confirming the complete file set:
 - Generate/rewrite code
 - Explain the example
 
-> This completeness step is **always required** — even if the user did not explicitly
-> ask for all files. Do not wait for them to remember to ask.
+> This completeness step is **always required** — even if the user did not
+> explicitly ask for all files. Do not wait for them to remember to ask.
 
 ---
 
@@ -58,15 +61,16 @@ Only after confirming the complete file set:
 
 Use `docs_search` for all Carbon AI Chat API documentation.
 
-The server automatically routes to the AI Chat index when queries contain relevant
-entity names or migration keywords.
+The server automatically routes to the AI Chat index when queries contain
+relevant entity names or migration keywords.
 
 **Rules:**
 
-- Do NOT set `filters.component_type`, `filters.component_id`, or `filters.ibm_products`
+- Do NOT set `filters.component_type`, `filters.component_id`, or
+  `filters.ibm_products`
 - Query using API symbol names, type names, or migration topic keywords
-- Include `"migration-1.0.0"` in the query when upgrade or breaking change context is implied
-  (user says "upgrade", "removed", "breaking", "instead")
+- Include `"migration-1.0.0"` in the query when upgrade or breaking change
+  context is implied (user says "upgrade", "removed", "breaking", "instead")
 
 **Key entity names:**
 
@@ -96,8 +100,8 @@ entity names or migration keywords.
 {"query": "ai chat react setup", "size": 3}
 ```
 
-**Routing trigger words** — the query must contain at least one of these for the server
-to route to the AI Chat docs index:
+**Routing trigger words** — the query must contain at least one of these for the
+server to route to the AI Chat docs index:
 
 | Trigger                          | When to use                                            |
 | -------------------------------- | ------------------------------------------------------ |
@@ -108,11 +112,13 @@ to route to the AI Chat docs index:
 | `migration-1.0.0`                | Upgrade, breaking changes, or "what changed in v1"     |
 | `custom server` / `service desk` | Custom backend or service desk integration             |
 
-> **⚠ `"chat"` alone does NOT trigger AI Chat docs routing** — neither does `"React"` alone.
-> Always include `"ai chat"` or a specific entity name like `ChatInstance`.
+> **⚠ `"chat"` alone does NOT trigger AI Chat docs routing** — neither does
+> `"React"` alone. Always include `"ai chat"` or a specific entity name like
+> `ChatInstance`.
 >
-> **⚠ `"assistant"` alone does NOT trigger AI Chat docs routing** — it was removed from
-> the routing regex to prevent false positives on general Carbon queries.
+> **⚠ `"assistant"` alone does NOT trigger AI Chat docs routing** — it was
+> removed from the routing regex to prevent false positives on general Carbon
+> queries.
 
 **Translation — user intent → agent query (docs_search):**
 
@@ -167,11 +173,11 @@ After receiving AI Chat code results:
 
 - Confirm the intended **example root** matches what was requested
 - Confirm **framework alignment** (React vs Web Components)
-- Check for `is_complete_file: true` — indicates the server has auto-reconstructed
-  a multi-chunk file; trust this result as complete
+- Check for `is_complete_file: true` — indicates the server has
+  auto-reconstructed a multi-chunk file; trust this result as complete
 - Confirm required source files are present for the example root
-- If you're not getting complete files, retry with a specific filename in the query —
-  the server will automatically assemble chunks for that file
+- If you're not getting complete files, retry with a specific filename in the
+  query — the server will automatically assemble chunks for that file
 
 ---
 
@@ -190,20 +196,26 @@ If the first query returns insufficient results:
      "filters": { "component_type": "React" }
    }
    ```
-3. For docs, retry with symbol name variations or include `"migration-1.0.0"` if context
-   suggests a version upgrade
+3. For docs, retry with symbol name variations or include `"migration-1.0.0"` if
+   context suggests a version upgrade
 
 ---
 
 ## Build Safety for AI Chat Integrations
 
-When generating runnable AI Chat integration code (not just retrieving examples), apply these rules:
+When generating runnable AI Chat integration code (not just retrieving
+examples), apply these rules:
 
-- Detect SSR indicators before choosing import patterns (`entry-server.*`, `server.js/ts`, SSR config in Vite/Webpack, SSR scripts in `package.json`).
+- Detect SSR indicators before choosing import patterns (`entry-server.*`,
+  `server.js/ts`, SSR config in Vite/Webpack, SSR scripts in `package.json`).
 - If SSR is present:
   - avoid top-level browser-only imports in SSR-rendered paths,
-  - use client-only loading patterns (`React.lazy`/`Suspense` or dynamic import in `useEffect`),
-  - configure `ssr.external` for `@carbon/ai-chat` and `@carbon/web-components` when needed.
-- Do not import CSS from `@carbon/ai-chat/es/index.css` (or similar non-existent CSS paths).
+  - use client-only loading patterns (`React.lazy`/`Suspense` or dynamic import
+    in `useEffect`),
+  - configure `ssr.external` for `@carbon/ai-chat` and `@carbon/web-components`
+    when needed.
+- Do not import CSS from `@carbon/ai-chat/es/index.css` (or similar non-existent
+  CSS paths).
 
-For broader package and implementation guardrails, see [implementation-guardrails.md](implementation-guardrails.md).
+For broader package and implementation guardrails, see
+[implementation-guardrails.md](implementation-guardrails.md).

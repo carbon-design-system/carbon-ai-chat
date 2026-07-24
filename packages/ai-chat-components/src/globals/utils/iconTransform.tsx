@@ -32,8 +32,8 @@
  * ```
  */
 
-import React from "react";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils";
+import React from 'react';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils';
 
 // Global cache for transformed icons using WeakMap to key by component reference
 const iconCache = new WeakMap<
@@ -48,11 +48,11 @@ const iconCache = new WeakMap<
 export function isCarbonIcon(icon: any): icon is CarbonIcon {
   return Boolean(
     icon &&
-    typeof icon === "object" &&
-    "elem" in icon &&
-    "attrs" in icon &&
-    "content" in icon &&
-    icon.elem === "svg",
+    typeof icon === 'object' &&
+    'elem' in icon &&
+    'attrs' in icon &&
+    'content' in icon &&
+    icon.elem === 'svg'
   );
 }
 
@@ -63,7 +63,7 @@ export function isCarbonIcon(icon: any): icon is CarbonIcon {
  */
 export function transformReactIconToCarbonIcon(
   icon: CarbonIcon | React.ComponentType<any>,
-  size = 16,
+  size = 16
 ): CarbonIcon {
   // No-op: If already a CarbonIcon, return unchanged
   if (isCarbonIcon(icon)) {
@@ -94,16 +94,16 @@ export function transformReactIconToCarbonIcon(
 
     // Validate descriptor
     if (!isValidCarbonIcon(descriptor)) {
-      throw new Error("Generated descriptor is invalid");
+      throw new Error('Generated descriptor is invalid');
     }
 
     // Cache and return
     sizeMap.set(size, descriptor);
     return descriptor;
   } catch (error) {
-    const iconName = ReactIcon.displayName || ReactIcon.name || "Unknown";
+    const iconName = ReactIcon.displayName || ReactIcon.name || 'Unknown';
     throw new Error(
-      `Failed to transform React icon "${iconName}": ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to transform React icon "${iconName}": ${error instanceof Error ? error.message : String(error)}`
     );
   }
 }
@@ -113,7 +113,7 @@ export function transformReactIconToCarbonIcon(
  */
 function extractCarbonIconFromReactElement(
   element: React.ReactElement,
-  size: number,
+  size: number
 ): CarbonIcon {
   // The element should be an SVG or Icon component
   // Navigate through forwardRef and other wrappers if needed
@@ -121,8 +121,8 @@ function extractCarbonIconFromReactElement(
 
   // Handle forwardRef wrapper
   if (
-    typeof currentElement.type === "object" &&
-    "render" in currentElement.type
+    typeof currentElement.type === 'object' &&
+    'render' in currentElement.type
   ) {
     // This is a forwardRef, call the render function
     const renderFn = (currentElement.type as any).render;
@@ -133,14 +133,14 @@ function extractCarbonIconFromReactElement(
   const props = currentElement.props as any;
 
   if (!props) {
-    throw new Error("Unable to extract props from React element");
+    throw new Error('Unable to extract props from React element');
   }
 
   // Extract SVG attributes from props
   const attrs: Record<string, string | number> = {
-    xmlns: props.xmlns || "http://www.w3.org/2000/svg",
-    viewBox: props.viewBox || "0 0 32 32",
-    fill: props.fill || "currentColor",
+    xmlns: props.xmlns || 'http://www.w3.org/2000/svg',
+    viewBox: props.viewBox || '0 0 32 32',
+    fill: props.fill || 'currentColor',
     width: size,
     height: size,
   };
@@ -154,7 +154,7 @@ function extractCarbonIconFromReactElement(
       const childElement = child as React.ReactElement;
       const contentItem: any = {
         elem:
-          typeof childElement.type === "string" ? childElement.type : "path",
+          typeof childElement.type === 'string' ? childElement.type : 'path',
         attrs: {},
       };
 
@@ -162,7 +162,7 @@ function extractCarbonIconFromReactElement(
       if (childElement.props) {
         Object.entries(childElement.props).forEach(([key, value]) => {
           // Skip children and other React-specific props
-          if (key !== "children" && value !== undefined && value !== null) {
+          if (key !== 'children' && value !== undefined && value !== null) {
             contentItem.attrs[key] = value;
           }
         });
@@ -173,7 +173,7 @@ function extractCarbonIconFromReactElement(
   });
 
   return {
-    elem: "svg",
+    elem: 'svg',
     attrs,
     content,
     name: extractIconName(props),
@@ -187,13 +187,13 @@ function extractCarbonIconFromReactElement(
 function isValidCarbonIcon(descriptor: any): descriptor is CarbonIcon {
   return (
     descriptor &&
-    descriptor.elem === "svg" &&
+    descriptor.elem === 'svg' &&
     descriptor.attrs &&
-    typeof descriptor.attrs === "object" &&
+    typeof descriptor.attrs === 'object' &&
     Array.isArray(descriptor.content) &&
     descriptor.content.length > 0 &&
-    typeof descriptor.name === "string" &&
-    typeof descriptor.size === "number"
+    typeof descriptor.name === 'string' &&
+    typeof descriptor.size === 'number'
   );
 }
 
@@ -202,5 +202,5 @@ function isValidCarbonIcon(descriptor: any): descriptor is CarbonIcon {
  */
 function extractIconName(props: any): string {
   // Try various properties that might contain the icon name
-  return props["data-icon-name"] || props["aria-label"] || props.name || "icon";
+  return props['data-icon-name'] || props['aria-label'] || props.name || 'icon';
 }

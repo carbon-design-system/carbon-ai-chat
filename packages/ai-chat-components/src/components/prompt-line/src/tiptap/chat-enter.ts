@@ -15,11 +15,11 @@
  * extension so hosts composing their own editor can opt in the same way.
  */
 
-import { Extension } from "@tiptap/core";
+import { Extension } from '@tiptap/core';
 
 export function carbonChatEnter(): Extension {
   return Extension.create({
-    name: "carbonChatEnter",
+    name: 'carbonChatEnter',
     addKeyboardShortcuts() {
       return {
         Enter: ({ editor }) => {
@@ -27,10 +27,10 @@ export function carbonChatEnter(): Extension {
             return false;
           }
           editor.view.dom.dispatchEvent(
-            new CustomEvent("cds-aichat-prompt-send-intent", {
+            new CustomEvent('cds-aichat-prompt-send-intent', {
               bubbles: true,
               composed: true,
-            }),
+            })
           );
           return true;
         },

@@ -25,7 +25,7 @@
  * Start reading at: `onBeforeRender` and the `STATE_CHANGE` handler.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
 import {
   BusEventType,
@@ -33,11 +33,11 @@ import {
   type BusEventStateChange,
   type ChatInstance,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -48,21 +48,21 @@ const config: PublicConfig = {
     // `homeScreenState.isHomeScreenOpen` to toggle between.
     isOn: true,
     // Greeting copy is what the user sees while `isHomeScreenOpen === true`.
-    greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
+    greeting: '👋 Hello!\n\nWelcome to Carbon AI Chat.',
     starters: {
       // Render conversation starter buttons so a click trivially flips the
       // homescreen state and triggers a STATE_CHANGE event.
       isOn: true,
       buttons: [
-        { label: "What can you help me with?" },
-        { label: "Tell me about state management" },
-        { label: "How do I use the STATE_CHANGE event?" },
+        { label: 'What can you help me with?' },
+        { label: 'Tell me about state management' },
+        { label: 'How do I use the STATE_CHANGE event?' },
       ],
     },
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .watch-state-host {
@@ -107,14 +107,13 @@ export class Demo extends LitElement {
     return html`
       <div class="watch-state-host">
         <h4>Current View State (via getState()):</h4>
-        <p>${this.isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
+        <p>${this.isHomescreenVisible ? 'Homescreen' : 'Chat View'}</p>
         <p>Watching state via STATE_CHANGE event</p>
       </div>
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
-        .homescreen=${config.homescreen}
-      ></cds-aichat-container>
+        .homescreen=${config.homescreen}></cds-aichat-container>
     `;
   }
 }

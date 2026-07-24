@@ -23,8 +23,8 @@ interface ContainerStyleConfig {
  * `style-src-attr 'unsafe-inline'`.
  */
 export interface ContainerStyleProperties {
-  "--cds-snippet-max-height"?: string;
-  "--cds-snippet-min-height"?: string;
+  '--cds-snippet-max-height'?: string;
+  '--cds-snippet-min-height'?: string;
 }
 
 export function buildContainerStyles({
@@ -42,8 +42,8 @@ export function buildContainerStyles({
 
   if (isFillMode) {
     // Fill-container mode: use 100% height with scrollbar
-    properties["--cds-snippet-max-height"] = "100%";
-    properties["--cds-snippet-min-height"] = "auto";
+    properties['--cds-snippet-max-height'] = '100%';
+    properties['--cds-snippet-min-height'] = 'auto';
     return properties;
   }
 
@@ -54,24 +54,24 @@ export function buildContainerStyles({
   // the snippet inside another scrollable surface.
   if (expanded) {
     if (maxExpanded === Infinity) {
-      properties["--cds-snippet-max-height"] = "none";
+      properties['--cds-snippet-max-height'] = 'none';
     } else if (maxExpanded > 0) {
-      properties["--cds-snippet-max-height"] = `${maxExpanded * rowHeight}px`;
+      properties['--cds-snippet-max-height'] = `${maxExpanded * rowHeight}px`;
     } else {
       // Remove the default CodeMirror max height so expanded snippets can grow to fit content
-      properties["--cds-snippet-max-height"] = "none";
+      properties['--cds-snippet-max-height'] = 'none';
     }
     if (minExpanded > 0 && minExpanded !== Infinity) {
-      properties["--cds-snippet-min-height"] = `${minExpanded * rowHeight}px`;
+      properties['--cds-snippet-min-height'] = `${minExpanded * rowHeight}px`;
     }
   } else {
     if (maxCollapsed === Infinity) {
-      properties["--cds-snippet-max-height"] = "none";
+      properties['--cds-snippet-max-height'] = 'none';
     } else if (maxCollapsed > 0) {
-      properties["--cds-snippet-max-height"] = `${maxCollapsed * rowHeight}px`;
+      properties['--cds-snippet-max-height'] = `${maxCollapsed * rowHeight}px`;
     }
     if (minCollapsed > 0 && minCollapsed !== Infinity) {
-      properties["--cds-snippet-min-height"] = `${minCollapsed * rowHeight}px`;
+      properties['--cds-snippet-min-height'] = `${minCollapsed * rowHeight}px`;
     }
   }
 

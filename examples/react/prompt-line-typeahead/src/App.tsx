@@ -23,12 +23,12 @@
  * Start reading at: `App()` and the `useMemo`'d `config`.
  */
 
-import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
-import React, { useMemo } from "react";
-import { createRoot } from "react-dom/client";
+import { ChatCustomElement, PublicConfig } from '@carbon/ai-chat';
+import React, { useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { CANNED_SUGGESTIONS } from "./suggestions";
+import { customSendMessage } from './customSendMessage';
+import { CANNED_SUGGESTIONS } from './suggestions';
 
 function App() {
   const config: PublicConfig = useMemo(
@@ -48,19 +48,19 @@ function App() {
           // resolver receives the live query string and returns the filtered SuggestionItem[] for the dropdown.
           items: async (query: string) =>
             CANNED_SUGGESTIONS.filter((s) =>
-              s.label.toLowerCase().includes(query.toLowerCase()),
+              s.label.toLowerCase().includes(query.toLowerCase())
             ),
           // throttle resolver calls so each keystroke does not trigger a fetch — 150ms keeps typing responsive.
           debounceMs: 150,
         },
       },
     }),
-    [],
+    []
   );
 
   return <ChatCustomElement className="chat-custom-element" {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

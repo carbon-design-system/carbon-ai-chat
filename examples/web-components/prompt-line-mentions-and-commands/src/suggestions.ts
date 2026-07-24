@@ -20,58 +20,58 @@
  * Start reading at: `mentionItems`.
  */
 
-import { SuggestionItem } from "@carbon/ai-chat";
+import { SuggestionItem } from '@carbon/ai-chat';
 
 // Replace with a real production implementation.
 const mentionItems: SuggestionItem[] = [
   {
-    id: "u1",
-    label: "Jane Smith",
-    description: "Design Lead",
+    id: 'u1',
+    label: 'Jane Smith',
+    description: 'Design Lead',
   },
   {
-    id: "u2",
-    label: "Bob Chen",
-    description: "Frontend Engineer",
+    id: 'u2',
+    label: 'Bob Chen',
+    description: 'Frontend Engineer',
   },
   {
-    id: "u3",
-    label: "Alice Park",
-    description: "Product Manager",
+    id: 'u3',
+    label: 'Alice Park',
+    description: 'Product Manager',
   },
   {
-    id: "u4",
-    label: "Carlos Rivera",
-    description: "Backend Engineer",
+    id: 'u4',
+    label: 'Carlos Rivera',
+    description: 'Backend Engineer',
   },
   {
-    id: "u5",
-    label: "Dana Williams",
-    description: "QA Engineer",
+    id: 'u5',
+    label: 'Dana Williams',
+    description: 'QA Engineer',
   },
 ];
 
 // Replace with a real production implementation.
 const commandItems: SuggestionItem[] = [
   {
-    id: "summarize",
-    label: "summarize",
-    description: "Summarize the conversation",
+    id: 'summarize',
+    label: 'summarize',
+    description: 'Summarize the conversation',
   },
   {
-    id: "translate",
-    label: "translate",
-    description: "Translate to another language",
+    id: 'translate',
+    label: 'translate',
+    description: 'Translate to another language',
   },
   {
-    id: "clear",
-    label: "clear",
-    description: "Clear the conversation",
+    id: 'clear',
+    label: 'clear',
+    description: 'Clear the conversation',
   },
   {
-    id: "help",
-    label: "help",
-    description: "Show available commands",
+    id: 'help',
+    label: 'help',
+    description: 'Show available commands',
   },
 ];
 

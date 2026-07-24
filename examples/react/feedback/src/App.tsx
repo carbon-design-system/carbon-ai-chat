@@ -32,11 +32,11 @@ import {
   ChatInstance,
   FeedbackInteractionType,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -76,6 +76,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

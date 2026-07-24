@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { AppState } from "../../types/state/AppState";
+import { AppState } from '../../types/state/AppState';
 import {
   HA_END_CHAT,
   HA_SET_HUMAN_AGENT_AVAILABILITY,
@@ -22,11 +22,11 @@ import {
   HA_UPDATE_FILE_UPLOAD_IN_PROGRESS,
   HA_UPDATE_IS_SUSPENDED,
   HA_UPDATE_IS_TYPING,
-} from "./humanAgentActions";
-import { type ReducerType } from "./reducers";
-import { ServiceDeskCapabilities } from "../../types/config/ServiceDeskConfig";
-import { applyLocalMessageUIState } from "./reducerUtils";
-import { ResponseUserProfile } from "../../types/messaging/Messages";
+} from './humanAgentActions';
+import { type ReducerType } from './reducers';
+import { ServiceDeskCapabilities } from '../../types/config/ServiceDeskConfig';
+import { applyLocalMessageUIState } from './reducerUtils';
+import { ResponseUserProfile } from '../../types/messaging/Messages';
 
 /**
  * Redux reducers for human agent actions.
@@ -35,7 +35,7 @@ import { ResponseUserProfile } from "../../types/messaging/Messages";
 const humanAgentReducers: { [key: string]: ReducerType } = {
   [HA_SET_IS_CONNECTING]: (
     state: AppState,
-    action: { isConnecting: boolean; localMessageID: string },
+    action: { isConnecting: boolean; localMessageID: string }
   ): AppState => {
     const { isConnecting, localMessageID } = action;
     return {
@@ -63,7 +63,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_IS_RECONNECTING]: (
     state: AppState,
-    action: { isReconnecting: boolean },
+    action: { isReconnecting: boolean }
   ): AppState => {
     const { isReconnecting } = action;
     return {
@@ -77,7 +77,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_HUMAN_AGENT_AVAILABILITY]: (
     state: AppState,
-    action: any,
+    action: any
   ): AppState => {
     if (!state.humanAgentState.isConnecting) {
       // If the agent is not currently connecting, just ignore the availability update.
@@ -96,7 +96,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_SHOW_SCREEN_SHARE_REQUEST]: (
     state: AppState,
-    { showRequest }: any,
+    { showRequest }: any
   ): AppState => {
     return {
       ...state,
@@ -109,7 +109,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_HUMAN_AGENT_JOINED]: (
     state: AppState,
-    action: { responseUserProfile?: ResponseUserProfile },
+    action: { responseUserProfile?: ResponseUserProfile }
   ): AppState => {
     const responseUserProfiles = {
       ...state.persistedToBrowserStorage.humanAgentState.responseUserProfiles,
@@ -141,7 +141,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_PERSISTED_STATE]: (
     state: AppState,
-    action: { state: unknown },
+    action: { state: unknown }
   ): AppState => ({
     ...state,
     persistedToBrowserStorage: {
@@ -155,7 +155,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_UPDATE_IS_SUSPENDED]: (
     state: AppState,
-    action: { isSuspended: boolean },
+    action: { isSuspended: boolean }
   ): AppState => {
     if (
       !state.humanAgentState.isConnecting &&
@@ -178,7 +178,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_UPDATE_IS_TYPING]: (
     state: AppState,
-    action: { isTyping: boolean },
+    action: { isTyping: boolean }
   ): AppState => {
     return {
       ...state,
@@ -211,7 +211,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_UPDATE_CAPABILITIES]: (
     state: AppState,
-    action: { capabilities: ServiceDeskCapabilities },
+    action: { capabilities: ServiceDeskCapabilities }
   ): AppState => {
     const newInputState = {
       ...state.humanAgentState.inputState,
@@ -231,7 +231,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_SET_IS_SCREEN_SHARING]: (
     state: AppState,
-    { isSharing }: { isSharing: boolean },
+    { isSharing }: { isSharing: boolean }
   ): AppState => ({
     ...state,
     humanAgentState: {
@@ -242,7 +242,7 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
 
   [HA_UPDATE_FILE_UPLOAD_IN_PROGRESS]: (
     state: AppState,
-    action: { fileUploadInProgress: boolean },
+    action: { fileUploadInProgress: boolean }
   ): AppState => ({
     ...state,
     humanAgentState: {
@@ -256,8 +256,8 @@ const humanAgentReducers: { [key: string]: ReducerType } = {
     let newState = applyLocalMessageUIState(
       state,
       state.humanAgentState.activeLocalMessageID,
-      "wasHumanAgentChatEnded",
-      true,
+      'wasHumanAgentChatEnded',
+      true
     );
 
     // End the chat.

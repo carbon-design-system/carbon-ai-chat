@@ -19,17 +19,17 @@ export enum CarbonTheme {
   /**
    * Injects Carbon white theme tokens.
    */
-  WHITE = "white",
+  WHITE = 'white',
   /**
    * Injects Carbon Gray 10 theme tokens.
    */
-  G10 = "g10",
+  G10 = 'g10',
   /**
    * Injects Carbon Gray 90 theme tokens.
    */
-  G90 = "g90",
+  G90 = 'g90',
   /**
    * Injects Carbon Gray 100 theme tokens.
    */
-  G100 = "g100",
+  G100 = 'g100',
 }

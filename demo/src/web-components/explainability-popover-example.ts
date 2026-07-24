@@ -7,20 +7,20 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/ai-label/index.js";
-import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/tag/index.js";
-import "@carbon/web-components/es/components/link/index.js";
-import "@carbon/web-components/es/components/list/index.js";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Launch16 from "@carbon/icons/es/launch/16.js";
-import Folders16 from "@carbon/icons/es/folders/16.js";
-import FolderOpen16 from "@carbon/icons/es/folder--open/16.js";
-import View16 from "@carbon/icons/es/view/16.js";
+import '@carbon/web-components/es/components/ai-label/index.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/link/index.js';
+import '@carbon/web-components/es/components/list/index.js';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Launch16 from '@carbon/icons/es/launch/16.js';
+import Folders16 from '@carbon/icons/es/folders/16.js';
+import FolderOpen16 from '@carbon/icons/es/folder--open/16.js';
+import View16 from '@carbon/icons/es/view/16.js';
 
-@customElement("explainability-popover-content")
+@customElement('explainability-popover-content')
 class ExplainabilityPopoverContent extends LitElement {
   static styles = css`
     .cds-aichat-explainability-popover--content {
@@ -115,8 +115,7 @@ class ExplainabilityPopoverContent extends LitElement {
       <div
         role="dialog"
         slot="body-text"
-        class="cds-aichat-explainability-popover--content"
-      >
+        class="cds-aichat-explainability-popover--content">
         <header class="cds-aichat-explainability-popover--content__header">
           <div class="cds-aichat-explainability-popover--content__eyebrow-row">
             <span class="cds-aichat-explainability-popover--content__label">
@@ -125,8 +124,7 @@ class ExplainabilityPopoverContent extends LitElement {
             <cds-tag
               class="cds-aichat--header__slug-confidence"
               size="sm"
-              type="outline"
-            >
+              type="outline">
               Confidence: 89%
             </cds-tag>
           </div>
@@ -180,9 +178,8 @@ class ExplainabilityPopoverContent extends LitElement {
             <cds-link
               href="https://example.com"
               target="_blank"
-              rel="noopener noreferrer"
-            >
-              granite.13b.v2.instruct${iconLoader(Launch16, { slot: "icon" })}
+              rel="noopener noreferrer">
+              granite.13b.v2.instruct${iconLoader(Launch16, { slot: 'icon' })}
             </cds-link>
           </div>
           <div>
@@ -199,9 +196,8 @@ class ExplainabilityPopoverContent extends LitElement {
             <cds-link
               href="https://example.com"
               target="_blank"
-              rel="noopener noreferrer"
-            >
-              IBM Security data piles${iconLoader(Launch16, { slot: "icon" })}
+              rel="noopener noreferrer">
+              IBM Security data piles${iconLoader(Launch16, { slot: 'icon' })}
             </cds-link>
           </div>
         </section>
@@ -210,7 +206,7 @@ class ExplainabilityPopoverContent extends LitElement {
   }
 }
 
-@customElement("explainability-popover-actions")
+@customElement('explainability-popover-actions')
 class ExplainabilityPopoverActions extends LitElement {
   static styles = css`
     :host {
@@ -221,15 +217,15 @@ class ExplainabilityPopoverActions extends LitElement {
   render() {
     return html`
       <cds-icon-button slot="actions" size="lg" kind="ghost">
-        ${iconLoader(Folders16, { slot: "icon" })}
+        ${iconLoader(Folders16, { slot: 'icon' })}
         <span slot="tooltip-content">Folders</span>
       </cds-icon-button>
       <cds-icon-button slot="actions" size="lg" kind="ghost">
-        ${iconLoader(FolderOpen16, { slot: "icon" })}
+        ${iconLoader(FolderOpen16, { slot: 'icon' })}
         <span slot="tooltip-content">Open Folder</span>
       </cds-icon-button>
       <cds-icon-button slot="actions" size="lg" kind="ghost">
-        ${iconLoader(View16, { slot: "icon" })}
+        ${iconLoader(View16, { slot: 'icon' })}
         <span slot="tooltip-content">View</span>
       </cds-icon-button>
       <cds-ai-label-action-button slot="actions">

@@ -25,8 +25,8 @@
  * Start reading at: `App()` and the lazy import below.
  */
 
-import "@carbon/ai-chat/css/chat-float-layout.css";
-import "@carbon/ai-chat/css/chat-launcher-layout.css";
+import '@carbon/ai-chat/css/chat-float-layout.css';
+import '@carbon/ai-chat/css/chat-launcher-layout.css';
 
 import {
   BusEventViewChange,
@@ -34,15 +34,15 @@ import {
   PublicConfig,
   ViewType,
   readCarbonChatSession,
-} from "@carbon/ai-chat";
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import { AiLaunch } from "@carbon/icons-react";
-import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
-import React, { Suspense, useEffect, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import { AiLaunch } from '@carbon/icons-react';
+import ChatButton from '@carbon/ai-chat-components/es/react/chat-button.js';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 // Check once at page load whether the chat was open in the previous session.
 // If so, auto-mount immediately (no launcher click required); otherwise wait.
@@ -55,11 +55,11 @@ const chatWasPreviouslyOpen = previousSession?.viewState.mainWindow === true;
 // when running on localhost. That timeout should be removed in a real implementation.
 const LazyChatCustomElement = React.lazy(() =>
   new Promise((resolve) => setTimeout(resolve, 3000)).then(() =>
-    import("@carbon/ai-chat").then((m) => ({ default: m.ChatCustomElement })),
-  ),
+    import('@carbon/ai-chat').then((m) => ({ default: m.ChatCustomElement }))
+  )
 );
 
-type FloatPhase = "idle" | "opening" | "open" | "closing" | "closed";
+type FloatPhase = 'idle' | 'opening' | 'open' | 'closing' | 'closed';
 
 const config: PublicConfig = {
   messaging: {
@@ -72,7 +72,7 @@ const config: PublicConfig = {
 
 function App() {
   const [phase, setPhase] = useState<FloatPhase>(
-    chatWasPreviouslyOpen ? "opening" : "idle",
+    chatWasPreviouslyOpen ? 'opening' : 'idle'
   );
   const instanceRef = useRef<ChatInstance | null>(null);
   // Tracks whether the chat has ever been opened so we don't trigger the
@@ -89,19 +89,19 @@ function App() {
   // When prefers-reduced-motion is set there is no CSS animation, so
   // animationend will never fire. Advance the phase immediately in that case.
   useEffect(() => {
-    if (phase !== "opening" && phase !== "closing") {
+    if (phase !== 'opening' && phase !== 'closing') {
       return;
     }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setPhase(phase === "opening" ? "open" : "closed");
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setPhase(phase === 'opening' ? 'open' : 'closed');
     }
   }, [phase]);
 
   function handleLauncherClick() {
-    if (phase === "idle") {
+    if (phase === 'idle') {
       // First click: trigger the lazy load by mounting LazyChatCustomElement.
-      setPhase("opening");
-    } else if (phase === "closed" && instanceRef.current) {
+      setPhase('opening');
+    } else if (phase === 'closed' && instanceRef.current) {
       // Subsequent clicks: chat is already loaded; changeView triggers
       // onViewChange which advances the phase to "opening".
       void instanceRef.current.changeView(ViewType.MAIN_WINDOW);
@@ -128,26 +128,26 @@ function App() {
   function onViewChange(event: BusEventViewChange) {
     if (event.newViewState.mainWindow) {
       hasEverOpenedRef.current = true;
-      setPhase("opening");
+      setPhase('opening');
     } else if (hasEverOpenedRef.current) {
-      setPhase("closing");
+      setPhase('closing');
     }
   }
 
   function getFloatClass(): string {
     switch (phase) {
-      case "opening":
+      case 'opening':
         // --open supplies position:fixed + dimensions; --opening adds the animation.
-        return "cds-aichat-float--open cds-aichat-float--opening";
-      case "open":
-        return "cds-aichat-float--open";
-      case "closing":
+        return 'cds-aichat-float--open cds-aichat-float--opening';
+      case 'open':
+        return 'cds-aichat-float--open';
+      case 'closing':
         // Keep --open so the widget stays positioned while the close animation plays.
-        return "cds-aichat-float--open cds-aichat-float--closing";
-      case "closed":
-        return "cds-aichat-float--close";
+        return 'cds-aichat-float--open cds-aichat-float--closing';
+      case 'closed':
+        return 'cds-aichat-float--close';
       default:
-        return "";
+        return '';
     }
   }
 
@@ -155,17 +155,17 @@ function App() {
     // Hide the launcher while the float is opening, open, or closing.
     // visibility:hidden (from --hidden) preserves layout so the entrance
     // animation does not replay when the launcher reappears.
-    const hidden = phase !== "idle" && phase !== "closed";
+    const hidden = phase !== 'idle' && phase !== 'closed';
     return hidden
-      ? "cds-aichat-launcher cds-aichat-launcher--hidden"
-      : "cds-aichat-launcher";
+      ? 'cds-aichat-launcher cds-aichat-launcher--hidden'
+      : 'cds-aichat-launcher';
   }
 
   function handleFloatAnimationEnd() {
-    if (phase === "opening") {
-      setPhase("open");
-    } else if (phase === "closing") {
-      setPhase("closed");
+    if (phase === 'opening') {
+      setPhase('open');
+    } else if (phase === 'closing') {
+      setPhase('closed');
     }
   }
 
@@ -180,14 +180,13 @@ function App() {
         iconDescription="Open chat"
         kind="primary"
         size="lg"
-        onClick={handleLauncherClick}
-      >
+        onClick={handleLauncherClick}>
         <AiLaunch slot="icon" />
       </ChatButton>
 
       {/* Not mounted until the launcher is first clicked. Stays mounted after
           that so the lazy bundle is not discarded. */}
-      {phase !== "idle" && (
+      {phase !== 'idle' && (
         <>
           {/* Suspense fallback is null because ChatShell (below) covers the
               float area during both phases — bundle loading AND initialization. */}
@@ -218,6 +217,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

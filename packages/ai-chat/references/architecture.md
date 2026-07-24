@@ -1,6 +1,7 @@
 # architecture.md — `@carbon/ai-chat` React/Lit boundary
 
-Load this when working across the React/Lit boundary (custom-element host, shadow DOM, slot projection). Routine React or store work doesn't need it.
+Load this when working across the React/Lit boundary (custom-element host,
+shadow DOM, slot projection). Routine React or store work doesn't need it.
 
 ## The boundary
 
@@ -18,11 +19,17 @@ React Application Components
 
 ## How it works
 
-1. **Lit host**: [`ChatContainerReact`](../src/react/ChatContainer.tsx#L40) is a Lit custom element decorated with `@carbonElement("cds-aichat-react")`.
-2. **React wrapper**: [`createComponent()`](../src/react/ChatContainer.tsx#L60) from `@lit/react` wraps the Lit host for React consumers.
-3. **Shadow DOM setup**: the Lit host creates a shadow root and emits `"shadow-ready"` in [`firstUpdated()`](../src/react/ChatContainer.tsx#L52).
-4. **React portal**: [`ChatContainer`](../src/react/ChatContainer.tsx#L183) waits for shadow root, creates a mount div, and portals the React app into it.
-5. **Extensibility**: user-defined content crosses the boundary via slots, never direct shadow DOM manipulation.
+1. **Lit host**: [`ChatContainerReact`](../src/react/ChatContainer.tsx#L40) is a
+   Lit custom element decorated with `@carbonElement("cds-aichat-react")`.
+2. **React wrapper**: [`createComponent()`](../src/react/ChatContainer.tsx#L60)
+   from `@lit/react` wraps the Lit host for React consumers.
+3. **Shadow DOM setup**: the Lit host creates a shadow root and emits
+   `"shadow-ready"` in [`firstUpdated()`](../src/react/ChatContainer.tsx#L52).
+4. **React portal**: [`ChatContainer`](../src/react/ChatContainer.tsx#L183)
+   waits for shadow root, creates a mount div, and portals the React app into
+   it.
+5. **Extensibility**: user-defined content crosses the boundary via slots, never
+   direct shadow DOM manipulation.
 
 ## When to work in each layer
 
@@ -33,7 +40,8 @@ React Application Components
 
 ## Common patterns
 
-**Passing data into shadow DOM** — the Lit host receives props; the React portal reads from the host:
+**Passing data into shadow DOM** — the Lit host receives props; the React portal
+reads from the host:
 
 ```typescript
 <cds-aichat-react .config=${config} />
@@ -41,7 +49,8 @@ React Application Components
 const config = wrapperElement.config;
 ```
 
-**Passing content out via slots** — React creates a slotted element; the Lit host projects it:
+**Passing content out via slots** — React creates a slotted element; the Lit
+host projects it:
 
 ```typescript
 const element = document.createElement('div');
@@ -61,11 +70,15 @@ wrapper.appendChild(element);
 
 ## References
 
-- Lit host: [src/react/ChatContainer.tsx#L40](../src/react/ChatContainer.tsx#L40)
-- React wrapper: [src/react/ChatCustomElement.tsx#L137](../src/react/ChatCustomElement.tsx#L137)
-- `@carbonElement` decorator and base classes: [`@carbon/ai-chat-components`](../../ai-chat-components/AGENTS.md)
+- Lit host:
+  [src/react/ChatContainer.tsx#L40](../src/react/ChatContainer.tsx#L40)
+- React wrapper:
+  [src/react/ChatCustomElement.tsx#L137](../src/react/ChatCustomElement.tsx#L137)
+- `@carbonElement` decorator and base classes:
+  [`@carbon/ai-chat-components`](../../ai-chat-components/AGENTS.md)
 
 ## Related guidance
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [packages/ai-chat-components/AGENTS.md](../../ai-chat-components/AGENTS.md) — Lit component authoring
+- [packages/ai-chat-components/AGENTS.md](../../ai-chat-components/AGENTS.md) —
+  Lit component authoring

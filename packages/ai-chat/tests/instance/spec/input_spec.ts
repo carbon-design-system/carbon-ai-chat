@@ -12,37 +12,37 @@ import {
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 import {
   selectInputFieldVisible,
   selectInputIsReadonly,
-} from "../../../src/chat/store/selectors";
+} from '../../../src/chat/store/selectors';
 
-describe("ChatInstance.input", () => {
+describe('ChatInstance.input', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("updates the raw input value", async () => {
+  it('updates the raw input value', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
-    instance.input.updateRawValue(() => "Hello");
+    instance.input.updateRawValue(() => 'Hello');
 
     let state = store.getState();
-    expect(state.assistantInputState.rawValue).toBe("Hello");
+    expect(state.assistantInputState.rawValue).toBe('Hello');
 
     instance.input.updateRawValue((prev) => `${prev}, world`);
 
     state = store.getState();
-    expect(state.assistantInputState.rawValue).toBe("Hello, world");
+    expect(state.assistantInputState.rawValue).toBe('Hello, world');
   });
 });
 
-describe("PublicConfig.input", () => {
+describe('PublicConfig.input', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("respects isVisible", async () => {
+  it('respects isVisible', async () => {
     const config = createBaseConfig();
     config.input = {
       ...config.input,
@@ -54,7 +54,7 @@ describe("PublicConfig.input", () => {
     expect(selectInputFieldVisible(store.getState())).toBe(false);
   });
 
-  it("respects isReadonly", async () => {
+  it('respects isReadonly', async () => {
     const config = createBaseConfig();
     config.isReadonly = true;
 

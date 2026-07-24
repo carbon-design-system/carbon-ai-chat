@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,9 +13,9 @@
  * own custom elements below it.
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasClassName } from "../../../types/utilities/HasClassName";
+import { HasClassName } from '../../../types/utilities/HasClassName';
 
 interface WriteableElementProps extends HasClassName {
   /**
@@ -55,8 +55,7 @@ function WriteableElement({
       className={className}
       id={id}
       data-floating-menu-container
-      slot={wrapperSlot}
-    >
+      slot={wrapperSlot}>
       <slot name={slotName} />
     </div>
   );

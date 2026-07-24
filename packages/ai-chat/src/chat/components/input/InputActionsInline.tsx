@@ -7,36 +7,36 @@
  *  @license
  */
 
-import React, { useEffect, useRef, useState } from "react";
-import OverflowMenuVertical16 from "@carbon/icons/es/overflow-menu--vertical/16.js";
-import { createOverflowHandler } from "@carbon/utilities";
-import { transformReactIconToCarbonIcon } from "@carbon/ai-chat-components/es/globals/utils/iconTransform.js";
+import React, { useEffect, useRef, useState } from 'react';
+import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
+import { createOverflowHandler } from '@carbon/utilities';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 
-import IconButton from "../carbon/IconButton";
-import { BUTTON_KIND } from "../carbon/Button";
-import Menu from "../carbon/Menu";
-import MenuItem from "../carbon/MenuItem";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import { useFloatingMenuPosition } from "./useFloatingMenuPosition";
-import type { ToolbarAction } from "../../../types/config/HeaderConfig";
+import IconButton from '../carbon/IconButton';
+import { BUTTON_KIND } from '../carbon/Button';
+import Menu from '../carbon/Menu';
+import MenuItem from '../carbon/MenuItem';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import { useFloatingMenuPosition } from './useFloatingMenuPosition';
+import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 
 const OverflowIcon = carbonIconToReact(OverflowMenuVertical16);
 
-function optionIconToReact(icon: ToolbarAction["icon"]) {
+function optionIconToReact(icon: ToolbarAction['icon']) {
   const carbonIcon = transformReactIconToCarbonIcon(icon, 16);
   return carbonIconToReact(
-    carbonIcon as Parameters<typeof carbonIconToReact>[0],
+    carbonIcon as Parameters<typeof carbonIconToReact>[0]
   );
 }
 
-function renderMenuItemIcon(icon: ToolbarAction["icon"]) {
+function renderMenuItemIcon(icon: ToolbarAction['icon']) {
   const Icon = optionIconToReact(icon);
   return <Icon slot="render-icon" />;
 }
 
 function runAction(opt: ToolbarAction) {
   if (opt.href) {
-    window.open(opt.href, opt.target || "_self");
+    window.open(opt.href, opt.target || '_self');
   } else {
     opt.onClick?.();
   }
@@ -100,7 +100,7 @@ function InputActionsInline({
     const setupRaf = requestAnimationFrame(() => {
       handler = createOverflowHandler({
         container,
-        dimension: "width",
+        dimension: 'width',
         onChange: (visibleItems) => {
           setHiddenCount(Math.max(0, nonFixedCount - visibleItems.length));
         },
@@ -129,8 +129,7 @@ function InputActionsInline({
       <div
         ref={containerRef}
         className="cds-aichat-input-inline-actions"
-        data-measuring={measuring ? "" : undefined}
-      >
+        data-measuring={measuring ? '' : undefined}>
         {nonFixedActions.map((opt) => {
           const Icon = optionIconToReact(opt.icon);
           return (
@@ -140,8 +139,7 @@ function InputActionsInline({
               size="sm"
               disabled={disabled || opt.disabled}
               data-testid={opt.testId}
-              onClick={() => runAction(opt)}
-            >
+              onClick={() => runAction(opt)}>
               <Icon slot="icon" />
               <span slot="tooltip-content">{opt.text}</span>
             </IconButton>
@@ -161,13 +159,12 @@ function InputActionsInline({
             triggerRef.current = el;
           }}
           data-offset=""
-          data-hidden={hiddenCount === 0 ? "" : undefined}
+          data-hidden={hiddenCount === 0 ? '' : undefined}
           kind={BUTTON_KIND.GHOST}
           size="sm"
           disabled={disabled}
           data-testid="cds-aichat-input-actions-overflow-trigger"
-          onClick={() => setOpen((isOpen) => !isOpen)}
-        >
+          onClick={() => setOpen((isOpen) => !isOpen)}>
           <OverflowIcon slot="icon" />
           <span slot="tooltip-content">{overflowMenuLabel}</span>
         </IconButton>
@@ -182,8 +179,7 @@ function InputActionsInline({
               size="sm"
               disabled={disabled || opt.disabled}
               data-testid={opt.testId}
-              onClick={() => runAction(opt)}
-            >
+              onClick={() => runAction(opt)}>
               <Icon slot="icon" />
               <span slot="tooltip-content">{opt.text}</span>
             </IconButton>
@@ -198,8 +194,7 @@ function InputActionsInline({
           }}
           open
           label={overflowMenuLabel}
-          onCdsMenuClosed={() => setOpen(false)}
-        >
+          onCdsMenuClosed={() => setOpen(false)}>
           {hiddenActions.map((opt) => (
             <MenuItem
               key={opt.testId ?? opt.text}
@@ -209,8 +204,7 @@ function InputActionsInline({
               onClick={() => {
                 setOpen(false);
                 runAction(opt);
-              }}
-            >
+              }}>
               {renderMenuItemIcon(opt.icon)}
             </MenuItem>
           ))}

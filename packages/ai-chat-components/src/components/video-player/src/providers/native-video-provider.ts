@@ -17,7 +17,7 @@
  * https://github.com/cookpete/react-player/blob/v2.15.1/src/players/FilePlayer.js
  */
 
-import { BaseProvider, ProviderConfig } from "./base-provider.js";
+import { BaseProvider, ProviderConfig } from './base-provider.js';
 
 /**
  * Provider for native HTML5 video files
@@ -31,10 +31,10 @@ export class NativeVideoProvider extends BaseProvider {
    */
   protected updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void {
-    element.setAttribute("aria-label", this.getStateLabel(state));
-    element.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    element.setAttribute('aria-label', this.getStateLabel(state));
+    element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
   }
 
   /**
@@ -44,28 +44,28 @@ export class NativeVideoProvider extends BaseProvider {
     await super.init(container, config);
 
     if (!this.container) {
-      throw new Error("Container element is required");
+      throw new Error('Container element is required');
     }
 
     // Create video element. Sizing/positioning is handled by the
     // .cds-aichat--video-player__provider video SCSS rule.
-    this.videoElement = document.createElement("video");
+    this.videoElement = document.createElement('video');
     this.videoElement.controls = true;
-    this.videoElement.setAttribute("controlsList", "nodownload");
+    this.videoElement.setAttribute('controlsList', 'nodownload');
     this.videoElement.playsInline = true;
-    this.videoElement.crossOrigin = "anonymous";
+    this.videoElement.crossOrigin = 'anonymous';
 
     // Set initial ARIA attributes for loading state
     if (config.ariaLabel) {
-      this.updateAriaAttributes(this.videoElement, "loading");
+      this.updateAriaAttributes(this.videoElement, 'loading');
     }
 
     // Add subtitle tracks if provided
     const videoElement = this.videoElement;
     if (config.subtitleTracks && config.subtitleTracks.length > 0) {
       config.subtitleTracks.forEach((track) => {
-        const trackElement = document.createElement("track");
-        trackElement.kind = track.kind || "subtitles";
+        const trackElement = document.createElement('track');
+        trackElement.kind = track.kind || 'subtitles';
         trackElement.src = track.src;
         trackElement.srclang = track.language;
         trackElement.label = track.label;
@@ -77,28 +77,28 @@ export class NativeVideoProvider extends BaseProvider {
     }
 
     // Set up event listeners
-    this.videoElement.addEventListener("loadedmetadata", () => {
+    this.videoElement.addEventListener('loadedmetadata', () => {
       if (this.videoElement) {
-        this.updateAriaAttributes(this.videoElement, "ready");
+        this.updateAriaAttributes(this.videoElement, 'ready');
       }
       this.triggerReady();
     });
 
-    this.videoElement.addEventListener("play", () => {
+    this.videoElement.addEventListener('play', () => {
       this.triggerPlay();
     });
 
-    this.videoElement.addEventListener("pause", () => {
+    this.videoElement.addEventListener('pause', () => {
       this.triggerPause();
     });
 
-    this.videoElement.addEventListener("error", () => {
+    this.videoElement.addEventListener('error', () => {
       if (this.videoElement) {
-        this.updateAriaAttributes(this.videoElement, "error");
+        this.updateAriaAttributes(this.videoElement, 'error');
       }
       // Use the generic error message from config
       this.triggerError(
-        new Error(this.config.errorMessage || "Failed to load video"),
+        new Error(this.config.errorMessage || 'Failed to load video')
       );
     });
 
@@ -111,7 +111,7 @@ export class NativeVideoProvider extends BaseProvider {
    */
   async load(url: string): Promise<void> {
     if (!this.videoElement) {
-      throw new Error("Video element not initialized");
+      throw new Error('Video element not initialized');
     }
 
     this.videoElement.src = url;
@@ -123,7 +123,7 @@ export class NativeVideoProvider extends BaseProvider {
         await this.videoElement.play();
       } catch (error) {
         // Auto-play might be blocked by browser
-        console.warn("Auto-play was prevented:", error);
+        console.warn('Auto-play was prevented:', error);
       }
     }
   }
@@ -134,7 +134,7 @@ export class NativeVideoProvider extends BaseProvider {
   play(): void {
     if (this.videoElement) {
       this.videoElement.play().catch((error) => {
-        console.warn("Play was prevented:", error);
+        console.warn('Play was prevented:', error);
       });
     }
   }
@@ -154,7 +154,7 @@ export class NativeVideoProvider extends BaseProvider {
   destroy(): void {
     if (this.videoElement) {
       this.videoElement.pause();
-      this.videoElement.removeAttribute("src");
+      this.videoElement.removeAttribute('src');
       this.videoElement.load();
 
       // Remove from DOM before calling super.destroy()

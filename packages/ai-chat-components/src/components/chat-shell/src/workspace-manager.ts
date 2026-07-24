@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import throttle from "lodash-es/throttle.js";
+import throttle from 'lodash-es/throttle.js';
 import {
   calculateRequiredWidth,
   hasSignificantWidthChange,
@@ -17,7 +17,7 @@ import {
   getCssLengthFromProperty,
   areWorkspaceAttributesCorrect,
   shouldSkipWorkspaceUpdate,
-} from "./workspace-manager-utils.js";
+} from './workspace-manager-utils.js';
 
 const WORKSPACE_MIN_WIDTH_FALLBACK = 640;
 const MESSAGES_MIN_WIDTH_FALLBACK = 320;
@@ -28,7 +28,7 @@ const EXPANSION_THRESHOLD_PX = 1;
 interface WorkspaceConfig {
   showWorkspace: boolean;
   showHistory: boolean;
-  workspaceLocation: "start" | "end";
+  workspaceLocation: 'start' | 'end';
   roundedCorners: boolean;
 }
 
@@ -85,12 +85,12 @@ export class WorkspaceManager {
     private readonly shellRoot: HTMLElement,
     private readonly hostElement: HTMLElement,
     private config: WorkspaceConfig,
-    private callbacks?: WorkspaceCallbacks,
+    private callbacks?: WorkspaceCallbacks
   ) {
     this.throttledHandleHostResize = throttle(
       (inlineSize: number) => this.handleHostResize(inlineSize),
       100,
-      { leading: true, trailing: true },
+      { leading: true, trailing: true }
     );
   }
 
@@ -113,8 +113,8 @@ export class WorkspaceManager {
    */
   disconnect(): void {
     this.hostResizeObserver?.disconnect();
-    if (this.windowResizeHandler && typeof window !== "undefined") {
-      window.removeEventListener("resize", this.windowResizeHandler);
+    if (this.windowResizeHandler && typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.windowResizeHandler);
     }
     this.clearExpansionTimers();
     this.clearContractionTimers();
@@ -244,7 +244,7 @@ export class WorkspaceManager {
   private observeHostWidth(): void {
     this.setupWindowResizeListener();
 
-    if (typeof ResizeObserver === "undefined") {
+    if (typeof ResizeObserver === 'undefined') {
       this.performInitialHostMeasurement();
       return;
     }
@@ -259,16 +259,16 @@ export class WorkspaceManager {
   }
 
   private setupWindowResizeListener(): void {
-    if (this.windowResizeHandler || typeof window === "undefined") {
+    if (this.windowResizeHandler || typeof window === 'undefined') {
       return;
     }
 
     this.windowResizeHandler = () => {
       this.throttledHandleHostResize(
-        this.hostElement.getBoundingClientRect().width,
+        this.hostElement.getBoundingClientRect().width
       );
     };
-    window.addEventListener("resize", this.windowResizeHandler);
+    window.addEventListener('resize', this.windowResizeHandler);
   }
 
   private createHostResizeObserver(): void {
@@ -383,13 +383,13 @@ export class WorkspaceManager {
 
     // Scenario 1: Already wide enough - show immediately
     if (isWideEnough(inlineSize, requiredWidth)) {
-      this.initializeImmediateDisplay("container", inlineSize);
+      this.initializeImmediateDisplay('container', inlineSize);
       return;
     }
 
     // Scenario 2: Host can't ever reach required size - go straight to panel
     if (!canHostGrow(requiredWidth)) {
-      this.initializeImmediateDisplay("panel", inlineSize);
+      this.initializeImmediateDisplay('panel', inlineSize);
       return;
     }
 
@@ -398,18 +398,18 @@ export class WorkspaceManager {
   }
 
   private initializeImmediateDisplay(
-    mode: "container" | "panel",
-    inlineSize: number,
+    mode: 'container' | 'panel',
+    inlineSize: number
   ): void {
     const attribute =
-      mode === "container" ? "workspace-in-container" : "workspace-in-panel";
+      mode === 'container' ? 'workspace-in-container' : 'workspace-in-panel';
 
     // Pre-set workspace attribute to prevent layout flash
-    this.hostElement.setAttribute(attribute, "");
+    this.hostElement.setAttribute(attribute, '');
     // Show the workspace container immediately
     this.setShowWorkspaceContainer(true);
     this.observeHostWidth();
-    this.finalizeImmediateDisplay(inlineSize, mode === "panel");
+    this.finalizeImmediateDisplay(inlineSize, mode === 'panel');
   }
 
   private initializeExpansionTracking(): void {
@@ -463,7 +463,7 @@ export class WorkspaceManager {
    */
   private checkExpansionProgress(
     initialWidth: number,
-    hasSetContainerMode: { value: boolean },
+    hasSetContainerMode: { value: boolean }
   ): void {
     const currentWidth = this.hostElement.getBoundingClientRect().width;
 
@@ -472,7 +472,7 @@ export class WorkspaceManager {
       const sawMovement = hasSignificantWidthChange(
         currentWidth,
         initialWidth,
-        EXPANSION_THRESHOLD_PX,
+        EXPANSION_THRESHOLD_PX
       );
       this.finishWorkspaceExpansion(sawMovement);
     } else {
@@ -480,7 +480,7 @@ export class WorkspaceManager {
       this.handleOngoingExpansion(
         currentWidth,
         initialWidth,
-        hasSetContainerMode,
+        hasSetContainerMode
       );
     }
   }
@@ -491,7 +491,7 @@ export class WorkspaceManager {
   private handleOngoingExpansion(
     currentWidth: number,
     initialWidth: number,
-    hasSetContainerMode: { value: boolean },
+    hasSetContainerMode: { value: boolean }
   ): void {
     // Set workspace-in-container mode on first detected meaningful movement
     if (
@@ -499,7 +499,7 @@ export class WorkspaceManager {
       hasSignificantWidthChange(
         currentWidth,
         initialWidth,
-        EXPANSION_THRESHOLD_PX,
+        EXPANSION_THRESHOLD_PX
       )
     ) {
       // Transition from checking to confirmed expanding
@@ -515,8 +515,8 @@ export class WorkspaceManager {
    * Set workspace to container mode by updating DOM attributes.
    */
   private setWorkspaceInContainerMode(): void {
-    this.hostElement.removeAttribute("workspace-in-panel");
-    this.hostElement.setAttribute("workspace-in-container", "");
+    this.hostElement.removeAttribute('workspace-in-panel');
+    this.hostElement.setAttribute('workspace-in-container', '');
   }
 
   private setupContractionTracking(): void {
@@ -557,7 +557,7 @@ export class WorkspaceManager {
 
   private checkContractionProgress(
     initialWidth: number,
-    hasSetContractingMode: { value: boolean },
+    hasSetContractingMode: { value: boolean }
   ): void {
     const currentWidth = this.hostElement.getBoundingClientRect().width;
 
@@ -566,7 +566,7 @@ export class WorkspaceManager {
       const sawMovement = hasSignificantWidthChange(
         currentWidth,
         initialWidth,
-        EXPANSION_THRESHOLD_PX,
+        EXPANSION_THRESHOLD_PX
       );
       this.finishWorkspaceContraction(sawMovement);
     } else {
@@ -574,7 +574,7 @@ export class WorkspaceManager {
       this.handleOngoingContraction(
         currentWidth,
         initialWidth,
-        hasSetContractingMode,
+        hasSetContractingMode
       );
     }
   }
@@ -582,7 +582,7 @@ export class WorkspaceManager {
   private handleOngoingContraction(
     currentWidth: number,
     initialWidth: number,
-    hasSetContractingMode: { value: boolean },
+    hasSetContractingMode: { value: boolean }
   ): void {
     // Set contracting mode on first detected meaningful shrinkage
     if (
@@ -590,7 +590,7 @@ export class WorkspaceManager {
       hasSignificantWidthChange(
         currentWidth,
         initialWidth,
-        EXPANSION_THRESHOLD_PX,
+        EXPANSION_THRESHOLD_PX
       ) &&
       currentWidth < initialWidth
     ) {
@@ -682,8 +682,8 @@ export class WorkspaceManager {
     this.setShowWorkspaceContainer(false);
 
     // Now clear attributes AFTER container is removed from DOM
-    this.hostElement.removeAttribute("workspace-in-panel");
-    this.hostElement.removeAttribute("workspace-in-container");
+    this.hostElement.removeAttribute('workspace-in-panel');
+    this.hostElement.removeAttribute('workspace-in-container');
 
     // Reset workspace state to original values
     this.setState({
@@ -737,9 +737,9 @@ export class WorkspaceManager {
    * @param inPanel - True for panel mode, false for container mode
    */
   private updateWorkspaceAttributes(inPanel: boolean): void {
-    this.hostElement.toggleAttribute("workspace-in-panel", inPanel);
+    this.hostElement.toggleAttribute('workspace-in-panel', inPanel);
     // workspace-in-container is the inverse of workspace-in-panel
-    this.hostElement.toggleAttribute("workspace-in-container", !inPanel);
+    this.hostElement.toggleAttribute('workspace-in-container', !inPanel);
   }
 
   /**
@@ -767,7 +767,7 @@ export class WorkspaceManager {
     const stateChanged = this.state.inPanel !== inPanel;
     const attributesCorrect = areWorkspaceAttributesCorrect(
       this.hostElement,
-      inPanel,
+      inPanel
     );
 
     // Nothing to do if state and attributes are already correct
@@ -846,26 +846,26 @@ export class WorkspaceManager {
 
   private updateShellClasses(): void {
     this.shellRoot.classList.toggle(
-      "workspace-checking",
-      this.state.isCheckingExpansion,
+      'workspace-checking',
+      this.state.isCheckingExpansion
     );
     this.shellRoot.classList.toggle(
-      "workspace-checking-closing",
-      this.state.isCheckingContracting,
+      'workspace-checking-closing',
+      this.state.isCheckingContracting
     );
     this.shellRoot.classList.toggle(
-      "workspace-closing",
-      this.state.isContracting,
+      'workspace-closing',
+      this.state.isContracting
     );
     this.shellRoot.classList.toggle(
-      "workspace-opening",
-      this.state.isExpanding,
+      'workspace-opening',
+      this.state.isExpanding
     );
   }
 
   private requestHostUpdate(): void {
     // Trigger re-render on Lit element
-    if ("requestUpdate" in this.hostElement) {
+    if ('requestUpdate' in this.hostElement) {
       (this.hostElement as any).requestUpdate();
     }
   }
@@ -873,19 +873,19 @@ export class WorkspaceManager {
   private getRequiredMinWidth(): number {
     const workspaceMinWidth = getCssLengthFromProperty(
       this.hostElement,
-      "--cds-aichat-workspace-min-width",
-      WORKSPACE_MIN_WIDTH_FALLBACK,
+      '--cds-aichat-workspace-min-width',
+      WORKSPACE_MIN_WIDTH_FALLBACK
     );
     const messagesMinWidth = getCssLengthFromProperty(
       this.hostElement,
-      "--cds-aichat-messages-min-width",
-      MESSAGES_MIN_WIDTH_FALLBACK,
+      '--cds-aichat-messages-min-width',
+      MESSAGES_MIN_WIDTH_FALLBACK
     );
     const historyWidth = this.config.showHistory
       ? getCssLengthFromProperty(
           this.hostElement,
-          "--cds-aichat-history-width",
-          HISTORY_WIDTH_FALLBACK,
+          '--cds-aichat-history-width',
+          HISTORY_WIDTH_FALLBACK
         )
       : 0;
 
@@ -894,7 +894,7 @@ export class WorkspaceManager {
 
   private finalizeImmediateDisplay(
     inlineSize: number,
-    usePanel: boolean,
+    usePanel: boolean
   ): void {
     this.setWorkspaceContentVisible(true);
     this.setState({ isExpanding: false });
@@ -924,7 +924,7 @@ export class WorkspaceManager {
    * When these properties change, recalculate workspace positioning.
    */
   private observeCssProperties(): void {
-    if (typeof MutationObserver === "undefined") {
+    if (typeof MutationObserver === 'undefined') {
       return;
     }
 
@@ -938,7 +938,7 @@ export class WorkspaceManager {
 
     this.cssPropertyObserver.observe(this.hostElement, {
       attributes: true,
-      attributeFilter: ["style"],
+      attributeFilter: ['style'],
     });
   }
 
@@ -949,18 +949,18 @@ export class WorkspaceManager {
     this.lastKnownCssValues = {
       workspaceMinWidth: getCssLengthFromProperty(
         this.hostElement,
-        "--cds-aichat-workspace-min-width",
-        WORKSPACE_MIN_WIDTH_FALLBACK,
+        '--cds-aichat-workspace-min-width',
+        WORKSPACE_MIN_WIDTH_FALLBACK
       ),
       messagesMinWidth: getCssLengthFromProperty(
         this.hostElement,
-        "--cds-aichat-messages-min-width",
-        MESSAGES_MIN_WIDTH_FALLBACK,
+        '--cds-aichat-messages-min-width',
+        MESSAGES_MIN_WIDTH_FALLBACK
       ),
       historyWidth: getCssLengthFromProperty(
         this.hostElement,
-        "--cds-aichat-history-width",
-        HISTORY_WIDTH_FALLBACK,
+        '--cds-aichat-history-width',
+        HISTORY_WIDTH_FALLBACK
       ),
     };
   }
@@ -971,18 +971,18 @@ export class WorkspaceManager {
   private checkCssPropertyChanges(): void {
     const workspaceMinWidth = getCssLengthFromProperty(
       this.hostElement,
-      "--cds-aichat-workspace-min-width",
-      WORKSPACE_MIN_WIDTH_FALLBACK,
+      '--cds-aichat-workspace-min-width',
+      WORKSPACE_MIN_WIDTH_FALLBACK
     );
     const messagesMinWidth = getCssLengthFromProperty(
       this.hostElement,
-      "--cds-aichat-messages-min-width",
-      MESSAGES_MIN_WIDTH_FALLBACK,
+      '--cds-aichat-messages-min-width',
+      MESSAGES_MIN_WIDTH_FALLBACK
     );
     const historyWidth = getCssLengthFromProperty(
       this.hostElement,
-      "--cds-aichat-history-width",
-      HISTORY_WIDTH_FALLBACK,
+      '--cds-aichat-history-width',
+      HISTORY_WIDTH_FALLBACK
     );
 
     const hasChanged =

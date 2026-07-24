@@ -27,7 +27,7 @@ import {
   clearSelector,
   clearVarsForSelector,
   setVarsForSelector,
-} from "@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js";
+} from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 let instanceCounter = 0;
 
@@ -44,10 +44,10 @@ function attrNameFor(prefix: string): string {
 }
 
 function escapeForAttributeSelector(value: string): string {
-  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+  if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
     return CSS.escape(value);
   }
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function selectorFor(attrName: string, id: string): string {
@@ -67,7 +67,7 @@ function selectorFor(attrName: string, id: string): string {
 function applyDynamicStyles(
   element: HTMLElement,
   prefix: string,
-  declarations: Record<string, string>,
+  declarations: Record<string, string>
 ): void {
   const attrName = attrNameFor(prefix);
   let id = element.getAttribute(attrName);

@@ -23,18 +23,18 @@
  * Start reading at: `handleClose` and the render() workspace shell.
  */
 
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/button/index.js";
-import { PanelType } from "@carbon/ai-chat";
-import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/web-components/es/components/tag/tag.js";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/button/index.js';
+import { PanelType } from '@carbon/ai-chat';
+import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/ai-label/ai-label.js';
 //icons
-import Close16 from "@carbon/icons/es/close/16.js";
+import Close16 from '@carbon/icons/es/close/16.js';
 
-@customElement("inventory-status-example")
+@customElement('inventory-status-example')
 class InventoryStatusExample extends LitElement {
   static styles = css`
     pre {
@@ -47,13 +47,13 @@ class InventoryStatusExample extends LitElement {
   `;
 
   @property({ type: String })
-  accessor location: string = "";
+  accessor location: string = '';
 
   @property({ type: Object })
   accessor instance: any = null;
 
   @property({ type: String })
-  accessor workspaceId: string = "";
+  accessor workspaceId: string = '';
 
   @property({ type: Object })
   accessor additionalData: any = null;
@@ -61,10 +61,10 @@ class InventoryStatusExample extends LitElement {
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
+      size: 'md',
       onClick: this.handleClose.bind(this),
     },
   ];
@@ -72,22 +72,22 @@ class InventoryStatusExample extends LitElement {
   @property({ type: Array })
   accessor footerActions: any[] = [
     {
-      id: "evaluate",
-      label: "Evaluate plan",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'evaluate',
+      label: 'Evaluate plan',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "run",
-      label: "Run plan",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'run',
+      label: 'Run plan',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ];
 
@@ -100,19 +100,19 @@ class InventoryStatusExample extends LitElement {
   handleWorkspaceFooterClick(event: any) {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
-      case "evaluate":
+      case 'evaluate':
         // Replace with a real production implementation; alert stands in for an evaluate-plan workflow.
         alert(
-          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "run":
+      case 'run':
         // Replace with a real production implementation; alert stands in for a run-plan workflow.
         alert(
-          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "cancel":
+      case 'cancel':
         this.handleClose();
         break;
       default:
@@ -125,8 +125,7 @@ class InventoryStatusExample extends LitElement {
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
-        .actions=${this.toolbarActions}
-      >
+        .actions=${this.toolbarActions}>
         <div slot="title" data-fixed>Current inventory status</div>
         <cds-ai-label slot="decorator" alignment="bottom" size="2xs">
           <div slot="body-text">
@@ -140,8 +139,7 @@ class InventoryStatusExample extends LitElement {
       </cds-aichat-toolbar>
       <cds-aichat-workspace-shell-header
         title-text="Current inventory status"
-        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}
-      >
+        subtitle-text=${`Created on: ${new Date().toLocaleDateString()}`}>
         <div slot="header-description">
           This is a simple example workspace component demonstrating the data
           flow from preview card to workspace.
@@ -162,7 +160,7 @@ class InventoryStatusExample extends LitElement {
         <p>Location: <strong>${this.location}</strong></p>
         <p>
           Workspace ID:
-          <strong>${this.workspaceId || "Not provided"}</strong>
+          <strong>${this.workspaceId || 'Not provided'}</strong>
         </p>
         <br />
         <h4>Additional Data from Preview Card:</h4>
@@ -180,8 +178,7 @@ class InventoryStatusExample extends LitElement {
         .actions=${this.footerActions}
         @cds-aichat-workspace-shell-footer-clicked=${
           this.handleWorkspaceFooterClick
-        }
-      >
+        }>
       </cds-aichat-workspace-shell-footer>
     </cds-aichat-workspace-shell>`;
   }

@@ -24,10 +24,10 @@
  * the build uses. Tests mock `typedoc` to keep this module's logic isolated.
  */
 
-import { Comment, ReflectionKind } from "typedoc";
+import { Comment, ReflectionKind } from 'typedoc';
 
 /** Names the renamed entry module can carry (current + legacy fallback). */
-const ENTRY_MODULE_NAMES = new Set(["Type reference", "aiChatEntry"]);
+const ENTRY_MODULE_NAMES = new Set(['Type reference', 'aiChatEntry']);
 
 /** Top-level reflection kinds we emit a record (and its own doc page) for. */
 const TOP_LEVEL_KINDS =
@@ -130,7 +130,7 @@ function processTopLevel(refl, ctx) {
     refl,
     ctx,
     null,
-    memberRecords.map((r) => r.key),
+    memberRecords.map((r) => r.key)
   );
   ctx.records.push(ownerRecord, ...memberRecords);
 
@@ -145,14 +145,14 @@ function processTopLevel(refl, ctx) {
 }
 
 function shouldSkip(refl) {
-  if (typeof refl.isReference === "function" && refl.isReference()) {
+  if (typeof refl.isReference === 'function' && refl.isReference()) {
     return true;
   }
   const c = refl.comment;
   if (
-    c?.hasModifier?.("@internal") ||
-    c?.hasModifier?.("@hidden") ||
-    c?.hasModifier?.("@ignore")
+    c?.hasModifier?.('@internal') ||
+    c?.hasModifier?.('@hidden') ||
+    c?.hasModifier?.('@ignore')
   ) {
     return true;
   }
@@ -164,7 +164,7 @@ function buildRecord(refl, ctx, fallbackCategory, memberKeys = []) {
   const comment = commentOf(refl);
 
   let category = readCategory(refl);
-  if (category === "*" && fallbackCategory) {
+  if (category === '*' && fallbackCategory) {
     category = fallbackCategory;
   }
 
@@ -172,8 +172,8 @@ function buildRecord(refl, ctx, fallbackCategory, memberKeys = []) {
   const signature = computeSignature(refl, allSignatures);
   const signatures = allSignatures.length > 1 ? allSignatures : [];
 
-  const remarks = comment?.getTag?.("@remarks");
-  const deprecatedTag = comment?.getTag?.("@deprecated");
+  const remarks = comment?.getTag?.('@remarks');
+  const deprecatedTag = comment?.getTag?.('@deprecated');
   const parentRefl = refl.parent;
   const parent =
     parentRefl &&
@@ -190,16 +190,16 @@ function buildRecord(refl, ctx, fallbackCategory, memberKeys = []) {
     parent,
     category,
     summary: renderParts(comment?.summary),
-    description: remarks ? renderParts(remarks.content) : "",
+    description: remarks ? renderParts(remarks.content) : '',
     signature,
     signatures,
     members: memberKeys,
     related: collectRelated(comment, module),
     examples: collectExamples(refl),
     deprecated:
-      typeof refl.isDeprecated === "function" ? refl.isDeprecated() : false,
-    deprecatedMessage: deprecatedTag ? renderParts(deprecatedTag.content) : "",
-    experimental: comment?.hasModifier?.("@experimental") === true,
+      typeof refl.isDeprecated === 'function' ? refl.isDeprecated() : false,
+    deprecatedMessage: deprecatedTag ? renderParts(deprecatedTag.content) : '',
+    experimental: comment?.hasModifier?.('@experimental') === true,
     url: router.getFullUrl(refl),
     anchor: router.getAnchor(refl) ?? null,
   };
@@ -218,7 +218,7 @@ function keyFor(refl, module) {
     parts.unshift(cur.name);
     cur = cur.parent;
   }
-  return parts.join(".");
+  return parts.join('.');
 }
 
 /** A reflection's comment, falling back to its first signature / get-accessor. */
@@ -236,44 +236,44 @@ function commentOf(refl) {
 }
 
 function readCategory(refl) {
-  const tag = commentOf(refl)?.getTag?.("@category");
+  const tag = commentOf(refl)?.getTag?.('@category');
   if (tag) {
     const value = Comment.combineDisplayParts(tag.content).trim();
     if (value) {
       return value;
     }
   }
-  return "*";
+  return '*';
 }
 
 function normalize(text) {
-  return (text ?? "").replace(/\r\n/g, "\n");
+  return (text ?? '').replace(/\r\n/g, '\n');
 }
 
 /** Render comment display parts to prose, flattening inline `{@link}` to text. */
 function renderParts(parts) {
   if (!parts) {
-    return "";
+    return '';
   }
-  let out = "";
+  let out = '';
   for (const part of parts) {
-    if (part.kind === "inline-tag" && isLinkTag(part.tag)) {
-      out += part.tsLinkText || part.text || linkTargetName(part.target) || "";
+    if (part.kind === 'inline-tag' && isLinkTag(part.tag)) {
+      out += part.tsLinkText || part.text || linkTargetName(part.target) || '';
     } else {
-      out += part.text ?? "";
+      out += part.text ?? '';
     }
   }
   return normalize(out).trim();
 }
 
 function isLinkTag(tag) {
-  return tag === "@link" || tag === "@linkcode" || tag === "@linkplain";
+  return tag === '@link' || tag === '@linkcode' || tag === '@linkplain';
 }
 
 function linkTargetName(target) {
-  return target && typeof target === "object" && typeof target.name === "string"
+  return target && typeof target === 'object' && typeof target.name === 'string'
     ? target.name
-    : "";
+    : '';
 }
 
 /** Collect the bare `{@link}` targets referenced in summary/remarks. */
@@ -281,7 +281,7 @@ function collectRelated(comment, module) {
   const out = new Set();
   const scan = (parts) => {
     for (const part of parts ?? []) {
-      if (part.kind === "inline-tag" && isLinkTag(part.tag)) {
+      if (part.kind === 'inline-tag' && isLinkTag(part.tag)) {
         const key = relatedKey(part, module);
         if (key) {
           out.add(key);
@@ -290,7 +290,7 @@ function collectRelated(comment, module) {
     }
   };
   scan(comment?.summary);
-  const remarks = comment?.getTag?.("@remarks");
+  const remarks = comment?.getTag?.('@remarks');
   if (remarks) {
     scan(remarks.content);
   }
@@ -299,7 +299,7 @@ function collectRelated(comment, module) {
 
 function relatedKey(part, module) {
   const target = part.target;
-  if (target && typeof target.getFullName === "function") {
+  if (target && typeof target.getFullName === 'function') {
     return keyFor(target, module);
   }
   return normalize(part.text).trim();
@@ -310,7 +310,7 @@ function collectExamples(refl) {
   const out = [];
   const add = (comment) => {
     for (const tag of comment?.blockTags ?? []) {
-      if (tag.tag === "@example") {
+      if (tag.tag === '@example') {
         out.push(normalize(Comment.combineDisplayParts(tag.content)).trim());
       }
     }
@@ -327,23 +327,23 @@ function collectExamples(refl) {
 
 function typeStr(type) {
   try {
-    return type ? type.toString() : "";
+    return type ? type.toString() : '';
   } catch {
-    return "";
+    return '';
   }
 }
 
 function paramStr(p) {
-  const optional = p.flags?.isOptional || p.defaultValue != null ? "?" : "";
-  return `${p.name}${optional}: ${typeStr(p.type) || "unknown"}`;
+  const optional = p.flags?.isOptional || p.defaultValue != null ? '?' : '';
+  return `${p.name}${optional}: ${typeStr(p.type) || 'unknown'}`;
 }
 
 function signatureStringFor(name, sig) {
   const typeParams = sig.typeParameters?.length
-    ? `<${sig.typeParameters.map((t) => t.name).join(", ")}>`
-    : "";
-  const params = (sig.parameters ?? []).map(paramStr).join(", ");
-  const ret = typeStr(sig.type) || "void";
+    ? `<${sig.typeParameters.map((t) => t.name).join(', ')}>`
+    : '';
+  const params = (sig.parameters ?? []).map(paramStr).join(', ');
+  const ret = typeStr(sig.type) || 'void';
   return `${name}${typeParams}(${params}): ${ret}`;
 }
 
@@ -376,12 +376,12 @@ function computeSignature(refl, signatures) {
     case ReflectionKind.Method:
       return signatures[0] ?? refl.name;
     case ReflectionKind.Accessor: {
-      const t = refl.getSignature ? typeStr(refl.getSignature.type) : "";
+      const t = refl.getSignature ? typeStr(refl.getSignature.type) : '';
       return t ? `${refl.name}: ${t}` : refl.name;
     }
     default: {
       // Property / Variable / anything else with a type.
-      const optional = refl.flags?.isOptional ? "?" : "";
+      const optional = refl.flags?.isOptional ? '?' : '';
       const t = typeStr(refl.type);
       return t ? `${refl.name}${optional}: ${t}` : refl.name;
     }

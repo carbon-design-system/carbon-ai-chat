@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,11 +7,11 @@
  *  @license
  */
 
-import { Compartment } from "@codemirror/state";
-import { LanguageDescription, LanguageSupport } from "@codemirror/language";
-import { languages } from "./language-data.js";
-import { EditorView } from "@codemirror/view";
-import { detectLanguage, mapLanguageName } from "./language-utils.js";
+import { Compartment } from '@codemirror/state';
+import { LanguageDescription, LanguageSupport } from '@codemirror/language';
+import { languages } from './language-data.js';
+import { EditorView } from '@codemirror/view';
+import { detectLanguage, mapLanguageName } from './language-utils.js';
 
 interface LanguageStateUpdate {
   detectedLanguage?: string | null;
@@ -51,13 +51,13 @@ export class LanguageController {
 
     let languageToUse = languageAttr
       ? (mapLanguageName(languageAttr) ?? languageAttr)
-      : "";
+      : '';
 
     if (!languageToUse && content) {
       const trimmed = content.trim();
       if (trimmed) {
         const detected = detectLanguage(trimmed);
-        languageToUse = detected ?? "";
+        languageToUse = detected ?? '';
       }
     }
 
@@ -77,7 +77,7 @@ export class LanguageController {
     const langDesc = LanguageDescription.matchLanguageName(
       languages,
       languageToUse,
-      true,
+      true
     );
 
     const detectedLanguage = langDesc ? languageToUse : null;
@@ -123,7 +123,7 @@ export class LanguageController {
         const langDesc = LanguageDescription.matchLanguageName(
           languages,
           detected,
-          true,
+          true
         );
 
         if (langDesc && !this.pendingLanguageLoad) {
@@ -185,7 +185,7 @@ export class LanguageController {
       const langDesc = LanguageDescription.matchLanguageName(
         languages,
         detected,
-        true,
+        true
       );
 
       if (!langDesc) {

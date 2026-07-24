@@ -1,36 +1,36 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
  */
-import { html } from "lit";
-import "@carbon/web-components/es/components/tag/tag.js";
-import "@carbon/web-components/es/components/data-table/table.js";
-import "@carbon/web-components/es/components/data-table/table-head.js";
-import "@carbon/web-components/es/components/data-table/table-header-row.js";
-import "@carbon/web-components/es/components/data-table/table-header-cell.js";
-import "@carbon/web-components/es/components/data-table/table-body.js";
-import "@carbon/web-components/es/components/data-table/table-row.js";
-import "@carbon/web-components/es/components/data-table/table-cell.js";
-import "@carbon/web-components/es/components/data-table/table-toolbar.js";
-import "@carbon/web-components/es/components/data-table/table-toolbar-content.js";
-import "@carbon/web-components/es/components/data-table/table-toolbar-search.js";
-import "@carbon/web-components/es/components/data-table/table-header-title.js";
-import "@carbon/web-components/es/components/data-table/table-header-description.js";
-import "@carbon/web-components/es/components/button/button.js";
-import "../../code-snippet/index.js";
-import { multilineCode } from "./story-data.js";
+import { html } from 'lit';
+import '@carbon/web-components/es/components/tag/tag.js';
+import '@carbon/web-components/es/components/data-table/table.js';
+import '@carbon/web-components/es/components/data-table/table-head.js';
+import '@carbon/web-components/es/components/data-table/table-header-row.js';
+import '@carbon/web-components/es/components/data-table/table-header-cell.js';
+import '@carbon/web-components/es/components/data-table/table-body.js';
+import '@carbon/web-components/es/components/data-table/table-row.js';
+import '@carbon/web-components/es/components/data-table/table-cell.js';
+import '@carbon/web-components/es/components/data-table/table-toolbar.js';
+import '@carbon/web-components/es/components/data-table/table-toolbar-content.js';
+import '@carbon/web-components/es/components/data-table/table-toolbar-search.js';
+import '@carbon/web-components/es/components/data-table/table-header-title.js';
+import '@carbon/web-components/es/components/data-table/table-header-description.js';
+import '@carbon/web-components/es/components/button/button.js';
+import '../../code-snippet/index.js';
+import { multilineCode } from './story-data.js';
 import {
   headers as tableHeaders,
   rows as tableRows,
-} from "../../table/__stories__/story-data.js";
+} from '../../table/__stories__/story-data.js';
 
 export function getHeaderDescription(type) {
   switch (type) {
-    case "basic":
+    case 'basic':
       return html`
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -38,7 +38,7 @@ export function getHeaderDescription(type) {
           minim veniam, quis nostrud exercitation ullamco.
         </div>
       `;
-    case "withTags":
+    case 'withTags':
       return html`
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -58,13 +58,13 @@ export function getHeaderDescription(type) {
 
 export function getBodyContent(type) {
   switch (type) {
-    case "short":
+    case 'short':
       return html`
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
         veniam, quis nostrud exercitation ullamco.
       `;
-    case "long":
+    case 'long':
       return html`
         <div>
           <p>
@@ -94,8 +94,7 @@ export function getBodyContent(type) {
               <cds-table-toolbar-content>
                 <cds-table-toolbar-search
                   placeholder="Filter table"
-                  persistent
-                ></cds-table-toolbar-search>
+                  persistent></cds-table-toolbar-search>
                 <cds-button>Add new</cds-button>
               </cds-table-toolbar-content>
             </cds-table-toolbar>
@@ -105,7 +104,7 @@ export function getBodyContent(type) {
                   (header) =>
                     html`<cds-table-header-cell
                       >${header.text}</cds-table-header-cell
-                    >`,
+                    >`
                 )}
               </cds-table-header-row>
             </cds-table-head>
@@ -115,10 +114,10 @@ export function getBodyContent(type) {
                   <cds-table-row>
                     ${row.cells.map(
                       (cell) =>
-                        html`<cds-table-cell>${cell.text}</cds-table-cell>`,
+                        html`<cds-table-cell>${cell.text}</cds-table-cell>`
                     )}
                   </cds-table-row>
-                `,
+                `
               )}
             </cds-table-body>
           </cds-table>

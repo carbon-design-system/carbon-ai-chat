@@ -7,25 +7,25 @@
  *  @license
  */
 
-import React, { useLayoutEffect, useRef } from "react";
-import { useSelector } from "../../../hooks/useSelector";
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import { selectInputIsReadonly } from "../../../store/selectors";
-import { AppState } from "../../../../types/state/AppState";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { THROW_ERROR } from "../../../utils/constants";
+import React, { useLayoutEffect, useRef } from 'react';
+import { useSelector } from '../../../hooks/useSelector';
+import { useServiceManager } from '../../../hooks/useServiceManager';
+import { selectInputIsReadonly } from '../../../store/selectors';
+import { AppState } from '../../../../types/state/AppState';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { THROW_ERROR } from '../../../utils/constants';
 import {
   applyDynamicStyles,
   clearDynamicStyles,
-} from "../../../utils/cspStyleUtils";
+} from '../../../utils/cspStyleUtils';
 import {
   GenericItem,
   GridItem,
   HorizontalCellAlignment,
   MessageResponse,
   VerticalCellAlignment,
-} from "../../../../types/messaging/Messages";
-import { MessageTypeComponentProps } from "../../../../types/messaging/MessageTypeComponentProps";
+} from '../../../../types/messaging/Messages';
+import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
 
 function GridItemCell({
   cell,
@@ -55,7 +55,7 @@ function GridItemCell({
   const serviceManager = useServiceManager();
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID,
+    (state: AppState) => state.allMessageItemsByID
   );
 
   const { horizontal_alignment, vertical_alignment } = localMessageItem.item;
@@ -69,21 +69,21 @@ function GridItemCell({
     }
     const horizontal = cellData?.horizontal_alignment || horizontal_alignment;
     const declarations: Record<string, string> = {
-      "align-items": getFlexAlignment(horizontal),
-      "justify-content": getFlexAlignment(
-        cellData?.vertical_alignment || vertical_alignment,
+      'align-items': getFlexAlignment(horizontal),
+      'justify-content': getFlexAlignment(
+        cellData?.vertical_alignment || vertical_alignment
       ),
     };
     if (isPixelValue) {
-      declarations["inline-size"] = columnWidthString;
+      declarations['inline-size'] = columnWidthString;
     } else {
       declarations.flex = `${Number(columnWidthString)}`;
     }
     if (horizontal) {
-      declarations["text-align"] = horizontal;
+      declarations['text-align'] = horizontal;
     }
-    applyDynamicStyles(node, "grid-cell", declarations);
-    return () => clearDynamicStyles(node, "grid-cell");
+    applyDynamicStyles(node, 'grid-cell', declarations);
+    return () => clearDynamicStyles(node, 'grid-cell');
   }, [
     isPixelValue,
     columnWidthString,
@@ -123,18 +123,18 @@ function GridItemCell({
  * Returns the CSS flex alignment for the given horizontal/vertical alignment value;
  */
 function getFlexAlignment(
-  value: HorizontalCellAlignment | VerticalCellAlignment,
+  value: HorizontalCellAlignment | VerticalCellAlignment
 ) {
   switch (value) {
-    case "bottom":
-    case "right":
-      return "flex-end";
-    case "center":
-      return "center";
-    case "top":
-    case "left":
+    case 'bottom':
+    case 'right':
+      return 'flex-end';
+    case 'center':
+      return 'center';
+    case 'top':
+    case 'left':
     default:
-      return "flex-start";
+      return 'flex-start';
   }
 }
 

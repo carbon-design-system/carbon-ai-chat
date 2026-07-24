@@ -7,11 +7,11 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasBaseHeight } from "../../../types/utilities/HasBaseHeight";
-import { MediaPlayer, MediaPlayerContentConfig } from "../util/MediaPlayer";
-import { MessageResponseTypes } from "../../../types/messaging/Messages";
+import { HasBaseHeight } from '../../../types/utilities/HasBaseHeight';
+import { MediaPlayer, MediaPlayerContentConfig } from '../util/MediaPlayer';
+import { MessageResponseTypes } from '../../../types/messaging/Messages';
 
 type VideoComponentConfig = HasBaseHeight;
 

@@ -7,20 +7,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import FileUploadsElement from "../components/file-uploads/src/file-uploads.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import FileUploadsElement from '../components/file-uploads/src/file-uploads.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatFileUploads = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-file-uploads",
+    tagName: 'cds-aichat-file-uploads',
     elementClass: FileUploadsElement,
     react: React,
     events: {
-      onFileRemove: "cds-aichat-file-remove",
+      onFileRemove: 'cds-aichat-file-remove',
     },
-  }),
+  })
 );
 
 export default CDSAIChatFileUploads;

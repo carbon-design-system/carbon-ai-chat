@@ -7,22 +7,22 @@
  *  @license
  */
 
-import { Dropdown, DropdownItem } from "../../../components/carbon/Dropdown";
-import cx from "classnames";
-import React, { useRef, useState } from "react";
+import { Dropdown, DropdownItem } from '../../../components/carbon/Dropdown';
+import cx from 'classnames';
+import React, { useRef, useState } from 'react';
 
-import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { useCounter } from "../../../hooks/useCounter";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { AppState } from "../../../../types/state/AppState";
-import { doScrollElementIntoView } from "../../../utils/domUtils";
+import { HasServiceManager } from '../../../hocs/withServiceManager';
+import { useCounter } from '../../../hooks/useCounter';
+import { useSelector } from '../../../hooks/useSelector';
+import { shallowEqual } from '../../../store/appStore';
+import { AppState } from '../../../../types/state/AppState';
+import { doScrollElementIntoView } from '../../../utils/domUtils';
 import {
   MessageInput,
   SingleOption,
-} from "../../../../types/messaging/Messages";
-import { DROPDOWN_SIZE } from "@carbon/web-components/es/components/dropdown/defs.js";
-import { TextBlock } from "../../../components/util/TextBlock/TextBlock";
+} from '../../../../types/messaging/Messages';
+import { DROPDOWN_SIZE } from '@carbon/web-components/es/components/dropdown/defs.js';
+import { TextBlock } from '../../../components/util/TextBlock/TextBlock';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -68,7 +68,7 @@ function SelectComponent(props: SelectProps) {
       options_ariaOptionsDisabled:
         state.languagePack.options_ariaOptionsDisabled,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   const [isBeingOpened, setIsBeingOpened] = useState(false);
@@ -129,10 +129,9 @@ function SelectComponent(props: SelectProps) {
         renderMode="markdown"
       />
       <div
-        className={cx("cds-aichat--select-holder", {
-          "cds-aichat--custom-select-temporary-padding": isBeingOpened,
-        })}
-      >
+        className={cx('cds-aichat--select-holder', {
+          'cds-aichat--custom-select-temporary-padding': isBeingOpened,
+        })}>
         <Dropdown
           id={`cds-aichat--select-uuid-${id}`}
           label={languagePack.options_select}
@@ -144,13 +143,11 @@ function SelectComponent(props: SelectProps) {
           }
           disabled={disableUserInputs}
           onToggled={handleToggle}
-          onSelected={handleSelected}
-        >
+          onSelected={handleSelected}>
           {options.map((option) => (
             <DropdownItem
               value={option.value.input.text}
-              key={option.value.input.text}
-            >
+              key={option.value.input.text}>
               {option.label}
             </DropdownItem>
           ))}

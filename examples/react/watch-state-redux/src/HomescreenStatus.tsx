@@ -23,9 +23,9 @@
  * Start reading at: the `useAppSelector` call below.
  */
 
-import React from "react";
+import React from 'react';
 
-import { selectIsHomeScreenOpen, useAppSelector } from "./store";
+import { selectIsHomeScreenOpen, useAppSelector } from './store';
 
 function HomescreenStatus() {
   // useSelector with a narrow selector means this component only re-renders
@@ -37,7 +37,7 @@ function HomescreenStatus() {
   return (
     <div>
       <h4>Current View State (via Redux selector):</h4>
-      <p>{isHomescreenVisible ? "Homescreen" : "Chat View"}</p>
+      <p>{isHomescreenVisible ? 'Homescreen' : 'Chat View'}</p>
       <p>Watching state via STATE_CHANGE → Redux dispatch</p>
     </div>
   );
