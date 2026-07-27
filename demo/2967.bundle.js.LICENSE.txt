@@ -1,5 +1,0 @@
-/*!
- * program-language-detector v0.0.12
- * (c) 2018-present ULIVZ <chl814@foxmail.com>
- * Released under the MIT License.
- */
