@@ -16,15 +16,15 @@ Shows how to observe `ChatInstance` state externally by reading `instance.getSta
 
 ## APIs and props demonstrated
 
-| Symbol                                                            | Package / kind              | Role in this example                            |
-| ----------------------------------------------------------------- | --------------------------- | ----------------------------------------------- |
-| `ChatContainer`                                                   | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher.         |
-| `PublicConfig`                                                    | `@carbon/ai-chat` type      | Config shape (includes `homescreen`).           |
-| `ChatInstance`                                                    | `@carbon/ai-chat` type      | Provided in `onBeforeRender`.                   |
-| `BusEventType.STATE_CHANGE`                                       | `@carbon/ai-chat` enum      | Event subscribed to.                            |
-| `instance.getState()` / `instance.on`                             | `ChatInstance` API          | Snapshot + subscription.                        |
-| `homescreen.isOn` / `homescreen.greeting` / `homescreen.starters` | config                      | Starter buttons that trigger state transitions. |
-| `customSendMessage`                                               | `messaging` prop            | Echoes a generic response back to the chat.     |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape (includes `homescreen`). |
+| `ChatInstance` | `@carbon/ai-chat` type | Provided in `onBeforeRender`. |
+| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Event subscribed to. |
+| `instance.getState()` / `instance.on` | `ChatInstance` API | Snapshot + subscription. |
+| `homescreen.isOn` / `homescreen.greeting` / `homescreen.starters` | config | Starter buttons that trigger state transitions. |
+| `customSendMessage` | `messaging` prop | Echoes a generic response back to the chat. |
 
 ## Run it
 

@@ -14,12 +14,12 @@ Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, provin
 
 ## APIs and props demonstrated
 
-| Symbol              | Package / kind              | Role in this example       |
-| ------------------- | --------------------------- | -------------------------- |
-| `ChatContainer`     | `@carbon/ai-chat` component | Mounts the chat UI.        |
-| `PublicConfig`      | `@carbon/ai-chat` type      | Config shape.              |
-| `customSendMessage` | `messaging` prop            | Minimal echo mock backend. |
-| `ReactDOM.render`   | `react-dom`                 | Legacy React 17 mount.     |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
+| `ReactDOM.render` | `react-dom` | Legacy React 17 mount. |
 
 ## Run it
 

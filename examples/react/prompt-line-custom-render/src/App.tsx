@@ -29,20 +29,20 @@
  * Start reading at: the `config` constant, then `handleTileClick` and `App()`.
  */
 
-import "./App.css";
+import './App.css';
 // Document-level Carbon stylesheet. Load-bearing: the `tileChip` node view is
 // bridged into the page's light DOM, so the injected Carbon `Tile` is styled
 // by these document styles rather than anything inside the chat's shadow root.
-import "@carbon/styles/css/styles.css";
-import { ChatCustomElement, ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import { ClickableTile } from "@carbon/react";
-import React, { useCallback, useMemo, useRef } from "react";
-import { createRoot } from "react-dom/client";
+import '@carbon/styles/css/styles.css';
+import { ChatCustomElement, ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import { ClickableTile } from '@carbon/react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { renderTileChip } from "./renderTileChip";
-import { tileChipNode, TILE_CHIP_NODE } from "./tileChipNode";
-import { tiles, Tile } from "./tiles";
+import { customSendMessage } from './customSendMessage';
+import { renderTileChip } from './renderTileChip';
+import { tileChipNode, TILE_CHIP_NODE } from './tileChipNode';
+import { tiles, Tile } from './tiles';
 
 function App() {
   // Captured in onBeforeRender so the tile-click handler can reach the live
@@ -69,7 +69,7 @@ function App() {
         tiptap: { extensions: [tileChipNode] },
       },
     }),
-    [],
+    []
   );
 
   const handleTileClick = useCallback((tile: Tile) => {
@@ -81,10 +81,10 @@ function App() {
     // Replace the entire input doc: a fresh doc atomically clears any previous
     // tile and injects the clicked one as a single custom node.
     instance.input.updateContent(() => ({
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
             {
               type: TILE_CHIP_NODE,
@@ -126,8 +126,7 @@ function App() {
             <ClickableTile
               key={tile.id}
               className="tile-chip"
-              onClick={() => handleTileClick(tile)}
-            >
+              onClick={() => handleTileClick(tile)}>
               <strong>{tile.label}</strong>
               <span>{tile.description}</span>
             </ClickableTile>
@@ -146,6 +145,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

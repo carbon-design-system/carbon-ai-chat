@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { LanguagePack } from "../../types/config/LanguagePack";
+import type { LanguagePack } from '../../types/config/LanguagePack';
 
 /**
  * The size/type/count limits a file selection is validated against. Each field
@@ -47,7 +47,7 @@ interface FileUploadValidationResult {
 function validateFileSelection(
   files: File[],
   existingCount: number,
-  config: FileUploadValidationConfig,
+  config: FileUploadValidationConfig
 ): FileUploadValidationResult {
   const { accept, maxFileSizeBytes, maxFiles } = config;
   const allowedTypes = parseAccept(accept);
@@ -64,14 +64,14 @@ function validateFileSelection(
     }
     if (allowedTypes && !matchesAccept(file, allowedTypes)) {
       rejections.push({
-        messageID: "fileSharing_unsupportedType",
+        messageID: 'fileSharing_unsupportedType',
         messageValues: { filename: file.name },
       });
       continue;
     }
     if (maxFileSizeBytes !== undefined && file.size > maxFileSizeBytes) {
       rejections.push({
-        messageID: "fileSharing_fileTooLarge",
+        messageID: 'fileSharing_fileTooLarge',
         messageValues: { maxSize: formatBytes(maxFileSizeBytes) },
       });
       continue;
@@ -83,7 +83,7 @@ function validateFileSelection(
   // One announcement for the whole overflow rather than one per dropped file.
   if (tooMany) {
     rejections.push({
-      messageID: "fileSharing_tooManyFiles",
+      messageID: 'fileSharing_tooManyFiles',
       messageValues: { maxFiles },
     });
   }
@@ -97,7 +97,7 @@ function parseAccept(accept?: string): string[] | null {
     return null;
   }
   const tokens = accept
-    .split(",")
+    .split(',')
     .map((token) => token.trim().toLowerCase())
     .filter(Boolean);
   return tokens.length ? tokens : null;
@@ -105,13 +105,13 @@ function parseAccept(accept?: string): string[] | null {
 
 /** Whether a file matches any token of a parsed `accept` list. */
 function matchesAccept(file: File, tokens: string[]): boolean {
-  const type = (file.type || "").toLowerCase();
+  const type = (file.type || '').toLowerCase();
   const name = file.name.toLowerCase();
   return tokens.some((token) => {
-    if (token.startsWith(".")) {
+    if (token.startsWith('.')) {
       return name.endsWith(token);
     }
-    if (token.endsWith("/*")) {
+    if (token.endsWith('/*')) {
       return type.startsWith(token.slice(0, -1));
     }
     return type === token;
@@ -123,7 +123,7 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) {
     return `${bytes} B`;
   }
-  const units = ["KB", "MB", "GB", "TB"];
+  const units = ['KB', 'MB', 'GB', 'TB'];
   let value = bytes / 1024;
   let unitIndex = 0;
   while (value >= 1024 && unitIndex < units.length - 1) {

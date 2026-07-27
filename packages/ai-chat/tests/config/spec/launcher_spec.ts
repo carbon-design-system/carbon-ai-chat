@@ -7,19 +7,19 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { doCreateStore } from "../../../src/chat/store/doCreateStore";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { NamespaceService } from "../../../src/chat/services/NamespaceService";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+import { doCreateStore } from '../../../src/chat/store/doCreateStore';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { NamespaceService } from '../../../src/chat/services/NamespaceService';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-describe("Config Launcher", () => {
+describe('Config Launcher', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -29,11 +29,11 @@ describe("Config Launcher", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("launcher", () => {
-    it("should store launcher.isOn: true in Redux state", async () => {
+  describe('launcher', () => {
+    it('should store launcher.isOn: true in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         launcher: { isOn: true },
@@ -50,7 +50,7 @@ describe("Config Launcher", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -58,7 +58,7 @@ describe("Config Launcher", () => {
       expect(state.config.derived.launcher.isOn).toBe(true);
     });
 
-    it("should store launcher.isOn: false in Redux state", async () => {
+    it('should store launcher.isOn: false in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         launcher: { isOn: false },
@@ -75,7 +75,7 @@ describe("Config Launcher", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -83,7 +83,7 @@ describe("Config Launcher", () => {
       expect(state.config.derived.launcher.isOn).toBe(false);
     });
 
-    it("should use default launcher.isOn value when not specified", async () => {
+    it('should use default launcher.isOn value when not specified', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // launcher intentionally omitted
@@ -100,7 +100,7 @@ describe("Config Launcher", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -108,7 +108,7 @@ describe("Config Launcher", () => {
       expect(state.config.derived.launcher.isOn).toBe(true); // default value
     });
 
-    it("should set launcher.showUnreadIndicator in persisted state", async () => {
+    it('should set launcher.showUnreadIndicator in persisted state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         launcher: { showUnreadIndicator: true },
@@ -125,7 +125,7 @@ describe("Config Launcher", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -135,8 +135,8 @@ describe("Config Launcher", () => {
     });
   });
 
-  describe("openChatByDefault", () => {
-    it("should store openChatByDefault: true in Redux state", async () => {
+  describe('openChatByDefault', () => {
+    it('should store openChatByDefault: true in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         openChatByDefault: true,
@@ -153,7 +153,7 @@ describe("Config Launcher", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -161,7 +161,7 @@ describe("Config Launcher", () => {
       expect(state.config.public.openChatByDefault).toBe(true);
     });
 
-    it("should store openChatByDefault: false in Redux state", async () => {
+    it('should store openChatByDefault: false in Redux state', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         openChatByDefault: false,
@@ -176,14 +176,14 @@ describe("Config Launcher", () => {
         React.createElement(ChatContainer, {
           ...props,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -191,7 +191,7 @@ describe("Config Launcher", () => {
       expect(state.config.public.openChatByDefault).toBe(false);
     });
 
-    it("should use default openChatByDefault value when not specified", async () => {
+    it('should use default openChatByDefault value when not specified', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // openChatByDefault intentionally omitted
@@ -206,14 +206,14 @@ describe("Config Launcher", () => {
         React.createElement(ChatContainer, {
           ...props,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -222,57 +222,57 @@ describe("Config Launcher", () => {
     });
   });
 
-  describe("Dynamic Launcher Config Updates", () => {
+  describe('Dynamic Launcher Config Updates', () => {
     let serviceManager: ServiceManager;
 
     beforeEach(() => {
       const initialConfig: PublicConfig = {
-        assistantName: "Test Assistant",
+        assistantName: 'Test Assistant',
       };
 
       const store = doCreateStore(initialConfig, {} as ServiceManager);
       serviceManager = {
         store,
-        namespace: new NamespaceService("test"),
+        namespace: new NamespaceService('test'),
         messageService: { timeoutMS: 30000 } as any,
         humanAgentService: null,
       } as ServiceManager;
     });
 
-    it("should handle launcher config changes dynamically", async () => {
+    it('should handle launcher config changes dynamically', async () => {
       const previousConfig: PublicConfig = {
         launcher: {
           isOn: true,
-          desktop: { title: "Old Desktop Title" },
-          mobile: { title: "Old Mobile Title" },
+          desktop: { title: 'Old Desktop Title' },
+          mobile: { title: 'Old Mobile Title' },
         },
       };
 
       const newConfig: PublicConfig = {
         launcher: {
           isOn: false,
-          desktop: { title: "New Desktop Title" },
-          mobile: { title: "New Mobile Title" },
+          desktop: { title: 'New Desktop Title' },
+          mobile: { title: 'New Mobile Title' },
         },
       };
 
       await applyConfigChangesDynamically(
         previousConfig,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const state: AppState = serviceManager.store.getState();
       expect(state.config.public.launcher?.isOn).toBe(false);
       expect(state.config.public.launcher?.desktop?.title).toBe(
-        "New Desktop Title",
+        'New Desktop Title'
       );
       expect(state.config.public.launcher?.mobile?.title).toBe(
-        "New Mobile Title",
+        'New Mobile Title'
       );
     });
 
-    it("should handle showUnreadIndicator changes dynamically", async () => {
+    it('should handle showUnreadIndicator changes dynamically', async () => {
       const previousConfig: PublicConfig = {
         launcher: {
           showUnreadIndicator: false,
@@ -288,7 +288,7 @@ describe("Config Launcher", () => {
       await applyConfigChangesDynamically(
         previousConfig,
         newConfig,
-        serviceManager,
+        serviceManager
       );
 
       const state: AppState = serviceManager.store.getState();

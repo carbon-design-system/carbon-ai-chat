@@ -17,19 +17,19 @@
 
 ## APIs and props demonstrated
 
-| Symbol                          | Package / kind              | Role in this example                                                            |
-| ------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
-| `ChatCustomElement`             | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline.                                  |
-| `PublicConfig`                  | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                          |
-| `SuggestionItem`                | `@carbon/ai-chat` type      | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
-| `CustomListProps`               | `@carbon/ai-chat` type      | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
-| `input.autocomplete`            | config prop                 | Registers the typeahead behavior on the input.                                  |
-| `autocomplete.renderCustomList` | config prop                 | Returns a React node that replaces the default dropdown.                        |
-| `autocomplete.items`            | config prop                 | Async filter providing entries to the custom list.                              |
-| `autocomplete.debounceMs`       | config prop                 | Coalesces keystrokes before calling `items`.                                    |
-| `layout.showFrame`              | config prop                 | Hides the default frame so the chat fills the host.                             |
-| `openChatByDefault`             | config prop                 | Mounts straight into the conversation, no launcher.                             |
-| `messaging.customSendMessage`   | config prop                 | Mock backend echoing the user's message.                                        |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI at the fullscreen baseline. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatCustomElement`. |
+| `SuggestionItem` | `@carbon/ai-chat` type | Shape of each entry returned from `items` and surfaced to `onSelect`. |
+| `CustomListProps` | `@carbon/ai-chat` type | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
+| `input.autocomplete` | config prop | Registers the typeahead behavior on the input. |
+| `autocomplete.renderCustomList` | config prop | Returns a React node that replaces the default dropdown. |
+| `autocomplete.items` | config prop | Async filter providing entries to the custom list. |
+| `autocomplete.debounceMs` | config prop | Coalesces keystrokes before calling `items`. |
+| `layout.showFrame` | config prop | Hides the default frame so the chat fills the host. |
+| `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
+| `messaging.customSendMessage` | config prop | Mock backend echoing the user's message. |
 
 ## Run it
 

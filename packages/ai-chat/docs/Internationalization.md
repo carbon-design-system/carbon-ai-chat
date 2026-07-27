@@ -17,7 +17,7 @@ Language packs use the [ICU Message Format](http://userguide.icu-project.org/for
 Example (React):
 
 ```tsx
-<ChatContainer strings={{ input_placeholder: "Ask me anything..." }} />
+<ChatContainer strings={{ input_placeholder: 'Ask me anything...' }} />
 ```
 
 Example (Lit web component):

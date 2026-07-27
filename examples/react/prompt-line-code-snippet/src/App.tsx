@@ -26,14 +26,14 @@
  * Start reading at: the `config` constant, then `App()`.
  */
 
-import "@carbon/styles/css/styles.css";
-import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
-import React, { useMemo } from "react";
-import { createRoot } from "react-dom/client";
+import '@carbon/styles/css/styles.css';
+import { ChatCustomElement, PublicConfig } from '@carbon/ai-chat';
+import React, { useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { codeSnippetNode } from "./codeSnippetNode";
-import { customSendMessage } from "./customSendMessage";
-import { renderCodeSnippet } from "./renderCodeSnippet";
+import { codeSnippetNode } from './codeSnippetNode';
+import { customSendMessage } from './customSendMessage';
+import { renderCodeSnippet } from './renderCodeSnippet';
 
 function App() {
   const config: PublicConfig = useMemo(
@@ -52,7 +52,7 @@ function App() {
         tiptap: { extensions: [codeSnippetNode] },
       },
     }),
-    [],
+    []
   );
 
   return (
@@ -64,6 +64,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

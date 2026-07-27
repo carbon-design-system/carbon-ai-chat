@@ -6,14 +6,14 @@ Load this when translating a Figma design into code, calling the Carbon MCP serv
 
 The two primary packages are **Web Components only**. React appears only in narrow places (auto-wrapper Storybook, demo, React examples). Pick the right flavor — and the right MCP filter — for the area you are editing.
 
-| Area                                                                                | Carbon flavor                                      | MCP `filters.component_type` |
-| ----------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
-| [packages/ai-chat/src/](../packages/ai-chat/src)                                    | `@carbon/web-components` via `@lit/react` wrappers | `"Web Components"`           |
-| [packages/ai-chat-components/src/](../packages/ai-chat-components/src) Lit elements | `@carbon/web-components`                           | `"Web Components"`           |
-| `packages/ai-chat-components/**/__stories__/*-react.{stories.jsx,mdx}`              | `@carbon/react` (Storybook only)                   | `"React"`                    |
-| [demo/](../demo)                                                                    | `@carbon/react`                                    | `"React"`                    |
-| [examples/react/](../examples/react)                                                | `@carbon/react`                                    | `"React"`                    |
-| [examples/web-components/](../examples/web-components)                              | `@carbon/web-components`                           | `"Web Components"`           |
+| Area | Carbon flavor | MCP `filters.component_type` |
+| --- | --- | --- |
+| [packages/ai-chat/src/](../packages/ai-chat/src) | `@carbon/web-components` via `@lit/react` wrappers | `"Web Components"` |
+| [packages/ai-chat-components/src/](../packages/ai-chat-components/src) Lit elements | `@carbon/web-components` | `"Web Components"` |
+| `packages/ai-chat-components/**/__stories__/*-react.{stories.jsx,mdx}` | `@carbon/react` (Storybook only) | `"React"` |
+| [demo/](../demo) | `@carbon/react` | `"React"` |
+| [examples/react/](../examples/react) | `@carbon/react` | `"React"` |
+| [examples/web-components/](../examples/web-components) | `@carbon/web-components` | `"Web Components"` |
 
 **`@carbon/react` is not a runtime dependency of either primary package.** Do not import it into [packages/ai-chat/src/](../packages/ai-chat/src) or into Lit elements under [packages/ai-chat-components/src/](../packages/ai-chat-components/src) — only into the `-react.stories.jsx` / `-react.mdx` files where it is already a devDep.
 

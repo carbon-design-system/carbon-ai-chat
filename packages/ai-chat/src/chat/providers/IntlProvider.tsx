@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -14,9 +14,9 @@
  * This is framework-agnostic and prepares for web components migration.
  */
 
-import React, { ReactNode, type JSX } from "react";
-import { IntlContext } from "../contexts/IntlContext";
-import { IntlShape } from "../utils/i18n";
+import React, { ReactNode, type JSX } from 'react';
+import { IntlContext } from '../contexts/IntlContext';
+import { IntlShape } from '../utils/i18n';
 
 interface IntlProviderProps {
   /**

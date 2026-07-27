@@ -22,17 +22,17 @@
  * Start reading at: `createServiceDeskFactory()` and `willUpdate()`.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   type PublicConfig,
   type ServiceDeskFactoryParameters,
-} from "@carbon/ai-chat";
-import { css, html, LitElement, type PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement, type PropertyValues } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { MockServiceDesk } from "./mockServiceDesk";
+import { customSendMessage } from './customSendMessage';
+import { MockServiceDesk } from './mockServiceDesk';
 
 interface UserData {
   name: string;
@@ -40,11 +40,11 @@ interface UserData {
 }
 
 // Routes outgoing user messages through the local mock instead of a real back-end.
-const messagingConfig: PublicConfig["messaging"] = {
+const messagingConfig: PublicConfig['messaging'] = {
   customSendMessage,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -70,13 +70,13 @@ export class Demo extends LitElement {
     super.connectedCallback();
     // Simulates async user data arriving after mount to exercise the factory rebuild path in willUpdate.
     setTimeout(() => {
-      this.userData = { name: "Bob", id: "1234" };
+      this.userData = { name: 'Bob', id: '1234' };
     }, 5000);
   }
 
   protected willUpdate(changedProperties: PropertyValues<this>): void {
     // Rebuild the factory only when userData actually changes so an in-flight session is preserved across unrelated re-renders.
-    if (changedProperties.has("userData")) {
+    if (changedProperties.has('userData')) {
       this.serviceDeskFactory = this.createServiceDeskFactory();
     }
   }
@@ -92,8 +92,7 @@ export class Demo extends LitElement {
         .messaging=${messagingConfig}
         .serviceDeskFactory=${this.serviceDeskFactory}
         .layout=${{ showFrame: false }}
-        .openChatByDefault=${true}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${true}></cds-aichat-custom-element>
     `;
   }
 }

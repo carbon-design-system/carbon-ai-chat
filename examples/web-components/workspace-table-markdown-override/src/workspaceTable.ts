@@ -18,15 +18,15 @@
  * "Open in workspace" on an inline table.
  */
 
-import { type ChatInstance, PanelType } from "@carbon/ai-chat";
-import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/ai-chat-components/es/components/table/index.js";
-import type { Action } from "@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js";
-import Close16 from "@carbon/icons/es/close/16.js";
+import { type ChatInstance, PanelType } from '@carbon/ai-chat';
+import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/ai-chat-components/es/components/table/index.js';
+import type { Action } from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
+import Close16 from '@carbon/icons/es/close/16.js';
 
-import { css, html, LitElement, type PropertyValues } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { css, html, LitElement, type PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
 export interface WorkspaceTableData {
   title: string;
@@ -34,7 +34,7 @@ export interface WorkspaceTableData {
   rows: string[][];
 }
 
-@customElement("workspace-table-content")
+@customElement('workspace-table-content')
 class WorkspaceTableContent extends LitElement {
   static styles = css`
     :host {
@@ -46,14 +46,14 @@ class WorkspaceTableContent extends LitElement {
   // The 2023-05 decorator proposal requires `accessor` for field decorators
   // (the webpack config in this example uses that decorator version).
   @property({ attribute: false })
-  accessor data: WorkspaceTableData = { title: "", headers: [], rows: [] };
+  accessor data: WorkspaceTableData = { title: '', headers: [], rows: [] };
 
   @property({ attribute: false })
   accessor instance: ChatInstance | null = null;
 
   updated(changed: PropertyValues): void {
     super.updated(changed);
-    if (!changed.has("data")) {
+    if (!changed.has('data')) {
       return;
     }
     // `cds-aichat-table` exposes `headers` / `rows` / `defaultPageSize` as
@@ -61,7 +61,7 @@ class WorkspaceTableContent extends LitElement {
     // Setting defaultPageSize to the row count suppresses the pagination
     // bar (the table only renders it when rows.length > currentPageSize).
     const table = this.renderRoot.querySelector(
-      "cds-aichat-table",
+      'cds-aichat-table'
     ) as unknown as {
       headers: { text: string }[];
       rows: { cells: { text: string }[] }[];
@@ -82,7 +82,7 @@ class WorkspaceTableContent extends LitElement {
 
   render() {
     const actions: Action[] = [
-      { text: "Close", icon: Close16, onClick: this._close },
+      { text: 'Close', icon: Close16, onClick: this._close },
     ];
     return html`
       <cds-aichat-workspace-shell>
@@ -99,6 +99,6 @@ class WorkspaceTableContent extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "workspace-table-content": WorkspaceTableContent;
+    'workspace-table-content': WorkspaceTableContent;
   }
 }

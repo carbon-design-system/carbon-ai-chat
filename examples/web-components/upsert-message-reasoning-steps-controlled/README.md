@@ -17,19 +17,19 @@ Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the pa
 
 ## APIs and props demonstrated
 
-| Symbol                                     | Kind           | Role in this example                                       |
-| ------------------------------------------ | -------------- | ---------------------------------------------------------- |
-| `<cds-aichat-custom-element>`              | custom element | Mounts the chat UI.                                        |
-| `messaging.customSendMessage`              | property       | Runs the controlled reasoning scenario.                    |
-| `onBeforeRender`                           | property       | Captures the `ChatInstance`.                               |
-| `ReasoningStep` / `ReasoningStepOpenState` | types          | Reasoning payloads + controlled open-state values.         |
-| `MessageResponseOptions`                   | type           | `message_options` carrying `reasoning.{steps,open_state}`. |
-| `MessageResponse`                          | type           | Full snapshot returned by each upsert updater.             |
-| `MessageState`                             | enum value     | `STREAMING` per update, `COMPLETE` on the final call.      |
-| `instance.messaging.upsertMessage`         | API            | Inserts + updates the welcome and the reasoning in place.  |
-| `instance.updateIsMessageLoadingCounter`   | API            | Custom loading label that replaces the default UI.         |
-| `ChatInstance`                             | type           | Type of the instance handle.                               |
-| `PublicConfig`                             | type           | Types the chat configuration object.                       |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Runs the controlled reasoning scenario. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `ReasoningStep` / `ReasoningStepOpenState` | types | Reasoning payloads + controlled open-state values. |
+| `MessageResponseOptions` | type | `message_options` carrying `reasoning.{steps,open_state}`. |
+| `MessageResponse` | type | Full snapshot returned by each upsert updater. |
+| `MessageState` | enum value | `STREAMING` per update, `COMPLETE` on the final call. |
+| `instance.messaging.upsertMessage` | API | Inserts + updates the welcome and the reasoning in place. |
+| `instance.updateIsMessageLoadingCounter` | API | Custom loading label that replaces the default UI. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 

@@ -7,16 +7,16 @@
  *  @license
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 
-import { useIntl } from "../../hooks/useIntl";
-import { useSelector } from "../../hooks/useSelector";
+import { useIntl } from '../../hooks/useIntl';
+import { useSelector } from '../../hooks/useSelector';
 
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 
-import { useShouldSanitizeHTML } from "../../hooks/useShouldSanitizeHTML";
-import { AppState } from "../../../types/state/AppState";
-import { shallowEqual } from "../../store/appStore";
+import { useShouldSanitizeHTML } from '../../hooks/useShouldSanitizeHTML';
+import { AppState } from '../../../types/state/AppState';
+import { shallowEqual } from '../../store/appStore';
 
 interface MarkdownWithDefaultsProps {
   /**
@@ -82,11 +82,11 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
       table_itemsPerPage: state.languagePack.table_itemsPerPage,
       table_downloadButton: state.languagePack.table_downloadButton,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const { formatMessage } = useIntl();
   const locale = useSelector(
-    (state: AppState) => state.config.public.locale || "en",
+    (state: AppState) => state.config.public.locale || 'en'
   );
   // Host markdown config, read from its own store slice (set in ChatAppEntry)
   // rather than a global context provider.
@@ -96,24 +96,24 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
     () =>
       ({ count }: { count: number }) =>
         formatMessage(
-          { id: "table_paginationSupplementalText" },
-          { pagesCount: count },
+          { id: 'table_paginationSupplementalText' },
+          { pagesCount: count }
         ),
-    [formatMessage],
+    [formatMessage]
   );
 
   const getPaginationStatusText = useMemo(
     () =>
       ({ start, end, count }: { start: number; end: number; count: number }) =>
-        formatMessage({ id: "table_paginationStatus" }, { start, end, count }),
-    [formatMessage],
+        formatMessage({ id: 'table_paginationStatus' }, { start, end, count }),
+    [formatMessage]
   );
 
   const getLineCountText = useMemo(
     () =>
       ({ count }: { count: number }) =>
-        formatMessage({ id: "codeSnippet_lineCount" }, { count }),
-    [formatMessage],
+        formatMessage({ id: 'codeSnippet_lineCount' }, { count }),
+    [formatMessage]
   );
 
   return (
@@ -172,7 +172,7 @@ const MarkdownWithDefaultsExport = React.memo(
       highlightEqual &&
       streamingEqual
     );
-  },
+  }
 );
 
 export { MarkdownWithDefaultsExport as MarkdownWithDefaults };

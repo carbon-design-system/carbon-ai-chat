@@ -15,17 +15,17 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                 | Package / kind              | Role in this example                                  |
-| -------------------------------------- | --------------------------- | ----------------------------------------------------- |
-| `ChatCustomElement`                    | `@carbon/ai-chat` component | Mounts the chat UI.                                   |
-| `PublicConfig`                         | `@carbon/ai-chat` type      | Types the config.                                     |
-| `ChatInstance`                         | `@carbon/ai-chat` type      | Captured in `onBeforeRender`, used to manage history. |
-| `Button`                               | `@carbon/react` component   | Triggers a history re-injection.                      |
-| `messaging.customSendMessage`          | config prop                 | Mock backend.                                         |
-| `messaging.customLoadHistory`          | config prop                 | Mock history loader returning N messages.             |
-| `onBeforeRender`                       | component prop              | Captures the chat instance.                           |
-| `instance.messaging.clearConversation` | instance method             | Clears the current conversation.                      |
-| `instance.messaging.insertHistory`     | instance method             | Inserts loaded history into the chat.                 |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured in `onBeforeRender`, used to manage history. |
+| `Button` | `@carbon/react` component | Triggers a history re-injection. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `messaging.customLoadHistory` | config prop | Mock history loader returning N messages. |
+| `onBeforeRender` | component prop | Captures the chat instance. |
+| `instance.messaging.clearConversation` | instance method | Clears the current conversation. |
+| `instance.messaging.insertHistory` | instance method | Inserts loaded history into the chat. |
 
 ## Run it
 

@@ -34,13 +34,13 @@ import {
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponseFactory } from "./renderUserDefinedResponse";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
+import { renderUserDefinedResponseFactory } from './renderUserDefinedResponse';
 
 const config: PublicConfig = {
   messaging: {
@@ -86,7 +86,7 @@ function App() {
 
   const renderUserDefinedResponse = useMemo(
     () => renderUserDefinedResponseFactory(activeResponseId),
-    [activeResponseId],
+    [activeResponseId]
   );
 
   return (
@@ -99,6 +99,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

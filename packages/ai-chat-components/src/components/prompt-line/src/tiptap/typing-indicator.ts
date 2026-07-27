@@ -23,10 +23,10 @@
  * state immediately on send.
  */
 
-import { Extension } from "@tiptap/core";
-import { Plugin } from "@tiptap/pm/state";
+import { Extension } from '@tiptap/core';
+import { Plugin } from '@tiptap/pm/state';
 
-import { isHostOrigin } from "./origin-meta.js";
+import { isHostOrigin } from './origin-meta.js';
 
 const TYPING_TIMEOUT_MS = 5000;
 
@@ -40,7 +40,7 @@ export const TypingIndicator = Extension.create<
   unknown,
   TypingIndicatorStorage
 >({
-  name: "carbonTypingIndicator",
+  name: 'carbonTypingIndicator',
 
   addStorage() {
     return { reset: () => {}, lastTransactionIsHost: false };
@@ -56,11 +56,11 @@ export const TypingIndicator = Extension.create<
       isTyping = typing;
       if (editorDom) {
         editorDom.dispatchEvent(
-          new CustomEvent("cds-aichat-prompt-typing", {
+          new CustomEvent('cds-aichat-prompt-typing', {
             detail: { isTyping: typing },
             bubbles: true,
             composed: true,
-          }),
+          })
         );
       }
     }

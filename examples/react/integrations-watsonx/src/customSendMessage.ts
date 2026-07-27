@@ -31,10 +31,10 @@ import {
   MessageResponseTypes,
   MessageRequest,
   type PartialItemChunkWithId,
-} from "@carbon/ai-chat";
-import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { getWatsonxConfig } from "./watsonxConfig";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { getWatsonxConfig } from './watsonxConfig';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 const WELCOME_TEXT = `Welcome to the watsonx.ai Chat Example! This demo connects the Carbon AI Chat component to IBM watsonx.ai for streaming text generation. Ask me anything to get started!`;
 
@@ -45,31 +45,31 @@ async function getAccessToken(): Promise<string> {
   // token minting goes through a local proxy so the IAM API key never
   // ships to the browser. Replace with a real production implementation that
   // fronts watsonx.ai through your own authenticated backend.
-  const tokenUrl = "http://localhost:3010/api/token";
+  const tokenUrl = 'http://localhost:3010/api/token';
 
   try {
     const response = await fetch(tokenUrl, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
       const errorData = await response
         .json()
-        .catch(() => ({ error: "Unknown error" }));
+        .catch(() => ({ error: 'Unknown error' }));
       throw new Error(
         `Token request failed: ${response.status} ${
           response.statusText
-        }\n${JSON.stringify(errorData)}`,
+        }\n${JSON.stringify(errorData)}`
       );
     }
 
     const data = await response.json();
     return data.access_token;
   } catch (error) {
-    console.error("Failed to get access token:", error);
+    console.error('Failed to get access token:', error);
     throw error;
   }
 }
@@ -80,7 +80,7 @@ async function getAccessToken(): Promise<string> {
 async function streamWatsonxResponse(
   input: string,
   _config: ReturnType<typeof getWatsonxConfig>,
-  instance: ChatInstance,
+  instance: ChatInstance
 ): Promise<void> {
   try {
     // Get access token
@@ -90,15 +90,15 @@ async function streamWatsonxResponse(
     // them into a single message; item_id stays constant so chunks accumulate
     // into the same partial_item rather than spawning new bubbles.
     const responseId = uuid();
-    const itemId = "1";
+    const itemId = '1';
 
     // streaming also hops through the local proxy — watsonx.ai's CORS
     // policy blocks browser-direct SSE. Replace with a real production
     // implementation when wiring this through your own backend.
-    const apiUrl = "http://localhost:3010/api/watsonx/stream";
+    const apiUrl = 'http://localhost:3010/api/watsonx/stream';
     const headers = {
-      "Content-Type": "application/json",
-      Accept: "text/event-stream",
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
     };
 
     const requestBody = {
@@ -107,18 +107,18 @@ async function streamWatsonxResponse(
     };
 
     // Track accumulated text for final chunk and buffering
-    let accumulatedText = "";
-    let textBuffer = "";
+    let accumulatedText = '';
+    let textBuffer = '';
 
     // Use fetch-event-source for cleaner SSE handling
     await fetchEventSource(apiUrl, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(requestBody),
 
       onmessage(event) {
         // Skip empty data or [DONE] signals
-        if (!event.data || event.data === "[DONE]") {
+        if (!event.data || event.data === '[DONE]') {
           return;
         }
 
@@ -128,7 +128,7 @@ async function streamWatsonxResponse(
           // Check if this is an error event from the proxy
           if (parsed.error) {
             throw new Error(
-              `${parsed.error}: ${parsed.details || parsed.message || ""}`,
+              `${parsed.error}: ${parsed.details || parsed.message || ''}`
             );
           }
 
@@ -147,8 +147,8 @@ async function streamWatsonxResponse(
               // tokens (e.g. `**bold**`, code fences) intact — emitting every
               // sub-token would split formatting characters mid-render.
               const shouldFlush =
-                generatedText.includes("\n") ||
-                generatedText.includes(" ") ||
+                generatedText.includes('\n') ||
+                generatedText.includes(' ') ||
                 generatedText.match(/[.!?,:;|]/);
 
               if (shouldFlush && textBuffer.trim()) {
@@ -167,12 +167,12 @@ async function streamWatsonxResponse(
                 };
 
                 instance.messaging.addMessageChunk(chunk);
-                textBuffer = ""; // Reset buffer
+                textBuffer = ''; // Reset buffer
               }
             }
 
             // Check if generation is complete
-            if (result.stop_reason && result.stop_reason !== "not_finished") {
+            if (result.stop_reason && result.stop_reason !== 'not_finished') {
               // Flush any remaining buffer
               if (textBuffer.trim()) {
                 const bufferChunk: PartialItemChunkWithId = {
@@ -227,21 +227,21 @@ async function streamWatsonxResponse(
             }
           }
         } catch (parseError) {
-          console.warn("Failed to parse SSE data:", event.data, parseError);
+          console.warn('Failed to parse SSE data:', event.data, parseError);
         }
       },
 
       onerror(error) {
-        console.error("SSE stream error:", error);
+        console.error('SSE stream error:', error);
         throw error;
       },
 
       onclose() {
-        console.log("SSE stream closed");
+        console.log('SSE stream closed');
       },
     });
   } catch (error) {
-    console.error("Watsonx streaming error:", error);
+    console.error('Watsonx streaming error:', error);
 
     // Send error message to chat
     const errorMessage: MessageResponse = {
@@ -250,7 +250,7 @@ async function streamWatsonxResponse(
           {
             response_type: MessageResponseTypes.INLINE_ERROR,
             text: `Sorry, I encountered an error while connecting to watsonx.ai: ${
-              error instanceof Error ? error.message : "Unknown error"
+              error instanceof Error ? error.message : 'Unknown error'
             }`,
           },
         ],
@@ -263,11 +263,11 @@ async function streamWatsonxResponse(
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // an empty input string is the chat's "session start" signal — emit a
   // canned welcome instead of round-tripping to watsonx.ai for nothing.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     const message: MessageResponse = {
       output: {
         generic: [
@@ -285,12 +285,12 @@ async function customSendMessage(
       const config = getWatsonxConfig();
 
       // Stream response from watsonx.ai
-      const inputText = request.input.text || "";
+      const inputText = request.input.text || '';
       if (inputText.trim()) {
         await streamWatsonxResponse(inputText, config, instance);
       }
     } catch (configError) {
-      console.error("Configuration error:", configError);
+      console.error('Configuration error:', configError);
 
       // Send configuration error message
       const errorMessage: MessageResponse = {
@@ -301,7 +301,7 @@ async function customSendMessage(
               text: `Configuration Error: ${
                 configError instanceof Error
                   ? configError.message
-                  : "Please check your environment variables."
+                  : 'Please check your environment variables.'
               }`,
             },
           ],

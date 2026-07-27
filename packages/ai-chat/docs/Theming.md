@@ -20,8 +20,8 @@ This injects the correct CSS custom properties into the chat's shadow DOM.
 Set `injectCarbonTheme` on the {@link PublicConfig} object you pass to the container:
 
 ```tsx
-import { ChatContainer, CarbonTheme } from "@carbon/ai-chat";
-import type { PublicConfig } from "@carbon/ai-chat";
+import { ChatContainer, CarbonTheme } from '@carbon/ai-chat';
+import type { PublicConfig } from '@carbon/ai-chat';
 
 const config: PublicConfig = {
   injectCarbonTheme: CarbonTheme.G100,
@@ -62,18 +62,18 @@ You can override the `--cds-aichat-*` shell tokens this way in every theme mode.
 If you force a theme with {@link PublicConfig.injectCarbonTheme}, the chat supplies its own Carbon `--cds-*` tokens, so page-level `--cds-*` overrides no longer reach the Carbon components. Set them through {@link LayoutConfig.customProperties | customProperties} instead: the chat injects these inside its own DOM, so they win over the forced theme. A bare key sets a `--cds-aichat-*` shell token; a key prefixed with `$` sets a Carbon `--cds-*` token, and `$`-prefixed values must be hexadecimal colors:
 
 ```tsx
-import { ChatContainer, CarbonTheme } from "@carbon/ai-chat";
-import type { PublicConfig } from "@carbon/ai-chat";
+import { ChatContainer, CarbonTheme } from '@carbon/ai-chat';
+import type { PublicConfig } from '@carbon/ai-chat';
 
 const config: PublicConfig = {
   injectCarbonTheme: CarbonTheme.G100,
   layout: {
     customProperties: {
       // Chat shell token -> --cds-aichat-launcher-color-background
-      "launcher-color-background": "#1a1a2e",
+      'launcher-color-background': '#1a1a2e',
       // Carbon component tokens -> --cds-button-primary / --cds-link-primary
-      "$button-primary": "#1a1a2e",
-      "$link-primary": "#1a1a2e",
+      '$button-primary': '#1a1a2e',
+      '$link-primary': '#1a1a2e',
     },
   },
 };

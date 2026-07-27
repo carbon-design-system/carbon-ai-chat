@@ -7,29 +7,29 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const { promisify } = require("util");
-const { program } = require("commander");
-const { exec } = require("child_process");
-const path = require("path");
-const reLicense = require("./license-text.js");
+const fs = require('fs');
+const { promisify } = require('util');
+const { program } = require('commander');
+const { exec } = require('child_process');
+const path = require('path');
+const reLicense = require('./license-text.js');
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const execPromise = promisify(exec);
-const projectRoot = path.resolve(__dirname, "..");
-const sourceFilePattern = "**/*.{js,jsx,ts,tsx,scss,html}";
-const allFilesSourceFilePattern = "**/*.{js,ts,tsx,scss,html}";
-const ignoredFilePatterns = ["!**/*.snap.js", "!examples/**"];
+const projectRoot = path.resolve(__dirname, '..');
+const sourceFilePattern = '**/*.{js,jsx,ts,tsx,scss,html}';
+const allFilesSourceFilePattern = '**/*.{js,ts,tsx,scss,html}';
+const ignoredFilePatterns = ['!**/*.snap.js', '!examples/**'];
 const sourceFileExtensions = new Set([
-  ".html",
-  ".js",
-  ".jsx",
-  ".scss",
-  ".ts",
-  ".tsx",
+  '.html',
+  '.js',
+  '.jsx',
+  '.scss',
+  '.ts',
+  '.tsx',
 ]);
 const {
   currentYear,
@@ -40,15 +40,15 @@ const {
 
 program
   .option(
-    "-c, --test-current-year",
-    "Ensures the license header represents the current year",
+    '-c, --test-current-year',
+    'Ensures the license header represents the current year'
   )
   .option(
-    "-w, --write-current-year",
-    "Updates the license header to represent the current year",
+    '-w, --write-current-year',
+    'Updates the license header to represent the current year'
   )
-  .option("-a, --check-all-files", "Grabs all files in the project to check")
-  .argument("[paths...]", "Files or directories to check");
+  .option('-a, --check-all-files', 'Grabs all files in the project to check')
+  .argument('[paths...]', 'Files or directories to check');
 
 program.parse();
 
@@ -71,9 +71,9 @@ const toProjectRelativePath = (filePath) =>
       projectRoot,
       path.isAbsolute(filePath)
         ? filePath
-        : path.resolve(process.cwd(), filePath),
+        : path.resolve(process.cwd(), filePath)
     )
-    .replace(/\\/g, "/");
+    .replace(/\\/g, '/');
 
 /**
  * Checks whether a path is a source file that should have a license header.
@@ -83,8 +83,8 @@ const toProjectRelativePath = (filePath) =>
  */
 const isSupportedSourceFile = (filePath) =>
   sourceFileExtensions.has(path.extname(filePath)) &&
-  !filePath.endsWith(".snap.js") &&
-  !filePath.includes(".yarn/");
+  !filePath.endsWith('.snap.js') &&
+  !filePath.includes('.yarn/');
 
 /**
  * Resolves CLI or git paths to source files that should be checked.
@@ -93,7 +93,7 @@ const isSupportedSourceFile = (filePath) =>
  * @returns {Promise<string[]>} The project-relative source file paths.
  */
 const resolveSourceFiles = async (paths) => {
-  const { globby } = await import("globby");
+  const { globby } = await import('globby');
   const normalizedPaths = paths.map(toProjectRelativePath);
   const files = await globby(normalizedPaths, {
     cwd: projectRoot,
@@ -101,7 +101,7 @@ const resolveSourceFiles = async (paths) => {
     onlyFiles: true,
     expandDirectories: {
       files: [sourceFilePattern],
-      exclude: ["**/*.snap.js"],
+      exclude: ['**/*.snap.js'],
     },
   });
 
@@ -120,7 +120,7 @@ const resolveSourceFiles = async (paths) => {
  */
 const check = async (paths, options) => {
   let checkPaths = [];
-  const { globby } = await import("globby");
+  const { globby } = await import('globby');
 
   if (options.checkAllFiles) {
     checkPaths = await globby(
@@ -129,14 +129,14 @@ const check = async (paths, options) => {
         cwd: projectRoot,
         gitignore: true,
         onlyFiles: true,
-      },
+      }
     );
   } else if (options.writeCurrentYear) {
     let pathsToCheck = paths;
     if (pathsToCheck.length === 0) {
       // Fall back to staged files when the command is run directly.
-      const { stdout } = await execPromise("git diff --cached --name-only");
-      pathsToCheck = stdout.split("\n").filter(Boolean);
+      const { stdout } = await execPromise('git diff --cached --name-only');
+      pathsToCheck = stdout.split('\n').filter(Boolean);
     }
 
     checkPaths = await resolveSourceFiles(pathsToCheck);
@@ -149,7 +149,7 @@ const check = async (paths, options) => {
     await Promise.all(
       checkFiles.map(async (item) => {
         const filePath = path.resolve(projectRoot, item);
-        const contents = await readFile(filePath, "utf8");
+        const contents = await readFile(filePath, 'utf8');
         const result = (
           options.testCurrentYear || options.writeCurrentYear
             ? reLicenseTextCurrentYear
@@ -160,26 +160,26 @@ const check = async (paths, options) => {
             const newContents = contents
               .replace(
                 reLicenseTextSingleYear,
-                (match) => `${match}, ${currentYear}`,
+                (match) => `${match}, ${currentYear}`
               )
               .replace(
                 reLicenseTextRange,
-                (match, token) => `${token}${currentYear}`,
+                (match, token) => `${token}${currentYear}`
               );
             if (!reLicenseTextCurrentYear.test(newContents)) {
               return item;
             }
-            await writeFile(filePath, newContents, "utf8");
+            await writeFile(filePath, newContents, 'utf8');
           } else {
             return item;
           }
         }
-      }),
+      })
     )
   ).filter(Boolean);
   if (filesWithErrors.length > 0) {
     throw new Error(
-      `Cannot find license text in: ${filesWithErrors.join(", ")}`,
+      `Cannot find license text in: ${filesWithErrors.join(', ')}`
     );
   }
 };
@@ -191,5 +191,5 @@ check(program.args, options).then(
   (error) => {
     console.error(error); // eslint-disable-line no-console
     process.exit(1);
-  },
+  }
 );

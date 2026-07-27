@@ -26,10 +26,10 @@ React Application Components
 
 ## When to work in each layer
 
-| Layer | Files                                                                                                                                | Concerns                                                                                           |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Lit   | [src/react/ChatContainer.tsx](../src/react/ChatContainer.tsx), [src/react/ChatCustomElement.tsx](../src/react/ChatCustomElement.tsx) | Custom element registration & lifecycle, shadow DOM setup, slot projection, global style injection |
-| React | everything else under [src/](../src)                                                                                                 | Application logic, state, UI components, store integration, service orchestration                  |
+| Layer | Files | Concerns |
+| --- | --- | --- |
+| Lit | [src/react/ChatContainer.tsx](../src/react/ChatContainer.tsx), [src/react/ChatCustomElement.tsx](../src/react/ChatCustomElement.tsx) | Custom element registration & lifecycle, shadow DOM setup, slot projection, global style injection |
+| React | everything else under [src/](../src) | Application logic, state, UI components, store integration, service orchestration |
 
 ## Common patterns
 
@@ -53,11 +53,11 @@ wrapper.appendChild(element);
 
 ## Debugging across the boundary
 
-| Symptom               | Likely cause                                                                                                         | Fix                                                                                                                                             |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shadow root not ready | `"shadow-ready"` listener attached after the event fired, or event never emitted                                     | Verify the listener is attached before the host's `firstUpdated()`; check the browser console for shadow DOM errors                             |
-| React not rendering   | Mount div missing, or portal created before shadow root was ready                                                    | Verify `.cds-aichat--react-app` exists in the shadow root; check React DevTools; confirm the portal is gated on `"shadow-ready"`                |
-| Slots not projecting  | Slot name mismatch, element appended to shadow root instead of the host wrapper, or element added after Lit's render | Match the `slot` attribute to the `<slot name="…">`; append to the wrapper, not the shadow root; create the element before the Lit host renders |
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| Shadow root not ready | `"shadow-ready"` listener attached after the event fired, or event never emitted | Verify the listener is attached before the host's `firstUpdated()`; check the browser console for shadow DOM errors |
+| React not rendering | Mount div missing, or portal created before shadow root was ready | Verify `.cds-aichat--react-app` exists in the shadow root; check React DevTools; confirm the portal is gated on `"shadow-ready"` |
+| Slots not projecting | Slot name mismatch, element appended to shadow root instead of the host wrapper, or element added after Lit's render | Match the `slot` attribute to the `<slot name="…">`; append to the wrapper, not the shadow root; create the element before the Lit host renders |
 
 ## References
 

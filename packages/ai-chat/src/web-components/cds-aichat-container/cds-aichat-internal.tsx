@@ -12,17 +12,17 @@
  * custom element and then renders the React Carbon AI Chat application while passing in properties.
  */
 
-import { css, LitElement, PropertyValues } from "lit";
-import { property } from "lit/decorators.js";
-import React from "react";
-import { createRoot, Root } from "react-dom/client";
-import isEqual from "lodash-es/isEqual.js";
+import { css, LitElement, PropertyValues } from 'lit';
+import { property } from 'lit/decorators.js';
+import React from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import isEqual from 'lodash-es/isEqual.js';
 
-import ChatAppEntry from "../../chat/ChatAppEntry";
-import { carbonElement } from "@carbon/ai-chat-components/es/globals/decorators/index.js";
-import { PublicConfig } from "../../types/config/PublicConfig";
-import { ChatInstance } from "../../types/instance/ChatInstance";
-import type { RenderUserDefinedInputNode } from "../../types/component/ChatContainer";
+import ChatAppEntry from '../../chat/ChatAppEntry';
+import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import { ChatInstance } from '../../types/instance/ChatInstance';
+import type { RenderUserDefinedInputNode } from '../../types/component/ChatContainer';
 
 /**
  * Structural `hasChanged` for object properties: Lit defaults to identity, which
@@ -35,7 +35,7 @@ import type { RenderUserDefinedInputNode } from "../../types/component/ChatConta
 const deepChanged = (value: unknown, previous: unknown): boolean =>
   !isEqual(value, previous);
 
-@carbonElement("cds-aichat-internal")
+@carbonElement('cds-aichat-internal')
 class ChatContainerInternal extends LitElement {
   static styles = css`
     :host {
@@ -125,14 +125,14 @@ class ChatContainerInternal extends LitElement {
         container={container}
         element={this.element}
         chatWrapper={this}
-      />,
+      />
     );
   }
 
   private ensureReactRoot(): HTMLDivElement {
     if (!this.reactContainer) {
-      const container = document.createElement("div");
-      container.classList.add("cds-aichat--react-app");
+      const container = document.createElement('div');
+      container.classList.add('cds-aichat--react-app');
       this.shadowRoot.appendChild(container);
       this.reactContainer = container;
     }
@@ -153,7 +153,7 @@ class ChatContainerInternal extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-internal": ChatContainerInternal;
+    'cds-aichat-internal': ChatContainerInternal;
   }
 }
 

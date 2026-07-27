@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { SnapshotSerializer } from "vitest";
+import type { SnapshotSerializer } from 'vitest';
 
 /**
  * Custom snapshot serializer for Vitest 4+ to handle dynamic content in shadow DOM.
@@ -36,7 +36,7 @@ export function normalizeSnapshot(val: string): string {
   // After:  <!--?lit$NORMALIZED$-->
   normalized = normalized.replace(
     /<!--\?lit\$\d+\$-->/g,
-    "<!--?lit$NORMALIZED$-->",
+    '<!--?lit$NORMALIZED$-->'
   );
 
   // Normalize UUID-based IDs in SVG elements (and their references)
@@ -65,8 +65,8 @@ export function normalizeSnapshot(val: string): string {
     /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(-\d+)?/g,
     (fullMatch, baseUuid, suffix) => {
       const stableId = uuidMap.get(baseUuid);
-      return `${stableId}${suffix || ""}`;
-    },
+      return `${stableId}${suffix || ''}`;
+    }
   );
 
   return normalized;
@@ -76,9 +76,9 @@ export const shadowDomSerializer: SnapshotSerializer = {
   serialize(val, _config, indentation, _depth, _refs, _printer) {
     // Get the default HTML serialization
     const htmlString =
-      typeof val === "string"
+      typeof val === 'string'
         ? val
-        : val && typeof val === "object" && "outerHTML" in val
+        : val && typeof val === 'object' && 'outerHTML' in val
           ? (val as Element).outerHTML
           : String(val);
 
@@ -87,16 +87,16 @@ export const shadowDomSerializer: SnapshotSerializer = {
 
     // Return the normalized string with proper indentation
     return normalized
-      .split("\n")
+      .split('\n')
       .map((line, i) => (i === 0 ? line : indentation + line))
-      .join("\n");
+      .join('\n');
   },
   test(val) {
     // Only apply to DOM elements
     return (
       val != null &&
-      typeof val === "object" &&
-      "nodeType" in val &&
+      typeof val === 'object' &&
+      'nodeType' in val &&
       val.nodeType === 1
     );
   },

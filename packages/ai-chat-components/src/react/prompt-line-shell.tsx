@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
+import { createComponent } from '@lit/react';
+import React from 'react';
 
-import PromptLineShellElement from "../components/prompt-line/src/prompt-line-shell.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import PromptLineShellElement from '../components/prompt-line/src/prompt-line-shell.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 /**
  * React wrapper for `<cds-aichat-prompt-line-shell>`. The shell is layout-only —
@@ -22,11 +22,11 @@ import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
  */
 const PromptLineShell = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-prompt-line-shell",
+    tagName: 'cds-aichat-prompt-line-shell',
     elementClass: PromptLineShellElement,
     react: React,
     events: {},
-  }),
+  })
 );
 
 export default PromptLineShell;

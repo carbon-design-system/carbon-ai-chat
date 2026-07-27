@@ -16,7 +16,7 @@
  * been warmed via {@link preloadPromptLineRich}.
  */
 
-type RichRuntimeModule = typeof import("./prompt-line-rich-runtime.js");
+type RichRuntimeModule = typeof import('./prompt-line-rich-runtime.js');
 
 let runtimePromise: Promise<RichRuntimeModule> | null = null;
 let runtime: RichRuntimeModule | null = null;
@@ -26,11 +26,11 @@ let runtime: RichRuntimeModule | null = null;
  * so server entries never pull Tiptap.
  */
 export function loadRichRuntime(): Promise<RichRuntimeModule | null> {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return Promise.resolve(null);
   }
   if (!runtimePromise) {
-    runtimePromise = import("./prompt-line-rich-runtime.js").then((module) => {
+    runtimePromise = import('./prompt-line-rich-runtime.js').then((module) => {
       runtime = module;
       return module;
     });

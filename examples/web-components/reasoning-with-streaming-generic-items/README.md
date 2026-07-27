@@ -16,17 +16,17 @@ Each reasoning step's `content` is a `GenericItem[]` — a `TextItem` whose `tex
 
 ## APIs and props demonstrated
 
-| Symbol                                                               | Package / kind            | Role in this example                                             |
-| -------------------------------------------------------------------- | ------------------------- | ---------------------------------------------------------------- |
-| `cds-aichat-container`                                               | `@carbon/ai-chat` element | Mounts the chat UI.                                              |
-| `PublicConfig`                                                       | `@carbon/ai-chat` type    | Config shape.                                                    |
-| `BusEventType.USER_DEFINED_RESPONSE` / `BusEventUserDefinedResponse` | `@carbon/ai-chat`         | Event the chat fires when a `user_defined` item needs a slot.    |
-| `ReasoningStep` with `content: GenericItem[]`                        | `@carbon/ai-chat` type    | Per-step array of inline response items.                         |
-| `MessageResponseTypes.TEXT` / `MessageResponseTypes.USER_DEFINED`    | `@carbon/ai-chat` enum    | Item kinds composed into the step's content array.               |
-| `UserDefinedItem`                                                    | `@carbon/ai-chat` type    | The appended summary card payload.                               |
-| `MessageResponseOptions` / `StreamChunk`                             | `@carbon/ai-chat` types   | Chunk shape used to re-push updated `reasoning.steps` per token. |
-| `instance.messaging.addMessage` / `addMessageChunk` / `instance.on`  | `ChatInstance` API        | Emit welcome + streamed chunks; subscribe to slot events.        |
-| `CustomSendMessageOptions.signal`                                    | `@carbon/ai-chat`         | Abort signal for cancellation.                                   |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `cds-aichat-container` | `@carbon/ai-chat` element | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `BusEventType.USER_DEFINED_RESPONSE` / `BusEventUserDefinedResponse` | `@carbon/ai-chat` | Event the chat fires when a `user_defined` item needs a slot. |
+| `ReasoningStep` with `content: GenericItem[]` | `@carbon/ai-chat` type | Per-step array of inline response items. |
+| `MessageResponseTypes.TEXT` / `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Item kinds composed into the step's content array. |
+| `UserDefinedItem` | `@carbon/ai-chat` type | The appended summary card payload. |
+| `MessageResponseOptions` / `StreamChunk` | `@carbon/ai-chat` types | Chunk shape used to re-push updated `reasoning.steps` per token. |
+| `instance.messaging.addMessage` / `addMessageChunk` / `instance.on` | `ChatInstance` API | Emit welcome + streamed chunks; subscribe to slot events. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` | Abort signal for cancellation. |
 
 ## Run it
 

@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { createContext } from "react";
-import { IntlShape } from "../utils/i18n";
+import { createContext } from 'react';
+import { IntlShape } from '../utils/i18n';
 
 /**
  * React context for providing i18n formatter throughout the component tree.
@@ -28,4 +28,4 @@ import { IntlShape } from "../utils/i18n";
  */
 export const IntlContext = createContext<IntlShape | null>(null);
 
-IntlContext.displayName = "IntlContext";
+IntlContext.displayName = 'IntlContext';

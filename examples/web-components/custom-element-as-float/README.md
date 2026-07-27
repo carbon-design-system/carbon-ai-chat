@@ -18,19 +18,19 @@ Replicates the built-in float view by combining `<cds-aichat-custom-element>` wi
 
 ## APIs and props demonstrated
 
-| Symbol                                              | Kind           | Role in this example                                               |
-| --------------------------------------------------- | -------------- | ------------------------------------------------------------------ |
-| `<cds-aichat-custom-element>`                       | custom element | Hosts the chat; animated through float-layout CSS classes.         |
-| `<cds-aichat-button>`                               | custom element | Custom launcher button.                                            |
-| `@carbon/ai-chat/css/chat-float-layout.css`         | stylesheet     | Supplies `cds-aichat-float--{open,opening,close,closing}` classes. |
-| `@carbon/ai-chat/css/chat-launcher-layout.css`      | stylesheet     | Supplies `cds-aichat-launcher` / `--hidden` classes.               |
-| `messaging.customSendMessage`                       | property       | Mock backend that echoes user input.                               |
-| `launcher.isOn`                                     | property       | Disabled (`false`) so the custom button is the only launcher.      |
-| `onAfterRender`                                     | property       | Captures `ChatInstance` and marks the chat ready.                  |
-| `onViewChange`                                      | property       | Suppresses default hide behavior and drives phase transitions.     |
-| `instance.changeView(ViewType.MAIN_WINDOW)`         | method         | Opens the chat on launcher click.                                  |
-| `animationend`                                      | DOM event      | Advances the phase machine from opening→open / closing→closed.     |
-| `has-icon-only`, `icon-description`, `kind`, `size` | attributes     | Configure the `<cds-aichat-button>`.                               |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat; animated through float-layout CSS classes. |
+| `<cds-aichat-button>` | custom element | Custom launcher button. |
+| `@carbon/ai-chat/css/chat-float-layout.css` | stylesheet | Supplies `cds-aichat-float--{open,opening,close,closing}` classes. |
+| `@carbon/ai-chat/css/chat-launcher-layout.css` | stylesheet | Supplies `cds-aichat-launcher` / `--hidden` classes. |
+| `messaging.customSendMessage` | property | Mock backend that echoes user input. |
+| `launcher.isOn` | property | Disabled (`false`) so the custom button is the only launcher. |
+| `onAfterRender` | property | Captures `ChatInstance` and marks the chat ready. |
+| `onViewChange` | property | Suppresses default hide behavior and drives phase transitions. |
+| `instance.changeView(ViewType.MAIN_WINDOW)` | method | Opens the chat on launcher click. |
+| `animationend` | DOM event | Advances the phase machine from opening→open / closing→closed. |
+| `has-icon-only`, `icon-description`, `kind`, `size` | attributes | Configure the `<cds-aichat-button>`. |
 
 ## Run it
 

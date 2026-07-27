@@ -6,13 +6,13 @@
 
 **Hard rule: never fall back to `code_search` for chart errors.**
 
-| Error                       | Recovery                                                                                                                                                    |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `error: "not_found"`        | 1. Try a closely related chart type slug (`"column"` → `"bar"`, `"doughnut"` → `"donut"`). 2. Try a different framework if user permits. 3. Report to user. |
-| `error: "chunks_not_found"` | Source code is not indexed. Run `mode: "schema"` to confirm the manifest exists and inspect `available_variants`. Report to user.                           |
-| `buildable: false`          | Inspect `incomplete.reason` and `incomplete.missing`. Suggest a different variant from `available_variants`. Do not call `code_search`.                     |
-| `variant_not_found: true`   | Server substituted the closest match. Inform the user which variant was used (`result.variant_note`).                                                       |
-| `recovery` object present   | Use cross-framework donor source files for data/options; keep requested-framework `import_hint`/`usage_hint`. Follow `assembly.instruction` exactly.        |
+| Error | Recovery |
+| --- | --- |
+| `error: "not_found"` | 1. Try a closely related chart type slug (`"column"` → `"bar"`, `"doughnut"` → `"donut"`). 2. Try a different framework if user permits. 3. Report to user. |
+| `error: "chunks_not_found"` | Source code is not indexed. Run `mode: "schema"` to confirm the manifest exists and inspect `available_variants`. Report to user. |
+| `buildable: false` | Inspect `incomplete.reason` and `incomplete.missing`. Suggest a different variant from `available_variants`. Do not call `code_search`. |
+| `variant_not_found: true` | Server substituted the closest match. Inform the user which variant was used (`result.variant_note`). |
+| `recovery` object present | Use cross-framework donor source files for data/options; keep requested-framework `import_hint`/`usage_hint`. Follow `assembly.instruction` exactly. |
 
 ---
 
@@ -26,14 +26,11 @@ If the initial discovery query returns 0 or unexpectedly few results:
    - If `ibm_products: "yes"` returned nothing → try `ibm_products: "no"`, or remove the filter
    - If `ibm_products: "no"` returned nothing → try `ibm_products: "yes"`
 3. **Adjust UIShell phrasing** — for navigation/layout components try:
-   - `"header navigation"`, `"ui shell"`, `"side nav"`, `"shell header"`,
-     `"breadcrumb navigation"`, `"global header"`
+   - `"header navigation"`, `"ui shell"`, `"side nav"`, `"shell header"`, `"breadcrumb navigation"`, `"global header"`
 4. **Retry once with expanded synonyms**
    - Try alternate names: `"notification"` / `"toast"` / `"inline notification"`
-5. **Never switch frameworks automatically** — only retry with a different `component_type`
-   if the user explicitly permits it
-6. **Present options** — if still ambiguous after retry, surface the top 2 plausible
-   component IDs and ask the user to confirm
+5. **Never switch frameworks automatically** — only retry with a different `component_type` if the user explicitly permits it
+6. **Present options** — if still ambiguous after retry, surface the top 2 plausible component IDs and ask the user to confirm
 
 ---
 
@@ -43,9 +40,7 @@ If the initial discovery query returns 0 or unexpectedly few results:
 
 **Symptom:** Searching `"Add icon carbon react"` returns unrelated icons or low scores.
 
-**Root cause:** Verbose queries de-rank the target icon. The icon index scores on `name`,
-`kebab`, `aliases`, `displayName` fields — extra words like `"icon"`, `"carbon"`, `"react"`
-add noise and dilute ranking. Also: setting `component_type` routes to the wrong index (zero results).
+**Root cause:** Verbose queries de-rank the target icon. The icon index scores on `name`, `kebab`, `aliases`, `displayName` fields — extra words like `"icon"`, `"carbon"`, `"react"` add noise and dilute ranking. Also: setting `component_type` routes to the wrong index (zero results).
 
 **Recovery:**
 
@@ -57,29 +52,20 @@ add noise and dilute ranking. Also: setting `component_type` routes to the wrong
 {"query": "Add", "filters": {"asset_type": "icon"}}
 ```
 
-If the short query returns no results, try the kebab form: `"add"`, `"ai-governance"`,
-then probe double-hyphen Carbon slug: `"ai--governance"`.
-If still 0 hits, retry without `asset_type` filter entirely.
+If the short query returns no results, try the kebab form: `"add"`, `"ai-governance"`, then probe double-hyphen Carbon slug: `"ai--governance"`. If still 0 hits, retry without `asset_type` filter entirely.
 
 #### Pattern: Component query returns AI Chat results instead of the component
 
-**Symptom:** A code*search for a React or Web Components component returns AI Chat
-example files (results with `example_root`, `framework: "react"`, `doc_id` starting
-with `ai_chat_example*\*`) instead of the expected Carbon component.
+**Symptom:** A code*search for a React or Web Components component returns AI Chat example files (results with `example_root`, `framework: "react"`, `doc_id` starting with `ai_chat_example*\*`) instead of the expected Carbon component.
 
-**Root cause:** The query text contains a framework name that triggers AI Chat code
-intent detection. The most common accidental triggers in component queries are:
+**Root cause:** The query text contains a framework name that triggers AI Chat code intent detection. The most common accidental triggers in component queries are:
 
 - `"react"` — e.g. `"modal react"`, `"accordion react component"`
 - `"web components"` / `"web-components"` / `"webcomponents"`
 
-When these appear in the query text, all query passes are routed to the
-`carbon_ai_chat_code` index. Component filters like `component_type` are removed,
-and the target component will never be found — regardless of fallback passes.
+When these appear in the query text, all query passes are routed to the `carbon_ai_chat_code` index. Component filters like `component_type` are removed, and the target component will never be found — regardless of fallback passes.
 
-> **`"ai chat"` is the primary signal** for intentional AI Chat code routing.
-> Only include it when you actually want AI Chat examples. For component queries,
-> use component names only and express the framework via `filters.component_type`.
+> **`"ai chat"` is the primary signal** for intentional AI Chat code routing. Only include it when you actually want AI Chat examples. For component queries, use component names only and express the framework via `filters.component_type`.
 
 **Recovery — remove framework words from query text:**
 
@@ -95,13 +81,9 @@ and the target component will never be found — regardless of fallback passes.
 
 #### Pattern: Component with "icon" in its name returns zero results or icons instead
 
-**Symptom:** Querying for `icon-button`, `icon-indicator`, `skeleton-icon`, or `status-icon`
-with `component_type: "React"` returns zero results or returns icon/pictogram entries
-from the icons index instead of the component.
+**Symptom:** Querying for `icon-button`, `icon-indicator`, `skeleton-icon`, or `status-icon` with `component_type: "React"` returns zero results or returns icon/pictogram entries from the icons index instead of the component.
 
-**Root cause:** The query service detects the word `"icon"` in the query text and
-re-routes to the `carbon_icons_and_pictograms` index — overriding the `component_type`
-filter. This affects any query text containing the standalone word "icon".
+**Root cause:** The query service detects the word `"icon"` in the query text and re-routes to the `carbon_icons_and_pictograms` index — overriding the `component_type` filter. This affects any query text containing the standalone word "icon".
 
 **Recovery — strip "icon" from the query text; rely on `component_id` for targeting:**
 
@@ -120,11 +102,9 @@ filter. This affects any query text containing the standalone word "icon".
 
 #### Pattern: `docs_search` returns only `"intro"` chunks with thin content
 
-**Symptom:** All results have `section_heading: "intro"` with `chunk_text` that is
-navigation boilerplate (site menu items, breadcrumbs) rather than actual documentation.
+**Symptom:** All results have `section_heading: "intro"` with `chunk_text` that is navigation boilerplate (site menu items, breadcrumbs) rather than actual documentation.
 
-**Root cause:** The intro chunk is always the first and often the highest-ranked result.
-Actual content lives in deeper sections. The docs index chunks are often sparse.
+**Root cause:** The intro chunk is always the first and often the highest-ranked result. Actual content lives in deeper sections. The docs index chunks are often sparse.
 
 **Recovery — try a more targeted page_type + specific topic:**
 
@@ -139,17 +119,13 @@ Actual content lives in deeper sections. The docs index chunks are often sparse.
 If the content is still sparse, **do not keep re-querying**. Instead:
 
 - Share the canonical URL: `source.page_url` from the result
-- Use `code_search` with `filters: { component_id: "button" }` and inspect `props_catalog[]`
-  for API-level details (more reliable than docs chunks for prop-level guidance)
+- Use `code_search` with `filters: { component_id: "button" }` and inspect `props_catalog[]` for API-level details (more reliable than docs chunks for prop-level guidance)
 
 #### Pattern: Wrong component returned by `component_id` filter
 
-**Symptom:** Setting `component_id: "date-picker"` returns `DatePickerInput` or another
-related component instead of the main component.
+**Symptom:** Setting `component_id: "date-picker"` returns `DatePickerInput` or another related component instead of the main component.
 
-**Root cause:** The `component_id` filter uses `flexibleExactMatcher` with analyzed text
-matching. `"date-picker"` tokenizes to `["date", "picker"]` which matches any component
-ID containing both tokens.
+**Root cause:** The `component_id` filter uses `flexibleExactMatcher` with analyzed text matching. `"date-picker"` tokenizes to `["date", "picker"]` which matches any component ID containing both tokens.
 
 **Recovery:**
 
@@ -198,12 +174,10 @@ If an AI Chat code query returns insufficient results:
    - Discovery: 1–2 calls
    - Targeted: 1–2 calls
    - Total ideal: ≤ 4 calls for any request
-6. **Fetch missing doc chunks only if needed** — docs content is sparse; often the `page_url`
-   is more useful than additional chunk queries
+6. **Fetch missing doc chunks only if needed** — docs content is sparse; often the `page_url` is more useful than additional chunk queries
 7. **For AI Chat docs** — prefer one concise `docs_search` call; server auto-routes to the AI Chat index
 8. **For AI Chat code** — prefer one concise `code_search` call with framework guardrail and optional example root
-9. **Trust server-side reconstruction** — multi-chunk files are assembled automatically;
-   do not issue chunk-by-chunk queries
+9. **Trust server-side reconstruction** — multi-chunk files are assembled automatically; do not issue chunk-by-chunk queries
 
 ---
 
@@ -246,8 +220,7 @@ Use this checklist before composing the final response:
 
 ### AI Chat
 
-- [ ] AI Chat doc query validated against intended API symbol/topic
-      (e.g., `PublicChatState`, `ChatInstance`, `migration-1.0.0`)
+- [ ] AI Chat doc query validated against intended API symbol/topic (e.g., `PublicChatState`, `ChatInstance`, `migration-1.0.0`)
 - [ ] AI Chat code validated against intended `example_root` and framework
 - [ ] All required files confirmed present (check for `is_complete_file: true`)
 - [ ] Complete file content available when needed

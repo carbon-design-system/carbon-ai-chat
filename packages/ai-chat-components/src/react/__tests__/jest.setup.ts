@@ -9,13 +9,13 @@
 
 beforeEach(() => {
   // Mock DOMParser for icon transformation tests
-  if (typeof DOMParser === "undefined") {
+  if (typeof DOMParser === 'undefined') {
     (global as any).DOMParser = class DOMParser {
       parseFromString(str: string, _type: string) {
         // Simple mock for testing - in real browser this would parse the string
         const doc = {
           querySelector: (selector: string) => {
-            if (selector === "svg" && str.includes("<svg")) {
+            if (selector === 'svg' && str.includes('<svg')) {
               // Extract attributes from SVG string
               const viewBoxMatch = str.match(/viewBox="([^"]*)"/);
               const fillMatch = str.match(/fill="([^"]*)"/);
@@ -25,18 +25,18 @@ beforeEach(() => {
               const pathMatch = str.match(/<path[^>]*d="([^"]*)"[^>]*>/);
 
               const mockSVG = {
-                tagName: "svg",
+                tagName: 'svg',
                 getAttribute: (attr: string) => {
-                  if (attr === "viewBox") {
-                    return viewBoxMatch ? viewBoxMatch[1] : "0 0 32 32";
+                  if (attr === 'viewBox') {
+                    return viewBoxMatch ? viewBoxMatch[1] : '0 0 32 32';
                   }
-                  if (attr === "fill") {
-                    return fillMatch ? fillMatch[1] : "currentColor";
+                  if (attr === 'fill') {
+                    return fillMatch ? fillMatch[1] : 'currentColor';
                   }
-                  if (attr === "xmlns") {
+                  if (attr === 'xmlns') {
                     return xmlnsMatch
                       ? xmlnsMatch[1]
-                      : "http://www.w3.org/2000/svg";
+                      : 'http://www.w3.org/2000/svg';
                   }
                   return null;
                 },
@@ -44,10 +44,10 @@ beforeEach(() => {
                   ? [
                       {
                         nodeType: 1, // ELEMENT_NODE
-                        tagName: "path",
+                        tagName: 'path',
                         attributes: [
                           {
-                            name: "d",
+                            name: 'd',
                             value: pathMatch[1],
                           },
                         ],
@@ -70,7 +70,7 @@ beforeEach(() => {
   }
 
   // Mock Node constants if not available
-  if (typeof Node === "undefined") {
+  if (typeof Node === 'undefined') {
     (global as any).Node = {
       ELEMENT_NODE: 1,
       TEXT_NODE: 3,

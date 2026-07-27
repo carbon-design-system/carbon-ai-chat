@@ -7,9 +7,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "variables" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use 'variables' as *;
 
 // ============================================================================
 // Workspace Styles
@@ -129,7 +129,7 @@
   container-type: inline-size;
 }
 
-:host([show-workspace][workspace-location="end"]) .input-and-messages {
+:host([show-workspace][workspace-location='end']) .input-and-messages {
   order: 1;
 }
 
@@ -169,28 +169,28 @@
 }
 
 // Container mode workspace-location overrides (more specific, must come after panel mode)
-:host([workspace-in-container][show-workspace][workspace-location="end"])
+:host([workspace-in-container][show-workspace][workspace-location='end'])
   .workspace {
   order: 2;
   padding-inline-end: layout.$spacing-05;
 }
 
-:host([workspace-in-container][show-workspace][workspace-location="end"])
+:host([workspace-in-container][show-workspace][workspace-location='end'])
   .input-and-messages {
   padding-inline-end: 0;
 }
 
 // When workspace is closing, keep end-ordering even if show-workspace is removed
 // This prevents input-and-messages from jumping to DOM order mid-transition
-:host([workspace-location="end"]) .shell.workspace-closing .input-and-messages,
-:host([workspace-location="end"])
+:host([workspace-location='end']) .shell.workspace-closing .input-and-messages,
+:host([workspace-location='end'])
   .shell.workspace-checking-closing
   .input-and-messages {
   order: 1;
 }
 
-:host([workspace-location="end"]) .shell.workspace-closing .workspace,
-:host([workspace-location="end"]) .shell.workspace-checking-closing .workspace {
+:host([workspace-location='end']) .shell.workspace-closing .workspace,
+:host([workspace-location='end']) .shell.workspace-checking-closing .workspace {
   order: 2;
 }
 
@@ -242,34 +242,34 @@
 }
 
 // Remove padding for end-positioned workspace during closing
-:host([workspace-in-container][workspace-location="end"])
+:host([workspace-in-container][workspace-location='end'])
   .shell.workspace-closing
   .workspace,
-:host([workspace-in-container][workspace-location="end"])
+:host([workspace-in-container][workspace-location='end'])
   .shell.workspace-checking-closing
   .workspace {
   padding-inline-end: layout.$spacing-05;
   padding-inline-start: 0;
 }
 
-:host([workspace-in-container][workspace-location="end"])
+:host([workspace-in-container][workspace-location='end'])
   .shell.workspace-closing
   .input-and-messages,
-:host([workspace-in-container][workspace-location="end"])
+:host([workspace-in-container][workspace-location='end'])
   .shell.workspace-checking-closing
   .input-and-messages {
   padding: 0;
 }
 
 // Apply padding for end-positioned workspace during opening
-:host([workspace-in-container][workspace-location="end"])
+:host([workspace-in-container][workspace-location='end'])
   .shell.workspace-opening
   .workspace {
   padding-inline-end: layout.$spacing-05;
   padding-inline-start: 0;
 }
 
-:host([workspace-in-container][workspace-location="end"])
+:host([workspace-in-container][workspace-location='end'])
   .shell.workspace-opening
   .input-and-messages {
   padding-inline-end: 0;

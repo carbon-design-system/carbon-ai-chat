@@ -27,13 +27,13 @@ Size and place the chat by overriding its `--cds-aichat-*` custom properties in 
 
 These shared tokens apply to both the floating and custom-element layouts:
 
-| Token                              | Default | Description                                                   |
-| ---------------------------------- | ------- | ------------------------------------------------------------- |
-| `--cds-aichat-messages-max-width`  | `672px` | Maximum width for message content area, including prompt line |
-| `--cds-aichat-messages-min-width`  | `320px` | Minimum width for message content area, including prompt line |
-| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel                             |
-| `--cds-aichat-history-width`       | `320px` | Width of the history / conversation list panel                |
-| `--cds-aichat-card-max-width`      | `424px` | Maximum width for card components                             |
+| Token | Default | Description |
+| --- | --- | --- |
+| `--cds-aichat-messages-max-width` | `672px` | Maximum width for message content area, including prompt line |
+| `--cds-aichat-messages-min-width` | `320px` | Minimum width for message content area, including prompt line |
+| `--cds-aichat-workspace-min-width` | `480px` | Minimum width for workspace panel |
+| `--cds-aichat-history-width` | `320px` | Width of the history / conversation list panel |
+| `--cds-aichat-card-max-width` | `424px` | Maximum width for card components |
 
 You can also set these tokens from config through {@link LayoutConfig.customProperties | customProperties}, with keys from {@link LayoutCustomProperties}. Do this if you'd rather keep them out of a stylesheet.
 
@@ -42,7 +42,7 @@ You can also set these tokens from config through {@link LayoutConfig.customProp
 To float the chat, apply the exported float classes to your custom element and import the float stylesheet:
 
 ```css
-@import "@carbon/ai-chat/css/chat-float-layout.css";
+@import '@carbon/ai-chat/css/chat-float-layout.css';
 ```
 
 The classes drive the floating widget:
@@ -57,18 +57,18 @@ Toggle the classes as the chat opens and closes. Use the {@link ChatCustomElemen
 
 Size and placement of the floating container come from these tokens:
 
-| Token                          | Default                                                                   | Description                                   |
-| ------------------------------ | ------------------------------------------------------------------------- | --------------------------------------------- |
-| `--cds-aichat-height`          | `calc(100vh - 4rem)`                                                      | Height of the floating chat container         |
-| `--cds-aichat-min-height`      | `max(150px, calc(min(256px, 100vh) - var(--cds-aichat-bottom-position)))` | Minimum height of the floating chat container |
-| `--cds-aichat-max-height`      | `640px`                                                                   | Maximum height of the floating chat container |
-| `--cds-aichat-width`           | `min(380px, var(--cds-aichat-max-width))`                                 | Width of the floating chat container          |
-| `--cds-aichat-max-width`       | inherited                                                                 | Maximum width of the floating chat container  |
-| `--cds-aichat-z-index`         | `99999`                                                                   | z-index of the floating chat container        |
-| `--cds-aichat-bottom-position` | `48px`                                                                    | Distance from the bottom of the viewport      |
-| `--cds-aichat-right-position`  | `32px`                                                                    | Distance from the right of the viewport       |
-| `--cds-aichat-top-position`    | `auto`                                                                    | Distance from the top of the viewport         |
-| `--cds-aichat-left-position`   | `auto`                                                                    | Distance from the left of the viewport        |
+| Token | Default | Description |
+| --- | --- | --- |
+| `--cds-aichat-height` | `calc(100vh - 4rem)` | Height of the floating chat container |
+| `--cds-aichat-min-height` | `max(150px, calc(min(256px, 100vh) - var(--cds-aichat-bottom-position)))` | Minimum height of the floating chat container |
+| `--cds-aichat-max-height` | `640px` | Maximum height of the floating chat container |
+| `--cds-aichat-width` | `min(380px, var(--cds-aichat-max-width))` | Width of the floating chat container |
+| `--cds-aichat-max-width` | inherited | Maximum width of the floating chat container |
+| `--cds-aichat-z-index` | `99999` | z-index of the floating chat container |
+| `--cds-aichat-bottom-position` | `48px` | Distance from the bottom of the viewport |
+| `--cds-aichat-right-position` | `32px` | Distance from the right of the viewport |
+| `--cds-aichat-top-position` | `auto` | Distance from the top of the viewport |
+| `--cds-aichat-left-position` | `auto` | Distance from the left of the viewport |
 
 > **Note:** RTL uses logical `inset-inline` placement while still reading the same `--cds-aichat-right-position` and `--cds-aichat-left-position` tokens. To mirror placement, override those tokens under `[dir="rtl"]`.
 
@@ -85,12 +85,12 @@ Built-in components already carry these attributes. Add `data-rounded` and `data
 
 **Quick guide**
 
-| Goal                                            | Use                                                   | Why                                                   |
-| ----------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
-| Style one surface (single element, single box)  | Read tokens in CSS                                    | You control the exact CSS and just need the value     |
-| Round the first/last item in a group            | `data-rounded` on the wrapper                         | The system applies the correct corners for you        |
-| The children are stacked vertically             | `data-rounded` + `data-stacked`                       | "Top" and "bottom" map to first and last in the stack |
-| You need both automatic rounding and custom CSS | `data-rounded` for the group + tokens in your own CSS | Keeps everything aligned                              |
+| Goal | Use | Why |
+| --- | --- | --- |
+| Style one surface (single element, single box) | Read tokens in CSS | You control the exact CSS and just need the value |
+| Round the first/last item in a group | `data-rounded` on the wrapper | The system applies the correct corners for you |
+| The children are stacked vertically | `data-rounded` + `data-stacked` | "Top" and "bottom" map to first and last in the stack |
+| You need both automatic rounding and custom CSS | `data-rounded` for the group + tokens in your own CSS | Keeps everything aligned |
 
 Supported values for `data-rounded`:
 

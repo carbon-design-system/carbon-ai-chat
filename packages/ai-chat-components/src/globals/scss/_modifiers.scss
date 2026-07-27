@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/utilities/convert" as *;
-@use "./vars" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/utilities/convert' as *;
+@use './vars' as *;
 
 // Note: This file is utilized at multiple places. please ensure changes here
 // are compatible across all usages. since these modifiers are built with DRY principles,
@@ -97,7 +97,7 @@ $rounded-host-map: (
 /* ----- CHILD ELEMENT POSITIONAL ROUNDING ----- */
 @mixin rounded-child-positions {
   @each $key, $positions in $rounded-host-map {
-    :host([data-rounded="#{$key}"]) & {
+    :host([data-rounded='#{$key}']) & {
       @include radius($positions...);
     }
   }
@@ -131,7 +131,7 @@ $non-stacked-map: (
   @each $key, $children in $non-stacked-map {
     @include host-and-attr('[data-rounded="#{$key}"]:not([data-stacked])') {
       @each $pos, $radius in $children {
-        @include round-child(":#{$pos}-child", $radius...);
+        @include round-child(':#{$pos}-child', $radius...);
       }
     }
   }
@@ -169,7 +169,7 @@ $stacked-map: (
   @each $key, $children in $stacked-map {
     @include host-and-attr('[data-rounded="#{$key}"][data-stacked]') {
       @each $pos, $radius in $children {
-        @include round-child(":#{$pos}-child", $radius...);
+        @include round-child(':#{$pos}-child', $radius...);
       }
     }
   }
@@ -185,7 +185,7 @@ $stacked-map: (
 
 /* ----- LAYOUT MODIFIERS ----- */
 @mixin stacked-modifiers {
-  @include host-and-attr("[data-stacked]") {
+  @include host-and-attr('[data-stacked]') {
     display: flex;
     flex-direction: column;
   }

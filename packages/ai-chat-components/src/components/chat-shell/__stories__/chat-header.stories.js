@@ -7,74 +7,73 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../src/shell";
-import "../src/chat-header";
-import "@carbon/web-components/es/components/ai-label/index.js";
-import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/content-switcher/index.js";
-import { html } from "lit";
-import { ref, createRef } from "lit/directives/ref.js";
-import Close from "@carbon/icons/es/close/16.js";
-import Restart from "@carbon/icons/es/restart/16.js";
-import Menu16 from "@carbon/icons/es/menu/16.js";
-import ChevronLeft from "@carbon/icons/es/chevron--left/16.js";
-import styles from "./story-styles.scss?lit";
+import '../src/shell';
+import '../src/chat-header';
+import '@carbon/web-components/es/components/ai-label/index.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/content-switcher/index.js';
+import { html } from 'lit';
+import { ref, createRef } from 'lit/directives/ref.js';
+import Close from '@carbon/icons/es/close/16.js';
+import Restart from '@carbon/icons/es/restart/16.js';
+import Menu16 from '@carbon/icons/es/menu/16.js';
+import ChevronLeft from '@carbon/icons/es/chevron--left/16.js';
+import styles from './story-styles.scss?lit';
 
 const sampleActions = [
   {
-    text: "Restart conversation",
+    text: 'Restart conversation',
     icon: Restart,
-    onClick: () => console.log("Restart clicked"),
+    onClick: () => console.log('Restart clicked'),
   },
   {
-    text: "Close chat",
+    text: 'Close chat',
     icon: Close,
-    onClick: () => console.log("Close clicked"),
+    onClick: () => console.log('Close clicked'),
     fixed: true,
   },
 ];
 
 const sampleOverflowItems = [
   {
-    text: "Settings",
-    onClick: () => console.log("Settings clicked"),
+    text: 'Settings',
+    onClick: () => console.log('Settings clicked'),
   },
   {
-    text: "Help",
-    onClick: () => console.log("Help clicked"),
+    text: 'Help',
+    onClick: () => console.log('Help clicked'),
   },
   {
-    text: "About",
-    onClick: () => console.log("About clicked"),
+    text: 'About',
+    onClick: () => console.log('About clicked'),
   },
 ];
 
 export default {
-  title: "Preview/Chat shell/Header",
+  title: 'Preview/Chat shell/Header',
   args: {
-    headerTitle: "title",
-    headerName: "name",
+    headerTitle: 'title',
+    headerName: 'name',
   },
   argTypes: {
     headerTitle: {
-      control: "text",
-      description: "Main title text",
+      control: 'text',
+      description: 'Main title text',
     },
     headerName: {
-      control: "text",
-      description: "Subtitle/name text",
+      control: 'text',
+      description: 'Subtitle/name text',
     },
     fixedActions: {
-      control: "select",
-      options: ["content switcher", "custom button", "none"],
+      control: 'select',
+      options: ['content switcher', 'custom button', 'none'],
       mapping: {
-        "content switcher": html` <div slot="fixed-actions">
+        'content switcher': html` <div slot="fixed-actions">
           <cds-content-switcher
             @cds-content-switcher-selected=${(e) => console.log(e)}
             selection-mode="automatic"
             selected-index="0"
-            size="sm"
-          >
+            size="sm">
             <cds-content-switcher-item value="code" name="one">
               Code
             </cds-content-switcher-item>
@@ -83,22 +82,22 @@ export default {
             </cds-content-switcher-item>
           </cds-content-switcher>
         </div>`,
-        "custom button": html` <div slot="fixed-actions">
+        'custom button': html` <div slot="fixed-actions">
           <cds-button
-            @click=${() => console.log("Custom button clicked")}
+            @click=${() => console.log('Custom button clicked')}
             size="md"
             >Custom</cds-button
           >
         </div>`,
         none: undefined,
       },
-      table: { category: "slot" },
+      table: { category: 'slot' },
       description:
         "Fixed actions slot for chat header component. `slot='fixed-actions'`",
     },
     aiLabel: {
-      table: { category: "slot" },
-      control: "boolean",
+      table: { category: 'slot' },
+      control: 'boolean',
       description:
         "AI Label slot in the chat header component `slot='decorator'`",
     },
@@ -108,13 +107,13 @@ export default {
 export const Default = {
   args: {
     showActions: true,
-    fixedActions: "none",
+    fixedActions: 'none',
     aiLabel: false,
   },
   argTypes: {
     showActions: {
-      control: "boolean",
-      description: "Show or hide action buttons",
+      control: 'boolean',
+      description: 'Show or hide action buttons',
     },
   },
   render: (args) => {
@@ -128,8 +127,7 @@ export const Default = {
           slot="header"
           .headerTitle=${args.headerTitle}
           .headerName=${args.headerName}
-          .actions=${actions}
-        >
+          .actions=${actions}>
           ${args.fixedActions}
           ${
             args.aiLabel
@@ -137,8 +135,7 @@ export const Default = {
                   size="2xs"
                   autoalign
                   alignment="bottom"
-                  slot="decorator"
-                >
+                  slot="decorator">
                   <div slot="body-text">
                     <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
                     <div>
@@ -148,7 +145,7 @@ export const Default = {
                     </div>
                   </div>
                 </cds-ai-label>`
-              : ""
+              : ''
           }
         </cds-aichat-chat-header>
         <div slot="messages" class="messages slot-sample">Messages</div>
@@ -160,24 +157,24 @@ export const Default = {
 
 export const WithOverflowNavigation = {
   args: {
-    navigationOverflowLabel: "Menu",
-    navigationOverflowAriaLabel: "Open menu",
+    navigationOverflowLabel: 'Menu',
+    navigationOverflowAriaLabel: 'Open menu',
     showActions: true,
-    fixedActions: "none",
+    fixedActions: 'none',
     aiLabel: false,
   },
   argTypes: {
     navigationOverflowLabel: {
-      control: "text",
-      description: "Label for overflow menu button",
+      control: 'text',
+      description: 'Label for overflow menu button',
     },
     navigationOverflowAriaLabel: {
-      control: "text",
-      description: "Aria label for overflow menu",
+      control: 'text',
+      description: 'Aria label for overflow menu',
     },
     showActions: {
-      control: "boolean",
-      description: "Show or hide action buttons",
+      control: 'boolean',
+      description: 'Show or hide action buttons',
     },
   },
   render: (args) => {
@@ -196,8 +193,7 @@ export const WithOverflowNavigation = {
           .navigationOverflowIcon=${Menu16}
           navigation-overflow-label=${args.navigationOverflowLabel}
           navigation-overflow-aria-label=${args.navigationOverflowAriaLabel}
-          .navigationOverflowItems=${sampleOverflowItems}
-        >
+          .navigationOverflowItems=${sampleOverflowItems}>
           ${args.fixedActions}
           ${
             args.aiLabel
@@ -205,8 +201,7 @@ export const WithOverflowNavigation = {
                   size="2xs"
                   autoalign
                   alignment="bottom"
-                  slot="decorator"
-                >
+                  slot="decorator">
                   <div slot="body-text">
                     <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
                     <div>
@@ -216,7 +211,7 @@ export const WithOverflowNavigation = {
                     </div>
                   </div>
                 </cds-ai-label>`
-              : ""
+              : ''
           }
         </cds-aichat-chat-header>
         <div slot="messages" class="messages slot-sample">Messages</div>
@@ -228,13 +223,13 @@ export const WithOverflowNavigation = {
 
 export const WithFocusManagement = {
   args: {
-    headerTitle: "title",
-    headerName: "name",
-    navigationType: "back",
-    navigationBackLabel: "Back",
+    headerTitle: 'title',
+    headerName: 'name',
+    navigationType: 'back',
+    navigationBackLabel: 'Back',
     showActions: true,
     overflow: false,
-    fixedActions: "none",
+    fixedActions: 'none',
     aiLabel: false,
   },
   render: (args) => {
@@ -244,7 +239,7 @@ export const WithFocusManagement = {
     const handleRequestFocus = () => {
       if (headerRef.value) {
         const success = headerRef.value.requestFocus();
-        console.log("Focus request:", success ? "successful" : "failed");
+        console.log('Focus request:', success ? 'successful' : 'failed');
       }
     };
 
@@ -268,8 +263,7 @@ export const WithFocusManagement = {
             .navigationBackIcon=${ChevronLeft}
             navigation-back-label=${args.navigationBackLabel}
             @cds-aichat-chat-header-navigation-back-click=${() =>
-              console.log("Back clicked")}
-          >
+              console.log('Back clicked')}>
             ${args.fixedActions}
             ${
               args.aiLabel
@@ -277,8 +271,7 @@ export const WithFocusManagement = {
                     size="2xs"
                     autoalign
                     alignment="bottom"
-                    slot="decorator"
-                  >
+                    slot="decorator">
                     <div slot="body-text">
                       <h4 class="margin-bottom-05">Powered by IBM watsonx</h4>
                       <div>
@@ -288,7 +281,7 @@ export const WithFocusManagement = {
                       </div>
                     </div>
                   </cds-ai-label>`
-                : ""
+                : ''
             }
           </cds-aichat-chat-header>
           <div slot="messages" class="messages slot-sample">Messages</div>

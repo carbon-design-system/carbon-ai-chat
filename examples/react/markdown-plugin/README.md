@@ -17,15 +17,15 @@
 
 ## APIs and props demonstrated
 
-| Symbol                        | Package / kind              | Role in this example                                            |
-| ----------------------------- | --------------------------- | --------------------------------------------------------------- |
-| `ChatCustomElement`           | `@carbon/ai-chat` component | Mounts the chat into a fullscreen host element.                 |
-| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.          |
-| `MarkdownItPlugin`            | `@carbon/ai-chat` type      | Element shape of the `markdownItPlugins` array.                 |
-| `markdown.markdownItPlugins`  | config prop                 | Registers `@vscode/markdown-it-katex` with the chat's renderer. |
-| `messaging.customSendMessage` | config prop                 | Mock backend that emits markdown with KaTeX math.               |
-| `layout.showFrame`            | config prop                 | Disables the built-in frame so the host owns the layout.        |
-| `openChatByDefault`           | config prop                 | Mounts straight into the conversation, no launcher.             |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a fullscreen host element. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatCustomElement`. |
+| `MarkdownItPlugin` | `@carbon/ai-chat` type | Element shape of the `markdownItPlugins` array. |
+| `markdown.markdownItPlugins` | config prop | Registers `@vscode/markdown-it-katex` with the chat's renderer. |
+| `messaging.customSendMessage` | config prop | Mock backend that emits markdown with KaTeX math. |
+| `layout.showFrame` | config prop | Disables the built-in frame so the host owns the layout. |
+| `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
 
 ## Run it
 

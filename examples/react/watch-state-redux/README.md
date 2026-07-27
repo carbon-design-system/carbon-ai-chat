@@ -17,22 +17,22 @@ Mirrors `ChatInstance` state into a Redux Toolkit store via the `STATE_CHANGE` b
 
 ## APIs and props demonstrated
 
-| Symbol                        | Package / kind              | Role in this example                                                  |
-| ----------------------------- | --------------------------- | --------------------------------------------------------------------- |
-| `ChatContainer`               | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher.                               |
-| `messaging.customSendMessage` | config prop                 | Mock backend.                                                         |
-| `homescreen.isOn`             | config prop                 | Enables the homescreen so toggling it produces `STATE_CHANGE` events. |
-| `homescreen.greeting`         | config prop                 | Greeting text on the homescreen.                                      |
-| `homescreen.starters`         | config prop                 | Starter buttons.                                                      |
-| `onBeforeRender`              | component prop              | Captures the `ChatInstance` and wires the bus → Redux bridge.         |
-| `instance.getState`           | `@carbon/ai-chat` method    | Seeds the Redux store on first render.                                |
-| `instance.on`                 | `@carbon/ai-chat` method    | Subscribes to `STATE_CHANGE`.                                         |
-| `BusEventType.STATE_CHANGE`   | `@carbon/ai-chat` enum      | Event the bridge listens to.                                          |
-| `PublicChatState`             | `@carbon/ai-chat` type      | Type of the snapshot stored in Redux.                                 |
-| `configureStore`              | `@reduxjs/toolkit` function | Creates the Redux store.                                              |
-| `createSlice`                 | `@reduxjs/toolkit` function | Defines the chat-state slice with the `chatStateSync` reducer.        |
-| `Provider`                    | `react-redux` component     | Provides the store to the React tree.                                 |
-| `useSelector` (typed)         | `react-redux` hook          | Reads `homeScreenState.isHomeScreenOpen` from the store.              |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI as a float launcher. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `homescreen.isOn` | config prop | Enables the homescreen so toggling it produces `STATE_CHANGE` events. |
+| `homescreen.greeting` | config prop | Greeting text on the homescreen. |
+| `homescreen.starters` | config prop | Starter buttons. |
+| `onBeforeRender` | component prop | Captures the `ChatInstance` and wires the bus → Redux bridge. |
+| `instance.getState` | `@carbon/ai-chat` method | Seeds the Redux store on first render. |
+| `instance.on` | `@carbon/ai-chat` method | Subscribes to `STATE_CHANGE`. |
+| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Event the bridge listens to. |
+| `PublicChatState` | `@carbon/ai-chat` type | Type of the snapshot stored in Redux. |
+| `configureStore` | `@reduxjs/toolkit` function | Creates the Redux store. |
+| `createSlice` | `@reduxjs/toolkit` function | Defines the chat-state slice with the `chatStateSync` reducer. |
+| `Provider` | `react-redux` component | Provides the store to the React tree. |
+| `useSelector` (typed) | `react-redux` hook | Reads `homeScreenState.isHomeScreenOpen` from the store. |
 
 ## Run it
 

@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { useCallback, useEffect, useState } from "react";
-import type { Extension } from "@tiptap/core";
+import { useCallback, useEffect, useState } from 'react';
+import type { Extension } from '@tiptap/core';
 
 import type {
   TriggerSuggestionConfig,
   SuggestionItem,
   AutocompleteConfig,
-} from "../../../types/config/InputConfig";
-import { resolvePromptLineMode } from "./promptLineMode";
-import { useInputExtensions } from "../../hooks/useInputExtensions";
+} from '../../../types/config/InputConfig';
+import { resolvePromptLineMode } from './promptLineMode';
+import { useInputExtensions } from '../../hooks/useInputExtensions';
 
 interface UseRichSurfaceArgs {
   mention: TriggerSuggestionConfig | undefined;
@@ -60,7 +60,7 @@ function useRichSurface({
     tiptap: hostExtensions ? { extensions: hostExtensions } : undefined,
   });
   const [richLatched, setRichLatched] = useState(false);
-  const useRichEditor = richLatched || promptLineMode === "rich";
+  const useRichEditor = richLatched || promptLineMode === 'rich';
   useEffect(() => {
     if (useRichEditor && !richLatched) {
       setRichLatched(true);

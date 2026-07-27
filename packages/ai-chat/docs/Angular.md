@@ -34,21 +34,21 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ElementRef,
   ViewChild,
-} from "@angular/core";
-import { ChatInstance } from "@carbon/ai-chat";
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+} from '@angular/core';
+import { ChatInstance } from '@carbon/ai-chat';
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
 @Component({
-  selector: "app-root",
+  selector: 'app-root',
   template: `<cds-aichat-container #chatContainer></cds-aichat-container>`,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppComponent {
-  @ViewChild("chatContainer", { static: false }) chatContainer!: ElementRef;
+  @ViewChild('chatContainer', { static: false }) chatContainer!: ElementRef;
 
   ngAfterViewInit() {
     const element = this.chatContainer.nativeElement;
-    element.header = { title: "My Assistant" };
+    element.header = { title: 'My Assistant' };
     element.onBeforeRender = (instance: ChatInstance) => {
       // Call instance methods here.
     };
@@ -63,11 +63,11 @@ This example uses the `cds-aichat-container` float layout. For custom sizing, us
 `@carbon/ai-chat` builds on `@carbon/web-components`. When you also use `carbon-angular-components`, the shared `cds-` web-component names collide in the browser's custom-element registry. To avoid the clash, import from the `es-custom` build. It registers every component under a `cds-custom-` prefix:
 
 ```typescript
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
-import "@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js";
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import '@carbon/ai-chat/dist/es-custom/web-components/cds-aichat-container/index.js';
 
 @Component({
-  selector: "app-root",
+  selector: 'app-root',
   template: `<cds-custom-aichat-container></cds-custom-aichat-container>`,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

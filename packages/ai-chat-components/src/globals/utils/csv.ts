@@ -14,7 +14,7 @@ const NEEDS_QUOTING = /[",\r\n]/;
 
 function formatField(value: CSVValue): string {
   if (value === null || value === undefined) {
-    return "";
+    return '';
   }
 
   const field = String(value);
@@ -31,7 +31,7 @@ function formatField(value: CSVValue): string {
  * newline; an empty input produces an empty string.
  */
 function stringifyCSV(rows: CSVValue[][]): string {
-  return rows.map((row) => `${row.map(formatField).join(",")}\n`).join("");
+  return rows.map((row) => `${row.map(formatField).join(',')}\n`).join('');
 }
 
 export { stringifyCSV };

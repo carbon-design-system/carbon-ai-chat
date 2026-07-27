@@ -29,30 +29,30 @@ Lerna + npm-workspaces monorepo.
 
 Read that package's `AGENTS.md` before your first edit. Each one routes onward to its own topic references (architecture, services, tests, types…) with "read when" triggers — so this table stops at the package boundary.
 
-| Editing…                       | Read                                                                                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/ai-chat/`            | [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md)                                                                                    |
-| `packages/ai-chat-components/` | [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md)                                                              |
-| `packages/typedoc-theme/`      | [packages/typedoc-theme/AGENTS.md](packages/typedoc-theme/AGENTS.md)                                                                        |
-| `demo/`                        | [demo/AGENTS.md](demo/AGENTS.md)                                                                                                            |
-| `examples/**`                  | [examples/AGENTS.md](examples/AGENTS.md) (+ [react](examples/react/AGENTS.md) / [web-components](examples/web-components/AGENTS.md) deltas) |
+| Editing… | Read |
+| --- | --- |
+| `packages/ai-chat/` | [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md) |
+| `packages/ai-chat-components/` | [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md) |
+| `packages/typedoc-theme/` | [packages/typedoc-theme/AGENTS.md](packages/typedoc-theme/AGENTS.md) |
+| `demo/` | [demo/AGENTS.md](demo/AGENTS.md) |
+| `examples/**` | [examples/AGENTS.md](examples/AGENTS.md) (+ [react](examples/react/AGENTS.md) / [web-components](examples/web-components/AGENTS.md) deltas) |
 
 ## What am I doing?
 
-| Task                                                | Read                                                        |
-| --------------------------------------------------- | ----------------------------------------------------------- |
-| Writing or changing any code                        | [code-patterns.md](references/code-patterns.md)             |
-| Commits, branches, PR titles, license headers       | [conventions.md](references/conventions.md)                 |
-| Building, testing, or running a single example/test | [commands.md](references/commands.md)                       |
-| Knowing which gate to run before shipping           | [definition-of-done.md](references/definition-of-done.md)   |
-| Reviewing a diff (or self-review before done)       | [code-review.md](references/code-review.md)                 |
-| Writing a multi-PR plan, design doc, or approach    | [plan-authoring.md](references/plan-authoring.md)           |
-| Reviewing a plan before any code is written         | [plan-review.md](references/plan-review.md)                 |
-| Writing a PR description                            | [pr.md](references/pr.md)                                   |
-| Filing a GitHub issue or sub-issue                  | [issue-authoring.md](references/issue-authoring.md)         |
-| Authoring or running an epic (umbrella issue)       | [epic-authoring.md](references/epic-authoring.md)           |
-| Writing developer-facing copy (README/JSDoc/MDX)    | [tone.md](references/tone.md)                               |
-| Translating a Figma design / calling Carbon MCP     | [figma.md](references/figma.md)                             |
+| Task | Read |
+| --- | --- |
+| Writing or changing any code | [code-patterns.md](references/code-patterns.md) |
+| Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
+| Building, testing, or running a single example/test | [commands.md](references/commands.md) |
+| Knowing which gate to run before shipping | [definition-of-done.md](references/definition-of-done.md) |
+| Reviewing a diff (or self-review before done) | [code-review.md](references/code-review.md) |
+| Writing a multi-PR plan, design doc, or approach | [plan-authoring.md](references/plan-authoring.md) |
+| Reviewing a plan before any code is written | [plan-review.md](references/plan-review.md) |
+| Writing a PR description | [pr.md](references/pr.md) |
+| Filing a GitHub issue or sub-issue | [issue-authoring.md](references/issue-authoring.md) |
+| Authoring or running an epic (umbrella issue) | [epic-authoring.md](references/epic-authoring.md) |
+| Writing developer-facing copy (README/JSDoc/MDX) | [tone.md](references/tone.md) |
+| Translating a Figma design / calling Carbon MCP | [figma.md](references/figma.md) |
 | Editing an `AGENTS.md` or `references/` file itself | [authoring-agents-md.md](references/authoring-agents-md.md) |
 
 Plan files (`PLAN.md`, `PLAN-{N}-{title}.md`) live at the repo root and are git-ignored.

@@ -12,60 +12,60 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-"use strict";
+'use strict';
 
-import { fileURLToPath } from "url";
-import { globby } from "globby";
-import { rollup, watch } from "rollup";
-import alias from "@rollup/plugin-alias";
-import autoprefixer from "autoprefixer";
-import commonjs from "@rollup/plugin-commonjs";
-import cssnano from "cssnano";
-import litSCSS from "../tools/rollup-plugin-lit-scss.js";
-import nodeResolve from "@rollup/plugin-node-resolve";
-import path from "path";
-import postcss from "postcss";
-import { readFileSync } from "fs";
-import fs from "fs-extra";
-import typescript from "@rollup/plugin-typescript";
+import { fileURLToPath } from 'url';
+import { globby } from 'globby';
+import { rollup, watch } from 'rollup';
+import alias from '@rollup/plugin-alias';
+import autoprefixer from 'autoprefixer';
+import commonjs from '@rollup/plugin-commonjs';
+import cssnano from 'cssnano';
+import litSCSS from '../tools/rollup-plugin-lit-scss.js';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import path from 'path';
+import postcss from 'postcss';
+import { readFileSync } from 'fs';
+import fs from 'fs-extra';
+import typescript from '@rollup/plugin-typescript';
 
-const packageJson = JSON.parse(readFileSync("./package.json"));
+const packageJson = JSON.parse(readFileSync('./package.json'));
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const watchMode = process.argv.includes("--watch");
+const watchMode = process.argv.includes('--watch');
 
 let currentWatcher;
 let postBuildInFlight = Promise.resolve();
 
 function showDeathBanner(kind, err) {
-  const RED = "\x1b[41;1;37m";
-  const RESET = "\x1b[0m";
+  const RED = '\x1b[41;1;37m';
+  const RESET = '\x1b[0m';
   const lines = [
-    "",
+    '',
     `${RED}================================================================${RESET}`,
-    `${RED}  [ai-chat-components] WATCH DIED (${kind})${" ".repeat(Math.max(0, 41 - kind.length))}${RESET}`,
+    `${RED}  [ai-chat-components] WATCH DIED (${kind})${' '.repeat(Math.max(0, 41 - kind.length))}${RESET}`,
     `${RED}  es/ output is now STALE. concurrently will restart shortly.   ${RESET}`,
     `${RED}================================================================${RESET}`,
     err?.stack || String(err),
-    "",
+    '',
   ];
-  process.stderr.write(lines.join("\n") + "\n");
+  process.stderr.write(lines.join('\n') + '\n');
 }
 
 if (watchMode) {
-  process.on("unhandledRejection", (reason) => {
-    showDeathBanner("unhandledRejection", reason);
+  process.on('unhandledRejection', (reason) => {
+    showDeathBanner('unhandledRejection', reason);
     process.exit(1);
   });
-  process.on("uncaughtException", (err) => {
-    showDeathBanner("uncaughtException", err);
+  process.on('uncaughtException', (err) => {
+    showDeathBanner('uncaughtException', err);
     process.exit(1);
   });
-  process.on("SIGINT", () => {
+  process.on('SIGINT', () => {
     currentWatcher?.close();
     process.exit(0);
   });
-  process.on("SIGTERM", () => {
-    showDeathBanner("SIGTERM", new Error("process killed externally"));
+  process.on('SIGTERM', () => {
+    showDeathBanner('SIGTERM', new Error('process killed externally'));
     currentWatcher?.close();
     process.exit(1);
   });
@@ -73,36 +73,36 @@ if (watchMode) {
 
 async function build() {
   const esInputs = await globby([
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "!src/**/*.test.ts",
-    "!src/**/*.stories.ts",
-    "!src/**/*.d.ts",
-    "!src/globals/internal/storybook-cdn.ts",
+    'src/**/*.ts',
+    'src/**/*.tsx',
+    '!src/**/*.test.ts',
+    '!src/**/*.stories.ts',
+    '!src/**/*.d.ts',
+    '!src/globals/internal/storybook-cdn.ts',
   ]);
 
   const entryPoint = {
-    rootDir: "src",
-    outputDirectory: path.resolve(__dirname, ".."),
+    rootDir: 'src',
+    outputDirectory: path.resolve(__dirname, '..'),
   };
 
   const formats = [
     {
-      type: "esm",
-      directory: "es",
+      type: 'esm',
+      directory: 'es',
     },
   ];
 
   for (const format of formats) {
     const outputDirectory = path.join(
       entryPoint.outputDirectory,
-      format.directory,
+      format.directory
     );
 
     const cwcInputConfig = getRollupConfig(
       esInputs,
       entryPoint.rootDir,
-      outputDirectory,
+      outputDirectory
     );
 
     if (watchMode) {
@@ -112,29 +112,29 @@ async function build() {
           dir: outputDirectory,
           format: format.type,
           preserveModules: true,
-          preserveModulesRoot: "src",
+          preserveModulesRoot: 'src',
           banner,
-          exports: "named",
+          exports: 'named',
           sourcemap: true,
         },
       });
 
-      currentWatcher.on("event", (event) => {
-        if (event.code === "START") {
-          console.log("Building ai-chat-components...");
-        } else if (event.code === "END") {
-          console.log("Build complete");
+      currentWatcher.on('event', (event) => {
+        if (event.code === 'START') {
+          console.log('Building ai-chat-components...');
+        } else if (event.code === 'END') {
+          console.log('Build complete');
           postBuildInFlight = postBuildInFlight
             .catch(() => {})
             .then(() => postBuild())
             .catch((err) => {
-              showDeathBanner("postBuild", err);
+              showDeathBanner('postBuild', err);
               process.exit(1);
             });
-        } else if (event.code === "ERROR") {
-          console.error("Build error:", event.error);
-        } else if (event.code === "FATAL") {
-          showDeathBanner("rollup FATAL", event.error);
+        } else if (event.code === 'ERROR') {
+          console.error('Build error:', event.error);
+        } else if (event.code === 'FATAL') {
+          showDeathBanner('rollup FATAL', event.error);
           process.exit(1);
         }
       });
@@ -145,9 +145,9 @@ async function build() {
         dir: outputDirectory,
         format: format.type,
         preserveModules: true,
-        preserveModulesRoot: "src",
+        preserveModulesRoot: 'src',
         banner,
-        exports: "named",
+        exports: 'named',
         sourcemap: true,
       });
 
@@ -183,20 +183,20 @@ function getRollupConfig(input, rootDir, outDir) {
     }),
     plugins: [
       alias({
-        entries: [{ find: /^(.*)\.scss\?lit$/, replacement: "$1.scss" }],
+        entries: [{ find: /^(.*)\.scss\?lit$/, replacement: '$1.scss' }],
       }),
       nodeResolve({
         browser: true,
-        mainFields: ["jsnext", "module", "main"],
-        extensions: [".js", ".ts", ".tsx"],
+        mainFields: ['jsnext', 'module', 'main'],
+        extensions: ['.js', '.ts', '.tsx'],
       }),
       commonjs({
         include: [/node_modules/],
       }),
       litSCSS({
         includePaths: [
-          path.resolve(__dirname, "../node_modules"),
-          path.resolve(__dirname, "../../../node_modules"),
+          path.resolve(__dirname, '../node_modules'),
+          path.resolve(__dirname, '../../../node_modules'),
         ],
         async preprocessor(contents, id) {
           return (
@@ -225,23 +225,23 @@ build().catch((error) => {
 // TODO: remove once @carbon/web-components supports scoped elements!
 async function postBuild() {
   // Copy SCSS token files to scss/ for consumption by other packages
-  const scssSourceDir = path.resolve(__dirname, "../src/globals/scss");
-  const scssTargetDir = path.resolve(__dirname, "../scss");
+  const scssSourceDir = path.resolve(__dirname, '../src/globals/scss');
+  const scssTargetDir = path.resolve(__dirname, '../scss');
 
   await fs.ensureDir(scssTargetDir);
   await fs.copy(scssSourceDir, scssTargetDir, {
     filter: (src) => {
       // Only copy .scss files and README.md
-      return src.endsWith(".scss") || fs.statSync(src).isDirectory();
+      return src.endsWith('.scss') || fs.statSync(src).isDirectory();
     },
   });
 
-  console.log("Copied SCSS token files to scss/");
+  console.log('Copied SCSS token files to scss/');
 
-  const sourceDir = path.resolve(__dirname, "../es");
+  const sourceDir = path.resolve(__dirname, '../es');
 
   if (sourceDir) {
-    const targetDir = path.resolve(__dirname, "../es-custom");
+    const targetDir = path.resolve(__dirname, '../es-custom');
 
     // Copy `es` directory to `es-custom`
     await fs.copy(sourceDir, targetDir);
@@ -252,21 +252,21 @@ async function postBuild() {
     // Replace "cds" with "cds-custom" in all files
     await Promise.all(
       files.map(async (file) => {
-        const content = await fs.promises.readFile(file, "utf8");
+        const content = await fs.promises.readFile(file, 'utf8');
         let updatedContent = content
           // 1) Fix import paths
           .replace(
             /@carbon\/web-components\/es/g,
-            "@carbon/web-components/es-custom",
+            '@carbon/web-components/es-custom'
           )
           // 2) Replace cds-aichat → cds-custom-aichat (except CSS variables like --cds-aichat-*)
-          .replace(/(?<!-)\bcds-aichat\b/g, "cds-custom-aichat")
+          .replace(/(?<!-)\bcds-aichat\b/g, 'cds-custom-aichat')
           // 3) Replace cds → cds-custom except:
           //    - CSS variables like --cds-* (via negative lookbehind (?<!-))
           //    - already transformed cds-custom/cds_custom (via negative lookahead (?!-custom|_custom))
-          .replace(/(?<!-)\bcds\b(?!-custom|_custom)/g, "cds-custom");
+          .replace(/(?<!-)\bcds\b(?!-custom|_custom)/g, 'cds-custom');
         await fs.promises.writeFile(file, updatedContent);
-      }),
+      })
     );
   }
 }

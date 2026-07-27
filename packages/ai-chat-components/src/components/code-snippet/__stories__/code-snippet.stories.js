@@ -7,15 +7,15 @@
  *  @license
  */
 
-import "../src/code-snippet";
-import "../../card/index.js";
-import "@carbon/web-components/es/components/ai-label/ai-label.js";
-import "@carbon/web-components/es/components/button/button.js";
-import { html, LitElement } from "lit";
-import { ifDefined } from "lit/directives/if-defined.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import { multilineCode } from "./sample-code.js";
+import '../src/code-snippet';
+import '../../card/index.js';
+import '@carbon/web-components/es/components/ai-label/ai-label.js';
+import '@carbon/web-components/es/components/button/button.js';
+import { html, LitElement } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import Download16 from '@carbon/icons/es/download/16.js';
+import Share16 from '@carbon/icons/es/share/16.js';
+import { multilineCode } from './sample-code.js';
 
 // Helper function to render with or without card wrapper
 const renderSnippet = (args, code) => {
@@ -36,8 +36,7 @@ const renderSnippet = (args, code) => {
       min-expanded-number-of-rows=${ifDefined(args.minExpandedNumberOfRows)}
       show-more-text=${ifDefined(args.showMoreText)}
       show-less-text=${ifDefined(args.showLessText)}
-      copy-button-tooltip-content=${ifDefined(args.copyButtonTooltipContent)}
-    >
+      copy-button-tooltip-content=${ifDefined(args.copyButtonTooltipContent)}>
     </cds-aichat-code-snippet>
   `;
 
@@ -53,22 +52,22 @@ const renderSnippet = (args, code) => {
 };
 
 export default {
-  title: "Components/Code snippet",
-  component: "cds-aichat-code-snippet",
+  title: 'Components/Code snippet',
+  component: 'cds-aichat-code-snippet',
   argTypes: {
     // Story-specific control (not a component property)
     useCard: {
-      control: "boolean",
-      description: "Wrap in card wrapper (story-only control)",
+      control: 'boolean',
+      description: 'Wrap in card wrapper (story-only control)',
       table: {
-        category: "Story",
+        category: 'Story',
       },
     },
     // Disable control for complex array property
     actions: {
       control: false,
       description:
-        "Array of actions that can overflow into a menu when space is limited.",
+        'Array of actions that can overflow into a menu when space is limited.',
     },
   },
 };
@@ -83,8 +82,8 @@ export const Default = {
     hideLineNumbers: false,
     hideFold: false,
     maxCollapsedNumberOfRows: 15,
-    showMoreText: "Show more",
-    showLessText: "Show less",
+    showMoreText: 'Show more',
+    showLessText: 'Show less',
   },
   render: (args) => renderSnippet(args, multilineCode),
 };
@@ -107,7 +106,7 @@ class StreamingDemo extends LitElement {
     this.highlight = true;
     this.disabled = false;
     this.hideCopyButton = false;
-    this.streamedContent = "";
+    this.streamedContent = '';
     this.streamInterval = null;
   }
 
@@ -130,7 +129,7 @@ class StreamingDemo extends LitElement {
     }
 
     let charIndex = 0;
-    this.streamedContent = "";
+    this.streamedContent = '';
 
     this.streamInterval = window.setInterval(() => {
       if (charIndex < multilineCode.length) {
@@ -154,8 +153,7 @@ class StreamingDemo extends LitElement {
         ?editable=${this.editable}
         ?highlight=${this.highlight}
         ?disabled=${this.disabled}
-        ?hide-copy-button=${this.hideCopyButton}
-      >
+        ?hide-copy-button=${this.hideCopyButton}>
       </cds-aichat-code-snippet>
     `;
 
@@ -171,8 +169,7 @@ class StreamingDemo extends LitElement {
       <div>
         <button
           @click=${() => this.startStreaming()}
-          style="margin-bottom: 1rem; padding: 0.5rem 1rem; cursor: pointer;"
-        >
+          style="margin-bottom: 1rem; padding: 0.5rem 1rem; cursor: pointer;">
           Restart Streaming
         </button>
         ${snippetContent}
@@ -181,7 +178,7 @@ class StreamingDemo extends LitElement {
   }
 }
 
-customElements.define("streaming-demo", StreamingDemo);
+customElements.define('streaming-demo', StreamingDemo);
 
 export const Streaming = {
   args: {
@@ -198,8 +195,7 @@ export const Streaming = {
       ?editable=${args.editable}
       ?highlight=${args.highlight}
       ?disabled=${args.disabled}
-      ?hide-copy-button=${args.hideCopyButton}
-    ></streaming-demo>
+      ?hide-copy-button=${args.hideCopyButton}></streaming-demo>
   `,
 };
 
@@ -215,14 +211,14 @@ export const WithHeaderSlotsFilled = {
   render: (args) => {
     const actions = [
       {
-        text: "Download",
+        text: 'Download',
         icon: Download16,
-        onClick: () => console.log("Download clicked"),
+        onClick: () => console.log('Download clicked'),
       },
       {
-        text: "Share",
+        text: 'Share',
         icon: Share16,
-        onClick: () => console.log("Share clicked"),
+        onClick: () => console.log('Share clicked'),
       },
     ];
 
@@ -249,7 +245,7 @@ export const WithHeaderSlotsFilled = {
         <div slot="fixed-actions">
           <cds-button
             size="sm"
-            @click=${() => console.log("Fixed action clicked")}>
+            @click=${() => console.log('Fixed action clicked')}>
             Button
           </button>
         </div>
@@ -365,8 +361,7 @@ export const FullHeightMode = {
         ?hide-line-numbers=${args.hideLineNumbers}
         ?hide-fold=${args.hideFold}
         max-collapsed-number-of-rows=${args.maxCollapsedNumberOfRows}
-        max-expanded-number-of-rows=${args.maxExpandedNumberOfRows}
-      >
+        max-expanded-number-of-rows=${args.maxExpandedNumberOfRows}>
       </cds-aichat-code-snippet>
     `;
 
@@ -380,8 +375,7 @@ export const FullHeightMode = {
 
     return html`
       <div
-        style="height: 500px; display: flex; flex-direction: column; border: 1px solid #ccc; padding: 1rem;"
-      >
+        style="height: 500px; display: flex; flex-direction: column; border: 1px solid #ccc; padding: 1rem;">
         <h3 style="margin: 0 0 1rem 0;">SQL Editor (Full-Height Mode)</h3>
         <p style="margin: 0 0 1rem 0; color: #666;">
           When both max-collapsed-number-of-rows and max-expanded-number-of-rows

@@ -7,11 +7,11 @@
  *  @license
  */
 
-import type { PublicConfig, ChatInstance } from "@carbon/ai-chat";
-import isEqual from "lodash-es/isEqual";
-import type { Settings } from "./types";
-import { updateQueryParamsWithoutRefresh } from "./utils";
-import { customSendMessage } from "../customSendMessage/customSendMessage";
+import type { PublicConfig, ChatInstance } from '@carbon/ai-chat';
+import isEqual from 'lodash-es/isEqual';
+import type { Settings } from './types';
+import { updateQueryParamsWithoutRefresh } from './utils';
+import { customSendMessage } from '../customSendMessage/customSendMessage';
 
 /**
  * Manages configuration changes and their side effects.
@@ -37,7 +37,7 @@ export class ConfigManager {
     options: {
       triggerSetChatConfigMode: boolean;
       onReactRender?: (config: PublicConfig) => Promise<void>;
-    },
+    }
   ): Promise<PublicConfig> {
     // Use newConfig as the base since all switchers dispatch the full desired
     // config (via {...this.config, ...changes}).  Only messaging.customSendMessage
@@ -59,7 +59,7 @@ export class ConfigManager {
             keyboardShortcuts: {
               ...newConfig.keyboardShortcuts,
               messageFocusToggle: {
-                key: toggle.key || "F6",
+                key: toggle.key || 'F6',
                 modifiers: {
                   ctrl: false,
                   alt: false,
@@ -76,22 +76,22 @@ export class ConfigManager {
     // Check for changes that require session restart
     const homescreenChanged = !isEqual(
       oldConfig.homescreen,
-      newConfig.homescreen,
+      newConfig.homescreen
     );
     const disclaimerChanged = !isEqual(
       oldConfig.disclaimer,
-      newConfig.disclaimer,
+      newConfig.disclaimer
     );
 
     // Update query parameters for persistence
     await this.updateQueryParameters(
       config,
       settings,
-      options.triggerSetChatConfigMode,
+      options.triggerSetChatConfigMode
     );
 
     // Re-render React app if needed
-    if (settings.framework === "react" && options.onReactRender) {
+    if (settings.framework === 'react' && options.onReactRender) {
       await options.onReactRender(config);
     }
 
@@ -113,7 +113,7 @@ export class ConfigManager {
   private async updateQueryParameters(
     config: PublicConfig,
     settings: Settings,
-    triggerSetChatConfigMode: boolean,
+    triggerSetChatConfigMode: boolean
   ): Promise<void> {
     // Don't update query params when NOT triggering setChatConfig mode
     // This means we're in setChatConfig mode and SetChatConfigManager should handle query params
@@ -165,8 +165,8 @@ export class ConfigManager {
     };
 
     const queryUpdates = [
-      { key: "settings", value: JSON.stringify(settings) },
-      { key: "config", value: JSON.stringify(configForSerialization) },
+      { key: 'settings', value: JSON.stringify(settings) },
+      { key: 'config', value: JSON.stringify(configForSerialization) },
     ];
 
     // Update query params without refresh (setChatConfig mode doesn't refresh)

@@ -13,7 +13,7 @@
  * so consumers see them at the package's public surface.
  */
 
-import type { JSONContent } from "@tiptap/core";
+import type { JSONContent } from '@tiptap/core';
 
 export type {
   BaseSuggestionConfig,
@@ -22,7 +22,7 @@ export type {
   SuggestionItem,
   CustomListProps,
   TriggerChangeEventDetail,
-} from "./tiptap/types.js";
+} from './tiptap/types.js';
 
 /**
  * Possible status values for a file upload. `SUCCESS` and `COMPLETE` both mean
@@ -37,23 +37,23 @@ export enum FileStatusValue {
    * reloaded message renders in this quiet state rather than re-showing the
    * transient `SUCCESS` checkmark.
    */
-  COMPLETE = "complete",
+  COMPLETE = 'complete',
   /**
    * The file is staged in the input area and can still be edited or removed
    * before the message is sent.
    */
-  EDIT = "edit",
+  EDIT = 'edit',
   /**
    * The file is actively uploading; a progress or loading affordance is shown.
    */
-  UPLOADING = "uploading",
+  UPLOADING = 'uploading',
   /**
    * Transient state shown the moment an upload finishes successfully, for example
    * a checkmark surfaced briefly to confirm success. It is later recorded as
    * `COMPLETE` in session history, so the affordance does not persist across
    * reloads. Distinct from `COMPLETE`, which is the quiet settled state.
    */
-  SUCCESS = "success",
+  SUCCESS = 'success',
 }
 
 /**

@@ -7,18 +7,18 @@
  *  @license
  */
 
-import type { AppStore } from "../store/appStore";
-import { CarbonTheme } from "../../types/config/CarbonTheme";
-import { AppState, ThemeState } from "../../types/state/AppState";
-import { getCSSVariableValue, isColorLighterThan } from "../utils/colors";
-import { consoleError } from "../utils/miscUtils";
-import { UPDATE_THEME_STATE } from "../store/actions";
+import type { AppStore } from '../store/appStore';
+import { CarbonTheme } from '../../types/config/CarbonTheme';
+import { AppState, ThemeState } from '../../types/state/AppState';
+import { getCSSVariableValue, isColorLighterThan } from '../utils/colors';
+import { consoleError } from '../utils/miscUtils';
+import { UPDATE_THEME_STATE } from '../store/actions';
 
 enum CARBON_BG_HEX {
-  WHITE = "#ffffff",
-  G10 = "#f4f4f4",
-  G90 = "#282828",
-  G100 = "#171717",
+  WHITE = '#ffffff',
+  G10 = '#f4f4f4',
+  G90 = '#282828',
+  G100 = '#171717',
 }
 
 /**
@@ -67,14 +67,14 @@ class ThemeWatcherService {
     // Watch for changes to the document's class and style attributes
     this.observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["style", "class"],
+      attributeFilter: ['style', 'class'],
       subtree: false,
       childList: false,
     });
 
     // Also watch for changes to style elements in the head
     const styleElements = document.querySelectorAll(
-      'head style, head link[rel="stylesheet"]',
+      'head style, head link[rel="stylesheet"]'
     );
     styleElements.forEach((element) => {
       this.observer?.observe(element, {
@@ -143,7 +143,7 @@ class ThemeWatcherService {
       // Narrow current to Element before calling getComputedStyle
       if (current instanceof Element) {
         const color = getComputedStyle(current).backgroundColor;
-        if (color && color !== "rgba(0, 0, 0, 0)" && color !== "transparent") {
+        if (color && color !== 'rgba(0, 0, 0, 0)' && color !== 'transparent') {
           return color;
         }
         current = current.parentElement;
@@ -174,7 +174,7 @@ class ThemeWatcherService {
       }
 
       const bgColor =
-        getCSSVariableValue("--cds-background", this.parentElement) ||
+        getCSSVariableValue('--cds-background', this.parentElement) ||
         this.getBackgroundColor(this.parentElement);
 
       // Skip processing if the background color hasn't changed (optimization for polling)

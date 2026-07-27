@@ -7,44 +7,44 @@
  *  @license
  */
 
-import { PublicConfig, ChatInstance } from "@carbon/ai-chat";
-import { css, html, LitElement, PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { PublicConfig, ChatInstance } from '@carbon/ai-chat';
+import { css, html, LitElement, PropertyValues } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { Settings } from "./types";
+import { Settings } from './types';
 import {
   getSettings,
   updateQueryParams,
   updateQueryParamsWithoutRefresh,
-} from "./utils";
+} from './utils';
 import {
   SetChatConfigManager,
   type SetChatConfigModeState,
-} from "./set-chat-config-manager";
-import { AccordionStateManager } from "./accordion-state-manager";
-import { ConfigManager } from "./config-manager";
-import { ReactAppManager } from "./react-app-manager";
-import "./demo-chat-theme-switcher";
-import "./demo-header-switcher";
-import "./demo-chat-feedback-switcher";
-import "./demo-layout-config-switcher";
-import "./demo-chat-history-switcher";
-import "./demo-launcher-switcher";
-import "./demo-input-config-switcher";
-import "./demo-stop-button-immediate-switcher";
-import "./demo-chat-instance-switcher";
-import "./demo-direction-switcher";
-import "./demo-chat-version-switcher";
-import "./demo-keyboard-shortcut-switcher";
-import "@carbon/web-components/es/components/button/index.js";
-import "./demo-chat-avatar-switcher";
+} from './set-chat-config-manager';
+import { AccordionStateManager } from './accordion-state-manager';
+import { ConfigManager } from './config-manager';
+import { ReactAppManager } from './react-app-manager';
+import './demo-chat-theme-switcher';
+import './demo-header-switcher';
+import './demo-chat-feedback-switcher';
+import './demo-layout-config-switcher';
+import './demo-chat-history-switcher';
+import './demo-launcher-switcher';
+import './demo-input-config-switcher';
+import './demo-stop-button-immediate-switcher';
+import './demo-chat-instance-switcher';
+import './demo-direction-switcher';
+import './demo-chat-version-switcher';
+import './demo-keyboard-shortcut-switcher';
+import '@carbon/web-components/es/components/button/index.js';
+import './demo-chat-avatar-switcher';
 
 const { defaultConfig, defaultSettings } = getSettings();
 
 /**
  * `DemoBody` is a custom Lit element representing the body component.
  */
-@customElement("demo-body")
+@customElement('demo-body')
 export class DemoBody extends LitElement {
   static styles = css`
     :host {
@@ -181,7 +181,7 @@ export class DemoBody extends LitElement {
 
     // Initialize managers with appropriate callbacks
     this.setChatConfigManager = new SetChatConfigManager(
-      this._onSetChatConfigModeChanged.bind(this),
+      this._onSetChatConfigModeChanged.bind(this)
     );
     this.accordionStateManager = new AccordionStateManager();
     this.configManager = new ConfigManager();
@@ -198,11 +198,11 @@ export class DemoBody extends LitElement {
    */
   private _dispatchSettingsChangeEvent() {
     this.dispatchEvent(
-      new CustomEvent("demo-settings-changed", {
+      new CustomEvent('demo-settings-changed', {
         detail: { settings: this.settings },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -211,11 +211,11 @@ export class DemoBody extends LitElement {
    */
   private _dispatchChatInstanceChangeEvent() {
     this.dispatchEvent(
-      new CustomEvent("demo-chat-instance-changed", {
+      new CustomEvent('demo-chat-instance-changed', {
         detail: { chatInstance: this.chatInstance },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -244,13 +244,13 @@ export class DemoBody extends LitElement {
       newConfig,
       this.config,
       async (mergedConfig: PublicConfig) => {
-        const event = new CustomEvent<PublicConfig>("config-changed", {
+        const event = new CustomEvent<PublicConfig>('config-changed', {
           detail: mergedConfig,
         });
         await this._processConfigChange(event, {
           triggerSetChatConfigMode: false,
         });
-      },
+      }
     );
   };
 
@@ -263,10 +263,10 @@ export class DemoBody extends LitElement {
 
     // Notify parent container about the change
     this.dispatchEvent(
-      new CustomEvent("set-chat-config-mode-changed", {
+      new CustomEvent('set-chat-config-mode-changed', {
         detail: data,
         bubbles: true,
-      }),
+      })
     );
 
     this.requestUpdate();
@@ -293,9 +293,9 @@ export class DemoBody extends LitElement {
    */
   protected firstUpdated(_changedProperties: PropertyValues): void {
     // Listen for config and settings changes
-    this.addEventListener("config-changed", this._onConfigChanged);
-    this.addEventListener("settings-changed", this._onSettingsChanged);
-    this.addEventListener("autocomplete-toggle", this._onAutocompleteToggle);
+    this.addEventListener('config-changed', this._onConfigChanged);
+    this.addEventListener('settings-changed', this._onSettingsChanged);
+    this.addEventListener('autocomplete-toggle', this._onAutocompleteToggle);
 
     // Expose the setChatConfig function globally for external use
     window.setChatConfig = this._setChatConfig;
@@ -309,24 +309,24 @@ export class DemoBody extends LitElement {
 
     // Set data attribute for CSS styling
     this.setAttribute(
-      "data-set-chat-config-mode",
-      this.isSetChatConfigMode.toString(),
+      'data-set-chat-config-mode',
+      this.isSetChatConfigMode.toString()
     );
 
     // Initial React app render if using React framework
-    if (this.settings.framework === "react") {
+    if (this.settings.framework === 'react') {
       this._renderReactApp();
     }
 
     // Notify parent about initial setChatConfig mode state
     this.dispatchEvent(
-      new CustomEvent("set-chat-config-mode-changed", {
+      new CustomEvent('set-chat-config-mode-changed', {
         detail: {
           isSetChatConfigMode: this.isSetChatConfigMode,
           hasReceivedSetChatConfig: this.hasReceivedSetChatConfig,
         },
         bubbles: true,
-      }),
+      })
     );
   }
 
@@ -335,10 +335,10 @@ export class DemoBody extends LitElement {
    */
   protected updated(_changedProperties: PropertyValues): void {
     // Update data attribute when setChatConfig mode changes
-    if (_changedProperties.has("isSetChatConfigMode")) {
+    if (_changedProperties.has('isSetChatConfigMode')) {
       this.setAttribute(
-        "data-set-chat-config-mode",
-        this.isSetChatConfigMode.toString(),
+        'data-set-chat-config-mode',
+        this.isSetChatConfigMode.toString()
       );
     }
   }
@@ -363,7 +363,7 @@ export class DemoBody extends LitElement {
    */
   private async _renderReactAppWithConfig(config: PublicConfig): Promise<void> {
     const setChatConfigState = this.setChatConfigManager.getState();
-    const container = this.querySelector("#root") as HTMLElement;
+    const container = this.querySelector('#root') as HTMLElement;
     await this.reactAppManager.renderReactApp(
       config,
       this.settings,
@@ -371,7 +371,7 @@ export class DemoBody extends LitElement {
       (instance: ChatInstance) => {
         this._setChatInstance(instance);
       },
-      container,
+      container
     );
   }
 
@@ -388,7 +388,7 @@ export class DemoBody extends LitElement {
    */
   private async _processConfigChange(
     event: CustomEvent<PublicConfig>,
-    { triggerSetChatConfigMode }: { triggerSetChatConfigMode: boolean },
+    { triggerSetChatConfigMode }: { triggerSetChatConfigMode: boolean }
   ): Promise<void> {
     const newConfig = event.detail;
     const oldConfig = this.config;
@@ -403,10 +403,10 @@ export class DemoBody extends LitElement {
       {
         triggerSetChatConfigMode,
         onReactRender:
-          this.settings.framework === "react"
+          this.settings.framework === 'react'
             ? (config: PublicConfig) => this._renderReactAppWithConfig(config)
             : undefined,
-      },
+      }
     );
 
     // Update the component's config state
@@ -441,10 +441,10 @@ export class DemoBody extends LitElement {
 
     if (headerSettingsChanged) {
       // Import DemoHeaderSwitcher to access the static method
-      const { DemoHeaderSwitcher } = await import("./demo-header-switcher");
+      const { DemoHeaderSwitcher } = await import('./demo-header-switcher');
       const updatedConfig = DemoHeaderSwitcher.applySettingsToConfig(
         this.config,
-        newSettings,
+        newSettings
       );
       this.config = updatedConfig;
     }
@@ -453,7 +453,7 @@ export class DemoBody extends LitElement {
     this._updateQueryParamsForSettings(newSettings, shouldRefresh);
 
     // Re-render React app if using React framework
-    if (this.settings.framework === "react") {
+    if (this.settings.framework === 'react') {
       this._renderReactApp();
     }
   };
@@ -466,7 +466,7 @@ export class DemoBody extends LitElement {
     const customEvent = event as CustomEvent<{ enabled: boolean }>;
     const { enabled } = customEvent.detail;
 
-    const { RESPONSE_MAP } = await import("../customSendMessage/responseMap");
+    const { RESPONSE_MAP } = await import('../customSendMessage/responseMap');
     const responseMapKeys = Object.keys(RESPONSE_MAP);
 
     const responseMapAutocomplete = {
@@ -491,7 +491,7 @@ export class DemoBody extends LitElement {
     }
 
     // Dispatch config-changed event
-    const configEvent = new CustomEvent<PublicConfig>("config-changed", {
+    const configEvent = new CustomEvent<PublicConfig>('config-changed', {
       detail: newConfig,
     });
     await this._processConfigChange(configEvent, {
@@ -504,7 +504,7 @@ export class DemoBody extends LitElement {
    */
   private _updateQueryParamsForSettings(
     newSettings: Settings,
-    shouldRefresh: boolean,
+    shouldRefresh: boolean
   ): void {
     // Don't update query params if in setChatConfig mode - let setChatConfigManager handle it
     if (this.isSetChatConfigMode) {
@@ -523,8 +523,8 @@ export class DemoBody extends LitElement {
     };
 
     const queryUpdates = [
-      { key: "settings", value: JSON.stringify(newSettings) },
-      { key: "config", value: JSON.stringify(configForSerialization) },
+      { key: 'settings', value: JSON.stringify(newSettings) },
+      { key: 'config', value: JSON.stringify(configForSerialization) },
     ];
 
     // Use appropriate update function based on what changed
@@ -539,8 +539,8 @@ export class DemoBody extends LitElement {
   render() {
     const pageClass =
       this.isSetChatConfigMode && !this.hasReceivedSetChatConfig
-        ? "page set-chat-config-mode-no-config"
-        : "page";
+        ? 'page set-chat-config-mode-no-config'
+        : 'page';
 
     return html` <div class="${pageClass}">
       ${
@@ -549,8 +549,7 @@ export class DemoBody extends LitElement {
               class="nav-block set-chat-config-sidebar"
               role="complementary"
               aria-label="Configuration Mode"
-              data-testid="config_sidebar"
-            >
+              data-testid="config_sidebar">
               <div class="title">setChatConfig Mode Active</div>
               <div class="description">
                 Configuration is being controlled via
@@ -560,8 +559,7 @@ export class DemoBody extends LitElement {
                 kind="secondary"
                 size="sm"
                 @click=${this._leaveSetChatConfigMode}
-                data-testid="leave_set_chat_config_mode_button"
-              >
+                data-testid="leave_set_chat_config_mode_button">
                 Leave setChatConfig Mode
               </cds-button>
             </aside>`
@@ -570,15 +568,13 @@ export class DemoBody extends LitElement {
                 class="nav-block"
                 role="complementary"
                 aria-label="Demo Configuration"
-                data-testid="config_sidebar"
-              >
+                data-testid="config_sidebar">
                 <cds-accordion>
                   <cds-accordion-item title="Choose Chat Component">
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="version-heading"
-                    >
+                      aria-labelledby="version-heading">
                       <div class="config-section__title" id="version-heading">
                         Version
                       </div>
@@ -587,41 +583,34 @@ export class DemoBody extends LitElement {
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="framework-heading"
-                    >
+                      aria-labelledby="framework-heading">
                       <div class="config-section__title" id="framework-heading">
                         Framework
                       </div>
                       <demo-version-switcher
-                        .settings=${this.settings}
-                      ></demo-version-switcher>
+                        .settings=${this.settings}></demo-version-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="layout-type-heading"
-                    >
+                      aria-labelledby="layout-type-heading">
                       <div
                         class="config-section__title"
-                        id="layout-type-heading"
-                      >
+                        id="layout-type-heading">
                         Layout Type
                       </div>
                       <demo-layout-switcher
-                        .settings=${this.settings}
-                      ></demo-layout-switcher>
+                        .settings=${this.settings}></demo-layout-switcher>
                     </div>
                   </cds-accordion-item>
                   <cds-accordion-item title="Page Settings">
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="page-theme-heading"
-                    >
+                      aria-labelledby="page-theme-heading">
                       <div
                         class="config-section__title"
-                        id="page-theme-heading"
-                      >
+                        id="page-theme-heading">
                         Page Theme
                       </div>
                       <demo-page-theme-switcher></demo-page-theme-switcher>
@@ -629,218 +618,183 @@ export class DemoBody extends LitElement {
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="direction-heading"
-                    >
+                      aria-labelledby="direction-heading">
                       <div class="config-section__title" id="direction-heading">
                         Text Direction
                       </div>
                       <demo-direction-switcher
-                        .settings=${this.settings}
-                      ></demo-direction-switcher>
+                        .settings=${this.settings}></demo-direction-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="writeable-elements-heading"
-                    >
+                      aria-labelledby="writeable-elements-heading">
                       <div
                         class="config-section__title"
-                        id="writeable-elements-heading"
-                      >
+                        id="writeable-elements-heading">
                         Slots
                       </div>
                       <demo-writeable-elements-switcher
-                        .settings=${this.settings}
-                      ></demo-writeable-elements-switcher>
+                        .settings=${this.settings}></demo-writeable-elements-switcher>
                     </div>
                   </cds-accordion-item>
                   <cds-accordion-item title="Chat Configuration">
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="carbon-theme-heading"
-                    >
+                      aria-labelledby="carbon-theme-heading">
                       <div
                         class="config-section__title"
-                        id="carbon-theme-heading"
-                      >
+                        id="carbon-theme-heading">
                         Carbon Theme
                       </div>
                       <demo-theme-switcher
-                        .config=${this.config}
-                      ></demo-theme-switcher>
+                        .config=${this.config}></demo-theme-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="ai-theme-heading"
-                    >
+                      aria-labelledby="ai-theme-heading">
                       <div class="config-section__title" id="ai-theme-heading">
                         AI Theme
                       </div>
                       <demo-chat-theme-switcher
-                        .config=${this.config}
-                      ></demo-chat-theme-switcher>
+                        .config=${this.config}></demo-chat-theme-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="history-heading"
-                    >
+                      aria-labelledby="history-heading">
                       <div class="config-section__title" id="history-heading">
                         History
                       </div>
                       <demo-chat-history-switcher
                         .config=${this.config}
-                        .instance=${this.chatInstance}
-                      ></demo-chat-history-switcher>
+                        .instance=${this.chatInstance}></demo-chat-history-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="feedback-heading"
-                    >
+                      aria-labelledby="feedback-heading">
                       <div class="config-section__title" id="feedback-heading">
                         Feedback
                       </div>
                       <demo-chat-feedback-switcher
-                        .config=${this.config}
-                      ></demo-chat-feedback-switcher>
+                        .config=${this.config}></demo-chat-feedback-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="avatar-heading"
-                    >
+                      aria-labelledby="avatar-heading">
                       <div class="config-section__title" id="avatar-heading">
                         Avatar
                       </div>
                       <demo-chat-avatar-switcher
-                        .config=${this.config}
-                      ></demo-chat-avatar-switcher>
+                        .config=${this.config}></demo-chat-avatar-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="homescreen-heading"
-                    >
+                      aria-labelledby="homescreen-heading">
                       <div
                         class="config-section__title"
-                        id="homescreen-heading"
-                      >
+                        id="homescreen-heading">
                         Homescreen & disclaimer
                       </div>
                       <demo-homescreen-switcher
-                        .config=${this.config}
-                      ></demo-homescreen-switcher>
+                        .config=${this.config}></demo-homescreen-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="layout-heading"
-                    >
+                      aria-labelledby="layout-heading">
                       <div class="config-section__title" id="layout-heading">
                         Layout
                       </div>
                       <demo-layout-config-switcher
-                        .config=${this.config}
-                      ></demo-layout-config-switcher>
+                        .config=${this.config}></demo-layout-config-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="header-heading"
-                    >
+                      aria-labelledby="header-heading">
                       <div class="config-section__title" id="header-heading">
                         Header
                       </div>
                       <demo-header-switcher
                         .config=${this.config}
-                        .settings=${this.settings}
-                      ></demo-header-switcher>
+                        .settings=${this.settings}></demo-header-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="input-heading"
-                    >
+                      aria-labelledby="input-heading">
                       <div class="config-section__title" id="input-heading">
                         Input
                       </div>
                       <demo-input-config-switcher
-                        .config=${this.config}
-                      ></demo-input-config-switcher>
+                        .config=${this.config}></demo-input-config-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="messaging-heading"
-                    >
+                      aria-labelledby="messaging-heading">
                       <div class="config-section__title" id="messaging-heading">
                         Messaging
                       </div>
                       <demo-stop-button-immediate-switcher
-                        .config=${this.config}
-                      ></demo-stop-button-immediate-switcher>
+                        .config=${this.config}></demo-stop-button-immediate-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="keyboard-shortcuts-heading"
-                    >
+                      aria-labelledby="keyboard-shortcuts-heading">
                       <div
                         class="config-section__title"
-                        id="keyboard-shortcuts-heading"
-                      >
+                        id="keyboard-shortcuts-heading">
                         Keyboard Shortcuts
                       </div>
                       <demo-keyboard-shortcut-switcher
-                        .config=${this.config}
-                      ></demo-keyboard-shortcut-switcher>
+                        .config=${this.config}></demo-keyboard-shortcut-switcher>
                     </div>
                     <div
                       class="config-section"
                       role="group"
-                      aria-labelledby="launcher-heading"
-                    >
+                      aria-labelledby="launcher-heading">
                       <div class="config-section__title" id="launcher-heading">
                         Launcher
                       </div>
                       <demo-launcher-switcher
-                        .config=${this.config}
-                      ></demo-launcher-switcher>
+                        .config=${this.config}></demo-launcher-switcher>
                     </div>
                   </cds-accordion-item>
                   ${
                     this.chatInstance
                       ? html`<cds-accordion-item title="Chat instance methods">
                           <demo-chat-instance-switcher
-                            .chatInstance=${this.chatInstance}
-                          ></demo-chat-instance-switcher>
+                            .chatInstance=${this.chatInstance}></demo-chat-instance-switcher>
                         </cds-accordion-item>`
                       : null
                   }
                 </cds-accordion>
               </aside>`
-            : ""
+            : ''
       }
       <main
         class="main"
         role="main"
         id="main-content"
-        aria-label="Carbon AI Chat demo chat widget"
-      >
+        aria-label="Carbon AI Chat demo chat widget">
         <slot></slot>
         ${
-          this.settings.framework === "web-component" &&
+          this.settings.framework === 'web-component' &&
           !(this.isSetChatConfigMode && !this.hasReceivedSetChatConfig)
             ? html`<demo-app
                 .config=${this.config}
                 .settings=${this.settings}
                 .onChatInstanceReady=${(instance: ChatInstance) => {
                   this._setChatInstance(instance);
-                }}
-              />`
+                }} />`
             : html``
         }
       </main>
@@ -851,6 +805,6 @@ export class DemoBody extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-body": DemoBody;
+    'demo-body': DemoBody;
   }
 }

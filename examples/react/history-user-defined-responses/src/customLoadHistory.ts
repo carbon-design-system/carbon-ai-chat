@@ -30,28 +30,28 @@ import {
   HistoryItem,
   MessageInputType,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Each entry produces one (request, user_defined response) pair so the rehydrated transcript reads like a normal back-and-forth conversation.
 const PAIRS: { request: string; cardText: string }[] = [
   {
-    request: "Show me the dashboard",
-    cardText: "Dashboard summary card.",
+    request: 'Show me the dashboard',
+    cardText: 'Dashboard summary card.',
   },
   {
-    request: "Show me my reports",
-    cardText: "Reports overview card.",
+    request: 'Show me my reports',
+    cardText: 'Reports overview card.',
   },
   {
-    request: "Show me settings",
-    cardText: "Settings panel card.",
+    request: 'Show me settings',
+    cardText: 'Settings panel card.',
   },
 ];
 
 // Replace with a real production implementation that fetches persisted history from your backend.
 async function customLoadHistory(
-  _instance: ChatInstance,
+  _instance: ChatInstance
 ): Promise<HistoryItem[]> {
   const history: HistoryItem[] = [];
 
@@ -77,7 +77,7 @@ async function customLoadHistory(
               response_type: MessageResponseTypes.USER_DEFINED,
               user_defined: {
                 // Matches the discriminator in renderUserDefinedResponse.tsx so only this example's items are claimed.
-                user_defined_type: "my_unique_identifier",
+                user_defined_type: 'my_unique_identifier',
                 text: cardText,
               },
             },

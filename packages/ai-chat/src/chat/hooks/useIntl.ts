@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { useContext } from "react";
-import { IntlContext } from "../contexts/IntlContext";
-import { IntlShape } from "../utils/i18n";
+import { useContext } from 'react';
+import { IntlContext } from '../contexts/IntlContext';
+import { IntlShape } from '../utils/i18n';
 
 /**
  * React hook to access the i18n formatter.
@@ -37,8 +37,8 @@ export function useIntl(): IntlShape {
 
   if (!formatter) {
     throw new Error(
-      "useIntl must be used within an IntlProvider. " +
-        "Make sure your component is wrapped with <IntlProvider>.",
+      'useIntl must be used within an IntlProvider. ' +
+        'Make sure your component is wrapped with <IntlProvider>.'
     );
   }
 

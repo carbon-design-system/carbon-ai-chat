@@ -13,11 +13,11 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
-} from "react";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+} from 'react';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
-import type { ServiceManager } from "../../services/ServiceManager";
-import type { InputFunctions } from "./Input";
+import type { ServiceManager } from '../../services/ServiceManager';
+import type { InputFunctions } from './Input';
 
 interface UseInputImperativeHandleArgs {
   /**
@@ -70,14 +70,14 @@ function useInputImperativeHandle({
       setContent: (next) => {
         const promptLine = promptLineRef.current;
         if (!promptLine) {
-          throw new Error("Input is not currently rendered");
+          throw new Error('Input is not currently rendered');
         }
         promptLine.setContent(next);
       },
       insertContent: (content, options) => {
         const promptLine = promptLineRef.current;
         if (!promptLine) {
-          throw new Error("Input is not currently rendered");
+          throw new Error('Input is not currently rendered');
         }
         promptLine.insertContent(content, options);
       },
@@ -85,7 +85,7 @@ function useInputImperativeHandle({
       ensureEditor: () => {
         const promptLine = promptLineRef.current;
         if (!promptLine) {
-          throw new Error("Input is not currently rendered");
+          throw new Error('Input is not currently rendered');
         }
         // Keep React's latch in sync with the element's own sticky upgrade so a
         // later render doesn't revert `rich`/`extensions`.
@@ -98,7 +98,7 @@ function useInputImperativeHandle({
     // once. Re-creating it would needlessly re-fire the imperative handle and
     // the registration effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   useImperativeHandle(ref, () => inputFunctions, [inputFunctions]);

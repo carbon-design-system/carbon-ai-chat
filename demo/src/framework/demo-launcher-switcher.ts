@@ -7,22 +7,22 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
-import "@carbon/web-components/es/components/text-input/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
+import '@carbon/web-components/es/components/text-input/index.js';
 
 import {
   LauncherCallToActionConfig,
   LauncherConfig,
   PublicConfig,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-const DROPDOWN_DEFAULT = "default";
-const DROPDOWN_TRUE = "true";
-const DROPDOWN_FALSE = "false";
+const DROPDOWN_DEFAULT = 'default';
+const DROPDOWN_TRUE = 'true';
+const DROPDOWN_FALSE = 'false';
 
-@customElement("demo-launcher-switcher")
+@customElement('demo-launcher-switcher')
 export class DemoLauncherSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -54,9 +54,7 @@ export class DemoLauncherSwitcher extends LitElement {
   accessor config!: PublicConfig;
 
   private _updateLauncher(
-    mutate: (
-      launcher: LauncherConfig | undefined,
-    ) => LauncherConfig | undefined,
+    mutate: (launcher: LauncherConfig | undefined) => LauncherConfig | undefined
   ) {
     const currentLauncher = this.config.launcher
       ? { ...this.config.launcher }
@@ -64,19 +62,19 @@ export class DemoLauncherSwitcher extends LitElement {
     const nextLauncher = mutate(currentLauncher);
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           launcher: nextLauncher,
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   private _normalizeLauncher(
-    launcher: LauncherConfig | undefined,
+    launcher: LauncherConfig | undefined
   ): LauncherConfig | undefined {
     if (!launcher) {
       return undefined;
@@ -97,7 +95,7 @@ export class DemoLauncherSwitcher extends LitElement {
   }
 
   private _normalizeCTA(
-    cta: LauncherCallToActionConfig | undefined,
+    cta: LauncherCallToActionConfig | undefined
   ): LauncherCallToActionConfig | undefined {
     if (!cta) {
       return undefined;
@@ -105,13 +103,13 @@ export class DemoLauncherSwitcher extends LitElement {
 
     const cleaned: LauncherCallToActionConfig = { ...cta };
 
-    if (cleaned.title === undefined || cleaned.title.trim() === "") {
+    if (cleaned.title === undefined || cleaned.title.trim() === '') {
       delete cleaned.title;
     }
 
     if (
       cleaned.avatarUrlOverride === undefined ||
-      cleaned.avatarUrlOverride.trim() === ""
+      cleaned.avatarUrlOverride.trim() === ''
     ) {
       delete cleaned.avatarUrlOverride;
     }
@@ -121,7 +119,7 @@ export class DemoLauncherSwitcher extends LitElement {
         if (cleaned[key] === undefined) {
           delete cleaned[key];
         }
-      },
+      }
     );
 
     return Object.keys(cleaned).length > 0 ? cleaned : undefined;
@@ -173,7 +171,7 @@ export class DemoLauncherSwitcher extends LitElement {
     });
   }
 
-  private _handleCTAVisibility(event: Event, targetKey: "mobile" | "desktop") {
+  private _handleCTAVisibility(event: Event, targetKey: 'mobile' | 'desktop') {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
 
@@ -195,7 +193,7 @@ export class DemoLauncherSwitcher extends LitElement {
     });
   }
 
-  private _handleCTATitle(event: Event, targetKey: "mobile" | "desktop") {
+  private _handleCTATitle(event: Event, targetKey: 'mobile' | 'desktop') {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
@@ -215,7 +213,7 @@ export class DemoLauncherSwitcher extends LitElement {
     });
   }
 
-  private _handleCTAAvatar(event: Event, targetKey: "mobile" | "desktop") {
+  private _handleCTAAvatar(event: Event, targetKey: 'mobile' | 'desktop') {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
@@ -237,8 +235,8 @@ export class DemoLauncherSwitcher extends LitElement {
 
   private _renderCTAControls(
     label: string,
-    key: "mobile" | "desktop",
-    config: LauncherCallToActionConfig | undefined,
+    key: 'mobile' | 'desktop',
+    config: LauncherCallToActionConfig | undefined
   ) {
     return html`
       <div class="launcher-section">
@@ -247,8 +245,7 @@ export class DemoLauncherSwitcher extends LitElement {
           value="${this._booleanDropdownValue(config?.isOn)}"
           title-text="Call to action"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleCTAVisibility(event, key)}
-        >
+            this._handleCTAVisibility(event, key)}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -263,15 +260,13 @@ export class DemoLauncherSwitcher extends LitElement {
           <cds-text-input
             label="Call to action title"
             placeholder="Enter title"
-            value="${config?.title ?? ""}"
-            @input=${(event: Event) => this._handleCTATitle(event, key)}
-          ></cds-text-input>
+            value="${config?.title ?? ''}"
+            @input=${(event: Event) => this._handleCTATitle(event, key)}></cds-text-input>
           <cds-text-input
             label="Avatar URL override"
             placeholder="Enter URL"
-            value="${config?.avatarUrlOverride ?? ""}"
-            @input=${(event: Event) => this._handleCTAAvatar(event, key)}
-          ></cds-text-input>
+            value="${config?.avatarUrlOverride ?? ''}"
+            @input=${(event: Event) => this._handleCTAAvatar(event, key)}></cds-text-input>
         </div>
       </div>
     `;
@@ -285,8 +280,7 @@ export class DemoLauncherSwitcher extends LitElement {
         <cds-dropdown
           value="${this._booleanDropdownValue(launcher?.isOn)}"
           title-text="Launcher visibility"
-          @cds-dropdown-selected=${this._handleLauncherVisibility}
-        >
+          @cds-dropdown-selected=${this._handleLauncherVisibility}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -303,8 +297,7 @@ export class DemoLauncherSwitcher extends LitElement {
         <cds-dropdown
           value="${this._booleanDropdownValue(launcher?.showUnreadIndicator)}"
           title-text="Custom unread indicator visibility"
-          @cds-dropdown-selected=${this._handleUnreadIndicator}
-        >
+          @cds-dropdown-selected=${this._handleUnreadIndicator}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -318,14 +311,14 @@ export class DemoLauncherSwitcher extends LitElement {
       </div>
 
       ${this._renderCTAControls(
-        "Mobile call to action",
-        "mobile",
-        launcher?.mobile,
+        'Mobile call to action',
+        'mobile',
+        launcher?.mobile
       )}
       ${this._renderCTAControls(
-        "Desktop call to action",
-        "desktop",
-        launcher?.desktop,
+        'Desktop call to action',
+        'desktop',
+        launcher?.desktop
       )}
     `;
   }
@@ -334,6 +327,6 @@ export class DemoLauncherSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-launcher-switcher": DemoLauncherSwitcher;
+    'demo-launcher-switcher': DemoLauncherSwitcher;
   }
 }

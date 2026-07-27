@@ -24,10 +24,10 @@
  */
 
 // Registers the <cds-aichat-code-snippet> custom element.
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
-import { WCRenderUserDefinedInputNode } from "@carbon/ai-chat";
+import '@carbon/ai-chat-components/es/components/code-snippet/index.js';
+import { WCRenderUserDefinedInputNode } from '@carbon/ai-chat';
 
-import { CODE_SNIPPET_NODE } from "./codeSnippetNode";
+import { CODE_SNIPPET_NODE } from './codeSnippetNode';
 
 const renderCodeSnippet: WCRenderUserDefinedInputNode = ({ node }) => {
   if (node.type !== CODE_SNIPPET_NODE) {
@@ -35,11 +35,11 @@ const renderCodeSnippet: WCRenderUserDefinedInputNode = ({ node }) => {
     return null;
   }
 
-  const snippet = document.createElement("cds-aichat-code-snippet");
-  snippet.setAttribute("highlight", "");
-  snippet.setAttribute("hide-header", "");
+  const snippet = document.createElement('cds-aichat-code-snippet');
+  snippet.setAttribute('highlight', '');
+  snippet.setAttribute('hide-header', '');
   (snippet as unknown as { code: string }).code = String(
-    node.attrs?.code ?? "",
+    node.attrs?.code ?? ''
   );
   return snippet;
 };

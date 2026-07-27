@@ -7,23 +7,23 @@
  *  @license
  */
 
-import React, { useCallback, useEffect, useRef } from "react";
-import { useSelector } from "../../hooks/useSelector";
+import React, { useCallback, useEffect, useRef } from 'react';
+import { useSelector } from '../../hooks/useSelector';
 
-import { useEffectDidUpdate } from "../../hooks/useEffectDidUpdate";
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { shallowEqual } from "../../store/appStore";
-import actions from "../../store/actions";
-import { IS_PHONE } from "../../utils/browserUtils";
-import { TIME_TO_ENTRANCE_ANIMATION_START } from "../../../types/config/LauncherConfig";
-import { AppState, ViewType } from "../../../types/state/AppState";
-import { Launcher } from "./Launcher";
-import type { LauncherHandle } from "./Launcher";
+import { useEffectDidUpdate } from '../../hooks/useEffectDidUpdate';
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { shallowEqual } from '../../store/appStore';
+import actions from '../../store/actions';
+import { IS_PHONE } from '../../utils/browserUtils';
+import { TIME_TO_ENTRANCE_ANIMATION_START } from '../../../types/config/LauncherConfig';
+import { AppState, ViewType } from '../../../types/state/AppState';
+import { Launcher } from './Launcher';
+import type { LauncherHandle } from './Launcher';
 import {
   MainWindowOpenReason,
   ViewChangeReason,
-} from "../../../types/events/eventBusTypes";
-import { PageObjectId } from "../../../testing/PageObjectId";
+} from '../../../types/events/eventBusTypes';
+import { PageObjectId } from '../../../testing/PageObjectId';
 
 function LauncherContainer() {
   const serviceManager = useServiceManager();
@@ -35,7 +35,7 @@ function LauncherContainer() {
       launcher_isClosed: state.languagePack.launcher_isClosed,
       launcher_isOpen: state.languagePack.launcher_isOpen,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const launcherRef = useRef<LauncherHandle | null>(null);
   const autoExtendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -55,10 +55,10 @@ function LauncherContainer() {
           .launcherShouldStartCallToActionCounterIfEnabled,
       showUnreadIndicator: state.persistedToBrowserStorage.showUnreadIndicator,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const unreadMessageCount = useSelector(
-    (state: AppState) => state.humanAgentState.numUnreadMessages,
+    (state: AppState) => state.humanAgentState.numUnreadMessages
   );
   // Select the launcher sub-object and the aiEnabled primitive separately rather
   // than the whole `derived` object: after config-reference reconciliation the
@@ -66,17 +66,17 @@ function LauncherContainer() {
   // primitive — so neither re-renders on unrelated config changes (e.g. theme,
   // header, layout).
   const launcher = useSelector(
-    (state: AppState) => state.config.derived.launcher,
+    (state: AppState) => state.config.derived.launcher
   );
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled,
+    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
   );
 
   const { launcher: isLauncherVisible, mainWindow: isMainWindowOpen } =
     viewState;
   const launcherHidden = !isLauncherVisible;
   const initialViewChangeComplete = useSelector(
-    (state: AppState) => state.initialViewChangeComplete,
+    (state: AppState) => state.initialViewChangeComplete
   );
 
   const launcherConfig = IS_PHONE ? launcher.mobile : launcher.desktop;
@@ -104,21 +104,21 @@ function LauncherContainer() {
     (value: boolean) => {
       serviceManager.store.dispatch(
         actions.setLauncherProperty(
-          "launcherShouldStartCallToActionCounterIfEnabled",
-          value,
-        ),
+          'launcherShouldStartCallToActionCounterIfEnabled',
+          value
+        )
       );
     },
-    [serviceManager.store],
+    [serviceManager.store]
   );
 
   const setLauncherIsExpanded = useCallback(
     (value: boolean) => {
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("launcherIsExpanded", value),
+        actions.setLauncherProperty('launcherIsExpanded', value)
       );
     },
-    [serviceManager.store],
+    [serviceManager.store]
   );
 
   const scheduleAutoExtend = useCallback(() => {
@@ -215,10 +215,10 @@ function LauncherContainer() {
       openLabel={languagePack.launcher_isOpen}
       formatUnreadMessageLabel={({ count }) =>
         serviceManager.intl.formatMessage(
-          { id: "icon_ariaUnreadMessages" },
+          { id: 'icon_ariaUnreadMessages' },
           {
             count: shouldShowUnreadIndicator ? Math.max(count, 1) : count,
-          },
+          }
         )
       }
       aiEnabled={aiEnabled}

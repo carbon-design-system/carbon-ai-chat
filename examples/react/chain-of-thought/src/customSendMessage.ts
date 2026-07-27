@@ -26,9 +26,9 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { runChainOfThoughtScenario } from "./scenarios";
+import { runChainOfThoughtScenario } from './scenarios';
 
 const WELCOME_TEXT = `This example shows chain-of-thought tool traces in Carbon AI Chat.
 
@@ -38,11 +38,11 @@ Send any message to see the assistant reply with a \`chain_of_thought\` array on
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Empty input is dispatched on first open as the welcome handshake — reply
   // with help text instead of running the chain-of-thought scenario.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

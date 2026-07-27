@@ -13,9 +13,9 @@
  * The slot element is rendered directly using the slot_name from the message options.
  */
 
-import React from "react";
+import React from 'react';
 
-import { GenericItemCustomFooterSlotOptions } from "../../../../types/messaging/Messages";
+import { GenericItemCustomFooterSlotOptions } from '../../../../types/messaging/Messages';
 
 interface CustomFooterSlotProps {
   /**

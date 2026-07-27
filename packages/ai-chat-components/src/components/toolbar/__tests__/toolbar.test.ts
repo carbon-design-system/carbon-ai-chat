@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
+import { html, fixture, expect } from '@open-wc/testing';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
 import Toolbar, {
   Action,
-} from "@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js";
+} from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
 import {
   Version16,
   Download16,
@@ -19,20 +19,20 @@ import {
   Launch16,
   Maximize16,
   Close16,
-} from "@carbon/icons";
+} from '@carbon/icons';
 
 const actionLists: Record<string, Action[]> = {
-  "Advanced list": [
-    { text: "Version", icon: Version16, size: "md", onClick: () => {} },
-    { text: "Download", icon: Download16, size: "md", onClick: () => {} },
-    { text: "Share", icon: Share16, size: "md", onClick: () => {} },
-    { text: "Launch", icon: Launch16, size: "md", onClick: () => {} },
-    { text: "Maximize", icon: Maximize16, size: "md", onClick: () => {} },
+  'Advanced list': [
+    { text: 'Version', icon: Version16, size: 'md', onClick: () => {} },
+    { text: 'Download', icon: Download16, size: 'md', onClick: () => {} },
+    { text: 'Share', icon: Share16, size: 'md', onClick: () => {} },
+    { text: 'Launch', icon: Launch16, size: 'md', onClick: () => {} },
+    { text: 'Maximize', icon: Maximize16, size: 'md', onClick: () => {} },
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
+      size: 'md',
       onClick: () => {},
     },
   ],
@@ -44,15 +44,14 @@ const actionLists: Record<string, Action[]> = {
  * here: https://modern-web.dev/docs/test-runner/overview/
  */
 
-describe("toolbar", function () {
-  it("should render with cds-aichat-toolbar minimum attributes", async () => {
+describe('toolbar', function () {
+  it('should render with cds-aichat-toolbar minimum attributes', async () => {
     const el = await fixture<Toolbar>(
       html`<cds-aichat-toolbar
-        .actions=${actionLists["Advanced list"] as Action[]}
-      ></cds-aichat-toolbar>`,
+        .actions=${actionLists['Advanced list'] as Action[]}></cds-aichat-toolbar>`
     );
     expect(el).to.be.instanceOf(Toolbar);
-    expect(el.actions).to.deep.equal(actionLists["Advanced list"] as Action[]);
+    expect(el.actions).to.deep.equal(actionLists['Advanced list'] as Action[]);
     expect(el.shadowRoot).to.exist;
     await expect(el).dom.to.equalSnapshot();
   });

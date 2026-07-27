@@ -16,17 +16,17 @@ Float-layout chat that exposes a custom history panel slot backed by `customLoad
 
 ## APIs and props demonstrated
 
-| Symbol                                 | Kind           | Role in this example                                             |
-| -------------------------------------- | -------------- | ---------------------------------------------------------------- |
-| `<cds-aichat-container>`               | custom element | Mounts the chat UI in float layout.                              |
-| `config.history.isOn`                  | property       | Enables the built-in history panel.                              |
-| `messaging.customSendMessage`          | property       | Mock backend for outbound messages.                              |
-| `messaging.customLoadHistory`          | property       | Returns stored `HistoryItem[]` for a named conversation.         |
-| `onBeforeRender`                       | property       | Captures the `ChatInstance`.                                     |
-| `instance.messaging.clearConversation` | method         | Resets the current conversation before inserting history.        |
-| `instance.messaging.insertHistory`     | method         | Rehydrates the chat with loaded history.                         |
-| `historyPanelElement`                  | slot           | Slot hosting the custom history panel.                           |
-| `history-panel-load-chat`              | custom event   | Dispatched by the slot element when a user picks a conversation. |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-container>` | custom element | Mounts the chat UI in float layout. |
+| `config.history.isOn` | property | Enables the built-in history panel. |
+| `messaging.customSendMessage` | property | Mock backend for outbound messages. |
+| `messaging.customLoadHistory` | property | Returns stored `HistoryItem[]` for a named conversation. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `instance.messaging.clearConversation` | method | Resets the current conversation before inserting history. |
+| `instance.messaging.insertHistory` | method | Rehydrates the chat with loaded history. |
+| `historyPanelElement` | slot | Slot hosting the custom history panel. |
+| `history-panel-load-chat` | custom event | Dispatched by the slot element when a user picks a conversation. |
 
 ## Chat history configuration
 

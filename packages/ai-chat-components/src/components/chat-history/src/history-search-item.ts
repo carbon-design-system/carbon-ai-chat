@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import FocusMixin from "@carbon/web-components/es/globals/mixins/focus.js";
-import HostListener from "@carbon/web-components/es/globals/decorators/host-listener.js";
-import HostListenerMixin from "@carbon/web-components/es/globals/mixins/host-listener.js";
-import styles from "./chat-history.scss?lit";
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import FocusMixin from '@carbon/web-components/es/globals/mixins/focus.js';
+import HostListener from '@carbon/web-components/es/globals/decorators/host-listener.js';
+import HostListenerMixin from '@carbon/web-components/es/globals/mixins/host-listener.js';
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History search item.
@@ -25,7 +25,7 @@ import styles from "./chat-history.scss?lit";
  */
 @carbonElement(`${prefix}-history-search-item`)
 class CDSAIChatHistorySearchItem extends HostListenerMixin(
-  FocusMixin(LitElement),
+  FocusMixin(LitElement)
 ) {
   /**
    * Chat item name.
@@ -45,11 +45,11 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
   @property({ type: String })
   id;
 
-  @HostListener("click")
+  @HostListener('click')
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleClick() {
     // Dispatch a custom event with item details
-    const itemActionEvent = new CustomEvent("history-search-item-selected", {
+    const itemActionEvent = new CustomEvent('history-search-item-selected', {
       bubbles: true,
       composed: true,
       detail: {
@@ -62,10 +62,10 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
     this.dispatchEvent(itemActionEvent);
   }
 
-  @HostListener("keydown")
+  @HostListener('keydown')
   // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
   private _handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       this._handleClick();
     }

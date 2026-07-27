@@ -7,30 +7,30 @@
  *  @license
  */
 
-import Link16 from "@carbon/icons/es/link/16.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import { carbonIconToReact } from "../../../../utils/carbonIcon";
-import React, { useLayoutEffect, useRef } from "react";
+import Link16 from '@carbon/icons/es/link/16.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+import { carbonIconToReact } from '../../../../utils/carbonIcon';
+import React, { useLayoutEffect, useRef } from 'react';
 
-import { useSelector } from "../../../../hooks/useSelector";
-import { useWindowSize } from "../../../../hooks/useWindowSize";
-import { shallowEqual } from "../../../../store/appStore";
+import { useSelector } from '../../../../hooks/useSelector';
+import { useWindowSize } from '../../../../hooks/useWindowSize';
+import { shallowEqual } from '../../../../store/appStore';
 import {
   ConversationalSearchItemCitation,
   SearchResult,
-} from "../../../../../types/messaging/Messages";
-import { AppState } from "../../../../../types/state/AppState";
+} from '../../../../../types/messaging/Messages';
+import { AppState } from '../../../../../types/state/AppState';
 
 enum CitationType {
   /**
    * If the citation has a url.
    */
-  URL = "url",
+  URL = 'url',
 
   /**
    * If the citation has no url, if its full contents don't fit in the card, you can click on it to see a panel with the results.
    */
-  EXPAND_IF_NEEDED = "expand",
+  EXPAND_IF_NEEDED = 'expand',
 }
 
 interface CitationCardProps {
@@ -66,7 +66,7 @@ interface CitationCardProps {
 
 interface CitationCardContentProps extends Omit<
   CitationCardProps,
-  "isSelected"
+  'isSelected'
 > {
   type: CitationType;
 
@@ -95,7 +95,7 @@ function CitationCardContent({
       conversationalSearch_viewSourceDocument:
         state.languagePack.conversationalSearch_viewSourceDocument,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const { width } = useWindowSize();
   const { conversationalSearch_viewSourceDocument } = languagePack;

@@ -7,13 +7,13 @@
  *  @license
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 
-import WriteableElement from "./components/util/WriteableElement";
-import { WriteableElementName } from "../types/instance/WriteableElements";
-import { HasServiceManager } from "./hocs/withServiceManager";
-import { useSelector } from "./hooks/useSelector";
-import { AppState } from "../types/state/AppState";
+import WriteableElement from './components/util/WriteableElement';
+import { WriteableElementName } from '../types/instance/WriteableElements';
+import { HasServiceManager } from './hocs/withServiceManager';
+import { useSelector } from './hooks/useSelector';
+import { AppState } from '../types/state/AppState';
 
 interface AppShellWriteableElementsProps extends HasServiceManager {
   showHomeScreen: boolean;
@@ -41,7 +41,7 @@ interface ElementConfig {
  * Resolves a value that may be static or conditional based on showHomeScreen.
  */
 function resolveValue<T>(value: T | ((flag: boolean) => T), flag: boolean): T {
-  return typeof value === "function"
+  return typeof value === 'function'
     ? (value as (flag: boolean) => T)(flag)
     : value;
 }
@@ -51,42 +51,42 @@ function resolveValue<T>(value: T | ((flag: boolean) => T), flag: boolean): T {
  */
 const ELEMENT_CONFIGS: ElementConfig[] = [
   {
-    wrapperSlot: "header-after",
+    wrapperSlot: 'header-after',
     slotName: (show) =>
       show
         ? WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT
         : WriteableElementName.HEADER_BOTTOM_ELEMENT,
     idSuffix: (show) =>
-      show ? "homeScreenHeaderBottomElement" : "headerBottomElement",
+      show ? 'homeScreenHeaderBottomElement' : 'headerBottomElement',
     className: (show) =>
       show
-        ? "cds-aichat--home-screen__home-screen-bottom-element"
-        : "cds-aichat--header-bottom-element",
+        ? 'cds-aichat--home-screen__home-screen-bottom-element'
+        : 'cds-aichat--header-bottom-element',
   },
   {
-    wrapperSlot: "input-before",
+    wrapperSlot: 'input-before',
     slotName: (show) =>
       show
         ? WriteableElementName.HOME_SCREEN_BEFORE_INPUT_ELEMENT
         : WriteableElementName.BEFORE_INPUT_ELEMENT,
     idSuffix: (show) =>
-      show ? "homeScreenBeforeInputElement" : "beforeInputElement",
+      show ? 'homeScreenBeforeInputElement' : 'beforeInputElement',
     className: (show) =>
       show
-        ? "cds-aichat--home-screen-before-input-element"
-        : "cds-aichat--before-input-element",
+        ? 'cds-aichat--home-screen-before-input-element'
+        : 'cds-aichat--before-input-element',
   },
   {
-    wrapperSlot: "input-after",
+    wrapperSlot: 'input-after',
     slotName: WriteableElementName.AFTER_INPUT_ELEMENT,
-    idSuffix: "afterInputElement",
-    className: "cds-aichat--after-input-element",
+    idSuffix: 'afterInputElement',
+    className: 'cds-aichat--after-input-element',
   },
   {
-    wrapperSlot: "footer",
+    wrapperSlot: 'footer',
     slotName: WriteableElementName.FOOTER_ELEMENT,
-    idSuffix: "footerElement",
-    className: "cds-aichat--footer-element",
+    idSuffix: 'footerElement',
+    className: 'cds-aichat--footer-element',
   },
 ];
 
@@ -102,7 +102,7 @@ export const AppShellWriteableElements = React.memo(
     const suffix = serviceManager.namespace.suffix;
     const hasContentMaxWidth = useSelector(
       (state: AppState) =>
-        state.config.derived.header.hasContentMaxWidth ?? false,
+        state.config.derived.header.hasContentMaxWidth ?? false
     );
 
     // `null` => host omitted the map entirely (render all, back-compat). A Set
@@ -113,10 +113,10 @@ export const AppShellWriteableElements = React.memo(
           ? null
           : new Set(
               writeableElementsPresentKeys
-                ? writeableElementsPresentKeys.split(" ")
-                : [],
+                ? writeableElementsPresentKeys.split(' ')
+                : []
             ),
-      [writeableElementsPresentKeys],
+      [writeableElementsPresentKeys]
     );
 
     const elements = useMemo(
@@ -125,7 +125,7 @@ export const AppShellWriteableElements = React.memo(
           const baseClassName = resolveValue(config.className, showHomeScreen);
           // Add constrain-width class to header-bottom-element if configured
           const isHeaderBottomElement =
-            baseClassName === "cds-aichat--header-bottom-element";
+            baseClassName === 'cds-aichat--header-bottom-element';
           const className =
             isHeaderBottomElement && hasContentMaxWidth
               ? `${baseClassName} cds-aichat--header-constrain-width`
@@ -145,7 +145,7 @@ export const AppShellWriteableElements = React.memo(
           }
           return presentKeySet.has(element.slotName);
         }),
-      [showHomeScreen, suffix, presentKeySet, hasContentMaxWidth],
+      [showHomeScreen, suffix, presentKeySet, hasContentMaxWidth]
     );
 
     return (
@@ -155,5 +155,5 @@ export const AppShellWriteableElements = React.memo(
         ))}
       </>
     );
-  },
+  }
 );

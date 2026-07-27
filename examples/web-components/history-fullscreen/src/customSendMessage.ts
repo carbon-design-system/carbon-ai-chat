@@ -29,8 +29,8 @@ import {
   MessageRequest,
   MessageResponseTypes,
   StreamChunk,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 // Replace with a real production implementation. The streamed response uses this to pace fake chunks with timing similar to a real model.
 async function sleep(milliseconds: number) {
@@ -65,7 +65,7 @@ Quam scelerisque platea ridiculus sem placerat pharetra sed. Porttitor per massa
 - Venenatis
 
 ` +
-  "\n```python\n" +
+  '\n```python\n' +
   `import random
 
 def generate_lorem_ipsum(paragraphs=1):
@@ -96,17 +96,17 @@ def generate_lorem_ipsum(paragraphs=1):
 # Example usage
 print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 ` +
-  "\n\n```";
+  '\n\n```';
 
 // Per-word pacing for the fake stream; small enough to feel live but slow enough to exercise the streaming UI.
 const WORD_DELAY = 40;
 
 async function doFakeTextStreaming(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = uuid();
-  const words = TEXT.split(" ");
+  const words = TEXT.split(' ');
   let isCanceled = false;
   const timeouts: number[] = [];
 
@@ -116,7 +116,7 @@ async function doFakeTextStreaming(
     // Without this, queued setTimeout callbacks would keep emitting partial chunks after cancellation.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -127,7 +127,7 @@ async function doFakeTextStreaming(
               response_type: MessageResponseTypes.TEXT,
               text: `${word} `,
               streaming_metadata: {
-                id: "1",
+                id: '1',
                 cancellable: true,
               },
             },
@@ -148,7 +148,7 @@ async function doFakeTextStreaming(
         response_type: MessageResponseTypes.TEXT,
         text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
         streaming_metadata: {
-          id: "1",
+          id: '1',
         },
       };
       instance.messaging.addMessageChunk({
@@ -173,9 +173,9 @@ async function doFakeTextStreaming(
       // On cancellation, persist roughly the prefix the user actually saw and tag it stream_stopped so the UI can render the partial-message marker.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
+        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
         streaming_metadata: {
-          id: "1",
+          id: '1',
           stream_stopped: true,
         },
       };
@@ -188,7 +188,7 @@ async function doFakeTextStreaming(
     }
   } finally {
     // Detaches the listener regardless of which branch ran so the AbortSignal does not retain a reference to this closure.
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
@@ -196,10 +196,10 @@ async function doFakeTextStreaming(
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // An empty input is the chat's synthetic "session start" message; respond with a welcome describing the demo's supported commands.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -212,7 +212,7 @@ async function customSendMessage(
     });
   } else {
     switch (request.input.text) {
-      case "text":
+      case 'text':
         instance.messaging.addMessage({
           output: {
             generic: [
@@ -224,7 +224,7 @@ async function customSendMessage(
           },
         });
         break;
-      case "stream text":
+      case 'stream text':
         // Intentionally not awaited; the chat expects customSendMessage to return promptly while addMessageChunk drives the UI asynchronously.
         doFakeTextStreaming(instance as ChatInstance, requestOptions.signal);
         break;

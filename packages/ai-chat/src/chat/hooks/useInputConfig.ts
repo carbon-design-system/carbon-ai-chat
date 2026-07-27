@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { useEffect, useState } from "react";
-import type { Extension } from "@tiptap/core";
+import { useEffect, useState } from 'react';
+import type { Extension } from '@tiptap/core';
 import type {
   TriggerSuggestionConfig,
   SuggestionItem,
   AutocompleteConfig,
-} from "../../types/config/InputConfig";
-import type { ToolbarAction } from "../../types/config/HeaderConfig";
-import { useServiceManager } from "./useServiceManager";
+} from '../../types/config/InputConfig';
+import type { ToolbarAction } from '../../types/config/HeaderConfig';
+import { useServiceManager } from './useServiceManager';
 
 interface InputConfigSlice {
   mention: TriggerSuggestionConfig | undefined;
@@ -44,13 +44,13 @@ function useInputConfig(): InputConfigSlice {
   const [autocomplete, setAutocomplete] = useState(() => initial?.autocomplete);
   const [starters, setStarters] = useState(() => initial?.starters);
   const [hostExtensions, setHostExtensions] = useState(
-    () => initial?.tiptap?.extensions,
+    () => initial?.tiptap?.extensions
   );
   const [isSendDisabledFromConfig, setIsSendDisabledFromConfig] = useState(() =>
-    Boolean(initial?.isSendDisabled),
+    Boolean(initial?.isSendDisabled)
   );
   const [actions, setActions] = useState<ToolbarAction[] | undefined>(
-    () => initial?.actions,
+    () => initial?.actions
   );
   const [expanded, setExpanded] = useState(() => Boolean(initial?.expanded));
 
@@ -60,11 +60,11 @@ function useInputConfig(): InputConfigSlice {
       setMention((prev) => (prev !== next?.mention ? next?.mention : prev));
       setCommand((prev) => (prev !== next?.command ? next?.command : prev));
       setAutocomplete((prev) =>
-        prev !== next?.autocomplete ? next?.autocomplete : prev,
+        prev !== next?.autocomplete ? next?.autocomplete : prev
       );
       setStarters((prev) => (prev !== next?.starters ? next?.starters : prev));
       setHostExtensions((prev) =>
-        prev !== next?.tiptap?.extensions ? next?.tiptap?.extensions : prev,
+        prev !== next?.tiptap?.extensions ? next?.tiptap?.extensions : prev
       );
       setIsSendDisabledFromConfig((prev) => {
         const flag = Boolean(next?.isSendDisabled);

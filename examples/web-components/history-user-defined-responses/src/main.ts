@@ -28,7 +28,7 @@
  * Start reading at: `onBeforeRender` and the `updated()` hook.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   BusEventType,
@@ -38,12 +38,12 @@ import {
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement, css, PropertyValues } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement, css, PropertyValues } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -65,7 +65,7 @@ interface TrackedElementData {
   fullMessageId?: string;
 }
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -113,7 +113,7 @@ export class Demo extends LitElement {
 
   protected updated(changedProperties: PropertyValues): void {
     // Lit cannot re-render the chat-owned children declaratively, so when the tracked id changes we walk the Map and mutate each detached element directly.
-    if (changedProperties.has("activeResponseId")) {
+    if (changedProperties.has('activeResponseId')) {
       for (const [el, data] of this._userDefinedElements) {
         // Drop entries whose host node has been removed from the DOM by the chat to keep the Map from leaking across long sessions.
         if (!el.isConnected) {
@@ -131,23 +131,23 @@ export class Demo extends LitElement {
       data.fullMessageId === this.activeResponseId;
     el.innerHTML = `
       ${data.text}
-      <div>Latest response id: ${this.activeResponseId ?? "none yet"}</div>
-      <div>Is this the most recent message? ${isLatest ? "Yes" : "Nope"}</div>
+      <div>Latest response id: ${this.activeResponseId ?? 'none yet'}</div>
+      <div>Is this the most recent message? ${isLatest ? 'Yes' : 'Nope'}</div>
     `;
   }
 
   renderUserDefinedCallback = (
     state: RenderUserDefinedState,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ): HTMLElement | null => {
     const messageItem = state.messageItem as UserDefinedItem | undefined;
 
     // Only claim items this example produced; returning null for anything else lets the chat fall back to its default rendering.
     if (
-      messageItem?.user_defined?.user_defined_type === "my_unique_identifier"
+      messageItem?.user_defined?.user_defined_type === 'my_unique_identifier'
     ) {
-      const el = document.createElement("div");
-      el.className = "external";
+      const el = document.createElement('div');
+      el.className = 'external';
       const data: TrackedElementData = {
         text: messageItem.user_defined.text as string,
         fullMessageId: state.fullMessage?.id,
@@ -169,8 +169,7 @@ export class Demo extends LitElement {
         .openChatByDefault=${config.openChatByDefault}
         .onBeforeRender=${this.onBeforeRender}
         .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-        class="chat-custom-element"
-      ></cds-aichat-custom-element>
+        class="chat-custom-element"></cds-aichat-custom-element>
     `;
   }
 }

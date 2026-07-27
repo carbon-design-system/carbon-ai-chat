@@ -1,17 +1,17 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/layout";
-@use "@carbon/styles/scss/type" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/web-components/scss/components/tile/tile";
-@use "@carbon/styles/scss/utilities/convert";
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/type' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/web-components/scss/components/tile/tile';
+@use '@carbon/styles/scss/utilities/convert';
 
 :host {
   display: block;
@@ -40,7 +40,7 @@
   }
 
   .#{$prefix}-card-step-indicator {
-    @include type-style("body-compact-01");
+    @include type-style('body-compact-01');
 
     display: flex;
     align-items: center;
@@ -50,14 +50,14 @@
   }
 
   .#{$prefix}-card-step-title {
-    @include type-style("body-compact-01");
+    @include type-style('body-compact-01');
 
     margin: 0;
     color: theme.$text-secondary;
   }
 
   .#{$prefix}-card-step-description {
-    @include type-style("label-01");
+    @include type-style('label-01');
 
     margin: 0;
     color: theme.$text-secondary;

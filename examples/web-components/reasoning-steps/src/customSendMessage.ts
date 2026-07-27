@@ -28,14 +28,14 @@ import {
   type ChatInstance,
   type CustomSendMessageOptions,
   type MessageRequest,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 import {
   scenarios,
   scenarioOptions,
   runReasoningContentScenario,
   runReasoningStepsScenario,
   ScenarioKey,
-} from "./scenarios";
+} from './scenarios';
 
 const WELCOME_TEXT = `This example shows reasoning-step streaming patterns in Carbon AI Chat.
 
@@ -59,9 +59,9 @@ function sendWelcome(instance: ChatInstance) {
         },
         {
           response_type: MessageResponseTypes.OPTION,
-          title: "Pick a reasoning demo",
+          title: 'Pick a reasoning demo',
           description:
-            "Each option streams reasoning differently. You can edit the text for each scenario in src/scenarios.ts.",
+            'Each option streams reasoning differently. You can edit the text for each scenario in src/scenarios.ts.',
           preference: OptionItemPreference.DROPDOWN,
           // Each option submits its key as `input.text`, which the dispatcher
           // below matches against `scenarios` to pick a runner.
@@ -78,20 +78,20 @@ function sendWelcome(instance: ChatInstance) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  const trimmedText = request.input.text?.trim() ?? "";
+  const trimmedText = request.input.text?.trim() ?? '';
 
   // Only dispatch into a scenario when the input exactly matches a known key;
   // every other input falls through to the welcome dropdown.
   if (isScenarioKey(trimmedText)) {
     switch (trimmedText) {
-      case "Reasoning steps":
+      case 'Reasoning steps':
         // Forward the host abort signal so the runner can cancel mid-stream
         // when the user stops the response.
         await runReasoningStepsScenario(instance, requestOptions.signal);
         return;
-      case "Reasoning content":
+      case 'Reasoning content':
         await runReasoningContentScenario(instance, requestOptions.signal);
         return;
       default:

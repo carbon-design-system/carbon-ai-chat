@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
-import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/defs.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatCodeSnippet from "../components/code-snippet/src/code-snippet.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge";
-import { transformReactIconToCarbonIcon } from "../globals/utils/iconTransform.js";
+import CDSAIChatCodeSnippet from '../components/code-snippet/src/code-snippet.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge';
+import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
 
 // Re-export the Action interface from the web component
-export type { Action } from "../components/code-snippet/src/code-snippet.js";
+export type { Action } from '../components/code-snippet/src/code-snippet.js';
 
 /**
  * React-specific Action interface that accepts both CarbonIcon and React icon components.
@@ -35,13 +35,13 @@ export interface ReactAction {
 // Base code snippet component from @lit/react
 const BaseCodeSnippet = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-code-snippet",
+    tagName: 'cds-aichat-code-snippet',
     elementClass: CDSAIChatCodeSnippet,
     react: React,
     events: {
-      onChange: "content-change",
+      onChange: 'content-change',
     },
-  }),
+  })
 );
 
 /**
@@ -118,6 +118,6 @@ const CodeSnippet = React.forwardRef<any, any>((props, ref) => {
   );
 });
 
-CodeSnippet.displayName = "CodeSnippet";
+CodeSnippet.displayName = 'CodeSnippet';
 
 export default CodeSnippet;

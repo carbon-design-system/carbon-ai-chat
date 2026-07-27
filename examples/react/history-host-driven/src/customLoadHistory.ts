@@ -29,32 +29,32 @@ import {
   MessageRequest,
   MessageResponse,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 function generateHistoryItem(isResponse: boolean): HistoryItem {
   const requestTexts = [
-    "Lorem ipsum dolor sit amet.",
-    "Can you help me with something?",
-    "I need assistance with this task.",
-    "What do you think about this?",
-    "Could you explain that to me?",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "Simple question here.",
-    "Tell me more about this topic please.",
-    "How does this work exactly?",
+    'Lorem ipsum dolor sit amet.',
+    'Can you help me with something?',
+    'I need assistance with this task.',
+    'What do you think about this?',
+    'Could you explain that to me?',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Simple question here.',
+    'Tell me more about this topic please.',
+    'How does this work exactly?',
     "I'm looking for information about something specific.\n\nCan you provide details on how to approach this problem?",
-    "Quick question about the process.",
+    'Quick question about the process.',
   ];
 
   const responseTexts = [
-    "**Bold text** with some *italic* formatting.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nSed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.\n\n## Heading\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "Quick single line with `code` snippet.",
-    "### Another heading\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n- Bullet point one\n- Bullet point two\n- Bullet point three",
-    "Simple text without formatting.",
-    "Medium length paragraph about something interesting. This text should be long enough to span multiple lines but not too overwhelming to read in the chat interface.",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n> This is a blockquote with some important information that stands out from the regular text.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    '**Bold text** with some *italic* formatting.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n\nSed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.\n\n## Heading\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    'Quick single line with `code` snippet.',
+    '### Another heading\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\n- Bullet point one\n- Bullet point two\n- Bullet point three',
+    'Simple text without formatting.',
+    'Medium length paragraph about something interesting. This text should be long enough to span multiple lines but not too overwhelming to read in the chat interface.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\n> This is a blockquote with some important information that stands out from the regular text.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     "Here's a detailed response with formatting:\n\n1. First point\n2. Second point\n3. Third point\n\nAnd some additional context below.",
   ];
 

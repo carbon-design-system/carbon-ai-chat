@@ -7,14 +7,14 @@
 
 // $css--plex: true !default;
 
-@use "sass:map";
-@use "@carbon/styles/scss/utilities" as *;
-@use "@carbon/styles/scss/spacing" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/motion" as *;
-@use "@carbon/styles/scss/config" as carbon-config;
+@use 'sass:map';
+@use '@carbon/styles/scss/utilities' as *;
+@use '@carbon/styles/scss/spacing' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/motion' as *;
+@use '@carbon/styles/scss/config' as carbon-config;
 
-$prefix: "cds-aichat";
+$prefix: 'cds-aichat';
 $carbon-prefix: carbon-config.$prefix;
 $block-class: #{$prefix}--truncated-text;
 
@@ -50,7 +50,7 @@ $block-class: #{$prefix}--truncated-text;
     white-space: normal;
 
     &:focus {
-      @include focus-outline("outline");
+      @include focus-outline('outline');
     }
 
     // When expanded, remove line clamping
@@ -80,7 +80,7 @@ $block-class: #{$prefix}--truncated-text;
   button:focus,
   .#{$block-class}_button-expand:focus,
   .#{$block-class}_button-collapse:focus {
-    @include focus-outline("outline");
+    @include focus-outline('outline');
   }
 }
 

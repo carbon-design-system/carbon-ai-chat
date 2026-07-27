@@ -26,15 +26,15 @@
  * Start reading at: the `config` constant, then `render`.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/styles/css/styles.css";
-import { type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/styles/css/styles.css';
+import { type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { codeSnippetNode } from "./codeSnippetNode";
-import { customSendMessage } from "./customSendMessage";
-import { renderCodeSnippet } from "./renderCodeSnippet";
+import { codeSnippetNode } from './codeSnippetNode';
+import { customSendMessage } from './customSendMessage';
+import { renderCodeSnippet } from './renderCodeSnippet';
 
 // Module-scope so the reference is stable across renders — a fresh `input`
 // object (or `tiptap.extensions` array) would make the editor recreate.
@@ -50,7 +50,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -67,8 +67,7 @@ export class Demo extends LitElement {
         .input=${config.input}
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
-        .renderUserDefinedInputNode=${renderCodeSnippet}
-      ></cds-aichat-custom-element>
+        .renderUserDefinedInputNode=${renderCodeSnippet}></cds-aichat-custom-element>
     `;
   }
 }

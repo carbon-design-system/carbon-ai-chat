@@ -17,10 +17,10 @@
  * https://github.com/cookpete/react-player/blob/v2.15.1/src/players/Vimeo.js
  */
 
-import { BaseProvider, ProviderConfig } from "./base-provider.js";
-import { ScriptLoader } from "../../../shared/media-utils/script-loader.js";
+import { BaseProvider, ProviderConfig } from './base-provider.js';
+import { ScriptLoader } from '../../../shared/media-utils/script-loader.js';
 
-const SDK_URL = "https://player.vimeo.com/api/player.js";
+const SDK_URL = 'https://player.vimeo.com/api/player.js';
 
 // Declare Vimeo Player API types
 declare global {
@@ -33,7 +33,7 @@ declare global {
  * Clean Vimeo URL by removing management paths
  */
 function cleanUrl(url: string): string {
-  return url.replace("/manage/videos", "");
+  return url.replace('/manage/videos', '');
 }
 
 /**
@@ -50,10 +50,10 @@ export class VimeoProvider extends BaseProvider {
    */
   protected updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void {
-    element.setAttribute("aria-label", this.getStateLabel(state));
-    element.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    element.setAttribute('aria-label', this.getStateLabel(state));
+    element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
   }
 
   /**
@@ -63,13 +63,13 @@ export class VimeoProvider extends BaseProvider {
     await super.init(container, config);
 
     if (!this.container) {
-      throw new Error("Container element is required");
+      throw new Error('Container element is required');
     }
 
     // Create container for Vimeo player. Sizing/positioning of the wrapper
     // and the iframe Vimeo inserts inside it are handled by the
     // .cds-aichat--video-player__provider SCSS rules in video-player.scss.
-    this.playerContainer = document.createElement("div");
+    this.playerContainer = document.createElement('div');
     this.container.appendChild(this.playerContainer);
 
     // Load Vimeo Player API
@@ -100,7 +100,7 @@ export class VimeoProvider extends BaseProvider {
       // Timeout after 5 seconds
       setTimeout(() => {
         if (!window.Vimeo || !window.Vimeo.Player) {
-          reject(new Error("Vimeo Player API failed to load"));
+          reject(new Error('Vimeo Player API failed to load'));
         }
       }, 5000);
     });
@@ -111,7 +111,7 @@ export class VimeoProvider extends BaseProvider {
    */
   async load(url: string): Promise<void> {
     if (!this.playerContainer) {
-      throw new Error("Player container not initialized");
+      throw new Error('Player container not initialized');
     }
 
     // Wait for API to be ready
@@ -136,49 +136,49 @@ export class VimeoProvider extends BaseProvider {
       // Track the SDK-created iframe for ARIA updates. Its sizing is handled
       // by the .cds-aichat--video-player__provider iframe SCSS rule.
       this.iframe = this.playerContainer.querySelector(
-        "iframe",
+        'iframe'
       ) as HTMLIFrameElement;
       if (this.iframe) {
-        this.updateAriaAttributes(this.iframe, "loading");
+        this.updateAriaAttributes(this.iframe, 'loading');
       }
 
       // Set up event listeners
-      this.player.on("loaded", () => {
+      this.player.on('loaded', () => {
         if (this.iframe) {
-          this.updateAriaAttributes(this.iframe, "ready");
+          this.updateAriaAttributes(this.iframe, 'ready');
         }
         this.isReady = true;
         this.triggerReady();
       });
 
-      this.player.on("play", () => {
+      this.player.on('play', () => {
         this.triggerPlay();
       });
 
-      this.player.on("pause", () => {
+      this.player.on('pause', () => {
         this.triggerPause();
       });
 
-      this.player.on("ended", () => {
+      this.player.on('ended', () => {
         this.triggerPause();
       });
 
-      this.player.on("error", (_error: any) => {
+      this.player.on('error', (_error: any) => {
         if (this.iframe) {
-          this.updateAriaAttributes(this.iframe, "error");
+          this.updateAriaAttributes(this.iframe, 'error');
         }
         // Use the generic error message from config
         this.triggerError(
-          new Error(this.config.errorMessage || "Failed to load video"),
+          new Error(this.config.errorMessage || 'Failed to load video')
         );
       });
     } catch (error) {
       if (this.iframe) {
-        this.updateAriaAttributes(this.iframe, "error");
+        this.updateAriaAttributes(this.iframe, 'error');
       }
       // Use the generic error message from config
       this.triggerError(
-        new Error(this.config.errorMessage || "Failed to load video"),
+        new Error(this.config.errorMessage || 'Failed to load video')
       );
     }
   }
@@ -189,7 +189,7 @@ export class VimeoProvider extends BaseProvider {
   play(): void {
     if (this.player && this.isReady) {
       this.player.play().catch((error: any) => {
-        console.warn("Vimeo play was prevented:", error);
+        console.warn('Vimeo play was prevented:', error);
       });
     }
   }
@@ -200,7 +200,7 @@ export class VimeoProvider extends BaseProvider {
   pause(): void {
     if (this.player && this.isReady) {
       this.player.pause().catch((error: any) => {
-        console.warn("Vimeo pause failed:", error);
+        console.warn('Vimeo pause failed:', error);
       });
     }
   }
@@ -211,7 +211,7 @@ export class VimeoProvider extends BaseProvider {
   destroy(): void {
     if (this.player) {
       this.player.destroy().catch((error: any) => {
-        console.warn("Vimeo destroy failed:", error);
+        console.warn('Vimeo destroy failed:', error);
       });
       this.player = null;
     }

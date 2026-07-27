@@ -21,7 +21,7 @@ Include the message's {@link MessageRequest.history | history} property. Its typ
 To load history when the chat opens, define a {@link PublicConfigMessaging.customLoadHistory | customLoadHistory} function in your {@link PublicConfig | config}:
 
 ```typescript
-import { ChatInstance, HistoryItem } from "@carbon/ai-chat";
+import { ChatInstance, HistoryItem } from '@carbon/ai-chat';
 
 const config = {
   messaging: {
@@ -88,7 +88,7 @@ But if you call {@link ChatInstanceMessaging.clearConversation | clearConversati
 ```typescript
 async function switchToConversation(conversationId: string) {
   // Show loading indicator
-  instance.updateIsChatLoadingCounter("increase");
+  instance.updateIsChatLoadingCounter('increase');
 
   try {
     // Fetch history from your backend
@@ -99,7 +99,7 @@ async function switchToConversation(conversationId: string) {
     await instance.messaging.insertHistory(history);
   } finally {
     // Hide loading indicator
-    instance.updateIsChatLoadingCounter("decrease");
+    instance.updateIsChatLoadingCounter('decrease');
   }
 }
 ```
@@ -160,7 +160,7 @@ Your slotted panel lives outside the chat. So it needs a way to reach your loade
 Open and close the panel through {@link CustomPanels | custom panels}:
 
 ```ts
-import { PanelType } from "@carbon/ai-chat";
+import { PanelType } from '@carbon/ai-chat';
 
 instance.customPanels.getPanel(PanelType.HISTORY)?.open();
 instance.customPanels.getPanel(PanelType.HISTORY)?.close();

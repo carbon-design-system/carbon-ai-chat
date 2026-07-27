@@ -17,19 +17,19 @@ Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the d
 
 ## APIs and props demonstrated
 
-| Symbol                             | Package / kind              | Role in this example                                               |
-| ---------------------------------- | --------------------------- | ------------------------------------------------------------------ |
-| `ChatCustomElement`                | `@carbon/ai-chat` component | Mounts the chat UI.                                                |
-| `PublicConfig`                     | `@carbon/ai-chat` type      | Config shape.                                                      |
-| `customSendMessage`                | `messaging` prop            | Dispatches to scenario runners.                                    |
-| `MessageResponseTypes.OPTION`      | `@carbon/ai-chat`           | Welcome-message scenario picker.                                   |
-| `OptionItemPreference.DROPDOWN`    | `@carbon/ai-chat` enum      | Renders scenario picker as a dropdown.                             |
-| `ReasoningStep`                    | `@carbon/ai-chat` type      | Individual reasoning step payload.                                 |
-| `MessageResponseOptions`           | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,content}`.            |
-| `MessageResponse`                  | `@carbon/ai-chat` type      | Full snapshot returned by each upsert updater.                     |
-| `MessageState`                     | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.              |
-| `instance.messaging.upsertMessage` | `ChatInstance` API          | Inserts + updates the welcome and the streamed reasoning in place. |
-| `CustomSendMessageOptions.signal`  | `@carbon/ai-chat`           | Abort signal for cancellation.                                     |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Dispatches to scenario runners. |
+| `MessageResponseTypes.OPTION` | `@carbon/ai-chat` | Welcome-message scenario picker. |
+| `OptionItemPreference.DROPDOWN` | `@carbon/ai-chat` enum | Renders scenario picker as a dropdown. |
+| `ReasoningStep` | `@carbon/ai-chat` type | Individual reasoning step payload. |
+| `MessageResponseOptions` | `@carbon/ai-chat` type | `message_options` carrying `reasoning.{steps,content}`. |
+| `MessageResponse` | `@carbon/ai-chat` type | Full snapshot returned by each upsert updater. |
+| `MessageState` | `@carbon/ai-chat` enum | `STREAMING` per update, `COMPLETE` on the final call. |
+| `instance.messaging.upsertMessage` | `ChatInstance` API | Inserts + updates the welcome and the streamed reasoning in place. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` | Abort signal for cancellation. |
 
 ## Run it
 

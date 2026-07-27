@@ -7,19 +7,19 @@
  *  @license
  */
 
-import { LitElement, html, nothing } from "lit";
-import { property, state } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/overflow-menu/index.js";
-import "../../toolbar/src/toolbar.js";
-import type { Action } from "../../toolbar/src/toolbar.js";
-import type { BaseOverflowMenuItem } from "../../../typings/overflow-menu.js";
-import prefix from "../../../globals/settings.js";
-import { PageObjectId } from "../../../testing/PageObjectId.js";
-import { tryFocus } from "../../../globals/utils/focus-utils.js";
-import styles from "./chat-header.scss?lit";
+import { LitElement, html, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/overflow-menu/index.js';
+import '../../toolbar/src/toolbar.js';
+import type { Action } from '../../toolbar/src/toolbar.js';
+import type { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
+import prefix from '../../../globals/settings.js';
+import { PageObjectId } from '../../../testing/PageObjectId.js';
+import { tryFocus } from '../../../globals/utils/focus-utils.js';
+import styles from './chat-header.scss?lit';
 
 /**
  * Navigation overflow menu item configuration.
@@ -64,26 +64,26 @@ class CdsAiChatChatHeader extends LitElement {
    *   This approach avoids duplicating validation logic and properly handles Carbon components.
    */
   private static readonly BUTTON_SELECTORS =
-    "cds-button, cds-icon-button, button";
+    'cds-button, cds-icon-button, button';
 
   private static readonly NAV_BUTTON_SELECTORS =
-    "cds-button, cds-icon-button, cds-overflow-menu, button";
+    'cds-button, cds-icon-button, cds-overflow-menu, button';
 
-  private static readonly FOCUSABLE_SELECTORS = "*";
+  private static readonly FOCUSABLE_SELECTORS = '*';
 
   private static readonly TOOLBAR_ACTION_SELECTOR =
-    "cds-icon-button:not([disabled])";
+    'cds-icon-button:not([disabled])';
 
   /**
    * Configuration constants for navigation elements.
    */
-  private static readonly BACK_ICON_CONFIG = { slot: "icon" };
+  private static readonly BACK_ICON_CONFIG = { slot: 'icon' };
 
   private static readonly NAV_TOOLTIP_CONFIG = {
-    alignment: "end",
-    position: "right",
-    enterDelayMs: "0",
-    leaveDelayMs: "0",
+    alignment: 'end',
+    position: 'right',
+    enterDelayMs: '0',
+    leaveDelayMs: '0',
   };
 
   /**
@@ -108,7 +108,7 @@ class CdsAiChatChatHeader extends LitElement {
    */
   private tryFocusSlotButtons(slotName: string, selectors: string): boolean {
     const slot = this.shadowRoot?.querySelector(
-      `slot[name="${slotName}"]`,
+      `slot[name="${slotName}"]`
     ) as HTMLSlotElement | null;
 
     if (!slot) {
@@ -140,7 +140,7 @@ class CdsAiChatChatHeader extends LitElement {
   requestFocus(): boolean {
     // Check if navigation is rendered from properties
     const hasNavigationProps =
-      this.navigationType && this.navigationType !== "none";
+      this.navigationType && this.navigationType !== 'none';
 
     // Define focus strategies in priority order
     const focusStrategies = [
@@ -150,7 +150,7 @@ class CdsAiChatChatHeader extends LitElement {
           // Navigation rendered from properties - query toolbar's navigation slot
           const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
           const navSlot = toolbar?.shadowRoot?.querySelector(
-            'slot[name="navigation"]',
+            'slot[name="navigation"]'
           ) as HTMLSlotElement | null;
 
           if (navSlot) {
@@ -163,7 +163,7 @@ class CdsAiChatChatHeader extends LitElement {
               }
               // Or it might be a wrapper div containing the button
               const button = el.querySelector(
-                CdsAiChatChatHeader.NAV_BUTTON_SELECTORS,
+                CdsAiChatChatHeader.NAV_BUTTON_SELECTORS
               );
               if (button && this.tryFocusElement(button)) {
                 return true;
@@ -174,22 +174,22 @@ class CdsAiChatChatHeader extends LitElement {
         } else {
           // Navigation slotted - query slot for buttons
           return this.tryFocusSlotButtons(
-            "navigation",
-            CdsAiChatChatHeader.NAV_BUTTON_SELECTORS,
+            'navigation',
+            CdsAiChatChatHeader.NAV_BUTTON_SELECTORS
           );
         }
       },
       // 2. Try fixed-actions slot
       () =>
         this.tryFocusSlotButtons(
-          "fixed-actions",
-          CdsAiChatChatHeader.BUTTON_SELECTORS,
+          'fixed-actions',
+          CdsAiChatChatHeader.BUTTON_SELECTORS
         ),
       // 3. Try toolbar action buttons
       () => {
         const toolbar = this.shadowRoot?.querySelector(`${prefix}-toolbar`);
         const buttons = toolbar?.shadowRoot?.querySelectorAll(
-          CdsAiChatChatHeader.TOOLBAR_ACTION_SELECTOR,
+          CdsAiChatChatHeader.TOOLBAR_ACTION_SELECTOR
         );
         return (
           buttons?.[0] instanceof HTMLElement &&
@@ -199,7 +199,7 @@ class CdsAiChatChatHeader extends LitElement {
       // 4. Try any focusable element as last resort
       () => {
         const focusable = this.shadowRoot?.querySelector(
-          CdsAiChatChatHeader.FOCUSABLE_SELECTORS,
+          CdsAiChatChatHeader.FOCUSABLE_SELECTORS
         );
         return (
           focusable instanceof HTMLElement && this.tryFocusElement(focusable)
@@ -220,26 +220,26 @@ class CdsAiChatChatHeader extends LitElement {
   /**
    * Enable overflow behavior for actions.
    */
-  @property({ type: Boolean, attribute: "overflow", reflect: true })
+  @property({ type: Boolean, attribute: 'overflow', reflect: true })
   overflow = false;
 
   /**
    * Optional header title text to display.
    */
-  @property({ type: String, attribute: "header-title" })
-  headerTitle = "";
+  @property({ type: String, attribute: 'header-title' })
+  headerTitle = '';
 
   /**
    * Optional name text to display after the title.
    */
-  @property({ type: String, attribute: "header-name" })
-  headerName = "";
+  @property({ type: String, attribute: 'header-name' })
+  headerName = '';
 
   /**
    * Type of navigation to display: 'back', 'overflow', or 'none'.
    */
-  @property({ type: String, attribute: "navigation-type" })
-  navigationType: "back" | "overflow" | "none" = "none";
+  @property({ type: String, attribute: 'navigation-type' })
+  navigationType: 'back' | 'overflow' | 'none' = 'none';
 
   /**
    * Icon for the back button (CarbonIcon object with render method).
@@ -250,8 +250,8 @@ class CdsAiChatChatHeader extends LitElement {
   /**
    * Label/tooltip text for the back button.
    */
-  @property({ type: String, attribute: "navigation-back-label" })
-  navigationBackLabel = "";
+  @property({ type: String, attribute: 'navigation-back-label' })
+  navigationBackLabel = '';
 
   /**
    * Click handler for the back button.
@@ -268,8 +268,8 @@ class CdsAiChatChatHeader extends LitElement {
   /**
    * Label/tooltip text for the overflow menu button.
    */
-  @property({ type: String, attribute: "navigation-overflow-label" })
-  navigationOverflowLabel = "";
+  @property({ type: String, attribute: 'navigation-overflow-label' })
+  navigationOverflowLabel = '';
 
   /**
    * Icon for the overflow menu button (CarbonIcon object with render method).
@@ -292,16 +292,15 @@ class CdsAiChatChatHeader extends LitElement {
         <cds-overflow-menu-item
           @click=${item.onClick}
           href=${item.href || nothing}
-          target=${item.href ? item.target || "_self" : nothing}
+          target=${item.href ? item.target || '_self' : nothing}
           ?disabled=${item.disabled}
           ?danger=${item.danger}
           danger-description=${item.dangerDescription || nothing}
           ?divider=${item.divider}
-          data-testid=${item.testId || nothing}
-        >
+          data-testid=${item.testId || nothing}>
           ${item.text}
         </cds-overflow-menu-item>
-      `,
+      `
     );
   }
 
@@ -310,7 +309,7 @@ class CdsAiChatChatHeader extends LitElement {
    * @returns True if back navigation type is set and icon is provided
    */
   private shouldRenderBackNavigation(): boolean {
-    return this.navigationType === "back" && !!this.navigationBackIcon;
+    return this.navigationType === 'back' && !!this.navigationBackIcon;
   }
 
   /**
@@ -319,7 +318,7 @@ class CdsAiChatChatHeader extends LitElement {
    */
   private shouldRenderOverflowNavigation(): boolean {
     return (
-      this.navigationType === "overflow" &&
+      this.navigationType === 'overflow' &&
       !!this.navigationOverflowItems?.length
     );
   }
@@ -331,7 +330,7 @@ class CdsAiChatChatHeader extends LitElement {
   private getOverflowIconConfig() {
     return {
       class: `${prefix}-chat-header-overflow-icon`,
-      slot: "icon",
+      slot: 'icon',
     };
   }
 
@@ -349,11 +348,10 @@ class CdsAiChatChatHeader extends LitElement {
           tooltip-position=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.position}
           enter-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.enterDelayMs}
           leave-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.leaveDelayMs}
-          @click=${this.navigationBackOnClick}
-        >
+          @click=${this.navigationBackOnClick}>
           ${iconLoader(
             this.navigationBackIcon,
-            CdsAiChatChatHeader.BACK_ICON_CONFIG,
+            CdsAiChatChatHeader.BACK_ICON_CONFIG
           )}
           <span slot="tooltip-content">${this.navigationBackLabel}</span>
         </cds-icon-button>
@@ -368,27 +366,25 @@ class CdsAiChatChatHeader extends LitElement {
   private renderOverflowNavigation() {
     // For LTR: menu opens right
     // For RTL: menu opens left
-    const menuAlignment = this.isRTL ? "left" : "right";
+    const menuAlignment = this.isRTL ? 'left' : 'right';
 
     return html`
       <div
         slot="navigation"
         data-floating-menu-container
-        class="${prefix}-chat-header-overflow-wrapper"
-      >
+        class="${prefix}-chat-header-overflow-wrapper">
         <cds-overflow-menu
           align=${menuAlignment}
           tooltip-alignment=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.alignment}
           tooltip-position=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.position}
           enter-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.enterDelayMs}
           leave-delay-ms=${CdsAiChatChatHeader.NAV_TOOLTIP_CONFIG.leaveDelayMs}
-          @click=${this.navigationOverflowOnClick}
-        >
+          @click=${this.navigationOverflowOnClick}>
           ${
             this.navigationOverflowIcon
               ? iconLoader(
                   this.navigationOverflowIcon,
-                  this.getOverflowIconConfig(),
+                  this.getOverflowIconConfig()
                 )
               : nothing
           }
@@ -407,7 +403,7 @@ class CdsAiChatChatHeader extends LitElement {
    * @returns Template result for navigation or nothing
    */
   private renderNavigation() {
-    if (!this.navigationType || this.navigationType === "none") {
+    if (!this.navigationType || this.navigationType === 'none') {
       return nothing;
     }
 
@@ -440,8 +436,7 @@ class CdsAiChatChatHeader extends LitElement {
             ? html`
                 <span
                   class="cds-aichat-chat-header__title-text"
-                  data-testid=${PageObjectId.HEADER_TITLE}
-                >
+                  data-testid=${PageObjectId.HEADER_TITLE}>
                   ${this.headerTitle}
                 </span>
               `
@@ -452,8 +447,7 @@ class CdsAiChatChatHeader extends LitElement {
             ? html`
                 <span
                   class="cds-aichat-chat-header__name-text"
-                  data-testid=${PageObjectId.HEADER_NAME}
-                >
+                  data-testid=${PageObjectId.HEADER_NAME}>
                   ${this.headerName}
                 </span>
               `
@@ -466,7 +460,7 @@ class CdsAiChatChatHeader extends LitElement {
   render() {
     // Determine if we should render navigation from props or use slot
     const hasNavigationProps =
-      this.navigationType && this.navigationType !== "none";
+      this.navigationType && this.navigationType !== 'none';
     const navigationContent = hasNavigationProps
       ? this.renderNavigation()
       : html`<slot name="navigation"></slot>`;
@@ -478,8 +472,7 @@ class CdsAiChatChatHeader extends LitElement {
         ?overflow=${this.overflow}
         titleText=${this.headerTitle || nothing}
         nameText=${this.headerName || nothing}
-        data-testid=${PageObjectId.CHAT_HEADER}
-      >
+        data-testid=${PageObjectId.CHAT_HEADER}>
         ${navigationContent}
         ${!this.headerTitle && !this.headerName ? this.renderTitle() : nothing}
         <slot name="fixed-actions" slot="fixed-actions"></slot>
@@ -491,7 +484,7 @@ class CdsAiChatChatHeader extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-chat-header": CdsAiChatChatHeader;
+    'cds-aichat-chat-header': CdsAiChatChatHeader;
   }
 }
 

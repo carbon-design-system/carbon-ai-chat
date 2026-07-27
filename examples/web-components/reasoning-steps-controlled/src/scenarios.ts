@@ -24,37 +24,37 @@
  * Start reading at: `runControlledReasoningScenario()`.
  */
 
-import type { ChatInstance } from "@carbon/ai-chat";
+import type { ChatInstance } from '@carbon/ai-chat';
 import {
   MessageResponseTypes,
   ReasoningStepOpenState,
   type MessageResponseOptions,
   type ReasoningStep,
   type StreamChunk,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 const FINAL_TEXT =
-  "This *controlled* reasoning example is set to keep all reasoning steps closed by default with a loading indicator visible instead.";
+  'This *controlled* reasoning example is set to keep all reasoning steps closed by default with a loading indicator visible instead.';
 
 // Replace with a real production implementation. These steps stand in for what
 // a model server would emit as it streams its reasoning trace.
 const REASONING_STEPS = [
   {
-    title: "Read the user request",
+    title: 'Read the user request',
     content:
-      "Scanning the prompt and preparing to choose a relevant example response.",
+      'Scanning the prompt and preparing to choose a relevant example response.',
   },
   {
-    title: "Pick a scenario",
+    title: 'Pick a scenario',
     content:
-      "Selecting the reasoning flow that matches the provided dropdown choice.",
+      'Selecting the reasoning flow that matches the provided dropdown choice.',
   },
   {
-    title: "Considering options",
+    title: 'Considering options',
   },
   {
-    title: "Fetching data",
+    title: 'Fetching data',
     content: `Calling the retrieval service for supporting facts:
 \`\`\`json
 {
@@ -67,11 +67,11 @@ const REASONING_STEPS = [
 \`\`\``,
   },
   {
-    title: "Prepare the response",
+    title: 'Prepare the response',
   },
 ];
 
-const TEXT_STREAM_ID = "text-1";
+const TEXT_STREAM_ID = 'text-1';
 const WORD_DELAY = 40;
 const REASONING_STEP_DELAY = 3000;
 
@@ -84,14 +84,14 @@ async function sleep(milliseconds: number) {
 function createShellMessage(
   instance: ChatInstance,
   responseID: string,
-  messageOptions?: MessageResponseOptions,
+  messageOptions?: MessageResponseOptions
 ) {
   // Seed the message with an empty text chunk so the chat reducers allocate
   // the shell record before any reasoning updates arrive.
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID },
     },
     partial_response: {
@@ -104,12 +104,12 @@ function createShellMessage(
 function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID, cancellable: true },
     },
     partial_response: { message_options: messageOptions },
@@ -122,9 +122,9 @@ async function streamText(
   responseID: string,
   text: string,
   signal?: AbortSignal,
-  finalMessageOptions?: MessageResponseOptions,
+  finalMessageOptions?: MessageResponseOptions
 ) {
-  const words = text.split(" ");
+  const words = text.split(' ');
   let isCanceled = false;
   const timeouts: number[] = [];
 
@@ -135,7 +135,7 @@ async function streamText(
     isCanceled = true;
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -181,13 +181,13 @@ async function streamText(
       instance.messaging.addMessageChunk(finalResponse);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
 export async function runControlledReasoningScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = uuid();
 
@@ -197,7 +197,7 @@ export async function runControlledReasoningScenario(
 
   // Show a custom loading label instead of the default reasoning-step UI so
   // the host owns the in-progress affordance for this controlled scenario.
-  instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+  instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
   for (const step of REASONING_STEPS) {
     // Per-step `open_state: OPEN` marks each individual step as expanded, but
@@ -222,7 +222,7 @@ export async function runControlledReasoningScenario(
 
   // Drop the loading indicator before streaming the final user-facing text so
   // the assistant message replaces the "Thinking..." affordance cleanly.
-  instance.updateIsMessageLoadingCounter("decrease");
+  instance.updateIsMessageLoadingCounter('decrease');
 
   // Keep asserting the parent `open_state: CLOSE` on the final snapshot too, so
   // the message stays in controlled mode at completion. Dropping it would flip

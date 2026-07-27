@@ -17,22 +17,22 @@
  * into `<PromptLineShell>`.
  */
 
-import React from "react";
-import ReactDOM from "react-dom";
-import type { JSX, ReactNode, RefObject } from "react";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import type { JSX, ReactNode, RefObject } from 'react';
 
-import Autocomplete from "../autocomplete.js";
-import type PromptLineElement from "../../components/prompt-line/src/prompt-line.js";
+import Autocomplete from '../autocomplete.js';
+import type PromptLineElement from '../../components/prompt-line/src/prompt-line.js';
 import {
   AutocompleteController,
   type AutocompleteControllerState,
-} from "../../components/prompt-line/src/autocomplete-controller.js";
+} from '../../components/prompt-line/src/autocomplete-controller.js';
 import type {
   AutocompleteConfig,
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
-} from "../../components/prompt-line/src/tiptap/types.js";
+} from '../../components/prompt-line/src/tiptap/types.js';
 
 export interface UseChatAutocompleteOptions {
   mention?: TriggerSuggestionConfig;
@@ -58,7 +58,7 @@ export interface UseChatAutocompleteOptions {
 export interface UseChatAutocompleteResult {
   /** Attach to `<PromptLine onTriggerChange={...} />`. */
   onTriggerChange: (
-    event: CustomEvent<TriggerChangeEventDetail | null>,
+    event: CustomEvent<TriggerChangeEventDetail | null>
   ) => void;
   /**
    * JSX to render with `slot="autocomplete-content"` inside `<PromptLineShell>`.
@@ -68,7 +68,7 @@ export interface UseChatAutocompleteResult {
 }
 
 export function useChatAutocomplete(
-  options: UseChatAutocompleteOptions,
+  options: UseChatAutocompleteOptions
 ): UseChatAutocompleteResult {
   const {
     mention,
@@ -140,7 +140,7 @@ export function useChatAutocomplete(
       controllerRef.current?.setPromptLine(promptLineRef.current);
       controllerRef.current?.handleTriggerChange(event.detail ?? null);
     },
-    [promptLineRef],
+    [promptLineRef]
   );
 
   const handleSelect = React.useCallback((item: SuggestionItem) => {
@@ -167,10 +167,10 @@ export function useChatAutocomplete(
     (el: HTMLElement | null) => {
       controllerRef.current?.setListElement(el);
       if (el && maxHeight) {
-        el.style.setProperty("--cds-aichat-autocomplete-max-height", maxHeight);
+        el.style.setProperty('--cds-aichat-autocomplete-max-height', maxHeight);
       }
     },
-    [maxHeight],
+    [maxHeight]
   );
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
@@ -277,7 +277,7 @@ function CustomReactNodePortal({
 }: CustomReactNodePortalProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [hostElement, setHostElement] = React.useState<HTMLElement | null>(
-    null,
+    null
   );
 
   React.useEffect(() => {
@@ -293,12 +293,12 @@ function CustomReactNodePortal({
     }
 
     const slotName = `cds-aichat-autocomplete-${++autocompletePortalCounter}`;
-    const slotEl = document.createElement("slot");
-    slotEl.setAttribute("name", slotName);
+    const slotEl = document.createElement('slot');
+    slotEl.setAttribute('name', slotName);
     container.appendChild(slotEl);
 
-    const hostEl = document.createElement("div");
-    hostEl.setAttribute("slot", slotName);
+    const hostEl = document.createElement('div');
+    hostEl.setAttribute('slot', slotName);
     chatWrapper.appendChild(hostEl);
 
     setHostElement(hostEl);

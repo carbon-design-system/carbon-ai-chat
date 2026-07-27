@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,27 +12,27 @@ import {
   renderChatAndGetInstance,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.doAutoScroll", () => {
+describe('ChatInstance.doAutoScroll', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have doAutoScroll method available", async () => {
+  it('should have doAutoScroll method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.doAutoScroll).toBe("function");
+    expect(typeof instance.doAutoScroll).toBe('function');
   });
 
-  it("should execute without parameters", async () => {
+  it('should execute without parameters', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     expect(() => instance.doAutoScroll()).not.toThrow();
   });
 
-  it("should execute without throwing errors", async () => {
+  it('should execute without throwing errors', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -40,7 +40,7 @@ describe("ChatInstance.doAutoScroll", () => {
     expect(() => instance.doAutoScroll()).not.toThrow();
   });
 
-  it("should work when called multiple times", async () => {
+  it('should work when called multiple times', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 

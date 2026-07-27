@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import {
   MessageRequest,
   MessageResponseTypes,
-} from "../../types/messaging/Messages";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '../../types/messaging/Messages';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 /**
  * Takes data from {@link MessageRequest} and transforms into something usable by the chat internally.
@@ -27,7 +27,7 @@ import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
 function inputItemToLocalItem(
   message: MessageRequest,
   originalUserText: string,
-  id: string = uuid(),
+  id: string = uuid()
 ): LocalMessageItem {
   const localMessage: LocalMessageItem = {
     // The individual message in the format of an item from output.generic in the docs above.

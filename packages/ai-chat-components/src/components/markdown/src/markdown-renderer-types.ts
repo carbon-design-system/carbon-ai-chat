@@ -7,11 +7,11 @@
  *  @license
  */
 
-import type MarkdownIt from "markdown-it";
-import type { Token } from "markdown-it";
+import type MarkdownIt from 'markdown-it';
+import type { Token } from 'markdown-it';
 
-import type { TableCellData } from "./utils/table-helpers.js";
-import type { TokenTree } from "./markdown-token-tree.js";
+import type { TableCellData } from './utils/table-helpers.js';
+import type { TokenTree } from './markdown-token-tree.js';
 
 /**
  * Data payload describing a markdown table the consumer can render in place
@@ -279,7 +279,7 @@ export interface MarkdownCustomRenderers {
    * defaults.
    */
   image?: (
-    args: MarkdownRendererImageArgs,
+    args: MarkdownRendererImageArgs
   ) => MarkdownRendererImageResult | null;
   /**
    * Make task-list checkboxes actionable. See {@link MarkdownRendererChecklist}.
@@ -297,21 +297,21 @@ export interface MarkdownCustomRenderers {
 export type MarkdownRendererSlotDescriptor =
   | {
       slotName: string;
-      kind: "table";
+      kind: 'table';
       token: Readonly<Token>;
       node: Readonly<TokenTree>;
       data: MarkdownRendererTableData;
     }
   | {
       slotName: string;
-      kind: "codeBlock";
+      kind: 'codeBlock';
       token: Readonly<Token>;
       node: Readonly<TokenTree>;
       data: MarkdownRendererCodeBlockData;
     }
   | {
       slotName: string;
-      kind: "pluginFallback";
+      kind: 'pluginFallback';
       token: Readonly<Token>;
       node: Readonly<TokenTree>;
       /**

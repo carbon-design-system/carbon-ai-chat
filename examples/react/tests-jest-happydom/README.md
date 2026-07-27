@@ -16,16 +16,16 @@ Jest + `@happy-dom/jest-environment` setup that exercises `ChatContainer` end-to
 
 ## APIs and props demonstrated
 
-| Symbol                          | Package / kind              | Role in this example                                                |
-| ------------------------------- | --------------------------- | ------------------------------------------------------------------- |
-| `ChatContainer`                 | `@carbon/ai-chat` component | Mounted under test.                                                 |
-| `PageObjectId`                  | `@carbon/ai-chat`           | Stable selector IDs used to query shadow-DOM elements.              |
-| `MessageResponseTypes`          | `@carbon/ai-chat` enum      | `TEXT` used when injecting deterministic replies.                   |
-| `messaging.customSendMessage`   | config prop                 | Inline mock that injects `instance.messaging.addMessage` responses. |
-| `instance.messaging.addMessage` | instance method             | Used inside the inline mock to stage assistant output.              |
-| `@testing-library/react`        | test util                   | `waitFor` + a `renderChatContainer` helper.                         |
-| `@testing-library/jest-dom`     | test util                   | DOM matchers.                                                       |
-| `@happy-dom/jest-environment`   | jest env                    | Shadow-DOM-capable DOM environment.                                 |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounted under test. |
+| `PageObjectId` | `@carbon/ai-chat` | Stable selector IDs used to query shadow-DOM elements. |
+| `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` used when injecting deterministic replies. |
+| `messaging.customSendMessage` | config prop | Inline mock that injects `instance.messaging.addMessage` responses. |
+| `instance.messaging.addMessage` | instance method | Used inside the inline mock to stage assistant output. |
+| `@testing-library/react` | test util | `waitFor` + a `renderChatContainer` helper. |
+| `@testing-library/jest-dom` | test util | DOM matchers. |
+| `@happy-dom/jest-environment` | jest env | Shadow-DOM-capable DOM environment. |
 
 ## Run it
 

@@ -16,11 +16,11 @@ Connects the chat to IBM watsonx.ai via a local Express proxy that streams token
 
 ## APIs and props demonstrated
 
-| Symbol                        | Kind           | Role in this example                      |
-| ----------------------------- | -------------- | ----------------------------------------- |
-| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI.                       |
-| `messaging.customSendMessage` | property       | Streams tokens from the watsonx.ai proxy. |
-| `PublicConfig`                | type           | Types the chat configuration object.      |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Streams tokens from the watsonx.ai proxy. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 

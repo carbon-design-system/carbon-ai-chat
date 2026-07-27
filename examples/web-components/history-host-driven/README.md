@@ -14,14 +14,14 @@ Demonstrates one-shot conversation rehydration: a button clears the active conve
 
 ## APIs and props demonstrated
 
-| Symbol                                 | Kind           | Role in this example                                        |
-| -------------------------------------- | -------------- | ----------------------------------------------------------- |
-| `<cds-aichat-custom-element>`          | custom element | Mounts the chat UI.                                         |
-| `messaging.customSendMessage`          | property       | Mock backend for outbound messages.                         |
-| `messaging.customLoadHistory`          | property       | Returns a synthetic `HistoryItem[]` of random length.       |
-| `onBeforeRender`                       | property       | Captures the `ChatInstance`.                                |
-| `instance.messaging.clearConversation` | method         | Resets the current conversation before reinserting history. |
-| `instance.messaging.insertHistory`     | method         | Rehydrates the chat with the loaded items.                  |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Mock backend for outbound messages. |
+| `messaging.customLoadHistory` | property | Returns a synthetic `HistoryItem[]` of random length. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `instance.messaging.clearConversation` | method | Resets the current conversation before reinserting history. |
+| `instance.messaging.insertHistory` | method | Rehydrates the chat with the loaded items. |
 
 ## Run it
 

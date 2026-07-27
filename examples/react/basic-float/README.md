@@ -14,13 +14,13 @@ Minimal React example of the float / launcher layout: mounts `ChatContainer` wit
 
 ## APIs and props demonstrated
 
-| Symbol                               | Package / kind              | Role in this example                                      |
-| ------------------------------------ | --------------------------- | --------------------------------------------------------- |
-| `ChatContainer`                      | `@carbon/ai-chat` component | Mounts the chat UI.                                       |
-| `PublicConfig`                       | `@carbon/ai-chat` type      | Types the config object passed to `ChatContainer`.        |
-| `messaging.customSendMessage`        | config prop                 | Mock backend that streams a response.                     |
-| `instance.messaging.addMessage`      | instance method             | Emits non-streaming responses (the welcome message).      |
-| `instance.messaging.addMessageChunk` | instance method             | Streams partial / complete / final chunks back to the UI. |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatContainer`. |
+| `messaging.customSendMessage` | config prop | Mock backend that streams a response. |
+| `instance.messaging.addMessage` | instance method | Emits non-streaming responses (the welcome message). |
+| `instance.messaging.addMessageChunk` | instance method | Streams partial / complete / final chunks back to the UI. |
 
 ## Run it
 

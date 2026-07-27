@@ -22,20 +22,20 @@
  * Start reading at: `InventoryStatusExample()`.
  */
 
-import "./WorkspaceWriteableElementExample.css";
+import './WorkspaceWriteableElementExample.css';
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
   WorkspaceShellFooter,
-} from "@carbon/ai-chat-components/es/react/workspace-shell.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
+} from '@carbon/ai-chat-components/es/react/workspace-shell.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
 
 // Using @carbon/icons-react for all icons
-import Close16 from "@carbon/icons-react/es/Close.js";
+import Close16 from '@carbon/icons-react/es/Close.js';
 
-import React, { useState } from "react";
-import { ChatInstance, PanelType } from "@carbon/ai-chat";
-import { AILabel, Tag } from "@carbon/react";
+import React, { useState } from 'react';
+import { ChatInstance, PanelType } from '@carbon/ai-chat';
+import { AILabel, Tag } from '@carbon/react';
 
 interface InventoryStatusExampleProps {
   location: string;
@@ -56,8 +56,8 @@ function InventoryStatusExample({
 
   const [toolbarActions, _setToolbarActions] = useState([
     {
-      id: "close",
-      text: "Close",
+      id: 'close',
+      text: 'Close',
       fixed: true,
       icon: Close16,
       onClick: handleClose,
@@ -66,22 +66,22 @@ function InventoryStatusExample({
 
   const [footerActions, _setFooterActions] = useState([
     {
-      id: "evaluate",
-      label: "Evaluate plan",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'evaluate',
+      label: 'Evaluate plan',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "run",
-      label: "Run plan",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'run',
+      label: 'Run plan',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ]);
 
@@ -91,17 +91,17 @@ function InventoryStatusExample({
   const handleWorkspaceFooterClick = (event: any) => {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
-      case "evaluate":
+      case 'evaluate':
         alert(
-          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "run":
+      case 'run':
         alert(
-          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "cancel":
+      case 'cancel':
         handleClose();
         break;
       default:
@@ -126,8 +126,7 @@ function InventoryStatusExample({
       </Toolbar>
       <WorkspaceShellHeader
         titleText="Current inventory status"
-        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}
-      >
+        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}>
         <div slot="header-description">
           This is a simple example workspace component demonstrating the data
           flow from preview card to workspace.
@@ -142,7 +141,7 @@ function InventoryStatusExample({
         <h3>Hello World!</h3>
         <p>
           This is the <strong>InventoryStatusExample</strong> component,
-          rendered when <code>additional_data.type</code> is{" "}
+          rendered when <code>additional_data.type</code> is{' '}
           <code>inventory_status</code>.
         </p>
         <br />
@@ -151,14 +150,14 @@ function InventoryStatusExample({
           Location: <strong>{location}</strong>
         </p>
         <p>
-          Workspace ID: <strong>{workspaceId || "Not provided"}</strong>
+          Workspace ID: <strong>{workspaceId || 'Not provided'}</strong>
         </p>
         <br />
         <h4>Additional Data from Preview Card:</h4>
         <pre>{JSON.stringify(additionalData, null, 2)}</pre>
         <br />
         <p>
-          This demonstrates how data flows from the preview cards{" "}
+          This demonstrates how data flows from the preview cards{' '}
           <code>additional_data</code> field all the way to the workspace
           component, allowing you to pass custom data and configuration to your
           workspace templates.
@@ -166,8 +165,7 @@ function InventoryStatusExample({
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         onFooterClicked={handleWorkspaceFooterClick}
-        actions={footerActions}
-      ></WorkspaceShellFooter>
+        actions={footerActions}></WorkspaceShellFooter>
     </WorkspaceShell>
   );
 }

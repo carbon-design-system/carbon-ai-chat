@@ -7,19 +7,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, unsafeCSS } from "lit";
-import { property, state } from "lit/decorators.js";
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property, state } from 'lit/decorators.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
 
-import "@carbon/web-components/es/components/icon-button/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
+import '@carbon/web-components/es/components/icon-button/index.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import SendFilled16 from '@carbon/icons/es/send--filled/16.js';
 
-import styles from "./autocomplete-item.scss?lit";
+import styles from './autocomplete-item.scss?lit';
 
-import type { SuggestionItem } from "../../prompt-line/src/types.js";
+import type { SuggestionItem } from '../../prompt-line/src/types.js';
 
 const blockClass = `${prefix}-autocomplete-item`;
 
@@ -51,7 +51,7 @@ class AutocompleteItemElement extends LitElement {
    * The current text in the input (used to apply styling to indicate what user has already typed)
    */
   @property({ type: String, attribute: false })
-  inputText = "";
+  inputText = '';
 
   /**
    * Whether the component is in RTL mode.
@@ -62,30 +62,30 @@ class AutocompleteItemElement extends LitElement {
   /**
    * Whether to render the send button.
    */
-  @property({ type: Boolean, reflect: true, attribute: "enable-send-button" })
+  @property({ type: Boolean, reflect: true, attribute: 'enable-send-button' })
   enableSendButton = true;
 
   /**
    * Whether this item is the active (highlighted) option.
    * Drives aria-selected and the visual highlight class.
    */
-  @property({ type: Boolean, reflect: true, attribute: "is-active" })
+  @property({ type: Boolean, reflect: true, attribute: 'is-active' })
   isActive = false;
 
   private _handleSendClick(event: Event) {
     event.stopPropagation();
 
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-autocomplete-item-send", {
+      new CustomEvent('cds-aichat-autocomplete-item-send', {
         detail: { index: this.index },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   private _handleKeydown(event: KeyboardEvent) {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
 
@@ -95,7 +95,7 @@ class AutocompleteItemElement extends LitElement {
   }
 
   private _handleSendKeydown(event: KeyboardEvent) {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
 
@@ -114,7 +114,7 @@ class AutocompleteItemElement extends LitElement {
     const avatar = this.item.avatar;
 
     // String URL - render as image
-    if (typeof avatar === "string") {
+    if (typeof avatar === 'string') {
       return html`
         <div class="${blockClass}__avatar">
           <img src="${avatar}" alt="" />
@@ -123,7 +123,7 @@ class AutocompleteItemElement extends LitElement {
     }
 
     // CarbonIcon - render using iconLoader
-    if (typeof avatar !== "function") {
+    if (typeof avatar !== 'function') {
       return html`
         <div class="${blockClass}__avatar">${iconLoader(avatar)}</div>
       `;
@@ -150,7 +150,7 @@ class AutocompleteItemElement extends LitElement {
 
     // If no match, return the entire label as remainder
     return {
-      typed: "",
+      typed: '',
       remainder: label,
     };
   }
@@ -161,13 +161,12 @@ class AutocompleteItemElement extends LitElement {
 
     return html`
       <li
-        class="${blockClass} ${this.isActive ? `${blockClass}--active` : ""}"
+        class="${blockClass} ${this.isActive ? `${blockClass}--active` : ''}"
         role="option"
-        aria-selected="${this.isActive ? "true" : "false"}"
+        aria-selected="${this.isActive ? 'true' : 'false'}"
         tabindex="-1"
         @keydown="${this._handleKeydown}"
-        id="${id}"
-      >
+        id="${id}">
         <div class="${blockClass}__content">
           ${this._renderAvatar()}
           <div class="${blockClass}__text">
@@ -177,13 +176,13 @@ class AutocompleteItemElement extends LitElement {
                   ? html`<span class="${blockClass}__label-typed"
                       >${typed}</span
                     >`
-                  : ""
+                  : ''
               }${
                 remainder
                   ? html`<span class="${blockClass}__label-remainder"
                       >${remainder}</span
                     >`
-                  : ""
+                  : ''
               }
             </div>
             ${
@@ -204,13 +203,12 @@ class AutocompleteItemElement extends LitElement {
                   class="${blockClass}__send"
                   kind="ghost"
                   size="md"
-                  align="${this.isRTL ? "top-start" : "top-end"}"
+                  align="${this.isRTL ? 'top-start' : 'top-end'}"
                   @click="${this._handleSendClick}"
                   @keydown="${this._handleSendKeydown}"
                   aria-label="Send ${this.item.label}"
-                  tabindex="-1"
-                >
-                  ${iconLoader(SendFilled16, { slot: "icon" })}
+                  tabindex="-1">
+                  ${iconLoader(SendFilled16, { slot: 'icon' })}
                   <span slot="tooltip-content">Send message</span>
                 </cds-icon-button>
               `
@@ -223,7 +221,7 @@ class AutocompleteItemElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-autocomplete-item": AutocompleteItemElement;
+    'cds-aichat-autocomplete-item': AutocompleteItemElement;
   }
 }
 

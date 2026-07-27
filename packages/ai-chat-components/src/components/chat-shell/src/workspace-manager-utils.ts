@@ -44,7 +44,7 @@ export function calculateRequiredWidth(dimensions: {
 export function hasSignificantWidthChange(
   current: number,
   initial: number,
-  threshold: number,
+  threshold: number
 ): boolean {
   return Math.abs(current - initial) > threshold;
 }
@@ -58,9 +58,9 @@ export function hasSignificantWidthChange(
  */
 export function isWideEnough(
   inlineSize: number,
-  requiredWidth: number,
+  requiredWidth: number
 ): boolean {
-  return typeof window === "undefined" || inlineSize >= requiredWidth;
+  return typeof window === 'undefined' || inlineSize >= requiredWidth;
 }
 
 /**
@@ -70,7 +70,7 @@ export function isWideEnough(
  * @returns True if window width is sufficient, false in SSR context
  */
 export function canHostGrow(requiredWidth: number): boolean {
-  return typeof window !== "undefined" && window.innerWidth >= requiredWidth;
+  return typeof window !== 'undefined' && window.innerWidth >= requiredWidth;
 }
 
 /**
@@ -97,7 +97,7 @@ export function getInlineSizeFromEntry(entry: ResizeObserverEntry): number {
 export function getCssLengthFromProperty(
   element: HTMLElement,
   propertyName: string,
-  fallback: number,
+  fallback: number
 ): number {
   const value = getComputedStyle(element).getPropertyValue(propertyName).trim();
   if (!value) {
@@ -116,10 +116,10 @@ export function getCssLengthFromProperty(
  */
 export function areWorkspaceAttributesCorrect(
   element: HTMLElement,
-  inPanel: boolean,
+  inPanel: boolean
 ): boolean {
-  const panelAttrExists = element.hasAttribute("workspace-in-panel");
-  const containerAttrExists = element.hasAttribute("workspace-in-container");
+  const panelAttrExists = element.hasAttribute('workspace-in-panel');
+  const containerAttrExists = element.hasAttribute('workspace-in-container');
 
   return panelAttrExists === inPanel && containerAttrExists === !inPanel;
 }
@@ -136,7 +136,7 @@ export function areWorkspaceAttributesCorrect(
  */
 export function shouldSkipWorkspaceUpdate(
   config: { showWorkspace: boolean },
-  state: { containerVisible: boolean; isContracting: boolean },
+  state: { containerVisible: boolean; isContracting: boolean }
 ): boolean {
   return (
     !config.showWorkspace || !state.containerVisible || state.isContracting

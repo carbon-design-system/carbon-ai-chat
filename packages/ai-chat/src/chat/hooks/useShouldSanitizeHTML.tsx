@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { useSelector } from "./useSelector";
+import { useSelector } from './useSelector';
 
-import { AppState } from "../../types/state/AppState";
+import { AppState } from '../../types/state/AppState';
 
 /**
  * A hook that indicates whether general HTML should be sanitized.
  */
 function useShouldSanitizeHTML() {
   const shouldSanitizeHTML = useSelector(
-    (state: AppState) => state.config.public.shouldSanitizeHTML,
+    (state: AppState) => state.config.public.shouldSanitizeHTML
   );
 
   // We want to sanitize the HTML in all the tooling Carbon AI Chats, in the agent app or if the customer has asked for it.

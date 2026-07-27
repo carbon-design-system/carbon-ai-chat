@@ -7,31 +7,31 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/prompt-line-shell.js";
-import "./src/prompt-line.js";
-import "./src/error-message.js";
-import "./src/send-control.js";
-import "./src/stop-streaming-button.js";
-import "./src/autocomplete-controller.js";
+import './src/prompt-line-shell.js';
+import './src/prompt-line.js';
+import './src/error-message.js';
+import './src/send-control.js';
+import './src/stop-streaming-button.js';
+import './src/autocomplete-controller.js';
 
-export { default as PromptLineShellElement } from "./src/prompt-line-shell.js";
-export { default as PromptLineElement } from "./src/prompt-line.js";
+export { default as PromptLineShellElement } from './src/prompt-line-shell.js';
+export { default as PromptLineElement } from './src/prompt-line.js';
 // Warms the Tiptap runtime chunk so a host (e.g. `@carbon/ai-chat`) can ensure
 // the prompt-line mounts in rich mode on first paint, no textarea→editor flash.
-export { preloadPromptLineRich } from "./src/prompt-line-rich-loader.js";
+export { preloadPromptLineRich } from './src/prompt-line-rich-loader.js';
 export type {
   PromptLineController,
   PromptLineControllerInit,
-} from "./src/prompt-line-controller.js";
-export { default as ErrorMessage } from "./src/error-message.js";
-export { default as InputSendControlElement } from "./src/send-control.js";
-export { default as StopStreamingButton } from "./src/stop-streaming-button.js";
+} from './src/prompt-line-controller.js';
+export { default as ErrorMessage } from './src/error-message.js';
+export { default as InputSendControlElement } from './src/send-control.js';
+export { default as StopStreamingButton } from './src/stop-streaming-button.js';
 export {
   default as AutocompleteControllerElement,
   AutocompleteController,
   type AutocompleteControllerOptions,
   type AutocompleteControllerState,
-} from "./src/autocomplete-controller.js";
+} from './src/autocomplete-controller.js';
 
 // Carbon Tiptap factories, helpers, and JSONContent walking utilities.
 export {
@@ -53,7 +53,7 @@ export {
   renderTokenChip,
   renderInLightDom,
   LIGHT_DOM_PORTAL_EVENT,
-} from "./src/tiptap/index.js";
+} from './src/tiptap/index.js';
 
 export type {
   BaseSuggestionConfig,
@@ -67,7 +67,7 @@ export type {
   RenderInLightDomArgs,
   RenderInLightDomResult,
   LightDomPortalEventDetail,
-} from "./src/tiptap/index.js";
+} from './src/tiptap/index.js';
 
 // Curated runtime / event-detail types.
 export type {
@@ -77,6 +77,6 @@ export type {
   FileSelectEventDetail,
   FileRemoveEventDetail,
   TypingEventDetail,
-} from "./src/types.js";
+} from './src/types.js';
 
-export { FileStatusValue } from "./src/types.js";
+export { FileStatusValue } from './src/types.js';

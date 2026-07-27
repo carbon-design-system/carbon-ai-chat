@@ -24,38 +24,38 @@
  * {@link MarkdownRendererSlotDescriptor} (defined in `./markdown-renderer-types.ts`) is the bridge between this module and `./markdown.ts`. This module appends descriptors via `recordCustomRender`; the markdown element's `reconcileCustomRendererHosts` consumes them, invokes consumer callbacks (or adopts plugin-fallback HTML) and attaches the result as a light-DOM `<div slot="…">` host (or `<span>` for inline plugin output).
  */
 
-import DOMPurify from "dompurify";
-import { html, TemplateResult } from "lit";
-import { repeat } from "lit/directives/repeat.js";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { Token } from "markdown-it";
-import "@carbon/web-components/es/components/list/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
-import "../../code-snippet/index.js";
-import "../../card/index.js";
-import "../../table/index.js";
-import { defaultLineCountText } from "../../code-snippet/src/formatters.js";
+import DOMPurify from 'dompurify';
+import { html, TemplateResult } from 'lit';
+import { repeat } from 'lit/directives/repeat.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { Token } from 'markdown-it';
+import '@carbon/web-components/es/components/list/index.js';
+import '@carbon/web-components/es/components/checkbox/index.js';
+import '../../code-snippet/index.js';
+import '../../card/index.js';
+import '../../table/index.js';
+import { defaultLineCountText } from '../../code-snippet/src/formatters.js';
 
-import { renderTable } from "./utils/table-helpers.js";
+import { renderTable } from './utils/table-helpers.js';
 import {
   combineConsecutiveHtmlInline,
   combineSplitHtmlBlocks,
-} from "./utils/html-helpers.js";
+} from './utils/html-helpers.js';
 import {
   htmlContainer,
   sanitizeHtmlContent,
   spread,
-} from "./utils/lit-directives.js";
+} from './utils/lit-directives.js';
 import {
   isNativelyHandled,
   renderFallback,
   shouldDelegateToPluginRule,
-} from "./utils/plugin-fallback.js";
-import { type TokenTree } from "./markdown-token-tree.js";
+} from './utils/plugin-fallback.js';
+import { type TokenTree } from './markdown-token-tree.js';
 import type {
   MarkdownRendererSlotDescriptor,
   RenderTokenTreeOptions,
-} from "./markdown-renderer-types.js";
+} from './markdown-renderer-types.js';
 
 // Re-export types so existing imports of these from this module keep working.
 export type {
@@ -73,7 +73,7 @@ export type {
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
   RenderTokenTreeOptions,
-} from "./markdown-renderer-types.js";
+} from './markdown-renderer-types.js';
 
 /**
  * Stable, parent-scoped slot name for an overridable token. Uses `startLine`
@@ -82,9 +82,9 @@ export type {
  * context disambiguates siblings on the same start line (rare but possible).
  */
 function slotNameFor(
-  kind: "table" | "codeBlock",
+  kind: 'table' | 'codeBlock',
   token: Token,
-  options: RenderTokenTreeOptions,
+  options: RenderTokenTreeOptions
 ): string {
   const startLine = token.map?.[0] ?? 0;
   const index = options.context?.currentIndex ?? 0;
@@ -106,7 +106,7 @@ function sanitizeAttrs(attrs: Record<string, string>): Record<string, string> {
       });
       const element = fragment.firstChild as Element | null;
       return element?.getAttribute(key) !== null;
-    }),
+    })
   );
 }
 
@@ -118,18 +118,18 @@ function sanitizeAttrs(attrs: Record<string, string>): Record<string, string> {
 function extractText(node: TokenTree): string {
   const { token, children } = node;
   if (children && children.length > 0) {
-    return children.map(extractText).join("");
+    return children.map(extractText).join('');
   }
-  return token.content ?? "";
+  return token.content ?? '';
 }
 
 function renderChildTokenTrees(
   children: TokenTree[],
   options: RenderTokenTreeOptions,
-  childContext?: RenderTokenTreeOptions["context"],
+  childContext?: RenderTokenTreeOptions['context']
 ): TemplateResult {
   const normalizedChildren = combineConsecutiveHtmlInline(
-    combineSplitHtmlBlocks(children),
+    combineSplitHtmlBlocks(children)
   );
 
   // Multiple or complex children: use repeat for stable keying
@@ -145,7 +145,7 @@ function renderChildTokenTrees(
       const startLine = child.token.map?.[0] ?? index;
       const stableKey = `${startLine}:${child.token.type}:${child.token.tag}`;
 
-      if (child.token.type?.includes("table")) {
+      if (child.token.type?.includes('table')) {
         return `table-${stableKey}`;
       }
 
@@ -162,7 +162,7 @@ function renderChildTokenTrees(
       });
       // Ensure we never return undefined, which Lit would render as the string "undefined"
       return result ?? html``;
-    },
+    }
   )}`;
 }
 
@@ -174,7 +174,7 @@ function renderChildTokenTrees(
  */
 export function renderMarkdownTree(
   node: TokenTree,
-  options: RenderTokenTreeOptions,
+  options: RenderTokenTreeOptions
 ): {
   template: TemplateResult;
   batch: MarkdownRendererSlotDescriptor[];
@@ -197,17 +197,17 @@ export function renderMarkdownTree(
  */
 export function renderTokenTree(
   node: TokenTree,
-  options: RenderTokenTreeOptions,
+  options: RenderTokenTreeOptions
 ): TemplateResult {
   const { token, children } = node;
   const { context, sanitize } = options;
 
   // Handle raw HTML blocks and inline HTML
-  if (token.type === "html_block" || token.type === "html_inline") {
+  if (token.type === 'html_block' || token.type === 'html_inline') {
     // Plugin-overridden html_block rules (rare but supported) — route through
     // the plugin's renderer before our default unsafeHTML pass-through.
     if (
-      token.type === "html_block" &&
+      token.type === 'html_block' &&
       shouldDelegateToPluginRule(token, options.md) &&
       options.md
     ) {
@@ -216,11 +216,11 @@ export function renderTokenTree(
         node,
         options.md,
         sanitize,
-        options,
+        options
       );
     }
 
-    let content = token.content || "";
+    let content = token.content || '';
 
     // Apply HTML sanitization if requested
     if (sanitize && content) {
@@ -231,38 +231,37 @@ export function renderTokenTree(
   }
 
   // Handle split HTML blocks that wrap markdown siblings (e.g. <details>…</details>).
-  if (token.type === "html_container") {
-    const openingHtml = token.content ?? "";
+  if (token.type === 'html_container') {
+    const openingHtml = token.content ?? '';
     const innerContent = renderChildTokenTrees(children, options, context);
 
     return html`<div
       class="cds-aichat-markdown-html-container"
-      ${htmlContainer(openingHtml, innerContent, sanitize)}
-    ></div>`;
+      ${htmlContainer(openingHtml, innerContent, sanitize)}></div>`;
   }
 
   // Handle plain text content
-  if (token.type === "text") {
+  if (token.type === 'text') {
     return html`${token.content}`;
   }
 
   // Handle inline code spans
-  if (token.type === "code_inline") {
+  if (token.type === 'code_inline') {
     if (shouldDelegateToPluginRule(token, options.md) && options.md) {
       return renderFallback(
         token as Token,
         node,
         options.md,
         sanitize,
-        options,
+        options
       );
     }
     return html`<code>${token.content}</code>`;
   }
 
   // Handle fenced code blocks
-  if (token.type === "fence") {
-    const language = token.info?.trim() ?? "";
+  if (token.type === 'fence') {
+    const language = token.info?.trim() ?? '';
     const {
       codeSnippetHighlight = true,
       codeSnippetShowLessText,
@@ -286,21 +285,20 @@ export function renderTokenTree(
           .getLineCountText=${codeSnippetGetLineCountText}
           .ariaLabelReadOnly=${codeSnippetAriaLabelReadOnly}
           .ariaLabelEditable=${codeSnippetAriaLabelEditable}
-          .code=${token.content}
-        ></cds-aichat-code-snippet>
+          .code=${token.content}></cds-aichat-code-snippet>
       </div>
     </cds-aichat-card>`;
 
     if (options.customRenderers?.codeBlock) {
-      const slotName = slotNameFor("codeBlock", token as Token, options);
+      const slotName = slotNameFor('codeBlock', token as Token, options);
       options.recordCustomRender?.({
         slotName,
-        kind: "codeBlock",
+        kind: 'codeBlock',
         token: token as Token,
         node,
         data: {
           language,
-          code: token.content ?? "",
+          code: token.content ?? '',
           isStreaming: !!options.streaming,
         },
       });
@@ -315,7 +313,7 @@ export function renderTokenTree(
         node,
         options.md,
         sanitize,
-        options,
+        options
       );
     }
 
@@ -331,26 +329,26 @@ export function renderTokenTree(
       acc[key] = value;
       return acc;
     },
-    {} as Record<string, string>,
+    {} as Record<string, string>
   );
 
   // Apply attribute sanitization if requested
   let attrs = rawAttrs;
-  const isCustomElement = !!token.tag && token.tag.includes("-");
+  const isCustomElement = !!token.tag && token.tag.includes('-');
   if (sanitize && !isCustomElement) {
     attrs = sanitizeAttrs(rawAttrs);
   }
 
   // Set up context for child rendering
   let childContext = context;
-  if (tag === "thead") {
+  if (tag === 'thead') {
     childContext = { ...context, isInThead: true };
   }
 
   // Render child content
   let content: TemplateResult;
 
-  if (children.length === 1 && children[0].token.type === "text") {
+  if (children.length === 1 && children[0].token.type === 'text') {
     // Optimization: single text child doesn't need repeat wrapper
     content = html`${children[0].token.content}`;
   } else {
@@ -377,7 +375,7 @@ export function renderTokenTree(
     attrs,
     options,
     childContext,
-    node,
+    node
   );
 }
 
@@ -391,53 +389,53 @@ function renderWithStaticTag(
   attrs: Record<string, string>,
   options: RenderTokenTreeOptions,
   _context?: { isInThead?: boolean },
-  node?: TokenTree,
+  node?: TokenTree
 ): TemplateResult {
   // Handle root token specially
-  if (token.type === "root") {
+  if (token.type === 'root') {
     return content;
   }
 
   const hasTaskListItems = (listNode?: TokenTree) =>
     !!listNode?.children?.some((child) => {
-      if (child.token.type !== "list_item_open") {
+      if (child.token.type !== 'list_item_open') {
         return false;
       }
 
-      const classAttr = child.token.attrs?.find(([key]) => key === "class");
-      return classAttr?.[1]?.split(/\s+/).includes("task-list-item");
+      const classAttr = child.token.attrs?.find(([key]) => key === 'class');
+      return classAttr?.[1]?.split(/\s+/).includes('task-list-item');
     });
 
   switch (tag) {
     // Basic block elements
-    case "p":
+    case 'p':
       return html`<p ${spread(attrs)}>${content}</p>`;
 
-    case "blockquote":
+    case 'blockquote':
       return html`<blockquote ${spread(attrs)}>${content}</blockquote>`;
 
-    case "pre":
+    case 'pre':
       return html`<pre ${spread(attrs)}>${content}</pre>`;
 
-    case "hr":
+    case 'hr':
       return html`<hr ${spread(attrs)} />`;
 
     // Headings
-    case "h1":
+    case 'h1':
       return html`<h1 ${spread(attrs)}>${content}</h1>`;
-    case "h2":
+    case 'h2':
       return html`<h2 ${spread(attrs)}>${content}</h2>`;
-    case "h3":
+    case 'h3':
       return html`<h3 ${spread(attrs)}>${content}</h3>`;
-    case "h4":
+    case 'h4':
       return html`<h4 ${spread(attrs)}>${content}</h4>`;
-    case "h5":
+    case 'h5':
       return html`<h5 ${spread(attrs)}>${content}</h5>`;
-    case "h6":
+    case 'h6':
       return html`<h6 ${spread(attrs)}>${content}</h6>`;
 
     // Lists with Carbon components
-    case "ul": {
+    case 'ul': {
       const nested = token.level > 1;
       if (hasTaskListItems(node)) {
         return html`<ul ${spread(attrs)}>
@@ -451,7 +449,7 @@ function renderWithStaticTag(
       </p>`;
     }
 
-    case "ol": {
+    case 'ol': {
       const nested = token.level > 1;
       if (hasTaskListItems(node)) {
         return html`<ol ${spread(attrs)}>
@@ -465,17 +463,17 @@ function renderWithStaticTag(
       </p>`;
     }
 
-    case "li": {
+    case 'li': {
       const classList = attrs.class?.split(/\s+/) ?? [];
-      if (classList.includes("task-list-item")) {
+      if (classList.includes('task-list-item')) {
         return html`<li ${spread(attrs)}>${content}</li>`;
       }
       return html`<cds-list-item ${spread(attrs)}>${content}</cds-list-item>`;
     }
 
-    case "cds-checkbox": {
+    case 'cds-checkbox': {
       const { checked, disabled, ...otherAttrs } = attrs;
-      let isChecked = checked === "true";
+      let isChecked = checked === 'true';
 
       // A configured `checklist` renderer can supply the checked state
       // (so a persisted toggle survives streaming re-renders) and makes the
@@ -483,13 +481,13 @@ function renderWithStaticTag(
       const checklist = options.customRenderers?.checklist;
       if (checklist?.getChecked && node) {
         const override = checklist.getChecked({
-          id: otherAttrs["data-cds-aichat-checklist-id"] ?? "",
+          id: otherAttrs['data-cds-aichat-checklist-id'] ?? '',
           label: extractText(node),
           checked: isChecked,
           token,
           node,
         });
-        if (typeof override === "boolean") {
+        if (typeof override === 'boolean') {
           isChecked = override;
         }
       }
@@ -498,7 +496,7 @@ function renderWithStaticTag(
         ? false
         : disabled === undefined
           ? false
-          : disabled === "" || disabled === "true";
+          : disabled === '' || disabled === 'true';
 
       return html`<cds-checkbox
         ?checked=${isChecked}
@@ -509,57 +507,57 @@ function renderWithStaticTag(
     }
 
     // Inline formatting
-    case "strong":
+    case 'strong':
       return html`<strong ${spread(attrs)}>${content}</strong>`;
-    case "em":
+    case 'em':
       return html`<em ${spread(attrs)}>${content}</em>`;
-    case "code":
+    case 'code':
       return html`<code ${spread(attrs)}>${content}</code>`;
-    case "del":
+    case 'del':
       return html`<del ${spread(attrs)}>${content}</del>`;
-    case "sub":
+    case 'sub':
       return html`<sub ${spread(attrs)}>${content}</sub>`;
-    case "sup":
+    case 'sup':
       return html`<sup ${spread(attrs)}>${content}</sup>`;
-    case "span":
+    case 'span':
       return html`<span ${spread(attrs)}>${content}</span>`;
-    case "i":
+    case 'i':
       return html`<i ${spread(attrs)}>${content}</i>`;
-    case "b":
+    case 'b':
       return html`<b ${spread(attrs)}>${content}</b>`;
-    case "small":
+    case 'small':
       return html`<small ${spread(attrs)}>${content}</small>`;
-    case "mark":
+    case 'mark':
       return html`<mark ${spread(attrs)}>${content}</mark>`;
-    case "ins":
+    case 'ins':
       return html`<ins ${spread(attrs)}>${content}</ins>`;
-    case "s":
+    case 's':
       return html`<s ${spread(attrs)}>${content}</s>`;
-    case "kbd":
+    case 'kbd':
       return html`<kbd ${spread(attrs)}>${content}</kbd>`;
-    case "var":
+    case 'var':
       return html`<var ${spread(attrs)}>${content}</var>`;
-    case "samp":
+    case 'samp':
       return html`<samp ${spread(attrs)}>${content}</samp>`;
-    case "cite":
+    case 'cite':
       return html`<cite ${spread(attrs)}>${content}</cite>`;
-    case "abbr":
+    case 'abbr':
       return html`<abbr ${spread(attrs)}>${content}</abbr>`;
-    case "dfn":
+    case 'dfn':
       return html`<dfn ${spread(attrs)}>${content}</dfn>`;
-    case "time":
+    case 'time':
       return html`<time ${spread(attrs)}>${content}</time>`;
-    case "q":
+    case 'q':
       return html`<q ${spread(attrs)}>${content}</q>`;
 
     // Links: optional consumer attribute transform, then automatic
     // target="_blank" safety default.
-    case "a": {
+    case 'a': {
       let linkAttrs: Record<string, string> = attrs;
       const linkRenderer = options.customRenderers?.link;
       if (linkRenderer && node) {
         const result = linkRenderer({
-          href: attrs.href ?? "",
+          href: attrs.href ?? '',
           title: attrs.title,
           text: extractText(node),
           attributes: { ...attrs },
@@ -585,7 +583,7 @@ function renderWithStaticTag(
         }
       }
       if (!linkAttrs.target) {
-        linkAttrs.target = "_blank";
+        linkAttrs.target = '_blank';
       }
       return html`<a ${spread(linkAttrs)}>${content}</a>`;
     }
@@ -594,12 +592,12 @@ function renderWithStaticTag(
     // how `codeBlock` wins over plugin `fence` rules); otherwise
     // plugin-introduced wrappers (e.g. image-figures) route through
     // `shouldDelegateToPluginRule` before falling back to a plain `<img>`.
-    case "img": {
+    case 'img': {
       const imageRenderer = options.customRenderers?.image;
       if (imageRenderer && node) {
         let imgAttrs: Record<string, string> = attrs;
         const result = imageRenderer({
-          src: attrs.src ?? "",
+          src: attrs.src ?? '',
           alt: attrs.alt,
           title: attrs.title,
           attributes: { ...attrs },
@@ -623,19 +621,19 @@ function renderWithStaticTag(
           node,
           options.md,
           options.sanitize,
-          options,
+          options
         );
       }
       return html`<img ${spread(attrs)} />`;
     }
 
     // Tables with Carbon component and streaming support
-    case "table": {
+    case 'table': {
       if (!node) {
         return html`<div>Error: Missing table data</div>`;
       }
       const slotName = options.customRenderers?.table
-        ? slotNameFor("table", token, options)
+        ? slotNameFor('table', token, options)
         : undefined;
       return renderTable(
         token,
@@ -643,7 +641,7 @@ function renderWithStaticTag(
         attrs,
         options,
         renderTokenTree,
-        slotName,
+        slotName
       );
     }
 
@@ -658,7 +656,7 @@ function renderWithStaticTag(
           node,
           options.md,
           options.sanitize,
-          options,
+          options
         );
       }
       return html`<div ${spread(attrs)}>${content}</div>`;
