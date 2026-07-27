@@ -26,13 +26,13 @@
  * Start reading at: the module-scope constants, then `App()`.
  */
 
-import "@carbon/styles/css/styles.css";
-import { ChatCustomElement, ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import React, { useCallback, useMemo } from "react";
-import { createRoot } from "react-dom/client";
+import '@carbon/styles/css/styles.css';
+import { ChatCustomElement, ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import React, { useCallback, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { createCustomSendMessage } from "./customSendMessage";
-import { createHistoryExtension, createHistoryState } from "./historyExtension";
+import { createCustomSendMessage } from './customSendMessage';
+import { createHistoryExtension, createHistoryState } from './historyExtension';
 
 // These three constants are created at module scope — outside the component —
 // so their references are stable across re-renders. Recreating `historyState`
@@ -67,7 +67,7 @@ function App() {
         tiptap: { extensions: [historyExtension] },
       },
     }),
-    [],
+    []
   );
 
   return (
@@ -79,6 +79,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

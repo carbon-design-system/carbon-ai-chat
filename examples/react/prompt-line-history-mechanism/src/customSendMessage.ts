@@ -29,9 +29,9 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import type { HistoryState } from "./historyExtension";
+import type { HistoryState } from './historyExtension';
 
 const WELCOME_TEXT = `Welcome! This example demonstrates shell-style message history in the chat input.
 
@@ -49,7 +49,7 @@ function createCustomSendMessage(state: HistoryState) {
   return async function customSendMessage(
     request: MessageRequest,
     _requestOptions: CustomSendMessageOptions,
-    instance: ChatInstance,
+    instance: ChatInstance
   ) {
     const text = request.input.text?.trim();
 

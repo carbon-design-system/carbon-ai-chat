@@ -23,8 +23,8 @@
  * Start reading at: `HistoryState`, then `createHistoryExtension`.
  */
 
-import { getRawText, textToDoc, type ChatInstance } from "@carbon/ai-chat";
-import { Extension } from "@tiptap/core";
+import { getRawText, textToDoc, type ChatInstance } from '@carbon/ai-chat';
+import { Extension } from '@tiptap/core';
 
 /**
  * Shared mutable state that flows between the keyboard extension and the
@@ -46,7 +46,7 @@ interface HistoryState {
 }
 
 function createHistoryState(): HistoryState {
-  return { entries: [], cursor: -1, draft: "", instance: null };
+  return { entries: [], cursor: -1, draft: '', instance: null };
 }
 
 /**
@@ -71,7 +71,7 @@ function createHistoryState(): HistoryState {
  */
 function createHistoryExtension(state: HistoryState): Extension {
   return Extension.create({
-    name: "historyNavigation",
+    name: 'historyNavigation',
 
     addKeyboardShortcuts() {
       return {
@@ -106,7 +106,7 @@ function createHistoryExtension(state: HistoryState): Extension {
           state.cursor = Math.min(state.cursor + 1, state.entries.length - 1);
 
           state.instance?.input.updateContent(() =>
-            textToDoc(state.entries[state.entries.length - 1 - state.cursor]),
+            textToDoc(state.entries[state.entries.length - 1 - state.cursor])
           );
 
           return true;
@@ -137,7 +137,7 @@ function createHistoryExtension(state: HistoryState): Extension {
             state.instance?.input.updateContent(() => textToDoc(state.draft));
           } else {
             state.instance?.input.updateContent(() =>
-              textToDoc(state.entries[state.entries.length - 1 - state.cursor]),
+              textToDoc(state.entries[state.entries.length - 1 - state.cursor])
             );
           }
 

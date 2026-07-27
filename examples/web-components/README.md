@@ -525,21 +525,21 @@ A keyboard-only Tiptap extension intercepts `ArrowUp` / `ArrowDown` in the chat 
 <details>
 <summary>APIs and props demonstrated</summary>
 
-| Symbol                         | Kind               | Role in this example                                                                          |
-| ------------------------------ | ------------------ | --------------------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`  | custom element     | Mounts the chat UI as a fullscreen surface.                                                   |
-| `PublicConfig`                 | type               | Types the config object bound to the element's properties.                                    |
-| `ChatInstance`                 | type               | Provides `instance.input.updateContent` to write text into the editor.                        |
-| `Extension.create`             | `@tiptap/core` API | Authors the keyboard-only history extension registered on the chat input.                     |
-| `addKeyboardShortcuts`         | `@tiptap/core` API | Hook where `ArrowUp` / `ArrowDown` handlers are declared.                                     |
-| `instance.input.updateContent` | API                | Writes recalled history entries (or the saved draft) back into the editor.                    |
-| `textToDoc`                    | utility            | Converts a plain-text string into a `JSONContent` doc suitable for `updateContent`.           |
-| `getRawText`                   | utility            | Extracts the plain-text string from the editor's `JSONContent` to save the draft.             |
-| `.onBeforeRender`              | property           | Callback that fires once with the `ChatInstance` so `historyState.instance` can be populated. |
-| `.input` (`tiptap.extensions`) | property           | Registers the host-authored history `Extension` on the chat input.                            |
-| `.layout` (`showFrame`)        | property           | Hides the default frame so the chat fills the viewport.                                       |
-| `.openChatByDefault`           | property           | Mounts straight into the conversation, no launcher.                                           |
-| `.messaging.customSendMessage` | property           | Captures sent text into `state.entries` and provides the mock response.                       |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI as a fullscreen surface. |
+| `PublicConfig` | type | Types the config object bound to the element's properties. |
+| `ChatInstance` | type | Provides `instance.input.updateContent` to write text into the editor. |
+| `Extension.create` | `@tiptap/core` API | Authors the keyboard-only history extension registered on the chat input. |
+| `addKeyboardShortcuts` | `@tiptap/core` API | Hook where `ArrowUp` / `ArrowDown` handlers are declared. |
+| `instance.input.updateContent` | API | Writes recalled history entries (or the saved draft) back into the editor. |
+| `textToDoc` | utility | Converts a plain-text string into a `JSONContent` doc suitable for `updateContent`. |
+| `getRawText` | utility | Extracts the plain-text string from the editor's `JSONContent` to save the draft. |
+| `.onBeforeRender` | property | Callback that fires once with the `ChatInstance` so `historyState.instance` can be populated. |
+| `.input` (`tiptap.extensions`) | property | Registers the host-authored history `Extension` on the chat input. |
+| `.layout` (`showFrame`) | property | Hides the default frame so the chat fills the viewport. |
+| `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
+| `.messaging.customSendMessage` | property | Captures sent text into `state.entries` and provides the mock response. |
 
 </details>
 

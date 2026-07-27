@@ -26,14 +26,14 @@
  * Start reading at: the module-scope constants, then the `Demo` class.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/styles/css/styles.css";
-import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/styles/css/styles.css';
+import { type ChatInstance, type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { createCustomSendMessage } from "./customSendMessage";
-import { createHistoryExtension, createHistoryState } from "./historyExtension";
+import { createCustomSendMessage } from './customSendMessage';
+import { createHistoryExtension, createHistoryState } from './historyExtension';
 
 // These three constants are created at module scope — outside the component —
 // so their references are stable across re-renders. Recreating `historyState`
@@ -59,7 +59,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -80,8 +80,7 @@ export class Demo extends LitElement {
         .input=${config.input}
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
-        .onBeforeRender=${this.onBeforeRender}
-      ></cds-aichat-custom-element>
+        .onBeforeRender=${this.onBeforeRender}></cds-aichat-custom-element>
     `;
   }
 }
