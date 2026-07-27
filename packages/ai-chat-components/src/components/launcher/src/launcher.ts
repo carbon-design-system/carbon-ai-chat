@@ -146,11 +146,7 @@ class CDSAIChatLauncher extends LitElement {
    * Moves focus to the launcher button.
    */
   requestFocus() {
-    const button = this.shadowRoot?.querySelector<HTMLElement>(
-      'cds-aichat-button[tabindex="-1"]',
-    );
-
-    button?.focus();
+    this.shadowRoot?.querySelector<HTMLElement>("cds-aichat-button")?.focus();
   }
 
   render() {
