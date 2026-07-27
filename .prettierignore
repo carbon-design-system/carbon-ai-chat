@@ -4,6 +4,9 @@ dist
 umd
 node_modules
 *.snap.js
+.claude
+.bob
+references
 
 packages/ai-chat/tasks/**
 
