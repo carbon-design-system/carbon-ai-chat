@@ -14,9 +14,9 @@ import type {
   TriggerSuggestionConfig,
   AutocompleteConfig,
   StartersConfig,
-} from "../../../types/config/InputConfig";
-import { resolvePromptLineMode } from "./promptLineMode";
-import { useInputExtensions } from "../../hooks/useInputExtensions";
+} from '../../../types/config/InputConfig';
+import { resolvePromptLineMode } from './promptLineMode';
+import { useInputExtensions } from '../../hooks/useInputExtensions';
 
 interface UseRichSurfaceArgs {
   mention: TriggerSuggestionConfig | undefined;

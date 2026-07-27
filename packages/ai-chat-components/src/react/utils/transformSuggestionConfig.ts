@@ -70,7 +70,7 @@ export function transformSuggestionConfig<
 
 /** Returns a copy of the starter config with item icons normalized. */
 export function transformStarterItems(
-  starters: StartersConfig | undefined,
+  starters: StartersConfig | undefined
 ): StartersConfig | undefined {
   if (!starters) {
     return starters;

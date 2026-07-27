@@ -10,7 +10,7 @@
 import type {
   InputConfig,
   StartersConfig,
-} from "../../../types/config/InputConfig";
+} from '../../../types/config/InputConfig';
 
 /**
  * Which prompt-line surface a given input config requires.
@@ -46,7 +46,7 @@ export function resolvePromptLineMode(
     Boolean(input?.autocomplete) ||
     startersHasItems(input?.starters) ||
     (input?.tiptap?.extensions?.length ?? 0) > 0;
-  return hasAdvancedFeature ? "rich" : "lite";
+  return hasAdvancedFeature ? 'rich' : 'lite';
 }
 
 function startersHasItems(starters: StartersConfig | undefined): boolean {

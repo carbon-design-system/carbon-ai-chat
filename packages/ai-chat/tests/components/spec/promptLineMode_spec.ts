@@ -26,12 +26,12 @@ describe('resolvePromptLineMode', () => {
       resolvePromptLineMode({ mention: { trigger: '@', items: [] } })
     ).toBe('rich');
     expect(
-      resolvePromptLineMode({ command: { trigger: "/", items: [] } }),
-    ).toBe("rich");
-    expect(resolvePromptLineMode({ autocomplete: { items: [] } })).toBe("rich");
+      resolvePromptLineMode({ command: { trigger: '/', items: [] } })
+    ).toBe('rich');
+    expect(resolvePromptLineMode({ autocomplete: { items: [] } })).toBe('rich');
     expect(
-      resolvePromptLineMode({ starters: { items: [{ id: "a", label: "A" }] } }),
-    ).toBe("rich");
+      resolvePromptLineMode({ starters: { items: [{ id: 'a', label: 'A' }] } })
+    ).toBe('rich');
   });
 
   it('derives rich for host tiptap.extensions — they may add typing-driven behavior', () => {
@@ -40,9 +40,9 @@ describe('resolvePromptLineMode', () => {
     ).toBe('rich');
   });
 
-  it("treats empty advanced collections as lite", () => {
-    expect(resolvePromptLineMode({ starters: { items: [] } })).toBe("lite");
-    expect(resolvePromptLineMode({ tiptap: { extensions: [] } })).toBe("lite");
-    expect(resolvePromptLineMode({ tiptap: {} })).toBe("lite");
+  it('treats empty advanced collections as lite', () => {
+    expect(resolvePromptLineMode({ starters: { items: [] } })).toBe('lite');
+    expect(resolvePromptLineMode({ tiptap: { extensions: [] } })).toBe('lite');
+    expect(resolvePromptLineMode({ tiptap: {} })).toBe('lite');
   });
 });

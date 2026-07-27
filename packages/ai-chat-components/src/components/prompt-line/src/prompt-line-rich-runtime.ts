@@ -83,10 +83,10 @@ class RichController implements PromptLineController {
     this._testId = init.testId;
     this._disabled = init.disabled;
 
-    host.setAttribute("role", "textbox");
-    host.setAttribute("aria-multiline", "true");
-    host.setAttribute("spellcheck", "true");
-    host.setAttribute("tabindex", "-1");
+    host.setAttribute('role', 'textbox');
+    host.setAttribute('aria-multiline', 'true');
+    host.setAttribute('spellcheck', 'true');
+    host.setAttribute('tabindex', '-1');
     if (init.ariaLabel) {
       host.setAttribute('aria-label', init.ariaLabel);
     }
@@ -327,7 +327,7 @@ class RichController implements PromptLineController {
     }
 
     const wasKeyboardFocus = this._editor.view.dom.classList.contains(
-      PM_KEYBOARD_FOCUS_CLASS,
+      PM_KEYBOARD_FOCUS_CLASS
     );
     if (wasFocused) {
       this._focusFromMouse = !wasKeyboardFocus;

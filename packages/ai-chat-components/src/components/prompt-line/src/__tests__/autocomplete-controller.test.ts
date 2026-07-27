@@ -38,8 +38,8 @@ const COMMANDS: SuggestionItem[] = [
 
 const STARTERS: StartersConfig = {
   items: [
-    { id: "hello", label: "Say hello" },
-    { id: "intro", label: "Introduce yourself" },
+    { id: 'hello', label: 'Say hello' },
+    { id: 'intro', label: 'Introduce yourself' },
   ],
 };
 
@@ -274,7 +274,7 @@ describe('AutocompleteController', () => {
     });
     await flush();
     controller.select(STARTERS.items[0]);
-    expect(editor.rawValue).to.equal("Say hello");
+    expect(editor.rawValue).to.equal('Say hello');
     // onStarterSelected receives the editor's rawValue projection — our
     // stub's `projectRawValue` will read an empty doc, so we only verify
     // the callback fired.
@@ -559,7 +559,7 @@ describe('AutocompleteController', () => {
     expect(lastEmittedAfterDestroy).to.equal(false);
   });
 
-  describe("starters isOn flag", () => {
+  describe('starters isOn flag', () => {
     function makeStarterPromptLineStub() {
       const storage: { carbonStarterTrigger: { isOn: boolean } } = {
         carbonStarterTrigger: { isOn: true },
@@ -587,7 +587,7 @@ describe('AutocompleteController', () => {
       return { promptLine, storage, getDispatchCount: () => dispatchCount };
     }
 
-    it("isOn:false suppresses the trigger while empty and focused", async () => {
+    it('isOn:false suppresses the trigger while empty and focused', async () => {
       const controller = new AutocompleteController({
         starters: { ...STARTERS, isOn: false },
         onChange: () => {},
@@ -604,7 +604,7 @@ describe('AutocompleteController', () => {
       expect(getDispatchCount()).to.equal(1);
     });
 
-    it("toggling isOn false → true writes to storage and dispatches", () => {
+    it('toggling isOn false → true writes to storage and dispatches', () => {
       const controller = new AutocompleteController({
         starters: { ...STARTERS, isOn: false },
         onChange: () => {},
@@ -620,7 +620,7 @@ describe('AutocompleteController', () => {
       expect(getDispatchCount()).to.equal(1);
     });
 
-    it("toggling isOn true → true (no change) does not dispatch", () => {
+    it('toggling isOn true → true (no change) does not dispatch', () => {
       const controller = new AutocompleteController({
         starters: { ...STARTERS, isOn: true },
         onChange: () => {},
@@ -636,7 +636,7 @@ describe('AutocompleteController', () => {
       expect(getDispatchCount()).to.equal(0);
     });
 
-    it("isOn:undefined is treated as true (same as omitting the flag)", () => {
+    it('isOn:undefined is treated as true (same as omitting the flag)', () => {
       const controller = new AutocompleteController({
         starters: { ...STARTERS, isOn: false }, // starts false
         onChange: () => {},
@@ -653,8 +653,8 @@ describe('AutocompleteController', () => {
     });
   });
 
-  describe("starters renderCustomList", () => {
-    it("emits the starters renderCustomList through state when trigger type is starter", async () => {
+  describe('starters renderCustomList', () => {
+    it('emits the starters renderCustomList through state when trigger type is starter', async () => {
       let last: any = null;
       const renderCustomList = (_props: CustomListProps) => null;
       const controller = new AutocompleteController({
@@ -664,27 +664,27 @@ describe('AutocompleteController', () => {
         },
       });
       controller.handleTriggerChange({
-        type: "starter",
-        query: "",
+        type: 'starter',
+        query: '',
         triggerOffset: 0,
       });
       await flush();
       expect(last.renderCustomList).to.equal(renderCustomList);
     });
 
-    it("does not leak starters renderCustomList when the active trigger is a different type", async () => {
+    it('does not leak starters renderCustomList when the active trigger is a different type', async () => {
       let last: any = null;
       const starterRender = (_props: CustomListProps) => null;
       const controller = new AutocompleteController({
         starters: { ...STARTERS, renderCustomList: starterRender },
-        mention: { trigger: "@", items: USERS },
+        mention: { trigger: '@', items: USERS },
         onChange: (state) => {
           last = state;
         },
       });
       controller.handleTriggerChange({
-        type: "mention",
-        query: "",
+        type: 'mention',
+        query: '',
         triggerOffset: 0,
       });
       await flush();
@@ -693,8 +693,8 @@ describe('AutocompleteController', () => {
     });
   });
 
-  describe("editor identity across isOn flip", () => {
-    it("does not recreate the editor when isOn is toggled", () => {
+  describe('editor identity across isOn flip', () => {
+    it('does not recreate the editor when isOn is toggled', () => {
       const controller = new AutocompleteController({
         starters: { ...STARTERS, isOn: true },
         onChange: () => {},

@@ -17,7 +17,7 @@ import type {
   TriggerSuggestionConfig,
   AutocompleteConfig,
   StartersConfig,
-} from "../../types/config/InputConfig";
+} from '../../types/config/InputConfig';
 import {
   getBuildCarbonExtensionsIfLoaded,
   loadBuildCarbonExtensions,
@@ -75,7 +75,7 @@ function useInputExtensions({
   const normalizedStarters = useMemo(
     () => transformStarterItems(starters),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- starters object identity is intentionally excluded; only the consumed fields matter
-    [starters?.items, starters?.renderCustomList],
+    [starters?.items, starters?.renderCustomList]
   );
 
   // Re-render once the builder chunk resolves (cold rich path); the synchronous

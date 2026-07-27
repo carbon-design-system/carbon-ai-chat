@@ -175,7 +175,7 @@ export interface AutocompleteConfig extends BaseSuggestionConfig {
  */
 export interface StartersConfig extends Pick<
   BaseSuggestionConfig,
-  "renderCustomList"
+  'renderCustomList'
 > {
   /** The starter prompts to display. */
   items: SuggestionItem[];

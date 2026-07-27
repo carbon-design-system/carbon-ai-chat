@@ -27,15 +27,15 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT =
-  "Welcome! Select a conversation starter above the input or type your own message to get started.";
+  'Welcome! Select a conversation starter above the input or type your own message to get started.';
 
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const text = request.input.text?.trim();
 

@@ -20,21 +20,21 @@
 
 ## APIs and props demonstrated
 
-| Symbol                        | Kind           | Role in this example                                                                 |
-| ----------------------------- | -------------- | ------------------------------------------------------------------------------------ |
-| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI at the fullscreen baseline.                                       |
-| `messaging.customSendMessage` | property       | Mock backend that echoes the user's message.                                         |
-| `layout.showFrame`            | property       | Hides the default frame so the chat fills the host.                                  |
-| `openChatByDefault`           | property       | Mounts straight into the conversation, no launcher.                                  |
-| `input.expanded`              | property       | Switches the prompt line to the expanded (two-row) layout.                           |
-| `input.starters`              | property       | Shows the starter list on empty-editor focus; auto-sends on selection.               |
-| `starters.items`              | property       | Static list of conversation-starter prompts.                                         |
-| `starters.renderCustomList`   | property       | Imperatively creates `<cds-aichat-autocomplete>` with a "Prompt suggestions" header. |
-| `starters.isOn`               | property       | Toggles the starters list on/off without removing the config.                        |
-| `input.actions`               | property       | Single toggle action that enables or disables the starters list.                     |
-| `<cds-aichat-autocomplete>`   | custom element | Renders the starter dropdown with `headerConfig`.                                    |
-| `onBeforeRender`              | property       | Subscribes to `cds-aichat-prompt-change` to track editor content.                    |
-| `cds-aichat-prompt-change`    | event          | Fires when the editor content changes; used to disable the toggle when not empty.    |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI at the fullscreen baseline. |
+| `messaging.customSendMessage` | property | Mock backend that echoes the user's message. |
+| `layout.showFrame` | property | Hides the default frame so the chat fills the host. |
+| `openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
+| `input.expanded` | property | Switches the prompt line to the expanded (two-row) layout. |
+| `input.starters` | property | Shows the starter list on empty-editor focus; auto-sends on selection. |
+| `starters.items` | property | Static list of conversation-starter prompts. |
+| `starters.renderCustomList` | property | Imperatively creates `<cds-aichat-autocomplete>` with a "Prompt suggestions" header. |
+| `starters.isOn` | property | Toggles the starters list on/off without removing the config. |
+| `input.actions` | property | Single toggle action that enables or disables the starters list. |
+| `<cds-aichat-autocomplete>` | custom element | Renders the starter dropdown with `headerConfig`. |
+| `onBeforeRender` | property | Subscribes to `cds-aichat-prompt-change` to track editor content. |
+| `cds-aichat-prompt-change` | event | Fires when the editor content changes; used to disable the toggle when not empty. |
 
 ## Run it
 

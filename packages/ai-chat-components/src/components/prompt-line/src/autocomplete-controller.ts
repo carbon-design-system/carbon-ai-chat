@@ -13,11 +13,11 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 
-import "../../autocomplete/src/autocomplete.js";
-import type { StarterTriggerStorage } from "./tiptap/carbon-starter-trigger.js";
-import { resolveShowTriggerInChip } from "./tiptap/carbon-mention.js";
-import { projectRawValue } from "./tiptap/json-utils.js";
-import type PromptLineElement from "./prompt-line.js";
+import '../../autocomplete/src/autocomplete.js';
+import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
+import { resolveShowTriggerInChip } from './tiptap/carbon-mention.js';
+import { projectRawValue } from './tiptap/json-utils.js';
+import type PromptLineElement from './prompt-line.js';
 import type {
   AutocompleteConfig,
   CustomListProps,
@@ -143,7 +143,7 @@ export class AutocompleteController {
     if ('autocomplete' in next) {
       this._autocomplete = next.autocomplete;
     }
-    if ("starters" in next) {
+    if ('starters' in next) {
       const prevIsOn = this._starters?.isOn !== false;
       const isOn = next.starters?.isOn !== false;
       this._starters = next.starters;
@@ -462,7 +462,7 @@ export class AutocompleteController {
   private async _resolveItems(
     trigger: TriggerChangeEventDetail
   ): Promise<SuggestionItem[]> {
-    if (trigger.type === "starter") {
+    if (trigger.type === 'starter') {
       return this._starters?.items ?? [];
     }
     const config =
@@ -485,7 +485,7 @@ export class AutocompleteController {
     if (!trigger) {
       return undefined;
     }
-    if (trigger.type === "starter") {
+    if (trigger.type === 'starter') {
       return this._starters?.renderCustomList;
     }
     const config =

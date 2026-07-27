@@ -13,9 +13,9 @@ import type {
   TriggerSuggestionConfig,
   AutocompleteConfig,
   StartersConfig,
-} from "../../types/config/InputConfig";
-import type { ToolbarAction } from "../../types/config/HeaderConfig";
-import { useServiceManager } from "./useServiceManager";
+} from '../../types/config/InputConfig';
+import type { ToolbarAction } from '../../types/config/HeaderConfig';
+import { useServiceManager } from './useServiceManager';
 
 interface InputConfigSlice {
   mention: TriggerSuggestionConfig | undefined;
@@ -43,7 +43,7 @@ function useInputConfig(): InputConfigSlice {
   const [command, setCommand] = useState(() => initial?.command);
   const [autocomplete, setAutocomplete] = useState(() => initial?.autocomplete);
   const [starters, setStarters] = useState<StartersConfig | undefined>(
-    () => initial?.starters,
+    () => initial?.starters
   );
   const [hostExtensions, setHostExtensions] = useState(
     () => initial?.tiptap?.extensions

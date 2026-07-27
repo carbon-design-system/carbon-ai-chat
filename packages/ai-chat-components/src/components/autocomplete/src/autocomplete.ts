@@ -196,9 +196,9 @@ class AutocompleteElement extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener("keydown", this._handleKeydown);
-    this._listboxEl?.removeEventListener("mousedown", this._handleMousedown);
-    document.removeEventListener("click", this._handleClickOutside);
+    this.removeEventListener('keydown', this._handleKeydown);
+    this._listboxEl?.removeEventListener('mousedown', this._handleMousedown);
+    document.removeEventListener('click', this._handleClickOutside);
     this._announcer.disconnect();
     if (this._moveAnnouncePending !== null) {
       clearTimeout(this._moveAnnouncePending);
@@ -212,9 +212,9 @@ class AutocompleteElement extends LitElement {
     );
     this._announcer.connect(Array.from(regions));
     this._listboxEl = this.renderRoot.querySelector<HTMLElement>(
-      `.${blockClass}__items`,
+      `.${blockClass}__items`
     );
-    this._listboxEl?.addEventListener("mousedown", this._handleMousedown);
+    this._listboxEl?.addEventListener('mousedown', this._handleMousedown);
   }
 
   updated(changedProperties: Map<string, any>) {

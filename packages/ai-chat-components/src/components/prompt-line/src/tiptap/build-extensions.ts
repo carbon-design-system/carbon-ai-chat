@@ -54,7 +54,7 @@ export function buildCarbonExtensions(
   }
   if (configs.starters?.items.length) {
     out.push(
-      carbonStarterTrigger(configs.starters.items, configs.starters.isOn),
+      carbonStarterTrigger(configs.starters.items, configs.starters.isOn)
     );
   }
   return out;

@@ -39,24 +39,24 @@ import {
   CustomListProps,
   PublicConfig,
   StartersConfig,
-} from "@carbon/ai-chat";
-import CDSAIChatAutocomplete from "@carbon/ai-chat-components/es/react/autocomplete.js";
-import { Chat, ChatOff } from "@carbon/icons-react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import CDSAIChatAutocomplete from '@carbon/ai-chat-components/es/react/autocomplete.js';
+import { Chat, ChatOff } from '@carbon/icons-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 /**
  * Example conversation-starter prompts. Replace with a dynamic source
  * (e.g. a fetch call) for production use.
  */
 const STARTER_ITEMS = [
-  { id: "starter-1", label: "Generate a chart for key metrics" },
-  { id: "starter-2", label: "Convert my question into an SQL query" },
-  { id: "starter-3", label: "Summarize recent High and Critical incidents" },
-  { id: "starter-4", label: "Generate test data with similar schema" },
+  { id: 'starter-1', label: 'Generate a chart for key metrics' },
+  { id: 'starter-2', label: 'Convert my question into an SQL query' },
+  { id: 'starter-3', label: 'Summarize recent High and Critical incidents' },
+  { id: 'starter-4', label: 'Generate test data with similar schema' },
 ];
 
 /**
@@ -71,7 +71,7 @@ function renderCustomList(props: CustomListProps) {
   return (
     <CDSAIChatAutocomplete
       items={items}
-      headerConfig={{ showHeader: true, title: "Prompt suggestions" }}
+      headerConfig={{ showHeader: true, title: 'Prompt suggestions' }}
       attached={false}
       enableSendButton={false}
       className="starter-list"
@@ -98,16 +98,16 @@ function App() {
       const { rawValue } = (e as CustomEvent<{ rawValue: string }>).detail;
       setInputHasText(rawValue.length > 0);
     };
-    el.addEventListener("cds-aichat-prompt-change", onPromptChange);
+    el.addEventListener('cds-aichat-prompt-change', onPromptChange);
     return () => {
-      el.removeEventListener("cds-aichat-prompt-change", onPromptChange);
+      el.removeEventListener('cds-aichat-prompt-change', onPromptChange);
     };
   }, []);
 
   const starters: StartersConfig = useMemo(
     () => ({ items: STARTER_ITEMS, renderCustomList }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   const config: PublicConfig = useMemo(
@@ -139,8 +139,8 @@ function App() {
         actions: [
           {
             text: startersEnabled
-              ? "Hide conversation starters"
-              : "Show conversation starters",
+              ? 'Hide conversation starters'
+              : 'Show conversation starters',
             icon: startersEnabled ? ChatOff : Chat,
             onClick: () => setStartersEnabled((prev) => !prev),
             disabled: inputHasText,
@@ -148,7 +148,7 @@ function App() {
         ],
       },
     }),
-    [starters, startersEnabled, inputHasText],
+    [starters, startersEnabled, inputHasText]
   );
 
   return (
@@ -158,6 +158,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

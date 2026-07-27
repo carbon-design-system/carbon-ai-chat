@@ -36,28 +36,28 @@
  * Start reading at: `STARTER_ITEMS`, `config`, and the `Demo` class below.
  */
 
-import "@carbon/styles/css/styles.css";
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/ai-chat-components/es/components/autocomplete/src/autocomplete.js";
+import '@carbon/styles/css/styles.css';
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/ai-chat-components/es/components/autocomplete/src/autocomplete.js';
 
-import { type CustomListProps, type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { type CustomListProps, type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
-import Chat16 from "@carbon/icons/es/chat/16.js";
-import ChatOff16 from "@carbon/icons/es/chat--off/16.js";
+import Chat16 from '@carbon/icons/es/chat/16.js';
+import ChatOff16 from '@carbon/icons/es/chat--off/16.js';
 
 /**
  * The four conversation-starter prompts. Replace with a dynamic source
  * (e.g. a fetch call) for production use.
  */
 const STARTER_ITEMS = [
-  { id: "starter-1", label: "Generate a chart for key metrics" },
-  { id: "starter-2", label: "Convert my question into an SQL query" },
-  { id: "starter-3", label: "Summarize recent High and Critical incidents" },
-  { id: "starter-4", label: "Generate test data with similar schema" },
+  { id: 'starter-1', label: 'Generate a chart for key metrics' },
+  { id: 'starter-2', label: 'Convert my question into an SQL query' },
+  { id: 'starter-3', label: 'Summarize recent High and Critical incidents' },
+  { id: 'starter-4', label: 'Generate test data with similar schema' },
 ];
 
 /**
@@ -71,21 +71,21 @@ const STARTER_ITEMS = [
  * its own managed slot and forward keyboard events through it.
  */
 function renderStarterList({ items, onSelect, onDismiss }: CustomListProps) {
-  const starters = document.createElement("cds-aichat-autocomplete") as any;
+  const starters = document.createElement('cds-aichat-autocomplete') as any;
   starters.items = items;
-  starters.headerConfig = { showHeader: true, title: "Prompt suggestions" };
+  starters.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   starters.attached = false;
   starters.enableSendButton = false;
   starters.addEventListener(
-    "cds-aichat-autocomplete-select",
+    'cds-aichat-autocomplete-select',
     (e: CustomEvent<{ item: (typeof STARTER_ITEMS)[number] }>) =>
-      onSelect(e.detail.item),
+      onSelect(e.detail.item)
   );
-  starters.addEventListener("cds-aichat-autocomplete-dismiss", onDismiss);
+  starters.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
   return starters;
 }
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -148,8 +148,8 @@ export class Demo extends LitElement {
         actions: [
           {
             text: this.startersEnabled
-              ? "Hide conversation starters"
-              : "Show conversation starters",
+              ? 'Hide conversation starters'
+              : 'Show conversation starters',
             icon: this.startersEnabled ? ChatOff16 : Chat16,
             onClick: () => {
               this.startersEnabled = !this.startersEnabled;
@@ -170,8 +170,7 @@ export class Demo extends LitElement {
         .layout=${cfg.layout}
         .openChatByDefault=${cfg.openChatByDefault}
         .input=${cfg.input}
-        @cds-aichat-prompt-change=${this._onPromptChange}
-      ></cds-aichat-custom-element>
+        @cds-aichat-prompt-change=${this._onPromptChange}></cds-aichat-custom-element>
     `;
   }
 }

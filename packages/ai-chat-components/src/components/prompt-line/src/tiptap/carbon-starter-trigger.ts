@@ -28,7 +28,7 @@ export interface StarterTriggerStorage {
 
 export function carbonStarterTrigger(
   initialItems: SuggestionItem[],
-  initialIsOn = true,
+  initialIsOn = true
 ): Extension {
   return Extension.create<unknown, StarterTriggerStorage>({
     name: 'carbonStarterTrigger',
