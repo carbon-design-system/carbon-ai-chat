@@ -1,47 +1,41 @@
 # History / Fullscreen
 
-`ChatCustomElement` configured as a full-screen host with the history feature
-enabled and a custom `historyPanelElement` for browsing conversations.
+`ChatCustomElement` configured as a full-screen host with the history feature enabled and a custom `historyPanelElement` for browsing conversations.
 
 ## What this example shows
 
-- Hosting the chat in a full-screen `ChatCustomElement` with
-  `layout.showFrame: false` and a max-width custom property.
+- Hosting the chat in a full-screen `ChatCustomElement` with `layout.showFrame: false` and a max-width custom property.
 - Enabling the built-in history panel via `history.isOn: true`.
-- Reacting to `STATE_CHANGE` events to track `customPanels.history.isMobile` for
-  responsive history UI.
+- Reacting to `STATE_CHANGE` events to track `customPanels.history.isMobile` for responsive history UI.
 - Rendering a custom history list into the `historyPanelElement` slot.
-- Swapping conversations using `instance.messaging.clearConversation()` and
-  `instance.messaging.insertHistory()`.
+- Swapping conversations using `instance.messaging.clearConversation()` and `instance.messaging.insertHistory()`.
 
 ## When to use this pattern
 
-- You want a full-screen chat experience (not a floating widget) with history
-  browsing.
+- You want a full-screen chat experience (not a floating widget) with history browsing.
 - You need a reference for responsive custom history panel UI.
-- You need to host the chat inside your own element while keeping built-in
-  history.
+- You need to host the chat inside your own element while keeping built-in history.
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Package / kind              | Role in this example                                  |
-| --------------------------------------------- | --------------------------- | ----------------------------------------------------- |
-| `ChatCustomElement`                           | `@carbon/ai-chat` component | Mounts the chat into a host element you style.        |
-| `PublicConfig`                                | `@carbon/ai-chat` type      | Types the config passed to `ChatCustomElement`.       |
-| `ChatInstance`                                | `@carbon/ai-chat` type      | Captured in `onBeforeRender`.                         |
-| `BusEventType`                                | `@carbon/ai-chat` enum      | Subscribes to `STATE_CHANGE`.                         |
-| `history.isOn`                                | config prop                 | Turns on the history panel.                           |
-| `layout.showFrame`                            | config prop                 | Disables the chat frame so it fills the host.         |
-| `layout.customProperties`                     | config prop                 | Sets `messages-max-width` for the full-screen layout. |
-| `openChatByDefault`                           | config prop                 | Opens the chat automatically on mount.                |
-| `messaging.customSendMessage`                 | config prop                 | Mock backend.                                         |
-| `messaging.customLoadHistory`                 | config prop                 | Mock history loader.                                  |
-| `className`                                   | component prop              | Host class name applied to the custom element.        |
-| `onBeforeRender`                              | component prop              | Captures the instance and subscribes to state.        |
-| `renderWriteableElements.historyPanelElement` | component prop              | React node rendered into the history panel slot.      |
-| `instance.getState`                           | instance method             | Reads `customPanels.history.isMobile`.                |
-| `instance.messaging.clearConversation`        | instance method             | Clears the conversation before insertion.             |
-| `instance.messaging.insertHistory`            | instance method             | Inserts the loaded history.                           |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config passed to `ChatCustomElement`. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured in `onBeforeRender`. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE`. |
+| `history.isOn` | config prop | Turns on the history panel. |
+| `layout.showFrame` | config prop | Disables the chat frame so it fills the host. |
+| `layout.customProperties` | config prop | Sets `messages-max-width` for the full-screen layout. |
+| `openChatByDefault` | config prop | Opens the chat automatically on mount. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `messaging.customLoadHistory` | config prop | Mock history loader. |
+| `className` | component prop | Host class name applied to the custom element. |
+| `onBeforeRender` | component prop | Captures the instance and subscribes to state. |
+| `renderWriteableElements.historyPanelElement` | component prop | React node rendered into the history panel slot. |
+| `instance.getState` | instance method | Reads `customPanels.history.isMobile`. |
+| `instance.messaging.clearConversation` | instance method | Clears the conversation before insertion. |
+| `instance.messaging.insertHistory` | instance method | Inserts the loaded history. |
 
 ## Chat history configuration
 
@@ -60,15 +54,11 @@ const config: PublicConfig = {
 With this default configuration:
 
 - **Desktop**: History panel starts open on the left side
-- **Mobile**: History panel starts closed; users access it via the mobile menu
-  in the header
-- **Mobile menu**: "New chat" and "View chats" options appear in the header on
-  small screens
-- **State behavior**: Resizing between desktop and mobile resets to the default
-  state for each mode
+- **Mobile**: History panel starts closed; users access it via the mobile menu in the header
+- **Mobile menu**: "New chat" and "View chats" options appear in the header on small screens
+- **State behavior**: Resizing between desktop and mobile resets to the default state for each mode
 
-This is the recommended setup if you want the standard chat history experience
-without custom controls.
+This is the recommended setup if you want the standard chat history experience without custom controls.
 
 ## Setting up chat history with external controls
 
@@ -96,13 +86,10 @@ const config: PublicConfig = {
 
 #### `history.showMobileMenu`
 
-- **Purpose**: Controls whether mobile menu options (New chat, View chats)
-  appear in the header
+- **Purpose**: Controls whether mobile menu options (New chat, View chats) appear in the header
 - **Default**: `true`
-- **Set to `false` when**: You're implementing external controls (like a custom
-  button) to toggle history
-- **Important**: If you're using external actions to control history visibility,
-  set this to `false` to prevent duplicate controls
+- **Set to `false` when**: You're implementing external controls (like a custom button) to toggle history
+- **Important**: If you're using external actions to control history visibility, set this to `false` to prevent duplicate controls
 
 #### `history.startClosed`
 
@@ -114,8 +101,7 @@ const config: PublicConfig = {
   - Resizing between modes resets to default state
 - **When `true`**:
   - Both desktop and mobile start closed
-  - User's open/closed state is preserved when resizing between desktop and
-    mobile
+  - User's open/closed state is preserved when resizing between desktop and mobile
   - Enables reliable external control via instance methods
 
 ### Controlling history panel visibility
@@ -149,9 +135,7 @@ if (historyPanel?.isOpen) {
 
 ### Complete example with external control
 
-See
-[`ChatHistoryExample.tsx`](../chat-history-fullscreen/src/ChatHistoryExample.tsx)
-for a full implementation. Key patterns:
+See [`ChatHistoryExample.tsx`](../chat-history-fullscreen/src/ChatHistoryExample.tsx) for a full implementation. Key patterns:
 
 ````typescript
 // 1. Configure history in PublicConfig

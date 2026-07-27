@@ -2,8 +2,7 @@
 
 ## Programmatic Configuration Mode
 
-Use `window.setChatConfig` to restart the demo with a supplied config instead of
-clicking through the sidebar.
+Use `window.setChatConfig` to restart the demo with a supplied config instead of clicking through the sidebar.
 
 ```javascript
 await window.setChatConfig({
@@ -14,17 +13,14 @@ await window.setChatConfig({
 });
 ```
 
-`setChatConfig` returns a Promise—always await it before interacting with the
-UI.
+`setChatConfig` returns a Promise—always await it before interacting with the UI.
 
 ## Browser Console Workflow
 
 - Navigate to `/?config=setChatConfig`
 - Paste the quick-start snippet above into DevTools
-- Wait for the promise to resolve before interacting; `window.chatInstance`
-  becomes available once the chat restarts
-- Call `setChatConfig` again any time you want to adjust options—the helper
-  tears down and rebuilds for you
+- Wait for the promise to resolve before interacting; `window.chatInstance` becomes available once the chat restarts
+- Call `setChatConfig` again any time you want to adjust options—the helper tears down and rebuilds for you
 
 Example tweaks:
 
@@ -95,14 +91,8 @@ test('updates header', async ({ page }) => {
 
 ## Helpers
 
-- `prepareDemoPage(page, { setChatConfig: true })` loads
-  `/?config=setChatConfig` and blocks analytics pop-ups
-- `destroyChatSession(page)` clears any existing widget between tests to prevent
-  state leaks
-- `waitForSetChatConfigApplied(page)` waits for React state updates after
-  `setChatConfig` calls (avoids arbitrary timeouts)
-- `openChatWindow(page)` keeps calling `changeView` until the main window opens
-  (handles async view state changes)
-- `waitForChatReady(page, { panelTestId })` waits for hydration spinner to
-  disappear and specified panel to appear; pass `PageObjectId.DISCLAIMER_PANEL`
-  when a disclaimer overlays the chat or `null` when the chat should stay closed
+- `prepareDemoPage(page, { setChatConfig: true })` loads `/?config=setChatConfig` and blocks analytics pop-ups
+- `destroyChatSession(page)` clears any existing widget between tests to prevent state leaks
+- `waitForSetChatConfigApplied(page)` waits for React state updates after `setChatConfig` calls (avoids arbitrary timeouts)
+- `openChatWindow(page)` keeps calling `changeView` until the main window opens (handles async view state changes)
+- `waitForChatReady(page, { panelTestId })` waits for hydration spinner to disappear and specified panel to appear; pass `PageObjectId.DISCLAIMER_PANEL` when a disclaimer overlays the chat or `null` when the chat should stay closed

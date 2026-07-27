@@ -11,13 +11,9 @@ import '@carbon/styles/css/styles.css';
 
 ### 2) Missing `@use '@carbon/react'` — components render unstyled
 
-`@use '@carbon/react'` is required to generate the actual component styles
-(button classes, tile styles, table markup, etc.). Without it, all Carbon
-components render completely unstyled.
+`@use '@carbon/react'` is required to generate the actual component styles (button classes, tile styles, table markup, etc.). Without it, all Carbon components render completely unstyled.
 
-Token imports (`spacing`, `theme`, `type`, `breakpoint`) are optional SCSS
-variable/mixin declarations — they emit **no compiled CSS** and are only needed
-if your custom SCSS uses those tokens.
+Token imports (`spacing`, `theme`, `type`, `breakpoint`) are optional SCSS variable/mixin declarations — they emit **no compiled CSS** and are only needed if your custom SCSS uses those tokens.
 
 ```scss
 /* ❌ Wrong — missing component styles; all Carbon components will render unstyled */
@@ -40,9 +36,7 @@ if your custom SCSS uses those tokens.
 
 ### 3) Including unnecessary token imports
 
-Token imports (`spacing`, `theme`, `type`, `breakpoint`) are **optional** — only
-include them if your custom SCSS uses those specific tokens. If you're only
-using Carbon components without custom SCSS, you don't need any token imports.
+Token imports (`spacing`, `theme`, `type`, `breakpoint`) are **optional** — only include them if your custom SCSS uses those specific tokens. If you're only using Carbon components without custom SCSS, you don't need any token imports.
 
 ```scss
 /* ✅ Minimum required — component styles only */
@@ -80,17 +74,12 @@ import { AirlineManageGates } from '@carbon/icons-react'; // queried "airline ma
 import { CharacterWholeNumber } from '@carbon/icons-react'; // queried "character whole number"
 ```
 
-Always query `code_search` with `filters.asset_type: "icon"` first and use the
-exact export name returned by MCP. If the name cannot be confirmed, tell the
-user.
+Always query `code_search` with `filters.asset_type: "icon"` first and use the exact export name returned by MCP. If the name cannot be confirmed, tell the user.
 
-**Import package differs by framework** — use `import_stmt` from the MCP
-response verbatim:
+**Import package differs by framework** — use `import_stmt` from the MCP response verbatim:
 
-- **React**: named export from `@carbon/icons-react` (e.g.
-  `import { AddComment } from '@carbon/icons-react'`)
-- **Web Components**: default export from `@carbon/icons` ES module (e.g.
-  `import AddComment from '@carbon/icons/es/add-comment/20.js'`)
+- **React**: named export from `@carbon/icons-react` (e.g. `import { AddComment } from '@carbon/icons-react'`)
+- **Web Components**: default export from `@carbon/icons` ES module (e.g. `import AddComment from '@carbon/icons/es/add-comment/20.js'`)
 
 ### 6) Additional imports (use as needed, not by default)
 
@@ -120,11 +109,9 @@ response verbatim:
   rel="stylesheet" />
 ```
 
-For **React SCSS projects** — no font CDN link is needed at all. IBM Plex is
-delivered automatically by the SCSS pipeline (`@use '@carbon/react'`).
+For **React SCSS projects** — no font CDN link is needed at all. IBM Plex is delivered automatically by the SCSS pipeline (`@use '@carbon/react'`).
 
-For **CDN/quick-start / Web Components (no bundler)** — use the IBM CDN
-exclusively:
+For **CDN/quick-start / Web Components (no bundler)** — use the IBM CDN exclusively:
 
 ```html
 <!-- ✅ Correct — IBM CDN for Plex fonts -->
@@ -197,10 +184,7 @@ import './styles.scss';
 
 ### 5) Using SCSS variables as runtime tokens in Web Component styles
 
-Carbon SCSS variables (`$spacing-*`, `$background`, etc.) resolve at **compile
-time** inside `.scss` files only. They are undefined in component `<style>`
-blocks, inline CSS, and any context outside the SCSS pipeline — producing
-zero-value or unstyled output with no error.
+Carbon SCSS variables (`$spacing-*`, `$background`, etc.) resolve at **compile time** inside `.scss` files only. They are undefined in component `<style>` blocks, inline CSS, and any context outside the SCSS pipeline — producing zero-value or unstyled output with no error.
 
 ```css
 /* ❌ Wrong — $spacing-09 is undefined at runtime; renders as nothing */
@@ -227,13 +211,11 @@ Common token mappings:
 | `$text-primary`     | `var(--cds-text-primary)`     |
 | `$border-subtle-00` | `var(--cds-border-subtle-00)` |
 
-CSS custom properties are available whenever Carbon CSS is loaded (SCSS pipeline
-or `@carbon/styles/css/styles.css`).
+CSS custom properties are available whenever Carbon CSS is loaded (SCSS pipeline or `@carbon/styles/css/styles.css`).
 
 ### 6) Using `<cds-row>` or treating the WC grid as a three-element system
 
-`<cds-row>` is **not** a registered Carbon Web Component. Using it wraps columns
-in an unknown element that collapses the entire layout.
+`<cds-row>` is **not** a registered Carbon Web Component. Using it wraps columns in an unknown element that collapses the entire layout.
 
 ```html
 <!-- ❌ Wrong — cds-row does not exist; layout will collapse -->
@@ -278,9 +260,7 @@ Do not use the WC element approach unless the user explicitly requests it.
 
 ### 11) Hardcoding `margin-top` to compensate for a fixed Header
 
-Carbon's `Header` is `position: fixed` — it is removed from document flow.
-Content underneath will be hidden behind the header unless explicit top offset
-is applied.
+Carbon's `Header` is `position: fixed` — it is removed from document flow. Content underneath will be hidden behind the header unless explicit top offset is applied.
 
 ```jsx
 // ❌ Wrong — hardcoded pixel offset; breaks on custom header heights and is not Carbon
@@ -303,9 +283,7 @@ import { Content } from '@carbon/react';
 <Content>{/* page content here */}</Content>;
 ```
 
-`Content` is part of the UIShell layout family (`@carbon/react`). It is the only
-approved way to offset content below a Carbon `Header`. Never substitute a
-hardcoded pixel value regardless of how the agent frames it.
+`Content` is part of the UIShell layout family (`@carbon/react`). It is the only approved way to offset content below a Carbon `Header`. Never substitute a hardcoded pixel value regardless of how the agent frames it.
 
 ---
 
@@ -325,14 +303,9 @@ code_search({
 code_search({ query: 'modal default', filters: { component_type: 'React' } });
 ```
 
-The words `"react"` and `"web components"` in `code_search` query text trigger
-AI Chat code intent detection. Every query pass is then routed to the AI Chat
-code index, regardless of `component_type` or `component_id` filters. The
-component will never be found.
+The words `"react"` and `"web components"` in `code_search` query text trigger AI Chat code intent detection. Every query pass is then routed to the AI Chat code index, regardless of `component_type` or `component_id` filters. The component will never be found.
 
-**Rule:** Express the framework exclusively via `filters.component_type`. Keep
-query text to component names and variant descriptors only. Include `"ai chat"`
-only when AI Chat example files are the actual goal.
+**Rule:** Express the framework exclusively via `filters.component_type`. Keep query text to component names and variant descriptors only. Include `"ai chat"` only when AI Chat example files are the actual goal.
 
 ### 10) Using `example` instead of `example_clean` for component JSX
 
@@ -344,6 +317,4 @@ const code = variant.example;
 const code = variant.example_clean;
 ```
 
-Exception: for **icon and pictogram** results, use `source.example` — icon
-sources do not have `variants[]` and their `example` field is preserved
-verbatim.
+Exception: for **icon and pictogram** results, use `source.example` — icon sources do not have `variants[]` and their `example` field is preserved verbatim.

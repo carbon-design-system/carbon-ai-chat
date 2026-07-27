@@ -1,7 +1,6 @@
 # indexer-contract.md — examples README format
 
-Every example README must follow this structure so the repo indexer can parse
-and display it. Validation runs as part of `ci-check`.
+Every example README must follow this structure so the repo indexer can parse and display it. Validation runs as part of `ci-check`.
 
 ## Required sections (in order)
 
@@ -36,17 +35,16 @@ Three-column table — Symbol / Package / kind / Role in example:
 ```markdown
 ## APIs and props demonstrated
 
-| Symbol                        | Package / kind                      | Role in example              |
-| ----------------------------- | ----------------------------------- | ---------------------------- |
-| `ChatContainer`               | `@carbon/ai-chat` / React component | Main chat UI container       |
-| `messaging.customSendMessage` | `@carbon/ai-chat` / config prop     | Intercepts outbound messages |
-| `renderUserDefinedResponse`   | `@carbon/ai-chat` / config prop     | Renders custom message types |
+| Symbol | Package / kind | Role in example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` / React component | Main chat UI container |
+| `messaging.customSendMessage` | `@carbon/ai-chat` / config prop | Intercepts outbound messages |
+| `renderUserDefinedResponse` | `@carbon/ai-chat` / config prop | Renders custom message types |
 ```
 
 ## Format rules
 
-1. **Section headers must match exactly** — case-sensitive, including "this" in
-   the first header.
+1. **Section headers must match exactly** — case-sensitive, including "this" in the first header.
 2. **Bullets** start with a capital letter and end with a period.
 3. **Table** has exactly 3 columns with the headers shown above.
 4. **If a section doesn't apply**, use `N/A - <reason>`:
@@ -70,8 +68,7 @@ If validation fails, the example won't appear on the docs site.
 
 ## Templates
 
-- **Reference implementation**:
-  [examples/react/basic-custom-element-fullscreen/README.md](../react/basic-custom-element-fullscreen/README.md)
+- **Reference implementation**: [examples/react/basic-custom-element-fullscreen/README.md](../react/basic-custom-element-fullscreen/README.md)
 - **New-example template**: [examples/README_TEMPLATE.md](../README_TEMPLATE.md)
 
 ## Related guidance
