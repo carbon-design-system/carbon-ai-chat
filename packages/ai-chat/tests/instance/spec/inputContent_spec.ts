@@ -7,25 +7,25 @@
  *  @license
  */
 
-import { waitFor } from "@testing-library/react";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
-import { Node } from "@tiptap/core";
-import type { Extension } from "@tiptap/core";
+import { waitFor } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import { Node } from '@tiptap/core';
+import type { Extension } from '@tiptap/core';
 
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
 const docFromText = (text: string) => ({
-  type: "doc",
+  type: 'doc',
   content: [
     {
-      type: "paragraph",
-      content: [{ type: "text", text }],
+      type: 'paragraph',
+      content: [{ type: 'text', text }],
     },
   ],
 });
@@ -33,11 +33,11 @@ const docFromText = (text: string) => ({
 // A doc carrying a mark that no schema in these tests supports — enough to fail
 // the plain-text gate and drive the on-demand rich upgrade.
 const markedDoc = () => ({
-  type: "doc",
+  type: 'doc',
   content: [
     {
-      type: "paragraph",
-      content: [{ type: "text", text: "x", marks: [{ type: "bold" }] }],
+      type: 'paragraph',
+      content: [{ type: 'text', text: 'x', marks: [{ type: 'bold' }] }],
     },
   ],
 });
@@ -45,21 +45,21 @@ const markedDoc = () => ({
 // A minimal inline atom node so a host can stage a custom node via
 // `input.tiptap.extensions` and exercise the lazy lite -> rich upgrade.
 const TestChip = Node.create({
-  name: "testChip",
-  group: "inline",
+  name: 'testChip',
+  group: 'inline',
   inline: true,
   atom: true,
   parseHTML() {
-    return [{ tag: "span[data-test-chip]" }];
+    return [{ tag: 'span[data-test-chip]' }];
   },
   renderHTML() {
-    return ["span", { "data-test-chip": "" }];
+    return ['span', { 'data-test-chip': '' }];
   },
 });
 
 const chipDoc = () => ({
-  type: "doc",
-  content: [{ type: "paragraph", content: [{ type: "testChip" }] }],
+  type: 'doc',
+  content: [{ type: 'paragraph', content: [{ type: 'testChip' }] }],
 });
 
 function configWithChip() {
@@ -77,101 +77,101 @@ function configWithChip() {
 async function getPromptLine(): Promise<PromptLineElement> {
   return waitFor(
     () => {
-      const el = deepQuerySelector(document, "cds-aichat-prompt-line");
+      const el = deepQuerySelector(document, 'cds-aichat-prompt-line');
       if (!el) {
-        throw new Error("prompt-line not mounted");
+        throw new Error('prompt-line not mounted');
       }
       return el as unknown as PromptLineElement;
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 }
 
-describe("ChatInstance.input.updateContent (text-only)", () => {
+describe('ChatInstance.input.updateContent (text-only)', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("updateContent replaces the input with a plain-text doc", async () => {
+  it('updateContent replaces the input with a plain-text doc', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    instance.input.updateContent(() => docFromText("hello"));
+    instance.input.updateContent(() => docFromText('hello'));
 
-    expect(store.getState().assistantInputState.rawValue).toBe("hello");
-    expect(instance.getState().input.rawValue).toBe("hello");
+    expect(store.getState().assistantInputState.rawValue).toBe('hello');
+    expect(instance.getState().input.rawValue).toBe('hello');
   });
 
-  it("updateContent updater receives the current JSONContent", async () => {
+  it('updateContent updater receives the current JSONContent', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    instance.input.updateContent(() => docFromText("hi"));
+    instance.input.updateContent(() => docFromText('hi'));
 
     instance.input.updateContent((prev) => {
       const text = (prev.content ?? [])
         .flatMap((para) => para.content ?? [])
-        .filter((node) => node.type === "text")
-        .map((node) => node.text ?? "")
-        .join("");
+        .filter((node) => node.type === 'text')
+        .map((node) => node.text ?? '')
+        .join('');
       return docFromText(`${text} there`);
     });
 
-    expect(instance.getState().input.rawValue).toBe("hi there");
+    expect(instance.getState().input.rawValue).toBe('hi there');
   });
 
-  it("getState().input.content reflects writes (JSONContent shape)", async () => {
+  it('getState().input.content reflects writes (JSONContent shape)', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    instance.input.updateContent(() => docFromText("abc"));
+    instance.input.updateContent(() => docFromText('abc'));
 
     const content = instance.getState().input.content;
-    expect(content.type).toBe("doc");
-    expect(content.content?.[0]?.type).toBe("paragraph");
+    expect(content.type).toBe('doc');
+    expect(content.content?.[0]?.type).toBe('paragraph');
     const text = content.content?.[0]?.content?.[0];
-    expect(text?.type).toBe("text");
-    expect(text?.text).toBe("abc");
+    expect(text?.type).toBe('text');
+    expect(text?.text).toBe('abc');
   });
 
-  it("rawValue and JSONContent stay consistent in Redux on every doc change", async () => {
+  it('rawValue and JSONContent stay consistent in Redux on every doc change', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    instance.input.updateContent(() => docFromText("x"));
-    expect(store.getState().assistantInputState.rawValue).toBe("x");
+    instance.input.updateContent(() => docFromText('x'));
+    expect(store.getState().assistantInputState.rawValue).toBe('x');
     expect(store.getState().assistantInputState.content).toEqual(
-      expect.objectContaining({ type: "doc" }),
+      expect.objectContaining({ type: 'doc' })
     );
 
-    instance.input.updateContent(() => docFromText("yz"));
-    expect(store.getState().assistantInputState.rawValue).toBe("yz");
+    instance.input.updateContent(() => docFromText('yz'));
+    expect(store.getState().assistantInputState.rawValue).toBe('yz');
   });
 
-  it("returns a promise", async () => {
+  it('returns a promise', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    const result = instance.input.updateContent(() => docFromText("x"));
-    expect(typeof (result as Promise<void>).then).toBe("function");
+    const result = instance.input.updateContent(() => docFromText('x'));
+    expect(typeof (result as Promise<void>).then).toBe('function');
     await result;
   });
 
-  it("plain-text writes stay in the textarea — no Tiptap load", async () => {
+  it('plain-text writes stay in the textarea — no Tiptap load', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     const promptLine = await getPromptLine();
 
-    await instance.input.updateContent(() => docFromText("hello"));
+    await instance.input.updateContent(() => docFromText('hello'));
 
     expect(promptLine.getEditor()).toBeNull();
   });
 });
 
-describe("ChatInstance.input.updateContent (lazy rich upgrade)", () => {
+describe('ChatInstance.input.updateContent (lazy rich upgrade)', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("upgrades the textarea on demand when given non-text content", async () => {
+  it('upgrades the textarea on demand when given non-text content', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     const promptLine = await getPromptLine();
@@ -185,11 +185,11 @@ describe("ChatInstance.input.updateContent (lazy rich upgrade)", () => {
   });
 });
 
-describe("ChatInstance.input.updateContent (configured tiptap extension)", () => {
+describe('ChatInstance.input.updateContent (configured tiptap extension)', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("mounts the rich editor for a configured extension, with it installed", async () => {
+  it('mounts the rich editor for a configured extension, with it installed', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(configWithChip());
     const promptLine = await getPromptLine();
@@ -206,12 +206,12 @@ describe("ChatInstance.input.updateContent (configured tiptap extension)", () =>
     // The custom node survives because the editor mounted with the staged
     // extension installed in its schema.
     expect(JSON.stringify(promptLine.getEditor()!.getJSON())).toContain(
-      "testChip",
+      'testChip'
     );
   });
 });
 
-describe("ChatInstance.input.updateContent (input hidden / not rendered)", () => {
+describe('ChatInstance.input.updateContent (input hidden / not rendered)', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -221,34 +221,34 @@ describe("ChatInstance.input.updateContent (input hidden / not rendered)", () =>
     return config;
   };
 
-  it("seeds the pending rawValue with plain text when there is no surface", async () => {
+  it('seeds the pending rawValue with plain text when there is no surface', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(hiddenConfig());
 
-    await instance.input.updateContent(() => docFromText("seeded"));
+    await instance.input.updateContent(() => docFromText('seeded'));
 
-    expect(store.getState().assistantInputState.rawValue).toBe("seeded");
+    expect(store.getState().assistantInputState.rawValue).toBe('seeded');
   });
 
-  it("throws on non-text content when there is no surface to upgrade", async () => {
+  it('throws on non-text content when there is no surface to upgrade', async () => {
     const { instance } =
       await renderChatAndGetInstanceWithStore(hiddenConfig());
 
     await expect(instance.input.updateContent(markedDoc)).rejects.toThrow(
-      /rendered/,
+      /rendered/
     );
   });
 });
 
-describe("ChatInstance.input.updateRawValue (deprecation policy)", () => {
+describe('ChatInstance.input.updateRawValue (deprecation policy)', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("updateRawValue continues to work for plain-text-only docs", async () => {
+  it('updateRawValue continues to work for plain-text-only docs', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
 
-    instance.input.updateRawValue(() => "hello");
-    expect(store.getState().assistantInputState.rawValue).toBe("hello");
+    instance.input.updateRawValue(() => 'hello');
+    expect(store.getState().assistantInputState.rawValue).toBe('hello');
   });
 });

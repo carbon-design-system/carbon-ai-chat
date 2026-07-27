@@ -25,15 +25,15 @@
  * Start reading at: `App()` and the `loadChat` callback.
  */
 
-import { ChatContainer, ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+import { ChatContainer, ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 
-import { ChatHistoryExample } from "./ChatHistoryExample";
-import "@carbon/styles/css/styles.css";
+import { ChatHistoryExample } from './ChatHistoryExample';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -67,7 +67,7 @@ function App() {
       await instance.messaging.clearConversation();
       instance.messaging.insertHistory(historyData);
     },
-    [instance],
+    [instance]
   );
 
   const historyWriteableElementExample = useMemo(
@@ -77,7 +77,7 @@ function App() {
         loadChat={loadChat}
       />
     ),
-    [instance, loadChat],
+    [instance, loadChat]
   );
 
   const renderWriteableElements = useMemo(() => {
@@ -97,6 +97,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

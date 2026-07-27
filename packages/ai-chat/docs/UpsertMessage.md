@@ -70,12 +70,12 @@ Nested `user_defined` items work inside {@link MessageResponseTypes.CARD | CARD}
 A React renderer can drive an in-widget streaming indicator straight from the lifecycle state:
 
 ```tsx
-import { MessageState, RenderUserDefinedState } from "@carbon/ai-chat";
+import { MessageState, RenderUserDefinedState } from '@carbon/ai-chat';
 
 function renderUserDefinedResponse(state: RenderUserDefinedState) {
   const { messageItem, state: lifecycleState } = state;
 
-  if (messageItem?.user_defined?.user_defined_type === "my_widget") {
+  if (messageItem?.user_defined?.user_defined_type === 'my_widget') {
     return (
       <MyWidget
         data={messageItem.user_defined}
@@ -92,7 +92,7 @@ function renderUserDefinedResponse(state: RenderUserDefinedState) {
 **Streaming a single message (SSE-style).** One call per delta. The first call creates the message. Later calls update it. {@link BusEventType.RECEIVE | RECEIVE} fires once, on the final transition to `COMPLETE`. Each call returns a {@link MessageResponse | MessageResponse}.
 
 ```typescript
-const messageID = "msg-1";
+const messageID = 'msg-1';
 
 for (const piece of await streamFromBackend()) {
   await instance.messaging.upsertMessage(
@@ -104,12 +104,12 @@ for (const piece of await streamFromBackend()) {
         generic: [
           {
             response_type: MessageResponseTypes.TEXT,
-            text: (prev?.output.generic?.[0]?.text ?? "") + piece,
-            streaming_metadata: { id: "1" },
+            text: (prev?.output.generic?.[0]?.text ?? '') + piece,
+            streaming_metadata: { id: '1' },
           },
         ],
       },
-    }),
+    })
   );
 }
 
@@ -118,14 +118,14 @@ for (const piece of await streamFromBackend()) {
 await instance.messaging.upsertMessage(
   messageID,
   MessageState.COMPLETE,
-  (prev) => prev ?? { id: messageID, output: { generic: [] } },
+  (prev) => prev ?? { id: messageID, output: { generic: [] } }
 );
 ```
 
 **Regenerate (one-shot, non-streaming).** This fires {@link BusEventType.RECEIVE | RECEIVE} if `prev` did not exist or was not `COMPLETE`. It does not fire if `prev` was already `COMPLETE`. `request_id` is a field of {@link MessageResponse | MessageResponse}. It links the response to the user input it answers.
 
 ```typescript
-const userInputID = "req-42";
+const userInputID = 'req-42';
 const responseID = findResponseByRequestId(userInputID); // app-level lookup
 
 await instance.messaging.upsertMessage(
@@ -134,7 +134,7 @@ await instance.messaging.upsertMessage(
   async () => {
     const fresh = await fetchFreshResponse(userInputID);
     return { ...fresh, id: responseID, request_id: userInputID };
-  },
+  }
 );
 ```
 
@@ -148,10 +148,10 @@ await instance.messaging.upsertMessage(
     id: messageID,
     output: {
       generic: [
-        { response_type: MessageResponseTypes.TEXT, text: "Working on it..." },
+        { response_type: MessageResponseTypes.TEXT, text: 'Working on it...' },
       ],
     },
-  }),
+  })
 );
 
 const result = await backendCall();
@@ -162,7 +162,7 @@ await instance.messaging.upsertMessage(
   () => ({
     id: messageID,
     output: { generic: [result] },
-  }),
+  })
 );
 ```
 

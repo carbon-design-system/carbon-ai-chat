@@ -7,33 +7,33 @@
  *  @license
  */
 
-import { FileStatusValue } from "../../types/config/ServiceDeskConfig";
-import { WriteableElementName } from "../../types/instance/WriteableElements";
-import { CornersType } from "../../types/config/CornersType";
+import { FileStatusValue } from '../../types/config/ServiceDeskConfig';
+import { WriteableElementName } from '../../types/instance/WriteableElements';
+import { CornersType } from '../../types/config/CornersType';
 
 // Prefix used to distinguish console logs omitted from our code
-const WA_CONSOLE_PREFIX = "[Chat]";
+const WA_CONSOLE_PREFIX = '[Chat]';
 
 // The right-to-left mark character string which mixes the direction of a string.
 // For more info on right-to-left mark: https://www.w3.org/TR/WCAG20-TECHS/H34.html
 const RIGHT_TO_LEFT_MARK = String.fromCharCode(0x200f);
 
-const ENGLISH_US_DATE_FORMAT = "mm/dd/yyyy";
+const ENGLISH_US_DATE_FORMAT = 'mm/dd/yyyy';
 
 // The timeout, in milliseconds, to wait for a response type to load content.
 const RESPONSE_TYPE_TIMEOUT_MS = 20000;
 
 // These are custom panel ids.
-const DEFAULT_CUSTOM_PANEL_ID = "wac-default-panel";
-const WORKSPACE_CUSTOM_PANEL_ID = "workspace-panel";
-const HISTORY_PANEL_ID = "history-panel";
+const DEFAULT_CUSTOM_PANEL_ID = 'wac-default-panel';
+const WORKSPACE_CUSTOM_PANEL_ID = 'workspace-panel';
+const HISTORY_PANEL_ID = 'history-panel';
 
 /**
  * This function serves as a placeholder in places where a functional value is required, but not expected to be
  * fired. In the event that it is, it will throw an error, letting you know it shouldn't be.
  */
 function THROW_ERROR() {
-  throw Error("Not implemented.");
+  throw Error('Not implemented.');
 }
 
 export {

@@ -28,7 +28,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to the Vite + Vitest Carbon AI Chat example.
 
@@ -37,12 +37,12 @@ Send any message to receive an echo response from the mock backend.`;
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // the chat runtime fires `customSendMessage` with an empty `input.text`
   // when the widget first opens — that's the hook for the welcome message,
   // not a user-typed empty string.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

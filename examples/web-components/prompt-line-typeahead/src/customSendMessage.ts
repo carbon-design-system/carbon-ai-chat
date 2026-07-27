@@ -26,7 +26,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 // Greeting shown when the user submits an empty message; nudges them toward
 // queries that will surface CANNED_SUGGESTIONS matches.
@@ -38,7 +38,7 @@ const WELCOME_TEXT =
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const text = request.input.text?.trim();
 

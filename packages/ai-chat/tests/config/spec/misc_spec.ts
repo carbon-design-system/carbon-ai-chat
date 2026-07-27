@@ -7,19 +7,19 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { doCreateStore } from "../../../src/chat/store/doCreateStore";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { NamespaceService } from "../../../src/chat/services/NamespaceService";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+import { doCreateStore } from '../../../src/chat/store/doCreateStore';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { NamespaceService } from '../../../src/chat/services/NamespaceService';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-describe("Config Miscellaneous", () => {
+describe('Config Miscellaneous', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -29,14 +29,14 @@ describe("Config Miscellaneous", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("boolean flags", () => {
+  describe('boolean flags', () => {
     const booleanProperties = [
-      "disableCustomElementMobileEnhancements",
-      "shouldSanitizeHTML",
-      "isReadonly",
+      'disableCustomElementMobileEnhancements',
+      'shouldSanitizeHTML',
+      'isReadonly',
     ] as const;
 
     booleanProperties.forEach((property) => {
@@ -56,14 +56,14 @@ describe("Config Miscellaneous", () => {
             React.createElement(ChatContainer, {
               ...props,
               onBeforeRender,
-            }),
+            })
           );
 
           await waitFor(
             () => {
               expect(capturedInstance).not.toBeNull();
             },
-            { timeout: 5000 },
+            { timeout: 5000 }
           );
 
           const store = (capturedInstance as any).serviceManager.store;
@@ -86,14 +86,14 @@ describe("Config Miscellaneous", () => {
             React.createElement(ChatContainer, {
               ...props,
               onBeforeRender,
-            }),
+            })
           );
 
           await waitFor(
             () => {
               expect(capturedInstance).not.toBeNull();
             },
-            { timeout: 5000 },
+            { timeout: 5000 }
           );
 
           const store = (capturedInstance as any).serviceManager.store;
@@ -116,14 +116,14 @@ describe("Config Miscellaneous", () => {
             React.createElement(ChatContainer, {
               ...props,
               onBeforeRender,
-            }),
+            })
           );
 
           await waitFor(
             () => {
               expect(capturedInstance).not.toBeNull();
             },
-            { timeout: 5000 },
+            { timeout: 5000 }
           );
 
           const store = (capturedInstance as any).serviceManager.store;
@@ -134,9 +134,9 @@ describe("Config Miscellaneous", () => {
     });
   });
 
-  describe("string", () => {
-    it("should store assistantName in Redux state", async () => {
-      const assistantName = "My Assistant";
+  describe('string', () => {
+    it('should store assistantName in Redux state', async () => {
+      const assistantName = 'My Assistant';
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         assistantName,
@@ -153,7 +153,7 @@ describe("Config Miscellaneous", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -162,9 +162,9 @@ describe("Config Miscellaneous", () => {
     });
   });
 
-  describe("string", () => {
-    it("should store assistantAvatarUrl in Redux state", async () => {
-      const assistantAvatarUrl = "my-avatar-url";
+  describe('string', () => {
+    it('should store assistantAvatarUrl in Redux state', async () => {
+      const assistantAvatarUrl = 'my-avatar-url';
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         assistantAvatarUrl,
@@ -181,7 +181,7 @@ describe("Config Miscellaneous", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -190,11 +190,11 @@ describe("Config Miscellaneous", () => {
     });
   });
 
-  describe("disclaimer", () => {
-    it("should store disclaimer config in Redux state", async () => {
+  describe('disclaimer', () => {
+    it('should store disclaimer config in Redux state', async () => {
       const disclaimer = {
         isOn: true,
-        disclaimerHTML: "<p>This is a disclaimer</p>",
+        disclaimerHTML: '<p>This is a disclaimer</p>',
       };
 
       const props: Partial<ChatContainerProps> = {
@@ -213,7 +213,7 @@ describe("Config Miscellaneous", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -221,10 +221,10 @@ describe("Config Miscellaneous", () => {
       expect(state.config.public.disclaimer).toEqual(disclaimer);
     });
 
-    it("should store disclaimer with isOn false in Redux state", async () => {
+    it('should store disclaimer with isOn false in Redux state', async () => {
       const disclaimer = {
         isOn: false,
-        disclaimerHTML: "<p>Disabled disclaimer</p>",
+        disclaimerHTML: '<p>Disabled disclaimer</p>',
       };
 
       const props: Partial<ChatContainerProps> = {
@@ -243,7 +243,7 @@ describe("Config Miscellaneous", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -251,34 +251,34 @@ describe("Config Miscellaneous", () => {
       expect(state.config.public.disclaimer).toEqual(disclaimer);
     });
 
-    describe("Dynamic Disclaimer Config Updates", () => {
+    describe('Dynamic Disclaimer Config Updates', () => {
       let serviceManager: ServiceManager;
 
       beforeEach(() => {
         const initialConfig: PublicConfig = {
-          assistantName: "Test Assistant",
+          assistantName: 'Test Assistant',
         };
 
         const store = doCreateStore(initialConfig, {} as ServiceManager);
         serviceManager = {
           store,
-          namespace: new NamespaceService("test"),
+          namespace: new NamespaceService('test'),
           messageService: { timeoutMS: 30000 } as any,
           humanAgentService: null,
         } as ServiceManager;
       });
 
-      it("should handle disclaimer config changes dynamically", async () => {
+      it('should handle disclaimer config changes dynamically', async () => {
         const previousConfig: PublicConfig = {
           disclaimer: {
-            disclaimerHTML: "<p>Old disclaimer</p>",
+            disclaimerHTML: '<p>Old disclaimer</p>',
             isOn: true,
           },
         };
 
         const newConfig: PublicConfig = {
           disclaimer: {
-            disclaimerHTML: "<p>New disclaimer</p>",
+            disclaimerHTML: '<p>New disclaimer</p>',
             isOn: false,
           },
         };
@@ -286,12 +286,12 @@ describe("Config Miscellaneous", () => {
         await applyConfigChangesDynamically(
           previousConfig,
           newConfig,
-          serviceManager,
+          serviceManager
         );
 
         const state: AppState = serviceManager.store.getState();
         expect(state.config.public.disclaimer?.disclaimerHTML).toBe(
-          "<p>New disclaimer</p>",
+          '<p>New disclaimer</p>'
         );
         expect(state.config.public.disclaimer?.isOn).toBe(false);
       });

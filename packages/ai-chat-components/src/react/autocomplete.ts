@@ -7,25 +7,25 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import AutocompleteElement from "../components/autocomplete/src/autocomplete.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import AutocompleteElement from '../components/autocomplete/src/autocomplete.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 // TODO: Icon transformation for suggestion items is handled upstream in prompt-line-shell.tsx.
 // When icon rendering is added to the autocomplete web component, no additional
 // React-side transformation is needed here.
 const CDSAIChatAutocomplete = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-autocomplete",
+    tagName: 'cds-aichat-autocomplete',
     elementClass: AutocompleteElement,
     react: React,
     events: {
-      onSelect: "cds-aichat-autocomplete-select",
-      onSend: "cds-aichat-autocomplete-send",
-      onDismiss: "cds-aichat-autocomplete-dismiss",
+      onSelect: 'cds-aichat-autocomplete-select',
+      onSend: 'cds-aichat-autocomplete-send',
+      onDismiss: 'cds-aichat-autocomplete-dismiss',
     },
-  }),
+  })
 );
 
 export default CDSAIChatAutocomplete;

@@ -23,11 +23,11 @@
  * Start reading at: the `renderCodeSnippet` callback below.
  */
 
-import { RenderUserDefinedInputNode } from "@carbon/ai-chat";
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
-import React from "react";
+import { RenderUserDefinedInputNode } from '@carbon/ai-chat';
+import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
+import React from 'react';
 
-import { CODE_SNIPPET_NODE } from "./codeSnippetNode";
+import { CODE_SNIPPET_NODE } from './codeSnippetNode';
 
 const renderCodeSnippet: RenderUserDefinedInputNode = ({ node }) => {
   if (node.type !== CODE_SNIPPET_NODE) {
@@ -35,7 +35,7 @@ const renderCodeSnippet: RenderUserDefinedInputNode = ({ node }) => {
     return null;
   }
 
-  const code = String(node.attrs?.code ?? "");
+  const code = String(node.attrs?.code ?? '');
 
   return <CodeSnippet code={code} highlight hideHeader />;
 };

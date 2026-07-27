@@ -7,24 +7,24 @@
  *  @license
  */
 
-import cloneDeep from "lodash-es/cloneDeep.js";
-import isEqual from "lodash-es/isEqual.js";
-import mergeWith from "lodash-es/mergeWith.js";
-import { ServiceManager } from "../services/ServiceManager";
-import { AppConfig } from "../../types/state/AppConfig";
-import { AppState, ThemeState } from "../../types/state/AppState";
-import { IS_PHONE } from "../utils/browserUtils";
-import { CornersType } from "../utils/constants";
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
+import mergeWith from 'lodash-es/mergeWith.js';
+import { ServiceManager } from '../services/ServiceManager';
+import { AppConfig } from '../../types/state/AppConfig';
+import { AppState, ThemeState } from '../../types/state/AppState';
+import { IS_PHONE } from '../utils/browserUtils';
+import { CornersType } from '../utils/constants';
 import {
   PerCornerConfig,
   ResolvedCornerConfig,
-} from "../../types/config/CornersType";
-import { PublicConfig } from "../../types/config/PublicConfig";
-import { LanguagePack } from "../../types/config/LanguagePack";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { mergeCSSVariables } from "../utils/styleUtils";
-import { reducers } from "./reducers";
-import { AppStore, createAppStore } from "./appStore";
+} from '../../types/config/CornersType';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import { LanguagePack } from '../../types/config/LanguagePack';
+import { DeepPartial } from '../../types/utilities/DeepPartial';
+import { mergeCSSVariables } from '../utils/styleUtils';
+import { reducers } from './reducers';
+import { AppStore, createAppStore } from './appStore';
 import {
   DEFAULT_CITATION_PANEL_STATE,
   DEFAULT_CUSTOM_PANEL_STATE,
@@ -43,10 +43,10 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
   VIEW_STATE_MAIN_WINDOW_OPEN,
   DEFAULT_HEADER,
-} from "./reducerUtils";
-import { enLanguagePack } from "../../types/config/LanguagePack";
-import { LayoutConfig } from "../../types/config/LayoutConfig";
-import { fromPersistableState } from "./persistenceUtils";
+} from './reducerUtils';
+import { enLanguagePack } from '../../types/config/LanguagePack';
+import { LayoutConfig } from '../../types/config/LayoutConfig';
+import { fromPersistableState } from './persistenceUtils';
 
 /**
  * Deep merge helper that:
@@ -68,7 +68,7 @@ function mergeDefaultsDeep<T>(target: Partial<T>, ...sources: Partial<T>[]): T {
       }
       // Let mergeWith handle objects/primitives normally
       return undefined;
-    },
+    }
   ) as T;
 }
 
@@ -91,7 +91,7 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
     publicConfig.layout?.customProperties || {},
     {},
     themeWithDefaults.derivedCarbonTheme,
-    themeWithDefaults.aiEnabled,
+    themeWithDefaults.aiEnabled
   );
 
   // Build derived config using deep merge that skips undefined
@@ -106,7 +106,7 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
       header: publicConfig.header,
       layout: publicConfig.layout,
       launcher: publicConfig.launcher,
-    },
+    }
   );
 
   return {
@@ -130,7 +130,7 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
  * config path so they all merge identically.
  */
 function buildLanguagePack(
-  strings?: DeepPartial<LanguagePack> | undefined,
+  strings?: DeepPartial<LanguagePack> | undefined
 ): LanguagePack {
   return { ...enLanguagePack, ...(strings ?? {}) } as LanguagePack;
 }
@@ -196,7 +196,7 @@ function reconcileObjectReferences<T extends object>(prev: T, next: T): T {
  */
 function reconcileAppConfigReferences(
   prev: AppConfig | null | undefined,
-  next: AppConfig,
+  next: AppConfig
 ): AppConfig {
   if (!prev) {
     return next;
@@ -284,7 +284,7 @@ function createInitialState(config: AppConfig): AppState {
 
 function doCreateStore(
   publicConfig: PublicConfig,
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ): AppStore<AppState> {
   // Build the complete AppConfig with derived values
   const config = createAppConfig(publicConfig);
@@ -295,7 +295,7 @@ function doCreateStore(
   // sessionStorage. Otherwise, pre-fill from session storage if a saved session exists.
   const persistedStateConfig = config.public.persistedState;
   const externallyPersisted = Boolean(
-    persistedStateConfig?.initialState || persistedStateConfig?.onStateChange,
+    persistedStateConfig?.initialState || persistedStateConfig?.onStateChange
   );
   const sessionStorageState = externallyPersisted
     ? persistedStateConfig?.initialState
@@ -340,7 +340,7 @@ function doCreateStore(
     };
   }
 
-  if (typeof config.public.launcher?.showUnreadIndicator === "boolean") {
+  if (typeof config.public.launcher?.showUnreadIndicator === 'boolean') {
     initialState.persistedToBrowserStorage.showUnreadIndicator =
       config.public.launcher.showUnreadIndicator;
   }
@@ -352,10 +352,10 @@ function doCreateStore(
  * Checks if a corners configuration is a PerCornerConfig object.
  */
 function isPerCornerConfig(
-  corners: CornersType | PerCornerConfig | undefined,
+  corners: CornersType | PerCornerConfig | undefined
 ): corners is PerCornerConfig {
   return (
-    typeof corners === "object" &&
+    typeof corners === 'object' &&
     corners !== null &&
     (corners.startStart !== undefined ||
       corners.startEnd !== undefined ||
@@ -370,7 +370,7 @@ function isPerCornerConfig(
  */
 function normalizeCorners(
   corners: CornersType | PerCornerConfig | undefined,
-  defaultValue: CornersType,
+  defaultValue: CornersType
 ): ResolvedCornerConfig {
   if (isPerCornerConfig(corners)) {
     // Per-corner config: use provided values or fall back to default
@@ -421,7 +421,7 @@ function getThemeCornersType(publicConfig: PublicConfig): ResolvedCornerConfig {
   // Otherwise, normalize the corners configuration
   return normalizeCorners(
     publicConfig.layout?.corners,
-    DEFAULT_THEME_STATE.corners.startStart, // Use default from one corner
+    DEFAULT_THEME_STATE.corners.startStart // Use default from one corner
   );
 }
 
@@ -430,7 +430,7 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
   return mergeDefaultsDeep<LayoutConfig>(
     {},
     DEFAULT_LAYOUT_STATE,
-    publicConfig.layout ?? {},
+    publicConfig.layout ?? {}
   );
 }
 
@@ -440,7 +440,7 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
  */
 function reducerFunction(
   state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined,
+  action: { type: string; [key: string]: unknown } | undefined
 ): AppState {
   return action && reducers[action.type]
     ? reducers[action.type](state, action)

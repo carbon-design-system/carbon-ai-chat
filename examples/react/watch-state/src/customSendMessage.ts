@@ -27,7 +27,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome! This example demonstrates watching ChatInstance state changes.
 
@@ -37,9 +37,9 @@ Try sending a message to see the chat view, or click the home icon to see the ho
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  const inputText = (request.input.text || "").trim().toLowerCase();
+  const inputText = (request.input.text || '').trim().toLowerCase();
 
   // Empty input fires on chat open; respond with the welcome copy.
   if (!inputText) {
@@ -61,7 +61,7 @@ async function customSendMessage(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "That is super great.",
+          text: 'That is super great.',
         },
       ],
     },

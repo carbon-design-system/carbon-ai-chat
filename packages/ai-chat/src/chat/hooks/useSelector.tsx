@@ -21,8 +21,8 @@
  * On React 18+ the shim detects native support and uses it.
  */
 
-import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector.js";
-import { useStore } from "./useStore";
+import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector.js';
+import { useStore } from './useStore';
 
 /**
  * Select a slice and subscribe to changes.
@@ -31,7 +31,7 @@ import { useStore } from "./useStore";
  */
 export function useSelector<RootState, Selected>(
   selector: (state: RootState) => Selected,
-  equalityFn?: (left: Selected, right: Selected) => boolean,
+  equalityFn?: (left: Selected, right: Selected) => boolean
 ): Selected {
   const store = useStore<RootState>();
   return useSyncExternalStoreWithSelector(
@@ -39,6 +39,6 @@ export function useSelector<RootState, Selected>(
     store.getState,
     store.getState,
     selector,
-    equalityFn,
+    equalityFn
   );
 }

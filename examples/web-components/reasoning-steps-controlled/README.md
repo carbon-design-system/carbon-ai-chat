@@ -16,16 +16,16 @@ Mocks a controlled reasoning-step flow: the parent reasoning panel stays collaps
 
 ## APIs and props demonstrated
 
-| Symbol                                     | Kind           | Role in this example                                       |
-| ------------------------------------------ | -------------- | ---------------------------------------------------------- |
-| `<cds-aichat-custom-element>`              | custom element | Mounts the chat UI.                                        |
-| `messaging.customSendMessage`              | property       | Runs the controlled reasoning scenario.                    |
-| `onBeforeRender`                           | property       | Captures the `ChatInstance`.                               |
-| `ReasoningStep` / `ReasoningStepOpenState` | types          | Reasoning payloads + controlled open-state values.         |
-| `MessageResponseOptions`                   | type           | `message_options` carrying `reasoning.{steps,open_state}`. |
-| `instance.updateIsMessageLoadingCounter`   | API            | Custom loading label that replaces the default UI.         |
-| `ChatInstance`                             | type           | Type of the instance handle.                               |
-| `PublicConfig`                             | type           | Types the chat configuration object.                       |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Runs the controlled reasoning scenario. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `ReasoningStep` / `ReasoningStepOpenState` | types | Reasoning payloads + controlled open-state values. |
+| `MessageResponseOptions` | type | `message_options` carrying `reasoning.{steps,open_state}`. |
+| `instance.updateIsMessageLoadingCounter` | API | Custom loading label that replaces the default UI. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 

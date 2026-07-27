@@ -19,7 +19,7 @@ Set {@link PublicConfig.persistedState | persisted state} to take over that stor
 Set {@link PersistedStateConfig.initialState | initialState} to boot from stored state, and {@link PersistedStateConfig.onStateChange | onStateChange} to receive changes to store.
 
 ```ts
-import { PersistableState, PublicConfig } from "@carbon/ai-chat";
+import { PersistableState, PublicConfig } from '@carbon/ai-chat';
 
 // readFromMyStore / writeToMyStore are stand-ins for your own storage.
 const config: PublicConfig = {

@@ -84,7 +84,7 @@ Re-declare upstream symbols at a local site you own, then re-export from [../aiC
 Write **full** consumer-facing JSDoc at the local re-declaration:
 
 ```ts
-import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+import type { AutocompleteConfig as _AutocompleteConfig } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 /**
  * Live autocomplete config consumed by {@link InputConfig.autocomplete}.
@@ -99,7 +99,7 @@ export type AutocompleteConfig = _AutocompleteConfig;
 For runtime values, use `export const`:
 
 ```ts
-import { buildCarbonExtensions as _buildCarbonExtensions } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+import { buildCarbonExtensions as _buildCarbonExtensions } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 /**
  * Translate the Carbon-curated configs surfaced on {@link InputConfig} into
@@ -132,7 +132,7 @@ When a property type inside this package references a **Carbon cross-package sym
 
 ```ts
 // In a consumer of InputConfig.ts (e.g. useInputConfig.ts)
-import type { TriggerSuggestionConfig } from "../../types/config/InputConfig"; // ✓
+import type { TriggerSuggestionConfig } from '../../types/config/InputConfig'; // ✓
 // import { TriggerSuggestionConfig } from "@carbon/ai-chat-components/...";    // ✗ resolves past our alias
 ```
 
@@ -176,17 +176,17 @@ enum ChainOfThoughtStepStatus {
   /**
    * The tool call is currently processing.
    */
-  PROCESSING = "processing",
+  PROCESSING = 'processing',
 
   /**
    * The tool call failed.
    */
-  FAILURE = "failure",
+  FAILURE = 'failure',
 
   /**
    * The tool call succeeded.
    */
-  SUCCESS = "success",
+  SUCCESS = 'success',
 }
 ```
 
@@ -198,9 +198,9 @@ Why it works: `@category` is valid, sentences end in periods, each member is doc
 // BAD
 /** step status — see #4821 for context */
 enum ChainOfThoughtStepStatus {
-  PROCESSING = "processing", // TODO rename?
-  FAILURE = "failure",
-  SUCCESS = "success",
+  PROCESSING = 'processing', // TODO rename?
+  FAILURE = 'failure',
+  SUCCESS = 'success',
 }
 ```
 
@@ -222,7 +222,7 @@ Why it works: units stated, default documented, `{@link}` resolves and will fail
 ### Good — linking back to the consumer
 
 ```ts
-import type { AutocompleteConfig as _AutocompleteConfig } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+import type { AutocompleteConfig as _AutocompleteConfig } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 /**
  * Live autocomplete config consumed by {@link InputConfig.autocomplete}.

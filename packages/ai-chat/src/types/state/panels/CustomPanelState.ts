@@ -10,7 +10,7 @@
 import {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
-} from "../../instance/apiTypes";
+} from '../../instance/apiTypes';
 
 /**
  * The state of the custom panel.

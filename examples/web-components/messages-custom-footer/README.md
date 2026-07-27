@@ -17,15 +17,15 @@ Render your own content beneath an assistant message — here a copy button — 
 
 ## APIs and props demonstrated
 
-| Symbol                                    | Kind           | Role in this example                              |
-| ----------------------------------------- | -------------- | ------------------------------------------------- |
-| `<cds-aichat-custom-element>`             | custom element | Mounts the chat into a host element you style.    |
-| `renderCustomMessageFooter`               | property       | Returns the footer element for each footer slot.  |
-| `RenderCustomMessageFooterState`          | type           | Shape passed to the footer callback.              |
-| `messaging.customSendMessage`             | config prop    | Mock backend that attaches the footer slot.       |
-| `message_item_options.custom_footer_slot` | message field  | Enables the footer and carries `additional_data`. |
-| `<custom-footer-example>`                 | custom element | Footer UI rendered into the slot.                 |
-| `layout.showFrame` / `openChatByDefault`  | config props   | Full-screen baseline.                             |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat into a host element you style. |
+| `renderCustomMessageFooter` | property | Returns the footer element for each footer slot. |
+| `RenderCustomMessageFooterState` | type | Shape passed to the footer callback. |
+| `messaging.customSendMessage` | config prop | Mock backend that attaches the footer slot. |
+| `message_item_options.custom_footer_slot` | message field | Enables the footer and carries `additional_data`. |
+| `<custom-footer-example>` | custom element | Footer UI rendered into the slot. |
+| `layout.showFrame` / `openChatByDefault` | config props | Full-screen baseline. |
 
 ## Run it
 

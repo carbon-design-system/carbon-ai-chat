@@ -15,17 +15,17 @@
  * ownership of the chip-body element.
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from 'react';
 
 import type {
   RenderUserDefinedInputNode,
   RenderUserDefinedInputNodeState,
   WCRenderUserDefinedInputNode,
-} from "../../types/component/ChatContainer";
-import type { ChatInstance } from "../../types/instance/ChatInstance";
+} from '../../types/component/ChatContainer';
+import type { ChatInstance } from '../../types/instance/ChatInstance';
 
 export function adaptWCRenderUserDefinedInputNode(
-  wcRenderer: WCRenderUserDefinedInputNode,
+  wcRenderer: WCRenderUserDefinedInputNode
 ): RenderUserDefinedInputNode {
   // eslint-disable-next-line react/display-name -- this is a render callback, not a component
   return (state, instance) => (

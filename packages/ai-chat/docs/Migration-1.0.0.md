@@ -97,8 +97,8 @@ const config = {
 // After
 const config = {
   header: {
-    title: "Welcome",
-    name: "My Assistant",
+    title: 'Welcome',
+    name: 'My Assistant',
     minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
     showRestartButton: true,
   },
@@ -130,18 +130,18 @@ const config = {
 ```ts
 // Before
 instance.updateCSSVariables({
-  BASE_HEIGHT: "600px",
-  BASE_WIDTH: "400px",
-  BASE_Z_INDEX: "9999",
+  BASE_HEIGHT: '600px',
+  BASE_WIDTH: '400px',
+  BASE_Z_INDEX: '9999',
 });
 
 // After
 const config = {
   layout: {
     customProperties: {
-      height: "600px",
-      width: "400px",
-      z_index: "9999",
+      height: '600px',
+      width: '400px',
+      z_index: '9999',
     },
   },
 };
@@ -209,14 +209,14 @@ render() {
 
 ```tsx
 const [config, setConfig] = useState({/* initial config */});
-const switchLanguage = () => setConfig((c) => ({ ...c, locale: "fr" }));
+const switchLanguage = () => setConfig((c) => ({ ...c, locale: 'fr' }));
 return <ChatContainer {...config} />;
 ```
 
 **Web Components:**
 
 ```ts
-const el = document.querySelector("cds-aichat-container");
+const el = document.querySelector('cds-aichat-container');
 el.launcher = { isOn: false };
 ```
 
@@ -241,12 +241,12 @@ import {
   makeTestId,
   PageObjectId,
   OverlayPanelName,
-} from "@carbon/ai-chat/server";
+} from '@carbon/ai-chat/server';
 
 // Tests had duplicate test ID problems when multiple panels existed
-await expect(page.getByTestId("input_send")).toBeVisible(); // Could find 2+ elements
+await expect(page.getByTestId('input_send')).toBeVisible(); // Could find 2+ elements
 await expect(
-  page.getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN)),
+  page.getByTestId(makeTestId(PageObjectId.INPUT_SEND, OverlayPanelName.MAIN))
 ).click();
 ```
 
@@ -255,11 +255,11 @@ await expect(
 ```ts
 // Using panel-scoped approach - cleaner and more reliable
 // PageObjectId now includes all panel identifiers - no need for OverlayPanelName
-import { PageObjectId } from "@carbon/ai-chat/server";
+import { PageObjectId } from '@carbon/ai-chat/server';
 
 // Each panel has its own scope - no more duplicates
 const mainPanel = page.getByTestId(PageObjectId.MAIN_PANEL);
-await expect(mainPanel.getByTestId(PageObjectId.INPUT)).fill("Hello");
+await expect(mainPanel.getByTestId(PageObjectId.INPUT)).fill('Hello');
 await expect(mainPanel.getByTestId(PageObjectId.INPUT_SEND)).click();
 await expect(mainPanel.getByTestId(PageObjectId.CLOSE_CHAT)).click();
 ```

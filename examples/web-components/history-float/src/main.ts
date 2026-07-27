@@ -25,15 +25,15 @@
  * Start reading at: `_loadChat` and `renderWriteableElementSlots()`.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-import "./history-writeable-element-example";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
+import './history-writeable-element-example';
 
-import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
-import { html, LitElement, css } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { type ChatInstance, type PublicConfig } from '@carbon/ai-chat';
+import { html, LitElement, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { customLoadHistory } from "./customLoadHistory";
+import { customSendMessage } from './customSendMessage';
+import { customLoadHistory } from './customLoadHistory';
 
 const config: PublicConfig = {
   history: {
@@ -48,7 +48,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css``;
 
@@ -82,7 +82,7 @@ export class Demo extends LitElement {
     }
 
     // The `historyPanelElement` slot name is the documented contract for replacing the built-in history panel.
-    const key = "historyPanelElement";
+    const key = 'historyPanelElement';
 
     return html`
       <div slot=${key}>
@@ -92,8 +92,7 @@ export class Demo extends LitElement {
           .isMobile=${
             this.instance?.getState().customPanels.history.isMobile ?? false
           }
-          @history-panel-load-chat=${this._loadChat}
-        ></history-writeable-element-example>
+          @history-panel-load-chat=${this._loadChat}></history-writeable-element-example>
       </div>
     `;
   }

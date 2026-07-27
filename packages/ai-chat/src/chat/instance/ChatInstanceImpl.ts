@@ -14,39 +14,39 @@
  * has been called.
  */
 
-import { ServiceManager } from "../services/ServiceManager";
-import actions from "../store/actions";
-import { selectInputIsReadonly } from "../store/selectors";
+import { ServiceManager } from '../services/ServiceManager';
+import actions from '../store/actions';
+import { selectInputIsReadonly } from '../store/selectors';
 import {
   CatastrophicErrorPanelState,
   ViewState,
   ViewType,
-} from "../../types/state/AppState";
+} from '../../types/state/AppState';
 
-import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
-import { HistoryItem } from "../../types/messaging/History";
+import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
+import { HistoryItem } from '../../types/messaging/History';
 import {
   consoleDebug,
   consoleError,
   consoleWarn,
   debugLog,
-} from "../utils/miscUtils";
+} from '../utils/miscUtils';
 import {
   ChatInstance,
   IncreaseOrDecrease,
   SendOptions,
-} from "../../types/instance/ChatInstance";
-import { TypeAndHandler } from "../../types/instance/EventHandlers";
-import { AddMessageOptions } from "../../types/config/MessagingConfig";
+} from '../../types/instance/ChatInstance';
+import { TypeAndHandler } from '../../types/instance/EventHandlers';
+import { AddMessageOptions } from '../../types/config/MessagingConfig';
 import {
   MessageSendSource,
   ViewChangeReason,
-} from "../../types/events/eventBusTypes";
+} from '../../types/events/eventBusTypes';
 import {
   MessageRequest,
   MessageResponse,
   StreamChunk,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 
 interface CreateChatInstance {
   /**
@@ -82,87 +82,87 @@ function createChatInstance({
     },
 
     send: async (message: MessageRequest | string, options?: SendOptions) => {
-      debugLog("Called instance.send", message, options);
+      debugLog('Called instance.send', message, options);
       if (selectInputIsReadonly(serviceManager.store.getState())) {
-        throw new Error("You are unable to send messages in read only mode.");
+        throw new Error('You are unable to send messages in read only mode.');
       }
       return serviceManager.actions.send(
         message,
         MessageSendSource.INSTANCE_SEND,
-        options,
+        options
       );
     },
 
     doAutoScroll: (options: AutoScrollOptions = {}) => {
-      debugLog("Called instance.doAutoScroll", options);
+      debugLog('Called instance.doAutoScroll', options);
       serviceManager.mainWindow?.doAutoScroll?.(options);
     },
 
     updateInputFieldVisibility: (isVisible: boolean) => {
       consoleWarn(
-        "instance.updateInputFieldVisibility is deprecated. Use The input.isVisible property to configure this behavior.",
+        'instance.updateInputFieldVisibility is deprecated. Use The input.isVisible property to configure this behavior.'
       );
       serviceManager.store.dispatch(
-        actions.updateInputState({ fieldVisible: isVisible }, false),
+        actions.updateInputState({ fieldVisible: isVisible }, false)
       );
     },
 
     updateInputIsDisabled: (isDisabled: boolean) => {
       consoleWarn(
-        "instance.updateInputIsDisabled is deprecated. Use the input.isDisabled property to configure this behavior.",
+        'instance.updateInputIsDisabled is deprecated. Use the input.isDisabled property to configure this behavior.'
       );
       serviceManager.store.dispatch(
-        actions.updateInputState({ isReadonly: isDisabled }, false),
+        actions.updateInputState({ isReadonly: isDisabled }, false)
       );
     },
 
     updateAssistantUnreadIndicatorVisibility: (isVisible: boolean) => {
       consoleWarn(
-        "instance.updateAssistantUnreadIndicatorVisibility is deprecated. Use public.launcher.showUnreadIndicator to configure this behavior.",
+        'instance.updateAssistantUnreadIndicatorVisibility is deprecated. Use public.launcher.showUnreadIndicator to configure this behavior.'
       );
       debugLog(
-        "Called instance.updateAssistantUnreadIndicatorVisibility",
-        isVisible,
+        'Called instance.updateAssistantUnreadIndicatorVisibility',
+        isVisible
       );
       serviceManager.store.dispatch(
-        actions.setLauncherProperty("showUnreadIndicator", isVisible),
+        actions.setLauncherProperty('showUnreadIndicator', isVisible)
       );
     },
 
     changeView: async (
-      newView: ViewType | Partial<ViewState>,
+      newView: ViewType | Partial<ViewState>
     ): Promise<void> => {
-      debugLog("Called instance.changeView", newView);
+      debugLog('Called instance.changeView', newView);
 
       let issueWithNewView = false;
 
       const viewTypeValues = Object.values<string>(ViewType);
-      if (typeof newView === "string") {
+      if (typeof newView === 'string') {
         if (!viewTypeValues.includes(newView)) {
           consoleError(
             `You tried to change the view but the view you specified is not a valid view name. Please use` +
-              ` the valid view names; ${viewTypeValues.join(", ")}.`,
+              ` the valid view names; ${viewTypeValues.join(', ')}.`
           );
           issueWithNewView = true;
         }
-      } else if (typeof newView === "object") {
+      } else if (typeof newView === 'object') {
         Object.keys(newView).forEach((key) => {
           if (!viewTypeValues.includes(key)) {
             // If an item in the newView object does not match any of the supported view types then log an error.
             consoleError(
               `You tried to change the state of multiple views by providing an object, however you included the key` +
                 ` "${key}" within the object which is not a valid view name. Please use the valid view names; ` +
-                `${viewTypeValues.join(", ")}.`,
+                `${viewTypeValues.join(', ')}.`
             );
             issueWithNewView = true;
           }
         });
       } else {
         consoleError(
-          "You tried to change the view but the view you provided was not a string or an object. You can either change" +
+          'You tried to change the view but the view you provided was not a string or an object. You can either change' +
             ' to one of the supported views by providing a string, ex. "launcher" or "mainWindow". Or you can' +
             ' change the state of multiple views by providing an object, ex. { "launcher": true, "mainWindow": false,' +
-            " }. Please use one of these supported options.",
+            ' }. Please use one of these supported options.'
         );
         issueWithNewView = true;
       }
@@ -177,22 +177,22 @@ function createChatInstance({
 
     input: {
       updateRawValue: (updater: (previous: string) => string) => {
-        debugLog("Called instance.input.updateRawValue");
+        debugLog('Called instance.input.updateRawValue');
         serviceManager.actions.updateRawInputValue(updater);
       },
 
       updateStructuredData: (updater) => {
-        debugLog("Called instance.input.updateStructuredData");
+        debugLog('Called instance.input.updateStructuredData');
         serviceManager.actions.updateStructuredData(updater);
       },
 
       updateContent: (updater) => {
-        debugLog("Called instance.input.updateContent");
+        debugLog('Called instance.input.updateContent');
         return serviceManager.actions.updateInputContent(updater);
       },
 
       getEditor: () => {
-        debugLog("Called instance.input.getEditor()");
+        debugLog('Called instance.input.getEditor()');
         return serviceManager.actions.ensureInputEditor();
       },
     },
@@ -202,53 +202,53 @@ function createChatInstance({
     writeableElements: serviceManager.writeableElements,
 
     scrollToMessage: (messageID: string, animate?: boolean) => {
-      debugLog("Called instance.scrollToMessage", messageID, animate);
+      debugLog('Called instance.scrollToMessage', messageID, animate);
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
     updateCatastrophicErrorPanel: (
-      panelState: Partial<CatastrophicErrorPanelState>,
+      panelState: Partial<CatastrophicErrorPanelState>
     ) => {
-      debugLog("Called instance.updateCatastrophicPanel");
+      debugLog('Called instance.updateCatastrophicPanel');
 
       if (
         panelState.isOpen &&
         serviceManager.store.getState().catastrophicErrorType !== true
       ) {
         serviceManager.store.dispatch({
-          type: "SET_APP_STATE_VALUE",
-          key: "catastrophicErrorType",
+          type: 'SET_APP_STATE_VALUE',
+          key: 'catastrophicErrorType',
           value: true,
         });
       }
 
       serviceManager.store.dispatch(
-        actions.updateCatastrophicErrorPanel(panelState),
+        actions.updateCatastrophicErrorPanel(panelState)
       );
     },
 
     customPanels: serviceManager.customPanelManager,
 
     restartConversation: async () => {
-      debugLog("Called instance.restartConversation");
+      debugLog('Called instance.restartConversation');
       consoleWarn(
-        "instance.restartConversation is deprecated. Use instance.messaging.restartConversation instead.",
+        'instance.restartConversation is deprecated. Use instance.messaging.restartConversation instead.'
       );
       return instance.messaging.restartConversation();
     },
 
     updateIsMessageLoadingCounter(
       direction: IncreaseOrDecrease,
-      message?: string,
+      message?: string
     ): void {
-      debugLog("Called instance.updateIsMessageLoadingCounter", direction);
+      debugLog('Called instance.updateIsMessageLoadingCounter', direction);
       const { store } = serviceManager;
 
-      if (direction === "reset") {
+      if (direction === 'reset') {
         store.dispatch(actions.resetIsLoadingCounter());
-      } else if (direction === "increase") {
+      } else if (direction === 'increase') {
         store.dispatch(actions.addIsLoadingCounter(1, message));
-      } else if (direction === "decrease") {
+      } else if (direction === 'decrease') {
         if (
           store.getState().assistantMessageState.isMessageLoadingCounter <= 0
         ) {
@@ -259,27 +259,27 @@ function createChatInstance({
         store.dispatch(actions.addIsLoadingCounter(0, message));
       } else if (direction) {
         consoleError(
-          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`,
+          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`
         );
       }
     },
 
     updateIsChatLoadingCounter(direction: string): void {
-      debugLog("Called instance.updateIsChatLoadingCounter", direction);
+      debugLog('Called instance.updateIsChatLoadingCounter', direction);
       const { store } = serviceManager;
 
-      if (direction === "reset") {
+      if (direction === 'reset') {
         store.dispatch(actions.resetIsHydratingCounter());
-      } else if (direction === "increase") {
+      } else if (direction === 'increase') {
         store.dispatch(actions.addIsHydratingCounter(1));
-      } else if (direction === "decrease") {
+      } else if (direction === 'decrease') {
         if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
           return;
         }
         store.dispatch(actions.addIsHydratingCounter(-1));
       } else {
         consoleError(
-          `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`,
+          `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`
         );
       }
     },
@@ -287,48 +287,48 @@ function createChatInstance({
     messaging: {
       addMessage: (
         message: MessageResponse,
-        options: AddMessageOptions = {},
+        options: AddMessageOptions = {}
       ) => {
-        debugLog("Called instance.messaging.addMessage", message, options);
+        debugLog('Called instance.messaging.addMessage', message, options);
         serviceManager.messageService.messageLoadingManager.end();
         return serviceManager.actions.receive(
           message,
           options?.isLatestWelcomeNode ?? false,
-          null,
+          null
         );
       },
 
       addMessageChunk: async (
         chunk: StreamChunk,
-        options: AddMessageOptions = {},
+        options: AddMessageOptions = {}
       ) => {
-        debugLog("Called instance.messaging.addMessageChunk", chunk, options);
+        debugLog('Called instance.messaging.addMessageChunk', chunk, options);
         serviceManager.messageService.messageLoadingManager.end();
         try {
           await serviceManager.actions.receiveChunk(chunk, null, options);
         } catch (error) {
-          consoleError("Error in addMessageChunk", error);
+          consoleError('Error in addMessageChunk', error);
           throw error;
         }
       },
 
       upsertMessage: async (messageID, state, updater) => {
-        debugLog("Called instance.messaging.upsertMessage", messageID, state);
+        debugLog('Called instance.messaging.upsertMessage', messageID, state);
         serviceManager.messageService.messageLoadingManager.end();
         return serviceManager.messageUpsertCoordinator.upsert(
           messageID,
           state,
-          updater,
+          updater
         );
       },
 
       removeMessages: async (messageIDs: string[]) => {
-        debugLog("Called instance.messaging.removeMessages", messageIDs);
+        debugLog('Called instance.messaging.removeMessages', messageIDs);
         return serviceManager.actions.removeMessages(messageIDs);
       },
 
       clearConversation: () => {
-        debugLog("Called instance.messaging.clearConversation");
+        debugLog('Called instance.messaging.clearConversation');
         return serviceManager.actions.restartConversation({
           skipHydration: true,
           endHumanAgentConversation: false,
@@ -337,35 +337,35 @@ function createChatInstance({
       },
 
       insertHistory: (messages: HistoryItem[]) => {
-        debugLog("Called instance.messaging.insertHistory", messages);
+        debugLog('Called instance.messaging.insertHistory', messages);
         return serviceManager.actions.insertHistory(messages);
       },
 
       restartConversation: async () => {
-        debugLog("Called instance.messaging.restartConversation");
+        debugLog('Called instance.messaging.restartConversation');
         return serviceManager.actions.restartConversation();
       },
     },
 
     requestFocus: () => {
-      debugLog("Called instance.requestFocus");
+      debugLog('Called instance.requestFocus');
       serviceManager.appWindow?.requestFocus();
     },
 
     serviceDesk: {
       endConversation: () => {
-        debugLog("Called instance.serviceDesk.endConversation");
+        debugLog('Called instance.serviceDesk.endConversation');
         return serviceManager.actions.agentEndConversation(false);
       },
 
       updateIsSuspended: async (isSuspended: boolean) => {
-        debugLog("Called instance.serviceDesk.updateIsSuspended", isSuspended);
+        debugLog('Called instance.serviceDesk.updateIsSuspended', isSuspended);
         return serviceManager.actions.agentUpdateIsSuspended(isSuspended);
       },
     },
 
     destroySession: async (keepOpenState: boolean) => {
-      debugLog("Called instance.destroySession", keepOpenState);
+      debugLog('Called instance.destroySession', keepOpenState);
       return serviceManager.actions.destroySession(keepOpenState);
     },
   };
@@ -379,7 +379,7 @@ function createChatInstance({
   }
 
   if (serviceManager.store.getState().config.public.debug) {
-    consoleDebug("[ChatInstanceImpl] Created chat instance", instance);
+    consoleDebug('[ChatInstanceImpl] Created chat instance', instance);
   }
 
   return instance;

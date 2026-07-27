@@ -21,17 +21,17 @@
  * Start reading at: `renderUserDefinedResponseFactory`.
  */
 
-import { ChatInstance, RenderUserDefinedState } from "@carbon/ai-chat";
-import React from "react";
+import { ChatInstance, RenderUserDefinedState } from '@carbon/ai-chat';
+import React from 'react';
 
-import { CustomResponseExample } from "./CustomResponseExample";
+import { CustomResponseExample } from './CustomResponseExample';
 
 // Factory pattern: closes over activeResponseId so every render call sees the
 // current "latest message" id without prop-drilling through the chat surface.
 function renderUserDefinedResponseFactory(activeResponseId?: string | null) {
   return function renderUserDefinedResponse(
     state: RenderUserDefinedState,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ) {
     const { messageItem } = state;
 
@@ -41,7 +41,7 @@ function renderUserDefinedResponseFactory(activeResponseId?: string | null) {
         Boolean(activeResponseId) && state.fullMessage?.id === activeResponseId;
 
       switch (messageItem.user_defined?.user_defined_type) {
-        case "my_unique_identifier":
+        case 'my_unique_identifier':
           return (
             <CustomResponseExample
               data={messageItem.user_defined as { type: string; text: string }}

@@ -16,12 +16,12 @@ Wires a mock service desk into `<cds-aichat-custom-element>` via `serviceDeskFac
 
 ## APIs and props demonstrated
 
-| Symbol                         | Kind           | Role in this example                                                         |
-| ------------------------------ | -------------- | ---------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`  | custom element | Mounts the chat UI.                                                          |
-| `messaging.customSendMessage`  | property       | Mock backend that routes between bot replies and desk handoff.               |
-| `serviceDeskFactory`           | property       | Async factory returning a `MockServiceDesk`; rebuilt when user data changes. |
-| `ServiceDeskFactoryParameters` | type           | Parameters passed to each factory call.                                      |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Mock backend that routes between bot replies and desk handoff. |
+| `serviceDeskFactory` | property | Async factory returning a `MockServiceDesk`; rebuilt when user data changes. |
+| `ServiceDeskFactoryParameters` | type | Parameters passed to each factory call. |
 
 ## Run it
 

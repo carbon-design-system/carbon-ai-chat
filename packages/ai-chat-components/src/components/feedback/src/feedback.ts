@@ -7,23 +7,23 @@
  *  @license
  */
 
-import "../../markdown/index.js";
-import "@carbon/web-components/es/components/button/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
-import "@carbon/web-components/es/components/tag/index.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
-import "@carbon/web-components/es/components/layer/index.js";
-import "@carbon/web-components/es/components/textarea/index.js";
+import '../../markdown/index.js';
+import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/checkbox/index.js';
+import '@carbon/web-components/es/components/tag/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
+import '@carbon/web-components/es/components/layer/index.js';
+import '@carbon/web-components/es/components/textarea/index.js';
 
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Close16 from "@carbon/icons/es/close/16.js";
-import { html, LitElement, nothing, PropertyValues } from "lit";
-import { property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./feedback.scss?lit";
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+import { html, LitElement, nothing, PropertyValues } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './feedback.scss?lit';
 
 /**
  * The component for displaying a panel requesting feedback from a user.
@@ -36,25 +36,25 @@ class CDSAIChatFeedback extends LitElement {
   /**
    * The CSS class of this panel.
    */
-  @property({ type: String, attribute: "class", reflect: true })
+  @property({ type: String, attribute: 'class', reflect: true })
   class!: string;
 
   /**
    * The ID of this panel.
    */
-  @property({ type: String, attribute: "id", reflect: true })
+  @property({ type: String, attribute: 'id', reflect: true })
   id!: string;
 
   /**
    * Indicates if the feedback details are open.
    */
-  @property({ type: Boolean, attribute: "is-open", reflect: true })
+  @property({ type: Boolean, attribute: 'is-open', reflect: true })
   isOpen = false;
 
   /**
    * Indicates if the feedback details are readonly.
    */
-  @property({ type: Boolean, attribute: "is-readonly", reflect: true })
+  @property({ type: Boolean, attribute: 'is-readonly', reflect: true })
   isReadonly = false;
 
   /**
@@ -66,20 +66,20 @@ class CDSAIChatFeedback extends LitElement {
   /**
    * The maximum number of characters allowed in the feedback text area.
    */
-  @property({ type: Number, attribute: "max-length", reflect: true })
+  @property({ type: Number, attribute: 'max-length', reflect: true })
   maxLength?: number;
 
   /**
    * The title to display in the popup. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "title", reflect: true })
-  title = "Provide additional feedback";
+  @property({ type: String, attribute: 'title', reflect: true })
+  title = 'Provide additional feedback';
 
   /**
    * The body text to display to the user. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "body", reflect: true })
-  body = "What do you think of this response?";
+  @property({ type: String, attribute: 'body', reflect: true })
+  body = 'What do you think of this response?';
 
   /**
    * The list of categories to show.
@@ -91,43 +91,43 @@ class CDSAIChatFeedback extends LitElement {
    * The legal disclaimer text to show at the bottom of the popup. This text may contain rich markdown content. If this
    * value is not provided, no text will be shown.
    */
-  @property({ type: String, attribute: "disclaimer", reflect: true })
+  @property({ type: String, attribute: 'disclaimer', reflect: true })
   disclaimer?: string;
 
   /**
    * The label text to display with the disclaimer checkbox. If this value is not provided, no checkbox or label text will be displayed.
    */
-  @property({ type: String, attribute: "disclaimer-checkbox", reflect: true })
+  @property({ type: String, attribute: 'disclaimer-checkbox', reflect: true })
   disclaimerCheckbox?: string;
 
   /**
    * The placeholder to show in the text area. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "text-area-placeholder", reflect: true })
-  placeholder = "Provide additional feedback...";
+  @property({ type: String, attribute: 'text-area-placeholder', reflect: true })
+  placeholder = 'Provide additional feedback...';
 
   /**
    * The label for the primary button. A default value will be used if no value is provided here.
    */
-  @property({ type: String, attribute: "primary-label", reflect: true })
+  @property({ type: String, attribute: 'primary-label', reflect: true })
   primaryLabel?: string;
 
   /**
    * The accessible label for the categories listbox. This label is used by screen readers to describe the purpose of the category selection list.
    */
-  @property({ type: String, attribute: "categories-label", reflect: true })
+  @property({ type: String, attribute: 'categories-label', reflect: true })
   categoriesLabel?: string;
 
   /**
    * Indicates whether the text area should be shown.
    */
-  @property({ type: Boolean, attribute: "show-text-area", reflect: true })
+  @property({ type: Boolean, attribute: 'show-text-area', reflect: true })
   showTextArea = false;
 
   /**
    * Indicates whether the body line should be shown.
    */
-  @property({ type: Boolean, attribute: "show-body", reflect: true })
+  @property({ type: Boolean, attribute: 'show-body', reflect: true })
   showBody = false;
 
   /**
@@ -136,7 +136,7 @@ class CDSAIChatFeedback extends LitElement {
    * @internal
    */
   @state()
-  _textInput = "";
+  _textInput = '';
 
   /**
    * The current set of selected categories.
@@ -156,11 +156,11 @@ class CDSAIChatFeedback extends LitElement {
    * Called when the properties of the component have changed.
    */
   protected updated(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has("initialValues")) {
+    if (changedProperties.has('initialValues')) {
       this._setInitialValues(this.initialValues);
     }
 
-    if (changedProperties.has("disclaimerCheckbox")) {
+    if (changedProperties.has('disclaimerCheckbox')) {
       this._isSubmitDisabled = Boolean(this.disclaimerCheckbox);
     }
   }
@@ -178,10 +178,10 @@ class CDSAIChatFeedback extends LitElement {
    */
   protected _setInitialValues(values?: FeedbackInitialValues) {
     if (values) {
-      this._textInput = values.text ?? "";
+      this._textInput = values.text ?? '';
       this._selectedCategories = new Set(values.selectedCategories ?? []);
     } else {
-      this._textInput = "";
+      this._textInput = '';
       this._selectedCategories = new Set();
     }
   }
@@ -198,14 +198,14 @@ class CDSAIChatFeedback extends LitElement {
    */
   _handleSubmit() {
     this.dispatchEvent(
-      new CustomEvent<FeedbackSubmitDetails>("feedback-submit", {
+      new CustomEvent<FeedbackSubmitDetails>('feedback-submit', {
         detail: {
           text: this._textInput,
           selectedCategories: Array.from(this._selectedCategories),
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -214,10 +214,10 @@ class CDSAIChatFeedback extends LitElement {
    */
   _handleCancel() {
     this.dispatchEvent(
-      new CustomEvent("feedback-close", {
+      new CustomEvent('feedback-close', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -230,7 +230,7 @@ class CDSAIChatFeedback extends LitElement {
     }
 
     const button = event.currentTarget as HTMLElement | null;
-    const category = button?.getAttribute("data-content");
+    const category = button?.getAttribute('data-content');
     if (!category) {
       return;
     }
@@ -265,8 +265,7 @@ class CDSAIChatFeedback extends LitElement {
           align="top-right"
           kind="ghost"
           ?disabled=${this.isReadonly}
-          @click=${this._handleCancel}
-        >
+          @click=${this._handleCancel}>
           <span slot="icon">${iconLoader(Close16)}</span>
           <span slot="tooltip-content">Close</span>
         </cds-icon-button>
@@ -280,7 +279,7 @@ class CDSAIChatFeedback extends LitElement {
             ${
               this.showBody
                 ? html`<div class="${prefix}--prompt">${this.body}</div>`
-                : ""
+                : ''
             }
             ${
               this.categories?.length
@@ -289,9 +288,8 @@ class CDSAIChatFeedback extends LitElement {
                       class="${prefix}--tag-list-container"
                       role="group"
                       aria-label="${
-                        this.categoriesLabel || "Feedback categories"
-                      }"
-                    >
+                        this.categoriesLabel || 'Feedback categories'
+                      }">
                       ${this.categories.map(
                         (value) =>
                           html`<cds-selectable-tag
@@ -301,12 +299,11 @@ class CDSAIChatFeedback extends LitElement {
                             data-content="${value}"
                             ?selected=${this._selectedCategories.has(value)}
                             ?disabled=${this.isReadonly}
-                            @click=${this._handleCategoryClick}
-                          ></cds-selectable-tag>`,
+                            @click=${this._handleCategoryClick}></cds-selectable-tag>`
                       )}
                     </div>
                   </div>`
-                : ""
+                : ''
             }
           </div>
           <div class="${prefix}--feedback-text">
@@ -321,19 +318,17 @@ class CDSAIChatFeedback extends LitElement {
                       placeholder="${this.placeholder}"
                       rows="3"
                       max-count="${this.maxLength ?? nothing}"
-                      @input=${this._handleTextInput}
-                    ></cds-textarea>
+                      @input=${this._handleTextInput}></cds-textarea>
                   </div>`
-                : ""
+                : ''
             }
             ${
               this.disclaimer
                 ? html`<div class="${prefix}--disclaimer">
                     <cds-aichat-markdown
-                      .markdown=${this.disclaimer}
-                    ></cds-aichat-markdown>
+                      .markdown=${this.disclaimer}></cds-aichat-markdown>
                   </div>`
-                : ""
+                : ''
             }
           </div>
           ${
@@ -342,10 +337,9 @@ class CDSAIChatFeedback extends LitElement {
                   class="${prefix}--disclaimer-checkbox"
                   ?disabled=${this.isReadonly}
                   @cds-checkbox-changed=${this._handleDisclaimerCheckboxChange}
-                  label-text=${this.disclaimerCheckbox}
-                >
+                  label-text=${this.disclaimerCheckbox}>
                 </cds-checkbox>`
-              : ""
+              : ''
           }
         </div>
         <div class="${prefix}--buttons">
@@ -354,9 +348,8 @@ class CDSAIChatFeedback extends LitElement {
               ?disabled=${this.isReadonly || this._isSubmitDisabled}
               size="lg"
               kind="primary"
-              @click=${this._handleSubmit}
-            >
-              ${this.primaryLabel || "Submit"}
+              @click=${this._handleSubmit}>
+              ${this.primaryLabel || 'Submit'}
             </cds-button>
           </div>
         </div>
@@ -387,7 +380,7 @@ type FeedbackInitialValues = FeedbackSubmitDetails | null;
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-feedback": CDSAIChatFeedback;
+    'cds-aichat-feedback': CDSAIChatFeedback;
   }
 }
 

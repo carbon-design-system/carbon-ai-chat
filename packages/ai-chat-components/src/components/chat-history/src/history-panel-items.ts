@@ -7,11 +7,11 @@
  *  @license
  */
 
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import CDSSideNavItems from "@carbon/web-components/es/components/ui-shell/side-nav-items.js";
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import CDSSideNavItems from '@carbon/web-components/es/components/ui-shell/side-nav-items.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History panel items.
@@ -25,7 +25,7 @@ class CDSAIChatHistoryPanelItems extends CDSSideNavItems {
 
   connectedCallback() {
     super.connectedCallback();
-    this.setAttribute("data-floating-menu-container", "");
+    this.setAttribute('data-floating-menu-container', '');
   }
 }
 

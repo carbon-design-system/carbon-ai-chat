@@ -24,7 +24,7 @@
  * Start reading at: `feedbackHandler` and the `Demo` element below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   BusEventType,
@@ -33,11 +33,11 @@ import {
   type ChatInstance,
   FeedbackInteractionType,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -64,7 +64,7 @@ function feedbackHandler(event: BusEvent) {
   }
 }
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -85,8 +85,7 @@ export class Demo extends LitElement {
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
         .onBeforeRender=${this.onBeforeRender}
-        class="chat-custom-element"
-      ></cds-aichat-custom-element>
+        class="chat-custom-element"></cds-aichat-custom-element>
     `;
   }
 }

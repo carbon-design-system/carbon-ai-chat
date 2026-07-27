@@ -7,16 +7,16 @@
  *  @license
  */
 
-import Loading from "../../../components/carbon/Loading";
-import React, { useCallback, useEffect, useState } from "react";
+import Loading from '../../../components/carbon/Loading';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { AppState } from "../../../../types/state/AppState";
-import { RESPONSE_TYPE_TIMEOUT_MS } from "../../../utils/constants";
-import { MountChildrenOnDelay } from "../../../components/util/MountChildrenOnDelay";
-import InlineError from "../../../components/util/InlineError";
+import { useAriaAnnouncer } from '../../../hooks/useAriaAnnouncer';
+import { useSelector } from '../../../hooks/useSelector';
+import { shallowEqual } from '../../../store/appStore';
+import { AppState } from '../../../../types/state/AppState';
+import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
+import { MountChildrenOnDelay } from '../../../components/util/MountChildrenOnDelay';
+import InlineError from '../../../components/util/InlineError';
 
 interface IFrameComponentProps {
   /**
@@ -67,7 +67,7 @@ function IFrameComponent({
       errors_iframeSource: state.languagePack.errors_iframeSource,
       iframe_ariaSourceLoaded: state.languagePack.iframe_ariaSourceLoaded,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const ariaAnnouncer = useAriaAnnouncer();
   const [showSpinner, setShowSpinner] = useState(true);

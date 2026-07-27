@@ -28,7 +28,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome! This example demonstrates a triple-backtick input rule.
 
@@ -39,7 +39,7 @@ Type \`\`\` in the input — the paragraph is swapped for an editable code-snipp
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const text = request.input.text?.trim();
 
@@ -59,9 +59,9 @@ async function customSendMessage(
     return;
   }
 
-  const replyText = text.includes("```")
-    ? "Got it — your message contained a fenced code block."
-    : "Got it — no code block detected in your message.";
+  const replyText = text.includes('```')
+    ? 'Got it — your message contained a fenced code block.'
+    : 'Got it — no code block detected in your message.';
 
   instance.messaging.addMessage({
     output: {

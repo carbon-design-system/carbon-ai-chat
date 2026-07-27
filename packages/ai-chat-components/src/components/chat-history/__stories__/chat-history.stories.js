@@ -6,21 +6,21 @@
  *
  *  @license
  */
-import "../index";
-import { LitElement, html, css } from "lit";
-import styles from "./story-styles.scss?lit";
-import { focusElementAfterRepaint } from "../../../globals/utils/focus-utils";
+import '../index';
+import { LitElement, html, css } from 'lit';
+import styles from './story-styles.scss?lit';
+import { focusElementAfterRepaint } from '../../../globals/utils/focus-utils';
 
 import {
   historyItemActions,
   pinnedHistoryItemActions,
   pinnedHistoryItems,
   historyItems,
-} from "./story-data";
+} from './story-data';
 
-import PinFilled16 from "@carbon/icons/es/pin--filled/16.js";
-import Search16 from "@carbon/icons/es/search/16.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
+import PinFilled16 from '@carbon/icons/es/pin--filled/16.js';
+import Search16 from '@carbon/icons/es/search/16.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 
 // Return id of selected chat item or undefined if no item is selected
 const findSelectedItemId = (pinnedItems, regularItems) => {
@@ -44,24 +44,24 @@ const findSelectedItemId = (pinnedItems, regularItems) => {
 // Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
 const getIndexByTimestamp = (items, timestamp) => {
   const index = items.findIndex(
-    (item) => timestamp >= Date.parse(item.lastUpdated),
+    (item) => timestamp >= Date.parse(item.lastUpdated)
   );
   return index === -1 ? items.length : index;
 };
 
 class ChatHistoryDemo extends LitElement {
   static properties = {
-    headerTitle: { type: String, attribute: "header-title" },
+    headerTitle: { type: String, attribute: 'header-title' },
     searchResults: { type: Array },
     searchTotalCount: { type: Number },
     searchValue: { type: String },
-    searchOff: { type: Boolean, attribute: "search-off" },
+    searchOff: { type: Boolean, attribute: 'search-off' },
     autofocus: { type: Boolean },
     searchAttributes: { type: Object },
-    overflowMenuLabel: { type: String, attribute: "overflow-menu-label" },
+    overflowMenuLabel: { type: String, attribute: 'overflow-menu-label' },
     selectedId: { type: String },
-    showCloseAction: { type: Boolean, attribute: "show-close-action" },
-    showActions: { type: Boolean, attribute: "show-actions" },
+    showCloseAction: { type: Boolean, attribute: 'show-close-action' },
+    showActions: { type: Boolean, attribute: 'show-actions' },
     showDeletePanel: { type: Boolean },
     itemToDelete: { type: String },
     pinnedItems: { type: Array },
@@ -77,21 +77,21 @@ class ChatHistoryDemo extends LitElement {
 
   constructor() {
     super();
-    this.headerTitle = "Chats";
+    this.headerTitle = 'Chats';
     this.searchOff = false;
     this.autofocus = false;
     this.searchAttributes = {
-      "label-text": "Search",
-      placeholder: "Search",
-      "close-button-label-text": "Clear search",
+      'label-text': 'Search',
+      placeholder: 'Search',
+      'close-button-label-text': 'Clear search',
     };
-    this.overflowMenuLabel = "Options";
+    this.overflowMenuLabel = 'Options';
     this.showCloseAction = true;
     this.showActions = false;
     this.startPanel = false;
     this.searchResults = [];
     this.searchTotalCount = 0;
-    this.searchValue = "";
+    this.searchValue = '';
     this.selectedId = findSelectedItemId(pinnedHistoryItems, historyItems);
     this.showDeletePanel = false;
     this.itemToDelete = null;
@@ -108,20 +108,20 @@ class ChatHistoryDemo extends LitElement {
   firstUpdated() {
     // Add event listeners after first render
     this.addEventListener(
-      "history-item-menu-action",
-      this._handleHistoryItemAction,
+      'history-item-menu-action',
+      this._handleHistoryItemAction
     );
-    this.addEventListener("cds-search-input", this._handleSearchInput);
-    this.addEventListener("history-delete-cancel", this._handleDeleteCancel);
-    this.addEventListener("history-delete-confirm", this._handleDeleteConfirm);
-    this.addEventListener("history-item-selected", this._handleSelectChat);
+    this.addEventListener('cds-search-input', this._handleSearchInput);
+    this.addEventListener('history-delete-cancel', this._handleDeleteCancel);
+    this.addEventListener('history-delete-confirm', this._handleDeleteConfirm);
+    this.addEventListener('history-item-selected', this._handleSelectChat);
     this.addEventListener(
-      "history-panel-item-input-change",
-      this._handleRenameChange,
+      'history-panel-item-input-change',
+      this._handleRenameChange
     );
     this.addEventListener(
-      "history-panel-item-input-save",
-      this._handleRenameSave,
+      'history-panel-item-input-save',
+      this._handleRenameSave
     );
   }
 
@@ -135,7 +135,7 @@ class ChatHistoryDemo extends LitElement {
     const itemExists =
       this.pinnedItems.some((item) => item.id === itemId) ||
       this.regularItems.some((section) =>
-        section.chats.some((chat) => chat.id === itemId),
+        section.chats.some((chat) => chat.id === itemId)
       );
 
     if (itemExists) {
@@ -179,7 +179,7 @@ class ChatHistoryDemo extends LitElement {
 
       focusElementAfterRepaint(
         this.renderRoot,
-        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`,
+        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`
       );
     }
   };
@@ -190,22 +190,22 @@ class ChatHistoryDemo extends LitElement {
     if (itemToUnpin !== undefined) {
       // Remove from pinned items
       this.pinnedItems = this.pinnedItems.filter(
-        (chat) => chat.id !== itemToUnpin.id,
+        (chat) => chat.id !== itemToUnpin.id
       );
 
       // Add to regular items
-      const now = new Date("Feb 10, 7:30 PM");
+      const now = new Date('Feb 10, 7:30 PM');
       const today = now.setHours(0, 0, 0, 0);
       const yesterday = today - 24 * 60 * 60 * 1000;
       const itemToUnpinTs = Date.parse(itemToUnpin.lastUpdated);
 
-      let sectionMatch = "";
+      let sectionMatch = '';
       if (itemToUnpinTs > today) {
-        sectionMatch = "Today";
+        sectionMatch = 'Today';
       } else if (itemToUnpinTs > yesterday) {
-        sectionMatch = "Yesterday";
+        sectionMatch = 'Yesterday';
       } else {
-        sectionMatch = "Previous 7 days";
+        sectionMatch = 'Previous 7 days';
       }
 
       const newRegularItems = this.regularItems.map((item) => {
@@ -226,7 +226,7 @@ class ChatHistoryDemo extends LitElement {
 
       focusElementAfterRepaint(
         this.renderRoot,
-        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`,
+        `cds-aichat-history-panel-item#${CSS.escape(itemId)}`
       );
     }
   };
@@ -235,19 +235,19 @@ class ChatHistoryDemo extends LitElement {
     const action = event.detail.action;
 
     switch (action) {
-      case "Delete":
+      case 'Delete':
         this.itemToDelete = event.detail.itemId;
         this.showDeletePanel = true;
         break;
-      case "Rename":
+      case 'Rename':
         if (event.detail.element) {
           event.detail.element.rename = true;
         }
         break;
-      case "Pin to top":
+      case 'Pin to top':
         this._handlePinToTop(event.detail.itemId);
         break;
-      case "Unpin":
+      case 'Unpin':
         this._handleUnpin(event.detail.itemId);
         break;
       default:
@@ -265,7 +265,7 @@ class ChatHistoryDemo extends LitElement {
     if (this.itemToDelete) {
       // Remove from pinned items
       this.pinnedItems = this.pinnedItems.filter(
-        (item) => item.id !== this.itemToDelete,
+        (item) => item.id !== this.itemToDelete
       );
 
       // Remove from regular items
@@ -292,10 +292,10 @@ class ChatHistoryDemo extends LitElement {
               ...chat,
               renameInvalid: invalid,
               renameInvalidMessage: invalid
-                ? "Title cannot exceed 75 characters."
-                : "",
+                ? 'Title cannot exceed 75 characters.'
+                : '',
             }
-          : chat,
+          : chat
       );
 
       this.regularItems = this.regularItems.map((section) => ({
@@ -306,10 +306,10 @@ class ChatHistoryDemo extends LitElement {
                 ...chat,
                 renameInvalid: invalid,
                 renameInvalidMessage: invalid
-                  ? "Title cannot exceed 75 characters."
-                  : "",
+                  ? 'Title cannot exceed 75 characters.'
+                  : '',
               }
-            : chat,
+            : chat
         ),
       }));
     }
@@ -325,7 +325,7 @@ class ChatHistoryDemo extends LitElement {
               ...chat,
               name: event.detail.newName,
             }
-          : chat,
+          : chat
       );
 
       this.regularItems = this.regularItems.map((section) => ({
@@ -336,7 +336,7 @@ class ChatHistoryDemo extends LitElement {
                 ...chat,
                 name: event.detail.newName,
               }
-            : chat,
+            : chat
         ),
       }));
     }
@@ -384,64 +384,57 @@ class ChatHistoryDemo extends LitElement {
       <cds-aichat-history-shell>
         <cds-aichat-history-header
           header-title="${this.headerTitle}"
-          ?show-close-action=${this.showCloseAction}
-        ></cds-aichat-history-header>
+          ?show-close-action=${this.showCloseAction}></cds-aichat-history-header>
         <cds-aichat-history-toolbar
           ?search-off=${this.searchOff}
           ?autofocus=${this.autofocus}
-          .searchAttributes=${this.searchAttributes}
-        >
+          .searchAttributes=${this.searchAttributes}>
         </cds-aichat-history-toolbar>
         <cds-aichat-history-content
           results-label="Results"
           results-count="${
-            showSearchResults || noSearchResults ? this.searchTotalCount : ""
-          }"
-        >
+            showSearchResults || noSearchResults ? this.searchTotalCount : ''
+          }">
           <cds-aichat-history-panel
             ?show-actions=${this.showActions}
-            aria-label="Chat history"
-          >
+            aria-label="Chat history">
             <cds-aichat-history-panel-items>
               ${
                 noSearchResults
                   ? html`
                       <cds-aichat-history-panel-menu
                         expanded
-                        title="Search results"
-                      >
+                        title="Search results">
                         ${iconLoader(Search16, {
-                          slot: "title-icon",
+                          slot: 'title-icon',
                         })}
                         <cds-aichat-history-search-item disabled>
                           No available chats
                         </cds-aichat-history-search-item>
                       </cds-aichat-history-panel-menu>
                     `
-                  : ""
+                  : ''
               }
               ${
                 showSearchResults
                   ? html`
                       <cds-aichat-history-panel-menu
                         expanded
-                        title="Search results"
-                      >
+                        title="Search results">
                         ${iconLoader(Search16, {
-                          slot: "title-icon",
+                          slot: 'title-icon',
                         })}
                         ${this.searchResults.map(
                           (result) => html`
                             <cds-aichat-history-search-item
                               name="${result.name}"
-                              date="${result.lastUpdated}"
-                            >
+                              date="${result.lastUpdated}">
                             </cds-aichat-history-search-item>
-                          `,
+                          `
                         )}
                       </cds-aichat-history-panel-menu>
                     `
-                  : ""
+                  : ''
               }
               ${
                 !showSearchResults && !noSearchResults
@@ -451,10 +444,9 @@ class ChatHistoryDemo extends LitElement {
                           ? html`
                               <cds-aichat-history-panel-menu
                                 expanded
-                                title="Pinned"
-                              >
+                                title="Pinned">
                                 ${iconLoader(PinFilled16, {
-                                  slot: "title-icon",
+                                  slot: 'title-icon',
                                 })}
                                 ${this.pinnedItems.map(
                                   (item) => html`
@@ -465,18 +457,17 @@ class ChatHistoryDemo extends LitElement {
                                       ?rename=${item.rename}
                                       ?rename-invalid=${item.renameInvalid}
                                       rename-invalid-message=${
-                                        item.renameInvalidMessage ?? ""
+                                        item.renameInvalidMessage ?? ''
                                       }
                                       overflow-menu-label="${
                                         this.overflowMenuLabel
                                       }"
-                                      .actions=${pinnedHistoryItemActions}
-                                    ></cds-aichat-history-panel-item>
-                                  `,
+                                      .actions=${pinnedHistoryItemActions}></cds-aichat-history-panel-item>
+                                  `
                                 )}
                               </cds-aichat-history-panel-menu>
                             `
-                          : ""
+                          : ''
                       }
                       ${this.regularItems
                         .filter((item) => item.chats.length > 0)
@@ -484,8 +475,7 @@ class ChatHistoryDemo extends LitElement {
                           (item) => html`
                             <cds-aichat-history-panel-menu
                               expanded
-                              title="${item.section}"
-                            >
+                              title="${item.section}">
                               ${item.icon}
                               ${item.chats.map(
                                 (chat) => html`
@@ -495,20 +485,19 @@ class ChatHistoryDemo extends LitElement {
                                     ?selected=${chat.selected}
                                     ?rename-invalid=${item.renameInvalid}
                                     rename-invalid-message=${
-                                      item.renameInvalidMessage ?? ""
+                                      item.renameInvalidMessage ?? ''
                                     }
                                     overflow-menu-label="${
                                       this.overflowMenuLabel
                                     }"
-                                    .actions=${historyItemActions}
-                                  ></cds-aichat-history-panel-item>
-                                `,
+                                    .actions=${historyItemActions}></cds-aichat-history-panel-item>
+                                `
                               )}
                             </cds-aichat-history-panel-menu>
-                          `,
+                          `
                         )}
                     `
-                  : ""
+                  : ''
               }
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
@@ -517,10 +506,9 @@ class ChatHistoryDemo extends LitElement {
           this.showDeletePanel
             ? html`
                 <cds-aichat-history-delete-panel
-                  item-id=${this.itemToDelete ?? ""}
-                ></cds-aichat-history-delete-panel>
+                  item-id=${this.itemToDelete ?? ''}></cds-aichat-history-delete-panel>
               `
-            : ""
+            : ''
         }
       </cds-aichat-history-shell>
     `;
@@ -528,13 +516,13 @@ class ChatHistoryDemo extends LitElement {
 }
 
 // Register the demo component
-if (!customElements.get("cds-aichat-history-demo")) {
-  customElements.define("cds-aichat-history-demo", ChatHistoryDemo);
+if (!customElements.get('cds-aichat-history-demo')) {
+  customElements.define('cds-aichat-history-demo', ChatHistoryDemo);
 }
 
 export default {
-  title: "Preview/Chat History",
-  component: "cds-aichat-history-shell",
+  title: 'Preview/Chat History',
+  component: 'cds-aichat-history-shell',
   decorators: [
     (story) => html`
       <style>
@@ -548,46 +536,46 @@ export default {
 export const Default = {
   argTypes: {
     HeaderTitle: {
-      control: "text",
-      description: "Header title text of the chat history shell",
+      control: 'text',
+      description: 'Header title text of the chat history shell',
     },
     searchOff: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "true if search should be turned off in chat history toolbar.",
+        'true if search should be turned off in chat history toolbar.',
     },
     autofocus: {
-      control: "boolean",
-      description: "Toggles the native autofocus attribute on the text input",
+      control: 'boolean',
+      description: 'Toggles the native autofocus attribute on the text input',
     },
     searchAttributes: {
-      control: "object",
+      control: 'object',
       description:
-        "Optional attributes to pass to the cds-search component. Allows customization of search behavior and appearance (e.g., label-text, placeholder, disabled, value, close-button-label-text).",
+        'Optional attributes to pass to the cds-search component. Allows customization of search behavior and appearance (e.g., label-text, placeholder, disabled, value, close-button-label-text).',
     },
     overflowMenuLabel: {
-      control: "text",
-      description: "Overflow menu tooltip label for history panel items.",
+      control: 'text',
+      description: 'Overflow menu tooltip label for history panel items.',
     },
     showCloseAction: {
-      control: "boolean",
-      description: "renders close chat history action in header.",
+      control: 'boolean',
+      description: 'renders close chat history action in header.',
     },
     showActions: {
-      control: "boolean",
-      description: "Show actions on all history panel items.",
+      control: 'boolean',
+      description: 'Show actions on all history panel items.',
     },
   },
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
     searchOff: false,
     autofocus: false,
     searchAttributes: {
-      "label-text": "Search",
-      placeholder: "Search",
-      "close-button-label-text": "Clear search",
+      'label-text': 'Search',
+      placeholder: 'Search',
+      'close-button-label-text': 'Clear search',
     },
-    overflowMenuLabel: "Options",
+    overflowMenuLabel: 'Options',
     showCloseAction: true,
     showActions: false,
   },
@@ -599,8 +587,7 @@ export const Default = {
       .searchAttributes=${args.searchAttributes}
       overflow-menu-label="${args.overflowMenuLabel}"
       ?show-close-action=${args.showCloseAction}
-      ?show-actions=${args.showActions}
-    ></cds-aichat-history-demo>
+      ?show-actions=${args.showActions}></cds-aichat-history-demo>
   `,
 };
 
@@ -609,15 +596,14 @@ export const SearchResults = {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          header-title="Chats"
-        ></cds-aichat-history-header>
+          header-title="Chats"></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-content results-label="Results" results-count="4">
           <cds-aichat-history-panel aria-label="Search results">
             <cds-aichat-history-panel-items>
               <cds-aichat-history-panel-menu expanded title="Search results">
                 ${iconLoader(Search16, {
-                  slot: "title-icon",
+                  slot: 'title-icon',
                 })}
                 <cds-aichat-history-search-item date="Monday, 12:04 PM">
                   Here's the onboarding doc that includes all the information to
@@ -643,14 +629,13 @@ export const SearchResults = {
 
 export const Loading = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          header-title="${args.HeaderTitle}"
-        ></cds-aichat-history-header>
+          header-title="${args.HeaderTitle}"></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-loading></cds-aichat-history-loading>
       </cds-aichat-history-shell>
@@ -660,14 +645,13 @@ export const Loading = {
 
 export const EmptyState = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          header-title="${args.HeaderTitle}"
-        ></cds-aichat-history-header>
+          header-title="${args.HeaderTitle}"></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-content> </cds-aichat-history-content>
       </cds-aichat-history-shell>
@@ -677,21 +661,20 @@ export const EmptyState = {
 
 export const DeleteFlow = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return html`
       <cds-aichat-history-shell>
         <cds-aichat-history-header
-          header-title="${args.HeaderTitle}"
-        ></cds-aichat-history-header>
+          header-title="${args.HeaderTitle}"></cds-aichat-history-header>
         <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
         <cds-aichat-history-content>
           <cds-aichat-history-panel>
             <cds-aichat-history-panel-items>
               <cds-aichat-history-panel-menu expanded title="Pinned">
                 ${iconLoader(PinFilled16, {
-                  slot: "title-icon",
+                  slot: 'title-icon',
                 })}
                 ${pinnedHistoryItems.map(
                   (item) => html`
@@ -700,36 +683,32 @@ export const DeleteFlow = {
                       name="${item.name}"
                       ?selected=${item.selected}
                       ?rename=${item.rename}
-                      .actions=${pinnedHistoryItemActions}
-                    ></cds-aichat-history-panel-item>
-                  `,
+                      .actions=${pinnedHistoryItemActions}></cds-aichat-history-panel-item>
+                  `
                 )}
               </cds-aichat-history-panel-menu>
               ${historyItems.map(
                 (item) => html`
                   <cds-aichat-history-panel-menu
                     expanded
-                    title="${item.section}"
-                  >
+                    title="${item.section}">
                     ${item.icon}
                     ${item.chats.map(
                       (chat) => html`
                         <cds-aichat-history-panel-item
                           id="${chat.id}"
                           name="${chat.name}"
-                          .actions=${historyItemActions}
-                        ></cds-aichat-history-panel-item>
-                      `,
+                          .actions=${historyItemActions}></cds-aichat-history-panel-item>
+                      `
                     )}
                   </cds-aichat-history-panel-menu>
-                `,
+                `
               )}
             </cds-aichat-history-panel-items>
           </cds-aichat-history-panel>
         </cds-aichat-history-content>
         <cds-aichat-history-delete-panel
-          item-id="today-0"
-        ></cds-aichat-history-delete-panel>
+          item-id="today-0"></cds-aichat-history-delete-panel>
       </cds-aichat-history-shell>
     `;
   },

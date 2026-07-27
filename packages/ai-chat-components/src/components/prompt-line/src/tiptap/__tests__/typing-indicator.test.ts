@@ -7,28 +7,28 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect } from "@open-wc/testing";
-import { Editor } from "@tiptap/core";
-import DocumentNode from "@tiptap/extension-document";
-import ParagraphNode from "@tiptap/extension-paragraph";
-import TextNode from "@tiptap/extension-text";
+import { expect } from '@open-wc/testing';
+import { Editor } from '@tiptap/core';
+import DocumentNode from '@tiptap/extension-document';
+import ParagraphNode from '@tiptap/extension-paragraph';
+import TextNode from '@tiptap/extension-text';
 
-import { setHostOriginMeta } from "../origin-meta.js";
+import { setHostOriginMeta } from '../origin-meta.js';
 import {
   TypingIndicator,
   type TypingIndicatorStorage,
-} from "../typing-indicator.js";
+} from '../typing-indicator.js';
 
 function makeEditor() {
-  const mount = document.createElement("div");
+  const mount = document.createElement('div');
   document.body.appendChild(mount);
   const editor = new Editor({
     element: mount,
     extensions: [DocumentNode, ParagraphNode, TextNode, TypingIndicator],
-    content: "",
+    content: '',
   });
   const events: { isTyping: boolean }[] = [];
-  editor.view.dom.addEventListener("cds-aichat-prompt-typing", (e) => {
+  editor.view.dom.addEventListener('cds-aichat-prompt-typing', (e) => {
     events.push((e as CustomEvent).detail);
   });
   return {
@@ -41,21 +41,21 @@ function makeEditor() {
   };
 }
 
-describe("tiptap/typing-indicator", function () {
-  it("emits isTyping=true on user-driven doc change", () => {
+describe('tiptap/typing-indicator', function () {
+  it('emits isTyping=true on user-driven doc change', () => {
     const { editor, events, cleanup } = makeEditor();
 
-    editor.commands.insertContent("hi");
+    editor.commands.insertContent('hi');
 
     expect(events.length).to.equal(1);
     expect(events[0].isTyping).to.equal(true);
     cleanup();
   });
 
-  it("does NOT emit isTyping=true when the tr carries host-origin meta", () => {
+  it('does NOT emit isTyping=true when the tr carries host-origin meta', () => {
     const { editor, events, cleanup } = makeEditor();
 
-    const tr = editor.state.tr.insertText("hi");
+    const tr = editor.state.tr.insertText('hi');
     setHostOriginMeta(tr);
     editor.view.dispatch(tr);
 
@@ -63,26 +63,26 @@ describe("tiptap/typing-indicator", function () {
     cleanup();
   });
 
-  it("keeps subsequent user input emitting after a host-origin batch", () => {
+  it('keeps subsequent user input emitting after a host-origin batch', () => {
     const { editor, events, cleanup } = makeEditor();
 
-    const tr = editor.state.tr.insertText("hi");
+    const tr = editor.state.tr.insertText('hi');
     setHostOriginMeta(tr);
     editor.view.dispatch(tr);
     expect(events.length).to.equal(0);
 
-    editor.commands.insertContent(" you");
+    editor.commands.insertContent(' you');
     expect(events.length).to.equal(1);
     expect(events[0].isTyping).to.equal(true);
     cleanup();
   });
 
-  it("storage.reset() emits isTyping=false when currently typing", () => {
+  it('storage.reset() emits isTyping=false when currently typing', () => {
     const { editor, events, cleanup } = makeEditor();
     const storage = editor.extensionStorage
       .carbonTypingIndicator as TypingIndicatorStorage;
 
-    editor.commands.insertContent("hi");
+    editor.commands.insertContent('hi');
     expect(events.length).to.equal(1);
 
     storage.reset();

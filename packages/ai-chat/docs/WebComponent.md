@@ -35,12 +35,12 @@ yarn add @carbon/ai-chat
 Render the component, give it a class that sizes it, and pass your configuration as props.
 
 ```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-@customElement("my-app")
+@customElement('my-app')
 export class MyApp extends LitElement {
   static styles = css`
     .fullscreen {
@@ -51,8 +51,7 @@ export class MyApp extends LitElement {
   render() {
     return html`<cds-aichat-custom-element
       class="fullscreen"
-      .header=${{ title: "My Assistant" }}
-    />`;
+      .header=${{ title: 'My Assistant' }} />`;
   }
 }
 ```
@@ -70,12 +69,12 @@ For different open/close behavior — say, animating the chat in and out — pro
 See {@link CdsAiChatCustomElementAttributes} for the properties and attributes it accepts.
 
 ```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
-@customElement("my-app")
+@customElement('my-app')
 export class MyApp extends LitElement {
   static styles = css`
     .fullscreen {
@@ -88,9 +87,8 @@ export class MyApp extends LitElement {
       class="fullscreen"
       .debug=${true}
       .aiEnabled=${true}
-      .header=${{ title: "My Assistant" }}
-      .launcher=${{ isOn: true }}
-    />`;
+      .header=${{ title: 'My Assistant' }}
+      .launcher=${{ isOn: true }} />`;
   }
 }
 ```
@@ -124,18 +122,18 @@ Render `user_defined` responses with the {@link CdsAiChatContainerAttributes.ren
 Provide a callback that receives the accumulated {@link RenderUserDefinedState} for a `user_defined` response and returns an `HTMLElement` or `null`. The callback reads the {@link UserDefinedItem} from that state, and the library manages everything else.
 
 ```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 
 import {
   type ChatInstance,
   type PublicConfig,
   type RenderUserDefinedState,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -143,7 +141,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   @state()
   accessor instance!: ChatInstance;
@@ -154,13 +152,13 @@ export class Demo extends LitElement {
 
   renderUserDefinedCallback = (
     state: RenderUserDefinedState,
-    instance: ChatInstance,
+    instance: ChatInstance
   ): HTMLElement | null => {
     const messageItem = state.messageItem as UserDefinedItem | undefined;
 
     switch (messageItem?.user_defined?.user_defined_type) {
-      case "my_unique_identifier": {
-        const el = document.createElement("div");
+      case 'my_unique_identifier': {
+        const el = document.createElement('div');
         el.textContent = messageItem.user_defined.text as string;
         return el;
       }
@@ -175,8 +173,7 @@ export class Demo extends LitElement {
       <cds-aichat-container
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
-        .renderUserDefinedResponse=${this.renderUserDefinedCallback}
-      ></cds-aichat-container>
+        .renderUserDefinedResponse=${this.renderUserDefinedCallback}></cds-aichat-container>
     `;
   }
 }
@@ -188,14 +185,14 @@ The callback runs on every state update: a new chunk, a complete item, or a full
 
 ```typescript
 renderUserDefinedCallback = (
-  state: RenderUserDefinedState,
+  state: RenderUserDefinedState
 ): HTMLElement | null => {
   // Streaming — show partial content as it arrives
   if (state.partialItems?.length) {
     const text = state.partialItems
       .map((item) => item.user_defined?.text)
-      .join("");
-    const el = document.createElement("div");
+      .join('');
+    const el = document.createElement('div');
     el.textContent = text;
     return el;
   }
@@ -203,7 +200,7 @@ renderUserDefinedCallback = (
   // Complete — show final content
   if (state.messageItem) {
     const messageItem = state.messageItem as UserDefinedItem;
-    const el = document.createElement("div");
+    const el = document.createElement('div');
     el.textContent = messageItem.user_defined?.text as string;
     return el;
   }
@@ -223,15 +220,15 @@ See [Slots](./WriteableElements.md) for the slot concept and the available {@lin
 The web components also take any element whose slot attribute matches a {@link WriteableElementName} as a slot item.
 
 ```typescript
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js";
-import { html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
+import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
 const config = {
   // Your configuration object.
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class MyApp extends LitElement {
   render() {
     return html`<cds-aichat-container>
@@ -249,7 +246,7 @@ Render a footer with the {@link CdsAiChatContainerAttributes.renderCustomMessage
 
 ```typescript
 renderCustomMessageFooter = (state, instance) => {
-  const footer = document.createElement("custom-footer-example");
+  const footer = document.createElement('custom-footer-example');
   footer.messageItem = state.messageItem;
   footer.additionalData = state.additionalData;
   return footer;

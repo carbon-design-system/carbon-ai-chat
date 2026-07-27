@@ -15,11 +15,9 @@ After every `code_search` or `docs_search` response:
 7. **Props validation** — use `props_used[]` and `props_literal{}` from the variant; `props_schema` is stripped server-side and will not be present
 8. **Imports** — always use the verbatim import statements from `source.imports[]`; never construct imports manually unless no result was returned
 9. **Freshness** — prefer results with more recent `last_crawled_at` or `last_updated`
-10. **AI Chat topic** — for AI Chat doc queries, validate the returned chunk references
-    the intended symbol or topic (e.g., `PublicChatState`, `migration-1.0.0`)
+10. **AI Chat topic** — for AI Chat doc queries, validate the returned chunk references the intended symbol or topic (e.g., `PublicChatState`, `migration-1.0.0`)
 11. **AI Chat code** — validate the intended `example_root` and framework before using snippets
-12. **File completeness** — for AI Chat code, confirm required source files are present;
-    look for `is_complete_file: true` indicating server-side reconstruction
+12. **File completeness** — for AI Chat code, confirm required source files are present; look for `is_complete_file: true` indicating server-side reconstruction
 
 ---
 
@@ -32,57 +30,41 @@ After every `get_charts` response:
    - `incomplete_example` — variant lacks concrete data/options; inspect `incomplete` object; suggest a different variant
    - `schema_only` — `mode:"schema"` was used; schema docs only — never emit as runnable code
 
-2. **Check `buildable`** — if `false`, surface this explicitly before generating code;
-   never silently produce code that the server has flagged as unbuildable
+2. **Check `buildable`** — if `false`, surface this explicitly before generating code; never silently produce code that the server has flagged as unbuildable
 
-3. **Confirm `chosen_variant`** — verify the resolved variant matches the user's intent;
-   if the user named a specific variant and it was not matched, disclose the fallback used
+3. **Confirm `chosen_variant`** — verify the resolved variant matches the user's intent; if the user named a specific variant and it was not matched, disclose the fallback used
 
-4. **Verify `assembly` fields (mode:"full" only)** — confirm all four sub-fields are present
-   before composing the response:
+4. **Verify `assembly` fields (mode:"full" only)** — confirm all four sub-fields are present before composing the response:
    - `assembly.install_command` — copy verbatim; do not substitute an equivalent package manager command
    - `assembly.styles_import` — apply as top-level app entry import; never place in SCSS
    - `chosen_variant.import_hint` — apply verbatim for component imports
    - `chosen_variant.usage_hint` — apply verbatim for usage structure
    - `assembly.instruction` — surface to the user if present; never suppress
 
-5. **Inspect `source_files[]` file roles** — every file carries a `file_role`; verify
-   expected roles are present:
+5. **Inspect `source_files[]` file roles** — every file carries a `file_role`; verify expected roles are present:
    - `variant` — primary chart example (always required)
    - `dependency` — helper or config file (include in output if present)
    - `framework_component` — framework-specific wrapper (include in output if present)
    - If the `variant` role is absent the result is unusable; trigger error recovery
 
-6. **Check `incomplete` on each source file** — if any `source_file.incomplete: true`,
-   that file's code chunk was truncated server-side; warn the user and do not fabricate
-   the missing portion
+6. **Check `incomplete` on each source file** — if any `source_file.incomplete: true`, that file's code chunk was truncated server-side; warn the user and do not fabricate the missing portion
 
-7. **Handle `recovery` object** — if present, the result was sourced from a cross-framework
-   fallback; disclose the recovery source and confirm the returned framework still satisfies
-   the user's requirements
+7. **Handle `recovery` object** — if present, the result was sourced from a cross-framework fallback; disclose the recovery source and confirm the returned framework still satisfies the user's requirements
 
-8. **Validate returned `framework`** — a mismatch between the requested and returned framework
-   means a fallback occurred; notify the user before proceeding
+8. **Validate returned `framework`** — a mismatch between the requested and returned framework means a fallback occurred; notify the user before proceeding
 
-9. **Install-before-import validation** — execute `assembly.install_command` and confirm
-   success before applying or validating `assembly.styles_import`
+9. **Install-before-import validation** — execute `assembly.install_command` and confirm success before applying or validating `assembly.styles_import`
 
 ---
 
 ### `get_charts` Response Composition Rules
 
-- **Assembly hints are verbatim** — never rewrite `install_command`, `styles_import`,
-  `import_hint`, or `usage_hint`, even to match local conventions
-- **Install before styles validation** — `styles_import` resolution is only valid after
-  successful dependency installation via `assembly.install_command`
-- **Emit all source files** — include every file from `source_files[]` in the output;
-  do not silently drop `dependency` or `framework_component` entries
-- **Do not fabricate truncated code** — when `incomplete: true`, tell the user the chunk is
-  truncated rather than filling in guessed content
-- **Schema ≠ runnable code** — a `mode:"schema"` result contains data/options schema docs,
-  not executable chart code; never emit a schema response as a code example
-- **Surface `assembly.instruction`** — always include assembly instruction guidance in the
-  output when it contains required setup/configuration details
+- **Assembly hints are verbatim** — never rewrite `install_command`, `styles_import`, `import_hint`, or `usage_hint`, even to match local conventions
+- **Install before styles validation** — `styles_import` resolution is only valid after successful dependency installation via `assembly.install_command`
+- **Emit all source files** — include every file from `source_files[]` in the output; do not silently drop `dependency` or `framework_component` entries
+- **Do not fabricate truncated code** — when `incomplete: true`, tell the user the chunk is truncated rather than filling in guessed content
+- **Schema ≠ runnable code** — a `mode:"schema"` result contains data/options schema docs, not executable chart code; never emit a schema response as a code example
+- **Surface `assembly.instruction`** — always include assembly instruction guidance in the output when it contains required setup/configuration details
 
 ---
 
@@ -124,8 +106,7 @@ When the user asks about accessibility (a11y) for a component:
 2. **Set `page_type`** — use `filters.page_type: "accessibility"` for Carbon docs
 3. **Scope** — fetch the top-level section headings first; avoid pulling every chunk
 4. **Stop when sufficient** — once the key headings are covered, stop querying
-5. **Fetch missing chunks only if needed** — if `chunk_ordinal_max` > 1 and a specific
-   chunk is needed, fetch it explicitly; do not bulk-fetch all chunks upfront
+5. **Fetch missing chunks only if needed** — if `chunk_ordinal_max` > 1 and a specific chunk is needed, fetch it explicitly; do not bulk-fetch all chunks upfront
 6. **Debounce** — do not issue duplicate a11y queries for the same component in the same session
 
 ---
@@ -134,11 +115,7 @@ When the user asks about accessibility (a11y) for a component:
 
 ### Imports
 
-Always use the verbatim import statements from `source.imports[]`. The field contains
-the exact import line from the story file — including package name, named exports, and
-any required subpath. Do not construct imports manually unless no result was returned.
-If both `imports[]` and a variant's `example_clean` contain import lines, prefer `imports[]`
-as the canonical source — it represents the full component import, not just the usage example.
+Always use the verbatim import statements from `source.imports[]`. The field contains the exact import line from the story file — including package name, named exports, and any required subpath. Do not construct imports manually unless no result was returned. If both `imports[]` and a variant's `example_clean` contain import lines, prefer `imports[]` as the canonical source — it represents the full component import, not just the usage example.
 
 ### Props
 

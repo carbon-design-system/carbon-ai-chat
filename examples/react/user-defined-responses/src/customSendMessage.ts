@@ -28,7 +28,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to the user-defined responses example.
 
@@ -39,10 +39,10 @@ Type \`user_defined\` to receive a custom response that is rendered by your own 
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Empty input fires once on chat open as a hello-from-the-bot trigger.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -56,7 +56,7 @@ async function customSendMessage(
     return;
   }
 
-  if (request.input.text === "user_defined") {
+  if (request.input.text === 'user_defined') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -65,8 +65,8 @@ async function customSendMessage(
             response_type: MessageResponseTypes.USER_DEFINED,
             user_defined: {
               // user_defined_type is the discriminator the renderer switches on.
-              user_defined_type: "my_unique_identifier",
-              text: "Some text from your back-end.",
+              user_defined_type: 'my_unique_identifier',
+              text: 'Some text from your back-end.',
             },
           },
         ],

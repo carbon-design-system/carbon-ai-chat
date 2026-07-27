@@ -17,18 +17,18 @@ Mocks a controlled reasoning-step flow delivered through `upsertMessage`: the pa
 
 ## APIs and props demonstrated
 
-| Symbol                                     | Package / kind              | Role in this example                                       |
-| ------------------------------------------ | --------------------------- | ---------------------------------------------------------- |
-| `ChatCustomElement`                        | `@carbon/ai-chat` component | Mounts the chat UI.                                        |
-| `PublicConfig`                             | `@carbon/ai-chat` type      | Config shape.                                              |
-| `customSendMessage`                        | `messaging` prop            | Runs the controlled reasoning scenario.                    |
-| `ReasoningStep` / `ReasoningStepOpenState` | `@carbon/ai-chat` types     | Reasoning payloads + controlled open-state values.         |
-| `MessageResponseOptions`                   | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,open_state}`. |
-| `MessageResponse`                          | `@carbon/ai-chat` type      | Full snapshot returned by each upsert updater.             |
-| `MessageState`                             | `@carbon/ai-chat` enum      | `STREAMING` per update, `COMPLETE` on the final call.      |
-| `instance.messaging.upsertMessage`         | `ChatInstance` API          | Inserts + updates the welcome and the reasoning in place.  |
-| `instance.updateIsMessageLoadingCounter`   | `ChatInstance` API          | Custom loading label that replaces the default UI.         |
-| `CustomSendMessageOptions.signal`          | `@carbon/ai-chat`           | Abort signal for cancellation.                             |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Runs the controlled reasoning scenario. |
+| `ReasoningStep` / `ReasoningStepOpenState` | `@carbon/ai-chat` types | Reasoning payloads + controlled open-state values. |
+| `MessageResponseOptions` | `@carbon/ai-chat` type | `message_options` carrying `reasoning.{steps,open_state}`. |
+| `MessageResponse` | `@carbon/ai-chat` type | Full snapshot returned by each upsert updater. |
+| `MessageState` | `@carbon/ai-chat` enum | `STREAMING` per update, `COMPLETE` on the final call. |
+| `instance.messaging.upsertMessage` | `ChatInstance` API | Inserts + updates the welcome and the reasoning in place. |
+| `instance.updateIsMessageLoadingCounter` | `ChatInstance` API | Custom loading label that replaces the default UI. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` | Abort signal for cancellation. |
 
 ## Run it
 

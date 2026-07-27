@@ -34,7 +34,7 @@ const response: MessageResponse = {
     generic: [
       {
         response_type: MessageResponseTypes.TEXT,
-        text: "Hello! How can I help?",
+        text: 'Hello! How can I help?',
       },
     ],
   },

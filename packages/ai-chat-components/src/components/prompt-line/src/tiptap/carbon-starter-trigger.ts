@@ -16,10 +16,10 @@
  * can swap the list at runtime without recreating the editor.
  */
 
-import { Extension, type Editor } from "@tiptap/core";
+import { Extension, type Editor } from '@tiptap/core';
 
-import { dispatchTriggerChange } from "./trigger-utils.js";
-import type { SuggestionItem } from "./types.js";
+import { dispatchTriggerChange } from './trigger-utils.js';
+import type { SuggestionItem } from './types.js';
 
 export interface StarterTriggerStorage {
   items: SuggestionItem[];
@@ -31,7 +31,7 @@ export function carbonStarterTrigger(
   initialIsOn = true,
 ): Extension {
   return Extension.create<unknown, StarterTriggerStorage>({
-    name: "carbonStarterTrigger",
+    name: 'carbonStarterTrigger',
 
     addStorage() {
       return { items: initialItems, isOn: initialIsOn };
@@ -74,8 +74,8 @@ function maybeEmit(editor: Editor, forceClear = false): void {
     return;
   }
   dispatchTriggerChange(editor, {
-    type: "starter",
-    query: "",
+    type: 'starter',
+    query: '',
     triggerOffset: 0,
   });
 }

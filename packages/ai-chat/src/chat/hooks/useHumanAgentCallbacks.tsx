@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { useCallback, useState } from "react";
-import type { ServiceManager } from "../services/ServiceManager";
-import type { FileUpload } from "../../types/state/AppState";
-import type { InputFunctions } from "../components/input/Input";
+import { useCallback, useState } from 'react';
+import type { ServiceManager } from '../services/ServiceManager';
+import type { FileUpload } from '../../types/state/AppState';
+import type { InputFunctions } from '../components/input/Input';
 
 interface UseHumanAgentCallbacksProps {
   serviceManager: ServiceManager;
@@ -66,7 +66,7 @@ export function useHumanAgentCallbacks({
         serviceManager.humanAgentService.userTyping(isTyping);
       }
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   const onFilesSelectedForUpload = useCallback(
@@ -83,7 +83,7 @@ export function useHumanAgentCallbacks({
       allowMultipleFileUploads,
       requestInputFocus,
       serviceManager,
-    ],
+    ]
   );
 
   return {

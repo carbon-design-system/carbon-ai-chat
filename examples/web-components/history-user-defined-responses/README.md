@@ -18,23 +18,23 @@ Lit example that rehydrates a conversation containing multiple `user_defined` ca
 
 ## APIs and props demonstrated
 
-| Symbol                                 | Kind                   | Role in this example                                                                     |
-| -------------------------------------- | ---------------------- | ---------------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`          | custom element         | Mounts the chat as a fullscreen surface.                                                 |
-| `PublicConfig.layout.showFrame`        | config prop            | Disables the default frame so the host element fills its container.                      |
-| `PublicConfig.openChatByDefault`       | config prop            | Opens the chat on first paint so the rehydrated cards are immediately visible.           |
-| `messaging.customSendMessage`          | property               | Mock backend that emits a new `user_defined` response on the `user_defined` keyword.     |
-| `messaging.customLoadHistory`          | property               | Mock history loader that returns three pre-built `user_defined` cards.                   |
-| `instance.messaging.clearConversation` | instance method        | Clears the conversation before `insertHistory` so the transcript fully replaces.         |
-| `instance.messaging.insertHistory`     | instance method        | Inserts the rehydrated `HistoryItem[]` produced by `customLoadHistory`.                  |
-| `renderUserDefinedResponse`            | property               | Callback returning an `HTMLElement` for `user_defined` items.                            |
-| `RenderUserDefinedState`               | `@carbon/ai-chat` type | Argument to the render callback — exposes `messageItem` and `fullMessage`.               |
-| `BusEventType.STATE_CHANGE`            | `@carbon/ai-chat` enum | Notifies on `activeResponseId` changes, including the change emitted by `insertHistory`. |
-| `instance.getState`                    | instance method        | Reads the initial `activeResponseId` before any `STATE_CHANGE` events fire.              |
-| `instance.on`                          | instance method        | Subscribes the `STATE_CHANGE` handler.                                                   |
-| `MessageResponseTypes.USER_DEFINED`    | `@carbon/ai-chat` enum | Response-type discriminator that routes the message to the render handler.               |
-| `MessageInputType.TEXT`                | `@carbon/ai-chat` enum | Marks each fabricated user-request `HistoryItem` as a text input.                        |
-| `HistoryItem`                          | `@carbon/ai-chat` type | Wrapper produced by `customLoadHistory` for each rehydrated message.                     |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat as a fullscreen surface. |
+| `PublicConfig.layout.showFrame` | config prop | Disables the default frame so the host element fills its container. |
+| `PublicConfig.openChatByDefault` | config prop | Opens the chat on first paint so the rehydrated cards are immediately visible. |
+| `messaging.customSendMessage` | property | Mock backend that emits a new `user_defined` response on the `user_defined` keyword. |
+| `messaging.customLoadHistory` | property | Mock history loader that returns three pre-built `user_defined` cards. |
+| `instance.messaging.clearConversation` | instance method | Clears the conversation before `insertHistory` so the transcript fully replaces. |
+| `instance.messaging.insertHistory` | instance method | Inserts the rehydrated `HistoryItem[]` produced by `customLoadHistory`. |
+| `renderUserDefinedResponse` | property | Callback returning an `HTMLElement` for `user_defined` items. |
+| `RenderUserDefinedState` | `@carbon/ai-chat` type | Argument to the render callback — exposes `messageItem` and `fullMessage`. |
+| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Notifies on `activeResponseId` changes, including the change emitted by `insertHistory`. |
+| `instance.getState` | instance method | Reads the initial `activeResponseId` before any `STATE_CHANGE` events fire. |
+| `instance.on` | instance method | Subscribes the `STATE_CHANGE` handler. |
+| `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Response-type discriminator that routes the message to the render handler. |
+| `MessageInputType.TEXT` | `@carbon/ai-chat` enum | Marks each fabricated user-request `HistoryItem` as a text input. |
+| `HistoryItem` | `@carbon/ai-chat` type | Wrapper produced by `customLoadHistory` for each rehydrated message. |
 
 ## Run it
 

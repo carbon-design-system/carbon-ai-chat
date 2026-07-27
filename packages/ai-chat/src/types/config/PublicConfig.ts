@@ -7,27 +7,27 @@
  *  @license
  */
 
-import { HomeScreenConfig } from "./HomeScreenConfig";
+import { HomeScreenConfig } from './HomeScreenConfig';
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
   ServiceDeskPublicConfig,
-} from "./ServiceDeskConfig";
-import { LauncherConfig } from "./LauncherConfig";
-import { PersistedStateConfig } from "./PersistedStateConfig";
-import { DeepPartial } from "../utilities/DeepPartial";
-import type { MarkdownItPlugin as _MarkdownItPlugin } from "@carbon/ai-chat-components/es/components/markdown/index.js";
-import type { KeyboardShortcuts } from "./ShortcutConfig";
-import { CarbonTheme } from "./CarbonTheme";
-import { DisclaimerPublicConfig } from "./DisclaimerConfig";
-import { HeaderConfig } from "./HeaderConfig";
-import { HistoryConfig } from "./HistoryConfig";
-import { InputConfig } from "./InputConfig";
-import { LanguagePack } from "./LanguagePack";
-import { LayoutConfig } from "./LayoutConfig";
-import { OnErrorData } from "./ErrorConfig";
-import { PublicConfigMessaging } from "./PublicConfigMessaging";
-import { UploadConfig } from "./UploadConfig";
+} from './ServiceDeskConfig';
+import { LauncherConfig } from './LauncherConfig';
+import { PersistedStateConfig } from './PersistedStateConfig';
+import { DeepPartial } from '../utilities/DeepPartial';
+import type { MarkdownItPlugin as _MarkdownItPlugin } from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import type { KeyboardShortcuts } from './ShortcutConfig';
+import { CarbonTheme } from './CarbonTheme';
+import { DisclaimerPublicConfig } from './DisclaimerConfig';
+import { HeaderConfig } from './HeaderConfig';
+import { HistoryConfig } from './HistoryConfig';
+import { InputConfig } from './InputConfig';
+import { LanguagePack } from './LanguagePack';
+import { LayoutConfig } from './LayoutConfig';
+import { OnErrorData } from './ErrorConfig';
+import { PublicConfigMessaging } from './PublicConfigMessaging';
+import { UploadConfig } from './UploadConfig';
 
 /**
  * This file contains the definition for the public application configuration operations that are provided by the
@@ -102,7 +102,7 @@ export interface PublicConfig {
    * down and rebuilds the service desk connection.
    */
   serviceDeskFactory?: (
-    parameters: ServiceDeskFactoryParameters,
+    parameters: ServiceDeskFactoryParameters
   ) => Promise<ServiceDesk>;
 
   /**

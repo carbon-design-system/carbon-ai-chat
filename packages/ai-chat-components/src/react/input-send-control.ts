@@ -7,21 +7,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import InputSendControlElement from "../components/prompt-line/src/send-control.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import InputSendControlElement from '../components/prompt-line/src/send-control.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const CDSAIChatInputSendControl = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-input-send-control",
+    tagName: 'cds-aichat-input-send-control',
     elementClass: InputSendControlElement,
     react: React,
     events: {
-      onSend: "cds-aichat-input-send",
-      onStopStreaming: "cds-aichat-input-stop-streaming",
+      onSend: 'cds-aichat-input-send',
+      onStopStreaming: 'cds-aichat-input-stop-streaming',
     },
-  }),
+  })
 );
 
 export default CDSAIChatInputSendControl;

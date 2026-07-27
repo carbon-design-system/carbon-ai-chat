@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { ChatInstance } from "../instance/ChatInstance";
-import { CustomSendMessageOptions } from "./MessagingConfig";
-import { MessageRequest } from "../messaging/Messages";
-import { HistoryItem } from "../messaging/History";
+import { ChatInstance } from '../instance/ChatInstance';
+import { CustomSendMessageOptions } from './MessagingConfig';
+import { MessageRequest } from '../messaging/Messages';
+import { HistoryItem } from '../messaging/History';
 
 /**
  * Config options for controlling messaging.
@@ -56,7 +56,7 @@ export interface PublicConfigMessaging {
   customSendMessage?: (
     request: MessageRequest,
     requestOptions: CustomSendMessageOptions,
-    instance: ChatInstance,
+    instance: ChatInstance
   ) => Promise<void> | void;
 
   /**

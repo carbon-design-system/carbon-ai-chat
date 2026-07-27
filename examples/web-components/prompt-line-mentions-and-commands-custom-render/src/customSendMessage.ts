@@ -28,7 +28,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 // Greeting text shown on the first empty submit so a fresh user sees the picker affordances.
 const WELCOME_TEXT = `Welcome! This example demonstrates @mentions and /commands.
@@ -44,7 +44,7 @@ When you send a message, the structured data will show what mentions and command
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const text = request.input.text?.trim();
 
@@ -65,23 +65,23 @@ async function customSendMessage(
 
   // Picks ride alongside the message text in a structured-data sidecar so plain text stays human-readable.
   const fields = request.input.structured_data?.fields ?? [];
-  const mentions = fields.filter((f) => f.type === "mention");
-  const commands = fields.filter((f) => f.type === "command");
+  const mentions = fields.filter((f) => f.type === 'mention');
+  const commands = fields.filter((f) => f.type === 'command');
 
   const parts: string[] = [`Received: "${text}"`];
 
   if (mentions.length > 0) {
-    const names = mentions.map((m) => m.label).join(", ");
+    const names = mentions.map((m) => m.label).join(', ');
     parts.push(`**Mentions:** ${names}`);
   }
 
   if (commands.length > 0) {
-    const cmds = commands.map((c) => `/${c.label}`).join(", ");
+    const cmds = commands.map((c) => `/${c.label}`).join(', ');
     parts.push(`**Commands:** ${cmds}`);
   }
 
   if (mentions.length === 0 && commands.length === 0) {
-    parts.push("No mentions or commands detected in structured data.");
+    parts.push('No mentions or commands detected in structured data.');
   }
 
   instance.messaging.addMessage({
@@ -89,7 +89,7 @@ async function customSendMessage(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: parts.join("\n\n"),
+          text: parts.join('\n\n'),
         },
       ],
     },

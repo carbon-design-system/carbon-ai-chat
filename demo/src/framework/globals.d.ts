@@ -7,12 +7,12 @@
  *  @license
  */
 
-declare module "@carbon/icons/es/*" {
+declare module '@carbon/icons/es/*' {
   const icon: any;
   export default icon;
 }
 
-declare module "*.css?raw" {
+declare module '*.css?raw' {
   const css: string;
   export default css;
 }

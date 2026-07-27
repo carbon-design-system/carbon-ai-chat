@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,10 +12,10 @@
  * UI Shell components while preserving existing functionality.
  */
 
-import { DefaultTheme } from "typedoc";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
-import { defaultLayout } from "./layouts/default.js";
+import { DefaultTheme } from 'typedoc';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import { defaultLayout } from './layouts/default.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -23,14 +23,14 @@
  * Start reading at: `injectHistory()` and the `Demo` element below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
-import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { type ChatInstance, type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -51,7 +51,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     :host {
@@ -96,15 +96,14 @@ export class Demo extends LitElement {
           ? html`<button @click=${this.injectHistory}>
               Insert a different conversation
             </button>`
-          : ""
+          : ''
       }
       <cds-aichat-custom-element
         class="chat-custom-element"
         .onBeforeRender=${this.onBeforeRender}
         .messaging=${config.messaging}
         .layout=${config.layout}
-        .openChatByDefault=${config.openChatByDefault}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${config.openChatByDefault}></cds-aichat-custom-element>
     `;
   }
 }

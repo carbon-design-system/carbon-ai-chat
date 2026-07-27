@@ -19,10 +19,10 @@
  * tokenizer).
  */
 
-import React, { Fragment, type ReactNode } from "react";
-import type { Token } from "markdown-it";
+import React, { Fragment, type ReactNode } from 'react';
+import type { Token } from 'markdown-it';
 
-import { markdownToMarkdownItTokens } from "@carbon/ai-chat-components/es/components/markdown/index.js";
+import { markdownToMarkdownItTokens } from '@carbon/ai-chat-components/es/components/markdown/index.js';
 
 /**
  * Render a single line / paragraph of inline markdown into React children.
@@ -41,14 +41,14 @@ export function renderInlineMarkdown(text: string): ReactNode {
   // `inline` token's children — those are the actual inline tokens we care
   // about. Fall back to the whole token stream if no inline wrapper exists
   // (e.g. caller passed something the parser couldn't parse).
-  const inlineToken = tokens.find((token) => token.type === "inline");
+  const inlineToken = tokens.find((token) => token.type === 'inline');
   const inlineTokens = inlineToken?.children ?? tokens;
 
   return renderInlineTokenList(inlineTokens);
 }
 
 interface InlineFrame {
-  type: "strong" | "em" | "s" | "a" | "mark";
+  type: 'strong' | 'em' | 's' | 'a' | 'mark';
   attrs: Record<string, string>;
   children: ReactNode[];
 }
@@ -70,52 +70,52 @@ function renderInlineTokenList(tokens: Token[] | null): ReactNode {
 
   for (const token of tokens) {
     switch (token.type) {
-      case "text":
+      case 'text':
         if (token.content) {
           pushChild(<Fragment key={nextKey()}>{token.content}</Fragment>);
         }
         break;
 
-      case "code_inline":
+      case 'code_inline':
         pushChild(<code key={nextKey()}>{token.content}</code>);
         break;
 
-      case "softbreak":
+      case 'softbreak':
         pushChild(<Fragment key={nextKey()}> </Fragment>);
         break;
 
-      case "hardbreak":
+      case 'hardbreak':
         pushChild(<br key={nextKey()} />);
         break;
 
-      case "strong_open":
-        stack.push({ type: "strong", attrs: {}, children: [] });
+      case 'strong_open':
+        stack.push({ type: 'strong', attrs: {}, children: [] });
         break;
-      case "em_open":
-        stack.push({ type: "em", attrs: {}, children: [] });
+      case 'em_open':
+        stack.push({ type: 'em', attrs: {}, children: [] });
         break;
-      case "s_open":
-        stack.push({ type: "s", attrs: {}, children: [] });
+      case 's_open':
+        stack.push({ type: 's', attrs: {}, children: [] });
         break;
-      case "mark_open":
-        stack.push({ type: "mark", attrs: {}, children: [] });
+      case 'mark_open':
+        stack.push({ type: 'mark', attrs: {}, children: [] });
         break;
-      case "link_open": {
+      case 'link_open': {
         const attrs: Record<string, string> = {};
         if (token.attrs) {
           for (const [key, value] of token.attrs) {
             attrs[key] = value;
           }
         }
-        stack.push({ type: "a", attrs, children: [] });
+        stack.push({ type: 'a', attrs, children: [] });
         break;
       }
 
-      case "strong_close":
-      case "em_close":
-      case "s_close":
-      case "mark_close":
-      case "link_close": {
+      case 'strong_close':
+      case 'em_close':
+      case 's_close':
+      case 'mark_close':
+      case 'link_close': {
         const frame = stack.pop();
         if (!frame) {
           break;
@@ -152,15 +152,15 @@ function renderInlineTokenList(tokens: Token[] | null): ReactNode {
 function renderFrame(frame: InlineFrame, key: string): ReactNode {
   const children = frame.children;
   switch (frame.type) {
-    case "strong":
+    case 'strong':
       return <strong key={key}>{children}</strong>;
-    case "em":
+    case 'em':
       return <em key={key}>{children}</em>;
-    case "s":
+    case 's':
       return <s key={key}>{children}</s>;
-    case "mark":
+    case 'mark':
       return <mark key={key}>{children}</mark>;
-    case "a": {
+    case 'a': {
       const href = frame.attrs.href || undefined;
       return (
         <a key={key} href={href} target="_blank" rel="noopener noreferrer">

@@ -1,18 +1,18 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../src/shell";
-import "../src/panel";
-import "../../card/src/card-footer";
-import "../../toolbar/src/toolbar";
-import { html, nothing } from "lit";
-import styles from "./story-styles.scss?lit";
+import '../src/shell';
+import '../src/panel';
+import '../../card/src/card-footer';
+import '../../toolbar/src/toolbar';
+import { html, nothing } from 'lit';
+import styles from './story-styles.scss?lit';
 
 // Core slots for Default, No Header, and Panels stories
 const coreSlotContent = html`
@@ -26,59 +26,59 @@ const coreSlotContent = html`
 `;
 
 export default {
-  title: "Preview/Chat shell",
+  title: 'Preview/Chat shell',
   args: {
     aiEnabled: false,
     showFrame: true,
-    cornerAll: "round",
+    cornerAll: 'round',
     cornerStartStart: undefined,
     cornerStartEnd: undefined,
     cornerEndStart: undefined,
     cornerEndEnd: undefined,
     showHistory: false,
     showWorkspace: false,
-    workspaceLocation: "start",
-    historyLocation: "start",
+    workspaceLocation: 'start',
+    historyLocation: 'start',
     contentMaxWidth: true,
   },
   argTypes: {
-    aiEnabled: { control: "boolean" },
-    showFrame: { control: "boolean" },
+    aiEnabled: { control: 'boolean' },
+    showFrame: { control: 'boolean' },
     cornerAll: {
-      control: { type: "radio" },
-      options: ["round", "square"],
-      description: "Sets all corners (individual corners override this)",
+      control: { type: 'radio' },
+      options: ['round', 'square'],
+      description: 'Sets all corners (individual corners override this)',
     },
     cornerStartStart: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Top-left corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Top-left corner in LTR (overrides cornerAll)',
     },
     cornerStartEnd: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Top-right corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Top-right corner in LTR (overrides cornerAll)',
     },
     cornerEndStart: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Bottom-left corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Bottom-left corner in LTR (overrides cornerAll)',
     },
     cornerEndEnd: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Bottom-right corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Bottom-right corner in LTR (overrides cornerAll)',
     },
-    showHistory: { control: "boolean" },
-    showWorkspace: { control: "boolean" },
-    contentMaxWidth: { control: "boolean" },
+    showHistory: { control: 'boolean' },
+    showWorkspace: { control: 'boolean' },
+    contentMaxWidth: { control: 'boolean' },
     workspaceLocation: {
-      control: { type: "radio" },
-      options: ["start", "end"],
+      control: { type: 'radio' },
+      options: ['start', 'end'],
     },
     historyLocation: {
-      control: { type: "radio" },
-      options: ["start", "end"],
+      control: { type: 'radio' },
+      options: ['start', 'end'],
     },
   },
   decorators: [
@@ -121,8 +121,7 @@ export const Default = {
         ?show-workspace=${showWorkspace}
         ?content-max-width=${contentMaxWidth}
         workspace-location=${workspaceLocation}
-        history-location=${historyLocation}
-      >
+        history-location=${historyLocation}>
         ${coreSlotContent}
       </cds-aichat-shell>
     `;
@@ -131,20 +130,20 @@ export const Default = {
 
 // Slot configuration definitions
 const SLOT_CONFIGS = [
-  { name: "header", label: "Header", hasCheckbox: true },
-  { name: "header-after", label: "Header after", hasCheckbox: true },
-  { name: "messages", label: "Messages", hasCheckbox: true },
-  { name: "input-before", label: "Input before", hasCheckbox: true },
-  { name: "input", label: "Input", hasCheckbox: true },
-  { name: "input-after", label: "Input after", hasCheckbox: true },
-  { name: "footer", label: "Footer", hasCheckbox: true },
-  { name: "history", label: "History", hasCheckbox: false },
-  { name: "workspace", label: "Workspace", hasCheckbox: false },
+  { name: 'header', label: 'Header', hasCheckbox: true },
+  { name: 'header-after', label: 'Header after', hasCheckbox: true },
+  { name: 'messages', label: 'Messages', hasCheckbox: true },
+  { name: 'input-before', label: 'Input before', hasCheckbox: true },
+  { name: 'input', label: 'Input', hasCheckbox: true },
+  { name: 'input-after', label: 'Input after', hasCheckbox: true },
+  { name: 'footer', label: 'Footer', hasCheckbox: true },
+  { name: 'history', label: 'History', hasCheckbox: false },
+  { name: 'workspace', label: 'Workspace', hasCheckbox: false },
 ];
 
 // Persistent state for slot visibility (survives re-renders)
 const slotVisibilityState = new Map(
-  SLOT_CONFIGS.map((slot) => [slot.name, true]),
+  SLOT_CONFIGS.map((slot) => [slot.name, true])
 );
 
 /**
@@ -158,8 +157,7 @@ const createSlotCheckbox = (slot, isVisible, onToggle) => html`
     <input
       type="checkbox"
       .checked=${isVisible}
-      @change=${() => onToggle(slot.name)}
-    />
+      @change=${() => onToggle(slot.name)} />
     ${slot.label}
   </label>
 `;
@@ -182,46 +180,46 @@ const createSlotElement = (slot, shouldRender) => {
 
 export const Slots = {
   args: {
-    messagesMaxWidth: "672px",
-    messagesMinWidth: "320px",
-    workspaceMinWidth: "640px",
-    historyWidth: "320px",
+    messagesMaxWidth: '672px',
+    messagesMinWidth: '320px',
+    workspaceMinWidth: '640px',
+    historyWidth: '320px',
   },
   argTypes: {
     messagesMaxWidth: {
-      control: { type: "select" },
-      options: ["480px", "560px", "672px", "800px", "960px"],
-      description: "CSS custom property: --cds-aichat-messages-max-width",
+      control: { type: 'select' },
+      options: ['480px', '560px', '672px', '800px', '960px'],
+      description: 'CSS custom property: --cds-aichat-messages-max-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "672px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '672px' },
       },
     },
     messagesMinWidth: {
-      control: { type: "select" },
-      options: ["280px", "320px", "400px", "480px"],
-      description: "CSS custom property: --cds-aichat-messages-min-width",
+      control: { type: 'select' },
+      options: ['280px', '320px', '400px', '480px'],
+      description: 'CSS custom property: --cds-aichat-messages-min-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "320px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '320px' },
       },
     },
     workspaceMinWidth: {
-      control: { type: "select" },
-      options: ["480px", "560px", "640px", "800px", "960px"],
-      description: "CSS custom property: --cds-aichat-workspace-min-width",
+      control: { type: 'select' },
+      options: ['480px', '560px', '640px', '800px', '960px'],
+      description: 'CSS custom property: --cds-aichat-workspace-min-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "640px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '640px' },
       },
     },
     historyWidth: {
-      control: { type: "select" },
-      options: ["256px", "320px", "400px", "480px"],
-      description: "CSS custom property: --cds-aichat-history-width",
+      control: { type: 'select' },
+      options: ['256px', '320px', '400px', '480px'],
+      description: 'CSS custom property: --cds-aichat-history-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "320px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '320px' },
       },
     },
   },
@@ -254,8 +252,8 @@ export const Slots = {
       slotVisibilityState.set(slotName, !currentState);
 
       // Force re-render by finding and updating the DOM directly
-      const container = document.querySelector(".story-container");
-      const shell = container?.querySelector("cds-aichat-shell");
+      const container = document.querySelector('.story-container');
+      const shell = container?.querySelector('cds-aichat-shell');
       const slotElement = shell?.querySelector(`[slot="${slotName}"]`);
 
       if (slotElement) {
@@ -263,8 +261,8 @@ export const Slots = {
       } else if (shell) {
         const slot = SLOT_CONFIGS.find((s) => s.name === slotName);
         if (slot) {
-          const newSlot = document.createElement("div");
-          newSlot.setAttribute("slot", slotName);
+          const newSlot = document.createElement('div');
+          newSlot.setAttribute('slot', slotName);
           newSlot.className = `${slotName} slot-sample`;
           newSlot.textContent = slot.label;
           shell.appendChild(newSlot);
@@ -282,8 +280,8 @@ export const Slots = {
                 createSlotCheckbox(
                   slot,
                   slotVisibilityState.get(slot.name),
-                  toggleSlot,
-                ),
+                  toggleSlot
+                )
               )}
             </div>
           </div>
@@ -306,10 +304,9 @@ export const Slots = {
             --cds-aichat-messages-min-width: ${messagesMinWidth};
             --cds-aichat-workspace-min-width: ${workspaceMinWidth};
             --cds-aichat-history-width: ${historyWidth};
-          "
-        >
+          ">
           ${SLOT_CONFIGS.map((slot) =>
-            createSlotElement(slot, slotVisibilityState.get(slot.name)),
+            createSlotElement(slot, slotVisibilityState.get(slot.name))
           )}
         </cds-aichat-shell>
       </div>
@@ -343,7 +340,7 @@ export const SidebarWorkspace = {
 
     // Configuration constants
     const CONFIG = {
-      SHELL_ID: "sidebar-workspace-shell",
+      SHELL_ID: 'sidebar-workspace-shell',
     };
 
     // State management for workspace visibility
@@ -358,13 +355,13 @@ export const SidebarWorkspace = {
       isWorkspaceOpen = !isWorkspaceOpen;
 
       // Toggle CSS class for width animation
-      shell.classList.toggle("expanded", isWorkspaceOpen);
+      shell.classList.toggle('expanded', isWorkspaceOpen);
 
       // Toggle component attribute for workspace visibility
       if (isWorkspaceOpen) {
-        shell.setAttribute("show-workspace", "");
+        shell.setAttribute('show-workspace', '');
       } else {
-        shell.removeAttribute("show-workspace");
+        shell.removeAttribute('show-workspace');
       }
     };
 
@@ -380,8 +377,7 @@ export const SidebarWorkspace = {
         corner-end-start=${cornerEndStart || nothing}
         corner-end-end=${cornerEndEnd || nothing}
         ?content-max-width=${contentMaxWidth}
-        workspace-location=${workspaceLocation}
-      >
+        workspace-location=${workspaceLocation}>
         <div slot="header" class="header slot-sample">Chat Header</div>
         <div slot="messages" class="messages slot-sample">
           <div class="messages-content">

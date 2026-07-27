@@ -34,9 +34,7 @@ After every `code_search` response:
 
 ## 4. Icons & Pictograms Routing Rule
 
-> **Hard rule: Never include an icon or pictogram in generated code without first querying
-> `code_search` to confirm it exists. Use the exact export name from the MCP response —
-> never invent or assume an icon name.**
+> **Hard rule: Never include an icon or pictogram in generated code without first querying `code_search` to confirm it exists. Use the exact export name from the MCP response — never invent or assume an icon name.**
 
 When the intent is an icon or pictogram search:
 
@@ -62,60 +60,56 @@ When the intent is an icon or pictogram search:
 
 ## 5. React SCSS Baseline
 
-When generating React code, include Carbon SCSS imports in a project-level SCSS file
-(e.g. `src/styles.scss` or `src/App.scss`).
+When generating React code, include Carbon SCSS imports in a project-level SCSS file (e.g. `src/styles.scss` or `src/App.scss`).
 
 ### Required SCSS structure for React
 
-**Component styles (required)** — emits the compiled CSS for every Carbon component (buttons,
-tiles, tables, modals, etc.). Without this, all Carbon components render completely unstyled:
+**Component styles (required)** — emits the compiled CSS for every Carbon component (buttons, tiles, tables, modals, etc.). Without this, all Carbon components render completely unstyled:
 
 ```scss
-@use "@carbon/react";
+@use '@carbon/react';
 ```
 
-**Token namespaces (optional)** — only needed if your custom SCSS uses Carbon tokens. These
-enable `$spacing-*`, `$text-primary`, type mixins, breakpoint helpers, etc. in your own SCSS
-without a namespace prefix:
+**Token namespaces (optional)** — only needed if your custom SCSS uses Carbon tokens. These enable `$spacing-*`, `$text-primary`, type mixins, breakpoint helpers, etc. in your own SCSS without a namespace prefix:
 
 ```scss
-@use "@carbon/react/scss/spacing" as *; // only if using $spacing-* tokens
-@use "@carbon/react/scss/theme" as *; // only if using $text-*, $background, etc.
-@use "@carbon/react/scss/type" as *; // only if using type mixins
-@use "@carbon/react/scss/breakpoint" as *; // only if using breakpoint helpers
+@use '@carbon/react/scss/spacing' as *; // only if using $spacing-* tokens
+@use '@carbon/react/scss/theme' as *; // only if using $text-*, $background, etc.
+@use '@carbon/react/scss/type' as *; // only if using type mixins
+@use '@carbon/react/scss/breakpoint' as *; // only if using breakpoint helpers
 ```
 
 **Minimal baseline (components only, no custom SCSS):**
 
 ```scss
 // Component styles — required for Carbon components to render correctly
-@use "@carbon/react";
+@use '@carbon/react';
 ```
 
 **Full baseline (with token imports for custom SCSS):**
 
 ```scss
 // Token namespaces — optional, only if using these tokens in custom styles
-@use "@carbon/react/scss/spacing" as *;
-@use "@carbon/react/scss/theme" as *;
-@use "@carbon/react/scss/type" as *;
-@use "@carbon/react/scss/breakpoint" as *;
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/theme' as *;
+@use '@carbon/react/scss/type' as *;
+@use '@carbon/react/scss/breakpoint' as *;
 
 // Component styles — required
-@use "@carbon/react";
+@use '@carbon/react';
 
 // Your custom styles below
 ```
 
 ### Additional imports (include as needed)
 
-| Import                                   | When to add                        |
-| ---------------------------------------- | ---------------------------------- |
-| `@use '@carbon/react/scss/grid' as *;`   | Carbon Grid layout utilities       |
-| `@use '@carbon/react/scss/motion' as *;` | Carbon motion tokens               |
-| `@use '@carbon/react/scss/layer' as *;`  | Layer nesting or `$layer-*` tokens |
+| Import | When to add |
+| --- | --- |
+| `@use '@carbon/react/scss/grid' as *;` | Carbon Grid layout utilities |
+| `@use '@carbon/react/scss/motion' as *;` | Carbon motion tokens |
+| `@use '@carbon/react/scss/layer' as *;` | Layer nesting or `$layer-*` tokens |
 | `@use '@carbon/react/scss/colors' as *;` | IBM Design Language color swatches |
-| `@use '@carbon/react/scss/reset' as *;`  | CSS baseline reset                 |
+| `@use '@carbon/react/scss/reset' as *;` | CSS baseline reset |
 
 ### Entry-module wiring
 
@@ -123,53 +117,46 @@ Import the SCSS file in the app entry module **before** any component imports:
 
 ```js
 // src/main.jsx or src/index.jsx
-import "./styles.scss"; // ← Carbon SCSS tokens — must come first
-import App from "./App";
+import './styles.scss'; // ← Carbon SCSS tokens — must come first
+import App from './App';
 ```
 
-The SCSS file may be named `styles.scss`, `App.scss`, or any project-consistent name.
-What matters is consistency and that the import precedes component imports.
+The SCSS file may be named `styles.scss`, `App.scss`, or any project-consistent name. What matters is consistency and that the import precedes component imports.
 
 ### Never do this for React
 
 ```js
 // ❌ Wrong — CSS file bypasses SCSS token resolution; not aligned with design system guidance
-import "@carbon/styles/css/styles.css";
+import '@carbon/styles/css/styles.css';
 ```
 
 ### IBM Plex font and typography
 
-IBM Plex is provided automatically through the Carbon SCSS token system above.
-**Do not add a separate font CDN link for React SCSS projects** — the SCSS pipeline
-handles it.
+IBM Plex is provided automatically through the Carbon SCSS token system above. **Do not add a separate font CDN link for React SCSS projects** — the SCSS pipeline handles it.
 
-For CDN/quick-start scenarios (no bundler, Web Components only), load IBM Plex from the
-IBM-hosted CDN exclusively:
+For CDN/quick-start scenarios (no bundler, Web Components only), load IBM Plex from the IBM-hosted CDN exclusively:
 
 ```html
 <!-- ✅ Correct — IBM CDN for Plex fonts -->
 <link
   rel="stylesheet"
-  href="https://1.www.s81c.com/common/carbon/plex/sans.css"
-/>
+  href="https://1.www.s81c.com/common/carbon/plex/sans.css" />
 <!-- Or for full Plex package (excluding jp and kr): -->
 <link
   rel="stylesheet"
-  href="https://1.www.s81c.com/common/carbon/plex/plex-full.css"
-/>
+  href="https://1.www.s81c.com/common/carbon/plex/plex-full.css" />
 ```
 
 ```html
 <!-- ❌ Wrong — Google Fonts is not permitted for IBM Plex -->
 <link
   href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans..."
-  rel="stylesheet"
-/>
+  rel="stylesheet" />
 ```
 
 ```css
 /* ❌ Wrong — @import from Google Fonts is not permitted */
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex...");
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex...');
 ```
 
 Apply typography via semantic HTML tags (`h1`, `h2`, `h3`, `p`) with Carbon type tokens or classes.
@@ -189,7 +176,7 @@ Apply typography via semantic HTML tags (`h1`, `h2`, `h3`, `p`) with Carbon type
 
 ```jsx
 // ❌ Wrong — token strings do NOT resolve at runtime
-<Component style={{ margin: "$spacing-05" }} />
+<Component style={{ margin: '$spacing-05' }} />
 ```
 
 ```jsx
@@ -208,26 +195,26 @@ When the target framework is **Web Components**, prefer a minimal import strateg
 1. **Minimal baseline (always first)**
 
 ```scss
-@use "@carbon/styles/scss/reset";
-@use "@carbon/styles/scss/type";
+@use '@carbon/styles/scss/reset';
+@use '@carbon/styles/scss/type';
 ```
 
 2. **Add grid only when layout utilities are needed**
 
 ```scss
-@use "@carbon/styles/scss/reset";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/grid";
+@use '@carbon/styles/scss/reset';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/grid';
 ```
 
 3. **Add theme wiring only when explicitly required**
 
 ```scss
-@use "@carbon/styles/scss/reset";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/themes";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/grid";
+@use '@carbon/styles/scss/reset';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/themes';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/grid';
 ```
 
 ### Project wiring checks
@@ -249,9 +236,7 @@ When the target framework is **Web Components**, prefer a minimal import strateg
 
 ### Token usage in component styles (Hard Rule)
 
-Carbon SCSS variables (`$spacing-*`, `$background`, `$layer-01`, etc.) are **compile-time only** —
-they resolve during SCSS compilation and are unavailable at runtime in component styles or inline CSS.
-In Web Components, always use **CSS custom properties** instead:
+Carbon SCSS variables (`$spacing-*`, `$background`, `$layer-01`, etc.) are **compile-time only** — they resolve during SCSS compilation and are unavailable at runtime in component styles or inline CSS. In Web Components, always use **CSS custom properties** instead:
 
 | ❌ SCSS variable (compile-time only) | ✅ CSS custom property (runtime) |
 | ------------------------------------ | -------------------------------- |
@@ -262,9 +247,7 @@ In Web Components, always use **CSS custom properties** instead:
 | `$text-primary`                      | `var(--cds-text-primary)`        |
 | `$border-subtle-00`                  | `var(--cds-border-subtle-00)`    |
 
-CSS custom properties are injected by the compiled Carbon CSS (SCSS pipeline or prebuilt
-`@carbon/styles/css/styles.css`) and work at runtime. Using SCSS variables produces no output
-and silently renders as unstyled or zero-value properties.
+CSS custom properties are injected by the compiled Carbon CSS (SCSS pipeline or prebuilt `@carbon/styles/css/styles.css`) and work at runtime. Using SCSS variables produces no output and silently renders as unstyled or zero-value properties.
 
 ```css
 /* ✅ Correct — runtime-safe token usage in Web Components styles */
@@ -277,8 +260,7 @@ and silently renders as unstyled or zero-value properties.
 
 ### Grid layout — CSS classes, not custom elements (Hard Rule)
 
-The Carbon grid for Web Components is **CSS-based**. Use class names directly on `<div>` elements —
-this requires no JavaScript import beyond the Carbon CSS:
+The Carbon grid for Web Components is **CSS-based**. Use class names directly on `<div>` elements — this requires no JavaScript import beyond the Carbon CSS:
 
 ```html
 <!-- ✅ Correct — CSS class grid, works with Carbon CSS alone -->
@@ -299,18 +281,13 @@ this requires no JavaScript import beyond the Carbon CSS:
 </cds-grid>
 ```
 
-`<cds-grid>` and `<cds-column>` web component elements do exist in the package but they
-require an explicit JS import (`@carbon/web-components/es/components/grid/index.js`) and
-use a two-element system with no `<cds-row>`. The CSS class approach is simpler, requires
-no import, and is the recommended default. Only use the WC element approach if the user
-explicitly requests it and you include the required JS import.
+`<cds-grid>` and `<cds-column>` web component elements do exist in the package but they require an explicit JS import (`@carbon/web-components/es/components/grid/index.js`) and use a two-element system with no `<cds-row>`. The CSS class approach is simpler, requires no import, and is the recommended default. Only use the WC element approach if the user explicitly requests it and you include the required JS import.
 
 ---
 
 ## 7. Component Composition Rules
 
-Certain components have silent prop or composition requirements that are easy to
-miss and cause accessibility or layout failures without obvious error messages.
+Certain components have silent prop or composition requirements that are easy to miss and cause accessibility or layout failures without obvious error messages.
 
 ### Modal
 
@@ -324,8 +301,7 @@ miss and cause accessibility or layout failures without obvious error messages.
 <Modal onRequestClose={() => setOpen(false)} open={open} />
 ```
 
-**`autoAlign` on floating-UI children inside Modal** — required to prevent Dropdown,
-ComboBox, and Select from positioning outside the viewport when rendered inside a Modal:
+**`autoAlign` on floating-UI children inside Modal** — required to prevent Dropdown, ComboBox, and Select from positioning outside the viewport when rendered inside a Modal:
 
 ```jsx
 // ❌ Wrong — dropdown clips or overflows:
@@ -336,8 +312,7 @@ ComboBox, and Select from positioning outside the viewport when rendered inside 
 <ComboBox autoAlign id="c1" titleText="Role" items={items} />
 ```
 
-**`data-modal-primary-focus` on the first focusable input** — Carbon uses this
-attribute to set initial focus when the Modal opens (accessibility requirement):
+**`data-modal-primary-focus` on the first focusable input** — Carbon uses this attribute to set initial focus when the Modal opens (accessibility requirement):
 
 ```jsx
 <TextInput
@@ -356,28 +331,27 @@ attribute to set initial focus when the Modal opens (accessibility requirement):
   onRequestClose={() => setOpen(false)}
   modalHeading="Add a custom domain"
   primaryButtonText="Add"
-  secondaryButtonText="Cancel"
->
+  secondaryButtonText="Cancel">
   <TextInput
     data-modal-primary-focus
     id="domain"
     labelText="Domain name"
     placeholder="example.com"
-    style={{ marginBottom: "1.5rem" }}
+    style={{ marginBottom: '1.5rem' }}
   />
   <Dropdown
     autoAlign
     id="region"
     titleText="Region"
     label="Select region"
-    items={[{ id: "us-south", text: "US South" }]}
-    itemToString={(item) => item?.text ?? ""}
+    items={[{ id: 'us-south', text: 'US South' }]}
+    itemToString={(item) => item?.text ?? ''}
   />
   <ComboBox
     autoAlign
     id="role"
     titleText="Permissions"
-    items={["Viewer", "Editor", "Manager"]}
+    items={['Viewer', 'Editor', 'Manager']}
   />
 </Modal>
 ```
@@ -439,7 +413,7 @@ Horizontal and vertical tabs use different component sets — never mix them.
 **Horizontal Tabs** — `Tabs` + `TabList`:
 
 ```jsx
-import { Tabs, TabList, Tab, TabPanels, TabPanel } from "@carbon/react";
+import { Tabs, TabList, Tab, TabPanels, TabPanel } from '@carbon/react';
 
 <Tabs>
   <TabList aria-label="List of tabs">
@@ -462,7 +436,7 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-} from "@carbon/react";
+} from '@carbon/react';
 
 <TabsVertical>
   <TabListVertical aria-label="List of vertical tabs">

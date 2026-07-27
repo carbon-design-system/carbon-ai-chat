@@ -28,13 +28,13 @@ import {
   PublicConfig,
   ServiceDesk,
   ServiceDeskFactoryParameters,
-} from "@carbon/ai-chat";
-import React, { useMemo } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { MockServiceDesk } from "./mockServiceDesk";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { MockServiceDesk } from './mockServiceDesk';
+import '@carbon/styles/css/styles.css';
 
 function Chat() {
   // Memoize so the same factory reference is reused across renders;
@@ -60,12 +60,12 @@ function Chat() {
       // Auto-open on load so the human-agent flow is immediately visible.
       openChatByDefault: true,
     }),
-    [serviceDeskFactory],
+    [serviceDeskFactory]
   );
 
   return <ChatCustomElement className="chat-custom-element" {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<Chat />);

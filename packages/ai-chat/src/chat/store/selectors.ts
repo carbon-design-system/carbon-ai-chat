@@ -11,17 +11,17 @@ import {
   AppState,
   HumanAgentDisplayState,
   InputState,
-} from "../../types/state/AppState";
-import { LanguagePack } from "../../types/config/LanguagePack";
+} from '../../types/state/AppState';
+import { LanguagePack } from '../../types/config/LanguagePack';
 
-const getAssistantInputState = (state: Pick<AppState, "assistantInputState">) =>
+const getAssistantInputState = (state: Pick<AppState, 'assistantInputState'>) =>
   state.assistantInputState;
-const getHumanAgentInputState = (state: Pick<AppState, "humanAgentState">) =>
+const getHumanAgentInputState = (state: Pick<AppState, 'humanAgentState'>) =>
   state.humanAgentState.inputState;
-const getHumanAgentState = (state: Pick<AppState, "humanAgentState">) =>
+const getHumanAgentState = (state: Pick<AppState, 'humanAgentState'>) =>
   state.humanAgentState;
 const getPersistedHumanAgent = (
-  state: Pick<AppState, "persistedToBrowserStorage">,
+  state: Pick<AppState, 'persistedToBrowserStorage'>
 ) => state.persistedToBrowserStorage.humanAgentState;
 
 /**
@@ -31,14 +31,14 @@ const getPersistedHumanAgent = (
  */
 type HumanAgentDisplayStateInput = Pick<
   AppState,
-  "humanAgentState" | "persistedToBrowserStorage"
+  'humanAgentState' | 'persistedToBrowserStorage'
 >;
 
 /**
  * Compute the display state for the agent.
  */
 function selectHumanAgentDisplayState(
-  state: HumanAgentDisplayStateInput,
+  state: HumanAgentDisplayStateInput
 ): HumanAgentDisplayState {
   const humanAgentState = getHumanAgentState(state);
   const persisted = getPersistedHumanAgent(state);
@@ -57,9 +57,9 @@ function selectHumanAgentDisplayState(
 
   let inputPlaceholderKey: keyof LanguagePack;
   if (isConnecting) {
-    inputPlaceholderKey = "agent_inputPlaceholderConnecting";
+    inputPlaceholderKey = 'agent_inputPlaceholderConnecting';
   } else if (isReconnecting) {
-    inputPlaceholderKey = "agent_inputPlaceholderReconnecting";
+    inputPlaceholderKey = 'agent_inputPlaceholderReconnecting';
   } else {
     inputPlaceholderKey = null;
   }
@@ -136,14 +136,14 @@ function selectInputFieldVisible(state: AppState): boolean {
 
 type InputUploadAndStreamingFields = Pick<
   InputState,
-  | "allowFileUploads"
-  | "allowedFileUploadTypes"
-  | "allowMultipleFileUploads"
-  | "maxFileSizeBytes"
-  | "maxFiles"
-  | "files"
-  | "pendingUploads"
-  | "stopStreamingButtonState"
+  | 'allowFileUploads'
+  | 'allowedFileUploadTypes'
+  | 'allowMultipleFileUploads'
+  | 'maxFileSizeBytes'
+  | 'maxFiles'
+  | 'files'
+  | 'pendingUploads'
+  | 'stopStreamingButtonState'
 >;
 
 /**
@@ -153,7 +153,7 @@ type InputUploadAndStreamingFields = Pick<
  * re-rendering on `rawValue` / `displayValue` updates (every keystroke).
  */
 function selectInputUploadAndStreamingFields(
-  state: AppState,
+  state: AppState
 ): InputUploadAndStreamingFields {
   const slice = selectInputState(state);
   return {
@@ -211,7 +211,7 @@ function selectHasOpenPanelWithBackButton(state: AppState): boolean {
  * string.
  */
 function selectLanguagePack(
-  state: Pick<AppState, "languagePack">,
+  state: Pick<AppState, 'languagePack'>
 ): LanguagePack {
   return state.languagePack;
 }

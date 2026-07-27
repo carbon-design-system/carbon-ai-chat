@@ -7,18 +7,18 @@
  *  @license
  */
 
-import { VideoPlayer } from "@carbon/ai-chat-components/es/react/video-player.js";
-import { AudioPlayer } from "@carbon/ai-chat-components/es/react/audio-player.js";
-import { Transcript } from "@carbon/ai-chat-components/es/react/transcript.js";
-import React from "react";
+import { VideoPlayer } from '@carbon/ai-chat-components/es/react/video-player.js';
+import { AudioPlayer } from '@carbon/ai-chat-components/es/react/audio-player.js';
+import { Transcript } from '@carbon/ai-chat-components/es/react/transcript.js';
+import React from 'react';
 
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
-import { VideoComponentConfig } from "../messages/VideoComponent";
-import { MessageResponseTypes } from "../../../types/messaging/Messages";
-import { AppState } from "../../../types/state/AppState";
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import { TextBlock } from "./TextBlock/TextBlock";
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
+import { VideoComponentConfig } from '../messages/VideoComponent';
+import { MessageResponseTypes } from '../../../types/messaging/Messages';
+import { AppState } from '../../../types/state/AppState';
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import { TextBlock } from './TextBlock/TextBlock';
 
 /**
  * The parent interface for the different media player types (audio, video) which holds the common properties between
@@ -74,7 +74,7 @@ interface MediaPlayerContentConfig {
     src: string;
     language: string;
     label: string;
-    kind?: "subtitles" | "captions" | "descriptions";
+    kind?: 'subtitles' | 'captions' | 'descriptions';
     default?: boolean;
   }>;
 
@@ -157,14 +157,14 @@ function MediaPlayerComponent({
       media_videoPlayer_errorLabel:
         state.languagePack.media_videoPlayer_errorLabel,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   const handleTranscriptToggle = React.useCallback(
     (event: CustomEvent<{ expanded: boolean }>) => {
       setTranscriptExpanded(event.detail.expanded);
     },
-    [],
+    []
   );
 
   const isAudio = type === MessageResponseTypes.AUDIO;

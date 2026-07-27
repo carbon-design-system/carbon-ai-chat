@@ -17,14 +17,14 @@ Render your own content beneath an assistant message — here a copy button — 
 
 ## APIs and props demonstrated
 
-| Symbol                                    | Package / kind                   | Role in this example                              |
-| ----------------------------------------- | -------------------------------- | ------------------------------------------------- |
-| `ChatCustomElement`                       | `@carbon/ai-chat` component      | Mounts the chat into a host element you style.    |
-| `renderCustomMessageFooter`               | `@carbon/ai-chat` component prop | Renders the footer for each `custom_footer_slot`. |
-| `RenderCustomMessageFooter`               | `@carbon/ai-chat` type           | Types the footer render prop.                     |
-| `messaging.customSendMessage`             | `@carbon/ai-chat` config prop    | Mock backend that attaches the footer slot.       |
-| `message_item_options.custom_footer_slot` | `@carbon/ai-chat` message field  | Enables the footer and carries `additional_data`. |
-| `layout.showFrame` / `openChatByDefault`  | `@carbon/ai-chat` config props   | Full-screen baseline.                             |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `renderCustomMessageFooter` | `@carbon/ai-chat` component prop | Renders the footer for each `custom_footer_slot`. |
+| `RenderCustomMessageFooter` | `@carbon/ai-chat` type | Types the footer render prop. |
+| `messaging.customSendMessage` | `@carbon/ai-chat` config prop | Mock backend that attaches the footer slot. |
+| `message_item_options.custom_footer_slot` | `@carbon/ai-chat` message field | Enables the footer and carries `additional_data`. |
+| `layout.showFrame` / `openChatByDefault` | `@carbon/ai-chat` config props | Full-screen baseline. |
 
 ## Run it
 

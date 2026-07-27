@@ -13,17 +13,17 @@ import React, {
   useLayoutEffect,
   useRef,
   useState,
-} from "react";
+} from 'react';
 
-import { ChatInstance } from "../types/instance/ChatInstance";
+import { ChatInstance } from '../types/instance/ChatInstance';
 import {
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
-} from "../types/events/eventBusTypes";
-import { ChatContainer, ChatContainerProps } from "./ChatContainer";
-import { FLATTENED_PUBLIC_CONFIG_FIELDS } from "../web-components/shared/flattenedPublicConfig";
-import { isBrowser } from "../chat/utils/browserUtils";
+} from '../types/events/eventBusTypes';
+import { ChatContainer, ChatContainerProps } from './ChatContainer';
+import { FLATTENED_PUBLIC_CONFIG_FIELDS } from '../web-components/shared/flattenedPublicConfig';
+import { isBrowser } from '../chat/utils/browserUtils';
 
 /**
  * Properties for the ChatContainer React component. This interface extends
@@ -64,7 +64,7 @@ interface ChatCustomElementProps extends ChatContainerProps {
    */
   onViewPreChange?: (
     event: BusEventViewPreChange,
-    instance: ChatInstance,
+    instance: ChatInstance
   ) => Promise<void> | void;
 
   /**
@@ -90,7 +90,7 @@ interface ChatCustomElementProps extends ChatContainerProps {
 }
 
 const customElementStylesheet =
-  isBrowser() && typeof CSSStyleSheet !== "undefined"
+  isBrowser() && typeof CSSStyleSheet !== 'undefined'
     ? new CSSStyleSheet()
     : null;
 
@@ -115,9 +115,9 @@ const hideStyles = `
 // Inject styles using adopted stylesheets when available, fallback to style element
 if (
   isBrowser() &&
-  !document.getElementById("cds-aichat-custom-element-styles")
+  !document.getElementById('cds-aichat-custom-element-styles')
 ) {
-  if (customElementStylesheet && "replaceSync" in customElementStylesheet) {
+  if (customElementStylesheet && 'replaceSync' in customElementStylesheet) {
     customElementStylesheet.replaceSync(hideStyles);
     document.adoptedStyleSheets = [
       ...document.adoptedStyleSheets,
@@ -125,8 +125,8 @@ if (
     ];
   } else {
     // Fallback for when adoptedStyleSheets are not supported
-    const style = document.createElement("style");
-    style.id = "cds-aichat-custom-element-styles";
+    const style = document.createElement('style');
+    style.id = 'cds-aichat-custom-element-styles';
     style.textContent = hideStyles;
     document.head.appendChild(style);
   }
@@ -143,7 +143,7 @@ if (
  */
 function ChatCustomElement(
   props: ChatCustomElementProps &
-    Omit<HTMLAttributes<HTMLDivElement>, keyof ChatCustomElementProps>,
+    Omit<HTMLAttributes<HTMLDivElement>, keyof ChatCustomElementProps>
 ) {
   const {
     onBeforeRender,
@@ -194,10 +194,10 @@ function ChatCustomElement(
         if (el) {
           if (event.newViewState.mainWindow) {
             // Show: remove the hidden class, let the provided className handle sizing
-            el.classList.remove("cds-aichat--hidden");
+            el.classList.remove('cds-aichat--hidden');
           } else {
             // Hide: add the hidden class to set size to 0x0
-            el.classList.add("cds-aichat--hidden");
+            el.classList.add('cds-aichat--hidden');
           }
         }
       }
@@ -216,7 +216,7 @@ function ChatCustomElement(
 
       return onBeforeRender?.(instance);
     },
-    [onViewPreChange, onViewChange, onBeforeRender],
+    [onViewPreChange, onViewChange, onBeforeRender]
   );
 
   return (
@@ -224,8 +224,7 @@ function ChatCustomElement(
       className={className}
       id={id}
       ref={containerRef}
-      {...(wrapperDomProps as HTMLAttributes<HTMLDivElement>)}
-    >
+      {...(wrapperDomProps as HTMLAttributes<HTMLDivElement>)}>
       {elementReady && containerRef.current && (
         <ChatContainer
           // Flattened PublicConfig fields, split from the shared field table.

@@ -7,33 +7,33 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, nothing, unsafeCSS } from "lit";
-import { property } from "lit/decorators.js";
+import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
+import { property } from 'lit/decorators.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import { isBrowser } from "../../../globals/utils/browser-utils.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import { isBrowser } from '../../../globals/utils/browser-utils.js';
+import prefix from '../../../globals/settings.js';
 
-import "@carbon/web-components/es/components/file-uploader/index.js";
+import '@carbon/web-components/es/components/file-uploader/index.js';
 
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import DocumentPDF20 from "@carbon/icons/es/PDF/20.js";
-import DocumentTXT20 from "@carbon/icons/es/TXT/20.js";
-import DocumentXLS20 from "@carbon/icons/es/XLS/20.js";
-import DocumentZIP20 from "@carbon/icons/es/ZIP/20.js";
-import DocumentPPT20 from "@carbon/icons/es/PPT/20.js";
-import DocumentCSV20 from "@carbon/icons/es/CSV/20.js";
-import DocumentDOC20 from "@carbon/icons/es/DOC/20.js";
-import DocumentHTML20 from "@carbon/icons/es/HTML/20.js";
-import DocumentJSON20 from "@carbon/icons/es/JSON/20.js";
-import PlayFilledAlt16 from "@carbon/icons/es/play--filled--alt/16.js";
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import DocumentPDF20 from '@carbon/icons/es/PDF/20.js';
+import DocumentTXT20 from '@carbon/icons/es/TXT/20.js';
+import DocumentXLS20 from '@carbon/icons/es/XLS/20.js';
+import DocumentZIP20 from '@carbon/icons/es/ZIP/20.js';
+import DocumentPPT20 from '@carbon/icons/es/PPT/20.js';
+import DocumentCSV20 from '@carbon/icons/es/CSV/20.js';
+import DocumentDOC20 from '@carbon/icons/es/DOC/20.js';
+import DocumentHTML20 from '@carbon/icons/es/HTML/20.js';
+import DocumentJSON20 from '@carbon/icons/es/JSON/20.js';
+import PlayFilledAlt16 from '@carbon/icons/es/play--filled--alt/16.js';
 
 import type {
   FileUpload,
   FileRemoveEventDetail,
-} from "../../prompt-line/src/types.js";
+} from '../../prompt-line/src/types.js';
 
-import styles from "./file-upload-item.scss?lit";
+import styles from './file-upload-item.scss?lit';
 
 /**
  * Renders a single file upload chip with an optional media preview or file-type icon.
@@ -52,12 +52,12 @@ class FileUploadItemElement extends LitElement {
   upload: FileUpload | null = null;
 
   /** Label for the remove file button. */
-  @property({ type: String, attribute: "remove-file-label" })
-  removeFileLabel = "Remove file";
+  @property({ type: String, attribute: 'remove-file-label' })
+  removeFileLabel = 'Remove file';
 
   /** Label for the uploading status. */
-  @property({ type: String, attribute: "uploading-file-label" })
-  uploadingFileLabel = "Uploading";
+  @property({ type: String, attribute: 'uploading-file-label' })
+  uploadingFileLabel = 'Uploading';
 
   /** Object URL created for image/video previews. Revoked on disconnect or when the file changes. */
   private _objectURL: string | null = null;
@@ -81,7 +81,7 @@ class FileUploadItemElement extends LitElement {
       return false;
     }
     const { type } = this.upload.file;
-    return type.startsWith("image/") || type.startsWith("video/");
+    return type.startsWith('image/') || type.startsWith('video/');
   }
 
   firstUpdated() {
@@ -89,16 +89,16 @@ class FileUploadItemElement extends LitElement {
       return;
     }
     const uploaderItem = this.shadowRoot?.querySelector(
-      "cds-file-uploader-item",
+      'cds-file-uploader-item'
     );
     const innerRoot = uploaderItem?.shadowRoot;
     if (!innerRoot) {
       return;
     }
     // apply style that reduces margin when there is a media preview being rendered in the chip
-    const style = document.createElement("style");
+    const style = document.createElement('style');
     style.textContent =
-      ".cds--file-filename { margin-inline-start: 2px !important; }";
+      '.cds--file-filename { margin-inline-start: 2px !important; }';
     innerRoot.appendChild(style);
   }
 
@@ -119,7 +119,7 @@ class FileUploadItemElement extends LitElement {
     const { type, name } = this.upload.file;
 
     // Image preview
-    if (type.startsWith("image/")) {
+    if (type.startsWith('image/')) {
       const url = this._getOrCreateObjectURL();
       if (!url) {
         return nothing;
@@ -137,7 +137,7 @@ class FileUploadItemElement extends LitElement {
     }
 
     // Video preview
-    if (type.startsWith("video/")) {
+    if (type.startsWith('video/')) {
       const url = this._getOrCreateObjectURL();
       if (!url) {
         return nothing;
@@ -145,17 +145,17 @@ class FileUploadItemElement extends LitElement {
 
       const openVideo = () => {
         const newWindow = isBrowser()
-          ? window.open("", "_blank", "width=800,height=600")
+          ? window.open('', '_blank', 'width=800,height=600')
           : null;
 
         if (!newWindow) {
           return;
         }
 
-        const style = newWindow.document.createElement("style");
+        const style = newWindow.document.createElement('style');
         style.textContent =
-          "* { margin: 0; padding: 0; background: #000 } video { display: block; width: 100%; height: 100vh; object-fit: contain }";
-        const video = newWindow.document.createElement("video");
+          '* { margin: 0; padding: 0; background: #000 } video { display: block; width: 100%; height: 100vh; object-fit: contain }';
+        const video = newWindow.document.createElement('video');
         video.src = url;
         video.controls = true;
         video.autoplay = true;
@@ -168,8 +168,7 @@ class FileUploadItemElement extends LitElement {
         class="${prefix}-file-upload-item__preview-wrapper ${prefix}-file-upload-item__video-preview-wrapper"
         type="button"
         aria-label="Play video"
-        @click="${openVideo}"
-      >
+        @click="${openVideo}">
         <video
           class="${prefix}-file-upload-item__preview"
           src="${url}"
@@ -182,8 +181,7 @@ class FileUploadItemElement extends LitElement {
           aria-hidden="true"
           @loadedmetadata="${(e: Event) => {
             (e.target as HTMLVideoElement).currentTime = 0.1;
-          }}"
-        ></video
+          }}"></video
         ><span class="${prefix}-file-upload-item__play-badge" aria-hidden="true"
           >${iconLoader(PlayFilledAlt16)}</span
         >
@@ -191,49 +189,49 @@ class FileUploadItemElement extends LitElement {
     }
 
     // File type icon (for supported icons)
-    const extension = name.split(".").pop()?.toLowerCase() ?? "";
+    const extension = name.split('.').pop()?.toLowerCase() ?? '';
     const mime = type.toLowerCase();
 
     type IconEntry = [boolean, typeof DocumentPDF20];
     const iconMap: IconEntry[] = [
-      [mime === "application/pdf" || extension === "pdf", DocumentPDF20],
-      [mime === "text/plain" || extension === "txt", DocumentTXT20],
+      [mime === 'application/pdf' || extension === 'pdf', DocumentPDF20],
+      [mime === 'text/plain' || extension === 'txt', DocumentTXT20],
       [
-        mime === "application/vnd.ms-excel" ||
+        mime === 'application/vnd.ms-excel' ||
           mime ===
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-          extension === "xls" ||
-          extension === "xlsx",
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+          extension === 'xls' ||
+          extension === 'xlsx',
         DocumentXLS20,
       ],
       [
-        mime === "application/zip" ||
-          mime === "application/x-zip-compressed" ||
-          extension === "zip",
+        mime === 'application/zip' ||
+          mime === 'application/x-zip-compressed' ||
+          extension === 'zip',
         DocumentZIP20,
       ],
       [
-        mime === "application/vnd.ms-powerpoint" ||
+        mime === 'application/vnd.ms-powerpoint' ||
           mime ===
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
-          extension === "ppt" ||
-          extension === "pptx",
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+          extension === 'ppt' ||
+          extension === 'pptx',
         DocumentPPT20,
       ],
-      [mime === "text/csv" || extension === "csv", DocumentCSV20],
+      [mime === 'text/csv' || extension === 'csv', DocumentCSV20],
       [
-        mime === "application/msword" ||
+        mime === 'application/msword' ||
           mime ===
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-          extension === "doc" ||
-          extension === "docx",
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          extension === 'doc' ||
+          extension === 'docx',
         DocumentDOC20,
       ],
       [
-        mime === "text/html" || extension === "html" || extension === "htm",
+        mime === 'text/html' || extension === 'html' || extension === 'htm',
         DocumentHTML20,
       ],
-      [mime === "application/json" || extension === "json", DocumentJSON20],
+      [mime === 'application/json' || extension === 'json', DocumentJSON20],
     ];
 
     const match = iconMap.find((entry) => entry[0] === true);
@@ -254,11 +252,11 @@ class FileUploadItemElement extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent<FileRemoveEventDetail>("cds-aichat-file-remove", {
+      new CustomEvent<FileRemoveEventDetail>('cds-aichat-file-remove', {
         detail: { fileId: this.upload.id },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -272,14 +270,13 @@ class FileUploadItemElement extends LitElement {
         size="md"
         .state="${this.upload.status}"
         .iconDescription="${
-          this.upload.status === "uploading"
+          this.upload.status === 'uploading'
             ? this.uploadingFileLabel
             : this.removeFileLabel
         }"
-        .errorSubject="${this.upload.errorMessage || ""}"
+        .errorSubject="${this.upload.errorMessage || ''}"
         ?invalid="${this.upload.isError}"
-        @cds-file-uploader-item-deleted="${this._handleRemove}"
-      >
+        @cds-file-uploader-item-deleted="${this._handleRemove}">
         ${this._renderPreview()} ${this.upload.file.name}
       </cds-file-uploader-item>
     `;
@@ -288,7 +285,7 @@ class FileUploadItemElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-file-upload-item": FileUploadItemElement;
+    'cds-aichat-file-upload-item': FileUploadItemElement;
   }
 }
 

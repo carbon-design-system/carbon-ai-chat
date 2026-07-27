@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { CornersType, PerCornerConfig } from "./CornersType";
-import type { LayoutCustomProperties } from "./LayoutCustomProperties";
+import { CornersType, PerCornerConfig } from './CornersType';
+import type { LayoutCustomProperties } from './LayoutCustomProperties';
 
 /**
  * @category Config

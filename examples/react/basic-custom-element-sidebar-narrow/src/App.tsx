@@ -35,8 +35,8 @@
  * view-change handlers.
  */
 
-import "@carbon/ai-chat/css/chat-sidebar-layout.css";
-import "./App.css";
+import '@carbon/ai-chat/css/chat-sidebar-layout.css';
+import './App.css';
 import {
   BusEventViewChange,
   BusEventViewPreChange,
@@ -45,13 +45,13 @@ import {
   CornersType,
   PublicConfig,
   ViewType,
-} from "@carbon/ai-chat";
-import React, { useState } from "react";
-import { createRoot } from "react-dom/client";
-import "@carbon/styles/css/styles.css";
-import AiLaunch20 from "@carbon/icons-react/es/AiLaunch.js";
+} from '@carbon/ai-chat';
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@carbon/styles/css/styles.css';
+import AiLaunch20 from '@carbon/icons-react/es/AiLaunch.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 // Hold the view transition long enough for the 240ms slide-out CSS transition
 // to visibly finish before the chat unmounts.
@@ -103,7 +103,7 @@ function App() {
 
   const onViewPreChange = async (
     event: BusEventViewPreChange,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ) => {
     if (!event.newViewState.mainWindow) {
       // Apply the closing modifier so the slide-out transition starts while the
@@ -136,11 +136,11 @@ function App() {
   // Build the host className from the shipped sidebar-layout classes: the
   // closing modifier wins while the animation plays, otherwise the closed
   // modifier applies once the panel is shut.
-  let className = "cds-aichat-sidebar";
+  let className = 'cds-aichat-sidebar';
   if (sideBarClosing) {
-    className += " cds-aichat-sidebar--closing";
+    className += ' cds-aichat-sidebar--closing';
   } else if (!sideBarOpen) {
-    className += " cds-aichat-sidebar--closed";
+    className += ' cds-aichat-sidebar--closed';
   }
 
   return (
@@ -155,8 +155,7 @@ function App() {
             className="app-header__button"
             onClick={handleHeaderButtonClick}
             disabled={clickInProgress}
-            aria-label="Toggle AI Chat"
-          >
+            aria-label="Toggle AI Chat">
             <AiLaunch20 />
           </button>
         )}
@@ -174,6 +173,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

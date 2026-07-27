@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,13 +12,13 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.updateInputFieldVisibility", () => {
+describe('ChatInstance.updateInputFieldVisibility', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should update input field visibility to false in Redux state", async () => {
+  it('should update input field visibility to false in Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -29,7 +29,7 @@ describe("ChatInstance.updateInputFieldVisibility", () => {
     expect(state.assistantInputState.fieldVisible).toBe(false);
   });
 
-  it("should update input field visibility to true in Redux state", async () => {
+  it('should update input field visibility to true in Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -40,7 +40,7 @@ describe("ChatInstance.updateInputFieldVisibility", () => {
     expect(state.assistantInputState.fieldVisible).toBe(true);
   });
 
-  it("should toggle input field visibility and maintain correct Redux state", async () => {
+  it('should toggle input field visibility and maintain correct Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 

@@ -75,7 +75,7 @@ const chunk: StreamChunk = {
     response_type: MessageResponseTypes.TEXT,
     text: streamedText,
     streaming_metadata: {
-      id: "1",
+      id: '1',
       cancellable: true, // Shows the "stop streaming" button
     },
   },
@@ -98,12 +98,12 @@ The {@link CustomSendMessageOptions.signal | abort signal} fires when a message 
 Check whether the request was cancelled with `signal.aborted`, or by listening for the "abort" event, and read the reason from `signal.reason`. The abort signal handles every cancellation the same way.
 
 ```typescript
-import { CancellationReason } from "@carbon/ai-chat";
+import { CancellationReason } from '@carbon/ai-chat';
 
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   let isCanceled = false;
 
@@ -114,16 +114,16 @@ async function customSendMessage(
 
     // Use enum for type-safe comparisons
     if (reason === CancellationReason.STOP_STREAMING) {
-      console.log("User clicked stop streaming");
+      console.log('User clicked stop streaming');
     } else if (reason === CancellationReason.CONVERSATION_RESTARTED) {
-      console.log("Conversation was restarted/cleared");
+      console.log('Conversation was restarted/cleared');
     } else if (reason === CancellationReason.TIMEOUT) {
-      console.log("Request timed out");
+      console.log('Request timed out');
     }
 
     // Stop your streaming loop and prepare to send the final response
   };
-  requestOptions.signal?.addEventListener("abort", abortHandler);
+  requestOptions.signal?.addEventListener('abort', abortHandler);
 
   try {
     // Your streaming logic here, checking isCanceled periodically
@@ -131,7 +131,7 @@ async function customSendMessage(
       // Stream chunks or upsert updates...
     }
   } finally {
-    requestOptions.signal?.removeEventListener("abort", abortHandler);
+    requestOptions.signal?.removeEventListener('abort', abortHandler);
   }
 }
 ```
@@ -151,7 +151,7 @@ await instance.messaging.addMessageChunk({
     response_type: MessageResponseTypes.TEXT,
     text: partialText, // The text generated before cancellation
     streaming_metadata: {
-      id: "1",
+      id: '1',
       stream_stopped: true,
     },
   },
@@ -196,7 +196,7 @@ await instance.messaging.upsertMessage(
           },
         })) ?? [],
     },
-  }),
+  })
 );
 ```
 

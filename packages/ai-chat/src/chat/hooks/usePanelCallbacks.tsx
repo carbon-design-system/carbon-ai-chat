@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
 interface UsePanelCallbacksProps {
   requestFocus: () => void;

@@ -24,13 +24,13 @@
  * Start reading at: `App()` and the `renderCustomList` prop.
  */
 
-import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
-import React, { useMemo } from "react";
-import { createRoot } from "react-dom/client";
+import { ChatCustomElement, PublicConfig } from '@carbon/ai-chat';
+import React, { useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { CANNED_SUGGESTIONS } from "./suggestions";
-import { CustomSuggestionList } from "./CustomSuggestionList";
+import { customSendMessage } from './customSendMessage';
+import { CANNED_SUGGESTIONS } from './suggestions';
+import { CustomSuggestionList } from './CustomSuggestionList';
 
 function App() {
   const config: PublicConfig = useMemo(
@@ -55,7 +55,7 @@ function App() {
           // a network call without changing the surrounding shape.
           items: async (query: string) =>
             CANNED_SUGGESTIONS.filter((s) =>
-              s.label.toLowerCase().includes(query.toLowerCase()),
+              s.label.toLowerCase().includes(query.toLowerCase())
             ),
           // debounce keystrokes so rapid typing does not thrash the
           // resolver; 150ms balances responsiveness with reduced churn.
@@ -74,12 +74,12 @@ function App() {
         },
       },
     }),
-    [],
+    []
   );
 
   return <ChatCustomElement className="chat-custom-element" {...config} />;
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

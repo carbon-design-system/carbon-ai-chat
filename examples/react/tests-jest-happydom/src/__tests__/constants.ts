@@ -15,7 +15,7 @@
  * WAIT_FOR_TIMEOUT / TEST_TIMEOUT to keep timing consistent across specs.
  */
 
-import { MessageResponseTypes } from "@carbon/ai-chat";
+import { MessageResponseTypes } from '@carbon/ai-chat';
 
 export const MARKDOWN_WITH_TABLE_AND_CODE = `
 Here is a summary of the components that should lazy-load inside Jest:
@@ -34,31 +34,31 @@ helloLazyLoad();
 \`\`\`
 `;
 
-export const CITATIONS_TOGGLE_ARIA_LABEL = "Open or close the list of sources";
+export const CITATIONS_TOGGLE_ARIA_LABEL = 'Open or close the list of sources';
 
 export const WAIT_FOR_TIMEOUT = 5_000;
 export const TEST_TIMEOUT = 15_000;
 
 export const CONVERSATIONAL_SEARCH_RESPONSE = {
   response_type: MessageResponseTypes.CONVERSATIONAL_SEARCH,
-  text: "Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.",
+  text: 'Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov at the University of Manchester.',
   citations: [
     {
-      title: "Carbon Allotropes - Chemical Database (IBM Research)",
-      text: "Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov.",
-      url: "https://ibm.com/research/carbon-allotropes#:~:text=Diamond%20was%20first,University%20of%20Manchester",
+      title: 'Carbon Allotropes - Chemical Database (IBM Research)',
+      text: 'Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985, and graphene was first isolated in 2004 by Andre Geim and Konstantin Novoselov.',
+      url: 'https://ibm.com/research/carbon-allotropes#:~:text=Diamond%20was%20first,University%20of%20Manchester',
       ranges: [{ start: 147, end: 290 }],
     },
     {
-      title: "Carbon Element History - Chemical Elements Database (IBM Watson)",
-      text: "Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times.",
-      url: "https://ibm.com/chemistry/elements/carbon#:~:text=Antoine%20Lavoisier%201789",
+      title: 'Carbon Element History - Chemical Elements Database (IBM Watson)',
+      text: 'Carbon was first recognized as an element by Antoine Lavoisier in 1789, though carbon compounds have been known since ancient times.',
+      url: 'https://ibm.com/chemistry/elements/carbon#:~:text=Antoine%20Lavoisier%201789',
       ranges: [{ start: 0, end: 137 }],
     },
     {
       title:
-        "Carbon Research Database - Internal Collection (IBM Quantum Network)",
-      text: "Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985.",
+        'Carbon Research Database - Internal Collection (IBM Quantum Network)',
+      text: 'Carbon exists in multiple allotropes including diamond, graphite, and fullerenes. Diamond was first synthesized artificially in 1955, while fullerenes were discovered in 1985.',
       search_result_idx: 0,
       ranges: [{ start: 138, end: 247 }],
     },

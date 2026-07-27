@@ -7,15 +7,15 @@
  *  @license
  */
 
-import React from "react";
-import { render, waitFor } from "@testing-library/react";
-import { ChatContainer } from "../../../src/react/ChatContainer";
-import { ChatContainerProps } from "../../../src/types/component/ChatContainer";
-import { createBaseTestProps } from "../../test_helpers";
-import { AppState } from "../../../src/types/state/AppState";
-import { enLanguagePack } from "../../../src/types/config/LanguagePack";
+import React from 'react';
+import { render, waitFor } from '@testing-library/react';
+import { ChatContainer } from '../../../src/react/ChatContainer';
+import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+import { createBaseTestProps } from '../../test_helpers';
+import { AppState } from '../../../src/types/state/AppState';
+import { enLanguagePack } from '../../../src/types/config/LanguagePack';
 
-describe("Config Strings", () => {
+describe('Config Strings', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
     ...createBaseTestProps(),
   });
@@ -25,13 +25,13 @@ describe("Config Strings", () => {
   });
 
   afterEach(() => {
-    document.body.innerHTML = "";
+    document.body.innerHTML = '';
   });
 
-  describe("strings", () => {
-    it("should apply partial string overrides to language pack in Redux state", async () => {
+  describe('strings', () => {
+    it('should apply partial string overrides to language pack in Redux state', async () => {
       const strings = {
-        input_placeholder: "Ask me anything…",
+        input_placeholder: 'Ask me anything…',
       } as Partial<typeof enLanguagePack>;
 
       const props: Partial<ChatContainerProps> = {
@@ -50,25 +50,25 @@ describe("Config Strings", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       // Overridden key reflects custom string
       expect(state.languagePack.input_placeholder).toBe(
-        strings.input_placeholder,
+        strings.input_placeholder
       );
       // Unspecified keys retain defaults
       expect(state.languagePack.launcher_isOpen).toBe(
-        enLanguagePack.launcher_isOpen,
+        enLanguagePack.launcher_isOpen
       );
     });
 
-    it("should merge multiple overrides and keep other defaults", async () => {
+    it('should merge multiple overrides and keep other defaults', async () => {
       const strings = {
-        input_placeholder: "Start here",
-        launcher_isOpen: "Open chat",
+        input_placeholder: 'Start here',
+        launcher_isOpen: 'Open chat',
       } as Partial<typeof enLanguagePack>;
 
       const props: Partial<ChatContainerProps> = {
@@ -87,26 +87,26 @@ describe("Config Strings", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
-      expect(state.languagePack.input_placeholder).toBe("Start here");
-      expect(state.languagePack.launcher_isOpen).toBe("Open chat");
+      expect(state.languagePack.input_placeholder).toBe('Start here');
+      expect(state.languagePack.launcher_isOpen).toBe('Open chat');
       // Another key not overridden remains default
       expect(state.languagePack.window_ariaWindowOpened).toBe(
-        enLanguagePack.window_ariaWindowOpened,
+        enLanguagePack.window_ariaWindowOpened
       );
     });
 
-    it("should update language pack when strings prop updates", async () => {
+    it('should update language pack when strings prop updates', async () => {
       const initialStrings = {
-        input_placeholder: "First value",
+        input_placeholder: 'First value',
       } as Partial<typeof enLanguagePack>;
 
       const updatedStrings = {
-        input_placeholder: "Second value",
+        input_placeholder: 'Second value',
       } as Partial<typeof enLanguagePack>;
 
       const props: Partial<ChatContainerProps> = {
@@ -120,21 +120,21 @@ describe("Config Strings", () => {
       });
 
       const { rerender } = render(
-        React.createElement(ChatContainer, { ...props, onBeforeRender }),
+        React.createElement(ChatContainer, { ...props, onBeforeRender })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
 
       // Verify initial override
       expect(store.getState().languagePack.input_placeholder).toBe(
-        initialStrings.input_placeholder,
+        initialStrings.input_placeholder
       );
 
       // Rerender with updated strings
@@ -143,22 +143,22 @@ describe("Config Strings", () => {
           ...props,
           strings: updatedStrings,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(store.getState().languagePack.input_placeholder).toBe(
-            updatedStrings.input_placeholder,
+            updatedStrings.input_placeholder
           );
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
     });
 
-    it("should revert a string to its default when removed from the strings prop", async () => {
+    it('should revert a string to its default when removed from the strings prop', async () => {
       const initialStrings = {
-        input_placeholder: "Custom value",
+        input_placeholder: 'Custom value',
       } as Partial<typeof enLanguagePack>;
 
       // Same prop, with the override removed — the key must fall back to default.
@@ -175,20 +175,20 @@ describe("Config Strings", () => {
       });
 
       const { rerender } = render(
-        React.createElement(ChatContainer, { ...props, onBeforeRender }),
+        React.createElement(ChatContainer, { ...props, onBeforeRender })
       );
 
       await waitFor(
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
 
       expect(store.getState().languagePack.input_placeholder).toBe(
-        "Custom value",
+        'Custom value'
       );
 
       rerender(
@@ -196,22 +196,22 @@ describe("Config Strings", () => {
           ...props,
           strings: clearedStrings,
           onBeforeRender,
-        }),
+        })
       );
 
       await waitFor(
         () => {
           expect(store.getState().languagePack.input_placeholder).toBe(
-            enLanguagePack.input_placeholder,
+            enLanguagePack.input_placeholder
           );
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
     });
 
-    it("should override only one string and keep all other defaults", async () => {
+    it('should override only one string and keep all other defaults', async () => {
       const strings = {
-        input_placeholder: "Custom placeholder only",
+        input_placeholder: 'Custom placeholder only',
       } as Partial<typeof enLanguagePack>;
 
       const props: Partial<ChatContainerProps> = {
@@ -230,7 +230,7 @@ describe("Config Strings", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -238,28 +238,28 @@ describe("Config Strings", () => {
 
       // Only this string should be overridden
       expect(state.languagePack.input_placeholder).toBe(
-        "Custom placeholder only",
+        'Custom placeholder only'
       );
 
       // All other strings should remain defaults
       expect(state.languagePack.launcher_isOpen).toBe(
-        enLanguagePack.launcher_isOpen,
+        enLanguagePack.launcher_isOpen
       );
       expect(state.languagePack.launcher_isClosed).toBe(
-        enLanguagePack.launcher_isClosed,
+        enLanguagePack.launcher_isClosed
       );
       expect(state.languagePack.window_ariaWindowOpened).toBe(
-        enLanguagePack.window_ariaWindowOpened,
+        enLanguagePack.window_ariaWindowOpened
       );
       expect(state.languagePack.window_ariaWindowClosed).toBe(
-        enLanguagePack.window_ariaWindowClosed,
+        enLanguagePack.window_ariaWindowClosed
       );
     });
 
-    it("should override exactly two strings and keep all other defaults", async () => {
+    it('should override exactly two strings and keep all other defaults', async () => {
       const strings = {
-        input_placeholder: "Custom input text",
-        launcher_isOpen: "Custom launcher text",
+        input_placeholder: 'Custom input text',
+        launcher_isOpen: 'Custom launcher text',
       } as Partial<typeof enLanguagePack>;
 
       const props: Partial<ChatContainerProps> = {
@@ -278,29 +278,29 @@ describe("Config Strings", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
 
       // These two strings should be overridden
-      expect(state.languagePack.input_placeholder).toBe("Custom input text");
-      expect(state.languagePack.launcher_isOpen).toBe("Custom launcher text");
+      expect(state.languagePack.input_placeholder).toBe('Custom input text');
+      expect(state.languagePack.launcher_isOpen).toBe('Custom launcher text');
 
       // All other strings should remain defaults
       expect(state.languagePack.launcher_isClosed).toBe(
-        enLanguagePack.launcher_isClosed,
+        enLanguagePack.launcher_isClosed
       );
       expect(state.languagePack.window_ariaWindowOpened).toBe(
-        enLanguagePack.window_ariaWindowOpened,
+        enLanguagePack.window_ariaWindowOpened
       );
       expect(state.languagePack.window_ariaWindowClosed).toBe(
-        enLanguagePack.window_ariaWindowClosed,
+        enLanguagePack.window_ariaWindowClosed
       );
     });
 
-    it("should handle empty strings object and use all defaults", async () => {
+    it('should handle empty strings object and use all defaults', async () => {
       const strings = {} as Partial<typeof enLanguagePack>;
 
       const props: Partial<ChatContainerProps> = {
@@ -319,7 +319,7 @@ describe("Config Strings", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
@@ -327,17 +327,17 @@ describe("Config Strings", () => {
 
       // All strings should remain defaults
       expect(state.languagePack.input_placeholder).toBe(
-        enLanguagePack.input_placeholder,
+        enLanguagePack.input_placeholder
       );
       expect(state.languagePack.launcher_isOpen).toBe(
-        enLanguagePack.launcher_isOpen,
+        enLanguagePack.launcher_isOpen
       );
       expect(state.languagePack.launcher_isClosed).toBe(
-        enLanguagePack.launcher_isClosed,
+        enLanguagePack.launcher_isClosed
       );
     });
 
-    it("should use defaults when strings is undefined", async () => {
+    it('should use defaults when strings is undefined', async () => {
       const props: Partial<ChatContainerProps> = {
         ...createBaseProps(),
         // strings intentionally omitted
@@ -354,14 +354,14 @@ describe("Config Strings", () => {
         () => {
           expect(capturedInstance).not.toBeNull();
         },
-        { timeout: 5000 },
+        { timeout: 5000 }
       );
 
       const store = (capturedInstance as any).serviceManager.store;
       const state: AppState = store.getState();
       // Spot check a known default value
       expect(state.languagePack.input_placeholder).toBe(
-        enLanguagePack.input_placeholder,
+        enLanguagePack.input_placeholder
       );
     });
   });

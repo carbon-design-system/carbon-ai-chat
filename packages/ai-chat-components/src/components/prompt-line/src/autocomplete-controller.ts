@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, LitElement, nothing } from "lit";
-import { property, state } from "lit/decorators.js";
+import { html, LitElement, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
 
 import "../../autocomplete/src/autocomplete.js";
 import type { StarterTriggerStorage } from "./tiptap/carbon-starter-trigger.js";
@@ -25,7 +25,7 @@ import type {
   SuggestionItem,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
-} from "./tiptap/types.js";
+} from './tiptap/types.js';
 
 // ---------------------------------------------------------------------------
 // AutocompleteController — framework-agnostic class
@@ -125,22 +125,22 @@ export class AutocompleteController {
     next: Partial<
       Pick<
         AutocompleteControllerOptions,
-        | "mention"
-        | "command"
-        | "autocomplete"
-        | "starters"
-        | "isSendDisabled"
-        | "onStarterSelected"
+        | 'mention'
+        | 'command'
+        | 'autocomplete'
+        | 'starters'
+        | 'isSendDisabled'
+        | 'onStarterSelected'
       >
-    >,
+    >
   ): void {
-    if ("mention" in next) {
+    if ('mention' in next) {
       this._mention = next.mention;
     }
-    if ("command" in next) {
+    if ('command' in next) {
       this._command = next.command;
     }
-    if ("autocomplete" in next) {
+    if ('autocomplete' in next) {
       this._autocomplete = next.autocomplete;
     }
     if ("starters" in next) {
@@ -161,10 +161,10 @@ export class AutocompleteController {
         }
       }
     }
-    if ("isSendDisabled" in next) {
+    if ('isSendDisabled' in next) {
       this._isSendDisabled = Boolean(next.isSendDisabled);
     }
-    if ("onStarterSelected" in next) {
+    if ('onStarterSelected' in next) {
       this._onStarterSelected = next.onStarterSelected;
     }
     if (this._trigger) {
@@ -223,7 +223,7 @@ export class AutocompleteController {
    * true`), so we capture it here for later selection-routing.
    */
   handleTriggerChangeEvent(
-    event: CustomEvent<TriggerChangeEventDetail | null>,
+    event: CustomEvent<TriggerChangeEventDetail | null>
   ): void {
     const target = findPromptLineFromTarget(event.composedPath());
     if (target) {
@@ -290,7 +290,7 @@ export class AutocompleteController {
       return;
     }
 
-    if (trigger.type === "starter") {
+    if (trigger.type === 'starter') {
       const text = item.value ?? item.label;
       editor.commands.insertContent(text);
       this.dismiss();
@@ -300,8 +300,8 @@ export class AutocompleteController {
       return;
     }
 
-    if (trigger.type === "mention" || trigger.type === "command") {
-      const config = trigger.type === "mention" ? this._mention : this._command;
+    if (trigger.type === 'mention' || trigger.type === 'command') {
+      const config = trigger.type === 'mention' ? this._mention : this._command;
       const nodeName = trigger.type;
       const range = {
         from: trigger.triggerOffset,
@@ -320,17 +320,17 @@ export class AutocompleteController {
               trigger: resolveShowTriggerInChip(
                 item,
                 config ?? {},
-                trigger.type === "command",
+                trigger.type === 'command'
               )
                 ? config?.trigger
                 : null,
             },
           },
-          { type: "text", text: " " },
+          { type: 'text', text: ' ' },
         ])
         .run();
       config?.onSelect?.(item);
-    } else if (trigger.type === "autocomplete") {
+    } else if (trigger.type === 'autocomplete') {
       const text = item.value ?? item.label;
       const range = {
         from: trigger.triggerOffset,
@@ -339,7 +339,7 @@ export class AutocompleteController {
       editor
         .chain()
         .focus()
-        .insertContentAt(range, [{ type: "text", text }])
+        .insertContentAt(range, [{ type: 'text', text }])
         .run();
       this._autocomplete?.onSelect?.(item);
     }
@@ -385,8 +385,8 @@ export class AutocompleteController {
     }
     this._detachEditorKeyHandler();
     if (editorDom) {
-      editorDom.addEventListener("keydown", this._handleEditorKeyDown, true);
-      editorDom.addEventListener("focusout", this._handleEditorFocusOut);
+      editorDom.addEventListener('keydown', this._handleEditorKeyDown, true);
+      editorDom.addEventListener('focusout', this._handleEditorFocusOut);
       this._editorDomBound = editorDom;
     }
   }
@@ -394,13 +394,13 @@ export class AutocompleteController {
   private _detachEditorKeyHandler(): void {
     if (this._editorDomBound) {
       this._editorDomBound.removeEventListener(
-        "keydown",
+        'keydown',
         this._handleEditorKeyDown,
-        true,
+        true
       );
       this._editorDomBound.removeEventListener(
-        "focusout",
-        this._handleEditorFocusOut,
+        'focusout',
+        this._handleEditorFocusOut
       );
       this._editorDomBound = null;
     }
@@ -408,10 +408,10 @@ export class AutocompleteController {
 
   private _handleEditorKeyDown = (event: KeyboardEvent): void => {
     if (
-      event.key !== "ArrowUp" &&
-      event.key !== "ArrowDown" &&
-      event.key !== "Enter" &&
-      event.key !== "Escape"
+      event.key !== 'ArrowUp' &&
+      event.key !== 'ArrowDown' &&
+      event.key !== 'Enter' &&
+      event.key !== 'Escape'
     ) {
       return;
     }
@@ -425,11 +425,11 @@ export class AutocompleteController {
     event.preventDefault();
     event.stopPropagation();
     listEl.dispatchEvent(
-      new KeyboardEvent("keydown", {
+      new KeyboardEvent('keydown', {
         key: event.key,
         bubbles: true,
         cancelable: true,
-      }),
+      })
     );
   };
 
@@ -460,17 +460,17 @@ export class AutocompleteController {
   }
 
   private async _resolveItems(
-    trigger: TriggerChangeEventDetail,
+    trigger: TriggerChangeEventDetail
   ): Promise<SuggestionItem[]> {
     if (trigger.type === "starter") {
       return this._starters?.items ?? [];
     }
     const config =
-      trigger.type === "mention"
+      trigger.type === 'mention'
         ? this._mention
-        : trigger.type === "command"
+        : trigger.type === 'command'
           ? this._command
-          : trigger.type === "autocomplete"
+          : trigger.type === 'autocomplete'
             ? this._autocomplete
             : undefined;
     if (!config) {
@@ -489,11 +489,11 @@ export class AutocompleteController {
       return this._starters?.renderCustomList;
     }
     const config =
-      trigger.type === "mention"
+      trigger.type === 'mention'
         ? this._mention
-        : trigger.type === "command"
+        : trigger.type === 'command'
           ? this._command
-          : trigger.type === "autocomplete"
+          : trigger.type === 'autocomplete'
             ? this._autocomplete
             : undefined;
     return config?.renderCustomList;
@@ -514,12 +514,12 @@ export class AutocompleteController {
 
 /** Walks an event's composedPath looking for a `cds-aichat-prompt-line`. */
 function findPromptLineFromTarget(
-  path: EventTarget[],
+  path: EventTarget[]
 ): PromptLineElement | null {
   for (const target of path) {
     if (
       target instanceof HTMLElement &&
-      target.tagName === "CDS-AICHAT-PROMPT-LINE"
+      target.tagName === 'CDS-AICHAT-PROMPT-LINE'
     ) {
       return target as unknown as PromptLineElement;
     }
@@ -538,13 +538,13 @@ async function resolveConfigItems(
       | ((query: string) => Promise<SuggestionItem[]> | SuggestionItem[]);
     minQueryLength?: number;
   },
-  query: string,
+  query: string
 ): Promise<SuggestionItem[]> {
   const minQueryLength = config.minQueryLength ?? 0;
   if (query.length < minQueryLength) {
     return [];
   }
-  if (typeof config.items === "function") {
+  if (typeof config.items === 'function') {
     return await Promise.resolve(config.items(query));
   }
   if (!query) {
@@ -552,7 +552,7 @@ async function resolveConfigItems(
   }
   const lower = query.toLowerCase();
   return config.items.filter((item) =>
-    item.label.toLowerCase().includes(lower),
+    item.label.toLowerCase().includes(lower)
   );
 }
 
@@ -596,7 +596,7 @@ class AutocompleteControllerElement extends LitElement {
   starters?: StartersConfig;
 
   /** When true, starter selection inserts text without firing the send event. */
-  @property({ type: Boolean, attribute: "is-send-disabled" })
+  @property({ type: Boolean, attribute: 'is-send-disabled' })
   isSendDisabled = false;
 
   @state()
@@ -627,11 +627,11 @@ class AutocompleteControllerElement extends LitElement {
       isSendDisabled: this.isSendDisabled,
       onStarterSelected: (text) => {
         this.dispatchEvent(
-          new CustomEvent("cds-aichat-starter-selected", {
+          new CustomEvent('cds-aichat-starter-selected', {
             detail: { text },
             bubbles: true,
             composed: true,
-          }),
+          })
         );
       },
       onChange: (next) => {
@@ -642,17 +642,17 @@ class AutocompleteControllerElement extends LitElement {
     // on the same page don't cross-talk. Falls back to `this` if the
     // controller is used outside a shell — in that case the consumer
     // should make sure their prompt-line bubbles events into this element.
-    this._eventSource = this.closest("cds-aichat-prompt-line-shell") ?? this;
+    this._eventSource = this.closest('cds-aichat-prompt-line-shell') ?? this;
     this._eventSource.addEventListener(
-      "cds-aichat-trigger-change",
-      this._handleTriggerChange as EventListener,
+      'cds-aichat-trigger-change',
+      this._handleTriggerChange as EventListener
     );
   }
 
   override disconnectedCallback(): void {
     this._eventSource?.removeEventListener(
-      "cds-aichat-trigger-change",
-      this._handleTriggerChange as EventListener,
+      'cds-aichat-trigger-change',
+      this._handleTriggerChange as EventListener
     );
     this._eventSource = null;
     this._controller?.destroy();
@@ -665,11 +665,11 @@ class AutocompleteControllerElement extends LitElement {
       return;
     }
     if (
-      changed.has("mention") ||
-      changed.has("command") ||
-      changed.has("autocomplete") ||
-      changed.has("starters") ||
-      changed.has("isSendDisabled")
+      changed.has('mention') ||
+      changed.has('command') ||
+      changed.has('autocomplete') ||
+      changed.has('starters') ||
+      changed.has('isSendDisabled')
     ) {
       this._controller.setConfigs({
         mention: this.mention,
@@ -682,7 +682,7 @@ class AutocompleteControllerElement extends LitElement {
     // Register the currently-rendered list element with the controller so
     // arrow / Enter / Escape on the editor get forwarded into it.
     const listEl =
-      this.querySelector<HTMLElement>("cds-aichat-autocomplete") ??
+      this.querySelector<HTMLElement>('cds-aichat-autocomplete') ??
       (this.firstElementChild instanceof HTMLElement
         ? this.firstElementChild
         : null);
@@ -708,11 +708,11 @@ class AutocompleteControllerElement extends LitElement {
       // a React node). Surface it on a side-channel event so React adapters
       // can portal it into place themselves.
       this.dispatchEvent(
-        new CustomEvent("cds-aichat-custom-list-render", {
+        new CustomEvent('cds-aichat-custom-list-render', {
           detail: { reactNode: result },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
       return nothing;
     }
@@ -720,25 +720,24 @@ class AutocompleteControllerElement extends LitElement {
       <cds-aichat-autocomplete
         .items=${items}
         @cds-aichat-autocomplete-select=${(
-          event: CustomEvent<{ item: SuggestionItem }>,
+          event: CustomEvent<{ item: SuggestionItem }>
         ) => this._controller?.select(event.detail.item)}
-        @cds-aichat-autocomplete-dismiss=${() => this._controller?.dismiss()}
-      ></cds-aichat-autocomplete>
+        @cds-aichat-autocomplete-dismiss=${() => this._controller?.dismiss()}></cds-aichat-autocomplete>
     `;
   }
 
   private _handleTriggerChange = (event: Event): void => {
     this._controller?.handleTriggerChangeEvent(
       event as CustomEvent<
-        Parameters<AutocompleteController["handleTriggerChange"]>[0]
-      >,
+        Parameters<AutocompleteController['handleTriggerChange']>[0]
+      >
     );
   };
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-autocomplete-controller": AutocompleteControllerElement;
+    'cds-aichat-autocomplete-controller': AutocompleteControllerElement;
   }
 }
 

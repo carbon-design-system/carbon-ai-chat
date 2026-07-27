@@ -14,12 +14,12 @@ Minimal Lit example of the float / launcher layout: mounts `<cds-aichat-containe
 
 ## APIs and props demonstrated
 
-| Symbol                               | Kind           | Role in this example                                      |
-| ------------------------------------ | -------------- | --------------------------------------------------------- |
-| `<cds-aichat-container>`             | custom element | Mounts the chat UI.                                       |
-| `messaging.customSendMessage`        | property       | Mock backend that streams a response.                     |
-| `instance.messaging.addMessage`      | method         | Emits non-streaming responses (the welcome message).      |
-| `instance.messaging.addMessageChunk` | method         | Streams partial / complete / final chunks back to the UI. |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-container>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Mock backend that streams a response. |
+| `instance.messaging.addMessage` | method | Emits non-streaming responses (the welcome message). |
+| `instance.messaging.addMessageChunk` | method | Streams partial / complete / final chunks back to the UI. |
 
 ## Run it
 

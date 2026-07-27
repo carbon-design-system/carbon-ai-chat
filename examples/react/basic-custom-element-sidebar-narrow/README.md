@@ -18,20 +18,20 @@ Docked-sidebar `ChatCustomElement` integration narrowed to a 320px side panel â€
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Package / kind                      | Role in this example                                                 |
-| --------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
-| `ChatCustomElement`                           | `@carbon/ai-chat` / React component | Mounts the chat into a host element you style as a sidebar.          |
-| `--cds-aichat-sidebar-width`                  | CSS custom property                 | Overridden to `320px` to narrow the panel below the `360px` default. |
-| `onViewChange`                                | `@carbon/ai-chat` / component prop  | Reports the resting open/closed view state to update the host class. |
-| `onViewPreChange`                             | `@carbon/ai-chat` / component prop  | Delays the view change so the slide-out animation can finish first.  |
-| `BusEventViewChange`                          | `@carbon/ai-chat` / event payload   | Carries `newViewState.mainWindow` for the resting-state handler.     |
-| `BusEventViewPreChange`                       | `@carbon/ai-chat` / event payload   | Carries `newViewState.mainWindow` for the pre-change handler.        |
-| `ChatInstance.changeView`                     | `@carbon/ai-chat` / instance method | Opens or closes the chat from the header toggle button.              |
-| `ViewType`                                    | `@carbon/ai-chat` / enum            | Selects `MAIN_WINDOW` or `LAUNCHER` when toggling the view.          |
-| `layout.corners`                              | `@carbon/ai-chat` / config prop     | Squares the chat corners to fit the sidebar chrome.                  |
-| `openChatByDefault`                           | `@carbon/ai-chat` / config prop     | Opens the chat on mount.                                             |
-| `messaging.customSendMessage`                 | `@carbon/ai-chat` / config prop     | Mock backend.                                                        |
-| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet                          | Provides the `cds-aichat-sidebar*` layout classes.                   |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` / React component | Mounts the chat into a host element you style as a sidebar. |
+| `--cds-aichat-sidebar-width` | CSS custom property | Overridden to `320px` to narrow the panel below the `360px` default. |
+| `onViewChange` | `@carbon/ai-chat` / component prop | Reports the resting open/closed view state to update the host class. |
+| `onViewPreChange` | `@carbon/ai-chat` / component prop | Delays the view change so the slide-out animation can finish first. |
+| `BusEventViewChange` | `@carbon/ai-chat` / event payload | Carries `newViewState.mainWindow` for the resting-state handler. |
+| `BusEventViewPreChange` | `@carbon/ai-chat` / event payload | Carries `newViewState.mainWindow` for the pre-change handler. |
+| `ChatInstance.changeView` | `@carbon/ai-chat` / instance method | Opens or closes the chat from the header toggle button. |
+| `ViewType` | `@carbon/ai-chat` / enum | Selects `MAIN_WINDOW` or `LAUNCHER` when toggling the view. |
+| `layout.corners` | `@carbon/ai-chat` / config prop | Squares the chat corners to fit the sidebar chrome. |
+| `openChatByDefault` | `@carbon/ai-chat` / config prop | Opens the chat on mount. |
+| `messaging.customSendMessage` | `@carbon/ai-chat` / config prop | Mock backend. |
+| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet | Provides the `cds-aichat-sidebar*` layout classes. |
 
 ## Run it
 

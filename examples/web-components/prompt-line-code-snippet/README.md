@@ -21,23 +21,23 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 
 ## APIs and props demonstrated
 
-| Symbol                               | Kind                                 | Role in this example                                                            |
-| ------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`        | custom element                       | Mounts the chat UI as a fullscreen surface.                                     |
-| `<cds-aichat-code-snippet>`          | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble.   |
-| `<cds-aichat-card>`                  | `@carbon/ai-chat-components` element | Frames the editable snippet; the exit hint sits in its `footer` slot.           |
-| `PublicConfig`                       | type                                 | Types the config bound to the element's properties.                             |
-| `WCRenderUserDefinedInputNode`       | type                                 | Types the `renderUserDefinedInputNode` callback.                                |
-| `Extension`                          | `@tiptap/core` type                  | Types the custom Tiptap node registered on the input.                           |
-| `renderInLightDom`                   | helper                               | Bridges the snippet web component into the page's light DOM.                    |
-| `.renderUserDefinedInputNode`        | property                             | Renders the custom `codeSnippetBlock` node inside the sent user message bubble. |
-| `.input` (`input.tiptap.extensions`) | property                             | Registers the host-authored `codeSnippetBlock` Tiptap node on the input.        |
-| `.layout` (`layout.showFrame`)       | property                             | Hides the default frame so the chat fills the viewport.                         |
-| `.openChatByDefault`                 | property                             | Mounts straight into the conversation, no launcher.                             |
-| `.messaging.customSendMessage`       | property                             | Mock backend; confirms whether the outgoing text contained a fenced block.      |
-| `Node.create`                        | `@tiptap/core` API                   | Authors the `codeSnippetBlock` block atom node.                                 |
-| `InputRule`                          | `@tiptap/core` API                   | Triggers the node swap when the user finishes typing three backticks.           |
-| `addKeyboardShortcuts` / keydown     | `@tiptap/core` / DOM                 | Escape exits the block to a new paragraph below.                                |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI as a fullscreen surface. |
+| `<cds-aichat-code-snippet>` | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble. |
+| `<cds-aichat-card>` | `@carbon/ai-chat-components` element | Frames the editable snippet; the exit hint sits in its `footer` slot. |
+| `PublicConfig` | type | Types the config bound to the element's properties. |
+| `WCRenderUserDefinedInputNode` | type | Types the `renderUserDefinedInputNode` callback. |
+| `Extension` | `@tiptap/core` type | Types the custom Tiptap node registered on the input. |
+| `renderInLightDom` | helper | Bridges the snippet web component into the page's light DOM. |
+| `.renderUserDefinedInputNode` | property | Renders the custom `codeSnippetBlock` node inside the sent user message bubble. |
+| `.input` (`input.tiptap.extensions`) | property | Registers the host-authored `codeSnippetBlock` Tiptap node on the input. |
+| `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the viewport. |
+| `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
+| `.messaging.customSendMessage` | property | Mock backend; confirms whether the outgoing text contained a fenced block. |
+| `Node.create` | `@tiptap/core` API | Authors the `codeSnippetBlock` block atom node. |
+| `InputRule` | `@tiptap/core` API | Triggers the node swap when the user finishes typing three backticks. |
+| `addKeyboardShortcuts` / keydown | `@tiptap/core` / DOM | Escape exits the block to a new paragraph below. |
 
 ## Run it
 

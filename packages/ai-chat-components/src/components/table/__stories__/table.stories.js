@@ -7,11 +7,11 @@
  *  @license
  */
 
-import "../index";
-import "../../card/index.js";
-import { html } from "lit";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { headers, rows } from "./story-data.js";
+import '../index';
+import '../../card/index.js';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { headers, rows } from './story-data.js';
 
 // Helper function to render with or without card wrapper
 const renderTable = (args) => {
@@ -28,8 +28,7 @@ const renderTable = (args) => {
       default-page-size=${ifDefined(args.defaultPageSize)}
       ?loading=${args.loading}
       .headers=${args.headers}
-      .rows=${args.rows}
-    >
+      .rows=${args.rows}>
     </cds-aichat-table>
   `;
 
@@ -45,63 +44,63 @@ const renderTable = (args) => {
 };
 
 export default {
-  title: "Components/Table",
-  component: "cds-aichat-table",
+  title: 'Components/Table',
+  component: 'cds-aichat-table',
   argTypes: {
     useCard: {
-      control: "boolean",
-      description: "Wrap in card wrapper",
+      control: 'boolean',
+      description: 'Wrap in card wrapper',
       table: {
-        category: "Wrapper",
+        category: 'Wrapper',
       },
     },
     tableTitle: {
-      control: "text",
-      description: "Optional heading displayed above the table.",
+      control: 'text',
+      description: 'Optional heading displayed above the table.',
     },
     tableDescription: {
-      control: "text",
-      description: "Optional helper text under the title.",
+      control: 'text',
+      description: 'Optional helper text under the title.',
     },
     headers: {
       control: false,
-      description: "Header cells for the table.",
-      table: { category: "data" },
+      description: 'Header cells for the table.',
+      table: { category: 'data' },
     },
     rows: {
       control: false,
-      description: "Row data for the table.",
-      table: { category: "data" },
+      description: 'Row data for the table.',
+      table: { category: 'data' },
     },
     loading: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Show a skeleton state while data loads. Filters and pagination are disabled when loading.",
+        'Show a skeleton state while data loads. Filters and pagination are disabled when loading.',
     },
     filterPlaceholderText: {
-      control: "text",
-      description: "Placeholder text for the filter search input.",
+      control: 'text',
+      description: 'Placeholder text for the filter search input.',
     },
     previousPageText: {
-      control: "text",
-      description: "Tooltip text for the pagination previous button.",
+      control: 'text',
+      description: 'Tooltip text for the pagination previous button.',
     },
     nextPageText: {
-      control: "text",
-      description: "Tooltip text for the pagination next button.",
+      control: 'text',
+      description: 'Tooltip text for the pagination next button.',
     },
     itemsPerPageText: {
-      control: "text",
-      description: "Label text for the items-per-page selector.",
+      control: 'text',
+      description: 'Label text for the items-per-page selector.',
     },
     locale: {
-      control: "text",
-      description: "Locale used for sorting and pagination formatting.",
+      control: 'text',
+      description: 'Locale used for sorting and pagination formatting.',
     },
     defaultPageSize: {
-      control: "number",
+      control: 'number',
       description:
-        "Initial page size. Defaults to 5 on narrow containers and 10 on wide containers.",
+        'Initial page size. Defaults to 5 on narrow containers and 10 on wide containers.',
     },
   },
 };
@@ -109,16 +108,16 @@ export default {
 export const Default = {
   args: {
     useCard: true,
-    tableTitle: "Agent roster",
-    tableDescription: "Operational view of AI chat team members.",
+    tableTitle: 'Agent roster',
+    tableDescription: 'Operational view of AI chat team members.',
     headers,
     rows,
     loading: false,
-    filterPlaceholderText: "Filter rows",
-    previousPageText: "Previous page",
-    nextPageText: "Next page",
-    itemsPerPageText: "Items per page",
-    locale: "en",
+    filterPlaceholderText: 'Filter rows',
+    previousPageText: 'Previous page',
+    nextPageText: 'Next page',
+    itemsPerPageText: 'Items per page',
+    locale: 'en',
     defaultPageSize: 5,
   },
   render: (args) => renderTable(args),

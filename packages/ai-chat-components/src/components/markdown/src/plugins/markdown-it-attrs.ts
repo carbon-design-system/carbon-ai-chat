@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -46,13 +46,13 @@
  *  are applied; any other attribute key is silently dropped.
  */
 
-import type MarkdownIt from "markdown-it";
-import type StateCore from "markdown-it/lib/rules_core/state_core.mjs";
-import type { Token } from "markdown-it";
+import type MarkdownIt from 'markdown-it';
+import type StateCore from 'markdown-it/lib/rules_core/state_core.mjs';
+import type { Token } from 'markdown-it';
 
-const LEFT = "{{";
-const RIGHT = "}}";
-const ALLOWED = new Set(["target", "rel", "class", "id"]);
+const LEFT = '{{';
+const RIGHT = '}}';
+const ALLOWED = new Set(['target', 'rel', 'class', 'id']);
 
 type AttrPair = [string, string];
 
@@ -63,24 +63,24 @@ type AttrPair = [string, string];
  */
 function parseAttrs(body: string): AttrPair[] {
   const attrs: AttrPair[] = [];
-  let key = "";
-  let value = "";
+  let key = '';
+  let value = '';
   let parsingKey = true;
   let inQuotes = false;
 
   const commit = () => {
-    if (key !== "" && ALLOWED.has(key)) {
+    if (key !== '' && ALLOWED.has(key)) {
       attrs.push([key, value]);
     }
-    key = "";
-    value = "";
+    key = '';
+    value = '';
     parsingKey = true;
   };
 
   for (let i = 0; i < body.length; i++) {
     const ch = body.charAt(i);
 
-    if (ch === "=" && parsingKey) {
+    if (ch === '=' && parsingKey) {
       parsingKey = false;
       continue;
     }
@@ -88,7 +88,7 @@ function parseAttrs(body: string): AttrPair[] {
       inQuotes = !inQuotes;
       continue;
     }
-    if (ch === " " && !inQuotes) {
+    if (ch === ' ' && !inQuotes) {
       commit();
       continue;
     }
@@ -109,8 +109,8 @@ function parseAttrs(body: string): AttrPair[] {
  */
 function applyAttrs(token: Token, attrs: AttrPair[]): void {
   for (const [key, value] of attrs) {
-    if (key === "class") {
-      token.attrJoin("class", value);
+    if (key === 'class') {
+      token.attrJoin('class', value);
     } else {
       token.attrPush([key, value]);
     }
@@ -124,7 +124,7 @@ function applyAttrs(token: Token, attrs: AttrPair[]): void {
  */
 function findMatchingOpen(tokens: Token[], closeIndex: number): Token | null {
   const close = tokens[closeIndex];
-  const openType = close.type.replace(/_close$/, "_open");
+  const openType = close.type.replace(/_close$/, '_open');
   for (let i = closeIndex - 1; i >= 0; i--) {
     if (tokens[i].type === openType && tokens[i].level === close.level) {
       return tokens[i];
@@ -149,7 +149,7 @@ function handleInlineAttributes(inlineToken: Token): boolean {
   for (let i = 1; i < children.length; i++) {
     const prev = children[i - 1];
     const curr = children[i];
-    if (prev.nesting !== -1 || curr.type !== "text") {
+    if (prev.nesting !== -1 || curr.type !== 'text') {
       continue;
     }
     if (!curr.content.startsWith(LEFT)) {
@@ -191,7 +191,7 @@ function handleEndOfBlock(tokens: Token[], inlineIndex: number): void {
     return;
   }
   const last = children[children.length - 1];
-  if (last.type !== "text" || !last.content.endsWith(RIGHT)) {
+  if (last.type !== 'text' || !last.content.endsWith(RIGHT)) {
     return;
   }
   const openIdx = last.content.lastIndexOf(LEFT);
@@ -218,7 +218,7 @@ function handleEndOfBlock(tokens: Token[], inlineIndex: number): void {
 
   const body = last.content.slice(
     openIdx + LEFT.length,
-    last.content.length - RIGHT.length,
+    last.content.length - RIGHT.length
   );
   applyAttrs(openToken, parseAttrs(body));
 
@@ -226,7 +226,7 @@ function handleEndOfBlock(tokens: Token[], inlineIndex: number): void {
   // attribute block, so `# Heading {{id=foo}}` does not render as
   // `<h1>Heading </h1>`.
   let trimmed = last.content.slice(0, openIdx);
-  if (trimmed.endsWith(" ")) {
+  if (trimmed.endsWith(' ')) {
     trimmed = trimmed.slice(0, -1);
   }
   last.content = trimmed;
@@ -240,7 +240,7 @@ export function markdownItAttrs(md: MarkdownIt): void {
   function curlyAttrs(state: StateCore): void {
     const tokens = state.tokens;
     for (let i = 0; i < tokens.length; i++) {
-      if (tokens[i].type !== "inline") {
+      if (tokens[i].type !== 'inline') {
         continue;
       }
       while (handleInlineAttributes(tokens[i])) {
@@ -250,7 +250,7 @@ export function markdownItAttrs(md: MarkdownIt): void {
     }
   }
 
-  md.core.ruler.before("linkify", "curly_attributes", curlyAttrs);
+  md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
 }
 
 export default markdownItAttrs;

@@ -17,17 +17,17 @@ Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the d
 
 ## APIs and props demonstrated
 
-| Symbol                          | Kind           | Role in this example                                    |
-| ------------------------------- | -------------- | ------------------------------------------------------- |
-| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI.                                     |
-| `messaging.customSendMessage`   | property       | Dispatches to the two reasoning scenario runners.       |
-| `onBeforeRender`                | property       | Captures the `ChatInstance`.                            |
-| `MessageResponseTypes.OPTION`   | enum value     | Welcome-message scenario picker.                        |
-| `OptionItemPreference.DROPDOWN` | enum value     | Renders scenario picker as a dropdown.                  |
-| `ReasoningStep`                 | type           | Individual reasoning step payload.                      |
-| `MessageResponseOptions`        | type           | `message_options` carrying `reasoning.{steps,content}`. |
-| `ChatInstance`                  | type           | Type of the instance handle.                            |
-| `PublicConfig`                  | type           | Types the chat configuration object.                    |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Dispatches to the two reasoning scenario runners. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `MessageResponseTypes.OPTION` | enum value | Welcome-message scenario picker. |
+| `OptionItemPreference.DROPDOWN` | enum value | Renders scenario picker as a dropdown. |
+| `ReasoningStep` | type | Individual reasoning step payload. |
+| `MessageResponseOptions` | type | `message_options` carrying `reasoning.{steps,content}`. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 

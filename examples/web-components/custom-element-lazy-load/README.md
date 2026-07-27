@@ -16,17 +16,17 @@ Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat
 
 ## APIs and props demonstrated
 
-| Symbol                        | Kind           | Role in this example                                    |
-| ----------------------------- | -------------- | ------------------------------------------------------- |
-| `<cds-aichat-custom-element>` | custom element | Lazy-loaded chat host.                                  |
-| `<cds-aichat-shell>`          | custom element | Skeleton placeholder shown while the bundle loads.      |
-| `messaging.customSendMessage` | property       | Mock backend.                                           |
-| `layout.showFrame`            | property       | Disables the built-in frame.                            |
-| `openChatByDefault`           | property       | Opens the main window on mount.                         |
-| `launcher.isOn`               | property       | Disabled to keep the surface fullscreen.                |
-| `header.hideMinimizeButton`   | property       | Hides the minimize control for the fullscreen surface.  |
-| `onAfterRender`               | property       | Fires when chat is ready so the shell can be unmounted. |
-| `ai-enabled`                  | attribute      | Enables AI styling on `<cds-aichat-shell>`.             |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Lazy-loaded chat host. |
+| `<cds-aichat-shell>` | custom element | Skeleton placeholder shown while the bundle loads. |
+| `messaging.customSendMessage` | property | Mock backend. |
+| `layout.showFrame` | property | Disables the built-in frame. |
+| `openChatByDefault` | property | Opens the main window on mount. |
+| `launcher.isOn` | property | Disabled to keep the surface fullscreen. |
+| `header.hideMinimizeButton` | property | Hides the minimize control for the fullscreen surface. |
+| `onAfterRender` | property | Fires when chat is ready so the shell can be unmounted. |
+| `ai-enabled` | attribute | Enables AI styling on `<cds-aichat-shell>`. |
 
 ## Run it
 

@@ -5,28 +5,28 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import Statoscope from "@statoscope/webpack-plugin";
-import path from "path";
-import { fileURLToPath } from "url";
-import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import Statoscope from '@statoscope/webpack-plugin';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 const { default: StatoscopeWebpackPlugin } = Statoscope;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const shouldAnalyze = process.env.ANALYZE === "true";
+const shouldAnalyze = process.env.ANALYZE === 'true';
 
 const environment = process.env.ENVIRONMENT
   ? process.env.ENVIRONMENT
-  : "production";
+  : 'production';
 
 const createPlugins = (includeAnalysis) => {
   const plugins = [
     new HtmlWebpackPlugin({
-      template: "./index.html",
-      inject: "body",
+      template: './index.html',
+      inject: 'body',
     }),
   ];
 
@@ -34,14 +34,14 @@ const createPlugins = (includeAnalysis) => {
     plugins.push(
       new StatoscopeWebpackPlugin({
         statsOptions: { modules: true, reasons: true },
-        open: "file",
-      }),
+        open: 'file',
+      })
     );
 
     plugins.push(new BundleAnalyzerPlugin());
 
     console.log(
-      "Statoscope analysis enabled - report will be generated after build",
+      'Statoscope analysis enabled - report will be generated after build'
     );
   }
 
@@ -53,14 +53,14 @@ export default () => {
 
   return {
     mode: environment,
-    entry: "./src/App.tsx",
+    entry: './src/App.tsx',
     output: {
-      path: path.resolve(__dirname, "dist"),
-      filename: "bundle.js",
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.js',
       clean: true,
     },
     resolve: {
-      extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.css'],
     },
     stats: {
       modules: true, // list modules
@@ -72,24 +72,24 @@ export default () => {
           test: /\.(ts|tsx|js|jsx)$/, // Combine TypeScript and JavaScript files in one rule
           exclude: /node_modules/,
           use: {
-            loader: "babel-loader",
+            loader: 'babel-loader',
             options: {
               presets: [
-                "@babel/preset-env",
-                "@babel/preset-react",
-                "@babel/preset-typescript",
+                '@babel/preset-env',
+                '@babel/preset-react',
+                '@babel/preset-typescript',
               ],
             },
           },
         },
         {
           test: /\.css$/,
-          use: ["style-loader", "css-loader"],
+          use: ['style-loader', 'css-loader'],
         },
       ],
     },
     plugins: createPlugins(shouldAnalyze),
-    devtool: "source-map",
+    devtool: 'source-map',
     snapshot: {
       managedPaths: [], // don't treat node_modules as immutable
     },
@@ -97,7 +97,7 @@ export default () => {
       ignored: /node_modules\/(?!@carbon\/ai-chat)/, // watch only our packages @carbon/ai-chat and @carbon/ai-chat-components
     },
     devServer: {
-      static: path.join(__dirname, "dist"),
+      static: path.join(__dirname, 'dist'),
       compress: true,
       port,
       open: true,

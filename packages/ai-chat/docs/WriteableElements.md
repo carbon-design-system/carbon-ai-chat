@@ -19,7 +19,7 @@ Slotted content can use the `data-rounded` and `data-stacked` attributes to alig
 Example (footer slot):
 
 ```ts
-import { WriteableElementName } from "@carbon/ai-chat";
+import { WriteableElementName } from '@carbon/ai-chat';
 
 const footer = instance.writeableElements[WriteableElementName.FOOTER_ELEMENT];
 if (footer) {

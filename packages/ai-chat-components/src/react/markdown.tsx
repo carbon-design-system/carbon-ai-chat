@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
+import { createComponent } from '@lit/react';
 import React, {
   forwardRef,
   useCallback,
@@ -17,20 +17,20 @@ import React, {
   useState,
   type ComponentPropsWithoutRef,
   type ReactNode,
-} from "react";
-import { createPortal, flushSync } from "react-dom";
+} from 'react';
+import { createPortal, flushSync } from 'react-dom';
 
 // Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatMarkdown from "../components/markdown/src/markdown.js";
+import CDSAIChatMarkdown from '../components/markdown/src/markdown.js';
 import type {
   MarkdownCustomRenderers,
   MarkdownRendererCodeBlockArgs,
   MarkdownRendererTableArgs,
-} from "../components/markdown/src/markdown-renderer-types.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge";
+} from '../components/markdown/src/markdown-renderer-types.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge';
 
 const LitMarkdown = createComponent({
-  tagName: "cds-aichat-markdown",
+  tagName: 'cds-aichat-markdown',
   elementClass: CDSAIChatMarkdown,
   react: React,
 });
@@ -40,7 +40,7 @@ const ForwardedBaseMarkdown = React.forwardRef<
   React.ComponentProps<typeof LitMarkdown> & { markdown?: string }
 >(({ children, markdown, ...rest }, forwardedRef) => {
   const isTextChildren =
-    typeof children === "string" || typeof children === "number";
+    typeof children === 'string' || typeof children === 'number';
   return React.createElement(
     LitMarkdown,
     {
@@ -51,11 +51,11 @@ const ForwardedBaseMarkdown = React.forwardRef<
     // Text children become the `markdown` prop; element children pass through
     // as light-DOM slot children (used by the React wrapper to mount plugin
     // slot forwarders inside the underlying `<cds-aichat-markdown>`).
-    isTextChildren ? null : children,
+    isTextChildren ? null : children
   );
 });
 
-ForwardedBaseMarkdown.displayName = "BaseMarkdown";
+ForwardedBaseMarkdown.displayName = 'BaseMarkdown';
 
 /**
  * Thin `@lit/react` bridge around `<cds-aichat-markdown>`. Handles text vs.
@@ -88,19 +88,19 @@ export interface MarkdownReactCustomRenderers {
    * back to the default Carbon code snippet renderer.
    */
   codeBlock?: (
-    args: MarkdownRendererCodeBlockArgs,
+    args: MarkdownRendererCodeBlockArgs
   ) => ReactNode | HTMLElement | null;
   /** Transform how links render. See {@link MarkdownCustomRenderers.link}. */
-  link?: MarkdownCustomRenderers["link"];
+  link?: MarkdownCustomRenderers['link'];
   /** Transform how images render. See {@link MarkdownCustomRenderers.image}. */
-  image?: MarkdownCustomRenderers["image"];
+  image?: MarkdownCustomRenderers['image'];
   /** Make task-list checkboxes actionable. See {@link MarkdownCustomRenderers.checklist}. */
-  checklist?: MarkdownCustomRenderers["checklist"];
+  checklist?: MarkdownCustomRenderers['checklist'];
 }
 
 type BaseMarkdownProps = Omit<
   ComponentPropsWithoutRef<typeof BaseMarkdown>,
-  "customRenderers"
+  'customRenderers'
 >;
 
 /**
@@ -125,15 +125,15 @@ type PortalEntry = {
 
 function isElement(value: unknown): value is HTMLElement {
   return (
-    typeof Element !== "undefined" &&
+    typeof Element !== 'undefined' &&
     value instanceof Element &&
-    "tagName" in value
+    'tagName' in value
   );
 }
 
 const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
   { customRenderers, ...rest },
-  forwardedRef,
+  forwardedRef
 ) {
   const hostsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const [portalEntries, setPortalEntries] = useState<PortalEntry[]>([]);
@@ -150,15 +150,15 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
   const setMarkdownRef = useCallback(
     (node: CDSAIChatMarkdown | null) => {
       markdownRef.current = node;
-      if (typeof forwardedRef === "function") {
+      if (typeof forwardedRef === 'function') {
         forwardedRef(node);
-      } else if (forwardedRef && "current" in forwardedRef) {
+      } else if (forwardedRef && 'current' in forwardedRef) {
         (
           forwardedRef as React.MutableRefObject<CDSAIChatMarkdown | null>
         ).current = node;
       }
     },
-    [forwardedRef],
+    [forwardedRef]
   );
 
   useEffect(() => {
@@ -173,7 +173,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
         return;
       }
       setPluginSlotNames((prev) =>
-        prev.includes(slotName) ? prev : [...prev, slotName],
+        prev.includes(slotName) ? prev : [...prev, slotName]
       );
     };
     const handleUnmount = (event: Event) => {
@@ -183,7 +183,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
         return;
       }
       setPluginSlotNames((prev) =>
-        prev.includes(slotName) ? prev.filter((n) => n !== slotName) : prev,
+        prev.includes(slotName) ? prev.filter((n) => n !== slotName) : prev
       );
     };
     // Optimistic: we render a `<slot>` forwarder for every slot the markdown
@@ -192,19 +192,19 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
     // the page-level host through the chain. If nothing intercepts
     // (standalone storybook), the markdown element creates its own local host
     // alongside, and the empty forwarder is harmless.
-    node.addEventListener("cds-aichat-markdown-plugin-host-mount", handleMount);
+    node.addEventListener('cds-aichat-markdown-plugin-host-mount', handleMount);
     node.addEventListener(
-      "cds-aichat-markdown-plugin-host-unmount",
-      handleUnmount,
+      'cds-aichat-markdown-plugin-host-unmount',
+      handleUnmount
     );
     return () => {
       node.removeEventListener(
-        "cds-aichat-markdown-plugin-host-mount",
-        handleMount,
+        'cds-aichat-markdown-plugin-host-mount',
+        handleMount
       );
       node.removeEventListener(
-        "cds-aichat-markdown-plugin-host-unmount",
-        handleUnmount,
+        'cds-aichat-markdown-plugin-host-unmount',
+        handleUnmount
       );
     };
   }, []);
@@ -224,7 +224,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
         return [...prev, { slotName, host, node }];
       });
     },
-    [],
+    []
   );
 
   const bridgedRenderers = useMemo<MarkdownCustomRenderers | undefined>(() => {
@@ -232,7 +232,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
       return undefined;
     }
     const bridge = <Args extends { slotName: string }>(
-      callback: (args: Args) => ReactNode | HTMLElement | null,
+      callback: (args: Args) => ReactNode | HTMLElement | null
     ) => {
       return (args: Args): HTMLElement | null => {
         const rendered = callback(args);
@@ -247,7 +247,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
         // element adopts it (no empty-host flash).
         let host = hostsRef.current.get(args.slotName);
         if (!host) {
-          host = document.createElement("div");
+          host = document.createElement('div');
           hostsRef.current.set(args.slotName, host);
         }
         flushSync(() => {
@@ -323,8 +323,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
       <BaseMarkdown
         {...rest}
         ref={setMarkdownRef as React.Ref<HTMLElement>}
-        customRenderers={bridgedRenderers as never}
-      >
+        customRenderers={bridgedRenderers as never}>
         {pluginSlotNames.map((slotName) => (
           <slot key={slotName} name={slotName} slot={slotName} />
         ))}
@@ -338,6 +337,6 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
   );
 });
 
-Markdown.displayName = "Markdown";
+Markdown.displayName = 'Markdown';
 
 export default Markdown;

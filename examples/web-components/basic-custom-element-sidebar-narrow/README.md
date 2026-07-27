@@ -18,19 +18,19 @@ Docked-sidebar chat driven by `<cds-aichat-custom-element>` narrowed to a 320px 
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Kind                | Role in this example                                                      |
-| --------------------------------------------- | ------------------- | ------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`                 | custom element      | Hosts the chat UI inside a host element styled as a sidebar.              |
-| `--cds-aichat-sidebar-width`                  | CSS custom property | Overridden to `320px` to narrow the panel below the `360px` default.      |
-| `onBeforeRender`                              | property            | Captures the `ChatInstance` and subscribes to the view-change bus events. |
-| `BusEventType.VIEW_CHANGE`                    | bus event           | Reports the resting open/closed view state to update the host class.      |
-| `BusEventType.VIEW_PRE_CHANGE`                | bus event           | Delays the view change so the slide-out animation can finish first.       |
-| `ChatInstance.changeView`                     | instance method     | Opens or closes the chat from the header toggle button.                   |
-| `ViewType`                                    | enum                | Selects `MAIN_WINDOW` or `LAUNCHER` when toggling the view.               |
-| `layout.corners`                              | property            | Squares the chat corners to fit the sidebar chrome.                       |
-| `openChatByDefault`                           | property            | Opens the chat on mount.                                                  |
-| `messaging.customSendMessage`                 | property            | Mock backend that echoes user input.                                      |
-| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet          | Provides the `cds-aichat-sidebar*` layout classes.                        |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI inside a host element styled as a sidebar. |
+| `--cds-aichat-sidebar-width` | CSS custom property | Overridden to `320px` to narrow the panel below the `360px` default. |
+| `onBeforeRender` | property | Captures the `ChatInstance` and subscribes to the view-change bus events. |
+| `BusEventType.VIEW_CHANGE` | bus event | Reports the resting open/closed view state to update the host class. |
+| `BusEventType.VIEW_PRE_CHANGE` | bus event | Delays the view change so the slide-out animation can finish first. |
+| `ChatInstance.changeView` | instance method | Opens or closes the chat from the header toggle button. |
+| `ViewType` | enum | Selects `MAIN_WINDOW` or `LAUNCHER` when toggling the view. |
+| `layout.corners` | property | Squares the chat corners to fit the sidebar chrome. |
+| `openChatByDefault` | property | Opens the chat on mount. |
+| `messaging.customSendMessage` | property | Mock backend that echoes user input. |
+| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet | Provides the `cds-aichat-sidebar*` layout classes. |
 
 ## Run it
 

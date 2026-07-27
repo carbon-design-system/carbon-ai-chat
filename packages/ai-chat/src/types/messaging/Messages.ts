@@ -12,21 +12,21 @@
  * intended to provide base types for a standalone widget and should not contain any imports of other types.
  */
 
-import { DeepPartial } from "../utilities/DeepPartial";
-import { MessageErrorState } from "./LocalMessageItem";
-import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { FileStatusValue } from "../config/ServiceDeskConfig";
+import { DeepPartial } from '../utilities/DeepPartial';
+import { MessageErrorState } from './LocalMessageItem';
+import { HumanAgentsOnlineStatus } from '../config/ServiceDeskConfig';
+import { FileStatusValue } from '../config/ServiceDeskConfig';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
-} from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/web-components/es/components/button/defs.js';
 import {
   CHAT_BUTTON_KIND as _CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
-import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
-import type { JSONContent } from "@tiptap/core";
+} from '@carbon/ai-chat-components/es/react/chat-button.js';
+import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from '@carbon/ai-chat-components/es/components/chain-of-thought/defs.js';
+import { WorkspaceCustomPanelConfigOptions } from '../instance/apiTypes';
+import type { JSONContent } from '@tiptap/core';
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -85,12 +85,12 @@ enum MessageInputType {
   /**
    * Represents a simple text message.
    */
-  TEXT = "text",
+  TEXT = 'text',
 
   /**
    * Represents an event message that can be used to send control, updates, or action information to the back-end.
    */
-  EVENT = "event",
+  EVENT = 'event',
 }
 
 /**
@@ -99,7 +99,7 @@ enum MessageInputType {
  * @category Messaging
  */
 enum InternalMessageRequestType {
-  FILE = "file",
+  FILE = 'file',
 }
 
 /**
@@ -111,12 +111,12 @@ export enum InternalSystemMessageType {
   /**
    * Indicates a request was cancelled before receiving a response.
    */
-  REQUEST_CANCELLED = "request_cancelled",
+  REQUEST_CANCELLED = 'request_cancelled',
 
   /**
    * Indicates a streaming response was stopped mid-stream.
    */
-  RESPONSE_STOPPED = "response_stopped",
+  RESPONSE_STOPPED = 'response_stopped',
 }
 
 /**
@@ -182,9 +182,9 @@ interface EventInputData<TNameType extends string = string> {
  * @category Messaging
  */
 type StructuredFieldType =
-  | "file"
-  | "mention"
-  | "command"
+  | 'file'
+  | 'mention'
+  | 'command'
   // `string & {}` widens to any string while keeping the three literals in
   // autocomplete — a plain `| string` would collapse the whole union to `string`.
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -203,7 +203,7 @@ interface InlineFile {
   /**
    * Type discriminator.
    */
-  type: "inline";
+  type: 'inline';
 
   /**
    * The actual File object.
@@ -239,7 +239,7 @@ interface ExternalFileReference {
   /**
    * Type discriminator.
    */
-  type: "reference";
+  type: 'reference';
 
   /**
    * File identifier (could be a database ID, UUID, etc.).
@@ -445,89 +445,89 @@ enum MessageResponseTypes {
   /**
    * Represents a basic text response. The given text may contain rich content such as markdown.
    */
-  TEXT = "text",
+  TEXT = 'text',
 
   /**
    * A response that requests the user choose an option from a list. The list of options may be presented as a list
    * of buttons or it may be from a drop-down.
    */
-  OPTION = "option",
+  OPTION = 'option',
 
   /**
    * Indicates that the conversation should be escalated to a human agent and offers that opportunity to the user.
    */
-  CONNECT_TO_HUMAN_AGENT = "connect_to_agent",
+  CONNECT_TO_HUMAN_AGENT = 'connect_to_agent',
 
   /**
    * Displays an image to the user.
    */
-  IMAGE = "image",
+  IMAGE = 'image',
 
   /**
    * Indicates that the chat should display a pause at this point in the conversation before displaying additional
    * items.
    */
-  PAUSE = "pause",
+  PAUSE = 'pause',
 
   /**
    * A user defined response will be displayed according to custom logic in the client.
    */
-  USER_DEFINED = "user_defined",
+  USER_DEFINED = 'user_defined',
 
   /**
    * Displays the contents of an iframe to the user.
    */
-  IFRAME = "iframe",
+  IFRAME = 'iframe',
 
   /**
    * Displays a video to the user using a video player.
    */
-  VIDEO = "video",
+  VIDEO = 'video',
 
   /**
    * Displays an audio clip to the user using an audio player.
    */
-  AUDIO = "audio",
+  AUDIO = 'audio',
 
   /**
    * Asks the user to provide a date. This may result in a date picker being presented to the user.
    */
-  DATE = "date",
+  DATE = 'date',
 
   /**
    * Displays a general error message to the user and include developer info to be logged and to debug.
    */
-  INLINE_ERROR = "inline_error",
+  INLINE_ERROR = 'inline_error',
 
   /**
    * Displays a card that can contain other response types.
    */
-  CARD = "card",
+  CARD = 'card',
 
   /**
    * Displays a carousel of cards that can contain other response types.
    */
-  CAROUSEL = "carousel",
+  CAROUSEL = 'carousel',
 
   /**
    * Displays a button that can either send a message back to the backend, open a url, or throw a client side event.
    */
-  BUTTON = "button",
+  BUTTON = 'button',
 
   /**
    * Ability to layout response types inside a grid.
    */
-  GRID = "grid",
+  GRID = 'grid',
 
   /**
    * Ability to show citations on your RAG result.
    */
-  CONVERSATIONAL_SEARCH = "conversational_search",
+  CONVERSATIONAL_SEARCH = 'conversational_search',
 
   /**
    * Displays a preview card that can take the user flow to a workspace view.
    */
-  PREVIEW_CARD = "preview_card",
+  PREVIEW_CARD = 'preview_card',
 
   /**
    * Displays a system message to the user. System messages appear centered between other messages
@@ -560,7 +560,7 @@ enum MessageResponseTypes {
    * }
    * ```
    */
-  SYSTEM = "system",
+  SYSTEM = 'system',
 }
 
 /**
@@ -572,92 +572,92 @@ export enum HumanAgentMessageType {
   /**
    * There was an error in a message.
    */
-  INLINE_ERROR = "inline_error",
+  INLINE_ERROR = 'inline_error',
 
   /**
    * The agent sent a message.
    */
-  FROM_HUMAN_AGENT = "from_agent",
+  FROM_HUMAN_AGENT = 'from_agent',
 
   /**
    * The user sent a message.
    */
-  FROM_USER = "from_user",
+  FROM_USER = 'from_user',
 
   /**
    * The agent left the chat.
    */
-  HUMAN_AGENT_LEFT_CHAT = "agent_left_chat",
+  HUMAN_AGENT_LEFT_CHAT = 'agent_left_chat',
 
   /**
    * The agent ended the conversation.
    */
-  HUMAN_AGENT_ENDED_CHAT = "agent_ended_chat",
+  HUMAN_AGENT_ENDED_CHAT = 'agent_ended_chat',
 
   /**
    * The agent joined the conversation.
    */
-  HUMAN_AGENT_JOINED = "agent_joined",
+  HUMAN_AGENT_JOINED = 'agent_joined',
 
   /**
    * A disconnection warning was emitted.
    */
-  RELOAD_WARNING = "user_connected_warning",
+  RELOAD_WARNING = 'user_connected_warning',
 
   /**
    * The conversation was transferred to another agent.
    */
-  TRANSFER_TO_HUMAN_AGENT = "transfer_to_agent",
+  TRANSFER_TO_HUMAN_AGENT = 'transfer_to_agent',
 
   /**
    * The end user ended the conversation with the agent.
    */
-  USER_ENDED_CHAT = "user_ended_chat",
+  USER_ENDED_CHAT = 'user_ended_chat',
 
   /**
    * The conversation was ended.
    */
-  CHAT_WAS_ENDED = "chat_was_ended",
+  CHAT_WAS_ENDED = 'chat_was_ended',
 
   /**
    * The conversation was disconnected.
    */
-  DISCONNECTED = "disconnected",
+  DISCONNECTED = 'disconnected',
 
   /**
    * The conversation was re-connected.
    */
-  RECONNECTED = "reconnected",
+  RECONNECTED = 'reconnected',
 
   /**
    * Screen sharing requested.
    */
-  SHARING_REQUESTED = "sharing_requested",
+  SHARING_REQUESTED = 'sharing_requested',
 
   /**
    * Screen sharing accepted.
    */
-  SHARING_ACCEPTED = "sharing_accepted",
+  SHARING_ACCEPTED = 'sharing_accepted',
 
   /**
    * Screen sharing declined.
    */
-  SHARING_DECLINED = "sharing_declined",
+  SHARING_DECLINED = 'sharing_declined',
 
   /**
    * Screen sharing cancelled.
    */
-  SHARING_CANCELLED = "sharing_cancelled",
+  SHARING_CANCELLED = 'sharing_cancelled',
 
   /**
    * Screen sharing ended.
    */
-  SHARING_ENDED = "sharing_ended",
+  SHARING_ENDED = 'sharing_ended',
 
   /**
    * A system message.
    */
-  SYSTEM = "system",
+  SYSTEM = 'system',
 }
 
 /**
@@ -1101,7 +1101,7 @@ interface TextItem<
  *
  * @category Messaging
  */
-export type SystemMessageVariant = "default" | "date" | "agent";
+export type SystemMessageVariant = 'default' | 'date' | 'agent';
 
 /**
  * A system message item that can be returned in a message response. System messages are used for
@@ -1251,12 +1251,12 @@ enum OptionItemPreference {
   /**
    * Indicates the options should be displayed as a drop-down.
    */
-  DROPDOWN = "dropdown",
+  DROPDOWN = 'dropdown',
 
   /**
    * Indicates the options should be displayed as buttons.
    */
-  BUTTON = "button",
+  BUTTON = 'button',
 }
 
 /**
@@ -1358,7 +1358,7 @@ interface MediaSubtitleTrack {
    * - "captions": Transcription including sound effects
    * - "descriptions": Audio descriptions for visually impaired
    */
-  kind?: "subtitles" | "captions" | "descriptions";
+  kind?: 'subtitles' | 'captions' | 'descriptions';
 
   /**
    * Whether this track should be enabled by default.
@@ -1423,12 +1423,12 @@ enum IFrameItemDisplayOption {
   /**
    * The iframe is displayed inline in the main message list.
    */
-  INLINE = "inline",
+  INLINE = 'inline',
 
   /**
    * The iframe is displayed in a separate panel after showing a card in the main message list.
    */
-  PANEL = "panel",
+  PANEL = 'panel',
 }
 
 /**
@@ -1611,22 +1611,22 @@ enum ButtonItemType {
   /**
    * A button that sends its value back to the backend.
    */
-  POST_BACK = "post_back",
+  POST_BACK = 'post_back',
 
   /**
    * A button that throws an event for your UI to respond to.
    */
-  CUSTOM_EVENT = "custom_event",
+  CUSTOM_EVENT = 'custom_event',
 
   /**
    * A button that shows a panel.
    */
-  SHOW_PANEL = "show_panel",
+  SHOW_PANEL = 'show_panel',
 
   /**
    * A button that opens a URL.
    */
-  URL = "url",
+  URL = 'url',
 }
 
 /**
@@ -1636,17 +1636,17 @@ enum WidthOptions {
   /**
    * Width the size of the floating chat for smaller content.
    */
-  SMALL = "small",
+  SMALL = 'small',
 
   /**
    * Max width of 438px, 2/3rd of the width of chat in fullscreen view with hasContentMaxWidth: true.
    */
-  MEDIUM = "medium",
+  MEDIUM = 'medium',
 
   /**
    * Max width of 585px, the full with of chat in fullscreen view with hasContentMaxWidth: true.
    */
-  LARGE = "large",
+  LARGE = 'large',
 }
 
 /**
@@ -1728,32 +1728,32 @@ enum ButtonItemKind {
   /**
    * Default Carbon button.
    */
-  DEFAULT = "default",
+  DEFAULT = 'default',
 
   /**
    * Secondary Carbon button.
    */
-  SECONDARY = "secondary",
+  SECONDARY = 'secondary',
 
   /**
    * Tertiary Carbon button.
    */
-  TERTIARY = "tertiary",
+  TERTIARY = 'tertiary',
 
   /**
    * Danger Carbon button.
    */
-  DANGER = "danger",
+  DANGER = 'danger',
 
   /**
    * Ghost Carbon button.
    */
-  GHOST = "ghost",
+  GHOST = 'ghost',
 
   /**
    * Button displayed like a link.
    */
-  LINK = "link",
+  LINK = 'link',
 }
 
 /**
@@ -1786,7 +1786,7 @@ interface ButtonItem<
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | 'LINK';
 
   /**
    * The button size.
@@ -1798,7 +1798,7 @@ interface ButtonItem<
    *
    * @internal
    */
-  is?: "standard-button";
+  is?: 'standard-button';
 
   /**
    * The type of button.
@@ -1878,14 +1878,14 @@ interface CarouselItem<
  *
  * @category Messaging
  */
-type HorizontalCellAlignment = "left" | "center" | "right";
+type HorizontalCellAlignment = 'left' | 'center' | 'right';
 
 /**
  * Vertical alignment values for items in a grid response.
  *
  * @category Messaging
  */
-type VerticalCellAlignment = "top" | "center" | "bottom";
+type VerticalCellAlignment = 'top' | 'center' | 'bottom';
 
 /**
  * @category Messaging
@@ -1997,9 +1997,9 @@ export interface MessageUIStateInternal {
  * @category Messaging
  */
 enum ReasoningStepOpenState {
-  OPEN = "open",
-  CLOSE = "close",
-  DEFAULT = "default",
+  OPEN = 'open',
+  CLOSE = 'close',
+  DEFAULT = 'default',
 }
 
 /**
@@ -2250,7 +2250,7 @@ interface PartialItemChunk extends Chunk {
  *
  * @category Messaging
  */
-type PartialItemChunkWithId = Omit<PartialItemChunk, "partial_item"> & {
+type PartialItemChunkWithId = Omit<PartialItemChunk, 'partial_item'> & {
   partial_item: DeepPartial<GenericItem> & {
     streaming_metadata: ItemStreamingMetadata;
   };
@@ -2312,19 +2312,19 @@ enum UserType {
   /**
    * A message from a human.
    */
-  HUMAN = "human",
+  HUMAN = 'human',
 
   /**
    * A message from a non-watsonx assistant, used for interacting with assistants that are not backed by watsonx.
    *
    * Official guidance is to not use this for IBM products without explicit exception.
    */
-  BOT = "bot",
+  BOT = 'bot',
 
   /**
    * A message from watsonx.
    */
-  WATSONX = "watsonx",
+  WATSONX = 'watsonx',
 }
 
 /**

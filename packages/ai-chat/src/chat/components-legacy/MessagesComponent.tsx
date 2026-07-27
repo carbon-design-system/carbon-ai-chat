@@ -7,59 +7,59 @@
  *  @license
  */
 
-import cx from "classnames";
-import throttle from "lodash-es/throttle.js";
-import React, { Fragment, PureComponent, ReactNode } from "react";
-import { useSelector } from "../hooks/useSelector";
-import DownToBottom16 from "@carbon/icons/es/down-to-bottom/16.js";
-import { HumanAgentBannerContainer } from "./humanAgent/HumanAgentBannerContainer";
-import { MessagesScrollHandle } from "./MessagesScrollHandle";
-import { MessagesScrollToBottomButton } from "./MessagesScrollToBottomButton";
-import { ProcessingWithText } from "../components/util/ProcessingWithText";
-import { MessagesView } from "./MessagesView";
-import { SystemMessage } from "../components/SystemMessage";
-import WriteableElement from "../components/util/WriteableElement";
+import cx from 'classnames';
+import throttle from 'lodash-es/throttle.js';
+import React, { Fragment, PureComponent, ReactNode } from 'react';
+import { useSelector } from '../hooks/useSelector';
+import DownToBottom16 from '@carbon/icons/es/down-to-bottom/16.js';
+import { HumanAgentBannerContainer } from './humanAgent/HumanAgentBannerContainer';
+import { MessagesScrollHandle } from './MessagesScrollHandle';
+import { MessagesScrollToBottomButton } from './MessagesScrollToBottomButton';
+import { ProcessingWithText } from '../components/util/ProcessingWithText';
+import { MessagesView } from './MessagesView';
+import { SystemMessage } from '../components/SystemMessage';
+import WriteableElement from '../components/util/WriteableElement';
 import {
   HasServiceManager,
   withServiceManager,
-} from "../hocs/withServiceManager";
+} from '../hocs/withServiceManager';
 import {
   selectHumanAgentDisplayState,
   selectInputIsReadonly,
-} from "../store/selectors";
-import { AppState, ChatMessagesState } from "../../types/state/AppState";
-import { shallowEqual } from "../store/appStore";
-import { AutoScrollOptions } from "../../types/utilities/HasDoAutoScroll";
-import HasIntl from "../../types/utilities/HasIntl";
-import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { IS_MOBILE } from "../utils/browserUtils";
-import { WriteableElementName } from "../utils/constants";
-import { applyDynamicStyles } from "../utils/cspStyleUtils";
-import { formatShortcutForDisplay } from "../utils/keyboardUtils";
-import { arrayLastValue } from "../utils/lang/arrayUtils";
+} from '../store/selectors';
+import { AppState, ChatMessagesState } from '../../types/state/AppState';
+import { shallowEqual } from '../store/appStore';
+import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
+import HasIntl from '../../types/utilities/HasIntl';
+import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { IS_MOBILE } from '../utils/browserUtils';
+import { WriteableElementName } from '../utils/constants';
+import { applyDynamicStyles } from '../utils/cspStyleUtils';
+import { formatShortcutForDisplay } from '../utils/keyboardUtils';
+import { arrayLastValue } from '../utils/lang/arrayUtils';
 import {
   isRequest,
   isResponse,
   getMessageIDForUserInput,
-} from "../utils/messageUtils";
-import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from "../../types/config/ShortcutConfig";
+} from '../utils/messageUtils';
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../../types/config/ShortcutConfig';
 import {
   MessagesScrollController,
   type PortableMessage,
   type ScrollHost,
-} from "../utils/messagesAutoScrollController";
-import { buildRenderableMessageMetadata } from "../utils/messagesRenderUtils";
-import { consoleError } from "../utils/miscUtils";
+} from '../utils/messagesAutoScrollController';
+import { buildRenderableMessageMetadata } from '../utils/messagesRenderUtils';
+import { consoleError } from '../utils/miscUtils';
 import MessageComponent, {
   MessageClass,
   MoveFocusType,
-} from "./MessageComponent";
-import { Message, MessageRequest } from "../../types/messaging/Messages";
-import { LanguagePack } from "../../types/config/LanguagePack";
-import { CarbonTheme } from "../../types/config/CarbonTheme";
-import { ChatShortcutConfig } from "../../types/config/ShortcutConfig";
-import { carbonIconToReact } from "../utils/carbonIcon";
+} from './MessageComponent';
+import { Message, MessageRequest } from '../../types/messaging/Messages';
+import { LanguagePack } from '../../types/config/LanguagePack';
+import { CarbonTheme } from '../../types/config/CarbonTheme';
+import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
+import { carbonIconToReact } from '../utils/carbonIcon';
 
 const DownToBottom = carbonIconToReact(DownToBottom16);
 
@@ -74,8 +74,8 @@ const SCROLL_NOTIFICATION_THROTTLE_MS = 200;
  * stylesheet so a strict CSP can drop style-src-attr 'unsafe-inline'.
  */
 function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
-  applyDynamicStyles(spacerElem, "spacer", {
-    "min-block-size": `${deficit}px`,
+  applyDynamicStyles(spacerElem, 'spacer', {
+    'min-block-size': `${deficit}px`,
   });
 }
 
@@ -89,7 +89,7 @@ function applySpacerDeficit(spacerElem: HTMLElement, deficit: number): void {
  */
 function shouldScrollToMessage(
   message: Message,
-  allMessagesByID: Record<string, Message>,
+  allMessagesByID: Record<string, Message>
 ): boolean {
   if (isResponse(message)) {
     const messageRequest = allMessagesByID[
@@ -110,7 +110,7 @@ function shouldScrollToMessage(
 type ScrollElementIntoViewFunction = (
   element: HTMLElement,
   paddingTop?: number,
-  paddingBottom?: number,
+  paddingBottom?: number
 ) => void;
 
 interface MessagesOwnProps extends HasIntl, HasServiceManager {
@@ -163,10 +163,10 @@ interface MessagesOwnProps extends HasIntl, HasServiceManager {
  */
 type MessagesLanguagePackStrings = Pick<
   LanguagePack,
-  | "messages_scrollHandle"
-  | "messages_scrollHandleEnd"
-  | "messages_processingLabel"
-  | "messages_scrollMoreButton"
+  | 'messages_scrollHandle'
+  | 'messages_scrollHandleEnd'
+  | 'messages_processingLabel'
+  | 'messages_scrollMoreButton'
 >;
 
 /**
@@ -176,9 +176,9 @@ type MessagesLanguagePackStrings = Pick<
  * doesn't re-render on every config update.
  */
 interface MessagesInjectedState {
-  allMessagesByID: AppState["allMessagesByID"];
-  humanAgentState: AppState["humanAgentState"];
-  persistedToBrowserStorage: AppState["persistedToBrowserStorage"];
+  allMessagesByID: AppState['allMessagesByID'];
+  humanAgentState: AppState['humanAgentState'];
+  persistedToBrowserStorage: AppState['persistedToBrowserStorage'];
   /** Effective whole-chat read-only state (override or config). */
   isInputReadonly: boolean;
   disclaimerIsOn: boolean | undefined;
@@ -260,7 +260,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    * {@link ScrollHost} and delegates all scroll behavior to the controller.
    */
   private scroll: MessagesScrollController = new MessagesScrollController(
-    this.createScrollHost(),
+    this.createScrollHost()
   );
 
   /**
@@ -315,7 +315,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   getSnapshotBeforeUpdate(
     _prevProps: MessagesProps,
-    _prevState: MessagesState,
+    _prevState: MessagesState
   ): number | null {
     const el = this.messagesContainerWithScrollingRef.current;
     return el ? el.scrollTop : null;
@@ -324,7 +324,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
   componentDidUpdate(
     oldProps: MessagesProps,
     _prevState: MessagesState,
-    snapshot: number | null,
+    snapshot: number | null
   ): void {
     // Check if human agent banner just became visible
     const oldDisplayState = selectHumanAgentDisplayState(oldProps);
@@ -391,13 +391,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     element: HTMLElement,
     paddingTop = 8,
     paddingBottom = 8,
-    animate = false,
+    animate = false
   ): void => {
     this.scroll.scrollElementIntoView(
       element,
       paddingTop,
       paddingBottom,
-      animate,
+      animate
     );
   };
 
@@ -427,7 +427,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     // Find the first item of that message
     const firstItemOfLastMessage = localMessageItems.find(
-      (item) => item.fullMessageID === lastMessageID,
+      (item) => item.fullMessageID === lastMessageID
     );
 
     if (firstItemOfLastMessage) {
@@ -464,12 +464,12 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       if (panelComponent) {
         this.scroll.doScrollToMessageElement(
           panelComponent.ref.current,
-          animate,
+          animate
         );
       }
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
-      consoleError("An error occurred while attempting to scroll.", error);
+      consoleError('An error occurred while attempting to scroll.', error);
     }
   }
 
@@ -494,7 +494,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       });
     },
     SCROLL_NOTIFICATION_THROTTLE_MS,
-    { leading: false, trailing: true },
+    { leading: false, trailing: true }
   );
 
   /**
@@ -556,7 +556,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     isMessageForInput: boolean,
     isFirstMessageItem: boolean,
     isLastMessageItem: boolean,
-    lastMessageID: string,
+    lastMessageID: string
   ) {
     const {
       serviceManager,
@@ -587,8 +587,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const isLastMessage = messagesIndex === totalMessagesWithTyping - 1;
     const className = cx({
-      "cds-aichat--message--first-message": messagesIndex === 0,
-      "cds-aichat--message--last-message": isLastMessage,
+      'cds-aichat--message--first-message': messagesIndex === 0,
+      'cds-aichat--message--last-message': isLastMessage,
     });
 
     // Allow for feedback to persist if configured to otherwise user can only
@@ -622,7 +622,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
         isLastMessageItem={isLastMessageItem}
-        locale={locale || "en"}
+        locale={locale || 'en'}
         allowNewFeedback={allowNewFeedback}
         hideFeedback={false}
       />
@@ -660,7 +660,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
    */
   private requestMoveFocus = (
     moveFocusType: MoveFocusType,
-    currentMessageIndex: number,
+    currentMessageIndex: number
   ) => {
     if (moveFocusType === MoveFocusType.INPUT) {
       this.props.requestInputFocus();
@@ -734,21 +734,21 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       if (shortcutsEnabled) {
         // Use messages with shortcut information
         labelKey = atTop
-          ? "messages_scrollHandleDetailed"
-          : "messages_scrollHandleEndDetailed";
+          ? 'messages_scrollHandleDetailed'
+          : 'messages_scrollHandleEndDetailed';
 
         const shortcutText = formatShortcutForDisplay(shortcutConfig);
 
         // Format the message with the shortcut parameter
         ariaLabel = intl.formatMessage(
           { id: labelKey },
-          { shortcut: shortcutText },
+          { shortcut: shortcutText }
         );
       } else {
         // Use messages without shortcut information
         labelKey = atTop
-          ? "messages_scrollHandleDetailedNoShortcut"
-          : "messages_scrollHandleEndDetailedNoShortcut";
+          ? 'messages_scrollHandleDetailedNoShortcut'
+          : 'messages_scrollHandleEndDetailedNoShortcut';
 
         ariaLabel = intl.formatMessage({ id: labelKey });
       }
@@ -759,7 +759,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       : () =>
           this.requestMoveFocus(
             atTop ? MoveFocusType.FIRST : MoveFocusType.LAST,
-            0,
+            0
           );
 
     return (
@@ -786,7 +786,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     const metadataList = buildRenderableMessageMetadata(
       localMessageItems,
       allMessagesByID,
-      messageIDForInput,
+      messageIDForInput
     );
 
     metadataList.forEach((metadata) => {
@@ -794,7 +794,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         renderMessageArray.push(
           <Fragment key={metadata.messageItemID}>
             <SystemMessage message={metadata.fullMessage} standalone={true} />
-          </Fragment>,
+          </Fragment>
         );
         return;
       }
@@ -807,8 +807,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           metadata.isMessageForInput,
           metadata.isFirstMessageItem,
           metadata.isLastMessageItem,
-          lastMessageID,
-        ),
+          lastMessageID
+        )
       );
     });
 
@@ -829,20 +829,20 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     const messageIDForInput = getMessageIDForUserInput(
       localMessageItems,
-      this.props.allMessagesByID,
+      this.props.allMessagesByID
     );
 
     const regularMessages = this.renderMessages(messageIDForInput);
 
     let isTypingMessage;
     if (isHumanAgentTyping) {
-      isTypingMessage = intl.formatMessage({ id: "messages_agentIsTyping" });
+      isTypingMessage = intl.formatMessage({ id: 'messages_agentIsTyping' });
     } else if (isMessageLoadingCounter) {
       isTypingMessage = intl.formatMessage(
-        { id: "messages_assistantIsLoading" },
+        { id: 'messages_assistantIsLoading' },
         {
           assistantName,
-        },
+        }
       );
     }
 
@@ -905,8 +905,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 // component into every config-change re-render; each narrow field's
 // reconciled reference / primitive value is compared instead.
 const selectMessagesState = (
-  state: AppState,
-): Omit<MessagesInjectedState, "languagePack"> => ({
+  state: AppState
+): Omit<MessagesInjectedState, 'languagePack'> => ({
   allMessagesByID: state.allMessagesByID,
   humanAgentState: state.humanAgentState,
   persistedToBrowserStorage: state.persistedToBrowserStorage,
@@ -923,7 +923,7 @@ const selectMessagesState = (
 // shallowEqual by reference on every commit. As its own narrow bag it changes
 // only when one of these four strings changes.
 const selectMessagesStrings = (
-  state: AppState,
+  state: AppState
 ): MessagesLanguagePackStrings => ({
   messages_scrollHandle: state.languagePack.messages_scrollHandle,
   messages_scrollHandleEnd: state.languagePack.messages_scrollHandleEnd,

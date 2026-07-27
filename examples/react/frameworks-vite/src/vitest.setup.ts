@@ -19,10 +19,10 @@
  * `vi.mock` calls in order.
  */
 
-import "@testing-library/jest-dom";
-import { loadAllLazyDeps } from "@carbon/ai-chat/server";
-import { vi, expect } from "vitest";
-import { shadowDomSerializer } from "./__tests__/snapshot-serializer";
+import '@testing-library/jest-dom';
+import { loadAllLazyDeps } from '@carbon/ai-chat/server';
+import { vi, expect } from 'vitest';
+import { shadowDomSerializer } from './__tests__/snapshot-serializer';
 
 // Lit and Carbon emit non-deterministic markers (lit$<id>, UUID-based
 // SVG ids) every render — the custom serializer normalizes them so snapshot
@@ -36,14 +36,14 @@ beforeAll(async () => {
   await loadAllLazyDeps();
 });
 
-vi.mock("@codemirror/view", async () => {
+vi.mock('@codemirror/view', async () => {
   // CodeMirror touches browser layout/focus APIs (ShadowRoot.activeElement,
   // layout measurements) that happy-dom does not implement; stubbing
   // `EditorView` lets tests assert the markup around code responses without
   // polyfilling the entire editor.
   const actual =
-    await vi.importActual<typeof import("@codemirror/view")>(
-      "@codemirror/view",
+    await vi.importActual<typeof import('@codemirror/view')>(
+      '@codemirror/view'
     );
 
   class MockEditorView {
@@ -67,7 +67,7 @@ vi.mock("@codemirror/view", async () => {
 });
 
 vi.mock(
-  "@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js",
+  '@carbon/ai-chat-components/es/components/code-snippet/src/codemirror/codemirror-loader.js',
   () => {
     // short-circuit the runtime loader so components never reach the real
     // editor stack — happy-dom cannot satisfy its browser-API dependencies and
@@ -93,9 +93,9 @@ vi.mock(
         }),
         applyLanguageSupport() {},
         updateReadOnlyConfiguration() {},
-        createEditorView: ({ doc = "" }) => {
+        createEditorView: ({ doc = '' }) => {
           const lines =
-            typeof doc === "string" ? doc.split(/\r\n|\r|\n/).length : 0;
+            typeof doc === 'string' ? doc.split(/\r\n|\r|\n/).length : 0;
           return {
             state: { doc: { lines } },
             destroy() {},
@@ -109,7 +109,7 @@ vi.mock(
       loadCodeMirrorRuntime: () => createRuntime(),
       loadCodeSnippetDeps: () => createRuntime(),
     };
-  },
+  }
 );
 
 beforeEach(() => {

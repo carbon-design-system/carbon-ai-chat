@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-type CodeMirrorRuntimeModule = typeof import("./codemirror-runtime.js");
+type CodeMirrorRuntimeModule = typeof import('./codemirror-runtime.js');
 
 let runtimePromise: Promise<CodeMirrorRuntimeModule> | null = null;
 
@@ -17,7 +17,7 @@ let runtimePromise: Promise<CodeMirrorRuntimeModule> | null = null;
  */
 export function loadCodeMirrorRuntime(): Promise<CodeMirrorRuntimeModule> {
   if (!runtimePromise) {
-    runtimePromise = import("./codemirror-runtime.js");
+    runtimePromise = import('./codemirror-runtime.js');
   }
   return runtimePromise;
 }

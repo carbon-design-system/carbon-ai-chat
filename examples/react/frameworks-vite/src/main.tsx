@@ -13,12 +13,12 @@
  * `createRoot` so the example can run from a Vite dev server.
  */
 
-import React from "react";
-import { createRoot } from "react-dom/client";
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { App } from "./App";
+import { App } from './App';
 
-const rootElement = document.getElementById("root");
+const rootElement = document.getElementById('root');
 
 // guard the root lookup so this module can be imported by Vitest (where
 // `index.html` is never loaded and `#root` is absent) without throwing.

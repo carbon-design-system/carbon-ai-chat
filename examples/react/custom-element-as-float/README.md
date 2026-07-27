@@ -17,24 +17,24 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                         | Package / kind                             | Role in this example                                         |
-| ---------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| `ChatCustomElement`                            | `@carbon/ai-chat` component                | Hosts the chat with float layout classes.                    |
-| `PublicConfig`                                 | `@carbon/ai-chat` type                     | Types the config.                                            |
-| `ChatInstance`                                 | `@carbon/ai-chat` type                     | Captured via `onAfterRender` and used to change views.       |
-| `BusEventViewChange`                           | `@carbon/ai-chat` type                     | Event payload for `onViewChange`.                            |
-| `ViewType`                                     | `@carbon/ai-chat` enum                     | `MAIN_WINDOW` passed to `changeView`.                        |
-| `ChatButton`                                   | `@carbon/ai-chat-components` React wrapper | Custom launcher button.                                      |
-| `AiLaunch`                                     | `@carbon/icons-react`                      | Launcher icon.                                               |
-| `@carbon/ai-chat/css/chat-float-layout.css`    | stylesheet                                 | Provides `cds-aichat-float--*` classes.                      |
-| `@carbon/ai-chat/css/chat-launcher-layout.css` | stylesheet                                 | Provides `cds-aichat-launcher` / `--hidden` classes.         |
-| `messaging.customSendMessage`                  | config prop                                | Mock backend.                                                |
-| `launcher.isOn`                                | config prop                                | Disabled so the custom launcher drives opening.              |
-| `className`                                    | component prop                             | Applies float phase classes to the host.                     |
-| `onAfterRender`                                | component prop                             | Captures the chat instance; gates launcher rendering.        |
-| `onAnimationEnd`                               | component prop                             | Advances the phase when open/close animations finish.        |
-| `onViewChange`                                 | component prop                             | Starts open/close animation based on main-window visibility. |
-| `instance.changeView`                          | instance method                            | Programmatically opens the chat.                             |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Hosts the chat with float layout classes. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured via `onAfterRender` and used to change views. |
+| `BusEventViewChange` | `@carbon/ai-chat` type | Event payload for `onViewChange`. |
+| `ViewType` | `@carbon/ai-chat` enum | `MAIN_WINDOW` passed to `changeView`. |
+| `ChatButton` | `@carbon/ai-chat-components` React wrapper | Custom launcher button. |
+| `AiLaunch` | `@carbon/icons-react` | Launcher icon. |
+| `@carbon/ai-chat/css/chat-float-layout.css` | stylesheet | Provides `cds-aichat-float--*` classes. |
+| `@carbon/ai-chat/css/chat-launcher-layout.css` | stylesheet | Provides `cds-aichat-launcher` / `--hidden` classes. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `launcher.isOn` | config prop | Disabled so the custom launcher drives opening. |
+| `className` | component prop | Applies float phase classes to the host. |
+| `onAfterRender` | component prop | Captures the chat instance; gates launcher rendering. |
+| `onAnimationEnd` | component prop | Advances the phase when open/close animations finish. |
+| `onViewChange` | component prop | Starts open/close animation based on main-window visibility. |
+| `instance.changeView` | instance method | Programmatically opens the chat. |
 
 ## Run it
 

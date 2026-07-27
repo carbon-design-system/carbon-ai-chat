@@ -6,11 +6,11 @@
  *
  *  @license
  */
-import { PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-@customElement("demo-chat-feedback-switcher")
+@customElement('demo-chat-feedback-switcher')
 export class DemoChatFeedbackSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -39,14 +39,14 @@ export class DemoChatFeedbackSwitcher extends LitElement {
       ...updates,
     };
 
-    console.log("newConfig", newConfig);
+    console.log('newConfig', newConfig);
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: newConfig,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -54,7 +54,7 @@ export class DemoChatFeedbackSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     const checked = customEvent.detail.checked;
 
-    console.log("feedback", checked);
+    console.log('feedback', checked);
 
     this._updateConfig({ persistFeedback: checked });
   };
@@ -66,8 +66,7 @@ export class DemoChatFeedbackSwitcher extends LitElement {
       <cds-checkbox
         ?checked=${persistFeedback}
         @cds-checkbox-changed=${this._onChanged}
-        label-text="Persist feedback"
-      >
+        label-text="Persist feedback">
       </cds-checkbox>
     </div>`;
   }
@@ -76,6 +75,6 @@ export class DemoChatFeedbackSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-chat-feedback-switcher": DemoChatFeedbackSwitcher;
+    'demo-chat-feedback-switcher': DemoChatFeedbackSwitcher;
   }
 }

@@ -26,25 +26,25 @@
  * Start reading at: `InventoryReportExample`.
  */
 
-import "./WorkspaceWriteableElementExample.css";
+import './WorkspaceWriteableElementExample.css';
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
   WorkspaceShellFooter,
-} from "@carbon/ai-chat-components/es/react/workspace-shell.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
+} from '@carbon/ai-chat-components/es/react/workspace-shell.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
 
 // Using @carbon/icons-react for all icons
-import Edit16 from "@carbon/icons-react/es/Edit.js";
-import Version16 from "@carbon/icons-react/es/Version.js";
-import Download16 from "@carbon/icons-react/es/Download.js";
-import Share16 from "@carbon/icons-react/es/Share.js";
-import Launch16 from "@carbon/icons-react/es/Launch.js";
-import Maximize16 from "@carbon/icons-react/es/Maximize.js";
-import Close16 from "@carbon/icons-react/es/Close.js";
+import Edit16 from '@carbon/icons-react/es/Edit.js';
+import Version16 from '@carbon/icons-react/es/Version.js';
+import Download16 from '@carbon/icons-react/es/Download.js';
+import Share16 from '@carbon/icons-react/es/Share.js';
+import Launch16 from '@carbon/icons-react/es/Launch.js';
+import Maximize16 from '@carbon/icons-react/es/Maximize.js';
+import Close16 from '@carbon/icons-react/es/Close.js';
 
-import React, { useState } from "react";
-import { ChatInstance, PanelType } from "@carbon/ai-chat";
+import React, { useState } from 'react';
+import { ChatInstance, PanelType } from '@carbon/ai-chat';
 import {
   AILabel,
   Button,
@@ -61,7 +61,7 @@ import {
   TableToolbar,
   TableToolbarContent,
   TableToolbarSearch,
-} from "@carbon/react";
+} from '@carbon/react';
 
 interface InventoryReportExampleProps {
   location: string;
@@ -84,38 +84,38 @@ function InventoryReportExample({
 
   const [toolbarActions, _setToolbarActions] = useState([
     {
-      id: "version",
-      text: "Version",
+      id: 'version',
+      text: 'Version',
       icon: Version16,
-      onClick: () => alert("Version clicked"),
+      onClick: () => alert('Version clicked'),
     },
     {
-      id: "download",
-      text: "Download",
+      id: 'download',
+      text: 'Download',
       icon: Download16,
-      onClick: () => alert("Download clicked"),
+      onClick: () => alert('Download clicked'),
     },
     {
-      id: "share",
-      text: "Share",
+      id: 'share',
+      text: 'Share',
       icon: Share16,
-      onClick: () => alert("Share clicked"),
+      onClick: () => alert('Share clicked'),
     },
     {
-      id: "launch",
-      text: "Launch",
+      id: 'launch',
+      text: 'Launch',
       icon: Launch16,
-      onClick: () => alert("Launch clicked"),
+      onClick: () => alert('Launch clicked'),
     },
     {
-      id: "maximize",
-      text: "Maximize",
+      id: 'maximize',
+      text: 'Maximize',
       icon: Maximize16,
-      onClick: () => alert("Maximize clicked"),
+      onClick: () => alert('Maximize clicked'),
     },
     {
-      id: "close",
-      text: "Close",
+      id: 'close',
+      text: 'Close',
       fixed: true,
       icon: Close16,
       onClick: handleClose,
@@ -124,79 +124,79 @@ function InventoryReportExample({
 
   const [footerActions, _setFooterActions] = useState([
     {
-      id: "evaluate",
-      label: "Evaluate plan",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'evaluate',
+      label: 'Evaluate plan',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "run",
-      label: "Run plan",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'run',
+      label: 'Run plan',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ]);
 
   const tableHeaders = [
-    { text: "Name" },
-    { text: "Role" },
-    { text: "Location" },
-    { text: "Status" },
+    { text: 'Name' },
+    { text: 'Role' },
+    { text: 'Location' },
+    { text: 'Status' },
   ];
 
   const tableRows = [
     {
       cells: [
-        { text: "Jordan Smith" },
-        { text: "Conversation Designer" },
-        { text: "Austin, TX" },
-        { text: "Active" },
+        { text: 'Jordan Smith' },
+        { text: 'Conversation Designer' },
+        { text: 'Austin, TX' },
+        { text: 'Active' },
       ],
     },
     {
       cells: [
-        { text: "Priya Patel" },
-        { text: "Applied Scientist" },
-        { text: "Bengaluru, IN" },
-        { text: "Active" },
+        { text: 'Priya Patel' },
+        { text: 'Applied Scientist' },
+        { text: 'Bengaluru, IN' },
+        { text: 'Active' },
       ],
     },
     {
       cells: [
-        { text: "Lee Chen" },
-        { text: "Product Manager" },
-        { text: "Singapore" },
-        { text: "Paused" },
+        { text: 'Lee Chen' },
+        { text: 'Product Manager' },
+        { text: 'Singapore' },
+        { text: 'Paused' },
       ],
     },
     {
       cells: [
-        { text: "Morgan Reyes" },
-        { text: "Researcher" },
-        { text: "Toronto, CA" },
-        { text: "Active" },
+        { text: 'Morgan Reyes' },
+        { text: 'Researcher' },
+        { text: 'Toronto, CA' },
+        { text: 'Active' },
       ],
     },
     {
       cells: [
-        { text: "Samira Khan" },
-        { text: "Engineer" },
-        { text: "San Jose, CA" },
-        { text: "Active" },
+        { text: 'Samira Khan' },
+        { text: 'Engineer' },
+        { text: 'San Jose, CA' },
+        { text: 'Active' },
       ],
     },
     {
       cells: [
-        { text: "Alex Kim" },
-        { text: "Designer" },
-        { text: "Seoul, KR" },
-        { text: "Inactive" },
+        { text: 'Alex Kim' },
+        { text: 'Designer' },
+        { text: 'Seoul, KR' },
+        { text: 'Inactive' },
       ],
     },
   ];
@@ -207,17 +207,17 @@ function InventoryReportExample({
   const handleWorkspaceFooterClick = (event: any) => {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
-      case "evaluate":
+      case 'evaluate':
         alert(
-          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "run":
+      case 'run':
         alert(
-          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "cancel":
+      case 'cancel':
         handleClose();
         break;
       default:
@@ -226,7 +226,7 @@ function InventoryReportExample({
   };
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
 
   const filteredRows = tableRows.filter((row) => {
     if (!searchValue) {
@@ -234,7 +234,7 @@ function InventoryReportExample({
     }
     const searchLower = searchValue.toLowerCase();
     return row.cells.some((cell) =>
-      cell.text.toLowerCase().includes(searchLower),
+      cell.text.toLowerCase().includes(searchLower)
     );
   });
 
@@ -263,8 +263,7 @@ function InventoryReportExample({
       />
       <WorkspaceShellHeader
         titleText="Optimizing excess inventory plan"
-        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}
-      >
+        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}>
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
@@ -291,7 +290,7 @@ function InventoryReportExample({
         <br />
         <h4>Data Flow Demonstration:</h4>
         <p>
-          Workspace ID: <strong>{workspaceId || "Not provided"}</strong>
+          Workspace ID: <strong>{workspaceId || 'Not provided'}</strong>
         </p>
         <br />
         <h4>Additional Data from Preview Card:</h4>
@@ -308,8 +307,7 @@ function InventoryReportExample({
               <br />
               <TableContainer
                 title="Agent roster"
-                description="Operational view of AI chat team members."
-              >
+                description="Operational view of AI chat team members.">
                 <TableToolbar>
                   <TableToolbarContent>
                     <TableToolbarSearch
@@ -317,7 +315,7 @@ function InventoryReportExample({
                       persistent
                       placeholder="Filter table"
                       onChange={(e) => {
-                        if (typeof e !== "string" && e.target) {
+                        if (typeof e !== 'string' && e.target) {
                           setSearchValue(e.target.value);
                         }
                       }}
@@ -359,8 +357,7 @@ function InventoryReportExample({
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         onFooterClicked={handleWorkspaceFooterClick}
-        actions={footerActions}
-      ></WorkspaceShellFooter>
+        actions={footerActions}></WorkspaceShellFooter>
     </WorkspaceShell>
   );
 }

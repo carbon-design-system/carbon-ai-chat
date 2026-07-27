@@ -18,37 +18,37 @@ Workspace feature wrapped in a right-hand sliding sidebar — built on the shipp
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Kind           | Role in this example                                       |
-| --------------------------------------------- | -------------- | ---------------------------------------------------------- |
-| `<cds-aichat-custom-element>`                 | custom element | Chat host inside the sidebar.                              |
-| `slot="workspacePanelElement"`                | slot           | Receives the rendered workspace view.                      |
-| `messaging.customSendMessage`                 | property       | Mock backend.                                              |
-| `layout.corners`                              | property       | Sets `CornersType.SQUARE`.                                 |
-| `openChatByDefault`                           | property       | Opens the chat on load.                                    |
-| `onBeforeRender`                              | property       | Captures the `ChatInstance` and subscribes to events.      |
-| `instance.on`                                 | method         | Subscribes to state, workspace, and view events.           |
-| `renderUserDefinedResponse`                   | property       | Renders the outstanding-orders card via a host callback.   |
-| `instance.getState`                           | method         | Reads initial `activeResponseId`.                          |
-| `instance.changeView`                         | method         | Toggles between `LAUNCHER` and `MAIN_WINDOW`.              |
-| `instance.customPanels.getPanel`              | method         | Retrieves the workspace panel handle.                      |
-| `panel.open`                                  | method         | Opens the workspace from the card's maximize button.       |
-| `BusEventType.STATE_CHANGE`                   | enum           | Tracks `activeResponseId`.                                 |
-| `BusEventType.WORKSPACE_PRE_OPEN`             | enum           | Starts sidebar expand animation.                           |
-| `BusEventType.WORKSPACE_OPEN`                 | enum           | Loads workspace data.                                      |
-| `BusEventType.WORKSPACE_PRE_CLOSE`            | enum           | Starts sidebar contract animation.                         |
-| `BusEventType.WORKSPACE_CLOSE`                | enum           | Clears workspace data.                                     |
-| `BusEventType.VIEW_CHANGE`                    | enum           | Syncs sidebar open/closed state.                           |
-| `BusEventType.VIEW_PRE_CHANGE`                | enum           | Plays close animation before view transition.              |
-| `ViewType.LAUNCHER`                           | enum           | Launcher view target for `changeView`.                     |
-| `ViewType.MAIN_WINDOW`                        | enum           | Main-window view target for `changeView`.                  |
-| `PanelType.WORKSPACE`                         | enum           | Panel key for `customPanels.getPanel`.                     |
-| `CornersType.SQUARE`                          | enum           | Layout corner style.                                       |
-| `iconLoader`                                  | function       | Renders the `AiLaunch20` Carbon icon on the header button. |
-| `RenderUserDefinedState`                      | type           | State passed to the `renderUserDefinedResponse` callback.  |
-| `UserDefinedItem`                             | type           | Shape of user-defined message items.                       |
-| `ChatInstance`                                | type           | Type of the instance handle.                               |
-| `PublicConfig`                                | type           | Types the chat configuration object.                       |
-| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet     | Provides the `cds-aichat-sidebar*` layout classes.         |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Chat host inside the sidebar. |
+| `slot="workspacePanelElement"` | slot | Receives the rendered workspace view. |
+| `messaging.customSendMessage` | property | Mock backend. |
+| `layout.corners` | property | Sets `CornersType.SQUARE`. |
+| `openChatByDefault` | property | Opens the chat on load. |
+| `onBeforeRender` | property | Captures the `ChatInstance` and subscribes to events. |
+| `instance.on` | method | Subscribes to state, workspace, and view events. |
+| `renderUserDefinedResponse` | property | Renders the outstanding-orders card via a host callback. |
+| `instance.getState` | method | Reads initial `activeResponseId`. |
+| `instance.changeView` | method | Toggles between `LAUNCHER` and `MAIN_WINDOW`. |
+| `instance.customPanels.getPanel` | method | Retrieves the workspace panel handle. |
+| `panel.open` | method | Opens the workspace from the card's maximize button. |
+| `BusEventType.STATE_CHANGE` | enum | Tracks `activeResponseId`. |
+| `BusEventType.WORKSPACE_PRE_OPEN` | enum | Starts sidebar expand animation. |
+| `BusEventType.WORKSPACE_OPEN` | enum | Loads workspace data. |
+| `BusEventType.WORKSPACE_PRE_CLOSE` | enum | Starts sidebar contract animation. |
+| `BusEventType.WORKSPACE_CLOSE` | enum | Clears workspace data. |
+| `BusEventType.VIEW_CHANGE` | enum | Syncs sidebar open/closed state. |
+| `BusEventType.VIEW_PRE_CHANGE` | enum | Plays close animation before view transition. |
+| `ViewType.LAUNCHER` | enum | Launcher view target for `changeView`. |
+| `ViewType.MAIN_WINDOW` | enum | Main-window view target for `changeView`. |
+| `PanelType.WORKSPACE` | enum | Panel key for `customPanels.getPanel`. |
+| `CornersType.SQUARE` | enum | Layout corner style. |
+| `iconLoader` | function | Renders the `AiLaunch20` Carbon icon on the header button. |
+| `RenderUserDefinedState` | type | State passed to the `renderUserDefinedResponse` callback. |
+| `UserDefinedItem` | type | Shape of user-defined message items. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
+| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet | Provides the `cds-aichat-sidebar*` layout classes. |
 
 ## Run it
 

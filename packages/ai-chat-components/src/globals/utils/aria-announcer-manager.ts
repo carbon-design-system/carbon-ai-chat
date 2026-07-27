@@ -15,7 +15,7 @@
  * - `assertive` — errors that block the user's progress; interrupts whatever the
  *   screen reader is currently reading. Use sparingly.
  */
-type AnnouncerPoliteness = "polite" | "assertive";
+type AnnouncerPoliteness = 'polite' | 'assertive';
 
 /**
  * One live-region channel: the regions it rotates through plus the pending-queue
@@ -69,7 +69,7 @@ export class AriaAnnouncerManager {
    */
   connect(
     politeRegions: HTMLDivElement[],
-    assertiveRegions: HTMLDivElement[] = [],
+    assertiveRegions: HTMLDivElement[] = []
   ): void {
     this.polite.regions = politeRegions.slice();
     this.polite.currentIndex = 0;
@@ -93,13 +93,13 @@ export class AriaAnnouncerManager {
    * Defaults to polite; falls back to polite if assertive is requested but no
    * assertive regions are connected.
    */
-  announce(message: string, politeness: AnnouncerPoliteness = "polite"): void {
-    if (!message || typeof window === "undefined") {
+  announce(message: string, politeness: AnnouncerPoliteness = 'polite'): void {
+    if (!message || typeof window === 'undefined') {
       return;
     }
 
     const channel =
-      politeness === "assertive" && this.assertive.regions.length > 0
+      politeness === 'assertive' && this.assertive.regions.length > 0
         ? this.assertive
         : this.polite;
 
@@ -118,7 +118,7 @@ export class AriaAnnouncerManager {
   private clearChannel(channel: AnnouncerChannel): void {
     if (
       channel.announcementTimeoutId !== null &&
-      typeof window !== "undefined"
+      typeof window !== 'undefined'
     ) {
       window.clearTimeout(channel.announcementTimeoutId);
       channel.announcementTimeoutId = null;
@@ -137,7 +137,7 @@ export class AriaAnnouncerManager {
       return;
     }
 
-    const message = channel.pendingAnnouncements.join(" ");
+    const message = channel.pendingAnnouncements.join(' ');
     channel.pendingAnnouncements = [];
 
     const writeRegion = channel.regions[channel.currentIndex];
@@ -148,7 +148,7 @@ export class AriaAnnouncerManager {
     // Clear every other region so the active one stands out as the change.
     channel.regions.forEach((region, index) => {
       if (index !== channel.currentIndex && region) {
-        region.textContent = "";
+        region.textContent = '';
       }
     });
 

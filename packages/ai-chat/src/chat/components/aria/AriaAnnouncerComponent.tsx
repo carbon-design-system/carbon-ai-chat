@@ -7,14 +7,14 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { AriaAnnouncerManager } from "@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js";
+import { AriaAnnouncerManager } from '@carbon/ai-chat-components/es/globals/utils/aria-announcer-manager.js';
 
-import { AnnounceMessage } from "../../../types/state/AppState";
-import HasIntl from "../../../types/utilities/HasIntl";
-import { nodeToText } from "../../utils/domUtils";
-import VisuallyHidden from "../util/VisuallyHidden";
+import { AnnounceMessage } from '../../../types/state/AppState';
+import HasIntl from '../../../types/utilities/HasIntl';
+import { nodeToText } from '../../utils/domUtils';
+import VisuallyHidden from '../util/VisuallyHidden';
 
 /**
  * Holds the visually-hidden ARIA live regions used for screen-reader
@@ -58,7 +58,7 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
       this.ref3.current,
     ].filter((el): el is HTMLDivElement => el !== null);
     const assertiveRefs = [this.ref4.current, this.ref5.current].filter(
-      (el): el is HTMLDivElement => el !== null,
+      (el): el is HTMLDivElement => el !== null
     );
     this.manager.connect(politeRefs, assertiveRefs);
   }
@@ -79,15 +79,15 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
       return;
     }
 
-    if (typeof value === "string" || hasNodeType(value)) {
+    if (typeof value === 'string' || hasNodeType(value)) {
       this.queueRawValue(value, false);
     } else if (value.messageID) {
       this.queueRawValue(
         this.props.intl.formatMessage(
           { id: value.messageID },
-          value.messageValues,
+          value.messageValues
         ),
-        Boolean(value.assertive),
+        Boolean(value.assertive)
       );
     } else {
       this.queueRawValue(value.messageText, Boolean(value.assertive));
@@ -117,16 +117,16 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
 
     const parts: string[] = [];
     queue.forEach((entry) => {
-      if (typeof entry === "string") {
+      if (typeof entry === 'string') {
         parts.push(entry);
       } else {
         nodeToText(entry, parts);
       }
     });
 
-    const text = parts.join(" ");
+    const text = parts.join(' ');
     if (text) {
-      this.manager.announce(text, "polite");
+      this.manager.announce(text, 'polite');
     }
   };
 
@@ -134,9 +134,9 @@ class AriaAnnouncerComponent extends React.PureComponent<HasIntl> {
     const queue = this.pendingAssertiveValues;
     this.pendingAssertiveValues = [];
 
-    const text = queue.filter(Boolean).join(" ");
+    const text = queue.filter(Boolean).join(' ');
     if (text) {
-      this.manager.announce(text, "assertive");
+      this.manager.announce(text, 'assertive');
     }
   };
 

@@ -16,12 +16,12 @@ Embeds `ChatContainer` inside a Next.js 16 App Router page, loading the chat as 
 
 ## APIs and props demonstrated
 
-| Symbol              | Package / kind              | Role in this example                   |
-| ------------------- | --------------------------- | -------------------------------------- |
-| `ChatContainer`     | `@carbon/ai-chat` component | Mounts the chat UI.                    |
-| `PublicConfig`      | `@carbon/ai-chat` type      | Shape of the config.                   |
-| `customSendMessage` | `messaging` prop            | Minimal mock backend.                  |
-| `next/dynamic`      | `next`                      | Client-only import of the chat module. |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Shape of the config. |
+| `customSendMessage` | `messaging` prop | Minimal mock backend. |
+| `next/dynamic` | `next` | Client-only import of the chat module. |
 
 ## Run it
 
