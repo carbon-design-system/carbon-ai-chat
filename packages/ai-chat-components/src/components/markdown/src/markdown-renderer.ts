@@ -53,6 +53,7 @@ import {
 } from './utils/plugin-fallback.js';
 import { type TokenTree } from './markdown-token-tree.js';
 import type {
+  MarkdownRendererLinkResult,
   MarkdownRendererSlotDescriptor,
   RenderTokenTreeOptions,
 } from './markdown-renderer-types.js';
@@ -553,8 +554,15 @@ function renderWithStaticTag(
     // Links: optional consumer attribute transform, then automatic
     // target="_blank" safety default.
     case 'a': {
-      let linkAttrs: Record<string, string> = attrs;
+      let linkAttrs: Record<string, string> = {
+        ...attrs,
+        target: attrs.target ?? '_blank',
+      };
+
+      let onClickHandler: MarkdownRendererLinkResult['onClick'];
+
       const linkRenderer = options.customRenderers?.link;
+
       if (linkRenderer && node) {
         const result = linkRenderer({
           href: attrs.href ?? '',
@@ -564,8 +572,13 @@ function renderWithStaticTag(
           token,
           node,
         });
+
         if (result) {
-          linkAttrs = { ...attrs, ...(result.attributes ?? {}) };
+          linkAttrs = {
+            ...linkAttrs,
+            ...(result.attributes ?? {}),
+          };
+
           if (result.href !== undefined) {
             linkAttrs.href = result.href;
           }
@@ -575,17 +588,20 @@ function renderWithStaticTag(
           if (result.rel !== undefined) {
             linkAttrs.rel = result.rel;
           }
-          // Consumer-supplied attributes bypass the token-attr sanitize pass
-          // above, so re-check them here.
+
+          // Consumer-supplied attributes are merged after the initial token
+          // sanitization pass, so sanitize the final attribute set again.
           if (options.sanitize) {
             linkAttrs = sanitizeAttrs(linkAttrs);
           }
+
+          onClickHandler = result.onClick;
         }
       }
-      if (!linkAttrs.target) {
-        linkAttrs.target = '_blank';
-      }
-      return html`<a ${spread(linkAttrs)}>${content}</a>`;
+
+      return html`<a ${spread(linkAttrs)} @click=${onClickHandler}
+        >${content}</a
+      >`;
     }
 
     // Self-closing image. A consumer `image` transform wins first (mirroring

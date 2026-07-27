@@ -1501,6 +1501,58 @@ HTTP: http://example.com
       expect(link?.getAttribute('data-safe')).to.equal('ok');
     });
 
+    it('onClick fires with the correct MouseEvent and is never set as an HTML attribute', async () => {
+      let receivedEvent: MouseEvent | null = null;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            link: () => ({
+              onClick: (event: MouseEvent) => {
+                event.preventDefault();
+                receivedEvent = event;
+              },
+            }),
+          }}
+          .markdown=${'[link](https://example.com)'}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector('a');
+      link!.click();
+      expect(receivedEvent, 'handler called').to.be.instanceOf(MouseEvent);
+      expect(
+        link?.hasAttribute('onclick'),
+        'onClick must not be serialised as an attribute'
+      ).to.equal(false);
+    });
+
+    it('onClick works alongside other link result fields', async () => {
+      let clicked = false;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            link: ({ href }: { href: string }) => ({
+              href: `${href}?utm=test`,
+              target: '_self',
+              rel: 'noopener',
+              onClick: (event: MouseEvent) => {
+                event.preventDefault();
+                clicked = true;
+              },
+            }),
+          }}
+          .markdown=${'[link](https://example.com)'}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector('a');
+      expect(link?.getAttribute('href')).to.equal(
+        'https://example.com?utm=test'
+      );
+      expect(link?.getAttribute('target')).to.equal('_self');
+      expect(link?.getAttribute('rel')).to.equal('noopener');
+      link!.click();
+      expect(clicked, 'onClick fired').to.equal(true);
+    });
+
     it('image callback rewrites src', async () => {
       const el = await fixture<MarkdownElementInstance>(
         html`<cds-aichat-markdown

@@ -289,8 +289,10 @@ export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
 export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
 
 /**
- * Attribute overrides returned by a link renderer callback (`href`, `target`,
- * `rel`, extra `attributes`). Return `null` to keep the defaults.
+ * Attribute overrides returned by a {@link CustomMarkdownRenderers.link} /
+ * {@link WCCustomMarkdownRenderers.link} callback. Fields left `undefined` keep
+ * the framework default; returning `null` from the callback skips the override
+ * entirely. Supply `onClick` to intercept link clicks.
  *
  * @category Messaging
  * @experimental
