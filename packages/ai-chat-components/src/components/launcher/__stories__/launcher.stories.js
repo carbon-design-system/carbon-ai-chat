@@ -29,7 +29,7 @@ const argTypes = {
   onToggle: { table: { disable: true } },
 };
 
-const Template = args => html`
+const Template = (args) => html`
   <cds-aichat-launcher
     @cds-aichat-launcher-toggle=${args.onToggle}
     ?launcher-hidden=${args.launcherHidden}
