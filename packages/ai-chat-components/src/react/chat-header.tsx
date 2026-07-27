@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CdsAiChatChatHeader from "../components/chat-shell/src/chat-header.js";
-import { withWebComponentBridge } from "./utils/withWebComponentBridge.js";
-import { transformReactIconToCarbonIcon } from "./utils/iconTransform.js";
-import type { ToolbarAction } from "./toolbar.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CdsAiChatChatHeader from '../components/chat-shell/src/chat-header.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
+import type { ToolbarAction } from './toolbar.js';
 
 export interface ChatHeaderProps {
   /** Array of actions that can overflow into a menu when space is limited. */
@@ -28,7 +28,7 @@ export interface ChatHeaderProps {
   headerName?: string;
 
   /** Type of navigation to display: 'back', 'overflow', or 'none'. */
-  navigationType?: "back" | "overflow" | "none";
+  navigationType?: 'back' | 'overflow' | 'none';
 
   /** Icon for the back button (CarbonIcon object). */
   navigationBackIcon?: any;
@@ -93,10 +93,10 @@ export interface ChatHeaderHandle {
 // Base chat header component from @lit/react
 const BaseChatHeader = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-chat-header",
+    tagName: 'cds-aichat-chat-header',
     elementClass: CdsAiChatChatHeader,
     react: React,
-  }),
+  })
 );
 
 /**
@@ -145,8 +145,6 @@ const ChatHeader = React.forwardRef<any, any>((props, ref) => {
   );
 });
 
-ChatHeader.displayName = "ChatHeader";
+ChatHeader.displayName = 'ChatHeader';
 
 export default ChatHeader;
-
-// Made with Bob

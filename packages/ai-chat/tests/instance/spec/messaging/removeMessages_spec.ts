@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,77 +13,77 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../../test_helpers";
-import { MessageResponseTypes } from "../../../../src/types/messaging/Messages";
+} from '../../../test_helpers';
+import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
 
-describe("ChatInstance.messaging.removeMessages", () => {
+describe('ChatInstance.messaging.removeMessages', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have removeMessages method available", async () => {
+  it('should have removeMessages method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.messaging.removeMessages).toBe("function");
+    expect(typeof instance.messaging.removeMessages).toBe('function');
   });
 
-  it("should accept array of message IDs", async () => {
+  it('should accept array of message IDs', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    const messageIDs = ["msg-1", "msg-2", "msg-3"];
+    const messageIDs = ['msg-1', 'msg-2', 'msg-3'];
 
     await expect(
-      instance.messaging.removeMessages(messageIDs),
+      instance.messaging.removeMessages(messageIDs)
     ).resolves.not.toThrow();
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    const result = instance.messaging.removeMessages(["msg-1"]);
+    const result = instance.messaging.removeMessages(['msg-1']);
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("Redux state management", () => {
-    it("should remove specified messages from Redux state", async () => {
+  describe('Redux state management', () => {
+    it('should remove specified messages from Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add some messages first
       await instance.messaging.addMessage({
-        id: "remove-test-msg-1",
+        id: 'remove-test-msg-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "First message to remove",
+              text: 'First message to remove',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "remove-test-msg-2",
+        id: 'remove-test-msg-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Second message to remove",
+              text: 'Second message to remove',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "keep-test-msg",
+        id: 'keep-test-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Message to keep",
+              text: 'Message to keep',
             },
           ],
         },
@@ -91,41 +91,41 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // Verify messages were added
       let state = store.getState();
-      expect(state.allMessagesByID["remove-test-msg-1"]).toBeDefined();
-      expect(state.allMessagesByID["remove-test-msg-2"]).toBeDefined();
-      expect(state.allMessagesByID["keep-test-msg"]).toBeDefined();
+      expect(state.allMessagesByID['remove-test-msg-1']).toBeDefined();
+      expect(state.allMessagesByID['remove-test-msg-2']).toBeDefined();
+      expect(state.allMessagesByID['keep-test-msg']).toBeDefined();
 
       const initialMessageCount = Object.keys(state.allMessagesByID).length;
 
       // Remove specific messages
       await instance.messaging.removeMessages([
-        "remove-test-msg-1",
-        "remove-test-msg-2",
+        'remove-test-msg-1',
+        'remove-test-msg-2',
       ]);
 
       // Verify specified messages are removed
       state = store.getState();
-      expect(state.allMessagesByID["remove-test-msg-1"]).toBeUndefined();
-      expect(state.allMessagesByID["remove-test-msg-2"]).toBeUndefined();
-      expect(state.allMessagesByID["keep-test-msg"]).toBeDefined();
+      expect(state.allMessagesByID['remove-test-msg-1']).toBeUndefined();
+      expect(state.allMessagesByID['remove-test-msg-2']).toBeUndefined();
+      expect(state.allMessagesByID['keep-test-msg']).toBeDefined();
 
       const finalMessageCount = Object.keys(state.allMessagesByID).length;
       expect(finalMessageCount).toBeLessThan(initialMessageCount);
     });
 
-    it("should remove associated message items from Redux state", async () => {
+    it('should remove associated message items from Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add a message
       await instance.messaging.addMessage({
-        id: "item-remove-test-msg",
+        id: 'item-remove-test-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Message with items to remove",
+              text: 'Message with items to remove',
             },
           ],
         },
@@ -133,27 +133,27 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // Get initial state
       let state = store.getState();
-      expect(state.allMessagesByID["item-remove-test-msg"]).toBeDefined();
+      expect(state.allMessagesByID['item-remove-test-msg']).toBeDefined();
 
       // Find associated message items
       const initialItems = Object.values(state.allMessageItemsByID);
       const itemsForMessage = initialItems.filter(
-        (item) => item.fullMessageID === "item-remove-test-msg",
+        (item) => item.fullMessageID === 'item-remove-test-msg'
       );
       expect(itemsForMessage.length).toBeGreaterThan(0);
 
       const initialItemCount = Object.keys(state.allMessageItemsByID).length;
 
       // Remove the message
-      await instance.messaging.removeMessages(["item-remove-test-msg"]);
+      await instance.messaging.removeMessages(['item-remove-test-msg']);
 
       // Verify message and its items are removed
       state = store.getState();
-      expect(state.allMessagesByID["item-remove-test-msg"]).toBeUndefined();
+      expect(state.allMessagesByID['item-remove-test-msg']).toBeUndefined();
 
       const finalItems = Object.values(state.allMessageItemsByID);
       const remainingItemsForMessage = finalItems.filter(
-        (item) => item.fullMessageID === "item-remove-test-msg",
+        (item) => item.fullMessageID === 'item-remove-test-msg'
       );
       expect(remainingItemsForMessage.length).toBe(0);
 
@@ -161,43 +161,43 @@ describe("ChatInstance.messaging.removeMessages", () => {
       expect(finalItemCount).toBeLessThan(initialItemCount);
     });
 
-    it("should update message order arrays in Redux state", async () => {
+    it('should update message order arrays in Redux state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add messages in specific order
       await instance.messaging.addMessage({
-        id: "order-msg-1",
+        id: 'order-msg-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "First message",
+              text: 'First message',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "order-msg-2",
+        id: 'order-msg-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Second message",
+              text: 'Second message',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "order-msg-3",
+        id: 'order-msg-3',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Third message",
+              text: 'Third message',
             },
           ],
         },
@@ -208,37 +208,37 @@ describe("ChatInstance.messaging.removeMessages", () => {
       const initialMessageIDs = [...state.assistantMessageState.messageIDs];
       const initialLocalIDs = [...state.assistantMessageState.localMessageIDs];
 
-      expect(initialMessageIDs.includes("order-msg-2")).toBe(true);
+      expect(initialMessageIDs.includes('order-msg-2')).toBe(true);
 
       // Remove middle message
-      await instance.messaging.removeMessages(["order-msg-2"]);
+      await instance.messaging.removeMessages(['order-msg-2']);
 
       // Verify order arrays are updated
       state = store.getState();
       const finalMessageIDs = state.assistantMessageState.messageIDs;
       const finalLocalIDs = state.assistantMessageState.localMessageIDs;
 
-      expect(finalMessageIDs.includes("order-msg-2")).toBe(false);
-      expect(finalMessageIDs.includes("order-msg-1")).toBe(true);
-      expect(finalMessageIDs.includes("order-msg-3")).toBe(true);
+      expect(finalMessageIDs.includes('order-msg-2')).toBe(false);
+      expect(finalMessageIDs.includes('order-msg-1')).toBe(true);
+      expect(finalMessageIDs.includes('order-msg-3')).toBe(true);
 
       expect(finalMessageIDs.length).toBeLessThan(initialMessageIDs.length);
       expect(finalLocalIDs.length).toBeLessThan(initialLocalIDs.length);
     });
 
-    it("should handle removing non-existent message IDs gracefully", async () => {
+    it('should handle removing non-existent message IDs gracefully', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add one real message
       await instance.messaging.addMessage({
-        id: "real-message",
+        id: 'real-message',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Real message",
+              text: 'Real message',
             },
           ],
         },
@@ -246,12 +246,12 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
 
       // Try to remove non-existent messages
       await expect(
-        instance.messaging.removeMessages(["non-existent-1", "non-existent-2"]),
+        instance.messaging.removeMessages(['non-existent-1', 'non-existent-2'])
       ).resolves.not.toThrow();
 
       // Verify state is unchanged
@@ -259,34 +259,34 @@ describe("ChatInstance.messaging.removeMessages", () => {
       const finalMessageCount = Object.keys(finalState.allMessagesByID).length;
 
       expect(finalMessageCount).toBe(initialMessageCount);
-      expect(finalState.allMessagesByID["real-message"]).toBeDefined();
+      expect(finalState.allMessagesByID['real-message']).toBeDefined();
     });
 
-    it("should handle mixed valid and invalid message IDs", async () => {
+    it('should handle mixed valid and invalid message IDs', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add some messages
       await instance.messaging.addMessage({
-        id: "valid-msg-1",
+        id: 'valid-msg-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Valid message 1",
+              text: 'Valid message 1',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "valid-msg-2",
+        id: 'valid-msg-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Valid message 2",
+              text: 'Valid message 2',
             },
           ],
         },
@@ -294,31 +294,31 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // Remove mix of valid and invalid IDs
       await instance.messaging.removeMessages([
-        "valid-msg-1",
-        "non-existent-msg",
-        "valid-msg-2",
-        "another-fake-msg",
+        'valid-msg-1',
+        'non-existent-msg',
+        'valid-msg-2',
+        'another-fake-msg',
       ]);
 
       // Verify only valid messages were removed
       const state = store.getState();
-      expect(state.allMessagesByID["valid-msg-1"]).toBeUndefined();
-      expect(state.allMessagesByID["valid-msg-2"]).toBeUndefined();
+      expect(state.allMessagesByID['valid-msg-1']).toBeUndefined();
+      expect(state.allMessagesByID['valid-msg-2']).toBeUndefined();
     });
 
-    it("should handle empty message ID array", async () => {
+    it('should handle empty message ID array', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add a message
       await instance.messaging.addMessage({
-        id: "unchanged-message",
+        id: 'unchanged-message',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "This should remain",
+              text: 'This should remain',
             },
           ],
         },
@@ -326,12 +326,12 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
 
       // Remove empty array
       await expect(
-        instance.messaging.removeMessages([]),
+        instance.messaging.removeMessages([])
       ).resolves.not.toThrow();
 
       // Verify state is unchanged
@@ -339,22 +339,22 @@ describe("ChatInstance.messaging.removeMessages", () => {
       const finalMessageCount = Object.keys(finalState.allMessagesByID).length;
 
       expect(finalMessageCount).toBe(initialMessageCount);
-      expect(finalState.allMessagesByID["unchanged-message"]).toBeDefined();
+      expect(finalState.allMessagesByID['unchanged-message']).toBeDefined();
     });
 
-    it("should preserve other Redux state when removing messages", async () => {
+    it('should preserve other Redux state when removing messages', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add a message
       await instance.messaging.addMessage({
-        id: "state-preserve-msg",
+        id: 'state-preserve-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Message to remove",
+              text: 'Message to remove',
             },
           ],
         },
@@ -367,55 +367,55 @@ describe("ChatInstance.messaging.removeMessages", () => {
       const initialAssistantName = initialState.config.public.assistantName;
 
       // Remove the message
-      await instance.messaging.removeMessages(["state-preserve-msg"]);
+      await instance.messaging.removeMessages(['state-preserve-msg']);
 
       // Verify other state is preserved
       const finalState = store.getState();
       expect(finalState.humanAgentState.isConnecting).toBe(
-        initialHumanAgentState.isConnecting,
+        initialHumanAgentState.isConnecting
       );
       expect(finalState.humanAgentState.isReconnecting).toBe(
-        initialHumanAgentState.isReconnecting,
+        initialHumanAgentState.isReconnecting
       );
       expect(finalState.isHydrated).toBe(initialIsHydrated);
       expect(finalState.config.public.assistantName).toBe(initialAssistantName);
     });
   });
 
-  describe("Behavior verification", () => {
-    it("should allow adding messages after removing messages", async () => {
+  describe('Behavior verification', () => {
+    it('should allow adding messages after removing messages', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add initial message
       await instance.messaging.addMessage({
-        id: "remove-then-add-msg",
+        id: 'remove-then-add-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Will be removed",
+              text: 'Will be removed',
             },
           ],
         },
       });
 
       // Remove the message
-      await instance.messaging.removeMessages(["remove-then-add-msg"]);
+      await instance.messaging.removeMessages(['remove-then-add-msg']);
 
       // Verify message is removed
       let state = store.getState();
-      expect(state.allMessagesByID["remove-then-add-msg"]).toBeUndefined();
+      expect(state.allMessagesByID['remove-then-add-msg']).toBeUndefined();
 
       // Add new message
       await instance.messaging.addMessage({
-        id: "new-after-remove-msg",
+        id: 'new-after-remove-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Added after removal",
+              text: 'Added after removal',
             },
           ],
         },
@@ -423,47 +423,47 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // Verify new message exists
       state = store.getState();
-      expect(state.allMessagesByID["new-after-remove-msg"]).toBeDefined();
-      expect(state.allMessagesByID["remove-then-add-msg"]).toBeUndefined();
+      expect(state.allMessagesByID['new-after-remove-msg']).toBeDefined();
+      expect(state.allMessagesByID['remove-then-add-msg']).toBeUndefined();
     });
 
-    it("should handle multiple remove operations", async () => {
+    it('should handle multiple remove operations', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add several messages
       await instance.messaging.addMessage({
-        id: "multi-remove-1",
+        id: 'multi-remove-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "First batch message 1",
+              text: 'First batch message 1',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "multi-remove-2",
+        id: 'multi-remove-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "First batch message 2",
+              text: 'First batch message 2',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "multi-remove-3",
+        id: 'multi-remove-3',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Second batch message",
+              text: 'Second batch message',
             },
           ],
         },
@@ -471,62 +471,62 @@ describe("ChatInstance.messaging.removeMessages", () => {
 
       // First removal
       await instance.messaging.removeMessages([
-        "multi-remove-1",
-        "multi-remove-2",
+        'multi-remove-1',
+        'multi-remove-2',
       ]);
 
       let state = store.getState();
-      expect(state.allMessagesByID["multi-remove-1"]).toBeUndefined();
-      expect(state.allMessagesByID["multi-remove-2"]).toBeUndefined();
-      expect(state.allMessagesByID["multi-remove-3"]).toBeDefined();
+      expect(state.allMessagesByID['multi-remove-1']).toBeUndefined();
+      expect(state.allMessagesByID['multi-remove-2']).toBeUndefined();
+      expect(state.allMessagesByID['multi-remove-3']).toBeDefined();
 
       // Second removal
-      await instance.messaging.removeMessages(["multi-remove-3"]);
+      await instance.messaging.removeMessages(['multi-remove-3']);
 
       state = store.getState();
-      expect(state.allMessagesByID["multi-remove-3"]).toBeUndefined();
+      expect(state.allMessagesByID['multi-remove-3']).toBeUndefined();
     });
 
-    it("should be resilient to removing the same message ID multiple times", async () => {
+    it('should be resilient to removing the same message ID multiple times', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add a message
       await instance.messaging.addMessage({
-        id: "duplicate-remove-msg",
+        id: 'duplicate-remove-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Message to remove multiple times",
+              text: 'Message to remove multiple times',
             },
           ],
         },
       });
 
       // First removal
-      await instance.messaging.removeMessages(["duplicate-remove-msg"]);
+      await instance.messaging.removeMessages(['duplicate-remove-msg']);
 
       let state = store.getState();
-      expect(state.allMessagesByID["duplicate-remove-msg"]).toBeUndefined();
+      expect(state.allMessagesByID['duplicate-remove-msg']).toBeUndefined();
 
       // Second removal of same ID (should not throw)
       await expect(
-        instance.messaging.removeMessages(["duplicate-remove-msg"]),
+        instance.messaging.removeMessages(['duplicate-remove-msg'])
       ).resolves.not.toThrow();
 
       // Third removal with duplicate IDs in same call
       await expect(
         instance.messaging.removeMessages([
-          "duplicate-remove-msg",
-          "duplicate-remove-msg",
-          "duplicate-remove-msg",
-        ]),
+          'duplicate-remove-msg',
+          'duplicate-remove-msg',
+          'duplicate-remove-msg',
+        ])
       ).resolves.not.toThrow();
 
       state = store.getState();
-      expect(state.allMessagesByID["duplicate-remove-msg"]).toBeUndefined();
+      expect(state.allMessagesByID['duplicate-remove-msg']).toBeUndefined();
     });
   });
 });

@@ -32,7 +32,7 @@ export class ScriptLoader {
     const promise = new Promise<void>((resolve, reject) => {
       // Check if script already exists in DOM
       const existingScript = document.querySelector(
-        `script[src="${url}"]`,
+        `script[src="${url}"]`
       ) as HTMLScriptElement;
 
       if (existingScript) {
@@ -42,7 +42,7 @@ export class ScriptLoader {
       }
 
       // Create and append new script element
-      const script = document.createElement("script");
+      const script = document.createElement('script');
       script.src = url;
       script.async = true;
 
@@ -81,5 +81,3 @@ export class ScriptLoader {
     this.loadedScripts.clear();
   }
 }
-
-// Made with Bob

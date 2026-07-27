@@ -7,19 +7,19 @@
  *  @license
  */
 
-import isEqual from "lodash-es/isEqual.js";
-import { PublicConfig } from "../../types/config/PublicConfig";
-import { ServiceManager } from "../services/ServiceManager";
-import { NamespaceService } from "../services/NamespaceService";
-import actions from "../store/actions";
-import createHumanAgentService from "../services/haa/HumanAgentServiceImpl";
-import { consoleDebug, consoleError } from "./miscUtils";
+import isEqual from 'lodash-es/isEqual.js';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import { ServiceManager } from '../services/ServiceManager';
+import { NamespaceService } from '../services/NamespaceService';
+import actions from '../store/actions';
+import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
+import { consoleDebug, consoleError } from './miscUtils';
 import {
   buildLanguagePack,
   createAppConfig,
   reconcileAppConfigReferences,
-} from "../store/doCreateStore";
-import { isBrowser } from "./browserUtils";
+} from '../store/doCreateStore';
+import { isBrowser } from './browserUtils';
 
 /**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`
@@ -54,7 +54,7 @@ import { isBrowser } from "./browserUtils";
 export async function applyConfigChangesDynamically(
   prevConfig: PublicConfig | null,
   newConfig: PublicConfig,
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ): Promise<void> {
   const { store } = serviceManager;
 
@@ -91,7 +91,7 @@ export async function applyConfigChangesDynamically(
   // sees the final derived theme.
   const reconciledConfig = reconcileAppConfigReferences(
     currentState.config,
-    newAppConfig,
+    newAppConfig
   );
   // When nothing actually changed, reconcile returns the previous config
   // reference; skip the dispatch entirely so we don't allocate a new top-level
@@ -115,7 +115,7 @@ export async function applyConfigChangesDynamically(
       // change is likewise picked up by that subscription off the config replace
       // above, so neither sink can go stale here.
       store.dispatch(
-        actions.setAppStateValue("languagePack", nextLanguagePack),
+        actions.setAppStateValue('languagePack', nextLanguagePack)
       );
     }
   }
@@ -186,7 +186,7 @@ export async function applyConfigChangesDynamically(
       Boolean(serviceManager.humanAgentService) &&
       isHumanAgentChatActive(serviceManager);
     const wasInitialized = Boolean(
-      serviceManager.humanAgentService?.hasInitialized,
+      serviceManager.humanAgentService?.hasInitialized
     );
 
     if (isActive || wasInitialized) {
@@ -195,25 +195,25 @@ export async function applyConfigChangesDynamically(
         // user-initiated end) so we don't strand a live connection on the old
         // service instance.
         if (isActive) {
-          consoleDebug("Tearing down existing service desk");
+          consoleDebug('Tearing down existing service desk');
           await serviceManager.humanAgentService.endChat(true, true, false);
         }
 
-        consoleDebug("Recreating human agent service");
+        consoleDebug('Recreating human agent service');
         serviceManager.humanAgentService =
           createHumanAgentService(serviceManager);
 
         // Re-initialize only if the previous service had already initialized, so
         // a factory swap preserves the prior started state.
         if (wasInitialized) {
-          consoleDebug("Human agent service restarting");
+          consoleDebug('Human agent service restarting');
           await serviceManager.humanAgentService.initialize();
         }
       } catch (error) {
         // Surface failure to the caller, which decides on any fallback.
         consoleError(
-          "Failed to update human agent service dynamically:",
-          error,
+          'Failed to update human agent service dynamically:',
+          error
         );
         throw error;
       }
@@ -224,7 +224,7 @@ export async function applyConfigChangesDynamically(
   // acceptance is no longer meaningful, so clear the recorded acceptance for this
   // hostname to force them to accept the new disclaimer again.
   if (!isEqual(prevConfig?.disclaimer, newConfig.disclaimer)) {
-    const hostname = isBrowser() ? window.location.hostname : "";
+    const hostname = isBrowser() ? window.location.hostname : '';
     const updatedDisclaimersAccepted = {
       ...store.getState().persistedToBrowserStorage.disclaimersAccepted,
     };
@@ -240,7 +240,7 @@ export async function applyConfigChangesDynamically(
           ...store.getState().persistedToBrowserStorage,
           disclaimersAccepted: updatedDisclaimersAccepted,
         },
-      }),
+      })
     );
   }
 
@@ -254,16 +254,16 @@ export async function applyConfigChangesDynamically(
   if (
     prevConfig?.launcher?.showUnreadIndicator !==
       newConfig.launcher?.showUnreadIndicator &&
-    typeof newConfig.launcher?.showUnreadIndicator === "boolean"
+    typeof newConfig.launcher?.showUnreadIndicator === 'boolean'
   ) {
     const currentValue =
       store.getState().persistedToBrowserStorage.showUnreadIndicator;
     if (currentValue !== newConfig.launcher.showUnreadIndicator) {
       store.dispatch(
         actions.setLauncherProperty(
-          "showUnreadIndicator",
-          newConfig.launcher.showUnreadIndicator,
-        ),
+          'showUnreadIndicator',
+          newConfig.launcher.showUnreadIndicator
+        )
       );
     }
   }

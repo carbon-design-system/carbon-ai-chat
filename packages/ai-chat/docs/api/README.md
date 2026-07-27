@@ -6,10 +6,10 @@ Machine-readable index of the `@carbon/ai-chat` public API, for the Carbon MCP i
 
 ## Contents
 
-| Path                   | Format          | Purpose                                                                                                    |
-| ---------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
-| `symbol-index.json`    | JSON lookup map | O(1) resolution of a `{@link}` target to its metadata + URL.                                               |
-| `markdown/<Symbol>.md` | Markdown        | One self-contained reference page per top-level symbol (members as sections), sized as an embedding chunk. |
+| Path | Format | Purpose |
+| --- | --- | --- |
+| `symbol-index.json` | JSON lookup map | O(1) resolution of a `{@link}` target to its metadata + URL. |
+| `markdown/<Symbol>.md` | Markdown | One self-contained reference page per top-level symbol (members as sections), sized as an embedding chunk. |
 
 Both come from one extraction pass, so they never disagree.
 
@@ -31,30 +31,28 @@ Both come from one extraction pass, so they never disagree.
 
 ### Record fields
 
-| Field               | Type           | Notes                                                                                                                           |
-| ------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `name`              | string         | Leaf name (`HistoryItem`, `time`).                                                                                              |
-| `kind`              | string         | `Interface`, `TypeAlias`, `Enum`, `EnumMember`, `Function`, `Method`, `Property`, `Accessor`, `Variable`, `Class`, `Namespace`. |
-| `parent`            | string \| null | Owner key for a member; `null` for a top-level symbol.                                                                          |
-| `category`          | string         | TypeDoc `@category` (`Messaging`, `Config`, …); members inherit their owner's.                                                  |
-| `summary`           | string         | Description; inline `{@link}` flattened to readable text.                                                                       |
-| `description`       | string         | `@remarks` body if present, else `""`.                                                                                          |
-| `signature`         | string         | Single-line signature (`time: string`, `type AudioItem = …`, `foo(a: A): B`).                                                   |
-| `signatures`        | string[]       | All overload signatures; non-empty only when a function/method has more than one.                                               |
-| `members`           | string[]       | Child keys (top-level symbols only).                                                                                            |
-| `related`           | string[]       | Bare `{@link}` targets referenced in the summary/remarks, deduped and sorted.                                                   |
-| `examples`          | string[]       | `@example` blocks, raw text, in source order.                                                                                   |
-| `deprecated`        | boolean        |                                                                                                                                 |
-| `deprecatedMessage` | string         | `@deprecated` body, else `""`.                                                                                                  |
-| `experimental`      | boolean        | `@experimental` modifier present.                                                                                               |
-| `url`               | string         | Version-relative path (see URLs).                                                                                               |
-| `anchor`            | string \| null | Member anchor (`time`); `null` for top-level.                                                                                   |
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | string | Leaf name (`HistoryItem`, `time`). |
+| `kind` | string | `Interface`, `TypeAlias`, `Enum`, `EnumMember`, `Function`, `Method`, `Property`, `Accessor`, `Variable`, `Class`, `Namespace`. |
+| `parent` | string \| null | Owner key for a member; `null` for a top-level symbol. |
+| `category` | string | TypeDoc `@category` (`Messaging`, `Config`, …); members inherit their owner's. |
+| `summary` | string | Description; inline `{@link}` flattened to readable text. |
+| `description` | string | `@remarks` body if present, else `""`. |
+| `signature` | string | Single-line signature (`time: string`, `type AudioItem = …`, `foo(a: A): B`). |
+| `signatures` | string[] | All overload signatures; non-empty only when a function/method has more than one. |
+| `members` | string[] | Child keys (top-level symbols only). |
+| `related` | string[] | Bare `{@link}` targets referenced in the summary/remarks, deduped and sorted. |
+| `examples` | string[] | `@example` blocks, raw text, in source order. |
+| `deprecated` | boolean |  |
+| `deprecatedMessage` | string | `@deprecated` body, else `""`. |
+| `experimental` | boolean | `@experimental` modifier present. |
+| `url` | string | Version-relative path (see URLs). |
+| `anchor` | string \| null | Member anchor (`time`); `null` for top-level. |
 
 ### URLs
 
-`url` is **relative to `baseUrl`** — the full page URL is `baseUrl + url`, e.g.
-`https://chat.carbondesignsystem.com/version/v1.15.0/docs/interfaces/Type_reference.HistoryItem.html#time`.
-The `Type_reference.` filename prefix is intrinsic to how the published TypeDoc site names pages; the URLs here match the live site verbatim because they come from TypeDoc's own router.
+`url` is **relative to `baseUrl`** — the full page URL is `baseUrl + url`, e.g. `https://chat.carbondesignsystem.com/version/v1.15.0/docs/interfaces/Type_reference.HistoryItem.html#time`. The `Type_reference.` filename prefix is intrinsic to how the published TypeDoc site names pages; the URLs here match the live site verbatim because they come from TypeDoc's own router.
 
 ## Versioning
 

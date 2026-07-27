@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -62,12 +62,12 @@ function animateWithClass(
   element: HTMLElement,
   className: string,
   endAnimationNameOrDelay?: string | number,
-  endAnimationCallback?: () => void,
+  endAnimationCallback?: () => void
 ) {
   if (element) {
     element.classList.add(className);
 
-    if (typeof endAnimationNameOrDelay === "number") {
+    if (typeof endAnimationNameOrDelay === 'number') {
       setTimeout(() => {
         element.classList.remove(className);
         if (endAnimationCallback) {
@@ -80,8 +80,8 @@ function animateWithClass(
           !endAnimationNameOrDelay ||
           event.animationName === endAnimationNameOrDelay
         ) {
-          element.removeEventListener("animationend", listener);
-          element.removeEventListener("animationcancel", listener);
+          element.removeEventListener('animationend', listener);
+          element.removeEventListener('animationcancel', listener);
           element.classList.remove(className);
 
           if (endAnimationCallback) {
@@ -90,8 +90,8 @@ function animateWithClass(
         }
       };
 
-      element.addEventListener("animationend", listener);
-      element.addEventListener("animationcancel", listener);
+      element.addEventListener('animationend', listener);
+      element.addEventListener('animationcancel', listener);
     }
   }
 }
@@ -111,7 +111,7 @@ function setAnimationTimeouts(
   element: Element,
   animation: string,
   timeouts: number[],
-  options: AnimationTimeoutOptions,
+  options: AnimationTimeoutOptions
 ) {
   const { startingIndex, beforeAll, afterAll, beforeEach, afterEach } = options;
   // The index of the current timeout value to start off on in the array.
@@ -154,7 +154,7 @@ function setAnimationTimeouts(
     // Move onto the next timeout in the array.
     index++;
     // Remove this event listener so that it doesn't get fired again.
-    element.removeEventListener("animationend", replayAnimation);
+    element.removeEventListener('animationend', replayAnimation);
     // Remove the animation class since it has ended.
     element.classList.remove(animation);
     // Attempt to replay the animation.
@@ -169,7 +169,7 @@ function setAnimationTimeouts(
       beforeEach();
     }
     // Begin the process to play the animation.
-    element.addEventListener("animationend", replayAnimation);
+    element.addEventListener('animationend', replayAnimation);
     element.classList.add(animation);
   }
 
@@ -184,7 +184,7 @@ function setAnimationTimeouts(
     clearTimeout(timeoutID);
     // Remove the animation class in case it's still applied and the event listener.
     element.classList.remove(animation);
-    element.removeEventListener("animationend", replayAnimation);
+    element.removeEventListener('animationend', replayAnimation);
   };
 }
 

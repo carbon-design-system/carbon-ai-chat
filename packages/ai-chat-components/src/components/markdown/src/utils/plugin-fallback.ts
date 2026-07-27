@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { html, TemplateResult } from "lit";
-import MarkdownIt, { Token } from "markdown-it";
+import { html, TemplateResult } from 'lit';
+import MarkdownIt, { Token } from 'markdown-it';
 
 import {
   getPluginOverriddenRules,
   PLUGIN_DELEGABLE_TOKEN_TYPES,
   type TokenTree,
-} from "../markdown-token-tree.js";
-import { sanitizeHtmlContent } from "./lit-directives.js";
-import type { RenderTokenTreeOptions } from "../markdown-renderer-types.js";
+} from '../markdown-token-tree.js';
+import { sanitizeHtmlContent } from './lit-directives.js';
+import type { RenderTokenTreeOptions } from '../markdown-renderer-types.js';
 
 /**
  * Slot-name prefix shared by every plugin-fallback descriptor. The element
@@ -27,73 +27,73 @@ import type { RenderTokenTreeOptions } from "../markdown-renderer-types.js";
  * @internal
  */
 export const PLUGIN_FALLBACK_SLOT_PREFIX =
-  "cds-aichat-markdown-renderer-pluginFallback";
+  'cds-aichat-markdown-renderer-pluginFallback';
 
 // Token types our hand-written renderer handles natively (no markdown-it
 // fallback needed).
 const NATIVELY_HANDLED_TOKEN_TYPES = new Set<string>([
-  "root",
-  "text",
-  "code_inline",
-  "fence",
-  "html_block",
-  "html_inline",
-  "html_container",
-  "inline",
-  "hr",
-  "thematic_break",
+  'root',
+  'text',
+  'code_inline',
+  'fence',
+  'html_block',
+  'html_inline',
+  'html_container',
+  'inline',
+  'hr',
+  'thematic_break',
 ]);
 
 // HTML tags whose paired open/close (or self-contained leaf) is rendered by
 // `renderWithStaticTag`. Anything else falls through to the markdown-it
 // renderer fallback.
 const NATIVELY_HANDLED_TAGS = new Set<string>([
-  "p",
-  "blockquote",
-  "pre",
-  "hr",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "ul",
-  "ol",
-  "li",
-  "cds-checkbox",
-  "strong",
-  "em",
-  "code",
-  "del",
-  "sub",
-  "sup",
-  "span",
-  "i",
-  "b",
-  "small",
-  "mark",
-  "ins",
-  "s",
-  "kbd",
-  "var",
-  "samp",
-  "cite",
-  "abbr",
-  "dfn",
-  "time",
-  "q",
-  "a",
-  "table",
-  "img",
+  'p',
+  'blockquote',
+  'pre',
+  'hr',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'ul',
+  'ol',
+  'li',
+  'cds-checkbox',
+  'strong',
+  'em',
+  'code',
+  'del',
+  'sub',
+  'sup',
+  'span',
+  'i',
+  'b',
+  'small',
+  'mark',
+  'ins',
+  's',
+  'kbd',
+  'var',
+  'samp',
+  'cite',
+  'abbr',
+  'dfn',
+  'time',
+  'q',
+  'a',
+  'table',
+  'img',
   // Table internals — their open/close pairs are walked into via children.
-  "thead",
-  "tbody",
-  "tr",
-  "th",
-  "td",
+  'thead',
+  'tbody',
+  'tr',
+  'th',
+  'td',
   // Task-list checkbox input element produced by markdown-it-task-lists.
-  "input",
+  'input',
 ]);
 
 /**
@@ -120,7 +120,7 @@ export function isNativelyHandled(token: Partial<Token>): boolean {
  */
 export function shouldDelegateToPluginRule(
   token: Partial<Token>,
-  md: MarkdownIt | undefined,
+  md: MarkdownIt | undefined
 ): boolean {
   if (!token.type || !md) {
     return false;
@@ -132,20 +132,20 @@ export function shouldDelegateToPluginRule(
 }
 
 function synthesizeCloseToken(openToken: Token): Token {
-  const closeType = openToken.type.replace(/_open$/, "_close");
+  const closeType = openToken.type.replace(/_open$/, '_close');
   return {
     type: closeType,
     tag: openToken.tag,
     nesting: -1,
     level: Math.max(0, openToken.level - 1),
-    content: "",
+    content: '',
     attrs: null,
     children: null,
     markup: openToken.markup,
     block: openToken.block,
     hidden: false,
     map: null,
-    info: "",
+    info: '',
     meta: null,
   } as Token;
 }
@@ -159,7 +159,7 @@ function flattenSubtree(node: TokenTree): Token[] {
   const tokens: Token[] = [];
   for (const child of node.children) {
     const t = child.token as Token;
-    if (t.type === "inline") {
+    if (t.type === 'inline') {
       tokens.push(t);
     } else if (t.nesting === 1) {
       tokens.push(t);
@@ -203,7 +203,7 @@ export function renderFallback(
   node: TokenTree,
   md: MarkdownIt,
   sanitize: boolean,
-  options: RenderTokenTreeOptions,
+  options: RenderTokenTreeOptions
 ): TemplateResult {
   let safe: string;
   if (node?.cachedHtml && node.cachedHtml.md === md) {
@@ -214,7 +214,7 @@ export function renderFallback(
     safe = sanitize ? sanitizeHtmlContent(htmlStr) : htmlStr;
     if (
       node &&
-      typeof token.type === "string" &&
+      typeof token.type === 'string' &&
       PLUGIN_DELEGABLE_TOKEN_TYPES.has(token.type)
     ) {
       node.cachedHtml = { md, html: safe };
@@ -225,7 +225,7 @@ export function renderFallback(
   const slotName = `${PLUGIN_FALLBACK_SLOT_PREFIX}-${index}`;
   options.recordCustomRender?.({
     slotName,
-    kind: "pluginFallback",
+    kind: 'pluginFallback',
     token,
     node,
     html: safe,

@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { html, LitElement, css } from "lit";
-import { customElement } from "lit/decorators.js";
-import "@carbon/web-components/es/components/dropdown/index.js";
+import { html, LitElement, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/dropdown/index.js';
 
 interface VersionOption {
   label: string;
@@ -20,17 +20,17 @@ interface VersionOption {
 }
 
 interface VersionInfo {
-  type: "tag" | "version" | "local";
+  type: 'tag' | 'version' | 'local';
   value: string;
 }
 
 /**
  * `VersionDropdown` is a custom Lit element for selecting versions.
  */
-@customElement("demo-chat-version-switcher")
+@customElement('demo-chat-version-switcher')
 export class VersionDropdown extends LitElement {
   private options: VersionOption[] = [];
-  private selectedValue = "";
+  private selectedValue = '';
 
   static styles = css`
     :host {
@@ -53,32 +53,32 @@ export class VersionDropdown extends LitElement {
     // Check if we're on a tag (latest/next/alpha)
     const tagMatch = path.match(/\/tag\/(latest|next|alpha)\//);
     if (tagMatch) {
-      return { type: "tag", value: tagMatch[1] };
+      return { type: 'tag', value: tagMatch[1] };
     }
 
     // Check if we're on a versioned path
     const versionMatch = path.match(/\/version\/(v[\d.]+(?:-rc\.\d+)?)\//);
     if (versionMatch) {
-      return { type: "version", value: versionMatch[1] };
+      return { type: 'version', value: versionMatch[1] };
     }
 
     // Check if we're on localhost (with or without port)
     const hostname = window.location.hostname;
     if (
-      hostname.endsWith(".local") ||
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "0.0.0.0"
+      hostname.endsWith('.local') ||
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0'
     ) {
-      return { type: "local", value: "local" };
+      return { type: 'local', value: 'local' };
     }
 
     // Default to latest if we can't determine
-    return { type: "tag", value: "latest" };
+    return { type: 'tag', value: 'latest' };
   }
 
   private getVersionPath(versionInfo: VersionInfo): string {
-    if (versionInfo.type === "tag") {
+    if (versionInfo.type === 'tag') {
       return `/tag/${versionInfo.value}/demo/index.html`;
     } else {
       return `/version/${versionInfo.value}/demo/index.html`;
@@ -89,33 +89,33 @@ export class VersionDropdown extends LitElement {
     const currentInfo = this.getCurrentVersionInfo();
 
     // If we're on localhost, fetch from local file
-    if (currentInfo.type === "local") {
-      return "./versions.js";
+    if (currentInfo.type === 'local') {
+      return './versions.js';
     }
 
     // For deployed sites, always fetch from the canonical location
-    return "https://chat.carbondesignsystem.com/versions.js";
+    return 'https://chat.carbondesignsystem.com/versions.js';
   }
 
   private formatOptionLabel(currentInfo: VersionInfo): string {
-    if (currentInfo.type === "tag") {
+    if (currentInfo.type === 'tag') {
       return (
         currentInfo.value.charAt(0).toUpperCase() + currentInfo.value.slice(1)
       );
     }
 
-    if (currentInfo.type === "local") {
-      return "Local";
+    if (currentInfo.type === 'local') {
+      return 'Local';
     }
 
     return currentInfo.value;
   }
 
   private createCurrentVersionOption(
-    currentInfo: VersionInfo,
+    currentInfo: VersionInfo
   ): VersionOption | null {
     switch (currentInfo.type) {
-      case "version": {
+      case 'version': {
         const href = `${window.location.origin}${this.getVersionPath(currentInfo)}`;
         return {
           label: currentInfo.value,
@@ -125,7 +125,7 @@ export class VersionDropdown extends LitElement {
         };
       }
 
-      case "tag": {
+      case 'tag': {
         const href = `${window.location.origin}${this.getVersionPath(currentInfo)}`;
         return {
           label: this.formatOptionLabel(currentInfo),
@@ -135,10 +135,10 @@ export class VersionDropdown extends LitElement {
         };
       }
 
-      case "local":
+      case 'local':
         return {
           label: this.formatOptionLabel(currentInfo),
-          value: "local",
+          value: 'local',
           href: window.location.href,
           selected: true,
         };
@@ -154,7 +154,7 @@ export class VersionDropdown extends LitElement {
       const response = await fetch(versionsPath);
 
       if (!response.ok) {
-        console.warn("Failed to fetch versions.js from", versionsPath);
+        console.warn('Failed to fetch versions.js from', versionsPath);
         return;
       }
 
@@ -162,18 +162,18 @@ export class VersionDropdown extends LitElement {
 
       // Extract the AI_CHAT_VERSIONS array from the file
       const match = text.match(
-        /export\s+const\s+AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);?/,
+        /export\s+const\s+AI_CHAT_VERSIONS\s*=\s*(\[[\s\S]*?\]);?/
       );
       if (!match) {
-        console.warn("Failed to parse versions.js");
+        console.warn('Failed to parse versions.js');
         return;
       }
 
       // Clean up array string for valid JSON
       const arrayString = match[1]
         .replace(/'/g, '"') // Replace single quotes with double quotes
-        .replace(/,\s*\]/g, "]") // remove trailing comma
-        .replace(/\s+/g, " ") // collapse whitespace/newlines
+        .replace(/,\s*\]/g, ']') // remove trailing comma
+        .replace(/\s+/g, ' ') // collapse whitespace/newlines
         .trim();
       const versions: string[] = JSON.parse(arrayString);
 
@@ -181,11 +181,11 @@ export class VersionDropdown extends LitElement {
       const currentInfo = this.getCurrentVersionInfo();
       let options: VersionOption[] = versions.map((version) => {
         const selected =
-          currentInfo.type === "version" && currentInfo.value === version;
+          currentInfo.type === 'version' && currentInfo.value === version;
         return {
           label: version,
           value: version,
-          href: `https://chat.carbondesignsystem.com${this.getVersionPath({ type: "version", value: version })}`,
+          href: `https://chat.carbondesignsystem.com${this.getVersionPath({ type: 'version', value: version })}`,
           selected,
         };
       });
@@ -198,7 +198,7 @@ export class VersionDropdown extends LitElement {
 
         if (currentOption) {
           const existingIndex = options.findIndex(
-            (opt) => opt.value === currentOption.value,
+            (opt) => opt.value === currentOption.value
           );
 
           if (existingIndex >= 0) {
@@ -215,7 +215,7 @@ export class VersionDropdown extends LitElement {
       }
 
       if (!selectedValue) {
-        selectedValue = options[0]?.value ?? "local";
+        selectedValue = options[0]?.value ?? 'local';
       }
 
       const normalizedOptions = options.map((option) => ({
@@ -227,16 +227,16 @@ export class VersionDropdown extends LitElement {
       this.selectedValue = selectedValue;
       this.requestUpdate();
     } catch (error) {
-      console.error("Error initializing version dropdown:", error);
+      console.error('Error initializing version dropdown:', error);
     }
   }
 
   private handleChange(event: CustomEvent) {
     const selectedValue = event.detail?.item?.value ?? event.detail?.value;
     const selectedOption = this.options.find(
-      (opt) => !opt.divider && opt.value === selectedValue,
+      (opt) => !opt.divider && opt.value === selectedValue
     );
-    if (selectedOption && selectedOption.href !== "#") {
+    if (selectedOption && selectedOption.href !== '#') {
       window.location.href = selectedOption.href;
     }
   }
@@ -251,14 +251,13 @@ export class VersionDropdown extends LitElement {
         title-text="Select @carbon/ai-chat version"
         helper-text="Changing will reset all other settings"
         .value=${this.selectedValue}
-        @cds-dropdown-selected=${this.handleChange}
-      >
+        @cds-dropdown-selected=${this.handleChange}>
         ${this.options.map((option) =>
           option.divider
             ? html`<cds-dropdown-item divider></cds-dropdown-item>`
             : html`<cds-dropdown-item value="${option.value}">
                 ${option.label}
-              </cds-dropdown-item>`,
+              </cds-dropdown-item>`
         )}
       </cds-dropdown>
     `;
@@ -268,6 +267,6 @@ export class VersionDropdown extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-chat-version-switcher": VersionDropdown;
+    'demo-chat-version-switcher': VersionDropdown;
   }
 }

@@ -7,16 +7,32 @@
  *  @license
  */
 
-import { LitElement, html, css } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import type { ChatInstance } from "@carbon/ai-chat";
-import { PanelType } from "@carbon/ai-chat";
-import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import Close16 from "@carbon/icons/es/close/16.js";
+/**
+ * Workspace child: SqlEditorExample.
+ *
+ * Demonstrates: the editable workspace path mounted into the
+ * `workspacePanelElement` slot when `additional_data.type === "sql_editor"`.
+ * Pairs `cds-aichat-code-snippet` (editable) with the workspace shell
+ * footer's Save/Cancel actions. Cancel calls
+ * `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`
+ *   - `cds-aichat-workspace-shell` / `cds-aichat-code-snippet`
+ *
+ * Start reading at: `handleClose` and `handleWorkspaceFooterClick`.
+ */
 
-@customElement("sql-editor-example")
+import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import type { ChatInstance } from '@carbon/ai-chat';
+import { PanelType } from '@carbon/ai-chat';
+import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
+import '@carbon/ai-chat-components/es/components/code-snippet/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+
+@customElement('sql-editor-example')
 export class SqlEditorExample extends LitElement {
   static styles = css`
     .sql-editor-container {
@@ -121,10 +137,10 @@ LIMIT 100;`;
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
+      size: 'md',
       onClick: this.handleClose.bind(this),
     },
   ];
@@ -132,26 +148,28 @@ LIMIT 100;`;
   @property({ type: Array })
   accessor footerActions: any[] = [
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "secondary",
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'secondary',
     },
     {
-      id: "save",
-      label: "Save Query",
-      kind: "primary",
+      id: 'save',
+      label: 'Save Query',
+      kind: 'primary',
     },
   ];
 
   connectedCallback() {
     super.connectedCallback();
-    console.log("SqlEditorExample rendered", {
+    // Debug wiring so payload shape from panel.open() is observable when the workspace mounts.
+    console.log('SqlEditorExample rendered', {
       workspaceId: this.workspaceId,
       additionalData: this.additionalData,
     });
   }
 
   handleClose() {
+    // Closing through customPanels fires WORKSPACE_CLOSE so the host in main.ts can clear its slot state.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
@@ -164,12 +182,14 @@ LIMIT 100;`;
   handleWorkspaceFooterClick(event: any) {
     const { id } = event.detail;
     switch (id) {
-      case "save":
-        console.log("Saving SQL query:", this.sqlContent);
-        alert("SQL query saved successfully!");
+      case 'save':
+        // Replace with a real production implementation.
+        console.log('Saving SQL query:', this.sqlContent);
+        alert('SQL query saved successfully!');
         this.hasChanges = false;
         break;
-      case "cancel":
+      case 'cancel':
+        // Cancel routes through handleClose so it goes through the customPanels API rather than detaching the slot.
         this.handleClose();
         break;
       default:
@@ -183,14 +203,12 @@ LIMIT 100;`;
         <cds-aichat-toolbar
           slot="toolbar"
           overflow
-          .actions=${this.toolbarActions}
-        >
+          .actions=${this.toolbarActions}>
           <div slot="title" data-fixed>SQL Query Editor</div>
         </cds-aichat-toolbar>
         <cds-aichat-workspace-shell-header
           title-text="Order Analytics Query"
-          subtitle-text="Edit and execute SQL queries"
-        >
+          subtitle-text="Edit and execute SQL queries">
           <div slot="header-description">
             This workspace demonstrates the code-snippet component in
             full-height mode. The editor fills the available space and provides
@@ -206,8 +224,7 @@ LIMIT 100;`;
               highlight
               max-collapsed-number-of-rows="0"
               max-expanded-number-of-rows="0"
-              @content-change=${this.handleContentChange}
-            >
+              @content-change=${this.handleContentChange}>
               ${this.sqlContent}
             </cds-aichat-code-snippet>
           </div>
@@ -217,12 +234,9 @@ LIMIT 100;`;
           .actions=${this.footerActions}
           @cds-aichat-workspace-shell-footer-clicked=${
             this.handleWorkspaceFooterClick
-          }
-        >
+          }>
         </cds-aichat-workspace-shell-footer>
       </cds-aichat-workspace-shell>
     `;
   }
 }
-
-// Made with Bob

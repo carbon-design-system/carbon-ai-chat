@@ -11,20 +11,20 @@ import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
   WorkspaceShellFooter,
-} from "@carbon/ai-chat-components/es/react/workspace-shell.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
+} from '@carbon/ai-chat-components/es/react/workspace-shell.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
 
 // Using @carbon/icons-react for all icons
-import Edit16 from "@carbon/icons-react/es/Edit.js";
-import Version16 from "@carbon/icons-react/es/Version.js";
-import Download16 from "@carbon/icons-react/es/Download.js";
-import Share16 from "@carbon/icons-react/es/Share.js";
-import Launch16 from "@carbon/icons-react/es/Launch.js";
-import Maximize16 from "@carbon/icons-react/es/Maximize.js";
-import Close16 from "@carbon/icons-react/es/Close.js";
+import Edit16 from '@carbon/icons-react/es/Edit.js';
+import Version16 from '@carbon/icons-react/es/Version.js';
+import Download16 from '@carbon/icons-react/es/Download.js';
+import Share16 from '@carbon/icons-react/es/Share.js';
+import Launch16 from '@carbon/icons-react/es/Launch.js';
+import Maximize16 from '@carbon/icons-react/es/Maximize.js';
+import Close16 from '@carbon/icons-react/es/Close.js';
 
-import React, { useState } from "react";
-import { ChatInstance, PanelType } from "@carbon/ai-chat";
+import React, { useState } from 'react';
+import { ChatInstance, PanelType } from '@carbon/ai-chat';
 import {
   AILabel,
   AILabelContent,
@@ -32,12 +32,12 @@ import {
   Button,
   InlineNotification,
   Tag,
-} from "@carbon/react";
+} from '@carbon/react';
 import {
   ExplainabilityPopoverContent,
   ExplainabilityPopoverActions,
-} from "./ExplainabilityPopoverExample";
-import "@carbon/ai-chat/css/chat-explainability-popover.css";
+} from './ExplainabilityPopoverExample';
+import '@carbon/ai-chat/css/chat-explainability-popover.css';
 
 interface WorkspaceExampleProps {
   location: string;
@@ -50,7 +50,7 @@ function WorkspaceWriteableElementExample({
   instance,
   parentStateText,
 }: WorkspaceExampleProps) {
-  const workspaceId = instance?.getState()?.workspace?.workspaceID || "unknown";
+  const workspaceId = instance?.getState()?.workspace?.workspaceID || 'unknown';
 
   const handleClose = () => {
     panel?.close();
@@ -58,38 +58,38 @@ function WorkspaceWriteableElementExample({
 
   const [toolbarActions, _setToolbarActions] = useState([
     {
-      id: "version",
-      text: "Version",
+      id: 'version',
+      text: 'Version',
       icon: Version16,
-      onClick: () => alert("Version clicked"),
+      onClick: () => alert('Version clicked'),
     },
     {
-      id: "download",
-      text: "Download",
+      id: 'download',
+      text: 'Download',
       icon: Download16,
-      onClick: () => alert("Download clicked"),
+      onClick: () => alert('Download clicked'),
     },
     {
-      id: "share",
-      text: "Share",
+      id: 'share',
+      text: 'Share',
       icon: Share16,
-      onClick: () => alert("Share clicked"),
+      onClick: () => alert('Share clicked'),
     },
     {
-      id: "launch",
-      text: "Launch",
+      id: 'launch',
+      text: 'Launch',
       icon: Launch16,
-      onClick: () => alert("Launch clicked"),
+      onClick: () => alert('Launch clicked'),
     },
     {
-      id: "maximize",
-      text: "Maximize",
+      id: 'maximize',
+      text: 'Maximize',
       icon: Maximize16,
-      onClick: () => alert("Maximize clicked"),
+      onClick: () => alert('Maximize clicked'),
     },
     {
-      id: "close",
-      text: "Close",
+      id: 'close',
+      text: 'Close',
       fixed: true,
       icon: Close16,
       onClick: handleClose,
@@ -98,22 +98,22 @@ function WorkspaceWriteableElementExample({
 
   const [footerActions, _setFooterActions] = useState([
     {
-      id: "evaluate",
-      label: "Evaluate plan",
-      kind: "secondary",
-      payload: { test: "value" },
+      id: 'evaluate',
+      label: 'Evaluate plan',
+      kind: 'secondary',
+      payload: { test: 'value' },
     },
     {
-      id: "run",
-      label: "Run plan",
-      kind: "primary",
-      payload: { test: "value" },
+      id: 'run',
+      label: 'Run plan',
+      kind: 'primary',
+      payload: { test: 'value' },
     },
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "ghost",
-      payload: { test: "value" },
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'ghost',
+      payload: { test: 'value' },
     },
   ]);
 
@@ -122,17 +122,17 @@ function WorkspaceWriteableElementExample({
   const handleWorkspaceFooterClick = (event: any) => {
     const { id, kind, label, payload } = event.detail;
     switch (id) {
-      case "evaluate":
+      case 'evaluate':
         alert(
-          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Evaluate plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "run":
+      case 'run':
         alert(
-          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`,
+          `Run plan clicked. Kind: ${kind}, Label: ${label}, Payload: ${JSON.stringify(payload)}`
         );
         break;
-      case "cancel":
+      case 'cancel':
         handleClose();
         break;
       default:
@@ -146,8 +146,7 @@ function WorkspaceWriteableElementExample({
         slot="toolbar"
         actions={toolbarActions}
         overflow
-        titleText="Optimizing excess inventory"
-      >
+        titleText="Optimizing excess inventory">
         <div slot="decorator">
           <AILabel autoAlign={false} size="2xs" align="bottom">
             <AILabelContent>
@@ -168,8 +167,7 @@ function WorkspaceWriteableElementExample({
       />
       <WorkspaceShellHeader
         titleText={`Optimizing excess inventory plan (ID: ${workspaceId.substring(0, 8)}...)`}
-        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}
-      >
+        subTitleText={`Created on: ${new Date().toLocaleDateString()}`}>
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
@@ -195,8 +193,7 @@ function WorkspaceWriteableElementExample({
       </WorkspaceShellBody>
       <WorkspaceShellFooter
         onFooterClicked={handleWorkspaceFooterClick}
-        actions={footerActions}
-      ></WorkspaceShellFooter>
+        actions={footerActions}></WorkspaceShellFooter>
     </WorkspaceShell>
   );
 }

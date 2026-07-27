@@ -17,14 +17,14 @@
  * Created by: the `renderCustomMessageFooter` callback in `./main.ts`.
  */
 
-import { GenericItem } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Copy16 from "@carbon/icons/es/copy/16.js";
+import { GenericItem } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Copy16 from '@carbon/icons/es/copy/16.js';
 
-@customElement("custom-footer-example")
+@customElement('custom-footer-example')
 class CustomFooterExample extends LitElement {
   static styles = css`
     .custom-footer-actions {
@@ -44,8 +44,8 @@ class CustomFooterExample extends LitElement {
 
   private handleCopy = () => {
     if (
-      "text" in this.messageItem &&
-      typeof this.messageItem.text === "string"
+      'text' in this.messageItem &&
+      typeof this.messageItem.text === 'string'
     ) {
       navigator.clipboard.writeText(this.messageItem.text);
     }
@@ -63,8 +63,7 @@ class CustomFooterExample extends LitElement {
           align="top-left"
           kind="ghost"
           size="sm"
-          @click=${this.handleCopy}
-        >
+          @click=${this.handleCopy}>
           <span slot="icon">${iconLoader(Copy16)}</span>
           <span slot="tooltip-content">Copy</span>
         </cds-icon-button>

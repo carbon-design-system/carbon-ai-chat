@@ -7,17 +7,36 @@
  *  @license
  */
 
-import "./WorkspaceWriteableElementExample.css";
-import React, { useState } from "react";
-import { ChatInstance, PanelType } from "@carbon/ai-chat";
+/**
+ * Workspace component for the workspace-sidebar example (sql_editor).
+ *
+ * Demonstrates: rendering inside the `workspacePanelElement` WriteableElement
+ * slot with an editable `CodeSnippet` filling the available height. Receives
+ * `workspaceId` and `additionalData` props from the originating message and
+ * calls `instance.customPanels.getPanel(PanelType.WORKSPACE).close()` from
+ * Close / Cancel actions to dismiss the panel.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.customPanels.getPanel`
+ *   - `PanelType.WORKSPACE`
+ *   - `WorkspaceShell` / `WorkspaceShellHeader` / `WorkspaceShellBody` / `WorkspaceShellFooter`
+ *   - `Toolbar`
+ *   - `CodeSnippet`
+ *
+ * Start reading at: `SqlEditorExample`.
+ */
+
+import './WorkspaceWriteableElementExample.css';
+import React, { useState } from 'react';
+import { ChatInstance, PanelType } from '@carbon/ai-chat';
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
   WorkspaceShellFooter,
-} from "@carbon/ai-chat-components/es/react/workspace-shell.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
-import Close16 from "@carbon/icons-react/es/Close.js";
+} from '@carbon/ai-chat-components/es/react/workspace-shell.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
+import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
+import Close16 from '@carbon/icons-react/es/Close.js';
 
 interface SqlEditorExampleProps {
   instance?: ChatInstance;
@@ -25,6 +44,7 @@ interface SqlEditorExampleProps {
   additionalData?: any;
 }
 
+// Replace with a real production implementation.
 const SQL_CONTENT = `-- Order Analytics Report
 -- Analyzes purchasing patterns and outstanding orders
 
@@ -108,6 +128,7 @@ export function SqlEditorExample({
   const [_hasChanges, setHasChanges] = useState(false);
 
   const handleClose = () => {
+    // customPanels.getPanel(PanelType.WORKSPACE): resolved on demand here because the close handler is the only consumer.
     const panel = instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   };
@@ -120,12 +141,12 @@ export function SqlEditorExample({
   const handleWorkspaceFooterClick = (event: any) => {
     const { id } = event.detail;
     switch (id) {
-      case "save":
-        console.log("Saving SQL query:", sqlContent);
-        alert("SQL query saved successfully!");
+      case 'save':
+        console.log('Saving SQL query:', sqlContent);
+        alert('SQL query saved successfully!');
         setHasChanges(false);
         break;
-      case "cancel":
+      case 'cancel':
         handleClose();
         break;
       default:
@@ -135,29 +156,29 @@ export function SqlEditorExample({
 
   const toolbarActions = [
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md" as const,
+      size: 'md' as const,
       onClick: handleClose,
     },
   ];
 
   const footerActions = [
     {
-      id: "cancel",
-      label: "Cancel",
-      kind: "secondary" as const,
+      id: 'cancel',
+      label: 'Cancel',
+      kind: 'secondary' as const,
     },
     {
-      id: "save",
-      label: "Save Query",
-      kind: "primary" as const,
+      id: 'save',
+      label: 'Save Query',
+      kind: 'primary' as const,
     },
   ];
 
   React.useEffect(() => {
-    console.log("SqlEditorExample rendered", {
+    console.log('SqlEditorExample rendered', {
       workspaceId,
       additionalData,
     });
@@ -172,8 +193,7 @@ export function SqlEditorExample({
       </Toolbar>
       <WorkspaceShellHeader
         titleText="Order Analytics Query"
-        subtitleText="Edit and execute SQL queries"
-      >
+        subtitleText="Edit and execute SQL queries">
         <div slot="header-description">
           This workspace demonstrates the code-snippet component in full-height
           mode. The editor fills the available space and provides a scrollbar
@@ -190,8 +210,7 @@ export function SqlEditorExample({
             maxCollapsedNumberOfRows={0}
             maxExpandedNumberOfRows={0}
             onContentChange={handleContentChange}
-            className="sql-editor-snippet"
-          >
+            className="sql-editor-snippet">
             {sqlContent}
           </CodeSnippet>
         </div>
@@ -214,5 +233,3 @@ export function SqlEditorExample({
     </WorkspaceShell>
   );
 }
-
-// Made with Bob

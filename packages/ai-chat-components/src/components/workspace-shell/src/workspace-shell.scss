@@ -7,16 +7,16 @@
  *  @license
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/utilities/convert" as *;
-@use "@carbon/styles/scss/breakpoint" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/utilities/convert' as *;
+@use '@carbon/styles/scss/breakpoint' as *;
 
 /* Workspace shell styles */
 :host(#{$prefix}-workspace-shell) {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   display: flex;
   overflow: auto;
@@ -34,35 +34,35 @@
   inline-size: 100%;
 
   // Prevent toolbar from shrinking - it should maintain its natural height
-  slot[name="toolbar"] {
+  slot[name='toolbar'] {
     flex-shrink: 0;
     min-inline-size: 0;
   }
 
   // Prevent notification from shrinking - it should maintain its natural height
-  slot[name="notification"] {
+  slot[name='notification'] {
     flex-shrink: 0;
   }
 
-  ::slotted([slot="notification"]) {
+  ::slotted([slot='notification']) {
     box-sizing: border-box;
     /* stylelint-disable-next-line declaration-no-important */
     max-inline-size: 100% !important;
   }
 
   // Prevent header from shrinking - it should maintain its natural height
-  slot[name="header"] {
+  slot[name='header'] {
     flex-shrink: 0;
   }
 
   // Make body slot grow to fill available space and become scrollable when content is large
-  slot[name="body"] {
+  slot[name='body'] {
     flex: 1 1 auto;
     min-block-size: 0;
   }
 
   // Prevent footer from shrinking - it should maintain its natural height
-  slot[name="footer"] {
+  slot[name='footer'] {
     flex-shrink: 0;
   }
 }

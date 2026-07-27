@@ -25,21 +25,21 @@
  * Start reading at: the `config` constant and `render()` below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import {
   type ChatInstance,
   type PublicConfig,
   type RenderCustomMessageFooterState,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 
 // Side-effect import registers <custom-footer-example>; the type import only
 // types the element we create in the render callback below.
-import "./custom-footer-example";
-import type CustomFooterExample from "./custom-footer-example";
-import { customSendMessage } from "./customSendMessage";
+import './custom-footer-example';
+import type CustomFooterExample from './custom-footer-example';
+import { customSendMessage } from './customSendMessage';
 
 const config: PublicConfig = {
   messaging: {
@@ -52,7 +52,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -66,10 +66,10 @@ export class Demo extends LitElement {
   // the library tracks the slot and manages the element's lifecycle.
   renderCustomMessageFooter = (
     state: RenderCustomMessageFooterState,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ): HTMLElement | null => {
     const footer = document.createElement(
-      "custom-footer-example",
+      'custom-footer-example'
     ) as CustomFooterExample;
     footer.messageItem = state.messageItem;
     footer.additionalData = state.additionalData;
@@ -83,8 +83,7 @@ export class Demo extends LitElement {
         .layout=${config.layout}
         .openChatByDefault=${config.openChatByDefault}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
-        class="chat-custom-element"
-      ></cds-aichat-custom-element>
+        class="chat-custom-element"></cds-aichat-custom-element>
     `;
   }
 }

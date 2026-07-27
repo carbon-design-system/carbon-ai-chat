@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,7 +11,7 @@ import {
   ChatInstance,
   MessageResponseTypes,
   WidthOptions,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 function doGrid(instance: ChatInstance) {
   instance.messaging.addMessage({
@@ -19,11 +19,11 @@ function doGrid(instance: ChatInstance) {
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "You can use the grid response type to do more complicated layouts of content on a grid. Be sure to take note of user_defined response types as your layout gets more complex.",
+          text: 'You can use the grid response type to do more complicated layouts of content on a grid. Be sure to take note of user_defined response types as your layout gets more complex.',
         },
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "#### Grid alignment example with max_width: WidthOptions.SMALL",
+          text: '#### Grid alignment example with max_width: WidthOptions.SMALL',
         },
         {
           max_width: WidthOptions.SMALL,
@@ -34,7 +34,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "**top**\ncenter\nbottom",
+                      text: '**top**\ncenter\nbottom',
                     },
                   ],
                 },
@@ -42,7 +42,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "left",
+                      text: 'left',
                     },
                   ],
                 },
@@ -50,60 +50,19 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "center",
+                      text: 'center',
                     },
                   ],
-                  horizontal_alignment: "center",
+                  horizontal_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "right",
+                      text: 'right',
                     },
                   ],
-                  horizontal_alignment: "right",
-                },
-              ],
-            },
-            {
-              cells: [
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "top\n**center**\nbottom",
-                    },
-                  ],
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "left",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "center",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                  horizontal_alignment: "center",
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "right",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                  horizontal_alignment: "right",
+                  horizontal_alignment: 'right',
                 },
               ],
             },
@@ -113,7 +72,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "top\ncenter\n**bottom**",
+                      text: 'top\n**center**\nbottom',
                     },
                   ],
                 },
@@ -121,53 +80,94 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "left",
+                      text: 'left',
                     },
                   ],
-                  vertical_alignment: "bottom",
+                  vertical_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "center",
+                      text: 'center',
                     },
                   ],
-                  vertical_alignment: "bottom",
-                  horizontal_alignment: "center",
+                  vertical_alignment: 'center',
+                  horizontal_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "right",
+                      text: 'right',
                     },
                   ],
-                  vertical_alignment: "bottom",
-                  horizontal_alignment: "right",
+                  vertical_alignment: 'center',
+                  horizontal_alignment: 'right',
+                },
+              ],
+            },
+            {
+              cells: [
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'top\ncenter\n**bottom**',
+                    },
+                  ],
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'left',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'center',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                  horizontal_alignment: 'center',
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'right',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                  horizontal_alignment: 'right',
                 },
               ],
             },
           ],
           columns: [
             {
-              width: "50px",
+              width: '50px',
             },
             {
-              width: "1",
+              width: '1',
             },
             {
-              width: "1",
+              width: '1',
             },
             {
-              width: "1",
+              width: '1',
             },
           ],
           response_type: MessageResponseTypes.GRID,
         },
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "#### Grid alignment example with max_width: WidthOptions.MEDIUM",
+          text: '#### Grid alignment example with max_width: WidthOptions.MEDIUM',
         },
         {
           max_width: WidthOptions.MEDIUM,
@@ -178,7 +178,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "**top**\ncenter\nbottom",
+                      text: '**top**\ncenter\nbottom',
                     },
                   ],
                 },
@@ -186,7 +186,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "left",
+                      text: 'left',
                     },
                   ],
                 },
@@ -194,60 +194,19 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "center",
+                      text: 'center',
                     },
                   ],
-                  horizontal_alignment: "center",
+                  horizontal_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "right",
+                      text: 'right',
                     },
                   ],
-                  horizontal_alignment: "right",
-                },
-              ],
-            },
-            {
-              cells: [
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "top\n**center**\nbottom",
-                    },
-                  ],
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "left",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "center",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                  horizontal_alignment: "center",
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "right",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                  horizontal_alignment: "right",
+                  horizontal_alignment: 'right',
                 },
               ],
             },
@@ -257,7 +216,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "top\ncenter\n**bottom**",
+                      text: 'top\n**center**\nbottom',
                     },
                   ],
                 },
@@ -265,53 +224,94 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "left",
+                      text: 'left',
                     },
                   ],
-                  vertical_alignment: "bottom",
+                  vertical_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "center",
+                      text: 'center',
                     },
                   ],
-                  vertical_alignment: "bottom",
-                  horizontal_alignment: "center",
+                  vertical_alignment: 'center',
+                  horizontal_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "right",
+                      text: 'right',
                     },
                   ],
-                  vertical_alignment: "bottom",
-                  horizontal_alignment: "right",
+                  vertical_alignment: 'center',
+                  horizontal_alignment: 'right',
+                },
+              ],
+            },
+            {
+              cells: [
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'top\ncenter\n**bottom**',
+                    },
+                  ],
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'left',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'center',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                  horizontal_alignment: 'center',
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'right',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                  horizontal_alignment: 'right',
                 },
               ],
             },
           ],
           columns: [
             {
-              width: "50px",
+              width: '50px',
             },
             {
-              width: "1",
+              width: '1',
             },
             {
-              width: "1",
+              width: '1',
             },
             {
-              width: "1",
+              width: '1',
             },
           ],
           response_type: MessageResponseTypes.GRID,
         },
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "#### Grid alignment example with max_width: WidthOptions.LARGE",
+          text: '#### Grid alignment example with max_width: WidthOptions.LARGE',
         },
         {
           max_width: WidthOptions.LARGE,
@@ -322,7 +322,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "**top**\ncenter\nbottom",
+                      text: '**top**\ncenter\nbottom',
                     },
                   ],
                 },
@@ -330,7 +330,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "left",
+                      text: 'left',
                     },
                   ],
                 },
@@ -338,60 +338,19 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "center",
+                      text: 'center',
                     },
                   ],
-                  horizontal_alignment: "center",
+                  horizontal_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "right",
+                      text: 'right',
                     },
                   ],
-                  horizontal_alignment: "right",
-                },
-              ],
-            },
-            {
-              cells: [
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "top\n**center**\nbottom",
-                    },
-                  ],
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "left",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "center",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                  horizontal_alignment: "center",
-                },
-                {
-                  items: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: "right",
-                    },
-                  ],
-                  vertical_alignment: "center",
-                  horizontal_alignment: "right",
+                  horizontal_alignment: 'right',
                 },
               ],
             },
@@ -401,7 +360,7 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "top\ncenter\n**bottom**",
+                      text: 'top\n**center**\nbottom',
                     },
                   ],
                 },
@@ -409,53 +368,94 @@ function doGrid(instance: ChatInstance) {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "left",
+                      text: 'left',
                     },
                   ],
-                  vertical_alignment: "bottom",
+                  vertical_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "center",
+                      text: 'center',
                     },
                   ],
-                  vertical_alignment: "bottom",
-                  horizontal_alignment: "center",
+                  vertical_alignment: 'center',
+                  horizontal_alignment: 'center',
                 },
                 {
                   items: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "right",
+                      text: 'right',
                     },
                   ],
-                  vertical_alignment: "bottom",
-                  horizontal_alignment: "right",
+                  vertical_alignment: 'center',
+                  horizontal_alignment: 'right',
+                },
+              ],
+            },
+            {
+              cells: [
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'top\ncenter\n**bottom**',
+                    },
+                  ],
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'left',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'center',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                  horizontal_alignment: 'center',
+                },
+                {
+                  items: [
+                    {
+                      response_type: MessageResponseTypes.TEXT,
+                      text: 'right',
+                    },
+                  ],
+                  vertical_alignment: 'bottom',
+                  horizontal_alignment: 'right',
                 },
               ],
             },
           ],
           columns: [
             {
-              width: "50px",
+              width: '50px',
             },
             {
-              width: "1",
+              width: '1',
             },
             {
-              width: "1",
+              width: '1',
             },
             {
-              width: "1",
+              width: '1',
             },
           ],
           response_type: MessageResponseTypes.GRID,
         },
         {
           response_type: MessageResponseTypes.TEXT,
-          text: "#### Using the grid to control the width of a single response type (Video set to SMALL here)",
+          text: '#### Using the grid to control the width of a single response type (Video set to SMALL here)',
         },
         {
           max_width: WidthOptions.SMALL,
@@ -465,7 +465,7 @@ function doGrid(instance: ChatInstance) {
                 {
                   items: [
                     {
-                      source: "https://vimeo.com/118761396",
+                      source: 'https://vimeo.com/118761396',
                       response_type: MessageResponseTypes.VIDEO,
                       dimensions: {
                         base_height: 126,
@@ -478,7 +478,7 @@ function doGrid(instance: ChatInstance) {
           ],
           columns: [
             {
-              width: "1",
+              width: '1',
             },
           ],
           response_type: MessageResponseTypes.GRID,

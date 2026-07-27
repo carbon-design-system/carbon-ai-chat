@@ -21,25 +21,25 @@
 
 ## APIs and props demonstrated
 
-| Symbol                               | Kind                          | Role in this example                                                        |
-| ------------------------------------ | ----------------------------- | --------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`        | custom element                | Hosts the chat UI at the size of its CSS box.                               |
-| `.markdown`                          | property (`attribute: false`) | Carries the `customRenderers` object to the chat's renderer.                |
-| `WCMarkdown`                         | `@carbon/ai-chat` type        | Shape of the value bound to `.markdown`.                                    |
-| `WCCustomMarkdownRenderers`          | `@carbon/ai-chat` type        | Shape of `markdown.customRenderers`.                                        |
-| `markdown.customRenderers.codeBlock` | config field                  | Replaces the default fenced-code renderer (returns an `HTMLElement`).       |
-| `markdown.customRenderers.table`     | config field                  | Replaces the default table renderer with a Carbon `cds-table`.              |
-| `markdown.customRenderers.link`      | config field                  | Returns attribute overrides (`href`, `target`, `rel`) for anchors.          |
-| `markdown.customRenderers.image`     | config field                  | Returns attribute overrides (`src`, `style`, `onclick`) for images.         |
-| `markdown.customRenderers.checklist` | config field                  | `onToggle` + `getChecked` to persist and react to task-list state.          |
-| `MarkdownRendererCodeBlockArgs`      | `@carbon/ai-chat` type        | Argument shape for the codeBlock callback (`language`, `code`, `slotName`). |
-| `MarkdownRendererTableArgs`          | `@carbon/ai-chat` type        | Argument shape for the table callback (`headers`, `rows`, `slotName`, …).   |
-| `MarkdownRendererLinkArgs`           | `@carbon/ai-chat` type        | Argument shape for the link callback (`href`, `title`, `text`, …).          |
-| `MarkdownRendererImageArgs`          | `@carbon/ai-chat` type        | Argument shape for the image callback (`src`, `alt`, `title`, …).           |
-| `<cds-aichat-card>` (`is-flush`)     | custom element                | Wraps the snippet to match the default Carbon shell.                        |
-| `<cds-aichat-code-snippet>`          | custom element                | Renders the code; receives `detectLanguage`, `language`, `highlight`.       |
-| `<cds-table>` and friends            | `@carbon/web-components`      | The data table the `table` override renders with Lit.                       |
-| `messaging.customSendMessage`        | property                      | Mock backend that emits a reply exercising every hook.                      |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI at the size of its CSS box. |
+| `.markdown` | property (`attribute: false`) | Carries the `customRenderers` object to the chat's renderer. |
+| `WCMarkdown` | `@carbon/ai-chat` type | Shape of the value bound to `.markdown`. |
+| `WCCustomMarkdownRenderers` | `@carbon/ai-chat` type | Shape of `markdown.customRenderers`. |
+| `markdown.customRenderers.codeBlock` | config field | Replaces the default fenced-code renderer (returns an `HTMLElement`). |
+| `markdown.customRenderers.table` | config field | Replaces the default table renderer with a Carbon `cds-table`. |
+| `markdown.customRenderers.link` | config field | Returns attribute overrides (`href`, `target`, `rel`) for anchors. |
+| `markdown.customRenderers.image` | config field | Returns attribute overrides (`src`, `style`, `onclick`) for images. |
+| `markdown.customRenderers.checklist` | config field | `onToggle` + `getChecked` to persist and react to task-list state. |
+| `MarkdownRendererCodeBlockArgs` | `@carbon/ai-chat` type | Argument shape for the codeBlock callback (`language`, `code`, `slotName`). |
+| `MarkdownRendererTableArgs` | `@carbon/ai-chat` type | Argument shape for the table callback (`headers`, `rows`, `slotName`, …). |
+| `MarkdownRendererLinkArgs` | `@carbon/ai-chat` type | Argument shape for the link callback (`href`, `title`, `text`, …). |
+| `MarkdownRendererImageArgs` | `@carbon/ai-chat` type | Argument shape for the image callback (`src`, `alt`, `title`, …). |
+| `<cds-aichat-card>` (`is-flush`) | custom element | Wraps the snippet to match the default Carbon shell. |
+| `<cds-aichat-code-snippet>` | custom element | Renders the code; receives `detectLanguage`, `language`, `highlight`. |
+| `<cds-table>` and friends | `@carbon/web-components` | The data table the `table` override renders with Lit. |
+| `messaging.customSendMessage` | property | Mock backend that emits a reply exercising every hook. |
 
 ## Run it
 

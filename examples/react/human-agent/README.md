@@ -1,6 +1,6 @@
-# Human Agent
+# Human agent
 
-`ChatContainer` wired to a mock service desk via `serviceDeskFactory`, demonstrating how to hand off to a live agent while keeping the factory stable across re-renders.
+`ChatCustomElement` wired to a mock service desk via `serviceDeskFactory`, demonstrating how to hand off to a live agent while keeping the factory stable across re-renders.
 
 ## What this example shows
 
@@ -16,17 +16,17 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                                                  | Package / kind              | Role in this example                                        |
-| ----------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------- |
-| `ChatContainer`                                                         | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
-| `PublicConfig`                                                          | `@carbon/ai-chat` type      | Types the config.                                           |
-| `ServiceDesk`                                                           | `@carbon/ai-chat` interface | Contract implemented by `MockServiceDesk`.                  |
-| `ServiceDeskFactoryParameters`                                          | `@carbon/ai-chat` type      | Parameters passed to the factory.                           |
-| `ServiceDeskCallback`                                                   | `@carbon/ai-chat` type      | Used by `MockServiceDesk` to send updates back to the chat. |
-| `ChatInstance`                                                          | `@carbon/ai-chat` type      | Used by the mock service desk.                              |
-| `MessageResponseTypes` / `UserType` / `ErrorType` / `AgentAvailability` | `@carbon/ai-chat` enums     | Used inside the mock service desk.                          |
-| `messaging.customSendMessage`                                           | config prop                 | Mock backend.                                               |
-| `serviceDeskFactory`                                                    | config prop                 | Returns a live-agent service desk instance.                 |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config. |
+| `ServiceDesk` | `@carbon/ai-chat` interface | Contract implemented by `MockServiceDesk`. |
+| `ServiceDeskFactoryParameters` | `@carbon/ai-chat` type | Parameters passed to the factory. |
+| `ServiceDeskCallback` | `@carbon/ai-chat` type | Used by `MockServiceDesk` to send updates back to the chat. |
+| `ChatInstance` | `@carbon/ai-chat` type | Used by the mock service desk. |
+| `MessageResponseTypes` / `UserType` / `ErrorType` / `AgentAvailability` | `@carbon/ai-chat` enums | Used inside the mock service desk. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `serviceDeskFactory` | config prop | Returns a live-agent service desk instance. |
 
 ## Run it
 

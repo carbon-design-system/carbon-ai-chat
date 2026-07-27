@@ -10,7 +10,7 @@
 import {
   ConversationalSearchItemCitation,
   SearchResult,
-} from "../../messaging/Messages";
+} from '../../messaging/Messages';
 
 /**
  * The state of the conversational search citation panel.

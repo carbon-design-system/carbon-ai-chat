@@ -7,24 +7,24 @@
  *  @license
  */
 
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-import ChevronUp16 from "@carbon/icons/es/chevron--up/16.js";
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
+import ChevronUp16 from '@carbon/icons/es/chevron--up/16.js';
 
-import React, { KeyboardEvent, useEffect, useState } from "react";
+import React, { KeyboardEvent, useEffect, useState } from 'react';
 
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
   ConversationalSearchItem,
   ConversationalSearchItemCitation,
-} from "../../../../types/messaging/Messages";
-import { AppState } from "../../../../types/state/AppState";
-import { MarkdownWithDefaults } from "../../../components/util/MarkdownWithDefaults";
-import { useCounter } from "../../../hooks/useCounter";
-import { useSelector } from "../../../hooks/useSelector";
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import { shallowEqual } from "../../../store/appStore";
-import OperationalTag from "../../../components/carbon/OperationalTag";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
+} from '../../../../types/messaging/Messages';
+import { AppState } from '../../../../types/state/AppState';
+import { MarkdownWithDefaults } from '../../../components/util/MarkdownWithDefaults';
+import { useCounter } from '../../../hooks/useCounter';
+import { useSelector } from '../../../hooks/useSelector';
+import { useServiceManager } from '../../../hooks/useServiceManager';
+import { shallowEqual } from '../../../store/appStore';
+import OperationalTag from '../../../components/carbon/OperationalTag';
+import { carbonIconToReact } from '../../../utils/carbonIcon';
 
 const ChevronDown = carbonIconToReact(ChevronDown16);
 const ChevronUp = carbonIconToReact(ChevronUp16);
@@ -79,18 +79,18 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
       conversationalSearch_toggleCitations:
         state.languagePack.conversationalSearch_toggleCitations,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const serviceManager = useServiceManager();
   const { streamingState } = searchItem.ui_state;
   const toggleID = `cds-aichat--conversational-search-text-${useCounter()}${
     serviceManager.namespace.suffix
   }`;
-  const [html, setHtml] = useState("");
+  const [html, setHtml] = useState('');
 
   let text: string;
   if (streamingState && !streamingState.isDone) {
-    text = streamingState.chunks.map((chunk) => chunk.text).join("");
+    text = streamingState.chunks.map((chunk) => chunk.text).join('');
   } else {
     text = searchItem.item.text;
   }
@@ -101,7 +101,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
   }, [text, highlightCitation, showCitationsToggle, streamingState]);
 
   const onKeyDownHandler = (evt: KeyboardEvent) => {
-    if (evt.key === "Enter" || evt.key === " ") {
+    if (evt.key === 'Enter' || evt.key === ' ') {
       onToggleCitations();
     }
   };
@@ -123,8 +123,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
               onKeyDown={onKeyDownHandler}
               aria-expanded={citationsOpen}
               text={languagePack.conversationalSearch_citationsLabel}
-              aria-label={languagePack.conversationalSearch_toggleCitations}
-            >
+              aria-label={languagePack.conversationalSearch_toggleCitations}>
               <span slot="icon">
                 {citationsOpen ? <ChevronUp /> : <ChevronDown />}
               </span>
@@ -145,7 +144,7 @@ function ConversationalSearchText(props: ConversationalSearchTextProps) {
  */
 function insertHighlightMarkdown(
   text: string,
-  highlightCitation: ConversationalSearchItemCitation,
+  highlightCitation: ConversationalSearchItemCitation
 ): string {
   const ranges = highlightCitation?.ranges;
 
@@ -167,7 +166,7 @@ function insertHighlightMarkdown(
     // Only highlight non-empty text that contains non-whitespace characters
     if (highlight.trim()) {
       processedText =
-        beforeHighlight + "==" + highlight + "==" + afterHighlight;
+        beforeHighlight + '==' + highlight + '==' + afterHighlight;
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { useMemo } from "react";
-import { isBrowser } from "../utils/browserUtils";
-import type { PublicConfig } from "../../types/config/PublicConfig";
-import type { PersistedState } from "../../types/state/AppState";
+import { useMemo } from 'react';
+import { isBrowser } from '../utils/browserUtils';
+import type { PublicConfig } from '../../types/config/PublicConfig';
+import type { PersistedState } from '../../types/state/AppState';
 
 interface UseDerivedStateProps {
   publicConfig: PublicConfig;
@@ -40,7 +40,7 @@ export function useDerivedState({
   viewStateMainWindow,
 }: UseDerivedStateProps): DerivedState {
   return useMemo(() => {
-    const hostname = isBrowser() ? window.location.hostname : "localhost";
+    const hostname = isBrowser() ? window.location.hostname : 'localhost';
     const showDisclaimer =
       publicConfig.disclaimer?.isOn &&
       !persistedToBrowserStorage.disclaimersAccepted[hostname];
@@ -76,5 +76,3 @@ export function useDerivedState({
     viewStateMainWindow,
   ]);
 }
-
-// Made with Bob

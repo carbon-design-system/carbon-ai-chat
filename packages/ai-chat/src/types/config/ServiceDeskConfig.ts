@@ -7,61 +7,42 @@
  *  @license
  */
 
-import { DeepPartial } from "../utilities/DeepPartial";
+import { DeepPartial } from '../utilities/DeepPartial';
 
 import {
   ResponseUserProfile,
   MessageRequest,
   MessageResponse,
-} from "../messaging/Messages";
-import type {
-  ChatInstance,
-  FileUploadCapabilities,
-} from "../instance/ChatInstance";
+} from '../messaging/Messages';
+import type { ChatInstance } from '../instance/ChatInstance';
+import type { FileUploadCapabilities } from '../instance/FileUploadCapabilities';
+
+// Canonical declarations live in @carbon/ai-chat-components; local
+// re-declarations here own the consumer-facing JSDoc + `@category` so
+// TypeDoc reads them at the local site. See [../AGENTS.md](../AGENTS.md)
+// for the cross-package re-export rule.
+import {
+  FileStatusValue as _FileStatusValue,
+  type FileUpload as _FileUpload,
+} from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
 
 /**
- * Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
+ * Lifecycle status for a {@link FileUpload}. Values:
+ * `EDIT` (selected but not yet sent), `UPLOADING` (transfer in progress),
+ * `COMPLETE` (processing finished), `SUCCESS` (upload finished cleanly).
  *
  * @category Service desk
  */
-export enum FileStatusValue {
-  COMPLETE = "complete",
-  EDIT = "edit",
-  UPLOADING = "uploading",
-  SUCCESS = "success",
-}
+export const FileStatusValue = _FileStatusValue;
+export type FileStatusValue = _FileStatusValue;
 
 /**
- * An interface that represents a file to upload and its current upload status.
+ * Represents a file the user has selected for upload, including its current
+ * {@link FileStatusValue} and any error metadata.
  *
  * @category Service desk
  */
-export interface FileUpload {
-  /**
-   * A unique ID for the file.
-   */
-  id: string;
-
-  /**
-   * The file to upload.
-   */
-  file: File;
-
-  /**
-   * The current upload status.
-   */
-  status: FileStatusValue;
-
-  /**
-   * Indicates if the file contains an error or failed to upload.
-   */
-  isError?: boolean;
-
-  /**
-   * If the file failed to upload, this is an optional error message to display.
-   */
-  errorMessage?: string;
-}
+export type FileUpload = _FileUpload;
 
 /**
  * The section of the public config that contains configuration options for service desk integrations.
@@ -106,18 +87,18 @@ export enum HumanAgentsOnlineStatus {
   /**
    * Indicates that agents are online.
    */
-  ONLINE = "online",
+  ONLINE = 'online',
 
   /**
    * Indicates that no agents are online.
    */
-  OFFLINE = "offline",
+  OFFLINE = 'offline',
 
   /**
    * Indicates that it is unknown whether any agents are available. This may be because the service desk being used
    * doesn't support the ability to determine this information.
    */
-  UNKNOWN = "unknown",
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -201,7 +182,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    */
   sendMessageToUser(
     message: MessageResponse | string,
-    agentID?: string,
+    agentID?: string
   ): Promise<void>;
 
   /**
@@ -250,7 +231,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
   setFileUploadStatus(
     fileID: string,
     isError?: boolean,
-    errorMessage?: string,
+    errorMessage?: string
   ): Promise<void>;
 
   /**
@@ -291,7 +272,7 @@ export interface ServiceDeskCallback<TPersistedStateType = unknown> {
    */
   updatePersistedState(
     state: DeepPartial<TPersistedStateType>,
-    mergeWithCurrent?: boolean,
+    mergeWithCurrent?: boolean
   ): void;
 }
 
@@ -311,22 +292,22 @@ export enum ScreenShareState {
   /**
    * Indicates the screen sharing was accepted by the user.
    */
-  ACCEPTED = "accepted",
+  ACCEPTED = 'accepted',
 
   /**
    * Indicates the screen sharing was declined by the user.
    */
-  DECLINED = "declined",
+  DECLINED = 'declined',
 
   /**
    * Indicates the screen sharing request was cancelled.
    */
-  CANCELLED = "cancelled",
+  CANCELLED = 'cancelled',
 
   /**
    * Indicates that screen sharing has ended.
    */
-  ENDED = "ended",
+  ENDED = 'ended',
 }
 
 /**
@@ -549,7 +530,7 @@ export interface ServiceDesk {
    */
   startChat: (
     connectMessage: MessageResponse,
-    startChatOptions: StartChatOptions,
+    startChatOptions: StartChatOptions
   ) => Promise<void>;
 
   /**
@@ -572,7 +553,7 @@ export interface ServiceDesk {
   sendMessageToAgent: (
     message: MessageRequest,
     messageID: string,
-    additionalData: AdditionalDataToAgent,
+    additionalData: AdditionalDataToAgent
   ) => Promise<void>;
 
   /**
@@ -603,7 +584,7 @@ export interface ServiceDesk {
    * means the availability status of agents is unknown or the service desk doesn't support this information.
    */
   areAnyAgentsOnline?: (
-    connectMessage: MessageResponse,
+    connectMessage: MessageResponse
   ) => Promise<boolean | null>;
 
   /**

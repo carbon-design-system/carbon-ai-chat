@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,8 +11,7 @@
  * A set of utilities for manipulating colors.
  */
 
-import { consoleError } from "./miscUtils";
-import { normalizeModuleInterop } from "./moduleInterop";
+import { consoleError } from './miscUtils';
 
 /**
  * Converts the given color string into an array with the red, green and blue components
@@ -22,13 +21,13 @@ function colorToRGB(color: string): [number, number, number] {
   const trimmedColor = color.trim().toLowerCase();
 
   // Handle hex colors
-  if (trimmedColor.startsWith("#")) {
+  if (trimmedColor.startsWith('#')) {
     return hexCodeToRGB(trimmedColor);
   }
 
   // Handle rgb/rgba colors
   const rgbMatch = trimmedColor.match(
-    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+)?\s*\)/,
+    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+)?\s*\)/
   );
   if (rgbMatch) {
     return [
@@ -40,7 +39,7 @@ function colorToRGB(color: string): [number, number, number] {
 
   // Handle hsl/hsla colors - convert to RGB
   const hslMatch = trimmedColor.match(
-    /hsla?\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*[\d.]+)?\s*\)/,
+    /hsla?\(\s*(\d+)\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*[\d.]+)?\s*\)/
   );
   if (hslMatch) {
     const h = parseInt(hslMatch[1], 10) / 360;
@@ -60,7 +59,7 @@ function colorToRGB(color: string): [number, number, number] {
  */
 function hexCodeToRGB(color: string): [number, number, number] {
   // Validate hex color format
-  if (!color.startsWith("#") || !/^#[0-9a-fA-F]+$/.test(color)) {
+  if (!color.startsWith('#') || !/^#[0-9a-fA-F]+$/.test(color)) {
     consoleError(`Unsupported color code: "${color}"`);
     return [0, 0, 0];
   }
@@ -146,20 +145,6 @@ function calculateRelativeLuminance([r8, g8, b8]: [
 }
 
 /**
- * Adjust a given color's lightness by a specified number of percentage points.
- */
-async function adjustLightness(token: string, shift: number) {
-  const colorModule = await import("color");
-  const Color = normalizeModuleInterop(colorModule);
-  const original = Color(token).hsl().object();
-
-  return Color({ ...original, l: original.l + shift })
-    .round()
-    .hex()
-    .toLowerCase();
-}
-
-/**
  * Checks if a color (from a CSS variable or hex string) is lighter than the specified threshold.
  * Returns true if the color has lightness greater than the threshold percentage.
  */
@@ -168,7 +153,7 @@ function isColorLighterThan(color: string, thresholdPercent = 50): boolean {
     let colorValue = color.trim();
 
     // If it's a CSS variable, try to get the computed value
-    if (colorValue.startsWith("var(")) {
+    if (colorValue.startsWith('var(')) {
       const computedStyle = getComputedStyle(document.documentElement);
       const variableName = colorValue.match(/var\(([^)]+)\)/)?.[1];
       if (variableName) {
@@ -179,8 +164,8 @@ function isColorLighterThan(color: string, thresholdPercent = 50): boolean {
     // If we still don't have a valid color, return false
     if (
       !colorValue ||
-      colorValue === "" ||
-      colorValue === "var(--cds-chat-shell-background)"
+      colorValue === '' ||
+      colorValue === 'var(--cds-chat-shell-background)'
     ) {
       return false;
     }
@@ -206,7 +191,7 @@ function isColorLighterThan(color: string, thresholdPercent = 50): boolean {
  */
 function getCSSVariableValue(
   variableName: string,
-  element = document.documentElement,
+  element = document.documentElement
 ): string | null {
   try {
     const computedStyle = getComputedStyle(element);
@@ -218,4 +203,4 @@ function getCSSVariableValue(
   }
 }
 
-export { adjustLightness, isColorLighterThan, getCSSVariableValue };
+export { isColorLighterThan, getCSSVariableValue };

@@ -17,21 +17,21 @@ Progressively updates a `user_defined` steps-card widget inside a single assista
 
 ## APIs and props demonstrated
 
-| Symbol                                                                       | Kind                    | Role in this example                                                              |
-| ---------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`                                                | custom element          | Mounts the chat into a host element you style.                                    |
-| `.messaging` / `.layout` / `.openChatByDefault`                              | properties              | Top-level `PublicConfig` fields applied to the custom element.                    |
-| `.onBeforeRender`                                                            | property (callback)     | Captures the `ChatInstance` for the toast action.                                 |
-| `.renderUserDefinedResponse`                                                 | property (callback)     | Returns the steps-card `HTMLElement` on every upsert; same ref ⇒ in-place update. |
-| `messaging.customSendMessage`                                                | config prop             | Mock back end: branches on the post-back trigger string and runs the long task.   |
-| `messaging.upsertMessage`                                                    | `ChatInstance` method   | Inserts and progressively updates the steps-card message.                         |
-| `MessageState.COMPLETE`                                                      | `@carbon/ai-chat` enum  | Marks the message complete on the very first upsert so input stays usable.        |
-| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK`                   | `@carbon/ai-chat` enums | Welcome-message button that posts the trigger string back to start a run.         |
-| `MessageResponseTypes.USER_DEFINED`                                          | `@carbon/ai-chat` enum  | Payload carrying the steps-card data updated each upsert.                         |
-| `instance.scrollToMessage`                                                   | `ChatInstance` method   | Toast action target — scrolls the chat back to the finished message.              |
-| `layout.showFrame`                                                           | config prop             | Disables the built-in frame for the fullscreen baseline.                          |
-| `<cds-aichat-card>` / `<cds-aichat-card-steps>` / `<cds-aichat-card-footer>` | custom elements         | Carbon storybook `WithSteps` composition rendered as the user_defined widget.     |
-| `<cds-actionable-notification>` / `<cds-actionable-notification-button>`     | custom elements         | Out-of-chat completion toast with a built-in action button.                       |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat into a host element you style. |
+| `.messaging` / `.layout` / `.openChatByDefault` | properties | Top-level `PublicConfig` fields applied to the custom element. |
+| `.onBeforeRender` | property (callback) | Captures the `ChatInstance` for the toast action. |
+| `.renderUserDefinedResponse` | property (callback) | Returns the steps-card `HTMLElement` on every upsert; same ref ⇒ in-place update. |
+| `messaging.customSendMessage` | config prop | Mock back end: branches on the post-back trigger string and runs the long task. |
+| `messaging.upsertMessage` | `ChatInstance` method | Inserts and progressively updates the steps-card message. |
+| `MessageState.COMPLETE` | `@carbon/ai-chat` enum | Marks the message complete on the very first upsert so input stays usable. |
+| `MessageResponseTypes.BUTTON` / `ButtonItemType.POST_BACK` | `@carbon/ai-chat` enums | Welcome-message button that posts the trigger string back to start a run. |
+| `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Payload carrying the steps-card data updated each upsert. |
+| `instance.scrollToMessage` | `ChatInstance` method | Toast action target — scrolls the chat back to the finished message. |
+| `layout.showFrame` | config prop | Disables the built-in frame for the fullscreen baseline. |
+| `<cds-aichat-card>` / `<cds-aichat-card-steps>` / `<cds-aichat-card-footer>` | custom elements | Carbon storybook `WithSteps` composition rendered as the user_defined widget. |
+| `<cds-actionable-notification>` / `<cds-actionable-notification-button>` | custom elements | Out-of-chat completion toast with a built-in action button. |
 
 ## Run it
 

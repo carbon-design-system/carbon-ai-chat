@@ -7,10 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from "@open-wc/testing";
-import "@carbon/ai-chat-components/es/components/carousel/index.js";
-import Carousel from "@carbon/ai-chat-components/es/components/carousel/src/carousel.js";
-import prefix from "../../../globals/settings";
+import { html, fixture, expect } from '@open-wc/testing';
+import '@carbon/ai-chat-components/es/components/carousel/index.js';
+import Carousel from '@carbon/ai-chat-components/es/components/carousel/src/carousel.js';
+import prefix from '../../../globals/settings';
 
 const blockClass = `${prefix}-carousel`;
 
@@ -30,8 +30,8 @@ const template = html`
   </cds-aichat-carousel>
 `;
 
-describe("carousel", function async() {
-  it.skip("should render with cds-aichat-carousel minimum attributes", async () => {
+describe('carousel', function async() {
+  it.skip('should render with cds-aichat-carousel minimum attributes', async () => {
     const el = await fixture<Carousel>(template);
     await el.updateComplete;
 
@@ -46,7 +46,7 @@ describe("carousel", function async() {
     expect(root).to.exist;
 
     const indicator = root?.querySelector(`.${blockClass}__indicator`);
-    expect(indicator?.textContent).to.equal("1 / 3");
+    expect(indicator?.textContent).to.equal('1 / 3');
 
     await expect(el).dom.to.equalSnapshot();
   });

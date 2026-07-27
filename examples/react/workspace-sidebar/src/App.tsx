@@ -7,7 +7,28 @@
  *  @license
  */
 
-import "./App.css";
+/**
+ * Example: Carbon AI Chat — Workspace sidebar
+ *
+ * Demonstrates: the workspace feature combined with a docked sidebar layout
+ * built on the library's shipped `cds-aichat-sidebar` classes and driven by
+ * `VIEW_CHANGE` / `VIEW_PRE_CHANGE` lifecycle hooks. Includes a custom host
+ * chrome and `CornersType.SQUARE` for the sidebar treatment. The workspace
+ * expand / contract modifiers compose on top of the shipped base class.
+ *
+ * APIs exercised:
+ *   - `ChatCustomElement` styled with the shipped sidebar-layout CSS
+ *     (`@carbon/ai-chat/css/chat-sidebar-layout.css`)
+ *   - `BusEventType.WORKSPACE_*` (open / pre-open / close)
+ *   - `BusEventType.VIEW_CHANGE` / `VIEW_PRE_CHANGE`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *
+ * Start reading at: `App()` and the view-change handlers in
+ * `onBeforeRender`.
+ */
+
+import '@carbon/ai-chat/css/chat-sidebar-layout.css';
+import './App.css';
 import {
   BusEvent,
   BusEventType,
@@ -23,20 +44,20 @@ import {
   CornersType,
   RenderUserDefinedState,
   PanelType,
-} from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
-import "@carbon/styles/css/styles.css";
-import AiLaunch20 from "@carbon/icons-react/es/AiLaunch.js";
+} from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@carbon/styles/css/styles.css';
+import AiLaunch20 from '@carbon/icons-react/es/AiLaunch.js';
 
 // These functions hook up to your back-end.
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 // Workspace slot components
-import { InventoryReportExample } from "./InventoryReportExample";
-import { InventoryStatusExample } from "./InventoryStatusExample";
-import { OutstandingOrdersExample } from "./OutstandingOrdersExample";
-import { OutstandingOrdersCard } from "./OutstandingOrdersCard";
-import { SqlEditorExample } from "./SqlEditorExample";
+import { InventoryReportExample } from './InventoryReportExample';
+import { InventoryStatusExample } from './InventoryStatusExample';
+import { OutstandingOrdersExample } from './OutstandingOrdersExample';
+import { OutstandingOrdersCard } from './OutstandingOrdersCard';
+import { SqlEditorExample } from './SqlEditorExample';
 
 const sleep = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -55,14 +76,16 @@ const config: PublicConfig = {
     customSendMessage,
   },
   layout: {
+    // Square corners visually match the host sidebar chrome that hosts the chat.
     corners: CornersType.SQUARE,
   },
+  // Open the chat eagerly so the embedded sidebar layout is visible on first load.
   openChatByDefault: true,
 };
 
 function App() {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
-  const [stateText, setStateText] = useState<string>("Initial text");
+  const [stateText, setStateText] = useState<string>('Initial text');
   const [workspaceData, setWorkspaceData] = useState<{
     type: string | null;
     workspaceId?: string;
@@ -74,32 +97,32 @@ function App() {
   const [sideBarClosing, setSideBarClosing] = useState(false);
   const [workspaceExpanded, setWorkspaceExpanded] = useState(false);
   const [workspaceAnimating, setWorkspaceAnimating] = useState<
-    "expanding" | "contracting" | null
+    'expanding' | 'contracting' | null
   >(null);
   const [clickInProgress, setClickInProgress] = useState(false);
 
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
 
-    // Handle workspace pre open event
+    // BusEventType.WORKSPACE_PRE_OPEN: begin sidebar expansion before the workspace panel renders so the host frame animates in sync.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
       handler: customWorkspacePreOpenHandler,
     });
 
-    // Handle workspace open event
+    // BusEventType.WORKSPACE_OPEN: capture the resolved workspaceId / additionalData payload and stash it for renderWriteableElements.
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: customWorkspaceOpenHandler,
     });
 
-    // Handle workspace pre-close event
+    // BusEventType.WORKSPACE_PRE_CLOSE: kick off sidebar contraction before the panel actually unmounts.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_CLOSE,
       handler: customWorkspacePreCloseHandler,
     });
 
-    // Handle workspace close event
+    // BusEventType.WORKSPACE_CLOSE: clear the stashed workspace data once the panel has finished closing.
     instance.on({
       type: BusEventType.WORKSPACE_CLOSE,
       handler: customWorkspaceCloseHandler,
@@ -110,32 +133,26 @@ function App() {
   React.useEffect(() => {
     const interval = setInterval(
       () => setStateText(Date.now().toString()),
-      2000,
+      2000
     );
     return () => clearInterval(interval);
   }, []);
 
-  /**
-   * Listens for workspace panel pre open event.
-   */
   function customWorkspacePreOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspacePreOpen;
     console.log(
       data,
-      "This event can be used to load additional resources into the workspace while displaying a manual loading state.",
+      'This event can be used to load additional resources into the workspace while displaying a manual loading state.'
     );
     // Expand sidebar when workspace is opening
-    console.log("Expanding sidebar - workspace opening");
-    setWorkspaceAnimating("expanding");
+    console.log('Expanding sidebar - workspace opening');
+    setWorkspaceAnimating('expanding');
     setWorkspaceExpanded(true);
   }
 
-  /**
-   * Listens for workspace panel open event.
-   */
   function customWorkspaceOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceOpen;
-    console.log(data, "Workspace panel opened");
+    console.log(data, 'Workspace panel opened');
 
     // Extract workspace data from the event
     const { workspaceId, additionalData } = data;
@@ -143,30 +160,21 @@ function App() {
     setWorkspaceData({ type, workspaceId, additionalData });
   }
 
-  /**
-   * Listens for workspace panel pre-close event.
-   */
   function customWorkspacePreCloseHandler() {
     // Contract sidebar when workspace is closing
-    console.log("Contracting sidebar - workspace closing");
-    setWorkspaceAnimating("contracting");
+    console.log('Contracting sidebar - workspace closing');
+    setWorkspaceAnimating('contracting');
     setWorkspaceExpanded(false);
   }
 
-  /**
-   * Listens for workspace panel close event.
-   */
   function customWorkspaceCloseHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceClose;
-    console.log(data, "Workspace panel closed");
+    console.log(data, 'Workspace panel closed');
 
     // Clear workspace data when panel closes
     setWorkspaceData({ type: null });
   }
 
-  /**
-   * Listens for view changes on the AI chat.
-   */
   const onViewChange = (event: BusEventViewChange, _instance: ChatInstance) => {
     if (event.newViewState.mainWindow) {
       setSideBarOpen(true);
@@ -176,15 +184,13 @@ function App() {
     }
   };
 
-  /**
-   * Handles pre-view-change lifecycle for sidebar transitions.
-   */
   const onViewPreChange = async (
     event: BusEventViewPreChange,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ) => {
     if (!event.newViewState.mainWindow) {
       setSideBarClosing(true);
+      // Hold the view transition until the sidebar collapse animation has visibly completed.
       await sleep(250);
     }
   };
@@ -192,7 +198,7 @@ function App() {
   // Handle transitionend to remove animation classes
   const handleTransitionEnd = useCallback((event: React.TransitionEvent) => {
     // Only handle width transitions
-    if (event.propertyName === "width") {
+    if (event.propertyName === 'width') {
       setWorkspaceAnimating(null);
     }
   }, []);
@@ -217,35 +223,31 @@ function App() {
     }
   };
 
-  /**
-   * Handler for user_defined response types.
-   */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
       const { messageItem } = state;
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
-          case "outstanding_orders_card":
+          case 'outstanding_orders_card':
             return (
               <OutstandingOrdersCard
                 workspaceId={messageItem.user_defined.workspace_id as string}
                 onMaximize={() => {
-                  // Open workspace using the customPanels API
                   const workspaceId = messageItem.user_defined
                     ?.workspace_id as string;
                   const additionalData =
                     messageItem.user_defined?.additional_data;
 
-                  // Set workspace data for rendering
+                  // Seed renderWriteableElements synchronously so the panel has content the moment it opens.
                   setWorkspaceData({
                     type: (additionalData as { type?: string })?.type || null,
                     workspaceId,
                     additionalData,
                   });
 
-                  // Open the workspace panel
+                  // customPanels.getPanel(PanelType.WORKSPACE): obtain the workspace panel handle so a user gesture can open it imperatively.
                   const panel = _instance.customPanels?.getPanel(
-                    PanelType.WORKSPACE,
+                    PanelType.WORKSPACE
                   );
                   if (panel) {
                     panel.open({
@@ -262,7 +264,7 @@ function App() {
       }
       return undefined;
     },
-    [],
+    []
   );
 
   const renderWriteableElements = useMemo(() => {
@@ -272,7 +274,7 @@ function App() {
 
     let component;
     switch (workspaceData.type) {
-      case "inventory_report":
+      case 'inventory_report':
         component = (
           <InventoryReportExample
             location="workspacePanelElement"
@@ -283,7 +285,7 @@ function App() {
           />
         );
         break;
-      case "inventory_status":
+      case 'inventory_status':
         component = (
           <InventoryStatusExample
             location="workspacePanelElement"
@@ -293,7 +295,7 @@ function App() {
           />
         );
         break;
-      case "outstanding_orders":
+      case 'outstanding_orders':
         component = (
           <OutstandingOrdersExample
             location="workspacePanelElement"
@@ -303,7 +305,7 @@ function App() {
           />
         );
         break;
-      case "sql_editor":
+      case 'sql_editor':
         component = (
           <SqlEditorExample
             instance={instance}
@@ -319,20 +321,21 @@ function App() {
     return { workspacePanelElement: component };
   }, [instance, workspaceData, stateText]);
 
-  // Build className for sidebar layout
-  let className = "sidebar";
+  // Build className for sidebar layout from the shipped `cds-aichat-sidebar`
+  // base class plus this example's workspace expand/contract modifiers.
+  let className = 'cds-aichat-sidebar';
   if (workspaceExpanded) {
-    className += " sidebar--expanded";
+    className += ' cds-aichat-sidebar--expanded';
   }
-  if (workspaceAnimating === "expanding") {
-    className += " sidebar--expanding";
-  } else if (workspaceAnimating === "contracting") {
-    className += " sidebar--contracting";
+  if (workspaceAnimating === 'expanding') {
+    className += ' cds-aichat-sidebar--expanding';
+  } else if (workspaceAnimating === 'contracting') {
+    className += ' cds-aichat-sidebar--contracting';
   }
   if (sideBarClosing) {
-    className += " sidebar--closing";
+    className += ' cds-aichat-sidebar--closing';
   } else if (!sideBarOpen) {
-    className += " sidebar--closed";
+    className += ' cds-aichat-sidebar--closed';
   }
 
   return (
@@ -345,8 +348,7 @@ function App() {
             className="app-header__button"
             onClick={handleHeaderButtonClick}
             disabled={clickInProgress}
-            aria-label="Toggle AI Chat"
-          >
+            aria-label="Toggle AI Chat">
             <AiLaunch20 />
           </button>
         )}
@@ -367,8 +369,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);
-
-// Made with Bob

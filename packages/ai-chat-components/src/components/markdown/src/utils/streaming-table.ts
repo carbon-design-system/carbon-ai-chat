@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { TokenTree } from "../markdown-token-tree.js";
+import type { TokenTree } from '../markdown-token-tree.js';
 
 /**
  * True if the right-most leaf of the tree is a `table` token. A trailing table
@@ -15,7 +15,7 @@ import type { TokenTree } from "../markdown-token-tree.js";
  * end of an arbitrary subtree — so we follow only the rightmost branch.
  */
 export function hasTrailingTableToken(node: TokenTree): boolean {
-  if (node.token.tag === "table") {
+  if (node.token.tag === 'table') {
     return true;
   }
 
@@ -36,7 +36,7 @@ export function hasNodeAfterTable(node: TokenTree): boolean {
   const children = node.children || [];
   for (let index = 0; index < children.length; index++) {
     const child = children[index];
-    if (child.token.tag === "table" && index < children.length - 1) {
+    if (child.token.tag === 'table' && index < children.length - 1) {
       return true;
     }
     if (hasNodeAfterTable(child)) {
@@ -54,7 +54,7 @@ export function hasNodeAfterTable(node: TokenTree): boolean {
  */
 export function isTableAtStreamingTail(
   parentChildren: readonly unknown[],
-  currentIndex: number,
+  currentIndex: number
 ): boolean {
   return currentIndex >= parentChildren.length - 1;
 }
@@ -67,11 +67,11 @@ export function isTableAtStreamingTail(
  * non-table renderings.
  */
 export function hasLikelyPartialTableTail(markdown: string): boolean {
-  const normalized = markdown.replace(/\r/g, "");
-  const lines = normalized.split("\n");
+  const normalized = markdown.replace(/\r/g, '');
+  const lines = normalized.split('\n');
   let index = lines.length - 1;
 
-  while (index >= 0 && lines[index].trim() === "") {
+  while (index >= 0 && lines[index].trim() === '') {
     index--;
   }
 
@@ -83,7 +83,7 @@ export function hasLikelyPartialTableTail(markdown: string): boolean {
 
   // During streaming, partially emitted table rows frequently end with a pipe
   // and markdown-it can temporarily stop recognizing the table token.
-  if (lastLine.startsWith("|") || lastLine.endsWith("|")) {
+  if (lastLine.startsWith('|') || lastLine.endsWith('|')) {
     return true;
   }
 

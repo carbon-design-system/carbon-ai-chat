@@ -1,18 +1,18 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/utilities/ai-gradient" as *;
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/utilities/ai-gradient' as *;
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
 
 $messages-max-width: var(--#{$prefix}-messages-max-width, 672px);
 
@@ -83,7 +83,7 @@ $messages-max-width: var(--#{$prefix}-messages-max-width, 672px);
   display: none;
 }
 
-:host-context([dir="rtl"]) {
+:host-context([dir='rtl']) {
   inset-inline: unset 0;
   text-align: end;
 }

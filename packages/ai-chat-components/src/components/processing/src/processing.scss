@@ -7,8 +7,8 @@
  *  @license
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme' as *;
 
 :host {
   display: inline-block;
@@ -176,7 +176,7 @@
   }
 }
 
-[dir="rtl"] .linear {
+[dir='rtl'] .linear {
   .dot--left {
     animation-delay: 1334ms, 1334ms, 2334ms, 2334ms, 7334ms, 7334ms;
   }
@@ -190,7 +190,7 @@
   }
 }
 
-[dir="rtl"] .linear--no-loop {
+[dir='rtl'] .linear--no-loop {
   .dot--left {
     animation-delay: 1334ms, 1334ms, 2334ms, 2334ms;
   }
@@ -204,7 +204,7 @@
   }
 }
 
-[dir="rtl"] .quick-load {
+[dir='rtl'] .quick-load {
   .dot--left {
     animation-delay: 334ms, 334ms, 1334ms, 1334ms;
   }

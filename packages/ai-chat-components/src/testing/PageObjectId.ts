@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -15,22 +15,20 @@ export enum PageObjectId {
   /**
    * Chat header container element.
    */
-  CHAT_HEADER = "chat_header",
+  CHAT_HEADER = 'chat_header',
 
   /**
    * Header title element.
    */
-  HEADER_TITLE = "header_title",
+  HEADER_TITLE = 'header_title',
 
   /**
    * Header name element.
    */
-  HEADER_NAME = "header_name",
+  HEADER_NAME = 'header_name',
 }
 
 /**
  * Ids used for data-testid.
  */
 export type TestId = PageObjectId;
-
-// Made with Bob

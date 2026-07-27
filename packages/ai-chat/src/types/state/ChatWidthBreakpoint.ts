@@ -12,11 +12,11 @@
  */
 enum ChatWidthBreakpoint {
   // < 360px
-  NARROW = "narrow",
+  NARROW = 'narrow',
   // >= 360px
-  STANDARD = "standard",
+  STANDARD = 'standard',
   // > 672 + 16 + 16px
-  WIDE = "wide",
+  WIDE = 'wide',
 }
 
 export { ChatWidthBreakpoint };

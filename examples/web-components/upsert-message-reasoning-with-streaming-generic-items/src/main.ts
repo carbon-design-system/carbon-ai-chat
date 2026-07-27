@@ -7,8 +7,8 @@
  *  @license
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "./reasoning-summary.css";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import './reasoning-summary.css';
 
 import {
   BusEventType,
@@ -16,14 +16,14 @@ import {
   type ChatInstance,
   type PublicConfig,
   type UserDefinedItem,
-} from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 interface ReasoningSummaryPayload {
-  user_defined_type: "reasoning_summary";
+  user_defined_type: 'reasoning_summary';
   summary: string;
   citations?: string[];
 }
@@ -44,7 +44,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   // Render in the light DOM so the global reasoning-summary.css (imported above)
   // styles the user_defined summary cards.
@@ -76,7 +76,7 @@ export class Demo extends LitElement {
     return Object.entries(this.slotsBySlotName).map(([slot, data]) => {
       const payload = data.message.user_defined as
         ReasoningSummaryPayload | undefined;
-      if (payload?.user_defined_type !== "reasoning_summary") {
+      if (payload?.user_defined_type !== 'reasoning_summary') {
         return null;
       }
       return html`
@@ -88,7 +88,7 @@ export class Demo extends LitElement {
               payload.citations && payload.citations.length
                 ? html`<ul class="reasoning-summary__citations">
                     ${payload.citations.map(
-                      (citation) => html`<li>${citation}</li>`,
+                      (citation) => html`<li>${citation}</li>`
                     )}
                   </ul>`
                 : null

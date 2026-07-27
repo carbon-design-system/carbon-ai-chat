@@ -17,8 +17,8 @@
  * for the user.
  */
 
-import Table from "@carbon/ai-chat-components/es/react/table";
-import React from "react";
+import Table from '@carbon/ai-chat-components/es/react/table';
+import React from 'react';
 
 interface InlineTablePreviewProps {
   headers: string[];

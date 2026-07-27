@@ -7,21 +7,21 @@
  *  @license
  */
 
-@use "sass:string";
+@use 'sass:string';
 
-@use "@carbon/styles" with (
+@use '@carbon/styles' with (
   // Turn off Carbon's Plex `@font-face` generation
   $css--font-face: false,
 
   // Change the root `font-family` definition(s)
   $font-families: (
-      "sans": string.unquote(
+      'sans': string.unquote(
           "'Permanent Marker', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', sans-serif"
         ),
-      "mono": string.unquote(
+      'mono': string.unquote(
           "'Permanent Marker', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', monospace"
         ),
-      "serif": string.unquote(
+      'serif': string.unquote(
           "'Permanent Marker', system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular', serif"
         ),
       // Include any other Carbon font family keys your application compiles.
@@ -30,8 +30,8 @@
 
 @font-face {
   font-display: swap;
-  font-family: "Permanent Marker";
+  font-family: 'Permanent Marker';
   font-style: normal;
   font-weight: 400;
-  src: url("./permanent-marker-v16-latin-regular.woff2") format("woff2");
+  src: url('./permanent-marker-v16-latin-regular.woff2') format('woff2');
 }

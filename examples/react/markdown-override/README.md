@@ -21,26 +21,26 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                    | Package / kind                     | Role in this example                                                             |
-| ----------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------- |
-| `ChatCustomElement`                       | `@carbon/ai-chat` component        | Mounts the chat into a fullscreen host element.                                  |
-| `PublicConfig`                            | `@carbon/ai-chat` type             | Types the config object passed to `ChatCustomElement`.                           |
-| `ChatContainerPropsMarkdown`              | `@carbon/ai-chat` type             | Shape of the `markdown` prop, including `customRenderers`.                       |
-| `markdown.customRenderers.codeBlock`      | config field                       | Replaces the default fenced-code renderer with a JSX wrapper.                    |
-| `markdown.customRenderers.table`          | config field                       | Replaces the default table renderer with a Carbon `DataTable`.                   |
-| `markdown.customRenderers.link`           | config field                       | Returns attribute overrides (`href`, `target`, `rel`) for anchors.               |
-| `markdown.customRenderers.image`          | config field                       | Returns attribute overrides (`src`, `style`, `onclick`) for images.              |
-| `markdown.customRenderers.checklist`      | config field                       | `onToggle` + `getChecked` to persist and react to task-list state.               |
-| `MarkdownRendererCodeBlockArgs`           | `@carbon/ai-chat` type             | Argument shape for the codeBlock renderer (`language`, `code`, …).               |
-| `MarkdownRendererTableArgs`               | `@carbon/ai-chat` type             | Argument shape for the table renderer (`headers`, `rows`, …).                    |
-| `MarkdownRendererLinkArgs`                | `@carbon/ai-chat` type             | Argument shape for the link renderer (`href`, `title`, `text`, `attributes`, …). |
-| `MarkdownRendererImageArgs`               | `@carbon/ai-chat` type             | Argument shape for the image renderer (`src`, `alt`, `title`, `attributes`, …).  |
-| `Card` (`cds-aichat-card`)                | `@carbon/ai-chat-components` React | Wraps the snippet to match the default Carbon shell.                             |
-| `CodeSnippet` (`cds-aichat-code-snippet`) | `@carbon/ai-chat-components` React | Renders the code; receives `detectLanguage={false}`.                             |
-| `Table` and friends                       | `@carbon/react`                    | The data table the `table` override renders.                                     |
-| `messaging.customSendMessage`             | config prop                        | Mock backend that emits a reply exercising every hook.                           |
-| `layout.showFrame`                        | config prop                        | Disables the built-in frame so the host owns the layout.                         |
-| `openChatByDefault`                       | config prop                        | Mounts straight into the conversation, no launcher.                              |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a fullscreen host element. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatCustomElement`. |
+| `ChatContainerPropsMarkdown` | `@carbon/ai-chat` type | Shape of the `markdown` prop, including `customRenderers`. |
+| `markdown.customRenderers.codeBlock` | config field | Replaces the default fenced-code renderer with a JSX wrapper. |
+| `markdown.customRenderers.table` | config field | Replaces the default table renderer with a Carbon `DataTable`. |
+| `markdown.customRenderers.link` | config field | Returns attribute overrides (`href`, `target`, `rel`) for anchors. |
+| `markdown.customRenderers.image` | config field | Returns attribute overrides (`src`, `style`, `onclick`) for images. |
+| `markdown.customRenderers.checklist` | config field | `onToggle` + `getChecked` to persist and react to task-list state. |
+| `MarkdownRendererCodeBlockArgs` | `@carbon/ai-chat` type | Argument shape for the codeBlock renderer (`language`, `code`, …). |
+| `MarkdownRendererTableArgs` | `@carbon/ai-chat` type | Argument shape for the table renderer (`headers`, `rows`, …). |
+| `MarkdownRendererLinkArgs` | `@carbon/ai-chat` type | Argument shape for the link renderer (`href`, `title`, `text`, `attributes`, …). |
+| `MarkdownRendererImageArgs` | `@carbon/ai-chat` type | Argument shape for the image renderer (`src`, `alt`, `title`, `attributes`, …). |
+| `Card` (`cds-aichat-card`) | `@carbon/ai-chat-components` React | Wraps the snippet to match the default Carbon shell. |
+| `CodeSnippet` (`cds-aichat-code-snippet`) | `@carbon/ai-chat-components` React | Renders the code; receives `detectLanguage={false}`. |
+| `Table` and friends | `@carbon/react` | The data table the `table` override renders. |
+| `messaging.customSendMessage` | config prop | Mock backend that emits a reply exercising every hook. |
+| `layout.showFrame` | config prop | Disables the built-in frame so the host owns the layout. |
+| `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
 
 ## Run it
 

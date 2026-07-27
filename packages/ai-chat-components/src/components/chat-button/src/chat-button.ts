@@ -7,20 +7,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { property } from "lit/decorators.js";
-import { PropertyValues } from "lit";
-import { CHAT_BUTTON_SIZE } from "../defs";
+import { property } from 'lit/decorators.js';
+import { PropertyValues } from 'lit';
+import { CHAT_BUTTON_SIZE } from '../defs';
 import {
   BUTTON_KIND as CHAT_BUTTON_KIND,
   BUTTON_TYPE as CHAT_BUTTON_TYPE,
   BUTTON_TOOLTIP_ALIGNMENT as CHAT_BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TOOLTIP_POSITION as CHAT_BUTTON_TOOLTIP_POSITION,
-} from "@carbon/web-components/es/components/button/button.js";
-import CDSButton from "@carbon/web-components/es/components/button/button.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./chat-button.scss?lit";
+} from '@carbon/web-components/es/components/button/button.js';
+import CDSButton from '@carbon/web-components/es/components/button/button.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './chat-button.scss?lit';
 
 export {
   CHAT_BUTTON_KIND,
@@ -45,14 +45,14 @@ class CDSAIChatButton extends CDSButton {
   /**
    * Specify whether the `ChatButton` should be rendered as a quick action button
    */
-  @property({ type: Boolean, attribute: "is-quick-action" })
+  @property({ type: Boolean, attribute: 'is-quick-action' })
   isQuickAction = false;
 
   /**
    * Button size.
    * Options: "sm", "md", "lg".
    */
-  @property({ reflect: true, attribute: "size" })
+  @property({ reflect: true, attribute: 'size' })
   declare size: ChatButtonSize;
 
   /**
@@ -66,9 +66,9 @@ class CDSAIChatButton extends CDSButton {
 
   protected willUpdate(changedProps: PropertyValues<this>): void {
     if (
-      changedProps.has("isQuickAction") ||
-      changedProps.has("size") ||
-      changedProps.has("kind")
+      changedProps.has('isQuickAction') ||
+      changedProps.has('size') ||
+      changedProps.has('kind')
     ) {
       this._normalizeButtonState(changedProps);
     }
@@ -78,7 +78,7 @@ class CDSAIChatButton extends CDSButton {
     if (this.isQuickAction) {
       this.size = CHAT_BUTTON_SIZE.SMALL;
       // Only default to ghost when kind was not explicitly provided in this update.
-      if (!changedProps.has("kind")) {
+      if (!changedProps.has('kind')) {
         this.kind = CHAT_BUTTON_KIND.GHOST;
       }
       return;
@@ -98,7 +98,7 @@ class CDSAIChatButton extends CDSButton {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-button": CDSAIChatButton;
+    'cds-aichat-button': CDSAIChatButton;
   }
 }
 

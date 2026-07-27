@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { WorkspaceCustomPanelConfigOptions } from "../../instance/apiTypes";
-import { LocalMessageItem } from "../../messaging/LocalMessageItem";
-import { Message } from "../../messaging/Messages";
+import { WorkspaceCustomPanelConfigOptions } from '../../instance/apiTypes';
+import { LocalMessageItem } from '../../messaging/LocalMessageItem';
+import { Message } from '../../messaging/Messages';
 
 /**
  * The state of the workspace panel.

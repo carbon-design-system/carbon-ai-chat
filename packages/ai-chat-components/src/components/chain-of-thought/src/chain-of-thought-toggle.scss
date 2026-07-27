@@ -1,19 +1,19 @@
 /* 
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *  
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/utilities/button-reset" as button;
-@use "@carbon/layout";
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/utilities/button-reset' as button;
+@use '@carbon/layout';
 
 :host {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   display: block;
   max-inline-size: 100%;
@@ -46,7 +46,7 @@
 
 button.#{$prefix}--chain-of-thought-button {
   @include button.reset(true);
-  @include type.type-style("heading-01");
+  @include type.type-style('heading-01');
 
   display: inline-flex;
   flex: 0 0 auto;

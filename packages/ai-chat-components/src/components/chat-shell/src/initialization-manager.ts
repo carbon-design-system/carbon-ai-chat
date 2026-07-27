@@ -1,13 +1,13 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import { InitialStateKey } from "./types.js";
+import { InitialStateKey } from './types.js';
 
 /**
  * Manages component initialization state tracking.
@@ -71,7 +71,7 @@ export class InitializationManager {
    */
   private checkInitializationComplete(): void {
     const allChecksComplete = Object.values(this.initialStateSet).every(
-      (check) => check === true,
+      (check) => check === true
     );
 
     if (allChecksComplete && this.isInitializing) {
@@ -87,5 +87,3 @@ export class InitializationManager {
     }
   }
 }
-
-// Made with Bob

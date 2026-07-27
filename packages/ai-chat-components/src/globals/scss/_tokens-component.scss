@@ -1,5 +1,5 @@
 /* 
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *  
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -8,7 +8,7 @@
 // Component tokens for AI Chat Components
 // These control component-specific styling like borders, radii, and typography
 
-@use "@carbon/layout";
+@use '@carbon/layout';
 
 // ============================================================================
 // Component Tokens - Public Configurable
@@ -26,5 +26,3 @@ $border-radius-start-start: layout.$spacing-03 !default;
 $border-radius-start-end: layout.$spacing-03 !default;
 $border-radius-end-start: layout.$spacing-03 !default;
 $border-radius-end-end: layout.$spacing-03 !default;
-
-// Made with Bob

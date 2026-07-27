@@ -8,22 +8,22 @@
  *  @license
  */
 
-import React, { useCallback, useMemo } from "react";
-import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
-import View16 from "@carbon/icons/es/view/16.js";
+import React, { useCallback, useMemo } from 'react';
+import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+import View16 from '@carbon/icons/es/view/16.js';
 
-import { useServiceManager } from "../../../hooks/useServiceManager";
-import { PanelType } from "../../../../types/instance/apiTypes";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { AppState } from "../../../../types/state/AppState";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
+import { useServiceManager } from '../../../hooks/useServiceManager';
+import { PanelType } from '../../../../types/instance/apiTypes';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { AppState } from '../../../../types/state/AppState';
+import { useSelector } from '../../../hooks/useSelector';
+import { shallowEqual } from '../../../store/appStore';
 import {
   PreviewCardItem,
   MessageResponse,
-} from "../../../../types/messaging/Messages";
-import actions from "../../../store/actions";
+} from '../../../../types/messaging/Messages';
+import actions from '../../../store/actions';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
@@ -45,10 +45,10 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       isOpen: state.workspacePanelState.isOpen,
       workspaceID: state.workspacePanelState.workspaceID,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const panel = serviceManager.instance.customPanels.getPanel(
-    PanelType.WORKSPACE,
+    PanelType.WORKSPACE
   );
 
   const isViewing = isOpen && workspaceID === workspace_id;
@@ -61,7 +61,7 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         localMessageItem,
         fullMessage,
         additionalData: additional_data,
-      }),
+      })
     );
 
     // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events
@@ -85,22 +85,21 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     () => [
       {
         icon: isViewing ? View16 : Maximize16,
-        id: "docs",
-        kind: "ghost",
-        label: isViewing ? "Viewing" : "View details",
-        payload: { test: "value" },
+        id: 'docs',
+        kind: 'ghost',
+        label: isViewing ? 'Viewing' : 'View details',
+        payload: { test: 'value' },
         isViewing,
       },
     ],
-    [isViewing],
+    [isViewing]
   );
 
   return (
     <Card
       data-rounded
       isFlush
-      className="cds-aichat-preview-card cds-aichat-preview-card__sm"
-    >
+      className="cds-aichat-preview-card cds-aichat-preview-card__sm">
       <div slot="body">
         <h5 className="cds-aichat-preview-card--title">{title}</h5>
         <p className="cds-aichat-preview-card--subtitle">{subtitle}</p>

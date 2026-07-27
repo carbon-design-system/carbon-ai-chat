@@ -7,14 +7,14 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-import { Settings } from "./types";
+import { Settings } from './types';
 
-@customElement("demo-writeable-elements-switcher")
+@customElement('demo-writeable-elements-switcher')
 export class DemoWriteableElementsSwitcher extends LitElement {
   @property({ type: Object })
   accessor settings!: Settings;
@@ -23,14 +23,14 @@ export class DemoWriteableElementsSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     // Emit a custom event `settings-changed` with the new framework value
     this.dispatchEvent(
-      new CustomEvent("settings-changed", {
+      new CustomEvent('settings-changed', {
         detail: {
           ...this.settings,
           writeableElements: customEvent.detail.item.value,
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      }),
+      })
     );
   };
 
@@ -38,8 +38,7 @@ export class DemoWriteableElementsSwitcher extends LitElement {
     return html`<cds-dropdown
       value="${this.settings.writeableElements}"
       title-text="Slot visibility"
-      @cds-dropdown-selected=${this.dropdownSelected}
-    >
+      @cds-dropdown-selected=${this.dropdownSelected}>
       <cds-dropdown-item value="false">Hide slots</cds-dropdown-item>
       <cds-dropdown-item value="true">Show slots</cds-dropdown-item>
     </cds-dropdown>`;
@@ -49,6 +48,6 @@ export class DemoWriteableElementsSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-writeable-elements-switcher": DemoWriteableElementsSwitcher;
+    'demo-writeable-elements-switcher': DemoWriteableElementsSwitcher;
   }
 }

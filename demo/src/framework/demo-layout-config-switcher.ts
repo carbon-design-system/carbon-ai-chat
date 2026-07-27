@@ -7,24 +7,24 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
 import {
   CornersType,
   LayoutConfig,
   PublicConfig,
   PerCornerConfig,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-const DROPDOWN_DEFAULT = "default";
-const DROPDOWN_TRUE = "true";
-const DROPDOWN_FALSE = "false";
+const DROPDOWN_DEFAULT = 'default';
+const DROPDOWN_TRUE = 'true';
+const DROPDOWN_FALSE = 'false';
 
-type CornerPosition = "startStart" | "startEnd" | "endStart" | "endEnd";
+type CornerPosition = 'startStart' | 'startEnd' | 'endStart' | 'endEnd';
 
-@customElement("demo-layout-config-switcher")
+@customElement('demo-layout-config-switcher')
 export class DemoLayoutConfigSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -44,7 +44,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
   accessor config!: PublicConfig;
 
   private _updateLayout(
-    mutate: (layout: LayoutConfig | undefined) => LayoutConfig | undefined,
+    mutate: (layout: LayoutConfig | undefined) => LayoutConfig | undefined
   ) {
     const currentLayout = this.config.layout
       ? { ...this.config.layout }
@@ -52,19 +52,19 @@ export class DemoLayoutConfigSwitcher extends LitElement {
     const nextLayout = mutate(currentLayout);
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           layout: nextLayout,
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   private _normalizeLayout(
-    layout: LayoutConfig | undefined,
+    layout: LayoutConfig | undefined
   ): LayoutConfig | undefined {
     if (!layout) {
       return undefined;
@@ -75,7 +75,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
     if (cleaned.customProperties !== undefined) {
       const customPropsEntries = Object.entries(cleaned.customProperties ?? {});
       const filteredEntries = customPropsEntries.filter(
-        ([, value]) => value !== undefined && value !== "",
+        ([, value]) => value !== undefined && value !== ''
       );
       if (filteredEntries.length > 0) {
         cleaned.customProperties = Object.fromEntries(filteredEntries);
@@ -95,7 +95,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
   private _handleBooleanDropdown(
     event: Event,
-    key: "showFrame" | "hasContentMaxWidth",
+    key: 'showFrame' | 'hasContentMaxWidth'
   ) {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
@@ -134,7 +134,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
   private _handleIndividualCornerDropdown(
     event: Event,
-    corner: CornerPosition,
+    corner: CornerPosition
   ) {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
@@ -144,7 +144,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
       // If corners is currently a simple string or undefined, we need to convert to object
       // but only set the specific corner being changed
-      if (typeof next.corners === "string" || next.corners === undefined) {
+      if (typeof next.corners === 'string' || next.corners === undefined) {
         // Start with an empty per-corner config
         next.corners = {} as PerCornerConfig;
       } else {
@@ -183,7 +183,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
   }
 
   private _getCornersValue(value: CornersType | PerCornerConfig | undefined) {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       return value;
     }
     return DROPDOWN_DEFAULT;
@@ -191,9 +191,9 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
   private _getIndividualCornerValue(
     corners: CornersType | PerCornerConfig | undefined,
-    corner: CornerPosition,
+    corner: CornerPosition
   ): string {
-    if (typeof corners === "object" && corners !== null) {
+    if (typeof corners === 'object' && corners !== null) {
       return corners[corner] ?? DROPDOWN_DEFAULT;
     }
     return DROPDOWN_DEFAULT;
@@ -208,8 +208,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
           value="${this._getBooleanDropdownValue(layout?.showFrame)}"
           title-text="Frame visibility"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "showFrame")}
-        >
+            this._handleBooleanDropdown(event, 'showFrame')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -227,8 +226,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
           value="${this._getBooleanDropdownValue(layout?.hasContentMaxWidth)}"
           title-text="Content max width"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "hasContentMaxWidth")}
-        >
+            this._handleBooleanDropdown(event, 'hasContentMaxWidth')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -245,8 +243,7 @@ export class DemoLayoutConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._getCornersValue(layout?.corners)}"
           title-text="Corner style (all)"
-          @cds-dropdown-selected=${this._handleCornersDropdown}
-        >
+          @cds-dropdown-selected=${this._handleCornersDropdown}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -263,12 +260,11 @@ export class DemoLayoutConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._getIndividualCornerValue(
             layout?.corners,
-            "startStart",
+            'startStart'
           )}"
           title-text="Top-left corner (startStart)"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleIndividualCornerDropdown(event, "startStart")}
-        >
+            this._handleIndividualCornerDropdown(event, 'startStart')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -283,11 +279,10 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
       <div class="layout-section">
         <cds-dropdown
-          value="${this._getIndividualCornerValue(layout?.corners, "startEnd")}"
+          value="${this._getIndividualCornerValue(layout?.corners, 'startEnd')}"
           title-text="Top-right corner (startEnd)"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleIndividualCornerDropdown(event, "startEnd")}
-        >
+            this._handleIndividualCornerDropdown(event, 'startEnd')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -302,11 +297,10 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
       <div class="layout-section">
         <cds-dropdown
-          value="${this._getIndividualCornerValue(layout?.corners, "endStart")}"
+          value="${this._getIndividualCornerValue(layout?.corners, 'endStart')}"
           title-text="Bottom-left corner (endStart)"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleIndividualCornerDropdown(event, "endStart")}
-        >
+            this._handleIndividualCornerDropdown(event, 'endStart')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -321,11 +315,10 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 
       <div class="layout-section">
         <cds-dropdown
-          value="${this._getIndividualCornerValue(layout?.corners, "endEnd")}"
+          value="${this._getIndividualCornerValue(layout?.corners, 'endEnd')}"
           title-text="Bottom-right corner (endEnd)"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleIndividualCornerDropdown(event, "endEnd")}
-        >
+            this._handleIndividualCornerDropdown(event, 'endEnd')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}"
             >Default</cds-dropdown-item
           >
@@ -344,6 +337,6 @@ export class DemoLayoutConfigSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-layout-config-switcher": DemoLayoutConfigSwitcher;
+    'demo-layout-config-switcher': DemoLayoutConfigSwitcher;
   }
 }
