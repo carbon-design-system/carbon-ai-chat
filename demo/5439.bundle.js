@@ -4,8 +4,7 @@
     locale=${b}
     is-sortable
     use-zebra-styles
-    @cds-table-filtered=${u}
-  >
+    @cds-table-filtered=${u}>
     ${t&&c.qy`<cds-table-header-title slot="title"
         >${t}</cds-table-header-title
       >`}
@@ -17,13 +16,11 @@
         ${h?c.qy`<cds-table-toolbar-search
                 persistent
                 placeholder=${r}
-                aria-label=${r}
-              ></cds-table-toolbar-search>`:""}
+                aria-label=${r}></cds-table-toolbar-search>`:""}
         <cds-icon-button
           @click=${$}
           align=${e}
-          kind="ghost"
-        >
+          kind="ghost">
           ${(0,l.L)(s.A,{slot:"icon"})}
           <span slot="tooltip-content">${d}</span>
         </cds-icon-button>
@@ -53,11 +50,8 @@
     .formatStatusWithDeterminateTotal=${(0,r.J)(p)}
     @cds-pagination-changed-current=${h}
     @cds-page-sizes-select-changed=${u}
-    forward-text-tooltip-position=${(0,n.S)()?"right":"left"}
-  >
-    ${f.map(e=>c.qy`<cds-select-item value="${e}"
-          >${e}</cds-select-item
-        >`)}
+    forward-text-tooltip-position=${(0,n.S)()?"right":"left"}>
+    ${f.map(e=>c.qy`<cds-select-item value="${e}">${e}</cds-select-item>`)}
     <cds-select-item value="${m}">${m}</cds-select-item>
   </cds-pagination>`}}}]);
 //# sourceMappingURL=5439.bundle.js.map
