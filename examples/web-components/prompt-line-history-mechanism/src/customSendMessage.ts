@@ -72,9 +72,9 @@ function createCustomSendMessage(state: HistoryState) {
     // Append to history before the response so ArrowUp works on the very next
     // keypress after the bot replies.
     state.entries.push(text);
-    // Reset navigation cursor so the next ArrowUp starts from the most-recent
+    // Reset historyIndex so the next ArrowUp starts from the most-recent
     // entry, even if the user was mid-navigation when they sent.
-    state.cursor = -1;
+    state.historyIndex = -1;
 
     instance.messaging.addMessage({
       output: {

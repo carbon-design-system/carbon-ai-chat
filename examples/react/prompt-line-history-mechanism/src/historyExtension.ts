@@ -32,7 +32,7 @@ import { Extension } from '@tiptap/core';
  * `createHistoryState` so that the reference is stable across re-renders.
  *
  * `entries`  — sent messages, oldest-first; grows on every send.
- * `cursor`   — -1 when not navigating; 0 = most-recent entry (entries.length - 1).
+ * `historyIndex` — -1 when not navigating; 0 = most-recent entry (entries.length - 1).
  * `draft`    — the in-progress text saved on the first ArrowUp press so it can
  *              be restored when the user navigates back past entry 0.
  * `instance` — set by `onBeforeRender` so the keyboard handler can call
@@ -40,13 +40,13 @@ import { Extension } from '@tiptap/core';
  */
 interface HistoryState {
   entries: string[];
-  cursor: number;
+  historyIndex: number;
   draft: string;
   instance: ChatInstance | null;
 }
 
 function createHistoryState(): HistoryState {
-  return { entries: [], cursor: -1, draft: '', instance: null };
+  return { entries: [], historyIndex: -1, draft: '', instance: null };
 }
 
 /**
@@ -64,9 +64,9 @@ function createHistoryState(): HistoryState {
  *   - `ArrowUp`: cursor must be at position 1 (the very start of the single
  *     paragraph) and there must be entries above the current position.
  *   - `ArrowDown`: cursor must be at the last position of the doc and the
- *     extension must currently be navigating (`state.cursor >= 0`).
+ *     extension must currently be navigating (`state.historyIndex >= 0`).
  *
- * Cursor index mapping: `state.cursor` 0 = most-recent entry
+ * History index mapping: `state.historyIndex` 0 = most-recent entry
  * (`entries[entries.length - 1]`); each increment goes one step further back.
  */
 function createHistoryExtension(state: HistoryState): Extension {
@@ -92,21 +92,26 @@ function createHistoryExtension(state: HistoryState): Extension {
           }
 
           // Already at the oldest entry
-          if (state.cursor >= state.entries.length - 1) {
-            return true; // consume the event so the cursor doesn't jump out
+          if (state.historyIndex >= state.entries.length - 1) {
+            return true; // consume the event so the editor cursor doesn't jump out
           }
 
           // Save the in-progress draft on the first ArrowUp of a navigation
           // session so we can restore it when the user presses ArrowDown past
           // entry 0.
-          if (state.cursor === -1) {
+          if (state.historyIndex === -1) {
             state.draft = getRawText(editor.getJSON());
           }
 
-          state.cursor = Math.min(state.cursor + 1, state.entries.length - 1);
+          state.historyIndex = Math.min(
+            state.historyIndex + 1,
+            state.entries.length - 1
+          );
 
           state.instance?.input.updateContent(() =>
-            textToDoc(state.entries[state.entries.length - 1 - state.cursor])
+            textToDoc(
+              state.entries[state.entries.length - 1 - state.historyIndex]
+            )
           );
 
           return true;
@@ -114,7 +119,7 @@ function createHistoryExtension(state: HistoryState): Extension {
 
         ArrowDown: ({ editor }) => {
           // Not currently navigating — let ProseMirror handle it.
-          if (state.cursor === -1) {
+          if (state.historyIndex === -1) {
             return false;
           }
 
@@ -130,14 +135,16 @@ function createHistoryExtension(state: HistoryState): Extension {
             return false;
           }
 
-          state.cursor -= 1;
+          state.historyIndex -= 1;
 
-          if (state.cursor === -1) {
+          if (state.historyIndex === -1) {
             // Navigated back past the most-recent entry
             state.instance?.input.updateContent(() => textToDoc(state.draft));
           } else {
             state.instance?.input.updateContent(() =>
-              textToDoc(state.entries[state.entries.length - 1 - state.cursor])
+              textToDoc(
+                state.entries[state.entries.length - 1 - state.historyIndex]
+              )
             );
           }
 
