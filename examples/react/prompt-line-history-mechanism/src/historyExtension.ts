@@ -76,7 +76,6 @@ function createHistoryExtension(state: HistoryState): Extension {
     addKeyboardShortcuts() {
       return {
         ArrowUp: ({ editor }) => {
-          // Nothing to navigate yet.
           if (state.entries.length === 0) {
             return false;
           }
@@ -88,13 +87,11 @@ function createHistoryExtension(state: HistoryState): Extension {
           }
 
           // Only intercept when the cursor is at the very start of the doc.
-          // In a single-paragraph doc, position 1 is "inside the only paragraph
-          // at the start" — the first character position.
           if (editor.state.selection.$from.pos !== 1) {
             return false;
           }
 
-          // Already at the oldest entry — nowhere further to go.
+          // Already at the oldest entry
           if (state.cursor >= state.entries.length - 1) {
             return true; // consume the event so the cursor doesn't jump out
           }
@@ -106,11 +103,8 @@ function createHistoryExtension(state: HistoryState): Extension {
             state.draft = getRawText(editor.getJSON());
           }
 
-          // Advance toward the oldest entry (0 = most-recent, length-1 = oldest).
           state.cursor = Math.min(state.cursor + 1, state.entries.length - 1);
 
-          // Write the recalled entry into the editor. The updater signature
-          // matches `updateContent((prev: JSONContent) => JSONContent)`.
           state.instance?.input.updateContent(() =>
             textToDoc(state.entries[state.entries.length - 1 - state.cursor]),
           );
@@ -124,15 +118,11 @@ function createHistoryExtension(state: HistoryState): Extension {
             return false;
           }
 
-          // Single-block guard: if the user somehow typed multi-paragraph
-          // content while navigating (shouldn't happen, but guard anyway).
           if (editor.state.doc.childCount !== 1) {
             return false;
           }
 
           // Only intercept when the cursor is at the very end of the doc.
-          // `doc.content.size - 1` is the last valid cursor position inside
-          // the paragraph (one step before the closing paragraph boundary).
           if (
             editor.state.selection.$from.pos !==
             editor.state.doc.content.size - 1
@@ -143,7 +133,7 @@ function createHistoryExtension(state: HistoryState): Extension {
           state.cursor -= 1;
 
           if (state.cursor === -1) {
-            // Navigated back past the most-recent entry — restore the draft.
+            // Navigated back past the most-recent entry
             state.instance?.input.updateContent(() => textToDoc(state.draft));
           } else {
             state.instance?.input.updateContent(() =>

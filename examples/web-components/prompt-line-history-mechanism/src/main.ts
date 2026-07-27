@@ -48,11 +48,8 @@ const sendMessage = createCustomSendMessage(historyState);
 const config: PublicConfig = {
   messaging: { customSendMessage: sendMessage },
   layout: {
-    // Hide the default chat frame so the custom element fills its host
-    // container — required for the canonical fullscreen surface.
     showFrame: false,
   },
-  // Auto-open so the conversation shows from first paint.
   openChatByDefault: true,
   input: {
     // Register the history keyboard extension. A non-empty `extensions`
@@ -71,10 +68,6 @@ export class Demo extends LitElement {
     }
   `;
 
-  // Capture the `ChatInstance` as soon as the chat is ready so the keyboard
-  // extension can call `instance.input.updateContent`. The arrow-function
-  // class field keeps `this` bound without needing `.bind(this)` in the
-  // template — matching the pattern used in upsert-message-user-defined.
   private onBeforeRender = (instance: ChatInstance) => {
     historyState.instance = instance;
   };
