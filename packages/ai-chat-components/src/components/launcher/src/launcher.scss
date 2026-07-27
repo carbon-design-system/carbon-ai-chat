@@ -5,8 +5,88 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+@use "@carbon/layout";
+@use "@carbon/styles/scss/theme";
+@use "@carbon/styles/scss/type";
+@use "@carbon/styles/scss/components/button";
 @use "../../../globals/scss/vars" as *;
+
+$launcher-default-size: 56px;
+$launcher-border-radius: 28px;
 
 :host(#{$prefix}-launcher) {
   display: block;
+
+  .cds-aichat-launcher {
+    position: relative;
+    border-radius: $launcher-border-radius;
+    background-color: theme.$background;
+    box-shadow: 1px 0 4px rgb(23 23 23 / 30%);
+    inline-size: $launcher-default-size;
+    block-size: $launcher-default-size;
+  }
+
+  .cds-aichat--count-indicator {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border-radius: 10px;
+    background-color: theme.$support-error;
+    box-shadow: 1px layout.$spacing-01 layout.$spacing-01 rgb(23 23 23 / 30%);
+    color: theme.$text-on-color;
+    inset-block-start: calc(-1 * #{layout.$spacing-02});
+    inset-inline-end: calc(-1 * #{layout.$spacing-02});
+    min-block-size: 20px;
+    min-inline-size: 20px;
+    @include type.type-style("caption-01");
+  }
+
+  .cds-aichat--launcher__avatar {
+    border-radius: 50%;
+    block-size: 32px;
+    inline-size: 32px;
+    user-select: none;
+  }
+
+  .cds-aichat--launcher__wrapper {
+    display: flex;
+  }
+
+  .cds-aichat--launcher__icon-holder {
+    display: flex;
+    align-items: center;
+  }
+
+  .cds-aichat--launcher__svg {
+    fill: currentcolor;
+  }
+
+  cds-aichat-button::part(button) {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: $launcher-border-radius;
+    background-color: button.$button-primary;
+    block-size: $launcher-default-size;
+    inline-size: $launcher-default-size;
+  }
+
+  cds-aichat-button::part(button):focus {
+    border-width: button.$button-border-width;
+    box-shadow: inset 0 0 0 button.$button-border-width theme.$text-on-color;
+  }
+
+  cds-aichat-button svg {
+    block-size: 24px;
+    fill: theme.$text-on-color;
+    inline-size: 24px;
+  }
+}
+
+[dir="rtl"] .cds-aichat--count-indicator {
+  inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
 }

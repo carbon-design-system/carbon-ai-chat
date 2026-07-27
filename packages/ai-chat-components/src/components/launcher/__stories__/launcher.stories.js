@@ -29,7 +29,7 @@ const argTypes = {
   onToggle: { table: { disable: true } },
 };
 
-const Template = (args) => html`
+const Template = args => html`
   <cds-aichat-launcher
     @cds-aichat-launcher-toggle=${args.onToggle}
     ?launcher-hidden=${args.launcherHidden}
@@ -84,8 +84,7 @@ export const WithAvatar = {
   name: "With avatar",
   args: {
     ...Default.args,
-    launcherAvatarUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/240px-User-avatar.svg.png",
+    launcherAvatarUrl: "https://i.pravatar.cc/150?u=33",
   },
   argTypes,
   render: Template,

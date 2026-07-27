@@ -146,7 +146,11 @@ class CDSAIChatLauncher extends LitElement {
    * Moves focus to the launcher button.
    */
   requestFocus() {
-    this.shadowRoot?.querySelector<HTMLElement>("cds-aichat-button")?.focus();
+    const button = this.shadowRoot?.querySelector<HTMLElement>(
+      'cds-aichat-button[tabindex="-1"]',
+    );
+
+    button?.focus();
   }
 
   render() {
@@ -156,7 +160,10 @@ class CDSAIChatLauncher extends LitElement {
       : BUTTON_TOOLTIP_POSITION.LEFT;
 
     return html`<div
-      class=${`cds-aichat-launcher ${classMap({ "cds-aichat-launcher--hidden": this.launcherHidden })}`}
+      class=${classMap({
+        "cds-aichat-launcher": true,
+        "cds-aichat-launcher--hidden": this.launcherHidden,
+      })}
     >
       <cds-aichat-button
         data-testid=${this.dataTestId}
