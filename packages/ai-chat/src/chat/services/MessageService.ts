@@ -204,18 +204,6 @@ class MessageService {
   private messageAbortControllers = new Map<string, AbortController>();
 
   /**
-   * The value indicates that there is a pending locale change that needs to be sent to the assistant on the next
-   * message request.
-   */
-  public pendingLocale = false;
-
-  /**
-   * Indicates if the locale has been explicitly set by the host page. This is used to ensure we only send a locale
-   * to the assistant when it has been explicitly set.
-   */
-  public localeIsExplicit = false;
-
-  /**
    * The instance of the messageLoadingManager to manage timeouts and showing of loading states.
    */
   public messageLoadingManager: MessageLoadingManager;

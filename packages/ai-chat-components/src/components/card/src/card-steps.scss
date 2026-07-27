@@ -35,10 +35,6 @@
     border-block-end: none;
   }
 
-  cds-icon-indicator {
-    margin-inline-end: calc(-1 * layout.$spacing-03);
-  }
-
   .#{$prefix}-card-step-indicator {
     @include type-style('body-compact-01');
 

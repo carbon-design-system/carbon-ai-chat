@@ -1,0 +1,128 @@
+{/*
+Template for `src/components/<name>/__stories__/<name>.mdx` — the Lit Storybook
+Overview (port 6006).
+
+Copy this file into the component's `__stories__/` folder, rename it, delete this
+comment, and replace every placeholder:
+
+  <name>        kebab-case folder + tag suffix, e.g. `card` -> `cds-aichat-card`
+  <Component>   display name in Title Case, e.g. `Card`
+  <Part>        a sub-element's tag suffix, e.g. `card-footer`
+
+Sections marked REQUIRED appear in every Overview, in this order. Delete the
+OPTIONAL ones you don't need — an Overview with only the required sections is a
+complete doc. Do not add a CDN block, a `previewTabs` param, or a hand-written
+Table of Contents. Rules, tone, and the story-vs-control test live in
+storybook.md.
+*/}
+
+import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./<name>.stories";
+
+<Meta of={Stories} />
+
+# <Component>
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/<name>) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+{/* REQUIRED. One or two task-led sentences, then the live render — nothing else
+above the Canvas. Real prose belongs under its own `##` further down. */}
+
+Use `cds-aichat-<name>` to <what it does and when to reach for it>.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+{/* OPTIONAL. Only for capabilities the hero render doesn't show. One line each,
+no more than four. Cut this heading if the render already says it. */}
+
+- **<Capability>**: <what it gives the consumer>
+
+## Customization
+
+{/* OPTIONAL. CSS custom properties and modifier attributes this component
+honors. Link the shared page instead of restating it. */}
+
+For the modifier system (`data-rounded`, `data-stacked`) and shared CSS custom
+properties, see [Styling & Modifiers](/docs/introduction-styling-modifiers--overview).
+
+### <Knob name>
+
+<What it controls and when to change it.>
+
+```html
+<cds-aichat-<name> <attribute>="<value>"></cds-aichat-<name>>
+```
+
+| Value     | Description   |
+| --------- | ------------- |
+| `<value>` | <what it does> |
+
+## Examples
+
+{/* OPTIONAL. One `###` per composition worth showing — a slot arrangement, a
+sub-element, or a wiring pattern a control can't express. Each example is an
+HTML block plus, when the pattern needs imperative setup (property assignment,
+event listeners), a JavaScript block. Prefer linking a story over inventing
+markup that no story renders. */}
+
+### <Composition name>
+
+<One sentence: what this shows and when to use it.>
+
+```html
+<cds-aichat-<name>>
+  <div slot="<slot>"><Content></div>
+  <cds-aichat-<part> id="<part>-1"></cds-aichat-<part>>
+</cds-aichat-<name>>
+```
+
+```javascript
+import "@carbon/ai-chat-components/es/components/<name>/index.js";
+
+const <part> = document.querySelector("#<part>-1");
+<part>.<property> = [{ id: "<id>", label: "<Label>" }];
+
+<part>.addEventListener("cds-aichat-<part>-<verb>", (event) => {
+  console.log(event.detail);
+});
+```
+
+## Component API
+
+{/* REQUIRED. The Lit side passes the *tag string* — it reads `custom-elements.json`,
+so run `npm run custom-elements` or the tables render empty. Give every
+sub-element its own `###` and its own `<ArgTypes>`; declare the shape of any
+object-typed property above its table. */}
+
+### `cds-aichat-<name>`
+
+<ArgTypes of="cds-aichat-<name>" />
+
+### `cds-aichat-<part>`
+
+```javascript
+type <Thing> = {
+  label: string;
+  id?: string;
+};
+```
+
+<ArgTypes of="cds-aichat-<part>" />
+
+## JS (via import)
+
+{/* REQUIRED. */}
+
+```javascript
+import "@carbon/ai-chat-components/es/components/<name>/index.js";
+```
+
+## Feedback
+
+{/* REQUIRED. One line, verbatim. */}
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

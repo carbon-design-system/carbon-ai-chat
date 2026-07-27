@@ -9,9 +9,8 @@
 
 import {
   convertCSSVariablesToString,
-  mergeCSSVariables,
+  validateCustomProperties,
 } from '../../../src/chat/utils/styleUtils';
-import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
 
 describe('styleUtils', () => {
   describe('convertCSSVariablesToString', () => {
@@ -54,39 +53,27 @@ describe('styleUtils', () => {
     });
   });
 
-  describe('mergeCSSVariables', () => {
-    const noWhiteLabel = {} as never;
-
+  describe('validateCustomProperties', () => {
     it('keeps $-prefixed Carbon tokens with hexadecimal values', () => {
-      const result = mergeCSSVariables(
-        { '$button-primary': '#1a1a2e' },
-        noWhiteLabel,
-        CarbonTheme.G100,
-        true
-      );
+      const result = validateCustomProperties({ '$button-primary': '#1a1a2e' });
       expect(result['$button-primary']).toBe('#1a1a2e');
     });
 
     it('drops $-prefixed tokens whose value is not hexadecimal', () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-      const result = mergeCSSVariables(
-        { '$button-primary': 'rebeccapurple' },
-        noWhiteLabel,
-        CarbonTheme.G100,
-        true
-      );
+      const result = validateCustomProperties({
+        '$button-primary': 'rebeccapurple',
+      });
       expect(result['$button-primary']).toBeUndefined();
       expect(warn).toHaveBeenCalledTimes(1);
       warn.mockRestore();
     });
 
     it('preserves bare shell tokens with non-color values', () => {
-      const result = mergeCSSVariables(
-        { width: '420px', 'launcher-color-background': '#1a1a2e' },
-        noWhiteLabel,
-        CarbonTheme.G100,
-        true
-      );
+      const result = validateCustomProperties({
+        width: '420px',
+        'launcher-color-background': '#1a1a2e',
+      });
       expect(result.width).toBe('420px');
       expect(result['launcher-color-background']).toBe('#1a1a2e');
     });

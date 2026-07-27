@@ -13,6 +13,7 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators';
 import { tableSkeletonTemplate } from './table-skeleton.template';
 import { loadTableRuntime } from './table-loader.js';
+import { stringifyCSV } from '../../../globals/utils/csv.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
 import styles from './table.scss?lit';
 import prefix from '../../../globals/settings.js';
@@ -617,8 +618,7 @@ class CDSAIChatTable extends LitElement {
    * - Only exports as JSON (we want CSV format)
    * - Doesn't include all the data we need
    *
-   * The method dynamically imports the CSV stringify library to avoid bundle bloat,
-   * creates a data URL to comply with CSP policies, and triggers a download.
+   * The method creates a data URL to comply with CSP policies, and triggers a download.
    *
    * @public
    */
@@ -631,11 +631,7 @@ class CDSAIChatTable extends LitElement {
     ];
 
     try {
-      // Lazy load the CSV stringify function only when needed
-      const { stringify } = await import('csv-stringify/browser/esm/sync');
-
-      // Convert table data to CSV format
-      const csvContent = stringify(tableArray);
+      const csvContent = stringifyCSV(tableArray);
 
       // Use data URL instead of Blob to avoid CSP issues with object-src
       const dataUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(

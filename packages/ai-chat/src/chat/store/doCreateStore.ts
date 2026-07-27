@@ -22,7 +22,7 @@ import {
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
-import { mergeCSSVariables } from '../utils/styleUtils';
+import { validateCustomProperties } from '../utils/styleUtils';
 import { reducers } from './reducers';
 import { AppStore, createAppStore } from './appStore';
 import {
@@ -87,11 +87,8 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
   };
 
   // Compute CSS variable overrides from theme configuration
-  const cssVariableOverrides = mergeCSSVariables(
-    publicConfig.layout?.customProperties || {},
-    {},
-    themeWithDefaults.derivedCarbonTheme,
-    themeWithDefaults.aiEnabled
+  const cssVariableOverrides = validateCustomProperties(
+    publicConfig.layout?.customProperties || {}
   );
 
   // Build derived config using deep merge that skips undefined
