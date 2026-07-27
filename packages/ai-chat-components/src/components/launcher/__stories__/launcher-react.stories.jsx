@@ -32,7 +32,8 @@ const sharedArgTypes = {
   },
   closedLabel: {
     control: "text",
-    description: 'Aria label used when the launcher is in its "open chat" state.',
+    description:
+      'Aria label used when the launcher is in its "open chat" state.',
   },
   openLabel: {
     control: "text",
@@ -41,7 +42,8 @@ const sharedArgTypes = {
   },
   aiEnabled: {
     control: "boolean",
-    description: "Renders the AI launch icon instead of the standard chat icon.",
+    description:
+      "Renders the AI launch icon instead of the standard chat icon.",
   },
   launcherAvatarUrl: {
     control: "text",
@@ -54,7 +56,7 @@ const sharedArgTypes = {
   onToggle: { table: { disable: true } },
 };
 
-const Template = (args) => <Launcher onToggle={action("onToggle")} {...args} />;
+const Template = args => <Launcher onToggle={action("onToggle")} {...args} />;
 
 export const Default = {
   args: {
@@ -96,8 +98,7 @@ export const WithAvatar = {
   name: "With avatar",
   args: {
     ...Default.args,
-    launcherAvatarUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/User-avatar.svg/240px-User-avatar.svg.png",
+    launcherAvatarUrl: "https://i.pravatar.cc/150?u=33",
   },
   argTypes: sharedArgTypes,
   render: Template,
