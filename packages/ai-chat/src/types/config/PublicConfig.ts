@@ -185,8 +185,11 @@ export interface PublicConfig {
   assistantAvatarUrl?: string;
 
   /**
-   * The locale to use for the widget. This controls the language pack and regional formatting.
-   * Example values include: 'en', 'en-us', 'fr', 'es'.
+   * The locale to use for the widget. This controls regional formatting, such as how times and numbers are written
+   * and which plural rules apply to translated text. Example values include: 'en', 'en-us', 'fr', 'es'.
+   *
+   * This does not translate the interface. To render the chat in another language, supply the translated text
+   * through {@link PublicConfig.strings}.
    */
   locale?: string;
 

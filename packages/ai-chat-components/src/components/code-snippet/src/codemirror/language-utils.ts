@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { detect } from "program-language-detector";
+import { detectLanguageFromSignatures } from "./detect-language.js";
 
 const LANGUAGE_ALIASES: Record<string, string | undefined> = {
   javascript: "JavaScript",
@@ -149,11 +149,11 @@ export function mapLanguageName(
 }
 
 /**
- * Detects the programming language from code content using pattern matching and ML-based detection.
+ * Detects the programming language from code content using pattern and signature matching.
  *
  * This function uses a multi-strategy approach:
  * 1. Pattern-based detection for Markdown, JSON, diff files, and shell scripts
- * 2. ML-based detection using the program-language-detector library
+ * 2. Signature-based detection across the common languages
  * 3. TypeScript-specific hints to distinguish TypeScript from JavaScript
  *
  * @example Basic usage
@@ -221,11 +221,6 @@ export function detectLanguage(code: string): string | null {
     return patternMatch;
   }
 
-  try {
-    const detected = detect(trimmed);
-    const mapped = mapLanguageName(detected);
-    return adjustDetectedLanguage(mapped, trimmed) ?? mapped ?? null;
-  } catch {
-    return patternMatch;
-  }
+  const mapped = mapLanguageName(detectLanguageFromSignatures(trimmed));
+  return adjustDetectedLanguage(mapped, trimmed) ?? mapped ?? null;
 }

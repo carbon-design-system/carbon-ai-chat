@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,7 +12,6 @@
  */
 
 import { consoleError } from "./miscUtils";
-import { normalizeModuleInterop } from "./moduleInterop";
 
 /**
  * Converts the given color string into an array with the red, green and blue components
@@ -146,20 +145,6 @@ function calculateRelativeLuminance([r8, g8, b8]: [
 }
 
 /**
- * Adjust a given color's lightness by a specified number of percentage points.
- */
-async function adjustLightness(token: string, shift: number) {
-  const colorModule = await import("color");
-  const Color = normalizeModuleInterop(colorModule);
-  const original = Color(token).hsl().object();
-
-  return Color({ ...original, l: original.l + shift })
-    .round()
-    .hex()
-    .toLowerCase();
-}
-
-/**
  * Checks if a color (from a CSS variable or hex string) is lighter than the specified threshold.
  * Returns true if the color has lightness greater than the threshold percentage.
  */
@@ -218,4 +203,4 @@ function getCSSVariableValue(
   }
 }
 
-export { adjustLightness, isColorLighterThan, getCSSVariableValue };
+export { isColorLighterThan, getCSSVariableValue };
