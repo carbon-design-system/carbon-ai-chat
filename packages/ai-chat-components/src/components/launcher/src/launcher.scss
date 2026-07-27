@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/components/button";
-@use "../../../globals/scss/vars" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/components/button';
+@use '../../../globals/scss/vars' as *;
 
 $launcher-default-size: 56px;
 $launcher-border-radius: 28px;
@@ -40,7 +40,7 @@ $launcher-border-radius: 28px;
     inset-inline-end: calc(-1 * #{layout.$spacing-02});
     min-block-size: 20px;
     min-inline-size: 20px;
-    @include type.type-style("caption-01");
+    @include type.type-style('caption-01');
   }
 
   .cds-aichat--launcher__avatar {
@@ -87,6 +87,6 @@ $launcher-border-radius: 28px;
   }
 }
 
-[dir="rtl"] .cds-aichat--count-indicator {
+[dir='rtl'] .cds-aichat--count-indicator {
   inset-inline: calc(-1 * #{layout.$spacing-01}) unset;
 }

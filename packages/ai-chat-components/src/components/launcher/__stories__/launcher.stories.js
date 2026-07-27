@@ -7,25 +7,25 @@
  *  @license
  */
 
-import "../src/launcher";
-import { html } from "lit";
-import { fn } from "storybook/test";
-import { ifDefined } from "lit/directives/if-defined.js";
+import '../src/launcher';
+import { html } from 'lit';
+import { fn } from 'storybook/test';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 export default {
-  title: "Components/Launcher",
-  component: "cds-aichat-launcher",
+  title: 'Components/Launcher',
+  component: 'cds-aichat-launcher',
 };
 
 const argTypes = {
-  launcherHidden: { control: "boolean" },
-  showUnreadIndicator: { control: "boolean" },
-  unreadMessageCount: { control: "number" },
-  closedLabel: { control: "text" },
-  openLabel: { control: "text" },
-  aiEnabled: { control: "boolean" },
-  launcherAvatarUrl: { control: "text" },
-  unreadLabel: { control: "text" },
+  launcherHidden: { control: 'boolean' },
+  showUnreadIndicator: { control: 'boolean' },
+  unreadMessageCount: { control: 'number' },
+  closedLabel: { control: 'text' },
+  openLabel: { control: 'text' },
+  aiEnabled: { control: 'boolean' },
+  launcherAvatarUrl: { control: 'text' },
+  unreadLabel: { control: 'text' },
   onToggle: { table: { disable: true } },
 };
 
@@ -39,8 +39,7 @@ const Template = (args) => html`
     open-label=${ifDefined(args.openLabel)}
     ?ai-enabled=${args.aiEnabled}
     launcher-avatar-url=${ifDefined(args.launcherAvatarUrl)}
-    unread-label=${ifDefined(args.unreadLabel)}
-  ></cds-aichat-launcher>
+    unread-label=${ifDefined(args.unreadLabel)}></cds-aichat-launcher>
 `;
 
 export const Default = {
@@ -48,8 +47,8 @@ export const Default = {
     launcherHidden: false,
     showUnreadIndicator: false,
     unreadMessageCount: 0,
-    closedLabel: "Open chat",
-    openLabel: "Close chat",
+    closedLabel: 'Open chat',
+    openLabel: 'Close chat',
     aiEnabled: false,
     onToggle: fn(),
   },
@@ -58,33 +57,33 @@ export const Default = {
 };
 
 export const AIEnabled = {
-  name: "AI enabled",
+  name: 'AI enabled',
   args: {
     ...Default.args,
     aiEnabled: true,
-    closedLabel: "Open AI chat",
-    openLabel: "Close AI chat",
+    closedLabel: 'Open AI chat',
+    openLabel: 'Close AI chat',
   },
   argTypes,
   render: Template,
 };
 
 export const WithUnreadCount = {
-  name: "With unread count",
+  name: 'With unread count',
   args: {
     ...Default.args,
     unreadMessageCount: 3,
-    unreadLabel: "3 unread messages",
+    unreadLabel: '3 unread messages',
   },
   argTypes,
   render: Template,
 };
 
 export const WithAvatar = {
-  name: "With avatar",
+  name: 'With avatar',
   args: {
     ...Default.args,
-    launcherAvatarUrl: "https://i.pravatar.cc/150?u=33",
+    launcherAvatarUrl: 'https://i.pravatar.cc/150?u=33',
   },
   argTypes,
   render: Template,

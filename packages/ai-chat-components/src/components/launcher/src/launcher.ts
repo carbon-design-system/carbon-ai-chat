@@ -7,23 +7,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import AiLaunch24 from "@carbon/icons/es/ai-launch/24.js";
-import ChatLaunch24 from "@carbon/icons/es/chat--launch/24.js";
-import "../../chat-button/index.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./launcher.scss?lit";
+import { LitElement, html, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import AiLaunch24 from '@carbon/icons/es/ai-launch/24.js';
+import ChatLaunch24 from '@carbon/icons/es/chat--launch/24.js';
+import '../../chat-button/index.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './launcher.scss?lit';
 import {
   BUTTON_KIND,
   BUTTON_TOOLTIP_POSITION,
   BUTTON_TYPE,
-} from "@carbon/web-components/es/components/button/defs.js";
-import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
+} from '@carbon/web-components/es/components/button/defs.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 
 /**
  * Launcher button — opens the AI Chat window.
@@ -38,61 +38,61 @@ class CDSAIChatLauncher extends LitElement {
   /**
    * Hides the launcher and removes it from the tab order when `true`.
    */
-  @property({ type: Boolean, attribute: "launcher-hidden" })
+  @property({ type: Boolean, attribute: 'launcher-hidden' })
   launcherHidden = false;
 
   /**
    * Shows the unread indicator dot when `true` and `unreadMessageCount` is 0.
    */
-  @property({ type: Boolean, attribute: "show-unread-indicator" })
+  @property({ type: Boolean, attribute: 'show-unread-indicator' })
   showUnreadIndicator = false;
 
   /**
    * Number of unread messages. Displays a count badge when greater than 0.
    */
-  @property({ type: Number, attribute: "unread-message-count" })
+  @property({ type: Number, attribute: 'unread-message-count' })
   unreadMessageCount = 0;
 
   /**
    * Aria label shown when the chat window is closed (launcher is in its
    * "open chat" state).
    */
-  @property({ attribute: "closed-label" })
-  closedLabel = "";
+  @property({ attribute: 'closed-label' })
+  closedLabel = '';
 
   /**
    * Aria label shown when the chat window is open (launcher is in its
    * "close chat" state).
    */
-  @property({ attribute: "open-label" })
-  openLabel = "";
+  @property({ attribute: 'open-label' })
+  openLabel = '';
 
   /**
    * When `true`, renders the AI launch icon. When `false`, renders the
    * standard chat launch icon.
    */
-  @property({ type: Boolean, attribute: "ai-enabled" })
+  @property({ type: Boolean, attribute: 'ai-enabled' })
   aiEnabled = false;
 
   /**
    * Optional URL for a custom avatar image. When provided, the avatar
    * replaces the default icon.
    */
-  @property({ attribute: "launcher-avatar-url" })
+  @property({ attribute: 'launcher-avatar-url' })
   launcherAvatarUrl?: string;
 
   /**
    * Pre-formatted screen-reader label suffix for the unread message count
    * (e.g. "3 unread messages"). Appended to the button aria-label when set.
    */
-  @property({ attribute: "unread-label" })
+  @property({ attribute: 'unread-label' })
   unreadLabel?: string;
 
   /**
    * Value for the `data-testid` attribute on the inner button element.
    * @internal
    */
-  @property({ attribute: "data-test-id" })
+  @property({ attribute: 'data-test-id' })
   dataTestId?: string;
 
   /**
@@ -105,7 +105,7 @@ class CDSAIChatLauncher extends LitElement {
       this.unreadLabel,
     ]
       .filter(Boolean)
-      .join(". ");
+      .join('. ');
   }
 
   private _renderIcon() {
@@ -114,8 +114,7 @@ class CDSAIChatLauncher extends LitElement {
         class="cds-aichat--launcher__avatar"
         src=${this.launcherAvatarUrl}
         aria-hidden
-        alt=""
-      />`;
+        alt="" />`;
     } else if (this.aiEnabled) {
       return iconLoader(AiLaunch24);
     } else {
@@ -129,7 +128,7 @@ class CDSAIChatLauncher extends LitElement {
     }
 
     return html`<div class="cds-aichat--count-indicator">
-      ${this.unreadMessageCount > 0 ? this.unreadMessageCount : ""}
+      ${this.unreadMessageCount > 0 ? this.unreadMessageCount : ''}
     </div>`;
   }
 
@@ -138,7 +137,7 @@ class CDSAIChatLauncher extends LitElement {
       new CustomEvent(`${prefix}-launcher-toggle`, {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -146,7 +145,7 @@ class CDSAIChatLauncher extends LitElement {
    * Moves focus to the launcher button.
    */
   requestFocus() {
-    this.shadowRoot?.querySelector<HTMLElement>("cds-aichat-button")?.focus();
+    this.shadowRoot?.querySelector<HTMLElement>('cds-aichat-button')?.focus();
   }
 
   render() {
@@ -157,10 +156,9 @@ class CDSAIChatLauncher extends LitElement {
 
     return html`<div
       class=${classMap({
-        "cds-aichat-launcher": true,
-        "cds-aichat-launcher--hidden": this.launcherHidden,
-      })}
-    >
+        'cds-aichat-launcher': true,
+        'cds-aichat-launcher--hidden': this.launcherHidden,
+      })}>
       <cds-aichat-button
         data-testid=${this.dataTestId}
         aria-label=${this._ariaLabel}
@@ -169,8 +167,7 @@ class CDSAIChatLauncher extends LitElement {
         kind=${BUTTON_KIND.PRIMARY}
         type=${BUTTON_TYPE.BUTTON}
         .tabIndex=${tabIndex}
-        @click=${this._handleToggle}
-      >
+        @click=${this._handleToggle}>
         <div class="cds-aichat--launcher__wrapper">
           <div class="cds-aichat--launcher__icon-holder">
             ${this._renderIcon()}
@@ -184,7 +181,7 @@ class CDSAIChatLauncher extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-launcher": CDSAIChatLauncher;
+    'cds-aichat-launcher': CDSAIChatLauncher;
   }
 }
 
