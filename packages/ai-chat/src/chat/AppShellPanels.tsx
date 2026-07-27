@@ -7,37 +7,37 @@
  *  @license
  */
 
-import React from "react";
-import type CDSButton from "@carbon/web-components/es/components/button/button.js";
-import cx from "classnames";
-import ChatPanel from "@carbon/ai-chat-components/es/react/panel.js";
-import { PanelHeader } from "./components/panels/PanelHeader";
-import HydrationPanel from "./components/panels/HydrationPanel";
-import DisclaimerPanel from "./components/panels/DisclaimerPanel";
-import IFramePanel from "./components/panels/IFramePanel";
-import ViewSourcePanel from "./components/panels/ViewSourcePanel";
-import CatastrophicErrorPanel from "./components/panels/CatastrophicErrorPanel";
-import { PanelWithFocus } from "./components/panels/PanelWithFocus";
-import { BodyMessageComponents } from "./components/BodyMessageComponents";
-import { FooterButtonComponents } from "./components/FooterButtonComponents";
-import { MessageTypeComponent } from "./components-legacy/MessageTypeComponent";
-import { Header } from "./components/header/Header";
-import { useSelector } from "./hooks/useSelector";
-import actions from "./store/actions";
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from "./store/reducerUtils";
+import React from 'react';
+import type CDSButton from '@carbon/web-components/es/components/button/button.js';
+import cx from 'classnames';
+import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
+import { PanelHeader } from './components/panels/PanelHeader';
+import HydrationPanel from './components/panels/HydrationPanel';
+import DisclaimerPanel from './components/panels/DisclaimerPanel';
+import IFramePanel from './components/panels/IFramePanel';
+import ViewSourcePanel from './components/panels/ViewSourcePanel';
+import CatastrophicErrorPanel from './components/panels/CatastrophicErrorPanel';
+import { PanelWithFocus } from './components/panels/PanelWithFocus';
+import { BodyMessageComponents } from './components/BodyMessageComponents';
+import { FooterButtonComponents } from './components/FooterButtonComponents';
+import { MessageTypeComponent } from './components-legacy/MessageTypeComponent';
+import { Header } from './components/header/Header';
+import { useSelector } from './hooks/useSelector';
+import actions from './store/actions';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from './store/reducerUtils';
 import type {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
-} from "../types/instance/apiTypes";
-import type { ButtonItem, MessageResponse } from "../types/messaging/Messages";
-import type { AppState } from "../types/state/AppState";
-import type { HasRequestFocus } from "../types/utilities/HasRequestFocus";
-import type { MessageTypeComponentProps } from "../types/messaging/MessageTypeComponentProps";
-import { HasServiceManager } from "./hocs/withServiceManager";
-import { shallowEqual } from "./store/appStore";
-import { BusEventType } from "../types/events/eventBusTypes";
-import WriteableElement from "./components/util/WriteableElement";
-import { PageObjectId } from "../testing/PageObjectId";
+} from '../types/instance/apiTypes';
+import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
+import type { AppState } from '../types/state/AppState';
+import type { HasRequestFocus } from '../types/utilities/HasRequestFocus';
+import type { MessageTypeComponentProps } from '../types/messaging/MessageTypeComponentProps';
+import { HasServiceManager } from './hocs/withServiceManager';
+import { shallowEqual } from './store/appStore';
+import { BusEventType } from '../types/events/eventBusTypes';
+import WriteableElement from './components/util/WriteableElement';
+import { PageObjectId } from '../testing/PageObjectId';
 
 interface AppShellPanelsProps extends HasServiceManager {
   isHydratingComplete: boolean;
@@ -50,34 +50,34 @@ interface AppShellPanelsProps extends HasServiceManager {
   onRestart: () => void;
   onToggleHomeScreen: () => void;
   isHomeScreenActive: boolean;
-  customPanelState: AppState["customPanelState"];
+  customPanelState: AppState['customPanelState'];
   customPanelRef: React.RefObject<HasRequestFocus | null>;
-  historyPanelState: AppState["historyPanelState"];
+  historyPanelState: AppState['historyPanelState'];
   showDisclaimer: boolean;
   disclaimerRef: React.RefObject<CDSButton | null>;
   onAcceptDisclaimer: () => void;
-  responsePanelState: AppState["responsePanelState"];
+  responsePanelState: AppState['responsePanelState'];
   responsePanelRef: React.RefObject<HasRequestFocus | null>;
   requestFocus: () => void;
-  iFramePanelState: AppState["iFramePanelState"];
+  iFramePanelState: AppState['iFramePanelState'];
   iframePanelRef: React.RefObject<HasRequestFocus | null>;
-  viewSourcePanelState: AppState["viewSourcePanelState"];
+  viewSourcePanelState: AppState['viewSourcePanelState'];
   viewSourcePanelRef: React.RefObject<HasRequestFocus | null>;
-  allMessagesByID: AppState["allMessagesByID"];
+  allMessagesByID: AppState['allMessagesByID'];
   isInputReadonly: boolean;
-  catastrophicErrorPanelState: AppState["catastrophicErrorPanelState"];
+  catastrophicErrorPanelState: AppState['catastrophicErrorPanelState'];
 }
 
 function isCustomPanelConfigOptions(
-  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions,
+  options: CustomPanelConfigOptions | DefaultCustomPanelConfigOptions
 ): options is CustomPanelConfigOptions {
   const legacyOptions = options as Partial<CustomPanelConfigOptions>;
   return (
-    typeof legacyOptions.disableDefaultCloseAction === "boolean" ||
-    typeof legacyOptions.hideCloseButton === "boolean" ||
-    typeof legacyOptions.onClickBack === "function" ||
-    typeof legacyOptions.onClickRestart === "function" ||
-    typeof legacyOptions.onClickClose === "function"
+    typeof legacyOptions.disableDefaultCloseAction === 'boolean' ||
+    typeof legacyOptions.hideCloseButton === 'boolean' ||
+    typeof legacyOptions.onClickBack === 'function' ||
+    typeof legacyOptions.onClickRestart === 'function' ||
+    typeof legacyOptions.onClickClose === 'function'
   );
 }
 
@@ -128,7 +128,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
       aria_viewSourcePanel: state.languagePack.aria_viewSourcePanel,
       general_returnToAssistant: state.languagePack.general_returnToAssistant,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   // Narrow config selections: each stays referentially stable across unrelated
@@ -137,13 +137,13 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   // re-renders only when one of these specific values changes — not on every
   // config field change the way selecting whole `config`/`publicConfig` did.
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.public.aiEnabled,
+    (state: AppState) => state.config.public.aiEnabled
   );
   const disclaimer = useSelector(
-    (state: AppState) => state.config.public.disclaimer,
+    (state: AppState) => state.config.public.disclaimer
   );
   const historyIsOn = useSelector(
-    (state: AppState) => state.config.public.history?.isOn,
+    (state: AppState) => state.config.public.history?.isOn
   );
 
   // Call DisclaimerPanel hook at component level (not inside render)
@@ -161,14 +161,14 @@ export const AppShellPanels = React.memo(function AppShellPanels({
     ? (customPanelOptions as CustomPanelConfigOptions)
     : undefined;
   const shouldShowCustomPanelHeader = !(
-    "hidePanelHeader" in customPanelOptions &&
+    'hidePanelHeader' in customPanelOptions &&
     customPanelOptions.hidePanelHeader
   );
   const panelTitle = customPanelOptions.title;
   const headerConfigOverride = isLegacyCustomPanel
     ? {
         hideMinimizeButton:
-          typeof legacyCustomPanelOptions?.hideCloseButton === "boolean"
+          typeof legacyCustomPanelOptions?.hideCloseButton === 'boolean'
             ? legacyCustomPanelOptions.hideCloseButton
             : undefined,
         title:
@@ -187,8 +187,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         aiEnabled={aiEnabled ? true : false}
         priority={100}
         fullWidth={false}
-        showChatHeader={true}
-      >
+        showChatHeader={true}>
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <CatastrophicErrorPanel
             title={catastrophicErrorPanelState?.title}
@@ -212,8 +211,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onCloseStart={onPanelCloseStart}
         onCloseEnd={() => {
           onPanelCloseEnd(false);
-        }}
-      >
+        }}>
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <HydrationPanel isHydrated={isHydratingComplete} />
         </div>
@@ -224,48 +222,48 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         open={customPanelState.isOpen}
         priority={60}
         fullWidth={
-          "fullWidth" in customPanelState.options &&
+          'fullWidth' in customPanelState.options &&
           customPanelState.options.fullWidth
             ? true
             : false
         }
         showFrame={
-          "showFrame" in customPanelState.options &&
+          'showFrame' in customPanelState.options &&
           customPanelState.options.showFrame
             ? true
             : false
         }
         aiEnabled={
-          "aiEnabled" in customPanelState.options &&
+          'aiEnabled' in customPanelState.options &&
           customPanelState.options.aiEnabled
             ? true
             : false
         }
         showChatHeader={
           !isLegacyCustomPanel &&
-          "showChatHeader" in customPanelState.options &&
+          'showChatHeader' in customPanelState.options &&
           customPanelState.options.showChatHeader
             ? true
             : false
         }
         animationOnOpen={
           customPanelState.options.disableAnimation
-            ? "none"
-            : "openFromSide" in customPanelState.options &&
+            ? 'none'
+            : 'openFromSide' in customPanelState.options &&
                 customPanelState.options.openFromSide
-              ? "slide-in-from-start"
-              : "slide-in-from-bottom"
+              ? 'slide-in-from-start'
+              : 'slide-in-from-bottom'
         }
         animationOnClose={
           customPanelState.options.disableAnimation
-            ? "none"
-            : "openFromSide" in customPanelState.options &&
+            ? 'none'
+            : 'openFromSide' in customPanelState.options &&
                 customPanelState.options.openFromSide
-              ? "slide-out-to-start"
-              : "slide-out-to-bottom"
+              ? 'slide-out-to-start'
+              : 'slide-out-to-bottom'
         }
         openFromSide={
-          "openFromSide" in customPanelState.options &&
+          'openFromSide' in customPanelState.options &&
           customPanelState.options.openFromSide
             ? true
             : false
@@ -273,37 +271,36 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onOpenStart={() => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_PRE_OPEN },
-            serviceManager.instance,
+            serviceManager.instance
           );
           onPanelOpenStart(true);
         }}
         onOpenEnd={() => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_OPEN },
-            serviceManager.instance,
+            serviceManager.instance
           );
           onPanelOpenEnd();
         }}
         onCloseStart={() => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_PRE_CLOSE },
-            serviceManager.instance,
+            serviceManager.instance
           );
           onPanelCloseStart();
         }}
         onCloseEnd={() => {
           serviceManager.eventBus.fire(
             { type: BusEventType.CUSTOM_PANEL_CLOSE },
-            serviceManager.instance,
+            serviceManager.instance
           );
           serviceManager.store.dispatch(
             actions.setCustomPanelConfigOptions(
-              DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-            ),
+              DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS
+            )
           );
           onPanelCloseEnd(true);
-        }}
-      >
+        }}>
         <PanelWithFocus
           ref={customPanelRef}
           header={
@@ -329,40 +326,39 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                   />
                 )}
                 <div
-                  className={cx("cds-aichat--panel-header", {
-                    "cds-aichat--panel-header--full-width":
-                      "fullWidth" in customPanelState.options &&
+                  className={cx('cds-aichat--panel-header', {
+                    'cds-aichat--panel-header--full-width':
+                      'fullWidth' in customPanelState.options &&
                       customPanelState.options.fullWidth,
-                  })}
-                >
+                  })}>
                   <div className="cds-aichat--panel-header-content">
                     <PanelHeader
                       title={panelTitle}
                       labelBackButton={languagePack.general_returnToAssistant}
                       backButtonType={
-                        "backButtonType" in customPanelState.options
+                        'backButtonType' in customPanelState.options
                           ? customPanelState.options.backButtonType
                           : undefined
                       }
                       backButtonPosition={
-                        "backButtonPosition" in customPanelState.options
+                        'backButtonPosition' in customPanelState.options
                           ? customPanelState.options.backButtonPosition
                           : undefined
                       }
                       openFromSide={
-                        "openFromSide" in customPanelState.options &&
+                        'openFromSide' in customPanelState.options &&
                         customPanelState.options.openFromSide
                       }
                       onClickBack={() => {
                         serviceManager.store.dispatch(
-                          actions.setCustomPanelOpen(false),
+                          actions.setCustomPanelOpen(false)
                         );
-                        "onClickBack" in customPanelState.options &&
+                        'onClickBack' in customPanelState.options &&
                           customPanelState.options.onClickBack?.();
                       }}
                       showBackButton={
                         !(
-                          "hideBackButton" in customPanelState.options &&
+                          'hideBackButton' in customPanelState.options &&
                           customPanelState.options.hideBackButton
                         )
                       }
@@ -396,8 +392,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
           onCloseStart={onPanelCloseStart}
           onCloseEnd={() => onPanelCloseEnd(false)}
           onBodyScroll={disclaimerContent.onBodyScroll}
-          data-testid={PageObjectId.DISCLAIMER_PANEL}
-        >
+          data-testid={PageObjectId.DISCLAIMER_PANEL}>
           <div slot="body" className="cds-aichat--widget--expand-to-fit">
             {disclaimerContent.body}
           </div>
@@ -449,10 +444,9 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onCloseEnd={() => {
           onPanelCloseEnd(true);
           serviceManager.store.dispatch(
-            actions.setResponsePanelContent(null, false),
+            actions.setResponsePanelContent(null, false)
           );
-        }}
-      >
+        }}>
         {responsePanelState.localMessageItem &&
           (allMessagesByID[
             responsePanelState.localMessageItem?.fullMessageID
@@ -472,7 +466,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                     labelBackButton={languagePack.general_returnToAssistant}
                     onClickBack={() =>
                       serviceManager.store.dispatch(
-                        actions.setResponsePanelIsOpen(false),
+                        actions.setResponsePanelIsOpen(false)
                       )
                     }
                   />
@@ -497,7 +491,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                   showChainOfThought={false}
                   allowNewFeedback={false}
                   renderMessageComponent={(
-                    childProps: MessageTypeComponentProps,
+                    childProps: MessageTypeComponentProps
                   ) => <MessageTypeComponent {...childProps} />}
                 />
               }
@@ -520,7 +514,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                   showChainOfThought={false}
                   allowNewFeedback={false}
                   renderMessageComponent={(
-                    childProps: MessageTypeComponentProps,
+                    childProps: MessageTypeComponentProps
                   ) => <MessageTypeComponent {...childProps} />}
                 />
               }
@@ -545,8 +539,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onOpenStart={() => onPanelOpenStart(true)}
         onOpenEnd={onPanelOpenEnd}
         onCloseStart={onPanelCloseStart}
-        onCloseEnd={() => onPanelCloseEnd(true)}
-      >
+        onCloseEnd={() => onPanelCloseEnd(true)}>
         <PanelWithFocus
           ref={iframePanelRef}
           header={
@@ -581,8 +574,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onOpenStart={() => onPanelOpenStart(true)}
         onOpenEnd={onPanelOpenEnd}
         onCloseStart={onPanelCloseStart}
-        onCloseEnd={() => onPanelCloseEnd(true)}
-      >
+        onCloseEnd={() => onPanelCloseEnd(true)}>
         <PanelWithFocus
           ref={viewSourcePanelRef}
           header={
@@ -591,7 +583,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
               labelBackButton={languagePack.general_returnToAssistant}
               onClickBack={() =>
                 serviceManager.store.dispatch(
-                  actions.setViewSourcePanelIsOpen(false),
+                  actions.setViewSourcePanelIsOpen(false)
                 )
               }
             />
@@ -621,8 +613,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
           onCloseEnd={() => {
             onPanelCloseEnd(true);
             serviceManager.store.dispatch(actions.setHistoryPanelOpen(false));
-          }}
-        >
+          }}>
           <PanelWithFocus
             body={
               <WriteableElement

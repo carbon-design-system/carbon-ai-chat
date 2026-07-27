@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,9 +12,9 @@ import React, {
   useImperativeHandle,
   useRef,
   ReactNode,
-} from "react";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { focusOnFirstFocusableElement } from "../../utils/domUtils";
+} from 'react';
+import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
+import { focusOnFirstFocusableElement } from '../../utils/domUtils';
 
 interface PanelWithFocusProps {
   header?: ReactNode;
@@ -64,16 +64,13 @@ export const PanelWithFocus = forwardRef<HasRequestFocus, PanelWithFocusProps>(
         <div
           ref={bodyRef}
           slot="body"
-          className="cds-aichat--widget--expand-to-fit"
-        >
+          className="cds-aichat--widget--expand-to-fit">
           {body}
         </div>
         {footer && <div slot="footer">{footer}</div>}
       </>
     );
-  },
+  }
 );
 
-PanelWithFocus.displayName = "PanelWithFocus";
-
-// Made with Bob
+PanelWithFocus.displayName = 'PanelWithFocus';

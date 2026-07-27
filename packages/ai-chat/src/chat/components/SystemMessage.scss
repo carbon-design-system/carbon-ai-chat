@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 // Standalone system message (no bubble, centered between messages)
 .cds-aichat--system-message-standalone {
@@ -17,7 +17,7 @@
   margin: layout.$spacing-07 layout.$spacing-05 0 layout.$spacing-05;
 
   &-text {
-    @include type.type-style("helper-text-01");
+    @include type.type-style('helper-text-01');
 
     color: theme.$text-secondary;
     text-align: center;
@@ -28,7 +28,7 @@
 .cds-aichat--received,
 .cds-aichat--sent {
   .cds-aichat--system-message-inline {
-    @include type.type-style("helper-text-01");
+    @include type.type-style('helper-text-01');
 
     color: theme.$text-secondary;
     text-align: center;
@@ -41,7 +41,7 @@
   &::after {
     flex: 1;
     border-block-end: 1px solid theme.$border-subtle;
-    content: "";
+    content: '';
   }
 
   &::before {
@@ -61,7 +61,7 @@
 }
 
 .cds-aichat--system-message-response-stopped {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   color: theme.$text-secondary;
   font-style: italic;

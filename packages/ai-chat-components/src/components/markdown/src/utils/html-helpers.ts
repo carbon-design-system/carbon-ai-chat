@@ -7,45 +7,45 @@
  *  @license
  */
 
-import type { TokenTree } from "../markdown-token-tree";
+import type { TokenTree } from '../markdown-token-tree';
 
 // HTML elements that never ship closing tags; treat them as self-closing so the stack logic does not wait for </tag>.
 const SELF_CLOSING_HTML_TAGS = new Set<string>([
-  "area",
-  "base",
-  "br",
-  "col",
-  "embed",
-  "hr",
-  "img",
-  "input",
-  "link",
-  "meta",
-  "param",
-  "source",
-  "track",
-  "wbr",
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ]);
 
 // Token types we can safely glue into the combined HTML chunk. Anything else (e.g., emphasis markers) should abort
 // the merge to avoid damaging markdown.
 const INLINE_HTML_ALLOWED_TOKEN_TYPES = new Set<string>([
-  "html_inline",
-  "text",
-  "softbreak",
-  "hardbreak",
-  "code_inline",
-  "entity",
-  "link_open",
-  "link_close",
+  'html_inline',
+  'text',
+  'softbreak',
+  'hardbreak',
+  'code_inline',
+  'entity',
+  'link_open',
+  'link_close',
 ]);
 
 type HtmlInlineTag =
-  | { kind: "opening"; tagName: string; selfClosing: boolean }
-  | { kind: "closing"; tagName: string };
+  | { kind: 'opening'; tagName: string; selfClosing: boolean }
+  | { kind: 'closing'; tagName: string };
 
 type HtmlBlockBoundary =
-  { kind: "opening"; tagName: string } | { kind: "closing"; tagName: string };
+  { kind: 'opening'; tagName: string } | { kind: 'closing'; tagName: string };
 
 /** Marker element appended to opening HTML so markdown children mount inside the block. */
 export const HTML_CONTAINER_SLOT = '<div data-aichat-markdown=""></div>';
@@ -55,16 +55,16 @@ export const HTML_CONTAINER_SLOT = '<div data-aichat-markdown=""></div>';
 // back inside the HTML element. Returns null for closers, self-closing tags, or blocks
 // that already include a matching </tag>.
 function parseHtmlBlockOpening(
-  content: string | undefined,
+  content: string | undefined
 ): HtmlBlockBoundary | null {
-  const trimmed = (content ?? "").trim();
+  const trimmed = (content ?? '').trim();
 
   if (
-    !trimmed.startsWith("<") ||
-    trimmed.startsWith("</") ||
-    trimmed.startsWith("<!") ||
-    trimmed.startsWith("<?") ||
-    trimmed.startsWith("<%")
+    !trimmed.startsWith('<') ||
+    trimmed.startsWith('</') ||
+    trimmed.startsWith('<!') ||
+    trimmed.startsWith('<?') ||
+    trimmed.startsWith('<%')
   ) {
     return null;
   }
@@ -79,50 +79,50 @@ function parseHtmlBlockOpening(
     return null;
   }
 
-  const closePattern = new RegExp(`</\\s*${tagName}\\s*>`, "i");
+  const closePattern = new RegExp(`</\\s*${tagName}\\s*>`, 'i');
   if (closePattern.test(trimmed)) {
     return null;
   }
 
-  return { kind: "opening", tagName };
+  return { kind: 'opening', tagName };
 }
 
 function parseHtmlBlockClosing(
-  content: string | undefined,
+  content: string | undefined
 ): HtmlBlockBoundary | null {
-  const trimmed = (content ?? "").trim();
+  const trimmed = (content ?? '').trim();
   const closingMatch = trimmed.match(/^<\/\s*([A-Za-z][\w:-]*)\s*>$/);
   if (!closingMatch) {
     return null;
   }
 
-  return { kind: "closing", tagName: closingMatch[1].toLowerCase() };
+  return { kind: 'closing', tagName: closingMatch[1].toLowerCase() };
 }
 
 // Minimal tag parser that ignores comments/entities (e.g., <!-- ... -->) and reports whether a tag opens, closes, or
 // self-closes a given element.
 function parseHtmlInlineTag(content: string | undefined): HtmlInlineTag | null {
-  const trimmed = (content ?? "").trim();
+  const trimmed = (content ?? '').trim();
 
-  if (!trimmed.startsWith("<") || !trimmed.endsWith(">")) {
+  if (!trimmed.startsWith('<') || !trimmed.endsWith('>')) {
     // Not bracketed like "<...>"; definitely not a tag token.
     return null;
   }
 
-  if (trimmed.startsWith("</")) {
+  if (trimmed.startsWith('</')) {
     // Closing tag: extract the element name. Reject malformed endings.
     const closingMatch = trimmed.match(/^<\/\s*([A-Za-z][\w:-]*)\s*>$/);
     if (!closingMatch) {
       return null;
     }
-    return { kind: "closing", tagName: closingMatch[1].toLowerCase() };
+    return { kind: 'closing', tagName: closingMatch[1].toLowerCase() };
   }
 
   // Skip comments/doctype/instruction fragments; they cannot help balance nesting.
   if (
-    trimmed.startsWith("<!") ||
-    trimmed.startsWith("<?") ||
-    trimmed.startsWith("<%")
+    trimmed.startsWith('<!') ||
+    trimmed.startsWith('<?') ||
+    trimmed.startsWith('<%')
   ) {
     return null;
   }
@@ -137,15 +137,15 @@ function parseHtmlInlineTag(content: string | undefined): HtmlInlineTag | null {
   // Treat `<tag/>` and the HTML void elements as self-contained so they do not
   // add entries to the stack.
   const selfClosing =
-    trimmed.endsWith("/>") || SELF_CLOSING_HTML_TAGS.has(tagName);
+    trimmed.endsWith('/>') || SELF_CLOSING_HTML_TAGS.has(tagName);
 
-  return { kind: "opening", tagName, selfClosing };
+  return { kind: 'opening', tagName, selfClosing };
 }
 
 // Collapses runs of html_inline tokens (possibly interleaved with text) into a
 // single token so the browser does not auto-close the first tag mid-render.
 export function combineConsecutiveHtmlInline(
-  children: TokenTree[],
+  children: TokenTree[]
 ): TokenTree[] {
   if (children.length < 2) {
     return children;
@@ -157,7 +157,7 @@ export function combineConsecutiveHtmlInline(
   for (let index = 0; index < children.length; index++) {
     const startNode = children[index];
 
-    if (startNode.token.type !== "html_inline") {
+    if (startNode.token.type !== 'html_inline') {
       combinedChildren.push(startNode);
       continue;
     }
@@ -165,7 +165,7 @@ export function combineConsecutiveHtmlInline(
     const openingTag = parseHtmlInlineTag(startNode.token.content);
     if (
       !openingTag ||
-      openingTag.kind !== "opening" ||
+      openingTag.kind !== 'opening' ||
       openingTag.selfClosing
     ) {
       combinedChildren.push(startNode);
@@ -174,20 +174,20 @@ export function combineConsecutiveHtmlInline(
 
     const stack: string[] = [openingTag.tagName]; // Track nested openings we must close.
     const chunkTokens: TokenTree[] = [startNode]; // Collect tokens to merge if the stack clears.
-    let content = startNode.token.content ?? "";
+    let content = startNode.token.content ?? '';
     let endIndex = index;
     let success = false;
 
     for (let lookahead = index + 1; lookahead < children.length; lookahead++) {
       const candidate = children[lookahead];
-      const tokenType = candidate.token.type ?? "";
+      const tokenType = candidate.token.type ?? '';
 
       if (!INLINE_HTML_ALLOWED_TOKEN_TYPES.has(tokenType)) {
         // Encountered formatting/inline constructs we do not know how to merge.
         break;
       }
 
-      if (tokenType === "html_inline") {
+      if (tokenType === 'html_inline') {
         const parsed = parseHtmlInlineTag(candidate.token.content);
         if (!parsed) {
           // Malformed tag; abandon the merge.
@@ -195,9 +195,9 @@ export function combineConsecutiveHtmlInline(
         }
 
         chunkTokens.push(candidate);
-        content += candidate.token.content ?? "";
+        content += candidate.token.content ?? '';
 
-        if (parsed.kind === "opening") {
+        if (parsed.kind === 'opening') {
           if (!parsed.selfClosing) {
             // Push nested openers so we wait for their matching closers too.
             stack.push(parsed.tagName);
@@ -235,7 +235,7 @@ export function combineConsecutiveHtmlInline(
 
     if (stack.length === 0 && endIndex > index) {
       combinedChildren.push({
-        key: chunkTokens.map((token) => token.key).join("|"),
+        key: chunkTokens.map((token) => token.key).join('|'),
         token: {
           ...startNode.token,
           content,
@@ -266,7 +266,7 @@ export function combineSplitHtmlBlocks(children: TokenTree[]): TokenTree[] {
   for (let index = 0; index < children.length; index++) {
     const startNode = children[index];
 
-    if (startNode.token.type !== "html_block") {
+    if (startNode.token.type !== 'html_block') {
       combinedChildren.push(startNode);
       continue;
     }
@@ -280,13 +280,13 @@ export function combineSplitHtmlBlocks(children: TokenTree[]): TokenTree[] {
     const stack: string[] = [openingTag.tagName];
     const innerChildren: TokenTree[] = [];
     let endIndex = index;
-    let closingHtml = "";
+    let closingHtml = '';
     let success = false;
 
     for (let lookahead = index + 1; lookahead < children.length; lookahead++) {
       const candidate = children[lookahead];
 
-      if (candidate.token.type === "html_block") {
+      if (candidate.token.type === 'html_block') {
         const nestedClosing = parseHtmlBlockClosing(candidate.token.content);
         if (nestedClosing) {
           const expected = stack[stack.length - 1];
@@ -298,7 +298,7 @@ export function combineSplitHtmlBlocks(children: TokenTree[]): TokenTree[] {
           endIndex = lookahead;
 
           if (stack.length === 0) {
-            closingHtml = candidate.token.content ?? "";
+            closingHtml = candidate.token.content ?? '';
             success = true;
             break;
           }
@@ -329,10 +329,10 @@ export function combineSplitHtmlBlocks(children: TokenTree[]): TokenTree[] {
         startNode.key,
         ...innerChildren.map((child) => child.key),
         children[endIndex].key,
-      ].join("|"),
+      ].join('|'),
       token: {
         ...startNode.token,
-        type: "html_container",
+        type: 'html_container',
         tag: openingTag.tagName,
         meta: { closingHtml },
       },
@@ -347,48 +347,48 @@ export function combineSplitHtmlBlocks(children: TokenTree[]): TokenTree[] {
 
 function serializeInlineToken(tokenTree: TokenTree): string {
   const token = tokenTree.token;
-  const type = token.type ?? "";
+  const type = token.type ?? '';
 
   if (
-    type === "text" ||
-    type === "code_inline" ||
-    type === "softbreak" ||
-    type === "hardbreak" ||
-    type === "entity" ||
-    type === "html_inline"
+    type === 'text' ||
+    type === 'code_inline' ||
+    type === 'softbreak' ||
+    type === 'hardbreak' ||
+    type === 'entity' ||
+    type === 'html_inline'
   ) {
-    return token.content ?? "";
+    return token.content ?? '';
   }
 
-  if (type === "link_open") {
+  if (type === 'link_open') {
     const attrs = (token.attrs ?? []) as Array<
       [string, string | null | undefined]
     >;
     const attrString = attrs
       .map(([name, value]) => {
         if (!name) {
-          return "";
+          return '';
         }
         if (value === undefined || value === null) {
           return name;
         }
-        const escaped = String(value).replace(/"/g, "&quot;");
+        const escaped = String(value).replace(/"/g, '&quot;');
         return `${name}="${escaped}"`;
       })
       .filter(Boolean)
-      .join(" ");
+      .join(' ');
 
     const childContent = (tokenTree.children ?? [])
       .map((child) => serializeInlineToken(child))
-      .join("");
+      .join('');
 
-    const openTag = attrString.length ? `<a ${attrString}>` : "<a>";
+    const openTag = attrString.length ? `<a ${attrString}>` : '<a>';
     return `${openTag}${childContent}</a>`;
   }
 
-  if (type === "link_close") {
-    return "";
+  if (type === 'link_close') {
+    return '';
   }
 
-  return token.content ?? "";
+  return token.content ?? '';
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,36 +13,36 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../../test_helpers";
+} from '../../../test_helpers';
 import {
   MessageResponseTypes,
   MessageRequest,
-} from "../../../../src/types/messaging/Messages";
+} from '../../../../src/types/messaging/Messages';
 import {
   CancellationReason,
   CustomSendMessageOptions,
-} from "../../../../src/types/config/MessagingConfig";
-import { ChatInstance } from "../../../../src/types/instance/ChatInstance";
+} from '../../../../src/types/config/MessagingConfig';
+import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 
-describe("ChatInstance.messaging.clearConversation", () => {
+describe('ChatInstance.messaging.clearConversation', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have clearConversation method available", async () => {
+  it('should have clearConversation method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.messaging.clearConversation).toBe("function");
+    expect(typeof instance.messaging.clearConversation).toBe('function');
   });
 
-  it("should execute without parameters", async () => {
+  it('should execute without parameters', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     await expect(instance.messaging.clearConversation()).resolves.not.toThrow();
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
@@ -50,32 +50,32 @@ describe("ChatInstance.messaging.clearConversation", () => {
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("state management", () => {
-    it("should clear all messages from state", async () => {
+  describe('state management', () => {
+    it('should clear all messages from state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add some messages first
       await instance.messaging.addMessage({
-        id: "test-msg-1",
+        id: 'test-msg-1',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "First message",
+              text: 'First message',
             },
           ],
         },
       });
 
       await instance.messaging.addMessage({
-        id: "test-msg-2",
+        id: 'test-msg-2',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Second message",
+              text: 'Second message',
             },
           ],
         },
@@ -85,7 +85,7 @@ describe("ChatInstance.messaging.clearConversation", () => {
       let state = store.getState();
       const messageCountBeforeClear = Object.keys(state.allMessagesByID).length;
       const itemCountBeforeClear = Object.keys(
-        state.allMessageItemsByID,
+        state.allMessageItemsByID
       ).length;
       const botMessageIDsBeforeClear =
         state.assistantMessageState.messageIDs.length;
@@ -115,19 +115,19 @@ describe("ChatInstance.messaging.clearConversation", () => {
       expect(botLocalIDsAfterClear).toBe(0);
     });
 
-    it("should reset conversation state to initial values", async () => {
+    it('should reset conversation state to initial values', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add some messages and modify state
       await instance.messaging.addMessage({
-        id: "state-test-msg",
+        id: 'state-test-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "State test message",
+              text: 'State test message',
             },
           ],
         },
@@ -154,19 +154,19 @@ describe("ChatInstance.messaging.clearConversation", () => {
       expect(state.assistantMessageState.isHydratingCounter).toBe(0);
     });
 
-    it("should handle multiple calls to clearConversation", async () => {
+    it('should handle multiple calls to clearConversation', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add messages
       await instance.messaging.addMessage({
-        id: "multi-clear-msg",
+        id: 'multi-clear-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Multi clear test",
+              text: 'Multi clear test',
             },
           ],
         },
@@ -180,7 +180,7 @@ describe("ChatInstance.messaging.clearConversation", () => {
 
       // Second clear (should not throw)
       await expect(
-        instance.messaging.clearConversation(),
+        instance.messaging.clearConversation()
       ).resolves.not.toThrow();
 
       // Third clear with no state changes
@@ -191,7 +191,7 @@ describe("ChatInstance.messaging.clearConversation", () => {
       expect(Object.keys(state.allMessageItemsByID)).toHaveLength(0);
     });
 
-    it("should clear conversation without affecting human agent state", async () => {
+    it('should clear conversation without affecting human agent state', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -202,12 +202,12 @@ describe("ChatInstance.messaging.clearConversation", () => {
 
       // Add messages
       await instance.messaging.addMessage({
-        id: "agent-test-msg",
+        id: 'agent-test-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Agent test message",
+              text: 'Agent test message',
             },
           ],
         },
@@ -219,17 +219,17 @@ describe("ChatInstance.messaging.clearConversation", () => {
       // Verify human agent state is preserved
       const finalState = store.getState();
       expect(finalState.humanAgentState.isConnecting).toBe(
-        initialHumanAgentState.isConnecting,
+        initialHumanAgentState.isConnecting
       );
       expect(finalState.humanAgentState.isReconnecting).toBe(
-        initialHumanAgentState.isReconnecting,
+        initialHumanAgentState.isReconnecting
       );
       expect(finalState.humanAgentState.numUnreadMessages).toBe(
-        initialHumanAgentState.numUnreadMessages,
+        initialHumanAgentState.numUnreadMessages
       );
     });
 
-    it("should work correctly when called with no existing messages", async () => {
+    it('should work correctly when called with no existing messages', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
@@ -237,10 +237,10 @@ describe("ChatInstance.messaging.clearConversation", () => {
       // Get initial empty state
       const initialState = store.getState();
       const initialMessageCount = Object.keys(
-        initialState.allMessagesByID,
+        initialState.allMessagesByID
       ).length;
       const initialItemCount = Object.keys(
-        initialState.allMessageItemsByID,
+        initialState.allMessageItemsByID
       ).length;
 
       // Clear conversation on empty state
@@ -258,8 +258,8 @@ describe("ChatInstance.messaging.clearConversation", () => {
     });
   });
 
-  describe("Behavior verification", () => {
-    it("should not fire restart conversation events", async () => {
+  describe('Behavior verification', () => {
+    it('should not fire restart conversation events', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
 
@@ -269,13 +269,13 @@ describe("ChatInstance.messaging.clearConversation", () => {
       // Set up event listeners to verify events are NOT fired
       instance.on([
         {
-          type: "pre:restartConversation" as any,
+          type: 'pre:restartConversation' as any,
           handler: () => {
             preRestartEventFired = true;
           },
         },
         {
-          type: "restartConversation" as any,
+          type: 'restartConversation' as any,
           handler: () => {
             restartEventFired = true;
           },
@@ -293,19 +293,19 @@ describe("ChatInstance.messaging.clearConversation", () => {
       expect(restartEventFired).toBe(false);
     });
 
-    it("should allow adding messages after clearing conversation", async () => {
+    it('should allow adding messages after clearing conversation', async () => {
       const config = createBaseConfig();
       const { instance, store } =
         await renderChatAndGetInstanceWithStore(config);
 
       // Add initial message
       await instance.messaging.addMessage({
-        id: "pre-clear-msg",
+        id: 'pre-clear-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "Before clear",
+              text: 'Before clear',
             },
           ],
         },
@@ -320,12 +320,12 @@ describe("ChatInstance.messaging.clearConversation", () => {
 
       // Add new message after clear
       await instance.messaging.addMessage({
-        id: "post-clear-msg",
+        id: 'post-clear-msg',
         output: {
           generic: [
             {
               response_type: MessageResponseTypes.TEXT,
-              text: "After clear",
+              text: 'After clear',
             },
           ],
         },
@@ -334,13 +334,13 @@ describe("ChatInstance.messaging.clearConversation", () => {
       // Verify new message was added
       state = store.getState();
       expect(Object.keys(state.allMessagesByID).length).toBeGreaterThan(0);
-      expect(state.allMessagesByID["post-clear-msg"]).toBeDefined();
-      expect(state.allMessagesByID["pre-clear-msg"]).toBeUndefined();
+      expect(state.allMessagesByID['post-clear-msg']).toBeDefined();
+      expect(state.allMessagesByID['pre-clear-msg']).toBeUndefined();
     });
   });
 
-  describe("Abort signal behavior", () => {
-    it("should trigger abort signal with CONVERSATION_RESTARTED reason when clearing during streaming", async () => {
+  describe('Abort signal behavior', () => {
+    it('should trigger abort signal with CONVERSATION_RESTARTED reason when clearing during streaming', async () => {
       const config = createBaseConfig();
       let capturedAbortReason: string | undefined;
 
@@ -349,10 +349,10 @@ describe("ChatInstance.messaging.clearConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
           // Listen for abort
-          options.signal?.addEventListener("abort", () => {
+          options.signal?.addEventListener('abort', () => {
             capturedAbortReason = options.signal?.reason;
           });
 
@@ -364,7 +364,7 @@ describe("ChatInstance.messaging.clearConversation", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Send a message (starts streaming)
-      const sendPromise = instance.send("test message");
+      const sendPromise = instance.send('test message');
 
       // Wait a moment to ensure message starts processing
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -379,11 +379,11 @@ describe("ChatInstance.messaging.clearConversation", () => {
 
       // Verify abort was triggered with correct reason
       expect(capturedAbortReason).toBe(
-        CancellationReason.CONVERSATION_RESTARTED,
+        CancellationReason.CONVERSATION_RESTARTED
       );
     });
 
-    it("should abort all pending messages when clearing conversation", async () => {
+    it('should abort all pending messages when clearing conversation', async () => {
       const config = createBaseConfig();
       const abortedMessages: string[] = [];
 
@@ -391,10 +391,10 @@ describe("ChatInstance.messaging.clearConversation", () => {
         customSendMessage: async (
           request: MessageRequest,
           options: CustomSendMessageOptions,
-          _instance: ChatInstance,
+          _instance: ChatInstance
         ) => {
-          options.signal?.addEventListener("abort", () => {
-            abortedMessages.push(request.input.text || "");
+          options.signal?.addEventListener('abort', () => {
+            abortedMessages.push(request.input.text || '');
           });
 
           // Simulate long streaming
@@ -405,9 +405,9 @@ describe("ChatInstance.messaging.clearConversation", () => {
       const instance = await renderChatAndGetInstance(config);
 
       // Send multiple messages
-      const send1 = instance.send("message 1");
-      const send2 = instance.send("message 2");
-      const send3 = instance.send("message 3");
+      const send1 = instance.send('message 1');
+      const send2 = instance.send('message 2');
+      const send3 = instance.send('message 3');
 
       // Wait a moment to ensure messages start processing
       await new Promise((resolve) => setTimeout(resolve, 10));

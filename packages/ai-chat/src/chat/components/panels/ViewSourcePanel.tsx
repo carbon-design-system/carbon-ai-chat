@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,13 +7,13 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { SearchResultBodyWithCitationHighlighted } from "../../components-legacy/responseTypes/util/SearchResultBody";
+import { SearchResultBodyWithCitationHighlighted } from '../../components-legacy/responseTypes/util/SearchResultBody';
 import type {
   ConversationalSearchItemCitation,
   SearchResult,
-} from "../../../types/messaging/Messages";
+} from '../../../types/messaging/Messages';
 
 interface ViewSourcePanelProps {
   citationItem?: ConversationalSearchItemCitation;

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,57 +13,57 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
-import { BusEventType } from "../../../src/types/events/eventBusTypes";
+} from '../../test_helpers';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 
-describe("ChatInstance.send", () => {
+describe('ChatInstance.send', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should have send method available", async () => {
+  it('should have send method available', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    expect(typeof instance.send).toBe("function");
+    expect(typeof instance.send).toBe('function');
   });
 
-  it("should accept string message", async () => {
+  it('should accept string message', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    await expect(instance.send("Hello")).resolves.not.toThrow();
+    await expect(instance.send('Hello')).resolves.not.toThrow();
   });
 
-  it("should accept MessageRequest object", async () => {
+  it('should accept MessageRequest object', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     const messageRequest = {
-      input: { text: "Hello" },
+      input: { text: 'Hello' },
     };
 
     await expect(instance.send(messageRequest)).resolves.not.toThrow();
   });
 
-  it("should accept send options", async () => {
+  it('should accept send options', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
     const options = { silent: true };
 
-    await expect(instance.send("Hello", options)).resolves.not.toThrow();
+    await expect(instance.send('Hello', options)).resolves.not.toThrow();
   });
 
-  it("should return a Promise", async () => {
+  it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
 
-    const result = instance.send("Hello");
+    const result = instance.send('Hello');
     expect(result).toBeInstanceOf(Promise);
   });
 
-  describe("Event bus integration", () => {
-    it("should fire pre:send and send events", async () => {
+  describe('Event bus integration', () => {
+    it('should fire pre:send and send events', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -76,7 +76,7 @@ describe("ChatInstance.send", () => {
         { type: BusEventType.SEND, handler: sendHandler },
       ]);
 
-      await instance.send("Test message for events");
+      await instance.send('Test message for events');
 
       // Verify both events were fired
       expect(preSendHandler).toHaveBeenCalledTimes(1);
@@ -89,15 +89,15 @@ describe("ChatInstance.send", () => {
       expect(preSendCall.type).toBe(BusEventType.PRE_SEND);
       expect(preSendCall.data).toBeDefined();
       expect(preSendCall.data.input).toBeDefined();
-      expect(preSendCall.data.input.text).toBe("Test message for events");
+      expect(preSendCall.data.input.text).toBe('Test message for events');
 
       expect(sendCall.type).toBe(BusEventType.SEND);
       expect(sendCall.data).toBeDefined();
       expect(sendCall.data.input).toBeDefined();
-      expect(sendCall.data.input.text).toBe("Test message for events");
+      expect(sendCall.data.input.text).toBe('Test message for events');
     });
 
-    it("should fire events for MessageRequest object", async () => {
+    it('should fire events for MessageRequest object', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -110,8 +110,8 @@ describe("ChatInstance.send", () => {
       ]);
 
       const messageRequest = {
-        input: { text: "MessageRequest test" },
-        context: { test: "data" },
+        input: { text: 'MessageRequest test' },
+        context: { test: 'data' },
       };
 
       await instance.send(messageRequest);
@@ -122,20 +122,20 @@ describe("ChatInstance.send", () => {
       const preSendCall = preSendHandler.mock.calls[0][0];
       const sendCall = sendHandler.mock.calls[0][0];
 
-      expect(preSendCall.data.input.text).toBe("MessageRequest test");
-      expect(preSendCall.data.context).toEqual({ test: "data" });
+      expect(preSendCall.data.input.text).toBe('MessageRequest test');
+      expect(preSendCall.data.context).toEqual({ test: 'data' });
 
-      expect(sendCall.data.input.text).toBe("MessageRequest test");
-      expect(sendCall.data.context).toEqual({ test: "data" });
+      expect(sendCall.data.input.text).toBe('MessageRequest test');
+      expect(sendCall.data.context).toEqual({ test: 'data' });
     });
 
-    it("should allow pre:send handler to modify message", async () => {
+    it('should allow pre:send handler to modify message', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
       // Handler that modifies the message
       const preSendHandler = jest.fn((event) => {
-        event.data.input.text = "Modified by pre:send handler";
+        event.data.input.text = 'Modified by pre:send handler';
         event.data.context = { modified: true };
       });
 
@@ -146,29 +146,29 @@ describe("ChatInstance.send", () => {
         { type: BusEventType.SEND, handler: sendHandler },
       ]);
 
-      await instance.send("Original text");
+      await instance.send('Original text');
 
       expect(preSendHandler).toHaveBeenCalledTimes(1);
       expect(sendHandler).toHaveBeenCalledTimes(1);
 
       // Verify the send handler received the modified message
       const sendCall = sendHandler.mock.calls[0][0];
-      expect(sendCall.data.input.text).toBe("Modified by pre:send handler");
+      expect(sendCall.data.input.text).toBe('Modified by pre:send handler');
       expect(sendCall.data.context).toEqual({ modified: true });
     });
 
-    it("should fire events in correct order (pre:send before send)", async () => {
+    it('should fire events in correct order (pre:send before send)', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
       const eventOrder: string[] = [];
 
       const preSendHandler = jest.fn(() => {
-        eventOrder.push("pre:send");
+        eventOrder.push('pre:send');
       });
 
       const sendHandler = jest.fn(() => {
-        eventOrder.push("send");
+        eventOrder.push('send');
       });
 
       instance.on([
@@ -176,12 +176,12 @@ describe("ChatInstance.send", () => {
         { type: BusEventType.SEND, handler: sendHandler },
       ]);
 
-      await instance.send("Test event order");
+      await instance.send('Test event order');
 
-      expect(eventOrder).toEqual(["pre:send", "send"]);
+      expect(eventOrder).toEqual(['pre:send', 'send']);
     });
 
-    it("should include message ID in events", async () => {
+    it('should include message ID in events', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -193,21 +193,21 @@ describe("ChatInstance.send", () => {
         { type: BusEventType.SEND, handler: sendHandler },
       ]);
 
-      await instance.send("Test with ID");
+      await instance.send('Test with ID');
 
       const preSendCall = preSendHandler.mock.calls[0][0];
       const sendCall = sendHandler.mock.calls[0][0];
 
       // Messages should have auto-generated IDs
       expect(preSendCall.data.id).toBeDefined();
-      expect(typeof preSendCall.data.id).toBe("string");
+      expect(typeof preSendCall.data.id).toBe('string');
       expect(preSendCall.data.id.length).toBeGreaterThan(0);
 
       expect(sendCall.data.id).toBeDefined();
       expect(sendCall.data.id).toBe(preSendCall.data.id); // Same ID in both events
     });
 
-    it("should preserve custom message ID", async () => {
+    it('should preserve custom message ID', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -220,8 +220,8 @@ describe("ChatInstance.send", () => {
       ]);
 
       const messageRequest = {
-        id: "custom-message-id",
-        input: { text: "Message with custom ID" },
+        id: 'custom-message-id',
+        input: { text: 'Message with custom ID' },
       };
 
       await instance.send(messageRequest);
@@ -229,11 +229,11 @@ describe("ChatInstance.send", () => {
       const preSendCall = preSendHandler.mock.calls[0][0];
       const sendCall = sendHandler.mock.calls[0][0];
 
-      expect(preSendCall.data.id).toBe("custom-message-id");
-      expect(sendCall.data.id).toBe("custom-message-id");
+      expect(preSendCall.data.id).toBe('custom-message-id');
+      expect(sendCall.data.id).toBe('custom-message-id');
     });
 
-    it("should work with send options", async () => {
+    it('should work with send options', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -246,17 +246,17 @@ describe("ChatInstance.send", () => {
       ]);
 
       const options = { silent: true };
-      await instance.send("Test with options", options);
+      await instance.send('Test with options', options);
 
       expect(preSendHandler).toHaveBeenCalledTimes(1);
       expect(sendHandler).toHaveBeenCalledTimes(1);
 
       // Events should still fire even with options
       const preSendCall = preSendHandler.mock.calls[0][0];
-      expect(preSendCall.data.input.text).toBe("Test with options");
+      expect(preSendCall.data.input.text).toBe('Test with options');
     });
 
-    it("should handle multiple consecutive sends", async () => {
+    it('should handle multiple consecutive sends', async () => {
       const config = createBaseConfig();
       const { instance } = await renderChatAndGetInstanceWithStore(config);
 
@@ -268,22 +268,22 @@ describe("ChatInstance.send", () => {
         { type: BusEventType.SEND, handler: sendHandler },
       ]);
 
-      await instance.send("First message");
-      await instance.send("Second message");
-      await instance.send("Third message");
+      await instance.send('First message');
+      await instance.send('Second message');
+      await instance.send('Third message');
 
       expect(preSendHandler).toHaveBeenCalledTimes(3);
       expect(sendHandler).toHaveBeenCalledTimes(3);
 
       // Check that each call had the correct message
       const preSendCalls = preSendHandler.mock.calls;
-      expect(preSendCalls[0][0].data.input.text).toBe("First message");
-      expect(preSendCalls[1][0].data.input.text).toBe("Second message");
-      expect(preSendCalls[2][0].data.input.text).toBe("Third message");
+      expect(preSendCalls[0][0].data.input.text).toBe('First message');
+      expect(preSendCalls[1][0].data.input.text).toBe('Second message');
+      expect(preSendCalls[2][0].data.input.text).toBe('Third message');
     });
 
-    describe("Stop button with showStopButtonImmediately", () => {
-      it("shows stop button immediately when enabled", async () => {
+    describe('Stop button with showStopButtonImmediately', () => {
+      it('shows stop button immediately when enabled', async () => {
         let resolveCustomSend: () => void;
         const customSendPromise = new Promise<void>((resolve) => {
           resolveCustomSend = resolve;
@@ -301,7 +301,7 @@ describe("ChatInstance.send", () => {
           await renderChatAndGetInstanceWithStore(config);
 
         // Send message
-        const sendPromise = instance.send("Test message");
+        const sendPromise = instance.send('Test message');
 
         // Give it a moment to process
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -309,7 +309,7 @@ describe("ChatInstance.send", () => {
         // Check stop button is visible immediately
         const state = store.getState();
         expect(
-          state.assistantInputState.stopStreamingButtonState.isVisible,
+          state.assistantInputState.stopStreamingButtonState.isVisible
         ).toBe(true);
 
         // Resolve the custom send to complete the test
@@ -319,7 +319,7 @@ describe("ChatInstance.send", () => {
         await sendPromise;
       });
 
-      it("does not show stop button immediately when disabled", async () => {
+      it('does not show stop button immediately when disabled', async () => {
         let resolveCustomSend: () => void;
         const customSendPromise = new Promise<void>((resolve) => {
           resolveCustomSend = resolve;
@@ -337,7 +337,7 @@ describe("ChatInstance.send", () => {
           await renderChatAndGetInstanceWithStore(config);
 
         // Send message
-        const sendPromise = instance.send("Test message");
+        const sendPromise = instance.send('Test message');
 
         // Give it a moment to process
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -345,7 +345,7 @@ describe("ChatInstance.send", () => {
         // Check stop button is NOT visible (would need streaming metadata)
         const state = store.getState();
         expect(
-          state.assistantInputState.stopStreamingButtonState.isVisible,
+          state.assistantInputState.stopStreamingButtonState.isVisible
         ).toBe(false);
 
         // Resolve the custom send to complete the test
@@ -355,7 +355,7 @@ describe("ChatInstance.send", () => {
         await sendPromise;
       });
 
-      it("respects abort signal when stop button functionality is triggered", async () => {
+      it('respects abort signal when stop button functionality is triggered', async () => {
         let abortCalled = false;
         let resolveCustomSend: () => void;
         const customSendPromise = new Promise<void>((resolve) => {
@@ -366,7 +366,7 @@ describe("ChatInstance.send", () => {
         config.messaging = {
           showStopButtonImmediately: true,
           customSendMessage: async (message, { signal }) => {
-            signal.addEventListener("abort", () => {
+            signal.addEventListener('abort', () => {
               abortCalled = true;
               resolveCustomSend();
             });
@@ -376,7 +376,7 @@ describe("ChatInstance.send", () => {
 
         const { instance } = await renderChatAndGetInstanceWithStore(config);
 
-        const sendPromise = instance.send("Test message");
+        const sendPromise = instance.send('Test message');
 
         // Give it a moment to start processing
         await new Promise((resolve) => setTimeout(resolve, 50));
@@ -391,7 +391,7 @@ describe("ChatInstance.send", () => {
         expect(abortCalled).toBe(true);
       });
 
-      it("hides stop button after message completes", async () => {
+      it('hides stop button after message completes', async () => {
         const config = createBaseConfig();
         config.messaging = {
           showStopButtonImmediately: true,
@@ -404,16 +404,16 @@ describe("ChatInstance.send", () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(config);
 
-        await instance.send("Test message");
+        await instance.send('Test message');
 
         // After completion, stop button should be hidden
         const state = store.getState();
         expect(
-          state.assistantInputState.stopStreamingButtonState.isVisible,
+          state.assistantInputState.stopStreamingButtonState.isVisible
         ).toBe(false);
       });
 
-      it("works with delayed responses", async () => {
+      it('works with delayed responses', async () => {
         const config = createBaseConfig();
         config.messaging = {
           showStopButtonImmediately: true,
@@ -422,15 +422,15 @@ describe("ChatInstance.send", () => {
             return new Promise<void>((resolve, reject) => {
               const timeoutId = setTimeout(() => {
                 if (signal.aborted) {
-                  reject(new Error("Aborted"));
+                  reject(new Error('Aborted'));
                   return;
                 }
                 resolve();
               }, 100);
 
-              signal.addEventListener("abort", () => {
+              signal.addEventListener('abort', () => {
                 clearTimeout(timeoutId);
-                reject(new Error("Aborted"));
+                reject(new Error('Aborted'));
               });
             });
           },
@@ -439,13 +439,13 @@ describe("ChatInstance.send", () => {
         const { instance, store } =
           await renderChatAndGetInstanceWithStore(config);
 
-        const sendPromise = instance.send("Delayed message");
+        const sendPromise = instance.send('Delayed message');
 
         // Check button is visible during delay
         await new Promise((resolve) => setTimeout(resolve, 20));
         let state = store.getState();
         expect(
-          state.assistantInputState.stopStreamingButtonState.isVisible,
+          state.assistantInputState.stopStreamingButtonState.isVisible
         ).toBe(true);
 
         // Let it complete
@@ -454,7 +454,7 @@ describe("ChatInstance.send", () => {
         // Button should be hidden after completion
         state = store.getState();
         expect(
-          state.assistantInputState.stopStreamingButtonState.isVisible,
+          state.assistantInputState.stopStreamingButtonState.isVisible
         ).toBe(false);
       });
     });

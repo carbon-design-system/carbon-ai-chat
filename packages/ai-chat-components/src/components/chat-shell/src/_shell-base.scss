@@ -1,20 +1,20 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/utilities/ai-gradient" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/utilities/ai-gradient' as *;
 
-@use "../../../globals/scss/vars" as *;
-@use "variables" as *;
+@use '../../../globals/scss/vars' as *;
+@use 'variables' as *;
 
 // ============================================================================
 // Host Element
@@ -86,7 +86,7 @@
 // Shell Modifiers - AI Theme
 .shell.ai-theme {
   border: 1px solid transparent;
-  @include ai-popover-gradient($background: "chat-shell-background");
+  @include ai-popover-gradient($background: 'chat-shell-background');
 
   background-color: theme.$chat-shell-background;
   box-shadow: $ai-box-shadow-inner, $ai-box-shadow-outer;
@@ -315,11 +315,11 @@
   max-inline-size: $history-width;
 }
 
-:host([show-history][history-location="end"]) .history {
+:host([show-history][history-location='end']) .history {
   order: 3;
 }
 
-:host([show-history][show-workspace][workspace-location="end"]) .workspace {
+:host([show-history][show-workspace][workspace-location='end']) .workspace {
   order: 2;
 }
 
@@ -344,7 +344,7 @@
   max-inline-size: $messages-max-width;
 }
 
-:host([show-history][history-location="end"]) .input-and-messages {
+:host([show-history][history-location='end']) .input-and-messages {
   order: 1;
 }
 
@@ -353,5 +353,3 @@
   flex-grow: 1;
   min-block-size: 0;
 }
-
-// Made with Bob

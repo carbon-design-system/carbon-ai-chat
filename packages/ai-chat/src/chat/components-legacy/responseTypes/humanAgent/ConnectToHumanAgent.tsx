@@ -7,20 +7,20 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { AppState } from "../../../../types/state/AppState";
-import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { selectHumanAgentDisplayState } from "../../../store/selectors";
-import { RealConnectToHumanAgent } from "./RealConnectToHumanAgent";
+import { HasServiceManager } from '../../../hocs/withServiceManager';
+import { AppState } from '../../../../types/state/AppState';
+import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { useSelector } from '../../../hooks/useSelector';
+import { shallowEqual } from '../../../store/appStore';
+import { selectHumanAgentDisplayState } from '../../../store/selectors';
+import { RealConnectToHumanAgent } from './RealConnectToHumanAgent';
 import {
   ConnectToHumanAgentItem,
   MessageResponse,
-} from "../../../../types/messaging/Messages";
+} from '../../../../types/messaging/Messages';
 
 interface ConnectToHumanAgentProps extends HasServiceManager, HasRequestFocus {
   /**
@@ -62,19 +62,19 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
   // from re-rendering.
   const agentDisplayState = useSelector(
     selectHumanAgentDisplayState,
-    shallowEqual,
+    shallowEqual
   );
   const humanAgentState = useSelector(
     (state: AppState) => state.humanAgentState,
-    shallowEqual,
+    shallowEqual
   );
   const persistedHumanAgentState = useSelector(
     (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
-    shallowEqual,
+    shallowEqual
   );
 
   const hasServiceDesk = useSelector((state: AppState) =>
-    Boolean(state.config.public.serviceDeskFactory),
+    Boolean(state.config.public.serviceDeskFactory)
   );
 
   // Disable the "start chat" button if the widget is in a readonly mode or a preview mode with no service desk.

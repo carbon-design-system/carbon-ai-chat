@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -193,7 +193,7 @@ cds-aichat-shell {
 
 .css-var {
   color: #0f62fe;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   font-weight: 400;
 }
@@ -205,7 +205,7 @@ cds-aichat-shell {
   background-color: #f4f4f4;
   color: #161616;
   cursor: pointer;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 14px;
 
   &:hover {
@@ -218,8 +218,6 @@ cds-aichat-shell {
     outline-offset: -2px;
   }
 }
-
-// Made with Bob
 
 // =============================================================================
 // Sidebar Workspace Shell Story Styles
@@ -265,7 +263,7 @@ cds-aichat-shell {
   background-color: #0f62fe;
   color: #ffffff;
   cursor: pointer;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 14px;
 
   &:hover {

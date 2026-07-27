@@ -29,10 +29,10 @@
  * - .cds-aichat-explainability-popover--content__section       — content section with spacing
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/ai-chat-components/scss/utilities" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/ai-chat-components/scss/utilities' as *;
 
 @mixin explainability-popover-content {
   /* ============================================================================
@@ -75,7 +75,7 @@
      ============================================================================ */
 
   .#{$prefix}-explainability-popover--content__label {
-    @include type.type-style("label-02");
+    @include type.type-style('label-02');
 
     color: theme.$text-secondary;
   }
@@ -86,7 +86,7 @@
      ============================================================================ */
 
   .#{$prefix}-explainability-popover--content__title {
-    @include type.type-style("heading-04");
+    @include type.type-style('heading-04');
   }
 
   /* ============================================================================
@@ -95,7 +95,7 @@
      ============================================================================ */
 
   .#{$prefix}-explainability-popover--content__description {
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
 
     color: theme.$text-secondary;
   }
@@ -124,13 +124,13 @@
   .#{$prefix}-explainability-popover--content__section h4,
   .#{$prefix}-explainability-popover--content__section h5,
   .#{$prefix}-explainability-popover--content__section h6 {
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
 
     color: theme.$text-secondary;
   }
 
   .#{$prefix}-explainability-popover--content__section p {
-    @include type.type-style("body-01");
+    @include type.type-style('body-01');
   }
 
   .#{$prefix}-explainability-popover--content__section

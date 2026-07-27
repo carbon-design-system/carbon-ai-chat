@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -11,12 +11,20 @@ import {
   CornersType,
   MinimizeButtonIconType,
   PublicConfig,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { customSendMessage } from "../customSendMessage/customSendMessage";
-import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
-import { KeyPairs, Settings } from "./types";
-import { DemoHeaderSwitcher } from "./demo-header-switcher";
+import { customSendMessage } from '../customSendMessage/customSendMessage';
+import { mockOnFileUpload } from '../customSendMessage/doFileUpload';
+import {
+  mentionItems,
+  commandItems,
+  mentionOnSelect,
+  mentionOnRemove,
+  commandOnSelect,
+  commandOnRemove,
+} from '../customSendMessage/doMentionCommand';
+import { KeyPairs, Settings } from './types';
+import { DemoHeaderSwitcher } from './demo-header-switcher';
 
 function updateQueryParams(items: KeyPairs[]) {
   // Get the current URL's search params
@@ -42,7 +50,7 @@ function updateQueryParamsWithoutRefresh(items: KeyPairs[]) {
 
   // Update the URL without refreshing the page using History API
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-  window.history.replaceState({}, "", newUrl);
+  window.history.replaceState({}, '', newUrl);
 }
 
 function updatePageTheme(theme: string) {
@@ -50,52 +58,57 @@ function updatePageTheme(theme: string) {
   const urlParams = new URLSearchParams(window.location.search);
 
   // Update only the pageTheme parameter
-  urlParams.set("pageTheme", theme);
+  urlParams.set('pageTheme', theme);
 
   // Update the URL without refreshing the page using History API
   const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-  window.history.replaceState({}, "", newUrl);
+  window.history.replaceState({}, '', newUrl);
 }
 
 function getSettings() {
   const urlParams = new URLSearchParams(window.location.search);
 
   // Check if we're in setChatConfig mode and ignore query params if so
-  const settingsParam = urlParams.get("settings");
-  const configParam = urlParams.get("config");
-  const isSetChatConfigMode = configParam === "setChatConfig";
+  const settingsParam = urlParams.get('settings');
+  const configParam = urlParams.get('config');
+  const isSetChatConfigMode = configParam === 'setChatConfig';
 
   const settings: Partial<Settings> =
     !isSetChatConfigMode &&
-    urlParams.has("settings") &&
+    urlParams.has('settings') &&
     JSON.parse(settingsParam as string);
   const config: any =
     !isSetChatConfigMode &&
-    urlParams.has("config") &&
-    configParam !== "setChatConfig"
+    urlParams.has('config') &&
+    configParam !== 'setChatConfig'
       ? JSON.parse(configParam as string)
       : {};
-  const pageTheme = urlParams.get("pageTheme") || "cds--white";
+  const pageTheme = urlParams.get('pageTheme') || 'cds--white';
 
   let defaultConfig: PublicConfig = {
     ...config,
     // Default to AI theme enabled; prefer explicit top-level value, otherwise map legacy theme.theme
     aiEnabled:
-      typeof config.aiEnabled === "boolean"
+      typeof config.aiEnabled === 'boolean'
         ? config.aiEnabled
         : config.theme?.theme !== undefined
-          ? config.theme.theme === "CarbonAI"
+          ? config.theme.theme === 'CarbonAI'
           : true,
     // Map legacy nested theme to top-level injectCarbonTheme; "inherit" => undefined
     injectCarbonTheme:
       config.injectCarbonTheme !== undefined
         ? config.injectCarbonTheme
-        : config.theme?.injectCarbonTheme === "inherit"
+        : config.theme?.injectCarbonTheme === 'inherit'
           ? undefined
           : config.theme?.injectCarbonTheme,
     messaging: {
       customSendMessage,
       ...config.messaging,
+    },
+    input: {
+      ...config.input,
+      // Don't add autocomplete by default - let it be controlled via the switcher
+      // Only preserve suggestions if they were explicitly set in config
     },
     // Expose service manager for testing/demo purposes
     exposeServiceManagerForTesting: true,
@@ -117,12 +130,46 @@ function getSettings() {
     };
   }
 
+  // Re-inject non-serializable mention/command callbacks when hydrating from
+  // URL. Functions are stripped during JSON serialization, so if a
+  // mention/command config is present but its callbacks are missing (e.g.
+  // after a page refresh), restore the mock fixtures/handlers.
+  if (defaultConfig.input?.mention && !defaultConfig.input.mention.onSelect) {
+    defaultConfig = {
+      ...defaultConfig,
+      input: {
+        ...defaultConfig.input,
+        mention: {
+          trigger: '@',
+          items: mentionItems,
+          onSelect: mentionOnSelect,
+          onRemove: mentionOnRemove,
+        },
+      },
+    };
+  }
+  if (defaultConfig.input?.command && !defaultConfig.input.command.onSelect) {
+    defaultConfig = {
+      ...defaultConfig,
+      input: {
+        ...defaultConfig.input,
+        command: {
+          trigger: '/',
+          triggerPosition: 'start',
+          items: commandItems,
+          onSelect: commandOnSelect,
+          onRemove: commandOnRemove,
+        },
+      },
+    };
+  }
+
   const defaultSettings: Settings = {
-    framework: "react",
-    layout: "fullscreen",
-    writeableElements: "false",
-    hideDefaultAiLabelContent: "false",
-    direction: "default",
+    framework: 'react',
+    layout: 'fullscreen',
+    writeableElements: 'false',
+    hideDefaultAiLabelContent: 'false',
+    direction: 'default',
     ...settings,
     // Parse header-related settings from URL or use defaults based on config
     showHeader: settings?.showHeader ?? config.header?.isOn !== false,
@@ -135,15 +182,15 @@ function getSettings() {
 
   // Apply direction setting to HTML element
   const htmlElement = document.documentElement;
-  if (defaultSettings.direction === "default") {
-    htmlElement.removeAttribute("dir");
+  if (defaultSettings.direction === 'default') {
+    htmlElement.removeAttribute('dir');
   } else {
-    htmlElement.setAttribute("dir", defaultSettings.direction);
+    htmlElement.setAttribute('dir', defaultSettings.direction);
   }
 
   // eslint-disable-next-line default-case
   switch (defaultSettings.layout) {
-    case "float":
+    case 'float':
       defaultConfig = {
         ...defaultConfig,
         header: {
@@ -171,7 +218,7 @@ function getSettings() {
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
-    case "sidebar":
+    case 'sidebar':
       defaultConfig = {
         ...defaultConfig,
         header: {
@@ -196,7 +243,7 @@ function getSettings() {
       delete defaultConfig.layout?.showFrame;
       delete defaultConfig.openChatByDefault;
       break;
-    case "fullscreen":
+    case 'fullscreen':
       defaultConfig = {
         ...defaultConfig,
         header: {
@@ -223,7 +270,7 @@ function getSettings() {
   // This ensures menuOptions and actions are added based on settings without serializing to URL
   const configWithHeaderSettings = DemoHeaderSwitcher.applySettingsToConfig(
     defaultConfig,
-    defaultSettings,
+    defaultSettings
   );
 
   return {
@@ -244,7 +291,7 @@ function getSettings() {
 async function asyncForEach<T>(
   list: T[],
   condition: (item: T, index: number) => boolean | Promise<boolean>,
-  callback: (item: T, index: number) => Promise<void>,
+  callback: (item: T, index: number) => Promise<void>
 ) {
   for (let index = 0; index < list.length; index++) {
     if (await condition(list[index], index)) {

@@ -27,7 +27,7 @@ import {
   type CustomSendMessageOptions,
   type MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const REPLY = `This example wires up five \`markdown.customRenderers\` hooks at once.
 
@@ -74,7 +74,7 @@ The \`checklist\` hook makes task lists actionable. Toggle a box and watch the c
 async function customSendMessage(
   _request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   instance.messaging.addMessage({
     output: {

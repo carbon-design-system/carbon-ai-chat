@@ -7,33 +7,33 @@
  *  @license
  */
 
-import Checkmark16 from "@carbon/icons/es/checkmark/16.js";
-import Headset16 from "@carbon/icons/es/headset/16.js";
-import HelpDesk16 from "@carbon/icons/es/help-desk/16.js";
-import Logout16 from "@carbon/icons/es/logout/16.js";
-import { carbonIconToReact } from "../../../utils/carbonIcon";
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import Button from "../../../components/carbon/Button";
-import React, { ReactNode, useState } from "react";
+import Checkmark16 from '@carbon/icons/es/checkmark/16.js';
+import Headset16 from '@carbon/icons/es/headset/16.js';
+import HelpDesk16 from '@carbon/icons/es/help-desk/16.js';
+import Logout16 from '@carbon/icons/es/logout/16.js';
+import { carbonIconToReact } from '../../../utils/carbonIcon';
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import Button from '../../../components/carbon/Button';
+import React, { ReactNode, useState } from 'react';
 
-import { HasServiceManager } from "../../../hocs/withServiceManager";
-import { HumanAgentsOnlineStatus } from "../../../services/haa/HumanAgentService";
+import { HasServiceManager } from '../../../hocs/withServiceManager';
+import { HumanAgentsOnlineStatus } from '../../../services/haa/HumanAgentService';
 import {
   AppState,
   HumanAgentDisplayState,
   HumanAgentState,
-} from "../../../../types/state/AppState";
-import { useSelector } from "../../../hooks/useSelector";
-import { shallowEqual } from "../../../store/appStore";
-import { PersistedHumanAgentState } from "../../../../types/state/PersistedHumanAgentState";
-import { HasRequestFocus } from "../../../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../../../types/messaging/LocalMessageItem";
-import { AvailabilityMessage } from "../../humanAgent/AvailabilityMessage";
+} from '../../../../types/state/AppState';
+import { useSelector } from '../../../hooks/useSelector';
+import { shallowEqual } from '../../../store/appStore';
+import { PersistedHumanAgentState } from '../../../../types/state/PersistedHumanAgentState';
+import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import { AvailabilityMessage } from '../../humanAgent/AvailabilityMessage';
 import {
   ConnectToHumanAgentItem,
   MessageResponse,
-} from "../../../../types/messaging/Messages";
-import { EndHumanAgentChatModal } from "../../../components/modals/EndHumanAgentChatModal";
+} from '../../../../types/messaging/Messages';
+import { EndHumanAgentChatModal } from '../../../components/modals/EndHumanAgentChatModal';
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);
@@ -197,8 +197,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     <Card isFlush className="cds-aichat--connect-to-human-agent">
       <div
         slot="body"
-        className="cds-aichat--body-message-components__message-wrapper"
-      >
+        className="cds-aichat--body-message-components__message-wrapper">
         <div className="cds-aichat--connect-to-human-agent__title">
           <span>{languagePack.agent_chatTitle}</span>
         </div>
@@ -224,8 +223,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
           className="cds-aichat--connect-to-human-agent__request-button cds-aichat--button-item"
           size="md"
           disabled={showDisabled}
-          onClick={doStartChat}
-        >
+          onClick={doStartChat}>
           <ButtonIcon slot="icon" />
           {buttonText}
         </Button>

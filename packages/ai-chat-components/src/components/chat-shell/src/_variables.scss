@@ -1,15 +1,15 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/styles/scss/theme";
-@use "../../../globals/scss/utilities" as utilities;
-@use "../../../globals/scss/tokens-layout" as layout;
+@use '@carbon/styles/scss/theme';
+@use '../../../globals/scss/utilities' as utilities;
+@use '../../../globals/scss/tokens-layout' as layout;
 
 // ============================================================================
 // Variables
@@ -17,18 +17,18 @@
 
 // Layout variables using tokens from the shared token system
 $messages-max-width: utilities.get-var(
-  "messages-max-width",
+  'messages-max-width',
   layout.$messages-max-width
 );
 $messages-min-width: utilities.get-var(
-  "messages-min-width",
+  'messages-min-width',
   layout.$messages-min-width
 );
 $workspace-min-width: utilities.get-var(
-  "workspace-min-width",
+  'workspace-min-width',
   layout.$workspace-min-width
 );
-$history-width: utilities.get-var("history-width", layout.$history-width);
+$history-width: utilities.get-var('history-width', layout.$history-width);
 
 // Shadow variables (component-specific, not part of shared tokens)
 $ai-box-shadow-inner: inset 0 -80px 70px -65px

@@ -169,5 +169,3 @@ export const WithEventHandling = {
     );
   },
 };
-
-// Made with Bob

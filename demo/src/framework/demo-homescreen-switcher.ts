@@ -7,13 +7,13 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
 
-import { PublicConfig, HomeScreenConfig } from "@carbon/ai-chat";
-import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { PublicConfig, HomeScreenConfig } from '@carbon/ai-chat';
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-@customElement("demo-homescreen-switcher")
+@customElement('demo-homescreen-switcher')
 export class DemoHomeScreenSwitcher extends LitElement {
   @property({ type: Object })
   accessor config!: PublicConfig;
@@ -26,42 +26,42 @@ export class DemoHomeScreenSwitcher extends LitElement {
     let disclaimer = this.config.disclaimer;
 
     switch (selectedValue) {
-      case "default":
+      case 'default':
         homescreen = {
           isOn: true,
           disableReturn: false,
-          greeting: "Hello!\n\nThis is some text to introduce your chat.",
+          greeting: 'Hello!\n\nThis is some text to introduce your chat.',
           starters: {
             isOn: true,
             buttons: [
-              { label: "text (stream)" },
-              { label: "code (stream)" },
-              { label: "text" },
-              { label: "code" },
+              { label: 'text (stream)' },
+              { label: 'code (stream)' },
+              { label: 'text' },
+              { label: 'code' },
             ],
           },
         };
         disclaimer = undefined;
         break;
-      case "splash":
+      case 'splash':
         homescreen = {
           isOn: true,
           disableReturn: true,
           greeting:
-            "A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.",
+            'A splash homescreen is removed when a message is sent. It can be combined with a custom homescreen.',
           starters: {
             isOn: true,
             buttons: [
-              { label: "text (stream)" },
-              { label: "code (stream)" },
-              { label: "text" },
-              { label: "code" },
+              { label: 'text (stream)' },
+              { label: 'code (stream)' },
+              { label: 'text' },
+              { label: 'code' },
             ],
           },
         };
         disclaimer = undefined;
         break;
-      case "custom":
+      case 'custom':
         homescreen = {
           isOn: true,
           disableReturn: false,
@@ -69,7 +69,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
         };
         disclaimer = undefined;
         break;
-      case "disclaimer-only":
+      case 'disclaimer-only':
         homescreen = {
           isOn: false,
         };
@@ -78,18 +78,18 @@ export class DemoHomeScreenSwitcher extends LitElement {
           disclaimerHTML: `<p>This is a demo disclaimer. Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.</p>`,
         };
         break;
-      case "disclaimer-with-default":
+      case 'disclaimer-with-default':
         homescreen = {
           isOn: true,
           disableReturn: false,
-          greeting: "Hello!\n\nThis is some text to introduce your chat.",
+          greeting: 'Hello!\n\nThis is some text to introduce your chat.',
           starters: {
             isOn: true,
             buttons: [
-              { label: "text (stream)" },
-              { label: "code (stream)" },
-              { label: "text" },
-              { label: "code" },
+              { label: 'text (stream)' },
+              { label: 'code (stream)' },
+              { label: 'text' },
+              { label: 'code' },
             ],
           },
         };
@@ -105,7 +105,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
           <p>Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.</p>`,
         };
         break;
-      case "none":
+      case 'none':
       default:
         homescreen = {
           isOn: false,
@@ -116,7 +116,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
 
     // Emit a custom event `config-changed` with the new home screen and disclaimer configuration
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           homescreen,
@@ -124,7 +124,7 @@ export class DemoHomeScreenSwitcher extends LitElement {
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
         composed: true, // Allows event to pass through shadow DOM boundaries
-      }),
+      })
     );
   };
 
@@ -133,29 +133,28 @@ export class DemoHomeScreenSwitcher extends LitElement {
     const hasHomescreen = this.config?.homescreen?.isOn;
 
     if (hasDisclaimer && !hasHomescreen) {
-      return "disclaimer-only";
+      return 'disclaimer-only';
     }
     if (hasDisclaimer && hasHomescreen) {
-      return "disclaimer-with-default";
+      return 'disclaimer-with-default';
     }
     if (!hasHomescreen) {
-      return "none";
+      return 'none';
     }
     if (this.config.homescreen?.customContentOnly) {
-      return "custom";
+      return 'custom';
     }
     if (this.config.homescreen?.disableReturn) {
-      return "splash";
+      return 'splash';
     }
-    return "default";
+    return 'default';
   }
 
   render() {
     return html`<cds-dropdown
       value="${this.getCurrentHomescreenValue()}"
       title-text="Homescreen and Disclaimer"
-      @cds-dropdown-selected=${this.dropdownSelected}
-    >
+      @cds-dropdown-selected=${this.dropdownSelected}>
       <cds-dropdown-item value="none">None</cds-dropdown-item>
       <cds-dropdown-item value="default">Default</cds-dropdown-item>
       <cds-dropdown-item value="splash">Splash</cds-dropdown-item>
@@ -173,6 +172,6 @@ export class DemoHomeScreenSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-homescreen-switcher": DemoHomeScreenSwitcher;
+    'demo-homescreen-switcher': DemoHomeScreenSwitcher;
   }
 }

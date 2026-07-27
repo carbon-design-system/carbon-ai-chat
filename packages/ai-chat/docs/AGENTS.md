@@ -6,7 +6,7 @@ Guidance for authoring inside [packages/ai-chat/docs/](.). The documents here sh
 
 ## Authoring net-new docs
 
-For markdown structure (page anatomy, cross-linking, code blocks, tables), see [AGENTS_DOC_STYLE.md](AGENTS_DOC_STYLE.md). For voice and word economy, see [AGENTS_TONE.md](../../../AGENTS_TONE.md). Routine edits don't need them.
+For markdown structure (page anatomy, cross-linking, code blocks, tables), see [doc-style.md](references/doc-style.md). For voice and word economy, see [tone.md](../../../references/tone.md). Routine edits don't need them.
 
 ## Authoring rules
 
@@ -24,18 +24,11 @@ For markdown structure (page anatomy, cross-linking, code blocks, tables), see [
 
 ## Code examples in docs
 
-All code examples must be tested. Validation checklist before publishing:
+For what makes a good example — self-contained, minimal, realistically typed, production-safe — follow [code-examples.md](../references/code-examples.md). This section covers only the docs-specific workflow: **every example must be tested in a real example project before publishing.**
 
-- [ ] All imports are correct and available in the published package.
-- [ ] All types are exported and accessible.
-- [ ] Code compiles without TypeScript errors.
-- [ ] Code runs without runtime errors.
-- [ ] Example demonstrates the documented behavior.
-- [ ] Example follows current best practices (e.g. React function components + hooks; never internal imports like `@carbon/ai-chat/src/...`).
-
-For inline snippets, copy them into a relevant example project (e.g. [examples/react/basic/](../../../examples/react/basic/)) and verify behavior. For full examples, create a standalone entry in [examples/](../../../examples/) that follows the [Indexer Contract](../../../examples/AGENTS.md). Reference implementation: [examples/react/custom-element/](../../../examples/react/custom-element/).
-
-When public API changes, update affected docs and corresponding example projects in the same PR.
+- For inline snippets, copy them into a relevant example project (e.g. [examples/react/basic-float/](../../../examples/react/basic-float/)) and verify it compiles and runs.
+- For full examples, create a standalone entry in [examples/](../../../examples/) that follows the [Indexer Contract](../../../examples/references/indexer-contract.md). Reference implementation: [examples/react/basic-custom-element-fullscreen/](../../../examples/react/basic-custom-element-fullscreen/).
+- When public API changes, update affected docs and corresponding example projects in the same PR.
 
 `typedoc/` holds `moduleNamePlugin.js` (a small TypeDoc hook) — only edit when changing TypeDoc behavior. The Carbon theme lives in [`packages/typedoc-theme/`](../../typedoc-theme/); see its [AGENTS.md](../../typedoc-theme/AGENTS.md) for the loading model.
 
@@ -59,7 +52,7 @@ From [../](../) (the package root): `npm run build` runs rollup + typedoc; `npm 
 ## Related guidance
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [AGENTS_DOC_STYLE.md](AGENTS_DOC_STYLE.md) — markdown structure for net-new docs
-- [AGENTS_TONE.md](../../../AGENTS_TONE.md) — voice and word economy
+- [doc-style.md](references/doc-style.md) — markdown structure for net-new docs
+- [tone.md](../../../references/tone.md) — voice and word economy
 - [../src/types/AGENTS.md](../src/types/AGENTS.md) — JSDoc standards for API docs
 - [../../typedoc-theme/AGENTS.md](../../typedoc-theme/AGENTS.md) — theme customization

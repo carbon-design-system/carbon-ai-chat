@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { ChatInstance, RenderUserDefinedState } from "@carbon/ai-chat";
-import React from "react";
+import { ChatInstance, RenderUserDefinedState } from '@carbon/ai-chat';
+import React from 'react';
 
-import { CustomResponseExample } from "./CustomResponseExample";
+import { CustomResponseExample } from './CustomResponseExample';
 
 function renderUserDefinedResponseFactory(activeResponseId?: string | null) {
   return function renderUserDefinedResponse(
     state: RenderUserDefinedState,
-    _instance: ChatInstance,
+    _instance: ChatInstance
   ) {
     const { messageItem } = state;
     // The event here will contain details for each user defined response that needs to be rendered.
@@ -26,7 +26,7 @@ function renderUserDefinedResponseFactory(activeResponseId?: string | null) {
         Boolean(activeResponseId) && state.fullMessage?.id === activeResponseId;
 
       switch (messageItem.user_defined?.user_defined_type) {
-        case "my_unique_identifier":
+        case 'my_unique_identifier':
           return (
             <CustomResponseExample
               data={messageItem.user_defined as { type: string; text: string }}

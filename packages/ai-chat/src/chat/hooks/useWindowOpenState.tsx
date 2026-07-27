@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { usePrevious } from "./usePrevious";
-import { prefersReducedMotion } from "../utils/prefersReducedMotion";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { usePrevious } from './usePrevious';
+import { prefersReducedMotion } from '../utils/prefersReducedMotion';
 
 interface UseWindowOpenStateProps {
   viewStateMainWindow: boolean;
@@ -53,7 +53,7 @@ export function useWindowOpenState({
   const removeChatFromDom = useCallback(() => {
     const widgetEl = widgetContainerRef.current;
     if (widgetEl) {
-      widgetEl.removeEventListener("animationend", removeChatFromDom);
+      widgetEl.removeEventListener('animationend', removeChatFromDom);
     }
     if (closeTimeoutRef.current !== null) {
       clearTimeout(closeTimeoutRef.current);
@@ -89,10 +89,10 @@ export function useWindowOpenState({
       if (useCustomHostElement || prefersReducedMotion() || !widgetEl) {
         removeChatFromDom();
       } else {
-        widgetEl.addEventListener("animationend", removeChatFromDom);
+        widgetEl.addEventListener('animationend', removeChatFromDom);
         closeTimeoutRef.current = setTimeout(
           removeChatFromDom,
-          CLOSE_ANIMATION_TIMEOUT_MS,
+          CLOSE_ANIMATION_TIMEOUT_MS
         );
         requestFocus();
       }
@@ -114,5 +114,3 @@ export function useWindowOpenState({
     widgetContainerRef,
   };
 }
-
-// Made with Bob

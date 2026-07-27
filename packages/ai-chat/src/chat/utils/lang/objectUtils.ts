@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -17,8 +17,8 @@ function deepFreeze(object: any) {
     if (
       Object.prototype.hasOwnProperty.call(object, prop) &&
       object[prop] !== null &&
-      (typeof object[prop] === "object" ||
-        typeof object[prop] === "function") &&
+      (typeof object[prop] === 'object' ||
+        typeof object[prop] === 'function') &&
       !Object.isFrozen(object[prop])
     ) {
       deepFreeze(object[prop]);

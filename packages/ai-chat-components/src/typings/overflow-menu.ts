@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type CDSOverflowMenuItem from "@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js";
+import type CDSOverflowMenuItem from '@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js';
 
 /**
  * Base type for overflow menu items.
@@ -21,7 +21,7 @@ import type CDSOverflowMenuItem from "@carbon/web-components/es/components/overf
 export interface BaseOverflowMenuItem extends Partial<
   Pick<
     CDSOverflowMenuItem,
-    "danger" | "dangerDescription" | "disabled" | "divider" | "href"
+    'danger' | 'dangerDescription' | 'disabled' | 'divider' | 'href'
   >
 > {
   /**

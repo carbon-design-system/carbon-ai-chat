@@ -7,14 +7,33 @@
  *  @license
  */
 
+/**
+ * Mock backend for the custom-element-as-float example.
+ *
+ * Demonstrates: a client-side `customSendMessage` that synthesizes either a
+ * complete text response or a word-by-word streamed response so the UI shell
+ * can be exercised without a real LLM.
+ *
+ * APIs exercised:
+ *   - `ChatInstance.messaging.addMessage`
+ *   - `ChatInstance.messaging.addMessageChunk`
+ *   - `MessageResponseTypes.TEXT`, `MessageResponseTypes.USER_DEFINED`
+ *   - `StreamChunk` with `partial_item`, `complete_item`, and `final_response`
+ *   - `CustomSendMessageOptions.signal` for cancellation
+ *
+ * Start reading at: `customSendMessage`.
+ */
+
 import {
   ChatInstance,
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
   StreamChunk,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
+// Replace with a real production implementation.
 async function sleep(milliseconds: number) {
   await new Promise((resolve) => {
     setTimeout(resolve, milliseconds);
@@ -47,7 +66,7 @@ Quam scelerisque platea ridiculus sem placerat pharetra sed. Porttitor per massa
 - Venenatis
 
 ` +
-  "\n```python\n" +
+  '\n```python\n' +
   `import random
 
 def generate_lorem_ipsum(paragraphs=1):
@@ -78,26 +97,29 @@ def generate_lorem_ipsum(paragraphs=1):
 # Example usage
 print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 ` +
-  "\n\n```";
+  '\n\n```';
 
 const WORD_DELAY = 40;
 
+// Replace with a real production implementation.
 async function doFakeTextStreaming(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
-  const responseID = crypto.randomUUID();
-  const words = TEXT.split(" ");
+  const responseID = uuid();
+  const words = TEXT.split(' ');
   let isCanceled = false;
   const timeouts: number[] = [];
 
-  // Listen to abort signal (handles both stop button and restart/clear)
+  // The same abort signal fires for both the stop button and a restart/clear,
+  // so a single handler covers user-initiated cancel and conversation reset.
   const abortHandler = () => {
     isCanceled = true;
-    // Clear all pending timeouts
+    // Pending word timeouts must be cleared so they cannot emit chunks for a
+    // response the user has already canceled.
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -108,7 +130,7 @@ async function doFakeTextStreaming(
               response_type: MessageResponseTypes.TEXT,
               text: `${word} `,
               streaming_metadata: {
-                id: "1",
+                id: '1',
                 cancellable: true,
               },
             },
@@ -128,7 +150,7 @@ async function doFakeTextStreaming(
         response_type: MessageResponseTypes.TEXT,
         text: `${TEXT}\n\nMore stuff on the end when adding as a complete item.`,
         streaming_metadata: {
-          id: "1",
+          id: '1',
         },
       };
       instance.messaging.addMessageChunk({
@@ -149,12 +171,13 @@ async function doFakeTextStreaming(
         final_response: finalResponse,
       } as StreamChunk);
     } else {
-      // Send stream_stopped marker
+      // The runtime needs an explicit stream_stopped complete_item so the UI
+      // can finalize the partial bubble instead of waiting for more chunks.
       const completeItem = {
         response_type: MessageResponseTypes.TEXT,
-        text: words.slice(0, Math.floor(words.length * 0.3)).join(" "),
+        text: words.slice(0, Math.floor(words.length * 0.3)).join(' '),
         streaming_metadata: {
-          id: "1",
+          id: '1',
           stream_stopped: true,
         },
       };
@@ -166,16 +189,19 @@ async function doFakeTextStreaming(
       } as StreamChunk);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
+// Replace with a real production implementation.
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  if (request.input.text === "") {
+  // An empty input.text is the synthetic message the runtime sends when the
+  // chat first opens, so we use it to seed the welcome message.
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -188,7 +214,7 @@ async function customSendMessage(
     });
   } else {
     switch (request.input.text) {
-      case "text":
+      case 'text':
         instance.messaging.addMessage({
           output: {
             generic: [
@@ -200,22 +226,22 @@ async function customSendMessage(
           },
         });
         break;
-      case "user_defined":
+      case 'user_defined':
         instance.messaging.addMessage({
           output: {
             generic: [
               {
                 response_type: MessageResponseTypes.USER_DEFINED,
                 user_defined: {
-                  user_defined_type: "my_unique_identifier",
-                  text: "Some text from your back-end.",
+                  user_defined_type: 'my_unique_identifier',
+                  text: 'Some text from your back-end.',
                 },
               },
             ],
           },
         });
         break;
-      case "stream text":
+      case 'stream text':
         doFakeTextStreaming(instance as ChatInstance, requestOptions.signal);
         break;
       default:

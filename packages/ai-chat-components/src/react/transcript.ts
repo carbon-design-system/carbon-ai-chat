@@ -7,21 +7,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import TranscriptElement from "../components/audio-player/src/transcript.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import TranscriptElement from '../components/audio-player/src/transcript.js';
 
 const Transcript = createComponent({
-  tagName: "cds-aichat-transcript",
+  tagName: 'cds-aichat-transcript',
   elementClass: TranscriptElement,
   react: React,
   events: {
-    onTranscriptToggle: "cds-aichat-transcript-toggle",
+    onTranscriptToggle: 'cds-aichat-transcript-toggle',
   },
-  displayName: "Transcript",
+  displayName: 'Transcript',
 });
 
 export { Transcript };
 export default Transcript;
-
-// Made with Bob

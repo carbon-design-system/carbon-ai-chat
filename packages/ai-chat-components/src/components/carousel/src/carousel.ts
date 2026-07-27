@@ -7,21 +7,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html } from "lit";
-import styles from "./carousel.scss?lit";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
+import { LitElement, html } from 'lit';
+import styles from './carousel.scss?lit';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
 import {
   initCarousel,
   InitCarousel,
   Config,
   CarouselResponse,
-} from "@carbon/utilities";
-import { queryAssignedElements } from "lit/decorators/query-assigned-elements.js";
-import { property, state } from "lit/decorators.js";
-import "@carbon/web-components/es/components/icon-button/icon-button.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import { ChevronLeft16, ChevronRight16 } from "@carbon/icons";
+} from '@carbon/utilities';
+import { queryAssignedElements } from 'lit/decorators/query-assigned-elements.js';
+import { property, state } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/icon-button/icon-button.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import { ChevronLeft16, ChevronRight16 } from '@carbon/icons';
 
 const blockClass = `${prefix}-carousel`;
 
@@ -74,8 +74,8 @@ class CDSAICarousel extends LitElement {
     this.dispatchEvent(
       new CustomEvent(
         (this.constructor as typeof CDSAICarousel).eventOnChange,
-        init,
-      ),
+        init
+      )
     );
   }
 
@@ -106,9 +106,8 @@ class CDSAICarousel extends LitElement {
             size="sm"
             align="bottom-start"
             enter-delay-ms="0"
-            leave-delay-ms="0"
-          >
-            ${iconLoader(ChevronLeft16, { slot: "icon" })}
+            leave-delay-ms="0">
+            ${iconLoader(ChevronLeft16, { slot: 'icon' })}
             <span slot="tooltip-content">${this.previousBtnText}</span>
           </cds-icon-button>
           <span class="${blockClass}__indicator"
@@ -121,9 +120,8 @@ class CDSAICarousel extends LitElement {
             size="sm"
             align="bottom-start"
             enter-delay-ms="0"
-            leave-delay-ms="0"
-          >
-            ${iconLoader(ChevronRight16, { slot: "icon" })}
+            leave-delay-ms="0">
+            ${iconLoader(ChevronRight16, { slot: 'icon' })}
             <span slot="tooltip-content">${this.nextBtnText}</span>
           </cds-icon-button>
         </div>

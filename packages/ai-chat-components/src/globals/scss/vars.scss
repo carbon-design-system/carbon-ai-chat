@@ -1,12 +1,12 @@
 /* 
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *  
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
 
 // prefix for Carbon Design System components
-$cds-prefix: "cds" !default;
+$cds-prefix: 'cds' !default;
 
 // Set this to a suitable prefix for your project to use in style files
-$prefix: "#{$cds-prefix}-aichat" !default;
+$prefix: '#{$cds-prefix}-aichat' !default;

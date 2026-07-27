@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { css, html, LitElement } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import AiLaunch20 from "@carbon/icons/es/ai-launch/20.js";
-import Switcher20 from "@carbon/icons/es/switcher/20.js";
-import { ViewType, type ChatInstance } from "@carbon/ai-chat";
-import { isDirectionRTL } from "@carbon/ai-chat-components/es/globals/utils/rtl-utils.js";
+import { css, html, LitElement } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import AiLaunch20 from '@carbon/icons/es/ai-launch/20.js';
+import Switcher20 from '@carbon/icons/es/switcher/20.js';
+import { ViewType, type ChatInstance } from '@carbon/ai-chat';
+import { isDirectionRTL } from '@carbon/ai-chat-components/es/globals/utils/rtl-utils.js';
 
-import type { Settings } from "./types";
+import type { Settings } from './types';
 
 /**
  * `DemoHeader` is a custom Lit element representing a header component.
  */
-@customElement("demo-header")
+@customElement('demo-header')
 export class DemoHeader extends LitElement {
   static styles = css`
     cds-header {
@@ -56,7 +56,7 @@ export class DemoHeader extends LitElement {
   private accessor _panelExpanded = false;
 
   @state()
-  private accessor _panelAnnouncement = "";
+  private accessor _panelAnnouncement = '';
 
   onClick = async () => {
     if (this.chatInstance) {
@@ -89,7 +89,7 @@ export class DemoHeader extends LitElement {
 
   private _handleButtonKeyDown = async (event: KeyboardEvent) => {
     // Handle Enter and Space keys for keyboard accessibility
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       await this._handleButtonClick();
     }
@@ -97,10 +97,10 @@ export class DemoHeader extends LitElement {
 
   private _getChatButtonLabel(): string {
     if (!this.chatInstance) {
-      return "Open AI Chat";
+      return 'Open AI Chat';
     }
     const state = this.chatInstance.getState();
-    return state.viewState.mainWindow ? "Close AI Chat" : "Open AI Chat";
+    return state.viewState.mainWindow ? 'Close AI Chat' : 'Open AI Chat';
   }
 
   private _handlePanelToggle = (event: Event) => {
@@ -109,7 +109,7 @@ export class DemoHeader extends LitElement {
       return;
     }
 
-    const panelId = target.getAttribute("panel-id");
+    const panelId = target.getAttribute('panel-id');
     if (!panelId) {
       return;
     }
@@ -119,20 +119,20 @@ export class DemoHeader extends LitElement {
       return;
     }
 
-    if (panel.hasAttribute("expanded")) {
-      panel.removeAttribute("expanded");
+    if (panel.hasAttribute('expanded')) {
+      panel.removeAttribute('expanded');
       this._panelExpanded = false;
-      this._panelAnnouncement = "Resources Panel closed";
+      this._panelAnnouncement = 'Resources Panel closed';
     } else {
-      panel.setAttribute("expanded", "");
+      panel.setAttribute('expanded', '');
       this._panelExpanded = true;
-      this._panelAnnouncement = "Resources Panel opened";
+      this._panelAnnouncement = 'Resources Panel opened';
     }
   };
 
   private _handlePanelKeyDown = (event: KeyboardEvent) => {
     // Handle Enter and Space keys for keyboard accessibility
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       this._handlePanelToggle(event);
     }
@@ -140,8 +140,8 @@ export class DemoHeader extends LitElement {
 
   private _getPanelButtonLabel(): string {
     return this._panelExpanded
-      ? "Close Resources Panel"
-      : "Open Resources Panel";
+      ? 'Close Resources Panel'
+      : 'Open Resources Panel';
   }
 
   render() {
@@ -162,22 +162,20 @@ export class DemoHeader extends LitElement {
                   tooltip-text="${this._getChatButtonLabel()}"
                   ?disabled=${this._clickInProgress}
                   @click=${this._handleButtonClick}
-                  @keydown=${this._handleButtonKeyDown}
-                >
-                  ${iconLoader(AiLaunch20, { slot: "icon" })}
+                  @keydown=${this._handleButtonKeyDown}>
+                  ${iconLoader(AiLaunch20, { slot: 'icon' })}
                   <span slot="tooltip-content">AI Chat</span>
                 </cds-header-global-action>`
-              : ""
+              : ''
           }
           <cds-header-global-action
             aria-label="${this._getPanelButtonLabel()}"
             tooltip-text="${this._getPanelButtonLabel()}"
-            tooltip-alignment="${isDirectionRTL() ? "left" : "right"}"
+            tooltip-alignment="${isDirectionRTL() ? 'left' : 'right'}"
             panel-id="switcher-panel"
             @click=${this._handlePanelToggle}
-            @keydown=${this._handlePanelKeyDown}
-          >
-            ${iconLoader(Switcher20, { slot: "icon" })}
+            @keydown=${this._handlePanelKeyDown}>
+            ${iconLoader(Switcher20, { slot: 'icon' })}
             <span slot="tooltip-content">Resources</span>
           </cds-header-global-action>
         </div>
@@ -185,8 +183,7 @@ export class DemoHeader extends LitElement {
           id="switcher-panel"
           aria-label="Resources Panel"
           ?inert=${!this._panelExpanded}
-          aria-hidden="${!this._panelExpanded}"
-        >
+          aria-hidden="${!this._panelExpanded}">
           <cds-switcher aria-label="Resources">
             <cds-switcher-item
               aria-label="Documentation site"
@@ -210,8 +207,7 @@ export class DemoHeader extends LitElement {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        class="visually-hidden"
-      >
+        class="visually-hidden">
         ${this._panelAnnouncement}
       </div>
     `;
@@ -221,6 +217,6 @@ export class DemoHeader extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-header": DemoHeader;
+    'demo-header': DemoHeader;
   }
 }

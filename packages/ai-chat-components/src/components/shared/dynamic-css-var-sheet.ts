@@ -39,22 +39,22 @@ function getCssText(): string {
     .map(([selector, declarations]) => {
       const decls = Array.from(declarations.entries())
         .map(([prop, value]) => `${prop}: ${value};`)
-        .join(" ");
+        .join(' ');
       return `${selector} { ${decls} }`;
     })
-    .join("\n");
+    .join('\n');
 }
 
 function ensureSheet(): CSSStyleSheet | null {
   if (sheet) {
     return sheet;
   }
-  if (typeof document === "undefined" || typeof CSSStyleSheet === "undefined") {
+  if (typeof document === 'undefined' || typeof CSSStyleSheet === 'undefined') {
     return null;
   }
   try {
     const candidate = new CSSStyleSheet();
-    if (typeof (candidate as any).replaceSync !== "function") {
+    if (typeof (candidate as any).replaceSync !== 'function') {
       // Older browsers / jsdom may construct a sheet but not implement
       // the constructable-stylesheet write methods. Fall back to <style>.
       return null;
@@ -68,9 +68,9 @@ function ensureSheet(): CSSStyleSheet | null {
 }
 
 function ensureFallbackStyleElement(
-  root: Document | ShadowRoot,
+  root: Document | ShadowRoot
 ): HTMLStyleElement | null {
-  if (typeof document === "undefined") {
+  if (typeof document === 'undefined') {
     return null;
   }
   const existing = fallbackStyleElements.get(root);
@@ -81,7 +81,7 @@ function ensureFallbackStyleElement(
   if (!ownerDocument) {
     return null;
   }
-  const styleElement = ownerDocument.createElement("style");
+  const styleElement = ownerDocument.createElement('style');
   const container =
     root instanceof Document ? (root.head ?? root.documentElement) : root;
   if (!container) {
@@ -122,7 +122,7 @@ function adoptOnRoot(root: Document | ShadowRoot): void {
     const current = (root as any).adoptedStyleSheets;
     if (
       Array.isArray(current) ||
-      typeof current?.[Symbol.iterator] === "function"
+      typeof current?.[Symbol.iterator] === 'function'
     ) {
       root.adoptedStyleSheets = [...current, s];
       adoptedRoots.add(root);
@@ -147,7 +147,7 @@ function adoptOnRoot(root: Document | ShadowRoot): void {
  */
 function setVarsForSelector(
   selector: string,
-  vars: Record<string, string>,
+  vars: Record<string, string>
 ): void {
   if (!ensureSheet()) {
     return;

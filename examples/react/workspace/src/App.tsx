@@ -7,6 +7,25 @@
  *  @license
  */
 
+/**
+ * Example: Carbon AI Chat — Workspace panel
+ *
+ * Demonstrates: the workspace feature for opening rich, side-by-side content
+ * (inventory, orders, SQL editor) via the `workspacePanelElement` slot.
+ * Subscribes to the `WORKSPACE_*` bus events and uses `customPanels.getPanel`
+ * to open the workspace from a `user_defined` response card's "maximize"
+ * action.
+ *
+ * APIs exercised:
+ *   - `ChatCustomElement`
+ *   - `BusEventType.WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_CLOSE`
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE)`
+ *   - `renderUserDefinedResponse` for the maximize affordance
+ *   - `renderWriteableElements.workspacePanelElement`
+ *
+ * Start reading at: `App()` and the `onBeforeRender` workspace handlers.
+ */
+
 import {
   BusEvent,
   BusEventType,
@@ -18,19 +37,19 @@ import {
   PublicConfig,
   RenderUserDefinedState,
   PanelType,
-} from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
-import "@carbon/styles/css/styles.css";
+} from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@carbon/styles/css/styles.css';
 
 // These functions hook up to your back-end.
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 // Workspace slot components
-import { InventoryReportExample } from "./InventoryReportExample";
-import { InventoryStatusExample } from "./InventoryStatusExample";
-import { OutstandingOrdersExample } from "./OutstandingOrdersExample";
-import { OutstandingOrdersCard } from "./OutstandingOrdersCard";
-import { SqlEditorExample } from "./SqlEditorExample";
+import { InventoryReportExample } from './InventoryReportExample';
+import { InventoryStatusExample } from './InventoryStatusExample';
+import { OutstandingOrdersExample } from './OutstandingOrdersExample';
+import { OutstandingOrdersCard } from './OutstandingOrdersCard';
+import { SqlEditorExample } from './SqlEditorExample';
 
 /**
  * Define your config outside your React component, or wrap it in useMemo /
@@ -46,17 +65,20 @@ const config: PublicConfig = {
     customSendMessage,
   },
   layout: {
+    // Hides the chat frame chrome so the workspace and chat sit flush in a fullscreen layout.
     showFrame: false,
     customProperties: {
-      "messages-max-width": `max(60vw, 672px)`,
+      // Caps message bubble width so wide screens still feel readable.
+      'messages-max-width': `max(60vw, 672px)`,
     },
   },
+  // Auto-opens chat on load so the workspace flow can be exercised without a launcher click.
   openChatByDefault: true,
 };
 
 function App() {
   const [instance, setInstance] = useState<ChatInstance | null>(null);
-  const [stateText, setStateText] = useState<string>("Initial text");
+  const [stateText, setStateText] = useState<string>('Initial text');
   const [workspaceData, setWorkspaceData] = useState<{
     type: string | null;
     workspaceId?: string;
@@ -66,19 +88,19 @@ function App() {
   function onBeforeRender(instance: ChatInstance) {
     setInstance(instance);
 
-    // Handle workspace pre open event
+    // Subscribes to BusEventType.WORKSPACE_PRE_OPEN so hosts can begin loading workspace resources before the panel animates in.
     instance.on({
       type: BusEventType.WORKSPACE_PRE_OPEN,
       handler: customWorkspacePreOpenHandler,
     });
 
-    // Handle workspace open event
+    // Subscribes to BusEventType.WORKSPACE_OPEN to capture workspaceId/additionalData and select the writeable element to render.
     instance.on({
       type: BusEventType.WORKSPACE_OPEN,
       handler: customWorkspaceOpenHandler,
     });
 
-    // Handle workspace close event
+    // Subscribes to BusEventType.WORKSPACE_CLOSE so workspace state is cleared when the user dismisses the panel.
     instance.on({
       type: BusEventType.WORKSPACE_CLOSE,
       handler: customWorkspaceCloseHandler,
@@ -89,28 +111,22 @@ function App() {
   React.useEffect(() => {
     const interval = setInterval(
       () => setStateText(Date.now().toString()),
-      2000,
+      2000
     );
     return () => clearInterval(interval);
   }, []);
 
-  /**
-   * Listens for workspace panel pre open event.
-   */
   function customWorkspacePreOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspacePreOpen;
     console.log(
       data,
-      "This event can be used to load additional resources into the workspace while displaying a manual loading state.",
+      'This event can be used to load additional resources into the workspace while displaying a manual loading state.'
     );
   }
 
-  /**
-   * Listens for workspace panel open event.
-   */
   function customWorkspaceOpenHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceOpen;
-    console.log(data, "Workspace panel opened");
+    console.log(data, 'Workspace panel opened');
 
     // Extract workspace data from the event
     const { workspaceId, additionalData } = data;
@@ -118,46 +134,39 @@ function App() {
     setWorkspaceData({ type, workspaceId, additionalData });
   }
 
-  /**
-   * Listens for workspace panel close event.
-   */
   function customWorkspaceCloseHandler(event: BusEvent) {
     const { data } = event as BusEventWorkspaceClose;
-    console.log(data, "Workspace panel closed");
+    console.log(data, 'Workspace panel closed');
 
     // Clear workspace data when panel closes
     setWorkspaceData({ type: null });
   }
 
-  /**
-   * Handler for user_defined response types.
-   */
   const renderUserDefinedResponse = useCallback(
     (state: RenderUserDefinedState, _instance: ChatInstance) => {
       const { messageItem } = state;
       if (messageItem) {
         switch (messageItem.user_defined?.user_defined_type) {
-          case "outstanding_orders_card":
+          case 'outstanding_orders_card':
             return (
               <OutstandingOrdersCard
                 workspaceId={messageItem.user_defined.workspace_id as string}
                 onMaximize={() => {
-                  // Open workspace using the customPanels API
                   const workspaceId = messageItem.user_defined
                     ?.workspace_id as string;
                   const additionalData =
                     messageItem.user_defined?.additional_data;
 
-                  // Set workspace data for rendering
+                  // Seeds workspaceData before opening so the writeable element resolves on the first render after the panel opens.
                   setWorkspaceData({
                     type: (additionalData as { type?: string })?.type || null,
                     workspaceId,
                     additionalData,
                   });
 
-                  // Open the workspace panel
+                  // instance.customPanels.getPanel(PanelType.WORKSPACE) hands back the workspace panel API so the host can open it imperatively from a card action.
                   const panel = _instance.customPanels?.getPanel(
-                    PanelType.WORKSPACE,
+                    PanelType.WORKSPACE
                   );
                   if (panel) {
                     panel.open({
@@ -174,7 +183,7 @@ function App() {
       }
       return undefined;
     },
-    [],
+    []
   );
 
   const renderWriteableElements = useMemo(() => {
@@ -184,7 +193,7 @@ function App() {
 
     let component;
     switch (workspaceData.type) {
-      case "inventory_report":
+      case 'inventory_report':
         component = (
           <InventoryReportExample
             location="workspacePanelElement"
@@ -195,7 +204,7 @@ function App() {
           />
         );
         break;
-      case "inventory_status":
+      case 'inventory_status':
         component = (
           <InventoryStatusExample
             location="workspacePanelElement"
@@ -205,7 +214,7 @@ function App() {
           />
         );
         break;
-      case "outstanding_orders":
+      case 'outstanding_orders':
         component = (
           <OutstandingOrdersExample
             location="workspacePanelElement"
@@ -215,7 +224,7 @@ function App() {
           />
         );
         break;
-      case "sql_editor":
+      case 'sql_editor':
         component = (
           <SqlEditorExample
             instance={instance}
@@ -243,6 +252,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

@@ -7,13 +7,29 @@
  *  @license
  */
 
-import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
+/**
+ * OutstandingOrdersCard preview component.
+ *
+ * Demonstrates: a USER_DEFINED message rendered inline in the chat
+ * transcript that previews outstanding orders and exposes a Maximize
+ * action. Maximize invokes the `onMaximize` callback wired by main.ts,
+ * which calls `instance.customPanels.getPanel(PanelType.WORKSPACE).open()`
+ * with the card's `workspaceId` and `additionalData`.
+ *
+ * APIs exercised:
+ *   - `<cds-aichat-card>` and `<cds-aichat-toolbar>`
+ *   - User-defined response slot wiring via `onMaximize`
+ *
+ * Start reading at: `handleMaximize` and the `toolbarActions` array.
+ */
 
-@customElement("outstanding-orders-card")
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+
+@customElement('outstanding-orders-card')
 export class OutstandingOrdersCard extends LitElement {
   static styles = css`
     :host {
@@ -65,7 +81,7 @@ export class OutstandingOrdersCard extends LitElement {
   `;
 
   @property({ type: String })
-  accessor workspaceId = "";
+  accessor workspaceId = '';
 
   @property({ type: Object })
   accessor additionalData: any;
@@ -76,18 +92,20 @@ export class OutstandingOrdersCard extends LitElement {
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
+      size: 'md',
       onClick: this.handleMaximize.bind(this),
     },
   ];
 
   private handleMaximize() {
+    // Debug log so integrators can confirm the workspaceId being forwarded to customPanels.getPanel().open().
     console.log(
-      "Maximize clicked, opening workspace with ID:",
-      this.workspaceId,
+      'Maximize clicked, opening workspace with ID:',
+      this.workspaceId
     );
+    // Defer to the parent-supplied onMaximize so the host owns the customPanels.getPanel(PanelType.WORKSPACE).open() call.
     if (this.onMaximize) {
       this.onMaximize();
     }
@@ -130,5 +148,3 @@ export class OutstandingOrdersCard extends LitElement {
     `;
   }
 }
-
-// Made with Bob

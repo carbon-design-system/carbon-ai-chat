@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
 /**
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-"use strict";
+'use strict';
 
-const child = require("child_process");
-const { Command } = require("commander");
+const child = require('child_process');
+const { Command } = require('commander');
 
 const program = new Command();
 
 program
-  .option("-f, --tagFrom <git tag from>", "Git tag range from")
-  .option("-t, --tagTo <git tag to>", "Git tag range from");
+  .option('-f, --tagFrom <git tag from>', 'Git tag range from')
+  .option('-t, --tagTo <git tag to>', 'Git tag range from');
 
 program.parse(process.argv);
 
@@ -46,11 +46,11 @@ const { tagTo } = args;
  *
  * @type {string}
  */
-const delimiter = "----DELIMITER----";
+const delimiter = '----DELIMITER----';
 
 // We keep a list of commits that are process-oriented that we never want to
 // show up in generated changelogs
-const denyList = ["chore(release): publish [skip ci]", "chore(release): v"];
+const denyList = ['chore(release): publish [skip ci]', 'chore(release): v'];
 
 /**
  * Returns back the commits in an array
@@ -59,14 +59,14 @@ const denyList = ["chore(release): publish [skip ci]", "chore(release): v"];
  * @returns {string[]} Commits array of objects
  */
 function getCommits(folder) {
-  const toTag = tagTo !== undefined ? tagTo : "HEAD";
+  const toTag = tagTo !== undefined ? tagTo : 'HEAD';
 
   // Gets the git output between the two tags
   const output = child
     .execSync(
-      `git log ${tagFrom}..${toTag} --pretty=format:"%s"${delimiter} -- ${folder}`,
+      `git log ${tagFrom}..${toTag} --pretty=format:"%s"${delimiter} -- ${folder}`
     )
-    .toString("utf-8");
+    .toString('utf-8');
 
   // Generates the array of commit comments
   return output.split(`${delimiter}\n`);
@@ -105,25 +105,25 @@ function getChangelog(pkgName, folder) {
   });
 
   commitsArray.forEach((commit) => {
-    const commitParse = commit.replace(delimiter, "");
-    if (commit.startsWith("feat")) {
+    const commitParse = commit.replace(delimiter, '');
+    if (commit.startsWith('feat')) {
       features.push(commitParse);
     }
 
-    if (commit.startsWith("fix")) {
+    if (commit.startsWith('fix')) {
       fixes.push(commitParse);
     }
 
     if (
-      commit.startsWith("build") ||
-      commit.startsWith("ci") ||
-      commit.startsWith("chore") ||
-      commit.startsWith("docs") ||
-      commit.startsWith("perf") ||
-      commit.startsWith("refactor") ||
-      commit.startsWith("revert") ||
-      commit.startsWith("style") ||
-      commit.startsWith("test")
+      commit.startsWith('build') ||
+      commit.startsWith('ci') ||
+      commit.startsWith('chore') ||
+      commit.startsWith('docs') ||
+      commit.startsWith('perf') ||
+      commit.startsWith('refactor') ||
+      commit.startsWith('revert') ||
+      commit.startsWith('style') ||
+      commit.startsWith('test')
     ) {
       chores.push(commitParse);
     }
@@ -134,7 +134,7 @@ function getChangelog(pkgName, folder) {
     features.map((feature) => {
       changelog += `- ${feature}\n`;
     });
-    changelog += "\n";
+    changelog += '\n';
   }
 
   if (fixes.length !== 0) {
@@ -142,7 +142,7 @@ function getChangelog(pkgName, folder) {
     fixes.map((fix) => {
       changelog += `- ${fix}\n`;
     });
-    changelog += "\n";
+    changelog += '\n';
   }
 
   if (chores.length !== 0) {
@@ -150,11 +150,11 @@ function getChangelog(pkgName, folder) {
     chores.map((chore) => {
       changelog += `- ${chore}\n`;
     });
-    changelog += "\n";
+    changelog += '\n';
   }
 
   if (features.length === 0 && fixes.length === 0 && chores.length === 0) {
-    changelog = "";
+    changelog = '';
   }
 
   return changelog;
@@ -164,7 +164,7 @@ function getChangelog(pkgName, folder) {
  * Renders the log
  */
 function generateLog() {
-  let log = "";
+  let log = '';
 
   /**
    * if you have multiple packages, you can add them here to the `log` variable
@@ -175,10 +175,10 @@ function generateLog() {
    * log += getChangelog('@carbon/monorepo-template-styles','./packages/styles');
    *
    */
-  log += getChangelog("@carbon/ai-chat", "./packages/ai-chat");
+  log += getChangelog('@carbon/ai-chat', './packages/ai-chat');
   log += getChangelog(
-    "@carbon/ai-chat-components",
-    "./packages/ai-chat-components",
+    '@carbon/ai-chat-components',
+    './packages/ai-chat-components'
   );
 
   console.log(log);

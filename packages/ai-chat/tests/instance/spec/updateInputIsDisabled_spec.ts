@@ -12,13 +12,13 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
-} from "../../test_helpers";
+} from '../../test_helpers';
 
-describe("ChatInstance.updateInputIsDisabled", () => {
+describe('ChatInstance.updateInputIsDisabled', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it("should update input disabled state to true in Redux state", async () => {
+  it('should update input disabled state to true in Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -29,7 +29,7 @@ describe("ChatInstance.updateInputIsDisabled", () => {
     expect(state.assistantInputState.isReadonly).toBe(true);
   });
 
-  it("should update input disabled state to false in Redux state", async () => {
+  it('should update input disabled state to false in Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
@@ -40,7 +40,7 @@ describe("ChatInstance.updateInputIsDisabled", () => {
     expect(state.assistantInputState.isReadonly).toBe(false);
   });
 
-  it("should toggle input disabled state and maintain correct Redux state", async () => {
+  it('should toggle input disabled state and maintain correct Redux state', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 

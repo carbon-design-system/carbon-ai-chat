@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatInstance } from "@carbon/ai-chat";
+import { ChatInstance } from '@carbon/ai-chat';
 
 declare global {
   interface Window {

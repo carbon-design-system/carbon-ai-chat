@@ -17,20 +17,20 @@ Mocks two reasoning-streaming patterns — discrete `ReasoningStep` items (the d
 
 ## APIs and props demonstrated
 
-| Symbol                             | Kind           | Role in this example                                               |
-| ---------------------------------- | -------------- | ------------------------------------------------------------------ |
-| `<cds-aichat-custom-element>`      | custom element | Mounts the chat UI.                                                |
-| `messaging.customSendMessage`      | property       | Dispatches to the two reasoning scenario runners.                  |
-| `onBeforeRender`                   | property       | Captures the `ChatInstance`.                                       |
-| `MessageResponseTypes.OPTION`      | enum value     | Welcome-message scenario picker.                                   |
-| `OptionItemPreference.DROPDOWN`    | enum value     | Renders scenario picker as a dropdown.                             |
-| `ReasoningStep`                    | type           | Individual reasoning step payload.                                 |
-| `MessageResponseOptions`           | type           | `message_options` carrying `reasoning.{steps,content}`.            |
-| `MessageResponse`                  | type           | Full snapshot returned by each upsert updater.                     |
-| `MessageState`                     | enum value     | `STREAMING` per update, `COMPLETE` on the final call.              |
-| `instance.messaging.upsertMessage` | API            | Inserts + updates the welcome and the streamed reasoning in place. |
-| `ChatInstance`                     | type           | Type of the instance handle.                                       |
-| `PublicConfig`                     | type           | Types the chat configuration object.                               |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Dispatches to the two reasoning scenario runners. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `MessageResponseTypes.OPTION` | enum value | Welcome-message scenario picker. |
+| `OptionItemPreference.DROPDOWN` | enum value | Renders scenario picker as a dropdown. |
+| `ReasoningStep` | type | Individual reasoning step payload. |
+| `MessageResponseOptions` | type | `message_options` carrying `reasoning.{steps,content}`. |
+| `MessageResponse` | type | Full snapshot returned by each upsert updater. |
+| `MessageState` | enum value | `STREAMING` per update, `COMPLETE` on the final call. |
+| `instance.messaging.upsertMessage` | API | Inserts + updates the welcome and the streamed reasoning in place. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 
