@@ -66,46 +66,29 @@ $message-bar-width: 3px;
 }
 
 .cds-aichat--message--with-avatar-line .cds-aichat--message-vertical-padding,
-.cds-aichat--message--with-avatar-line
-  .cds-aichat--ui-customization-element--response,
-.cds-aichat--message--option-response-without-title-or-description
-  .cds-aichat--message-vertical-padding {
+.cds-aichat--message--with-avatar-line .cds-aichat--ui-customization-element--response,
+.cds-aichat--message--option-response-without-title-or-description .cds-aichat--message-vertical-padding {
   /* If this is the avatar line or an option response without title or description then remove the padding-block-start
    from the message and the custom element. */
   padding-block-start: 0;
 }
 
-.cds-aichat--message--option-response-without-title-or-description
-  .cds-aichat--ui-customization-element--response {
+.cds-aichat--message--option-response-without-title-or-description .cds-aichat--ui-customization-element--response {
   padding-block-start: 0;
 }
 
-.cds-aichat--message.cds-aichat--message--custom
-  .cds-aichat--message-vertical-padding,
-.cds-aichat--message.cds-aichat--message--custom
-  .cds-aichat--ui-customization-element--response {
+.cds-aichat--message.cds-aichat--message--custom .cds-aichat--message-vertical-padding,
+.cds-aichat--message.cds-aichat--message--custom .cds-aichat--ui-customization-element--response {
   padding-block: 0;
 }
 
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
-  > div.cds-aichat--received,
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
-  > div.cds-aichat--received.cds-aichat--received--carousel:not(
-    .cds-aichat--received--carousel-single
-  ):first-child,
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
-  > div.cds-aichat--received.cds-aichat--received--full-width:first-child {
+.cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received,
+.cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received.cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single):first-child,
+.cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received.cds-aichat--received--full-width:first-child {
   margin-block-start: layout.$spacing-03;
 }
 
-.cds-aichat--message.cds-aichat--message--last-message
-  .cds-aichat--message--padding {
+.cds-aichat--message.cds-aichat--message--last-message .cds-aichat--message--padding {
   padding-block-end: layout.$spacing-06;
 }
 
@@ -123,61 +106,33 @@ $message-bar-width: 3px;
   /* Smooth transitions for message margins when workspace opens/closes.
  * Matches workspace content transition timing for visual coherence. */
   @media screen and (prefers-reduced-motion: no-preference) {
+
     .cds-aichat--message .cds-aichat--received,
     .cds-aichat--message .cds-aichat--sent-container {
-      transition: margin-inline motion.$duration-fast-02
-        motion.motion(standard, productive);
+      transition: margin-inline motion.$duration-fast-02 motion.motion(standard, productive);
     }
 
-    .cds-aichat--message__avatar-line
-      + .cds-aichat--message--padding
-      .cds-aichat--assistant-message
-      > div.cds-aichat--received {
-      transition: margin-block-start motion.$duration-fast-02
-        motion.motion(standard, productive);
+    .cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received {
+      transition: margin-block-start motion.$duration-fast-02 motion.motion(standard, productive);
     }
 
-    .cds-aichat--message
-      .cds-aichat--received.cds-aichat--received--agent-status-message {
-      transition: margin-inline motion.$duration-fast-02
-        motion.motion(standard, productive);
+    .cds-aichat--message .cds-aichat--received.cds-aichat--received--agent-status-message {
+      transition: margin-inline motion.$duration-fast-02 motion.motion(standard, productive);
     }
   }
 }
 
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--conversational-search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--search,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--full-width {
+.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--conversational-search,
+.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--search,
+.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
+.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--full-width,
+.cds-aichat--narrow-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--conversational-search,
+.cds-aichat--narrow-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--search,
+.cds-aichat--narrow-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--full-width,
+.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--conversational-search,
+.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--search,
+.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received--carousel:not(.cds-aichat--received--carousel-single),
+.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received.cds-aichat--received--full-width {
   margin-inline: 0 layout.$spacing-05;
 }
 
@@ -297,8 +252,7 @@ $message-bar-width: 3px;
 }
 
 .cds-aichat--sent-container .cds-aichat--message-status-file-success svg {
-  animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2000ms
-    cds-aichat-fade-out forwards;
+  animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2000ms cds-aichat-fade-out forwards;
   fill: theme.$interactive;
 }
 
@@ -316,7 +270,7 @@ $message-bar-width: 3px;
   position: relative;
 }
 
-.cds-aichat--sent--text > span {
+.cds-aichat--sent--text>span {
   flex: 1;
   white-space: pre-wrap;
 }
@@ -457,13 +411,8 @@ svg.cds-aichat--sent-file-icon {
   }
 }
 
-.cds-aichat--message--response:not(
-    .cds-aichat--message--system-message
-  ).cds-aichat--message--agent-message
-  + .cds-aichat--message--response:not(
-    .cds-aichat--message--system-message
-  ).cds-aichat--message--agent-message,
-.cds-aichat--message--request + .cds-aichat--message--request {
+.cds-aichat--message--response:not(.cds-aichat--message--system-message).cds-aichat--message--agent-message+.cds-aichat--message--response:not(.cds-aichat--message--system-message).cds-aichat--message--agent-message,
+.cds-aichat--message--request+.cds-aichat--message--request {
   padding-block-start: layout.$spacing-03;
 
   .cds-aichat--message__avatar-line {
@@ -476,15 +425,11 @@ svg.cds-aichat--sent-file-icon {
   }
 }
 
-.cds-aichat--message--response:not(.cds-aichat--message--agent-message)
-  .cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding {
+.cds-aichat--message--response:not(.cds-aichat--message--agent-message) .cds-aichat--message__avatar-line+.cds-aichat--message--padding {
   padding-block-start: layout.$spacing-02;
 }
 
-.cds-aichat--message__avatar--agent
-  .cds-aichat--image-with-fallback
-  .cds-aichat--icon-holder {
+.cds-aichat--message__avatar--agent .cds-aichat--image-with-fallback .cds-aichat--icon-holder {
   background-color: theme.$chat-avatar-agent;
 }
 
@@ -508,32 +453,27 @@ svg.cds-aichat--sent-file-icon {
   padding-block-end: layout.$spacing-04;
 }
 
-.cds-aichat--container--render[dir='rtl']
-  .cds-aichat--received--from-agent.cds-aichat--received--text {
+.cds-aichat--container--render[dir='rtl'] .cds-aichat--received--from-agent.cds-aichat--received--text {
   border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
 }
 
-.cds-aichat--message__avatar--assistant
-  .cds-aichat--image-with-fallback
-  .cds-aichat--icon-holder {
+.cds-aichat--message__avatar--assistant .cds-aichat--image-with-fallback .cds-aichat--icon-holder {
   background-color: theme.$chat-avatar-bot;
 }
 
 /* Layout overrides by shell state (legacy/light DOM). */
 .cds-aichat--container--render {
+
   /* Views bigger than a small phone. */
   :where(cds-aichat-shell) {
+
     &.cds-aichat--standard-width,
     &.cds-aichat--wide-width {
-      .cds-aichat--message__avatar-line
-        + .cds-aichat--message--padding
-        .cds-aichat--assistant-message
-        > div.cds-aichat--received {
+      .cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received {
         margin-block-start: 0;
       }
 
-      .cds-aichat--message
-        .cds-aichat--received.cds-aichat--received--agent-status-message {
+      .cds-aichat--message .cds-aichat--received.cds-aichat--received--agent-status-message {
         margin-inline: 0;
       }
     }
@@ -542,14 +482,9 @@ svg.cds-aichat--sent-file-icon {
     &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
     &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
     &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-    &.cds-aichat--standard-width
-      .cds-aichat--message
-      .cds-aichat--sent-container {
+    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--sent-container {
       /* Start = left padding + avatar + right padding. */
-      margin-inline: calc(
-          #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
-        )
-        layout.$spacing-05;
+      margin-inline: calc(#{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}) layout.$spacing-05;
     }
   }
 
@@ -559,17 +494,14 @@ svg.cds-aichat--sent-file-icon {
    * of the calculated width breakpoint to prevent layout issues. */
 
   :where(cds-aichat-shell[workspace-in-container]) {
+
     &.cds-aichat--standard-width,
     &.cds-aichat--wide-width {
-      .cds-aichat--message__avatar-line
-        + .cds-aichat--message--padding
-        .cds-aichat--assistant-message
-        > div.cds-aichat--received {
+      .cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received {
         margin-block-start: layout.$spacing-03;
       }
 
-      .cds-aichat--message
-        .cds-aichat--received.cds-aichat--received--agent-status-message {
+      .cds-aichat--message .cds-aichat--received.cds-aichat--received--agent-status-message {
         margin-inline: layout.$spacing-05;
       }
     }
@@ -578,19 +510,14 @@ svg.cds-aichat--sent-file-icon {
     &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
     &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
     &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-    &.cds-aichat--standard-width
-      .cds-aichat--message
-      .cds-aichat--sent-container {
+    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--sent-container {
       margin-inline: layout.$spacing-05;
     }
   }
 
   /* Workspaces: open should use the no-margin-block-start variant regardless of width. */
   :where(cds-aichat-shell[show-workspace]) {
-    .cds-aichat--message__avatar-line
-      + .cds-aichat--message--padding
-      .cds-aichat--assistant-message
-      > div.cds-aichat--received {
+    .cds-aichat--message__avatar-line+.cds-aichat--message--padding .cds-aichat--assistant-message>div.cds-aichat--received {
       margin-block-start: 0;
     }
   }
@@ -601,16 +528,10 @@ svg.cds-aichat--sent-file-icon {
   margin-block-start: layout.$spacing-03;
 }
 
-.cds-aichat--container--render
-  :where(cds-aichat-shell).cds-aichat--wide-width
-  .cds-aichat--message.cds-aichat--messa`ge--hide-avatar
-  .cds-aichat--received {
+.cds-aichat--container--render :where(cds-aichat-shell).cds-aichat--wide-width .cds-aichat--message.cds-aichat--message--hide-avatar .cds-aichat--received {
   margin-inline-start: 1rem;
 }
 
-.cds-aichat--container--render
-  :where(cds-aichat-shell).cds-aichat--standard-width
-  .cds-aichat--message.cds-aichat--message--hide-avatar
-  .cds-aichat--received {
+.cds-aichat--container--render :where(cds-aichat-shell).cds-aichat--standard-width .cds-aichat--message.cds-aichat--message--hide-avatar .cds-aichat--received {
   margin-inline-start: 1rem;
 }
