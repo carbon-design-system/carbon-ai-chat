@@ -21,8 +21,8 @@ $launcher-border-radius: 28px;
     position: relative;
     border-radius: $launcher-border-radius;
     background-color: theme.$background;
-    box-shadow: 1px 0 4px rgb(23 23 23 / 30%);
     block-size: $launcher-default-size;
+    box-shadow: 1px 0 4px rgb(23 23 23 / 30%);
     inline-size: $launcher-default-size;
   }
 
