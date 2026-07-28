@@ -64,7 +64,7 @@ See the typeahead examples: [React](https://github.com/carbon-design-system/carb
 
 ## Starter prompts
 
-{@link InputConfig.starters | starters} shows a {@link SuggestionItem} list. It shows while the editor is empty, focused, and editable. Picking one inserts its `value` (or `label`). It also sends that text in the same turn. The send is gated by {@link InputConfig.isSendDisabled | isSendDisabled}. These differ from the home screen's starter buttons ({@link HomeScreenConfig.starters | starters}) — see [Home screen](./Homescreen.md).
+{@link InputConfig.starters | starters} takes a {@link StartersConfig}. It shows while the editor is empty, focused, and editable. `items` is a required static array of {@link SuggestionItem} — unlike mention/command/autocomplete, starters are resolved once and cannot be an async function. Picking one inserts its `value` (or `label`) and auto-sends in the same turn. The send is gated by {@link InputConfig.isSendDisabled | isSendDisabled}. Pass `renderCustomList` to replace the built-in list UI (for example, to add a header above the items). These differ from the home screen's starter buttons ({@link HomeScreenConfig.starters | starters}) — see [Home screen](./Homescreen.md).
 
 ## Custom actions and the expanded layout
 
