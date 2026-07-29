@@ -111,6 +111,22 @@ describe('aichat workspace shell', function () {
     expect(assigned.length).to.equal(1);
     expect(assigned[0].tagName.toLowerCase()).to.equal('cds-aichat-toolbar');
   });
+
+  it('should apply workspace attribute to toolbar when workspace is set', async () => {
+    const el = await fixture<CDSAIChatWorkspaceShell>(
+      html`<cds-aichat-workspace-shell>
+        <cds-aichat-toolbar
+          slot="toolbar"
+          workspace
+          titleText="Workspace Title"
+          .actions=${actions}>
+        </cds-aichat-toolbar>
+      </cds-aichat-workspace-shell>`
+    );
+    const toolbar = el.querySelector('cds-aichat-toolbar') as HTMLElement;
+    expect(toolbar).to.exist;
+    expect(toolbar.hasAttribute('workspace')).to.be.true;
+  });
   it('should render notification inside the notification slot', async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
       html`<cds-aichat-workspace-shell>

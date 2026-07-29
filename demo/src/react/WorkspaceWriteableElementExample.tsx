@@ -146,6 +146,7 @@ function WorkspaceWriteableElementExample({
         slot="toolbar"
         actions={toolbarActions}
         overflow
+        workspace
         titleText="Optimizing excess inventory">
         <div slot="decorator">
           <AILabel autoAlign={false} size="2xs" align="bottom">
@@ -163,6 +164,7 @@ function WorkspaceWriteableElementExample({
         title="Notification Title"
         subtitle="Notification Subtitle"
         kind="warning"
+        lowContrast
         hideCloseButton
       />
       <WorkspaceShellHeader

@@ -84,6 +84,12 @@ class CDSAIChatToolbar extends LitElement {
   @property({ type: String })
   nameText?: string;
 
+  /**
+   * When true, applies workspace-shell heading styles to the title.
+   */
+  @property({ type: Boolean, attribute: 'workspace', reflect: true })
+  workspace = false;
+
   /** Container holding all action buttons and the overflow menu.
    *  @internal
    */

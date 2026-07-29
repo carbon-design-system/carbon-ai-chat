@@ -148,7 +148,8 @@ export const Default = {
         slot="toolbar"
         ?overflow=${args.toolbarOverflow}
         .actions=${args.toolbarAction}
-        titleText=${args.toolbarTitle}>
+        titleText=${args.toolbarTitle}
+        workspace>
         <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
           <div slot="body-text">
             <p class="secondary">
@@ -164,6 +165,7 @@ export const Default = {
         .title="${args.notificationTitle}"
         .subtitle="${args.notificationSubTitle}"
         kind="warning"
+        low-contrast
         hide-close-button>
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header

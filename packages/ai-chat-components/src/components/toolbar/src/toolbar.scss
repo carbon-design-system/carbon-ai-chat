@@ -10,6 +10,7 @@
 @use '../../../globals/scss/vars' as *;
 @use '../../../globals/scss/modifiers' as *;
 @use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 @use '@carbon/layout';
 
 $block-class: #{$prefix}-toolbar;
@@ -51,7 +52,7 @@ $block-class: #{$prefix}-toolbar;
     margin-block: auto;
     margin-inline-end: auto;
     min-inline-size: layout.$spacing-10;
-    padding-inline: layout.$spacing-04;
+    padding-inline-start: layout.$spacing-07;
   }
 
   // Style for name text - this needs to be at the host level to style slotted content
@@ -98,5 +99,11 @@ $block-class: #{$prefix}-toolbar;
     margin-block: auto;
     min-block-size: layout.$spacing-08;
     min-inline-size: layout.$spacing-08;
+  }
+}
+
+:host([workspace]) {
+  .#{$block-class}__title {
+    @include type.type-style('heading-03');
   }
 }

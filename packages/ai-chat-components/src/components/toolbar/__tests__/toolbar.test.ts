@@ -55,4 +55,52 @@ describe('toolbar', function () {
     expect(el.shadowRoot).to.exist;
     await expect(el).dom.to.equalSnapshot();
   });
+
+  it('should default workspace to false and not reflect the attribute', async () => {
+    const el = await fixture<Toolbar>(
+      html`<cds-aichat-toolbar
+        .actions=${actionLists['Advanced list'] as Action[]}></cds-aichat-toolbar>`
+    );
+    expect(el.workspace).to.be.false;
+    expect(el.hasAttribute('workspace')).to.be.false;
+  });
+
+  it('should set workspace to true and reflect the attribute when workspace attribute is present', async () => {
+    const el = await fixture<Toolbar>(
+      html`<cds-aichat-toolbar
+        workspace
+        .actions=${actionLists['Advanced list'] as Action[]}></cds-aichat-toolbar>`
+    );
+    expect(el.workspace).to.be.true;
+    expect(el.hasAttribute('workspace')).to.be.true;
+  });
+
+  it('should reflect workspace attribute changes via property', async () => {
+    const el = await fixture<Toolbar>(
+      html`<cds-aichat-toolbar
+        .actions=${actionLists['Advanced list'] as Action[]}></cds-aichat-toolbar>`
+    );
+    expect(el.hasAttribute('workspace')).to.be.false;
+
+    el.workspace = true;
+    await el.updateComplete;
+
+    expect(el.hasAttribute('workspace')).to.be.true;
+
+    el.workspace = false;
+    await el.updateComplete;
+
+    expect(el.hasAttribute('workspace')).to.be.false;
+  });
+
+  it('should render the title div inside the shadow root', async () => {
+    const el = await fixture<Toolbar>(
+      html`<cds-aichat-toolbar
+        workspace
+        titleText="My Title"
+        .actions=${actionLists['Advanced list'] as Action[]}></cds-aichat-toolbar>`
+    );
+    const titleDiv = el.shadowRoot!.querySelector('.cds-aichat-toolbar__title');
+    expect(titleDiv).to.exist;
+  });
 });
