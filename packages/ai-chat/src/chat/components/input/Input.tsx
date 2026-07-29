@@ -31,6 +31,7 @@ import { useServiceManager } from '../../hooks/useServiceManager';
 import { useIntl } from '../../hooks/useIntl';
 import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
 import { validateFileSelection } from '../../utils/fileUploadValidation';
+import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
 import { useInputConfig } from '../../hooks/useInputConfig';
 import { useRichSurface } from './useRichSurface';
 import { useInputValueSync } from './useInputValueSync';
@@ -381,14 +382,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     if (!hasAnnouncedShortcut) {
       const shortcutConfig =
-        store.getState().config.public.keyboardShortcuts?.messageFocusToggle;
+        store.getState().config.derived.keyboardShortcuts.messageFocusToggle;
 
-      if (shortcutConfig?.is_on) {
-        const key = shortcutConfig.key;
+      if (shortcutConfig.isOn) {
         store.dispatch(
           actions.announceMessage({
             messageID: 'input_keyboardShortcutAnnouncement',
-            messageValues: { key },
+            messageValues: {
+              // Formatted through the same helper the scroll-handle labels use, so the
+              // announced and the displayed shortcut never disagree about modifiers.
+              key: formatShortcutForDisplay(shortcutConfig),
+            },
           })
         );
         setHasAnnouncedShortcut(true);

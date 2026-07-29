@@ -196,7 +196,7 @@ export interface PublicConfig {
   /**
    * Configuration for the homescreen.
    *
-   * If you change anything but `is_on` after the chat session has started, the chat will handle it gracefully.
+   * If you change anything but `isOn` after the chat session has started, the chat will handle it gracefully.
    *
    * If you turn on the homescreen after the user has already started chatting, it will show up in the header as
    * an icon, but the user won't be forced to go back to the homescreen (unlike turning on the disclaimer mid-chat).
@@ -215,7 +215,7 @@ export interface PublicConfig {
 
   /**
    * Configuration for file upload behavior in the chat input.
-   * When `is_on` is `true`, the chat renders a file attachment button in the input area.
+   * When `isOn` is `true`, the chat renders a file attachment button in the input area.
    *
    * @experimental
    */
@@ -229,6 +229,8 @@ export interface PublicConfig {
   /**
    * Configuration for keyboard shortcuts in the chat.
    * Allows customization of keyboard shortcuts for various actions.
+   *
+   * Shortcuts are off by default. Turn one on with {@link ChatShortcutConfig.isOn}.
    *
    * @experimental
    */

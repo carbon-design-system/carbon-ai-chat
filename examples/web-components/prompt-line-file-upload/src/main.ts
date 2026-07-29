@@ -10,13 +10,13 @@
 /**
  * Example: Carbon AI Chat — File upload (Web components)
  *
- * Demonstrates: enabling the file-attachment button via `upload.is_on`
+ * Demonstrates: enabling the file-attachment button via `upload.isOn`
  * and wiring an `onFileUpload` handler so attached files become
  * `ExternalFileReference` payloads on the next user message.
  *
  * APIs exercised:
  *   - `<cds-aichat-custom-element>`
- *   - `PublicConfig.upload.is_on`
+ *   - `PublicConfig.upload.isOn`
  *   - `PublicConfig.upload.onFileUpload` (see `./mockOnFileUpload.ts`)
  *
  * Start reading at: the `config` constant and `./mockOnFileUpload.ts`.
@@ -40,7 +40,7 @@ const config: PublicConfig = {
   upload: {
     // Reveals the paperclip attachment button in the input area; without
     // this the rest of the upload config has no UI affordance to trigger it.
-    is_on: true,
+    isOn: true,
     // Invoked once per selected file before the next user turn is sent;
     // its returned `StructuredData` is what carries the file forward.
     onFileUpload: mockOnFileUpload,

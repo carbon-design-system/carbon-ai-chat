@@ -138,10 +138,15 @@ export async function initServiceManagerAndInstance(options: {
   // Validate UploadConfig at startup so misconfiguration is surfaced early,
   // regardless of whether the main window is open.
   const uploadConfig = serviceManager.store.getState().config.public.upload;
-  if (uploadConfig?.is_on && !uploadConfig.onFileUpload) {
+  if (uploadConfig?.isOn && !uploadConfig.onFileUpload) {
     consoleError(
-      '[upload] UploadConfig.is_on is true but onFileUpload is not provided. ' +
+      '[upload] UploadConfig.isOn is true but onFileUpload is not provided. ' +
         'File upload will be disabled. Please provide an onFileUpload handler in config.upload.'
+    );
+  } else if (uploadConfig?.onFileUpload && !uploadConfig.isOn) {
+    consoleError(
+      '[upload] UploadConfig.onFileUpload is provided but isOn is not true. ' +
+        'File upload will be disabled. Set isOn: true in config.upload to enable it.'
     );
   }
 

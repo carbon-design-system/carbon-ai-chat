@@ -4,7 +4,7 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 
 ## What this example shows
 
-- Turning on the file-attachment button in the chat input via `upload.is_on: true`.
+- Turning on the file-attachment button in the chat input via `upload.isOn: true`.
 - Supplying an `upload.onFileUpload` handler that returns an `ExternalFileReference` / `StructuredData` payload after a simulated 1-second upload.
 - Respecting `AbortSignal` so removing a pending attachment cancels its in-flight upload.
 - Echoing file metadata (name, type, size, server id) back through `customSendMessage`.
@@ -21,7 +21,7 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 | --- | --- | --- |
 | `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
 | `messaging.customSendMessage` | property | Mock backend that echoes uploaded-file metadata. |
-| `upload.is_on` | property | Enables the attachment button. |
+| `upload.isOn` | property | Enables the attachment button. |
 | `upload.onFileUpload` | property | Mock upload handler returning `StructuredData` with an `ExternalFileReference`. |
 | `AbortSignal` | API | Cancels in-flight uploads when a pending file is removed. |
 

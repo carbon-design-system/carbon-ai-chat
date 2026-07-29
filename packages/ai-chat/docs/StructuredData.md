@@ -70,13 +70,13 @@ async function customSendMessage(request, requestOptions, instance) {
 
 A file upload is one kind of structured data: an uploaded file becomes a `file`-typed {@link StructuredField | field} that you read on the server exactly like any other field.
 
-Enable it with {@link PublicConfig.upload | upload}. Set `is_on: true`, provide an `onFileUpload` handler, and optionally constrain attachments with `accept`, `maxFileSizeBytes`, and `maxFiles` (see {@link UploadConfig} for the full list):
+Enable it with {@link PublicConfig.upload | upload}. Set `isOn: true`, provide an `onFileUpload` handler, and optionally constrain attachments with `accept`, `maxFileSizeBytes`, and `maxFiles` (see {@link UploadConfig} for the full list):
 
 ```typescript
 const config: PublicConfig = {
   messaging: { customSendMessage },
   upload: {
-    is_on: true,
+    isOn: true,
     onFileUpload: handleFileUpload,
     accept: 'image/*,.pdf',
   },

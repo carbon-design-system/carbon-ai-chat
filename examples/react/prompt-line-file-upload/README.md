@@ -4,7 +4,7 @@
 
 ## What this example shows
 
-- Enabling attachments with `upload.is_on: true` and providing an `onFileUpload` handler.
+- Enabling attachments with `upload.isOn: true` and providing an `onFileUpload` handler.
 - Simulating a 1-second upload with `AbortSignal` support and returning an `ExternalFileReference` wrapped in `StructuredData`.
 - Echoing attached file metadata back as a text message via `instance.messaging.addMessage` and `MessageResponseTypes.TEXT`.
 - Documenting the optional `accept`, `maxFileSizeBytes`, and `maxFiles` config knobs (commented in source).
@@ -26,7 +26,7 @@
 | `MessageRequest` | `@carbon/ai-chat` type | Inspected for `structured_data` to echo files. |
 | `ChatInstance` | `@carbon/ai-chat` type | Used by the mock server response helper. |
 | `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` used to echo file metadata. |
-| `upload.is_on` | config prop | Enables attachments. |
+| `upload.isOn` | config prop | Enables attachments. |
 | `upload.onFileUpload` | config prop | Mock upload handler returning `StructuredData`. |
 | `upload.accept` (documented) | config prop | Optional MIME/extension allowlist. |
 | `upload.maxFileSizeBytes` (documented) | config prop | Optional per-file size cap. |

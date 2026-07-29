@@ -106,6 +106,11 @@ describe('reconcileAppConfigReferences', () => {
     expect(reconciled.derived.themeWithDefaults).toBe(
       prev.derived.themeWithDefaults
     );
+    // MessagesComponent's shallowEqual selector reads this one, so a fresh identity here
+    // would re-render the message list on every unrelated config change.
+    expect(reconciled.derived.keyboardShortcuts).toBe(
+      prev.derived.keyboardShortcuts
+    );
   });
 
   it('does not churn value-equal sub-objects when only a function prop changes', () => {

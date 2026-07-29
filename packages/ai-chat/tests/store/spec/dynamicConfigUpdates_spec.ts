@@ -84,6 +84,61 @@ describe('Dynamic Config Updates', () => {
       expect(updatedState.config.derived.header?.showRestartButton).toBe(false);
     });
 
+    it('should re-merge keyboard shortcut defaults on a runtime config change', async () => {
+      await applyConfigChangesDynamically(
+        initialState.config.public,
+        { keyboardShortcuts: { messageFocusToggle: { key: 'F7' } } },
+        serviceManager
+      );
+
+      // A partial config inherits the other fields one by one rather than replacing the
+      // whole default object.
+      expect(
+        serviceManager.store.getState().config.derived.keyboardShortcuts
+          .messageFocusToggle
+      ).toEqual({ key: 'F7', modifiers: {}, isOn: false });
+    });
+
+    it('should resolve the full default binding from an isOn-only config', async () => {
+      await applyConfigChangesDynamically(
+        initialState.config.public,
+        { keyboardShortcuts: { messageFocusToggle: { isOn: true } } },
+        serviceManager
+      );
+
+      // What the demo's keyboard-shortcut switcher dispatches: the toggle alone.
+      expect(
+        serviceManager.store.getState().config.derived.keyboardShortcuts
+          .messageFocusToggle
+      ).toEqual({ key: 'F6', modifiers: {}, isOn: true });
+    });
+
+    it('should turn the keyboard shortcut on and back off at runtime', async () => {
+      await applyConfigChangesDynamically(
+        initialState.config.public,
+        {
+          keyboardShortcuts: {
+            messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+          },
+        },
+        serviceManager
+      );
+      expect(
+        serviceManager.store.getState().config.derived.keyboardShortcuts
+          .messageFocusToggle.isOn
+      ).toBe(true);
+
+      await applyConfigChangesDynamically(
+        serviceManager.store.getState().config.public,
+        {},
+        serviceManager
+      );
+      expect(
+        serviceManager.store.getState().config.derived.keyboardShortcuts
+          .messageFocusToggle.isOn
+      ).toBe(false);
+    });
+
     it('should handle header property deletion correctly', async () => {
       // Start with a header that has multiple properties
       const initialConfig: PublicConfig = {

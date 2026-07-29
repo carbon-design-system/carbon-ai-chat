@@ -297,6 +297,17 @@ describe('config-change re-render counts', () => {
       persistFeedback: true,
     } as PublicConfig);
     expect(messagesBagRenders).toBe(2);
+
+    // The bag reads the shortcut config from `derived`, so turning the shortcut on must
+    // re-render — otherwise the scroll-handle labels would stay frozen at their boot value.
+    applyConfigChange(store, {
+      ...BASE_CONFIG,
+      persistFeedback: true,
+      keyboardShortcuts: {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+      },
+    } as PublicConfig);
+    expect(messagesBagRenders).toBe(3);
   });
 
   // Regression: AppShell subscribes to the file-upload + streaming subset of
