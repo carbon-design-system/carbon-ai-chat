@@ -17,8 +17,10 @@ import prefix from '../../../globals/settings.js';
 import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
 
 import styles from './autocomplete.scss?lit';
-import './autocomplete-item.js';
-import './autocomplete-item-group.js';
+import itemStyles from './autocomplete-item.scss?lit';
+import groupStyles from './autocomplete-item-group.scss?lit';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import SendFilled16 from '@carbon/icons/es/send--filled/16.js';
 
 import type {
   SuggestionItem,
@@ -30,6 +32,8 @@ export type {
 } from '../../prompt-line/src/tiptap/types.js';
 
 const blockClass = `${prefix}-autocomplete`;
+const itemClass = `${blockClass}-item`;
+const groupClass = `${itemClass}-group`;
 
 /**
  * Configuration for the autocomplete header
@@ -117,6 +121,8 @@ export interface AutocompleteSendEventDetail {
 class AutocompleteElement extends LitElement {
   static styles = css`
     ${unsafeCSS(styles)}
+    ${unsafeCSS(itemStyles)}
+    ${unsafeCSS(groupStyles)}
   `;
 
   /**
@@ -338,23 +344,12 @@ class AutocompleteElement extends LitElement {
     }, 50);
   }
 
-  private _handleSendClick(event: CustomEvent) {
-    event.stopPropagation();
-    const index = event.detail?.index;
-
-    if (index === undefined) {
-      return;
-    }
-
-    // Update focused index to match the item whose send button was clicked
-    this._focusedIndex = index;
-
+  private _handleSend(index: number) {
     const item = this._getItemAtIndex(index);
-
     if (!item) {
       return;
     }
-
+    this._focusedIndex = index;
     this.dispatchEvent(
       new CustomEvent<AutocompleteSendEventDetail>(
         'cds-aichat-autocomplete-send',
@@ -386,27 +381,12 @@ class AutocompleteElement extends LitElement {
       const itemsContainer = this.shadowRoot?.querySelector(
         `.${blockClass}__items`
       );
-      const itemArray = this._flatItemElements(itemsContainer);
-      const targetItem = itemArray[this._focusedIndex] as
-        HTMLElement | undefined;
-      if (targetItem) {
-        targetItem.scrollIntoView({ block: 'nearest' });
-      }
-    });
-  }
-
-  private _flatItemElements(container: Element | null | undefined): Element[] {
-    return Array.from(container?.children ?? []).flatMap((child) => {
-      if (child.tagName === 'CDS-AICHAT-AUTOCOMPLETE-ITEM') {
-        return [child];
-      }
-      if (child.tagName === 'CDS-AICHAT-AUTOCOMPLETE-ITEM-GROUP') {
-        return Array.from(
-          child.shadowRoot?.querySelectorAll('cds-aichat-autocomplete-item') ??
-            []
-        );
-      }
-      return [];
+      const options = Array.from(
+        itemsContainer?.querySelectorAll('li[role="option"]') ?? []
+      );
+      (options[this._focusedIndex] as HTMLElement | undefined)?.scrollIntoView({
+        block: 'nearest',
+      });
     });
   }
 
@@ -443,16 +423,130 @@ class AutocompleteElement extends LitElement {
     }
   }
 
-  private _handleGroupItemClick(event: CustomEvent) {
-    event.stopPropagation();
-    const index = event.detail?.index;
-    if (index !== undefined) {
-      this._handleItemClick(index);
+  private _getActiveOptionId(): string | undefined {
+    const item = this._getItemAtIndex(this._focusedIndex);
+    return item ? `${item.id}--option` : undefined;
+  }
+
+  private _getLabelParts(item: SuggestionItem): {
+    typed: string;
+    remainder: string;
+  } {
+    const label = item.label;
+    const input = this.inputText.toLowerCase();
+
+    if (input && label.toLowerCase().startsWith(input)) {
+      return {
+        typed: label.substring(0, input.length),
+        remainder: label.substring(input.length),
+      };
     }
+
+    return { typed: '', remainder: label };
+  }
+
+  /**
+   * Render the avatar if provided
+   */
+  private _renderAvatar(item: SuggestionItem) {
+    const { avatar } = item;
+    if (!avatar) {
+      return null;
+    }
+    if (typeof avatar === 'string') {
+      return html`<div class="${itemClass}__avatar">
+        <img src="${avatar}" alt="" />
+      </div>`;
+    }
+    // CarbonIcon descriptor (object, not a function)
+    if (typeof avatar !== 'function') {
+      return html`<div class="${itemClass}__avatar">
+        ${iconLoader(avatar)}
+      </div>`;
+    }
+    return null;
+  }
+
+  /**
+   * Render a single `<li role="option">` for both flat and grouped contexts.
+   */
+  private _renderItem(
+    item: SuggestionItem,
+    index: number,
+    opts: { firstItem?: boolean; lastItem?: boolean } = {}
+  ) {
+    const { typed, remainder } = this._getLabelParts(item);
+    const isActive = index === this._focusedIndex;
+    const id = `${item.id}--option`;
+
+    return html`
+      <li
+        @click="${() => this._handleItemClick(index)}"
+        @keydown="${(e: KeyboardEvent) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            this._handleItemClick(index);
+          }
+        }}"
+        aria-selected="${isActive ? 'true' : 'false'}"
+        class="${itemClass} ${isActive ? `${itemClass}--active` : ''}"
+        id="${id}"
+        role="option"
+        tabindex="-1"
+        ?first-item="${opts.firstItem}"
+        ?last-item="${opts.lastItem}">
+        <div class="${itemClass}__content">
+          ${this._renderAvatar(item)}
+          <div class="${itemClass}__text">
+            <div class="${itemClass}__label">
+              ${
+                typed
+                  ? html`<span class="${itemClass}__label-typed"
+                      >${typed}</span
+                    >`
+                  : ''
+              }${
+                remainder
+                  ? html`<span class="${itemClass}__label-remainder"
+                      >${remainder}</span
+                    >`
+                  : ''
+              }
+            </div>
+            ${
+              item.description
+                ? html`<div class="${itemClass}__description">
+                    ${item.description}
+                  </div>`
+                : null
+            }
+          </div>
+        </div>
+        ${
+          this.enableSendButton
+            ? html`
+                <cds-icon-button
+                  align="${this.isRTL ? 'top-start' : 'top-end'}"
+                  aria-label="Send ${item.label}"
+                  class="${itemClass}__send"
+                  kind="ghost"
+                  size="md"
+                  tabindex="-1"
+                  @click="${(e: Event) => {
+                    e.stopPropagation();
+                    this._handleSend(index);
+                  }}">
+                  ${iconLoader(SendFilled16, { slot: 'icon' })}
+                  <span slot="tooltip-content">Send message</span>
+                </cds-icon-button>
+              `
+            : null
+        }
+      </li>
+    `;
   }
 
   render() {
-    // Detect RTL mode from document direction
     this.isRTL = isDirectionRTL();
 
     const totalItems = this._getTotalItemCount();
@@ -492,50 +586,47 @@ class AutocompleteElement extends LitElement {
         }
 
         <ul
-          class="${blockClass}__items"
-          role="listbox"
+          aria-activedescendant="${this._getActiveOptionId()}"
           aria-label="${this.i18n.listboxLabel}"
-          id="${blockClass}-listbox">
-          <!-- Render flat items first -->
-          ${this.items.map((item, idx) => {
+          class="${blockClass}__items"
+          id="${blockClass}-listbox"
+          role="listbox">
+          <!-- Flat items -->
+          ${this.items.map((item, index) => {
             const itemIndex = currentIndex++;
-            const isFirstItem = !this.headerConfig?.showHeader && idx === 0;
-            const isLastItem =
-              this.groups.length === 0 && idx === this.items.length - 1;
-            return html`
-              <cds-aichat-autocomplete-item
-                .isActive="${itemIndex === this._focusedIndex}"
-                .item="${item}"
-                .index="${itemIndex}"
-                .inputText="${this.inputText}"
-                .isRTL="${this.isRTL}"
-                .enableSendButton="${this.enableSendButton}"
-                ?first-item="${isFirstItem}"
-                ?last-item="${isLastItem}"
-                @click="${() => this._handleItemClick(itemIndex)}"
-                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"></cds-aichat-autocomplete-item>
-            `;
+            return this._renderItem(item, itemIndex, {
+              firstItem: !this.headerConfig?.showHeader && index === 0,
+              lastItem:
+                this.groups.length === 0 && index === this.items.length - 1,
+            });
           })}
 
-          <!-- Render grouped items -->
-          ${this.groups.map((group, groupIdx) => {
+          <!-- Grouped items -->
+          ${this.groups.map((group, groupIndex) => {
             const groupStartIndex = currentIndex;
             currentIndex += group.items.length;
-            const isLastGroup = groupIdx === this.groups.length - 1;
+            const isLastGroup = groupIndex === this.groups.length - 1;
             return html`
-              <cds-aichat-autocomplete-item-group
-                .title="${group.title}"
-                .items="${group.items}"
-                .startIndex="${groupStartIndex}"
-                .focusedIndex="${this._focusedIndex}"
-                .inputText="${this.inputText}"
-                .isRTL="${this.isRTL}"
-                .enableSendButton="${this.enableSendButton}"
-                ?last-group="${isLastGroup}"
-                @cds-aichat-autocomplete-item-click="${
-                  this._handleGroupItemClick
-                }"
-                @cds-aichat-autocomplete-item-send="${this._handleSendClick}"></cds-aichat-autocomplete-item-group>
+              <li
+                role="group"
+                aria-label="${group.title}"
+                class="${groupClass}">
+                ${
+                  group.title
+                    ? html`<div class="${groupClass}__title">
+                        ${group.title}
+                      </div>`
+                    : null
+                }
+                <ul class="${groupClass}__items">
+                  ${group.items.map((item, itemIndex) =>
+                    this._renderItem(item, groupStartIndex + itemIndex, {
+                      lastItem:
+                        isLastGroup && itemIndex === group.items.length - 1,
+                    })
+                  )}
+                </ul>
+              </li>
             `;
           })}
         </ul>
