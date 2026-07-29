@@ -355,6 +355,7 @@ export const QuickAction = {
     ...sharedArgs,
     buttonText: 'Quick action',
     isQuickAction: true,
+    isSelected: false,
   },
   render: baseButtonTemplate,
 };
