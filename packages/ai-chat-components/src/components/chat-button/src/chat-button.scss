@@ -43,7 +43,7 @@
 
 :host(#{$prefix}-button[is-quick-action]) {
   .#{$cds-prefix}--btn {
-    border: convert.to-rem(1px) solid theme.$border-interactive;
+    border: convert.to-rem(1px) solid theme.$chat-button;
     background: transparent;
     color: theme.$chat-button;
 
@@ -86,7 +86,6 @@
     }
 
     &:focus {
-      border-width: convert.to-rem(2px);
       border-color: theme.$focus;
       box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
     }
