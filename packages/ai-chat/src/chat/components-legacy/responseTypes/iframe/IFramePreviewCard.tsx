@@ -35,9 +35,6 @@ function IFramePreviewCardComponent({
   messageItem,
 }: IFramePreviewCardComponentProps) {
   const { source, image_url, title, description } = messageItem;
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
-  );
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
   const iframe_ariaImageAltText = useSelector(
@@ -72,7 +69,6 @@ function IFramePreviewCardComponent({
         renderIcon={ArrowRight}
         onClick={handleCardClick}
         preventInlineError
-        useAITheme={aiEnabled}
       />
       <VisuallyHidden>{iframeAriaClickPreviewCardMessage}</VisuallyHidden>
     </div>

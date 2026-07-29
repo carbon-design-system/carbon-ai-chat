@@ -8,7 +8,7 @@
  */
 
 import React, { forwardRef, Ref, useMemo, useRef, useState } from 'react';
-import { AnnounceOnMountComponent } from '../helpers/AnnounceOnMountComponent/AnnounceOnMountComponent';
+import { AnnounceOnMount } from '../helpers/AnnounceOnMount/AnnounceOnMount';
 import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
 import InputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
 import FileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
@@ -551,7 +551,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       );
       return (
         <div slot="field-messaging">
-          <AnnounceOnMountComponent
+          <AnnounceOnMount
             announceOnce={`Error: Max character count exceeded. ${errorText}`}>
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
@@ -559,7 +559,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               description={errorText}
               collapsible={true}
             />
-          </AnnounceOnMountComponent>
+          </AnnounceOnMount>
         </div>
       );
     }
@@ -574,14 +574,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     return (
       <div slot="field-messaging">
-        <AnnounceOnMountComponent announceOnce={announcement}>
+        <AnnounceOnMount announceOnce={announcement}>
           <ErrorMessage
             fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
             title={error.title}
             description={error?.description}
             collapsible={error?.collapsible}
           />
-        </AnnounceOnMountComponent>
+        </AnnounceOnMount>
       </div>
     );
   };

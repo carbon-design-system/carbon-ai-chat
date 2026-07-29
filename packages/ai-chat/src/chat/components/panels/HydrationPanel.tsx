@@ -10,7 +10,7 @@
 import React from 'react';
 
 import Loading from '../carbon/Loading';
-import { AnnounceOnMountComponent } from '../helpers/AnnounceOnMountComponent/AnnounceOnMountComponent';
+import { AnnounceOnMount } from '../helpers/AnnounceOnMount/AnnounceOnMount';
 import { MountChildrenOnDelay } from '../helpers/MountChildrenOnDelay/MountChildrenOnDelay';
 import type { AppState } from '../../../types/state/AppState';
 import { useSelector } from '../../hooks/useSelector';
@@ -29,9 +29,7 @@ const HydrationPanel: React.FC<HydrationPanelProps> = ({ isHydrated }) => {
     <div className="cds-aichat--hydrating-container">
       <div className="cds-aichat--hydrating cds-aichat--panel-content">
         <MountChildrenOnDelay delay={400}>
-          {!isHydrated && (
-            <AnnounceOnMountComponent announceOnce={ariaWindowLoading} />
-          )}
+          {!isHydrated && <AnnounceOnMount announceOnce={ariaWindowLoading} />}
           <Loading active overlay={false} assistiveText={ariaWindowLoading} />
         </MountChildrenOnDelay>
       </div>

@@ -23,12 +23,8 @@
   display: flex;
   flex: 0 0 layout.$spacing-05;
   align-items: flex-start;
-  margin: layout.$spacing-01 layout.$spacing-03 0 layout.$spacing-05;
-}
-
-.cds-aichat--container--render[dir='rtl']
-  .cds-aichat--inline-error--icon-holder {
-  margin: layout.$spacing-01 layout.$spacing-05 0 layout.$spacing-03;
+  margin-block: layout.$spacing-01 0;
+  margin-inline: layout.$spacing-05 layout.$spacing-03;
 }
 
 .cds-aichat--inline-error--icon {
@@ -46,9 +42,6 @@
 .cds-aichat--inline-error .cds-aichat--inline-error--text {
   color: theme.$text-error;
 }
-
-/* Folded in from the former components/util/ErrorIcon.scss — the error icon has no
-   component of its own; InlineError applies the class inline. */
 
 .cds-aichat--error-icon {
   fill: theme.$support-error;

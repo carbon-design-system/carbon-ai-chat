@@ -99,9 +99,6 @@ function BaseButtonItemComponent({
   const errors_imageSource = useSelector(
     (state: AppState) => state.languagePack.errors_imageSource
   );
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
-  );
   const text = label || url;
   const linkTarget = url ? target : undefined;
 
@@ -118,7 +115,6 @@ function BaseButtonItemComponent({
         onClick={onClick}
         disabled={disabled}
         isLink={Boolean(url)}
-        useAITheme={aiEnabled}
       />
     );
   }

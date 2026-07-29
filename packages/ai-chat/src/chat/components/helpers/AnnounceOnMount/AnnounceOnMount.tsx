@@ -21,28 +21,28 @@ import {
 } from '../../../hocs/withAriaAnnouncer';
 import { HasChildren } from '../../../../types/utilities/HasChildren';
 
-interface AnnounceOnMountComponentProps extends HasAriaAnnouncer, HasChildren {
+interface AnnounceOnMountProps extends HasAriaAnnouncer, HasChildren {
   /**
    * An optional additional message that can be announced the first time the component is mounted.
    */
   announceOnce?: string;
 }
 
-interface AnnounceOnMountComponentState {
+interface AnnounceOnMountState {
   /**
    * Indicates if this component has been mounted.
    */
   isMounted: boolean;
 }
 
-class AnnounceOnMountComponent extends PureComponent<
-  AnnounceOnMountComponentProps,
-  AnnounceOnMountComponentState
+class AnnounceOnMount extends PureComponent<
+  AnnounceOnMountProps,
+  AnnounceOnMountState
 > {
   /**
    * Default state.
    */
-  public readonly state: Readonly<AnnounceOnMountComponentState> = {
+  public readonly state: Readonly<AnnounceOnMountState> = {
     isMounted: false,
   };
 
@@ -73,7 +73,5 @@ class AnnounceOnMountComponent extends PureComponent<
   }
 }
 
-const AnnounceOnMountComponentExport = withAriaAnnouncer(
-  AnnounceOnMountComponent
-);
-export { AnnounceOnMountComponentExport as AnnounceOnMountComponent };
+const AnnounceOnMountExport = withAriaAnnouncer(AnnounceOnMount);
+export { AnnounceOnMountExport as AnnounceOnMount };

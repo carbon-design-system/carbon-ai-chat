@@ -40,11 +40,6 @@
   background-color: transparent;
 }
 
-.cds-aichat--grid .cds-aichat--image__skeleton {
-  // Stop the skeleton from displaying for images in the middle of a grid.
-  display: none;
-}
-
 .cds-aichat--grid .cds-aichat--media-player__skeleton {
   display: none;
 }

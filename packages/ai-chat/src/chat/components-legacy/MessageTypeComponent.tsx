@@ -146,9 +146,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   const { formatMessage } = useIntl();
   const languagePack = useSelector(selectMessageTypeStrings, shallowEqual);
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
-  );
   const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const chainOfThoughtRef = useRef<CDSAIChatChainOfThought>(null);
   const feedbackID = message.item.message_item_options?.feedback?.id;
@@ -458,7 +455,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         description={message.item.description}
         altText={message.item.alt_text}
         needsAnnouncement={message.ui_state.needsAnnouncement}
-        useAITheme={aiEnabled}
       />
     );
   }

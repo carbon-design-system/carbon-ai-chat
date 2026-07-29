@@ -7,14 +7,13 @@
  *  @license
  */
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { AppState } from '../../../../types/state/AppState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 
-import { SkeletonPlaceholder } from '../../helpers/SkeletonPicker/SkeletonPicker';
 import { CardItemComponent } from './CardItemComponent';
 import {
   CarouselItem,
@@ -50,7 +49,7 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
   const { itemsLocalMessageItemIDs } = localMessageItem.ui_state;
 
   return (
-    <Suspense fallback={<SkeletonPlaceholder />}>
+    <>
       {itemsLocalMessageItemIDs.map((nestedLocalMessageItemID) => {
         const localMessageItem = allMessageItemsByID[nestedLocalMessageItemID];
         return (
@@ -65,7 +64,7 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
           />
         );
       })}
-    </Suspense>
+    </>
   );
 }
 
