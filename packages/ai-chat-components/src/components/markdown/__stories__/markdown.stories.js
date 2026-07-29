@@ -533,3 +533,91 @@ export const WithTableOverride = {
       .customRenderers=${tableOverrideRenderers}></streaming-markdown-demo>
   `,
 };
+
+const linkOverrideMarkdown = `Explore the [Carbon Design System](https://carbondesignsystem.com) for design guidance, reusable components, and accessibility best practices, or visit the [Carbon AI Chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html) for APIs, examples, and customization guides.`;
+
+export const WithLinkOverride = {
+  parameters: {
+    controls: { sort: 'none' },
+  },
+  args: {
+    markdown: linkOverrideMarkdown,
+    rewriteHref: false,
+    linkTarget: '_blank',
+    linkRel: '',
+    addDataAttribute: false,
+    showConfirmDialog: false,
+    confirmUrlFilter: '',
+  },
+  argTypes: {
+    markdown: { table: { disable: true } },
+    rewriteHref: {
+      control: 'boolean',
+      description:
+        'Uses the `href` override — rewrites every link destination to `/redirect?url=…`',
+    },
+    linkTarget: {
+      control: 'select',
+      options: ['_blank', '_self', '_parent', '_top'],
+      description: 'Uses the `target` override — controls how the link opens',
+    },
+    linkRel: {
+      control: 'text',
+      description: 'Uses the `rel` override — leave blank to keep the default',
+    },
+    addDataAttribute: {
+      control: 'boolean',
+      description:
+        'Uses the `attributes` override — merges `data-tracked="true"` onto every rendered `<a>`',
+    },
+    showConfirmDialog: {
+      control: 'boolean',
+      description:
+        'Uses the `onClick` override — opens a native confirm dialog before navigation',
+    },
+    confirmUrlFilter: {
+      control: 'text',
+      description:
+        'Filters which links trigger the confirmation dialog by matching their `href` (for example, `carbondesignsystem.com`). Leave blank to apply to all links.',
+      if: { arg: 'showConfirmDialog', truthy: true },
+    },
+  },
+  render: (args) => {
+    const customRenderers = {
+      link: ({ href }) => {
+        const result = { target: args.linkTarget };
+        if (args.rewriteHref) {
+          result.href = `/redirect?url=${encodeURIComponent(href)}`;
+        }
+        if (args.linkRel) {
+          result.rel = args.linkRel;
+        }
+        if (args.addDataAttribute) {
+          result.attributes = { 'data-tracked': 'true' };
+        }
+        if (args.showConfirmDialog) {
+          const matches =
+            !args.confirmUrlFilter || href.includes(args.confirmUrlFilter);
+          if (matches) {
+            result.onClick = (event) => {
+              event.preventDefault();
+              if (window.confirm(`You're about to navigate to\n\n${href}`)) {
+                window.open(href, args.linkTarget || '_blank');
+              }
+            };
+          }
+        }
+        return result;
+      },
+    };
+
+    return html`
+      <div>
+        <h2 style="margin-bottom: 1rem;">Markdown Link Override Demo</h2>
+        <cds-aichat-markdown
+          .markdown=${args.markdown}
+          .customRenderers=${customRenderers}></cds-aichat-markdown>
+      </div>
+    `;
+  },
+};
