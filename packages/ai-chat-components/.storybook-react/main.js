@@ -46,6 +46,13 @@ export default {
     name: getAbsolutePath('@storybook/react-vite'),
     options: {},
   },
+  typescript: {
+    // react-docgen's Babel parser does not support the `@decorator export
+    // class {}` syntax used by Lit / @carbon/web-components source files that
+    // are transitively imported by the React stories. Disabling docgen here
+    // is safe because all argTypes in the React stories are declared manually.
+    reactDocgen: false,
+  },
   features: {
     storyStoreV7: true,
   },

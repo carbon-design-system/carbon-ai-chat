@@ -134,7 +134,7 @@ const filterSuggestionGroups = (groups, query) => {
 };
 
 export default {
-  title: 'Preview/Autocomplete',
+  title: 'Preview/Prompt line/Autocomplete',
   component: 'cds-aichat-autocomplete',
   argTypes: {
     items: {

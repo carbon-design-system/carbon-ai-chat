@@ -10,6 +10,9 @@
 import React, { useMemo } from 'react';
 import { action } from 'storybook/actions';
 import CDSAIChatAutocomplete from '../../../react/autocomplete';
+import React, { useMemo } from 'react';
+import { action } from 'storybook/actions';
+import CDSAIChatAutocomplete from '../../../react/autocomplete';
 import {
   Default as DefaultWC,
   WithHeader as WithHeaderWC,
@@ -143,7 +146,7 @@ const filterSuggestionGroups = (groups, query) => {
 };
 
 export default {
-  title: 'Preview/Autocomplete',
+  title: 'Preview/Prompt line/Autocomplete',
   argTypes: {
     items: {
       control: false,
@@ -168,12 +171,11 @@ export default {
     inputText: {
       control: 'text',
       description:
-        'The current input text. Suggestion items will apply styling to indicate what the user has already typed.',
+        'The current input text. Suggestion items will apply styling to indicate what user has already typed.',
     },
     enableSendButton: {
       control: 'boolean',
-      description:
-        'Whether to render the send button inside each suggestion item.',
+      description: 'Whether to enable the send button',
     },
     attached: {
       control: 'boolean',

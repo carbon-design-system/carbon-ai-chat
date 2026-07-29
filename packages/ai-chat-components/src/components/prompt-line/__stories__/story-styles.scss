@@ -1,0 +1,36 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * Shared SCSS for Prompt line stories.
+ *
+ * .prompt-line-story-wrapper — constrains width and centres the component.
+ * .prompt-line-story-hint    — muted instructional text above the input.
+ */
+
+.prompt-line-story-wrapper {
+  inline-size: 640px;
+  max-inline-size: 100%;
+}
+
+.prompt-line-story-hint {
+  color: var(--cds-text-helper, #6f6f6f);
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-block-end: 0.5rem;
+}
+
+.prompt-line-story-hint code {
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+  background: var(--cds-layer-01, #f4f4f4);
+  font-family: 'IBM Plex Mono', Menlo, 'DejaVu Sans Mono', monospace;
+  font-size: 0.8125rem;
+}

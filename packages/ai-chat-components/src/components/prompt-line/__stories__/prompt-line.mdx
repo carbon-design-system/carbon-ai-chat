@@ -1,0 +1,73 @@
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as PromptLineStories from "./prompt-line.stories";
+
+<Meta of={PromptLineStories} />
+
+# Prompt line
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/prompt-line) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+
+## Table of Contents
+- [Overview](#overview)
+- [Default](#default)
+- [Expanded](#expanded)
+- [Commands and mentions](#commands-and-mentions)
+- [Conversation starters](#conversation-starters)
+- [File uploads](#file-uploads)
+- [Typeahead](#typeahead)
+- [Component API](#component-api)
+
+## Overview
+
+The prompt line is the chat input surface. It is composed of three web components:
+
+- `<cds-aichat-prompt-line-shell>` — layout chrome: defines named slots and controls expanded/non-expanded modes.
+- `<cds-aichat-prompt-line>` — the editor; starts as a plain textarea and upgrades to a Tiptap rich editor when `rich` is set or `extensions` are provided.
+- `<cds-aichat-input-send-control>` — send button.
+
+Optional components can be projected into slots:
+- `<cds-aichat-toolbar>` → `message-actions` slot — icon action buttons.
+- `<cds-aichat-autocomplete-controller>` → `autocomplete-content` slot — trigger-driven suggestion overlay.
+- `<cds-aichat-file-uploads>` → `file-uploads` slot — uploaded file list.
+
+## Default
+
+Simplest configuration: no actions, no autocomplete, non-expanded layout.
+
+<Canvas of={PromptLineStories.Default} />
+
+## Expanded
+
+The `expanded` attribute on the shell places the editor on its own full-width row, with the action toolbar and send button on a second row beneath it.
+
+<Canvas of={PromptLineStories.Expanded} />
+
+## Commands and mentions
+
+Type `@` anywhere in the message to open a mention picker. Type `/` at the start of a line to open a command picker. Both use `buildCarbonExtensions` to register Tiptap plugins and `<cds-aichat-autocomplete-controller>` to manage the overlay lifecycle.
+
+<Canvas of={PromptLineStories.CommandsAndMentions} />
+
+## Conversation starters
+
+Starter prompts appear automatically when the editor is empty and focused. A toggle action button enables or disables the starters list. The `renderCustomList` hook wraps `<cds-aichat-autocomplete>` to add the "Prompt suggestions" header.
+
+<Canvas of={PromptLineStories.ConversationStarters} />
+
+## File uploads
+
+An attach button opens a native file picker. Selected files appear in the uploads row with a simulated progress animation (uploading → success). Uses `<cds-aichat-file-uploads>` in the `file-uploads` slot.
+
+<Canvas of={PromptLineStories.FileUploads} />
+
+## Typeahead
+
+Live autocomplete: suggestions filter on every keystroke. Uses `buildCarbonExtensions({ autocomplete })` and `<cds-aichat-autocomplete-controller>` with no trigger character.
+
+<Canvas of={PromptLineStories.Typeahead} />
+
+## Component API
+
+<ArgTypes of={PromptLineStories} />
