@@ -230,7 +230,7 @@ function isPlaceholder(target) {
 
 // GitHub's heading-anchor rules: lowercase, drop punctuation other than hyphen
 // and underscore, then turn each remaining space into a hyphen. Spaces are not
-// collapsed first — "Naming & prefix" anchors as "naming--prefix".
+// e.g. "Naming & prefix discipline" anchors as "naming--prefix-discipline".
 function slugify(heading) {
   return heading
     .trim()
