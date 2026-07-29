@@ -2,17 +2,23 @@
 
 ## File Completeness Rule (Must Follow)
 
-When the user's intent is **anything related to Carbon AI Chat examples** — they say "chat", "AI chat", "Carbon AI chat", "React AI chat", "web components AI chat", "AI chat history example", "chat custom element example", "watsonx example", "load history", etc. — follow this protocol **before** answering, explaining, or generating any code:
+When the user's intent is **anything related to Carbon AI Chat examples** — they say
+"chat", "AI chat", "Carbon AI chat", "React AI chat", "web components AI chat",
+"AI chat history example", "chat custom element example", "watsonx example",
+"load history", etc. — follow this protocol **before** answering, explaining, or
+generating any code:
 
 ### Step 1 — Fetch the full file list
 
-Issue a **single, explicit `code_search`** call targeting the example root and framework.
+Issue a **single, explicit `code_search`** call with the user's natural language query.
 
 Required in the query:
 
 - The phrase `"ai chat"`
 - The framework: `"react"` or `"web components"` (default to React if unspecified)
-- The example root: `"basic"`, `"custom-element"`, `"history"`, `"watsonx"`, or `"watch-state"`
+- The user's description of what they want (e.g., "full screen mode", "load history", "watsonx integration")
+
+**Do NOT hardcode example root names** — let Elasticsearch match against example descriptions naturally.
 
 Always set:
 
@@ -21,9 +27,11 @@ Always set:
 
 ### Step 2 — Inspect `example_files`
 
-After the call, read `example_files` on the top hit. If present, treat it as the **authoritative file list** and proceed.
+After the call, read `example_files` on the top hit. If present, treat it as the
+**authoritative file list** and proceed.
 
-If `example_files` is missing or incomplete, issue follow-up file-targeted queries for any missing filenames. Common files to check for:
+If `example_files` is missing or incomplete, issue follow-up file-targeted queries for
+any missing filenames. Common files to check for:
 
 - `App.tsx`
 - `customSendMessage.ts`
@@ -43,7 +51,8 @@ Only after confirming the complete file set:
 - Generate/rewrite code
 - Explain the example
 
-> This completeness step is **always required** — even if the user did not explicitly ask for all files. Do not wait for them to remember to ask.
+> This completeness step is **always required** — even if the user did not explicitly
+> ask for all files. Do not wait for them to remember to ask.
 
 ---
 
@@ -51,13 +60,15 @@ Only after confirming the complete file set:
 
 Use `docs_search` for all Carbon AI Chat API documentation.
 
-The server automatically routes to the AI Chat index when queries contain relevant entity names or migration keywords.
+The server automatically routes to the AI Chat index when queries contain relevant
+entity names or migration keywords.
 
 **Rules:**
 
 - Do NOT set `filters.component_type`, `filters.component_id`, or `filters.ibm_products`
 - Query using API symbol names, type names, or migration topic keywords
-- Include `"migration-1.0.0"` in the query when upgrade or breaking change context is implied (user says "upgrade", "removed", "breaking", "instead")
+- Include `"migration-1.0.0"` in the query when upgrade or breaking change context is implied
+  (user says "upgrade", "removed", "breaking", "instead")
 
 **Key entity names:**
 
@@ -87,31 +98,34 @@ The server automatically routes to the AI Chat index when queries contain releva
 {"query": "ai chat react setup", "size": 3}
 ```
 
-**Routing trigger words** — the query must contain at least one of these for the server to route to the AI Chat docs index:
+**Routing trigger words** — the query must contain at least one of these for the server
+to route to the AI Chat docs index:
 
-| Trigger | When to use |
-| --- | --- |
-| `ai chat` / `ai-chat` | General questions — setup, configuration, integration |
-| `ChatInstance` | Questions about the instance API or its methods |
-| `PublicChatState` | Questions about chat state shape or properties |
-| `PublicConfig` | Questions about configuration options (base URL, etc.) |
-| `migration-1.0.0` | Upgrade, breaking changes, or "what changed in v1" |
-| `custom server` / `service desk` | Custom backend or service desk integration |
+| Trigger                          | When to use                                            |
+| -------------------------------- | ------------------------------------------------------ |
+| `ai chat` / `ai-chat`            | General questions — setup, configuration, integration  |
+| `ChatInstance`                   | Questions about the instance API or its methods        |
+| `PublicChatState`                | Questions about chat state shape or properties         |
+| `PublicConfig`                   | Questions about configuration options (base URL, etc.) |
+| `migration-1.0.0`                | Upgrade, breaking changes, or "what changed in v1"     |
+| `custom server` / `service desk` | Custom backend or service desk integration             |
 
-> **⚠ `"chat"` alone does NOT trigger AI Chat docs routing** — neither does `"React"` alone. Always include `"ai chat"` or a specific entity name like `ChatInstance`.
+> **⚠ `"chat"` alone does NOT trigger AI Chat docs routing** — neither does `"React"` alone.
+> Always include `"ai chat"` or a specific entity name like `ChatInstance`.
 >
-> **⚠ `"assistant"` alone does NOT trigger AI Chat docs routing** — it was removed from the routing regex to prevent false positives on general Carbon queries.
+> **⚠ `"assistant"` alone does NOT trigger AI Chat docs routing** — it was removed from
+> the routing regex to prevent false positives on general Carbon queries.
 
 **Translation — user intent → agent query (docs_search):**
 
-| User says | Agent calls |
-| --- | --- |
-| "How do I set up Carbon AI Chat?" | `{"query": "ai chat setup", "size": 3}` |
-| "How do I use AI Chat with React?" | `{"query": "ai chat react integration", "size": 3}` |
-| "What methods does ChatInstance have?" | `{"query": "ChatInstance methods", "size": 3}` |
-| "How do I set the base URL?" | `{"query": "ai chat PublicConfig baseUrl", "size": 3}` |
-| "What changed in the v1 upgrade?" | `{"query": "migration-1.0.0 breaking changes", "size": 3}` |
-| "How do I connect a custom server?" | `{"query": "custom server configuration", "size": 3}` |
+| User says                              | Agent calls                                                |
+| -------------------------------------- | ---------------------------------------------------------- |
+| "How do I set up Carbon AI Chat?"      | `{"query": "ai chat setup", "size": 3}`                    |
+| "How do I use AI Chat with React?"     | `{"query": "ai chat react integration", "size": 3}`        |
+| "What methods does ChatInstance have?" | `{"query": "ChatInstance methods", "size": 3}`             |
+| "How do I set the base URL?"           | `{"query": "ai chat PublicConfig baseUrl", "size": 3}`     |
+| "What changed in the v1 upgrade?"      | `{"query": "migration-1.0.0 breaking changes", "size": 3}` |
+| "How do I connect a custom server?"    | `{"query": "custom server configuration", "size": 3}`      |
 
 ---
 
@@ -123,7 +137,8 @@ Use `code_search` for Carbon AI Chat sample applications and code snippets.
 
 - Set `filters.component_type` per framework guardrail (default React)
 - Do NOT set `filters.ibm_products`
-- Prefer a single concise query with framework + example root; let the server auto-provide complete files
+- Prefer a single concise query with framework + example root; let the server
+  auto-provide complete files
 
 **Example roots and their use:**
 
@@ -135,16 +150,26 @@ Use `code_search` for Carbon AI Chat sample applications and code snippets.
 | `watsonx`        | Watson/watsonx AI backend integration |
 | `watch-state`    | Observing chat state changes          |
 
+**Natural Query Matching:**
+
+The system uses Elasticsearch's natural text matching against the `description` field (boost: 7) to find the most relevant examples. Simply describe what you want in natural language:
+
+- "full screen mode" → matches examples with "fullscreen layout" in description
+- "load chat history" → matches examples with "message history loading" in description
+- "watsonx integration" → matches examples with "watsonx.ai connection" in description
+
+The `description` field is weighted higher than most other fields to prioritize semantic relevance over exact keyword matches.
+
 **Translation — user intent → agent query (code_search):**
 
-| User says | Agent calls |
-| --- | --- |
-| "Show me a basic AI Chat example" | `{"query": "ai chat basic react", "size": 15, "filters": {"component_type": "React"}}` |
-| "How do I load chat history?" | `{"query": "ai chat history react", "size": 15, "filters": {"component_type": "React"}}` |
-| "Show me the watsonx AI Chat integration" | `{"query": "ai chat watsonx react", "size": 15, "filters": {"component_type": "React"}}` |
-| "How do I watch/observe chat state?" | `{"query": "ai chat watch-state react", "size": 15, "filters": {"component_type": "React"}}` |
-| "Show me a custom element AI Chat example" | `{"query": "ai chat custom-element web components", "size": 15, "filters": {"component_type": "Web Components"}}` |
-| "Show me the basic web components AI Chat" | `{"query": "ai chat basic web components", "size": 15, "filters": {"component_type": "Web Components"}}` |
+| User says                                       | Agent calls                                                                                                       |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| "Show me a basic AI Chat example"               | `{"query": "ai chat basic react", "size": 15, "filters": {"component_type": "React"}}`                            |
+| "How do I load chat history?"                   | `{"query": "ai chat load history react", "size": 15, "filters": {"component_type": "React"}}`                     |
+| "Show me the watsonx AI Chat integration"       | `{"query": "ai chat watsonx integration react", "size": 15, "filters": {"component_type": "React"}}`              |
+| "AI Chat in full screen mode with default open" | `{"query": "ai chat full screen mode default open react", "size": 15, "filters": {"component_type": "React"}}`    |
+| "Show me a custom element AI Chat example"      | `{"query": "ai chat custom element web components", "size": 15, "filters": {"component_type": "Web Components"}}` |
+| "How do I watch/observe chat state?"            | `{"query": "ai chat watch observe state react", "size": 15, "filters": {"component_type": "React"}}`              |
 
 ---
 
@@ -154,9 +179,11 @@ After receiving AI Chat code results:
 
 - Confirm the intended **example root** matches what was requested
 - Confirm **framework alignment** (React vs Web Components)
-- Check for `is_complete_file: true` — indicates the server has auto-reconstructed a multi-chunk file; trust this result as complete
+- Check for `is_complete_file: true` — indicates the server has auto-reconstructed
+  a multi-chunk file; trust this result as complete
 - Confirm required source files are present for the example root
-- If you're not getting complete files, retry with a specific filename in the query — the server will automatically assemble chunks for that file
+- If you're not getting complete files, retry with a specific filename in the query —
+  the server will automatically assemble chunks for that file
 
 ---
 
@@ -175,7 +202,8 @@ If the first query returns insufficient results:
      "filters": { "component_type": "React" }
    }
    ```
-3. For docs, retry with symbol name variations or include `"migration-1.0.0"` if context suggests a version upgrade
+3. For docs, retry with symbol name variations or include `"migration-1.0.0"` if context
+   suggests a version upgrade
 
 ---
 
