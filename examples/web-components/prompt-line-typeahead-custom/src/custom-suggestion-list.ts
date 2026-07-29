@@ -23,12 +23,12 @@
  * `CustomSuggestionList` below.
  */
 
-import { type SuggestionItem } from "@carbon/ai-chat";
-import { css, html, LitElement, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
+import { type SuggestionItem } from '@carbon/ai-chat';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
-@customElement("custom-suggestion-list")
+@customElement('custom-suggestion-list')
 export class CustomSuggestionList extends LitElement {
   static styles = css`
     :host {
@@ -85,7 +85,7 @@ export class CustomSuggestionList extends LitElement {
   accessor items: SuggestionItem[] = [];
 
   @property({ type: String })
-  accessor query = "";
+  accessor query = '';
 
   @state()
   private accessor _selectedIndex = 0;
@@ -97,7 +97,7 @@ export class CustomSuggestionList extends LitElement {
   // attribute reflection cannot carry function references through the DOM.
   setCallbacks(
     onSelect: (item: SuggestionItem) => void,
-    onDismiss: () => void,
+    onDismiss: () => void
   ) {
     this._onSelect = onSelect;
     this._onDismiss = onDismiss;
@@ -106,16 +106,16 @@ export class CustomSuggestionList extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // Listen on `document` so arrow-key navigation works while focus stays in the chat input.
-    document.addEventListener("keydown", this._handleKeydown);
+    document.addEventListener('keydown', this._handleKeydown);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    document.removeEventListener("keydown", this._handleKeydown);
+    document.removeEventListener('keydown', this._handleKeydown);
   }
 
   updated(changed: Map<string, unknown>) {
-    if (changed.has("items")) {
+    if (changed.has('items')) {
       // Reset highlight to the first row whenever the result set changes so a stale index never
       // points past the new array's length.
       this._selectedIndex = 0;
@@ -127,23 +127,23 @@ export class CustomSuggestionList extends LitElement {
       return;
     }
 
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
       this._selectedIndex = Math.min(
         this._selectedIndex + 1,
-        this.items.length - 1,
+        this.items.length - 1
       );
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       this._selectedIndex = Math.max(this._selectedIndex - 1, 0);
-    } else if (e.key === "Enter") {
+    } else if (e.key === 'Enter') {
       e.preventDefault();
       if (this.items[this._selectedIndex]) {
         // Dispatch through the chat-provided callback so selection flows through the framework's
         // input-population and analytics pipeline rather than firing a local-only event.
         this._onSelect?.(this.items[this._selectedIndex]);
       }
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       // Escape forwards to `onDismiss` so the chat tears the dropdown down through its normal path.
       this._onDismiss?.();
     }
@@ -164,15 +164,14 @@ export class CustomSuggestionList extends LitElement {
             <div
               class=${classMap({
                 item: true,
-                "item--selected": i === this._selectedIndex,
+                'item--selected': i === this._selectedIndex,
               })}
               role="option"
               aria-selected="${i === this._selectedIndex}"
               @click=${() => this._onSelect?.(item)}
               @mouseenter=${() => {
                 this._selectedIndex = i;
-              }}
-            >
+              }}>
               <span class="label">${item.label}</span>
               ${
                 item.description
@@ -180,7 +179,7 @@ export class CustomSuggestionList extends LitElement {
                   : nothing
               }
             </div>
-          `,
+          `
         )}
       </div>
     `;

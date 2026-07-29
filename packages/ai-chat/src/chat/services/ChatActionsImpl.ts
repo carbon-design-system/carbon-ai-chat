@@ -7,44 +7,44 @@
  *  @license
  */
 
-import cloneDeep from "lodash-es/cloneDeep.js";
-import isEqual from "lodash-es/isEqual.js";
-import merge from "lodash-es/merge.js";
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import isEqual from 'lodash-es/isEqual.js';
+import merge from 'lodash-es/merge.js';
 
-import { LoadedHistory } from "../schema/historyToMessages";
-import inputItemToLocalItem from "../schema/inputItemToLocalItem";
+import { LoadedHistory } from '../schema/historyToMessages';
+import inputItemToLocalItem from '../schema/inputItemToLocalItem';
 import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
-} from "../schema/outputItemToLocalItem";
-import { HumanAgentsOnlineStatus } from "./haa/HumanAgentService";
-import { ServiceManager } from "./ServiceManager";
-import actions from "../store/actions";
-import { agentUpdateIsSuspended } from "../store/humanAgentActions";
+} from '../schema/outputItemToLocalItem';
+import { HumanAgentsOnlineStatus } from './haa/HumanAgentService';
+import { ServiceManager } from './ServiceManager';
+import actions from '../store/actions';
+import { agentUpdateIsSuspended } from '../store/humanAgentActions';
 import {
   DEFAULT_PERSISTED_TO_BROWSER,
   VIEW_STATE_LAUNCHER_OPEN,
-} from "../store/reducerUtils";
+} from '../store/reducerUtils';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from "../store/selectors";
+} from '../store/selectors';
 import {
   AppState,
   AppStateMessages,
   PendingUploadStatus,
   ViewState,
   ViewType,
-} from "../../types/state/AppState";
+} from '../../types/state/AppState';
 
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 
-import { HistoryItem, HistoryNote } from "../../types/messaging/History";
+import { HistoryItem, HistoryNote } from '../../types/messaging/History';
 
-import { asyncForEach } from "../utils/lang/arrayUtils";
-import { deepFreeze } from "../utils/lang/objectUtils";
-import { sleep } from "../utils/lang/promiseUtils";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+import { asyncForEach } from '../utils/lang/arrayUtils';
+import { deepFreeze } from '../utils/lang/objectUtils';
+import { sleep } from '../utils/lang/promiseUtils';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
   addDefaultsToMessage,
   createMessageRequestForText,
@@ -61,18 +61,18 @@ import {
   isTyping,
   renderAsUserDefinedMessage,
   streamItemID,
-} from "../utils/messageUtils";
+} from '../utils/messageUtils';
 import {
   callOnError,
   consoleError,
   consoleWarn,
   debugLog,
-} from "../utils/miscUtils";
+} from '../utils/miscUtils';
 import {
   ResolvablePromise,
   resolvablePromise,
-} from "../utils/resolvablePromise";
-import { constructViewState } from "../utils/viewStateUtils";
+} from '../utils/resolvablePromise';
+import { constructViewState } from '../utils/viewStateUtils';
 import {
   GenericItem,
   ItemStreamingMetadata,
@@ -85,7 +85,7 @@ import {
   PauseItem,
   StreamChunk,
   StructuredData,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 import {
   chunkHasDisplayableContent,
   FinalResponseChunk,
@@ -93,11 +93,11 @@ import {
   resetStopStreamingButton,
   resolveChunkContext,
   shouldShowStopStreaming,
-} from "../utils/streamingUtils";
+} from '../utils/streamingUtils';
 import {
   AddMessageOptions,
   MessageState,
-} from "../../types/config/MessagingConfig";
+} from '../../types/config/MessagingConfig';
 import {
   BusEventChunkUserDefinedResponse,
   BusEventCustomFooterSlot,
@@ -110,16 +110,16 @@ import {
   MainWindowOpenReason,
   MessageSendSource,
   ViewChangeReason,
-} from "../../types/events/eventBusTypes";
-import { SendOptions } from "../../types/instance/ChatInstance";
-import { PublicChatState } from "../../types/instance/PublicChatState";
-import { OnErrorData, OnErrorType } from "../../types/config/ErrorConfig";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-import type { Editor, JSONContent } from "@tiptap/core";
+} from '../../types/events/eventBusTypes';
+import { SendOptions } from '../../types/instance/ChatInstance';
+import { PublicChatState } from '../../types/instance/PublicChatState';
+import { OnErrorData, OnErrorType } from '../../types/config/ErrorConfig';
+import { DeepPartial } from '../../types/utilities/DeepPartial';
+import type { Editor, JSONContent } from '@tiptap/core';
 import {
   getRawText,
   textToDoc,
-} from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 /**
  * Module-scoped flag so the deprecation warning for `updateRawValue` is
@@ -136,18 +136,18 @@ let hasWarnedAboutUpdateRawValueDeprecation = false;
  * with `\n` from Shift+Enter) pass through.
  */
 function isPlainTextDoc(json: JSONContent): boolean {
-  const allowed = new Set(["doc", "paragraph", "text", "hardBreak"]);
+  const allowed = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
   let ok = true;
   const walk = (node: JSONContent | undefined): void => {
     if (!ok || !node) {
       return;
     }
-    if (typeof node.type === "string" && !allowed.has(node.type)) {
+    if (typeof node.type === 'string' && !allowed.has(node.type)) {
       ok = false;
       return;
     }
     if (
-      node.type === "text" &&
+      node.type === 'text' &&
       Array.isArray(node.marks) &&
       node.marks.length > 0
     ) {
@@ -267,7 +267,7 @@ class ChatActionsImpl {
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateWelcomeRequestSource?: MessageSendSource,
-    alternateOptions?: SendOptions,
+    alternateOptions?: SendOptions
   ) {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
     let fireReady = false;
@@ -277,7 +277,7 @@ class ChatActionsImpl {
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
           alternateWelcomeRequestSource,
-          alternateOptions,
+          alternateOptions
         );
         fireReady = true;
       }
@@ -305,13 +305,13 @@ class ChatActionsImpl {
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateWelcomeRequestSource?: MessageSendSource,
-    alternateOptions?: SendOptions,
+    alternateOptions?: SendOptions
   ) {
     debugLog(
-      "Hydrating Carbon AI Chat",
+      'Hydrating Carbon AI Chat',
       alternateWelcomeRequest,
       alternateWelcomeRequestSource,
-      alternateOptions,
+      alternateOptions
     );
 
     // Load the history and main config but only if it's the first time we are hydrating.
@@ -327,10 +327,10 @@ class ChatActionsImpl {
       ) {
         // Once we've got the main config which contains the details for connecting to a service desk, we can
         // initialize the human agent service.
-        debugLog("Initializing the human agent service");
+        debugLog('Initializing the human agent service');
         await serviceManager.humanAgentService.initialize();
       } else {
-        debugLog("No service desk integrations present");
+        debugLog('No service desk integrations present');
       }
     }
 
@@ -353,7 +353,7 @@ class ChatActionsImpl {
             createWelcomeRequest(),
             MessageSendSource.WELCOME_REQUEST,
             {},
-            true,
+            true
           );
         }
       }
@@ -361,7 +361,7 @@ class ChatActionsImpl {
       // Need to populate the history in redux (specifically botMessageState) before creating elements for custom
       // responses. createElementsForUserDefinedResponse() fires a userDefinedResponse event.
       serviceManager.store.dispatch(
-        actions.hydrateMessageHistory(history.messageHistory),
+        actions.hydrateMessageHistory(history.messageHistory)
       );
       const { messageIDs } = history.messageHistory.assistantMessageState;
       // The active response is simply the last message response in order (requests are ignored).
@@ -373,7 +373,7 @@ class ChatActionsImpl {
       const activeResponseId =
         lastMessage && isResponse(lastMessage) ? lastMessage.id : null;
       serviceManager.store.dispatch(
-        actions.setActiveResponseId(activeResponseId),
+        actions.setActiveResponseId(activeResponseId)
       );
       await this.createElementsForUserDefinedResponses(history.messageHistory);
 
@@ -392,7 +392,7 @@ class ChatActionsImpl {
     const allowReconnect = config.public.serviceDesk.allowReconnect ?? true;
     this.serviceManager?.humanAgentService?.handleHydration(
       allowReconnect,
-      Boolean(history),
+      Boolean(history)
     );
 
     this.alreadyHydrated = true;
@@ -430,19 +430,19 @@ class ChatActionsImpl {
       }
     } else {
       inputContent = {
-        type: "doc",
-        content: [{ type: "paragraph" }],
+        type: 'doc',
+        content: [{ type: 'paragraph' }],
       } as JSONContent;
     }
     const input = deepFreeze({
-      rawValue: inputState.rawValue ?? "",
+      rawValue: inputState.rawValue ?? '',
       content: inputContent,
       focused: Boolean(inputState.focused),
       structuredData: inputState.pendingStructuredData
         ? cloneDeep(inputState.pendingStructuredData)
         : undefined,
       hasInFlightUploads: inputState.pendingUploads.some(
-        (u) => u.status === PendingUploadStatus.UPLOADING,
+        (u) => u.status === PendingUploadStatus.UPLOADING
       ),
     });
 
@@ -494,8 +494,8 @@ class ChatActionsImpl {
   }
 
   updateRawInputValue(updater: (previous: string) => string) {
-    if (typeof updater !== "function") {
-      consoleError("Input updater must be a function");
+    if (typeof updater !== 'function') {
+      consoleError('Input updater must be a function');
       return;
     }
 
@@ -511,30 +511,30 @@ class ChatActionsImpl {
       const currentJson = editor.getJSON();
       if (!isPlainTextDoc(currentJson)) {
         throw new Error(
-          "ChatInstance.input.updateRawValue cannot be used while the input contains non-text nodes or marked text. Use updateContent instead.",
+          'ChatInstance.input.updateRawValue cannot be used while the input contains non-text nodes or marked text. Use updateContent instead.'
         );
       }
       if (!hasWarnedAboutUpdateRawValueDeprecation) {
         hasWarnedAboutUpdateRawValueDeprecation = true;
         consoleWarn(
-          "ChatInstance.input.updateRawValue is deprecated. Use updateContent.",
+          'ChatInstance.input.updateRawValue is deprecated. Use updateContent.'
         );
       }
       let previousRaw = getRawText(currentJson);
-      if (previousRaw === "\n") {
-        previousRaw = "";
+      if (previousRaw === '\n') {
+        previousRaw = '';
       }
       let nextValue: string;
       try {
         nextValue = updater(previousRaw);
       } catch (error) {
-        consoleError("An error occurred while updating the input value", error);
+        consoleError('An error occurred while updating the input value', error);
         return;
       }
-      if (typeof nextValue !== "string") {
+      if (typeof nextValue !== 'string') {
         nextValue =
           nextValue === undefined || nextValue === null
-            ? ""
+            ? ''
             : String(nextValue);
       }
       if (nextValue === previousRaw) {
@@ -547,24 +547,24 @@ class ChatActionsImpl {
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
-    let previousValue = (inputState.rawValue ?? "") as string;
+    let previousValue = (inputState.rawValue ?? '') as string;
 
     // Normalize: treat "\n" as empty string
-    if (previousValue === "\n") {
-      previousValue = "";
+    if (previousValue === '\n') {
+      previousValue = '';
     }
 
     let nextValue: string;
     try {
       nextValue = updater(previousValue);
     } catch (error) {
-      consoleError("An error occurred while updating the input value", error);
+      consoleError('An error occurred while updating the input value', error);
       return;
     }
 
-    if (typeof nextValue !== "string") {
+    if (typeof nextValue !== 'string') {
       nextValue =
-        nextValue === undefined || nextValue === null ? "" : String(nextValue);
+        nextValue === undefined || nextValue === null ? '' : String(nextValue);
     }
 
     if (nextValue === previousValue) {
@@ -574,8 +574,8 @@ class ChatActionsImpl {
     store.dispatch(
       actions.updateInputState(
         { rawValue: nextValue },
-        selectIsInputToHumanAgent(state),
-      ),
+        selectIsInputToHumanAgent(state)
+      )
     );
   }
 
@@ -598,10 +598,10 @@ class ChatActionsImpl {
    * hidden or not yet rendered), because nothing can render rich content there.
    */
   async updateInputContent(
-    updater: (previous: JSONContent) => JSONContent,
+    updater: (previous: JSONContent) => JSONContent
   ): Promise<void> {
-    if (typeof updater !== "function") {
-      consoleError("Input content updater must be a function");
+    if (typeof updater !== 'function') {
+      consoleError('Input content updater must be a function');
       return;
     }
 
@@ -618,12 +618,12 @@ class ChatActionsImpl {
     if (editor) {
       previous = editor.getJSON();
     } else {
-      let previousRaw = (selectInputState(state).rawValue ?? "") as string;
+      let previousRaw = (selectInputState(state).rawValue ?? '') as string;
       // An empty textarea whose only keystroke was Enter reports a lone "\n"
       // (the native newline the empty-Enter guard lets through). Treat it as
       // empty so the updater sees an empty doc, not a spurious blank paragraph.
-      if (previousRaw === "\n") {
-        previousRaw = "";
+      if (previousRaw === '\n') {
+        previousRaw = '';
       }
       previous = textToDoc(previousRaw);
     }
@@ -632,7 +632,7 @@ class ChatActionsImpl {
     try {
       next = updater(previous);
     } catch (error) {
-      consoleError("An error occurred while updating the input content", error);
+      consoleError('An error occurred while updating the input content', error);
       return;
     }
 
@@ -650,8 +650,8 @@ class ChatActionsImpl {
       store.dispatch(
         actions.updateInputState(
           { rawValue: getRawText(next), content: next },
-          selectIsInputToHumanAgent(state),
-        ),
+          selectIsInputToHumanAgent(state)
+        )
       );
       return;
     }
@@ -661,7 +661,7 @@ class ChatActionsImpl {
     // when there is no surface to upgrade (hidden / not yet rendered).
     if (!ref) {
       throw new Error(
-        "ChatInstance.input.updateContent cannot seed non-text content before the input is rendered. Wait for the input to mount, or write plain text.",
+        'ChatInstance.input.updateContent cannot seed non-text content before the input is rendered. Wait for the input to mount, or write plain text.'
       );
     }
     await ref.ensureEditor();
@@ -676,7 +676,7 @@ class ChatActionsImpl {
   ensureInputEditor(): Promise<Editor> {
     const ref = this.serviceManager.getInputFunctionsRef();
     if (!ref) {
-      return Promise.reject(new Error("Input is not currently rendered"));
+      return Promise.reject(new Error('Input is not currently rendered'));
     }
     return ref.ensureEditor();
   }
@@ -688,11 +688,11 @@ class ChatActionsImpl {
    */
   updateStructuredData(
     updater: (
-      previous: StructuredData | undefined,
-    ) => StructuredData | undefined,
+      previous: StructuredData | undefined
+    ) => StructuredData | undefined
   ) {
-    if (typeof updater !== "function") {
-      consoleError("Structured data updater must be a function");
+    if (typeof updater !== 'function') {
+      consoleError('Structured data updater must be a function');
       return;
     }
 
@@ -708,14 +708,14 @@ class ChatActionsImpl {
       nextValue = updater(previousValue);
     } catch (error) {
       consoleError(
-        "An error occurred while updating the structured data",
-        error,
+        'An error occurred while updating the structured data',
+        error
       );
       return;
     }
 
     store.dispatch(
-      actions.updateStructuredData(nextValue, selectIsInputToHumanAgent(state)),
+      actions.updateStructuredData(nextValue, selectIsInputToHumanAgent(state))
     );
   }
 
@@ -735,8 +735,8 @@ class ChatActionsImpl {
     store.dispatch(
       actions.removePendingUpload(
         uploadId,
-        selectIsInputToHumanAgent(store.getState()),
-      ),
+        selectIsInputToHumanAgent(store.getState())
+      )
     );
   }
 
@@ -767,14 +767,14 @@ class ChatActionsImpl {
     store.dispatch(
       actions.addPendingUpload(
         { id: uploadId, file, status: PendingUploadStatus.UPLOADING },
-        selectIsInputToHumanAgent(store.getState()),
-      ),
+        selectIsInputToHumanAgent(store.getState())
+      )
     );
 
     try {
       const contributedData = await uploadConfig.onFileUpload(
         file,
-        controller.signal,
+        controller.signal
       );
       // Only update if the upload was not aborted while awaiting.
       if (!controller.signal.aborted) {
@@ -782,8 +782,8 @@ class ChatActionsImpl {
           actions.updatePendingUpload(
             uploadId,
             { status: PendingUploadStatus.COMPLETE, contributedData },
-            selectIsInputToHumanAgent(store.getState()),
-          ),
+            selectIsInputToHumanAgent(store.getState())
+          )
         );
       }
     } catch (error) {
@@ -797,8 +797,8 @@ class ChatActionsImpl {
         actions.updatePendingUpload(
           uploadId,
           { status: PendingUploadStatus.ERROR, errorMessage },
-          selectIsInputToHumanAgent(store.getState()),
-        ),
+          selectIsInputToHumanAgent(store.getState())
+        )
       );
     } finally {
       this.uploadAbortControllers.delete(uploadId);
@@ -813,12 +813,12 @@ class ChatActionsImpl {
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
-    ignoreHydration = false,
+    ignoreHydration = false
   ) {
     try {
       await this.send(message, source, options, ignoreHydration);
     } catch (error) {
-      consoleError("An error occurred sending the message", error);
+      consoleError('An error occurred sending the message', error);
     }
   }
 
@@ -837,10 +837,10 @@ class ChatActionsImpl {
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
-    ignoreHydration = false,
+    ignoreHydration = false
   ) {
     const messageRequest =
-      typeof message === "string"
+      typeof message === 'string'
         ? createMessageRequestForText(message)
         : message;
 
@@ -901,7 +901,7 @@ class ChatActionsImpl {
   private async doSend(
     message: MessageRequest,
     source: MessageSendSource,
-    options: SendOptions = {},
+    options: SendOptions = {}
   ): Promise<void> {
     const { store } = this.serviceManager;
 
@@ -914,11 +914,11 @@ class ChatActionsImpl {
     const inputState = selectInputState(store.getState());
     if (
       inputState.pendingUploads.some(
-        (u) => u.status === PendingUploadStatus.UPLOADING,
+        (u) => u.status === PendingUploadStatus.UPLOADING
       )
     ) {
       consoleWarn(
-        "Cannot send message while file uploads are in progress. Wait for all uploads to complete or remove them.",
+        'Cannot send message while file uploads are in progress. Wait for all uploads to complete or remove them.'
       );
       return;
     }
@@ -928,13 +928,13 @@ class ChatActionsImpl {
     // Messages sent via instance.send() with explicit structured_data are never overwritten.
     if (inputState.pendingStructuredData && !message.input.structured_data) {
       message.input.structured_data = cloneDeep(
-        inputState.pendingStructuredData,
+        inputState.pendingStructuredData
       );
     }
 
     // Clear the pending structured data now that it has been captured into the outgoing message.
     store.dispatch(
-      actions.clearStructuredData(selectIsInputToHumanAgent(store.getState())),
+      actions.clearStructuredData(selectIsInputToHumanAgent(store.getState()))
     );
 
     // Grab the original text before it can be modified by a pre:send handler.
@@ -963,8 +963,8 @@ class ChatActionsImpl {
       store.dispatch(
         actions.messageSetOptionSelected(
           options.setValueSelectedForMessageID,
-          message,
-        ),
+          message
+        )
       );
     }
 
@@ -978,7 +978,7 @@ class ChatActionsImpl {
       cloneDeep(message),
       source,
       localMessage.ui_state.id,
-      options,
+      options
     );
   }
 
@@ -996,7 +996,7 @@ class ChatActionsImpl {
   async receive(
     message: MessageResponse,
     isLatestWelcomeNode = false,
-    requestMessage?: MessageRequest,
+    requestMessage?: MessageRequest
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
 
@@ -1019,7 +1019,7 @@ class ChatActionsImpl {
 
     if (!isLatestWelcomeNode) {
       this.serviceManager.store.dispatch(
-        actions.updateHasSentNonWelcomeMessage(true),
+        actions.updateHasSentNonWelcomeMessage(true)
       );
     }
 
@@ -1038,15 +1038,15 @@ class ChatActionsImpl {
       this.processMessageResponse(
         message,
         isLatestWelcomeNode,
-        requestMessage,
+        requestMessage
       ).catch((error) => {
-        consoleError("Error processing the message response", error);
+        consoleError('Error processing the message response', error);
       });
     } else {
       const inlineError: MessageResponse = createMessageResponseForText(
         languagePack.errors_singleMessage,
         message?.thread_id,
-        MessageResponseTypes.INLINE_ERROR,
+        MessageResponseTypes.INLINE_ERROR
       );
       this.receive(inlineError, false);
     }
@@ -1113,7 +1113,7 @@ class ChatActionsImpl {
     const newAppStateMessages: AppStateMessages = merge(
       {},
       history.messageHistory,
-      currentAppStateMessages,
+      currentAppStateMessages
     );
 
     // Now make sure the message arrays are merged correctly.
@@ -1127,7 +1127,7 @@ class ChatActionsImpl {
     ];
 
     this.serviceManager.store.dispatch(
-      actions.hydrateMessageHistory(newAppStateMessages),
+      actions.hydrateMessageHistory(newAppStateMessages)
     );
 
     // History messages are semantically COMPLETE — record so a later upsertMessage on
@@ -1153,7 +1153,7 @@ class ChatActionsImpl {
       lastMessage && isResponse(lastMessage) ? lastMessage.id : null;
 
     this.serviceManager.store.dispatch(
-      actions.setActiveResponseId(activeResponseId),
+      actions.setActiveResponseId(activeResponseId)
     );
     await this.createElementsForUserDefinedResponses(history.messageHistory);
 
@@ -1169,7 +1169,7 @@ class ChatActionsImpl {
   async receiveChunk(
     chunk: StreamChunk,
     messageID?: string,
-    options: AddMessageOptions = {},
+    options: AddMessageOptions = {}
   ) {
     // Mark message as streaming IMMEDIATELY when first chunk arrives (before queuing)
     // This prevents MessageService from clearing the queue before chunks are processed
@@ -1177,23 +1177,23 @@ class ChatActionsImpl {
       // Extract messageID from chunk if not provided
       const extractedMessageID =
         messageID ||
-        ("streaming_metadata" in chunk &&
+        ('streaming_metadata' in chunk &&
           chunk.streaming_metadata?.response_id);
 
       this.serviceManager.messageService.markCurrentMessageAsStreaming(
         extractedMessageID,
-        chunk.partial_item?.streaming_metadata?.id,
+        chunk.partial_item?.streaming_metadata?.id
       );
 
       // Record STREAMING so a mixed flow of addMessageChunk + upsertMessage does not
       // double-fire `pre:receive` / `receive`.
       this.serviceManager.messageUpsertCoordinator.markStreaming(
-        extractedMessageID || undefined,
+        extractedMessageID || undefined
       );
 
       // Check if this chunk contains reasoning steps
       const hasReasoning =
-        "partial_response" in chunk &&
+        'partial_response' in chunk &&
         chunk.partial_response?.message_options?.reasoning;
 
       // Announce reasoning start on first reasoning chunk for this message
@@ -1266,9 +1266,9 @@ class ChatActionsImpl {
 
     store.dispatch(
       actions.announceMessage({
-        messageID: "messages_streamingStart",
+        messageID: 'messages_streamingStart',
         messageValues: { sender: speakerName },
-      }),
+      })
     );
   }
 
@@ -1289,7 +1289,7 @@ class ChatActionsImpl {
     // Try to get response_user_profile from the chunk first (for streaming messages)
     // This is important because the message might not be in the store yet
     const chunkProfile =
-      "partial_response" in chunk
+      'partial_response' in chunk
         ? chunk.partial_response?.message_options?.response_user_profile
         : undefined;
 
@@ -1312,9 +1312,9 @@ class ChatActionsImpl {
 
     store.dispatch(
       actions.announceMessage({
-        messageID: "messages_reasoningStart",
+        messageID: 'messages_reasoningStart',
         messageValues: { sender: speakerName },
-      }),
+      })
     );
   }
 
@@ -1357,7 +1357,7 @@ class ChatActionsImpl {
           chunk as PartialOrCompleteItemChunk,
           messageID,
           item,
-          isCompleteItem,
+          isCompleteItem
         );
       } else if (isStreamFinalResponse(chunk)) {
         await this.handleFinalResponseChunk(chunk, messageID, options);
@@ -1367,14 +1367,14 @@ class ChatActionsImpl {
 
       this.advanceChunkQueue(chunkPromise);
     } catch (error) {
-      consoleError("Error processing stream chunk", error);
+      consoleError('Error processing stream chunk', error);
       this.advanceChunkQueue(chunkPromise, error);
     }
   }
 
   private shouldSkipChunkDueToGeneration(
     messageID: string | undefined,
-    hideStopStreaming: () => void,
+    hideStopStreaming: () => void
   ) {
     const inboundStreaming =
       this.serviceManager.messageService.inboundStreaming;
@@ -1385,7 +1385,7 @@ class ChatActionsImpl {
         messageID,
         this.messageGenerations,
         this.restartGeneration,
-        hideStopStreaming,
+        hideStopStreaming
       )
     ) {
       return true;
@@ -1396,18 +1396,18 @@ class ChatActionsImpl {
   private maybeShowStopStreaming(
     chunk: StreamChunk,
     isPartialItem: boolean,
-    stopStreamingState: { isVisible: boolean },
+    stopStreamingState: { isVisible: boolean }
   ) {
     const shouldShow = isPartialItem
       ? shouldShowStopStreaming(
           (chunk as PartialItemChunk).partial_item?.streaming_metadata,
-          stopStreamingState.isVisible,
+          stopStreamingState.isVisible
         )
       : false;
 
     if (shouldShow) {
       this.serviceManager.store.dispatch(
-        actions.setStopStreamingButtonVisible(true),
+        actions.setStopStreamingButtonVisible(true)
       );
     }
   }
@@ -1416,7 +1416,7 @@ class ChatActionsImpl {
     chunk: PartialOrCompleteItemChunk,
     messageID: string | undefined,
     item: DeepPartial<GenericItem> | undefined,
-    isCompleteItem: boolean,
+    isCompleteItem: boolean
   ) {
     const { store } = this.serviceManager;
     if (messageID && !store.getState().allMessagesByID[messageID]) {
@@ -1429,7 +1429,7 @@ class ChatActionsImpl {
 
     if (messageID && item) {
       store.dispatch(
-        actions.streamingAddChunk(messageID, item, isCompleteItem),
+        actions.streamingAddChunk(messageID, item, isCompleteItem)
       );
     }
 
@@ -1443,15 +1443,15 @@ class ChatActionsImpl {
   private async handleFinalResponseChunk(
     chunk: FinalResponseChunk,
     messageID: string | undefined,
-    options: AddMessageOptions,
+    options: AddMessageOptions
   ) {
     this.warnIfMissingFinalResponseStreamingIds(
       messageID,
-      chunk.final_response,
+      chunk.final_response
     );
     const finalResponse = this.maybePatchFinalResponseItemIds(
       messageID,
-      chunk.final_response,
+      chunk.final_response
     );
     await this.receive(finalResponse, options.isLatestWelcomeNode, null);
 
@@ -1462,21 +1462,21 @@ class ChatActionsImpl {
 
   private warnIfMissingCompleteItemStreamingId(
     messageID: string | undefined,
-    item: DeepPartial<GenericItem> | undefined,
+    item: DeepPartial<GenericItem> | undefined
   ) {
     if (!item || item.streaming_metadata?.id) {
       return;
     }
-    const idLabel = messageID ? ` for message "${messageID}"` : "";
+    const idLabel = messageID ? ` for message "${messageID}"` : '';
     consoleWarn(
       `complete_item${idLabel} is missing streaming_metadata.id. ` +
-        "Include streaming_metadata.id to preserve item identity and avoid remounts.",
+        'Include streaming_metadata.id to preserve item identity and avoid remounts.'
     );
   }
 
   private warnIfMissingFinalResponseStreamingIds(
     messageID: string | undefined,
-    response: MessageResponse,
+    response: MessageResponse
   ) {
     if (!messageID || !response?.output?.generic?.length) {
       return;
@@ -1486,26 +1486,26 @@ class ChatActionsImpl {
     const { allMessageItemsByID } = state;
     const hasStreamedItems = localMessageIDs.some(
       (localMessageID) =>
-        allMessageItemsByID[localMessageID]?.fullMessageID === messageID,
+        allMessageItemsByID[localMessageID]?.fullMessageID === messageID
     );
     if (!hasStreamedItems) {
       return;
     }
     const missingCount = response.output.generic.filter(
-      (item) => !item?.streaming_metadata?.id,
+      (item) => !item?.streaming_metadata?.id
     ).length;
     if (missingCount > 0) {
       consoleWarn(
         `final_response for message "${messageID}" contains ${missingCount} item(s) ` +
-          "without streaming_metadata.id. If this response was streamed, include streaming_metadata.id " +
-          "for streamed items to preserve identity and avoid remounts.",
+          'without streaming_metadata.id. If this response was streamed, include streaming_metadata.id ' +
+          'for streamed items to preserve identity and avoid remounts.'
       );
     }
   }
 
   private maybePatchFinalResponseItemIds(
     messageID: string | undefined,
-    response: MessageResponse,
+    response: MessageResponse
   ): MessageResponse {
     if (!messageID || !response?.output?.generic?.length) {
       return response;
@@ -1517,7 +1517,7 @@ class ChatActionsImpl {
       .map((localMessageID) => state.allMessageItemsByID[localMessageID])
       .filter(
         (localMessage) =>
-          localMessage && localMessage.fullMessageID === messageID,
+          localMessage && localMessage.fullMessageID === messageID
       )
       .map((localMessage) => localMessage.item);
 
@@ -1539,7 +1539,7 @@ class ChatActionsImpl {
     };
 
     const itemsMatch = existingItems.every((existingItem, index) =>
-      isEqual(normalizeItem(existingItem), normalizeItem(responseItems[index])),
+      isEqual(normalizeItem(existingItem), normalizeItem(responseItems[index]))
     );
 
     if (!itemsMatch) {
@@ -1577,7 +1577,7 @@ class ChatActionsImpl {
 
   private resetStopStreamingIfNeeded(
     isCompleteItem: boolean,
-    chunk: StreamChunk,
+    chunk: StreamChunk
   ) {
     if (isCompleteItem || isStreamFinalResponse(chunk)) {
       resetStopStreamingButton(this.serviceManager.store);
@@ -1586,7 +1586,7 @@ class ChatActionsImpl {
 
   private advanceChunkQueue(
     chunkPromise: ResolvablePromise<void>,
-    error?: unknown,
+    error?: unknown
   ) {
     // Ensure queue continues processing and promise is settled for callers
     this.chunkQueue.shift();
@@ -1612,7 +1612,7 @@ class ChatActionsImpl {
       };
       this.serviceManager.userDefinedElementRegistry.set(
         messageItemID,
-        userDefinedItem,
+        userDefinedItem
       );
     }
     return userDefinedItem;
@@ -1626,14 +1626,14 @@ class ChatActionsImpl {
   async handleUserDefinedResponseItems(
     localMessage: LocalMessageItem,
     originalMessage: Message,
-    messageState?: MessageState,
+    messageState?: MessageState
   ) {
     if (renderAsUserDefinedMessage(localMessage.item)) {
       let slotName: string;
       if (!localMessage.item.user_defined?.silent) {
         // If the message is silent, don't create a host element for it since it's not going to be rendered.
         ({ slotName } = this.getOrCreateUserDefinedElement(
-          localMessage.ui_state.id,
+          localMessage.ui_state.id
         ));
       }
 
@@ -1661,13 +1661,13 @@ class ChatActionsImpl {
        * Will attempt to create an element for the custom response using the provided local message id.
        */
       const createElementForNestedUserDefinedResponse = (
-        localMessageItemID: string,
+        localMessageItemID: string
       ) => {
         const nestedLocalMessage = allMessageItemsByID[localMessageItemID];
         return this.handleUserDefinedResponseItems(
           nestedLocalMessage,
           originalMessage,
-          messageState,
+          messageState
         );
       };
 
@@ -1675,30 +1675,30 @@ class ChatActionsImpl {
         await asyncForEach(gridLocalMessageItemIDs, (row) =>
           asyncForEach(row, (cell) =>
             asyncForEach(cell, (itemID) =>
-              createElementForNestedUserDefinedResponse(itemID),
-            ),
-          ),
+              createElementForNestedUserDefinedResponse(itemID)
+            )
+          )
         );
       }
 
       if (itemsLocalMessageItemIDs?.length) {
         await asyncForEach(
           itemsLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse,
+          createElementForNestedUserDefinedResponse
         );
       }
 
       if (bodyLocalMessageItemIDs?.length) {
         await asyncForEach(
           bodyLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse,
+          createElementForNestedUserDefinedResponse
         );
       }
 
       if (footerLocalMessageItemIDs?.length) {
         await asyncForEach(
           footerLocalMessageItemIDs,
-          createElementForNestedUserDefinedResponse,
+          createElementForNestedUserDefinedResponse
         );
       }
     }
@@ -1714,7 +1714,7 @@ class ChatActionsImpl {
   async handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
-    messageItem: DeepPartial<GenericItem>,
+    messageItem: DeepPartial<GenericItem>
   ) {
     if (renderAsUserDefinedMessage(messageItem)) {
       const itemID = streamItemID(messageID, messageItem);
@@ -1744,7 +1744,7 @@ class ChatActionsImpl {
    */
   async handleCustomFooterSlot(
     localMessage: LocalMessageItem,
-    originalMessage: MessageResponse,
+    originalMessage: MessageResponse
   ) {
     const footerOptions =
       localMessage.item.message_item_options?.custom_footer_slot;
@@ -1776,7 +1776,7 @@ class ChatActionsImpl {
   async processMessageResponse(
     fullMessage: MessageResponse,
     isLatestWelcomeNode: boolean,
-    requestMessage: MessageRequest,
+    requestMessage: MessageRequest
   ) {
     const { store } = this.serviceManager;
     const { config } = store.getState();
@@ -1797,7 +1797,7 @@ class ChatActionsImpl {
     if (messagingConfig.showStopButtonImmediately) {
       resetStopStreamingButton(
         store,
-        this.serviceManager.messageService.inboundStreaming.streamingMessageID,
+        this.serviceManager.messageService.inboundStreaming.streamingMessageID
       );
     }
 
@@ -1821,7 +1821,7 @@ class ChatActionsImpl {
         const localMessageItem = outputItemToLocalItem(
           messageItem,
           fullMessage,
-          isLatestWelcomeNode,
+          isLatestWelcomeNode
         );
 
         const nestedLocalMessageItems: LocalMessageItem[] = [];
@@ -1830,7 +1830,7 @@ class ChatActionsImpl {
           fullMessage,
           false,
           nestedLocalMessageItems,
-          true,
+          true
         );
 
         store.dispatch(actions.addNestedMessages(nestedLocalMessageItems));
@@ -1858,9 +1858,9 @@ class ChatActionsImpl {
             store.dispatch(
               actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
-                "agent_no_service_desk",
-                true,
-              ),
+                'agent_no_service_desk',
+                true
+              )
             );
             partialMessage.ui_state_internal.agent_no_service_desk = true;
           }
@@ -1868,7 +1868,7 @@ class ChatActionsImpl {
           // eslint-disable-next-line no-await-in-loop
           const agentAvailability =
             await this.serviceManager.humanAgentService?.checkAreAnyHumanAgentsOnline(
-              fullMessage,
+              fullMessage
             );
 
           // If a restart occurred while waiting for the agents online check, then skip the processing below.
@@ -1877,9 +1877,9 @@ class ChatActionsImpl {
             store.dispatch(
               actions.setMessageUIStateInternalProperty(
                 localMessageItem.fullMessageID,
-                "agent_availability",
-                agentAvailability,
-              ),
+                'agent_availability',
+                agentAvailability
+              )
             );
 
             partialMessage.ui_state_internal =
@@ -1905,7 +1905,7 @@ class ChatActionsImpl {
             ) {
               this.serviceManager.humanAgentService.startChat(
                 localMessageItem,
-                fullMessage,
+                fullMessage
               );
             }
           }
@@ -1936,7 +1936,7 @@ class ChatActionsImpl {
           await this.handleUserDefinedResponseItems(
             localMessageItem,
             fullMessage,
-            MessageState.COMPLETE,
+            MessageState.COMPLETE
           );
           // eslint-disable-next-line no-await-in-loop
           await this.handleCustomFooterSlot(localMessageItem, fullMessage);
@@ -1949,8 +1949,8 @@ class ChatActionsImpl {
                 localMessageItem,
                 fullMessage,
                 false,
-                previousItemID,
-              ),
+                previousItemID
+              )
             );
             previousItemID = localMessageItem.ui_state.id;
           }
@@ -1964,10 +1964,10 @@ class ChatActionsImpl {
    */
   openResponsePanel(
     localMessageItem: LocalMessageItem,
-    isMessageForInput: boolean,
+    isMessageForInput: boolean
   ) {
     this.serviceManager.store.dispatch(
-      actions.setResponsePanelContent(localMessageItem, isMessageForInput),
+      actions.setResponsePanelContent(localMessageItem, isMessageForInput)
     );
     this.serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
   }
@@ -1996,7 +1996,7 @@ class ChatActionsImpl {
       mainWindowCloseReason?: MainWindowCloseReason;
     },
     tryHydrating = true,
-    forceViewChange = false,
+    forceViewChange = false
   ): Promise<ViewState> {
     const { store } = this.serviceManager;
     const { viewState } = store.getState().persistedToBrowserStorage;
@@ -2032,7 +2032,7 @@ class ChatActionsImpl {
         // the chat. Since this function is only responsible for changing the view don't await hydrateChat(), instead
         // let hydrateChat complete on its own time.
         this.hydrateChat().catch((error) => {
-          consoleError("Error hydrating the chat", error);
+          consoleError('Error hydrating the chat', error);
         });
       }
     }
@@ -2058,14 +2058,14 @@ class ChatActionsImpl {
       viewChangeReason: ViewChangeReason;
       mainWindowOpenReason?: MainWindowOpenReason;
       mainWindowCloseReason?: MainWindowCloseReason;
-    },
+    }
   ): Promise<void> {
     const { store } = this.serviceManager;
 
     if (store.getState().viewChanging) {
       // If the view is already in the middle of changing then throw an error.
       throw new Error(
-        "The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events.",
+        'The view may not be changed while a view change event is already running. Please make sure to resolve any promises from these events.'
       );
     }
 
@@ -2091,7 +2091,7 @@ class ChatActionsImpl {
 
       if (preViewChangeEvent.cancelViewChange) {
         // If the view changing was canceled in the event then log a message and don't change the view.
-        debugLog("The view changing was cancelled by a view:pre:change event.");
+        debugLog('The view changing was cancelled by a view:pre:change event.');
         return;
       }
 
@@ -2115,7 +2115,7 @@ class ChatActionsImpl {
         // If the view changing was canceled in the event then log a message and switch the viewState back to what it was
         // originally.
         store.dispatch(actions.setViewState(oldViewState));
-        debugLog("The view changing was cancelled by a view:change event.");
+        debugLog('The view changing was cancelled by a view:change event.');
         return;
       }
 
@@ -2135,19 +2135,19 @@ class ChatActionsImpl {
    * @param error Details about the error or the error object.
    */
   errorOccurred(error: OnErrorData) {
-    consoleError("An error has occurred", error);
+    consoleError('An error has occurred', error);
 
     if (error.catastrophicErrorType) {
       this.serviceManager.store.dispatch(
         actions.setAppStateValue(
-          "catastrophicErrorType",
-          error.catastrophicErrorType,
-        ),
+          'catastrophicErrorType',
+          error.catastrophicErrorType
+        )
       );
     }
     callOnError(
       this.serviceManager.store.getState().config.public.onError,
-      error,
+      error
     );
   }
 
@@ -2163,11 +2163,11 @@ class ChatActionsImpl {
       fireEvents = true,
     } = options;
 
-    debugLog("Restarting conversation");
+    debugLog('Restarting conversation');
 
     if (this.restarting) {
       consoleWarn(
-        "You cannot restart a conversation while a previous restart is still pending.",
+        'You cannot restart a conversation while a previous restart is still pending.'
       );
       return;
     }
@@ -2272,7 +2272,7 @@ class ChatActionsImpl {
     const { persistedToBrowserStorage } = store.getState();
     const originalViewState = persistedToBrowserStorage.viewState;
     const newPersistedToBrowserStorage = cloneDeep(
-      DEFAULT_PERSISTED_TO_BROWSER,
+      DEFAULT_PERSISTED_TO_BROWSER
     );
 
     if (keepOpenState) {
@@ -2295,9 +2295,9 @@ class ChatActionsImpl {
 
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(
-        "persistedToBrowserStorage",
-        newPersistedToBrowserStorage,
-      ),
+        'persistedToBrowserStorage',
+        newPersistedToBrowserStorage
+      )
     );
   }
 
@@ -2339,9 +2339,9 @@ class ChatActionsImpl {
         return this.handleUserDefinedResponseItems(
           localMessage,
           originalMessage,
-          messageState,
+          messageState
         );
-      },
+      }
     );
   }
 

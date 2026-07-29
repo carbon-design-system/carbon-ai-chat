@@ -18,20 +18,20 @@ Fullscreen chat driven by `<cds-aichat-custom-element>` that exposes a custom hi
 
 ## APIs and props demonstrated
 
-| Symbol                                 | Kind           | Role in this example                                      |
-| -------------------------------------- | -------------- | --------------------------------------------------------- |
-| `<cds-aichat-custom-element>`          | custom element | Hosts the chat UI at the size of its host container.      |
-| `config.history.isOn`                  | property       | Enables the built-in history panel.                       |
-| `config.layout.showFrame`              | property       | Removes the default frame for fullscreen presentation.    |
-| `config.openChatByDefault`             | property       | Opens the main window on mount.                           |
-| `messaging.customSendMessage`          | property       | Mock backend for outbound messages.                       |
-| `messaging.customLoadHistory`          | property       | Returns stored `HistoryItem[]` for a named conversation.  |
-| `onBeforeRender`                       | property       | Captures the `ChatInstance` and subscribes to bus events. |
-| `BusEventType.STATE_CHANGE`            | event          | Tracks `customPanels.history.isMobile`.                   |
-| `instance.messaging.clearConversation` | method         | Resets the current conversation before inserting history. |
-| `instance.messaging.insertHistory`     | method         | Rehydrates the chat with loaded history.                  |
-| `historyPanelElement`                  | slot           | Slot hosting the custom history panel.                    |
-| `history-panel-load-chat`              | custom event   | Listened for on the host element to drive the loader.     |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI at the size of its host container. |
+| `config.history.isOn` | property | Enables the built-in history panel. |
+| `config.layout.showFrame` | property | Removes the default frame for fullscreen presentation. |
+| `config.openChatByDefault` | property | Opens the main window on mount. |
+| `messaging.customSendMessage` | property | Mock backend for outbound messages. |
+| `messaging.customLoadHistory` | property | Returns stored `HistoryItem[]` for a named conversation. |
+| `onBeforeRender` | property | Captures the `ChatInstance` and subscribes to bus events. |
+| `BusEventType.STATE_CHANGE` | event | Tracks `customPanels.history.isMobile`. |
+| `instance.messaging.clearConversation` | method | Resets the current conversation before inserting history. |
+| `instance.messaging.insertHistory` | method | Rehydrates the chat with loaded history. |
+| `historyPanelElement` | slot | Slot hosting the custom history panel. |
+| `history-panel-load-chat` | custom event | Listened for on the host element to drive the loader. |
 
 ## Chat history configuration
 
@@ -112,7 +112,7 @@ config.history.isOn = !config.history.isOn;
 **✅ Correct approach** - Use the panel instance methods:
 
 ```javascript
-import { PanelType } from "@carbon/ai-chat";
+import { PanelType } from '@carbon/ai-chat';
 
 // To close the history panel
 instance.customPanels.getPanel(PanelType.HISTORY)?.close();

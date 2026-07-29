@@ -22,9 +22,9 @@
  * Start reading at: `CustomSuggestionList()` and the keydown effect.
  */
 
-import { SuggestionItem } from "@carbon/ai-chat";
-import React, { useEffect, useState } from "react";
-import "./custom-suggestions.css";
+import { SuggestionItem } from '@carbon/ai-chat';
+import React, { useEffect, useState } from 'react';
+import './custom-suggestions.css';
 
 interface CustomSuggestionListProps {
   items: SuggestionItem[];
@@ -51,23 +51,23 @@ function CustomSuggestionList({
   // focus while the dropdown is open — the list itself never receives keys.
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "ArrowDown") {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex((i) => Math.min(i + 1, items.length - 1));
-      } else if (e.key === "ArrowUp") {
+      } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelectedIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === "Enter") {
+      } else if (e.key === 'Enter') {
         e.preventDefault();
         if (items[selectedIndex]) {
           onSelect(items[selectedIndex]);
         }
-      } else if (e.key === "Escape") {
+      } else if (e.key === 'Escape') {
         onDismiss();
       }
     }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [items, selectedIndex, onSelect, onDismiss]);
 
   // returning null suppresses the wrapper entirely so the chat input is
@@ -86,16 +86,15 @@ function CustomSuggestionList({
           key={item.id}
           role="option"
           aria-selected={i === selectedIndex}
-          className={`custom-suggestion-item ${i === selectedIndex ? "selected" : ""}`}
+          className={`custom-suggestion-item ${i === selectedIndex ? 'selected' : ''}`}
           onClick={() => onSelect(item)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               onSelect(item);
             }
           }}
           onMouseEnter={() => setSelectedIndex(i)}
-          tabIndex={-1}
-        >
+          tabIndex={-1}>
           <span className="custom-suggestion-label">{item.label}</span>
           {item.description && (
             <span className="custom-suggestion-desc">{item.description}</span>

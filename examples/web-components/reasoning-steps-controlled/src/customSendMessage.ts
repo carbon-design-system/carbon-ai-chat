@@ -28,9 +28,9 @@ import {
   type ChatInstance,
   type CustomSendMessageOptions,
   type MessageRequest,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { runControlledReasoningScenario } from "./scenarios";
+import { runControlledReasoningScenario } from './scenarios';
 
 const WELCOME_TEXT = `This example shows controlled reasoning-step open state in Carbon AI Chat.
 
@@ -39,11 +39,11 @@ Send any message to see a custom "Thinking..." indicator (driven by \`updateIsMe
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Empty input is dispatched on first open as the welcome handshake — reply
   // with help text instead of running the reasoning scenario.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

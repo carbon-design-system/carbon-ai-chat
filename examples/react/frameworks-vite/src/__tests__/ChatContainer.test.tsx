@@ -17,18 +17,18 @@
  * Snapshots use the serializer registered by `vitest.setup.ts`.
  */
 
-import React from "react";
-import { render, act, waitFor, cleanup } from "@testing-library/react";
+import React from 'react';
+import { render, act, waitFor, cleanup } from '@testing-library/react';
 import {
   ChatContainer,
   PageObjectId,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
-import { WAIT_FOR_TIMEOUT } from "./constants";
-import { closeChat, openChat, waitForChatElement } from "./helpers";
+} from '@carbon/ai-chat';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import { WAIT_FOR_TIMEOUT } from './constants';
+import { closeChat, openChat, waitForChatElement } from './helpers';
 
-describe("ChatContainer", () => {
+describe('ChatContainer', () => {
   // Unmount every rendered widget after each test so a leftover open chat (e.g.
   // from a test whose teardown was skipped by a mid-body assertion failure) can
   // never leak into the next test. `cleanup()` is idempotent, so this is safe
@@ -38,7 +38,7 @@ describe("ChatContainer", () => {
     cleanup();
   });
 
-  it("should render the chat component", async () => {
+  it('should render the chat component', async () => {
     // Render ChatContainer with an inline customSendMessage so we can inject a deterministic
     // AI response without hitting a backend or wiring up WebSocket plumbing.
     const { container } = await act(() =>
@@ -51,7 +51,7 @@ describe("ChatContainer", () => {
                   generic: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "Hello! How can I help you today?",
+                      text: 'Hello! How can I help you today?',
                     },
                   ],
                 },
@@ -64,8 +64,8 @@ describe("ChatContainer", () => {
               <div data-testid="custom-header">Custom Header Content</div>
             ),
           }}
-        />,
-      ),
+        />
+      )
     );
 
     // waitForChatElement finds the host element by locating PageObjectId.CHAT_WIDGET inside
@@ -74,7 +74,7 @@ describe("ChatContainer", () => {
     expect(customElement).toBeInTheDocument();
   });
 
-  it("should open chat when launcher is clicked", async () => {
+  it('should open chat when launcher is clicked', async () => {
     // Exercise the full launcher interaction so we know happy-dom can open the floating widget
     // and expose the same shadow-rooted surface users see in production.
     const { container } = await act(() =>
@@ -87,15 +87,15 @@ describe("ChatContainer", () => {
                   generic: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "Welcome! How can I help you?",
+                      text: 'Welcome! How can I help you?',
                     },
                   ],
                 },
               });
             },
           }}
-        />,
-      ),
+        />
+      )
     );
 
     const customElement = await waitForChatElement(container);
@@ -110,21 +110,21 @@ describe("ChatContainer", () => {
       const mainPanel = await waitFor(
         () =>
           shadowRoot.querySelector(
-            `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
+            `[data-testid="${PageObjectId.MAIN_PANEL}"]`
           ),
-        { timeout: WAIT_FOR_TIMEOUT },
+        { timeout: WAIT_FOR_TIMEOUT }
       );
       expect(mainPanel).toBeTruthy();
 
       const inputField = deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.INPUT}"]`,
+        `[data-testid="${PageObjectId.INPUT}"]`
       );
       expect(inputField).toBeTruthy();
 
       const sendButton = deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.INPUT_SEND}"]`,
+        `[data-testid="${PageObjectId.INPUT_SEND}"]`
       );
       expect(sendButton).toBeTruthy();
 
@@ -134,7 +134,7 @@ describe("ChatContainer", () => {
     }
   });
 
-  it("should render slotted content", async () => {
+  it('should render slotted content', async () => {
     // Render custom header content via `renderWriteableElements` so we can assert that
     // slot wiring behaves the same under happy-dom as it does in browsers.
     const { container } = await act(() =>
@@ -142,7 +142,7 @@ describe("ChatContainer", () => {
         <ChatContainer
           messaging={{
             customSendMessage(_request, _requestOptions, _instance) {
-              console.log("customSendMessage");
+              console.log('customSendMessage');
             },
           }}
           renderWriteableElements={{
@@ -150,27 +150,27 @@ describe("ChatContainer", () => {
               <div data-testid="custom-header">Custom Header Content</div>
             ),
           }}
-        />,
-      ),
+        />
+      )
     );
 
     // Slot assertions happen outside the widget's shadow DOM: Carbon copies whatever we
     // provide into light DOM slots, so we only need to make sure our authored nodes exist.
     const slotWrapper = await waitFor(() =>
-      container.querySelector('[slot="headerBottomElement"]'),
+      container.querySelector('[slot="headerBottomElement"]')
     );
     expect(slotWrapper).toBeInTheDocument();
 
     const customHeader = slotWrapper?.querySelector(
-      '[data-testid="custom-header"]',
+      '[data-testid="custom-header"]'
     );
     expect(customHeader).toBeInTheDocument();
-    expect(customHeader).toHaveTextContent("Custom Header Content");
+    expect(customHeader).toHaveTextContent('Custom Header Content');
 
     expect(container.firstChild).toMatchSnapshot();
   });
 
-  it("should render PageObjectId elements in shadow DOM", async () => {
+  it('should render PageObjectId elements in shadow DOM', async () => {
     // Minimal render that only needs the launcher so we can document how PageObjectId
     // selectors map to real DOM elements inside the custom element's shadow tree.
     const { container } = await act(() =>
@@ -183,20 +183,20 @@ describe("ChatContainer", () => {
                   generic: [
                     {
                       response_type: MessageResponseTypes.TEXT,
-                      text: "Test message",
+                      text: 'Test message',
                     },
                   ],
                 },
               });
             },
           }}
-        />,
-      ),
+        />
+      )
     );
 
     const customElement = await waitForChatElement(container);
 
-    if (typeof (customElement as any).updateComplete !== "undefined") {
+    if (typeof (customElement as any).updateComplete !== 'undefined') {
       await (customElement as any).updateComplete;
     }
 
@@ -209,14 +209,14 @@ describe("ChatContainer", () => {
       () => {
         const el = deepQuerySelector(
           shadowRoot,
-          `[data-testid="${PageObjectId.LAUNCHER}"]`,
+          `[data-testid="${PageObjectId.LAUNCHER}"]`
         );
         if (!el) {
-          throw new Error("Launcher not rendered yet");
+          throw new Error('Launcher not rendered yet');
         }
         return el;
       },
-      { timeout: WAIT_FOR_TIMEOUT },
+      { timeout: WAIT_FOR_TIMEOUT }
     );
     expect(launcher).toBeTruthy();
 

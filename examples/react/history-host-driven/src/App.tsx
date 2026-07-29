@@ -23,14 +23,14 @@
  * Start reading at: `App()` then `injectHistory()`.
  */
 
-import { ChatCustomElement, ChatInstance, PublicConfig } from "@carbon/ai-chat";
-import React, { useState } from "react";
-import { createRoot } from "react-dom/client";
+import { ChatCustomElement, ChatInstance, PublicConfig } from '@carbon/ai-chat';
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
-import { Button } from "@carbon/react";
-import "@carbon/styles/css/styles.css";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
+import { Button } from '@carbon/react';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -77,6 +77,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

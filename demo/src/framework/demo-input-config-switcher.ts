@@ -7,23 +7,23 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
+import '@carbon/web-components/es/components/checkbox/index.js';
 
-import { InputConfig, PublicConfig, ToolbarAction } from "@carbon/ai-chat";
-import Document16 from "@carbon/icons/es/document/16.js";
-import Language16 from "@carbon/icons/es/language/16.js";
-import Idea16 from "@carbon/icons/es/idea/16.js";
-import Edit16 from "@carbon/icons/es/edit/16.js";
-import MagicWand16 from "@carbon/icons/es/magic-wand/16.js";
-import Code16 from "@carbon/icons/es/code/16.js";
-import Image16 from "@carbon/icons/es/image/16.js";
-import Search16 from "@carbon/icons/es/search/16.js";
-import Microphone16 from "@carbon/icons/es/microphone/16.js";
-import Chat16 from "@carbon/icons/es/chat/16.js";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { mockOnFileUpload } from "../customSendMessage/doFileUpload";
+import { InputConfig, PublicConfig, ToolbarAction } from '@carbon/ai-chat';
+import Document16 from '@carbon/icons/es/document/16.js';
+import Language16 from '@carbon/icons/es/language/16.js';
+import Idea16 from '@carbon/icons/es/idea/16.js';
+import Edit16 from '@carbon/icons/es/edit/16.js';
+import MagicWand16 from '@carbon/icons/es/magic-wand/16.js';
+import Code16 from '@carbon/icons/es/code/16.js';
+import Image16 from '@carbon/icons/es/image/16.js';
+import Search16 from '@carbon/icons/es/search/16.js';
+import Microphone16 from '@carbon/icons/es/microphone/16.js';
+import Chat16 from '@carbon/icons/es/chat/16.js';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { mockOnFileUpload } from '../customSendMessage/doFileUpload';
 import {
   mentionItems,
   commandItems,
@@ -31,66 +31,66 @@ import {
   mentionOnRemove,
   commandOnSelect,
   commandOnRemove,
-} from "../customSendMessage/doMentionCommand";
+} from '../customSendMessage/doMentionCommand';
 
 const DEMO_MENU_OPTIONS: ToolbarAction[] = [
   {
-    text: "Summarize conversation",
+    text: 'Summarize conversation',
     icon: Document16,
-    onClick: () => window.alert("Summarize conversation"),
+    onClick: () => window.alert('Summarize conversation'),
   },
   {
-    text: "Translate last message",
+    text: 'Translate last message',
     icon: Language16,
-    onClick: () => window.alert("Translate last message"),
+    onClick: () => window.alert('Translate last message'),
   },
   {
-    text: "Brainstorm ideas",
+    text: 'Brainstorm ideas',
     icon: Idea16,
-    onClick: () => window.alert("Brainstorm ideas"),
+    onClick: () => window.alert('Brainstorm ideas'),
   },
   {
-    text: "Refine my writing",
+    text: 'Refine my writing',
     icon: Edit16,
-    onClick: () => window.alert("Refine my writing"),
+    onClick: () => window.alert('Refine my writing'),
   },
   {
-    text: "Suggest a follow-up",
+    text: 'Suggest a follow-up',
     icon: MagicWand16,
-    onClick: () => window.alert("Suggest a follow-up"),
+    onClick: () => window.alert('Suggest a follow-up'),
   },
   {
-    text: "Explain this code",
+    text: 'Explain this code',
     icon: Code16,
-    onClick: () => window.alert("Explain this code"),
+    onClick: () => window.alert('Explain this code'),
   },
   {
-    text: "Describe an image",
+    text: 'Describe an image',
     icon: Image16,
-    onClick: () => window.alert("Describe an image"),
+    onClick: () => window.alert('Describe an image'),
   },
   {
-    text: "Search the web",
+    text: 'Search the web',
     icon: Search16,
-    onClick: () => window.alert("Search the web"),
+    onClick: () => window.alert('Search the web'),
   },
   {
-    text: "Dictate a message",
+    text: 'Dictate a message',
     icon: Microphone16,
-    onClick: () => window.alert("Dictate a message"),
+    onClick: () => window.alert('Dictate a message'),
   },
   {
-    text: "Start a new chat",
+    text: 'Start a new chat',
     icon: Chat16,
-    onClick: () => window.alert("Start a new chat"),
+    onClick: () => window.alert('Start a new chat'),
   },
 ];
 
-const DROPDOWN_DEFAULT = "default";
-const DROPDOWN_TRUE = "true";
-const DROPDOWN_FALSE = "false";
+const DROPDOWN_DEFAULT = 'default';
+const DROPDOWN_TRUE = 'true';
+const DROPDOWN_FALSE = 'false';
 
-@customElement("demo-input-config-switcher")
+@customElement('demo-input-config-switcher')
 export class DemoInputConfigSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -110,7 +110,7 @@ export class DemoInputConfigSwitcher extends LitElement {
   accessor config!: PublicConfig;
 
   private _updateInput(
-    mutate: (input: InputConfig | undefined) => InputConfig | undefined,
+    mutate: (input: InputConfig | undefined) => InputConfig | undefined
   ) {
     const currentInput = this.config.input
       ? { ...this.config.input }
@@ -118,19 +118,19 @@ export class DemoInputConfigSwitcher extends LitElement {
     const nextInput = mutate(currentInput);
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           input: nextInput,
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
   private _normalizeInput(
-    input: InputConfig | undefined,
+    input: InputConfig | undefined
   ): InputConfig | undefined {
     if (!input) {
       return undefined;
@@ -161,7 +161,7 @@ export class DemoInputConfigSwitcher extends LitElement {
 
     if (value === DROPDOWN_TRUE) {
       this.dispatchEvent(
-        new CustomEvent("config-changed", {
+        new CustomEvent('config-changed', {
           detail: {
             ...this.config,
             upload: {
@@ -171,18 +171,18 @@ export class DemoInputConfigSwitcher extends LitElement {
           },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     } else {
       // Default or false — remove the upload config entirely.
       const next = { ...this.config };
       delete next.upload;
       this.dispatchEvent(
-        new CustomEvent("config-changed", {
+        new CustomEvent('config-changed', {
           detail: next,
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     }
   }
@@ -200,7 +200,7 @@ export class DemoInputConfigSwitcher extends LitElement {
 
       if (value === DROPDOWN_TRUE) {
         next.mention = {
-          trigger: "@",
+          trigger: '@',
           items: mentionItems,
           onSelect: mentionOnSelect,
           onRemove: mentionOnRemove,
@@ -226,8 +226,8 @@ export class DemoInputConfigSwitcher extends LitElement {
 
       if (value === DROPDOWN_TRUE) {
         next.command = {
-          trigger: "/",
-          triggerPosition: "start",
+          trigger: '/',
+          triggerPosition: 'start',
           items: commandItems,
           onSelect: commandOnSelect,
           onRemove: commandOnRemove,
@@ -242,7 +242,7 @@ export class DemoInputConfigSwitcher extends LitElement {
 
   private _handleBooleanDropdown(
     event: Event,
-    key: "isVisible" | "isDisabled" | "expanded",
+    key: 'isVisible' | 'isDisabled' | 'expanded'
   ) {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
@@ -277,14 +277,14 @@ export class DemoInputConfigSwitcher extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: {
           ...this.config,
           shouldTakeFocusIfOpensAutomatically,
         },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -303,9 +303,9 @@ export class DemoInputConfigSwitcher extends LitElement {
     if (suggestions && Array.isArray(suggestions)) {
       const hasAutocomplete = suggestions.some(
         (suggestion) =>
-          suggestion.type === "autocomplete" &&
-          suggestion.trigger === "" &&
-          suggestion.triggerPosition === "start",
+          suggestion.type === 'autocomplete' &&
+          suggestion.trigger === '' &&
+          suggestion.triggerPosition === 'start'
       );
       return hasAutocomplete ? DROPDOWN_TRUE : DROPDOWN_FALSE;
     }
@@ -348,11 +348,11 @@ export class DemoInputConfigSwitcher extends LitElement {
     if (value === DROPDOWN_TRUE) {
       // Enable autocomplete - dispatch event to let parent handle it
       this.dispatchEvent(
-        new CustomEvent("autocomplete-toggle", {
+        new CustomEvent('autocomplete-toggle', {
           detail: { enabled: true },
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     } else {
       // Disable autocomplete
@@ -363,10 +363,10 @@ export class DemoInputConfigSwitcher extends LitElement {
         newConfig.input.suggestions = newConfig.input.suggestions.filter(
           (suggestion) =>
             !(
-              suggestion.type === "autocomplete" &&
-              suggestion.trigger === "" &&
-              suggestion.triggerPosition === "start"
-            ),
+              suggestion.type === 'autocomplete' &&
+              suggestion.trigger === '' &&
+              suggestion.triggerPosition === 'start'
+            )
         );
 
         // If no suggestions left, remove the suggestions array
@@ -381,11 +381,11 @@ export class DemoInputConfigSwitcher extends LitElement {
       }
 
       this.dispatchEvent(
-        new CustomEvent("config-changed", {
+        new CustomEvent('config-changed', {
           detail: newConfig,
           bubbles: true,
           composed: true,
-        }),
+        })
       );
     }
   }
@@ -399,7 +399,7 @@ export class DemoInputConfigSwitcher extends LitElement {
 
       if (checked) {
         next.error = {
-          title: "Error: title goes here",
+          title: 'Error: title goes here',
           description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
             tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
             quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
@@ -423,8 +423,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._uploadDropdownValue()}"
           title-text="File uploads"
-          @cds-dropdown-selected=${this._handleUploadDropdown}
-        >
+          @cds-dropdown-selected=${this._handleUploadDropdown}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -442,8 +441,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           value="${this._booleanDropdownValue(input?.isVisible)}"
           title-text="Input field visibility"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "isVisible")}
-        >
+            this._handleBooleanDropdown(event, 'isVisible')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -461,8 +459,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           value="${this._booleanDropdownValue(input?.isDisabled)}"
           title-text="Input field state"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "isDisabled")}
-        >
+            this._handleBooleanDropdown(event, 'isDisabled')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -478,11 +475,10 @@ export class DemoInputConfigSwitcher extends LitElement {
       <div class="input-section">
         <cds-dropdown
           value="${this._booleanDropdownValue(
-            this.config?.shouldTakeFocusIfOpensAutomatically,
+            this.config?.shouldTakeFocusIfOpensAutomatically
           )}"
           title-text="Auto focus"
-          @cds-dropdown-selected=${this._handleFocusDropdown}
-        >
+          @cds-dropdown-selected=${this._handleFocusDropdown}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -499,8 +495,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._autocompleteDropdownValue()}"
           title-text="Enable autocomplete suggestions"
-          @cds-dropdown-selected=${this._handleAutocompleteDropdown}
-        >
+          @cds-dropdown-selected=${this._handleAutocompleteDropdown}>
           <cds-dropdown-item value="${DROPDOWN_TRUE}">True</cds-dropdown-item>
           <cds-dropdown-item value="${DROPDOWN_FALSE}">False</cds-dropdown-item>
         </cds-dropdown>
@@ -510,8 +505,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._menuOptionsDropdownValue()}"
           title-text="Additional actions menu"
-          @cds-dropdown-selected=${this._handleMenuOptionsDropdown}
-        >
+          @cds-dropdown-selected=${this._handleMenuOptionsDropdown}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -529,8 +523,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           value="${this._booleanDropdownValue(input?.expanded)}"
           title-text="Expanded layout"
           @cds-dropdown-selected=${(event: Event) =>
-            this._handleBooleanDropdown(event, "expanded")}
-        >
+            this._handleBooleanDropdown(event, 'expanded')}>
           <cds-dropdown-item value="${DROPDOWN_DEFAULT}">
             Default
           </cds-dropdown-item>
@@ -547,8 +540,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._mentionDropdownValue()}"
           title-text="@mentions"
-          @cds-dropdown-selected=${this._handleMentionDropdown}
-        >
+          @cds-dropdown-selected=${this._handleMentionDropdown}>
           <cds-dropdown-item value="${DROPDOWN_TRUE}"
             >Enable @mentions</cds-dropdown-item
           >
@@ -562,8 +554,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-dropdown
           value="${this._commandDropdownValue()}"
           title-text="/commands"
-          @cds-dropdown-selected=${this._handleCommandDropdown}
-        >
+          @cds-dropdown-selected=${this._handleCommandDropdown}>
           <cds-dropdown-item value="${DROPDOWN_TRUE}"
             >Enable /commands</cds-dropdown-item
           >
@@ -577,8 +568,7 @@ export class DemoInputConfigSwitcher extends LitElement {
         <cds-checkbox
           ?checked="${this.config?.input?.error !== undefined}"
           label-text="Show prompt line error"
-          @cds-checkbox-changed=${this._handleErrorCheckbox}
-        ></cds-checkbox>
+          @cds-checkbox-changed=${this._handleErrorCheckbox}></cds-checkbox>
       </div>
     `;
   }
@@ -586,6 +576,6 @@ export class DemoInputConfigSwitcher extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-input-config-switcher": DemoInputConfigSwitcher;
+    'demo-input-config-switcher': DemoInputConfigSwitcher;
   }
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -13,8 +13,8 @@
  * Provides the modal portal host element to descendants via {@link ModalPortalRootContext}.
  */
 
-import React, { ReactNode, type JSX } from "react";
-import { ModalPortalRootContext } from "../contexts/ModalPortalRootContext";
+import React, { ReactNode, type JSX } from 'react';
+import { ModalPortalRootContext } from '../contexts/ModalPortalRootContext';
 
 interface ModalPortalRootProviderProps {
   hostElement: Element;

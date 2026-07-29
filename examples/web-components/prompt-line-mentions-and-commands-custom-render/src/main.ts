@@ -28,20 +28,20 @@
  * Start reading at: the `renderCustomToken` callback below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/web-components/es/components/tooltip/tooltip.js";
-import "@carbon/web-components/es/components/tooltip/tooltip-content.js";
-import "@carbon/web-components/es/components/tag/tag.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/web-components/es/components/tooltip/tooltip.js';
+import '@carbon/web-components/es/components/tooltip/tooltip-content.js';
+import '@carbon/web-components/es/components/tag/tag.js';
 import {
   type ChatInstance,
   type PublicConfig,
   type SuggestionItem,
-} from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { mentionItems, commandItems } from "./suggestions";
+import { customSendMessage } from './customSendMessage';
+import { mentionItems, commandItems } from './suggestions';
 
 /**
  * Creates a custom mention token element: a Carbon Tag wrapped in a Tooltip
@@ -62,24 +62,24 @@ import { mentionItems, commandItems } from "./suggestions";
  * above the chip without any change to the code below.
  */
 function createMentionToken(item: SuggestionItem): HTMLElement {
-  const tooltip = document.createElement("cds-tooltip");
-  tooltip.setAttribute("align", "top");
-  tooltip.setAttribute("autoalign", "");
+  const tooltip = document.createElement('cds-tooltip');
+  tooltip.setAttribute('align', 'top');
+  tooltip.setAttribute('autoalign', '');
 
-  const content = document.createElement("cds-tooltip-content");
+  const content = document.createElement('cds-tooltip-content');
   content.textContent = item.description ?? item.label;
   tooltip.appendChild(content);
 
-  const tag = document.createElement("cds-tag");
-  tag.setAttribute("size", "sm");
-  tag.setAttribute("type", "purple");
+  const tag = document.createElement('cds-tag');
+  tag.setAttribute('size', 'sm');
+  tag.setAttribute('type', 'purple');
   tag.textContent = `@${item.label}`;
   tooltip.appendChild(tag);
 
   return tooltip;
 }
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .chat-custom-element {
@@ -109,13 +109,13 @@ export class Demo extends LitElement {
       input: {
         // `@`-mention slot — drives the inline chip UI customized below via renderCustomToken.
         mention: {
-          trigger: "@",
+          trigger: '@',
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
             }
             return mentionItems.filter((m) =>
-              m.label.toLowerCase().includes(query.toLowerCase()),
+              m.label.toLowerCase().includes(query.toLowerCase())
             );
           },
           onSelect: (item: SuggestionItem) => {
@@ -127,7 +127,7 @@ export class Demo extends LitElement {
                 {
                   id: `mention_${item.id}`,
                   label: item.label,
-                  type: "mention",
+                  type: 'mention',
                   value: item.id,
                 },
               ],
@@ -144,7 +144,7 @@ export class Demo extends LitElement {
               }
               const index = prev.fields.findIndex(
                 (field) =>
-                  field.type === "mention" && field.id === `mention_${item.id}`,
+                  field.type === 'mention' && field.id === `mention_${item.id}`
               );
               if (index === -1) {
                 return prev;
@@ -158,8 +158,8 @@ export class Demo extends LitElement {
           renderCustomToken: (item: SuggestionItem) => createMentionToken(item),
         },
         command: {
-          trigger: "/",
-          triggerPosition: "start",
+          trigger: '/',
+          triggerPosition: 'start',
           items: commandItems,
           onSelect: (item: SuggestionItem) => {
             // Mirrors the picked command into structured_data so customSendMessage can read it on submit.
@@ -170,7 +170,7 @@ export class Demo extends LitElement {
                 {
                   id: `command_${item.id}`,
                   label: item.label,
-                  type: "command",
+                  type: 'command',
                   value: item.id,
                 },
               ],
@@ -186,7 +186,7 @@ export class Demo extends LitElement {
               }
               const index = prev.fields.findIndex(
                 (field) =>
-                  field.type === "command" && field.id === `command_${item.id}`,
+                  field.type === 'command' && field.id === `command_${item.id}`
               );
               if (index === -1) {
                 return prev;
@@ -211,8 +211,7 @@ export class Demo extends LitElement {
         .messaging=${cfg.messaging}
         .input=${cfg.input}
         .layout=${cfg.layout}
-        .openChatByDefault=${cfg.openChatByDefault}
-      ></cds-aichat-custom-element>
+        .openChatByDefault=${cfg.openChatByDefault}></cds-aichat-custom-element>
     `;
   }
 }

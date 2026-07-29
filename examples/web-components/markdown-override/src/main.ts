@@ -28,12 +28,12 @@
  * Start reading at the `el.markdown = ...` assignment below.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
-import "@carbon/web-components/es/components/data-table/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/code-snippet/index.js';
+import '@carbon/web-components/es/components/data-table/index.js';
 
-import { html, render } from "lit";
+import { html, render } from 'lit';
 
 import {
   type MarkdownRendererCodeBlockArgs,
@@ -41,9 +41,9 @@ import {
   type MarkdownRendererLinkArgs,
   type MarkdownRendererTableArgs,
   type WCMarkdown,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { customSendMessage } from "./customSendMessage";
+import { customSendMessage } from './customSendMessage';
 
 // Cache rendered host elements by slotName so re-renders during streaming
 // update the same DOM nodes in place instead of creating new ones each pass.
@@ -58,7 +58,7 @@ const checklistState = new Map<string, boolean>();
 // The image the `image` override resolves the markdown's `app-image:lions`
 // reference to — the same photo the demo site uses for its "image" utterance.
 const DEMO_IMAGE =
-  "https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg";
+  'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg';
 
 const MARKDOWN_CONFIG: WCMarkdown = {
   customRenderers: {
@@ -72,17 +72,17 @@ const MARKDOWN_CONFIG: WCMarkdown = {
       let card = codeBlockHosts.get(slotName);
       let snippet: HTMLElement | null = null;
       if (!card) {
-        card = document.createElement("cds-aichat-card");
-        card.setAttribute("is-flush", "");
-        const wrap = document.createElement("div");
-        wrap.setAttribute("slot", "body");
-        snippet = document.createElement("cds-aichat-code-snippet");
-        snippet.setAttribute("data-rounded", "");
+        card = document.createElement('cds-aichat-card');
+        card.setAttribute('is-flush', '');
+        const wrap = document.createElement('div');
+        wrap.setAttribute('slot', 'body');
+        snippet = document.createElement('cds-aichat-code-snippet');
+        snippet.setAttribute('data-rounded', '');
         wrap.appendChild(snippet);
         card.appendChild(wrap);
         codeBlockHosts.set(slotName, card);
       } else {
-        snippet = card.querySelector("cds-aichat-code-snippet");
+        snippet = card.querySelector('cds-aichat-code-snippet');
       }
       if (snippet) {
         // Properties (not attributes) — `code` may contain quotes/newlines
@@ -102,7 +102,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
     table: ({ headers, rows, slotName }: MarkdownRendererTableArgs) => {
       let wrapper = tableHosts.get(slotName);
       if (!wrapper) {
-        wrapper = document.createElement("div");
+        wrapper = document.createElement('div');
         tableHosts.set(slotName, wrapper);
       }
       render(
@@ -114,7 +114,7 @@ const MARKDOWN_CONFIG: WCMarkdown = {
                   (cell) =>
                     html`<cds-table-header-cell
                       >${cell.text}</cds-table-header-cell
-                    >`,
+                    >`
                 )}
               </cds-table-header-row>
             </cds-table-head>
@@ -124,15 +124,15 @@ const MARKDOWN_CONFIG: WCMarkdown = {
                   <cds-table-row>
                     ${row.map(
                       (cell) =>
-                        html`<cds-table-cell>${cell.text}</cds-table-cell>`,
+                        html`<cds-table-cell>${cell.text}</cds-table-cell>`
                     )}
                   </cds-table-row>
-                `,
+                `
               )}
             </cds-table-body>
           </cds-table>
         `,
-        wrapper,
+        wrapper
       );
       return wrapper;
     },
@@ -140,11 +140,11 @@ const MARKDOWN_CONFIG: WCMarkdown = {
     link: ({ href }: MarkdownRendererLinkArgs) => {
       try {
         const url = new URL(href);
-        url.searchParams.set("utm_source", "ai-chat");
+        url.searchParams.set('utm_source', 'ai-chat');
         return {
           href: url.toString(),
-          target: "_self",
-          rel: "noopener noreferrer",
+          target: '_self',
+          rel: 'noopener noreferrer',
         };
       } catch {
         return null;
@@ -155,14 +155,14 @@ const MARKDOWN_CONFIG: WCMarkdown = {
     // does not enable HTML sanitization; a sanitized/CSP setup would instead
     // delegate a click listener on the host.
     image: ({ src, attributes }: MarkdownRendererImageArgs) => {
-      if (src.startsWith("app-image:")) {
+      if (src.startsWith('app-image:')) {
         return {
           src: DEMO_IMAGE,
           attributes: {
             ...attributes,
             style:
-              "cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;",
-            title: "Click me",
+              'cursor: pointer; max-width: 100%; height: auto; border-radius: 8px;',
+            title: 'Click me',
             onclick: "alert('You clicked the image!')",
           },
         };
@@ -175,13 +175,13 @@ const MARKDOWN_CONFIG: WCMarkdown = {
         checklistState.has(id) ? checklistState.get(id) : checked,
       onToggle: ({ id, label, checked }) => {
         checklistState.set(id, checked);
-        console.log(`[checklist] "${label}" → ${checked ? "done" : "todo"}`);
+        console.log(`[checklist] "${label}" → ${checked ? 'done' : 'todo'}`);
       },
     },
   },
 };
 
-const el = document.querySelector("cds-aichat-custom-element") as
+const el = document.querySelector('cds-aichat-custom-element') as
   | (HTMLElement & {
       messaging?: { customSendMessage: typeof customSendMessage };
       layout?: { showFrame?: boolean };

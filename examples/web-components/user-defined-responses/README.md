@@ -16,17 +16,17 @@ Lit example that renders `user_defined` responses through the `renderUserDefined
 
 ## APIs and props demonstrated
 
-| Symbol                              | Kind                   | Role in this example                                                       |
-| ----------------------------------- | ---------------------- | -------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`       | custom element         | Mounts the chat as a fullscreen surface.                                   |
-| `PublicConfig.layout.showFrame`     | config prop            | Disables the default frame so the host element fills its container.        |
-| `PublicConfig.openChatByDefault`    | config prop            | Opens the chat on first paint.                                             |
-| `messaging.customSendMessage`       | property               | Mock backend that emits a `user_defined` response.                         |
-| `renderUserDefinedResponse`         | property               | Callback returning an `HTMLElement` for `user_defined` items.              |
-| `RenderUserDefinedState`            | `@carbon/ai-chat` type | Argument to the render callback — exposes the `messageItem` to render.     |
-| `BusEventType.STATE_CHANGE`         | `@carbon/ai-chat` enum | Notifies on `activeResponseId` changes.                                    |
-| `instance.getState`                 | instance method        | Reads the initial `activeResponseId`.                                      |
-| `instance.on`                       | instance method        | Subscribes the `STATE_CHANGE` handler.                                     |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat as a fullscreen surface. |
+| `PublicConfig.layout.showFrame` | config prop | Disables the default frame so the host element fills its container. |
+| `PublicConfig.openChatByDefault` | config prop | Opens the chat on first paint. |
+| `messaging.customSendMessage` | property | Mock backend that emits a `user_defined` response. |
+| `renderUserDefinedResponse` | property | Callback returning an `HTMLElement` for `user_defined` items. |
+| `RenderUserDefinedState` | `@carbon/ai-chat` type | Argument to the render callback — exposes the `messageItem` to render. |
+| `BusEventType.STATE_CHANGE` | `@carbon/ai-chat` enum | Notifies on `activeResponseId` changes. |
+| `instance.getState` | instance method | Reads the initial `activeResponseId`. |
+| `instance.on` | instance method | Subscribes the `STATE_CHANGE` handler. |
 | `MessageResponseTypes.USER_DEFINED` | `@carbon/ai-chat` enum | Response-type discriminator that routes the message to the render handler. |
 
 ## Run it

@@ -11,21 +11,21 @@
  * This file takes history store data and transforms it to the schema we use in the Redux messages array.
  */
 
-import { ServiceManager } from "../services/ServiceManager";
-import { DEFAULT_CHAT_MESSAGES_STATE } from "../store/reducerUtils";
+import { ServiceManager } from '../services/ServiceManager';
+import { DEFAULT_CHAT_MESSAGES_STATE } from '../store/reducerUtils';
 import {
   AppStateMessages,
   ChatMessagesState,
-} from "../../types/state/AppState";
+} from '../../types/state/AppState';
 import {
   LocalMessageItem,
   MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
-import ObjectMap from "../../types/utilities/ObjectMap";
-import { HistoryItem, HistoryNote } from "../../types/messaging/History";
-import { FileStatusValue } from "../utils/constants";
-import { findLast } from "../utils/lang/arrayUtils";
-import { deepFreeze } from "../utils/lang/objectUtils";
+} from '../../types/messaging/LocalMessageItem';
+import ObjectMap from '../../types/utilities/ObjectMap';
+import { HistoryItem, HistoryNote } from '../../types/messaging/History';
+import { FileStatusValue } from '../utils/constants';
+import { findLast } from '../utils/lang/arrayUtils';
+import { deepFreeze } from '../utils/lang/objectUtils';
 import {
   addDefaultsToMessage,
   isDateResponseType,
@@ -36,22 +36,22 @@ import {
   isResponse,
   isResponseWithNestedItems,
   THREAD_ID_MAIN,
-} from "../utils/messageUtils";
-import inputItemToLocalItemSchema from "./inputItemToLocalItem";
+} from '../utils/messageUtils';
+import inputItemToLocalItemSchema from './inputItemToLocalItem';
 import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
-} from "./outputItemToLocalItem";
+} from './outputItemToLocalItem';
 import {
   GenericItem,
   Message,
   MessageResponse,
   PanelItem,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 import {
   BusEventHistoryBegin,
   BusEventType,
-} from "../../types/events/eventBusTypes";
+} from '../../types/events/eventBusTypes';
 
 interface LoadedHistory {
   /**
@@ -148,7 +148,7 @@ interface LoadingState {
  */
 async function notesToLoadedHistory(
   notes: HistoryNote[],
-  serviceManager: ServiceManager,
+  serviceManager: ServiceManager
 ): Promise<LoadedHistory> {
   // Create an empty version of our state and the final result object.
   const allLocalMessagesByID: ObjectMap<LocalMessageItem> = {};
@@ -210,7 +210,7 @@ async function notesToLoadedHistory(
  */
 async function notesToMessages(
   notes: HistoryNote[],
-  loadingState: LoadingState,
+  loadingState: LoadingState
 ) {
   const {
     allMessages,
@@ -293,7 +293,7 @@ async function notesToMessages(
   // Fire the event that says we're done loading from history.
   await serviceManager.eventBus.fire(
     { type: BusEventType.HISTORY_END, messages: allMessages },
-    serviceManager.instance,
+    serviceManager.instance
   );
 }
 
@@ -303,7 +303,7 @@ async function notesToMessages(
 function addMessage(
   message: Message,
   loadingState: LoadingState,
-  historyItem: HistoryItem,
+  historyItem: HistoryItem
 ) {
   // Ensure every message has a stable id, thread_id, history, and ui_state_internal so
   // downstream maps (allMessagesByID, localMessagesByOriginalMessageID) never collide at
@@ -353,7 +353,7 @@ function createLocalMessages(loadingState: LoadingState) {
             const localMessage = outputItemToLocalItem(
               messageItem,
               message as MessageResponse,
-              false,
+              false
             );
 
             localMessagesByOriginalMessageID[message.id].push(localMessage);
@@ -366,7 +366,7 @@ function createLocalMessages(loadingState: LoadingState) {
                 message as MessageResponse,
                 true,
                 nestedLocalMessageItems,
-                true,
+                true
               );
 
               nestedLocalMessageItems.forEach((localMessageItem) => {
@@ -423,7 +423,7 @@ function createChatStates(loadingState: LoadingState) {
   } = loadingState;
   loadedHistory.messageHistory.assistantMessageState = toChatMessageState(
     threadMessagesByThreadID[THREAD_ID_MAIN],
-    localMessagesByOriginalMessageID,
+    localMessagesByOriginalMessageID
   );
 }
 
@@ -432,7 +432,7 @@ function createChatStates(loadingState: LoadingState) {
  */
 function toChatMessageState(
   messages: Message[],
-  localMessagesByFullMessageID: ObjectMap<LocalMessageItem[]>,
+  localMessagesByFullMessageID: ObjectMap<LocalMessageItem[]>
 ): ChatMessagesState {
   const localMessageIDs: string[] = [];
   const messageIDs: string[] = [];
@@ -467,7 +467,7 @@ function markIsLatestWelcomeNode(loadingState: LoadingState) {
   // Look for the most recent welcome message.
   const welcomeRequest = findLast(
     mainThreadMessages,
-    (message) => isRequest(message) && message.history.is_welcome_request,
+    (message) => isRequest(message) && message.history.is_welcome_request
   );
 
   if (welcomeRequest) {
@@ -477,7 +477,7 @@ function markIsLatestWelcomeNode(loadingState: LoadingState) {
       localMessagesByOriginalMessageID[welcomeResponse.id].forEach(
         (localMessage) => {
           localMessage.ui_state.isWelcomeResponse = true;
-        },
+        }
       );
     }
   }

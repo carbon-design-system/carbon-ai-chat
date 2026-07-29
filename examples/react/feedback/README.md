@@ -16,16 +16,16 @@ React example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackI
 
 ## APIs and props demonstrated
 
-| Symbol                                | Package / kind              | Role in this example                                                |
-| ------------------------------------- | --------------------------- | ------------------------------------------------------------------- |
-| `ChatCustomElement`                   | `@carbon/ai-chat` component | Mounts the chat as a fullscreen surface.                            |
-| `PublicConfig.layout.showFrame`       | config prop                 | Disables the default frame so the host element fills its container. |
-| `PublicConfig.openChatByDefault`      | config prop                 | Opens the chat on first paint.                                      |
-| `messaging.customSendMessage`         | config prop                 | Mock backend that emits a response with `message_item_options`.     |
-| `BusEventType.FEEDBACK`               | `@carbon/ai-chat` enum      | Bus event fired when the user interacts with the feedback widget.   |
-| `FeedbackInteractionType.SUBMITTED`   | `@carbon/ai-chat` enum      | Discriminator for "user clicked submit on the feedback prompt."     |
-| `instance.on`                         | instance method             | Subscribes the feedback handler.                                    |
-| `message_item_options.feedback.is_on` | server response option      | Renders the thumbs-up/thumbs-down widget on a message.              |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat as a fullscreen surface. |
+| `PublicConfig.layout.showFrame` | config prop | Disables the default frame so the host element fills its container. |
+| `PublicConfig.openChatByDefault` | config prop | Opens the chat on first paint. |
+| `messaging.customSendMessage` | config prop | Mock backend that emits a response with `message_item_options`. |
+| `BusEventType.FEEDBACK` | `@carbon/ai-chat` enum | Bus event fired when the user interacts with the feedback widget. |
+| `FeedbackInteractionType.SUBMITTED` | `@carbon/ai-chat` enum | Discriminator for "user clicked submit on the feedback prompt." |
+| `instance.on` | instance method | Subscribes the feedback handler. |
+| `message_item_options.feedback.is_on` | server response option | Renders the thumbs-up/thumbs-down widget on a message. |
 
 ## Run it
 

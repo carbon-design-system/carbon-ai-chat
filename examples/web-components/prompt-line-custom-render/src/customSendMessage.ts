@@ -28,7 +28,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome! This example demonstrates a custom input node.
 
@@ -39,7 +39,7 @@ Click a tile on the left — it drops a copy of the tile into the input below. P
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const text = request.input.text?.trim();
 
@@ -65,7 +65,7 @@ async function customSendMessage(
 
   const replyText = tile
     ? `You submitted the **${tile.label}** tile (id: \`${tile.value}\`).`
-    : "No tile was attached to this message.";
+    : 'No tile was attached to this message.';
 
   instance.messaging.addMessage({
     output: {

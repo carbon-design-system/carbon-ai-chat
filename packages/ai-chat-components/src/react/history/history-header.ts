@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSAIChatHistoryHeader from "../../components/chat-history/src/history-header.js";
-import { withWebComponentBridge } from "../utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatHistoryHeader from '../../components/chat-history/src/history-header.js';
+import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryHeader = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-history-header",
+    tagName: 'cds-aichat-history-header',
     elementClass: CDSAIChatHistoryHeader,
     react: React,
     events: {
-      onClose: "history-header-close-click",
+      onClose: 'history-header-close-click',
     },
-  }),
+  })
 );
 
 export default HistoryHeader;

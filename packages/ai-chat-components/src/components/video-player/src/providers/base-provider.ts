@@ -28,7 +28,7 @@ export interface ProviderConfig {
     src: string;
     language: string;
     label: string;
-    kind?: "subtitles" | "captions" | "descriptions";
+    kind?: 'subtitles' | 'captions' | 'descriptions';
     default?: boolean;
   }>;
 
@@ -138,7 +138,7 @@ export abstract class BaseProvider {
    */
   protected abstract updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void;
 
   /**
@@ -147,12 +147,12 @@ export abstract class BaseProvider {
    * @param state - The current state
    * @returns The aria-label string
    */
-  protected getStateLabel(state: "loading" | "ready" | "error"): string {
-    const baseLabel = this.config.ariaLabel || "Video player";
+  protected getStateLabel(state: 'loading' | 'ready' | 'error'): string {
+    const baseLabel = this.config.ariaLabel || 'Video player';
     const stateLabels = {
-      loading: this.config.loadingLabel || "Loading",
-      ready: this.config.readyLabel || "Ready",
-      error: this.config.errorLabel || "Error",
+      loading: this.config.loadingLabel || 'Loading',
+      ready: this.config.readyLabel || 'Ready',
+      error: this.config.errorLabel || 'Error',
     };
     return `${baseLabel} - ${stateLabels[state]}`;
   }
@@ -162,7 +162,7 @@ export abstract class BaseProvider {
    */
   destroy(): void {
     if (this.container) {
-      this.container.innerHTML = "";
+      this.container.innerHTML = '';
       this.container = null;
     }
     this.readyCallback = null;

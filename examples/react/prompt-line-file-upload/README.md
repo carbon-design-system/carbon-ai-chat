@@ -16,23 +16,23 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                 | Package / kind              | Role in this example                                        |
-| -------------------------------------- | --------------------------- | ----------------------------------------------------------- |
-| `ChatCustomElement`                    | `@carbon/ai-chat` component | Mounts the chat UI.                                         |
-| `PublicConfig`                         | `@carbon/ai-chat` type      | Types the config.                                           |
-| `ExternalFileReference`                | `@carbon/ai-chat` type      | Server-assigned file reference returned by the mock upload. |
-| `StructuredData`                       | `@carbon/ai-chat` type      | Wraps the file reference returned from `onFileUpload`.      |
-| `StructuredField`                      | `@carbon/ai-chat` type      | Typed entry inside `StructuredData.fields`.                 |
-| `MessageRequest`                       | `@carbon/ai-chat` type      | Inspected for `structured_data` to echo files.              |
-| `ChatInstance`                         | `@carbon/ai-chat` type      | Used by the mock server response helper.                    |
-| `MessageResponseTypes`                 | `@carbon/ai-chat` enum      | `TEXT` used to echo file metadata.                          |
-| `upload.is_on`                         | config prop                 | Enables attachments.                                        |
-| `upload.onFileUpload`                  | config prop                 | Mock upload handler returning `StructuredData`.             |
-| `upload.accept` (documented)           | config prop                 | Optional MIME/extension allowlist.                          |
-| `upload.maxFileSizeBytes` (documented) | config prop                 | Optional per-file size cap.                                 |
-| `upload.maxFiles` (documented)         | config prop                 | Optional per-message file count cap.                        |
-| `messaging.customSendMessage`          | config prop                 | Mock backend; forwards file messages to the echo helper.    |
-| `instance.messaging.addMessage`        | instance method             | Injects the echoed text response.                           |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config. |
+| `ExternalFileReference` | `@carbon/ai-chat` type | Server-assigned file reference returned by the mock upload. |
+| `StructuredData` | `@carbon/ai-chat` type | Wraps the file reference returned from `onFileUpload`. |
+| `StructuredField` | `@carbon/ai-chat` type | Typed entry inside `StructuredData.fields`. |
+| `MessageRequest` | `@carbon/ai-chat` type | Inspected for `structured_data` to echo files. |
+| `ChatInstance` | `@carbon/ai-chat` type | Used by the mock server response helper. |
+| `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` used to echo file metadata. |
+| `upload.is_on` | config prop | Enables attachments. |
+| `upload.onFileUpload` | config prop | Mock upload handler returning `StructuredData`. |
+| `upload.accept` (documented) | config prop | Optional MIME/extension allowlist. |
+| `upload.maxFileSizeBytes` (documented) | config prop | Optional per-file size cap. |
+| `upload.maxFiles` (documented) | config prop | Optional per-message file count cap. |
+| `messaging.customSendMessage` | config prop | Mock backend; forwards file messages to the echo helper. |
+| `instance.messaging.addMessage` | instance method | Injects the echoed text response. |
 
 ## Run it
 

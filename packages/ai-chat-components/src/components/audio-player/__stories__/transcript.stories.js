@@ -7,31 +7,31 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../index";
-import { html } from "lit";
-import isChromatic from "chromatic/isChromatic";
+import '../index';
+import { html } from 'lit';
+import isChromatic from 'chromatic/isChromatic';
 
 const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
-  "data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA";
+  'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
-  title: "Preview/Audio player/Transcript",
+  title: 'Preview/Audio player/Transcript',
   args: {
-    text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
-    label: "English Transcript",
-    language: "en",
+    text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
+    label: 'English Transcript',
+    language: 'en',
   },
   argTypes: {
     text: {
-      control: "text",
-      description: "The transcript text content (supports markdown)",
+      control: 'text',
+      description: 'The transcript text content (supports markdown)',
     },
     label: {
-      control: "text",
-      description: "Label for the transcript toggle button",
+      control: 'text',
+      description: 'Label for the transcript toggle button',
     },
     language: {
-      control: "text",
+      control: 'text',
       description: "Language code for the transcript (e.g., 'en', 'es')",
     },
   },
@@ -61,8 +61,8 @@ The transcript component is designed to be collapsible, allowing users to expand
 - Clean visual presentation
 
 This makes it ideal for providing detailed transcripts of audio content without overwhelming the user interface. Users can choose to read the transcript when they need it, making the content more accessible to those who prefer or require text-based alternatives to audio.`,
-    label: "Full Transcript",
-    language: "en",
+    label: 'Full Transcript',
+    language: 'en',
   },
   render: (args) => {
     const { text, label, language } = args;
@@ -78,25 +78,25 @@ export const WithAudioPlayer = {
   args: {
     audioSource: isChromatic()
       ? WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI
-      : "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
-    audioTitle: "Your own mp3 file with transcript",
-    audioDescription: "This example includes a transcript for accessibility.",
-    text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
-    label: "English Transcript",
-    language: "en",
+      : 'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3',
+    audioTitle: 'Your own mp3 file with transcript',
+    audioDescription: 'This example includes a transcript for accessibility.',
+    text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
+    label: 'English Transcript',
+    language: 'en',
   },
   argTypes: {
     audioSource: {
-      control: "text",
-      description: "Audio source URL",
+      control: 'text',
+      description: 'Audio source URL',
     },
     audioTitle: {
-      control: "text",
-      description: "Audio title",
+      control: 'text',
+      description: 'Audio title',
     },
     audioDescription: {
-      control: "text",
-      description: "Audio description",
+      control: 'text',
+      description: 'Audio description',
     },
   },
   render: (args) => {
@@ -109,8 +109,7 @@ export const WithAudioPlayer = {
           <cds-aichat-audio-player
             source=${audioSource}
             aria-label=${audioTitle}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-audio-player>
         </div>
         <div slot="body" style="padding: 1rem;">
@@ -121,8 +120,7 @@ export const WithAudioPlayer = {
           <cds-aichat-transcript
             text=${text}
             label=${label}
-            language=${language}
-          >
+            language=${language}>
           </cds-aichat-transcript>
         </div>
       </cds-aichat-card>
@@ -137,22 +135,19 @@ export const MultipleLanguages = {
         <cds-aichat-transcript
           text="This is an English transcript."
           label="English Transcript"
-          language="en"
-        >
+          language="en">
         </cds-aichat-transcript>
 
         <cds-aichat-transcript
           text="Esta es una transcripción en español."
           label="Transcripción en español"
-          language="es"
-        >
+          language="es">
         </cds-aichat-transcript>
 
         <cds-aichat-transcript
           text="これは日本語の文字起こしです。"
           label="日本語の文字起こし"
-          language="ja"
-        >
+          language="ja">
         </cds-aichat-transcript>
       </div>
     `;

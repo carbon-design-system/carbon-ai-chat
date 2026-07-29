@@ -31,20 +31,20 @@
  * Run with --fix to regenerate the mirror from the canonical tree.
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const REPO_ROOT = path.join(__dirname, "..");
-const CANONICAL_DIR = ".bob/skills";
-const MIRROR_DIRS = [".claude/skills"];
-const FALLBACK_POINTER_FILE = ".github/copilot-instructions.md";
+const REPO_ROOT = path.join(__dirname, '..');
+const CANONICAL_DIR = '.bob/skills';
+const MIRROR_DIRS = ['.claude/skills'];
+const FALLBACK_POINTER_FILE = '.github/copilot-instructions.md';
 
 // Skills this repo owns. The vendored carbon-builder skill is mirrored and
 // shape-checked like any other, but its internal links belong to its upstream
 // author, so they are not ours to lint.
-const OWNED_SKILL_PREFIX = "caic-";
+const OWNED_SKILL_PREFIX = 'caic-';
 
-const fix = process.argv.includes("--fix");
+const fix = process.argv.includes('--fix');
 
 let errors = 0;
 
@@ -71,7 +71,7 @@ function listFiles(dir) {
       if (entry.isDirectory()) {
         walk(full);
       } else if (entry.isFile()) {
-        found.push(path.relative(root, full).split(path.sep).join("/"));
+        found.push(path.relative(root, full).split(path.sep).join('/'));
       }
     }
   };
@@ -85,7 +85,7 @@ function validateMirror() {
   if (canonical.length === 0) {
     error(
       CANONICAL_DIR,
-      "No skills found — expected the canonical skill tree.",
+      'No skills found — expected the canonical skill tree.'
     );
     return;
   }
@@ -98,36 +98,36 @@ function validateMirror() {
 
     for (const file of canonical) {
       if (!mirrorSet.has(file)) {
-        error(`${mirrorDir}/${file}`, "Missing from the mirror.");
+        error(`${mirrorDir}/${file}`, 'Missing from the mirror.');
         continue;
       }
       const a = fs.readFileSync(path.join(REPO_ROOT, CANONICAL_DIR, file));
       const b = fs.readFileSync(path.join(REPO_ROOT, mirrorDir, file));
       if (!a.equals(b)) {
-        error(`${mirrorDir}/${file}`, "Differs from the canonical copy.");
+        error(`${mirrorDir}/${file}`, 'Differs from the canonical copy.');
       }
     }
 
     for (const file of mirror) {
       if (!canonicalSet.has(file)) {
-        error(`${mirrorDir}/${file}`, "Not present in the canonical tree.");
+        error(`${mirrorDir}/${file}`, 'Not present in the canonical tree.');
       }
     }
   }
 
   info(
-    `Compared ${canonical.length} files across ${MIRROR_DIRS.length + 1} skill trees.`,
+    `Compared ${canonical.length} files across ${MIRROR_DIRS.length + 1} skill trees.`
   );
 }
 
 // Minimal frontmatter reader: the delimited block of `key: value` lines that
 // both Claude Code and Bob parse at the top of a SKILL.md.
 function readFrontmatter(content) {
-  const lines = content.split("\n");
-  if (lines[0].trim() !== "---") {
+  const lines = content.split('\n');
+  if (lines[0].trim() !== '---') {
     return null;
   }
-  const end = lines.indexOf("---", 1);
+  const end = lines.indexOf('---', 1);
   if (end === -1) {
     return null;
   }
@@ -168,28 +168,28 @@ function validateSkillShape(name) {
   const fullPath = path.join(REPO_ROOT, file);
 
   if (!fs.existsSync(fullPath)) {
-    error(file, "Skill directory has no SKILL.md.");
+    error(file, 'Skill directory has no SKILL.md.');
     return;
   }
 
-  const frontmatter = readFrontmatter(fs.readFileSync(fullPath, "utf-8"));
+  const frontmatter = readFrontmatter(fs.readFileSync(fullPath, 'utf-8'));
   if (!frontmatter) {
-    error(file, "Missing or unterminated `---` frontmatter block.");
+    error(file, 'Missing or unterminated `---` frontmatter block.');
     return;
   }
 
-  const declaredName = frontmatter.name ? frontmatter.name.value : "";
+  const declaredName = frontmatter.name ? frontmatter.name.value : '';
   if (declaredName !== name) {
     error(
       file,
-      `Frontmatter name "${declaredName}" must match the directory name "${name}".`,
+      `Frontmatter name "${declaredName}" must match the directory name "${name}".`
     );
   }
 
   if (!frontmatter.description || !frontmatter.description.value) {
     error(
       file,
-      "Frontmatter needs a non-empty `description` — it is what both harnesses match on, and a skill without one is ignored.",
+      'Frontmatter needs a non-empty `description` — it is what both harnesses match on, and a skill without one is ignored.'
     );
   }
 
@@ -203,13 +203,13 @@ function validateSkillShape(name) {
     if (/\s#/.test(field.value)) {
       error(
         file,
-        `Frontmatter \`${key}\` contains " #", which YAML reads as a comment — everything after it is dropped. Rephrase, or quote the value.`,
+        `Frontmatter \`${key}\` contains " #", which YAML reads as a comment — everything after it is dropped. Rephrase, or quote the value.`
       );
     }
     if (/:\s/.test(field.value)) {
       error(
         file,
-        `Frontmatter \`${key}\` contains ": ", which YAML reads as a nested mapping. Rephrase, or quote the value.`,
+        `Frontmatter \`${key}\` contains ": ", which YAML reads as a nested mapping. Rephrase, or quote the value.`
       );
     }
   }
@@ -220,10 +220,10 @@ function validateSkillShape(name) {
 // git-ignored working drafts that only exist mid-effort.
 function isPlaceholder(target) {
   return (
-    target.includes("path/to/") ||
-    target.includes("<") ||
-    target.includes("*") ||
-    target === "PLAN.md" ||
+    target.includes('path/to/') ||
+    target.includes('<') ||
+    target.includes('*') ||
+    target === 'PLAN.md' ||
     /^PLAN-.*\.md$/.test(target)
   );
 }
@@ -235,15 +235,15 @@ function slugify(heading) {
   return heading
     .trim()
     .toLowerCase()
-    .replace(/`/g, "")
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s/g, "-");
+    .replace(/`/g, '')
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s/g, '-');
 }
 
 function headingSlugs(filePath) {
   const slugs = new Set();
   let inFence = false;
-  for (const line of fs.readFileSync(filePath, "utf-8").split("\n")) {
+  for (const line of fs.readFileSync(filePath, 'utf-8').split('\n')) {
     if (/^\s*```/.test(line)) {
       inFence = !inFence;
       continue;
@@ -265,13 +265,13 @@ function headingSlugs(filePath) {
 function checkTarget(file, baseDir, target, description) {
   if (
     /^(https?:)?\/\//.test(target) ||
-    target.startsWith("#") ||
-    target.startsWith("mailto:")
+    target.startsWith('#') ||
+    target.startsWith('mailto:')
   ) {
     return;
   }
 
-  const withoutAnchor = target.split("#")[0];
+  const withoutAnchor = target.split('#')[0];
   if (!withoutAnchor || isPlaceholder(withoutAnchor)) {
     return;
   }
@@ -280,19 +280,19 @@ function checkTarget(file, baseDir, target, description) {
   if (!fs.existsSync(resolved)) {
     error(
       file,
-      `${description} ${target} does not resolve relative to ${path.relative(REPO_ROOT, baseDir) || "."}.`,
+      `${description} ${target} does not resolve relative to ${path.relative(REPO_ROOT, baseDir) || '.'}.`
     );
     return;
   }
 
   // A link into a heading that later gets renamed still resolves as a file, so
   // check the anchor too — otherwise cross-file section links rot in silence.
-  const anchor = target.split("#")[1];
-  if (anchor && resolved.endsWith(".md") && fs.statSync(resolved).isFile()) {
+  const anchor = target.split('#')[1];
+  if (anchor && resolved.endsWith('.md') && fs.statSync(resolved).isFile()) {
     if (!headingSlugs(resolved).has(anchor)) {
       error(
         file,
-        `${description} ${target} resolves, but ${path.relative(REPO_ROOT, resolved)} has no heading anchored at #${anchor}.`,
+        `${description} ${target} resolves, but ${path.relative(REPO_ROOT, resolved)} has no heading anchored at #${anchor}.`
       );
     }
   }
@@ -301,12 +301,12 @@ function checkTarget(file, baseDir, target, description) {
 function validateSkillLinks(name) {
   const skillRoot = path.join(REPO_ROOT, CANONICAL_DIR, name);
   const markdown = listFiles(`${CANONICAL_DIR}/${name}`).filter((relative) =>
-    relative.endsWith(".md"),
+    relative.endsWith('.md')
   );
 
   for (const relative of markdown) {
     const file = `${CANONICAL_DIR}/${name}/${relative}`;
-    const content = fs.readFileSync(path.join(skillRoot, relative), "utf-8");
+    const content = fs.readFileSync(path.join(skillRoot, relative), 'utf-8');
 
     const fileDir = path.dirname(path.join(skillRoot, relative));
 
@@ -317,7 +317,7 @@ function validateSkillLinks(name) {
         file,
         fileDir,
         match[2],
-        `Broken link: [${match[1]}](${match[2]}) ->`,
+        `Broken link: [${match[1]}](${match[2]}) ->`
       );
     }
 
@@ -328,7 +328,7 @@ function validateSkillLinks(name) {
         file,
         REPO_ROOT,
         match[1],
-        `Outdated file reference \`${match[1]}\` ->`,
+        `Outdated file reference \`${match[1]}\` ->`
       );
     }
   }
@@ -342,11 +342,11 @@ function validateCollectionDocs() {
     return;
   }
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.endsWith(".md")) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) {
       continue;
     }
     const file = `${CANONICAL_DIR}/${entry.name}`;
-    const content = fs.readFileSync(path.join(root, entry.name), "utf-8");
+    const content = fs.readFileSync(path.join(root, entry.name), 'utf-8');
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     let match;
     while ((match = linkRegex.exec(content)) !== null) {
@@ -354,7 +354,7 @@ function validateCollectionDocs() {
         file,
         root,
         match[2],
-        `Broken link: [${match[1]}](${match[2]}) ->`,
+        `Broken link: [${match[1]}](${match[2]}) ->`
       );
     }
   }
@@ -366,18 +366,18 @@ function validateCollectionDocs() {
 function validateFallbackPointer(ownedSkills) {
   const fullPath = path.join(REPO_ROOT, FALLBACK_POINTER_FILE);
   if (!fs.existsSync(fullPath)) {
-    error(FALLBACK_POINTER_FILE, "File not found.");
+    error(FALLBACK_POINTER_FILE, 'File not found.');
     return;
   }
 
-  const content = fs.readFileSync(fullPath, "utf-8");
+  const content = fs.readFileSync(fullPath, 'utf-8');
   for (const name of ownedSkills) {
     // A real markdown link, not just the path in passing — a mention inside a
     // comment or a sentence gives a reader nothing to follow.
     if (!content.includes(`](../${CANONICAL_DIR}/${name}/SKILL.md)`)) {
       error(
         FALLBACK_POINTER_FILE,
-        `Does not link ${CANONICAL_DIR}/${name}/SKILL.md — without it, an assistant that cannot load skills has no way to find that workflow.`,
+        `Does not link ${CANONICAL_DIR}/${name}/SKILL.md — without it, an assistant that cannot load skills has no way to find that workflow.`
       );
     }
   }
@@ -391,7 +391,7 @@ function syncMirror() {
   // otherwise lose every mirrored skill and then crash on the copy.
   if (!fs.existsSync(from)) {
     console.error(
-      `❌ ${CANONICAL_DIR} not found — nothing to sync from. No mirror was touched.`,
+      `❌ ${CANONICAL_DIR} not found — nothing to sync from. No mirror was touched.`
     );
     process.exit(1);
   }
@@ -403,7 +403,7 @@ function syncMirror() {
     for (const file of listFiles(mirrorDir)) {
       if (!canonical.has(file)) {
         console.log(
-          `   removing ${mirrorDir}/${file} (not in ${CANONICAL_DIR})`,
+          `   removing ${mirrorDir}/${file} (not in ${CANONICAL_DIR})`
         );
       }
     }
@@ -421,17 +421,17 @@ function syncMirror() {
 // broken link or a bad frontmatter name would wait for CI to surface.
 if (fix) {
   syncMirror();
-  console.log("");
+  console.log('');
 }
 
-console.log("🔍 Validating agent skills...\n");
+console.log('🔍 Validating agent skills...\n');
 
 const skills = skillDirs();
 const ownedSkills = skills.filter((name) =>
-  name.startsWith(OWNED_SKILL_PREFIX),
+  name.startsWith(OWNED_SKILL_PREFIX)
 );
 info(
-  `Found ${skills.length} skills (${ownedSkills.length} owned by this repo).`,
+  `Found ${skills.length} skills (${ownedSkills.length} owned by this repo).`
 );
 
 const errorsBeforeMirror = errors;
@@ -447,9 +447,9 @@ for (const name of ownedSkills) {
 validateCollectionDocs();
 validateFallbackPointer(ownedSkills);
 
-console.log("\n" + "=".repeat(60));
+console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors`);
-console.log("=".repeat(60));
+console.log('='.repeat(60));
 
 // Syncing only fixes drift. Offering it for a broken link or a bad name sends
 // the reader to a command that copies the problem into the mirror and fails
@@ -458,10 +458,10 @@ if (errors > 0) {
   console.error(
     mirrorDrifted
       ? `\n❌ Validation failed. ${CANONICAL_DIR} is canonical — run \`npm run sync:skills\` to regenerate the mirrors.`
-      : `\n❌ Validation failed. Fix the findings above in ${CANONICAL_DIR} (the canonical tree), then run \`npm run sync:skills\`.`,
+      : `\n❌ Validation failed. Fix the findings above in ${CANONICAL_DIR} (the canonical tree), then run \`npm run sync:skills\`.`
   );
   process.exit(1);
 }
 
-console.log("\n✨ All checks passed!");
+console.log('\n✨ All checks passed!');
 process.exit(0);

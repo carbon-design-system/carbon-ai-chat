@@ -23,7 +23,7 @@ import {
   isElementInvisible,
   walkComposedTree,
   getFirstAndLastFocusableChildren,
-} from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+} from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
 ```
 
 #### `tryFocus(element, exceptions?)`
@@ -79,7 +79,7 @@ Traverses the composed tree (including shadow DOM) to find elements matching cri
 for (const element of walkComposedTree(
   root,
   NodeFilter.SHOW_ELEMENT,
-  isFocusable,
+  isFocusable
 )) {
   // Process focusable elements
 }
@@ -200,10 +200,10 @@ export interface ComponentHandle {
 ### Parent Component Usage
 
 ```tsx
-import { useRef } from "react";
+import { useRef } from 'react';
 import ChatHeader, {
   ChatHeaderHandle,
-} from "@carbon/ai-chat-components/react/chat-header";
+} from '@carbon/ai-chat-components/react/chat-header';
 
 function ParentComponent() {
   const headerRef = useRef<ChatHeaderHandle>(null);
@@ -423,8 +423,8 @@ Parent components should test:
 ## Example Test
 
 ```typescript
-describe("ChatHeader requestFocus", () => {
-  it("should focus close button first", async () => {
+describe('ChatHeader requestFocus', () => {
+  it('should focus close button first', async () => {
     const header = await fixture(html`
       <cds-aichat-chat-header>
         <button slot="fixed-actions" id="close">Close</button>
@@ -435,10 +435,10 @@ describe("ChatHeader requestFocus", () => {
     const result = header.requestFocus();
 
     expect(result).to.be.true;
-    expect(document.activeElement?.id).to.equal("close");
+    expect(document.activeElement?.id).to.equal('close');
   });
 
-  it("should return false when no focusable elements exist", async () => {
+  it('should return false when no focusable elements exist', async () => {
     const header = await fixture(html`
       <cds-aichat-chat-header></cds-aichat-chat-header>
     `);
@@ -448,7 +448,7 @@ describe("ChatHeader requestFocus", () => {
     expect(result).to.be.false;
   });
 
-  it("should skip disabled buttons", async () => {
+  it('should skip disabled buttons', async () => {
     const header = await fixture(html`
       <cds-aichat-chat-header>
         <button slot="fixed-actions" disabled>Close</button>
@@ -459,7 +459,7 @@ describe("ChatHeader requestFocus", () => {
     const result = header.requestFocus();
 
     expect(result).to.be.true;
-    expect(document.activeElement?.id).to.equal("back");
+    expect(document.activeElement?.id).to.equal('back');
   });
 });
 ```

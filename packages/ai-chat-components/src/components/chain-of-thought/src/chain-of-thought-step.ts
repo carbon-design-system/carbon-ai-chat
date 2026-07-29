@@ -7,25 +7,25 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/inline-loading/index.js";
+import '@carbon/web-components/es/components/inline-loading/index.js';
 
-import { LitElement, html } from "lit";
-import { classMap } from "lit/directives/class-map.js";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { property, state } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import CheckmarkFilled16 from "@carbon/icons/es/checkmark--filled/16.js";
-import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
-import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./chain-of-thought-step.scss?lit";
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import { ChainOfThoughtStepStatus } from "../defs.js";
+import { LitElement, html } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { property, state } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import CheckmarkFilled16 from '@carbon/icons/es/checkmark--filled/16.js';
+import ChevronRight16 from '@carbon/icons/es/chevron--right/16.js';
+import ErrorFilled16 from '@carbon/icons/es/error--filled/16.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './chain-of-thought-step.scss?lit';
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import { ChainOfThoughtStepStatus } from '../defs.js';
 
 const baseClass = `${prefix}--chain-of-thought-accordion-item`;
 const statusClass = `${prefix}--chain-of-thought-accordion-item-header-status`;
-const numberFormatter = new Intl.NumberFormat("en-US");
+const numberFormatter = new Intl.NumberFormat('en-US');
 
 let idCounter = 0;
 const generateId = (segment: string) =>
@@ -39,44 +39,44 @@ const generateId = (segment: string) =>
 class CDSAIChatChainOfThoughtStep extends LitElement {
   static styles = [commonStyles, styles];
 
-  @property({ type: String, attribute: "title" })
-  title = "";
+  @property({ type: String, attribute: 'title' })
+  title = '';
 
-  @property({ type: Number, attribute: "step-number", reflect: true })
+  @property({ type: Number, attribute: 'step-number', reflect: true })
   stepNumber = 0;
 
-  @property({ type: String, attribute: "label-text" })
-  labelText = "";
+  @property({ type: String, attribute: 'label-text' })
+  labelText = '';
 
-  @property({ type: String, attribute: "status" })
+  @property({ type: String, attribute: 'status' })
   status: ChainOfThoughtStepStatus = ChainOfThoughtStepStatus.SUCCESS;
 
-  @property({ type: Boolean, reflect: true, attribute: "open" })
+  @property({ type: Boolean, reflect: true, attribute: 'open' })
   open = false;
 
-  @property({ type: Boolean, reflect: true, attribute: "controlled" })
+  @property({ type: Boolean, reflect: true, attribute: 'controlled' })
   controlled = false;
 
   @property({
     type: String,
-    attribute: "status-succeeded-label-text",
+    attribute: 'status-succeeded-label-text',
     reflect: true,
   })
-  statusSucceededLabelText = "Succeeded";
+  statusSucceededLabelText = 'Succeeded';
 
   @property({
     type: String,
-    attribute: "status-failed-label-text",
+    attribute: 'status-failed-label-text',
     reflect: true,
   })
-  statusFailedLabelText = "Failed";
+  statusFailedLabelText = 'Failed';
 
   @property({
     type: String,
-    attribute: "status-processing-label-text",
+    attribute: 'status-processing-label-text',
     reflect: true,
   })
-  statusProcessingLabelText = "Processing";
+  statusProcessingLabelText = 'Processing';
 
   /**
    * @internal
@@ -87,16 +87,16 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
   /**
    * @internal
    */
-  private headerId = generateId("header");
+  private headerId = generateId('header');
 
   /**
    * @internal
    */
-  private contentId = generateId("content");
+  private contentId = generateId('content');
 
   connectedCallback() {
-    if (!this.hasAttribute("role")) {
-      this.setAttribute("role", "listitem");
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'listitem');
     }
 
     super.connectedCallback();
@@ -105,14 +105,14 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
   }
 
   protected updated(changedProperties: Map<PropertyKey, unknown>) {
-    if (changedProperties.has("stepNumber")) {
+    if (changedProperties.has('stepNumber')) {
       this.updateStepParity();
     }
   }
 
   firstUpdated() {
     const slot =
-      this.shadowRoot?.querySelector<HTMLSlotElement>("slot:not([name])");
+      this.shadowRoot?.querySelector<HTMLSlotElement>('slot:not([name])');
     const nodes = slot?.assignedNodes({ flatten: true });
 
     if (nodes) {
@@ -126,7 +126,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
     }
 
     return this.shadowRoot.querySelector<HTMLButtonElement>(
-      `.${baseClass}-header`,
+      `.${baseClass}-header`
     );
   }
 
@@ -146,7 +146,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
   private isBodyNode(node: Node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const element = node as HTMLElement;
-      const slotName = element.getAttribute("slot");
+      const slotName = element.getAttribute('slot');
 
       if (slotName) {
         return false;
@@ -168,27 +168,27 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
 
   private updateStepParity() {
     if (this.stepNumber > 0) {
-      const parity = this.stepNumber % 2 === 0 ? "even" : "odd";
-      this.setAttribute("data-step-parity", parity);
+      const parity = this.stepNumber % 2 === 0 ? 'even' : 'odd';
+      this.setAttribute('data-step-parity', parity);
     } else {
-      this.removeAttribute("data-step-parity");
+      this.removeAttribute('data-step-parity');
     }
   }
 
   private isToolCallDataNode(element: HTMLElement) {
-    return element.tagName.toLowerCase() === "cds-aichat-tool-call-data";
+    return element.tagName.toLowerCase() === 'cds-aichat-tool-call-data';
   }
 
   private toolCallDataHasContent(element: HTMLElement) {
     const toolName =
       (element as { toolName?: string }).toolName ??
-      element.getAttribute("tool-name");
+      element.getAttribute('tool-name');
     if (toolName?.toString().trim()) {
       return true;
     }
 
     return Array.from(element.childNodes).some((child) =>
-      this.hasChildContent(child),
+      this.hasChildContent(child)
     );
   }
 
@@ -205,7 +205,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
       }
 
       return Array.from(element.childNodes).some((child) =>
-        this.hasChildContent(child),
+        this.hasChildContent(child)
       );
     }
 
@@ -223,7 +223,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
     const detail = { open: nextState };
     const init = { bubbles: true, cancelable: true, composed: true, detail };
     const canToggle = this.dispatchEvent(
-      new CustomEvent(`chain-of-thought-step-beingtoggled`, init),
+      new CustomEvent(`chain-of-thought-step-beingtoggled`, init)
     );
 
     if (!canToggle) {
@@ -249,7 +249,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
       return;
     }
 
-    if (event.key === "Escape" || event.key === "Esc") {
+    if (event.key === 'Escape' || event.key === 'Esc') {
       event.stopPropagation();
       this.handleToggleRequest(false);
     }
@@ -273,7 +273,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
 
     if (this.stepNumber > 0) {
       const formattedNumber = numberFormatter.format(this.stepNumber);
-      return `${formattedNumber}: ${this.title || ""}`;
+      return `${formattedNumber}: ${this.title || ''}`;
     }
 
     return this.title;
@@ -284,8 +284,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
       case ChainOfThoughtStepStatus.PROCESSING:
         return html`<cds-inline-loading
           status="active"
-          aria-label="${this.statusProcessingLabelText}"
-        ></cds-inline-loading>`;
+          aria-label="${this.statusProcessingLabelText}"></cds-inline-loading>`;
       case ChainOfThoughtStepStatus.FAILURE:
         return html`<span
           class="${statusClass}--${ChainOfThoughtStepStatus.FAILURE}"
@@ -313,13 +312,11 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
         aria-expanded="${String(this.open)}"
         aria-controls="${this.contentId}"
         @click=${this.handleButtonClick}
-        @keydown=${this.handleButtonKeydown}
-      >
+        @keydown=${this.handleButtonKeydown}>
         <span
           class="${baseClass}-header-chevron"
           ?data-open=${this.open}
-          aria-hidden="true"
-        >
+          aria-hidden="true">
           ${iconLoader(ChevronRight16)}
         </span>
         <span class="${baseClass}-header-title">
@@ -356,19 +353,16 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
         class="${baseClass}-content"
         part="wrapper"
         ?aria-hidden=${!this.open}
-        role=${ifDefined(!isHidden ? "region" : undefined)}
+        role=${ifDefined(!isHidden ? 'region' : undefined)}
         aria-labelledby=${ifDefined(!isHidden ? this.headerId : undefined)}
-        ?hidden=${isHidden || !this.open}
-      >
+        ?hidden=${isHidden || !this.open}>
         <div
           class="${prefix}--chain-of-thought-item"
           part="content"
-          data-visible="${this.open && !isHidden}"
-        >
+          data-visible="${this.open && !isHidden}">
           <slot
             @slotchange=${this.handleBodySlotChange}
-            ?hidden=${isHidden}
-          ></slot>
+            ?hidden=${isHidden}></slot>
         </div>
       </div>
     `;
@@ -394,7 +388,7 @@ class CDSAIChatChainOfThoughtStep extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-chain-of-thought-step": CDSAIChatChainOfThoughtStep;
+    'cds-aichat-chain-of-thought-step': CDSAIChatChainOfThoughtStep;
   }
 }
 

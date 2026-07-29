@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -12,7 +12,7 @@
  * effect where the inputs are new).
  */
 
-import { DependencyList, EffectCallback, useEffect, useRef } from "react";
+import { DependencyList, EffectCallback, useEffect, useRef } from 'react';
 
 function useEffectDidUpdate(effect: EffectCallback, deps?: DependencyList) {
   const hasRunRef = useRef(false);

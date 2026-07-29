@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -68,7 +68,7 @@ export interface KeyboardShortcuts {
  * Users can disable it via configuration if needed.
  */
 export const DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT: ChatShortcutConfig = {
-  key: "F6",
+  key: 'F6',
   modifiers: {},
   is_on: true,
 };

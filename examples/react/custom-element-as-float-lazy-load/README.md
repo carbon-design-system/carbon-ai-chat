@@ -19,27 +19,27 @@ Code-split `ChatCustomElement` rendered as a floating widget with a custom launc
 
 ## APIs and props demonstrated
 
-| Symbol                                         | Package / kind                             | Role in this example                                     |
-| ---------------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
-| `ChatCustomElement`                            | `@carbon/ai-chat` component (lazy)         | Dynamically imported; hosts the float chat.              |
-| `readCarbonChatSession`                        | `@carbon/ai-chat` function                 | Reads prior `viewState.mainWindow` to decide auto-mount. |
-| `PublicConfig`                                 | `@carbon/ai-chat` type                     | Types the config.                                        |
-| `ChatInstance`                                 | `@carbon/ai-chat` type                     | Captured via `onAfterRender`.                            |
-| `BusEventViewChange`                           | `@carbon/ai-chat` type                     | Event payload for `onViewChange`.                        |
-| `ViewType`                                     | `@carbon/ai-chat` enum                     | `MAIN_WINDOW` passed to `changeView`.                    |
-| `ChatShell`                                    | `@carbon/ai-chat-components` React wrapper | Fixed overlay covering load + init phases.               |
-| `ChatButton`                                   | `@carbon/ai-chat-components` React wrapper | Custom launcher button.                                  |
-| `AiLaunch`                                     | `@carbon/icons-react`                      | Launcher icon.                                           |
-| `@carbon/ai-chat/css/chat-float-layout.css`    | stylesheet                                 | Provides `cds-aichat-float--*` classes.                  |
-| `@carbon/ai-chat/css/chat-launcher-layout.css` | stylesheet                                 | Provides `cds-aichat-launcher` classes.                  |
-| `React.lazy` / `Suspense`                      | React                                      | Code-splits `ChatCustomElement`.                         |
-| `messaging.customSendMessage`                  | config prop                                | Mock backend.                                            |
-| `launcher.isOn`                                | config prop                                | Disabled so the custom button drives opening.            |
-| `className`                                    | component prop                             | Applies float phase classes.                             |
-| `onAfterRender`                                | component prop                             | Captures the instance; calls `changeView(MAIN_WINDOW)`.  |
-| `onAnimationEnd`                               | component prop                             | Advances the phase.                                      |
-| `onViewChange`                                 | component prop                             | Triggers opening/closing animations.                     |
-| `showFrame` / `aiEnabled` / `cornerAll`        | `ChatShell` props                          | Configure the loading-state shell.                       |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component (lazy) | Dynamically imported; hosts the float chat. |
+| `readCarbonChatSession` | `@carbon/ai-chat` function | Reads prior `viewState.mainWindow` to decide auto-mount. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured via `onAfterRender`. |
+| `BusEventViewChange` | `@carbon/ai-chat` type | Event payload for `onViewChange`. |
+| `ViewType` | `@carbon/ai-chat` enum | `MAIN_WINDOW` passed to `changeView`. |
+| `ChatShell` | `@carbon/ai-chat-components` React wrapper | Fixed overlay covering load + init phases. |
+| `ChatButton` | `@carbon/ai-chat-components` React wrapper | Custom launcher button. |
+| `AiLaunch` | `@carbon/icons-react` | Launcher icon. |
+| `@carbon/ai-chat/css/chat-float-layout.css` | stylesheet | Provides `cds-aichat-float--*` classes. |
+| `@carbon/ai-chat/css/chat-launcher-layout.css` | stylesheet | Provides `cds-aichat-launcher` classes. |
+| `React.lazy` / `Suspense` | React | Code-splits `ChatCustomElement`. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `launcher.isOn` | config prop | Disabled so the custom button drives opening. |
+| `className` | component prop | Applies float phase classes. |
+| `onAfterRender` | component prop | Captures the instance; calls `changeView(MAIN_WINDOW)`. |
+| `onAnimationEnd` | component prop | Advances the phase. |
+| `onViewChange` | component prop | Triggers opening/closing animations. |
+| `showFrame` / `aiEnabled` / `cornerAll` | `ChatShell` props | Configure the loading-state shell. |
 
 ## Run it
 

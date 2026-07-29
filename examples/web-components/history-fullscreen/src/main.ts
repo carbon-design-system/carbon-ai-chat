@@ -25,8 +25,8 @@
  * `onBeforeRender`, and `renderWriteableElementSlots()`.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
-import "./history-writeable-element-example";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
+import './history-writeable-element-example';
 
 import {
   BusEventType,
@@ -34,12 +34,12 @@ import {
   type BusEventStateChange,
   type ChatInstance,
   type PublicConfig,
-} from "@carbon/ai-chat";
-import { html, LitElement, css } from "lit";
-import { customElement, state } from "lit/decorators.js";
+} from '@carbon/ai-chat';
+import { html, LitElement, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { customLoadHistory } from "./customLoadHistory";
+import { customSendMessage } from './customSendMessage';
+import { customLoadHistory } from './customLoadHistory';
 
 const config: PublicConfig = {
   history: {
@@ -59,7 +59,7 @@ const config: PublicConfig = {
   openChatByDefault: true,
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     .fullScreen {
@@ -120,7 +120,7 @@ export class Demo extends LitElement {
       return null;
     }
 
-    const key = "historyPanelElement";
+    const key = 'historyPanelElement';
 
     return html`
       <div slot=${key}>
@@ -128,8 +128,7 @@ export class Demo extends LitElement {
           location=${key}
           .instance=${this.instance}
           .valueFromParent=${this.valueFromParent}
-          .isMobile=${this.isMobile}
-        ></history-writeable-element-example>
+          .isMobile=${this.isMobile}></history-writeable-element-example>
       </div>
     `;
   }

@@ -7,9 +7,9 @@
  *  @license
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 
-import { WriteableElementName } from "../../../types/instance/WriteableElements";
+import { WriteableElementName } from '../../../types/instance/WriteableElements';
 
 interface PromptLineWriteableSlotProps {
   /**
@@ -37,7 +37,7 @@ function hasRenderableContent(slotElement: HTMLSlotElement): boolean {
     .some((node) =>
       node.nodeType === Node.ELEMENT_NODE
         ? (node as Element).childNodes.length > 0 || !!node.textContent?.trim()
-        : !!node.textContent?.trim(),
+        : !!node.textContent?.trim()
     );
 }
 
@@ -68,7 +68,7 @@ function PromptLineWriteableSlot({
     }
 
     const observer = new MutationObserver(() =>
-      setHasContent(hasRenderableContent(slotElement)),
+      setHasContent(hasRenderableContent(slotElement))
     );
 
     const reevaluate = () => {
@@ -88,9 +88,9 @@ function PromptLineWriteableSlot({
     };
 
     reevaluate();
-    slotElement.addEventListener("slotchange", reevaluate);
+    slotElement.addEventListener('slotchange', reevaluate);
     return () => {
-      slotElement.removeEventListener("slotchange", reevaluate);
+      slotElement.removeEventListener('slotchange', reevaluate);
       observer.disconnect();
     };
   }, []);
@@ -100,8 +100,7 @@ function PromptLineWriteableSlot({
       slot={wrapperSlot}
       data-prompt-line-slot
       data-floating-menu-container
-      hidden={!hasContent}
-    >
+      hidden={!hasContent}>
       <slot ref={slotRef} name={slotName} />
     </div>
   );

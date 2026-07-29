@@ -18,24 +18,24 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Package / kind              | Role in this example                                  |
-| --------------------------------------------- | --------------------------- | ----------------------------------------------------- |
-| `ChatCustomElement`                           | `@carbon/ai-chat` component | Mounts the chat into a host element you style.        |
-| `PublicConfig`                                | `@carbon/ai-chat` type      | Types the config passed to `ChatCustomElement`.       |
-| `ChatInstance`                                | `@carbon/ai-chat` type      | Captured in `onBeforeRender`.                         |
-| `BusEventType`                                | `@carbon/ai-chat` enum      | Subscribes to `STATE_CHANGE`.                         |
-| `history.isOn`                                | config prop                 | Turns on the history panel.                           |
-| `layout.showFrame`                            | config prop                 | Disables the chat frame so it fills the host.         |
-| `layout.customProperties`                     | config prop                 | Sets `messages-max-width` for the full-screen layout. |
-| `openChatByDefault`                           | config prop                 | Opens the chat automatically on mount.                |
-| `messaging.customSendMessage`                 | config prop                 | Mock backend.                                         |
-| `messaging.customLoadHistory`                 | config prop                 | Mock history loader.                                  |
-| `className`                                   | component prop              | Host class name applied to the custom element.        |
-| `onBeforeRender`                              | component prop              | Captures the instance and subscribes to state.        |
-| `renderWriteableElements.historyPanelElement` | component prop              | React node rendered into the history panel slot.      |
-| `instance.getState`                           | instance method             | Reads `customPanels.history.isMobile`.                |
-| `instance.messaging.clearConversation`        | instance method             | Clears the conversation before insertion.             |
-| `instance.messaging.insertHistory`            | instance method             | Inserts the loaded history.                           |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config passed to `ChatCustomElement`. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured in `onBeforeRender`. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE`. |
+| `history.isOn` | config prop | Turns on the history panel. |
+| `layout.showFrame` | config prop | Disables the chat frame so it fills the host. |
+| `layout.customProperties` | config prop | Sets `messages-max-width` for the full-screen layout. |
+| `openChatByDefault` | config prop | Opens the chat automatically on mount. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `messaging.customLoadHistory` | config prop | Mock history loader. |
+| `className` | component prop | Host class name applied to the custom element. |
+| `onBeforeRender` | component prop | Captures the instance and subscribes to state. |
+| `renderWriteableElements.historyPanelElement` | component prop | React node rendered into the history panel slot. |
+| `instance.getState` | instance method | Reads `customPanels.history.isMobile`. |
+| `instance.messaging.clearConversation` | instance method | Clears the conversation before insertion. |
+| `instance.messaging.insertHistory` | instance method | Inserts the loaded history. |
 
 ## Chat history configuration
 
@@ -116,7 +116,7 @@ config.history.isOn = !config.history.isOn;
 **✅ Correct approach** - Use the panel instance methods:
 
 ```typescript
-import { PanelType } from "@carbon/ai-chat";
+import { PanelType } from '@carbon/ai-chat';
 
 // To close the history panel
 instance.customPanels.getPanel(PanelType.HISTORY)?.close();

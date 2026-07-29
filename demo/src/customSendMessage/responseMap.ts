@@ -7,28 +7,28 @@
  *  @license
  */
 
-import { ChatInstance, CustomSendMessageOptions } from "@carbon/ai-chat";
+import { ChatInstance, CustomSendMessageOptions } from '@carbon/ai-chat';
 
-import { doAudioSoundCloud, doAudioMp3 } from "./doAudio";
-import { doButton } from "./doButton";
-import { doCard } from "./doCard";
-import { doPreviewCard } from "./doPreviewCard";
-import { doCarousel } from "./doCarousel";
-import { doCode, doCodeStreaming } from "./doCode";
+import { doAudioSoundCloud, doAudioMp3 } from './doAudio';
+import { doButton } from './doButton';
+import { doCard } from './doCard';
+import { doPreviewCard } from './doPreviewCard';
+import { doCarousel } from './doCarousel';
+import { doCode, doCodeStreaming } from './doCode';
 import {
   doConversationalSearch,
   doConversationalSearchStreaming,
-} from "./doConversationalSearch";
-import { doDate } from "./doDate";
-import { doError } from "./doError";
-import { doGrid } from "./doGrid";
-import { doHumanAgent } from "./doHumanAgent";
-import { doIFrame } from "./doIFrame";
-import { doImage } from "./doImage";
-import { doList } from "./doList";
-import { doOption } from "./doOption";
-import { doOrderedList } from "./doOrderedList";
-import { doTable, doTableStreaming } from "./doTable";
+} from './doConversationalSearch';
+import { doDate } from './doDate';
+import { doError } from './doError';
+import { doGrid } from './doGrid';
+import { doHumanAgent } from './doHumanAgent';
+import { doIFrame } from './doIFrame';
+import { doImage } from './doImage';
+import { doList } from './doList';
+import { doOption } from './doOption';
+import { doOrderedList } from './doOrderedList';
+import { doTable, doTableStreaming } from './doTable';
 import {
   doHTML,
   doHTMLStreaming,
@@ -46,61 +46,61 @@ import {
   doTextWithReasoningStepsStreaming,
   doTextWithReasoningTraceStreaming,
   doTextWithWatsonAgentProfile,
-} from "./doText";
-import { doUserDefined, doUserDefinedStreaming } from "./doUserDefined";
-import { doSystemMessage } from "./doSystemMessage";
-import { doVideoYouTube, doVideoVimeo, doVideoKaltura } from "./doVideo";
+} from './doText';
+import { doUserDefined, doUserDefinedStreaming } from './doUserDefined';
+import { doSystemMessage } from './doSystemMessage';
+import { doVideoYouTube, doVideoVimeo, doVideoKaltura } from './doVideo';
 
 const sortResponseMap = <T extends Record<string, unknown>>(map: T): T =>
   Object.fromEntries(
     Object.entries(map).sort(([leftKey], [rightKey]) =>
-      leftKey.localeCompare(rightKey),
-    ),
+      leftKey.localeCompare(rightKey)
+    )
   ) as T;
 
 const RESPONSE_MAP: Record<
   string,
   (
     instance: ChatInstance,
-    requestOptions?: CustomSendMessageOptions,
+    requestOptions?: CustomSendMessageOptions
   ) => Promise<void> | void
 > = sortResponseMap({
-  "audio - soundcloud": (instance) => doAudioSoundCloud(instance),
-  "audio - mp3": (instance) => doAudioMp3(instance),
+  'audio - soundcloud': (instance) => doAudioSoundCloud(instance),
+  'audio - mp3': (instance) => doAudioMp3(instance),
   button: (instance) => doButton(instance),
   card: (instance) => doCard(instance),
-  "workspace preview card (open start)": (instance) =>
-    doPreviewCard(instance, "start"),
-  "workspace preview card (open end)": (instance) =>
-    doPreviewCard(instance, "end"),
+  'workspace preview card (open start)': (instance) =>
+    doPreviewCard(instance, 'start'),
+  'workspace preview card (open end)': (instance) =>
+    doPreviewCard(instance, 'end'),
   carousel: (instance) => doCarousel(instance),
   code: (instance) => doCode(instance),
-  "code (stream)": (instance, requestOptions) =>
+  'code (stream)': (instance, requestOptions) =>
     doCodeStreaming(instance, requestOptions),
-  "conversational search": (instance) => doConversationalSearch(instance),
-  "conversational search (stream)": (instance, requestOptions) =>
+  'conversational search': (instance) => doConversationalSearch(instance),
+  'conversational search (stream)': (instance, requestOptions) =>
     doConversationalSearchStreaming(instance, undefined, requestOptions),
   date: (instance) => doDate(instance),
   grid: (instance) => doGrid(instance),
-  "human agent": (instance) => doHumanAgent(instance),
+  'human agent': (instance) => doHumanAgent(instance),
   iframe: (instance) => doIFrame(instance),
-  "inline error": (instance) => doError(instance),
+  'inline error': (instance) => doError(instance),
   image: (instance) => doImage(instance),
-  "unordered list": (instance) => doList(instance),
-  "option list": (instance) => doOption(instance),
-  "ordered list": (instance) => doOrderedList(instance),
-  "system message (inline)": (instance) => doSystemMessage(instance, true),
-  "system message (stand alone, default variant)": (instance) =>
-    doSystemMessage(instance, false, "default"),
-  "system message (stand alone, date variant)": (instance) =>
-    doSystemMessage(instance, false, "date"),
-  "system message (stand alone, agent variant)": (instance) =>
-    doSystemMessage(instance, false, "agent"),
+  'unordered list': (instance) => doList(instance),
+  'option list': (instance) => doOption(instance),
+  'ordered list': (instance) => doOrderedList(instance),
+  'system message (inline)': (instance) => doSystemMessage(instance, true),
+  'system message (stand alone, default variant)': (instance) =>
+    doSystemMessage(instance, false, 'default'),
+  'system message (stand alone, date variant)': (instance) =>
+    doSystemMessage(instance, false, 'date'),
+  'system message (stand alone, agent variant)': (instance) =>
+    doSystemMessage(instance, false, 'agent'),
   table: (instance) => doTable(instance),
-  "table (stream)": (instance, requestOptions) =>
+  'table (stream)': (instance, requestOptions) =>
     doTableStreaming(instance, requestOptions),
   text: (instance) => doText(instance),
-  "text (stream)": (instance, requestOptions) =>
+  'text (stream)': (instance, requestOptions) =>
     doTextStreaming(
       instance,
       undefined,
@@ -110,42 +110,42 @@ const RESPONSE_MAP: Record<
       undefined,
       undefined,
       undefined,
-      requestOptions,
+      requestOptions
     ),
-  "text (stream early resolve)": (instance, requestOptions) =>
+  'text (stream early resolve)': (instance, requestOptions) =>
     doTextStreamingEarlyResolve(instance, requestOptions),
-  "text with feedback": (instance) => doTextWithFeedback(instance),
-  "text with feedback (stream)": (instance, requestOptions) =>
+  'text with feedback': (instance) => doTextWithFeedback(instance),
+  'text with feedback (stream)': (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),
-  "text with custom footer": (instance) => doTextWithCustomFooter(instance),
-  "text from watsonx agent": (instance) =>
+  'text with custom footer': (instance) => doTextWithCustomFooter(instance),
+  'text from watsonx agent': (instance) =>
     doTextWithWatsonAgentProfile(instance),
-  "text from third party human": (instance) => doTextWithHumanProfile(instance),
-  "text from third party bot": (instance) =>
+  'text from third party human': (instance) => doTextWithHumanProfile(instance),
+  'text from third party bot': (instance) =>
     doTextWithNonWatsonAssistantProfile(instance),
-  "text (stream) from third party bot": (instance, requestOptions) =>
+  'text (stream) from third party bot': (instance, requestOptions) =>
     doTextStreamingWithNonWatsonAssistantProfile(
       instance,
       undefined,
       undefined,
       undefined,
-      requestOptions,
+      requestOptions
     ),
-  "text with chain of thought": (instance) => doTextChainOfThought(instance),
-  "text (stream) with chain of thought": (instance, requestOptions) =>
+  'text with chain of thought': (instance) => doTextChainOfThought(instance),
+  'text (stream) with chain of thought': (instance, requestOptions) =>
     doTextChainOfThoughtStreaming(
       instance,
       undefined,
       undefined,
       undefined,
       undefined,
-      requestOptions,
+      requestOptions
     ),
-  "text (stream) with reasoning steps": (instance, requestOptions) =>
+  'text (stream) with reasoning steps': (instance, requestOptions) =>
     doTextWithReasoningStepsStreaming(instance, requestOptions),
-  "text (stream) with single reasoning trace": (instance, requestOptions) =>
+  'text (stream) with single reasoning trace': (instance, requestOptions) =>
     doTextWithReasoningTraceStreaming(instance, requestOptions),
-  "text (delayed response)": async (instance, requestOptions) => {
+  'text (delayed response)': async (instance, requestOptions) => {
     const signal = requestOptions?.signal;
 
     // Check if already aborted
@@ -153,18 +153,18 @@ const RESPONSE_MAP: Record<
       return;
     }
 
-    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+    instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
     // Return a Promise that resolves when the work is done or cancelled
     return new Promise<void>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         // Double-check signal wasn't aborted during delay
         if (signal?.aborted) {
-          instance.updateIsMessageLoadingCounter("decrease");
-          reject(new Error("Aborted"));
+          instance.updateIsMessageLoadingCounter('decrease');
+          reject(new Error('Aborted'));
           return;
         }
-        instance.updateIsMessageLoadingCounter("decrease");
+        instance.updateIsMessageLoadingCounter('decrease');
         doText(instance);
         resolve();
       }, 3000);
@@ -172,13 +172,13 @@ const RESPONSE_MAP: Record<
       // Cancel timeout if signal is aborted
       const abortHandler = () => {
         clearTimeout(timeoutId);
-        instance.updateIsMessageLoadingCounter("decrease");
-        reject(new Error("Aborted"));
+        instance.updateIsMessageLoadingCounter('decrease');
+        reject(new Error('Aborted'));
       };
-      signal?.addEventListener("abort", abortHandler, { once: true });
+      signal?.addEventListener('abort', abortHandler, { once: true });
     });
   },
-  "text (delayed streaming response)": async (instance, requestOptions) => {
+  'text (delayed streaming response)': async (instance, requestOptions) => {
     const signal = requestOptions?.signal;
 
     // Check if already aborted
@@ -186,18 +186,18 @@ const RESPONSE_MAP: Record<
       return;
     }
 
-    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+    instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
     // Return a Promise that resolves when the work is done or cancelled
     return new Promise<void>((resolve, reject) => {
       const timeoutId = setTimeout(async () => {
         // Double-check signal wasn't aborted during delay
         if (signal?.aborted) {
-          instance.updateIsMessageLoadingCounter("decrease");
-          reject(new Error("Aborted"));
+          instance.updateIsMessageLoadingCounter('decrease');
+          reject(new Error('Aborted'));
           return;
         }
-        instance.updateIsMessageLoadingCounter("decrease");
+        instance.updateIsMessageLoadingCounter('decrease');
         try {
           await doTextStreaming(
             instance,
@@ -208,7 +208,7 @@ const RESPONSE_MAP: Record<
             undefined,
             undefined,
             undefined,
-            requestOptions,
+            requestOptions
           );
           resolve();
         } catch (error) {
@@ -219,16 +219,16 @@ const RESPONSE_MAP: Record<
       // Cancel timeout if signal is aborted
       const abortHandler = () => {
         clearTimeout(timeoutId);
-        instance.updateIsMessageLoadingCounter("decrease");
-        reject(new Error("Aborted"));
+        instance.updateIsMessageLoadingCounter('decrease');
+        reject(new Error('Aborted'));
       };
-      signal?.addEventListener("abort", abortHandler, { once: true });
+      signal?.addEventListener('abort', abortHandler, { once: true });
     });
   },
-  "text (consecutive responses)": (instance) => {
-    instance.updateIsMessageLoadingCounter("increase", "Thinking...");
+  'text (consecutive responses)': (instance) => {
+    instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
     setTimeout(() => {
-      instance.updateIsMessageLoadingCounter("decrease");
+      instance.updateIsMessageLoadingCounter('decrease');
       doTextWithFeedback(instance);
       setTimeout(() => {
         doTextWithFeedback(instance);
@@ -236,7 +236,7 @@ const RESPONSE_MAP: Record<
     }, 3000);
   },
   html: (instance) => doHTML(instance),
-  "html (stream)": (instance, requestOptions) =>
+  'html (stream)': (instance, requestOptions) =>
     doHTMLStreaming(
       instance,
       undefined,
@@ -244,14 +244,14 @@ const RESPONSE_MAP: Record<
       undefined,
       undefined,
       undefined,
-      requestOptions,
+      requestOptions
     ),
   user_defined: (instance) => doUserDefined(instance),
-  "user_defined (stream)": (instance, requestOptions) =>
+  'user_defined (stream)': (instance, requestOptions) =>
     doUserDefinedStreaming(instance, requestOptions),
-  "video - youtube": (instance) => doVideoYouTube(instance),
-  "video - vimeo": (instance) => doVideoVimeo(instance),
-  "video - kaltura": (instance) => doVideoKaltura(instance),
+  'video - youtube': (instance) => doVideoYouTube(instance),
+  'video - vimeo': (instance) => doVideoVimeo(instance),
+  'video - kaltura': (instance) => doVideoKaltura(instance),
 });
 
 export { RESPONSE_MAP };

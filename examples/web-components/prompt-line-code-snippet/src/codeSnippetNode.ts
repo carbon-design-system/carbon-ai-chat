@@ -36,17 +36,17 @@
  */
 
 // Registers the <cds-aichat-card> and <cds-aichat-code-snippet> custom elements.
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
-import { renderInLightDom } from "@carbon/ai-chat";
-import { Node, mergeAttributes, InputRule, type Extension } from "@tiptap/core";
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/code-snippet/index.js';
+import { renderInLightDom } from '@carbon/ai-chat';
+import { Node, mergeAttributes, InputRule, type Extension } from '@tiptap/core';
 
 // The node type name. Kept distinct from the chat's built-in node types
 // (doc / paragraph / text / hardBreak / mention / command) so the chat routes
 // it to `renderUserDefinedInputNode` when the message is sent.
-const CODE_SNIPPET_NODE = "codeSnippetBlock";
+const CODE_SNIPPET_NODE = 'codeSnippetBlock';
 
-const EMPTY_FENCED = "\n```\n\n```\n";
+const EMPTY_FENCED = '\n```\n\n```\n';
 
 function fence(code: string): string {
   return `\n\`\`\`\n${code}\n\`\`\`\n`;
@@ -66,7 +66,7 @@ function fence(code: string): string {
  */
 const impl = Node.create({
   name: CODE_SNIPPET_NODE,
-  group: "block",
+  group: 'block',
   atom: true,
   selectable: true,
   defining: true,
@@ -77,7 +77,7 @@ const impl = Node.create({
   // outgoing message text contains standard ```...``` fences.
   addAttributes() {
     return {
-      code: { default: "" },
+      code: { default: '' },
       value: { default: EMPTY_FENCED },
     };
   },
@@ -86,17 +86,17 @@ const impl = Node.create({
   // JSON via `getRawText` (which uses `attrs.value`), not this method, but
   // Tiptap's send-enable heuristic does call into `renderText`.
   renderText({ node }) {
-    return node.attrs.value ?? "";
+    return node.attrs.value ?? '';
   },
 
   parseHTML() {
-    return [{ tag: "pre[data-code-snippet-block]" }];
+    return [{ tag: 'pre[data-code-snippet-block]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
-      "pre",
-      mergeAttributes(HTMLAttributes, { "data-code-snippet-block": "" }),
+      'pre',
+      mergeAttributes(HTMLAttributes, { 'data-code-snippet-block': '' }),
     ];
   },
 
@@ -115,7 +115,7 @@ const impl = Node.create({
             .deleteRange(range)
             .insertContent({
               type: CODE_SNIPPET_NODE,
-              attrs: { code: "", value: EMPTY_FENCED },
+              attrs: { code: '', value: EMPTY_FENCED },
             })
             .run();
         },
@@ -139,7 +139,7 @@ const impl = Node.create({
         }
         return editor
           .chain()
-          .insertContentAt(selection.to, { type: "paragraph" })
+          .insertContentAt(selection.to, { type: 'paragraph' })
           .focus()
           .run();
       },
@@ -156,10 +156,10 @@ const impl = Node.create({
       // ships its own SCSS for CodeMirror. `renderInLightDom` bridges the
       // node-view content into the page's light DOM and hands back a
       // `container` to mount in the editor in its place.
-      const snippet = document.createElement("cds-aichat-code-snippet");
-      snippet.setAttribute("editable", "");
-      snippet.setAttribute("highlight", "");
-      snippet.setAttribute("hide-header", "");
+      const snippet = document.createElement('cds-aichat-code-snippet');
+      snippet.setAttribute('editable', '');
+      snippet.setAttribute('highlight', '');
+      snippet.setAttribute('hide-header', '');
       // Sizing: `Infinity` on both row maxes disables the snippet's internal
       // scrollbar so the prompt-line shell's own `overflow-y: auto` is the only
       // scroll surface. `5` on the row mins floors the empty editor at ~80px —
@@ -179,47 +179,47 @@ const impl = Node.create({
       snippetProps.maxExpandedNumberOfRows = Infinity;
       snippetProps.minCollapsedNumberOfRows = 5;
       snippetProps.minExpandedNumberOfRows = 5;
-      snippetProps.code = String(node.attrs.code ?? "");
+      snippetProps.code = String(node.attrs.code ?? '');
 
       // CodeMirror emits `content-change` on every keystroke. Push the new
       // code into the node's attrs so a later send / re-render sees it.
       const onChange = (event: Event) => {
         const detail = (event as CustomEvent<{ content: string }>).detail;
-        const next = detail?.content ?? "";
+        const next = detail?.content ?? '';
         const pos = getPos();
-        if (typeof pos !== "number") {
+        if (typeof pos !== 'number') {
           return;
         }
         editor.view.dispatch(
           editor.state.tr.setNodeMarkup(pos, undefined, {
             code: next,
             value: fence(next),
-          }),
+          })
         );
       };
-      snippet.addEventListener("content-change", onChange);
+      snippet.addEventListener('content-change', onChange);
 
       // Escape inside the snippet exits the block. CodeMirror by default does
       // not bind Escape to anything destructive, so we can listen for it on
       // the snippet element and forward to the editor.
       const onKeyDown = (event: KeyboardEvent) => {
-        if (event.key !== "Escape") {
+        if (event.key !== 'Escape') {
           return;
         }
         event.preventDefault();
         event.stopPropagation();
         const pos = getPos();
-        if (typeof pos !== "number") {
+        if (typeof pos !== 'number') {
           return;
         }
         const after = pos + node.nodeSize;
         editor
           .chain()
-          .insertContentAt(after, { type: "paragraph" })
+          .insertContentAt(after, { type: 'paragraph' })
           .focus(after + 1)
           .run();
       };
-      snippet.addEventListener("keydown", onKeyDown);
+      snippet.addEventListener('keydown', onKeyDown);
 
       // Wrap the editor in a card so it reads as a contained region inside the
       // chat input. `slot="body"` / `slot="footer"` route the snippet and the
@@ -229,12 +229,12 @@ const impl = Node.create({
       // from `@carbon/styles` (no inline styles), and it resolves because the
       // card is portaled into light DOM where the example's global
       // `@carbon/styles/css/styles.css` import applies.
-      const card = document.createElement("cds-aichat-card");
-      snippet.setAttribute("slot", "body");
-      const hint = document.createElement("div");
-      hint.setAttribute("slot", "footer");
-      hint.className = "cds--form__helper-text";
-      hint.textContent = "Esc to exit code editor";
+      const card = document.createElement('cds-aichat-card');
+      snippet.setAttribute('slot', 'body');
+      const hint = document.createElement('div');
+      hint.setAttribute('slot', 'footer');
+      hint.className = 'cds--form__helper-text';
+      hint.textContent = 'Esc to exit code editor';
       card.append(snippet, hint);
 
       // `containerTag: "div"` — the card host (extends `cds-tile`) is
@@ -243,7 +243,7 @@ const impl = Node.create({
       const { container } = renderInLightDom({
         content: card,
         dispatchTarget: editor.view.dom,
-        containerTag: "div",
+        containerTag: 'div',
       });
 
       // After the InputRule fires, ProseMirror parks a NodeSelection on this
@@ -254,7 +254,7 @@ const impl = Node.create({
       // `delegatesFocus: true` lands on `.cm-scroller` (focusable for a11y,
       // not editable).
       queueMicrotask(() =>
-        (snippet as HTMLElement & { focusEditor?: () => void }).focusEditor?.(),
+        (snippet as HTMLElement & { focusEditor?: () => void }).focusEditor?.()
       );
 
       return {
@@ -268,8 +268,8 @@ const impl = Node.create({
         // not destroy the node view (that would unmount CodeMirror mid-keystroke).
         update: (next) => next.type.name === CODE_SNIPPET_NODE,
         destroy: () => {
-          snippet.removeEventListener("content-change", onChange);
-          snippet.removeEventListener("keydown", onKeyDown);
+          snippet.removeEventListener('content-change', onChange);
+          snippet.removeEventListener('keydown', onKeyDown);
         },
       };
     };

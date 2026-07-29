@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { BusEvent, BusEventType } from "../events/eventBusTypes";
-import type { ChatInstance } from "./ChatInstance";
+import { BusEvent, BusEventType } from '../events/eventBusTypes';
+import type { ChatInstance } from './ChatInstance';
 
 /**
  * This is a subset of the public interface that is managed by the event bus that is used for registering and
@@ -80,7 +80,7 @@ export interface EventHandlers {
  */
 export type EventBusHandler<T extends BusEvent = BusEvent> = (
   event: T,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => unknown;
 
 /**

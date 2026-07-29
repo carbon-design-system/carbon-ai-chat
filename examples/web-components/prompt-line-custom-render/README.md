@@ -19,24 +19,24 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 
 ## APIs and props demonstrated
 
-| Symbol                                | Kind                | Role in this example                                                         |
-| ------------------------------------- | ------------------- | ---------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`         | custom element      | Mounts the chat UI inside the docked sidebar container.                      |
-| `<cds-clickable-tile>` / `<cds-tile>` | custom element      | Carbon tiles — the page grid, and the tile injected into the input / bubble. |
-| `PublicConfig`                        | type                | Types the config bound to the element's properties.                          |
-| `ChatInstance`                        | type                | Captured in `.onBeforeRender` so the tile handler can drive the input.       |
-| `WCRenderUserDefinedInputNode`        | type                | Types the `renderUserDefinedInputNode` callback.                             |
-| `Extension`                           | `@tiptap/core` type | Types the custom Tiptap node registered on the input.                        |
-| `renderInLightDom`                    | helper              | Bridges the node view's `<cds-tile>` into the page's light DOM.              |
-| `.renderUserDefinedInputNode`         | property            | Renders the custom `tileChip` node inside the sent user message bubble.      |
-| `.input` (`input.tiptap.extensions`)  | property            | Registers the host-authored `tileChip` Tiptap node on the input.             |
-| `instance.input.updateContent`        | method              | Clears the input and injects the clicked tile as a custom node.              |
-| `instance.input.updateStructuredData` | method              | Replaces the pending structured data with metadata describing the tile.      |
-| `.onBeforeRender`                     | property            | Captures the `ChatInstance` used by the tile-click handler.                  |
-| `.layout` (`layout.showFrame`)        | property            | Hides the default frame so the chat fills the sidebar.                       |
-| `.openChatByDefault`                  | property            | Mounts straight into the conversation, no launcher.                          |
-| `.messaging.customSendMessage`        | property            | Reads `request.input.structured_data` and echoes the submitted tile.         |
-| `Node.create`                         | `@tiptap/core` API  | Authors the custom `tileChip` inline atom node.                              |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI inside the docked sidebar container. |
+| `<cds-clickable-tile>` / `<cds-tile>` | custom element | Carbon tiles — the page grid, and the tile injected into the input / bubble. |
+| `PublicConfig` | type | Types the config bound to the element's properties. |
+| `ChatInstance` | type | Captured in `.onBeforeRender` so the tile handler can drive the input. |
+| `WCRenderUserDefinedInputNode` | type | Types the `renderUserDefinedInputNode` callback. |
+| `Extension` | `@tiptap/core` type | Types the custom Tiptap node registered on the input. |
+| `renderInLightDom` | helper | Bridges the node view's `<cds-tile>` into the page's light DOM. |
+| `.renderUserDefinedInputNode` | property | Renders the custom `tileChip` node inside the sent user message bubble. |
+| `.input` (`input.tiptap.extensions`) | property | Registers the host-authored `tileChip` Tiptap node on the input. |
+| `instance.input.updateContent` | method | Clears the input and injects the clicked tile as a custom node. |
+| `instance.input.updateStructuredData` | method | Replaces the pending structured data with metadata describing the tile. |
+| `.onBeforeRender` | property | Captures the `ChatInstance` used by the tile-click handler. |
+| `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the sidebar. |
+| `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
+| `.messaging.customSendMessage` | property | Reads `request.input.structured_data` and echoes the submitted tile. |
+| `Node.create` | `@tiptap/core` API | Authors the custom `tileChip` inline atom node. |
 
 ## Run it
 

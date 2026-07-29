@@ -17,18 +17,18 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Package / kind              | Role in this example                                         |
-| --------------------------------------------- | --------------------------- | ------------------------------------------------------------ |
-| `ChatContainer`                               | `@carbon/ai-chat` component | Mounts the chat UI in the default float layout.              |
-| `PublicConfig`                                | `@carbon/ai-chat` type      | Types the config passed to `ChatContainer`.                  |
-| `ChatInstance`                                | `@carbon/ai-chat` type      | Captured in `onBeforeRender` and used to swap conversations. |
-| `history.isOn`                                | config prop                 | Enables the built-in history panel.                          |
-| `messaging.customSendMessage`                 | config prop                 | Mock backend.                                                |
-| `messaging.customLoadHistory`                 | config prop                 | Returns a mock history payload for a selected conversation.  |
-| `onBeforeRender`                              | component prop              | Captures the `ChatInstance`.                                 |
-| `renderWriteableElements.historyPanelElement` | component prop              | React node rendered into the history panel slot.             |
-| `instance.messaging.clearConversation`        | instance method             | Clears the current conversation before inserting history.    |
-| `instance.messaging.insertHistory`            | instance method             | Inserts the loaded history payload.                          |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI in the default float layout. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config passed to `ChatContainer`. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured in `onBeforeRender` and used to swap conversations. |
+| `history.isOn` | config prop | Enables the built-in history panel. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `messaging.customLoadHistory` | config prop | Returns a mock history payload for a selected conversation. |
+| `onBeforeRender` | component prop | Captures the `ChatInstance`. |
+| `renderWriteableElements.historyPanelElement` | component prop | React node rendered into the history panel slot. |
+| `instance.messaging.clearConversation` | instance method | Clears the current conversation before inserting history. |
+| `instance.messaging.insertHistory` | instance method | Inserts the loaded history payload. |
 
 ## Chat history configuration
 

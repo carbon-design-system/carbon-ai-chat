@@ -7,18 +7,18 @@
  *  @license
  */
 
-import type CDSButton from "@carbon/web-components/es/components/button/button.js";
-import CloseLarge16 from "@carbon/icons/es/close--large/16.js";
-import Home16 from "@carbon/icons/es/home/16.js";
-import Menu16 from "@carbon/icons/es/menu/16.js";
-import Restart16 from "@carbon/icons/es/restart/16.js";
-import RightPanelOpen16 from "@carbon/icons/es/right-panel--open/16.js";
-import RightPanelClose16 from "@carbon/icons/es/right-panel--close/16.js";
-import BottomPanelClose16 from "@carbon/icons/es/bottom-panel--close/16.js";
-import BottomPanelOpen16 from "@carbon/icons/es/bottom-panel--open/16.js";
-import SubtractLarge16 from "@carbon/icons/es/subtract--large/16.js";
-import { AI_LABEL_SIZE } from "@carbon/web-components/es/components/ai-label/defs.js";
-import { POPOVER_ALIGNMENT } from "@carbon/web-components/es/components/popover/defs.js";
+import type CDSButton from '@carbon/web-components/es/components/button/button.js';
+import CloseLarge16 from '@carbon/icons/es/close--large/16.js';
+import Home16 from '@carbon/icons/es/home/16.js';
+import Menu16 from '@carbon/icons/es/menu/16.js';
+import Restart16 from '@carbon/icons/es/restart/16.js';
+import RightPanelOpen16 from '@carbon/icons/es/right-panel--open/16.js';
+import RightPanelClose16 from '@carbon/icons/es/right-panel--close/16.js';
+import BottomPanelClose16 from '@carbon/icons/es/bottom-panel--close/16.js';
+import BottomPanelOpen16 from '@carbon/icons/es/bottom-panel--open/16.js';
+import SubtractLarge16 from '@carbon/icons/es/subtract--large/16.js';
+import { AI_LABEL_SIZE } from '@carbon/web-components/es/components/ai-label/defs.js';
+import { POPOVER_ALIGNMENT } from '@carbon/web-components/es/components/popover/defs.js';
 import React, {
   forwardRef,
   Ref,
@@ -26,30 +26,30 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-} from "react";
-import { AISlug } from "../carbon/AISlug";
-import WriteableElement from "../util/WriteableElement";
-import ChatHeader from "@carbon/ai-chat-components/es/react/chat-header.js";
-import type { ToolbarAction } from "@carbon/ai-chat-components/es/react/toolbar.js";
-import { useSelector } from "../../hooks/useSelector";
-import { useServiceManager } from "../../hooks/useServiceManager";
-import { shallowEqual } from "../../store/appStore";
-import { selectHumanAgentDisplayState } from "../../store/selectors";
-import { WriteableElementName } from "../../utils/constants";
-import { doFocusRef, isDirectionRTL } from "../../utils/domUtils";
+} from 'react';
+import { AISlug } from '../carbon/AISlug';
+import WriteableElement from '../util/WriteableElement';
+import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
+import type { ToolbarAction } from '@carbon/ai-chat-components/es/react/toolbar.js';
+import { useSelector } from '../../hooks/useSelector';
+import { useServiceManager } from '../../hooks/useServiceManager';
+import { shallowEqual } from '../../store/appStore';
+import { selectHumanAgentDisplayState } from '../../store/selectors';
+import { WriteableElementName } from '../../utils/constants';
+import { doFocusRef, isDirectionRTL } from '../../utils/domUtils';
 import {
   HeaderConfig,
   MinimizeButtonIconType,
-} from "../../../types/config/HeaderConfig";
-import { AppState } from "../../../types/state/AppState";
-import { HasRequestFocus } from "../../../types/utilities/HasRequestFocus";
-import { PageObjectId } from "../../../testing/PageObjectId";
+} from '../../../types/config/HeaderConfig';
+import { AppState } from '../../../types/state/AppState';
+import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
+import { PageObjectId } from '../../../testing/PageObjectId';
 import {
   BusEventHeaderMenuClick,
   BusEventType,
   HeaderMenuClickType,
-} from "../../../types/events/eventBusTypes";
-import { BUTTON_SIZE } from "@carbon/web-components/es/components/button/button.js";
+} from '../../../types/events/eventBusTypes';
+import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/button.js';
 
 /**
  * This component renders the header that appears on the main bot view.
@@ -106,7 +106,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       homeScreen_overflowMenuHomeScreen:
         state.languagePack.homeScreen_overflowMenuHomeScreen,
     }),
-    shallowEqual,
+    shallowEqual
   );
   const homeScreenIsOn = useSelector((state: AppState) => {
     const homescreen = state.config.public.homescreen;
@@ -114,7 +114,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
   });
 
   const derivedHeaderConfig = useSelector(
-    (state: AppState) => state.config.derived.header,
+    (state: AppState) => state.config.derived.header
   );
 
   const mergedHeaderConfig = useMemo(() => {
@@ -129,7 +129,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         }
         return acc;
       },
-      {} as Partial<HeaderConfig>,
+      {} as Partial<HeaderConfig>
     );
 
     return {
@@ -142,15 +142,15 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
 
   const memoizedCustomMenuOptions = useMemo(
     () => customMenuOptions || undefined,
-    [customMenuOptions],
+    [customMenuOptions]
   );
   const headerConfig = mergedHeaderConfig;
   const { isConnectingOrConnected } = useSelector(
     selectHumanAgentDisplayState,
-    shallowEqual,
+    shallowEqual
   );
   const isOpen = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow,
+    (state: AppState) => state.persistedToBrowserStorage.viewState.mainWindow
   );
   const isRestarting = useSelector((state: AppState) => state.isRestarting);
   const backButtonRef = useRef<CDSButton>(undefined);
@@ -233,7 +233,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       allowHomeScreen,
       overflowItems,
       serviceManager,
-    ],
+    ]
   );
 
   // Expose a consistent focus target for the header.
@@ -288,7 +288,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     // Add restart button if enabled
     if (showRestartButton) {
       actionsArray.push({
-        text: restartButtonLabel ?? "",
+        text: restartButtonLabel ?? '',
         icon: Restart16,
         onClick: onRestart ?? (() => {}),
         disabled: isRestarting,
@@ -322,7 +322,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       }
 
       actionsArray.push({
-        text: closeButtonLabel ?? "",
+        text: closeButtonLabel ?? '',
         icon: closeIconToUse,
         onClick: onClose,
         size: BUTTON_SIZE.MEDIUM,
@@ -347,10 +347,10 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
 
   // Determine navigation type and props
   const navigationType = overflowItems
-    ? ("overflow" as const)
+    ? ('overflow' as const)
     : showBackButton
-      ? ("back" as const)
-      : ("none" as const);
+      ? ('back' as const)
+      : ('none' as const);
 
   const navigationOverflowItemsWithHandlers = useMemo(() => {
     if (!overflowItems) {
@@ -386,8 +386,8 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
 
   const hasContentMaxWidth = headerConfig?.hasContentMaxWidth ?? false;
   const headerContainerClassName = hasContentMaxWidth
-    ? "cds-aichat--header__container cds-aichat--header-constrain-width"
-    : "cds-aichat--header__container";
+    ? 'cds-aichat--header__container cds-aichat--header-constrain-width'
+    : 'cds-aichat--header__container';
 
   return (
     <div className={headerContainerClassName}>
@@ -407,8 +407,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         navigationOverflowAriaLabel={overflowMenuAriaLabel}
         navigationOverflowIcon={Menu16}
         navigationOverflowOnClick={handleOverflowMenuClick}
-        navigationTooltipAlign="right"
-      >
+        navigationTooltipAlign="right">
         {/* Decorator slot - AI Label */}
         {showAiSlugContent && (
           <AISlug
@@ -421,8 +420,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
               isRTL
                 ? POPOVER_ALIGNMENT.BOTTOM_LEFT
                 : POPOVER_ALIGNMENT.BOTTOM_RIGHT
-            }
-          >
+            }>
             {explainabilityPopoverContentElement}
             {!hideDefaultAiLabelContent && (
               <div role="dialog" slot="body-text">

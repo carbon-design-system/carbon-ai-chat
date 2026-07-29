@@ -30,25 +30,25 @@ Lerna + npm-workspaces monorepo.
 
 Read that package's `AGENTS.md` before your first edit. Each one routes onward to its own topic references (architecture, services, tests, types…) with "read when" triggers — so this table stops at the package boundary.
 
-| Editing…                       | Read                                                                                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/ai-chat/`            | [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md)                                                                                    |
-| `packages/ai-chat-components/` | [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md)                                                              |
-| `packages/typedoc-theme/`      | [packages/typedoc-theme/AGENTS.md](packages/typedoc-theme/AGENTS.md)                                                                        |
-| `demo/`                        | [demo/AGENTS.md](demo/AGENTS.md)                                                                                                            |
-| `examples/**`                  | [examples/AGENTS.md](examples/AGENTS.md) (+ [react](examples/react/AGENTS.md) / [web-components](examples/web-components/AGENTS.md) deltas) |
+| Editing… | Read |
+| --- | --- |
+| `packages/ai-chat/` | [packages/ai-chat/AGENTS.md](packages/ai-chat/AGENTS.md) |
+| `packages/ai-chat-components/` | [packages/ai-chat-components/AGENTS.md](packages/ai-chat-components/AGENTS.md) |
+| `packages/typedoc-theme/` | [packages/typedoc-theme/AGENTS.md](packages/typedoc-theme/AGENTS.md) |
+| `demo/` | [demo/AGENTS.md](demo/AGENTS.md) |
+| `examples/**` | [examples/AGENTS.md](examples/AGENTS.md) (+ [react](examples/react/AGENTS.md) / [web-components](examples/web-components/AGENTS.md) deltas) |
 
 ## What am I doing?
 
-| Topic                                                                        | Read                                                                  |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Writing or changing any code                                                 | [code-patterns.md](references/code-patterns.md)                       |
-| Choosing `@carbon/react` vs `@carbon/web-components` for the file you're in  | [code-patterns.md](references/code-patterns.md#carbon-flavor-by-area) |
-| Commits, branches, PR titles, license headers                                | [conventions.md](references/conventions.md)                           |
-| Building, testing, linting, using prettier, or running a single example/test | [commands.md](references/commands.md)                                 |
-| Knowing which gate to run before shipping                                    | [definition-of-done.md](references/definition-of-done.md)             |
-| Writing developer-facing copy (README/JSDoc/MDX)                             | [tone.md](references/tone.md)                                         |
-| Editing an `AGENTS.md`, `references/`, or skill file                         | [authoring-agents-md.md](references/authoring-agents-md.md)           |
+| Topic | Read |
+| --- | --- |
+| Writing or changing any code | [code-patterns.md](references/code-patterns.md) |
+| Choosing `@carbon/react` vs `@carbon/web-components` for the file you're in | [code-patterns.md](references/code-patterns.md#carbon-flavor-by-area) |
+| Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
+| Building, testing, linting, using prettier, or running a single example/test | [commands.md](references/commands.md) |
+| Knowing which gate to run before shipping | [definition-of-done.md](references/definition-of-done.md) |
+| Writing developer-facing copy (README/JSDoc/MDX) | [tone.md](references/tone.md) |
+| Editing an `AGENTS.md`, `references/`, or skill file | [authoring-agents-md.md](references/authoring-agents-md.md) |
 
 Working drafts are git-ignored and never committed: plans in `.github/plan-drafts/{name}/`, PR descriptions in `.github/pr-drafts/`, issue bodies in `.github/issue-drafts/`.
 

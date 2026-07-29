@@ -15,19 +15,19 @@ Subscribes to the chat's `STATE_CHANGE` bus event to mirror homescreen visibilit
 
 ## APIs and props demonstrated
 
-| Symbol                        | Kind           | Role in this example                                  |
-| ----------------------------- | -------------- | ----------------------------------------------------- |
-| `<cds-aichat-container>`      | custom element | Mounts the chat UI as a float launcher.               |
-| `messaging.customSendMessage` | property       | Mock backend.                                         |
-| `homescreen.isOn`             | property       | Enables the homescreen.                               |
-| `homescreen.greeting`         | property       | Greeting text on the homescreen.                      |
-| `homescreen.starters`         | property       | Starter buttons.                                      |
-| `onBeforeRender`              | property       | Captures the `ChatInstance` and subscribes to events. |
-| `instance.getState`           | method         | Reads initial homescreen state.                       |
-| `instance.on`                 | method         | Subscribes to `STATE_CHANGE`.                         |
-| `BusEventType.STATE_CHANGE`   | enum           | Event type observed for state diffs.                  |
-| `ChatInstance`                | type           | Type of the instance handle.                          |
-| `PublicConfig`                | type           | Types the chat configuration object.                  |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-container>` | custom element | Mounts the chat UI as a float launcher. |
+| `messaging.customSendMessage` | property | Mock backend. |
+| `homescreen.isOn` | property | Enables the homescreen. |
+| `homescreen.greeting` | property | Greeting text on the homescreen. |
+| `homescreen.starters` | property | Starter buttons. |
+| `onBeforeRender` | property | Captures the `ChatInstance` and subscribes to events. |
+| `instance.getState` | method | Reads initial homescreen state. |
+| `instance.on` | method | Subscribes to `STATE_CHANGE`. |
+| `BusEventType.STATE_CHANGE` | enum | Event type observed for state diffs. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 

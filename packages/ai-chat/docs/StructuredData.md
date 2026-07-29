@@ -20,10 +20,10 @@ A {@link StructuredData | structured data} payload has two parts. `fields` is an
 ```typescript
 const data: StructuredData = {
   fields: [
-    { id: "rating", value: 4 },
-    { id: "topics", value: ["billing", "shipping"] },
+    { id: 'rating', value: 4 },
+    { id: 'topics', value: ['billing', 'shipping'] },
   ],
-  user_defined: { source_widget: "checkout-page" },
+  user_defined: { source_widget: 'checkout-page' },
 };
 ```
 
@@ -39,7 +39,7 @@ Call {@link ChatInstanceInput.updateStructuredData | updateStructuredData} with 
 // Add a field, preserving anything already pending.
 instance.input.updateStructuredData((prev) => ({
   ...prev,
-  fields: [...(prev?.fields ?? []), { id: "rating", value: 4 }],
+  fields: [...(prev?.fields ?? []), { id: 'rating', value: 4 }],
 }));
 ```
 
@@ -55,13 +55,13 @@ Because `value` is `unknown`, narrow it before you use it:
 async function customSendMessage(request, requestOptions, instance) {
   const fields = request.input.structured_data?.fields ?? [];
 
-  const rating = fields.find((field) => field.id === "rating")?.value;
-  if (typeof rating === "number") {
+  const rating = fields.find((field) => field.id === 'rating')?.value;
+  if (typeof rating === 'number') {
     // ...handle the rating alongside request.input.text
   }
 
   const files = fields
-    .filter((field) => field.type === "file")
+    .filter((field) => field.type === 'file')
     .map((field) => field.value as FileFieldValue);
 }
 ```
@@ -78,7 +78,7 @@ const config: PublicConfig = {
   upload: {
     is_on: true,
     onFileUpload: handleFileUpload,
-    accept: "image/*,.pdf",
+    accept: 'image/*,.pdf',
   },
 };
 ```
@@ -88,28 +88,28 @@ const config: PublicConfig = {
 ```typescript
 async function handleFileUpload(
   file: File,
-  abortSignal: AbortSignal,
+  abortSignal: AbortSignal
 ): Promise<StructuredData> {
   const body = new FormData();
-  body.append("file", file);
+  body.append('file', file);
 
-  const res = await fetch("/api/upload", {
-    method: "POST",
+  const res = await fetch('/api/upload', {
+    method: 'POST',
     body,
     signal: abortSignal,
   });
   const { id, url } = await res.json();
 
   const reference: ExternalFileReference = {
-    type: "reference",
+    type: 'reference',
     id,
     url,
     name: file.name,
-    mime_type: file.type || "application/octet-stream",
+    mime_type: file.type || 'application/octet-stream',
     size: file.size,
   };
 
-  return { fields: [{ id: "file", type: "file", value: reference }] };
+  return { fields: [{ id: 'file', type: 'file', value: reference }] };
 }
 ```
 

@@ -20,22 +20,22 @@ Floating-widget replica of `<cds-aichat-custom-element>` whose bundle is dynamic
 
 ## APIs and props demonstrated
 
-| Symbol                                              | Kind           | Role in this example                                           |
-| --------------------------------------------------- | -------------- | -------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`                       | custom element | Lazy-loaded chat host, animated via float-layout classes.      |
-| `<cds-aichat-button>`                               | custom element | Custom launcher button.                                        |
-| `<cds-aichat-shell>`                                | custom element | Placeholder skeleton shown during bundle load.                 |
-| `readCarbonChatSession()`                           | function       | Reads prior session state to decide whether to auto-open.      |
-| `@carbon/ai-chat/css/chat-float-layout.css`         | stylesheet     | Supplies float-layout classes.                                 |
-| `@carbon/ai-chat/css/chat-launcher-layout.css`      | stylesheet     | Supplies launcher classes.                                     |
-| `messaging.customSendMessage`                       | property       | Mock backend.                                                  |
-| `launcher.isOn`                                     | property       | Disabled so the custom button is the only launcher.            |
-| `onAfterRender`                                     | property       | Fires when chat is fully initialized; drops the shell overlay. |
-| `onViewChange`                                      | property       | Drives phase transitions on open/close.                        |
-| `instance.changeView(ViewType.MAIN_WINDOW)`         | method         | Forces the chat into the main window after mount.              |
-| `animationend`                                      | DOM event      | Advances the phase machine.                                    |
-| `has-icon-only`, `icon-description`, `kind`, `size` | attributes     | Configure `<cds-aichat-button>`.                               |
-| `show-frame`, `ai-enabled`, `corner-all`            | attributes     | Configure `<cds-aichat-shell>`.                                |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Lazy-loaded chat host, animated via float-layout classes. |
+| `<cds-aichat-button>` | custom element | Custom launcher button. |
+| `<cds-aichat-shell>` | custom element | Placeholder skeleton shown during bundle load. |
+| `readCarbonChatSession()` | function | Reads prior session state to decide whether to auto-open. |
+| `@carbon/ai-chat/css/chat-float-layout.css` | stylesheet | Supplies float-layout classes. |
+| `@carbon/ai-chat/css/chat-launcher-layout.css` | stylesheet | Supplies launcher classes. |
+| `messaging.customSendMessage` | property | Mock backend. |
+| `launcher.isOn` | property | Disabled so the custom button is the only launcher. |
+| `onAfterRender` | property | Fires when chat is fully initialized; drops the shell overlay. |
+| `onViewChange` | property | Drives phase transitions on open/close. |
+| `instance.changeView(ViewType.MAIN_WINDOW)` | method | Forces the chat into the main window after mount. |
+| `animationend` | DOM event | Advances the phase machine. |
+| `has-icon-only`, `icon-description`, `kind`, `size` | attributes | Configure `<cds-aichat-button>`. |
+| `show-frame`, `ai-enabled`, `corner-all` | attributes | Configure `<cds-aichat-shell>`. |
 
 ## Run it
 

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import IntlMessageFormat from "intl-messageformat";
+import IntlMessageFormat from 'intl-messageformat';
 
 /**
  * Generic message dictionary type for flexibility in testing and custom implementations.
@@ -114,7 +114,7 @@ export function createIntl({
 
     formatMessage(
       options: { id: string },
-      values?: Record<string, any>,
+      values?: Record<string, any>
     ): string {
       const { id } = options;
       const message = messages[id];
@@ -126,7 +126,7 @@ export function createIntl({
       }
 
       // For simple strings without variables, return directly
-      if (!values && !message.includes("{")) {
+      if (!values && !message.includes('{')) {
         return message;
       }
 
@@ -142,7 +142,7 @@ export function createIntl({
         // IntlMessageFormat can return string or array of parts
         // Convert to string if needed
         if (Array.isArray(result)) {
-          return result.join("");
+          return result.join('');
         }
 
         return result as string;
@@ -160,7 +160,7 @@ export function createIntl({
       try {
         return new Intl.DateTimeFormat(locale, options).format(date);
       } catch (error) {
-        console.error("[i18n] Error formatting date:", error);
+        console.error('[i18n] Error formatting date:', error);
         return date.toLocaleDateString();
       }
     },
@@ -169,7 +169,7 @@ export function createIntl({
       try {
         return new Intl.NumberFormat(locale, options).format(num);
       } catch (error) {
-        console.error("[i18n] Error formatting number:", error);
+        console.error('[i18n] Error formatting number:', error);
         return num.toString();
       }
     },
@@ -177,13 +177,13 @@ export function createIntl({
     formatTime(date: Date, options?: Intl.DateTimeFormatOptions): string {
       try {
         const timeOptions: Intl.DateTimeFormatOptions = {
-          hour: "numeric",
-          minute: "numeric",
+          hour: 'numeric',
+          minute: 'numeric',
           ...options,
         };
         return new Intl.DateTimeFormat(locale, timeOptions).format(date);
       } catch (error) {
-        console.error("[i18n] Error formatting time:", error);
+        console.error('[i18n] Error formatting time:', error);
         return date.toLocaleTimeString();
       }
     },
@@ -197,9 +197,9 @@ export function createIntl({
 export function isValidFormatter(formatter: any): formatter is IntlShape {
   return (
     formatter &&
-    typeof formatter === "object" &&
-    typeof formatter.formatMessage === "function" &&
-    typeof formatter.locale === "string" &&
-    typeof formatter.messages === "object"
+    typeof formatter === 'object' &&
+    typeof formatter.formatMessage === 'function' &&
+    typeof formatter.locale === 'string' &&
+    typeof formatter.messages === 'object'
   );
 }

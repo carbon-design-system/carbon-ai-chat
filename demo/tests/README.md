@@ -6,8 +6,8 @@ Use `window.setChatConfig` to restart the demo with a supplied config instead of
 
 ```javascript
 await window.setChatConfig({
-  header: { title: "Carbon Assistant", name: "Carbon" },
-  injectCarbonTheme: "g100",
+  header: { title: 'Carbon Assistant', name: 'Carbon' },
+  injectCarbonTheme: 'g100',
   launcher: { isOn: false },
   openChatByDefault: true,
 });
@@ -28,7 +28,7 @@ Example tweaks:
 await window.setChatConfig({
   disclaimer: {
     isOn: true,
-    disclaimerHTML: "Please accept before continuing.",
+    disclaimerHTML: 'Please accept before continuing.',
   },
   messaging: {
     customSendMessage: async (payload) => console.log(payload),
@@ -39,16 +39,16 @@ await window.setChatConfig({
 ## Playwright Recipe
 
 ```typescript
-import { test, expect } from "@playwright/test";
-import { PageObjectId } from "@carbon/ai-chat/server";
+import { test, expect } from '@playwright/test';
+import { PageObjectId } from '@carbon/ai-chat/server';
 import {
   prepareDemoPage,
   destroyChatSession,
   openChatWindow,
   waitForChatReady,
   waitForSetChatConfigApplied,
-} from "./utils";
-import type {} from "../types/window";
+} from './utils';
+import type {} from '../types/window';
 
 test.beforeEach(async ({ page }) => {
   // Load demo in setChatConfig mode and block analytics pop-ups
@@ -60,12 +60,12 @@ test.afterEach(async ({ page }) => {
   await destroyChatSession(page);
 });
 
-test("updates header", async ({ page }) => {
+test('updates header', async ({ page }) => {
   // Configure chat settings programmatically
   await page.evaluate(async () => {
     await window.setChatConfig({
-      header: { title: "Carbon AI Chat" },
-      injectCarbonTheme: "g90",
+      header: { title: 'Carbon AI Chat' },
+      injectCarbonTheme: 'g90',
     });
   });
 
@@ -78,14 +78,14 @@ test("updates header", async ({ page }) => {
 
   // Verify the header title was updated
   await expect(page.getByTestId(PageObjectId.HEADER_TITLE)).toContainText(
-    "Carbon AI Chat",
+    'Carbon AI Chat'
   );
 
   // Access chat instance state for advanced assertions
   const chatState = await page.evaluate(() => {
     return window.chatInstance.getState();
   });
-  expect(chatState.config.header.title).toBe("Carbon AI Chat");
+  expect(chatState.config.header.title).toBe('Carbon AI Chat');
 });
 ```
 

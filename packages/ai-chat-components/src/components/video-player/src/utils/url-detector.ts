@@ -21,11 +21,11 @@
  * Enum representing different video source types
  */
 export enum VideoSource {
-  YOUTUBE = "youtube",
-  VIMEO = "vimeo",
-  KALTURA = "kaltura",
-  NATIVE = "native",
-  UNKNOWN = "unknown",
+  YOUTUBE = 'youtube',
+  VIMEO = 'vimeo',
+  KALTURA = 'kaltura',
+  NATIVE = 'native',
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -51,7 +51,7 @@ const DASH_EXTENSIONS = /\.(mpd)($|\?)/i;
  * @returns The detected video source type
  */
 export function detectVideoSource(url: string): VideoSource {
-  if (!url || typeof url !== "string") {
+  if (!url || typeof url !== 'string') {
     return VideoSource.UNKNOWN;
   }
 

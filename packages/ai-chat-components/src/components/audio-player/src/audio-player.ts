@@ -7,18 +7,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html } from "lit";
-import { property, state, query } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./audio-player.scss?lit";
+import { LitElement, html } from 'lit';
+import { property, state, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './audio-player.scss?lit';
 
-import { detectAudioSource, AudioSource } from "./utils/url-detector.js";
-import { BaseProvider } from "./providers/base-provider.js";
-import { NativeAudioProvider } from "./providers/native-audio-provider.js";
-import { SoundCloudProvider } from "./providers/soundcloud-provider.js";
+import { detectAudioSource, AudioSource } from './utils/url-detector.js';
+import { BaseProvider } from './providers/base-provider.js';
+import { NativeAudioProvider } from './providers/native-audio-provider.js';
+import { SoundCloudProvider } from './providers/soundcloud-provider.js';
 
 const LOADING_TIMEOUT_MS = 10000; // 10 seconds
 
@@ -38,13 +38,13 @@ class AudioPlayer extends LitElement {
    * Audio source URL (required)
    */
   @property({ type: String })
-  source = "";
+  source = '';
 
   /**
    * ARIA label for accessibility
    */
-  @property({ type: String, attribute: "aria-label" })
-  ariaLabel = "Audio player";
+  @property({ type: String, attribute: 'aria-label' })
+  ariaLabel = 'Audio player';
 
   /**
    * Whether the audio should be playing
@@ -55,38 +55,38 @@ class AudioPlayer extends LitElement {
   /**
    * Generic error message to display when audio fails to load
    */
-  @property({ type: String, attribute: "error-message" })
-  errorMessage = "Failed to load audio";
+  @property({ type: String, attribute: 'error-message' })
+  errorMessage = 'Failed to load audio';
 
   /**
    * Status message announced when audio starts loading
    */
-  @property({ type: String, attribute: "loading-status-message" })
-  loadingStatusMessage = "Audio player loading";
+  @property({ type: String, attribute: 'loading-status-message' })
+  loadingStatusMessage = 'Audio player loading';
 
   /**
    * Status message announced when audio is ready
    */
-  @property({ type: String, attribute: "ready-status-message" })
-  readyStatusMessage = "Audio player ready";
+  @property({ type: String, attribute: 'ready-status-message' })
+  readyStatusMessage = 'Audio player ready';
 
   /**
    * Label suffix for loading state (e.g., "Loading")
    */
-  @property({ type: String, attribute: "loading-label" })
-  loadingLabel = "Loading";
+  @property({ type: String, attribute: 'loading-label' })
+  loadingLabel = 'Loading';
 
   /**
    * Label suffix for ready state (e.g., "Ready")
    */
-  @property({ type: String, attribute: "ready-label" })
-  readyLabel = "Ready";
+  @property({ type: String, attribute: 'ready-label' })
+  readyLabel = 'Ready';
 
   /**
    * Label suffix for error state (e.g., "Error")
    */
-  @property({ type: String, attribute: "error-label" })
-  errorLabel = "Error";
+  @property({ type: String, attribute: 'error-label' })
+  errorLabel = 'Error';
 
   /**
    * Internal state: loading status
@@ -116,7 +116,7 @@ class AudioPlayer extends LitElement {
    * Internal state: current status message for screen readers
    */
   @state()
-  private statusMessage = "";
+  private statusMessage = '';
 
   /**
    * Query the provider container element
@@ -175,7 +175,7 @@ class AudioPlayer extends LitElement {
       // Set loading timeout
       this.loadingTimeout = setTimeout(() => {
         if (this.isLoading) {
-          this.handleError(new Error("Audio loading timeout"));
+          this.handleError(new Error('Audio loading timeout'));
         }
       }, LOADING_TIMEOUT_MS);
 
@@ -186,7 +186,7 @@ class AudioPlayer extends LitElement {
       this.provider = this.createProvider(this.source);
 
       if (!this.provider) {
-        throw new Error("Unsupported audio source");
+        throw new Error('Unsupported audio source');
       }
 
       // Set up event handlers
@@ -220,7 +220,7 @@ class AudioPlayer extends LitElement {
       await this.provider.load(this.source);
     } catch (error) {
       this.handleError(
-        error instanceof Error ? error : new Error("Unknown error"),
+        error instanceof Error ? error : new Error('Unknown error')
       );
     } finally {
       this.isLoadingAudio = false;
@@ -241,10 +241,10 @@ class AudioPlayer extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-audio-player-ready", {
+      new CustomEvent('cds-aichat-audio-player-ready', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -253,10 +253,10 @@ class AudioPlayer extends LitElement {
    */
   private handlePlay(): void {
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-audio-player-play", {
+      new CustomEvent('cds-aichat-audio-player-play', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -265,10 +265,10 @@ class AudioPlayer extends LitElement {
    */
   private handlePause(): void {
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-audio-player-pause", {
+      new CustomEvent('cds-aichat-audio-player-pause', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -278,7 +278,7 @@ class AudioPlayer extends LitElement {
   private handleError(_error: Error): void {
     this.isLoading = false;
     this.hasError = true;
-    this.statusMessage = ""; // Clear to avoid duplicate announcements with error div
+    this.statusMessage = ''; // Clear to avoid duplicate announcements with error div
 
     if (this.loadingTimeout) {
       clearTimeout(this.loadingTimeout);
@@ -287,11 +287,11 @@ class AudioPlayer extends LitElement {
 
     // Always use the generic error message, regardless of the actual error
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-audio-player-error", {
+      new CustomEvent('cds-aichat-audio-player-error', {
         bubbles: true,
         composed: true,
         detail: { message: this.errorMessage },
-      }),
+      })
     );
   }
 
@@ -323,7 +323,7 @@ class AudioPlayer extends LitElement {
 
     // Reload audio if source changes (but not on first update, which is handled by firstUpdated)
     if (
-      changedProperties.has("source") &&
+      changedProperties.has('source') &&
       this.source &&
       this.providerContainer &&
       !this.hasUpdated // Prevent duplicate load on first render
@@ -332,7 +332,7 @@ class AudioPlayer extends LitElement {
     }
 
     // Handle play/pause changes
-    if (changedProperties.has("playing") && this.provider && this.isReady) {
+    if (changedProperties.has('playing') && this.provider && this.isReady) {
       if (this.playing) {
         this.provider.play();
       } else {
@@ -366,8 +366,7 @@ class AudioPlayer extends LitElement {
       <div
         class="${prefix}--audio-player__error"
         role="alert"
-        aria-live="assertive"
-      >
+        aria-live="assertive">
         <p class="${prefix}--audio-player__error-message">
           ${this.errorMessage}
         </p>
@@ -385,8 +384,7 @@ class AudioPlayer extends LitElement {
       <div
         class="${prefix}--audio-player"
         role="region"
-        aria-label=${this.ariaLabel}
-      >
+        aria-label=${this.ariaLabel}>
         ${
           this.statusMessage
             ? html`
@@ -394,27 +392,24 @@ class AudioPlayer extends LitElement {
                   class="${prefix}--audio-player__status"
                   role="status"
                   aria-live="polite"
-                  aria-atomic="true"
-                >
+                  aria-atomic="true">
                   ${this.statusMessage}
                 </div>
               `
-            : ""
+            : ''
         }
         <div
           class="${classMap({
             [`${prefix}--audio-player__container`]: true,
             [`${prefix}--audio-player__container--soundcloud`]: isSoundCloud,
-          })}"
-        >
-          ${this.hasError ? this.renderError() : ""}
+          })}">
+          ${this.hasError ? this.renderError() : ''}
           <div
             class="${classMap({
               [`${prefix}--audio-player__provider`]: true,
               [`${prefix}--audio-player__provider--hidden`]: this.hasError,
               [`${prefix}--audio-player__provider--ready`]: this.isReady,
-            })}"
-          ></div>
+            })}"></div>
         </div>
       </div>
     `;

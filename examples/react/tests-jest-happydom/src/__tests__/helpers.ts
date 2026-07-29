@@ -16,14 +16,14 @@
  * so individual tests stay focused on the runner-level assertion.
  */
 
-import type { ReactElement } from "react";
-import { act, render, waitFor } from "@testing-library/react";
-import { PageObjectId } from "@carbon/ai-chat";
-import { deepQuerySelector } from "@carbon/ai-chat-components/es/globals/utils/dom-utils.js";
-import { WAIT_FOR_TIMEOUT } from "./constants";
+import type { ReactElement } from 'react';
+import { act, render, waitFor } from '@testing-library/react';
+import { PageObjectId } from '@carbon/ai-chat';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import { WAIT_FOR_TIMEOUT } from './constants';
 
 export async function renderChatContainer(
-  ui: ReactElement,
+  ui: ReactElement
 ): Promise<ReturnType<typeof render>> {
   const result = render(ui);
   await waitForChatElement(result.container);
@@ -31,28 +31,28 @@ export async function renderChatContainer(
 }
 
 export async function waitForChatElement(
-  container: HTMLElement,
+  container: HTMLElement
 ): Promise<Element> {
   return waitFor(
     () => {
       // the chat host is a custom element whose shadowRoot we don't know
       // by tag name, so we have to walk every descendant looking for the one
       // whose shadow tree contains the CHAT_WIDGET marker.
-      for (const el of Array.from(container.querySelectorAll("*"))) {
+      for (const el of Array.from(container.querySelectorAll('*'))) {
         const shadowRoot = (el as HTMLElement).shadowRoot;
         if (
           shadowRoot?.querySelector(
-            `[data-testid="${PageObjectId.CHAT_WIDGET}"]`,
+            `[data-testid="${PageObjectId.CHAT_WIDGET}"]`
           )
         ) {
           return el;
         }
       }
-      throw new Error("Chat element not rendered yet");
+      throw new Error('Chat element not rendered yet');
     },
     {
       timeout: WAIT_FOR_TIMEOUT,
-    },
+    }
   );
 }
 
@@ -60,12 +60,12 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
   // Lit's `updateComplete` resolves once the element finishes its current
   // render cycle; without awaiting it the shadowRoot can be present but its
   // children (launcher, main panel) may not yet be in place.
-  if (typeof (customElement as any).updateComplete !== "undefined") {
+  if (typeof (customElement as any).updateComplete !== 'undefined') {
     await (customElement as any).updateComplete;
   }
   const shadowRoot = (customElement as HTMLElement).shadowRoot;
   if (!shadowRoot) {
-    throw new Error("Custom element shadow root not ready");
+    throw new Error('Custom element shadow root not ready');
   }
   const { launcher, alreadyOpen } = await waitFor(
     () => {
@@ -76,13 +76,13 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
       // the outermost shadow tree.
       const button = deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.LAUNCHER}"]`,
+        `[data-testid="${PageObjectId.LAUNCHER}"]`
       ) as HTMLElement | null;
       const isMainPanelVisible = Boolean(
         deepQuerySelector(
           shadowRoot,
-          `[data-testid="${PageObjectId.MAIN_PANEL}"]`,
-        ),
+          `[data-testid="${PageObjectId.MAIN_PANEL}"]`
+        )
       );
 
       if (button) {
@@ -95,9 +95,9 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
         return { launcher: null, alreadyOpen: true } as const;
       }
 
-      throw new Error("Launcher not ready");
+      throw new Error('Launcher not ready');
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   if (!alreadyOpen && launcher) {
@@ -106,7 +106,7 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
     // assert on the resulting DOM.
     await act(async () => {
       launcher.click();
-      if (typeof (customElement as any).updateComplete !== "undefined") {
+      if (typeof (customElement as any).updateComplete !== 'undefined') {
         await (customElement as any).updateComplete;
       }
     });
@@ -115,9 +115,9 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
     () =>
       deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.CHAT_WIDGET}"]`,
+        `[data-testid="${PageObjectId.CHAT_WIDGET}"]`
       ),
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
   return shadowRoot;
 }
@@ -125,7 +125,7 @@ export async function openChat(customElement: Element): Promise<ShadowRoot> {
 export async function closeChat(customElement: Element) {
   const shadowRoot = (customElement as HTMLElement).shadowRoot;
   if (!shadowRoot) {
-    throw new Error("Custom element shadow root not ready");
+    throw new Error('Custom element shadow root not ready');
   }
 
   const closeButton = await waitFor(
@@ -135,19 +135,19 @@ export async function closeChat(customElement: Element) {
       // shadowRoot.querySelector at the host level wouldn't find it.
       const button = deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.CLOSE_CHAT}"]`,
+        `[data-testid="${PageObjectId.CLOSE_CHAT}"]`
       ) as HTMLElement | null;
       if (!button) {
-        throw new Error("Close chat button not ready");
+        throw new Error('Close chat button not ready');
       }
       return button;
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   await act(async () => {
     closeButton.click();
-    if (typeof (customElement as any).updateComplete !== "undefined") {
+    if (typeof (customElement as any).updateComplete !== 'undefined') {
       await (customElement as any).updateComplete;
     }
   });
@@ -155,7 +155,7 @@ export async function closeChat(customElement: Element) {
 
 export async function sendUserMessage(
   shadowRoot: ShadowRoot,
-  text: string,
+  text: string
 ): Promise<void> {
   // The INPUT PageObjectId is the ProseMirror contenteditable inside
   // cds-aichat-prompt-line-shell. Driving the editor with synthetic key/composition
@@ -173,14 +173,14 @@ export async function sendUserMessage(
       // pattern.
       const field = deepQuerySelector(
         shadowRoot,
-        `[data-testid="${PageObjectId.INPUT}"]`,
+        `[data-testid="${PageObjectId.INPUT}"]`
       ) as HTMLElement | null;
       if (!field) {
-        throw new Error("Input not ready");
+        throw new Error('Input not ready');
       }
       return field;
     },
-    { timeout: WAIT_FOR_TIMEOUT },
+    { timeout: WAIT_FOR_TIMEOUT }
   );
 
   // The input is a ProseMirror-backed web component (cds-aichat-prompt-line-shell).
@@ -199,17 +199,17 @@ export async function sendUserMessage(
   // `instance.send(...)` (or `instance.messaging.addMessage(...)`) directly
   // — `sendUserMessage` is left in place for future tests that only need
   // to populate the input doc.
-  const promptLineShell = input.closest("cds-aichat-prompt-line-shell") as
+  const promptLineShell = input.closest('cds-aichat-prompt-line-shell') as
     | (HTMLElement & {
-        setContent?: (segments: Array<{ type: "text"; text: string }>) => void;
+        setContent?: (segments: Array<{ type: 'text'; text: string }>) => void;
       })
     | null;
-  if (typeof promptLineShell?.setContent !== "function") {
-    throw new Error("Prompt-line shell `setContent` not available");
+  if (typeof promptLineShell?.setContent !== 'function') {
+    throw new Error('Prompt-line shell `setContent` not available');
   }
   await act(async () => {
-    promptLineShell.setContent!([{ type: "text", text }]);
-    if (typeof (shadowRoot.host as any).updateComplete !== "undefined") {
+    promptLineShell.setContent!([{ type: 'text', text }]);
+    if (typeof (shadowRoot.host as any).updateComplete !== 'undefined') {
       await (shadowRoot.host as any).updateComplete;
     }
   });

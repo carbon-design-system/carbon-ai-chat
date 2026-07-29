@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { ViewState } from "../instance/apiTypes";
-import ObjectMap from "../utilities/ObjectMap";
-import { HomeScreenState } from "../config/HomeScreenConfig";
-import { PersistedHumanAgentState } from "./PersistedHumanAgentState";
+import { ViewState } from '../instance/apiTypes';
+import ObjectMap from '../utilities/ObjectMap';
+import { HomeScreenState } from '../config/HomeScreenConfig';
+import { PersistedHumanAgentState } from './PersistedHumanAgentState';
 
 /**
  * Items stored in sessionStorage.

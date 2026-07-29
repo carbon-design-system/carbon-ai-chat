@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "./CustomResponseStyles.css";
+import './CustomResponseStyles.css';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 interface CustomResponseExampleData {
   type: string;
@@ -40,10 +40,10 @@ function CustomResponseExample({
       is some text passed along for use by the back-end: {data.text}. And here
       is a value being set by state: {timestamp}.
       <div>
-        Latest response id: {latestResponseId ? latestResponseId : "none yet"}
+        Latest response id: {latestResponseId ? latestResponseId : 'none yet'}
       </div>
       <div>
-        Is this the most recent message? {isLatestMessage ? "Yes" : "Nope"}
+        Is this the most recent message? {isLatestMessage ? 'Yes' : 'Nope'}
       </div>
     </div>
   );

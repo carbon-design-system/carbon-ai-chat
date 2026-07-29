@@ -17,10 +17,10 @@
  * https://github.com/cookpete/react-player/blob/v2.15.1/src/players/SoundCloud.js
  */
 
-import { BaseProvider, ProviderConfig } from "./base-provider.js";
-import { ScriptLoader } from "../../../shared/media-utils/script-loader.js";
+import { BaseProvider, ProviderConfig } from './base-provider.js';
+import { ScriptLoader } from '../../../shared/media-utils/script-loader.js';
 
-const SDK_URL = "https://w.soundcloud.com/player/api.js";
+const SDK_URL = 'https://w.soundcloud.com/player/api.js';
 
 // Declare SoundCloud Widget API types
 declare global {
@@ -44,10 +44,10 @@ export class SoundCloudProvider extends BaseProvider {
    */
   protected updateAriaAttributes(
     element: HTMLElement,
-    state: "loading" | "ready" | "error",
+    state: 'loading' | 'ready' | 'error'
   ): void {
-    element.setAttribute("aria-label", this.getStateLabel(state));
-    element.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    element.setAttribute('aria-label', this.getStateLabel(state));
+    element.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
   }
 
   /**
@@ -57,23 +57,23 @@ export class SoundCloudProvider extends BaseProvider {
     await super.init(container, config);
 
     if (!this.container) {
-      throw new Error("Container element is required");
+      throw new Error('Container element is required');
     }
 
     // Create iframe for SoundCloud player
-    this.iframe = document.createElement("iframe");
-    this.iframe.setAttribute("frameborder", "0");
-    this.iframe.setAttribute("allow", "autoplay");
+    this.iframe = document.createElement('iframe');
+    this.iframe.setAttribute('frameborder', '0');
+    this.iframe.setAttribute('allow', 'autoplay');
     this.iframe.setAttribute(
-      "sandbox",
-      "allow-scripts allow-downloads allow-forms allow-popups allow-same-origin",
+      'sandbox',
+      'allow-scripts allow-downloads allow-forms allow-popups allow-same-origin'
     );
-    this.iframe.setAttribute("referrer-policy", "origin");
-    this.iframe.setAttribute("role", "application");
+    this.iframe.setAttribute('referrer-policy', 'origin');
+    this.iframe.setAttribute('role', 'application');
 
     // Set initial ARIA attributes for loading state
     if (config.ariaLabel) {
-      this.updateAriaAttributes(this.iframe, "loading");
+      this.updateAriaAttributes(this.iframe, 'loading');
     }
 
     this.container.appendChild(this.iframe);
@@ -117,7 +117,7 @@ export class SoundCloudProvider extends BaseProvider {
    */
   async load(url: string): Promise<void> {
     if (!this.iframe) {
-      throw new Error("Iframe not initialized");
+      throw new Error('Iframe not initialized');
     }
 
     // Wait for API to be ready
@@ -164,7 +164,7 @@ export class SoundCloudProvider extends BaseProvider {
 
     this.player.bind(ERROR, (_e: any) => {
       if (this.iframe) {
-        this.updateAriaAttributes(this.iframe, "error");
+        this.updateAriaAttributes(this.iframe, 'error');
       }
       // Use the generic error message from config
       this.triggerError(new Error(this.config.errorMessage));
@@ -178,7 +178,7 @@ export class SoundCloudProvider extends BaseProvider {
           this.duration = duration / 1000;
           this.isReady = true;
           if (this.iframe) {
-            this.updateAriaAttributes(this.iframe, "ready");
+            this.updateAriaAttributes(this.iframe, 'ready');
           }
           this.triggerReady();
         });

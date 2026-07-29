@@ -23,15 +23,15 @@
  * Start reading at: `runChainOfThoughtScenario()`.
  */
 
-import type { ChatInstance } from "@carbon/ai-chat";
+import type { ChatInstance } from '@carbon/ai-chat';
 import {
   MessageResponseTypes,
   ChainOfThoughtStepStatus,
   type ChainOfThoughtStep,
   type MessageResponseOptions,
   type StreamChunk,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 const FINAL_TEXT =
   "Chain of thought is best suited for raw debugging or tool-call traces. In most cases you should use reasoning steps instead, because they are more user-friendly while still exposing the assistant's thinking.";
@@ -41,32 +41,32 @@ const FINAL_TEXT =
 // chain-of-thought drawer as a tool trace, and `status` controls the badge.
 const CHAIN_OF_THOUGHT_STEPS: ChainOfThoughtStep[] = [
   {
-    title: "Vector search",
-    description: "Retrieved similar documents.",
-    tool_name: "semantic_search",
-    request: { args: { query: "user request" } },
-    response: { content: ["doc-1", "doc-2", "doc-3"] },
+    title: 'Vector search',
+    description: 'Retrieved similar documents.',
+    tool_name: 'semantic_search',
+    request: { args: { query: 'user request' } },
+    response: { content: ['doc-1', 'doc-2', 'doc-3'] },
     status: ChainOfThoughtStepStatus.SUCCESS,
   },
   {
-    title: "Summarize",
-    description: "Summarizing the retrieved documents.",
-    tool_name: "summarize",
-    request: { args: { documents: ["doc-1", "doc-2", "doc-3"] } },
-    response: { content: "Summary of the retrieved context." },
+    title: 'Summarize',
+    description: 'Summarizing the retrieved documents.',
+    tool_name: 'summarize',
+    request: { args: { documents: ['doc-1', 'doc-2', 'doc-3'] } },
+    response: { content: 'Summary of the retrieved context.' },
     status: ChainOfThoughtStepStatus.SUCCESS,
   },
   {
-    title: "Generate response",
-    description: "Drafting the user-facing reply.",
-    tool_name: "generate",
-    request: { args: { summary: "Summary of the retrieved context." } },
-    response: { content: "Final chain of thought drafted." },
+    title: 'Generate response',
+    description: 'Drafting the user-facing reply.',
+    tool_name: 'generate',
+    request: { args: { summary: 'Summary of the retrieved context.' } },
+    response: { content: 'Final chain of thought drafted.' },
     status: ChainOfThoughtStepStatus.SUCCESS,
   },
 ];
 
-const TEXT_STREAM_ID = "text-1";
+const TEXT_STREAM_ID = 'text-1';
 const WORD_DELAY = 40;
 
 async function sleep(milliseconds: number) {
@@ -78,14 +78,14 @@ async function sleep(milliseconds: number) {
 function createShellMessage(
   instance: ChatInstance,
   responseID: string,
-  messageOptions?: MessageResponseOptions,
+  messageOptions?: MessageResponseOptions
 ) {
   // Seed the message with an empty streaming text item so the shell exists
   // before the chain-of-thought trace lands on the final response.
   instance.messaging.addMessageChunk({
     partial_item: {
       response_type: MessageResponseTypes.TEXT,
-      text: "",
+      text: '',
       streaming_metadata: { id: TEXT_STREAM_ID },
     },
     partial_response: {
@@ -100,9 +100,9 @@ async function streamText(
   responseID: string,
   text: string,
   signal?: AbortSignal,
-  finalMessageOptions?: MessageResponseOptions,
+  finalMessageOptions?: MessageResponseOptions
 ) {
-  const words = text.split(" ");
+  const words = text.split(' ');
   let isCanceled = false;
   const timeouts: number[] = [];
 
@@ -113,7 +113,7 @@ async function streamText(
     isCanceled = true;
     timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
   };
-  signal?.addEventListener("abort", abortHandler);
+  signal?.addEventListener('abort', abortHandler);
 
   try {
     words.forEach((word, index) => {
@@ -159,13 +159,13 @@ async function streamText(
       instance.messaging.addMessageChunk(finalResponse);
     }
   } finally {
-    signal?.removeEventListener("abort", abortHandler);
+    signal?.removeEventListener('abort', abortHandler);
   }
 }
 
 export async function runChainOfThoughtScenario(
   instance: ChatInstance,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
   const responseID = uuid();
   createShellMessage(instance, responseID, { chain_of_thought: [] });

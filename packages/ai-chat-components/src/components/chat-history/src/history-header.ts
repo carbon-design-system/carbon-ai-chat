@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { LitElement, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import { LitElement, html, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 
-import "@carbon/web-components/es/components/icon-button/index.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import ChevronLeft16 from "@carbon/icons/es/chevron--left/16.js";
-import styles from "./chat-history.scss?lit";
+import '@carbon/web-components/es/components/icon-button/index.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import ChevronLeft16 from '@carbon/icons/es/chevron--left/16.js';
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History header.
@@ -29,24 +29,24 @@ class CDSAIChatHistoryHeader extends LitElement {
    * Sets default slot value to header
    */
   @property({ type: String, reflect: true })
-  slot = "header";
+  slot = 'header';
 
   /**
    * Header title
    */
-  @property({ type: String, reflect: true, attribute: "header-title" })
-  headerTitle = "Chats";
+  @property({ type: String, reflect: true, attribute: 'header-title' })
+  headerTitle = 'Chats';
 
   /**
    * Label for close chat history button.
    */
-  @property({ type: String, attribute: "close-button-label" })
-  closeButtonLabel = "Close chat history";
+  @property({ type: String, attribute: 'close-button-label' })
+  closeButtonLabel = 'Close chat history';
 
   /**
    * Render close chat history panel button
    */
-  @property({ type: Boolean, attribute: "show-close-action", reflect: true })
+  @property({ type: Boolean, attribute: 'show-close-action', reflect: true })
   showCloseAction = false;
 
   /**
@@ -54,10 +54,10 @@ class CDSAIChatHistoryHeader extends LitElement {
    */
   _handleCloseButtonClick = () => {
     this.dispatchEvent(
-      new CustomEvent("history-header-close-click", {
+      new CustomEvent('history-header-close-click', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   };
 
@@ -76,9 +76,8 @@ class CDSAIChatHistoryHeader extends LitElement {
               class="${prefix}--history-header__close-button"
               kind="ghost"
               align="right"
-              @click=${handleCloseButtonClick}
-            >
-              ${iconLoader(ChevronLeft16, { slot: "icon" })}
+              @click=${handleCloseButtonClick}>
+              ${iconLoader(ChevronLeft16, { slot: 'icon' })}
               <span slot="tooltip-content">${closeButtonLabel}</span>
             </cds-icon-button>`
           : nothing

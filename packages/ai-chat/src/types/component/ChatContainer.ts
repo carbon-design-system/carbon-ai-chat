@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { type ReactNode } from "react";
+import { type ReactNode } from 'react';
 import type {
   MarkdownCustomRenderers as _MarkdownCustomRenderers,
   MarkdownRendererChecklist as _MarkdownRendererChecklist,
@@ -22,23 +22,23 @@ import type {
   MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
   MarkdownRendererTableData as _MarkdownRendererTableData,
   TokenTree as _TokenTree,
-} from "@carbon/ai-chat-components/es/components/markdown/index.js";
-import { type ChatInstance } from "../instance/ChatInstance";
-import { WriteableElements } from "../instance/WriteableElements";
+} from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import { type ChatInstance } from '../instance/ChatInstance';
+import { WriteableElements } from '../instance/WriteableElements';
 import {
   GenericItem,
   Message,
   MessageRequest,
   MessageResponse,
-} from "../messaging/Messages";
-import { PublicConfig, PublicConfigMarkdown } from "../config/PublicConfig";
-import { DeepPartial } from "../utilities/DeepPartial";
+} from '../messaging/Messages';
+import { PublicConfig, PublicConfigMarkdown } from '../config/PublicConfig';
+import { DeepPartial } from '../utilities/DeepPartial';
 import {
   BusEventViewChange,
   BusEventViewPreChange,
-} from "../events/eventBusTypes";
-import type { JSONContent } from "@tiptap/core";
-import { MessageState } from "../config/MessagingConfig";
+} from '../events/eventBusTypes';
+import type { JSONContent } from '@tiptap/core';
+import { MessageState } from '../config/MessagingConfig';
 
 /**
  * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
@@ -94,7 +94,7 @@ type RenderCustomMessageFooter = (
   message: MessageResponse,
   messageItem: GenericItem,
   instance: ChatInstance,
-  additionalData?: Record<string, unknown>,
+  additionalData?: Record<string, unknown>
 ) => ReactNode | null;
 
 /**
@@ -109,7 +109,7 @@ type RenderCustomMessageFooter = (
  */
 type RenderUserDefinedResponse = (
   state: RenderUserDefinedState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => ReactNode;
 
 /**
@@ -128,7 +128,7 @@ type RenderUserDefinedResponse = (
  */
 type WCRenderUserDefinedResponse = (
   state: RenderUserDefinedState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => HTMLElement | null;
 
 /**
@@ -167,7 +167,7 @@ interface RenderCustomMessageFooterState {
  */
 type WCRenderCustomMessageFooter = (
   state: RenderCustomMessageFooterState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => HTMLElement | null;
 
 /**
@@ -197,7 +197,7 @@ interface RenderUserDefinedInputNodeState {
  */
 type RenderUserDefinedInputNode = (
   state: RenderUserDefinedInputNodeState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => ReactNode;
 
 /**
@@ -211,7 +211,7 @@ type RenderUserDefinedInputNode = (
  */
 type WCRenderUserDefinedInputNode = (
   state: RenderUserDefinedInputNodeState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => HTMLElement | null;
 
 /**
@@ -398,7 +398,7 @@ interface CustomMarkdownRenderers {
    * `attributes`) or `null` to keep the defaults.
    */
   image?: (
-    args: MarkdownRendererImageArgs,
+    args: MarkdownRendererImageArgs
   ) => MarkdownRendererImageResult | null;
   /**
    * Make task-list checkboxes actionable so the host can persist and react to
@@ -442,7 +442,7 @@ interface WCCustomMarkdownRenderers {
    * `attributes`) or `null` to keep the defaults.
    */
   image?: (
-    args: MarkdownRendererImageArgs,
+    args: MarkdownRendererImageArgs
   ) => MarkdownRendererImageResult | null;
   /**
    * Make task-list checkboxes actionable so the host can persist and react to
@@ -498,7 +498,7 @@ interface WCMarkdown extends PublicConfigMarkdown {
  *
  * @category React
  */
-interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
+interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   /**
    * Markdown rendering customization. Extends the framework-neutral
    * {@link PublicConfigMarkdown} with React-layer custom renderers.
@@ -547,7 +547,7 @@ interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
    */
   onViewPreChange?: (
     event: BusEventViewPreChange,
-    instance: ChatInstance,
+    instance: ChatInstance
   ) => Promise<void> | void;
 
   /**

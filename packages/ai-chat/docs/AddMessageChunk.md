@@ -30,7 +30,7 @@ const chunk: StreamChunk = {
     response_type: MessageResponseTypes.TEXT,
     text: `${new_chunk}`,
     streaming_metadata: {
-      id: "1", // Identifies this item within the message
+      id: '1', // Identifies this item within the message
       cancellable: true, // Shows "stop streaming" button
     },
   },
@@ -65,7 +65,7 @@ const chunk: StreamChunk = {
     response_type: MessageResponseTypes.TEXT,
     text: finalText, // Complete, corrected text
     streaming_metadata: {
-      id: "1",
+      id: '1',
       stream_stopped: wasCancelled, // Indicates if user cancelled
     },
   },
@@ -104,7 +104,7 @@ const finalResponse: MessageResponse = {
         response_type: MessageResponseTypes.TEXT,
         text: finalText,
         streaming_metadata: {
-          id: "1",
+          id: '1',
         },
         message_item_options: {
           feedback: feedbackOptions,

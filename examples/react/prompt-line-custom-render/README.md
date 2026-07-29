@@ -19,24 +19,24 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 
 ## APIs and props demonstrated
 
-| Symbol                                | Package / kind              | Role in this example                                                          |
-| ------------------------------------- | --------------------------- | ----------------------------------------------------------------------------- |
-| `ChatCustomElement`                   | `@carbon/ai-chat` component | Mounts the chat UI inside the docked sidebar container.                       |
-| `PublicConfig`                        | `@carbon/ai-chat` type      | Types the config object passed to `ChatCustomElement`.                        |
-| `ChatInstance`                        | `@carbon/ai-chat` type      | Captured in `onBeforeRender` so the tile handler can drive the input.         |
-| `RenderUserDefinedInputNode`          | `@carbon/ai-chat` type      | Types the `renderUserDefinedInputNode` callback.                              |
-| `Extension`                           | `@carbon/ai-chat` type      | Types the custom Tiptap node registered on the input.                         |
-| `renderInLightDom`                    | `@carbon/ai-chat` helper    | Bridges the node view's `Tile` into the page's light DOM.                     |
-| `renderUserDefinedInputNode`          | component prop              | Renders the custom `tileChip` node inside the sent user message bubble.       |
-| `input.tiptap.extensions`             | config prop                 | Registers the host-authored `tileChip` Tiptap node on the input.              |
-| `instance.input.updateContent`        | instance method             | Clears the input and injects the clicked tile as a custom node.               |
-| `instance.input.updateStructuredData` | instance method             | Replaces the pending structured data with metadata describing the tile.       |
-| `onBeforeRender`                      | component prop              | Captures the `ChatInstance` used by the tile-click handler.                   |
-| `layout.showFrame`                    | config prop                 | Hides the default frame so the chat fills the sidebar.                        |
-| `openChatByDefault`                   | config prop                 | Mounts straight into the conversation, no launcher.                           |
-| `messaging.customSendMessage`         | config prop                 | Reads `request.input.structured_data` and echoes the submitted tile.          |
-| `Node.create`                         | `@tiptap/core` API          | Authors the custom `tileChip` inline atom node.                               |
-| `Tile` / `ClickableTile`              | `@carbon/react` component   | The Carbon tile rendered in the page grid, the input, and the message bubble. |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI inside the docked sidebar container. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatCustomElement`. |
+| `ChatInstance` | `@carbon/ai-chat` type | Captured in `onBeforeRender` so the tile handler can drive the input. |
+| `RenderUserDefinedInputNode` | `@carbon/ai-chat` type | Types the `renderUserDefinedInputNode` callback. |
+| `Extension` | `@carbon/ai-chat` type | Types the custom Tiptap node registered on the input. |
+| `renderInLightDom` | `@carbon/ai-chat` helper | Bridges the node view's `Tile` into the page's light DOM. |
+| `renderUserDefinedInputNode` | component prop | Renders the custom `tileChip` node inside the sent user message bubble. |
+| `input.tiptap.extensions` | config prop | Registers the host-authored `tileChip` Tiptap node on the input. |
+| `instance.input.updateContent` | instance method | Clears the input and injects the clicked tile as a custom node. |
+| `instance.input.updateStructuredData` | instance method | Replaces the pending structured data with metadata describing the tile. |
+| `onBeforeRender` | component prop | Captures the `ChatInstance` used by the tile-click handler. |
+| `layout.showFrame` | config prop | Hides the default frame so the chat fills the sidebar. |
+| `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
+| `messaging.customSendMessage` | config prop | Reads `request.input.structured_data` and echoes the submitted tile. |
+| `Node.create` | `@tiptap/core` API | Authors the custom `tileChip` inline atom node. |
+| `Tile` / `ClickableTile` | `@carbon/react` component | The Carbon tile rendered in the page grid, the input, and the message bubble. |
 
 ## Run it
 

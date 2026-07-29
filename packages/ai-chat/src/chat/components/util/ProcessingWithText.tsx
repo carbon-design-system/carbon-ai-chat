@@ -7,11 +7,11 @@
  *  @license
  */
 
-import cx from "classnames";
-import Processing from "@carbon/ai-chat-components/es/react/processing.js";
-import React from "react";
-import { AriaLiveMessage } from "../aria/AriaLiveMessage";
-import { CarbonTheme } from "../../../types/config/CarbonTheme";
+import cx from 'classnames';
+import Processing from '@carbon/ai-chat-components/es/react/processing.js';
+import React from 'react';
+import { AriaLiveMessage } from '../aria/AriaLiveMessage';
+import { CarbonTheme } from '../../../types/config/CarbonTheme';
 
 interface ProcessingWithTextProps {
   carbonTheme: CarbonTheme;
@@ -34,9 +34,8 @@ function ProcessingWithText({
     <div
       className={cx(
         `cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`,
-        { "cds-aichat--typing-indicator--hidden": !isVisible },
-      )}
-    >
+        { 'cds-aichat--typing-indicator--hidden': !isVisible }
+      )}>
       <div className="cds-aichat--message--padding">
         {isVisible && isTypingMessage && (
           <AriaLiveMessage message={isTypingMessage} />
@@ -51,7 +50,7 @@ function ProcessingWithText({
                   quickLoad
                   carbonTheme={carbonTheme}
                   aria-label={processingLabel}
-                />{" "}
+                />{' '}
                 <div className="cds-aichat--processing-label">
                   {statusMessage}
                 </div>

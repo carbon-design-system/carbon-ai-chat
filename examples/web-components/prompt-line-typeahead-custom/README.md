@@ -17,20 +17,20 @@
 
 ## APIs and props demonstrated
 
-| Symbol                          | Kind           | Role in this example                                                            |
-| ------------------------------- | -------------- | ------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.                                  |
-| `<custom-suggestion-list>`      | custom element | Lit element returned from `renderCustomList`.                                   |
-| `PublicConfig`                  | type           | Types the config bound to the element's properties.                             |
-| `SuggestionItem`                | type           | Shape of each entry returned from `items` and surfaced to `onSelect`.           |
-| `CustomListProps`               | type           | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
-| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.                                  |
-| `autocomplete.renderCustomList` | property       | Returns an `HTMLElement` that replaces the default dropdown.                    |
-| `autocomplete.items`            | property       | Async filter providing entries to the custom list.                              |
-| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.                                    |
-| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.                             |
-| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.                             |
-| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.                                        |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI at the fullscreen baseline. |
+| `<custom-suggestion-list>` | custom element | Lit element returned from `renderCustomList`. |
+| `PublicConfig` | type | Types the config bound to the element's properties. |
+| `SuggestionItem` | type | Shape of each entry returned from `items` and surfaced to `onSelect`. |
+| `CustomListProps` | type | Props (`items`, `query`, `onSelect`, `onDismiss`) given to the custom renderer. |
+| `.input` (`input.autocomplete`) | property | Registers the typeahead behavior on the input. |
+| `autocomplete.renderCustomList` | property | Returns an `HTMLElement` that replaces the default dropdown. |
+| `autocomplete.items` | property | Async filter providing entries to the custom list. |
+| `autocomplete.debounceMs` | property | Coalesces keystrokes before calling `items`. |
+| `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the host. |
+| `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
+| `.messaging.customSendMessage` | property | Mock backend echoing the user's message. |
 
 ## Run it
 

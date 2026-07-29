@@ -7,11 +7,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../src/carousel";
-import "../../card/src/card";
-import { html } from "lit";
-import styles from "./story-styles.scss?lit";
-import { map } from "lit/directives/map.js";
+import '../src/carousel';
+import '../../card/src/card';
+import { html } from 'lit';
+import styles from './story-styles.scss?lit';
+import { map } from 'lit/directives/map.js';
 
 const cards = Array(8)
   .fill(null)
@@ -19,15 +19,15 @@ const cards = Array(8)
 
 const argTypes = {
   nextBtnText: {
-    control: "text",
-    description: "Text for the next button",
+    control: 'text',
+    description: 'Text for the next button',
   },
   previousBtnText: {
-    control: "text",
-    description: "Text for the previous button",
+    control: 'text',
+    description: 'Text for the previous button',
   },
   onChange: {
-    action: "cds-aichat-carousel-onchange",
+    action: 'cds-aichat-carousel-onchange',
     table: {
       disable: true,
     },
@@ -35,7 +35,7 @@ const argTypes = {
 };
 
 export default {
-  title: "Preview/Carousel",
+  title: 'Preview/Carousel',
   argTypes,
   decorators: [
     (story) => html`
@@ -49,8 +49,7 @@ export default {
     <cds-aichat-carousel
       nextBtnText=${nextBtnText}
       previousBtnText=${previousBtnText}
-      @cds-aichat-carousel-onchange=${onChange}
-    >
+      @cds-aichat-carousel-onchange=${onChange}>
       <div>
         ${map(
           cards,
@@ -60,7 +59,7 @@ export default {
                 <div class="carousel-card">${card}</div>
               </div>
             </cds-aichat-card>
-          `,
+          `
         )}
       </div>
     </cds-aichat-carousel>
@@ -69,7 +68,7 @@ export default {
 
 export const Default = {
   args: {
-    nextBtnText: "Next",
-    previousBtnText: "Previous",
+    nextBtnText: 'Next',
+    previousBtnText: 'Previous',
   },
 };

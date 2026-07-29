@@ -14,13 +14,13 @@
  */
 export function deepQuerySelector(
   root: ShadowRoot | Element | Document,
-  selector: string,
+  selector: string
 ): Element | null {
   const direct = (root as Element).querySelector(selector);
   if (direct) {
     return direct;
   }
-  for (const el of Array.from(root.querySelectorAll("*"))) {
+  for (const el of Array.from(root.querySelectorAll('*'))) {
     const shadow = (el as HTMLElement).shadowRoot;
     if (shadow) {
       const found = deepQuerySelector(shadow, selector);

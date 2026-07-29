@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property, query } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./workspace-shell-header.scss?lit";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import ChevronDown16 from "@carbon/icons/es/chevron--down/16.js";
-import "../../truncated-text/index.js";
+import { LitElement, html } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './workspace-shell-header.scss?lit';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import ChevronDown16 from '@carbon/icons/es/chevron--down/16.js';
+import '../../truncated-text/index.js';
 
 /**
  * Workspace Shell Header.
@@ -35,18 +35,18 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
    * Sets default slot value to toolbar
    */
   @property({ type: String, reflect: true })
-  slot = "header";
+  slot = 'header';
 
   /**
    * Sets the Title text for the Toolbar Component
    */
-  @property({ type: String, attribute: "title-text" })
+  @property({ type: String, attribute: 'title-text' })
   titleText;
 
   /**
    * Sets the subTitle text for the Toolbar Component
    */
-  @property({ type: String, attribute: "subtitle-text" })
+  @property({ type: String, attribute: 'subtitle-text' })
   subTitleText;
 
   /**
@@ -60,19 +60,19 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   /**
    * @internal
    */
-  @query("details")
+  @query('details')
   private _detailsElement?: HTMLDetailsElement;
 
   firstUpdated() {
     if (this.collapsible && this._detailsElement) {
-      this._detailsElement.addEventListener("toggle", this._handleToggle);
+      this._detailsElement.addEventListener('toggle', this._handleToggle);
     }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     if (this._detailsElement) {
-      this._detailsElement.removeEventListener("toggle", this._handleToggle);
+      this._detailsElement.removeEventListener('toggle', this._handleToggle);
     }
   }
 
@@ -82,11 +82,11 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
   private _handleToggle = () => {
     const isOpen = this._detailsElement?.open || false;
     this.dispatchEvent(
-      new CustomEvent("workspace-header-toggle", {
+      new CustomEvent('workspace-header-toggle', {
         detail: { open: isOpen },
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   };
 
@@ -110,8 +110,7 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
       // Collapsible mode: starts closed, can be toggled
       return html`
         <details
-          class="${prefix}-workspace-shell__header-details ${prefix}-workspace-shell__header-content"
-        >
+          class="${prefix}-workspace-shell__header-details ${prefix}-workspace-shell__header-content">
           ${
             titleText &&
             html`
@@ -120,8 +119,7 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
                   <cds-aichat-truncated-text
                     value=${titleText}
                     lines="1"
-                    type="tooltip"
-                  ></cds-aichat-truncated-text>
+                    type="tooltip"></cds-aichat-truncated-text>
                 </h1>
                 <span class="${prefix}-workspace-shell__header-chevron">
                   ${iconLoader(ChevronDown16)}
@@ -146,8 +144,7 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
               <cds-aichat-truncated-text
                 value=${titleText}
                 lines="1"
-                type="tooltip"
-              ></cds-aichat-truncated-text>
+                type="tooltip"></cds-aichat-truncated-text>
             </h1>
           `
         }

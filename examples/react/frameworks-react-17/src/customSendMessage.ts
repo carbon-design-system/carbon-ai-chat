@@ -27,7 +27,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 // copy shown when the chat first opens (empty input from the welcome event); kept short so the example surface is the legacy render API, not the message content.
 const WELCOME_TEXT = `Welcome to the React 17 + ReactDOM.render Carbon AI Chat example.
@@ -38,10 +38,10 @@ Send any message to receive an echo response from the mock backend.`;
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Carbon AI Chat invokes `customSendMessage` with an empty `input.text` on first open to request a welcome message; branch here so we can answer with `WELCOME_TEXT` instead of echoing.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [

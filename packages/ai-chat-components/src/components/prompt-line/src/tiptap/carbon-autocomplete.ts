@@ -18,15 +18,15 @@
  * helper.
  */
 
-import { Extension } from "@tiptap/core";
-import { PluginKey } from "@tiptap/pm/state";
-import Suggestion from "@tiptap/suggestion";
+import { Extension } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
+import Suggestion from '@tiptap/suggestion';
 
-import { dispatchTriggerChange } from "./trigger-utils.js";
-import type { AutocompleteConfig, SuggestionItem } from "./types.js";
+import { dispatchTriggerChange } from './trigger-utils.js';
+import type { AutocompleteConfig, SuggestionItem } from './types.js';
 
 export function carbonAutocomplete(config: AutocompleteConfig): Extension {
-  const name = config.name ?? "autocomplete";
+  const name = config.name ?? 'autocomplete';
   const pluginKey = new PluginKey(`carbonAutocompleteSuggestion_${name}`);
 
   return Extension.create({
@@ -39,7 +39,7 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
       return [
         Suggestion<SuggestionItem>({
           editor,
-          char: "",
+          char: '',
           pluginKey,
           // Match any non-empty text as the autocomplete query.
           allowedPrefixes: null,
@@ -47,8 +47,8 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
             const text = $position.parent.textBetween(
               0,
               $position.parentOffset,
-              "\n",
-              "\0",
+              '\n',
+              '\0'
             );
             if (!text || text.length === 0) {
               return null;
@@ -76,7 +76,7 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
             const insertText = item.value ?? item.label;
             ed.chain()
               .focus()
-              .insertContentAt(range, [{ type: "text", text: insertText }])
+              .insertContentAt(range, [{ type: 'text', text: insertText }])
               .run();
             config.onSelect?.(item);
           },
@@ -84,7 +84,7 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
             onStart: (props) => {
               lastQuery = props.query;
               dispatchTriggerChange(props.editor, {
-                type: "autocomplete",
+                type: 'autocomplete',
                 query: props.query,
                 triggerOffset: props.range.from,
               });
@@ -95,7 +95,7 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
               }
               lastQuery = props.query;
               dispatchTriggerChange(props.editor, {
-                type: "autocomplete",
+                type: 'autocomplete',
                 query: props.query,
                 triggerOffset: props.range.from,
               });
@@ -114,13 +114,13 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
 
 async function resolveItems(
   config: AutocompleteConfig,
-  query: string,
+  query: string
 ): Promise<SuggestionItem[]> {
   const minQueryLength = config.minQueryLength ?? 0;
   if (query.length < minQueryLength) {
     return [];
   }
-  if (typeof config.items === "function") {
+  if (typeof config.items === 'function') {
     return Promise.resolve(config.items(query));
   }
   if (!query) {
@@ -128,7 +128,7 @@ async function resolveItems(
   }
   const lower = query.toLowerCase();
   return config.items.filter((item) =>
-    item.label.toLowerCase().includes(lower),
+    item.label.toLowerCase().includes(lower)
   );
 }
 

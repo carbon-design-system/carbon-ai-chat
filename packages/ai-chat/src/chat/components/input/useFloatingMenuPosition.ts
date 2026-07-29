@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { RefObject, useEffect } from "react";
-import { autoUpdate, computePosition, flip, offset } from "@floating-ui/dom";
+import { RefObject, useEffect } from 'react';
+import { autoUpdate, computePosition, flip, offset } from '@floating-ui/dom';
 
 /**
  * Positions a `cds-menu` popover above its trigger via Floating UI while `open`.
@@ -24,7 +24,7 @@ import { autoUpdate, computePosition, flip, offset } from "@floating-ui/dom";
 function useFloatingMenuPosition(
   open: boolean,
   triggerRef: RefObject<HTMLElement | null>,
-  menuRef: RefObject<HTMLElement | null>,
+  menuRef: RefObject<HTMLElement | null>
 ) {
   useEffect(() => {
     if (!open) {
@@ -40,31 +40,31 @@ function useFloatingMenuPosition(
     // Await Lit's updateComplete so the menu's shadow DOM (with the inner
     // `.cds--menu` styleElement we position) has rendered before we query.
     Promise.resolve(
-      (menu as unknown as { updateComplete?: Promise<unknown> }).updateComplete,
+      (menu as unknown as { updateComplete?: Promise<unknown> }).updateComplete
     ).then(() => {
       if (cancelled) {
         return;
       }
       const styleEl = menu.shadowRoot?.querySelector(
-        ".cds--menu",
+        '.cds--menu'
       ) as HTMLElement | null;
       if (!styleEl) {
         return;
       }
       cleanup = autoUpdate(trigger, styleEl, async () => {
         const { x, y } = await computePosition(trigger, styleEl, {
-          strategy: "fixed",
-          placement: "top-start",
+          strategy: 'fixed',
+          placement: 'top-start',
           middleware: [
             offset(4),
-            flip({ fallbackPlacements: ["top", "bottom"] }),
+            flip({ fallbackPlacements: ['top', 'bottom'] }),
           ],
         });
         Object.assign(styleEl.style, {
-          position: "fixed",
+          position: 'fixed',
           left: `${x}px`,
           top: `${y}px`,
-          right: "auto",
+          right: 'auto',
         });
       });
     });

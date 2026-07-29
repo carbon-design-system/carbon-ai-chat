@@ -68,7 +68,7 @@ React (stable via useCallback):
 ```tsx
 const myFactory = useCallback(
   (params: ServiceDeskFactoryParameters) => new MyServiceDesk(params),
-  [],
+  []
 );
 
 <ChatContainer serviceDeskFactory={myFactory} />;
@@ -77,15 +77,14 @@ const myFactory = useCallback(
 Web Components / Lit (stable class field):
 
 ```ts
-@customElement("my-app")
+@customElement('my-app')
 export class MyApp extends LitElement {
   private readonly serviceDeskFactory = (
-    params: ServiceDeskFactoryParameters,
+    params: ServiceDeskFactoryParameters
   ) => new MyServiceDesk(params);
   render() {
     return html`<cds-aichat-container
-      .serviceDeskFactory=${this.serviceDeskFactory}
-    />`;
+      .serviceDeskFactory=${this.serviceDeskFactory} />`;
   }
 }
 ```
@@ -172,7 +171,7 @@ First, call {@link ServiceDeskCallback.updateCapabilities | updateCapabilities} 
 ```ts
 this.callback.updateCapabilities({
   allowFileUploads: true,
-  allowedFileUploadTypes: "image/*,.txt",
+  allowedFileUploadTypes: 'image/*,.txt',
   allowMultipleFileUploads: true,
 });
 ```

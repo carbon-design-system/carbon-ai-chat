@@ -7,18 +7,18 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/data-table/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
-import "@carbon/web-components/es/components/icon-button/index.js";
-import "@carbon/web-components/es/components/layer/index.js";
+import '@carbon/web-components/es/components/data-table/index.js';
+import '@carbon/web-components/es/components/checkbox/index.js';
+import '@carbon/web-components/es/components/icon-button/index.js';
+import '@carbon/web-components/es/components/layer/index.js';
 
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import { html } from "lit";
-import { repeat } from "lit-html/directives/repeat.js";
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Download16 from '@carbon/icons/es/download/16.js';
+import { html } from 'lit';
+import { repeat } from 'lit-html/directives/repeat.js';
 
-import type { CDSAIChatTable } from "./table.js";
-import { isDirectionRTL } from "../../../globals/utils/rtl-utils.js";
+import type { CDSAIChatTable } from './table.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 
 /**
  * Table view logic.
@@ -40,7 +40,7 @@ function tableTemplate(tableElement: CDSAIChatTable) {
   function toolbarElement() {
     // Check if RTL direction is set
     const isRTL = isDirectionRTL();
-    const tooltipPosition = isRTL ? "right-start" : "left-start";
+    const tooltipPosition = isRTL ? 'right-start' : 'left-start';
 
     return html`<cds-table-toolbar slot="toolbar">
       <cds-table-toolbar-content>
@@ -49,16 +49,14 @@ function tableTemplate(tableElement: CDSAIChatTable) {
             ? html`<cds-table-toolbar-search
                 persistent
                 placeholder=${filterPlaceholderText}
-                aria-label=${filterPlaceholderText}
-              ></cds-table-toolbar-search>`
-            : ""
+                aria-label=${filterPlaceholderText}></cds-table-toolbar-search>`
+            : ''
         }
         <cds-icon-button
           @click=${handleDownload}
           align=${tooltipPosition}
-          kind="ghost"
-        >
-          ${iconLoader(Download16, { slot: "icon" })}
+          kind="ghost">
+          ${iconLoader(Download16, { slot: 'icon' })}
           <span slot="tooltip-content">${downloadLabelText}</span>
         </cds-icon-button>
       </cds-table-toolbar-content>
@@ -72,7 +70,7 @@ function tableTemplate(tableElement: CDSAIChatTable) {
           (header) =>
             html`<cds-table-header-cell
               >${header.template ?? header.text}</cds-table-header-cell
-            >`,
+            >`
         )}
       </cds-table-header-row>
     </cds-table-head>`;
@@ -90,7 +88,7 @@ function tableTemplate(tableElement: CDSAIChatTable) {
                 >${cell.template ?? cell.text}</cds-table-cell
               >`;
             })}</cds-table-row
-          >`,
+          >`
       )}
     </cds-table-body>`;
   }
@@ -105,8 +103,7 @@ function tableTemplate(tableElement: CDSAIChatTable) {
     locale=${locale}
     is-sortable
     use-zebra-styles
-    @cds-table-filtered=${handleFilterEvent}
-  >
+    @cds-table-filtered=${handleFilterEvent}>
     ${
       tableTitle &&
       html`<cds-table-header-title slot="title"

@@ -10,22 +10,22 @@
 import {
   MessageState,
   UpsertMessageUpdater,
-} from "../../types/config/MessagingConfig";
+} from '../../types/config/MessagingConfig';
 import {
   Message,
   MessageRequest,
   MessageResponse,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 import {
   BusEventPreReceive,
   BusEventReceive,
   BusEventType,
-} from "../../types/events/eventBusTypes";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import actions from "../store/actions";
-import { addDefaultsToMessage, isRequest } from "../utils/messageUtils";
-import { consoleError } from "../utils/miscUtils";
-import { ServiceManager } from "./ServiceManager";
+} from '../../types/events/eventBusTypes';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import actions from '../store/actions';
+import { addDefaultsToMessage, isRequest } from '../utils/messageUtils';
+import { consoleError } from '../utils/miscUtils';
+import { ServiceManager } from './ServiceManager';
 
 const VALID_STATES = new Set<MessageState>([
   MessageState.STREAMING,
@@ -113,22 +113,22 @@ class MessageUpsertCoordinator {
   async upsert(
     messageID: string,
     nextState: MessageState,
-    updater: UpsertMessageUpdater,
+    updater: UpsertMessageUpdater
   ): Promise<void> {
-    if (typeof messageID !== "string" || messageID.length === 0) {
+    if (typeof messageID !== 'string' || messageID.length === 0) {
       throw new TypeError(
-        "upsertMessage: messageID must be a non-empty string.",
+        'upsertMessage: messageID must be a non-empty string.'
       );
     }
     if (!VALID_STATES.has(nextState)) {
       throw new TypeError(
         `upsertMessage: state must be a MessageState value, received ${String(
-          nextState,
-        )}.`,
+          nextState
+        )}.`
       );
     }
-    if (typeof updater !== "function") {
-      throw new TypeError("upsertMessage: updater must be a function.");
+    if (typeof updater !== 'function') {
+      throw new TypeError('upsertMessage: updater must be a function.');
     }
 
     const prev = this.chainByID.get(messageID) ?? Promise.resolve();
@@ -155,7 +155,7 @@ class MessageUpsertCoordinator {
   private async runOne(
     messageID: string,
     nextState: MessageState,
-    updater: UpsertMessageUpdater,
+    updater: UpsertMessageUpdater
   ): Promise<void> {
     const result = await this.runUpdater(messageID, updater);
 
@@ -186,7 +186,7 @@ class MessageUpsertCoordinator {
    */
   private async runUpdater(
     messageID: string,
-    updater: UpsertMessageUpdater,
+    updater: UpsertMessageUpdater
   ): Promise<MessageResponse> {
     const existing = this.serviceManager.store.getState().allMessagesByID[
       messageID
@@ -194,7 +194,7 @@ class MessageUpsertCoordinator {
 
     if (existing && isRequest(existing as MessageRequest)) {
       throw new Error(
-        `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`,
+        `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
       );
     }
 
@@ -203,12 +203,12 @@ class MessageUpsertCoordinator {
 
     if (result === null || result === undefined) {
       throw new TypeError(
-        "upsertMessage: updater must return a MessageResponse, received null/undefined.",
+        'upsertMessage: updater must return a MessageResponse, received null/undefined.'
       );
     }
-    if (typeof result !== "object") {
+    if (typeof result !== 'object') {
       throw new TypeError(
-        "upsertMessage: updater must return a MessageResponse object.",
+        'upsertMessage: updater must return a MessageResponse object.'
       );
     }
 
@@ -216,7 +216,7 @@ class MessageUpsertCoordinator {
       result.id = messageID;
     } else if (result.id !== messageID) {
       throw new Error(
-        `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`,
+        `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`
       );
     }
 
@@ -233,7 +233,7 @@ class MessageUpsertCoordinator {
    */
   private async firePreReceive(
     messageID: string,
-    result: MessageResponse,
+    result: MessageResponse
   ): Promise<void> {
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
@@ -245,7 +245,7 @@ class MessageUpsertCoordinator {
         result.id = messageID;
       } else {
         throw new Error(
-          `upsertMessage: pre:receive handler changed message id from "${messageID}" to "${result.id}".`,
+          `upsertMessage: pre:receive handler changed message id from "${messageID}" to "${result.id}".`
         );
       }
     }
@@ -258,12 +258,12 @@ class MessageUpsertCoordinator {
    * which is what makes this diff cheap and correct.
    */
   private snapshotLocalItemRefs(
-    messageID: string,
+    messageID: string
   ): Map<string, LocalMessageItem> {
     const refs = new Map<string, LocalMessageItem>();
     const stateBefore = this.serviceManager.store.getState();
     for (const [localID, localItem] of Object.entries(
-      stateBefore.allMessageItemsByID,
+      stateBefore.allMessageItemsByID
     )) {
       if (localItem && localItem.fullMessageID === messageID) {
         refs.set(localID, localItem);
@@ -283,7 +283,7 @@ class MessageUpsertCoordinator {
     messageID: string,
     result: MessageResponse,
     nextState: MessageState,
-    refsBefore: Map<string, LocalMessageItem>,
+    refsBefore: Map<string, LocalMessageItem>
   ): Promise<void> {
     const { actions: chatActions, store } = this.serviceManager;
     const stateAfter = store.getState();
@@ -308,7 +308,7 @@ class MessageUpsertCoordinator {
       await chatActions.handleUserDefinedResponseItems(
         localItem,
         result,
-        nextState,
+        nextState
       );
       // eslint-disable-next-line no-await-in-loop
       await chatActions.handleCustomFooterSlot(localItem, result);
@@ -323,7 +323,7 @@ class MessageUpsertCoordinator {
    */
   private async firePostReceiveAndFinalize(
     messageID: string,
-    result: MessageResponse,
+    result: MessageResponse
   ): Promise<void> {
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
@@ -332,7 +332,7 @@ class MessageUpsertCoordinator {
     try {
       await this.serviceManager.fire(receiveEvent);
     } catch (error) {
-      consoleError("upsertMessage: receive handler threw, continuing.", error);
+      consoleError('upsertMessage: receive handler threw, continuing.', error);
     }
     this.serviceManager.messageService.finalizeStreamingMessage(messageID);
   }

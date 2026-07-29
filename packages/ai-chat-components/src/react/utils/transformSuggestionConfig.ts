@@ -15,12 +15,13 @@
  * lists.
  */
 
-import { transformReactIconToCarbonIcon } from "../../globals/utils/iconTransform.js";
+import { transformReactIconToCarbonIcon } from '../../globals/utils/iconTransform.js';
 import type {
   AutocompleteConfig,
+  StartersConfig,
   SuggestionItem,
   TriggerSuggestionConfig,
-} from "../../components/prompt-line/src/tiptap/types.js";
+} from '../../components/prompt-line/src/tiptap/types.js';
 
 const ICON_SIZE = 16;
 
@@ -29,7 +30,7 @@ const ICON_SIZE = 16;
  * a React component was supplied.
  */
 export function transformItemIcon(item: SuggestionItem): SuggestionItem {
-  if (!item.avatar || typeof item.avatar === "string") {
+  if (!item.avatar || typeof item.avatar === 'string') {
     return item;
   }
   return {
@@ -43,7 +44,7 @@ type SuggestionItemsField =
   | ((query: string) => Promise<SuggestionItem[]> | SuggestionItem[]);
 
 function transformItemsField(
-  items: SuggestionItemsField,
+  items: SuggestionItemsField
 ): SuggestionItemsField {
   if (Array.isArray(items)) {
     return items.map(transformItemIcon);
@@ -67,12 +68,12 @@ export function transformSuggestionConfig<
   return { ...config, items: transformItemsField(config.items) } as T;
 }
 
-/** Returns a copy of the starter items array with icons normalized. */
+/** Returns a copy of the starter config with item icons normalized. */
 export function transformStarterItems(
-  starters: SuggestionItem[] | undefined,
-): SuggestionItem[] | undefined {
+  starters: StartersConfig | undefined
+): StartersConfig | undefined {
   if (!starters) {
     return starters;
   }
-  return starters.map(transformItemIcon);
+  return { ...starters, items: starters.items.map(transformItemIcon) };
 }

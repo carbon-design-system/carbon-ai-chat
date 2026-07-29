@@ -21,26 +21,26 @@
  * Enter without this builder.
  */
 
-import type { Extension } from "@tiptap/core";
+import type { Extension } from '@tiptap/core';
 
-import { carbonAutocomplete } from "./carbon-autocomplete.js";
-import { carbonCommand, carbonMention } from "./carbon-mention.js";
-import { carbonStarterTrigger } from "./carbon-starter-trigger.js";
+import { carbonAutocomplete } from './carbon-autocomplete.js';
+import { carbonCommand, carbonMention } from './carbon-mention.js';
+import { carbonStarterTrigger } from './carbon-starter-trigger.js';
 import type {
   AutocompleteConfig,
-  SuggestionItem,
+  StartersConfig,
   TriggerSuggestionConfig,
-} from "./types.js";
+} from './types.js';
 
 export interface BuildCarbonExtensionsConfig {
   mention?: TriggerSuggestionConfig;
   command?: TriggerSuggestionConfig;
   autocomplete?: AutocompleteConfig;
-  starters?: SuggestionItem[];
+  starters?: StartersConfig;
 }
 
 export function buildCarbonExtensions(
-  configs: BuildCarbonExtensionsConfig,
+  configs: BuildCarbonExtensionsConfig
 ): Extension[] {
   const out: Extension[] = [];
   if (configs.mention) {
@@ -52,8 +52,10 @@ export function buildCarbonExtensions(
   if (configs.autocomplete) {
     out.push(carbonAutocomplete(configs.autocomplete));
   }
-  if (configs.starters && configs.starters.length > 0) {
-    out.push(carbonStarterTrigger(configs.starters));
+  if (configs.starters?.items.length) {
+    out.push(
+      carbonStarterTrigger(configs.starters.items, configs.starters.isOn)
+    );
   }
   return out;
 }

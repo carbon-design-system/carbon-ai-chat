@@ -7,64 +7,64 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "../index";
-import "../../card/index.js";
-import { html } from "lit";
+import '../index';
+import '../../card/index.js';
+import { html } from 'lit';
 
 export default {
-  title: "Preview/Video player",
+  title: 'Preview/Video player',
   args: {
-    source: "https://www.youtube.com/watch?v=eZ1NizUx9U4",
-    title: "Sample Video Title",
+    source: 'https://www.youtube.com/watch?v=eZ1NizUx9U4',
+    title: 'Sample Video Title',
     description:
-      "This is a sample video description that provides context about the video content.",
+      'This is a sample video description that provides context about the video content.',
     playing: false,
     aspectRatioPercentage: 56.25,
-    ariaLabel: "Video player",
+    ariaLabel: 'Video player',
     useCard: true,
   },
   argTypes: {
     source: {
-      control: "select",
+      control: 'select',
       options: [
-        "https://www.youtube.com/watch?v=eZ1NizUx9U4",
-        "https://vimeo.com/671038464",
-        "Custom URL",
+        'https://www.youtube.com/watch?v=eZ1NizUx9U4',
+        'https://vimeo.com/671038464',
+        'Custom URL',
       ],
       mapping: {
-        "https://www.youtube.com/watch?v=eZ1NizUx9U4":
-          "https://www.youtube.com/watch?v=eZ1NizUx9U4",
-        "https://vimeo.com/671038464": "https://vimeo.com/671038464",
-        "Custom URL": "",
+        'https://www.youtube.com/watch?v=eZ1NizUx9U4':
+          'https://www.youtube.com/watch?v=eZ1NizUx9U4',
+        'https://vimeo.com/671038464': 'https://vimeo.com/671038464',
+        'Custom URL': '',
       },
       description:
         "Video source URL (YouTube, Vimeo, native video files, etc.). Select from dropdown or choose 'Custom URL' to enter your own.",
     },
     title: {
-      control: "text",
-      description: "Video title displayed in card body (when useCard is true)",
+      control: 'text',
+      description: 'Video title displayed in card body (when useCard is true)',
     },
     description: {
-      control: "text",
+      control: 'text',
       description:
-        "Video description displayed in card body (when useCard is true)",
+        'Video description displayed in card body (when useCard is true)',
     },
     playing: {
-      control: "boolean",
-      description: "Whether the video should be playing",
+      control: 'boolean',
+      description: 'Whether the video should be playing',
     },
     aspectRatioPercentage: {
-      control: { type: "number", min: 0, max: 100, step: 0.01 },
+      control: { type: 'number', min: 0, max: 100, step: 0.01 },
       description:
-        "Aspect ratio as padding-top percentage (default: 56.25 for 16:9)",
+        'Aspect ratio as padding-top percentage (default: 56.25 for 16:9)',
     },
     ariaLabel: {
-      control: "text",
-      description: "ARIA label for accessibility",
+      control: 'text',
+      description: 'ARIA label for accessibility',
     },
     useCard: {
-      control: "boolean",
-      description: "Wrap video player in a card component with metadata",
+      control: 'boolean',
+      description: 'Wrap video player in a card component with metadata',
     },
   },
 };
@@ -88,8 +88,7 @@ export const Default = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-video-player>
         `
       : html`
@@ -97,8 +96,7 @@ export const Default = {
             source=${source}
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
-            aria-label=${ariaLabel}
-          >
+            aria-label=${ariaLabel}>
           </cds-aichat-video-player>
         `;
 
@@ -132,8 +130,7 @@ export const Standalone = {
         source=${source}
         ?playing=${playing}
         aspect-ratio-percentage=${aspectRatioPercentage}
-        aria-label=${ariaLabel}
-      >
+        aria-label=${ariaLabel}>
       </cds-aichat-video-player>
     `;
   },
@@ -141,10 +138,10 @@ export const Standalone = {
 
 export const WithMetadata = {
   args: {
-    source: "https://www.youtube.com/watch?v=eZ1NizUx9U4",
-    title: "Understanding AI and Machine Learning",
+    source: 'https://www.youtube.com/watch?v=eZ1NizUx9U4',
+    title: 'Understanding AI and Machine Learning',
     description:
-      "An in-depth exploration of artificial intelligence and machine learning concepts, covering neural networks, deep learning, and practical applications in modern technology.",
+      'An in-depth exploration of artificial intelligence and machine learning concepts, covering neural networks, deep learning, and practical applications in modern technology.',
     useCard: true,
   },
   render: (args) => {
@@ -165,8 +162,7 @@ export const WithMetadata = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-video-player>
         </div>
         <div slot="body" style="padding: 1rem;">
@@ -182,10 +178,10 @@ export const WithMetadata = {
 
 export const ErrorState = {
   args: {
-    source: "https://invalid-url-that-will-cause-error.com/video.mp4",
-    title: "Error State Example",
+    source: 'https://invalid-url-that-will-cause-error.com/video.mp4',
+    title: 'Error State Example',
     description:
-      "This demonstrates the error state when a video fails to load.",
+      'This demonstrates the error state when a video fails to load.',
     useCard: true,
   },
   render: (args) => {
@@ -206,8 +202,7 @@ export const ErrorState = {
             ?playing=${playing}
             aspect-ratio-percentage=${aspectRatioPercentage}
             aria-label=${ariaLabel}
-            data-rounded="top"
-          >
+            data-rounded="top">
           </cds-aichat-video-player>
         </div>
         <div slot="body" style="padding: 1rem;">

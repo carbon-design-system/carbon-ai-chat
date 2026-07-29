@@ -7,14 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "./src/autocomplete.js";
-import "./src/autocomplete-item.js";
-import "./src/autocomplete-item-group.js";
+import './src/autocomplete.js';
+import './src/autocomplete-item.js';
+import './src/autocomplete-item-group.js';
 
-export { default as AutocompleteElement } from "./src/autocomplete.js";
-export { default as AutocompleteItemElement } from "./src/autocomplete-item.js";
-export { default as AutocompleteItemGroupElement } from "./src/autocomplete-item-group.js";
-export { defaultAutocompleteI18n } from "./src/autocomplete.js";
+export { default as AutocompleteElement } from './src/autocomplete.js';
+export { default as AutocompleteItemElement } from './src/autocomplete-item.js';
+export { default as AutocompleteItemGroupElement } from './src/autocomplete-item-group.js';
+export { defaultAutocompleteI18n } from './src/autocomplete.js';
 export type {
   HeaderConfig,
   AutocompleteI18n,
@@ -22,4 +22,4 @@ export type {
   AutocompleteSendEventDetail,
   SuggestionItem,
   SuggestionItemGroup,
-} from "./src/autocomplete.js";
+} from './src/autocomplete.js';

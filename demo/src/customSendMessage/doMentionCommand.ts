@@ -12,7 +12,7 @@ import {
   MessageRequest,
   MessageResponseTypes,
   SuggestionItem,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 /**
  * Mock `InputConfig.mention` / `InputConfig.command` fixtures and callbacks
@@ -25,26 +25,26 @@ import {
  */
 
 const mentionItems: SuggestionItem[] = [
-  { id: "u1", label: "Jane Smith", description: "Design Lead" },
-  { id: "u2", label: "Bob Chen", description: "Frontend Engineer" },
-  { id: "u3", label: "Alice Park", description: "Product Manager" },
-  { id: "u4", label: "Carlos Rivera", description: "Backend Engineer" },
-  { id: "u5", label: "Dana Williams", description: "QA Engineer" },
+  { id: 'u1', label: 'Jane Smith', description: 'Design Lead' },
+  { id: 'u2', label: 'Bob Chen', description: 'Frontend Engineer' },
+  { id: 'u3', label: 'Alice Park', description: 'Product Manager' },
+  { id: 'u4', label: 'Carlos Rivera', description: 'Backend Engineer' },
+  { id: 'u5', label: 'Dana Williams', description: 'QA Engineer' },
 ];
 
 const commandItems: SuggestionItem[] = [
   {
-    id: "summarize",
-    label: "summarize",
-    description: "Summarize the conversation",
+    id: 'summarize',
+    label: 'summarize',
+    description: 'Summarize the conversation',
   },
   {
-    id: "translate",
-    label: "translate",
-    description: "Translate to another language",
+    id: 'translate',
+    label: 'translate',
+    description: 'Translate to another language',
   },
-  { id: "clear", label: "clear", description: "Clear the conversation" },
-  { id: "help", label: "help", description: "Show available commands" },
+  { id: 'clear', label: 'clear', description: 'Clear the conversation' },
+  { id: 'help', label: 'help', description: 'Show available commands' },
 ];
 
 function mentionOnSelect(item: SuggestionItem): void {
@@ -55,7 +55,7 @@ function mentionOnSelect(item: SuggestionItem): void {
       {
         id: `mention_${item.id}`,
         label: item.label,
-        type: "mention",
+        type: 'mention',
         value: item.id,
       },
     ],
@@ -72,7 +72,7 @@ function mentionOnRemove(item: SuggestionItem): void {
       return prev;
     }
     const index = prev.fields.findIndex(
-      (field) => field.type === "mention" && field.id === `mention_${item.id}`,
+      (field) => field.type === 'mention' && field.id === `mention_${item.id}`
     );
     if (index === -1) {
       return prev;
@@ -91,7 +91,7 @@ function commandOnSelect(item: SuggestionItem): void {
       {
         id: `command_${item.id}`,
         label: item.label,
-        type: "command",
+        type: 'command',
         value: item.id,
       },
     ],
@@ -107,7 +107,7 @@ function commandOnRemove(item: SuggestionItem): void {
       return prev;
     }
     const index = prev.fields.findIndex(
-      (field) => field.type === "command" && field.id === `command_${item.id}`,
+      (field) => field.type === 'command' && field.id === `command_${item.id}`
     );
     if (index === -1) {
       return prev;
@@ -125,11 +125,11 @@ function commandOnRemove(item: SuggestionItem): void {
  */
 function doMentionCommandResponse(
   request: MessageRequest,
-  instance: ChatInstance,
+  instance: ChatInstance
 ): void {
   const fields = request.input.structured_data?.fields ?? [];
-  const mentions = fields.filter((f) => f.type === "mention");
-  const commands = fields.filter((f) => f.type === "command");
+  const mentions = fields.filter((f) => f.type === 'mention');
+  const commands = fields.filter((f) => f.type === 'command');
 
   if (mentions.length === 0 && commands.length === 0) {
     return;
@@ -138,12 +138,12 @@ function doMentionCommandResponse(
   const parts: string[] = [];
 
   if (mentions.length > 0) {
-    const names = mentions.map((m) => m.label).join(", ");
+    const names = mentions.map((m) => m.label).join(', ');
     parts.push(`**Mentions:** ${names}`);
   }
 
   if (commands.length > 0) {
-    const cmds = commands.map((c) => `/${c.label}`).join(", ");
+    const cmds = commands.map((c) => `/${c.label}`).join(', ');
     parts.push(`**Commands:** ${cmds}`);
   }
 
@@ -152,7 +152,7 @@ function doMentionCommandResponse(
       generic: [
         {
           response_type: MessageResponseTypes.TEXT,
-          text: parts.join("\n\n"),
+          text: parts.join('\n\n'),
         },
       ],
     },

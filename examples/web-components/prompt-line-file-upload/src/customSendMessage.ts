@@ -30,9 +30,9 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
-import { doFileUploadResponse } from "./mockOnFileUpload";
+import { doFileUploadResponse } from './mockOnFileUpload';
 
 const WELCOME_TEXT = `Welcome! This example demonstrates file uploads in Carbon AI Chat.
 
@@ -45,13 +45,13 @@ You can attach multiple files at once before sending.`;
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Files attached via `onFileUpload` arrive on the next turn as
   // `structured_data.fields` entries with `type === "file"`, not as
   // a separate property on the request.
   const fileFields = request.input.structured_data?.fields?.filter(
-    (f) => f.type === "file",
+    (f) => f.type === 'file'
   );
   if (fileFields && fileFields.length > 0) {
     // Hand off to the mock echo responder so the assistant turn lists

@@ -15,11 +15,11 @@ Vite-powered React example that mounts `ChatContainer` with a minimal mock backe
 
 ## APIs and props demonstrated
 
-| Symbol              | Package / kind              | Role in this example       |
-| ------------------- | --------------------------- | -------------------------- |
-| `ChatContainer`     | `@carbon/ai-chat` component | Mounts the chat UI.        |
-| `PublicConfig`      | `@carbon/ai-chat` type      | Config shape.              |
-| `customSendMessage` | `messaging` prop            | Minimal echo mock backend. |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
 
 ## Run it
 

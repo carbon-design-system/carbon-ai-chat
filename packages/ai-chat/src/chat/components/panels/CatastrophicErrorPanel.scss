@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 .cds-aichat--overlay-panel--catastrophic_panel .cds-aichat--overlay-panel {
   display: flex;
@@ -37,12 +37,12 @@
 }
 
 .cds-aichat--catastrophic-error__error-heading {
-  @include type.type-style("heading-04");
+  @include type.type-style('heading-04');
 }
 
 .cds-aichat--catastrophic-error__error-body {
   color: theme.$text-secondary;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   margin-block-start: layout.$spacing-05;
 }

@@ -7,8 +7,8 @@
  *  @license
  */
 
-import DOMPurify from "dompurify";
-import { nothing, render, TemplateResult } from "lit";
+import DOMPurify from 'dompurify';
+import { nothing, render, TemplateResult } from 'lit';
 import {
   Directive,
   ElementPart,
@@ -16,9 +16,9 @@ import {
   PartInfo,
   PartType,
   directive,
-} from "lit/directive.js";
+} from 'lit/directive.js';
 
-import { HTML_CONTAINER_SLOT } from "./html-helpers.js";
+import { HTML_CONTAINER_SLOT } from './html-helpers.js';
 
 // Generic attribute spread for Lit templates
 class SpreadAttrs extends Directive {
@@ -31,7 +31,7 @@ class SpreadAttrs extends Directive {
       if (v === false || v === null || v === undefined) {
         el.removeAttribute(k);
       } else if (v === true) {
-        el.setAttribute(k, "");
+        el.setAttribute(k, '');
       } else {
         el.setAttribute(k, String(v));
       }
@@ -44,7 +44,7 @@ export const spread = directive(SpreadAttrs);
 
 export const sanitizeHtmlContent = (content: string) =>
   DOMPurify.sanitize(content, {
-    ADD_ATTR: ["data-aichat-markdown"],
+    ADD_ATTR: ['data-aichat-markdown'],
     CUSTOM_ELEMENT_HANDLING: {
       tagNameCheck: () => true, // Allow custom elements
       attributeNameCheck: () => true,
@@ -54,26 +54,26 @@ export const sanitizeHtmlContent = (content: string) =>
 
 class HtmlContainer extends Directive {
   private slotElement: HTMLElement | null = null;
-  private lastOpeningHtml = "";
+  private lastOpeningHtml = '';
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (partInfo.type !== PartType.ELEMENT) {
-      throw new Error("HtmlContainer must be used on an element");
+      throw new Error('HtmlContainer must be used on an element');
     }
   }
 
   render(
     _openingHtml: string,
     _childTemplate: TemplateResult,
-    _sanitize: boolean,
+    _sanitize: boolean
   ) {
     return nothing;
   }
 
   update(
     part: Part,
-    [openingHtml, childTemplate, sanitize]: [string, TemplateResult, boolean],
+    [openingHtml, childTemplate, sanitize]: [string, TemplateResult, boolean]
   ) {
     const host = (part as ElementPart).element as HTMLElement;
 
@@ -86,7 +86,7 @@ class HtmlContainer extends Directive {
 
       const fragment = document.createRange().createContextualFragment(content);
       host.replaceChildren(...Array.from(fragment.childNodes));
-      this.slotElement = host.querySelector("[data-aichat-markdown]");
+      this.slotElement = host.querySelector('[data-aichat-markdown]');
     }
 
     if (this.slotElement) {

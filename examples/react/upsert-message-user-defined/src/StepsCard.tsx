@@ -22,15 +22,15 @@ import {
   Card,
   CardFooter,
   CardSteps,
-} from "@carbon/ai-chat-components/es/react/card.js";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
-import React from "react";
+} from '@carbon/ai-chat-components/es/react/card.js';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/defs.js';
+import React from 'react';
 
-type StepKind = "NOT-STARTED" | "IN-PROGRESS" | "SUCCEEDED";
+type StepKind = 'NOT-STARTED' | 'IN-PROGRESS' | 'SUCCEEDED';
 
 interface StepsCardData {
-  user_defined_type: "steps_card";
+  user_defined_type: 'steps_card';
   title: string;
   status: string;
   showFooter: boolean;

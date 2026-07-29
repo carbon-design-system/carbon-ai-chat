@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { css, html, LitElement } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { css, html, LitElement } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 
-@customElement("user-defined-response-example")
+@customElement('user-defined-response-example')
 class UserDefinedResponseExample extends LitElement {
   static styles = css`
     .external {
@@ -22,10 +22,10 @@ class UserDefinedResponseExample extends LitElement {
   `;
 
   @property({ type: String })
-  accessor text = "";
+  accessor text = '';
 
   @property({ type: String })
-  accessor valueFromParent: string = "";
+  accessor valueFromParent: string = '';
 
   @state()
   accessor timestamp = 0;

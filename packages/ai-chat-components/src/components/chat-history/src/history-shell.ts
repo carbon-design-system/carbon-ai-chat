@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import styles from "./chat-history.scss?lit";
+import { LitElement, html } from 'lit';
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History Shell.
@@ -26,15 +26,15 @@ class CDSAIChatHistoryShell extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener(
-      "history-delete-confirm",
-      this._handleHistoryDeleteConfirm,
+      'history-delete-confirm',
+      this._handleHistoryDeleteConfirm
     );
   }
 
   disconnectedCallback() {
     this.removeEventListener(
-      "history-delete-confirm",
-      this._handleHistoryDeleteConfirm,
+      'history-delete-confirm',
+      this._handleHistoryDeleteConfirm
     );
     super.disconnectedCallback();
   }
@@ -55,7 +55,7 @@ class CDSAIChatHistoryShell extends LitElement {
       requestAnimationFrame(() => {
         const tag = `${prefix}-history-panel-item`;
         const nextHost = Array.from(this.querySelectorAll(tag)).find(
-          (el) => (el as HTMLElement).id === nextItemId,
+          (el) => (el as HTMLElement).id === nextItemId
         ) as HTMLElement | undefined;
 
         if (!nextHost) {
@@ -64,7 +64,7 @@ class CDSAIChatHistoryShell extends LitElement {
 
         if (deletedItemWasSelected) {
           nextHost.dispatchEvent(
-            new CustomEvent("history-item-selected", {
+            new CustomEvent('history-item-selected', {
               bubbles: true,
               composed: true,
               detail: {
@@ -72,7 +72,7 @@ class CDSAIChatHistoryShell extends LitElement {
                 itemName: (nextHost as any).name,
                 element: nextHost,
               },
-            }),
+            })
           );
         }
 

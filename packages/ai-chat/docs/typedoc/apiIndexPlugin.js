@@ -19,20 +19,20 @@
  * @type {import("typedoc").PluginHost}
  */
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { Renderer } from "typedoc";
+import { Renderer } from 'typedoc';
 
-import { extractRecords } from "./apiIndexCore.js";
-import { serializeJsonIndex } from "./apiIndexJson.js";
-import { serializeMarkdown } from "./apiIndexMarkdown.js";
+import { extractRecords } from './apiIndexCore.js';
+import { serializeJsonIndex } from './apiIndexJson.js';
+import { serializeMarkdown } from './apiIndexMarkdown.js';
 
-const GENERATOR = "@carbon/ai-chat typedoc apiIndexPlugin";
+const GENERATOR = '@carbon/ai-chat typedoc apiIndexPlugin';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = resolve(HERE, "../api");
+const OUT_DIR = resolve(HERE, '../api');
 
 /**
  * The version this index describes, read from `packages/ai-chat/package.json`.
@@ -43,7 +43,7 @@ const OUT_DIR = resolve(HERE, "../api");
  */
 function releasedVersion() {
   const pkg = JSON.parse(
-    readFileSync(resolve(HERE, "../../package.json"), "utf8"),
+    readFileSync(resolve(HERE, '../../package.json'), 'utf8')
   );
   return pkg.version;
 }
@@ -71,7 +71,7 @@ export function load(app) {
     const router = app.renderer.router;
     if (!router) {
       app.logger.warn(
-        "apiIndexPlugin: renderer.router unavailable at EVENT_END; skipping API index.",
+        'apiIndexPlugin: renderer.router unavailable at EVENT_END; skipping API index.'
       );
       return;
     }
@@ -87,13 +87,13 @@ export function load(app) {
     const markdown = serializeMarkdown(records, meta);
 
     // Rewrite markdown/ from scratch so deleted symbols don't leave stale files.
-    const markdownDir = join(OUT_DIR, "markdown");
+    const markdownDir = join(OUT_DIR, 'markdown');
     rmSync(markdownDir, { recursive: true, force: true });
     mkdirSync(markdownDir, { recursive: true });
 
     writeFileSync(
-      join(OUT_DIR, "symbol-index.json"),
-      serializeJsonIndex(records, meta),
+      join(OUT_DIR, 'symbol-index.json'),
+      serializeJsonIndex(records, meta)
     );
     for (const [relativePath, content] of Object.entries(markdown)) {
       writeFileSync(join(OUT_DIR, relativePath), content);
@@ -102,7 +102,7 @@ export function load(app) {
     app.logger.info(
       `apiIndexPlugin: wrote ${records.length} symbol records and ${
         Object.keys(markdown).length
-      } markdown pages to docs/api/.`,
+      } markdown pages to docs/api/.`
     );
   });
 }

@@ -18,24 +18,24 @@ Same workspace payloads as `workspace`, but the chat is mounted inside a collaps
 
 ## APIs and props demonstrated
 
-| Symbol                                                                                           | Package / kind              | Role in this example                        |
-| ------------------------------------------------------------------------------------------------ | --------------------------- | ------------------------------------------- |
-| `ChatCustomElement`                                                                              | `@carbon/ai-chat` component | Mounts the chat in a host div.              |
-| `PublicConfig`                                                                                   | `@carbon/ai-chat` type      | Config shape.                               |
-| `ChatInstance`                                                                                   | `@carbon/ai-chat` type      | Provided in `onBeforeRender`.               |
-| `CornersType.SQUARE`                                                                             | `@carbon/ai-chat` enum      | Square corners in `layout`.                 |
-| `ViewType`                                                                                       | `@carbon/ai-chat` enum      | Referenced in view-change handling.         |
-| `BusEventType.WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_PRE_CLOSE` / `WORKSPACE_CLOSE` | `@carbon/ai-chat`           | Workspace lifecycle events.                 |
-| `BusEventWorkspacePreOpen` / `BusEventWorkspaceOpen` / `BusEventWorkspaceClose`                  | `@carbon/ai-chat` types     | Typed event payloads.                       |
-| `BusEventViewChange` / `BusEventViewPreChange`                                                   | `@carbon/ai-chat` types     | View transition payloads.                   |
-| `PanelType.WORKSPACE`                                                                            | `@carbon/ai-chat` enum      | Selects the workspace panel.                |
-| `instance.customPanels.getPanel(...).open(...)`                                                  | `ChatInstance` API          | Opens the workspace imperatively.           |
-| `renderUserDefinedResponse` / `RenderUserDefinedState`                                           | prop / type                 | Renders the `outstanding_orders_card`.      |
-| `MessageResponseTypes.PREVIEW_CARD` / `USER_DEFINED` / `OPTION` / `TEXT`                         | `@carbon/ai-chat`           | Outgoing response types from mock backend.  |
-| `OptionItemPreference.BUTTON`                                                                    | `@carbon/ai-chat` enum      | Inventory-type picker.                      |
-| `openChatByDefault`                                                                              | prop                        | Opens chat on load.                         |
-| `AiLaunch20`                                                                                     | `@carbon/icons-react`       | Sidebar launcher icon.                      |
-| `@carbon/ai-chat/css/chat-sidebar-layout.css`                                                    | stylesheet                  | Provides the `cds-aichat-sidebar*` classes. |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in a host div. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `ChatInstance` | `@carbon/ai-chat` type | Provided in `onBeforeRender`. |
+| `CornersType.SQUARE` | `@carbon/ai-chat` enum | Square corners in `layout`. |
+| `ViewType` | `@carbon/ai-chat` enum | Referenced in view-change handling. |
+| `BusEventType.WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_PRE_CLOSE` / `WORKSPACE_CLOSE` | `@carbon/ai-chat` | Workspace lifecycle events. |
+| `BusEventWorkspacePreOpen` / `BusEventWorkspaceOpen` / `BusEventWorkspaceClose` | `@carbon/ai-chat` types | Typed event payloads. |
+| `BusEventViewChange` / `BusEventViewPreChange` | `@carbon/ai-chat` types | View transition payloads. |
+| `PanelType.WORKSPACE` | `@carbon/ai-chat` enum | Selects the workspace panel. |
+| `instance.customPanels.getPanel(...).open(...)` | `ChatInstance` API | Opens the workspace imperatively. |
+| `renderUserDefinedResponse` / `RenderUserDefinedState` | prop / type | Renders the `outstanding_orders_card`. |
+| `MessageResponseTypes.PREVIEW_CARD` / `USER_DEFINED` / `OPTION` / `TEXT` | `@carbon/ai-chat` | Outgoing response types from mock backend. |
+| `OptionItemPreference.BUTTON` | `@carbon/ai-chat` enum | Inventory-type picker. |
+| `openChatByDefault` | prop | Opens chat on load. |
+| `AiLaunch20` | `@carbon/icons-react` | Sidebar launcher icon. |
+| `@carbon/ai-chat/css/chat-sidebar-layout.css` | stylesheet | Provides the `cds-aichat-sidebar*` classes. |
 
 ## Run it
 

@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/colors";
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
+@use '@carbon/colors';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 .cds-aichat--disclaimer__content.cds-aichat--panel-content,
 .cds-aichat--wide-width
@@ -31,14 +31,14 @@
 
 .cds-aichat--disclaimer__title {
   display: block;
-  @include type.type-style("heading-04");
+  @include type.type-style('heading-04');
 
   inline-size: 100%;
   padding-block-end: layout.$spacing-05;
 }
 
 .cds-aichat--disclaimer__description {
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   padding-block-end: layout.$spacing-05;
 }

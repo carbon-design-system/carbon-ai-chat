@@ -35,11 +35,11 @@ Three-column table — Symbol / Package / kind / Role in example:
 ```markdown
 ## APIs and props demonstrated
 
-| Symbol                        | Package / kind                      | Role in example              |
-| ----------------------------- | ----------------------------------- | ---------------------------- |
-| `ChatContainer`               | `@carbon/ai-chat` / React component | Main chat UI container       |
-| `messaging.customSendMessage` | `@carbon/ai-chat` / config prop     | Intercepts outbound messages |
-| `renderUserDefinedResponse`   | `@carbon/ai-chat` / config prop     | Renders custom message types |
+| Symbol | Package / kind | Role in example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` / React component | Main chat UI container |
+| `messaging.customSendMessage` | `@carbon/ai-chat` / config prop | Intercepts outbound messages |
+| `renderUserDefinedResponse` | `@carbon/ai-chat` / config prop | Renders custom message types |
 ```
 
 ## Format rules

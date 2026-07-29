@@ -32,15 +32,15 @@ import {
   ChatCustomElement,
   ChatInstance,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React, { useCallback, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React, { useCallback, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customLoadHistory } from "./customLoadHistory";
-import { customSendMessage } from "./customSendMessage";
+import { customLoadHistory } from './customLoadHistory';
+import { customSendMessage } from './customSendMessage';
 
-import { ChatHistoryExample } from "./ChatHistoryExample";
-import "@carbon/styles/css/styles.css";
+import { ChatHistoryExample } from './ChatHistoryExample';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   history: {
@@ -57,7 +57,7 @@ const config: PublicConfig = {
     showFrame: false,
     customProperties: {
       // widen the message column on large viewports while keeping a sensible minimum on small ones.
-      "messages-max-width": `max(60vw, 672px)`,
+      'messages-max-width': `max(60vw, 672px)`,
     },
   },
   // the example is a dedicated chat surface, so the chat is visible immediately without a launcher click.
@@ -100,7 +100,7 @@ function App() {
       await instance.messaging.clearConversation();
       instance.messaging.insertHistory(historyData);
     },
-    [instance],
+    [instance]
   );
 
   const historyWriteableElementExample = useMemo(
@@ -111,7 +111,7 @@ function App() {
         loadChat={loadChat}
       />
     ),
-    [instance, isMobile, loadChat],
+    [instance, isMobile, loadChat]
   );
 
   const renderWriteableElements = useMemo(() => {
@@ -130,6 +130,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

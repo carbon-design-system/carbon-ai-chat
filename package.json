@@ -243,6 +243,8 @@
   },
   "overrides": {
     "tar": "^7.5.16",
-    "shell-quote": "^1.10.0"
+    "shell-quote": "^1.10.0",
+    "postcss": "^8.5.23",
+    "axios": "^1.18.1"
   }
 }

@@ -28,14 +28,14 @@ import {
   ChatCustomElement,
   PublicConfig,
   RenderCustomMessageFooter,
-} from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
+} from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { CustomFooterExample } from "./CustomFooterExample";
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
-import "./App.css";
+import { CustomFooterExample } from './CustomFooterExample';
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
+import './App.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -55,7 +55,7 @@ const renderCustomMessageFooter: RenderCustomMessageFooter = (
   message,
   messageItem,
   instance,
-  additionalData,
+  additionalData
 ) => (
   <CustomFooterExample
     slotName={slotName}
@@ -76,6 +76,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,9 +7,9 @@
  *  @license
  */
 
-import type { PublicConfig } from "@carbon/ai-chat";
-import { updateQueryParamsWithoutRefresh } from "./utils";
-import { customSendMessage } from "../customSendMessage/customSendMessage";
+import type { PublicConfig } from '@carbon/ai-chat';
+import { updateQueryParamsWithoutRefresh } from './utils';
+import { customSendMessage } from '../customSendMessage/customSendMessage';
 
 /**
  * Manages setChatConfig mode state and configuration changes.
@@ -49,8 +49,8 @@ export class SetChatConfigManager {
    */
   private initializeFromURL(): void {
     const urlParams = new URLSearchParams(window.location.search);
-    const configParam = urlParams.get("config");
-    this.isSetChatConfigMode = configParam === "setChatConfig";
+    const configParam = urlParams.get('config');
+    this.isSetChatConfigMode = configParam === 'setChatConfig';
 
     // If we're in setChatConfig mode from URL but haven't received config via setChatConfig,
     // it means the page was refreshed - hasReceivedSetChatConfig stays false
@@ -66,7 +66,7 @@ export class SetChatConfigManager {
   async setChatConfig(
     newConfig: Partial<PublicConfig>,
     previousConfig: PublicConfig,
-    onConfigChange: (mergedConfig: PublicConfig) => Promise<void>,
+    onConfigChange: (mergedConfig: PublicConfig) => Promise<void>
   ): Promise<void> {
     // Set setChatConfig mode to true and mark that we've received config
     this.isSetChatConfigMode = true;
@@ -74,7 +74,7 @@ export class SetChatConfigManager {
 
     // Keep the URL query param aligned with setChatConfig mode for consistency
     updateQueryParamsWithoutRefresh([
-      { key: "config", value: "setChatConfig" },
+      { key: 'config', value: 'setChatConfig' },
     ]);
 
     // Notify about setChatConfig mode changes
@@ -106,8 +106,8 @@ export class SetChatConfigManager {
    */
   leaveSetChatConfigMode(): void {
     const urlParams = new URLSearchParams(window.location.search);
-    urlParams.delete("settings");
-    urlParams.delete("config");
+    urlParams.delete('settings');
+    urlParams.delete('config');
 
     const newUrl = urlParams.toString()
       ? `${window.location.pathname}?${urlParams.toString()}`
