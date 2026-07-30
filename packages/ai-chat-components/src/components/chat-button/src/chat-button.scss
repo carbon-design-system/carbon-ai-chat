@@ -82,8 +82,25 @@
 }
 
 :host(#{$prefix}-button[is-quick-action][isselected]) {
-  .#{$cds-prefix}--btn[disabled] {
+  // Selected state: visually matches the selected appearance without setting the
+  // HTML disabled attribute. Pointer events remain active so the button is still
+  // interactive (e.g. can be de-selected). The &[disabled] override ensures the
+  // selected colours win even when the button is also genuinely disabled.
+  .#{$cds-prefix}--btn {
+    border: convert.to-rem(1px) solid button-tokens.$button-disabled;
     background: theme.$background-selected;
     color: theme.$text-secondary;
+    cursor: not-allowed;
+
+    &[disabled] {
+      background: theme.$background-selected;
+      color: theme.$text-secondary;
+    }
+
+    &:hover:not([disabled]) {
+      border-color: button-tokens.$button-disabled;
+      background: theme.$background-selected;
+      color: theme.$text-secondary;
+    }
   }
 }

@@ -26,4 +26,65 @@ describe('chat-button', function () {
 
     await expect(el).dom.to.equalSnapshot();
   });
+
+  describe('quick action selected', function () {
+    it('should not fire click events when isSelected=true', async () => {
+      let clicked = 0;
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button
+          is-quick-action
+          ?isSelected="${true}"
+          @click="${() => clicked++}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+      el.click();
+      expect(clicked).to.equal(0);
+    });
+
+    it('should fire click events when isSelected=false', async () => {
+      let clicked = 0;
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button
+          is-quick-action
+          ?isSelected="${false}"
+          @click="${() => clicked++}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+      el.click();
+      expect(clicked).to.equal(1);
+    });
+
+    it('should not set the disabled attribute when isSelected=true', async () => {
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button is-quick-action ?isSelected="${true}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+      expect(el.disabled).to.be.false;
+      expect(el.hasAttribute('disabled')).to.be.false;
+    });
+
+    it('should have tabIndex=-1 when isSelected=true and restore to 0 when de-selected', async () => {
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button is-quick-action ?isSelected="${true}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+      expect(el.tabIndex).to.equal(-1);
+
+      el.isSelected = false;
+      await el.updateComplete;
+      expect(el.tabIndex).to.equal(0);
+    });
+  });
 });

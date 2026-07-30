@@ -9,6 +9,7 @@
 
 import { property } from 'lit/decorators.js';
 import { PropertyValues } from 'lit';
+import HostListener from '@carbon/web-components/es/globals/decorators/host-listener.js';
 import { CHAT_BUTTON_SIZE } from '../defs';
 import {
   BUTTON_KIND as CHAT_BUTTON_KIND,
@@ -49,6 +50,19 @@ class CDSAIChatButton extends CDSButton {
   isQuickAction = false;
 
   /**
+   * Suppress click events when the quick-action button is selected.
+   * This mirrors the behaviour of the native `disabled` attribute without
+   * adding it to the DOM, so the button remains focusable and the selected
+   * styling is applied via CSS only.
+   */
+  @HostListener('click', { capture: true })
+  protected _handleSelectedClick(event: Event): void {
+    if (this.isQuickAction && this.isSelected) {
+      event.stopPropagation();
+    }
+  }
+
+  /**
    * Button size.
    * Options: "sm", "md", "lg".
    */
@@ -82,7 +96,9 @@ class CDSAIChatButton extends CDSButton {
       if (!changedProps.has('kind')) {
         this.kind = CHAT_BUTTON_KIND.GHOST;
       }
-      this.disabled = this.isSelected;
+      // Remove from tab order when selected so keyboard users skip it,
+      // matching the non-interactive appearance. Restore to 0 when de-selected.
+      this.tabIndex = this.isSelected ? -1 : 0;
       return;
     }
     // Do not allow size larger than `lg`
