@@ -1,6 +1,8 @@
 # Accessibility Rules — WCAG 2.2 AA
 
-Apply these rules **inline while writing code**. Carbon components are WCAG-compliant by design — your job is to not break what Carbon provides and to fill the gaps Carbon cannot fill automatically (semantic structure, alt text, focus management, form labels).
+Apply these rules **inline while writing code**. Carbon components are WCAG-compliant by
+design — your job is to not break what Carbon provides and to fill the gaps Carbon cannot
+fill automatically (semantic structure, alt text, focus management, form labels).
 
 ---
 
@@ -8,40 +10,41 @@ Apply these rules **inline while writing code**. Carbon components are WCAG-comp
 
 Adding these manually duplicates Carbon's built-in ARIA and will break assistive technology.
 
-| Carbon component | What it provides automatically | What breaks it |
-| --- | --- | --- |
-| `<Modal>` | `role="dialog"`, `aria-modal`, focus trap, return-focus on close | Adding `role="dialog"` manually; overriding `tabIndex` on interior elements |
-| `<Button>` (with visible text) | Accessible name from text content | Adding `aria-label` that differs from visible text (violates 2.5.3) |
-| `<InlineNotification>` / `<ToastNotification>` | `role="alert"` or `role="status"` | Wrapping in another `role="alert"` container |
-| `<Header>` | `<header>` landmark, skip-to-content link | Adding a second `<header>` element outside Carbon's `<Header>` |
-| `<SideNav>` | `<nav>` landmark with `aria-label` | Wrapping in another `<nav>` |
-| `<Breadcrumb>` | `<nav aria-label="Breadcrumb">`, `aria-current="page"` on current item | Setting `aria-current` manually; wrapping in `<nav>` |
-| `<DataTable>` | `role="grid"`, column sort announcements, selection state | Re-implementing sort headers manually |
-| `<ComboBox>` / `<MultiSelect>` | `role="combobox"`, `aria-expanded`, `aria-activedescendant` | Adding these ARIA attributes manually |
+| Carbon component                               | What it provides automatically                                         | What breaks it                                                              |
+| ---------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `<Modal>`                                      | `role="dialog"`, `aria-modal`, focus trap, return-focus on close       | Adding `role="dialog"` manually; overriding `tabIndex` on interior elements |
+| `<Button>` (with visible text)                 | Accessible name from text content                                      | Adding `aria-label` that differs from visible text (violates 2.5.3)         |
+| `<InlineNotification>` / `<ToastNotification>` | `role="alert"` or `role="status"`                                      | Wrapping in another `role="alert"` container                                |
+| `<Header>`                                     | `<header>` landmark, skip-to-content link                              | Adding a second `<header>` element outside Carbon's `<Header>`              |
+| `<SideNav>`                                    | `<nav>` landmark with `aria-label`                                     | Wrapping in another `<nav>`                                                 |
+| `<Breadcrumb>`                                 | `<nav aria-label="Breadcrumb">`, `aria-current="page"` on current item | Setting `aria-current` manually; wrapping in `<nav>`                        |
+| `<DataTable>`                                  | `role="grid"`, column sort announcements, selection state              | Re-implementing sort headers manually                                       |
+| `<ComboBox>` / `<MultiSelect>`                 | `role="combobox"`, `aria-expanded`, `aria-activedescendant`            | Adding these ARIA attributes manually                                       |
 
 ---
 
 ## Required Carbon props that activate accessibility
 
-These props are optional in TypeScript but **mandatory for accessible output**. Omitting them produces a silently inaccessible component — no build error, no console warning.
+These props are optional in TypeScript but **mandatory for accessible output**. Omitting them
+produces a silently inaccessible component — no build error, no console warning.
 
-| Component | Required prop(s) | What breaks without it |
-| --- | --- | --- |
-| `<Button>` — icon only (no visible text) | `iconDescription` | No accessible name; screen reader announces nothing |
-| `<IconButton>` | `label` | No accessible name |
-| `<TextInput>` | `labelText` | Input has no programmatic label |
-| `<TextArea>` | `labelText` | Textarea has no programmatic label |
-| `<Select>` | `labelText` | Select has no programmatic label |
-| `<Checkbox>` | `labelText` | Checkbox has no label |
-| `<RadioButton>` | `labelText` | Radio has no label |
-| `<Toggle>` | `labelText` + `labelA` + `labelB` | State changes not announced |
-| `<Search>` | `labelText` | Search field unlabeled |
-| `<Modal>` | `modalHeading` | Dialog has no accessible name |
-| `<FileUploader>` | `labelTitle` + `labelDescription` | Upload control unlabeled |
-| `<NumberInput>` | `label` | Input has no label |
-| `<Slider>` | `labelText` | Slider has no label |
-| `<InlineNotification>` | `title` | Alert content not announced |
-| `<Tag>` — interactive | `title` | Tag action unlabeled |
+| Component                                | Required prop(s)                  | What breaks without it                              |
+| ---------------------------------------- | --------------------------------- | --------------------------------------------------- |
+| `<Button>` — icon only (no visible text) | `iconDescription`                 | No accessible name; screen reader announces nothing |
+| `<IconButton>`                           | `label`                           | No accessible name                                  |
+| `<TextInput>`                            | `labelText`                       | Input has no programmatic label                     |
+| `<TextArea>`                             | `labelText`                       | Textarea has no programmatic label                  |
+| `<Select>`                               | `labelText`                       | Select has no programmatic label                    |
+| `<Checkbox>`                             | `labelText`                       | Checkbox has no label                               |
+| `<RadioButton>`                          | `labelText`                       | Radio has no label                                  |
+| `<Toggle>`                               | `labelText` + `labelA` + `labelB` | State changes not announced                         |
+| `<Search>`                               | `labelText`                       | Search field unlabeled                              |
+| `<Modal>`                                | `modalHeading`                    | Dialog has no accessible name                       |
+| `<FileUploader>`                         | `labelTitle` + `labelDescription` | Upload control unlabeled                            |
+| `<NumberInput>`                          | `label`                           | Input has no label                                  |
+| `<Slider>`                               | `labelText`                       | Slider has no label                                 |
+| `<InlineNotification>`                   | `title`                           | Alert content not announced                         |
+| `<Tag>` — interactive                    | `title`                           | Tag action unlabeled                                |
 
 ```jsx
 // ❌ Wrong — icon-only button with no accessible name
@@ -103,7 +106,8 @@ Multiple `<nav>` elements must each have a unique `aria-label` to distinguish th
 
 ### Lists
 
-Use `<ul>`/`<ol>` for groups of related items — navigation links, card grids, tag groups. Never build lists from `<div>` elements.
+Use `<ul>`/`<ol>` for groups of related items — navigation links, card grids, tag groups.
+Never build lists from `<div>` elements.
 
 ```jsx
 // ❌ Wrong — navigation links in divs
@@ -161,7 +165,8 @@ Set `alt=""` — never omit `alt` entirely (omission causes screen readers to an
 </svg>
 ```
 
-Carbon icon components (`<Add />`, `<Settings />`) accept `aria-label` and `aria-hidden` directly — use those props instead of wrapping with SVG attributes.
+Carbon icon components (`<Add />`, `<Settings />`) accept `aria-label` and `aria-hidden`
+directly — use those props instead of wrapping with SVG attributes.
 
 ---
 
@@ -169,7 +174,8 @@ Carbon icon components (`<Add />`, `<Settings />`) accept `aria-label` and `aria
 
 ### Tab order
 
-- Never use `tabIndex > 0` — positive tabindex removes the element from natural tab flow and creates a separate, confusing tab sequence
+- Never use `tabIndex > 0` — positive tabindex removes the element from natural tab flow and
+  creates a separate, confusing tab sequence
 - `tabIndex={0}` is correct only when making a non-interactive element focusable (custom widget)
 - `tabIndex={-1}` is correct for elements that receive focus programmatically but not via Tab
 
@@ -183,7 +189,9 @@ Carbon icon components (`<Add />`, `<Settings />`) accept `aria-label` and `aria
 
 ### Non-interactive elements with click handlers
 
-`<div>`, `<span>`, and `<p>` are not keyboard-reachable by default. Any element with an `onClick` handler must be either a native interactive element or have all three of: `role`, `tabIndex={0}`, and a `onKeyDown` handler.
+`<div>`, `<span>`, and `<p>` are not keyboard-reachable by default. Any element with an
+`onClick` handler must be either a native interactive element or have all three of:
+`role`, `tabIndex={0}`, and a `onKeyDown` handler.
 
 ```jsx
 // ❌ Wrong — not keyboard accessible
@@ -205,15 +213,15 @@ Carbon icon components (`<Add />`, `<Settings />`) accept `aria-label` and `aria
 
 ### Focus management after dynamic changes
 
-| Scenario | Required action |
-| --- | --- |
-| Modal opens | Carbon handles — do not add manual `focus()` |
-| Modal closes | Carbon returns focus to the trigger — do not override |
-| Toast / notification appears | No focus move required; `role="alert"` announces it |
-| Step wizard advances | Move focus to new step heading or first focusable element |
-| Inline content expands (accordion) | Carbon handles — do not override |
-| Page navigation (SPA) | Move focus to `<main>` or new page heading after route change |
-| Item deleted from a list | Return focus to next item, or previous item if last, or list container |
+| Scenario                           | Required action                                                        |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| Modal opens                        | Carbon handles — do not add manual `focus()`                           |
+| Modal closes                       | Carbon returns focus to the trigger — do not override                  |
+| Toast / notification appears       | No focus move required; `role="alert"` announces it                    |
+| Step wizard advances               | Move focus to new step heading or first focusable element              |
+| Inline content expands (accordion) | Carbon handles — do not override                                       |
+| Page navigation (SPA)              | Move focus to `<main>` or new page heading after route change          |
+| Item deleted from a list           | Return focus to next item, or previous item if last, or list container |
 
 ### Focus visibility
 
@@ -241,7 +249,8 @@ button:focus {
 
 ### Label association
 
-Always use Carbon's `labelText` prop — it generates a `<label>` with a `for` attribute wired to the input's `id`. Never substitute a visible `<p>` or `aria-label` for a real label.
+Always use Carbon's `labelText` prop — it generates a `<label>` with a `for` attribute
+wired to the input's `id`. Never substitute a visible `<p>` or `aria-label` for a real label.
 
 ```jsx
 // ❌ Wrong — placeholder is not a label; disappears on input
@@ -256,7 +265,8 @@ Always use Carbon's `labelText` prop — it generates a `<label>` with a `for` a
 
 ### Error messages
 
-Use Carbon's `invalid` and `invalidText` props — they wire up `aria-describedby` automatically. Never convey errors only through color or icon.
+Use Carbon's `invalid` and `invalidText` props — they wire up `aria-describedby` automatically.
+Never convey errors only through color or icon.
 
 ```jsx
 // ❌ Wrong — error only shown visually
@@ -280,7 +290,8 @@ Use Carbon's `invalid` and `invalidText` props — they wire up `aria-describedb
 
 ### Helper text
 
-Use Carbon's `helperText` prop — it links via `aria-describedby`. Do not use a separate `<p>` element next to an input without also wiring `aria-describedby` manually.
+Use Carbon's `helperText` prop — it links via `aria-describedby`. Do not use a separate
+`<p>` element next to an input without also wiring `aria-describedby` manually.
 
 ---
 
@@ -288,11 +299,14 @@ Use Carbon's `helperText` prop — it links via `aria-describedby`. Do not use a
 
 Three rules:
 
-1. **If Carbon already provides it, do not add it again.** Duplicate ARIA (two `role="dialog"`, two `aria-label` on the same element) breaks assistive technology announcement.
+1. **If Carbon already provides it, do not add it again.** Duplicate ARIA (two `role="dialog"`,
+   two `aria-label` on the same element) breaks assistive technology announcement.
 
-2. **`aria-label` must contain the visible text** (WCAG 2.5.3). If a button reads "Submit", its `aria-label` must include "Submit" — not replace it with something different.
+2. **`aria-label` must contain the visible text** (WCAG 2.5.3). If a button reads "Submit",
+   its `aria-label` must include "Submit" — not replace it with something different.
 
-3. **`aria-hidden="true"`** removes an element from the accessibility tree entirely — never apply it to interactive elements or their ancestors.
+3. **`aria-hidden="true"`** removes an element from the accessibility tree entirely — never
+   apply it to interactive elements or their ancestors.
 
 ```jsx
 // ❌ Wrong — aria-label conflicts with visible text
@@ -313,7 +327,9 @@ These criteria are new in WCAG 2.2 and are not handled by Carbon automatically.
 
 ### Focus Not Obscured (2.4.11)
 
-A focused element must not be entirely hidden behind a sticky header, footer, or floating panel. When adding sticky elements, ensure the page body has sufficient `scroll-margin-top` / `scroll-padding-top` so focused elements scroll into view.
+A focused element must not be entirely hidden behind a sticky header, footer, or floating panel.
+When adding sticky elements, ensure the page body has sufficient `scroll-margin-top` /
+`scroll-padding-top` so focused elements scroll into view.
 
 ```css
 /* ✅ Correct — compensate for a 48px sticky header */
@@ -324,7 +340,9 @@ html {
 
 ### Target Size — Minimum (2.5.8)
 
-Interactive targets must be at least **24×24 CSS pixels**. Carbon buttons and controls meet this by default. Custom interactive elements (icon links, custom toggles) must also meet it. Prefer Carbon's built-in sizes (44×44px) over the minimum.
+Interactive targets must be at least **24×24 CSS pixels**. Carbon buttons and controls meet
+this by default. Custom interactive elements (icon links, custom toggles) must also meet it.
+Prefer Carbon's built-in sizes (44×44px) over the minimum.
 
 ```css
 /* ✅ Correct — custom interactive element meets minimum */
@@ -336,7 +354,8 @@ Interactive targets must be at least **24×24 CSS pixels**. Carbon buttons and c
 
 ### Label in Name (2.5.3)
 
-When an interactive element has visible text, its accessible name must **contain** that text. The `aria-label` value must not replace or contradict visible text.
+When an interactive element has visible text, its accessible name must **contain** that text.
+The `aria-label` value must not replace or contradict visible text.
 
 ```jsx
 // ❌ Wrong — aria-label replaces visible text; accessible name does not contain "Next"
@@ -351,15 +370,20 @@ When an interactive element has visible text, its accessible name must **contain
 
 ### Accessible Authentication (3.3.8)
 
-Do not use cognitive tests (image-matching puzzles, drag-and-drop CAPTCHAs) in authentication flows without providing an accessible text-based alternative. Standard password fields and Carbon form inputs are compliant.
+Do not use cognitive tests (image-matching puzzles, drag-and-drop CAPTCHAs) in
+authentication flows without providing an accessible text-based alternative.
+Standard password fields and Carbon form inputs are compliant.
 
 ---
 
 ## Color and contrast
 
-- Use **Carbon tokens** for all colors — `var(--cds-text-primary)`, `var(--cds-background)`, `var(--cds-layer-01)`, etc. Token-based colors are WCAG AA contrast-compliant by design.
-- **Never convey information by color alone.** Error states, status indicators, and data categories must also have a text label, icon, or pattern.
-- Do not hardcode hex/rgb color values that bypass the token system — they will fail in dark/high-contrast themes and may fail contrast ratios.
+- Use **Carbon tokens** for all colors — `var(--cds-text-primary)`, `var(--cds-background)`,
+  `var(--cds-layer-01)`, etc. Token-based colors are WCAG AA contrast-compliant by design.
+- **Never convey information by color alone.** Error states, status indicators, and data
+  categories must also have a text label, icon, or pattern.
+- Do not hardcode hex/rgb color values that bypass the token system — they will fail in
+  dark/high-contrast themes and may fail contrast ratios.
 
 ```jsx
 // ❌ Wrong — error conveyed only by red border
@@ -373,7 +397,8 @@ Do not use cognitive tests (image-matching puzzles, drag-and-drop CAPTCHAs) in a
 
 ## Motion
 
-Any CSS animation or transition added **outside Carbon components** must respect the user's motion preference. Carbon's own motion tokens already handle this internally.
+Any CSS animation or transition added **outside Carbon components** must respect the
+user's motion preference. Carbon's own motion tokens already handle this internally.
 
 ```css
 /* ✅ Correct — custom animation with reduced-motion respect */

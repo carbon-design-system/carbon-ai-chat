@@ -17,7 +17,7 @@
  * Discovery crawls from the root AGENTS.md, following links to other bare
  * AGENTS.md entry points and to per-directory topic docs, which live as
  * kebab-case files under a `references/` subfolder (e.g.
- * `references/code-review.md`).
+ * `references/code-patterns.md`).
  */
 
 const fs = require('fs');
@@ -89,9 +89,12 @@ function getPackageRoot(agentsFile) {
     return 'demo';
   }
   if (agentsFile.startsWith('examples/')) {
-    // Return the specific example directory (e.g., examples/react/basic-float)
-    const match = agentsFile.match(/^(examples\/[^/]+\/[^/]+)/);
-    return match ? match[1] : 'examples';
+    // Return the specific example directory (e.g., examples/react/basic-float).
+    // The trailing slash matters: without it a framework-level doc such as
+    // `examples/react/AGENTS.md` captures its own filename as the "root", and
+    // every path resolution below then joins onto a file instead of a folder.
+    const match = agentsFile.match(/^(examples\/[^/]+\/[^/]+)\//);
+    return match ? match[1] : path.dirname(agentsFile);
   }
   return null;
 }

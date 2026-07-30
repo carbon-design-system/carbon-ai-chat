@@ -9,6 +9,8 @@ Deltas for React examples. See [../AGENTS.md](../AGENTS.md) for shared workflow 
 
 Workspace naming: `@carbon/ai-chat-examples-react-<slug>`.
 
+**Carbon flavor**: `@carbon/react`. These examples are host applications, so JSX and `@carbon/react` are correct here — the Web-Components-only rule covers the two primary packages, not this directory. `@carbon/web-components` appears in `package.json` because `@carbon/ai-chat` peer-depends on it, not as an authoring signal. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area).
+
 ## Smoke-test setup
 
 Reference setups: [`./tests-jest-jsdom/`](./tests-jest-jsdom/) and [`./tests-jest-happydom/`](./tests-jest-happydom/) — `jest.config.js`, `babel.config.js`, plus a spec under `src/`. **Default to jsdom**; use happy-dom only when the example's APIs need it (layout measurement, certain form behaviors).
