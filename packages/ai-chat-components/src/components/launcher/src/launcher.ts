@@ -82,13 +82,6 @@ class CDSAIChatLauncher extends LitElement {
   unreadLabel?: string;
 
   /**
-   * Value for the `data-testid` attribute on the inner button element.
-   * @internal
-   */
-  @property({ attribute: 'data-test-id' })
-  dataTestId?: string;
-
-  /**
    * Value for computed aria-label set on the element.
    * @internal
    */
@@ -143,7 +136,6 @@ class CDSAIChatLauncher extends LitElement {
 
     return html`<div class="cds-aichat-launcher">
       <cds-aichat-button
-        data-testid=${this.dataTestId}
         aria-label=${this._ariaLabel}
         tooltip-text=${this._ariaLabel}
         tooltip-position=${tooltipPosition}
