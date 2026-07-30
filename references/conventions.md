@@ -30,5 +30,4 @@ Because pre-commit only touches staged files and skips license headers, run `npm
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
 - [code-patterns.md](code-patterns.md) — naming, SCSS, component placement, comments
-- [code-review.md](code-review.md) — review rubric that flags violations of these conventions
-- [pr.md](pr.md) — drafting PR descriptions
+- [tone.md](tone.md) — voice & word economy for developer-facing copy
