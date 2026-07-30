@@ -9,7 +9,6 @@
 
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import AiLaunch24 from '@carbon/icons/es/ai-launch/24.js';
 import ChatLaunch24 from '@carbon/icons/es/chat--launch/24.js';
@@ -34,12 +33,6 @@ import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 @carbonElement(`${prefix}-launcher`)
 class CDSAIChatLauncher extends LitElement {
   static styles = [commonStyles, styles];
-
-  /**
-   * Hides the launcher and removes it from the tab order when `true`.
-   */
-  @property({ type: Boolean, attribute: 'launcher-hidden' })
-  launcherHidden = false;
 
   /**
    * Shows the unread indicator dot when `true` and `unreadMessageCount` is 0.
@@ -100,12 +93,7 @@ class CDSAIChatLauncher extends LitElement {
    * @internal
    */
   private get _ariaLabel(): string {
-    return [
-      this.launcherHidden ? this.openLabel : this.closedLabel,
-      this.unreadLabel,
-    ]
-      .filter(Boolean)
-      .join('. ');
+    return [this.closedLabel, this.unreadLabel].filter(Boolean).join('. ');
   }
 
   private _renderIcon() {
@@ -149,16 +137,11 @@ class CDSAIChatLauncher extends LitElement {
   }
 
   render() {
-    const tabIndex = this.launcherHidden ? -1 : undefined;
     const tooltipPosition = isDirectionRTL()
       ? BUTTON_TOOLTIP_POSITION.RIGHT
       : BUTTON_TOOLTIP_POSITION.LEFT;
 
-    return html`<div
-      class=${classMap({
-        'cds-aichat-launcher': true,
-        'cds-aichat-launcher--hidden': this.launcherHidden,
-      })}>
+    return html`<div class="cds-aichat-launcher">
       <cds-aichat-button
         data-testid=${this.dataTestId}
         aria-label=${this._ariaLabel}
@@ -166,7 +149,6 @@ class CDSAIChatLauncher extends LitElement {
         tooltip-position=${tooltipPosition}
         kind=${BUTTON_KIND.PRIMARY}
         type=${BUTTON_TYPE.BUTTON}
-        .tabIndex=${tabIndex}
         @click=${this._handleToggle}>
         <div class="cds-aichat--launcher__wrapper">
           <div class="cds-aichat--launcher__icon-holder">

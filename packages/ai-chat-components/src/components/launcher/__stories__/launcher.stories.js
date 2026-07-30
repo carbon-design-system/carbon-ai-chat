@@ -18,7 +18,6 @@ export default {
 };
 
 const argTypes = {
-  launcherHidden: { control: 'boolean' },
   showUnreadIndicator: { control: 'boolean' },
   unreadMessageCount: { control: 'number' },
   closedLabel: { control: 'text' },
@@ -32,7 +31,6 @@ const argTypes = {
 const Template = (args) => html`
   <cds-aichat-launcher
     @cds-aichat-launcher-toggle=${args.onToggle}
-    ?launcher-hidden=${args.launcherHidden}
     ?show-unread-indicator=${args.showUnreadIndicator}
     unread-message-count=${ifDefined(args.unreadMessageCount)}
     closed-label=${ifDefined(args.closedLabel)}
@@ -44,7 +42,6 @@ const Template = (args) => html`
 
 export const Default = {
   args: {
-    launcherHidden: false,
     showUnreadIndicator: false,
     unreadMessageCount: 0,
     closedLabel: 'Open chat',

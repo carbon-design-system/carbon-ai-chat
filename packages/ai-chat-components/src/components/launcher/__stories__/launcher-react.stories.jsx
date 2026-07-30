@@ -7,64 +7,59 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from "react";
-import { action } from "storybook/actions";
-import Launcher from "../../../react/launcher";
+import React from 'react';
+import { action } from 'storybook/actions';
+import Launcher from '../../../react/launcher';
 
 export default {
-  title: "Components/Launcher",
+  title: 'Components/Launcher',
   component: Launcher,
 };
 
 const sharedArgTypes = {
-  launcherHidden: {
-    control: "boolean",
-    description: "Hides the launcher and removes it from the tab order.",
-  },
   showUnreadIndicator: {
-    control: "boolean",
+    control: 'boolean',
     description:
-      "Shows the unread indicator dot when there are no unread messages.",
+      'Shows the unread indicator dot when there are no unread messages.',
   },
   unreadMessageCount: {
-    control: "number",
-    description: "Displays the unread count badge when greater than 0.",
+    control: 'number',
+    description: 'Displays the unread count badge when greater than 0.',
   },
   closedLabel: {
-    control: "text",
+    control: 'text',
     description:
       'Aria label used when the launcher is in its "open chat" state.',
   },
   openLabel: {
-    control: "text",
+    control: 'text',
     description:
       'Aria label used when the launcher is in its "close chat" state.',
   },
   aiEnabled: {
-    control: "boolean",
+    control: 'boolean',
     description:
-      "Renders the AI launch icon instead of the standard chat icon.",
+      'Renders the AI launch icon instead of the standard chat icon.',
   },
   launcherAvatarUrl: {
-    control: "text",
-    description: "Optional avatar image URL that replaces the default icon.",
+    control: 'text',
+    description: 'Optional avatar image URL that replaces the default icon.',
   },
   unreadLabel: {
-    control: "text",
-    description: "Screen-reader label suffix for unread messages.",
+    control: 'text',
+    description: 'Screen-reader label suffix for unread messages.',
   },
   onToggle: { table: { disable: true } },
 };
 
-const Template = args => <Launcher onToggle={action("onToggle")} {...args} />;
+const Template = (args) => <Launcher onToggle={action('onToggle')} {...args} />;
 
 export const Default = {
   args: {
-    launcherHidden: false,
     showUnreadIndicator: false,
     unreadMessageCount: 0,
-    closedLabel: "Open chat",
-    openLabel: "Close chat",
+    closedLabel: 'Open chat',
+    openLabel: 'Close chat',
     aiEnabled: false,
   },
   argTypes: sharedArgTypes,
@@ -72,33 +67,33 @@ export const Default = {
 };
 
 export const AIEnabled = {
-  name: "AI enabled",
+  name: 'AI enabled',
   args: {
     ...Default.args,
     aiEnabled: true,
-    closedLabel: "Open AI chat",
-    openLabel: "Close AI chat",
+    closedLabel: 'Open AI chat',
+    openLabel: 'Close AI chat',
   },
   argTypes: sharedArgTypes,
   render: Template,
 };
 
 export const WithUnreadCount = {
-  name: "With unread count",
+  name: 'With unread count',
   args: {
     ...Default.args,
     unreadMessageCount: 3,
-    unreadLabel: "3 unread messages",
+    unreadLabel: '3 unread messages',
   },
   argTypes: sharedArgTypes,
   render: Template,
 };
 
 export const WithAvatar = {
-  name: "With avatar",
+  name: 'With avatar',
   args: {
     ...Default.args,
-    launcherAvatarUrl: "https://i.pravatar.cc/150?u=33",
+    launcherAvatarUrl: 'https://i.pravatar.cc/150?u=33',
   },
   argTypes: sharedArgTypes,
   render: Template,
