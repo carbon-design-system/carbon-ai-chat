@@ -38,7 +38,7 @@
 
 import '@carbon/styles/css/styles.css';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
-import '@carbon/ai-chat-components/es/components/autocomplete/src/autocomplete.js';
+import '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 
 import { type CustomListProps, type PublicConfig } from '@carbon/ai-chat';
 import { css, html, LitElement } from 'lit';

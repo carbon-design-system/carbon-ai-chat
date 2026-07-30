@@ -11,10 +11,10 @@ import { css, html, LitElement, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import '@carbon/web-components/es/components/icon-button/index.js';
 
-import { carbonElement } from '../../../globals/decorators/carbon-element.js';
-import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
-import prefix from '../../../globals/settings.js';
-import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
+import { carbonElement } from '../../../../globals/decorators/carbon-element.js';
+import { isDirectionRTL } from '../../../../globals/utils/rtl-utils.js';
+import prefix from '../../../../globals/settings.js';
+import { AriaAnnouncerManager } from '../../../../globals/utils/aria-announcer-manager.js';
 
 import styles from './autocomplete.scss?lit';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
@@ -23,11 +23,11 @@ import SendFilled16 from '@carbon/icons/es/send--filled/16.js';
 import type {
   SuggestionItem,
   SuggestionItemGroup,
-} from '../../prompt-line/src/tiptap/types.js';
+} from '../../src/tiptap/types.js';
 export type {
   SuggestionItem,
   SuggestionItemGroup,
-} from '../../prompt-line/src/tiptap/types.js';
+} from '../../src/tiptap/types.js';
 
 const blockClass = `${prefix}-autocomplete`;
 const itemClass = `${blockClass}-item`;

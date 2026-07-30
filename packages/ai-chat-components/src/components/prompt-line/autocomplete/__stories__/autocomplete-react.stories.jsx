@@ -9,10 +9,7 @@
  */
 import React, { useMemo } from 'react';
 import { action } from 'storybook/actions';
-import CDSAIChatAutocomplete from '../../../react/autocomplete';
-import React, { useMemo } from 'react';
-import { action } from 'storybook/actions';
-import CDSAIChatAutocomplete from '../../../react/autocomplete';
+import CDSAIChatAutocomplete from '../../../../react/autocomplete';
 import {
   Default as DefaultWC,
   WithHeader as WithHeaderWC,

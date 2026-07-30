@@ -9,7 +9,7 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import AutocompleteElement from '../components/autocomplete/src/autocomplete.js';
+import AutocompleteElement from '../components/prompt-line/autocomplete/src/autocomplete.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 // TODO: Icon transformation for suggestion items is handled upstream in prompt-line-shell.tsx.

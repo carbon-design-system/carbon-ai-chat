@@ -20,7 +20,7 @@
  */
 
 import '../index';
-import '../../autocomplete/index';
+import '../autocomplete/index';
 import '../../toolbar/index';
 import '../../file-uploads/index';
 import '@carbon/web-components/es/components/button/index.js';

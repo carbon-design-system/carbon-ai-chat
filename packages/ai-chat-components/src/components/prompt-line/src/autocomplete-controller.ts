@@ -13,7 +13,7 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 
-import '../../autocomplete/src/autocomplete.js';
+import '../autocomplete/src/autocomplete.js';
 import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
 import { resolveShowTriggerInChip } from './tiptap/carbon-mention.js';
 import { projectRawValue } from './tiptap/json-utils.js';
