@@ -26,6 +26,10 @@ const argTypes = {
   launcherAvatarUrl: { control: 'text' },
   unreadLabel: { control: 'text' },
   onToggle: { table: { disable: true } },
+  tooltipPosition: {
+    control: 'select',
+    options: ['top', 'bottom', 'left', 'right'],
+  },
 };
 
 const Template = (args) => html`
@@ -37,7 +41,8 @@ const Template = (args) => html`
     open-label=${ifDefined(args.openLabel)}
     ?ai-enabled=${args.aiEnabled}
     launcher-avatar-url=${ifDefined(args.launcherAvatarUrl)}
-    unread-label=${ifDefined(args.unreadLabel)}></cds-aichat-launcher>
+    unread-label=${ifDefined(args.unreadLabel)}
+    tooltip-position=${ifDefined(args.tooltipPosition)}></cds-aichat-launcher>
 `;
 
 export const Default = {
@@ -48,6 +53,7 @@ export const Default = {
     openLabel: 'Close chat',
     aiEnabled: false,
     onToggle: fn(),
+    tooltipPosition: 'right',
   },
   argTypes,
   render: Template,

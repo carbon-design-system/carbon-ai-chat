@@ -22,7 +22,6 @@ import {
   BUTTON_TOOLTIP_POSITION,
   BUTTON_TYPE,
 } from '@carbon/web-components/es/components/button/defs.js';
-import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 
 /**
  * Launcher button — opens the AI Chat window.
@@ -82,6 +81,12 @@ class CDSAIChatLauncher extends LitElement {
   unreadLabel?: string;
 
   /**
+   * Optional tooltip position to be rendered when hovering over the launcher, defaults to top
+   */
+  @property({ type: String, attribute: 'tooltip-position' })
+  tooltipPosition?: BUTTON_TOOLTIP_POSITION = BUTTON_TOOLTIP_POSITION.TOP;
+
+  /**
    * Value for computed aria-label set on the element.
    * @internal
    */
@@ -130,15 +135,11 @@ class CDSAIChatLauncher extends LitElement {
   }
 
   render() {
-    const tooltipPosition = isDirectionRTL()
-      ? BUTTON_TOOLTIP_POSITION.RIGHT
-      : BUTTON_TOOLTIP_POSITION.LEFT;
-
     return html`<div class="cds-aichat-launcher">
       <cds-aichat-button
         aria-label=${this._ariaLabel}
         tooltip-text=${this._ariaLabel}
-        tooltip-position=${tooltipPosition}
+        tooltip-position=${this.tooltipPosition}
         kind=${BUTTON_KIND.PRIMARY}
         type=${BUTTON_TYPE.BUTTON}
         @click=${this._handleToggle}>

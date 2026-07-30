@@ -50,6 +50,12 @@ const sharedArgTypes = {
     description: 'Screen-reader label suffix for unread messages.',
   },
   onToggle: { table: { disable: true } },
+  tooltipPosition: {
+    control: 'select',
+    options: ['top', 'bottom', 'left', 'right'],
+    description:
+      'Renders the tooltip position either top, bottom, left, or right.',
+  },
 };
 
 const Template = (args) => <Launcher onToggle={action('onToggle')} {...args} />;
@@ -61,6 +67,7 @@ export const Default = {
     closedLabel: 'Open chat',
     openLabel: 'Close chat',
     aiEnabled: false,
+    tooltipPosition: 'right',
   },
   argTypes: sharedArgTypes,
   render: Template,
