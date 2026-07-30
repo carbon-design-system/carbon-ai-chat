@@ -17,14 +17,14 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                        | Kind                          | Role in this example                                               |
-| --------------------------------------------- | ----------------------------- | ------------------------------------------------------------------ |
-| `<cds-aichat-custom-element>`                 | custom element                | Hosts the chat UI at the size of its CSS box.                      |
-| `.markdown`                                   | property (`attribute: false`) | Carries the `markdownItPlugins` array to the chat's renderer.      |
-| `markdown.markdownItPlugins`                  | config field                  | Registers `@vscode/markdown-it-katex` with the chat's renderer.    |
-| `WCMarkdown`                                  | `@carbon/ai-chat` type        | Shape of the value bound to `.markdown`.                           |
-| `.messaging`, `.layout`, `.openChatByDefault` | properties                    | Standard fullscreen baseline (`showFrame: false`, opens on mount). |
-| `messaging.customSendMessage`                 | property                      | Mock backend that emits markdown with KaTeX math.                  |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI at the size of its CSS box. |
+| `.markdown` | property (`attribute: false`) | Carries the `markdownItPlugins` array to the chat's renderer. |
+| `markdown.markdownItPlugins` | config field | Registers `@vscode/markdown-it-katex` with the chat's renderer. |
+| `WCMarkdown` | `@carbon/ai-chat` type | Shape of the value bound to `.markdown`. |
+| `.messaging`, `.layout`, `.openChatByDefault` | properties | Standard fullscreen baseline (`showFrame: false`, opens on mount). |
+| `messaging.customSendMessage` | property | Mock backend that emits markdown with KaTeX math. |
 
 ## Run it
 

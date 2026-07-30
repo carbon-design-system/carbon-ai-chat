@@ -12,20 +12,21 @@
  * intended to provide base types for a standalone widget and should not contain any imports of other types.
  */
 
-import { DeepPartial } from "../utilities/DeepPartial";
-import { MessageErrorState } from "./LocalMessageItem";
-import { HumanAgentsOnlineStatus } from "../config/ServiceDeskConfig";
-import { FileStatusValue } from "../config/ServiceDeskConfig";
+import { DeepPartial } from '../utilities/DeepPartial';
+import { MessageErrorState } from './LocalMessageItem';
+import { HumanAgentsOnlineStatus } from '../config/ServiceDeskConfig';
+import { FileStatusValue } from '../config/ServiceDeskConfig';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
-} from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/web-components/es/components/button/defs.js';
 import {
-  CHAT_BUTTON_KIND,
-  CHAT_BUTTON_SIZE,
-} from "@carbon/ai-chat-components/es/react/chat-button.js";
-import { ChainOfThoughtStepStatus } from "@carbon/ai-chat-components/es/components/chain-of-thought/defs.js";
-import { WorkspaceCustomPanelConfigOptions } from "../instance/apiTypes";
+  CHAT_BUTTON_KIND as _CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE,
+} from '@carbon/ai-chat-components/es/react/chat-button.js';
+import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from '@carbon/ai-chat-components/es/components/chain-of-thought/defs.js';
+import { WorkspaceCustomPanelConfigOptions } from '../instance/apiTypes';
+import type { JSONContent } from '@tiptap/core';
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
@@ -84,12 +85,12 @@ enum MessageInputType {
   /**
    * Represents a simple text message.
    */
-  TEXT = "text",
+  TEXT = 'text',
 
   /**
    * Represents an event message that can be used to send control, updates, or action information to the back-end.
    */
-  EVENT = "event",
+  EVENT = 'event',
 }
 
 /**
@@ -98,7 +99,7 @@ enum MessageInputType {
  * @category Messaging
  */
 enum InternalMessageRequestType {
-  FILE = "file",
+  FILE = 'file',
 }
 
 /**
@@ -110,12 +111,12 @@ export enum InternalSystemMessageType {
   /**
    * Indicates a request was cancelled before receiving a response.
    */
-  REQUEST_CANCELLED = "request_cancelled",
+  REQUEST_CANCELLED = 'request_cancelled',
 
   /**
    * Indicates a streaming response was stopped mid-stream.
    */
-  RESPONSE_STOPPED = "response_stopped",
+  RESPONSE_STOPPED = 'response_stopped',
 }
 
 /**
@@ -165,20 +166,29 @@ interface EventInputData<TNameType extends string = string> {
 /**
  * The type of a structured field.
  *
+ * Only three values carry meaning to the chat itself:
+ *
+ * - `"file"` — drives the upload merge logic and in-flight upload tracking.
+ * - `"mention"` — produced by the mention input node.
+ * - `"command"` — produced by the command input node.
+ *
+ * Any other string is accepted and passed through untouched — a free-form hint
+ * for your own {@link PublicConfigMessaging.customSendMessage}, which the chat
+ * never inspects. The three named members exist only so they keep
+ * autocompleting; describe every other backend widget type however your
+ * backend already names it.
+ *
  * @experimental
  * @category Messaging
  */
 type StructuredFieldType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "boolean"
-  | "select"
-  | "multi_select"
-  | "date"
-  | "datetime"
-  | "file"
-  | "unknown";
+  | 'file'
+  | 'mention'
+  | 'command'
+  // `string & {}` widens to any string while keeping the three literals in
+  // autocomplete — a plain `| string` would collapse the whole union to `string`.
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {});
 
 /**
  * Represents an inline file — the actual File object to be uploaded.
@@ -193,7 +203,7 @@ interface InlineFile {
   /**
    * Type discriminator.
    */
-  type: "inline";
+  type: 'inline';
 
   /**
    * The actual File object.
@@ -229,7 +239,7 @@ interface ExternalFileReference {
   /**
    * Type discriminator.
    */
-  type: "reference";
+  type: 'reference';
 
   /**
    * File identifier (could be a database ID, UUID, etc.).
@@ -267,31 +277,15 @@ interface ExternalFileReference {
 type FileFieldValue = InlineFile | ExternalFileReference;
 
 /**
- * The value of a structured field. The actual type depends on the field's
- * {@link StructuredFieldType}.
- *
- * @experimental
- * @category Messaging
- */
-type StructuredFieldValue =
-  | string // text, textarea, select, date, datetime
-  | number // number
-  | boolean // boolean
-  | string[] // multi_select
-  | FileFieldValue // file (single)
-  | FileFieldValue[] // file (multiple)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | any; // unknown / user_defined escape hatch
-
-/**
- * A single typed field within a {@link StructuredData} payload.
+ * A single field within a {@link StructuredData} payload.
  *
  * @experimental
  * @category Messaging
  */
 interface StructuredField {
   /**
-   * Unique identifier for this field.
+   * Unique identifier for this field. Read it back in
+   * {@link PublicConfigMessaging.customSendMessage} to find the field you sent.
    */
   id: string;
 
@@ -301,27 +295,33 @@ interface StructuredField {
   label?: string;
 
   /**
-   * The type of field.
+   * The type of field. Only `"file"`, `"mention"`, and `"command"` mean
+   * anything to the chat (see {@link StructuredFieldType}); any other value is
+   * carried through untouched for your own
+   * {@link PublicConfigMessaging.customSendMessage} to interpret.
    */
   type?: StructuredFieldType;
 
   /**
-   * The value of the field.
+   * The value of the field, carried untyped. For a `"file"` field it is a
+   * {@link FileFieldValue}; for every other field it is whatever your backend
+   * needs — narrow it yourself in
+   * {@link PublicConfigMessaging.customSendMessage}.
    */
-  value: StructuredFieldValue;
+  value: unknown;
 }
 
 /**
  * Structured data that can be sent alongside or instead of plain text input.
- * Supports typed fields for common input patterns (text, select, multi-select,
- * file, etc.) as well as an escape hatch for arbitrary user-defined data.
+ * Carries an array of {@link StructuredField} entries plus `user_defined`, an
+ * escape hatch for arbitrary host-defined data.
  *
  * @experimental
  * @category Messaging
  */
 interface StructuredData {
   /**
-   * Typed fields with known structures (recommended for most use cases).
+   * The structured fields carried with the message.
    */
   fields?: StructuredField[];
 
@@ -351,12 +351,26 @@ interface MessageInput extends BaseMessageInput {
 
   /**
    * Structured data that can be sent alongside or instead of plain text input.
-   * Supports typed fields (text, select, multi-select, file, etc.) and an
-   * escape hatch for arbitrary user-defined data.
+   * Carries an array of structured fields and an escape hatch for arbitrary
+   * user-defined data.
    *
    * @experimental
    */
   structured_data?: StructuredData;
+
+  /**
+   * TipTap JSONContent captured when the user sent the message. When present,
+   * the user message bubble renders structurally; mention / command / custom
+   * nodes render via their respective renderers. Absent on plain-text /
+   * legacy messages — the bubble falls back to `text`.
+   *
+   * Snapshot semantics: this reflects what the user typed at send time. If a
+   * `pre:send` handler rewrites `input.text`, `display_content` does NOT
+   * auto-update.
+   *
+   * @experimental
+   */
+  display_content?: JSONContent;
 }
 
 /**
@@ -431,89 +445,89 @@ enum MessageResponseTypes {
   /**
    * Represents a basic text response. The given text may contain rich content such as markdown.
    */
-  TEXT = "text",
+  TEXT = 'text',
 
   /**
    * A response that requests the user choose an option from a list. The list of options may be presented as a list
    * of buttons or it may be from a drop-down.
    */
-  OPTION = "option",
+  OPTION = 'option',
 
   /**
    * Indicates that the conversation should be escalated to a human agent and offers that opportunity to the user.
    */
-  CONNECT_TO_HUMAN_AGENT = "connect_to_agent",
+  CONNECT_TO_HUMAN_AGENT = 'connect_to_agent',
 
   /**
    * Displays an image to the user.
    */
-  IMAGE = "image",
+  IMAGE = 'image',
 
   /**
    * Indicates that the chat should display a pause at this point in the conversation before displaying additional
    * items.
    */
-  PAUSE = "pause",
+  PAUSE = 'pause',
 
   /**
    * A user defined response will be displayed according to custom logic in the client.
    */
-  USER_DEFINED = "user_defined",
+  USER_DEFINED = 'user_defined',
 
   /**
    * Displays the contents of an iframe to the user.
    */
-  IFRAME = "iframe",
+  IFRAME = 'iframe',
 
   /**
    * Displays a video to the user using a video player.
    */
-  VIDEO = "video",
+  VIDEO = 'video',
 
   /**
    * Displays an audio clip to the user using an audio player.
    */
-  AUDIO = "audio",
+  AUDIO = 'audio',
 
   /**
    * Asks the user to provide a date. This may result in a date picker being presented to the user.
    */
-  DATE = "date",
+  DATE = 'date',
 
   /**
    * Displays a general error message to the user and include developer info to be logged and to debug.
    */
-  INLINE_ERROR = "inline_error",
+  INLINE_ERROR = 'inline_error',
 
   /**
    * Displays a card that can contain other response types.
    */
-  CARD = "card",
+  CARD = 'card',
 
   /**
    * Displays a carousel of cards that can contain other response types.
    */
-  CAROUSEL = "carousel",
+  CAROUSEL = 'carousel',
 
   /**
    * Displays a button that can either send a message back to the backend, open a url, or throw a client side event.
    */
-  BUTTON = "button",
+  BUTTON = 'button',
 
   /**
    * Ability to layout response types inside a grid.
    */
-  GRID = "grid",
+  GRID = 'grid',
 
   /**
    * Ability to show citations on your RAG result.
    */
-  CONVERSATIONAL_SEARCH = "conversational_search",
+  CONVERSATIONAL_SEARCH = 'conversational_search',
 
   /**
    * Displays a preview card that can take the user flow to a workspace view.
    */
-  PREVIEW_CARD = "preview_card",
+  PREVIEW_CARD = 'preview_card',
 
   /**
    * Displays a system message to the user. System messages appear centered between other messages
@@ -546,7 +560,7 @@ enum MessageResponseTypes {
    * }
    * ```
    */
-  SYSTEM = "system",
+  SYSTEM = 'system',
 }
 
 /**
@@ -558,92 +572,92 @@ export enum HumanAgentMessageType {
   /**
    * There was an error in a message.
    */
-  INLINE_ERROR = "inline_error",
+  INLINE_ERROR = 'inline_error',
 
   /**
    * The agent sent a message.
    */
-  FROM_HUMAN_AGENT = "from_agent",
+  FROM_HUMAN_AGENT = 'from_agent',
 
   /**
    * The user sent a message.
    */
-  FROM_USER = "from_user",
+  FROM_USER = 'from_user',
 
   /**
    * The agent left the chat.
    */
-  HUMAN_AGENT_LEFT_CHAT = "agent_left_chat",
+  HUMAN_AGENT_LEFT_CHAT = 'agent_left_chat',
 
   /**
    * The agent ended the conversation.
    */
-  HUMAN_AGENT_ENDED_CHAT = "agent_ended_chat",
+  HUMAN_AGENT_ENDED_CHAT = 'agent_ended_chat',
 
   /**
    * The agent joined the conversation.
    */
-  HUMAN_AGENT_JOINED = "agent_joined",
+  HUMAN_AGENT_JOINED = 'agent_joined',
 
   /**
    * A disconnection warning was emitted.
    */
-  RELOAD_WARNING = "user_connected_warning",
+  RELOAD_WARNING = 'user_connected_warning',
 
   /**
    * The conversation was transferred to another agent.
    */
-  TRANSFER_TO_HUMAN_AGENT = "transfer_to_agent",
+  TRANSFER_TO_HUMAN_AGENT = 'transfer_to_agent',
 
   /**
    * The end user ended the conversation with the agent.
    */
-  USER_ENDED_CHAT = "user_ended_chat",
+  USER_ENDED_CHAT = 'user_ended_chat',
 
   /**
    * The conversation was ended.
    */
-  CHAT_WAS_ENDED = "chat_was_ended",
+  CHAT_WAS_ENDED = 'chat_was_ended',
 
   /**
    * The conversation was disconnected.
    */
-  DISCONNECTED = "disconnected",
+  DISCONNECTED = 'disconnected',
 
   /**
    * The conversation was re-connected.
    */
-  RECONNECTED = "reconnected",
+  RECONNECTED = 'reconnected',
 
   /**
    * Screen sharing requested.
    */
-  SHARING_REQUESTED = "sharing_requested",
+  SHARING_REQUESTED = 'sharing_requested',
 
   /**
    * Screen sharing accepted.
    */
-  SHARING_ACCEPTED = "sharing_accepted",
+  SHARING_ACCEPTED = 'sharing_accepted',
 
   /**
    * Screen sharing declined.
    */
-  SHARING_DECLINED = "sharing_declined",
+  SHARING_DECLINED = 'sharing_declined',
 
   /**
    * Screen sharing cancelled.
    */
-  SHARING_CANCELLED = "sharing_cancelled",
+  SHARING_CANCELLED = 'sharing_cancelled',
 
   /**
    * Screen sharing ended.
    */
-  SHARING_ENDED = "sharing_ended",
+  SHARING_ENDED = 'sharing_ended',
 
   /**
    * A system message.
    */
-  SYSTEM = "system",
+  SYSTEM = 'system',
 }
 
 /**
@@ -679,11 +693,14 @@ export interface ItemStreamingMetadata {
 }
 
 /**
- * Status of the chain of thought step.
+ * The processing status of a single chain-of-thought step, surfaced on
+ * {@link ChainOfThoughtStep.status}. An icon reflecting this status is rendered
+ * in the chain-of-thought view; when omitted, the UI assumes success.
  *
  * @category Messaging
  */
-export { ChainOfThoughtStepStatus };
+export const ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
+export type ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
 
 /**
  * A chain of thought step is meant to show tool calls and other steps made by your agent
@@ -1084,7 +1101,7 @@ interface TextItem<
  *
  * @category Messaging
  */
-export type SystemMessageVariant = "default" | "date" | "agent";
+export type SystemMessageVariant = 'default' | 'date' | 'agent';
 
 /**
  * A system message item that can be returned in a message response. System messages are used for
@@ -1234,12 +1251,12 @@ enum OptionItemPreference {
   /**
    * Indicates the options should be displayed as a drop-down.
    */
-  DROPDOWN = "dropdown",
+  DROPDOWN = 'dropdown',
 
   /**
    * Indicates the options should be displayed as buttons.
    */
-  BUTTON = "button",
+  BUTTON = 'button',
 }
 
 /**
@@ -1341,7 +1358,7 @@ interface MediaSubtitleTrack {
    * - "captions": Transcription including sound effects
    * - "descriptions": Audio descriptions for visually impaired
    */
-  kind?: "subtitles" | "captions" | "descriptions";
+  kind?: 'subtitles' | 'captions' | 'descriptions';
 
   /**
    * Whether this track should be enabled by default.
@@ -1406,12 +1423,12 @@ enum IFrameItemDisplayOption {
   /**
    * The iframe is displayed inline in the main message list.
    */
-  INLINE = "inline",
+  INLINE = 'inline',
 
   /**
    * The iframe is displayed in a separate panel after showing a card in the main message list.
    */
-  PANEL = "panel",
+  PANEL = 'panel',
 }
 
 /**
@@ -1594,22 +1611,22 @@ enum ButtonItemType {
   /**
    * A button that sends its value back to the backend.
    */
-  POST_BACK = "post_back",
+  POST_BACK = 'post_back',
 
   /**
    * A button that throws an event for your UI to respond to.
    */
-  CUSTOM_EVENT = "custom_event",
+  CUSTOM_EVENT = 'custom_event',
 
   /**
    * A button that shows a panel.
    */
-  SHOW_PANEL = "show_panel",
+  SHOW_PANEL = 'show_panel',
 
   /**
    * A button that opens a URL.
    */
-  URL = "url",
+  URL = 'url',
 }
 
 /**
@@ -1619,17 +1636,17 @@ enum WidthOptions {
   /**
    * Width the size of the floating chat for smaller content.
    */
-  SMALL = "small",
+  SMALL = 'small',
 
   /**
    * Max width of 438px, 2/3rd of the width of chat in fullscreen view with hasContentMaxWidth: true.
    */
-  MEDIUM = "medium",
+  MEDIUM = 'medium',
 
   /**
    * Max width of 585px, the full with of chat in fullscreen view with hasContentMaxWidth: true.
    */
-  LARGE = "large",
+  LARGE = 'large',
 }
 
 /**
@@ -1711,33 +1728,52 @@ enum ButtonItemKind {
   /**
    * Default Carbon button.
    */
-  DEFAULT = "default",
+  DEFAULT = 'default',
 
   /**
    * Secondary Carbon button.
    */
-  SECONDARY = "secondary",
+  SECONDARY = 'secondary',
 
   /**
    * Tertiary Carbon button.
    */
-  TERTIARY = "tertiary",
+  TERTIARY = 'tertiary',
 
   /**
    * Danger Carbon button.
    */
-  DANGER = "danger",
+  DANGER = 'danger',
 
   /**
    * Ghost Carbon button.
    */
-  GHOST = "ghost",
+  GHOST = 'ghost',
 
   /**
    * Button displayed like a link.
    */
-  LINK = "link",
+  LINK = 'link',
 }
+
+/**
+ * The Carbon AI-chat button style applied to {@link ButtonItem.kind}. Selects
+ * the visual treatment (primary, secondary, tertiary, ...) for buttons rendered
+ * by the chat.
+ *
+ * @category Messaging
+ */
+export const CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
+export type CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
+
+/**
+ * The Carbon AI-chat button size applied to {@link ButtonItem.size}. Selects the
+ * height and padding scale for buttons rendered by the chat.
+ *
+ * @category Messaging
+ */
+export const CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
+export type CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
 
 /**
  * This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.
@@ -1750,7 +1786,7 @@ interface ButtonItem<
   /**
    * The style of button to display.
    */
-  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | "LINK";
+  kind?: BUTTON_KIND | CHAT_BUTTON_KIND | 'LINK';
 
   /**
    * The button size.
@@ -1762,7 +1798,7 @@ interface ButtonItem<
    *
    * @internal
    */
-  is?: "standard-button";
+  is?: 'standard-button';
 
   /**
    * The type of button.
@@ -1842,14 +1878,14 @@ interface CarouselItem<
  *
  * @category Messaging
  */
-type HorizontalCellAlignment = "left" | "center" | "right";
+type HorizontalCellAlignment = 'left' | 'center' | 'right';
 
 /**
  * Vertical alignment values for items in a grid response.
  *
  * @category Messaging
  */
-type VerticalCellAlignment = "top" | "center" | "bottom";
+type VerticalCellAlignment = 'top' | 'center' | 'bottom';
 
 /**
  * @category Messaging
@@ -1961,9 +1997,9 @@ export interface MessageUIStateInternal {
  * @category Messaging
  */
 enum ReasoningStepOpenState {
-  OPEN = "open",
-  CLOSE = "close",
-  DEFAULT = "default",
+  OPEN = 'open',
+  CLOSE = 'close',
+  DEFAULT = 'default',
 }
 
 /**
@@ -2214,7 +2250,7 @@ interface PartialItemChunk extends Chunk {
  *
  * @category Messaging
  */
-type PartialItemChunkWithId = Omit<PartialItemChunk, "partial_item"> & {
+type PartialItemChunkWithId = Omit<PartialItemChunk, 'partial_item'> & {
   partial_item: DeepPartial<GenericItem> & {
     streaming_metadata: ItemStreamingMetadata;
   };
@@ -2276,19 +2312,19 @@ enum UserType {
   /**
    * A message from a human.
    */
-  HUMAN = "human",
+  HUMAN = 'human',
 
   /**
    * A message from a non-watsonx assistant, used for interacting with assistants that are not backed by watsonx.
    *
    * Official guidance is to not use this for IBM products without explicit exception.
    */
-  BOT = "bot",
+  BOT = 'bot',
 
   /**
    * A message from watsonx.
    */
-  WATSONX = "watsonx",
+  WATSONX = 'watsonx',
 }
 
 /**
@@ -2401,7 +2437,6 @@ export {
   StructuredData,
   StructuredField,
   StructuredFieldType,
-  StructuredFieldValue,
   InlineFile,
   ExternalFileReference,
   FileFieldValue,

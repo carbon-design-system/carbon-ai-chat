@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.LayoutConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html
 
 ## Signature
 
@@ -35,7 +35,7 @@ corners: {
 
 Undefined corners in PerCornerConfig will fall back to CornersType.ROUND.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.LayoutConfig.html#corners)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#corners)
 
 ### customProperties
 
@@ -64,7 +64,7 @@ Example:
 }
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.LayoutConfig.html#customproperties)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#customproperties)
 
 ### hasContentMaxWidth
 
@@ -75,7 +75,7 @@ Indicates if content inside the Carbon AI Chat widget should be constrained to a
 At larger widths the card, carousel, options and conversational search response types
 have pending issues.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.LayoutConfig.html#hascontentmaxwidth)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#hascontentmaxwidth)
 
 ### showFrame
 
@@ -83,4 +83,4 @@ have pending issues.
 
 Indicates if the Carbon AI Chat widget should keep its border and box-shadow.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.LayoutConfig.html#showframe)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.LayoutConfig.html#showframe)

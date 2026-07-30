@@ -18,27 +18,27 @@
 
 ## APIs and props demonstrated
 
-| Symbol                                | Kind                          | Role in this example                                                            |
-| ------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------- |
-| `<cds-aichat-custom-element>`         | custom element                | Hosts the chat UI at the size of its CSS box.                                   |
-| `.markdown`                           | property (`attribute: false`) | Carries the `customRenderers` object to the chat's renderer.                    |
-| `WCMarkdown`                          | `@carbon/ai-chat` type        | Shape of the value bound to `.markdown`.                                        |
-| `WCCustomMarkdownRenderers`           | `@carbon/ai-chat` type        | Shape of `markdown.customRenderers`.                                            |
-| `markdown.customRenderers.table`      | config field                  | Replaces the default markdown table renderer with a card+toolbar HTMLElement.   |
-| `MarkdownRendererTableArgs`           | `@carbon/ai-chat` type        | Argument shape for the table renderer (`headers`, `rows`, `slotName`, …).       |
-| `ChatInstance.customPanels`           | `@carbon/ai-chat` API         | Access to the chat's panel manager.                                             |
-| `CustomPanels.getPanel`               | `@carbon/ai-chat` API         | Returns a `CustomPanelInstance` for the requested panel type.                   |
-| `PanelType.WORKSPACE`                 | `@carbon/ai-chat` enum        | Selects the workspace panel.                                                    |
-| `CustomPanelInstance.open` / `.close` | `@carbon/ai-chat` API         | Opens / closes the workspace; `open` takes `WorkspaceCustomPanelConfigOptions`. |
-| `ChatInstance.writeableElements`      | `@carbon/ai-chat` API         | Slot for assigning the workspace-panel HTMLElement content.                     |
-| `BusEventType.WORKSPACE_CLOSE`        | `@carbon/ai-chat` event       | Fires when the panel closes — used to clear workspace state.                    |
-| `<cds-aichat-card>` (`is-flush`)      | custom element                | Wraps the inline table; `is-flush` removes default padding.                     |
-| `<cds-aichat-toolbar>`                | custom element                | Renders the card header with title + right-aligned actions.                     |
-| `<cds-aichat-workspace-shell>` family | custom elements               | Standard workspace-panel chrome around the full-size table.                     |
-| `Maximize16`                          | `@carbon/icons`               | Icon for the toolbar's "Open in workspace" action.                              |
-| `<cds-aichat-table>`                  | `@carbon/ai-chat-components`  | Renders the full-size table inside the workspace.                               |
-| `default-page-size`                   | `<cds-aichat-table>` property | Set to the row count so the pagination bar is suppressed and all rows render.   |
-| `messaging.customSendMessage`         | property                      | Mock backend that emits a 24-row order table.                                   |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI at the size of its CSS box. |
+| `.markdown` | property (`attribute: false`) | Carries the `customRenderers` object to the chat's renderer. |
+| `WCMarkdown` | `@carbon/ai-chat` type | Shape of the value bound to `.markdown`. |
+| `WCCustomMarkdownRenderers` | `@carbon/ai-chat` type | Shape of `markdown.customRenderers`. |
+| `markdown.customRenderers.table` | config field | Replaces the default markdown table renderer with a card+toolbar HTMLElement. |
+| `MarkdownRendererTableArgs` | `@carbon/ai-chat` type | Argument shape for the table renderer (`headers`, `rows`, `slotName`, …). |
+| `ChatInstance.customPanels` | `@carbon/ai-chat` API | Access to the chat's panel manager. |
+| `CustomPanels.getPanel` | `@carbon/ai-chat` API | Returns a `CustomPanelInstance` for the requested panel type. |
+| `PanelType.WORKSPACE` | `@carbon/ai-chat` enum | Selects the workspace panel. |
+| `CustomPanelInstance.open` / `.close` | `@carbon/ai-chat` API | Opens / closes the workspace; `open` takes `WorkspaceCustomPanelConfigOptions`. |
+| `ChatInstance.writeableElements` | `@carbon/ai-chat` API | Slot for assigning the workspace-panel HTMLElement content. |
+| `BusEventType.WORKSPACE_CLOSE` | `@carbon/ai-chat` event | Fires when the panel closes — used to clear workspace state. |
+| `<cds-aichat-card>` (`is-flush`) | custom element | Wraps the inline table; `is-flush` removes default padding. |
+| `<cds-aichat-toolbar>` | custom element | Renders the card header with title + right-aligned actions. |
+| `<cds-aichat-workspace-shell>` family | custom elements | Standard workspace-panel chrome around the full-size table. |
+| `Maximize16` | `@carbon/icons` | Icon for the toolbar's "Open in workspace" action. |
+| `<cds-aichat-table>` | `@carbon/ai-chat-components` | Renders the full-size table inside the workspace. |
+| `default-page-size` | `<cds-aichat-table>` property | Set to the row count so the pagination bar is suppressed and all rows render. |
+| `messaging.customSendMessage` | property | Mock backend that emits a 24-row order table. |
 
 ## Run it
 

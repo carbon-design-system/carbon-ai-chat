@@ -7,24 +7,24 @@
  *  @license
  */
 
-import React from "react";
-import { cleanup, render, waitFor, act } from "@testing-library/react";
-import { ChatContainer } from "../src/react/ChatContainer";
-import { PublicConfig } from "../src/types/config/PublicConfig";
-import { ChatContainerProps } from "../src/types/component/ChatContainer";
-import { ChatInstance } from "../src/types/instance/ChatInstance";
-import { createAppStore, type AppStore } from "../src/chat/store/appStore";
-import { AppState } from "../src/types/state/AppState";
-import { ServiceManager } from "../src/chat/services/ServiceManager";
-import { reducers } from "../src/chat/store/reducers";
-import actions from "../src/chat/store/actions";
-import isEqual from "lodash-es/isEqual.js";
+import React from 'react';
+import { cleanup, render, waitFor, act } from '@testing-library/react';
+import { ChatContainer } from '../src/react/ChatContainer';
+import { PublicConfig } from '../src/types/config/PublicConfig';
+import { ChatContainerProps } from '../src/types/component/ChatContainer';
+import { ChatInstance } from '../src/types/instance/ChatInstance';
+import { createAppStore, type AppStore } from '../src/chat/store/appStore';
+import { AppState } from '../src/types/state/AppState';
+import { ServiceManager } from '../src/chat/services/ServiceManager';
+import { reducers } from '../src/chat/store/reducers';
+import actions from '../src/chat/store/actions';
+import isEqual from 'lodash-es/isEqual.js';
 import {
   buildLanguagePack,
   createAppConfig,
   createInitialState,
   reconcileAppConfigReferences,
-} from "../src/chat/store/doCreateStore";
+} from '../src/chat/store/doCreateStore';
 
 // ============================================================================
 // Configuration helpers
@@ -75,7 +75,7 @@ export interface ChatInstanceWithStore {
  * @returns Promise that resolves to the ChatInstance
  */
 export const renderChatAndGetInstance = async (
-  config: PublicConfig,
+  config: PublicConfig
 ): Promise<ChatInstance> => {
   let capturedInstance: ChatInstance | null = null;
   const onBeforeRender = jest.fn((instance) => {
@@ -86,14 +86,14 @@ export const renderChatAndGetInstance = async (
     React.createElement(ChatContainer, {
       ...config,
       onBeforeRender,
-    }),
+    })
   );
 
   await waitFor(
     () => {
       expect(capturedInstance).not.toBeNull();
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 
   return capturedInstance;
@@ -107,7 +107,7 @@ export const renderChatAndGetInstance = async (
  * @returns Promise that resolves to an object containing instance, store, and serviceManager
  */
 export const renderChatAndGetInstanceWithStore = async (
-  config: PublicConfig,
+  config: PublicConfig
 ): Promise<ChatInstanceWithStore> => {
   let capturedInstance: ChatInstance | null = null;
   const onBeforeRender = jest.fn((instance) => {
@@ -118,14 +118,14 @@ export const renderChatAndGetInstanceWithStore = async (
     React.createElement(ChatContainer, {
       ...config,
       onBeforeRender,
-    }),
+    })
   );
 
   await waitFor(
     () => {
       expect(capturedInstance).not.toBeNull();
     },
-    { timeout: 5000 },
+    { timeout: 5000 }
   );
 
   const serviceManager = (capturedInstance as ChatInstance).serviceManager;
@@ -145,7 +145,7 @@ export const renderChatAndGetInstanceWithStore = async (
 /** The real root reducer (mirrors `reducerFunction` in doCreateStore). */
 const rootReducer = (
   state: AppState,
-  action: { type: string; [key: string]: unknown } | undefined,
+  action: { type: string; [key: string]: unknown } | undefined
 ): AppState =>
   action && reducers[action.type]
     ? reducers[action.type](state, action)
@@ -159,7 +159,7 @@ const rootReducer = (
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
   return createAppStore<AppState>(
     rootReducer as never,
-    createInitialState(createAppConfig(config)),
+    createInitialState(createAppConfig(config))
   );
 }
 
@@ -171,7 +171,7 @@ export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
  */
 export function applyConfigChange(
   store: AppStore<AppState>,
-  nextConfig: PublicConfig,
+  nextConfig: PublicConfig
 ): void {
   const prevConfig = store.getState().config;
   const next = createAppConfig(nextConfig);
@@ -186,7 +186,7 @@ export function applyConfigChange(
       const nextLanguagePack = buildLanguagePack(nextConfig.strings);
       if (!isEqual(store.getState().languagePack, nextLanguagePack)) {
         store.dispatch(
-          actions.setAppStateValue("languagePack", nextLanguagePack),
+          actions.setAppStateValue('languagePack', nextLanguagePack)
         );
       }
     }
@@ -213,5 +213,5 @@ export const setupBeforeEach = () => {
  */
 export const setupAfterEach = () => {
   cleanup();
-  document.body.innerHTML = "";
+  document.body.innerHTML = '';
 };

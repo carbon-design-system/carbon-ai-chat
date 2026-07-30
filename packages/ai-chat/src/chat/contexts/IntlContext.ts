@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { createContext } from "react";
-import { IntlShape } from "../utils/i18n";
+import { createContext } from 'react';
+import { IntlShape } from '../utils/i18n';
 
 /**
  * React context for providing i18n formatter throughout the component tree.
@@ -28,6 +28,4 @@ import { IntlShape } from "../utils/i18n";
  */
 export const IntlContext = createContext<IntlShape | null>(null);
 
-IntlContext.displayName = "IntlContext";
-
-// Made with Bob
+IntlContext.displayName = 'IntlContext';

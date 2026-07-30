@@ -13,12 +13,12 @@
  * where the two shapes are mapped, so the emit and restore paths cannot drift apart.
  */
 
-import cloneDeep from "lodash-es/cloneDeep.js";
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
-import { PersistableState } from "../../types/config/PersistedStateConfig";
-import { PersistedState } from "../../types/state/AppState";
-import { VERSION } from "../utils/environmentVariables";
-import { DEFAULT_PERSISTED_TO_BROWSER } from "./reducerUtils";
+import { PersistableState } from '../../types/config/PersistedStateConfig';
+import { PersistedState } from '../../types/state/AppState';
+import { VERSION } from '../utils/environmentVariables';
+import { DEFAULT_PERSISTED_TO_BROWSER } from './reducerUtils';
 
 /**
  * Converts a consumer-provided {@link PersistableState} into the internal {@link PersistedState} used

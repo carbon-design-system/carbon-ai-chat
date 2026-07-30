@@ -19,16 +19,16 @@
  * Start reading at `WorkspaceTable()`.
  */
 
-import { type ChatInstance, PanelType } from "@carbon/ai-chat";
-import Table from "@carbon/ai-chat-components/es/react/table";
+import { type ChatInstance, PanelType } from '@carbon/ai-chat';
+import Table from '@carbon/ai-chat-components/es/react/table';
 import WorkspaceShell, {
   WorkspaceShellBody,
-} from "@carbon/ai-chat-components/es/react/workspace-shell";
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar";
-import { Close } from "@carbon/icons-react";
-import React from "react";
+} from '@carbon/ai-chat-components/es/react/workspace-shell';
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar';
+import { Close } from '@carbon/icons-react';
+import React from 'react';
 
-import { type TableData } from "./tableData";
+import { type TableData } from './tableData';
 
 interface WorkspaceTableProps {
   instance: ChatInstance;
@@ -49,8 +49,7 @@ function WorkspaceTable({ instance, data }: WorkspaceTableProps) {
     <WorkspaceShell>
       <Toolbar
         slot="toolbar"
-        actions={[{ text: "Close", icon: Close, onClick: close }]}
-      >
+        actions={[{ text: 'Close', icon: Close, onClick: close }]}>
         <div slot="title">{data.title}</div>
       </Toolbar>
       <WorkspaceShellBody>

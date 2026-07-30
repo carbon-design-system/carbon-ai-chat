@@ -7,22 +7,22 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSAIChatHistoryPanelItemInput from "../../components/chat-history/src/history-panel-item-input.js";
-import { withWebComponentBridge } from "../utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatHistoryPanelItemInput from '../../components/chat-history/src/history-panel-item-input.js';
+import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryPanelItemInput = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-history-panel-item-input",
+    tagName: 'cds-aichat-history-panel-item-input',
     elementClass: CDSAIChatHistoryPanelItemInput,
     react: React,
     events: {
-      onChange: "history-panel-item-input-change",
-      onCancel: "history-panel-item-input-cancel",
-      onSave: "history-panel-item-input-save",
+      onChange: 'history-panel-item-input-change',
+      onCancel: 'history-panel-item-input-cancel',
+      onSave: 'history-panel-item-input-save',
     },
-  }),
+  })
 );
 
 export default HistoryPanelItemInput;

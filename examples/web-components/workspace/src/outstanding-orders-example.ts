@@ -7,27 +7,43 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import type { ChatInstance } from "@carbon/ai-chat";
-import { PanelType } from "@carbon/ai-chat";
-import "@carbon/ai-chat-components/es/components/workspace-shell/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import "@carbon/web-components/es/components/data-table/table.js";
-import "@carbon/web-components/es/components/data-table/table-head.js";
-import "@carbon/web-components/es/components/data-table/table-header-row.js";
-import "@carbon/web-components/es/components/data-table/table-header-cell.js";
-import "@carbon/web-components/es/components/data-table/table-body.js";
-import "@carbon/web-components/es/components/data-table/table-row.js";
-import "@carbon/web-components/es/components/data-table/table-cell.js";
-import "@carbon/web-components/es/components/data-table/table-header-title.js";
-import "@carbon/web-components/es/components/data-table/table-header-description.js";
-import Close16 from "@carbon/icons/es/close/16.js";
+/**
+ * Workspace child: OutstandingOrdersExample.
+ *
+ * Demonstrates: the data-table workspace path mounted into the
+ * `workspacePanelElement` slot when `additional_data.type ===
+ * "outstanding_orders"`. Reads the `orders` array off `additionalData`
+ * (forwarded from the user_defined card via `panel.open()` in `main.ts`)
+ * and closes through `instance.customPanels.getPanel(PanelType.WORKSPACE)`.
+ *
+ * APIs exercised:
+ *   - `instance.customPanels.getPanel(PanelType.WORKSPACE).close()`
+ *   - `cds-aichat-workspace-shell` / `cds-aichat-toolbar`
+ *
+ * Start reading at: `handleClose` and `render`.
+ */
 
-@customElement("outstanding-orders-example")
+import { LitElement, html } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import type { ChatInstance } from '@carbon/ai-chat';
+import { PanelType } from '@carbon/ai-chat';
+import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '@carbon/web-components/es/components/data-table/table.js';
+import '@carbon/web-components/es/components/data-table/table-head.js';
+import '@carbon/web-components/es/components/data-table/table-header-row.js';
+import '@carbon/web-components/es/components/data-table/table-header-cell.js';
+import '@carbon/web-components/es/components/data-table/table-body.js';
+import '@carbon/web-components/es/components/data-table/table-row.js';
+import '@carbon/web-components/es/components/data-table/table-cell.js';
+import '@carbon/web-components/es/components/data-table/table-header-title.js';
+import '@carbon/web-components/es/components/data-table/table-header-description.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+
+@customElement('outstanding-orders-example')
 export class OutstandingOrdersExample extends LitElement {
   @property({ type: String })
-  accessor location = "";
+  accessor location = '';
 
   @property({ type: Object })
   accessor instance: ChatInstance | undefined;
@@ -41,17 +57,18 @@ export class OutstandingOrdersExample extends LitElement {
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Close",
+      text: 'Close',
       fixed: true,
       icon: Close16,
-      size: "md",
+      size: 'md',
       onClick: this.handleClose.bind(this),
     },
   ];
 
   connectedCallback() {
     super.connectedCallback();
-    console.log("OutstandingOrdersExample rendered", {
+    // Debug wiring so payload shape from panel.open() is observable when the workspace mounts.
+    console.log('OutstandingOrdersExample rendered', {
       location: this.location,
       workspaceId: this.workspaceId,
       additionalData: this.additionalData,
@@ -59,12 +76,13 @@ export class OutstandingOrdersExample extends LitElement {
   }
 
   handleClose() {
+    // Closing through customPanels fires WORKSPACE_CLOSE so the host in main.ts can clear its slot state.
     const panel = this.instance?.customPanels?.getPanel(PanelType.WORKSPACE);
     panel?.close();
   }
 
   render() {
-    // Get orders from additionalData, fallback to empty array
+    // additionalData.orders is forwarded from sendOutstandingOrdersResponse via panel.open().
     const orders = this.additionalData?.orders || [];
 
     return html`
@@ -72,14 +90,12 @@ export class OutstandingOrdersExample extends LitElement {
         <cds-aichat-toolbar
           slot="toolbar"
           overflow
-          .actions=${this.toolbarActions}
-        >
+          .actions=${this.toolbarActions}>
           <div slot="title" data-fixed>Outstanding Orders</div>
         </cds-aichat-toolbar>
         <cds-aichat-workspace-shell-header
           title-text="Outstanding Orders"
-          subtitle-text="Total: ${orders.length} orders"
-        >
+          subtitle-text="Total: ${orders.length} orders">
           <div slot="header-description">
             View and manage all outstanding orders. This workspace displays the
             complete order list with details including customer information,
@@ -117,7 +133,7 @@ export class OutstandingOrdersExample extends LitElement {
                     <cds-table-cell>${order.date}</cds-table-cell>
                     <cds-table-cell>${order.amount}</cds-table-cell>
                   </cds-table-row>
-                `,
+                `
               )}
             </cds-table-body>
           </cds-table>
@@ -126,5 +142,3 @@ export class OutstandingOrdersExample extends LitElement {
     `;
   }
 }
-
-// Made with Bob

@@ -1,0 +1,70 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+/* The docked sidebar panel itself is positioned by the `cds-aichat-sidebar`
+   classes imported from `@carbon/ai-chat/css/chat-sidebar-layout.css`. This
+   file holds the host-page chrome (header bar), the offset that tucks the panel
+   below the 48px header, and the width override that narrows the panel to 320px
+   — below the 360px default — so the chat renders in its compact responsive
+   layout. It loads at document level because the `my-app` element disables
+   shadow DOM so the imported package CSS applies. */
+:root {
+  --cds-aichat-sidebar-width: 320px;
+  --cds-aichat-sidebar-inset-block-start: 48px;
+}
+
+my-app {
+  display: block;
+}
+
+.app-header {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background-color: #161616;
+  block-size: 48px;
+  color: #f4f4f4;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+.app-header__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.app-header__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #f4f4f4;
+  cursor: pointer;
+  /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
+  transition: background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+
+.app-header__button:hover {
+  background-color: #353535;
+}
+
+.app-header__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Make the ChatCustomElement fill the docked sidebar panel. */
+.cds-aichat-sidebar .chat-custom-element {
+  block-size: 100%;
+  inline-size: 100%;
+}

@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { classMap } from "lit/directives/class-map.js";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { property, state } from "lit/decorators.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import ChevronRight16 from "@carbon/icons/es/chevron--right/16.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./reasoning-step.scss?lit";
-import prefix from "../../../globals/settings.js";
-import { carbonElement } from "../../../globals/decorators";
+import { LitElement, html } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { property, state } from 'lit/decorators.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import ChevronRight16 from '@carbon/icons/es/chevron--right/16.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './reasoning-step.scss?lit';
+import prefix from '../../../globals/settings.js';
+import { carbonElement } from '../../../globals/decorators';
 
 const baseClass = `${prefix}--reasoning-step`;
 let idCounter = 0;
@@ -32,13 +32,13 @@ const generateId = (segment: string) =>
 class CDSAIChatReasoningStep extends LitElement {
   static styles = [commonStyles, styles];
 
-  @property({ type: String, attribute: "title" })
-  title = "";
+  @property({ type: String, attribute: 'title' })
+  title = '';
 
-  @property({ type: Boolean, attribute: "open", reflect: true })
+  @property({ type: Boolean, attribute: 'open', reflect: true })
   open = false;
 
-  @property({ type: Boolean, attribute: "controlled", reflect: true })
+  @property({ type: Boolean, attribute: 'controlled', reflect: true })
   controlled = false;
 
   /**
@@ -50,16 +50,16 @@ class CDSAIChatReasoningStep extends LitElement {
   /**
    * @internal
    */
-  private headerId = generateId("header");
+  private headerId = generateId('header');
 
   /**
    * @internal
    */
-  private contentId = generateId("content");
+  private contentId = generateId('content');
 
   connectedCallback() {
-    if (!this.hasAttribute("role")) {
-      this.setAttribute("role", "listitem");
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'listitem');
     }
 
     super.connectedCallback();
@@ -68,7 +68,7 @@ class CDSAIChatReasoningStep extends LitElement {
 
   firstUpdated() {
     const slot =
-      this.shadowRoot?.querySelector<HTMLSlotElement>("slot:not([name])");
+      this.shadowRoot?.querySelector<HTMLSlotElement>('slot:not([name])');
     const nodes = slot?.assignedNodes({ flatten: true });
     this.evaluateBodyContent(nodes);
     this.updatePanelInertState();
@@ -78,8 +78,8 @@ class CDSAIChatReasoningStep extends LitElement {
     super.updated(changedProperties);
 
     if (
-      changedProperties.has("open") ||
-      changedProperties.has("hasBodyContent")
+      changedProperties.has('open') ||
+      changedProperties.has('hasBodyContent')
     ) {
       this.updatePanelInertState();
     }
@@ -87,8 +87,8 @@ class CDSAIChatReasoningStep extends LitElement {
     // Announce when a real open/close toggle has settled so the scroll manager can
     // recalculate geometry. Skip the initial render (no previous value).
     if (
-      changedProperties.has("open") &&
-      changedProperties.get("open") !== undefined
+      changedProperties.has('open') &&
+      changedProperties.get('open') !== undefined
     ) {
       this.emitAnimationEndWhenSettled();
     }
@@ -100,7 +100,7 @@ class CDSAIChatReasoningStep extends LitElement {
     }
 
     return this.shadowRoot.querySelector<HTMLButtonElement>(
-      `.${baseClass}__trigger`,
+      `.${baseClass}__trigger`
     );
   }
 
@@ -122,7 +122,7 @@ class CDSAIChatReasoningStep extends LitElement {
   private isBodyNode(node: Node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       const element = node as HTMLElement;
-      const slotName = element.getAttribute("slot");
+      const slotName = element.getAttribute('slot');
 
       return !slotName;
     }
@@ -155,7 +155,7 @@ class CDSAIChatReasoningStep extends LitElement {
       detail,
     };
     const canToggle = this.dispatchEvent(
-      new CustomEvent("reasoning-step-beingtoggled", init),
+      new CustomEvent('reasoning-step-beingtoggled', init)
     );
 
     if (!canToggle) {
@@ -166,7 +166,7 @@ class CDSAIChatReasoningStep extends LitElement {
       this.open = nextState;
     }
 
-    this.dispatchEvent(new CustomEvent("reasoning-step-toggled", init));
+    this.dispatchEvent(new CustomEvent('reasoning-step-toggled', init));
   }
 
   private handleButtonClick() {
@@ -178,7 +178,7 @@ class CDSAIChatReasoningStep extends LitElement {
       return;
     }
 
-    if (event.key === "Escape" || event.key === "Esc") {
+    if (event.key === 'Escape' || event.key === 'Esc') {
       event.stopPropagation();
       this.handleToggleRequest(false);
     }
@@ -205,8 +205,7 @@ class CDSAIChatReasoningStep extends LitElement {
         aria-expanded="${String(this.open)}"
         aria-controls="${this.contentId}"
         @click=${this.handleButtonClick}
-        @keydown=${this.handleButtonKeydown}
-      >
+        @keydown=${this.handleButtonKeydown}>
         <span class="${baseClass}__icon" part="expando-icon" aria-hidden="true">
           ${iconLoader(ChevronRight16)}
         </span>
@@ -245,15 +244,15 @@ class CDSAIChatReasoningStep extends LitElement {
   private emitAnimationEndWhenSettled() {
     requestAnimationFrame(() => {
       const panel = this.shadowRoot?.querySelector<HTMLElement>(
-        `.${baseClass}__panel`,
+        `.${baseClass}__panel`
       );
       const emit = () =>
         this.dispatchEvent(
-          new CustomEvent("reasoning-animation-end", {
+          new CustomEvent('reasoning-animation-end', {
             bubbles: true,
             composed: true,
             detail: { open: this.open },
-          }),
+          })
         );
       // Only the `grid-template-rows` transition changes block size; awaiting the
       // panel's opacity/padding transitions too can delay the emit well past the
@@ -261,14 +260,14 @@ class CDSAIChatReasoningStep extends LitElement {
       const animations = (panel?.getAnimations?.() ?? []).filter(
         (animation): animation is CSSTransition =>
           animation instanceof CSSTransition &&
-          animation.transitionProperty === "grid-template-rows",
+          animation.transitionProperty === 'grid-template-rows'
       );
       if (!animations.length) {
         emit();
         return;
       }
       Promise.allSettled(
-        animations.map((animation) => animation.finished),
+        animations.map((animation) => animation.finished)
       ).then(emit);
     });
   }
@@ -285,20 +284,17 @@ class CDSAIChatReasoningStep extends LitElement {
         id=${this.contentId}
         class=${panelClasses}
         part="wrapper"
-        aria-hidden="${this.open && !isHidden ? "false" : "true"}"
-        role=${ifDefined(!isHidden ? "region" : undefined)}
+        aria-hidden="${this.open && !isHidden ? 'false' : 'true'}"
+        role=${ifDefined(!isHidden ? 'region' : undefined)}
         aria-labelledby=${ifDefined(!isHidden ? this.headerId : undefined)}
-        ?hidden=${isHidden}
-      >
+        ?hidden=${isHidden}>
         <div
           class="${baseClass}__panel-body"
           part="content"
-          data-visible="${this.open && !isHidden}"
-        >
+          data-visible="${this.open && !isHidden}">
           <slot
             @slotchange=${this.handleBodySlotChange}
-            ?hidden=${isHidden}
-          ></slot>
+            ?hidden=${isHidden}></slot>
         </div>
       </div>
     `;
@@ -309,7 +305,7 @@ class CDSAIChatReasoningStep extends LitElement {
    */
   private updatePanelInertState() {
     const slot =
-      this.shadowRoot?.querySelector<HTMLSlotElement>("slot:not([name])");
+      this.shadowRoot?.querySelector<HTMLSlotElement>('slot:not([name])');
 
     if (!slot) {
       return;
@@ -319,7 +315,7 @@ class CDSAIChatReasoningStep extends LitElement {
     const assignedElements = slot.assignedElements({ flatten: true });
 
     assignedElements.forEach((element) => {
-      element.toggleAttribute("inert", shouldInert);
+      element.toggleAttribute('inert', shouldInert);
     });
   }
 
@@ -345,7 +341,7 @@ class CDSAIChatReasoningStep extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-reasoning-step": CDSAIChatReasoningStep;
+    'cds-aichat-reasoning-step': CDSAIChatReasoningStep;
   }
 }
 

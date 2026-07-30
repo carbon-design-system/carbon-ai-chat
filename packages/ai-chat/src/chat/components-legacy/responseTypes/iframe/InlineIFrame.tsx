@@ -7,20 +7,20 @@
  *  @license
  */
 
-import React, { useCallback, useState, useLayoutEffect, useRef } from "react";
+import React, { useCallback, useState, useLayoutEffect, useRef } from 'react';
 
-import { useAriaAnnouncer } from "../../../hooks/useAriaAnnouncer";
-import { useSelector } from "../../../hooks/useSelector";
+import { useAriaAnnouncer } from '../../../hooks/useAriaAnnouncer';
+import { useSelector } from '../../../hooks/useSelector';
 import {
   applyDynamicStyles,
   clearDynamicStyles,
-} from "../../../utils/cspStyleUtils";
-import { getMediaDimensions } from "../../../utils/messageUtils";
-import { getResponsiveElementPaddingValue } from "../../../utils/miscUtils";
-import InlineError from "../../../components/util/InlineError";
-import { IFrameComponent } from "./IFrameComponent";
-import { IFrameItem } from "../../../../types/messaging/Messages";
-import { AppState } from "../../../../types/state/AppState";
+} from '../../../utils/cspStyleUtils';
+import { getMediaDimensions } from '../../../utils/messageUtils';
+import { getResponsiveElementPaddingValue } from '../../../utils/miscUtils';
+import InlineError from '../../../components/util/InlineError';
+import { IFrameComponent } from './IFrameComponent';
+import { IFrameItem } from '../../../../types/messaging/Messages';
+import { AppState } from '../../../../types/state/AppState';
 
 interface InlineIframeProps {
   /**
@@ -35,7 +35,7 @@ interface InlineIframeProps {
 function InlineIFrame({ messageItem }: InlineIframeProps) {
   const ariaAnnouncer = useAriaAnnouncer();
   const errors_iframeSource = useSelector(
-    (state: AppState) => state.languagePack.errors_iframeSource,
+    (state: AppState) => state.languagePack.errors_iframeSource
   );
   const [isError, setIsError] = useState(false);
   const { source, title } = messageItem;
@@ -51,10 +51,10 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
     if (!node || !paddingTop) {
       return undefined;
     }
-    applyDynamicStyles(node, "iframe-padding", {
-      "padding-block-start": paddingTop,
+    applyDynamicStyles(node, 'iframe-padding', {
+      'padding-block-start': paddingTop,
     });
-    return () => clearDynamicStyles(node, "iframe-padding");
+    return () => clearDynamicStyles(node, 'iframe-padding');
   }, [paddingTop]);
 
   /**

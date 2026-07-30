@@ -19,14 +19,14 @@ import {
   MessageState,
   ReasoningStep,
   UserDefinedItem,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 // The welcome button posts back this string; `customSendMessage` runs the
 // scenario for any non-empty input. `silent` keeps the trigger message out of
 // the visible transcript.
-const START_TRIGGER = "Show me the reasoning demo";
+const START_TRIGGER = 'Show me the reasoning demo';
 
-const TEXT_STREAM_ID = "final-text";
+const TEXT_STREAM_ID = 'final-text';
 const WORD_DELAY = 50;
 const STEP_GAP = 600;
 
@@ -39,26 +39,26 @@ interface StepPlan {
 
 const STEP_PLANS: StepPlan[] = [
   {
-    title: "Read the user request",
+    title: 'Read the user request',
     body: "Scanning the message for the user's goal and any required tools.",
-    summary: "Detected a request for an example walkthrough.",
-    citations: ["session-context"],
+    summary: 'Detected a request for an example walkthrough.',
+    citations: ['session-context'],
   },
   {
-    title: "Gather supporting context",
-    body: "Fetching documents from the knowledge base that match the goal.",
-    summary: "Pulled 3 supporting documents from the mock retrieval service.",
-    citations: ["doc-123", "doc-456", "doc-789"],
+    title: 'Gather supporting context',
+    body: 'Fetching documents from the knowledge base that match the goal.',
+    summary: 'Pulled 3 supporting documents from the mock retrieval service.',
+    citations: ['doc-123', 'doc-456', 'doc-789'],
   },
   {
-    title: "Draft the response",
-    body: "Composing a short answer that cites the supporting documents.",
-    summary: "Drafted a 2-sentence response with inline citations.",
+    title: 'Draft the response',
+    body: 'Composing a short answer that cites the supporting documents.',
+    summary: 'Drafted a 2-sentence response with inline citations.',
   },
 ];
 
 const FINAL_TEXT =
-  "Here is the response. Each reasoning step above streamed a TextItem into its content array and then appended a user_defined summary card.";
+  'Here is the response. Each reasoning step above streamed a TextItem into its content array and then appended a user_defined summary card.';
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => {
@@ -68,7 +68,7 @@ function sleep(ms: number) {
 
 function makeStepContent(
   streamedText: string,
-  summary?: StepPlan,
+  summary?: StepPlan
 ): GenericItem[] {
   const content: GenericItem[] = [
     {
@@ -80,7 +80,7 @@ function makeStepContent(
     const userDefined: UserDefinedItem = {
       response_type: MessageResponseTypes.USER_DEFINED,
       user_defined: {
-        user_defined_type: "reasoning_summary",
+        user_defined_type: 'reasoning_summary',
         summary: summary.summary,
         citations: summary.citations,
       },
@@ -107,7 +107,7 @@ function buildSnapshot(
   responseID: string,
   text: string,
   messageOptions: MessageResponseOptions,
-  cancellable: boolean,
+  cancellable: boolean
 ): MessageResponse {
   return {
     id: responseID,
@@ -129,28 +129,28 @@ function buildSnapshot(
 function createShellMessage(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   // First upsert is STREAMING: seed an empty-text shell so the message exists
   // before the reasoning steps stream in.
   return instance.messaging.upsertMessage(
     responseID,
     MessageState.STREAMING,
-    () => buildSnapshot(responseID, "", messageOptions, false),
+    () => buildSnapshot(responseID, '', messageOptions, false)
   );
 }
 
 function pushMessageOptions(
   instance: ChatInstance,
   responseID: string,
-  messageOptions: MessageResponseOptions,
+  messageOptions: MessageResponseOptions
 ) {
   // STREAMING upsert that advances `message_options.reasoning` (the steps and
   // their streamed content arrays) while the answer text is still empty.
   return instance.messaging.upsertMessage(
     responseID,
     MessageState.STREAMING,
-    () => buildSnapshot(responseID, "", messageOptions, true),
+    () => buildSnapshot(responseID, '', messageOptions, true)
   );
 }
 
@@ -159,15 +159,15 @@ async function streamFinalText(
   responseID: string,
   text: string,
   finalMessageOptions: MessageResponseOptions,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ) {
-  const words = text.split(" ");
+  const words = text.split(' ');
   let canceled = false;
-  let accumulated = "";
+  let accumulated = '';
   const onAbort = () => {
     canceled = true;
   };
-  signal?.addEventListener("abort", onAbort);
+  signal?.addEventListener('abort', onAbort);
 
   try {
     for (let i = 0; i < words.length; i += 1) {
@@ -180,7 +180,7 @@ async function streamFinalText(
       await instance.messaging.upsertMessage(
         responseID,
         MessageState.STREAMING,
-        () => buildSnapshot(responseID, accumulated, finalMessageOptions, true),
+        () => buildSnapshot(responseID, accumulated, finalMessageOptions, true)
       );
       await sleep(WORD_DELAY);
     }
@@ -193,10 +193,10 @@ async function streamFinalText(
     await instance.messaging.upsertMessage(
       responseID,
       MessageState.COMPLETE,
-      () => buildSnapshot(responseID, text, finalMessageOptions, false),
+      () => buildSnapshot(responseID, text, finalMessageOptions, false)
     );
   } finally {
-    signal?.removeEventListener("abort", onAbort);
+    signal?.removeEventListener('abort', onAbort);
   }
 }
 
@@ -227,8 +227,8 @@ async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
     await sleep(STEP_GAP);
 
     // 2. Stream the TextItem body for this step word-by-word.
-    const words = plan.body.split(" ");
-    let partial = "";
+    const words = plan.body.split(' ');
+    let partial = '';
 
     for (let w = 0; w < words.length; w += 1) {
       if (signal?.aborted) {
@@ -262,7 +262,7 @@ async function runScenario(instance: ChatInstance, signal?: AbortSignal) {
     responseID,
     FINAL_TEXT,
     { reasoning: { steps: cloneSteps(steps) } },
-    signal,
+    signal
   );
 }
 
@@ -283,22 +283,22 @@ function sendWelcome(instance: ChatInstance) {
           {
             response_type: MessageResponseTypes.BUTTON,
             button_type: ButtonItemType.POST_BACK,
-            label: "Send a message to see example",
+            label: 'Send a message to see example',
             value: { input: { text: START_TRIGGER } },
             silent: true,
           },
         ],
       },
-    }),
+    })
   );
 }
 
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  const trimmed = request.input.text?.trim() ?? "";
+  const trimmed = request.input.text?.trim() ?? '';
   if (!trimmed) {
     await sendWelcome(instance);
     return;

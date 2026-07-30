@@ -22,9 +22,9 @@
 
 function escapeText(value) {
   return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 export function applyCarbonRules(parser) {
@@ -35,25 +35,25 @@ export function applyCarbonRules(parser) {
   // document order, so a single flag distinguishes header rows from body rows.
   let inHead = false;
 
-  rules.table_open = () => "<cds-table>";
-  rules.table_close = () => "</cds-table>";
+  rules.table_open = () => '<cds-table>';
+  rules.table_close = () => '</cds-table>';
   rules.thead_open = () => {
     inHead = true;
-    return "<cds-table-head>";
+    return '<cds-table-head>';
   };
-  rules.thead_close = () => "</cds-table-head>";
+  rules.thead_close = () => '</cds-table-head>';
   rules.tbody_open = () => {
     inHead = false;
-    return "<cds-table-body>";
+    return '<cds-table-body>';
   };
-  rules.tbody_close = () => "</cds-table-body>";
-  rules.tr_open = () => (inHead ? "<cds-table-header-row>" : "<cds-table-row>");
+  rules.tbody_close = () => '</cds-table-body>';
+  rules.tr_open = () => (inHead ? '<cds-table-header-row>' : '<cds-table-row>');
   rules.tr_close = () =>
-    inHead ? "</cds-table-header-row>" : "</cds-table-row>";
-  rules.th_open = () => "<cds-table-header-cell>";
-  rules.th_close = () => "</cds-table-header-cell>";
-  rules.td_open = () => "<cds-table-cell>";
-  rules.td_close = () => "</cds-table-cell>";
+    inHead ? '</cds-table-header-row>' : '</cds-table-row>';
+  rules.th_open = () => '<cds-table-header-cell>';
+  rules.th_close = () => '</cds-table-header-cell>';
+  rules.td_open = () => '<cds-table-cell>';
+  rules.td_close = () => '</cds-table-cell>';
 
   // Fenced code. Replacing the fence rule outright means TypeDoc's shiki
   // highlight callback is never invoked for fenced blocks. The raw source is
@@ -66,8 +66,8 @@ export function applyCarbonRules(parser) {
   // fold gutter (no collapse/expand control) for cleaner inline prose snippets.
   rules.fence = (tokens, idx) => {
     const token = tokens[idx];
-    const lang = (token.info || "").trim().split(/\s+/)[0] || "";
-    const code = escapeText(token.content.replace(/\n$/, ""));
+    const lang = (token.info || '').trim().split(/\s+/)[0] || '';
+    const code = escapeText(token.content.replace(/\n$/, ''));
     return `<div class="cds--tile"><cds-aichat-code-snippet hide-header hide-line-numbers hide-fold language="${lang}" highlight max-collapsed-number-of-rows="0" max-expanded-number-of-rows="0">${code}</cds-aichat-code-snippet></div>`;
   };
 
@@ -83,11 +83,11 @@ export function applyCarbonRules(parser) {
   // `is-expressive`. Emitting both keeps lists at body-02 across either, which
   // matters because the floating CDN tag can roll forward without notice.
   rules.bullet_list_open = () =>
-    "<cds-unordered-list isexpressive is-expressive>";
-  rules.bullet_list_close = () => "</cds-unordered-list>";
+    '<cds-unordered-list isexpressive is-expressive>';
+  rules.bullet_list_close = () => '</cds-unordered-list>';
   rules.ordered_list_open = () =>
-    "<cds-ordered-list isexpressive is-expressive>";
-  rules.ordered_list_close = () => "</cds-ordered-list>";
-  rules.list_item_open = () => "<cds-list-item>";
-  rules.list_item_close = () => "</cds-list-item>";
+    '<cds-ordered-list isexpressive is-expressive>';
+  rules.ordered_list_close = () => '</cds-ordered-list>';
+  rules.list_item_open = () => '<cds-list-item>';
+  rules.list_item_close = () => '</cds-list-item>';
 }

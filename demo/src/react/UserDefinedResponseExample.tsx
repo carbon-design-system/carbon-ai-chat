@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,9 +7,9 @@
  *  @license
  */
 
-import "./UserDefinedResponseStyles.css";
+import './UserDefinedResponseStyles.css';
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 interface UserDefinedExampleProps {
   text: string;
@@ -36,7 +36,7 @@ function UserDefinedResponseExample({
         The following is some text passed along for use by the back-end: {text}.
       </p>
       <p>
-        And here is a value being set by the parent container state:{" "}
+        And here is a value being set by the parent container state:{' '}
         {parentStateText}.
       </p>
       <p>And here is a value being set by local state: {timestamp}.</p>

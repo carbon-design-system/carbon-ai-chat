@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/types/Type_reference.StructuredFieldValue.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.StructuredFieldValue.html
 
 The value of a structured field. The actual type depends on the field's
 StructuredFieldType.

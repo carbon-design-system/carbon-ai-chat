@@ -5,29 +5,35 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "sass:string";
+@use 'sass:string';
 
-@use "@carbon/styles/scss/type";
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/themes";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/colors";
-@use "@carbon/styles/scss/spacing";
-@use "@carbon/styles/scss/utilities/focus-outline" as *;
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
+@use '@carbon/styles/scss/type';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/themes';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/colors';
+@use '@carbon/styles/scss/spacing';
+@use '@carbon/styles/scss/utilities/focus-outline' as *;
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
 
-:host-context([data-theme="white"]),
-:host-context([storybook-carbon-theme="white"]),
-:host-context([data-theme="g10"]),
-:host-context([storybook-carbon-theme="g10"]),
+:host-context([data-theme='white']),
+:host-context([storybook-carbon-theme='white']),
+:host-context([data-theme='g10']),
+:host-context([storybook-carbon-theme='g10']),
 :host {
+  // Without this the custom element is inline by default. In text-flow
+  // contexts (e.g. a contenteditable) the host then picks up the parent's
+  // line-height as phantom inline-box height, leaving leading above/below
+  // the snippet.
+  display: block;
+
   @include rounded-modifiers;
 
   // Automatically output all syntax-* tokens from the Carbon $white theme
   @each $token, $value in themes.$white {
-    @if string.index($token, "syntax-") == 1 {
+    @if string.index($token, 'syntax-') == 1 {
       --cds-#{$token}: #{$value};
     }
   }
@@ -51,12 +57,16 @@
   background: theme.$chat-shell-background;
   font-family: inherit;
   max-inline-size: 100%;
+  // Insulate from inherited `white-space: pre-wrap` (e.g. contenteditable
+  // hosts). Without this, indented newlines in the Lit template render as
+  // line boxes between block children, leaving a gap above/below the editor.
+  white-space: normal;
 
   @include rounded-self;
 
   // Masking removed - was causing issues with scrollbars
   code {
-    @include type.type-style("code-01");
+    @include type.type-style('code-01');
   }
 }
 
@@ -66,12 +76,12 @@
   block-size: 100%;
 }
 
-:host-context([data-theme="g90"]),
-:host-context([storybook-carbon-theme="g90"]),
-:host-context([data-theme="g100"]),
-:host-context([storybook-carbon-theme="g100"]) {
+:host-context([data-theme='g90']),
+:host-context([storybook-carbon-theme='g90']),
+:host-context([data-theme='g100']),
+:host-context([storybook-carbon-theme='g100']) {
   @each $token, $value in themes.$g90 {
-    @if string.index($token, "syntax-") == 1 {
+    @if string.index($token, 'syntax-') == 1 {
       --cds-#{$token}: #{$value};
     }
   }
@@ -127,15 +137,18 @@
 .#{$prefix}--snippet-container {
   position: relative;
   order: 1;
-  max-block-size: var(--cds-snippet-max-height, 100%);
-  min-block-size: var(--cds-snippet-min-height, 100%);
+  // Default to "grow with content, no internal scroll". Pixel clamps are
+  // applied per-instance by `buildContainerStyles` (driven by the
+  // `*NumberOfRows` properties); fill-mode overrides separately below.
+  max-block-size: var(--cds-snippet-max-height, none);
+  min-block-size: var(--cds-snippet-min-height, auto);
   overflow-y: auto;
   pointer-events: auto;
   transition: max-height motion.$duration-moderate-01
     motion(standard, productive);
 
   &:focus {
-    @include focus-outline("outline");
+    @include focus-outline('outline');
 
     outline-offset: 0;
   }
@@ -153,6 +166,10 @@
 
 .#{$prefix}--snippet-container--fill-mode {
   block-size: 100%;
+  // Own the clamp explicitly so fill mode (a 0/0 row config) scrolls inside
+  // its host rather than depending on the base container's `var()` fallback,
+  // which defaults to `none` to let grow mode (Infinity rows) expand freely.
+  max-block-size: 100%;
   overflow-y: auto;
 }
 
@@ -213,7 +230,7 @@
 .#{$prefix}--snippet__language,
 .#{$prefix}--snippet__header-separator,
 .#{$prefix}--snippet__linecount {
-  @include type.type-style("label-01");
+  @include type.type-style('label-01');
 }
 
 .#{$prefix}--snippet__header-separator {

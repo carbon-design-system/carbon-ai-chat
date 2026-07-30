@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.BusEventStateChange.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html
 
 This event is fired whenever the public state returned by ChatInstance.getState() changes.
 This includes changes to viewState, showUnreadIndicator, and other persisted state.
@@ -21,7 +21,7 @@ interface BusEventStateChange
 
 The new state after the change.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.BusEventStateChange.html#newstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html#newstate)
 
 ### previousState
 
@@ -29,7 +29,7 @@ The new state after the change.
 
 The previous state before the change.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.BusEventStateChange.html#previousstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html#previousstate)
 
 ### type
 
@@ -37,4 +37,4 @@ The previous state before the change.
 
 The type of the event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.BusEventStateChange.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventStateChange.html#type)

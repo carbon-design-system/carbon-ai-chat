@@ -7,15 +7,15 @@
  *  @license
  */
 
-import "../src/markdown";
-import "@carbon/web-components/es/components/data-table/index.js";
-import { html, render, LitElement } from "lit";
+import '../src/markdown';
+import '@carbon/web-components/es/components/data-table/index.js';
+import { html, render, LitElement } from 'lit';
 // `@vscode/markdown-it-katex` is a CommonJS module that assigns the plugin to
 // `exports.default` without an `__esModule` marker. Under Vite's interop the
 // default import resolves to the whole module namespace (`{ default: fn }`)
 // rather than the function, so unwrap `.default` before handing it to
 // `markdownItPlugins`, which expects plugin functions.
-import markdownItKatexModule from "@vscode/markdown-it-katex";
+import markdownItKatexModule from '@vscode/markdown-it-katex';
 
 const markdownItKatex = markdownItKatexModule.default ?? markdownItKatexModule;
 
@@ -186,7 +186,7 @@ class StreamingDemo extends LitElement {
 
   constructor() {
     super();
-    this.streamedContent = "";
+    this.streamedContent = '';
     this.streaming = true;
     this.isComplete = false;
     this.streamInterval = null;
@@ -213,18 +213,18 @@ class StreamingDemo extends LitElement {
 
     // Split content into chunks based on every 3 spaces
     const chunks = [];
-    let currentChunk = "";
+    let currentChunk = '';
     let spaceCount = 0;
 
     for (let i = 0; i < this.source.length; i++) {
       const char = this.source[i];
       currentChunk += char;
 
-      if (char === " ") {
+      if (char === ' ') {
         spaceCount++;
         if (spaceCount === 3) {
           chunks.push(currentChunk);
-          currentChunk = "";
+          currentChunk = '';
           spaceCount = 0;
         }
       }
@@ -236,7 +236,7 @@ class StreamingDemo extends LitElement {
     }
 
     let chunkIndex = 0;
-    this.streamedContent = "";
+    this.streamedContent = '';
     this.isComplete = false;
 
     this.streamInterval = window.setInterval(() => {
@@ -259,78 +259,76 @@ class StreamingDemo extends LitElement {
         <div style="margin-bottom: 1rem;">
           <button
             @click=${() => this.startStreaming()}
-            style="padding: 0.5rem 1rem; cursor: pointer; margin-right: 0.5rem;"
-          >
+            style="padding: 0.5rem 1rem; cursor: pointer; margin-right: 0.5rem;">
             Restart Streaming
           </button>
         </div>
         <cds-aichat-markdown
           ?streaming=${this.streaming}
           .markdown=${this.streamedContent}
-          .customRenderers=${this.customRenderers}
-        ></cds-aichat-markdown>
+          .customRenderers=${this.customRenderers}></cds-aichat-markdown>
       </div>
     `;
   }
 }
 
-customElements.define("streaming-markdown-demo", StreamingDemo);
+customElements.define('streaming-markdown-demo', StreamingDemo);
 
 export default {
-  title: "Components/Markdown",
-  component: "cds-aichat-markdown",
+  title: 'Components/Markdown',
+  component: 'cds-aichat-markdown',
   argTypes: {
     markdown: {
-      control: "text",
-      description: "Markdown content to render",
+      control: 'text',
+      description: 'Markdown content to render',
     },
     streaming: {
-      control: "boolean",
-      description: "Enable streaming mode for progressive rendering",
+      control: 'boolean',
+      description: 'Enable streaming mode for progressive rendering',
     },
     sanitizeHTML: {
-      control: "boolean",
-      description: "Sanitize HTML content using DOMPurify",
+      control: 'boolean',
+      description: 'Sanitize HTML content using DOMPurify',
     },
     removeHTML: {
-      control: "boolean",
-      description: "Remove all HTML tags",
+      control: 'boolean',
+      description: 'Remove all HTML tags',
     },
     codeSnippetHighlight: {
-      control: "boolean",
-      description: "Enable syntax highlighting for code blocks",
+      control: 'boolean',
+      description: 'Enable syntax highlighting for code blocks',
     },
     codeSnippetCopyButtonTooltipContent: {
-      control: "text",
-      description: "Tooltip text for copy button",
+      control: 'text',
+      description: 'Tooltip text for copy button',
     },
     codeSnippetShowMoreText: {
-      control: "text",
-      description: "Text for expand button",
+      control: 'text',
+      description: 'Text for expand button',
     },
     codeSnippetShowLessText: {
-      control: "text",
-      description: "Text for collapse button",
+      control: 'text',
+      description: 'Text for collapse button',
     },
     tableFilterPlaceholderText: {
-      control: "text",
-      description: "Placeholder for table filter",
+      control: 'text',
+      description: 'Placeholder for table filter',
     },
     tablePreviousPageText: {
-      control: "text",
-      description: "Previous page button text",
+      control: 'text',
+      description: 'Previous page button text',
     },
     tableNextPageText: {
-      control: "text",
-      description: "Next page button text",
+      control: 'text',
+      description: 'Next page button text',
     },
     tableItemsPerPageText: {
-      control: "text",
-      description: "Items per page label",
+      control: 'text',
+      description: 'Items per page label',
     },
     tableLocale: {
-      control: "text",
-      description: "Locale for number formatting",
+      control: 'text',
+      description: 'Locale for number formatting',
     },
   },
   args: {
@@ -339,14 +337,14 @@ export default {
     sanitizeHTML: false,
     removeHTML: false,
     codeSnippetHighlight: false,
-    codeSnippetCopyButtonTooltipContent: "Copy code",
-    codeSnippetShowMoreText: "Show more",
-    codeSnippetShowLessText: "Show less",
-    tableFilterPlaceholderText: "Filter table...",
-    tablePreviousPageText: "Previous page",
-    tableNextPageText: "Next page",
-    tableItemsPerPageText: "Items per page:",
-    tableLocale: "en",
+    codeSnippetCopyButtonTooltipContent: 'Copy code',
+    codeSnippetShowMoreText: 'Show more',
+    codeSnippetShowLessText: 'Show less',
+    tableFilterPlaceholderText: 'Filter table...',
+    tablePreviousPageText: 'Previous page',
+    tableNextPageText: 'Next page',
+    tableItemsPerPageText: 'Items per page:',
+    tableLocale: 'en',
   },
 };
 
@@ -365,14 +363,13 @@ export const Default = {
       table-previous-page-text=${args.tablePreviousPageText}
       table-next-page-text=${args.tableNextPageText}
       table-items-per-page-text=${args.tableItemsPerPageText}
-      table-locale=${args.tableLocale}
-    ></cds-aichat-markdown>
+      table-locale=${args.tableLocale}></cds-aichat-markdown>
   `,
 };
 
 export const Streaming = {
   args: {
-    markdown: "",
+    markdown: '',
   },
   argTypes: {
     markdown: {
@@ -404,8 +401,7 @@ export const WithHTMLSanitization = {
         ?sanitize-html=${args.sanitizeHTML}
         ?remove-html=${args.removeHTML}
         ?code-snippet-highlight=${args.codeSnippetHighlight}
-        .markdown=${args.markdown}
-      ></cds-aichat-markdown>
+        .markdown=${args.markdown}></cds-aichat-markdown>
     </div>
   `,
 };
@@ -429,8 +425,7 @@ export const WithHTMLRemoval = {
         ?sanitize-html=${args.sanitizeHTML}
         ?remove-html=${args.removeHTML}
         ?code-snippet-highlight=${args.codeSnippetHighlight}
-        .markdown=${args.markdown}
-      ></cds-aichat-markdown>
+        .markdown=${args.markdown}></cds-aichat-markdown>
     </div>
   `,
 };
@@ -450,7 +445,7 @@ export const WithMarkdownItPlugin = {
     markdown: katexMarkdown,
   },
   argTypes: {
-    markdown: { control: "text" },
+    markdown: { control: 'text' },
   },
   render: (args) => html`
     <div>
@@ -462,8 +457,7 @@ export const WithMarkdownItPlugin = {
       </p>
       <cds-aichat-markdown
         .markdownItPlugins=${katexPlugins}
-        .markdown=${args.markdown}
-      ></cds-aichat-markdown>
+        .markdown=${args.markdown}></cds-aichat-markdown>
     </div>
   `,
 };
@@ -490,7 +484,7 @@ const tableOverrideRenderers = {
     // `cds-table` template into a wrapper element with Lit's `render`.
     let wrapper = tableOverrideHosts.get(slotName);
     if (!wrapper) {
-      wrapper = document.createElement("div");
+      wrapper = document.createElement('div');
       tableOverrideHosts.set(slotName, wrapper);
     }
     render(
@@ -502,7 +496,7 @@ const tableOverrideRenderers = {
                 (cell) =>
                   html`<cds-table-header-cell
                     >${cell.text}</cds-table-header-cell
-                  >`,
+                  >`
               )}
             </cds-table-header-row>
           </cds-table-head>
@@ -512,15 +506,15 @@ const tableOverrideRenderers = {
                 <cds-table-row>
                   ${row.map(
                     (cell) =>
-                      html`<cds-table-cell>${cell.text}</cds-table-cell>`,
+                      html`<cds-table-cell>${cell.text}</cds-table-cell>`
                   )}
                 </cds-table-row>
-              `,
+              `
             )}
           </cds-table-body>
         </cds-table>
       `,
-      wrapper,
+      wrapper
     );
     return wrapper;
   },
@@ -531,12 +525,11 @@ export const WithTableOverride = {
     markdown: tableOverrideMarkdown,
   },
   argTypes: {
-    markdown: { control: "text" },
+    markdown: { control: 'text' },
   },
   render: (args) => html`
     <streaming-markdown-demo
       .source=${args.markdown}
-      .customRenderers=${tableOverrideRenderers}
-    ></streaming-markdown-demo>
+      .customRenderers=${tableOverrideRenderers}></streaming-markdown-demo>
   `,
 };

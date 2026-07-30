@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/types/Type_reference.MarkdownRendererImageArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.MarkdownRendererImageArgs.html
 
 Argument passed to an CustomMarkdownRenderers.image /
 WCCustomMarkdownRenderers.image callback — the parsed image data

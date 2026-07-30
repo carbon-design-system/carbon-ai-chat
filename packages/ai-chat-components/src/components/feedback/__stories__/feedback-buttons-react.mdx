@@ -29,8 +29,8 @@ import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-button
 function FeedbackButtonsExample() {
   return (
     <FeedbackButtons
-      positiveLabel="Thumbs up"
-      negativeLabel="Thumbs down"
+      positiveLabel="I like this response"
+      negativeLabel="I dislike this response"
       onClick={(event) => {
         const { isPositive } = event.detail;
         console.log(isPositive ? "Positive feedback" : "Negative feedback");
@@ -62,8 +62,8 @@ function SimpleFeedback() {
       isNegativeSelected={state.negativeSelected}
       isPositiveDisabled={state.disabled}
       isNegativeDisabled={state.disabled}
-      positiveLabel="Thumbs up"
-      negativeLabel="Thumbs down"
+      positiveLabel="I like this response"
+      negativeLabel="I dislike this response"
       onClick={(event) => {
         const { isPositive } = event.detail;
         const updates =
@@ -95,8 +95,8 @@ function DetailedFeedback() {
       <FeedbackButtons
         hasNegativeDetails
         panelID="feedback-panel-123"
-        negativeLabel="Thumbs down"
-        positiveLabel="Thumbs up"
+        positiveLabel="I like this response"
+        negativeLabel="I dislike this response"
         isNegativeOpen={isNegativeOpen}
         onClick={(event) => {
           const { isPositive } = event.detail;

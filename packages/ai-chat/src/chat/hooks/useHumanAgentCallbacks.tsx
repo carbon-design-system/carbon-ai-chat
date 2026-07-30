@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { useCallback, useState } from "react";
-import type { ServiceManager } from "../services/ServiceManager";
-import type { FileUpload } from "../../types/state/AppState";
-import type { InputFunctions } from "../components-legacy/input/Input";
+import { useCallback, useState } from 'react';
+import type { ServiceManager } from '../services/ServiceManager';
+import type { FileUpload } from '../../types/state/AppState';
+import type { InputFunctions } from '../components/input/Input';
 
 interface UseHumanAgentCallbacksProps {
   serviceManager: ServiceManager;
@@ -48,7 +48,7 @@ export function useHumanAgentCallbacks({
   const hideConfirmEndChat = useCallback(() => {
     setShowEndChatConfirmation(false);
     setTimeout(() => {
-      inputRef.current?.takeFocus();
+      inputRef.current?.requestFocus();
     });
   }, [inputRef]);
 
@@ -66,7 +66,7 @@ export function useHumanAgentCallbacks({
         serviceManager.humanAgentService.userTyping(isTyping);
       }
     },
-    [serviceManager],
+    [serviceManager]
   );
 
   const onFilesSelectedForUpload = useCallback(
@@ -83,7 +83,7 @@ export function useHumanAgentCallbacks({
       allowMultipleFileUploads,
       requestInputFocus,
       serviceManager,
-    ],
+    ]
   );
 
   return {
@@ -95,5 +95,3 @@ export function useHumanAgentCallbacks({
     onFilesSelectedForUpload,
   };
 }
-
-// Made with Bob

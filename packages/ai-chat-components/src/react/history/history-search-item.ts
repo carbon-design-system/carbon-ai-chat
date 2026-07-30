@@ -7,20 +7,20 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSAIChatHistorySearchItem from "../../components/chat-history/src/history-search-item.js";
-import { withWebComponentBridge } from "../utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatHistorySearchItem from '../../components/chat-history/src/history-search-item.js';
+import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistorySearchItem = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-history-search-item",
+    tagName: 'cds-aichat-history-search-item',
     elementClass: CDSAIChatHistorySearchItem,
     react: React,
     events: {
-      onSelected: "history-search-item-selected",
+      onSelected: 'history-search-item-selected',
     },
-  }),
+  })
 );
 
 export default HistorySearchItem;

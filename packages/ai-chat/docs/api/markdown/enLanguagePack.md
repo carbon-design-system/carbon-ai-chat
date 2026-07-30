@@ -2,7 +2,7 @@
 
 - Kind: Variable
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/variables/Type_reference.enLanguagePack.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/variables/Type_reference.enLanguagePack.html
 
 The raw strings used for PublicConfig.strings. Presented in ICU format.
 

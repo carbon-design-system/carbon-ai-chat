@@ -7,19 +7,20 @@
  *  @license
  */
 
-import cloneDeep from "lodash-es/cloneDeep.js";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
+import cloneDeep from 'lodash-es/cloneDeep.js';
+import { DeepPartial } from '../../types/utilities/DeepPartial';
 
-import { AppConfig } from "../../types/state/AppConfig";
-import { AppState } from "../../types/state/AppState";
-import { FileUpload } from "../../types/config/ServiceDeskConfig";
+import { AppConfig } from '../../types/state/AppConfig';
+import { AppState } from '../../types/state/AppState';
+import { FileUpload } from '../../types/config/ServiceDeskConfig';
 import {
   LocalMessageItem,
   MessageErrorState,
-} from "../../types/messaging/LocalMessageItem";
-import { FileStatusValue } from "./constants";
-import { findLastWithMap } from "./lang/arrayUtils";
-import { uuid, UUIDType } from "./lang/uuid";
+} from '../../types/messaging/LocalMessageItem';
+import { FileStatusValue } from './constants';
+import { findLastWithMap } from './lang/arrayUtils';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
+import type { JSONContent } from '@tiptap/core';
 import {
   HumanAgentMessageType,
   ButtonItem,
@@ -51,9 +52,9 @@ import {
   TextItem,
   UserDefinedItem,
   WithBodyAndFooter,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 
-const THREAD_ID_MAIN = "main";
+const THREAD_ID_MAIN = 'main';
 
 /**
  * This function determines if the given message is an output message (i.e. a message output from the assistant) and
@@ -65,7 +66,7 @@ function isResponse(message: unknown): message is MessageResponse {
 }
 
 function isDateResponseType(
-  localMessage: LocalMessageItem,
+  localMessage: LocalMessageItem
 ): localMessage is LocalMessageItem<DateItem> {
   return (
     (localMessage?.item.response_type as string) === MessageResponseTypes.DATE
@@ -76,10 +77,10 @@ function isDateResponseType(
  * Adds default values to the given MessageResponse.
  */
 function addDefaultsToMessage<T extends MessageResponse | MessageRequest>(
-  fullMessage: T,
+  fullMessage: T
 ): T {
   if (!fullMessage.id) {
-    fullMessage.id = uuid(UUIDType.MESSAGE);
+    fullMessage.id = uuid();
   }
   if (!fullMessage.thread_id) {
     fullMessage.thread_id = THREAD_ID_MAIN;
@@ -123,7 +124,7 @@ function hasLiveHumanAgentMessage(message: Message) {
   return (
     (isResponse(message) &&
       Boolean(
-        message.output.generic?.find((item) => item?.agent_message_type),
+        message.output.generic?.find((item) => item?.agent_message_type)
       )) ||
     (isRequest(message) && Boolean(message.input.agent_message_type))
   );
@@ -135,7 +136,7 @@ function hasLiveHumanAgentMessage(message: Message) {
  * which will narrow the type to 'MessageRequest<EventInput>' if it returns true.
  */
 function isEventRequest(
-  message: unknown,
+  message: unknown
 ): message is MessageRequest<EventInput> {
   return (
     (message as MessageRequest<EventInput>)?.input?.message_type ===
@@ -150,7 +151,7 @@ function isEventRequest(
 function isTextItem(item: GenericItem): item is TextItem {
   return (
     item &&
-    item.response_type === "text" &&
+    item.response_type === 'text' &&
     (item as TextItem).text !== undefined
   );
 }
@@ -187,12 +188,12 @@ function isOptionItem(item: GenericItem): item is OptionItem {
  */
 function createMessageRequestForChoice(
   choice: SingleOption,
-  relatedResponseID?: string,
+  relatedResponseID?: string
 ): MessageRequest {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
   const messageRequest: MessageRequest = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: THREAD_ID_MAIN,
     ...cloneDeep(choice.value),
   };
@@ -214,11 +215,11 @@ function createMessageRequestForChoice(
  */
 function createMessageRequestForButtonItemOption(
   buttonItem: ButtonItem,
-  relatedResponseID: string,
+  relatedResponseID: string
 ) {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   const messageRequest: MessageRequest = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: THREAD_ID_MAIN,
     input: null,
   };
@@ -242,9 +243,9 @@ function createMessageRequestForButtonItemOption(
  */
 function createWelcomeRequest(): MessageRequest {
   return addDefaultsToMessage<MessageRequest>({
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     input: {
-      text: "",
+      text: '',
     },
     history: {
       silent: true,
@@ -257,8 +258,15 @@ function createWelcomeRequest(): MessageRequest {
 /**
  * Generates a {@link MessageRequest} for the given text message sent by the user. This is used for generating the
  * request to send to the server when the user has typed something into the input field.
+ *
+ * When the user sent the message via the TipTap-backed prompt-line, pass the editor's JSONContent as
+ * `displayContent` so the user bubble can render structurally (mention chips, custom nodes). Programmatic
+ * sends omit it and the bubble falls back to plain text.
  */
-function createMessageRequestForText(text: string): MessageRequest {
+function createMessageRequestForText(
+  text: string,
+  displayContent?: JSONContent
+): MessageRequest {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
   // We'll clone it and add in the history value which stores the user-visible label in the history store.
   return addDefaultsToMessage<MessageRequest>({
@@ -266,6 +274,7 @@ function createMessageRequestForText(text: string): MessageRequest {
       // The assistant will choke if we send it text with line breaks in it, so we have to remove them first.
       text,
       message_type: MessageInputType.TEXT,
+      ...(displayContent ? { display_content: displayContent } : {}),
     },
   });
 }
@@ -291,7 +300,7 @@ function createMessageRequestForFileUpload(upload: FileUpload): MessageRequest {
 function createMessageRequestForDate(
   inputString: string,
   userString: string,
-  relatedResponseID: string,
+  relatedResponseID: string
 ) {
   const messageRequest = createMessageRequestForText(inputString);
 
@@ -310,14 +319,14 @@ function createMessageResponseForText(
   text: string,
   threadID: string = THREAD_ID_MAIN,
   responseType = MessageResponseTypes.TEXT,
-  context?: unknown,
+  context?: unknown
 ): MessageResponse {
   const textItem: TextItem = {
     response_type: responseType as MessageResponseTypes,
     text,
   };
   const messageResponse: MessageResponse = {
-    id: uuid(UUIDType.MESSAGE),
+    id: uuid(),
     thread_id: threadID,
     output: {
       generic: [textItem],
@@ -335,7 +344,7 @@ function createMessageResponseForText(
  */
 function createMessageResponseForItem<T extends GenericItem>(
   item: T,
-  context?: unknown,
+  context?: unknown
 ): MessageResponse {
   const messageResponse: MessageResponse = {
     output: {
@@ -352,7 +361,7 @@ function createMessageResponseForItem<T extends GenericItem>(
  * Indicates if the dialog response is a "connect_to_agent" message.
  */
 function isConnectToHumanAgent(
-  response: GenericItem,
+  response: GenericItem
 ): response is ConnectToHumanAgentItem {
   return (
     response?.response_type === MessageResponseTypes.CONNECT_TO_HUMAN_AGENT
@@ -365,7 +374,7 @@ function isCardResponseType(response: GenericItem): response is CardItem {
 }
 
 function isCarouselResponseType(
-  response: GenericItem,
+  response: GenericItem
 ): response is CarouselItem {
   return (response?.response_type as string) === MessageResponseTypes.CAROUSEL;
 }
@@ -408,7 +417,7 @@ function hasBodyOrFooter(item: WithBodyAndFooter) {
  * Determines if the given message should be rendered as custom message.
  */
 function renderAsUserDefinedMessage(
-  messageItem: DeepPartial<GenericItem>,
+  messageItem: DeepPartial<GenericItem>
 ): boolean {
   const responseType = messageItem.response_type;
   switch (responseType) {
@@ -464,13 +473,13 @@ function isItemSupportedInResponseBody(item: GenericItem) {
  * Determines if the message item is a carousel response type with a single item.
  */
 function isSingleItemCarousel(
-  messageItem: GenericItem,
+  messageItem: GenericItem
 ): messageItem is CarouselItem {
   return isCarouselResponseType(messageItem) && messageItem.items.length === 1;
 }
 
 function isFullWidthUserDefined(
-  messageItem: GenericItem,
+  messageItem: GenericItem
 ): messageItem is UserDefinedItem {
   return isUserDefinedItem(messageItem) && messageItem.full_width;
 }
@@ -484,13 +493,13 @@ function isGridResponseType(item: GenericItem): item is GridItem {
 }
 
 function getOptionType(preference: OptionItemPreference, totalOptions: number) {
-  let type = "button";
-  if (preference && preference === "button") {
-    type = "button";
-  } else if (preference && preference === "dropdown") {
-    type = "dropdown";
+  let type = 'button';
+  if (preference && preference === 'button') {
+    type = 'button';
+  } else if (preference && preference === 'dropdown') {
+    type = 'dropdown';
   } else if (totalOptions > 4) {
-    type = "dropdown";
+    type = 'dropdown';
   }
   return type;
 }
@@ -513,7 +522,7 @@ function isStreamCompleteItem(chunk: StreamChunk): chunk is CompleteItemChunk {
  * Indicates if the given stream chunk is a partial item.
  */
 function isStreamFinalResponse(
-  chunk: StreamChunk,
+  chunk: StreamChunk
 ): chunk is FinalResponseChunk {
   return Boolean((chunk as FinalResponseChunk).final_response);
 }
@@ -548,7 +557,7 @@ function getLastAssistantResponseWithContext(state: AppState) {
     (message) =>
       isResponse(message) &&
       !hasLiveHumanAgentMessage(message) &&
-      Boolean(message.context),
+      Boolean(message.context)
   ) as MessageResponse;
 }
 
@@ -599,7 +608,7 @@ function isStandaloneSystemMessage(message: Message): boolean {
  */
 function getMessageIDForUserInput(
   localMessageItems: LocalMessageItem[],
-  allMessagesByID: Record<string, Message>,
+  allMessagesByID: Record<string, Message>
 ): string | null {
   for (let index = localMessageItems.length - 1; index >= 0; index--) {
     const message = localMessageItems[index];
@@ -633,7 +642,7 @@ function getMessageIDForUserInput(
  */
 function getSpeakerName(
   message: MessageResponse | undefined,
-  assistantName: string | undefined,
+  assistantName: string | undefined
 ): string | undefined {
   // Get the response user profile if available
   const responseUserProfile = message?.message_options?.response_user_profile;

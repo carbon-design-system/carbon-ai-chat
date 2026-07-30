@@ -14,13 +14,13 @@
  * service manager. This component attaches that host element in to the React tree.
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasServiceManager } from "../hocs/withServiceManager";
-import { useSelector } from "../hooks/useSelector";
-import { shallowEqual } from "../store/appStore";
-import { AppState } from "../../types/state/AppState";
-import InlineError from "./util/InlineError";
+import { HasServiceManager } from '../hocs/withServiceManager';
+import { useSelector } from '../hooks/useSelector';
+import { shallowEqual } from '../store/appStore';
+import { AppState } from '../../types/state/AppState';
+import InlineError from './util/InlineError';
 
 interface UserDefinedResponseProps extends HasServiceManager {
   /**
@@ -42,7 +42,7 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
       conversationalSearch_streamingIncomplete:
         state.languagePack.conversationalSearch_streamingIncomplete,
     }),
-    shallowEqual,
+    shallowEqual
   );
 
   // The element that was previously created that we'll attach to this React component. The custom code should
@@ -53,8 +53,7 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
   return (
     <div
       className="cds-aichat--message-user-defined-response"
-      data-floating-menu-container
-    >
+      data-floating-menu-container>
       <slot name={userDefinedRegistryItem.slotName} />
       {isStreamingError && (
         <InlineError

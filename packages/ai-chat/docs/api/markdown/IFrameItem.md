@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html
 
 ## Signature
 
@@ -18,7 +18,7 @@ interface IFrameItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#agent_message_type)
 
 ### description
 
@@ -27,7 +27,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 The description of the source URL. This property is unfurled from the source URL at runtime. It is used when
 IFrameItemDisplayOption is set to 'panel' for the preview card to open the panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#description)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#description)
 
 ### display
 
@@ -35,7 +35,7 @@ IFrameItemDisplayOption is set to 'panel' for the preview card to open the panel
 
 How the iframe should be displayed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#display)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#display)
 
 ### image_url
 
@@ -44,7 +44,7 @@ How the iframe should be displayed.
 The preview image of the source URL. This property is unfurled from the source URL at runtime. It is used when
 IFrameItemDisplayOption is set to 'panel' for the preview card to open the panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#image_url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#image_url)
 
 ### message_item_options
 
@@ -52,7 +52,7 @@ IFrameItemDisplayOption is set to 'panel' for the preview card to open the panel
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#message_item_options)
 
 ### response_type
 
@@ -60,7 +60,7 @@ Options that control additional features available for a message item.
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#response_type)
 
 ### source
 
@@ -68,7 +68,7 @@ The response type of this message item.
 
 The source URL to an embeddable page
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#source)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#source)
 
 ### streaming_metadata
 
@@ -77,7 +77,7 @@ The source URL to an embeddable page
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#streaming_metadata)
 
 ### title
 
@@ -86,7 +86,7 @@ for a specific item.
 The title of the source URL. This property is unfurled from the source URL at runtime. It is used when
 IFrameItemDisplayOption is set to 'panel' for the preview card to open the panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#title)
 
 ### user_defined
 
@@ -94,4 +94,4 @@ IFrameItemDisplayOption is set to 'panel' for the preview card to open the panel
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.IFrameItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.IFrameItem.html#user_defined)

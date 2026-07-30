@@ -7,68 +7,68 @@
  *  @license
  */
 
-import "@carbon/web-components/es/components/dropdown/index.js";
-import "@carbon/web-components/es/components/text-input/index.js";
-import "@carbon/web-components/es/components/checkbox/index.js";
+import '@carbon/web-components/es/components/dropdown/index.js';
+import '@carbon/web-components/es/components/text-input/index.js';
+import '@carbon/web-components/es/components/checkbox/index.js';
 
-import { PublicConfig, MinimizeButtonIconType } from "@carbon/ai-chat";
-import Help16 from "@carbon/icons/es/help/16.js";
-import Information16 from "@carbon/icons/es/information/16.js";
-import Document16 from "@carbon/icons/es/document/16.js";
-import Chat16 from "@carbon/icons/es/chat/16.js";
-import UserAvatar16 from "@carbon/icons/es/user--avatar/16.js";
-import Settings16 from "@carbon/icons/es/settings/16.js";
-import Share16 from "@carbon/icons/es/share/16.js";
-import Download16 from "@carbon/icons/es/download/16.js";
-import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import type { Settings } from "./types";
+import { PublicConfig, MinimizeButtonIconType } from '@carbon/ai-chat';
+import Help16 from '@carbon/icons/es/help/16.js';
+import Information16 from '@carbon/icons/es/information/16.js';
+import Document16 from '@carbon/icons/es/document/16.js';
+import Chat16 from '@carbon/icons/es/chat/16.js';
+import UserAvatar16 from '@carbon/icons/es/user--avatar/16.js';
+import Settings16 from '@carbon/icons/es/settings/16.js';
+import Share16 from '@carbon/icons/es/share/16.js';
+import Download16 from '@carbon/icons/es/download/16.js';
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import type { Settings } from './types';
 
 // Sample actions for demo
 const sampleActions = [
   {
     icon: Help16,
-    text: "Help",
-    onClick: () => alert("Help clicked!"),
+    text: 'Help',
+    onClick: () => alert('Help clicked!'),
   },
   {
     icon: Information16,
-    text: "About",
-    onClick: () => alert("About clicked!"),
+    text: 'About',
+    onClick: () => alert('About clicked!'),
   },
   {
     icon: Document16,
-    text: "Documentation",
-    onClick: () => alert("Documentation clicked!"),
+    text: 'Documentation',
+    onClick: () => alert('Documentation clicked!'),
   },
   {
     icon: Chat16,
-    text: "Feedback",
-    onClick: () => alert("Feedback clicked!"),
+    text: 'Feedback',
+    onClick: () => alert('Feedback clicked!'),
   },
   {
     icon: UserAvatar16,
-    text: "Profile",
-    onClick: () => alert("Profile clicked!"),
+    text: 'Profile',
+    onClick: () => alert('Profile clicked!'),
   },
   {
     icon: Settings16,
-    text: "Settings",
-    onClick: () => alert("Settings clicked!"),
+    text: 'Settings',
+    onClick: () => alert('Settings clicked!'),
   },
   {
     icon: Share16,
-    text: "Share",
-    onClick: () => alert("Share clicked!"),
+    text: 'Share',
+    onClick: () => alert('Share clicked!'),
   },
   {
     icon: Download16,
-    text: "Export Chat",
-    onClick: () => alert("Export Chat clicked!"),
+    text: 'Export Chat',
+    onClick: () => alert('Export Chat clicked!'),
   },
 ];
 
-@customElement("demo-header-switcher")
+@customElement('demo-header-switcher')
 export class DemoHeaderSwitcher extends LitElement {
   static styles = css`
     :host {
@@ -105,11 +105,11 @@ export class DemoHeaderSwitcher extends LitElement {
     };
 
     this.dispatchEvent(
-      new CustomEvent("config-changed", {
+      new CustomEvent('config-changed', {
         detail: newConfig,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -120,11 +120,11 @@ export class DemoHeaderSwitcher extends LitElement {
     };
 
     this.dispatchEvent(
-      new CustomEvent("settings-changed", {
+      new CustomEvent('settings-changed', {
         detail: newSettings,
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   }
 
@@ -134,7 +134,7 @@ export class DemoHeaderSwitcher extends LitElement {
    */
   static applySettingsToConfig(
     config: PublicConfig,
-    settings: Settings,
+    settings: Settings
   ): PublicConfig {
     const header = { ...config.header };
 
@@ -149,21 +149,21 @@ export class DemoHeaderSwitcher extends LitElement {
     if (settings.showMenuOptions) {
       header.menuOptions = [
         {
-          text: "Help",
-          handler: () => alert("Help clicked!"),
+          text: 'Help',
+          handler: () => alert('Help clicked!'),
         },
         {
-          text: "Documentation",
-          href: "https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html",
-          target: "_blank",
+          text: 'Documentation',
+          href: 'https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html',
+          target: '_blank',
         },
         {
-          text: "Settings",
-          handler: () => alert("Settings clicked!"),
+          text: 'Settings',
+          handler: () => alert('Settings clicked!'),
         },
         {
-          text: "Disabled Option",
-          handler: () => alert("This should not appear!"),
+          text: 'Disabled Option',
+          handler: () => alert('This should not appear!'),
           disabled: true,
         },
       ];
@@ -192,8 +192,8 @@ export class DemoHeaderSwitcher extends LitElement {
       header: {
         ...this.config.header,
         minimizeButtonIconType:
-          value === "default" ? undefined : (value as MinimizeButtonIconType),
-        hideMinimizeButton: value === "none" ? true : undefined,
+          value === 'default' ? undefined : (value as MinimizeButtonIconType),
+        hideMinimizeButton: value === 'none' ? true : undefined,
       },
     });
   };
@@ -287,11 +287,11 @@ export class DemoHeaderSwitcher extends LitElement {
     const value = customEvent.detail.item.value;
     const header = { ...this.config.header };
 
-    if (value === "default") {
+    if (value === 'default') {
       delete header.hasContentMaxWidth;
-    } else if (value === "true") {
+    } else if (value === 'true') {
       header.hasContentMaxWidth = true;
-    } else if (value === "false") {
+    } else if (value === 'false') {
       header.hasContentMaxWidth = false;
     }
 
@@ -300,17 +300,17 @@ export class DemoHeaderSwitcher extends LitElement {
 
   private _getCurrentMinimizeButtonType(): string {
     if (this.config?.header?.hideMinimizeButton) {
-      return "none";
+      return 'none';
     }
-    return this.config?.header?.minimizeButtonIconType || "default";
+    return this.config?.header?.minimizeButtonIconType || 'default';
   }
 
   private _getHasContentMaxWidthValue(): string {
     const value = this.config?.header?.hasContentMaxWidth;
     if (value === undefined) {
-      return "default";
+      return 'default';
     }
-    return value ? "true" : "false";
+    return value ? 'true' : 'false';
   }
 
   render() {
@@ -321,15 +321,13 @@ export class DemoHeaderSwitcher extends LitElement {
           <cds-checkbox
             ?checked=${this.settings?.showHeader === false}
             @cds-checkbox-changed=${this._onIsOnChanged}
-            label-text="Hide chat header"
-          >
+            label-text="Hide chat header">
           </cds-checkbox>
         </div>
         <cds-dropdown
           value="${this._getCurrentMinimizeButtonType()}"
           title-text="Minimize button icon"
-          @cds-dropdown-selected=${this._onMinimizeButtonTypeChanged}
-        >
+          @cds-dropdown-selected=${this._onMinimizeButtonTypeChanged}>
           <cds-dropdown-item value="default">Default</cds-dropdown-item>
           <cds-dropdown-item value="close">Close (X)</cds-dropdown-item>
           <cds-dropdown-item value="minimize">Minimize (-)</cds-dropdown-item>
@@ -350,26 +348,23 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-text-input
           label="Header title"
           placeholder="Enter custom title"
-          value="${header?.title || ""}"
-          @input=${this._onTitleChanged}
-        ></cds-text-input>
+          value="${header?.title || ''}"
+          @input=${this._onTitleChanged}></cds-text-input>
       </div>
 
       <div class="header-section">
         <cds-text-input
           label="Header name"
           placeholder="Enter custom name"
-          value="${header?.name || ""}"
-          @input=${this._onNameChanged}
-        ></cds-text-input>
+          value="${header?.name || ''}"
+          @input=${this._onNameChanged}></cds-text-input>
       </div>
 
       <div class="header-section">
         <cds-checkbox
           ?checked=${header?.showRestartButton}
           @cds-checkbox-changed=${this._onShowRestartButtonChanged}
-          label-text="Show restart button"
-        >
+          label-text="Show restart button">
         </cds-checkbox>
       </div>
 
@@ -377,8 +372,7 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${this.settings?.showMenuOptions === true}
           @cds-checkbox-changed=${this._onMenuOptionsChanged}
-          label-text="Add menu options"
-        >
+          label-text="Add menu options">
         </cds-checkbox>
       </div>
 
@@ -386,8 +380,7 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${header?.showAiLabel !== false}
           @cds-checkbox-changed=${this._onShowAiLabelChanged}
-          label-text="Show AI label"
-        >
+          label-text="Show AI label">
         </cds-checkbox>
       </div>
 
@@ -395,8 +388,7 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-checkbox
           ?checked=${this.settings?.showSampleActions === true}
           @cds-checkbox-changed=${this._onSampleActionsChanged}
-          label-text="Add menu actions"
-        >
+          label-text="Add menu actions">
         </cds-checkbox>
       </div>
 
@@ -404,8 +396,7 @@ export class DemoHeaderSwitcher extends LitElement {
         <cds-dropdown
           value="${this._getHasContentMaxWidthValue()}"
           title-text="Content max width"
-          @cds-dropdown-selected=${this._onHasContentMaxWidthChanged}
-        >
+          @cds-dropdown-selected=${this._onHasContentMaxWidthChanged}>
           <cds-dropdown-item value="default">Default</cds-dropdown-item>
           <cds-dropdown-item value="true">Enable max width</cds-dropdown-item>
           <cds-dropdown-item value="false">Disable max width</cds-dropdown-item>
@@ -418,6 +409,6 @@ export class DemoHeaderSwitcher extends LitElement {
 // Register the custom element if not already defined
 declare global {
   interface HTMLElementTagNameMap {
-    "demo-header-switcher": DemoHeaderSwitcher;
+    'demo-header-switcher': DemoHeaderSwitcher;
   }
 }

@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.RenderUserDefinedState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedState.html
 
 The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
 
@@ -20,7 +20,7 @@ interface RenderUserDefinedState
 
 The entire message object received when the entire message (not just the individual messageItem) has finished processing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#fullmessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#fullmessage)
 
 ### messageItem
 
@@ -31,7 +31,7 @@ chunk.
 Once the fullMessage is resolved, this value will update to the value of the item in the fullMessage, which will
 be the same value unless you have done any post-processing mutations.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#messageitem)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#messageitem)
 
 ### partialItems
 
@@ -41,7 +41,7 @@ An array of each user defined item partial chunk. Each chunk contains the new ch
 concatenated for you. When messageItem has been set an no more chunks are expected, this property is removed
 to avoid memory leaks.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#partialitems)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#partialitems)
 
 ### state
 
@@ -56,4 +56,4 @@ without inspecting the message items directly.
  Field is additive; its presence and semantics may evolve as the
 lifecycle model stabilizes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#state)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderUserDefinedState.html#state)

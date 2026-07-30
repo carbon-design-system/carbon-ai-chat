@@ -5,10 +5,10 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/utilities/convert" as *;
-@use "@carbon/styles/scss/components/button/tokens" as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/utilities/convert' as *;
+@use '@carbon/styles/scss/components/button/tokens' as *;
 
 // Mixin to apply proper radius
 @mixin footer-button-radius($radius) {
@@ -16,11 +16,11 @@
   &:not(.cds-aichat--footer-button-components--column) {
     gap: rem(1px);
 
-    &:not(:has([kind="ghost"])) {
+    &:not(:has([kind='ghost'])) {
       background-color: $button-separator;
     }
 
-    &:has([kind="ghost"]) {
+    &:has([kind='ghost']) {
       border-block-start: rem(1px) solid theme.$chat-bubble-border;
     }
 
@@ -40,7 +40,7 @@
     flex-direction: column;
 
     .cds-aichat--button-item {
-      &[kind="ghost"] {
+      &[kind='ghost'] {
         border-block-start: rem(1px) solid theme.$chat-bubble-border;
       }
 
@@ -60,7 +60,7 @@
     flex: auto;
   }
 
-  cds-button[href][kind="ghost"] svg {
+  cds-button[href][kind='ghost'] svg {
     fill: theme.$link-primary;
   }
 }

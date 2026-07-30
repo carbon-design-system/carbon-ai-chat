@@ -7,13 +7,30 @@
  *  @license
  */
 
-import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
+/**
+ * Inline message card: OutstandingOrdersCard.
+ *
+ * Demonstrates: the `user_defined` response card returned by
+ * `renderUserDefinedCallback` in `main.ts` for
+ * `user_defined_type === "outstanding_orders_card"`. The toolbar's Maximize
+ * action invokes the host-supplied `onMaximize` callback, which the host
+ * uses to call `instance.customPanels.getPanel(PanelType.WORKSPACE).open()`
+ * with this card's `workspaceId` and `additionalData`.
+ *
+ * APIs exercised:
+ *   - `cds-aichat-card` / `cds-aichat-toolbar`
+ *   - host-injected `onMaximize` flowing into `customPanels.getPanel(...).open()`
+ *
+ * Start reading at: `handleMaximize`.
+ */
 
-@customElement("outstanding-orders-card")
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
+
+@customElement('outstanding-orders-card')
 export class OutstandingOrdersCard extends LitElement {
   static styles = css`
     :host {
@@ -65,7 +82,7 @@ export class OutstandingOrdersCard extends LitElement {
   `;
 
   @property({ type: String })
-  accessor workspaceId = "";
+  accessor workspaceId = '';
 
   @property({ type: Object })
   accessor additionalData: any;
@@ -76,18 +93,20 @@ export class OutstandingOrdersCard extends LitElement {
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
+      size: 'md',
       onClick: this.handleMaximize.bind(this),
     },
   ];
 
   private handleMaximize() {
+    // Debug wiring so the workspaceId can be traced from the card click into panel.open().
     console.log(
-      "Maximize clicked, opening workspace with ID:",
-      this.workspaceId,
+      'Maximize clicked, opening workspace with ID:',
+      this.workspaceId
     );
+    // Delegate to the host's onMaximize so this card stays decoupled from the customPanels API.
     if (this.onMaximize) {
       this.onMaximize();
     }
@@ -130,5 +149,3 @@ export class OutstandingOrdersCard extends LitElement {
     `;
   }
 }
-
-// Made with Bob

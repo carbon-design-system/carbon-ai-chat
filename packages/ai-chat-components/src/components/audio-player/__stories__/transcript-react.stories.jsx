@@ -7,35 +7,35 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from "react";
-import { Transcript } from "../../../react/transcript";
-import { AudioPlayer } from "../../../react/audio-player";
-import { Card } from "../../../react/card";
-import isChromatic from "chromatic/isChromatic";
-import "./transcript-react.stories.css";
+import React from 'react';
+import { Transcript } from '../../../react/transcript';
+import { AudioPlayer } from '../../../react/audio-player';
+import { Card } from '../../../react/card';
+import isChromatic from 'chromatic/isChromatic';
+import './transcript-react.stories.css';
 
 const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
-  "data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA";
+  'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
-  title: "Preview/Audio player/Transcript",
+  title: 'Preview/Audio player/Transcript',
   component: Transcript,
   args: {
-    text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
-    label: "English Transcript",
-    language: "en",
+    text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
+    label: 'English Transcript',
+    language: 'en',
   },
   argTypes: {
     text: {
-      control: "text",
-      description: "The transcript text content (supports markdown)",
+      control: 'text',
+      description: 'The transcript text content (supports markdown)',
     },
     label: {
-      control: "text",
-      description: "Label for the transcript toggle button",
+      control: 'text',
+      description: 'Label for the transcript toggle button',
     },
     language: {
-      control: "text",
+      control: 'text',
       description: "Language code for the transcript (e.g., 'en', 'es')",
     },
   },
@@ -62,8 +62,8 @@ The transcript component is designed to be collapsible, allowing users to expand
 - Clean visual presentation
 
 This makes it ideal for providing detailed transcripts of audio content without overwhelming the user interface. Users can choose to read the transcript when they need it, making the content more accessible to those who prefer or require text-based alternatives to audio.`,
-    label: "Full Transcript",
-    language: "en",
+    label: 'Full Transcript',
+    language: 'en',
   },
   render: (args) => {
     const { text, label, language } = args;
@@ -76,25 +76,25 @@ export const WithAudioPlayer = {
   args: {
     audioSource: isChromatic()
       ? WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI
-      : "https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3",
-    audioTitle: "Your own mp3 file with transcript",
-    audioDescription: "This example includes a transcript for accessibility.",
-    text: "My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.",
-    label: "English Transcript",
-    language: "en",
+      : 'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/Teapot_Hasselhoff.mp3',
+    audioTitle: 'Your own mp3 file with transcript',
+    audioDescription: 'This example includes a transcript for accessibility.',
+    text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
+    label: 'English Transcript',
+    language: 'en',
   },
   argTypes: {
     audioSource: {
-      control: "text",
-      description: "Audio source URL",
+      control: 'text',
+      description: 'Audio source URL',
     },
     audioTitle: {
-      control: "text",
-      description: "Audio title",
+      control: 'text',
+      description: 'Audio title',
     },
     audioDescription: {
-      control: "text",
-      description: "Audio description",
+      control: 'text',
+      description: 'Audio description',
     },
   },
   render: (args) => {
@@ -154,8 +154,8 @@ export const WithEventHandling = {
     return (
       <>
         <p>
-          Transcript is currently:{" "}
-          <strong>{isExpanded ? "Expanded" : "Collapsed"}</strong>
+          Transcript is currently:{' '}
+          <strong>{isExpanded ? 'Expanded' : 'Collapsed'}</strong>
         </p>
         <Transcript
           text={text}
@@ -169,5 +169,3 @@ export const WithEventHandling = {
     );
   },
 };
-
-// Made with Bob

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { type ReactNode } from "react";
+import { type ReactNode } from 'react';
 import type {
   MarkdownCustomRenderers as _MarkdownCustomRenderers,
   MarkdownRendererChecklist as _MarkdownRendererChecklist,
@@ -22,16 +22,23 @@ import type {
   MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
   MarkdownRendererTableData as _MarkdownRendererTableData,
   TokenTree as _TokenTree,
-} from "@carbon/ai-chat-components/es/components/markdown/index.js";
-import { type ChatInstance, WriteableElements } from "../instance/ChatInstance";
-import { GenericItem, Message, MessageResponse } from "../messaging/Messages";
-import { PublicConfig, PublicConfigMarkdown } from "../config/PublicConfig";
-import { DeepPartial } from "../utilities/DeepPartial";
+} from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import { type ChatInstance } from '../instance/ChatInstance';
+import { WriteableElements } from '../instance/WriteableElements';
+import {
+  GenericItem,
+  Message,
+  MessageRequest,
+  MessageResponse,
+} from '../messaging/Messages';
+import { PublicConfig, PublicConfigMarkdown } from '../config/PublicConfig';
+import { DeepPartial } from '../utilities/DeepPartial';
 import {
   BusEventViewChange,
   BusEventViewPreChange,
-} from "../events/eventBusTypes";
-import { MessageState } from "../config/MessagingConfig";
+} from '../events/eventBusTypes';
+import type { JSONContent } from '@tiptap/core';
+import { MessageState } from '../config/MessagingConfig';
 
 /**
  * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
@@ -87,7 +94,7 @@ type RenderCustomMessageFooter = (
   message: MessageResponse,
   messageItem: GenericItem,
   instance: ChatInstance,
-  additionalData?: Record<string, unknown>,
+  additionalData?: Record<string, unknown>
 ) => ReactNode | null;
 
 /**
@@ -102,7 +109,7 @@ type RenderCustomMessageFooter = (
  */
 type RenderUserDefinedResponse = (
   state: RenderUserDefinedState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => ReactNode;
 
 /**
@@ -121,7 +128,7 @@ type RenderUserDefinedResponse = (
  */
 type WCRenderUserDefinedResponse = (
   state: RenderUserDefinedState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) => HTMLElement | null;
 
 /**
@@ -160,7 +167,51 @@ interface RenderCustomMessageFooterState {
  */
 type WCRenderCustomMessageFooter = (
   state: RenderCustomMessageFooterState,
-  instance: ChatInstance,
+  instance: ChatInstance
+) => HTMLElement | null;
+
+/**
+ * The state passed to a `renderUserDefinedInputNode` call. The chat surfaces
+ * one call per non-text TipTap node inside a sent user message's
+ * `display_content` — typically a consumer-registered custom node such as a
+ * task card, file pill, or mention with rich rendering.
+ *
+ * @category React
+ * @experimental
+ */
+interface RenderUserDefinedInputNodeState {
+  /** The TipTap JSONContent node being rendered (carries `type`, `attrs`, etc.). */
+  node: JSONContent;
+  /** The full user message this node belongs to. */
+  message: MessageRequest;
+}
+
+/**
+ * React-side renderer for custom TipTap node types in user message bubbles.
+ * Returned content mounts into LIGHT DOM so consumer stylesheets apply. The
+ * library manages the slot lifecycle — register a renderer that returns the
+ * React node for nodes you care about and `null` for everything else.
+ *
+ * @category React
+ * @experimental
+ */
+type RenderUserDefinedInputNode = (
+  state: RenderUserDefinedInputNodeState,
+  instance: ChatInstance
+) => ReactNode;
+
+/**
+ * Web-component renderer for custom TipTap node types in user message
+ * bubbles. Mirrors {@link RenderUserDefinedInputNode} but returns an
+ * `HTMLElement` (or `null`). The library moves / removes the element as
+ * messages mount and unmount.
+ *
+ * @category Web component
+ * @experimental
+ */
+type WCRenderUserDefinedInputNode = (
+  state: RenderUserDefinedInputNodeState,
+  instance: ChatInstance
 ) => HTMLElement | null;
 
 /**
@@ -347,7 +398,7 @@ interface CustomMarkdownRenderers {
    * `attributes`) or `null` to keep the defaults.
    */
   image?: (
-    args: MarkdownRendererImageArgs,
+    args: MarkdownRendererImageArgs
   ) => MarkdownRendererImageResult | null;
   /**
    * Make task-list checkboxes actionable so the host can persist and react to
@@ -391,7 +442,7 @@ interface WCCustomMarkdownRenderers {
    * `attributes`) or `null` to keep the defaults.
    */
   image?: (
-    args: MarkdownRendererImageArgs,
+    args: MarkdownRendererImageArgs
   ) => MarkdownRendererImageResult | null;
   /**
    * Make task-list checkboxes actionable so the host can persist and react to
@@ -447,7 +498,7 @@ interface WCMarkdown extends PublicConfigMarkdown {
  *
  * @category React
  */
-interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
+interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   /**
    * Markdown rendering customization. Extends the framework-neutral
    * {@link PublicConfigMarkdown} with React-layer custom renderers.
@@ -496,7 +547,7 @@ interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
    */
   onViewPreChange?: (
     event: BusEventViewPreChange,
-    instance: ChatInstance,
+    instance: ChatInstance
   ) => Promise<void> | void;
 
   /**
@@ -517,6 +568,16 @@ interface ChatContainerProps extends Omit<PublicConfig, "markdown"> {
    * This is the function that this component will call when a user defined response should be rendered.
    */
   renderUserDefinedResponse?: RenderUserDefinedResponse;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Invoked once per non-built-in node in a
+   * user message's `display_content`; returned React content mounts into
+   * light DOM. Return `null` for nodes you don't recognize.
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
   /**
    * This is the render function this component will call when it needs to render a writeable element.
@@ -543,4 +604,7 @@ export {
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+  WCRenderUserDefinedInputNode,
 };

@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,16 +7,16 @@
  *  @license
  */
 
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import cx from "classnames";
-import React from "react";
-import { CitationCardContent, CitationType } from "./CitationCardContent";
-import { ExpandToPanelCard } from "./ExpandToPanelCard";
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import cx from 'classnames';
+import React from 'react';
+import { CitationCardContent, CitationType } from './CitationCardContent';
+import { ExpandToPanelCard } from './ExpandToPanelCard';
 import {
   ConversationalSearchItemCitation,
   SearchResult,
-} from "../../../../../types/messaging/Messages";
-import { isValidURL } from "../../../../utils/htmlUtils";
+} from '../../../../../types/messaging/Messages';
+import { isValidURL } from '../../../../utils/htmlUtils';
 
 /**
  * This component takes a ConversationalSearchItemCitation OR a SearchResult and decides which kind of Card to display
@@ -45,14 +45,14 @@ function CitationCard({
 
   const type = getType();
   const className = cx(
-    "cds-aichat--citation-card",
+    'cds-aichat--citation-card',
     {
-      "cds-aichat--citation-card--selected": isSelected,
-      "cds-aichat--citation-card--clickable": type === CitationType.URL,
-      "cds-aichat--citation-card--url": type === CitationType.URL,
-      "cds-aichat--citation-card--no-url": type !== CitationType.URL,
+      'cds-aichat--citation-card--selected': isSelected,
+      'cds-aichat--citation-card--clickable': type === CitationType.URL,
+      'cds-aichat--citation-card--url': type === CitationType.URL,
+      'cds-aichat--citation-card--no-url': type !== CitationType.URL,
     },
-    "cds-aichat--widget__text-ellipsis",
+    'cds-aichat--widget__text-ellipsis'
   );
 
   if (type === CitationType.URL) {
@@ -64,8 +64,7 @@ function CitationCard({
         target="_blank"
         rel="noopener noreferrer"
         onClick={onSelectCitation}
-        onFocus={onSelectCitation}
-      >
+        onFocus={onSelectCitation}>
         <Card>
           <div slot="body">
             <CitationCardContent citation={citation} type={type} />

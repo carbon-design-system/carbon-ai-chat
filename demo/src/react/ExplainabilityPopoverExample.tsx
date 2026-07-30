@@ -7,10 +7,10 @@
  *  @license
  */
 
-import "@carbon/ai-chat/css/chat-explainability-popover.css";
-import React from "react";
-import { Launch, Folders, FolderOpen, View } from "@carbon/icons-react";
-import AILabelActionButton from "@carbon/ai-chat-components/es/react/ai-label-action-button.js";
+import '@carbon/ai-chat/css/chat-explainability-popover.css';
+import React from 'react';
+import { Launch, Folders, FolderOpen, View } from '@carbon/icons-react';
+import AILabelActionButton from '@carbon/ai-chat-components/es/react/ai-label-action-button.js';
 import {
   IconButton,
   OrderedList,
@@ -18,15 +18,14 @@ import {
   ListItem,
   Link,
   Tag,
-} from "@carbon/react";
+} from '@carbon/react';
 
 function ExplainabilityPopoverContent() {
   return (
     <div
       role="dialog"
       slot="body-text"
-      className="cds-aichat-explainability-popover--content"
-    >
+      className="cds-aichat-explainability-popover--content">
       <header className="cds-aichat-explainability-popover--content__header">
         <div className="cds-aichat-explainability-popover--content__eyebrow-row">
           <span className="cds-aichat-explainability-popover--content__label">
@@ -35,8 +34,7 @@ function ExplainabilityPopoverContent() {
           <Tag
             className="cds-aichat--header__slug-confidence"
             size="sm"
-            type="outline"
-          >
+            type="outline">
             Confidence: 89%
           </Tag>
         </div>
@@ -85,8 +83,7 @@ function ExplainabilityPopoverContent() {
             href="https://example.com"
             target="_blank"
             rel="noopener noreferrer"
-            renderIcon={Launch}
-          >
+            renderIcon={Launch}>
             granite.13b.v2.instruct
           </Link>
         </div>
@@ -105,8 +102,7 @@ function ExplainabilityPopoverContent() {
             href="https://example.com"
             target="_blank"
             rel="noopener noreferrer"
-            renderIcon={Launch}
-          >
+            renderIcon={Launch}>
             IBM Security data piles
           </Link>
         </div>
@@ -119,8 +115,7 @@ function ExplainabilityPopoverActions() {
   return (
     <div
       slot="explainabilityPopoverActions"
-      className="cds-aichat-explainability-popover--actions"
-    >
+      className="cds-aichat-explainability-popover--actions">
       <IconButton slot="actions" size="lg" kind="ghost" label="Folders">
         <Folders />
       </IconButton>

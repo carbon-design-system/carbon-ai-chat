@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-demo",
   "private": true,
-  "version": "1.18.0",
+  "version": "1.18.0-rc.0",
   "type": "module",
   "description": "A demo and testing framework using @carbon/ai-chat as a React component.",
   "scripts": {
@@ -13,10 +13,10 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.18.0",
-    "@carbon/ai-chat-components": "^1.8.0",
+    "@carbon/ai-chat": "^1.18.0-rc.0",
+    "@carbon/ai-chat-components": "^1.8.0-rc.0",
     "@carbon/icons": "^11.53.0",
-    "@carbon/react": "^1.68.0",
+    "@carbon/react": "^1.97.0",
     "@carbon/web-components": "^2.58.1",
     "lit": "^3.1.0",
     "react": "^19.0.0",
@@ -34,7 +34,7 @@
     "@babel/preset-typescript": "^7.26.0",
     "@playwright/test": "^1.54.1",
     "@types/node": "^24.0.14",
-    "accessibility-checker": "^4.0.9",
+    "accessibility-checker": "^4.0.18",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
     "html-webpack-plugin": "^5.6.3",

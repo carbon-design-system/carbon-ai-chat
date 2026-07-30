@@ -7,19 +7,19 @@
  *  @license
  */
 
-import React from "react";
+import React from 'react';
 
-import { HasRequestFocus } from "../../types/utilities/HasRequestFocus";
-import { LocalMessageItem } from "../../types/messaging/LocalMessageItem";
-import { ButtonItemCustomEventComponent } from "./ButtonItemCustomEventComponent";
-import { ButtonItemPostBackComponent } from "./ButtonItemPostBackComponent";
-import { ButtonItemShowPanelComponent } from "./ButtonItemShowPanelComponent";
-import { ButtonItemURLComponent } from "./ButtonItemURLComponent";
+import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
+import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+import { ButtonItemCustomEventComponent } from './ButtonItemCustomEventComponent';
+import { ButtonItemPostBackComponent } from './ButtonItemPostBackComponent';
+import { ButtonItemShowPanelComponent } from './ButtonItemShowPanelComponent';
+import { ButtonItemURLComponent } from './ButtonItemURLComponent';
 import {
   ButtonItem,
   ButtonItemType,
   MessageResponse,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 
 interface ButtonItemComponentProps extends HasRequestFocus {
   localMessageItem: LocalMessageItem<ButtonItem>;

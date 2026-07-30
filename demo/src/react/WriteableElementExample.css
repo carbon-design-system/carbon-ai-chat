@@ -22,8 +22,25 @@
   border-end-end-radius: var(--cds-aichat-border-radius-end-end);
 }
 
-.writeable-element-external--compact {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  border-radius: 0;
+.writeable-element-external--swatch {
+  display: block;
+  inline-size: 32px;
+  block-size: 32px;
+  padding: 0;
+  border: 0;
+  background: green;
+  cursor: pointer;
+}
+
+.writeable-element-external--swatch-header {
+  inline-size: 24px;
+  block-size: 24px;
+}
+
+/* Carbon's tooltip trigger wrapper is inline-block by default, which reserves
+   font-descender space below the swatch and throws off its vertical alignment.
+   Make it a flex box so the wrapper height matches the swatch exactly. */
+.writeable-element-external--swatch-tooltip {
+  display: flex;
+  align-items: center;
 }

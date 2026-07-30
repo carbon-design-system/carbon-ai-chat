@@ -23,6 +23,8 @@ Use `cds-aichat-feedback` to collect structured feedback on AI responses. It sup
 
 **Note:** The `show-text-area` and `show-body` attributes default to `false`. You must explicitly set them to enable the text area and body text display.
 
+**Note:** When `disclaimer-checkbox` is set, the submit button is disabled until the user checks the checkbox.
+
 ### Getting started
 
 Here's a quick example to get you started.
@@ -43,9 +45,9 @@ Here's a quick example to get you started.
 <cds-aichat-feedback
   id="feedback-panel"
   is-open
-  title="Tell us what you think"
-  body="Help us improve this response"
-  text-area-placeholder="What worked well? What missed the mark?"
+  title="Additional feedback"
+  body="Why did you choose this rating?"
+  text-area-placeholder="Add a comment"
   secondary-label="Cancel"
   primary-label="Submit"
   show-text-area
@@ -56,6 +58,25 @@ Here's a quick example to get you started.
 ## Component API
 
 <ArgTypes of="cds-aichat-feedback" />
+
+### Legal Disclaimer
+
+Add a legal notice at the bottom of the panel using the `disclaimer` attribute. The text supports markdown.
+
+```html
+<cds-aichat-feedback
+  disclaimer="By submitting feedback, you agree to our Privacy Policy."
+></cds-aichat-feedback>
+```
+
+To require the user to explicitly acknowledge the disclaimer before submitting, add a `disclaimer-checkbox` attribute with the checkbox label. The submit button remains **disabled** until the checkbox is checked.
+
+```html
+<cds-aichat-feedback
+  disclaimer="By submitting feedback, you agree to our Privacy Policy"
+  disclaimer-checkbox="I have read and agree to the Privacy Policy."
+></cds-aichat-feedback>
+```
 
 ## JS (via import)
 

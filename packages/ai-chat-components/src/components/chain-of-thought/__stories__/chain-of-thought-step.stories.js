@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,11 +7,11 @@
  *  @license
  */
 
-import "../src/chain-of-thought-step";
-import "../src/chain-of-thought";
-import "../src/tool-call-data";
-import "../../markdown";
-import { html } from "lit";
+import '../src/chain-of-thought-step';
+import '../src/chain-of-thought';
+import '../src/tool-call-data';
+import '../../markdown';
+import { html } from 'lit';
 
 const request = `\`\`\`json
 { "query": "recent outages in eu-west", "limit": 3 }
@@ -27,56 +27,56 @@ const response = `\`\`\`json
 \`\`\``;
 
 export default {
-  title: "Components/Chain of thought/Step",
-  component: "cds-aichat-chain-of-thought-step",
+  title: 'Components/Chain of thought/Step',
+  component: 'cds-aichat-chain-of-thought-step',
   parameters: {
     docs: {
       description: {
         component:
-          "Represents a single chain-of-thought entry. Supports controlled or uncontrolled open state when paired with `cds-aichat-chain-of-thought`.",
+          'Represents a single chain-of-thought entry. Supports controlled or uncontrolled open state when paired with `cds-aichat-chain-of-thought`.',
       },
     },
   },
   argTypes: {
     title: {
-      control: "text",
-      description: "Label displayed in the step header.",
+      control: 'text',
+      description: 'Label displayed in the step header.',
     },
     status: {
-      control: "select",
-      options: ["success", "failure", "processing"],
-      description: "Status indicator for the step.",
+      control: 'select',
+      options: ['success', 'failure', 'processing'],
+      description: 'Status indicator for the step.',
     },
     open: {
-      control: "boolean",
-      description: "Whether the step is expanded.",
+      control: 'boolean',
+      description: 'Whether the step is expanded.',
     },
     controlled: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "When true, the host application must update the open state in response to toggle events.",
+        'When true, the host application must update the open state in response to toggle events.',
     },
     statusSucceededLabelText: {
-      control: "text",
-      description: "Assistive text when a step has succeeded.",
+      control: 'text',
+      description: 'Assistive text when a step has succeeded.',
     },
     statusFailedLabelText: {
-      control: "text",
-      description: "Assistive text when a step failed.",
+      control: 'text',
+      description: 'Assistive text when a step failed.',
     },
     statusProcessingLabelText: {
-      control: "text",
-      description: "Assistive text when a step is processing.",
+      control: 'text',
+      description: 'Assistive text when a step is processing.',
     },
   },
   args: {
-    title: "Check recent incidents",
-    status: "success",
+    title: 'Check recent incidents',
+    status: 'success',
     open: true,
     controlled: false,
-    statusSucceededLabelText: "Succeeded",
-    statusFailedLabelText: "Failed",
-    statusProcessingLabelText: "Processing",
+    statusSucceededLabelText: 'Succeeded',
+    statusFailedLabelText: 'Failed',
+    statusProcessingLabelText: 'Processing',
   },
 };
 
@@ -91,28 +91,23 @@ export const Default = {
         status-succeeded-label-text=${args.statusSucceededLabelText}
         status-failed-label-text=${args.statusFailedLabelText}
         status-processing-label-text=${args.statusProcessingLabelText}
-        step-number="1"
-      >
+        step-number="1">
         <cds-aichat-tool-call-data tool-name="incident_lookup">
           <cds-aichat-markdown
             slot="description"
-            .markdown=${"Look up recent outages affecting the EU region before escalating."}
-          ></cds-aichat-markdown>
+            .markdown=${'Look up recent outages affecting the EU region before escalating.'}></cds-aichat-markdown>
           <cds-aichat-markdown
             slot="input"
-            .markdown=${request}
-          ></cds-aichat-markdown>
+            .markdown=${request}></cds-aichat-markdown>
           <cds-aichat-markdown
             slot="output"
-            .markdown=${response}
-          ></cds-aichat-markdown>
+            .markdown=${response}></cds-aichat-markdown>
         </cds-aichat-tool-call-data>
       </cds-aichat-chain-of-thought-step>
       <cds-aichat-chain-of-thought-step
         title="Awaiting confirmation"
         status="processing"
-        step-number="2"
-      >
+        step-number="2">
       </cds-aichat-chain-of-thought-step>
     </cds-aichat-chain-of-thought>
   `,
@@ -124,8 +119,7 @@ export const Static = {
       <cds-aichat-chain-of-thought-step
         title="Plan remediation"
         status="success"
-        step-number="1"
-      >
+        step-number="1">
       </cds-aichat-chain-of-thought-step>
     </cds-aichat-chain-of-thought>
   `,

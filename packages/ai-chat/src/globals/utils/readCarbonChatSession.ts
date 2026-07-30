@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { VERSION } from "../../chat/utils/environmentVariables";
-import { PersistedState } from "../../types/state/AppState";
-import { IS_SESSION_STORAGE } from "../../chat/utils/browserUtils";
-import { getSuffix } from "../../chat/services/NamespaceService";
+import { VERSION } from '../../chat/utils/environmentVariables';
+import { PersistedState } from '../../types/state/AppState';
+import { IS_SESSION_STORAGE } from '../../chat/utils/browserUtils';
+import { getSuffix } from '../../chat/services/NamespaceService';
 
 /**
  * Reads and validates the Carbon AI Chat session from sessionStorage.
@@ -29,6 +29,8 @@ import { getSuffix } from "../../chat/services/NamespaceService";
  * // With a namespace matching PublicConfig.namespace
  * const session = readCarbonChatSession("myapp");
  * const wasOpen = session?.viewState.mainWindow === true;
+ *
+ * @category Utilities
  */
 function readCarbonChatSession(namespace?: string): PersistedState | null {
   try {

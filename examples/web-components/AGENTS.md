@@ -4,14 +4,16 @@ Deltas for web-component examples. See [../AGENTS.md](../AGENTS.md) for shared w
 
 ## Canonical scaffolds
 
-- **`<cds-aichat-container>` (built-in float layout)** — copy [`./basic/`](./basic/).
-- **`<cds-aichat-custom-element>` (host the chat in your own DOM node)** — copy [`./custom-element/`](./custom-element/).
+- **`<cds-aichat-container>` (built-in float layout)** — copy [`./basic-float/`](./basic-float/).
+- **`<cds-aichat-custom-element>` (host the chat in your own DOM node)** — copy [`./basic-custom-element-fullscreen/`](./basic-custom-element-fullscreen/). This is the canonical baseline for non-float examples.
 
 Workspace naming: `@carbon/ai-chat-examples-web-components-<slug>`.
 
+**Carbon flavor**: `@carbon/web-components`. No JSX and no `@carbon/react` — if a Carbon snippet arrives as React (the `carbon-builder` skill defaults to it), rewrite it as a custom element before saving. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area).
+
 ## Smoke-test setup
 
-Reuse Jest wiring from [`../react/jest-jsdom/`](../react/jest-jsdom/) — nearest reference for workspace-dep resolution. A sufficient spec instantiates the custom element, asserts it upgrades without error, and does one round-trip behavior (e.g. send one message via `customSendMessage`).
+Reuse Jest wiring from [`../react/tests-jest-jsdom/`](../react/tests-jest-jsdom/) — nearest reference for workspace-dep resolution. A sufficient spec instantiates the custom element, asserts it upgrades without error, and does one round-trip behavior (e.g. send one message via `customSendMessage`).
 
 ## APIs-and-props table headers
 

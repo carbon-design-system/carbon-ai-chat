@@ -1,37 +1,46 @@
-import React from "react";
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import React from 'react';
 import WorkspaceShell, {
   WorkspaceShellBody,
   WorkspaceShellFooter,
-} from "../../../react/workspace-shell";
-import { action } from "storybook/actions";
-import { FooterActionList } from "./story-data";
-import "./story-styles.scss";
+} from '../../../react/workspace-shell';
+import { action } from 'storybook/actions';
+import { FooterActionList } from './story-data';
+import './story-styles.scss';
 
 const defaultBodyText = `This is sample content to demonstrate the footer positioning. The footer will be pushed to the bottom of the workspace shell. Shrink the workspace width below 671px to see the footer buttons stack vertically with primary actions appearing first.`;
 
 export default {
-  title: "Components/Workspace shell/Footer",
+  title: 'Components/Workspace shell/Footer',
   component: WorkspaceShellFooter,
   parameters: {
     docs: {
       description: {
         component:
-          "Footer section for the workspace shell, containing action buttons. Automatically handles responsive stacking and button ordering.",
+          'Footer section for the workspace shell, containing action buttons. Automatically handles responsive stacking and button ordering.',
       },
     },
   },
   argTypes: {
     actionPreset: {
       control: {
-        type: "select",
+        type: 'select',
       },
       options: Object.keys(FooterActionList),
-      description: "Select a predefined set of actions",
+      description: 'Select a predefined set of actions',
     },
     onFooterClicked: {
-      action: "onFooterClicked",
-      table: { category: "events" },
-      description: "Event fired when a footer button is clicked",
+      action: 'onFooterClicked',
+      table: { category: 'events' },
+      description: 'Event fired when a footer button is clicked',
     },
   },
   decorators: [
@@ -45,8 +54,8 @@ export default {
 
 export const Default = {
   args: {
-    actionPreset: "Two buttons",
-    onFooterClicked: (data) => action("footer-action")(data),
+    actionPreset: 'Two buttons',
+    onFooterClicked: (data) => action('footer-action')(data),
   },
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
@@ -63,8 +72,8 @@ export const Default = {
 
 export const ThreeButtons = {
   args: {
-    actionPreset: "Three buttons with one ghost",
-    onFooterClicked: (data) => action("footer-action")(data),
+    actionPreset: 'Three buttons with one ghost',
+    onFooterClicked: (data) => action('footer-action')(data),
   },
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
@@ -81,8 +90,8 @@ export const ThreeButtons = {
 
 export const WithDisabled = {
   args: {
-    actionPreset: "With disabled button",
-    onFooterClicked: (data) => action("footer-action")(data),
+    actionPreset: 'With disabled button',
+    onFooterClicked: (data) => action('footer-action')(data),
   },
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
@@ -99,8 +108,8 @@ export const WithDisabled = {
 
 export const DangerActions = {
   args: {
-    actionPreset: "Danger actions",
-    onFooterClicked: (data) => action("footer-action")(data),
+    actionPreset: 'Danger actions',
+    onFooterClicked: (data) => action('footer-action')(data),
   },
   render: ({ actionPreset, onFooterClicked }) => (
     <WorkspaceShell>
@@ -114,5 +123,3 @@ export const DangerActions = {
     </WorkspaceShell>
   ),
 };
-
-// Made with Bob

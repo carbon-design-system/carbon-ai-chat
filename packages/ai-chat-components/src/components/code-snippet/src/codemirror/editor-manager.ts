@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { EditorState, Compartment } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
-import { LanguageSupport } from "@codemirror/language";
-import { createCarbonTheme, makeScrollerFocusable } from "./theme.js";
+import { EditorState, Compartment } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
+import { LanguageSupport } from '@codemirror/language';
+import { createCarbonTheme, makeScrollerFocusable } from './theme.js';
 import {
   baseCodeMirrorSetup,
   type BaseCodeMirrorSetupOptions,
-} from "./base-setup.js";
+} from './base-setup.js';
 
 interface EditorDocChangePayload {
   content: string;
@@ -64,13 +64,13 @@ export function createEditorView({
   ];
 
   const contentAttributesExtensions = EditorView.contentAttributes.of({
-    "aria-label": ariaLabel,
+    'aria-label': ariaLabel,
   });
 
   const wrapTheme = createCarbonTheme();
 
   // Enable diff decorator only for diff language
-  const isDiffLanguage = detectedLanguage === "diff";
+  const isDiffLanguage = detectedLanguage === 'diff';
 
   const state = EditorState.create({
     doc,
@@ -104,7 +104,7 @@ export function createEditorView({
 export function applyLanguageSupport(
   view: EditorView | undefined,
   languageCompartment: Compartment,
-  support: LanguageSupport | null,
+  support: LanguageSupport | null
 ) {
   if (!view) {
     return;
@@ -119,7 +119,7 @@ export function applyLanguageSupport(
 export function updateReadOnlyConfiguration(
   view: EditorView | undefined,
   readOnlyCompartment: Compartment,
-  { editable, disabled }: { editable: boolean; disabled: boolean },
+  { editable, disabled }: { editable: boolean; disabled: boolean }
 ) {
   if (!view) {
     return;
@@ -136,7 +136,7 @@ export function updateReadOnlyConfiguration(
 export function updateContentAttributes(
   view: EditorView | undefined,
   contentAttributesCompartment: Compartment,
-  ariaLabel: string,
+  ariaLabel: string
 ) {
   if (!view) {
     return;
@@ -145,8 +145,8 @@ export function updateContentAttributes(
   view.dispatch({
     effects: contentAttributesCompartment.reconfigure(
       EditorView.contentAttributes.of({
-        "aria-label": ariaLabel,
-      }),
+        'aria-label': ariaLabel,
+      })
     ),
   });
 }

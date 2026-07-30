@@ -5,6 +5,20 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+/* The docked sidebar panel's base / closing / closed positioning comes from
+   the `cds-aichat-sidebar` classes in
+   `@carbon/ai-chat/css/chat-sidebar-layout.css`. This file holds the host-page
+   chrome plus the workspace-specific expand / contract modifiers, which compose
+   on top of the shipped base class. It loads at document level because the
+   `my-app` element disables shadow DOM so the imported package CSS applies. */
+:root {
+  --cds-aichat-sidebar-inset-block-start: 48px;
+}
+
+my-app {
+  display: block;
+}
+
 .app-header {
   position: fixed;
   z-index: 10000;
@@ -47,79 +61,33 @@
   opacity: 0.5;
 }
 
-.sidebar {
-  position: fixed;
-  z-index: 9999;
-  block-size: calc(100vh - 48px);
-  inline-size: 320px;
-  inset-block-start: 48px;
-  inset-inline-end: 0;
-  /* Carbon motion token: motion.$duration-moderate-01 (240ms) with motion.motion(standard, productive) */
-  transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9);
-  visibility: visible;
-}
-
-.sidebar .chat-custom-element {
+/* Make the ChatCustomElement fill the docked sidebar panel. */
+.cds-aichat-sidebar .chat-custom-element {
   block-size: 100%;
   inline-size: 100%;
 }
 
-.sidebar--expanded {
-  inline-size: calc(100vw - 320px - 2rem);
+/* Workspace expansion: widen the panel to make room for the workspace UI. */
+.cds-aichat-sidebar--expanded {
+  width: calc(100vw - var(--cds-aichat-sidebar-width, 360px) - 2rem);
 }
 
-.sidebar--expanding {
-  /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-  transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+/* While expanding / contracting, transition `width` alongside the open/close
+   slide so the panel grows and shrinks smoothly. `inset-inline-end` keeps the
+   slide correct in RTL; `width` is direction-agnostic and is what the
+   `transitionend` handler watches for. Carbon motion tokens:
+   motion.$duration-moderate-02 (240ms) and motion.$duration-slow-01 (400ms)
+   with motion.motion(standard, productive). */
+.cds-aichat-sidebar--expanding,
+.cds-aichat-sidebar--contracting {
+  transition:
+    inset-inline-end 240ms cubic-bezier(0.2, 0, 0.38, 0.9),
+    width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
 }
 
-.sidebar--contracting {
-  /* Carbon motion tokens: motion.$duration-moderate-01 (240ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-  transition: right 240ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9);
+/* Collapse the panel back to its base width while it slides out, so an expanded
+   panel does not slide off-screen at its full expanded width. */
+.cds-aichat-sidebar--closing,
+.cds-aichat-sidebar--closed {
+  width: var(--cds-aichat-sidebar-width, 360px);
 }
-
-.sidebar--closing {
-  inline-size: 320px;
-  inset-inline-end: calc(calc(320px + 1rem) * -1);
-}
-
-.sidebar--closed {
-  inline-size: 320px;
-  inset-inline-end: calc(calc(320px + 1rem) * -1);
-  visibility: hidden;
-}
-
-/* RTL support */
-[dir="rtl"] .sidebar {
-  inset-inline: 0 auto;
-  /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
-  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
-}
-
-[dir="rtl"] .sidebar--expanded {
-  inline-size: calc(100vw - 320px - 2rem);
-}
-
-[dir="rtl"] .sidebar--expanding {
-  /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
-}
-
-[dir="rtl"] .sidebar--contracting {
-  /* Carbon motion tokens: motion.$duration-fast-01 (70ms) and motion.$duration-moderate-02 (400ms) with motion.motion(standard, productive) */
-  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), width 400ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 70ms;
-}
-
-[dir="rtl"] .sidebar--closing {
-  inline-size: 320px;
-  inset-inline-start: calc(calc(320px + 1rem) * -1);
-}
-
-[dir="rtl"] .sidebar--closed {
-  inline-size: 320px;
-  inset-inline: calc(calc(320px + 1rem) * -1) auto;
-  /* Carbon motion token: motion.$duration-fast-01 (70ms) with motion.motion(standard, productive) */
-  transition: left 70ms cubic-bezier(0.2, 0, 0.38, 0.9), visibility 0s 0s;
-}
-
-/* Made with Bob */

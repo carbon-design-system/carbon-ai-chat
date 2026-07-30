@@ -17,9 +17,9 @@
  */
 
 // Export types and utilities without importing web components
-export { PageObjectId, TestId } from "./testing/PageObjectId";
+export { PageObjectId, TestId } from './testing/PageObjectId';
 
-export { ViewState, ViewType } from "./types/instance/apiTypes";
+export { ViewState, ViewType } from './types/instance/apiTypes';
 
 export {
   CustomPanelConfigOptions,
@@ -29,17 +29,23 @@ export {
   PanelType,
   CustomPanels,
   CustomPanelOpenOptions,
-} from "./types/instance/apiTypes";
+} from './types/instance/apiTypes';
 
 export {
   ChangeFunction,
   ChatInstance,
-  ChatInstanceInput,
-  ChatInstanceServiceDeskActions,
+  IncreaseOrDecrease,
+  SendOptions,
+} from './types/instance/ChatInstance';
+export { ChatInstanceInput } from './types/instance/ChatInstanceInput';
+export { ChatInstanceServiceDeskActions } from './types/instance/ChatInstanceServiceDeskActions';
+export {
   EventBusHandler,
   EventHandlers,
-  FileUploadCapabilities,
-  IncreaseOrDecrease,
+  TypeAndHandler,
+} from './types/instance/EventHandlers';
+export { FileUploadCapabilities } from './types/instance/FileUploadCapabilities';
+export {
   PublicInputState,
   PublicCustomPanelsState,
   PublicHistoryPanelState,
@@ -47,20 +53,20 @@ export {
   PublicChatHumanAgentState,
   PublicChatState,
   PublicWorkspaceCustomPanelState,
-  SendOptions,
-  TypeAndHandler,
+} from './types/instance/PublicChatState';
+export {
   WriteableElementName,
   WriteableElements,
-} from "./types/instance/ChatInstance";
-export { AutoScrollOptions } from "./types/utilities/HasDoAutoScroll";
-export { LayoutCustomProperties } from "./types/config/LayoutCustomProperties";
+} from './types/instance/WriteableElements';
+export { AutoScrollOptions } from './types/utilities/HasDoAutoScroll';
+export { LayoutCustomProperties } from './types/config/LayoutCustomProperties';
 
-export { CornersType } from "./types/config/CornersType";
+export { CornersType } from './types/config/CornersType';
 export type {
   PerCornerConfig,
   ResolvedCornerConfig,
-} from "./types/config/CornersType";
-export type { loadAllLazyDeps } from "./testing/helpers";
+} from './types/config/CornersType';
+export type { loadAllLazyDeps } from './testing/helpers';
 
 export {
   BusEvent,
@@ -104,28 +110,28 @@ export {
   HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
-} from "./types/events/eventBusTypes";
+} from './types/events/eventBusTypes';
 
 export {
   CatastrophicErrorPanelState,
   PersistedState,
-} from "./types/state/AppState";
+} from './types/state/AppState';
 
-export { readCarbonChatSession } from "./globals/utils/readCarbonChatSession";
+export { readCarbonChatSession } from './globals/utils/readCarbonChatSession';
 
-export { PersistedHumanAgentState } from "./types/state/PersistedHumanAgentState";
+export { PersistedHumanAgentState } from './types/state/PersistedHumanAgentState';
 
 export {
   PersistableState,
   PersistedStateConfig,
-} from "./types/config/PersistedStateConfig";
+} from './types/config/PersistedStateConfig';
 
 export {
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
   HomeScreenState,
-} from "./types/config/HomeScreenConfig";
+} from './types/config/HomeScreenConfig';
 
 export {
   CancellationReason,
@@ -133,33 +139,68 @@ export {
   CustomSendMessageOptions,
   MessageState,
   UpsertMessageUpdater,
-} from "./types/config/MessagingConfig";
+} from './types/config/MessagingConfig';
 
+export { PublicConfig } from './types/config/PublicConfig';
+export { CarbonTheme } from './types/config/CarbonTheme';
+export { DisclaimerPublicConfig } from './types/config/DisclaimerConfig';
 export {
-  CarbonTheme,
   CustomMenuOption,
-  DisclaimerPublicConfig,
-  enLanguagePack,
   HeaderConfig,
-  HistoryConfig,
-  InputConfig,
-  LanguagePack,
-  LayoutConfig,
   MinimizeButtonIconType,
-  OnErrorData,
-  OnErrorType,
-  PublicConfig,
-  PublicConfigMessaging,
-  UploadConfig,
-} from "./types/config/PublicConfig";
+  ToolbarAction,
+} from './types/config/HeaderConfig';
+export { HistoryConfig } from './types/config/HistoryConfig';
+export type {
+  InputConfig,
+  BaseSuggestionConfig,
+  TriggerSuggestionConfig,
+  AutocompleteConfig,
+  StartersConfig,
+  SuggestionItem,
+  CustomListProps,
+} from './types/config/InputConfig';
+export { enLanguagePack, LanguagePack } from './types/config/LanguagePack';
+export { LayoutConfig } from './types/config/LayoutConfig';
+export { OnErrorData, OnErrorType } from './types/config/ErrorConfig';
+export { PublicConfigMessaging } from './types/config/PublicConfigMessaging';
+export { UploadConfig } from './types/config/UploadConfig';
 
 export {
   ChatShortcutConfig,
   KeyboardShortcuts,
-} from "./types/config/ShortcutConfig";
+} from './types/config/ShortcutConfig';
 
-export { DeepPartial } from "./types/utilities/DeepPartial";
-export type { default as ObjectMap } from "./types/utilities/ObjectMap";
+// Carbon Tiptap extension factories and JSONContent / light-DOM helpers.
+// Local re-declarations live in `./types/utilities/inputUtils` so we own the
+// JSDoc + `@category` placement; see [src/types/AGENTS.md](./types/AGENTS.md)
+// for the cross-package re-export rule. Raw `@tiptap/core` types (`Editor`,
+// `Extension`, `JSONContent`, `Node`, ...) are not re-exported — import those
+// from `@tiptap/core` directly. The Carbon suggestion-config types are
+// exported from `./types/config/InputConfig` alongside `InputConfig`.
+export type {
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+} from './types/utilities/inputUtils';
+
+export {
+  carbonMention,
+  carbonCommand,
+  carbonAutocomplete,
+  carbonStarterTrigger,
+  buildCarbonExtensions,
+  setHostOriginMeta,
+  removeNodesByType,
+  mapNodes,
+  findNodesByType,
+  getRawText,
+  textToDoc,
+  renderTokenChip,
+  renderInLightDom,
+} from './types/utilities/inputUtils';
+
+export { DeepPartial } from './types/utilities/DeepPartial';
+export type { default as ObjectMap } from './types/utilities/ObjectMap';
 
 export {
   AdditionalDataToAgent,
@@ -180,7 +221,7 @@ export {
   ServiceDeskPublicConfig,
   StartChatOptions,
   UserMessageErrorInfo,
-} from "./types/config/ServiceDeskConfig";
+} from './types/config/ServiceDeskConfig';
 
 export {
   BaseGenericItem,
@@ -245,6 +286,8 @@ export {
   HumanAgentMessageType,
   ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
+  CHAT_BUTTON_KIND,
+  CHAT_BUTTON_SIZE,
   ReasoningSteps,
   ReasoningStep,
   ReasoningStepOpenState,
@@ -259,29 +302,28 @@ export {
   StructuredData,
   StructuredField,
   StructuredFieldType,
-  StructuredFieldValue,
   InlineFile,
   ExternalFileReference,
   FileFieldValue,
-} from "./types/messaging/Messages";
+} from './types/messaging/Messages';
 
 export type {
   SystemMessageItem,
   SystemMessageVariant,
-} from "./types/messaging/Messages";
+} from './types/messaging/Messages';
 
-export { HistoryItem } from "./types/messaging/History";
+export { HistoryItem } from './types/messaging/History';
 
-export { MessageErrorState } from "./types/messaging/LocalMessageItem";
+export { MessageErrorState } from './types/messaging/LocalMessageItem';
 
 export {
   LauncherCallToActionConfig,
   LauncherConfig,
-} from "./types/config/LauncherConfig";
+} from './types/config/LauncherConfig';
 
-export { CdsAiChatContainerAttributes } from "./web-components/cds-aichat-container/index";
+export { CdsAiChatContainerAttributes } from './web-components/cds-aichat-container/index';
 
-export { CdsAiChatCustomElementAttributes } from "./web-components/cds-aichat-custom-element/index";
+export { CdsAiChatCustomElementAttributes } from './web-components/cds-aichat-custom-element/index';
 
 export {
   ChatContainerPropsMarkdown,
@@ -308,16 +350,19 @@ export {
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
-} from "./types/component/ChatContainer";
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+  WCRenderUserDefinedInputNode,
+} from './types/component/ChatContainer';
 
 export type {
   MarkdownItPlugin,
   PublicConfigMarkdown,
-} from "./types/config/PublicConfig";
+} from './types/config/PublicConfig';
 
-export { ChatContainer, ChatContainerProps } from "./react/ChatContainer";
+export { ChatContainer, ChatContainerProps } from './react/ChatContainer';
 
 export {
   ChatCustomElement,
   ChatCustomElementProps,
-} from "./react/ChatCustomElement";
+} from './react/ChatCustomElement';

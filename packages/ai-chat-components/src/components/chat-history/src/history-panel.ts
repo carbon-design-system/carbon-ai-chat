@@ -7,12 +7,12 @@
  *  @license
  */
 
-import prefix from "../../../globals/settings.js";
-import { property } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import CDSSideNav from "@carbon/web-components/es/components/ui-shell/side-nav.js";
+import prefix from '../../../globals/settings.js';
+import { property } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import CDSSideNav from '@carbon/web-components/es/components/ui-shell/side-nav.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History panel.
@@ -25,7 +25,7 @@ class CDSAIChatHistoryPanel extends CDSSideNav {
   /**
    * Sets default property from side nav
    */
-  @property({ type: Boolean, attribute: "is-not-child-of-header" })
+  @property({ type: Boolean, attribute: 'is-not-child-of-header' })
   isNotChildOfHeader = true;
 
   /**
@@ -39,11 +39,11 @@ class CDSAIChatHistoryPanel extends CDSSideNav {
    * When set, the actions menu will be visible without requiring hover or selection.
    * Individual items can override this with their own `show-actions` attribute.
    */
-  @property({ type: Boolean, reflect: true, attribute: "show-actions" })
+  @property({ type: Boolean, reflect: true, attribute: 'show-actions' })
   showActions = false;
 
   connectedCallback() {
-    this.setAttribute("collapse-mode", "fixed");
+    this.setAttribute('collapse-mode', 'fixed');
     super.connectedCallback();
   }
 

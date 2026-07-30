@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { ChatWidthBreakpoint } from "../../types/state/AppState";
+import { ChatWidthBreakpoint } from '../../types/state/AppState';
 
 /**
  * Calculate the chat width breakpoint based on the container width
@@ -15,7 +15,7 @@ import { ChatWidthBreakpoint } from "../../types/state/AppState";
  * @returns The appropriate ChatWidthBreakpoint
  */
 export function calculateChatWidthBreakpoint(
-  width: number,
+  width: number
 ): ChatWidthBreakpoint {
   if (width >= 672 + 16 + 16) {
     return ChatWidthBreakpoint.WIDE;
@@ -24,5 +24,3 @@ export function calculateChatWidthBreakpoint(
   }
   return ChatWidthBreakpoint.NARROW;
 }
-
-// Made with Bob

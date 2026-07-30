@@ -82,12 +82,26 @@ test-results
 
 # NextJS cache filees
 .next
+next-env.d.ts
 
 packages/ai-chat-components/scss
-.bob
-.claude
+# Skill trees stay tracked: .bob/skills/ is canonical and .claude/skills/ is a
+# generated mirror (npm run sync:skills), but both must be committed because
+# each assistant only reads its own directory.
+.bob/*
+!.bob/skills/
+.claude/*
+!.claude/skills/
 
 .playwright-mcp
 
-# PR description draft (per-PR throwaway, see AGENTS_PR.md)
+# Agent working drafts (per-task throwaway, never committed).
+# Issue bodies mirror live GitHub issues; PR drafts feed `gh pr create --body-file`;
+# plan files are consumed by the epic or the merged PRs. See .bob/skills/README.md.
+.github/issue-drafts/
+.github/pr-drafts/
+.github/plan-drafts/
+
+# Legacy repo-root draft locations, superseded by .github/*-drafts/ above.
 /PR.md
+/PLAN*.md

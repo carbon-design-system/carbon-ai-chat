@@ -21,9 +21,9 @@
  * Enum representing different audio source types
  */
 export enum AudioSource {
-  SOUNDCLOUD = "soundcloud",
-  NATIVE = "native",
-  UNKNOWN = "unknown",
+  SOUNDCLOUD = 'soundcloud',
+  NATIVE = 'native',
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -43,7 +43,7 @@ const AUDIO_EXTENSIONS =
  * @returns The detected audio source type
  */
 export function detectAudioSource(url: string): AudioSource {
-  if (!url || typeof url !== "string") {
+  if (!url || typeof url !== 'string') {
     return AudioSource.UNKNOWN;
   }
 
@@ -79,5 +79,3 @@ export function isSoundCloudUrl(url: string): boolean {
 export function isNativeAudioUrl(url: string): boolean {
   return detectAudioSource(url) === AudioSource.NATIVE;
 }
-
-// Made with Bob

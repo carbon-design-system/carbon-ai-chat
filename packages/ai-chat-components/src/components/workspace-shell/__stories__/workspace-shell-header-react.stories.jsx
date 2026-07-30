@@ -1,21 +1,30 @@
-import React from "react";
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import React from 'react';
 import WorkspaceShell, {
   WorkspaceShellHeader,
   WorkspaceShellBody,
-} from "../../../react/workspace-shell";
-import { Button } from "@carbon/react";
-import Edit16 from "@carbon/icons/es/edit/16.js";
-import { getHeaderDescription, getBodyContent } from "./story-helper-react";
-import "./story-styles.scss";
+} from '../../../react/workspace-shell';
+import { Button } from '@carbon/react';
+import Edit16 from '@carbon/icons/es/edit/16.js';
+import { getHeaderDescription, getBodyContent } from './story-helper-react';
+import './story-styles.scss';
 
 export default {
-  title: "Components/Workspace shell/Header",
+  title: 'Components/Workspace shell/Header',
   component: WorkspaceShellHeader,
   parameters: {
     docs: {
       description: {
         component:
-          "Header section for the workspace shell, containing title, subtitle, description, and optional action buttons.",
+          'Header section for the workspace shell, containing title, subtitle, description, and optional action buttons.',
       },
     },
     controls: {
@@ -24,24 +33,24 @@ export default {
   },
   argTypes: {
     collapsible: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Whether the header can be collapsed/expanded. When true, header starts collapsed and can be toggled. When false, header is always fully expanded. Useful when you have a lot of header content or when workspaces are used in small form factors.",
+        'Whether the header can be collapsed/expanded. When true, header starts collapsed and can be toggled. When false, header is always fully expanded. Useful when you have a lot of header content or when workspaces are used in small form factors.',
     },
     descriptionType: {
       control: {
-        type: "select",
+        type: 'select',
       },
       options: {
-        None: "none",
-        "Basic text": "basic",
-        "With Tags": "withTags",
+        None: 'none',
+        'Basic text': 'basic',
+        'With Tags': 'withTags',
       },
-      description: "Type of description content to display",
+      description: 'Type of description content to display',
     },
     showAction: {
-      control: "boolean",
-      description: "Whether to show the action button",
+      control: 'boolean',
+      description: 'Whether to show the action button',
     },
   },
   decorators: [
@@ -55,10 +64,10 @@ export default {
 
 export const Default = {
   args: {
-    titleText: "Workspace Title",
-    subTitleText: "Workspace subtitle",
+    titleText: 'Workspace Title',
+    subTitleText: 'Workspace subtitle',
     collapsible: false,
-    descriptionType: "none",
+    descriptionType: 'none',
     showAction: false,
   },
   render: ({
@@ -72,26 +81,25 @@ export const Default = {
       <WorkspaceShellHeader
         titleText={titleText}
         subTitleText={subTitleText}
-        collapsible={collapsible}
-      >
-        {descriptionType !== "none" && getHeaderDescription(descriptionType)}
+        collapsible={collapsible}>
+        {descriptionType !== 'none' && getHeaderDescription(descriptionType)}
         {showAction && (
           <Button icon={Edit16} kind="tertiary" slot="header-action">
             Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
-      <WorkspaceShellBody>{getBodyContent("short")}</WorkspaceShellBody>
+      <WorkspaceShellBody>{getBodyContent('short')}</WorkspaceShellBody>
     </WorkspaceShell>
   ),
 };
 
 export const WithDescription = {
   args: {
-    titleText: "Project Analysis",
-    subTitleText: "Q4 2024 Performance Review",
+    titleText: 'Project Analysis',
+    subTitleText: 'Q4 2024 Performance Review',
     collapsible: false,
-    descriptionType: "basic",
+    descriptionType: 'basic',
     showAction: false,
   },
   render: ({
@@ -105,26 +113,25 @@ export const WithDescription = {
       <WorkspaceShellHeader
         titleText={titleText}
         subTitleText={subTitleText}
-        collapsible={collapsible}
-      >
-        {descriptionType !== "none" && getHeaderDescription(descriptionType)}
+        collapsible={collapsible}>
+        {descriptionType !== 'none' && getHeaderDescription(descriptionType)}
         {showAction && (
           <Button icon={Edit16} kind="tertiary" slot="header-action">
             Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
-      <WorkspaceShellBody>{getBodyContent("short")}</WorkspaceShellBody>
+      <WorkspaceShellBody>{getBodyContent('short')}</WorkspaceShellBody>
     </WorkspaceShell>
   ),
 };
 
 export const WithTags = {
   args: {
-    titleText: "Development Plan",
-    subTitleText: "Sprint 23 - Feature Implementation",
+    titleText: 'Development Plan',
+    subTitleText: 'Sprint 23 - Feature Implementation',
     collapsible: false,
-    descriptionType: "withTags",
+    descriptionType: 'withTags',
     showAction: false,
   },
   render: ({
@@ -138,26 +145,25 @@ export const WithTags = {
       <WorkspaceShellHeader
         titleText={titleText}
         subTitleText={subTitleText}
-        collapsible={collapsible}
-      >
-        {descriptionType !== "none" && getHeaderDescription(descriptionType)}
+        collapsible={collapsible}>
+        {descriptionType !== 'none' && getHeaderDescription(descriptionType)}
         {showAction && (
           <Button icon={Edit16} kind="tertiary" slot="header-action">
             Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
-      <WorkspaceShellBody>{getBodyContent("short")}</WorkspaceShellBody>
+      <WorkspaceShellBody>{getBodyContent('short')}</WorkspaceShellBody>
     </WorkspaceShell>
   ),
 };
 
 export const WithAction = {
   args: {
-    titleText: "Deployment Strategy",
-    subTitleText: "Production Release v2.5.0",
+    titleText: 'Deployment Strategy',
+    subTitleText: 'Production Release v2.5.0',
     collapsible: false,
-    descriptionType: "basic",
+    descriptionType: 'basic',
     showAction: true,
   },
   render: ({
@@ -171,26 +177,25 @@ export const WithAction = {
       <WorkspaceShellHeader
         titleText={titleText}
         subTitleText={subTitleText}
-        collapsible={collapsible}
-      >
-        {descriptionType !== "none" && getHeaderDescription(descriptionType)}
+        collapsible={collapsible}>
+        {descriptionType !== 'none' && getHeaderDescription(descriptionType)}
         {showAction && (
           <Button icon={Edit16} kind="tertiary" slot="header-action">
             Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
-      <WorkspaceShellBody>{getBodyContent("short")}</WorkspaceShellBody>
+      <WorkspaceShellBody>{getBodyContent('short')}</WorkspaceShellBody>
     </WorkspaceShell>
   ),
 };
 
 export const Complete = {
   args: {
-    titleText: "Complete Header Example",
-    subTitleText: "All features demonstrated",
+    titleText: 'Complete Header Example',
+    subTitleText: 'All features demonstrated',
     collapsible: false,
-    descriptionType: "withTags",
+    descriptionType: 'withTags',
     showAction: true,
   },
   render: ({
@@ -204,26 +209,25 @@ export const Complete = {
       <WorkspaceShellHeader
         titleText={titleText}
         subTitleText={subTitleText}
-        collapsible={collapsible}
-      >
-        {descriptionType !== "none" && getHeaderDescription(descriptionType)}
+        collapsible={collapsible}>
+        {descriptionType !== 'none' && getHeaderDescription(descriptionType)}
         {showAction && (
           <Button icon={Edit16} kind="tertiary" slot="header-action">
             Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
-      <WorkspaceShellBody>{getBodyContent("short")}</WorkspaceShellBody>
+      <WorkspaceShellBody>{getBodyContent('short')}</WorkspaceShellBody>
     </WorkspaceShell>
   ),
 };
 
 export const Collapsible = {
   args: {
-    titleText: "Collapsible Header",
-    subTitleText: "Click title to expand/collapse",
+    titleText: 'Collapsible Header',
+    subTitleText: 'Click title to expand/collapse',
     collapsible: true,
-    descriptionType: "basic",
+    descriptionType: 'basic',
     showAction: true,
   },
   render: ({
@@ -237,18 +241,15 @@ export const Collapsible = {
       <WorkspaceShellHeader
         titleText={titleText}
         subTitleText={subTitleText}
-        collapsible={collapsible}
-      >
-        {descriptionType !== "none" && getHeaderDescription(descriptionType)}
+        collapsible={collapsible}>
+        {descriptionType !== 'none' && getHeaderDescription(descriptionType)}
         {showAction && (
           <Button icon={Edit16} kind="tertiary" slot="header-action">
             Edit Plan
           </Button>
         )}
       </WorkspaceShellHeader>
-      <WorkspaceShellBody>{getBodyContent("short")}</WorkspaceShellBody>
+      <WorkspaceShellBody>{getBodyContent('short')}</WorkspaceShellBody>
     </WorkspaceShell>
   ),
 };
-
-// Made with Bob
