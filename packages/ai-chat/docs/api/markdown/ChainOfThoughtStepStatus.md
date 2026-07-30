@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html
 
 Status of the chain of thought step.
 
@@ -20,7 +20,7 @@ enum ChainOfThoughtStepStatus
 
 If the tool call failed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html#failure)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html#failure)
 
 ### PROCESSING
 
@@ -28,7 +28,7 @@ If the tool call failed.
 
 If the tool call is currently processing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html#processing)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html#processing)
 
 ### SUCCESS
 
@@ -36,4 +36,4 @@ If the tool call is currently processing.
 
 If the tool call succeeded.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html#success)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ChainOfThoughtStepStatus.html#success)

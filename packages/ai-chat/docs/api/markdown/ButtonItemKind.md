@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html
 
 ## Signature
 
@@ -18,7 +18,7 @@ enum ButtonItemKind
 
 Danger Carbon button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html#danger)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html#danger)
 
 ### DEFAULT
 
@@ -26,7 +26,7 @@ Danger Carbon button.
 
 Default Carbon button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html#default)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html#default)
 
 ### GHOST
 
@@ -34,7 +34,7 @@ Default Carbon button.
 
 Ghost Carbon button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html#ghost)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html#ghost)
 
 ### LINK
 
@@ -42,7 +42,7 @@ Ghost Carbon button.
 
 Button displayed like a link.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html#link)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html#link)
 
 ### SECONDARY
 
@@ -50,7 +50,7 @@ Button displayed like a link.
 
 Secondary Carbon button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html#secondary)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html#secondary)
 
 ### TERTIARY
 
@@ -58,4 +58,4 @@ Secondary Carbon button.
 
 Tertiary Carbon button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.ButtonItemKind.html#tertiary)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/enums/Type_reference.ButtonItemKind.html#tertiary)

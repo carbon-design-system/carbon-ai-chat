@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html
 
 This is the public interface for a human agent service desk integration. This is the interface between the chat
 widget and the implementation of the human agent interface with one of the various supported service desks.
@@ -24,7 +24,7 @@ mean that an agent is immediately available; when a chat is started, the user ma
 agent to become available. The callback function ServiceDeskCallback.updateAgentAvailability is used to
 give the user more up-to-date information while they are waiting for an agent to become available.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#areanyagentsonline)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#areanyagentsonline)
 
 ### endChat
 
@@ -32,7 +32,7 @@ give the user more up-to-date information while they are waiting for an agent to
 
 Tells the service desk to terminate the chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#endchat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#endchat)
 
 ### filesSelectedForUpload
 
@@ -49,7 +49,7 @@ If there are errors in the files, this method should use ServiceDeskCallback#set
 the status with an error message. The user will not be able to upload any files until any files in error are
 removed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#filesselectedforupload)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#filesselectedforupload)
 
 ### getName
 
@@ -61,7 +61,7 @@ interest in various service desks for the possibility of creating fully supporte
 
 This value is required for custom service desks and may have a maximum of 40 characters.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#getname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#getname)
 
 ### reconnect
 
@@ -71,7 +71,7 @@ This will be called when the service desk is first initialized and it is determi
 connected to an agent. This function should perform whatever steps are necessary to reconnect the user. Web chat
 will assume the user is permitted to send messages and is connected to the same agent when this function resolves.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#reconnect)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#reconnect)
 
 ### screenShareStop
 
@@ -79,7 +79,7 @@ will assume the user is permitted to send messages and is connected to the same 
 
 Tells the service desk that the user has requested to stop sharing their screen.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#screensharestop)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#screensharestop)
 
 ### sendMessageToAgent
 
@@ -88,7 +88,7 @@ Tells the service desk that the user has requested to stop sharing their screen.
 Sends a message to the agent in the service desk. Note that the message text may be empty if the user has
 selected files to upload and has not chosen to include a message to go along with the files.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#sendmessagetoagent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#sendmessagetoagent)
 
 ### startChat
 
@@ -110,7 +110,7 @@ The areAnyAgentsOnline function is called before this function is called and is 
 should be displayed to the user or if the "no agents are available" message configured in the skill should be
 shown instead.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#startchat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#startchat)
 
 ### userReadMessages
 
@@ -118,7 +118,7 @@ shown instead.
 
 Informs the service desk that the user has read all the messages that have been sent by the service desk.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#userreadmessages)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#userreadmessages)
 
 ### userTyping
 
@@ -126,4 +126,4 @@ Informs the service desk that the user has read all the messages that have been 
 
 Tells the service desk if a user has started or stopped typing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ServiceDesk.html#usertyping)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ServiceDesk.html#usertyping)

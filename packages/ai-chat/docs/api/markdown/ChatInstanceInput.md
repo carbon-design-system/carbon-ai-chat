@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatInstanceInput.html
 
 Methods for controlling the input field.
 
@@ -30,7 +30,7 @@ in the future, a custom slot implementation.
 instance.input.updateRawValue((prev) => `${prev} @celeste`);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
 
 ### updateStructuredData
 
@@ -67,4 +67,4 @@ instance.input.updateStructuredData(() => ({
 instance.input.updateStructuredData(() => undefined);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)

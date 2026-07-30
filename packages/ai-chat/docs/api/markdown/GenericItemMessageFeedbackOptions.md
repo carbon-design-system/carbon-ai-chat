@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html
 
 Controls the display of a feedback options (thumbs up/down) for a message item.
 
@@ -22,7 +22,7 @@ An optional set of categories to allow the user to choose from. This can either 
 both positive and negative feedback or a GenericItemMessageFeedbackCategories object to make different
 configuration for both.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#categories)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#categories)
 
 ### disclaimer
 
@@ -31,7 +31,7 @@ configuration for both.
 The legal disclaimer text to show at the bottom of the popup. This text may contain rich markdown content. If this
 value is not provided, no text will be shown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#disclaimer)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#disclaimer)
 
 ### disclaimerCheckbox
 
@@ -40,7 +40,7 @@ value is not provided, no text will be shown.
 The label text to display with the legal disclaimer checkbox. If this value is not provided, no disclaimer checkbox
 or label text will be displayed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#disclaimercheckbox)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#disclaimercheckbox)
 
 ### id
 
@@ -48,7 +48,7 @@ or label text will be displayed.
 
 A unique identifier for this feedback. This is required for the feedback to be recorded in message history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#id)
 
 ### is_on
 
@@ -56,7 +56,7 @@ A unique identifier for this feedback. This is required for the feedback to be r
 
 Indicates if a request for feedback should be displayed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#is_on)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#is_on)
 
 ### max_length
 
@@ -65,7 +65,7 @@ Indicates if a request for feedback should be displayed.
 The maximum number of characters allowed in the feedback text area.
 defaults to 1000.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#max_length)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#max_length)
 
 ### placeholder
 
@@ -73,7 +73,7 @@ defaults to 1000.
 
 The placeholder to show in the text area. A default value will be used if no value is provided here.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#placeholder)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#placeholder)
 
 ### prompt
 
@@ -81,7 +81,7 @@ The placeholder to show in the text area. A default value will be used if no val
 
 The prompt text to display to the user. A default value will be used if no value is provided here.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#prompt)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#prompt)
 
 ### show_negative_details
 
@@ -90,7 +90,7 @@ The prompt text to display to the user. A default value will be used if no value
 Indicates if the user should be asked for additional detailed information when providing negative feedback. This
 defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_negative_details)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_negative_details)
 
 ### show_positive_details
 
@@ -99,7 +99,7 @@ defaults to true.
 Indicates if the user should be asked for additional detailed information when providing positive feedback. This
 defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_positive_details)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_positive_details)
 
 ### show_prompt
 
@@ -107,7 +107,7 @@ defaults to true.
 
 Indicates whether the prompt line should be shown. This defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_prompt)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_prompt)
 
 ### show_text_area
 
@@ -115,7 +115,7 @@ Indicates whether the prompt line should be shown. This defaults to true.
 
 Indicates whether the text area should be shown. This defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_text_area)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#show_text_area)
 
 ### title
 
@@ -123,4 +123,4 @@ Indicates whether the text area should be shown. This defaults to true.
 
 The title to display in the popup. A default value will be used if no value is provided here.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.GenericItemMessageFeedbackOptions.html#title)

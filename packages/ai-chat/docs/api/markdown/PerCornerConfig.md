@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PerCornerConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.PerCornerConfig.html
 
 Configuration for individual corners using logical property names.
 Supports RTL layouts by using start/end instead of left/right.
@@ -24,7 +24,7 @@ interface PerCornerConfig
 Bottom-right corner in LTR, bottom-left in RTL.
 Maps to border-end-end-radius.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PerCornerConfig.html#endend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.PerCornerConfig.html#endend)
 
 ### endStart
 
@@ -33,7 +33,7 @@ Maps to border-end-end-radius.
 Bottom-left corner in LTR, bottom-right in RTL.
 Maps to border-end-start-radius.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PerCornerConfig.html#endstart)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.PerCornerConfig.html#endstart)
 
 ### startEnd
 
@@ -42,7 +42,7 @@ Maps to border-end-start-radius.
 Top-right corner in LTR, top-left in RTL.
 Maps to border-start-end-radius.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PerCornerConfig.html#startend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.PerCornerConfig.html#startend)
 
 ### startStart
 
@@ -51,4 +51,4 @@ Maps to border-start-end-radius.
 Top-left corner in LTR, top-right in RTL.
 Maps to border-start-start-radius.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PerCornerConfig.html#startstart)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.PerCornerConfig.html#startstart)

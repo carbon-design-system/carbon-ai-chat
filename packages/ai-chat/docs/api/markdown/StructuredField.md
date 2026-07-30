@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.StructuredField.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.StructuredField.html
 
 A single typed field within a StructuredData payload.
 
@@ -24,7 +24,7 @@ interface StructuredField
 
 Unique identifier for this field.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.StructuredField.html#id)
 
 ### label
 
@@ -34,7 +34,7 @@ Unique identifier for this field.
 
 Human-readable label (optional).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.StructuredField.html#label)
 
 ### type
 
@@ -44,7 +44,7 @@ Human-readable label (optional).
 
 The type of field.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.StructuredField.html#type)
 
 ### value
 
@@ -54,7 +54,7 @@ The type of field.
 
 The value of the field.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#value)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.StructuredField.html#value)
 
 ## Related
 

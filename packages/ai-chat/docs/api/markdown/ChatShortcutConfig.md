@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatShortcutConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatShortcutConfig.html
 
 Configuration for a keyboard shortcut.
 
@@ -25,7 +25,7 @@ interface ChatShortcutConfig
 Whether the keyboard shortcut is enabled.
 Default: true
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatShortcutConfig.html#is_on)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatShortcutConfig.html#is_on)
 
 ### key
 
@@ -35,7 +35,7 @@ Default: true
 
 The primary key (e.g., 'c', 'F6', '/')
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatShortcutConfig.html#key)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatShortcutConfig.html#key)
 
 ### modifiers
 
@@ -45,4 +45,4 @@ The primary key (e.g., 'c', 'F6', '/')
 
 Modifier keys required to be held
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatShortcutConfig.html#modifiers)
+[Reference](https://chat.carbondesignsystem.com/version/v1.18.0/docs/interfaces/Type_reference.ChatShortcutConfig.html#modifiers)
