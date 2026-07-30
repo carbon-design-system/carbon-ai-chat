@@ -644,6 +644,33 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 
 </details>
 
+### [Prompt line / History mechanism](./prompt-line-history-mechanism/README.md)
+
+A keyboard-only Tiptap extension intercepts `ArrowUp` / `ArrowDown` in the chat input to cycle through previously sent messages — shell-style — and writes recalled text back into the editor via `instance.input.updateContent`. Your in-progress draft is saved on the first `ArrowUp` press and restored when you navigate back past the most-recent entry.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-history-mechanism`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI as a fullscreen surface. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config object passed to `ChatCustomElement`. |
+| `ChatInstance` | `@carbon/ai-chat` type | Provides `instance.input.updateContent` to write text into the editor. |
+| `Extension.create` | `@tiptap/core` API | Authors the keyboard-only history extension registered on the chat input. |
+| `addKeyboardShortcuts` | `@tiptap/core` API | Hook where `ArrowUp` / `ArrowDown` handlers are declared. |
+| `instance.input.updateContent` | `@carbon/ai-chat` API | Writes recalled history entries (or the saved draft) back into the editor. |
+| `textToDoc` | `@carbon/ai-chat` utility | Converts a plain-text string into a `JSONContent` doc suitable for `updateContent`. |
+| `getRawText` | `@carbon/ai-chat` utility | Extracts the plain-text string from the editor's `JSONContent` to save the draft. |
+| `onBeforeRender` | component prop | Callback that fires once with the `ChatInstance` so `historyState.instance` can be populated. |
+| `input.tiptap.extensions` | config prop | Registers the host-authored history `Extension` on the chat input. |
+| `layout.showFrame` | config prop | Hides the default frame so the chat fills the viewport. |
+| `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
+| `messaging.customSendMessage` | config prop | Captures sent text into `state.entries` and provides the mock response. |
+
+</details>
+
 ### [Prompt line / Mentions & commands](./prompt-line-mentions-and-commands/README.md)
 
 `ChatCustomElement` configured with `input.mention` for `@`-picking team members anywhere in the message and `input.command` for `/`-commands constrained to the start of the line.
