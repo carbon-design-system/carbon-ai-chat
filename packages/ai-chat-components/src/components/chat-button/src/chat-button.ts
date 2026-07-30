@@ -67,6 +67,7 @@ class CDSAIChatButton extends CDSButton {
   protected willUpdate(changedProps: PropertyValues<this>): void {
     if (
       changedProps.has('isQuickAction') ||
+      changedProps.has('isSelected') ||
       changedProps.has('size') ||
       changedProps.has('kind')
     ) {
@@ -81,6 +82,7 @@ class CDSAIChatButton extends CDSButton {
       if (!changedProps.has('kind')) {
         this.kind = CHAT_BUTTON_KIND.GHOST;
       }
+      this.disabled = this.isSelected;
       return;
     }
     // Do not allow size larger than `lg`

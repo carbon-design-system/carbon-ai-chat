@@ -359,3 +359,17 @@ export const QuickAction = {
   },
   render: baseButtonTemplate,
 };
+
+export const QuickActionSelected = {
+  name: 'Quick action (selected)',
+  argTypes: {
+    ...QuickAction.argTypes,
+  },
+  args: {
+    ...sharedArgs,
+    buttonText: 'Quick action',
+    isQuickAction: true,
+    isSelected: true,
+  },
+  render: baseButtonTemplate,
+};

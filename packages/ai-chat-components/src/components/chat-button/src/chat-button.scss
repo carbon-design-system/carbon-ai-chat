@@ -7,9 +7,11 @@
 
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 @use '@carbon/web-components/scss/components/button/button';
 @use '@carbon/styles/scss/utilities/layout';
 @use '@carbon/styles/scss/utilities/convert';
+@use '@carbon/styles/scss/components/button/tokens' as button-tokens;
 
 :host(#{$prefix}-button) {
   @extend :host(#{$cds-prefix}-button);
@@ -43,26 +45,20 @@
 
 :host(#{$prefix}-button[is-quick-action]) {
   .#{$cds-prefix}--btn {
-    border: convert.to-rem(1px) solid theme.$chat-button;
+    border: convert.to-rem(1px) solid theme.$border-interactive;
     background: transparent;
-    color: theme.$chat-button;
+    color: theme.$link-primary;
 
     &[disabled] {
-      &:not(.#{$cds-prefix}--btn--selected) {
-        border: convert.to-rem(1px) solid theme.$border-disabled;
-        background: transparent;
-        color: theme.$text-disabled;
-      }
+      border: convert.to-rem(1px) solid button-tokens.$button-disabled;
+      background: transparent;
+      color: theme.$text-disabled;
     }
 
     &:hover:not([disabled]) {
       border-color: transparent;
-      background: theme.$chat-button-hover;
-      color: theme.$chat-button-text-hover;
-
-      &.#{$cds-prefix}--btn--selected {
-        color: theme.$chat-button-text-selected;
-      }
+      background: theme.$background-hover;
+      color: theme.$link-primary-hover;
 
       &:focus {
         border-color: theme.$focus;
@@ -71,23 +67,23 @@
     }
 
     &:active:not([disabled]) {
-      background: theme.$chat-button-active;
-    }
+      @include type.type-style('body-compact-01');
 
-    &.#{$cds-prefix}--btn--selected {
       border-color: transparent;
-      background: theme.$chat-button-selected;
-      color: theme.$chat-button-text-selected;
-
-      &:focus {
-        border-color: theme.$focus;
-        box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
-      }
+      background: theme.$background-active;
+      color: theme.$link-primary-hover;
     }
 
     &:focus {
       border-color: theme.$focus;
       box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
     }
+  }
+}
+
+:host(#{$prefix}-button[is-quick-action][isselected]) {
+  .#{$cds-prefix}--btn[disabled] {
+    background: theme.$background-selected;
+    color: theme.$text-secondary;
   }
 }
