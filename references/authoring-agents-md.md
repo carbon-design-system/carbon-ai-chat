@@ -20,7 +20,7 @@ Task procedures are **skills**, not `references/` docs. The dividing line is whe
 
 Rules for authoring them:
 
-- **The command surface maps to moments in the dev cycle, not to files.** Four skills cover planning, issue filing, PR description, and diff review. Don't add a skill per document — a procedure that only makes sense inside another one ships as a supporting file in that skill's own `references/` folder.
+- **The command surface maps to moments in the dev cycle, not to files.** Five skills cover decision records, planning, issue filing, PR description, and diff review. Don't add a skill per document — a procedure that only makes sense inside another one ships as a supporting file in that skill's own `references/` folder.
 - **Name them `caic-` + a short task name.** An unprefixed skill silently overrides the harness built-in of the same name, and `/code-review` and `/review` are real built-ins.
 - **Frontmatter is `name` and `description` only.** `name` must match the directory. Everything else is ignored by one harness or the other. Write the description as one sentence of what it does plus concrete "Use when the user asks…" phrasing — that text is what both harnesses match against.
 - **Move the content, don't point at it.** A skill that just says "read this other file" reintroduces the hop that made docs skippable in the first place.
