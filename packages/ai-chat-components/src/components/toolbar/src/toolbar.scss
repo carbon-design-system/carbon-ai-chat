@@ -52,7 +52,7 @@ $block-class: #{$prefix}-toolbar;
     margin-block: auto;
     margin-inline-end: auto;
     min-inline-size: layout.$spacing-10;
-    padding-inline-start: layout.$spacing-07;
+    padding-inline: layout.$spacing-04;
   }
 
   // Style for name text - this needs to be at the host level to style slotted content
@@ -105,5 +105,7 @@ $block-class: #{$prefix}-toolbar;
 :host([workspace]) {
   .#{$block-class}__title {
     @include type.type-style('heading-03');
+
+    padding-inline-start: layout.$spacing-07;
   }
 }
