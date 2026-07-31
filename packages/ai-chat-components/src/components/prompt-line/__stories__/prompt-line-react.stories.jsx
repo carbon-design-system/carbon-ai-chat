@@ -18,34 +18,25 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { action } from 'storybook/actions';
 
+import '@carbon/web-components/es/components/button/index.js';
+import AddLarge16 from '@carbon/icons/es/add--large/16.js';
+
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
 import CDSAIChatInputSendControl from '../../../react/input-send-control';
 import CDSAIChatFileUploads from '../../../react/file-uploads';
-import Toolbar from '../../../react/toolbar';
-import CDSAIChatAutocomplete from '../../../react/autocomplete';
+import CDSAIChatErrorMessage from '../../../react/error-message';
 import { useChatAutocomplete } from '../../../react/hooks/useChatAutocomplete';
 import { buildCarbonExtensions, FileStatusValue } from '../index';
 
-import {
-  Chat,
-  ChatOff,
-  Attachment,
-  Document,
-  Translate,
-  Idea,
-  Edit,
-  MagicWand,
-  Code,
-  Image,
-  Search,
-  Microphone,
-} from '@carbon/icons-react';
+import Chat16 from '@carbon/icons/es/chat/16.js';
+import ChatOff16 from '@carbon/icons/es/chat--off/16.js';
 import {
   mentionItems,
   commandItems,
   starterItems,
   typeaheadItems,
+  dummyActions,
   filterItems,
 } from './story-data.js';
 
@@ -55,6 +46,14 @@ import {
 
 const Wrapper = ({ children }) => (
   <div style={{ width: '640px', maxWidth: '100%' }}>{children}</div>
+);
+
+// Gives the prompt line breathing room above it for the autocomplete overlay.
+// Mirrors .prompt-line-story-wrapper--bottom in story-styles.scss.
+const WrapperBottom = ({ children }) => (
+  <div style={{ width: '640px', maxWidth: '100%', marginBlockStart: '320px' }}>
+    {children}
+  </div>
 );
 
 const Hint = ({ children }) => (
@@ -83,60 +82,49 @@ const InlineCode = ({ children }) => (
   </code>
 );
 
-// React-compatible dummy actions — @carbon/icons-react icons are
-// auto-transformed to CarbonIcon format by the Toolbar React wrapper.
-const dummyActionsReact = [
-  {
-    text: 'Summarize conversation',
-    icon: Document,
-    onClick: () => action('dummy-action')('Summarize conversation'),
-  },
-  {
-    text: 'Translate last message',
-    icon: Translate,
-    onClick: () => action('dummy-action')('Translate last message'),
-  },
-  {
-    text: 'Brainstorm ideas',
-    icon: Idea,
-    onClick: () => action('dummy-action')('Brainstorm ideas'),
-  },
-  {
-    text: 'Refine my writing',
-    icon: Edit,
-    onClick: () => action('dummy-action')('Refine my writing'),
-  },
-  {
-    text: 'Suggest a follow-up',
-    icon: MagicWand,
-    onClick: () => action('dummy-action')('Suggest a follow-up'),
-  },
-  {
-    text: 'Explain this code',
-    icon: Code,
-    onClick: () => action('dummy-action')('Explain this code'),
-  },
-  {
-    text: 'Describe an image',
-    icon: Image,
-    onClick: () => action('dummy-action')('Describe an image'),
-  },
-  {
-    text: 'Search the web',
-    icon: Search,
-    onClick: () => action('dummy-action')('Search the web'),
-  },
-  {
-    text: 'Dictate a message',
-    icon: Microphone,
-    onClick: () => action('dummy-action')('Dictate a message'),
-  },
-  {
-    text: 'Start a new chat',
-    icon: Chat,
-    onClick: () => action('dummy-action')('Start a new chat'),
-  },
-];
+/**
+ * Renders a CarbonIcon descriptor as a React <svg> element in a named slot.
+ * Mirrors the carbonIconToReact() utility used in InputActionsInline.
+ */
+const CarbonIconSlot = ({ icon, slot }) =>
+  React.createElement(
+    'svg',
+    {
+      slot,
+      ...icon.attrs,
+      width: icon.attrs.width || 16,
+      height: icon.attrs.height || 16,
+      fill: icon.attrs.fill || 'currentColor',
+      focusable: 'false',
+      style: { pointerEvents: 'none' },
+    },
+    icon.content.map((child, i) =>
+      React.createElement(child.elem, { key: i, ...(child.attrs || {}) })
+    )
+  );
+
+/**
+ * Renders dummy actions as a flat row of sm ghost icon buttons, matching the
+ * demo's InputActionsInline pattern (no toolbar wrapper, no justify-content:end).
+ */
+const InlineActions = ({ disabled }) => (
+  <div slot="message-actions" style={{ display: 'flex', alignItems: 'center' }}>
+    {dummyActions.map((a) => (
+      <cds-icon-button
+        key={a.text}
+        size="sm"
+        kind="ghost"
+        align="top-start"
+        enter-delay-ms="0"
+        leave-delay-ms="0"
+        disabled={disabled || undefined}
+        onClick={a.onClick}>
+        <CarbonIconSlot icon={a.icon} slot="icon" />
+        <span slot="tooltip-content">{a.text}</span>
+      </cds-icon-button>
+    ))}
+  </div>
+);
 
 // ---------------------------------------------------------------------------
 // Story meta
@@ -157,11 +145,51 @@ export default {
       control: 'boolean',
       description: 'Whether the shell has rounded corners.',
     },
+    hasError: {
+      control: 'boolean',
+      description: 'Whether the shell is in an error state.',
+    },
+    errorTitle: {
+      control: 'text',
+      description:
+        'Short error title shown in the error message bar (requires hasError).',
+    },
+    errorDescription: {
+      control: 'text',
+      description: 'Optional longer description shown below the error title.',
+    },
+    errorCollapsible: {
+      control: 'boolean',
+      description: 'Whether the error message description can be collapsed.',
+    },
+    errorFullscreen: {
+      control: 'boolean',
+      description: 'Whether the error message uses the fullscreen layout.',
+    },
+    enableSendButton: {
+      control: 'boolean',
+      description:
+        'Whether the send arrow is shown inside each autocomplete suggestion item (Typeahead only).',
+      table: { category: 'Autocomplete' },
+    },
+    attached: {
+      control: 'boolean',
+      description:
+        'Whether the autocomplete popover is visually attached to the input — removes bottom-corner rounding (Typeahead only).',
+      table: { category: 'Autocomplete' },
+    },
   },
   args: {
-    placeholder: 'Ask a question…',
+    placeholder: 'Type something...',
     disabled: false,
-    rounded: false,
+    rounded: true,
+    hasError: false,
+    errorTitle: 'Something went wrong.',
+    errorDescription: '',
+    errorCollapsible: false,
+    errorFullscreen: true,
+    enableSendButton: true,
+    attached: false,
   },
 };
 
@@ -170,7 +198,20 @@ export default {
 // ---------------------------------------------------------------------------
 
 export const Default = {
-  render: ({ placeholder, disabled, rounded }) => {
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+  }) => {
     const [hasValidInput, setHasValidInput] = useState(false);
 
     const onChange = useCallback((e) => {
@@ -180,7 +221,19 @@ export const Default = {
 
     return (
       <Wrapper>
-        <PromptLineShell rounded={rounded} disabled={disabled}>
+        <PromptLineShell
+          rounded={rounded}
+          disabled={disabled}
+          hasError={hasError}>
+          {hasError && errorTitle && (
+            <CDSAIChatErrorMessage
+              slot="field-messaging"
+              title={errorTitle}
+              description={errorDescription}
+              collapsible={errorCollapsible}
+              fullscreen={errorFullscreen}
+            />
+          )}
           <PromptLine
             slot="editor"
             placeholder={placeholder}
@@ -207,7 +260,20 @@ export const Default = {
 // ---------------------------------------------------------------------------
 
 export const Expanded = {
-  render: ({ placeholder, disabled, rounded }) => {
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+  }) => {
     const [hasValidInput, setHasValidInput] = useState(false);
 
     const onChange = useCallback((e) => {
@@ -217,18 +283,27 @@ export const Expanded = {
 
     return (
       <Wrapper>
-        <PromptLineShell rounded={rounded} disabled={disabled} expanded>
+        <PromptLineShell
+          rounded={rounded}
+          disabled={disabled}
+          hasError={hasError}
+          expanded>
+          {hasError && errorTitle && (
+            <CDSAIChatErrorMessage
+              slot="field-messaging"
+              title={errorTitle}
+              description={errorDescription}
+              collapsible={errorCollapsible}
+              fullscreen={errorFullscreen}
+            />
+          )}
           <PromptLine
             slot="editor"
             placeholder={placeholder}
             disabled={disabled}
             onChange={onChange}
           />
-          <Toolbar
-            slot="message-actions"
-            overflow
-            actions={dummyActionsReact}
-          />
+          <InlineActions disabled={disabled} />
           <CDSAIChatInputSendControl
             slot="send-control"
             disabled={disabled}
@@ -245,9 +320,20 @@ export const Expanded = {
 // Commands and mentions — rich editor, @ + / pickers, hint callout
 // ---------------------------------------------------------------------------
 
-const CommandsAndMentionsStory = ({ placeholder, disabled, rounded }) => {
+const CommandsAndMentionsStory = ({
+  placeholder,
+  disabled,
+  rounded,
+  hasError,
+  errorTitle,
+  errorDescription,
+  errorCollapsible,
+  errorFullscreen,
+  enableSendButton,
+}) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
+  const shellRef = useRef(null);
 
   const mention = useMemo(
     () => ({
@@ -284,7 +370,7 @@ const CommandsAndMentionsStory = ({ placeholder, disabled, rounded }) => {
     mention,
     command,
     promptLineRef,
-    attached: true,
+    attached: false,
   });
 
   const onChange = useCallback((e) => {
@@ -292,38 +378,62 @@ const CommandsAndMentionsStory = ({ placeholder, disabled, rounded }) => {
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
 
+  React.useEffect(() => {
+    const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
+    if (el) {
+      el.enableSendButton = enableSendButton;
+    }
+  }, [enableSendButton, autocompleteContent]);
+
   return (
     <Wrapper>
       <Hint>
         Type <InlineCode>@</InlineCode> anywhere to mention a team member. Type{' '}
         <InlineCode>/</InlineCode> at the start of the line to run a command.
       </Hint>
-      <PromptLineShell rounded={rounded} disabled={disabled} expanded>
-        <PromptLine
-          ref={promptLineRef}
-          slot="editor"
-          placeholder={placeholder}
+      <div style={{ marginBlockStart: '320px' }}>
+        <PromptLineShell
+          ref={shellRef}
+          rounded={rounded}
           disabled={disabled}
-          rich
-          extensions={extensions}
-          onChange={onChange}
-          onTriggerChange={onTriggerChange}
-        />
-        {autocompleteContent}
-        <Toolbar slot="message-actions" overflow actions={dummyActionsReact} />
-        <CDSAIChatInputSendControl
-          slot="send-control"
-          disabled={disabled}
-          hasValidInput={hasValidInput}
-          onSend={() => action('cds-aichat-input-send')()}
-        />
-      </PromptLineShell>
+          hasError={hasError}
+          expanded>
+          {hasError && errorTitle && (
+            <CDSAIChatErrorMessage
+              slot="field-messaging"
+              title={errorTitle}
+              description={errorDescription}
+              collapsible={errorCollapsible}
+              fullscreen={errorFullscreen}
+            />
+          )}
+          <PromptLine
+            ref={promptLineRef}
+            slot="editor"
+            placeholder={placeholder}
+            disabled={disabled}
+            rich
+            extensions={extensions}
+            onChange={onChange}
+            onTriggerChange={onTriggerChange}
+          />
+          {autocompleteContent}
+          <InlineActions disabled={disabled} />
+          <CDSAIChatInputSendControl
+            slot="send-control"
+            disabled={disabled}
+            hasValidInput={hasValidInput}
+            onSend={() => action('cds-aichat-input-send')()}
+          />
+        </PromptLineShell>
+      </div>
     </Wrapper>
   );
 };
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
+  args: { enableSendButton: false },
   render: (args) => <CommandsAndMentionsStory {...args} />,
 };
 
@@ -332,19 +442,28 @@ export const CommandsAndMentions = {
 // ---------------------------------------------------------------------------
 
 function renderCustomList({ items, onSelect, onDismiss }) {
-  return (
-    <CDSAIChatAutocomplete
-      items={items}
-      headerConfig={{ showHeader: true, title: 'Prompt suggestions' }}
-      attached={false}
-      enableSendButton={false}
-      onSelect={(e) => onSelect(e.detail.item)}
-      onDismiss={onDismiss}
-    />
+  const el = document.createElement('cds-aichat-autocomplete');
+  el.items = items;
+  el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
+  el.attached = false;
+  el.enableSendButton = false;
+  el.addEventListener('cds-aichat-autocomplete-select', (e) =>
+    onSelect(e.detail.item)
   );
+  el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
+  return el;
 }
 
-const ConversationStartersStory = ({ placeholder, disabled, rounded }) => {
+const ConversationStartersStory = ({
+  placeholder,
+  disabled,
+  rounded,
+  hasError,
+  errorTitle,
+  errorDescription,
+  errorCollapsible,
+  errorFullscreen,
+}) => {
   const [startersEnabled, setStartersEnabled] = useState(true);
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
@@ -375,23 +494,27 @@ const ConversationStartersStory = ({ placeholder, disabled, rounded }) => {
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
 
-  const toggleAction = useMemo(
-    () => [
-      {
-        text: startersEnabled
-          ? 'Hide conversation starters'
-          : 'Show conversation starters',
-        icon: startersEnabled ? ChatOff : Chat,
-        disabled: hasValidInput,
-        onClick: () => setStartersEnabled((prev) => !prev),
-      },
-    ],
-    [startersEnabled, hasValidInput]
-  );
+  const toggleIcon = startersEnabled ? ChatOff16 : Chat16;
+  const toggleLabel = startersEnabled
+    ? 'Hide conversation starters'
+    : 'Show conversation starters';
 
   return (
-    <Wrapper>
-      <PromptLineShell rounded={rounded} disabled={disabled} expanded>
+    <WrapperBottom>
+      <PromptLineShell
+        rounded={rounded}
+        disabled={disabled}
+        hasError={hasError}
+        expanded>
+        {hasError && errorTitle && (
+          <CDSAIChatErrorMessage
+            slot="field-messaging"
+            title={errorTitle}
+            description={errorDescription}
+            collapsible={errorCollapsible}
+            fullscreen={errorFullscreen}
+          />
+        )}
         <PromptLine
           ref={promptLineRef}
           slot="editor"
@@ -403,7 +526,19 @@ const ConversationStartersStory = ({ placeholder, disabled, rounded }) => {
           onTriggerChange={onTriggerChange}
         />
         {autocompleteContent}
-        <Toolbar slot="message-actions" actions={toggleAction} />
+        <div slot="message-actions">
+          <cds-icon-button
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            disabled={disabled || hasValidInput || undefined}
+            onClick={() => setStartersEnabled((prev) => !prev)}>
+            <CarbonIconSlot icon={toggleIcon} slot="icon" />
+            <span slot="tooltip-content">{toggleLabel}</span>
+          </cds-icon-button>
+        </div>
         <CDSAIChatInputSendControl
           slot="send-control"
           disabled={disabled}
@@ -411,12 +546,16 @@ const ConversationStartersStory = ({ placeholder, disabled, rounded }) => {
           onSend={() => action('cds-aichat-input-send')()}
         />
       </PromptLineShell>
-    </Wrapper>
+    </WrapperBottom>
   );
 };
 
 export const ConversationStarters = {
   name: 'Conversation starters',
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
   render: (args) => <ConversationStartersStory {...args} />,
 };
 
@@ -424,7 +563,16 @@ export const ConversationStarters = {
 // File uploads — file picker with simulated upload progress
 // ---------------------------------------------------------------------------
 
-const FileUploadsStory = ({ placeholder, disabled, rounded }) => {
+const FileUploadsStory = ({
+  placeholder,
+  disabled,
+  rounded,
+  hasError,
+  errorTitle,
+  errorDescription,
+  errorCollapsible,
+  errorFullscreen,
+}) => {
   const [uploads, setUploads] = useState([]);
   const [hasValidInput, setHasValidInput] = useState(false);
   const fileInputRef = useRef(null);
@@ -434,33 +582,28 @@ const FileUploadsStory = ({ placeholder, disabled, rounded }) => {
   }, []);
 
   const onFileSelected = useCallback((e) => {
-    const files = Array.from(e.target.files ?? []);
+    const input = e.target;
+    const files = Array.from(input.files ?? []);
+    // Reset early so re-selecting the same file fires `change` again.
+    input.value = '';
+
+    if (files.length === 0) {
+      return;
+    }
+
     const newUploads = files.map((file) => ({
       id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: file.name,
-      status: FileStatusValue.UPLOADING,
-      isError: false,
+      file,
+      status: FileStatusValue.EDIT,
     }));
 
     setUploads((prev) => [...prev, ...newUploads]);
-
-    newUploads.forEach(({ id }) => {
-      setTimeout(() => {
-        setUploads((prev) =>
-          prev.map((u) =>
-            u.id === id ? { ...u, status: FileStatusValue.SUCCESS } : u
-          )
-        );
-      }, 1500);
-    });
-
-    e.target.value = '';
   }, []);
 
   const onFileRemove = useCallback((e) => {
-    const { id } = e.detail;
-    setUploads((prev) => prev.filter((u) => u.id !== id));
-    action('cds-aichat-file-remove')({ id });
+    const { fileId } = e.detail;
+    setUploads((prev) => prev.filter((u) => u.id !== fileId));
+    action('cds-aichat-file-remove')({ fileId });
   }, []);
 
   const onChange = useCallback((e) => {
@@ -468,27 +611,28 @@ const FileUploadsStory = ({ placeholder, disabled, rounded }) => {
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
 
-  const attachAction = useMemo(
-    () => [
-      {
-        text: 'Attach file',
-        icon: Attachment,
-        onClick: onAttachClick,
-      },
-    ],
-    [onAttachClick]
-  );
+  // Send is valid when there is text, or at least one non-errored upload —
+  // matches the demo's hasValidInput logic in Input.tsx.
+  const hasValidInputOrUploads =
+    hasValidInput || (uploads.length > 0 && !uploads.every((u) => u.isError));
 
   return (
     <Wrapper>
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        style={{ display: 'none' }}
-        onChange={onFileSelected}
-      />
-      <PromptLineShell rounded={rounded} disabled={disabled} expanded>
+      <PromptLineShell
+        rounded={rounded}
+        disabled={disabled}
+        hasError={hasError}
+        expanded>
+        {hasError && errorTitle && (
+          <CDSAIChatErrorMessage
+            slot="field-messaging"
+            title={errorTitle}
+            description={errorDescription}
+            collapsible={errorCollapsible}
+            fullscreen={errorFullscreen}
+          />
+        )}
+        {/* Always mounted so live regions persist after the last file is removed. */}
         <CDSAIChatFileUploads
           slot="file-uploads"
           uploads={uploads}
@@ -500,11 +644,32 @@ const FileUploadsStory = ({ placeholder, disabled, rounded }) => {
           disabled={disabled}
           onChange={onChange}
         />
-        <Toolbar slot="message-actions" actions={attachAction} />
+        {/* Hidden file input lives beside the button inside the slot. */}
+        <div slot="message-actions">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            tabIndex={-1}
+            hidden
+            onChange={onFileSelected}
+          />
+          <cds-icon-button
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            disabled={disabled || undefined}
+            onClick={onAttachClick}>
+            <CarbonIconSlot icon={AddLarge16} slot="icon" />
+            <span slot="tooltip-content">Attach file</span>
+          </cds-icon-button>
+        </div>
         <CDSAIChatInputSendControl
           slot="send-control"
           disabled={disabled}
-          hasValidInput={hasValidInput}
+          hasValidInput={hasValidInputOrUploads}
           onSend={() => action('cds-aichat-input-send')()}
         />
       </PromptLineShell>
@@ -514,6 +679,10 @@ const FileUploadsStory = ({ placeholder, disabled, rounded }) => {
 
 export const FileUploads = {
   name: 'File uploads',
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
   render: (args) => <FileUploadsStory {...args} />,
 };
 
@@ -521,9 +690,22 @@ export const FileUploads = {
 // Typeahead — live autocomplete, 7 flat items, dummy actions
 // ---------------------------------------------------------------------------
 
-const TypeaheadStory = ({ placeholder, disabled, rounded }) => {
+const TypeaheadStory = ({
+  placeholder,
+  disabled,
+  rounded,
+  hasError,
+  errorTitle,
+  errorDescription,
+  errorCollapsible,
+  errorFullscreen,
+  enableSendButton,
+  attached,
+}) => {
   const [hasValidInput, setHasValidInput] = useState(false);
+  const [inputText, setInputText] = useState('');
   const promptLineRef = useRef(null);
+  const shellRef = useRef(null);
 
   const autocomplete = useMemo(
     () => ({
@@ -540,17 +722,42 @@ const TypeaheadStory = ({ placeholder, disabled, rounded }) => {
   const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
     autocomplete,
     promptLineRef,
-    attached: true,
+    attached,
   });
 
   const onChange = useCallback((e) => {
     setHasValidInput(e.detail.rawValue.length > 0);
+    setInputText(e.detail.rawValue);
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
 
+  // Imperatively push props onto the <cds-aichat-autocomplete> element that
+  // the hook renders internally — it isn't directly accessible as JSX props.
+  React.useEffect(() => {
+    const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
+    if (el) {
+      el.enableSendButton = enableSendButton;
+      el.inputText = inputText;
+    }
+  }, [enableSendButton, inputText, autocompleteContent]);
+
   return (
-    <Wrapper>
-      <PromptLineShell rounded={rounded} disabled={disabled} expanded>
+    <WrapperBottom>
+      <PromptLineShell
+        ref={shellRef}
+        rounded={rounded}
+        disabled={disabled}
+        hasError={hasError}
+        expanded>
+        {hasError && errorTitle && (
+          <CDSAIChatErrorMessage
+            slot="field-messaging"
+            title={errorTitle}
+            description={errorDescription}
+            collapsible={errorCollapsible}
+            fullscreen={errorFullscreen}
+          />
+        )}
         <PromptLine
           ref={promptLineRef}
           slot="editor"
@@ -562,7 +769,7 @@ const TypeaheadStory = ({ placeholder, disabled, rounded }) => {
           onTriggerChange={onTriggerChange}
         />
         {autocompleteContent}
-        <Toolbar slot="message-actions" overflow actions={dummyActionsReact} />
+        <InlineActions disabled={disabled} />
         <CDSAIChatInputSendControl
           slot="send-control"
           disabled={disabled}
@@ -570,7 +777,7 @@ const TypeaheadStory = ({ placeholder, disabled, rounded }) => {
           onSend={() => action('cds-aichat-input-send')()}
         />
       </PromptLineShell>
-    </Wrapper>
+    </WrapperBottom>
   );
 };
 

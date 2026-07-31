@@ -21,7 +21,6 @@
 
 import '../index';
 import '../autocomplete/index';
-import '../../toolbar/index';
 import '../../file-uploads/index';
 import '@carbon/web-components/es/components/button/index.js';
 
@@ -29,7 +28,7 @@ import { html, LitElement } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { action } from 'storybook/actions';
 
-import Attachment16 from '@carbon/icons/es/attachment/16.js';
+import AddLarge16 from '@carbon/icons/es/add--large/16.js';
 import Chat16 from '@carbon/icons/es/chat/16.js';
 import ChatOff16 from '@carbon/icons/es/chat--off/16.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
@@ -45,6 +44,30 @@ import {
 } from './story-data.js';
 import { buildCarbonExtensions, FileStatusValue } from '../index';
 
+/**
+ * Renders dummy actions as a flat row of sm ghost icon buttons, matching the
+ * demo's InputActionsInline pattern (no toolbar wrapper, no justify-content:end).
+ */
+const renderInlineActions = (actions, disabled) => html`
+  <div slot="message-actions" style="display:flex;align-items:center;">
+    ${actions.map(
+      (a) => html`
+        <cds-icon-button
+          size="sm"
+          kind="ghost"
+          align="top-start"
+          enter-delay-ms="0"
+          leave-delay-ms="0"
+          ?disabled=${disabled}
+          @click=${a.onClick}>
+          ${iconLoader(a.icon, { slot: 'icon' })}
+          <span slot="tooltip-content">${a.text}</span>
+        </cds-icon-button>
+      `
+    )}
+  </div>
+`;
+
 // ---------------------------------------------------------------------------
 // Stateful element: Conversation Starters story
 // ---------------------------------------------------------------------------
@@ -56,6 +79,11 @@ class PromptLineStartersStory extends LitElement {
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
+    hasError: { type: Boolean },
+    errorTitle: {},
+    errorDescription: {},
+    errorCollapsible: { type: Boolean },
+    errorFullscreen: { type: Boolean },
   };
 
   constructor() {
@@ -65,6 +93,11 @@ class PromptLineStartersStory extends LitElement {
     this.placeholder = 'Ask a question…';
     this.disabled = false;
     this.rounded = false;
+    this.hasError = false;
+    this.errorTitle = '';
+    this.errorDescription = '';
+    this.errorCollapsible = false;
+    this.errorFullscreen = true;
   }
 
   // Render in light DOM so story-styles.scss reaches the content.
@@ -103,26 +136,31 @@ class PromptLineStartersStory extends LitElement {
 
     const extensions = buildCarbonExtensions({ starters: startersConfig });
 
-    const toggleAction = {
-      text: this._startersEnabled
-        ? 'Hide conversation starters'
-        : 'Show conversation starters',
-      icon: iconLoader(this._startersEnabled ? ChatOff16 : Chat16),
-      disabled: this._inputHasText,
-      onClick: () => {
-        this._startersEnabled = !this._startersEnabled;
-      },
-    };
+    const toggleIcon = this._startersEnabled ? ChatOff16 : Chat16;
+    const toggleLabel = this._startersEnabled
+      ? 'Hide conversation starters'
+      : 'Show conversation starters';
 
     return html`
       <style>
         ${styles}
       </style>
-      <div class="prompt-line-story-wrapper">
+      <div style="width:640px;max-inline-size:100%;margin-block-start:320px">
         <cds-aichat-prompt-line-shell
           ?rounded=${this.rounded}
           ?disabled=${this.disabled}
+          ?has-error=${this.hasError}
           expanded>
+          ${
+            this.hasError && this.errorTitle
+              ? html`<cds-aichat-error-message
+                  slot="field-messaging"
+                  title=${this.errorTitle}
+                  description=${this.errorDescription}
+                  ?collapsible=${this.errorCollapsible}
+                  ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
+              : null
+          }
           <cds-aichat-prompt-line
             slot="editor"
             placeholder=${this.placeholder}
@@ -134,9 +172,21 @@ class PromptLineStartersStory extends LitElement {
           <cds-aichat-autocomplete-controller
             slot="autocomplete-content"
             .starters=${startersConfig}></cds-aichat-autocomplete-controller>
-          <cds-aichat-toolbar
-            slot="message-actions"
-            .actions=${[toggleAction]}></cds-aichat-toolbar>
+          <div slot="message-actions">
+            <cds-icon-button
+              size="sm"
+              kind="ghost"
+              align="top-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              ?disabled=${this.disabled || this._inputHasText}
+              @click=${() => {
+                this._startersEnabled = !this._startersEnabled;
+              }}>
+              ${iconLoader(toggleIcon, { slot: 'icon' })}
+              <span slot="tooltip-content">${toggleLabel}</span>
+            </cds-icon-button>
+          </div>
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${this.disabled}
@@ -163,6 +213,11 @@ class PromptLineFileUploadsStory extends LitElement {
     placeholder: {},
     disabled: { type: Boolean },
     rounded: { type: Boolean },
+    hasError: { type: Boolean },
+    errorTitle: {},
+    errorDescription: {},
+    errorCollapsible: { type: Boolean },
+    errorFullscreen: { type: Boolean },
   };
 
   constructor() {
@@ -171,6 +226,11 @@ class PromptLineFileUploadsStory extends LitElement {
     this.placeholder = 'Ask a question…';
     this.disabled = false;
     this.rounded = false;
+    this.hasError = false;
+    this.errorTitle = '';
+    this.errorDescription = '';
+    this.errorCollapsible = false;
+    this.errorFullscreen = true;
     this._fileInputRef = createRef();
   }
 
@@ -183,64 +243,64 @@ class PromptLineFileUploadsStory extends LitElement {
   }
 
   _onFileSelected(e) {
-    const files = Array.from(e.target.files ?? []);
+    const input = e.target;
+    const files = Array.from(input.files ?? []);
+    // Reset early so re-selecting the same file fires `change` again.
+    input.value = '';
+
+    if (files.length === 0) {
+      return;
+    }
+
     const newUploads = files.map((file) => ({
       id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: file.name,
-      status: FileStatusValue.UPLOADING,
-      isError: false,
+      file,
+      status: FileStatusValue.EDIT,
     }));
 
     this._uploads = [...this._uploads, ...newUploads];
-
-    // Simulate each file completing after 1.5 s
-    newUploads.forEach(({ id }) => {
-      setTimeout(() => {
-        this._uploads = this._uploads.map((u) =>
-          u.id === id ? { ...u, status: FileStatusValue.SUCCESS } : u
-        );
-      }, 1500);
-    });
-
-    e.target.value = '';
   }
 
   _onFileRemove(e) {
-    const { id } = e.detail;
-    this._uploads = this._uploads.filter((u) => u.id !== id);
-    action('cds-aichat-file-remove')({ id });
+    const { fileId } = e.detail;
+    this._uploads = this._uploads.filter((u) => u.id !== fileId);
+    action('cds-aichat-file-remove')({ fileId });
   }
 
   _onPromptChange(e) {
     const sendControl = this.querySelector('cds-aichat-input-send-control');
     if (sendControl) {
-      sendControl.hasValidInput = e.detail.rawValue.length > 0;
+      // Send is valid when there is text, or at least one non-errored upload.
+      const hasText = e.detail.rawValue.length > 0;
+      const hasUploads =
+        this._uploads.length > 0 && !this._uploads.every((u) => u.isError);
+      sendControl.hasValidInput = hasText || hasUploads;
     }
     action('cds-aichat-prompt-change')(e.detail);
   }
 
   render() {
-    const attachAction = {
-      text: 'Attach file',
-      icon: iconLoader(Attachment16),
-      onClick: () => this._onAttachClick(),
-    };
-
     return html`
       <style>
         ${styles}
       </style>
-      <input
-        type="file"
-        multiple
-        style="display:none"
-        @change=${(e) => this._onFileSelected(e)}
-        ${ref(this._fileInputRef)} />
-      <div class="prompt-line-story-wrapper">
+      <div style="width:640px;max-inline-size:100%;">
         <cds-aichat-prompt-line-shell
           ?rounded=${this.rounded}
           ?disabled=${this.disabled}
+          ?has-error=${this.hasError}
           expanded>
+          ${
+            this.hasError && this.errorTitle
+              ? html`<cds-aichat-error-message
+                  slot="field-messaging"
+                  title=${this.errorTitle}
+                  description=${this.errorDescription}
+                  ?collapsible=${this.errorCollapsible}
+                  ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
+              : null
+          }
+          <!-- Always mounted so live regions persist after the last file is removed. -->
           <cds-aichat-file-uploads
             slot="file-uploads"
             .uploads=${this._uploads}
@@ -252,9 +312,27 @@ class PromptLineFileUploadsStory extends LitElement {
             ?disabled=${this.disabled}
             @cds-aichat-prompt-change=${(e) =>
               this._onPromptChange(e)}></cds-aichat-prompt-line>
-          <cds-aichat-toolbar
-            slot="message-actions"
-            .actions=${[attachAction]}></cds-aichat-toolbar>
+          <!-- Hidden file input lives beside the button inside the slot. -->
+          <div slot="message-actions">
+            <input
+              type="file"
+              multiple
+              tabindex="-1"
+              hidden
+              @change=${(e) => this._onFileSelected(e)}
+              ${ref(this._fileInputRef)} />
+            <cds-icon-button
+              size="sm"
+              kind="ghost"
+              align="top-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              ?disabled=${this.disabled}
+              @click=${() => this._onAttachClick()}>
+              ${iconLoader(AddLarge16, { slot: 'icon' })}
+              <span slot="tooltip-content">Attach file</span>
+            </cds-icon-button>
+          </div>
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${this.disabled}
@@ -272,6 +350,296 @@ if (!customElements.get('prompt-line-story-file-uploads')) {
   customElements.define(
     'prompt-line-story-file-uploads',
     PromptLineFileUploadsStory
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Stateful element: Commands and mentions story
+// ---------------------------------------------------------------------------
+
+class PromptLineCommandsAndMentionsStory extends LitElement {
+  static properties = {
+    placeholder: {},
+    disabled: { type: Boolean },
+    rounded: { type: Boolean },
+    hasError: { type: Boolean },
+    errorTitle: {},
+    errorDescription: {},
+    errorCollapsible: { type: Boolean },
+    errorFullscreen: { type: Boolean },
+    enableSendButton: { type: Boolean },
+  };
+
+  constructor() {
+    super();
+    this.placeholder = 'Type something...';
+    this.disabled = false;
+    this.rounded = true;
+    this.hasError = false;
+    this.errorTitle = '';
+    this.errorDescription = '';
+    this.errorCollapsible = false;
+    this.errorFullscreen = true;
+    this.enableSendButton = false;
+    this._sendControlRef = createRef();
+    this._mentionConfig = {
+      trigger: '@',
+      items: async (query) => {
+        if (!query) {
+          return mentionItems;
+        }
+        return mentionItems.filter((m) =>
+          m.label.toLowerCase().includes(query.toLowerCase())
+        );
+      },
+      onSelect: (item) => action('mention-selected')(item),
+      onRemove: (item) => action('mention-removed')(item),
+    };
+    this._commandConfig = {
+      trigger: '/',
+      triggerPosition: 'start',
+      items: commandItems,
+      onSelect: (item) => action('command-selected')(item),
+      onRemove: (item) => action('command-removed')(item),
+    };
+    this._extensions = buildCarbonExtensions({
+      mention: this._mentionConfig,
+      command: this._commandConfig,
+    });
+  }
+
+  createRenderRoot() {
+    return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._autocompleteObserver = new MutationObserver(() => {
+      this._pushAutocompleteProps();
+    });
+    this._autocompleteObserver.observe(this, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._autocompleteObserver?.disconnect();
+    this._autocompleteObserver = null;
+  }
+
+  updated() {
+    this._pushAutocompleteProps();
+  }
+
+  _pushAutocompleteProps() {
+    const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
+    if (autocompleteEl) {
+      autocompleteEl.enableSendButton = this.enableSendButton;
+    }
+  }
+
+  _onPromptChange(e) {
+    if (this._sendControlRef.value) {
+      this._sendControlRef.value.hasValidInput = e.detail.rawValue.length > 0;
+    }
+    action('cds-aichat-prompt-change')(e.detail);
+  }
+
+  render() {
+    return html`
+      <style>
+        ${styles}
+      </style>
+      <div class="prompt-line-story-wrapper">
+        <p class="prompt-line-story-hint">
+          Type <code>@</code> anywhere to mention a team member. Type
+          <code>/</code> at the start of the line to run a command.
+        </p>
+        <div style="margin-block-start:320px">
+          <cds-aichat-prompt-line-shell
+            ?rounded=${this.rounded}
+            ?disabled=${this.disabled}
+            ?has-error=${this.hasError}
+            expanded>
+            ${
+            this.hasError && this.errorTitle
+              ? html`<cds-aichat-error-message
+                  slot="field-messaging"
+                  title=${this.errorTitle}
+                  description=${this.errorDescription}
+                  ?collapsible=${this.errorCollapsible}
+                  ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
+              : null
+          }
+            <cds-aichat-prompt-line
+              slot="editor"
+              placeholder=${this.placeholder}
+              ?disabled=${this.disabled}
+              rich
+              .extensions=${this._extensions}
+              @cds-aichat-prompt-change=${(e) =>
+              this._onPromptChange(e)}></cds-aichat-prompt-line>
+            <cds-aichat-autocomplete-controller
+              slot="autocomplete-content"
+              .mention=${this._mentionConfig}
+              .command=${this._commandConfig}></cds-aichat-autocomplete-controller>
+            ${renderInlineActions(dummyActions, this.disabled)}
+            <cds-aichat-input-send-control
+              slot="send-control"
+              ?disabled=${this.disabled}
+              @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+              ${ref(this._sendControlRef)}></cds-aichat-input-send-control>
+          </cds-aichat-prompt-line-shell>
+        </div>
+      </div>
+    `;
+  }
+}
+
+if (!customElements.get('prompt-line-story-commands-and-mentions')) {
+  customElements.define(
+    'prompt-line-story-commands-and-mentions',
+    PromptLineCommandsAndMentionsStory
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Stateful element: Typeahead story
+// ---------------------------------------------------------------------------
+
+class PromptLineTypeaheadStory extends LitElement {
+  static properties = {
+    _inputText: { state: true },
+    placeholder: {},
+    disabled: { type: Boolean },
+    rounded: { type: Boolean },
+    hasError: { type: Boolean },
+    errorTitle: {},
+    errorDescription: {},
+    errorCollapsible: { type: Boolean },
+    errorFullscreen: { type: Boolean },
+    enableSendButton: { type: Boolean },
+    attached: { type: Boolean },
+  };
+
+  constructor() {
+    super();
+    this._inputText = '';
+    this.placeholder = 'Type something...';
+    this.disabled = false;
+    this.rounded = true;
+    this.hasError = false;
+    this.errorTitle = '';
+    this.errorDescription = '';
+    this.errorCollapsible = false;
+    this.errorFullscreen = true;
+    this.enableSendButton = true;
+    this.attached = false;
+    this._autocompleteConfig = {
+      items: (query) => filterItems(typeaheadItems, query),
+    };
+    this._extensions = buildCarbonExtensions({
+      autocomplete: this._autocompleteConfig,
+    });
+    this._sendControlRef = createRef();
+  }
+
+  createRenderRoot() {
+    return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Watch for <cds-aichat-autocomplete> being added by the controller so we
+    // can push props onto it the moment it appears, not just on our own updates.
+    this._autocompleteObserver = new MutationObserver(() => {
+      this._pushAutocompleteProps();
+    });
+    this._autocompleteObserver.observe(this, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._autocompleteObserver?.disconnect();
+    this._autocompleteObserver = null;
+  }
+
+  updated() {
+    // Also push on every reactive update (e.g. when enableSendButton/attached
+    // change from Storybook controls, or _inputText changes).
+    this._pushAutocompleteProps();
+  }
+
+  _pushAutocompleteProps() {
+    const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
+    if (autocompleteEl) {
+      autocompleteEl.enableSendButton = this.enableSendButton;
+      autocompleteEl.attached = this.attached;
+      autocompleteEl.inputText = this._inputText;
+    }
+  }
+
+  _onPromptChange(e) {
+    this._inputText = e.detail.rawValue;
+    if (this._sendControlRef.value) {
+      this._sendControlRef.value.hasValidInput = e.detail.rawValue.length > 0;
+    }
+    action('cds-aichat-prompt-change')(e.detail);
+  }
+
+  render() {
+    return html`
+      <style>
+        ${styles}
+      </style>
+      <div class="prompt-line-story-wrapper" style="margin-block-start:320px">
+        <cds-aichat-prompt-line-shell
+          ?rounded=${this.rounded}
+          ?disabled=${this.disabled}
+          ?has-error=${this.hasError}
+          expanded>
+          ${
+            this.hasError && this.errorTitle
+              ? html`<cds-aichat-error-message
+                  slot="field-messaging"
+                  title=${this.errorTitle}
+                  description=${this.errorDescription}
+                  ?collapsible=${this.errorCollapsible}
+                  ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
+              : null
+          }
+          <cds-aichat-prompt-line
+            slot="editor"
+            placeholder=${this.placeholder}
+            ?disabled=${this.disabled}
+            rich
+            .extensions=${this._extensions}
+            @cds-aichat-prompt-change=${(e) =>
+              this._onPromptChange(e)}></cds-aichat-prompt-line>
+          <cds-aichat-autocomplete-controller
+            slot="autocomplete-content"
+            .autocomplete=${this._autocompleteConfig}></cds-aichat-autocomplete-controller>
+          ${renderInlineActions(dummyActions, this.disabled)}
+          <cds-aichat-input-send-control
+            slot="send-control"
+            ?disabled=${this.disabled}
+            @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
+            ${ref(this._sendControlRef)}></cds-aichat-input-send-control>
+        </cds-aichat-prompt-line-shell>
+      </div>
+    `;
+  }
+}
+
+if (!customElements.get('prompt-line-story-typeahead')) {
+  customElements.define(
+    'prompt-line-story-typeahead',
+    PromptLineTypeaheadStory
   );
 }
 
@@ -294,11 +662,51 @@ export default {
       control: 'boolean',
       description: 'Whether the shell has rounded corners.',
     },
+    hasError: {
+      control: 'boolean',
+      description: 'Whether the shell is in an error state.',
+    },
+    errorTitle: {
+      control: 'text',
+      description:
+        'Short error title shown in the error message bar (requires hasError).',
+    },
+    errorDescription: {
+      control: 'text',
+      description: 'Optional longer description shown below the error title.',
+    },
+    errorCollapsible: {
+      control: 'boolean',
+      description: 'Whether the error message description can be collapsed.',
+    },
+    errorFullscreen: {
+      control: 'boolean',
+      description: 'Whether the error message uses the fullscreen layout.',
+    },
+    enableSendButton: {
+      control: 'boolean',
+      description:
+        'Whether the send arrow is shown inside each autocomplete suggestion item (Typeahead only).',
+      table: { category: 'Autocomplete' },
+    },
+    attached: {
+      control: 'boolean',
+      description:
+        'Whether the autocomplete popover is visually attached to the input — removes bottom-corner rounding (Typeahead only).',
+      table: { category: 'Autocomplete' },
+    },
   },
   args: {
-    placeholder: 'Ask a question…',
+    placeholder: 'Type something...',
     disabled: false,
-    rounded: false,
+    rounded: true,
+    hasError: false,
+    errorTitle: 'Something went wrong.',
+    errorDescription: '',
+    errorCollapsible: false,
+    errorFullscreen: true,
+    enableSendButton: true,
+    attached: false,
   },
 };
 
@@ -307,7 +715,20 @@ export default {
 // ---------------------------------------------------------------------------
 
 export const Default = {
-  render: ({ placeholder, disabled, rounded }) => {
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+  }) => {
     let sendControlEl = null;
 
     const onPromptChange = (e) => {
@@ -322,7 +743,20 @@ export const Default = {
         ${styles}
       </style>
       <div class="prompt-line-story-wrapper">
-        <cds-aichat-prompt-line-shell ?rounded=${rounded} ?disabled=${disabled}>
+        <cds-aichat-prompt-line-shell
+          ?rounded=${rounded}
+          ?disabled=${disabled}
+          ?has-error=${hasError}>
+          ${
+            hasError && errorTitle
+              ? html`<cds-aichat-error-message
+                  slot="field-messaging"
+                  title=${errorTitle}
+                  description=${errorDescription}
+                  ?collapsible=${errorCollapsible}
+                  ?fullscreen=${errorFullscreen}></cds-aichat-error-message>`
+              : null
+          }
           <cds-aichat-prompt-line
             slot="editor"
             placeholder=${placeholder}
@@ -350,7 +784,20 @@ export const Default = {
 // ---------------------------------------------------------------------------
 
 export const Expanded = {
-  render: ({ placeholder, disabled, rounded }) => {
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+  }) => {
     let sendControlEl = null;
 
     const onPromptChange = (e) => {
@@ -368,16 +815,24 @@ export const Expanded = {
         <cds-aichat-prompt-line-shell
           ?rounded=${rounded}
           ?disabled=${disabled}
+          ?has-error=${hasError}
           expanded>
+          ${
+            hasError && errorTitle
+              ? html`<cds-aichat-error-message
+                  slot="field-messaging"
+                  title=${errorTitle}
+                  description=${errorDescription}
+                  ?collapsible=${errorCollapsible}
+                  ?fullscreen=${errorFullscreen}></cds-aichat-error-message>`
+              : null
+          }
           <cds-aichat-prompt-line
             slot="editor"
             placeholder=${placeholder}
             ?disabled=${disabled}
             @cds-aichat-prompt-change=${onPromptChange}></cds-aichat-prompt-line>
-          <cds-aichat-toolbar
-            slot="message-actions"
-            overflow
-            .actions=${dummyActions}></cds-aichat-toolbar>
+          ${renderInlineActions(dummyActions, disabled)}
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${disabled}
@@ -397,81 +852,31 @@ export const Expanded = {
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
-  render: ({ placeholder, disabled, rounded }) => {
-    const mentionConfig = {
-      trigger: '@',
-      items: async (query) => {
-        if (!query) {
-          return mentionItems;
-        }
-        return mentionItems.filter((m) =>
-          m.label.toLowerCase().includes(query.toLowerCase())
-        );
-      },
-      onSelect: (item) => action('mention-selected')(item),
-      onRemove: (item) => action('mention-removed')(item),
-    };
-
-    const commandConfig = {
-      trigger: '/',
-      triggerPosition: 'start',
-      items: commandItems,
-      onSelect: (item) => action('command-selected')(item),
-      onRemove: (item) => action('command-removed')(item),
-    };
-
-    const extensions = buildCarbonExtensions({
-      mention: mentionConfig,
-      command: commandConfig,
-    });
-
-    let sendControlEl = null;
-
-    const onPromptChange = (e) => {
-      if (sendControlEl) {
-        sendControlEl.hasValidInput = e.detail.rawValue.length > 0;
-      }
-      action('cds-aichat-prompt-change')(e.detail);
-    };
-
-    return html`
-      <style>
-        ${styles}
-      </style>
-      <div class="prompt-line-story-wrapper">
-        <p class="prompt-line-story-hint">
-          Type <code>@</code> anywhere to mention a team member. Type
-          <code>/</code> at the start of the line to run a command.
-        </p>
-        <cds-aichat-prompt-line-shell
-          ?rounded=${rounded}
-          ?disabled=${disabled}
-          expanded>
-          <cds-aichat-prompt-line
-            slot="editor"
-            placeholder=${placeholder}
-            ?disabled=${disabled}
-            rich
-            .extensions=${extensions}
-            @cds-aichat-prompt-change=${onPromptChange}></cds-aichat-prompt-line>
-          <cds-aichat-autocomplete-controller
-            slot="autocomplete-content"
-            .mention=${mentionConfig}
-            .command=${commandConfig}></cds-aichat-autocomplete-controller>
-          <cds-aichat-toolbar
-            slot="message-actions"
-            overflow
-            .actions=${dummyActions}></cds-aichat-toolbar>
-          <cds-aichat-input-send-control
-            slot="send-control"
-            ?disabled=${disabled}
-            @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
-            ${ref((el) => {
-              sendControlEl = el ?? null;
-            })}></cds-aichat-input-send-control>
-        </cds-aichat-prompt-line-shell>
-      </div>
-    `;
+  args: { enableSendButton: false },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+    enableSendButton,
+  }) => {
+    const el = document.createElement(
+      'prompt-line-story-commands-and-mentions'
+    );
+    el.placeholder = placeholder;
+    el.disabled = disabled;
+    el.rounded = rounded;
+    el.hasError = hasError;
+    el.errorTitle = errorTitle;
+    el.errorDescription = errorDescription;
+    el.errorCollapsible = errorCollapsible;
+    el.errorFullscreen = errorFullscreen;
+    el.enableSendButton = enableSendButton;
+    return el;
   },
 };
 
@@ -481,11 +886,29 @@ export const CommandsAndMentions = {
 
 export const ConversationStarters = {
   name: 'Conversation starters',
-  render: ({ placeholder, disabled, rounded }) => {
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+  }) => {
     const el = document.createElement('prompt-line-story-starters');
     el.placeholder = placeholder;
     el.disabled = disabled;
     el.rounded = rounded;
+    el.hasError = hasError;
+    el.errorTitle = errorTitle;
+    el.errorDescription = errorDescription;
+    el.errorCollapsible = errorCollapsible;
+    el.errorFullscreen = errorFullscreen;
     return el;
   },
 };
@@ -496,11 +919,29 @@ export const ConversationStarters = {
 
 export const FileUploads = {
   name: 'File uploads',
-  render: ({ placeholder, disabled, rounded }) => {
+  argTypes: {
+    enableSendButton: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+  }) => {
     const el = document.createElement('prompt-line-story-file-uploads');
     el.placeholder = placeholder;
     el.disabled = disabled;
     el.rounded = rounded;
+    el.hasError = hasError;
+    el.errorTitle = errorTitle;
+    el.errorDescription = errorDescription;
+    el.errorCollapsible = errorCollapsible;
+    el.errorFullscreen = errorFullscreen;
     return el;
   },
 };
@@ -510,56 +951,29 @@ export const FileUploads = {
 // ---------------------------------------------------------------------------
 
 export const Typeahead = {
-  render: ({ placeholder, disabled, rounded }) => {
-    const autocompleteConfig = {
-      items: (query) => filterItems(typeaheadItems, query),
-    };
-
-    const extensions = buildCarbonExtensions({
-      autocomplete: autocompleteConfig,
-    });
-
-    let sendControlEl = null;
-
-    const onPromptChange = (e) => {
-      if (sendControlEl) {
-        sendControlEl.hasValidInput = e.detail.rawValue.length > 0;
-      }
-      action('cds-aichat-prompt-change')(e.detail);
-    };
-
-    return html`
-      <style>
-        ${styles}
-      </style>
-      <div class="prompt-line-story-wrapper">
-        <cds-aichat-prompt-line-shell
-          ?rounded=${rounded}
-          ?disabled=${disabled}
-          expanded>
-          <cds-aichat-prompt-line
-            slot="editor"
-            placeholder=${placeholder}
-            ?disabled=${disabled}
-            rich
-            .extensions=${extensions}
-            @cds-aichat-prompt-change=${onPromptChange}></cds-aichat-prompt-line>
-          <cds-aichat-autocomplete-controller
-            slot="autocomplete-content"
-            .autocomplete=${autocompleteConfig}></cds-aichat-autocomplete-controller>
-          <cds-aichat-toolbar
-            slot="message-actions"
-            overflow
-            .actions=${dummyActions}></cds-aichat-toolbar>
-          <cds-aichat-input-send-control
-            slot="send-control"
-            ?disabled=${disabled}
-            @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
-            ${ref((el) => {
-              sendControlEl = el ?? null;
-            })}></cds-aichat-input-send-control>
-        </cds-aichat-prompt-line-shell>
-      </div>
-    `;
+  render: ({
+    placeholder,
+    disabled,
+    rounded,
+    hasError,
+    errorTitle,
+    errorDescription,
+    errorCollapsible,
+    errorFullscreen,
+    enableSendButton,
+    attached,
+  }) => {
+    const el = document.createElement('prompt-line-story-typeahead');
+    el.placeholder = placeholder;
+    el.disabled = disabled;
+    el.rounded = rounded;
+    el.hasError = hasError;
+    el.errorTitle = errorTitle;
+    el.errorDescription = errorDescription;
+    el.errorCollapsible = errorCollapsible;
+    el.errorFullscreen = errorFullscreen;
+    el.enableSendButton = enableSendButton;
+    el.attached = attached;
+    return el;
   },
 };

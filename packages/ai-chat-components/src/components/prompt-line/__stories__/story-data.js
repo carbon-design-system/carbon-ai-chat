@@ -139,52 +139,52 @@ export const typeaheadItems = [
 export const dummyActions = [
   {
     text: 'Summarize conversation',
-    icon: iconLoader(Document16),
+    icon: Document16,
     onClick: () => action('dummy-action')('Summarize conversation'),
   },
   {
     text: 'Translate last message',
-    icon: iconLoader(Language16),
+    icon: Language16,
     onClick: () => action('dummy-action')('Translate last message'),
   },
   {
     text: 'Brainstorm ideas',
-    icon: iconLoader(Idea16),
+    icon: Idea16,
     onClick: () => action('dummy-action')('Brainstorm ideas'),
   },
   {
     text: 'Refine my writing',
-    icon: iconLoader(Edit16),
+    icon: Edit16,
     onClick: () => action('dummy-action')('Refine my writing'),
   },
   {
     text: 'Suggest a follow-up',
-    icon: iconLoader(MagicWand16),
+    icon: MagicWand16,
     onClick: () => action('dummy-action')('Suggest a follow-up'),
   },
   {
     text: 'Explain this code',
-    icon: iconLoader(Code16),
+    icon: Code16,
     onClick: () => action('dummy-action')('Explain this code'),
   },
   {
     text: 'Describe an image',
-    icon: iconLoader(Image16),
+    icon: Image16,
     onClick: () => action('dummy-action')('Describe an image'),
   },
   {
     text: 'Search the web',
-    icon: iconLoader(Search16),
+    icon: Search16,
     onClick: () => action('dummy-action')('Search the web'),
   },
   {
     text: 'Dictate a message',
-    icon: iconLoader(Microphone16),
+    icon: Microphone16,
     onClick: () => action('dummy-action')('Dictate a message'),
   },
   {
     text: 'Start a new chat',
-    icon: iconLoader(Chat16),
+    icon: Chat16,
     onClick: () => action('dummy-action')('Start a new chat'),
   },
 ];
