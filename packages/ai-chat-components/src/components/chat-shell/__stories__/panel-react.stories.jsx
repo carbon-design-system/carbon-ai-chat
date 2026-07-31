@@ -8,14 +8,14 @@
  */
 
 /* eslint-disable */
-import React, { useState } from "react";
-import "@carbon/web-components/es/components/toggle/index.js";
+import React, { useState } from 'react';
+import '@carbon/web-components/es/components/toggle/index.js';
 
-import ChatShell from "../../../react/chat-shell.js";
-import ChatPanel from "../../../react/panel.js";
-import { CardFooter } from "../../../react/card.js";
-import { cardFooterPresets } from "../../card/__stories__/story-data.js";
-import "./story-styles.scss";
+import ChatShell from '../../../react/chat-shell.js';
+import ChatPanel from '../../../react/panel.js';
+import { CardFooter } from '../../../react/card.js';
+import { cardFooterPresets } from '../../card/__stories__/story-data.js';
+import './story-styles.scss';
 
 // Core slots for panel stories
 const CoreSlotContent = () => (
@@ -39,19 +39,19 @@ const CoreSlotContent = () => (
 );
 
 export default {
-  title: "Preview/Chat shell/Panels",
+  title: 'Preview/Chat shell/Panels',
   argTypes: {
     aiEnabled: {
-      control: "boolean",
-      description: "Enable AI-specific theming for shell",
+      control: 'boolean',
+      description: 'Enable AI-specific theming for shell',
     },
     showFrame: {
-      control: "boolean",
-      description: "Show visual frame around shell content",
+      control: 'boolean',
+      description: 'Show visual frame around shell content',
     },
     roundedCorners: {
-      control: "boolean",
-      description: "Apply rounded corners to shell frame",
+      control: 'boolean',
+      description: 'Apply rounded corners to shell frame',
     },
   },
 };
@@ -69,61 +69,61 @@ export const Default = {
     showChatHeader: true,
     showPanelFrame: true,
     panelAiEnabled: false,
-    animationOnOpen: "slide-in-from-bottom",
-    animationOnClose: "slide-out-to-bottom",
-    panelAriaLabel: "Configurable panel",
+    animationOnOpen: 'slide-in-from-bottom',
+    animationOnClose: 'slide-out-to-bottom',
+    panelAriaLabel: 'Configurable panel',
   },
   argTypes: {
     // Panel-specific argTypes
     open: {
-      control: "boolean",
-      description: "Panel open state",
+      control: 'boolean',
+      description: 'Panel open state',
     },
     priority: {
-      control: { type: "number", min: 0, max: 2, step: 1 },
-      description: "Panel priority (higher priority panels display over lower)",
+      control: { type: 'number', min: 0, max: 2, step: 1 },
+      description: 'Panel priority (higher priority panels display over lower)',
     },
     fullWidth: {
-      control: "boolean",
-      description: "Panel spans full width of chat interface",
+      control: 'boolean',
+      description: 'Panel spans full width of chat interface',
     },
     showChatHeader: {
-      control: "boolean",
-      description: "Show chat header within panel",
+      control: 'boolean',
+      description: 'Show chat header within panel',
     },
     showPanelFrame: {
-      control: "boolean",
-      description: "Show visual frame around panel content",
+      control: 'boolean',
+      description: 'Show visual frame around panel content',
     },
     panelAiEnabled: {
-      control: "boolean",
-      description: "Enable AI theme for panel content",
+      control: 'boolean',
+      description: 'Enable AI theme for panel content',
     },
     animationOnOpen: {
-      control: { type: "select" },
+      control: { type: 'select' },
       options: [
-        "",
-        "slide-in-from-bottom",
-        "slide-in-from-end",
-        "slide-in-from-start",
-        "fade-in",
+        '',
+        'slide-in-from-bottom',
+        'slide-in-from-end',
+        'slide-in-from-start',
+        'fade-in',
       ],
-      description: "Animation when panel opens",
+      description: 'Animation when panel opens',
     },
     animationOnClose: {
-      control: { type: "select" },
+      control: { type: 'select' },
       options: [
-        "",
-        "slide-out-to-bottom",
-        "slide-out-to-end",
-        "slide-out-to-start",
-        "fade-out",
+        '',
+        'slide-out-to-bottom',
+        'slide-out-to-end',
+        'slide-out-to-start',
+        'fade-out',
       ],
-      description: "Animation when panel closes",
+      description: 'Animation when panel closes',
     },
     panelAriaLabel: {
-      control: "text",
-      description: "ARIA label for the panel",
+      control: 'text',
+      description: 'ARIA label for the panel',
     },
   },
   render: (args) => {
@@ -146,8 +146,7 @@ export const Default = {
       <ChatShell
         aiEnabled={aiEnabled}
         showFrame={showFrame}
-        roundedCorners={roundedCorners}
-      >
+        roundedCorners={roundedCorners}>
         <CoreSlotContent />
         <div slot="panels">
           <ChatPanel
@@ -159,8 +158,7 @@ export const Default = {
             aiEnabled={panelAiEnabled}
             animationOnOpen={animationOnOpen || undefined}
             animationOnClose={animationOnClose || undefined}
-            panelAriaLabel={panelAriaLabel}
-          >
+            panelAriaLabel={panelAriaLabel}>
             <div slot="header">
               <h4>Panel Header</h4>
             </div>
@@ -176,7 +174,7 @@ export const Default = {
             </div>
             <CardFooter
               slot="footer"
-              actions={cardFooterPresets["secondary primary buttons"]}
+              actions={cardFooterPresets['secondary primary buttons']}
             />
           </ChatPanel>
         </div>
@@ -188,44 +186,44 @@ export const Default = {
 // Panel configurations for the Embedded story
 const panelConfigs = [
   {
-    id: "panel-primary-full",
-    label: "fullscreen takeover panel. (highest priority)",
+    id: 'panel-primary-full',
+    label: 'fullscreen takeover panel. (highest priority)',
     priority: 2,
     fullWidth: true,
     showChatHeader: false,
     showFrame: false,
-    animationOnOpen: "",
-    animationOnClose: "",
+    animationOnOpen: '',
+    animationOnClose: '',
   },
   {
-    id: "panel-tertiary-full",
-    label: "fullscreen panel",
+    id: 'panel-tertiary-full',
+    label: 'fullscreen panel',
     priority: 0,
     fullWidth: true,
     showChatHeader: true,
     showFrame: true,
-    animationOnOpen: "slide-in-from-bottom",
-    animationOnClose: "slide-out-to-bottom",
+    animationOnOpen: 'slide-in-from-bottom',
+    animationOnClose: 'slide-out-to-bottom',
   },
   {
-    id: "panel-tertiary",
-    label: "standard panel",
+    id: 'panel-tertiary',
+    label: 'standard panel',
     priority: 0,
     fullWidth: false,
     showChatHeader: true,
     showFrame: true,
-    animationOnOpen: "slide-in-from-bottom",
-    animationOnClose: "slide-out-to-bottom",
+    animationOnOpen: 'slide-in-from-bottom',
+    animationOnClose: 'slide-out-to-bottom',
   },
   {
-    id: "panel-tertiary-no-header",
-    label: "standard panel takeover panel",
+    id: 'panel-tertiary-no-header',
+    label: 'standard panel takeover panel',
     priority: 0,
     fullWidth: false,
     showChatHeader: false,
     showFrame: false,
-    animationOnOpen: "slide-in-from-bottom",
-    animationOnClose: "slide-out-to-bottom",
+    animationOnOpen: 'slide-in-from-bottom',
+    animationOnClose: 'slide-out-to-bottom',
   },
 ];
 
@@ -239,7 +237,7 @@ export const Embedded = {
       panelConfigs.reduce((acc, config) => {
         acc[config.id] = false;
         return acc;
-      }, {}),
+      }, {})
     );
 
     const togglePanel = (panelId) => {
@@ -263,8 +261,7 @@ export const Embedded = {
               key={id}
               label-text={label}
               checked={panelStates[id]}
-              onCds-toggle-changed={(e) => togglePanel(id)}
-            ></cds-toggle>
+              onCds-toggle-changed={(e) => togglePanel(id)}></cds-toggle>
           ))}
         </div>
         <ChatShell aiEnabled={false} showFrame={true} roundedCorners={true}>
@@ -272,14 +269,13 @@ export const Embedded = {
           <div slot="panels">
             {/* Standard panel */}
             <ChatPanel
-              open={panelStates["panel-tertiary"]}
+              open={panelStates['panel-tertiary']}
               priority={0}
               showChatHeader
               showFrame
               animationOnOpen="slide-in-from-bottom"
               animationOnClose="slide-out-to-bottom"
-              panelAriaLabel="Standard panel"
-            >
+              panelAriaLabel="Standard panel">
               <div slot="header">
                 <h4>Standard panel</h4>
               </div>
@@ -292,12 +288,11 @@ export const Embedded = {
 
             {/* Standard panel takeover */}
             <ChatPanel
-              open={panelStates["panel-tertiary-no-header"]}
+              open={panelStates['panel-tertiary-no-header']}
               priority={0}
               animationOnOpen="slide-in-from-bottom"
               animationOnClose="slide-out-to-bottom"
-              panelAriaLabel="Standard panel takeover panel"
-            >
+              panelAriaLabel="Standard panel takeover panel">
               <div slot="header">
                 <h4>Standard panel takeover panel</h4>
               </div>
@@ -310,15 +305,14 @@ export const Embedded = {
 
             {/* Fullscreen panel */}
             <ChatPanel
-              open={panelStates["panel-tertiary-full"]}
+              open={panelStates['panel-tertiary-full']}
               priority={0}
               fullWidth
               showChatHeader
               showFrame
               animationOnOpen="slide-in-from-bottom"
               animationOnClose="slide-out-to-bottom"
-              panelAriaLabel="Fullscreen panel"
-            >
+              panelAriaLabel="Fullscreen panel">
               <div slot="header" className="panel-sample">
                 <h4>Fullscreen panel</h4>
               </div>
@@ -331,17 +325,16 @@ export const Embedded = {
               </div>
               <CardFooter
                 slot="footer"
-                actions={cardFooterPresets["secondary primary buttons"]}
+                actions={cardFooterPresets['secondary primary buttons']}
               />
             </ChatPanel>
 
             {/* Fullscreen takeover panel (highest priority) */}
             <ChatPanel
-              open={panelStates["panel-primary-full"]}
+              open={panelStates['panel-primary-full']}
               priority={2}
               fullWidth
-              panelAriaLabel="Fullscreen takeover panel"
-            >
+              panelAriaLabel="Fullscreen takeover panel">
               <div slot="header">
                 <h4>Fullscreen takeover panel. (highest priority)</h4>
               </div>

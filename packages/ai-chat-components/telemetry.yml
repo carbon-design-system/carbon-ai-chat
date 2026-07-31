@@ -29,6 +29,10 @@ collect:
         - loading-status-message
         - name
         - onhistory-item-selected
+        - onhistory-panel-item-input-cancel
+        - onhistory-panel-item-input-change
+        - onhistory-panel-item-input-save
+        - onreasoning-animation-end
         - open
         - open-label-text
         - overflow
@@ -100,6 +104,7 @@ collect:
         - max-expanded-number-of-rows
         - min-collapsed-number-of-rows
         - min-expanded-number-of-rows
+        - oncode-snippet-render-end
         - oncontent-change
         - show-less-text
         - show-more-text
@@ -150,12 +155,14 @@ collect:
         - overflow-menu-label
         - parent-menu-expanded
         - rename
+        - rename-invalid
+        - rename-invalid-message
         - selected
         # cds-aichat-history-panel-item-input
         - cancelLabel
+        - invalid
+        - invalid-message
         - labelText
-        - onhistory-panel-item-input-cancel
-        - onhistory-panel-item-input-save
         - placeholder
         - saveLabel
         - tooltipAlignment
@@ -196,6 +203,8 @@ collect:
         # cds-aichat-reasoning-step
         - onreasoning-step-beingtoggled
         - onreasoning-step-toggled
+        # cds-aichat-reasoning-steps
+        - onreasoning-animation-start
         # cds-aichat-reasoning-steps-toggle
         - onreasoning-steps-toggle
         # cds-aichat-table
