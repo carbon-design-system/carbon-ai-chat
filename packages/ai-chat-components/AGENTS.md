@@ -41,6 +41,7 @@ npm test                        # both test suites (see testing.md)
 ## Gotchas
 
 - **`custom-elements.json` is generated, never committed** — it's gitignored and rebuilt by `npm run custom-elements` (and every `npm run build`). Don't expect it in git, and don't flag it as missing from a diff; regenerate it locally so Storybook `<ArgTypes>` and the React wrappers reflect prop/slot/event changes.
+- **Carbon flavor**: Lit elements use `@carbon/web-components`. `@carbon/react` is a devDependency for the `-react.stories.jsx` / `-react.mdx` files **only** — never import it into `src/`. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
 - **ESM `.js` extensions** apply here: relative imports use `.js` even for `.ts` source.
 - The two test runners and the ESM-dep `transformIgnorePatterns` rule live in [testing.md](references/testing.md).
 
@@ -52,7 +53,7 @@ npm test                        # both test suites (see testing.md)
 - **Tests**: [testing.md](references/testing.md) — WTR (Lit) + Jest (React)
 - **Voice and tone**: [tone.md](../../references/tone.md) — for Storybook MDX and JSDoc
 - **Consumer package**: [../ai-chat/AGENTS.md](../ai-chat/AGENTS.md) — how the React app uses these components
-- **Code reviews**: [../../references/code-review.md](../../references/code-review.md)
+- **Shipping gate**: [definition-of-done.md](../../references/definition-of-done.md)
 
 ## Definition of done
 

@@ -19,11 +19,11 @@ Load this to pick the minimum verification gate for what you changed, before mar
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file — husky's pre-commit only runs prettier/eslint/stylelint on staged files and does not check license headers.
 
-Before declaring a task done, self-review the diff against [code-review.md](code-review.md). Prefer a sub-agent for independence and to keep the main conversation lean. Act on **Blocker** findings before handing back; surface **Important** findings to the user.
+Before declaring a task done, self-review the diff against this repo's review rubric — the `caic-review` skill carries it. Prefer a sub-agent for independence and to keep the main conversation lean. Act on **Blocker** findings before handing back; surface **Important** findings to the user.
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo router
 - [commands.md](commands.md) — the commands referenced above
-- [code-review.md](code-review.md) — review rubric
+- [code-patterns.md](code-patterns.md) — the code-authoring discipline a review checks against
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks

@@ -1,8 +1,8 @@
-# Plan-review rubric
+# plan-review.md — reviewing an implementation plan
 
-This file tells agents how to review an implementation plan before any code is written. It is the planning-phase analog of [code-review.md](code-review.md).
+How to review an implementation plan before any code is written. The planning-phase analog of [code review](../../caic-review/SKILL.md).
 
-Use this rubric when the user asks you to "review the plan", "look over PLAN.md", "check the design", "give feedback before I start", or anything similar — for any plan document or set of plan documents (PLAN.md, design docs, multi-PR series, RFC drafts).
+Load this when closing out a planning session (the `caic-plan` skill ends here), or when the user asks you to "review the plan", "look over PLAN.md", "check the design", or "give feedback before I start" — for any plan document or set of plan documents (PLAN.md, design docs, multi-PR series, RFC drafts).
 
 ## The core principle
 
@@ -15,7 +15,7 @@ The right posture: read the plan fully → identify its load-bearing claims → 
 
 ## Phase 1 — Read the plan
 
-- Read every plan file end-to-end before commenting. Multi-PR plans (PLAN.md + PLAN-N.md) are designed to be read together; commenting on PLAN-3 without PLAN.md context produces noise.
+- Read every plan file end-to-end before commenting. Multi-PR plans are designed to be read together; commenting on step 3 without the overview context produces noise.
 - Build a mental list of **load-bearing claims** — assertions about the existing codebase the plan depends on for correctness:
   - "Function/field X already exists with shape Y."
   - "The pattern in this area is Z, and we'll follow it."
@@ -72,7 +72,7 @@ The deliverable of a plan review is **executable plan files**, not a separate cr
 - Tighten ambiguous sections.
 - Add cross-references where decisions in one PR affect another.
 
-The original critique document can stay as a record of what changed and why, but the plan files themselves should now stand on their own — a fresh executor reading PLAN.md should not need the review to follow what to build.
+The original critique document can stay as a record of what changed and why, but the plan files themselves should now stand on their own — a fresh executor reading the plan should not need the review to follow what to build.
 
 ## Style
 
@@ -94,3 +94,9 @@ The original critique document can stay as a record of what changed and why, but
 ## When the plan is small
 
 Not every plan needs all five phases. A 1-paragraph design note doesn't need parallel agents. Apply judgment: the rubric scales down by collapsing phases (read → verify-the-one-claim → comment), but the core principle still holds — verify before recommending.
+
+## Related guidance
+
+- [caic-plan](../SKILL.md) — the authoring rubric this review closes out
+- [caic-review](../../caic-review/SKILL.md) — the same discipline applied to a diff
+- [Root AGENTS.md](../../../../AGENTS.md) — repo overview and pointer index
