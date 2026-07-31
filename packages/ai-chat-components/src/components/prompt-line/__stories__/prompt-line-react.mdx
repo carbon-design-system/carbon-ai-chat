@@ -18,10 +18,11 @@ import * as PromptLineReactStories from "./prompt-line-react.stories";
 
 ## Overview
 
-The prompt line is the **input interface component for the chat**.
+The prompt line is the **input interface component for the chat**. It provides the editing surface where users compose and send messages. It scales from a simple text input up to a rich editor with autocomplete suggestions, context chips, file attachments, and custom extensions.
 
 The prompt line supports:
 
+- **Text input** — text entry with placeholder, disabled, and autofocus states.
 - **Autocomplete** — trigger-driven suggestion overlays via `useChatAutocomplete` and the `buildCarbonExtensions` helper.
 - **Message actions** — icon action buttons projected into the `message-actions` slot (e.g. attach file, switch mode).
 - **File uploads** — a visual file chip list projected into the `file-uploads` slot via `<CDSAIChatFileUploads>`.
