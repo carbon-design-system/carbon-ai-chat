@@ -9,7 +9,6 @@
 
 import { property } from 'lit/decorators.js';
 import { PropertyValues } from 'lit';
-import HostListener from '@carbon/web-components/es/globals/decorators/host-listener.js';
 import { CHAT_BUTTON_SIZE } from '../defs';
 import {
   BUTTON_KIND as CHAT_BUTTON_KIND,
@@ -54,12 +53,31 @@ class CDSAIChatButton extends CDSButton {
    * This mirrors the behaviour of the native `disabled` attribute without
    * adding it to the DOM, so the button remains focusable and the selected
    * styling is applied via CSS only.
+   *
+   * Registered manually in connectedCallback/disconnectedCallback rather than
+   * via @HostListener to avoid mutating the shared CDSButton._hostListeners
+   * table — which would cause every CDSButton in the same document to register
+   * `undefined` as a capture-phase click listener (crashing happy-dom and
+   * likely causing subtle bugs in production).
    */
-  @HostListener('click', { capture: true })
-  protected _handleSelectedClick(event: Event): void {
+  protected _handleSelectedClick = (event: Event): void => {
     if (this.isQuickAction && this.isSelected) {
       event.stopPropagation();
     }
+  };
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener('click', this._handleSelectedClick, {
+      capture: true,
+    });
+  }
+
+  disconnectedCallback(): void {
+    this.removeEventListener('click', this._handleSelectedClick, {
+      capture: true,
+    });
+    super.disconnectedCallback();
   }
 
   /**
