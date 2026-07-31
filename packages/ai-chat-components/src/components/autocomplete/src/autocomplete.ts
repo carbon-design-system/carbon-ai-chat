@@ -17,8 +17,6 @@ import prefix from '../../../globals/settings.js';
 import { AriaAnnouncerManager } from '../../../globals/utils/aria-announcer-manager.js';
 
 import styles from './autocomplete.scss?lit';
-import itemStyles from './autocomplete-item.scss?lit';
-import groupStyles from './autocomplete-item-group.scss?lit';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import SendFilled16 from '@carbon/icons/es/send--filled/16.js';
 
@@ -121,8 +119,6 @@ export interface AutocompleteSendEventDetail {
 class AutocompleteElement extends LitElement {
   static styles = css`
     ${unsafeCSS(styles)}
-    ${unsafeCSS(itemStyles)}
-    ${unsafeCSS(groupStyles)}
   `;
 
   /**
