@@ -153,18 +153,22 @@ export default {
       control: 'text',
       description:
         'Short error title shown in the error message bar (requires hasError).',
+      table: { disable: true },
     },
     errorDescription: {
       control: 'text',
       description: 'Optional longer description shown below the error title.',
+      table: { disable: true },
     },
     errorCollapsible: {
       control: 'boolean',
       description: 'Whether the error message description can be collapsed.',
+      table: { disable: true },
     },
     errorFullscreen: {
       control: 'boolean',
       description: 'Whether the error message uses the fullscreen layout.',
+      table: { disable: true },
     },
     enableSendButton: {
       control: 'boolean',
