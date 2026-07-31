@@ -47,130 +47,657 @@ describe('cds-aichat-autocomplete', () => {
     },
   ];
 
-  it('should render with items', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete .items="${mockItems}"></cds-aichat-autocomplete>
-    `);
+  describe('flat items', () => {
+    it('should render flat items as list options', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
 
-    expect(el).to.exist;
-    const items = el.shadowRoot?.querySelectorAll(
-      'cds-aichat-autocomplete-item'
-    );
-    expect(items?.length).to.equal(2);
-  });
-
-  it('should render with groups', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .groups="${mockGroups}"></cds-aichat-autocomplete>
-    `);
-
-    expect(el).to.exist;
-    const groups = el.shadowRoot?.querySelectorAll(
-      'cds-aichat-autocomplete-item-group'
-    );
-    expect(groups?.length).to.equal(1);
-  });
-
-  it('should render both items and groups', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .items="${mockItems}"
-        .groups="${mockGroups}"></cds-aichat-autocomplete>
-    `);
-
-    const items = el.shadowRoot?.querySelectorAll(
-      'cds-aichat-autocomplete-item'
-    );
-    const groups = el.shadowRoot?.querySelectorAll(
-      'cds-aichat-autocomplete-item-group'
-    );
-    expect(items?.length).to.equal(2);
-    expect(groups?.length).to.equal(1);
-  });
-
-  it('should render header when headerConfig is provided', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .items="${mockItems}"
-        .headerConfig="${{ showHeader: true, title: 'Test Header' }}"></cds-aichat-autocomplete>
-    `);
-
-    const header = el.shadowRoot?.querySelector(
-      '.cds-aichat-autocomplete__header'
-    );
-    expect(header).to.exist;
-    const title = el.shadowRoot?.querySelector(
-      '.cds-aichat-autocomplete__title'
-    );
-    expect(title?.textContent?.trim()).to.equal('Test Header');
-  });
-
-  it('should not render header when showHeader is false', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .items="${mockItems}"
-        .headerConfig="${{ showHeader: false, title: 'Test Header' }}"></cds-aichat-autocomplete>
-    `);
-
-    const header = el.shadowRoot?.querySelector(
-      '.cds-aichat-autocomplete__header'
-    );
-    expect(header).to.not.exist;
-  });
-
-  it('should render nothing when no items or groups provided', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete></cds-aichat-autocomplete>
-    `);
-
-    const container = el.shadowRoot?.querySelector('.cds-aichat-autocomplete');
-    expect(container).to.not.exist;
-  });
-
-  it('should emit select event when item is clicked', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete .items="${mockItems}"></cds-aichat-autocomplete>
-    `);
-
-    let eventDetail: any = null;
-    el.addEventListener('cds-aichat-autocomplete-select', (e: Event) => {
-      eventDetail = (e as CustomEvent).detail;
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(options?.length).to.equal(2);
     });
 
-    const firstItem = el.shadowRoot?.querySelector(
-      'cds-aichat-autocomplete-item'
-    );
-    firstItem?.dispatchEvent(new Event('click', { bubbles: true }));
+    it('renders the send button by default on items', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
 
-    await el.updateComplete;
+      const sendButtons = el.shadowRoot?.querySelectorAll(
+        'li[role="option"] cds-icon-button'
+      );
+      expect(sendButtons?.length).to.equal(2);
+    });
 
-    expect(eventDetail).to.exist;
-    expect(eventDetail.item).to.deep.equal(mockItems[0]);
-  });
+    it('does not render send buttons when enableSendButton is false', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .enableSendButton="${false}"></cds-aichat-autocomplete>
+      `);
 
-  it('should pass enableSendButton to items', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .items="${mockItems}"
-        .enableSendButton="${false}"></cds-aichat-autocomplete>
-    `);
+      const sendButtons = el.shadowRoot?.querySelectorAll(
+        'li[role="option"] cds-icon-button'
+      );
+      expect(sendButtons?.length).to.equal(0);
+    });
 
-    const items = el.shadowRoot?.querySelectorAll(
-      'cds-aichat-autocomplete-item'
-    );
-    items?.forEach((item) => {
-      expect(item.hasAttribute('enable-send-button')).to.be.false;
+    it('has role=option on flat list items', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      options?.forEach((li) => {
+        expect(li.getAttribute('role')).to.equal('option');
+      });
+    });
+
+    it('has tabindex=-1 on items so focus stays in the editor', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      options?.forEach((li) => {
+        expect(li.getAttribute('tabindex')).to.equal('-1');
+      });
+    });
+
+    it('sets aria-selected=false when item is not active', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      // Second item should not be active (first is auto-focused on render)
+      expect(
+        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+    });
+
+    it('sets aria-selected=true and active class when item is focused', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      // First item is auto-focused on render
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      expect(firstOption?.getAttribute('aria-selected')).to.equal('true');
+      expect(
+        firstOption?.classList.contains('cds-aichat-autocomplete-item--active')
+      ).to.be.true;
+    });
+
+    it('displays input text in bold when label starts with typed text', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          input-text="Hello"></cds-aichat-autocomplete>
+      `);
+
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      const typedSpan = firstOption?.querySelector(
+        '.cds-aichat-autocomplete-item__label-typed'
+      );
+      expect(typedSpan?.textContent).to.equal('Hello');
     });
   });
 
-  it('should pass inputText to items', async () => {
-    const el = await fixture<AutocompleteElement>(html`
-      <cds-aichat-autocomplete
-        .items="${mockItems}"
-        input-text="test"></cds-aichat-autocomplete>
-    `);
+  describe('grouped items', () => {
+    it('should render groups as role=group containers', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
 
-    expect(el.inputText).to.equal('test');
+      const groups = el.shadowRoot?.querySelectorAll('li[role="group"]');
+      expect(groups?.length).to.equal(1);
+    });
+
+    it('should render group title', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      const titleElement = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete-item-group__title'
+      );
+      expect(titleElement).to.exist;
+      expect(titleElement?.textContent?.trim()).to.equal('Group 1');
+    });
+
+    it('should render all items within a group', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      const groupOptions = el.shadowRoot?.querySelectorAll(
+        'li[role="group"] li[role="option"]'
+      );
+      expect(groupOptions?.length).to.equal(2);
+    });
+
+    it('should not render group title when empty', async () => {
+      const groupWithoutTitle: SuggestionItemGroup[] = [
+        {
+          id: 'group-1',
+          title: '',
+          items: mockItems,
+        },
+      ];
+
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${groupWithoutTitle}"></cds-aichat-autocomplete>
+      `);
+
+      const titleElement = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete-item-group__title'
+      );
+      expect(titleElement).to.not.exist;
+    });
+
+    it('should use role=group (not listbox) to avoid nested listbox', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      const groupEl = el.shadowRoot?.querySelector('li[role="group"]');
+      expect(groupEl?.getAttribute('role')).to.equal('group');
+      expect(groupEl?.getAttribute('aria-label')).to.equal('Group 1');
+    });
+
+    it('should pass enableSendButton to all grouped items', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${mockGroups}"
+          .enableSendButton="${false}"></cds-aichat-autocomplete>
+      `);
+
+      const sendButtons = el.shadowRoot?.querySelectorAll(
+        'li[role="group"] li[role="option"] cds-icon-button'
+      );
+      expect(sendButtons?.length).to.equal(0);
+    });
+
+    it('should mark grouped item as active when focused', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      // First group item should be auto-focused on render
+      const groupOptions = el.shadowRoot?.querySelectorAll(
+        'li[role="group"] li[role="option"]'
+      );
+      expect(
+        (groupOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+    });
+  });
+
+  describe('mixed flat and grouped items', () => {
+    it('should render both flat items and groups together', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      // Query the listbox's direct children more reliably
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      const flatOptions = Array.from(listbox?.children ?? []).filter(
+        (child) => (child as HTMLElement).getAttribute('role') === 'option'
+      );
+      const groups = Array.from(listbox?.children ?? []).filter(
+        (child) => (child as HTMLElement).getAttribute('role') === 'group'
+      );
+
+      expect(flatOptions.length).to.equal(2);
+      expect(groups.length).to.equal(1);
+    });
+
+    it('should navigate across flat and grouped items with arrow keys', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      // First item is already focused, navigate down 2 more times to reach first group item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      const activeOption = Array.from(allOptions || []).find(
+        (li) => li.getAttribute('aria-selected') === 'true'
+      );
+
+      expect(activeOption?.textContent).to.include('Group item 1');
+    });
+  });
+
+  describe('header', () => {
+    it('should render header when headerConfig.showHeader is true', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .headerConfig="${{
+            showHeader: true,
+            title: 'Test Header',
+          }}"></cds-aichat-autocomplete>
+      `);
+
+      const header = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete__header'
+      );
+      expect(header).to.exist;
+      const title = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete__title'
+      );
+      expect(title?.textContent?.trim()).to.equal('Test Header');
+    });
+
+    it('should not render header when showHeader is false', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .headerConfig="${{
+            showHeader: false,
+            title: 'Test Header',
+          }}"></cds-aichat-autocomplete>
+      `);
+
+      const header = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete__header'
+      );
+      expect(header).to.not.exist;
+    });
+  });
+
+  describe('events', () => {
+    it('should emit select event when item is clicked', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      let eventDetail: any = null;
+      el.addEventListener('cds-aichat-autocomplete-select', (e: Event) => {
+        eventDetail = (e as CustomEvent).detail;
+      });
+
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      firstOption?.dispatchEvent(new Event('click', { bubbles: true }));
+
+      await el.updateComplete;
+
+      expect(eventDetail).to.exist;
+      expect(eventDetail.item).to.deep.equal(mockItems[0]);
+    });
+
+    it('should emit send event when send button is clicked', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      let eventDetail: any = null;
+      el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
+        eventDetail = (e as CustomEvent).detail;
+      });
+
+      const sendButton = el.shadowRoot?.querySelector(
+        'li[role="option"] cds-icon-button'
+      );
+      sendButton?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, composed: true })
+      );
+
+      await el.updateComplete;
+
+      expect(eventDetail).to.exist;
+      expect(eventDetail.text).to.equal(mockItems[0].label);
+    });
+
+    it('should emit select event without send event on item click', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      let selectEventFired = false;
+      let sendEventFired = false;
+
+      el.addEventListener('cds-aichat-autocomplete-select', () => {
+        selectEventFired = true;
+      });
+      el.addEventListener('cds-aichat-autocomplete-send', () => {
+        sendEventFired = true;
+      });
+
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      firstOption?.dispatchEvent(new Event('click', { bubbles: true }));
+
+      await el.updateComplete;
+
+      expect(selectEventFired).to.be.true;
+      expect(sendEventFired).to.be.false;
+    });
+
+    it('should emit dismiss event when Escape is pressed', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      let dismissEventFired = false;
+      el.addEventListener('cds-aichat-autocomplete-dismiss', () => {
+        dismissEventFired = true;
+      });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          bubbles: true,
+          composed: true,
+        })
+      );
+
+      await el.updateComplete;
+
+      expect(dismissEventFired).to.be.true;
+    });
+  });
+
+  describe('keyboard navigation', () => {
+    it('should move focus down with ArrowDown', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      // First item is auto-focused on render
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+
+      // Move down to second item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // Refresh query since aria-selected has changed
+      const updatedOptions =
+        el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (updatedOptions?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+      expect(
+        (updatedOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+    });
+
+    it('should move focus up with ArrowUp', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      // Navigate to second item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // Move up
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+    });
+
+    it('should jump to first item with Home key', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      // Navigate to last item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      // Jump to home
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Home',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (allOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+    });
+
+    it('should jump to last item with End key', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'End',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      const lastOption = allOptions?.[allOptions.length - 1];
+      expect(
+        (lastOption as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+    });
+
+    it('should select item with Enter key', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      let eventDetail: any = null;
+      el.addEventListener('cds-aichat-autocomplete-select', (e: Event) => {
+        eventDetail = (e as CustomEvent).detail;
+      });
+
+      // First item is already focused, pressing Enter selects it
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(eventDetail).to.exist;
+      expect(eventDetail.item).to.deep.equal(mockItems[0]);
+    });
+  });
+
+  describe('aria', () => {
+    it('should have aria-activedescendant pointing to focused item', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      // First item is auto-focused
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      const activeId = listbox?.getAttribute('aria-activedescendant');
+      expect(activeId).to.equal('1--option');
+    });
+
+    it('should have aria-activedescendant for grouped items', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
+      `);
+
+      // First item is auto-focused (index 0), navigate down 2 times to reach group item at index 2
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      const activeId = listbox?.getAttribute('aria-activedescendant');
+      expect(activeId).to.equal('3--option');
+    });
+
+    it('should have role=listbox on the main list', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      const listbox = el.shadowRoot?.querySelector('ul');
+      expect(listbox?.getAttribute('role')).to.equal('listbox');
+      expect(listbox?.getAttribute('aria-label')).to.equal(
+        'Autocomplete options'
+      );
+    });
+  });
+
+  describe('empty state', () => {
+    it('should render nothing when no items or groups provided', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete></cds-aichat-autocomplete>
+      `);
+
+      const container = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete'
+      );
+      expect(container).to.not.exist;
+    });
+
+    it('should render live regions even when empty', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete></cds-aichat-autocomplete>
+      `);
+
+      const liveRegions = el.shadowRoot?.querySelectorAll(
+        '[aria-live="polite"]'
+      );
+      expect(liveRegions?.length).to.equal(2);
+    });
+  });
+
+  describe('properties', () => {
+    it('should respect enableSendButton property', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .enableSendButton="${false}"></cds-aichat-autocomplete>
+      `);
+
+      const sendButtons = el.shadowRoot?.querySelectorAll(
+        'li[role="option"] cds-icon-button'
+      );
+      expect(sendButtons?.length).to.equal(0);
+    });
+
+    it('should pass inputText for label highlighting', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          input-text="Hello"></cds-aichat-autocomplete>
+      `);
+
+      expect(el.inputText).to.equal('Hello');
+      const typedSpan = el.shadowRoot?.querySelector(
+        '.cds-aichat-autocomplete-item__label-typed'
+      );
+      expect(typedSpan?.textContent).to.equal('Hello');
+    });
+
+    it('should render with attached property', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .attached="${false}"></cds-aichat-autocomplete>
+      `);
+
+      expect(el.attached).to.be.false;
+    });
   });
 });
