@@ -15,15 +15,15 @@ Mocks a chain-of-thought tool trace: the assistant ships a complete `chain_of_th
 
 ## APIs and props demonstrated
 
-| Symbol                                            | Kind           | Role in this example                           |
-| ------------------------------------------------- | -------------- | ---------------------------------------------- |
-| `<cds-aichat-custom-element>`                     | custom element | Mounts the chat UI.                            |
-| `messaging.customSendMessage`                     | property       | Runs the chain-of-thought scenario.            |
-| `onBeforeRender`                                  | property       | Captures the `ChatInstance`.                   |
-| `ChainOfThoughtStep` / `ChainOfThoughtStepStatus` | types          | Tool-trace payloads + status badge values.     |
-| `MessageResponseOptions`                          | type           | `message_options` carrying `chain_of_thought`. |
-| `ChatInstance`                                    | type           | Type of the instance handle.                   |
-| `PublicConfig`                                    | type           | Types the chat configuration object.           |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
+| `messaging.customSendMessage` | property | Runs the chain-of-thought scenario. |
+| `onBeforeRender` | property | Captures the `ChatInstance`. |
+| `ChainOfThoughtStep` / `ChainOfThoughtStepStatus` | types | Tool-trace payloads + status badge values. |
+| `MessageResponseOptions` | type | `message_options` carrying `chain_of_thought`. |
+| `ChatInstance` | type | Type of the instance handle. |
+| `PublicConfig` | type | Types the chat configuration object. |
 
 ## Run it
 

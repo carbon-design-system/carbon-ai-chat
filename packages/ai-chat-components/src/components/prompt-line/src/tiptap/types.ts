@@ -13,8 +13,8 @@
  * `carbonStarterTrigger`) and the shell consume these types directly.
  */
 
-import type { ComponentType, ReactNode } from "react";
-import type { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
+import type { ComponentType, ReactNode } from 'react';
+import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 /**
  * Single list-item shape used by both the autocomplete-list-manager and the
@@ -117,7 +117,7 @@ export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
 
   /** Whether the trigger must appear at the start of the input/line, or
    *  anywhere. Defaults to "anywhere". */
-  triggerPosition?: "start" | "anywhere";
+  triggerPosition?: 'start' | 'anywhere';
 
   /**
    * Override the schema-node name. Threaded through `Mention.extend({ name })`
@@ -163,6 +163,31 @@ export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
 export interface AutocompleteConfig extends BaseSuggestionConfig {
   /** Override the suggestion plugin key name. Defaults to `"autocomplete"`. */
   name?: string;
+}
+
+/**
+ * Configuration for starter prompts — shown when the editor is empty and
+ * focused. Extends {@link BaseSuggestionConfig} so consumers can supply a
+ * `renderCustomList` (e.g. to add a header above the list).
+ *
+ * `items` is required and must be a static array (starters are resolved once
+ * from storage, not re-queried per keystroke).
+ */
+export interface StartersConfig extends Pick<
+  BaseSuggestionConfig,
+  'renderCustomList'
+> {
+  /** The starter prompts to display. */
+  items: SuggestionItem[];
+  /**
+   * Controls whether the starters list is active. Defaults to `true`.
+   *
+   * When true, the list appears automatically whenever the editor is focused
+   * and empty. Set to false to suppress the list without removing the config
+   * entirely. Keeping the config present with isOn: false leaves the editor
+   * intact and lets you toggle the list on and off instantly.
+   */
+  isOn?: boolean;
 }
 
 /**

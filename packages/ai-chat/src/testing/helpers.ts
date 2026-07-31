@@ -15,14 +15,8 @@
  */
 
 // Reuse the component-level preload helper so CodeMirror/DataTable deps stay in sync.
-import { loadAllLazyDeps as loadComponentLazyDeps } from "@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js";
-import { normalizeModuleInterop } from "../chat/utils/moduleInterop";
-import { localeLoaders } from "../chat/utils/languageUtils";
-
-async function preloadColor() {
-  const colorModule = await import("color");
-  normalizeModuleInterop(colorModule);
-}
+import { loadAllLazyDeps as loadComponentLazyDeps } from '@carbon/ai-chat-components/es/testing/load-all-lazy-deps.js';
+import { localeLoaders } from '../chat/utils/languageUtils';
 
 async function preloadDayjsLocales() {
   await Promise.all(Object.values(localeLoaders).map((loader) => loader()));
@@ -37,11 +31,7 @@ async function preloadDayjsLocales() {
  * @category Testing
  */
 async function loadAllLazyDeps(): Promise<void> {
-  await Promise.all([
-    loadComponentLazyDeps(),
-    preloadColor(),
-    preloadDayjsLocales(),
-  ]);
+  await Promise.all([loadComponentLazyDeps(), preloadDayjsLocales()]);
 }
 
 export { loadAllLazyDeps };

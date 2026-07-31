@@ -27,7 +27,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to the user-defined responses example.
 
@@ -38,10 +38,10 @@ Type \`user_defined\` to receive a custom response that is rendered by your own 
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // The chat fires an empty-text request on first open so the example can seed a welcome message before any user input.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -56,7 +56,7 @@ async function customSendMessage(
   }
 
   // The literal "user_defined" keyword is the trigger this example uses to exercise the USER_DEFINED render path.
-  if (request.input.text === "user_defined") {
+  if (request.input.text === 'user_defined') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -64,8 +64,8 @@ async function customSendMessage(
             response_type: MessageResponseTypes.USER_DEFINED,
             user_defined: {
               // Matches the discriminator checked inside `renderUserDefinedCallback` so only this example's items are claimed.
-              user_defined_type: "my_unique_identifier",
-              text: "This is text from the server placed into a user_defined response.",
+              user_defined_type: 'my_unique_identifier',
+              text: 'This is text from the server placed into a user_defined response.',
             },
           },
         ],

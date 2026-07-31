@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { PersistedState } from "../state/AppState";
+import { PersistedState } from '../state/AppState';
 
 /**
  * The subset of session state that Carbon AI Chat can persist and restore, consumed by
@@ -22,7 +22,7 @@ import { PersistedState } from "../state/AppState";
  */
 export type PersistableState = Omit<
   PersistedState,
-  "version" | "wasLoadedFromBrowser"
+  'version' | 'wasLoadedFromBrowser'
 >;
 
 /**

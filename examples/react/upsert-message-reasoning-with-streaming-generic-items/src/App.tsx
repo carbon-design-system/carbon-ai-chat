@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { ChatCustomElement, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
+import { ChatCustomElement, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
-import { customSendMessage } from "./customSendMessage";
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
-import "@carbon/styles/css/styles.css";
-import "./reasoning-summary.css";
+import { customSendMessage } from './customSendMessage';
+import { renderUserDefinedResponse } from './renderUserDefinedResponse';
+import '@carbon/styles/css/styles.css';
+import './reasoning-summary.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -38,6 +38,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

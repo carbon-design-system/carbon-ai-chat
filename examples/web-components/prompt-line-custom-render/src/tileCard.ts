@@ -23,22 +23,22 @@
  */
 
 // Registers the <cds-tile> custom element.
-import "@carbon/web-components/es/components/tile/index.js";
+import '@carbon/web-components/es/components/tile/index.js';
 
 /** Builds a Carbon `<cds-tile>` showing the tile's label + description. */
 function buildTileCard(label: string, description: string): HTMLElement {
-  const tile = document.createElement("cds-tile");
-  tile.className = "tile-chip";
+  const tile = document.createElement('cds-tile');
+  tile.className = 'tile-chip';
 
-  const labelEl = document.createElement("strong");
-  labelEl.style.display = "block";
+  const labelEl = document.createElement('strong');
+  labelEl.style.display = 'block';
   labelEl.textContent = label;
 
-  const descEl = document.createElement("span");
-  descEl.style.display = "block";
-  descEl.style.marginBlockStart = "0.25rem";
-  descEl.style.color = "#525252";
-  descEl.style.fontSize = "0.875rem";
+  const descEl = document.createElement('span');
+  descEl.style.display = 'block';
+  descEl.style.marginBlockStart = '0.25rem';
+  descEl.style.color = '#525252';
+  descEl.style.fontSize = '0.875rem';
   descEl.textContent = description;
 
   tile.append(labelEl, descEl);

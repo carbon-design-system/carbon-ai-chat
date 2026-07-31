@@ -7,45 +7,45 @@
  *  @license
  */
 
-import "../src/feedback-buttons";
-import "../src/feedback";
-import { LitElement, css, html, nothing } from "lit";
+import '../src/feedback-buttons';
+import '../src/feedback';
+import { LitElement, css, html, nothing } from 'lit';
 
 const positiveCategories = [
-  "Accurate",
-  "Helpful",
-  "Clear explanation",
-  "Comprehensive",
+  'Accurate',
+  'Helpful',
+  'Clear explanation',
+  'Comprehensive',
 ];
 
 const negativeCategories = [
-  "Inaccurate",
-  "Unhelpful",
-  "Inappropriate",
-  "Too verbose",
+  'Inaccurate',
+  'Unhelpful',
+  'Inappropriate',
+  'Too verbose',
 ];
 
 class FeedbackButtonsDetailsDemo extends LitElement {
   static properties = {
     hasPositiveDetails: {
       type: Boolean,
-      attribute: "has-positive-details",
+      attribute: 'has-positive-details',
     },
     hasNegativeDetails: {
       type: Boolean,
-      attribute: "has-negative-details",
+      attribute: 'has-negative-details',
     },
     panelId: {
       type: String,
-      attribute: "panel-id",
+      attribute: 'panel-id',
     },
     positiveLabel: {
       type: String,
-      attribute: "positive-label",
+      attribute: 'positive-label',
     },
     negativeLabel: {
       type: String,
-      attribute: "negative-label",
+      attribute: 'negative-label',
     },
   };
 
@@ -70,9 +70,9 @@ class FeedbackButtonsDetailsDemo extends LitElement {
     super();
     this.hasPositiveDetails = false;
     this.hasNegativeDetails = true;
-    this.panelId = "feedback-panel-demo";
-    this.positiveLabel = "I like this response";
-    this.negativeLabel = "I dislike this response";
+    this.panelId = 'feedback-panel-demo';
+    this.positiveLabel = 'I like this response';
+    this.negativeLabel = 'I dislike this response';
 
     this._isFeedbackSubmitted = false;
     this._isPositiveSelected = false;
@@ -101,8 +101,9 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         negative-label=${this.negativeLabel}
         panel-id=${this.panelId}
         @feedback-buttons-click=${(event) =>
-          this._handleFeedbackToggle(event.detail.isPositive)}
-      ></cds-aichat-feedback-buttons>
+          this._handleFeedbackToggle(
+            event.detail.isPositive
+          )}></cds-aichat-feedback-buttons>
       <div class="feedback-demo-panels">
         ${this.hasPositiveDetails ? this._renderFeedbackPanel(true) : nothing}
         ${this.hasNegativeDetails ? this._renderFeedbackPanel(false) : nothing}
@@ -113,7 +114,7 @@ class FeedbackButtonsDetailsDemo extends LitElement {
               Last submission:
               <strong
                 >${
-                  this._lastSubmission.isPositive ? "Positive" : "Negative"
+                  this._lastSubmission.isPositive ? 'Positive' : 'Negative'
                 }</strong
               >
               ${
@@ -128,10 +129,10 @@ class FeedbackButtonsDetailsDemo extends LitElement {
   }
 
   _renderFeedbackPanel(isPositive) {
-    const label = isPositive ? "positive" : "negative";
+    const label = isPositive ? 'positive' : 'negative';
     const isOpen = isPositive ? this._isPositiveOpen : this._isNegativeOpen;
     const categories = isPositive ? positiveCategories : negativeCategories;
-    const placeholder = "Add a comment";
+    const placeholder = 'Add a comment';
 
     return html`
       <cds-aichat-feedback
@@ -152,8 +153,10 @@ class FeedbackButtonsDetailsDemo extends LitElement {
         show-prompt
         @feedback-close=${() => this._handlePanelClose(isPositive)}
         @feedback-submit=${(event) =>
-          this._handlePanelSubmit(isPositive, event.detail)}
-      ></cds-aichat-feedback>
+          this._handlePanelSubmit(
+            isPositive,
+            event.detail
+          )}></cds-aichat-feedback>
     `;
   }
 
@@ -185,7 +188,7 @@ class FeedbackButtonsDetailsDemo extends LitElement {
     const openDetails = hasDetails && toggleToSelected;
 
     if (toggleToSelected && !hasDetails) {
-      this._recordSubmission(isPositive, { text: "", selectedCategories: [] });
+      this._recordSubmission(isPositive, { text: '', selectedCategories: [] });
     } else {
       this._isPositiveOpen = openDetails && isPositive;
       this._isNegativeOpen = openDetails && !isPositive;
@@ -231,82 +234,82 @@ class FeedbackButtonsDetailsDemo extends LitElement {
     this._isNegativeSelected = !isPositive;
     this._lastSubmission = {
       isPositive,
-      text: details?.text || "",
+      text: details?.text || '',
       selectedCategories: details?.selectedCategories || [],
     };
 
     // eslint-disable-next-line no-console
     console.log(
       `[Feedback Demo] ${
-        isPositive ? "Positive" : "Negative"
+        isPositive ? 'Positive' : 'Negative'
       } submission recorded`,
-      this._lastSubmission,
+      this._lastSubmission
     );
   }
 }
 
 if (
-  typeof window !== "undefined" &&
-  !customElements.get("cds-aichat-feedback-buttons-demo")
+  typeof window !== 'undefined' &&
+  !customElements.get('cds-aichat-feedback-buttons-demo')
 ) {
   customElements.define(
-    "cds-aichat-feedback-buttons-demo",
-    FeedbackButtonsDetailsDemo,
+    'cds-aichat-feedback-buttons-demo',
+    FeedbackButtonsDetailsDemo
   );
 }
 
 export default {
-  title: "Preview/Feedback/Buttons",
-  component: "cds-aichat-feedback-buttons",
+  title: 'Preview/Feedback/Buttons',
+  component: 'cds-aichat-feedback-buttons',
   argTypes: {
     isPositiveSelected: {
-      control: "boolean",
-      description: "Whether the positive button is selected",
+      control: 'boolean',
+      description: 'Whether the positive button is selected',
     },
     isNegativeSelected: {
-      control: "boolean",
-      description: "Whether the negative button is selected",
+      control: 'boolean',
+      description: 'Whether the negative button is selected',
     },
     isPositiveDisabled: {
-      control: "boolean",
-      description: "Whether the positive button is disabled",
+      control: 'boolean',
+      description: 'Whether the positive button is disabled',
     },
     isNegativeDisabled: {
-      control: "boolean",
-      description: "Whether the negative button is disabled",
+      control: 'boolean',
+      description: 'Whether the negative button is disabled',
     },
     positiveLabel: {
-      control: "text",
-      description: "Accessibility label for positive button",
+      control: 'text',
+      description: 'Accessibility label for positive button',
     },
     negativeLabel: {
-      control: "text",
-      description: "Accessibility label for negative button",
+      control: 'text',
+      description: 'Accessibility label for negative button',
     },
     // Panel-related properties - hidden by default, shown only in WithDetailsPanel story
     hasPositiveDetails: {
-      control: "boolean",
-      description: "Whether positive button opens a details panel",
+      control: 'boolean',
+      description: 'Whether positive button opens a details panel',
       table: { disable: true },
     },
     hasNegativeDetails: {
-      control: "boolean",
-      description: "Whether negative button opens a details panel",
+      control: 'boolean',
+      description: 'Whether negative button opens a details panel',
       table: { disable: true },
     },
     isPositiveOpen: {
-      control: "boolean",
-      description: "Whether the positive details panel is open",
+      control: 'boolean',
+      description: 'Whether the positive details panel is open',
       table: { disable: true },
     },
     isNegativeOpen: {
-      control: "boolean",
-      description: "Whether the negative details panel is open",
+      control: 'boolean',
+      description: 'Whether the negative details panel is open',
       table: { disable: true },
     },
     panelID: {
-      control: "text",
-      description: "ID of the associated feedback panel",
+      control: 'text',
+      description: 'ID of the associated feedback panel',
       table: { disable: true },
     },
   },
@@ -318,8 +321,8 @@ export const Default = {
     isNegativeSelected: false,
     isPositiveDisabled: false,
     isNegativeDisabled: false,
-    positiveLabel: "I like this response",
-    negativeLabel: "I dislike this response",
+    positiveLabel: 'I like this response',
+    negativeLabel: 'I dislike this response',
   },
   render: (args) => html`
     <div style="padding: 2rem;">
@@ -335,10 +338,9 @@ export const Default = {
         negative-label=${args.negativeLabel}
         @feedback-buttons-click=${(event) => {
           const { isPositive } = event.detail;
-          console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
-          alert(`${isPositive ? "Positive" : "Negative"} feedback recorded!`);
-        }}
-      >
+          console.log(`${isPositive ? 'Positive' : 'Negative'} button clicked`);
+          alert(`${isPositive ? 'Positive' : 'Negative'} feedback recorded!`);
+        }}>
       </cds-aichat-feedback-buttons>
     </div>
   `,
@@ -346,27 +348,27 @@ export const Default = {
 
 export const WithDetailsPanel = {
   args: {
-    positiveLabel: "I like this response",
-    negativeLabel: "I dislike this response",
-    panelID: "feedback-panel-example",
+    positiveLabel: 'I like this response',
+    negativeLabel: 'I dislike this response',
+    panelID: 'feedback-panel-example',
     hasPositiveDetails: true,
     hasNegativeDetails: true,
   },
   argTypes: {
     // Show panel-related properties in the table but make them read-only
     hasPositiveDetails: {
-      control: "boolean",
-      description: "Whether positive button opens a details panel",
+      control: 'boolean',
+      description: 'Whether positive button opens a details panel',
       table: { disable: false },
     },
     hasNegativeDetails: {
-      control: "boolean",
-      description: "Whether negative button opens a details panel",
+      control: 'boolean',
+      description: 'Whether negative button opens a details panel',
       table: { disable: false },
     },
     panelID: {
       control: false,
-      description: "ID of the associated feedback panel",
+      description: 'ID of the associated feedback panel',
       table: { disable: false },
     },
   },
@@ -381,8 +383,7 @@ export const WithDetailsPanel = {
         positive-label=${args.positiveLabel}
         negative-label=${args.negativeLabel}
         ?has-positive-details=${args.hasPositiveDetails}
-        ?has-negative-details=${args.hasNegativeDetails}
-      ></cds-aichat-feedback-buttons-demo>
+        ?has-negative-details=${args.hasNegativeDetails}></cds-aichat-feedback-buttons-demo>
     </div>
   `,
 };

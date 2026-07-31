@@ -29,21 +29,21 @@
  * Start reading at: the `config` constant, then `handleTileClick` and `render`.
  */
 
-import "@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js";
+import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 // Registers <cds-clickable-tile> for the page grid.
-import "@carbon/web-components/es/components/tile/index.js";
+import '@carbon/web-components/es/components/tile/index.js';
 // Document-level Carbon styles. Load-bearing: the page-grid Carbon tiles live
 // outside the chat, so they need the Carbon theme tokens (`--cds-*`) on the
 // page.
-import "@carbon/styles/css/styles.css";
-import { type ChatInstance, type PublicConfig } from "@carbon/ai-chat";
-import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import '@carbon/styles/css/styles.css';
+import { type ChatInstance, type PublicConfig } from '@carbon/ai-chat';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-import { customSendMessage } from "./customSendMessage";
-import { renderTileChip } from "./renderTileChip";
-import { tileChipNode, TILE_CHIP_NODE } from "./tileChipNode";
-import { tiles, type Tile } from "./tiles";
+import { customSendMessage } from './customSendMessage';
+import { renderTileChip } from './renderTileChip';
+import { tileChipNode, TILE_CHIP_NODE } from './tileChipNode';
+import { tiles, type Tile } from './tiles';
 
 // Module-scope so the reference is stable across renders — a fresh `input`
 // object (or `tiptap.extensions` array) would make the editor recreate.
@@ -62,7 +62,7 @@ const config: PublicConfig = {
   },
 };
 
-@customElement("my-app")
+@customElement('my-app')
 export class Demo extends LitElement {
   static styles = css`
     :host {
@@ -145,10 +145,10 @@ export class Demo extends LitElement {
     // Replace the entire input doc: a fresh doc atomically clears any previous
     // tile and injects the clicked one as a single custom node.
     instance.input.updateContent(() => ({
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
             {
               type: TILE_CHIP_NODE,
@@ -191,12 +191,11 @@ export class Demo extends LitElement {
               (tile) => html`
                 <cds-clickable-tile
                   class="tile-chip"
-                  @click=${() => this.handleTileClick(tile)}
-                >
+                  @click=${() => this.handleTileClick(tile)}>
                   <strong class="tile-chip__label">${tile.label}</strong>
                   <span class="tile-chip__desc">${tile.description}</span>
                 </cds-clickable-tile>
-              `,
+              `
             )}
           </div>
         </main>
@@ -208,8 +207,7 @@ export class Demo extends LitElement {
             .input=${config.input}
             .layout=${config.layout}
             .openChatByDefault=${config.openChatByDefault}
-            .renderUserDefinedInputNode=${renderTileChip}
-          ></cds-aichat-custom-element>
+            .renderUserDefinedInputNode=${renderTileChip}></cds-aichat-custom-element>
         </aside>
       </div>
     `;

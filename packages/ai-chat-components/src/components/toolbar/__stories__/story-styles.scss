@@ -7,11 +7,11 @@
  *  @license
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/utilities/convert" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/styles/scss/type";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/utilities/convert' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/styles/scss/type';
 
 @include rounded-modifiers;
 
@@ -21,7 +21,7 @@
   color: theme.$icon-primary;
 }
 
-[slot="fixed-actions"] {
+[slot='fixed-actions'] {
   display: flex;
 
   cds-content-switcher {
@@ -38,16 +38,16 @@
   word-break: break-all;
 }
 
-[slot="icon"] {
+[slot='icon'] {
   display: flex;
 }
 
-[slot="title"]:not(:has(.truncated-text)) {
+[slot='title']:not(:has(.truncated-text)) {
   white-space: nowrap;
 }
 
 .bold {
-  @include type.type-style("heading-compact-01");
+  @include type.type-style('heading-compact-01');
 }
 
 cds-aichat-toolbar {

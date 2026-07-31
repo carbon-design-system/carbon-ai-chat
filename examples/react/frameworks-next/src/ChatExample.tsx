@@ -26,13 +26,13 @@
  */
 
 // ChatContainer interacts with browser APIs (window, custom elements), so force this module to run on the client.
-"use client";
+'use client';
 
-import { ChatContainer, PublicConfig } from "@carbon/ai-chat";
-import React from "react";
+import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
+import React from 'react';
 
-import { customSendMessage } from "./customSendMessage";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {

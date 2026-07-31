@@ -17,10 +17,10 @@
  * Rendered by: the `renderCustomMessageFooter` render prop in `./App.tsx`.
  */
 
-import { ChatInstance, GenericItem, MessageResponse } from "@carbon/ai-chat";
-import { Copy } from "@carbon/icons-react";
-import { IconButton } from "@carbon/react";
-import React from "react";
+import { ChatInstance, GenericItem, MessageResponse } from '@carbon/ai-chat';
+import { Copy } from '@carbon/icons-react';
+import { IconButton } from '@carbon/react';
+import React from 'react';
 
 interface CustomFooterExampleProps {
   slotName: string;
@@ -37,7 +37,7 @@ function CustomFooterExample({
   const handleCopy = () => {
     // `messageItem` is the assistant item the footer hangs off of, so its
     // `text` is what the user expects the copy button to put on the clipboard.
-    if ("text" in messageItem && typeof messageItem.text === "string") {
+    if ('text' in messageItem && typeof messageItem.text === 'string') {
       navigator.clipboard.writeText(messageItem.text);
     }
   };
@@ -55,8 +55,7 @@ function CustomFooterExample({
         kind="ghost"
         size="sm"
         label="Copy"
-        onClick={handleCopy}
-      >
+        onClick={handleCopy}>
         <Copy />
       </IconButton>
     </div>

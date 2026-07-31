@@ -7,18 +7,18 @@
  *  @license
  */
 
-import React, { useEffect, useMemo, useRef } from "react";
-import ReactDOM from "react-dom";
+import React, { useEffect, useMemo, useRef } from 'react';
+import ReactDOM from 'react-dom';
 
-import { useSelector } from "../../hooks/useSelector";
-import type { AppState } from "../../../types/state/AppState";
-import type { ChatInstance } from "../../../types/instance/ChatInstance";
+import { useSelector } from '../../hooks/useSelector';
+import type { AppState } from '../../../types/state/AppState';
+import type { ChatInstance } from '../../../types/instance/ChatInstance';
 import type {
   Message,
   MessageRequest,
-} from "../../../types/messaging/Messages";
-import type { RenderUserDefinedInputNode } from "../../../types/component/ChatContainer";
-import type { JSONContent } from "@tiptap/core";
+} from '../../../types/messaging/Messages';
+import type { RenderUserDefinedInputNode } from '../../../types/component/ChatContainer';
+import type { JSONContent } from '@tiptap/core';
 
 interface InputNodePortalsContainerProps {
   chatInstance: ChatInstance;
@@ -32,12 +32,12 @@ interface InputNodePortalsContainerProps {
  * a custom node and routed through `renderUserDefinedInputNode`.
  */
 const BUILT_IN_NODE_TYPES = new Set([
-  "doc",
-  "paragraph",
-  "text",
-  "hardBreak",
-  "mention",
-  "command",
+  'doc',
+  'paragraph',
+  'text',
+  'hardBreak',
+  'mention',
+  'command',
 ]);
 
 interface SlotEntry {
@@ -68,12 +68,12 @@ function InputNodePortalsContainer({
   chatWrapper,
 }: InputNodePortalsContainerProps) {
   const allMessagesByID = useSelector(
-    (state: AppState) => state.allMessagesByID,
+    (state: AppState) => state.allMessagesByID
   );
 
   const slotEntries = useMemo(
     () => collectSlotEntries(allMessagesByID),
-    [allMessagesByID],
+    [allMessagesByID]
   );
 
   // Map slotKey -> light-DOM host element. Hosts persist across renders so
@@ -116,7 +116,7 @@ function InputNodePortalsContainer({
       {slotEntries.map((entry) => {
         const node = renderUserDefinedInputNode(
           { node: entry.node, message: entry.message },
-          chatInstance,
+          chatInstance
         );
         if (node == null) {
           // Drop any previously mounted host for this slot — the consumer
@@ -131,8 +131,8 @@ function InputNodePortalsContainer({
 
         let host = hostElementsRef.current.get(entry.slotKey);
         if (!host) {
-          host = document.createElement("div");
-          host.setAttribute("slot", entry.slotKey);
+          host = document.createElement('div');
+          host.setAttribute('slot', entry.slotKey);
           hostElementsRef.current.set(entry.slotKey, host);
           chatWrapper.appendChild(host);
         }
@@ -158,14 +158,14 @@ function InputNodePortal({
 }
 
 function collectSlotEntries(
-  allMessagesByID: Record<string, Message>,
+  allMessagesByID: Record<string, Message>
 ): SlotEntry[] {
   const entries: SlotEntry[] = [];
   for (const message of Object.values(allMessagesByID)) {
     if (!isRequestWithDisplayContent(message)) {
       continue;
     }
-    const messageId = message.id ?? "";
+    const messageId = message.id ?? '';
     if (!messageId) {
       continue;
     }
@@ -184,7 +184,7 @@ function collectSlotEntries(
 }
 
 function isRequestWithDisplayContent(
-  message: Message,
+  message: Message
 ): message is MessageRequest {
   return Boolean((message as MessageRequest)?.input?.display_content);
 }
@@ -213,7 +213,7 @@ export interface InputNodeSlot {
  */
 export function collectInputNodeSlots(
   content: JSONContent,
-  messageId: string,
+  messageId: string
 ): InputNodeSlot[] {
   const out: InputNodeSlot[] = [];
   const stack: Array<{ node: JSONContent; path: string }> = [];
@@ -228,7 +228,7 @@ export function collectInputNodeSlots(
       break;
     }
     const { node, path } = frame;
-    const type = node.type ?? "";
+    const type = node.type ?? '';
 
     if (!BUILT_IN_NODE_TYPES.has(type)) {
       out.push({ slotKey: `${messageId}::${path}`, node });
@@ -249,7 +249,7 @@ export function collectInputNodeSlots(
 function walkForSlots(args: WalkArgs): void {
   for (const { slotKey, node } of collectInputNodeSlots(
     args.content,
-    args.messageId,
+    args.messageId
   )) {
     args.out.push({
       slotKey,

@@ -164,6 +164,33 @@ ID containing both tokens.
 
 ---
 
+### Carbon Labs Recovery
+
+If a Carbon Labs implementation behaves unexpectedly, do not assume stable Carbon guidance is sufficient.
+
+- Verify the package is a current `@carbon-labs/*` package, not deprecated `@carbon/labs-react`.
+- Verify the requested feature maps to the correct package before changing imports.
+  - UIShell → verify `@carbon-labs/react-ui-shell`
+  - Resizer → verify `@carbon-labs/react-resizer`
+  - What's New → verify `@carbon-labs/react-whats-new`
+  - Processing → verify `@carbon-labs/react-processing`
+- If styling is incomplete, verify whether the package requires package-specific SCSS in addition
+  to the Carbon React baseline.
+- If colors/layers/theme look wrong, verify whether the host container requires
+  `data-carbon-theme`.
+- If package docs/examples differ from stable Carbon assumptions, follow the package-specific
+  guidance and note the deviation instead of forcing stable patterns.
+
+Recovery sequence:
+
+1. Confirm the exact Labs package.
+2. Confirm the exact import path/API.
+3. Confirm package-specific SCSS requirements.
+4. Confirm theme/container requirements such as `data-carbon-theme`.
+5. Re-verify rendered styling and behavior after setup.
+
+---
+
 ### AI Chat Recovery
 
 If an AI Chat docs query returns insufficient results:
@@ -269,11 +296,14 @@ Use this checklist before composing the final response:
 
 ### React Project Setup
 
-- [ ] Stability policy enforced — no `@carbon/labs-react` unless user asked or it is already present in the repo
+- [ ] Stability policy enforced — no deprecated `@carbon/labs-react`; use current `@carbon-labs/*` packages only when Labs is required
 - [ ] Baseline token imports present in project SCSS file: `spacing`, `theme`, `type`, `breakpoint` from `@carbon/react/scss/`
 - [ ] `@use '@carbon/react'` present in project SCSS file (required for component styles — token imports alone emit no CSS)
 - [ ] Project SCSS file imported in entry module before component imports
 - [ ] No `@carbon/styles/css/styles.css` import used for React projects
+- [ ] Carbon Labs projects: exact package verified (`@carbon-labs/react-ui-shell`, `@carbon-labs/react-resizer`, `@carbon-labs/react-whats-new`, `@carbon-labs/react-processing`, etc.) before generating imports
+- [ ] Carbon Labs projects: package-specific SCSS requirements verified instead of assuming the Carbon baseline is sufficient
+- [ ] Carbon Labs projects: host theme requirements such as `data-carbon-theme` verified when styling depends on explicit theme context
 - [ ] IBM Products projects: `@use '@carbon/ibm-products/css/index-full.css';` included alongside the React SCSS baseline
 
 ### Web Components Project Setup

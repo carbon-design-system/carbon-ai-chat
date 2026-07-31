@@ -82,10 +82,10 @@ When you do use a table: keep cells short, code-format values (`` `string` ``), 
 Tag the language so the Carbon theme highlights it (` ```tsx `, ` ```ts `, ` ```html `, ` ```bash `, ` ```css `). Keep every snippet copy-pasteable and use **real exported types** — don't invent config shapes.
 
 ```tsx
-import { ChatContainer } from "@carbon/ai-chat";
+import { ChatContainer } from '@carbon/ai-chat';
 
 function App() {
-  return <ChatContainer header={{ title: "My Assistant" }} />;
+  return <ChatContainer header={{ title: 'My Assistant' }} />;
 }
 ```
 

@@ -17,17 +17,17 @@
 
 ## APIs and props demonstrated
 
-| Symbol                          | Kind           | Role in this example                                  |
-| ------------------------------- | -------------- | ----------------------------------------------------- |
-| `<cds-aichat-custom-element>`   | custom element | Mounts the chat UI at the fullscreen baseline.        |
-| `PublicConfig`                  | type           | Types the config bound to the element's properties.   |
-| `SuggestionItem`                | type           | Shape of each entry returned from `items`.            |
-| `.input` (`input.autocomplete`) | property       | Registers the typeahead behavior on the input.        |
-| `autocomplete.items`            | property       | Async filter that returns matching `SuggestionItem`s. |
-| `autocomplete.debounceMs`       | property       | Coalesces keystrokes before calling `items`.          |
-| `.layout` (`layout.showFrame`)  | property       | Hides the default frame so the chat fills the host.   |
-| `.openChatByDefault`            | property       | Mounts straight into the conversation, no launcher.   |
-| `.messaging.customSendMessage`  | property       | Mock backend echoing the user's message.              |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat UI at the fullscreen baseline. |
+| `PublicConfig` | type | Types the config bound to the element's properties. |
+| `SuggestionItem` | type | Shape of each entry returned from `items`. |
+| `.input` (`input.autocomplete`) | property | Registers the typeahead behavior on the input. |
+| `autocomplete.items` | property | Async filter that returns matching `SuggestionItem`s. |
+| `autocomplete.debounceMs` | property | Coalesces keystrokes before calling `items`. |
+| `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the host. |
+| `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
+| `.messaging.customSendMessage` | property | Mock backend echoing the user's message. |
 
 ## Run it
 

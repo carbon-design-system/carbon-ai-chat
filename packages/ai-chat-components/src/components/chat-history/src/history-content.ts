@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import prefix from "../../../globals/settings.js";
-import { property } from "lit/decorators.js";
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
+import { LitElement, html } from 'lit';
+import prefix from '../../../globals/settings.js';
+import { property } from 'lit/decorators.js';
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 
-import styles from "./chat-history.scss?lit";
+import styles from './chat-history.scss?lit';
 
 /**
  * Chat History Content.
@@ -26,25 +26,25 @@ class CDSAIChatHistoryContent extends LitElement {
    * Sets default slot value to content
    */
   @property({ type: String, reflect: true })
-  slot = "content";
+  slot = 'content';
 
   /**
    * Label to display before the results count
    */
-  @property({ type: String, attribute: "results-label" })
-  resultsLabel = "Results";
+  @property({ type: String, attribute: 'results-label' })
+  resultsLabel = 'Results';
 
   /**
    * The results count to display
    */
-  @property({ type: String, attribute: "results-count" })
+  @property({ type: String, attribute: 'results-count' })
   resultsCount?: string | number;
 
   render() {
     const shouldDisplay =
       this.resultsCount !== undefined &&
       this.resultsCount !== null &&
-      this.resultsCount !== "";
+      this.resultsCount !== '';
 
     const displayText =
       shouldDisplay && this.resultsLabel
@@ -58,7 +58,7 @@ class CDSAIChatHistoryContent extends LitElement {
             ? html`<span class="${prefix}--history-content__results-count">
                 ${displayText}
               </span>`
-            : ""
+            : ''
         }
       </div>
       <slot></slot>

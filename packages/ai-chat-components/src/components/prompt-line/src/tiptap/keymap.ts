@@ -29,19 +29,19 @@
  * `onKeyDown` so they don't consume those keys either.
  */
 
-import { Extension } from "@tiptap/core";
+import { Extension } from '@tiptap/core';
 
 export const Keymap = Extension.create({
-  name: "carbonChatKeymap",
+  name: 'carbonChatKeymap',
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Enter": ({ editor }) => {
+      'Mod-Enter': ({ editor }) => {
         editor.view.dom.dispatchEvent(
-          new CustomEvent("cds-aichat-prompt-send-intent", {
+          new CustomEvent('cds-aichat-prompt-send-intent', {
             bubbles: true,
             composed: true,
-          }),
+          })
         );
         return true;
       },

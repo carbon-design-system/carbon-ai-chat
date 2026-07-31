@@ -37,10 +37,10 @@ yarn add @carbon/ai-chat
 Render this component in your application and pass the Carbon AI Chat configuration as individual props. Give it a `className` that sizes it.
 
 ```tsx
-import React from "react";
-import { ChatCustomElement } from "@carbon/ai-chat";
+import React from 'react';
+import { ChatCustomElement } from '@carbon/ai-chat';
 
-import "./App.css";
+import './App.css';
 
 function App() {
   return (
@@ -68,10 +68,10 @@ This component requires a `className` prop that sets the size and position of th
 To change the open/close behavior — say, to animate the chat in and out — provide the {@link ChatCustomElementProps.onViewPreChange | onViewPreChange} and {@link ChatCustomElementProps.onViewChange | onViewChange} props. `onViewPreChange` runs before the view changes and the chat awaits it, so you can update your `className` and let an animation finish before the chat shell hides. `onViewChange` runs once the change completes; provide it to replace the default 0x0 sizing.
 
 ```tsx
-import React from "react";
-import { ChatCustomElement } from "@carbon/ai-chat";
+import React from 'react';
+import { ChatCustomElement } from '@carbon/ai-chat';
 
-import "./App.css";
+import './App.css';
 
 const ChatOptions = {
   messaging: {
@@ -121,15 +121,15 @@ This component can also manage `user_defined` responses (see {@link UserDefinedI
 Treat `renderUserDefinedResponse` like any typical React render prop. It runs on every app rerender and on every new `user_defined` message, so don't call functions inside it that you don't want run on every render. Put those calls inside the React component you render, with a `useEffect`.
 
 ```tsx
-import React from "react";
+import React from 'react';
 import {
   ChatContainer,
   RenderUserDefinedState,
   ChatInstance,
-} from "@carbon/ai-chat";
-import { AISkeletonPlaceholder } from "@carbon/react";
-import { Chart } from "./Chart";
-import { UserDefinedResponseExample } from "./Example";
+} from '@carbon/ai-chat';
+import { AISkeletonPlaceholder } from '@carbon/react';
+import { Chart } from './Chart';
+import { UserDefinedResponseExample } from './Example';
 
 const ChatOptions = {
   messaging: {
@@ -150,14 +150,14 @@ function someFunction() {}
 
 function renderUserDefinedResponse(
   state: RenderUserDefinedState,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   const { messageItem } = state;
   // The state contains details for each user defined response that needs to be rendered.
   // You can also pass information from your component's props or state into the component you return.
   if (messageItem) {
     switch (messageItem.user_defined?.user_defined_type) {
-      case "chart":
+      case 'chart':
         someFunction(); // If you do this, this function gets called on every render!
         return (
           <div className="padding">
@@ -168,7 +168,7 @@ function renderUserDefinedResponse(
             />
           </div>
         );
-      case "green":
+      case 'green':
         return (
           <UserDefinedResponseExample
             text={messageItem.user_defined.text as string}
@@ -194,16 +194,16 @@ The chat has several elements you can add content to with a slot. The {@link Cha
 Like `renderUserDefinedResponse`, this object is re-created on every render if you define it inside your component. To avoid that, wrap `renderWriteableElements` in `useMemo` or define it outside your component. With `useMemo`, you can also pass values from your component into the slots.
 
 ```tsx
-import React, { useMemo, useState } from "react";
-import { ChatContainer } from "@carbon/ai-chat";
-import { AIExplanationTooltipContent } from "./AIExplanationTooltipContent";
+import React, { useMemo, useState } from 'react';
+import { ChatContainer } from '@carbon/ai-chat';
+import { AIExplanationTooltipContent } from './AIExplanationTooltipContent';
 
 const chatOptions = {
   // Your configuration object.
 };
 
 function App() {
-  const [modelsInUse, setModelsInUse] = useState(["granite-13b-instruct-v2"]);
+  const [modelsInUse, setModelsInUse] = useState(['granite-13b-instruct-v2']);
 
   const renderWriteableElements = useMemo(
     () => ({
@@ -214,7 +214,7 @@ function App() {
         />
       ),
     }),
-    [modelsInUse],
+    [modelsInUse]
   );
 
   return <ChatContainer renderWriteableElements={renderWriteableElements} />;
@@ -240,7 +240,7 @@ Insert a `custom_footer_slot` in assistant messages to render your own content b
     message,
     messageItem,
     instance,
-    additionalData,
+    additionalData
   ) => (
     <CustomFooterExample
       messageItem={messageItem}

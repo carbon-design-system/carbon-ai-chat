@@ -37,18 +37,18 @@
  * Start reading at: the `Node.create` call below.
  */
 
-import { renderInLightDom } from "@carbon/ai-chat";
-import Card from "@carbon/ai-chat-components/es/react/card.js";
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
-import { Node, mergeAttributes, InputRule, type Extension } from "@tiptap/core";
-import React from "react";
+import { renderInLightDom } from '@carbon/ai-chat';
+import Card from '@carbon/ai-chat-components/es/react/card.js';
+import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
+import { Node, mergeAttributes, InputRule, type Extension } from '@tiptap/core';
+import React from 'react';
 
 // The node type name. Kept distinct from the chat's built-in node types
 // (doc / paragraph / text / hardBreak / mention / command) so the chat routes
 // it to `renderUserDefinedInputNode` when the message is sent.
-const CODE_SNIPPET_NODE = "codeSnippetBlock";
+const CODE_SNIPPET_NODE = 'codeSnippetBlock';
 
-const EMPTY_FENCED = "\n```\n\n```\n";
+const EMPTY_FENCED = '\n```\n\n```\n';
 
 function fence(code: string): string {
   return `\n\`\`\`\n${code}\n\`\`\`\n`;
@@ -90,21 +90,21 @@ function EditableSnippet({
   const handleChange = React.useCallback(
     (event: Event) => {
       const detail = (event as CustomEvent<{ content: string }>).detail;
-      onCodeChange(detail?.content ?? "");
+      onCodeChange(detail?.content ?? '');
     },
-    [onCodeChange],
+    [onCodeChange]
   );
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent) => {
-      if (event.key !== "Escape") {
+      if (event.key !== 'Escape') {
         return;
       }
       event.preventDefault();
       event.stopPropagation();
       onEscape();
     },
-    [onEscape],
+    [onEscape]
   );
 
   // The `Card` frames the editor so it reads as a contained region inside the
@@ -159,7 +159,7 @@ function EditableSnippet({
  */
 const impl = Node.create({
   name: CODE_SNIPPET_NODE,
-  group: "block",
+  group: 'block',
   atom: true,
   selectable: true,
   defining: true,
@@ -170,7 +170,7 @@ const impl = Node.create({
   // outgoing message text contains standard ```...``` fences.
   addAttributes() {
     return {
-      code: { default: "" },
+      code: { default: '' },
       value: { default: EMPTY_FENCED },
     };
   },
@@ -179,17 +179,17 @@ const impl = Node.create({
   // JSON via `getRawText` (which uses `attrs.value`), not this method, but
   // Tiptap's send-enable heuristic does call into `renderText`.
   renderText({ node }) {
-    return node.attrs.value ?? "";
+    return node.attrs.value ?? '';
   },
 
   parseHTML() {
-    return [{ tag: "pre[data-code-snippet-block]" }];
+    return [{ tag: 'pre[data-code-snippet-block]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
-      "pre",
-      mergeAttributes(HTMLAttributes, { "data-code-snippet-block": "" }),
+      'pre',
+      mergeAttributes(HTMLAttributes, { 'data-code-snippet-block': '' }),
     ];
   },
 
@@ -208,7 +208,7 @@ const impl = Node.create({
             .deleteRange(range)
             .insertContent({
               type: CODE_SNIPPET_NODE,
-              attrs: { code: "", value: EMPTY_FENCED },
+              attrs: { code: '', value: EMPTY_FENCED },
             })
             .run();
         },
@@ -229,7 +229,7 @@ const impl = Node.create({
         }
         return editor
           .chain()
-          .insertContentAt(selection.to, { type: "paragraph" })
+          .insertContentAt(selection.to, { type: 'paragraph' })
           .focus()
           .run();
       },
@@ -243,20 +243,20 @@ const impl = Node.create({
     return ({ node, editor, getPos }) => {
       const onCodeChange = (next: string) => {
         const pos = getPos();
-        if (typeof pos !== "number") {
+        if (typeof pos !== 'number') {
           return;
         }
         editor.view.dispatch(
           editor.state.tr.setNodeMarkup(pos, undefined, {
             code: next,
             value: fence(next),
-          }),
+          })
         );
       };
 
       const onEscape = () => {
         const pos = getPos();
-        if (typeof pos !== "number") {
+        if (typeof pos !== 'number') {
           return;
         }
         // Atom block nodes have `nodeSize === 1`; the position immediately
@@ -264,7 +264,7 @@ const impl = Node.create({
         const after = pos + 1;
         editor
           .chain()
-          .insertContentAt(after, { type: "paragraph" })
+          .insertContentAt(after, { type: 'paragraph' })
           .focus(after + 1)
           .run();
       };
@@ -280,13 +280,13 @@ const impl = Node.create({
       const { container } = renderInLightDom({
         content: (
           <EditableSnippet
-            initialCode={String(node.attrs.code ?? "")}
+            initialCode={String(node.attrs.code ?? '')}
             onCodeChange={onCodeChange}
             onEscape={onEscape}
           />
         ),
         dispatchTarget: editor.view.dom,
-        containerTag: "div",
+        containerTag: 'div',
       });
 
       return {

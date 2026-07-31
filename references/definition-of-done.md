@@ -8,22 +8,22 @@ Load this to pick the minimum verification gate for what you changed, before mar
 
 ## Minimum gate by area edited
 
-| Area edited                       | Minimum gate before shipping                                                                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Cross-cutting / multiple packages | `npm run build && npm run ci-check`                                                                                                                                      |
-| `packages/ai-chat/`               | `npm run build --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat`                                                                                 |
-| `packages/ai-chat-components/`    | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites)                      |
-| `demo/`                           | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright)                                        |
-| `examples/**`                     | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
-| SCSS only                         | `npm run lint:styles && npm run format`                                                                                                                                  |
+| Area edited | Minimum gate before shipping |
+| --- | --- |
+| Cross-cutting / multiple packages | `npm run build && npm run ci-check` |
+| `packages/ai-chat/` | `npm run build --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat` |
+| `packages/ai-chat-components/` | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites) |
+| `demo/` | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright) |
+| `examples/**` | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
+| SCSS only | `npm run lint:styles && npm run format` |
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file — husky's pre-commit only runs prettier/eslint/stylelint on staged files and does not check license headers.
 
-Before declaring a task done, self-review the diff against [code-review.md](code-review.md). Prefer a sub-agent for independence and to keep the main conversation lean. Act on **Blocker** findings before handing back; surface **Important** findings to the user.
+Before declaring a task done, self-review the diff against this repo's review rubric — the `caic-review` skill carries it. Prefer a sub-agent for independence and to keep the main conversation lean. Act on **Blocker** findings before handing back; surface **Important** findings to the user.
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo router
 - [commands.md](commands.md) — the commands referenced above
-- [code-review.md](code-review.md) — review rubric
+- [code-patterns.md](code-patterns.md) — the code-authoring discipline a review checks against
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks

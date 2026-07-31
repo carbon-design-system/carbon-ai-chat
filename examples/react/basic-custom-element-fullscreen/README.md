@@ -17,14 +17,14 @@ Fullscreen `ChatCustomElement` integration that hosts the chat inside your own e
 
 ## APIs and props demonstrated
 
-| Symbol                        | Package / kind              | Role in this example                            |
-| ----------------------------- | --------------------------- | ----------------------------------------------- |
-| `ChatCustomElement`           | `@carbon/ai-chat` component | Mounts the chat into a host element you style.  |
-| `PublicConfig`                | `@carbon/ai-chat` type      | Types the config passed to `ChatCustomElement`. |
-| `messaging.customSendMessage` | config prop                 | Mock backend.                                   |
-| `layout.showFrame`            | config prop                 | Disables the built-in frame.                    |
-| `openChatByDefault`           | config prop                 | Opens the chat on mount.                        |
-| `className`                   | component prop              | Host class applied to the custom element.       |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config passed to `ChatCustomElement`. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `layout.showFrame` | config prop | Disables the built-in frame. |
+| `openChatByDefault` | config prop | Opens the chat on mount. |
+| `className` | component prop | Host class applied to the custom element. |
 
 ## Run it
 

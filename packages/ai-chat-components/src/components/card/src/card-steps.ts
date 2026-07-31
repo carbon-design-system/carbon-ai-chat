@@ -7,17 +7,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { LitElement, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
-import { ifDefined } from "lit/directives/if-defined.js";
-import { repeat } from "lit/directives/repeat.js";
-import "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
-import "@carbon/web-components/es/components/loading/loading.js";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/icon-indicator.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./card-steps.scss?lit";
-import { carbonElement } from "../../../globals/decorators/index.js";
+import { LitElement, html, nothing } from 'lit';
+import { property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { repeat } from 'lit/directives/repeat.js';
+import '@carbon/web-components/es/components/icon-indicator/icon-indicator.js';
+import '@carbon/web-components/es/components/loading/loading.js';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/icon-indicator.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './card-steps.scss?lit';
+import { carbonElement } from '../../../globals/decorators/index.js';
 
 export type Step = {
   title: string;
@@ -50,13 +50,12 @@ class CardSteps extends LitElement {
                     ${
                       !step.kind
                         ? html`${step.label}`
-                        : step.kind !== ICON_INDICATOR_KIND["IN-PROGRESS"]
+                        : step.kind !== ICON_INDICATOR_KIND['IN-PROGRESS']
                           ? html`
                               <div class="${prefix}-card-step-indicator">
                                 <cds-icon-indicator
                                   kind="${ifDefined(step.kind)}"
-                                  size="16"
-                                ></cds-icon-indicator>
+                                  size="16"></cds-icon-indicator>
                                 ${step.label}
                               </div>
                             `
@@ -66,8 +65,7 @@ class CardSteps extends LitElement {
                                   active
                                   description="Loading"
                                   assistive-text="Loading"
-                                  small
-                                ></cds-loading>
+                                  small></cds-loading>
                                 ${step.label}
                               </div>
                             `
@@ -84,7 +82,7 @@ class CardSteps extends LitElement {
                       }
                     </div>
                   </div>
-                `,
+                `
               )
             : nothing
         }

@@ -7,17 +7,17 @@
  *  @license
  */
 
-import { createComponent } from "@lit/react";
-import React from "react";
-import CDSAIChatHistoryPanel from "../../components/chat-history/src/history-panel.js";
-import { withWebComponentBridge } from "../utils/withWebComponentBridge.js";
+import { createComponent } from '@lit/react';
+import React from 'react';
+import CDSAIChatHistoryPanel from '../../components/chat-history/src/history-panel.js';
+import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryPanel = withWebComponentBridge(
   createComponent({
-    tagName: "cds-aichat-history-panel",
+    tagName: 'cds-aichat-history-panel',
     elementClass: CDSAIChatHistoryPanel,
     react: React,
-  }),
+  })
 );
 
 export default HistoryPanel;

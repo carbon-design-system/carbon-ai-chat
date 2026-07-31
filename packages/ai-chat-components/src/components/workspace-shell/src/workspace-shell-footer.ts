@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property, state } from "lit/decorators.js";
-import "@carbon/web-components/es/components/button/button.js";
-import { CarbonIcon } from "@carbon/web-components/es/globals/internal/icon-loader-utils.js";
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import { BUTTON_KIND } from "@carbon/web-components/es/components/button/button.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
-import prefix from "../../../globals/settings.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./workspace-shell-footer.scss?lit";
+import { LitElement, html } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import '@carbon/web-components/es/components/button/button.js';
+import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import { BUTTON_KIND } from '@carbon/web-components/es/components/button/button.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
+import prefix from '../../../globals/settings.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './workspace-shell-footer.scss?lit';
 
 export type Action = {
   label: string;
@@ -51,14 +51,14 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
    * Sets default slot value to footer
    */
   @property({ type: String, reflect: true })
-  slot = "footer";
+  slot = 'footer';
 
   @property({ type: Array, reflect: false })
   actions: Action[] = [];
 
   connectedCallback() {
     super.connectedCallback();
-    this.setAttribute("data-rounded", "bottom");
+    this.setAttribute('data-rounded', 'bottom');
 
     // Observe component's own size changes
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
@@ -71,20 +71,20 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
   }
 
   updated(changedProps: Map<string, any>) {
-    if (changedProps.has("actions")) {
+    if (changedProps.has('actions')) {
       if (this.actions.length === 3) {
         this.classList.add(`${prefix}-workspace-shell-footer__three-buttons`);
       } else {
         this.classList.remove(
-          `${prefix}-workspace-shell-footer__three-buttons`,
+          `${prefix}-workspace-shell-footer__three-buttons`
         );
       }
     }
     // Sync to host data attribute
     if (this._isStacked) {
-      this.setAttribute("data-stacked", "");
+      this.setAttribute('data-stacked', '');
     } else {
-      this.removeAttribute("data-stacked");
+      this.removeAttribute('data-stacked');
     }
   }
 
@@ -97,10 +97,9 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
             kind=${action.kind}
             ?disabled=${action.disabled}
             size="2xl"
-            @click=${() => this.handleAction(action)}
-          >
+            @click=${() => this.handleAction(action)}>
             ${action.label}
-            ${action.icon && iconLoader(action.icon, { slot: "icon" })}
+            ${action.icon && iconLoader(action.icon, { slot: 'icon' })}
           </cds-button>
         `;
       })}
@@ -122,8 +121,8 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
       new CustomEvent(
         (this.constructor as typeof CDSAIChatWorkspaceShellFooter)
           .eventButtonClick,
-        init,
-      ),
+        init
+      )
     );
   }
 
@@ -140,11 +139,11 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
 
   private _sortActions(actions: Action[]) {
     const rank = (action: Action) => {
-      const kind = action.kind ?? "primary";
+      const kind = action.kind ?? 'primary';
       return (
         {
           ghost: 1,
-          "danger--ghost": 2,
+          'danger--ghost': 2,
           tertiary: 3,
           danger: 5,
           primary: 6,

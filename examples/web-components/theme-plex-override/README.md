@@ -20,20 +20,20 @@ Lit web-component integration of `@carbon/ai-chat` demonstrating how to replace 
 
 ## APIs and props demonstrated
 
-| Symbol                        | Package / kind            | Role in this example                                             |
-| ----------------------------- | ------------------------- | ---------------------------------------------------------------- |
-| `cds-aichat-container`        | `@carbon/ai-chat` element | Mounts the chat UI as a custom element.                          |
-| `PublicConfig`                | `@carbon/ai-chat` type    | Types the messaging config passed to the element.                |
-| `ChatInstance`                | `@carbon/ai-chat` type    | Typed reference captured in `onBeforeRender`.                    |
-| `BusEventType`                | `@carbon/ai-chat` enum    | Subscribes to `STATE_CHANGE` and `FEEDBACK`.                     |
-| `FeedbackInteractionType`     | `@carbon/ai-chat` enum    | Detects `SUBMITTED` feedback interactions.                       |
-| `messaging.customSendMessage` | element property          | Mock backend that echoes user input.                             |
-| `onBeforeRender`              | element property          | Captures the `ChatInstance` and attaches event listeners.        |
-| `renderUserDefinedResponse`   | element property          | Renders custom response content for user-defined response types. |
-| `instance.getState`           | instance method           | Reads the initial `activeResponseId`.                            |
-| `instance.on`                 | instance method           | Attaches bus event handlers.                                     |
-| `$css--font-face`             | `@carbon/styles` SCSS var | Set to `false` to suppress Plex `@font-face` generation.         |
-| `$font-families`              | `@carbon/styles` SCSS var | Overrides the `sans`, `mono`, and `serif` font-family stacks.    |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `cds-aichat-container` | `@carbon/ai-chat` element | Mounts the chat UI as a custom element. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the messaging config passed to the element. |
+| `ChatInstance` | `@carbon/ai-chat` type | Typed reference captured in `onBeforeRender`. |
+| `BusEventType` | `@carbon/ai-chat` enum | Subscribes to `STATE_CHANGE` and `FEEDBACK`. |
+| `FeedbackInteractionType` | `@carbon/ai-chat` enum | Detects `SUBMITTED` feedback interactions. |
+| `messaging.customSendMessage` | element property | Mock backend that echoes user input. |
+| `onBeforeRender` | element property | Captures the `ChatInstance` and attaches event listeners. |
+| `renderUserDefinedResponse` | element property | Renders custom response content for user-defined response types. |
+| `instance.getState` | instance method | Reads the initial `activeResponseId`. |
+| `instance.on` | instance method | Attaches bus event handlers. |
+| `$css--font-face` | `@carbon/styles` SCSS var | Set to `false` to suppress Plex `@font-face` generation. |
+| `$font-families` | `@carbon/styles` SCSS var | Overrides the `sans`, `mono`, and `serif` font-family stacks. |
 
 ## Run it
 

@@ -5,12 +5,12 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "sass:meta";
-@use "@carbon/ai-chat-components/scss/common";
-@use "@carbon/styles/scss/type";
+@use 'sass:meta';
+@use '@carbon/ai-chat-components/scss/common';
+@use '@carbon/styles/scss/type';
 
 :host {
   block-size: 100%;
   font-family: inherit;
-  @include meta.load-css("./AppShellStyles");
+  @include meta.load-css('./AppShellStyles');
 }

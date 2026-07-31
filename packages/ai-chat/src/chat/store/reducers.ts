@@ -7,12 +7,12 @@
  *  @license
  */
 
-import isEqual from "lodash-es/isEqual.js";
-import merge from "lodash-es/merge.js";
-import { DeepPartial } from "../../types/utilities/DeepPartial";
-import { isBrowser } from "../utils/browserUtils";
+import isEqual from 'lodash-es/isEqual.js';
+import merge from 'lodash-es/merge.js';
+import { DeepPartial } from '../../types/utilities/DeepPartial';
+import { isBrowser } from '../utils/browserUtils';
 
-import { outputItemToLocalItem } from "../schema/outputItemToLocalItem";
+import { outputItemToLocalItem } from '../schema/outputItemToLocalItem';
 import {
   AnnounceMessage,
   AppState,
@@ -26,17 +26,17 @@ import {
   PersistedState,
   ThemeState,
   ViewState,
-} from "../../types/state/AppState";
+} from '../../types/state/AppState';
 import {
   CustomPanelConfigOptions,
   WorkspaceCustomPanelConfigOptions,
-} from "../../types/instance/apiTypes";
+} from '../../types/instance/apiTypes';
 import {
   LocalMessageItem,
   LocalMessageUIState,
-} from "../../types/messaging/LocalMessageItem";
-import { FileStatusValue } from "../utils/constants";
-import { isRequest, isResponse, streamItemID } from "../utils/messageUtils";
+} from '../../types/messaging/LocalMessageItem';
+import { FileStatusValue } from '../utils/constants';
+import { isRequest, isResponse, streamItemID } from '../utils/messageUtils';
 import {
   ACCEPTED_DISCLAIMER,
   ADD_INPUT_FILE,
@@ -105,8 +105,8 @@ import {
   ADD_PENDING_UPLOAD,
   UPDATE_PENDING_UPLOAD,
   REMOVE_PENDING_UPLOAD,
-} from "./actions";
-import { humanAgentReducers } from "./humanAgentReducers";
+} from './actions';
+import { humanAgentReducers } from './humanAgentReducers';
 import {
   applyAssistantMessageState,
   applyFullMessage,
@@ -119,7 +119,7 @@ import {
   DEFAULT_IFRAME_PANEL_STATE,
   handleViewStateChange,
   setHomeScreenOpenState,
-} from "./reducerUtils";
+} from './reducerUtils';
 import {
   HumanAgentMessageType,
   ConversationalSearchItemCitation,
@@ -133,7 +133,7 @@ import {
   MessageResponseOptions,
   MessageResponseHistory,
   MessageRequestHistory,
-} from "../../types/messaging/Messages";
+} from '../../types/messaging/Messages';
 
 type ReducerType = (state: AppState, action?: any) => AppState;
 
@@ -148,10 +148,10 @@ type ReducerType = (state: AppState, action?: any) => AppState;
  * Returns `undefined` when there is nothing to combine.
  */
 function rebuildPendingStructuredData(
-  inputState: InputState,
-): import("../../types/messaging/Messages").StructuredData | undefined {
-  type SD = import("../../types/messaging/Messages").StructuredData;
-  type SF = import("../../types/messaging/Messages").StructuredField;
+  inputState: InputState
+): import('../../types/messaging/Messages').StructuredData | undefined {
+  type SD = import('../../types/messaging/Messages').StructuredData;
+  type SF = import('../../types/messaging/Messages').StructuredField;
 
   const parts: SD[] = [];
 
@@ -208,7 +208,7 @@ const EXCLUDE_HUMAN_AGENT_UNREAD = new Set([
 const reducers: { [key: string]: ReducerType } = {
   [CHANGE_STATE]: (
     state: AppState,
-    action: { partialState: DeepPartial<AppState> },
+    action: { partialState: DeepPartial<AppState> }
   ): AppState => {
     const { partialState } = action;
     if (!partialState) {
@@ -236,12 +236,12 @@ const reducers: { [key: string]: ReducerType } = {
     // we ensure each update starts from a clean AppConfig while still allowing partial config updates (e.g.
     // `config: { derived: { header: ... } }`) to merge as before.
     if (config !== undefined) {
-      if (config && Object.prototype.hasOwnProperty.call(config, "public")) {
-        nextState.config = config as AppState["config"];
+      if (config && Object.prototype.hasOwnProperty.call(config, 'public')) {
+        nextState.config = config as AppState['config'];
       } else if (config) {
         nextState.config = merge({}, nextState.config, config);
       } else {
-        nextState.config = config as AppState["config"];
+        nextState.config = config as AppState['config'];
       }
     }
 
@@ -292,7 +292,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [HYDRATE_MESSAGE_HISTORY]: (
     state: AppState,
-    action: { messageHistory: AppStateMessages },
+    action: { messageHistory: AppStateMessages }
   ): AppState => {
     const newState = {
       ...state,
@@ -319,7 +319,7 @@ const reducers: { [key: string]: ReducerType } = {
       message: Message;
       addMessage: boolean;
       addAfterID: string;
-    },
+    }
   ): AppState => {
     const { messageItem, message, addMessage, addAfterID } = action;
     const { id } = messageItem.ui_state;
@@ -334,7 +334,7 @@ const reducers: { [key: string]: ReducerType } = {
 
     const currentIndex =
       newState.assistantMessageState.localMessageIDs.findIndex(
-        (existingID) => existingID === id,
+        (existingID) => existingID === id
       );
     const newLocalMessageIDs = [
       ...newState.assistantMessageState.localMessageIDs,
@@ -353,7 +353,7 @@ const reducers: { [key: string]: ReducerType } = {
     // If an "addAfterID" was provided, use that to determine where to put this new ID.
     if (addAfterID) {
       const afterIDIndex = newLocalMessageIDs.findIndex(
-        (existingID) => existingID === addAfterID,
+        (existingID) => existingID === addAfterID
       );
       if (afterIDIndex !== -1) {
         insertAtIndex = afterIDIndex + 1;
@@ -413,7 +413,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [REMOVE_MESSAGES]: (
     state: AppState,
-    { messageIDs }: { messageIDs: string[] },
+    { messageIDs }: { messageIDs: string[] }
   ): AppState => {
     const idsSet = new Set(messageIDs);
 
@@ -422,7 +422,7 @@ const reducers: { [key: string]: ReducerType } = {
 
     // Remove all the message IDs from the message list.
     const newMessageIDs = state.assistantMessageState.messageIDs.filter(
-      (messageID) => !idsSet.has(messageID),
+      (messageID) => !idsSet.has(messageID)
     );
 
     // Remove all the message items from the items list for items that are part of one of the messages being
@@ -461,7 +461,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_LOCAL_MESSAGE_ITEM]: (
     state: AppState,
-    action: { messageItem: LocalMessageItem },
+    action: { messageItem: LocalMessageItem }
   ): AppState => {
     const { messageItem } = action;
     return {
@@ -475,7 +475,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_MESSAGE]: (
     state: AppState,
-    action: { message: Message },
+    action: { message: Message }
   ): AppState => {
     const { message } = action;
     return {
@@ -489,7 +489,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPSERT_MESSAGE]: (
     state: AppState,
-    action: { message: Message },
+    action: { message: Message }
   ): AppState => {
     const { message } = action;
     const messageID = message.id;
@@ -508,7 +508,7 @@ const reducers: { [key: string]: ReducerType } = {
     const { otherLocalIDs, insertPoint } = computeLocalIDInsertionPoint(
       state.assistantMessageState.localMessageIDs,
       state.allMessageItemsByID,
-      messageID,
+      messageID
     );
     const newLocalMessageIDs = [
       ...otherLocalIDs.slice(0, insertPoint),
@@ -619,7 +619,7 @@ const reducers: { [key: string]: ReducerType } = {
       // Now insert the message items back into the list at the right spot, but only the items we already had.
       if (existingItemIDs.length) {
         const itemIDsToInsert = itemIDsInNewMessage.filter((itemID) =>
-          existingItemIDs.includes(itemID),
+          existingItemIDs.includes(itemID)
         );
         if (itemIDsToInsert.length) {
           newLocalMessageIDs.splice(firstFoundIndex, 0, ...itemIDsToInsert);
@@ -641,7 +641,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [MESSAGE_SET_OPTION_SELECTED]: (
     state: AppState,
-    action: { sentMessage: MessageRequest; messageID: string },
+    action: { sentMessage: MessageRequest; messageID: string }
   ): AppState => {
     const newMessagesByID = {
       ...state.allMessageItemsByID,
@@ -673,12 +673,12 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ADD_IS_LOADING_COUNTER]: (
     state: AppState,
-    action: { addToIsLoading: number; message?: string },
+    action: { addToIsLoading: number; message?: string }
   ): AppState => {
     const isMessageLoadingCounter = Math.max(
       state.assistantMessageState.isMessageLoadingCounter +
         action.addToIsLoading,
-      0,
+      0
     );
     return {
       ...state,
@@ -705,7 +705,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ADD_IS_HYDRATING_COUNTER]: (
     state: AppState,
-    action: { addToIsHydrating: number },
+    action: { addToIsHydrating: number }
   ): AppState => {
     return {
       ...state,
@@ -714,7 +714,7 @@ const reducers: { [key: string]: ReducerType } = {
         isHydratingCounter: Math.max(
           state.assistantMessageState.isHydratingCounter +
             action.addToIsHydrating,
-          0,
+          0
         ),
       },
     };
@@ -722,7 +722,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_APP_STATE_VALUE]: (
     state: AppState,
-    action: { key: keyof AppState; value: any },
+    action: { key: keyof AppState; value: any }
   ): AppState => ({
     ...state,
     [action.key]: action.value,
@@ -730,7 +730,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_CATASTROPHIC_ERROR_PANEL]: (
     state: AppState,
-    action: { panelState: Partial<CatastrophicErrorPanelState> },
+    action: { panelState: Partial<CatastrophicErrorPanelState> }
   ): AppState => ({
     ...state,
     catastrophicErrorPanelState: {
@@ -741,7 +741,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_PERSISTED_STATE]: (
     state: AppState,
-    action: { chatState: Partial<PersistedState> },
+    action: { chatState: Partial<PersistedState> }
   ): AppState => ({
     ...state,
     persistedToBrowserStorage: {
@@ -752,7 +752,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_HAS_SENT_NON_WELCOME_MESSAGE]: (
     state: AppState,
-    action: { hasSentNonWelcomeMessage: boolean },
+    action: { hasSentNonWelcomeMessage: boolean }
   ): AppState => {
     if (
       state.persistedToBrowserStorage.hasSentNonWelcomeMessage ===
@@ -771,7 +771,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_IS_RESTARTING]: (
     state: AppState,
-    action: { isRestarting: boolean },
+    action: { isRestarting: boolean }
   ): AppState => ({
     ...state,
     isRestarting: action.isRestarting,
@@ -779,14 +779,14 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_VIEW_STATE]: (
     state: AppState,
-    action: { viewState: ViewState },
+    action: { viewState: ViewState }
   ): AppState => {
     return handleViewStateChange(state, action.viewState);
   },
 
   [SET_VIEW_CHANGING]: (
     state: AppState,
-    action: { viewChanging: boolean },
+    action: { viewChanging: boolean }
   ): AppState => ({
     ...state,
     viewChanging: action.viewChanging,
@@ -794,7 +794,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_INITIAL_VIEW_CHANGE_COMPLETE]: (
     state: AppState,
-    action: { changeComplete: boolean },
+    action: { changeComplete: boolean }
   ): AppState => ({
     ...state,
     initialViewChangeComplete: action.changeComplete,
@@ -806,13 +806,13 @@ const reducers: { [key: string]: ReducerType } = {
       localMessageID: string;
       propertyName: TPropertyName;
       propertyValue: LocalMessageUIState[TPropertyName];
-    },
+    }
   ): AppState => {
     return applyLocalMessageUIState(
       state,
       action.localMessageID,
       action.propertyName,
-      action.propertyValue,
+      action.propertyValue
     );
   },
 
@@ -824,7 +824,7 @@ const reducers: { [key: string]: ReducerType } = {
       messageID: string;
       propertyName: TPropertyName;
       propertyValue: MessageResponseHistory[TPropertyName];
-    },
+    }
   ): AppState => {
     const { messageID, propertyName, propertyValue } = action;
     const oldMessage = state.allMessagesByID[messageID];
@@ -854,7 +854,7 @@ const reducers: { [key: string]: ReducerType } = {
       messageID: string;
       propertyName: TPropertyName;
       propertyValue: MessageUIStateInternal[TPropertyName];
-    },
+    }
   ): AppState => {
     const { messageID, propertyName, propertyValue } = action;
     const oldMessage = state.allMessagesByID[messageID];
@@ -881,7 +881,7 @@ const reducers: { [key: string]: ReducerType } = {
     action: {
       messageID: string;
       history: MessageResponseHistory | MessageRequestHistory;
-    },
+    }
   ): AppState => {
     const oldMessage = state.allMessagesByID[action.messageID];
     if (oldMessage) {
@@ -901,7 +901,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [ANNOUNCE_MESSAGE]: (
     state: AppState,
-    action: { message: AnnounceMessage },
+    action: { message: AnnounceMessage }
   ): AppState => ({
     ...state,
     announceMessage: action.message,
@@ -913,14 +913,14 @@ const reducers: { [key: string]: ReducerType } = {
       ...state.persistedToBrowserStorage,
       disclaimersAccepted: {
         ...state.persistedToBrowserStorage.disclaimersAccepted,
-        [isBrowser() ? window.location.hostname : "localhost"]: true,
+        [isBrowser() ? window.location.hostname : 'localhost']: true,
       },
     },
   }),
 
   [SET_HOME_SCREEN_IS_OPEN]: (
     state: AppState,
-    { isOpen }: { isOpen: boolean },
+    { isOpen }: { isOpen: boolean }
   ) => setHomeScreenOpenState(state, isOpen),
 
   [TOGGLE_HOME_SCREEN]: (state: AppState) => {
@@ -930,7 +930,7 @@ const reducers: { [key: string]: ReducerType } = {
     return setHomeScreenOpenState(
       state,
       !isCurrentlyOpen,
-      !isCurrentlyOpen, // true when opening, false when closing
+      !isCurrentlyOpen // true when opening, false when closing
     );
   },
 
@@ -939,7 +939,7 @@ const reducers: { [key: string]: ReducerType } = {
     action: {
       propertyName: TPropertyName;
       propertyValue: PersistedState[TPropertyName];
-    },
+    }
   ) => {
     return {
       ...state,
@@ -955,7 +955,7 @@ const reducers: { [key: string]: ReducerType } = {
     action: {
       propertyName: TPropertyName;
       propertyValue: ChatMessagesState[TPropertyName];
-    },
+    }
   ) => {
     return applyAssistantMessageState(state, {
       [action.propertyName]: action.propertyValue,
@@ -974,7 +974,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [OPEN_IFRAME_CONTENT]: (
     state: AppState,
-    { messageItem }: { messageItem: IFrameItem },
+    { messageItem }: { messageItem: IFrameItem }
   ) => {
     return {
       ...state,
@@ -984,7 +984,7 @@ const reducers: { [key: string]: ReducerType } = {
         isOpen: true,
       },
       announceMessage: {
-        messageID: "iframe_ariaOpenedPanel",
+        messageID: 'iframe_ariaOpenedPanel',
       },
     };
   },
@@ -997,7 +997,7 @@ const reducers: { [key: string]: ReducerType } = {
         isOpen: false,
       },
       announceMessage: {
-        messageID: "iframe_ariaClosedPanel",
+        messageID: 'iframe_ariaClosedPanel',
       },
     };
   },
@@ -1008,7 +1008,7 @@ const reducers: { [key: string]: ReducerType } = {
       isOpen: boolean;
       citationItem: ConversationalSearchItemCitation;
       relatedSearchResult: SearchResult;
-    },
+    }
   ) => {
     return {
       ...state,
@@ -1033,7 +1033,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_CUSTOM_PANEL_OPTIONS]: (
     state: AppState,
-    action: { options: CustomPanelConfigOptions },
+    action: { options: CustomPanelConfigOptions }
   ) => {
     return {
       ...state,
@@ -1046,7 +1046,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_WORKSPACE_PANEL_OPEN]: (
     state: AppState,
-    action: { isOpen: boolean },
+    action: { isOpen: boolean }
   ) => {
     // When closing the panel, reset the workspace panel state to default
     if (!action.isOpen) {
@@ -1070,7 +1070,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_WORKSPACE_PANEL_OPTIONS]: (
     state: AppState,
-    action: { options: Partial<WorkspaceCustomPanelConfigOptions> },
+    action: { options: Partial<WorkspaceCustomPanelConfigOptions> }
   ) => {
     return {
       ...state,
@@ -1091,7 +1091,7 @@ const reducers: { [key: string]: ReducerType } = {
       localMessageItem?: LocalMessageItem;
       fullMessage?: Message;
       additionalData?: unknown;
-    },
+    }
   ) => {
     return {
       ...state,
@@ -1107,7 +1107,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_HISTORY_PANEL_OPEN]: (
     state: AppState,
-    action: { isOpen: boolean },
+    action: { isOpen: boolean }
   ): AppState => {
     if (!action.isOpen) {
       return {
@@ -1130,7 +1130,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_HISTORY_PANEL_OPTIONS]: (
     state: AppState,
-    action: { isMobile: boolean; isOpen?: boolean },
+    action: { isMobile: boolean; isOpen?: boolean }
   ): AppState => {
     return {
       ...state,
@@ -1144,7 +1144,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_INPUT_STATE]: (
     state: AppState,
-    action: { newState: Partial<InputState>; isInputToHumanAgent: boolean },
+    action: { newState: Partial<InputState>; isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, action.isInputToHumanAgent);
     const newInputState = {
@@ -1154,14 +1154,14 @@ const reducers: { [key: string]: ReducerType } = {
     const newState = applyInputState(
       state,
       newInputState,
-      action.isInputToHumanAgent,
+      action.isInputToHumanAgent
     );
     return newState;
   },
 
   [SET_IS_BROWSER_PAGE_VISIBLE]: (
     state: AppState,
-    action: { isVisible: boolean },
+    action: { isVisible: boolean }
   ) => {
     // If the page becomes visible while the main window is open, then clear the number of unread messages.
     const isMainWindowOpen =
@@ -1186,7 +1186,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       file,
       isInputToHumanAgent,
-    }: { file: FileUpload; isInputToHumanAgent: boolean },
+    }: { file: FileUpload; isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
@@ -1195,7 +1195,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: [...currentInputState.files, file],
       },
-      isInputToHumanAgent,
+      isInputToHumanAgent
     );
   },
 
@@ -1204,7 +1204,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       fileID,
       isInputToHumanAgent,
-    }: { fileID: string; isInputToHumanAgent: boolean },
+    }: { fileID: string; isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     const newUploads = [...currentInputState.files];
@@ -1218,17 +1218,17 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: newUploads,
       },
-      isInputToHumanAgent,
+      isInputToHumanAgent
     );
   },
 
   [REMOVE_LOCAL_MESSAGE_ITEM]: (
     state: AppState,
-    { localMessageItemID }: { localMessageItemID: string },
+    { localMessageItemID }: { localMessageItemID: string }
   ) => {
     const newLocalMessageIDs =
       state.assistantMessageState.localMessageIDs.filter(
-        (id) => id !== localMessageItemID,
+        (id) => id !== localMessageItemID
       );
     const allMessageItemsByID = {
       ...state.allMessageItemsByID,
@@ -1248,7 +1248,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [CLEAR_INPUT_FILES]: (
     state: AppState,
-    { isInputToHumanAgent }: { isInputToHumanAgent: boolean },
+    { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
@@ -1257,7 +1257,7 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputState,
         files: [],
       },
-      isInputToHumanAgent,
+      isInputToHumanAgent
     );
   },
 
@@ -1268,9 +1268,9 @@ const reducers: { [key: string]: ReducerType } = {
       isInputToHumanAgent,
     }: {
       structuredData:
-        import("../../types/messaging/Messages").StructuredData | undefined;
+        import('../../types/messaging/Messages').StructuredData | undefined;
       isInputToHumanAgent: boolean;
-    },
+    }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     const nextInputState: InputState = {
@@ -1284,7 +1284,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [CLEAR_STRUCTURED_DATA]: (
     state: AppState,
-    { isInputToHumanAgent }: { isInputToHumanAgent: boolean },
+    { isInputToHumanAgent }: { isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     return applyInputState(
@@ -1295,7 +1295,7 @@ const reducers: { [key: string]: ReducerType } = {
         pendingUploads: [],
         pendingStructuredData: undefined,
       },
-      isInputToHumanAgent,
+      isInputToHumanAgent
     );
   },
 
@@ -1304,7 +1304,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       upload,
       isInputToHumanAgent,
-    }: { upload: PendingUpload; isInputToHumanAgent: boolean },
+    }: { upload: PendingUpload; isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     const nextInputState: InputState = {
@@ -1326,11 +1326,11 @@ const reducers: { [key: string]: ReducerType } = {
       uploadId: string;
       patch: Partial<PendingUpload>;
       isInputToHumanAgent: boolean;
-    },
+    }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     const nextUploads = currentInputState.pendingUploads.map((u) =>
-      u.id === uploadId ? { ...u, ...patch } : u,
+      u.id === uploadId ? { ...u, ...patch } : u
     );
     const nextInputState: InputState = {
       ...currentInputState,
@@ -1346,11 +1346,11 @@ const reducers: { [key: string]: ReducerType } = {
     {
       uploadId,
       isInputToHumanAgent,
-    }: { uploadId: string; isInputToHumanAgent: boolean },
+    }: { uploadId: string; isInputToHumanAgent: boolean }
   ) => {
     const currentInputState = getInputState(state, isInputToHumanAgent);
     const nextUploads = currentInputState.pendingUploads.filter(
-      (u) => u.id !== uploadId,
+      (u) => u.id !== uploadId
     );
     const nextInputState: InputState = {
       ...currentInputState,
@@ -1367,7 +1367,7 @@ const reducers: { [key: string]: ReducerType } = {
       fileID,
       errorMessage,
       isInputToHumanAgent,
-    }: { fileID: string; errorMessage: string; isInputToHumanAgent: boolean },
+    }: { fileID: string; errorMessage: string; isInputToHumanAgent: boolean }
   ) => {
     const currentInputSate = getInputState(state, isInputToHumanAgent);
     const newUploads = [...currentInputSate.files];
@@ -1386,13 +1386,13 @@ const reducers: { [key: string]: ReducerType } = {
         ...currentInputSate,
         files: newUploads,
       },
-      isInputToHumanAgent,
+      isInputToHumanAgent
     );
   },
 
   [ADD_NESTED_MESSAGES]: (
     state: AppState,
-    { localMessageItems }: { localMessageItems: LocalMessageItem[] },
+    { localMessageItems }: { localMessageItems: LocalMessageItem[] }
   ) => {
     const allMessageItemsByID = { ...state.allMessageItemsByID };
 
@@ -1408,7 +1408,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_RESPONSE_PANEL_IS_OPEN]: (
     state: AppState,
-    { isOpen }: { isOpen: boolean },
+    { isOpen }: { isOpen: boolean }
   ) => {
     return {
       ...state,
@@ -1424,7 +1424,7 @@ const reducers: { [key: string]: ReducerType } = {
     {
       localMessageItem,
       isMessageForInput,
-    }: { localMessageItem: LocalMessageItem; isMessageForInput: boolean },
+    }: { localMessageItem: LocalMessageItem; isMessageForInput: boolean }
   ) => {
     return {
       ...state,
@@ -1438,7 +1438,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [STREAMING_START]: (
     state: AppState,
-    { messageID }: { messageID: string },
+    { messageID }: { messageID: string }
   ) => {
     // Add an empty placeholder where we will start adding the streaming chunks as they come in.
     const streamIntoResponse: MessageResponse = {
@@ -1462,7 +1462,7 @@ const reducers: { [key: string]: ReducerType } = {
     }: {
       messageID: string;
       message_options: DeepPartial<MessageResponseOptions>;
-    },
+    }
   ) => {
     const existingMessage = state.allMessagesByID[messageID];
     const newMessage = merge({}, existingMessage, { message_options });
@@ -1490,7 +1490,7 @@ const reducers: { [key: string]: ReducerType } = {
       fullMessageID: string;
       chunkItem: DeepPartial<GenericItem>;
       isCompleteItem: boolean;
-    },
+    }
   ) => {
     const message = state.allMessagesByID[fullMessageID] as MessageResponse;
 
@@ -1505,7 +1505,7 @@ const reducers: { [key: string]: ReducerType } = {
       newItem = outputItemToLocalItem(
         chunkItem as GenericItem,
         message as MessageResponse,
-        false,
+        false
       );
       newItem.ui_state.needsAnnouncement = false;
       newItem.ui_state.isIntermediateStreaming = true;
@@ -1521,8 +1521,8 @@ const reducers: { [key: string]: ReducerType } = {
       if (!newItem.item.response_type) {
         throw new Error(
           `New chunk item does not have a response_type: ${JSON.stringify(
-            chunkItem,
-          )}`,
+            chunkItem
+          )}`
         );
       }
     } else if (isCompleteItem) {
@@ -1576,7 +1576,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_STOP_STREAMING_BUTTON_VISIBLE]: (
     state: AppState,
-    { isVisible }: { isVisible: boolean },
+    { isVisible }: { isVisible: boolean }
   ) => {
     return {
       ...state,
@@ -1592,7 +1592,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_STOP_STREAMING_BUTTON_DISABLED]: (
     state: AppState,
-    { isDisabled }: { isDisabled: boolean },
+    { isDisabled }: { isDisabled: boolean }
   ) => {
     return {
       ...state,
@@ -1608,7 +1608,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_STREAM_ID]: (
     state: AppState,
-    { currentStreamID }: { currentStreamID: string },
+    { currentStreamID }: { currentStreamID: string }
   ) => {
     return {
       ...state,
@@ -1624,7 +1624,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [SET_ACTIVE_RESPONSE_ID]: (
     state: AppState,
-    { activeResponseId }: { activeResponseId: string | null },
+    { activeResponseId }: { activeResponseId: string | null }
   ) => {
     return {
       ...state,
@@ -1637,7 +1637,7 @@ const reducers: { [key: string]: ReducerType } = {
 
   [UPDATE_THEME_STATE]: (
     state: AppState,
-    { themeState }: { themeState: ThemeState },
+    { themeState }: { themeState: ThemeState }
   ) => {
     return {
       ...state,
@@ -1659,7 +1659,7 @@ const reducers: { [key: string]: ReducerType } = {
 function applyInputState(
   state: AppState,
   newInputState: InputState,
-  isInputToHumanAgent: boolean,
+  isInputToHumanAgent: boolean
 ): AppState {
   if (isInputToHumanAgent) {
     return {

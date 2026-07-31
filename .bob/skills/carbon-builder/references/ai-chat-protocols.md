@@ -10,13 +10,15 @@ generating any code:
 
 ### Step 1 — Fetch the full file list
 
-Issue a **single, explicit `code_search`** call targeting the example root and framework.
+Issue a **single, explicit `code_search`** call with the user's natural language query.
 
 Required in the query:
 
 - The phrase `"ai chat"`
 - The framework: `"react"` or `"web components"` (default to React if unspecified)
-- The example root: `"basic"`, `"custom-element"`, `"history"`, `"watsonx"`, or `"watch-state"`
+- The user's description of what they want (e.g., "full screen mode", "load history", "watsonx integration")
+
+**Do NOT hardcode example root names** — let Elasticsearch match against example descriptions naturally.
 
 Always set:
 
@@ -148,16 +150,26 @@ Use `code_search` for Carbon AI Chat sample applications and code snippets.
 | `watsonx`        | Watson/watsonx AI backend integration |
 | `watch-state`    | Observing chat state changes          |
 
+**Natural Query Matching:**
+
+The system uses Elasticsearch's natural text matching against the `description` field (boost: 7) to find the most relevant examples. Simply describe what you want in natural language:
+
+- "full screen mode" → matches examples with "fullscreen layout" in description
+- "load chat history" → matches examples with "message history loading" in description
+- "watsonx integration" → matches examples with "watsonx.ai connection" in description
+
+The `description` field is weighted higher than most other fields to prioritize semantic relevance over exact keyword matches.
+
 **Translation — user intent → agent query (code_search):**
 
-| User says                                  | Agent calls                                                                                                       |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| "Show me a basic AI Chat example"          | `{"query": "ai chat basic react", "size": 15, "filters": {"component_type": "React"}}`                            |
-| "How do I load chat history?"              | `{"query": "ai chat history react", "size": 15, "filters": {"component_type": "React"}}`                          |
-| "Show me the watsonx AI Chat integration"  | `{"query": "ai chat watsonx react", "size": 15, "filters": {"component_type": "React"}}`                          |
-| "How do I watch/observe chat state?"       | `{"query": "ai chat watch-state react", "size": 15, "filters": {"component_type": "React"}}`                      |
-| "Show me a custom element AI Chat example" | `{"query": "ai chat custom-element web components", "size": 15, "filters": {"component_type": "Web Components"}}` |
-| "Show me the basic web components AI Chat" | `{"query": "ai chat basic web components", "size": 15, "filters": {"component_type": "Web Components"}}`          |
+| User says                                       | Agent calls                                                                                                       |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| "Show me a basic AI Chat example"               | `{"query": "ai chat basic react", "size": 15, "filters": {"component_type": "React"}}`                            |
+| "How do I load chat history?"                   | `{"query": "ai chat load history react", "size": 15, "filters": {"component_type": "React"}}`                     |
+| "Show me the watsonx AI Chat integration"       | `{"query": "ai chat watsonx integration react", "size": 15, "filters": {"component_type": "React"}}`              |
+| "AI Chat in full screen mode with default open" | `{"query": "ai chat full screen mode default open react", "size": 15, "filters": {"component_type": "React"}}`    |
+| "Show me a custom element AI Chat example"      | `{"query": "ai chat custom element web components", "size": 15, "filters": {"component_type": "Web Components"}}` |
+| "How do I watch/observe chat state?"            | `{"query": "ai chat watch observe state react", "size": 15, "filters": {"component_type": "React"}}`              |
 
 ---
 

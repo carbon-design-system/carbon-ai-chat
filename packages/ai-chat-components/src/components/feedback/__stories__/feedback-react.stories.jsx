@@ -8,87 +8,87 @@
  */
 
 /* eslint-disable */
-import React from "react";
+import React from 'react';
 
-import Feedback from "../../../react/feedback";
+import Feedback from '../../../react/feedback';
 
 const negativeCategories = [
-  "Inaccurate",
-  "Unhelpful",
-  "Inappropriate",
-  "Not relevant",
-  "Too verbose",
-  "Missing information",
+  'Inaccurate',
+  'Unhelpful',
+  'Inappropriate',
+  'Not relevant',
+  'Too verbose',
+  'Missing information',
 ];
 
 const positiveCategories = [
-  "Accurate",
-  "Helpful",
-  "Well-formatted",
-  "Clear explanation",
-  "Comprehensive",
+  'Accurate',
+  'Helpful',
+  'Well-formatted',
+  'Clear explanation',
+  'Comprehensive',
 ];
 
 export default {
-  title: "Preview/Feedback",
+  title: 'Preview/Feedback',
   argTypes: {
     isOpen: {
-      control: "boolean",
-      description: "Whether the feedback panel is open",
+      control: 'boolean',
+      description: 'Whether the feedback panel is open',
     },
     isReadonly: {
-      control: "boolean",
-      description: "Whether the feedback is in read-only mode",
+      control: 'boolean',
+      description: 'Whether the feedback is in read-only mode',
     },
     title: {
-      control: "text",
-      description: "Title of the feedback panel",
+      control: 'text',
+      description: 'Title of the feedback panel',
     },
     body: {
-      control: "text",
-      description: "Body text for the user",
+      control: 'text',
+      description: 'Body text for the user',
     },
     disclaimer: {
-      control: "text",
-      description: "Legal disclaimer text",
-      table: { type: { summary: "string" } },
+      control: 'text',
+      description: 'Legal disclaimer text',
+      table: { type: { summary: 'string' } },
     },
     disclaimerCheckbox: {
-      control: "text",
-      description: "Label text to display with disclaimer checkbox",
-      table: { type: { summary: "string" } },
+      control: 'text',
+      description: 'Label text to display with disclaimer checkbox',
+      table: { type: { summary: 'string' } },
     },
     placeholder: {
-      control: "text",
-      description: "Placeholder for the text area",
+      control: 'text',
+      description: 'Placeholder for the text area',
     },
     primaryLabel: {
-      control: "text",
-      description: "Label for the primary button",
+      control: 'text',
+      description: 'Label for the primary button',
     },
     showTextArea: {
-      control: "boolean",
-      description: "Show the text area (defaults to false)",
+      control: 'boolean',
+      description: 'Show the text area (defaults to false)',
     },
     showBody: {
-      control: "boolean",
-      description: "Show the body text (defaults to false)",
+      control: 'boolean',
+      description: 'Show the body text (defaults to false)',
     },
     onSubmit: {
-      action: "onSubmit",
-      table: { category: "events" },
+      action: 'onSubmit',
+      table: { category: 'events' },
       description:
-        "Fires when feedback is submitted. `event.detail` includes text and selectedCategories.",
+        'Fires when feedback is submitted. `event.detail` includes text and selectedCategories.',
     },
     onClose: {
-      action: "onClose",
-      table: { category: "events" },
-      description: "Fires when the panel is closed without submitting.",
+      action: 'onClose',
+      table: { category: 'events' },
+      description: 'Fires when the panel is closed without submitting.',
     },
     maxLength: {
-      control: "number",
+      control: 'number',
       description:
-        "The maximum number of characters allowed in the feedback text area.",
+        'The maximum number of characters allowed in the feedback text area.',
     },
   },
 };
@@ -99,9 +99,9 @@ const renderFeedback = (args, options) => {
   const handleClose = options?.onClose ?? args.onClose;
 
   return (
-    <div style={{ padding: "1rem", maxWidth: "24rem" }}>
+    <div style={{ padding: '1rem', maxWidth: '24rem' }}>
       {description ? (
-        <p style={{ marginBottom: "1rem" }}>{description}</p>
+        <p style={{ marginBottom: '1rem' }}>{description}</p>
       ) : null}
       <Feedback
         isOpen={args.isOpen}
@@ -133,10 +133,10 @@ export const Default = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Additional feedback",
-    body: "Why did you choose this rating?",
-    placeholder: "Add a comment",
-    primaryLabel: "Submit",
+    title: 'Additional feedback',
+    body: 'Why did you choose this rating?',
+    placeholder: 'Add a comment',
+    primaryLabel: 'Submit',
     showTextArea: true,
     showBody: true,
     onSubmit: undefined,
@@ -146,15 +146,15 @@ export const Default = {
   render: (args) =>
     renderFeedback(args, {
       onSubmit: (details) => {
-        console.log("Feedback submitted:", details);
-        if (typeof window !== "undefined") {
+        console.log('Feedback submitted:', details);
+        if (typeof window !== 'undefined') {
           window.alert(
-            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+            `Feedback submitted!\nText: ${details.text || '(empty)'}\nCategories: ${details.selectedCategories?.join(', ') || '(none)'}`
           );
         }
       },
       onClose: () => {
-        console.log("Feedback closed");
+        console.log('Feedback closed');
       },
     }),
 };
@@ -163,10 +163,10 @@ export const WithCategories = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Additional feedback",
-    body: "Why did you choose this rating?",
-    placeholder: "Add a comment",
-    primaryLabel: "Submit",
+    title: 'Additional feedback',
+    body: 'Why did you choose this rating?',
+    placeholder: 'Add a comment',
+    primaryLabel: 'Submit',
     showTextArea: true,
     showBody: true,
     maxLength: 1000,
@@ -174,18 +174,18 @@ export const WithCategories = {
   render: (args) =>
     renderFeedback(args, {
       description:
-        "Provide multiple categories when collecting specific negative feedback.",
+        'Provide multiple categories when collecting specific negative feedback.',
       categories: negativeCategories,
       onSubmit: (details) => {
-        console.log("Feedback submitted:", details);
-        if (typeof window !== "undefined") {
+        console.log('Feedback submitted:', details);
+        if (typeof window !== 'undefined') {
           window.alert(
-            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+            `Feedback submitted!\nText: ${details.text || '(empty)'}\nCategories: ${details.selectedCategories?.join(', ') || '(none)'}`
           );
         }
       },
       onClose: () => {
-        console.log("Feedback closed");
+        console.log('Feedback closed');
       },
     }),
 };
@@ -194,14 +194,14 @@ export const WithDisclaimer = {
   args: {
     isOpen: true,
     isReadonly: false,
-    title: "Additional feedback",
-    body: "Why did you choose this rating?",
-    placeholder: "Add a comment",
+    title: 'Additional feedback',
+    body: 'Why did you choose this rating?',
+    placeholder: 'Add a comment',
     disclaimer:
-      "To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.",
+      'To better understand your feedback, a dedicated IBM team may review additional information (such as your prompt and the model output) to drive improvement of AI-powered features. Your content will not be used to train or enhance the AI model.',
     disclaimerCheckbox:
-      "I agree to IBM collecting information related to my feedback.",
-    primaryLabel: "Submit",
+      'I agree to IBM collecting information related to my feedback.',
+    primaryLabel: 'Submit',
     showTextArea: true,
     showBody: true,
     maxLength: 1000,
@@ -210,15 +210,15 @@ export const WithDisclaimer = {
     renderFeedback(args, {
       categories: positiveCategories,
       onSubmit: (details) => {
-        console.log("Feedback submitted:", details);
-        if (typeof window !== "undefined") {
+        console.log('Feedback submitted:', details);
+        if (typeof window !== 'undefined') {
           window.alert(
-            `Feedback submitted!\nText: ${details.text || "(empty)"}\nCategories: ${details.selectedCategories?.join(", ") || "(none)"}`,
+            `Feedback submitted!\nText: ${details.text || '(empty)'}\nCategories: ${details.selectedCategories?.join(', ') || '(none)'}`
           );
         }
       },
       onClose: () => {
-        console.log("Feedback closed");
+        console.log('Feedback closed');
       },
     }),
 };
@@ -227,7 +227,7 @@ export const ReadOnly = {
   args: {
     isOpen: true,
     isReadonly: true,
-    title: "Additional feedback",
+    title: 'Additional feedback',
     showTextArea: true,
     showBody: false,
     maxLength: 1000,
@@ -237,7 +237,7 @@ export const ReadOnly = {
       categories: negativeCategories,
       initialValues: {
         text: "The response was inaccurate and didn't address my question properly. It also included irrelevant information.",
-        selectedCategories: ["Inaccurate", "Not relevant"],
+        selectedCategories: ['Inaccurate', 'Not relevant'],
       },
     }),
 };

@@ -16,8 +16,6 @@ collect:
         - config
         - onAfterRender
         - onBeforeRender
-        - serviceDesk
-        - strings
         # cds-aichat-stop-streaming-button
         - disabled
         - label

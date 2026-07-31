@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { PublicConfig } from "../config/PublicConfig";
-import { HeaderConfig } from "../config/HeaderConfig";
-import { LayoutConfig } from "../config/LayoutConfig";
-import { ThemeState } from "./ThemeState";
-import ObjectMap from "../utilities/ObjectMap";
-import { LauncherConfig } from "../config/LauncherConfig";
+import { PublicConfig } from '../config/PublicConfig';
+import { HeaderConfig } from '../config/HeaderConfig';
+import { LayoutConfig } from '../config/LayoutConfig';
+import { ThemeState } from './ThemeState';
+import ObjectMap from '../utilities/ObjectMap';
+import { LauncherConfig } from '../config/LauncherConfig';
 
 /**
  * This contains the top level interface that defines the configuration options for the application.

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LanguagePack } from "../config/LanguagePack";
+import { LanguagePack } from '../config/LanguagePack';
 
 /**
  * This interface represents a piece of text that can be translated using a language pack. A piece of code that

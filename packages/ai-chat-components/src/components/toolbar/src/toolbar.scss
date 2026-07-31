@@ -7,11 +7,11 @@
  *  @license
  */
 
-@use "../../../globals/scss/vars" as *;
-@use "../../../globals/scss/modifiers" as *;
-@use "@carbon/styles/scss/theme";
-@use "@carbon/layout";
-@use "@carbon/styles/scss/type";
+@use '../../../globals/scss/vars' as *;
+@use '../../../globals/scss/modifiers' as *;
+@use '@carbon/styles/scss/theme';
+@use '@carbon/layout';
+@use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-toolbar;
 
@@ -50,7 +50,7 @@ $block-class: #{$prefix}-toolbar;
   }
 
   .#{$block-class}__title {
-    @include type.type-style("body-compact-01");
+    @include type.type-style('body-compact-01');
 
     flex: 1;
     margin-block: auto;
@@ -90,13 +90,13 @@ $block-class: #{$prefix}-toolbar;
     min-inline-size: 0;
   }
 
-  ::slotted([slot="navigation"]) {
+  ::slotted([slot='navigation']) {
     display: flex;
     align-items: center;
     margin-block: auto;
   }
 
-  ::slotted([slot="decorator"]) {
+  ::slotted([slot='decorator']) {
     display: flex;
     align-items: center;
     justify-content: center;

@@ -24,13 +24,13 @@
  * Start reading at: `handleMaximize`.
  */
 
-import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import "@carbon/ai-chat-components/es/components/toolbar/index.js";
-import Maximize16 from "@carbon/icons/es/maximize/16.js";
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import Maximize16 from '@carbon/icons/es/maximize/16.js';
 
-@customElement("outstanding-orders-card")
+@customElement('outstanding-orders-card')
 export class OutstandingOrdersCard extends LitElement {
   static styles = css`
     :host {
@@ -82,7 +82,7 @@ export class OutstandingOrdersCard extends LitElement {
   `;
 
   @property({ type: String })
-  accessor workspaceId = "";
+  accessor workspaceId = '';
 
   @property({ type: Object })
   accessor additionalData: any;
@@ -93,9 +93,9 @@ export class OutstandingOrdersCard extends LitElement {
   @property({ type: Array })
   accessor toolbarActions: any[] = [
     {
-      text: "Maximize",
+      text: 'Maximize',
       icon: Maximize16,
-      size: "md",
+      size: 'md',
       onClick: this.handleMaximize.bind(this),
     },
   ];
@@ -103,8 +103,8 @@ export class OutstandingOrdersCard extends LitElement {
   private handleMaximize() {
     // Debug wiring so the workspaceId can be traced from the card click into panel.open().
     console.log(
-      "Maximize clicked, opening workspace with ID:",
-      this.workspaceId,
+      'Maximize clicked, opening workspace with ID:',
+      this.workspaceId
     );
     // Delegate to the host's onMaximize so this card stays decoupled from the customPanels API.
     if (this.onMaximize) {

@@ -16,13 +16,13 @@ Fullscreen chat driven by `<cds-aichat-custom-element>`, letting the host elemen
 
 ## APIs and props demonstrated
 
-| Symbol                        | Kind           | Role in this example                                           |
-| ----------------------------- | -------------- | -------------------------------------------------------------- |
-| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI at the size of its CSS box.                  |
-| `messaging.customSendMessage` | property       | Mock backend that echoes user input.                           |
-| `layout.showFrame`            | property       | Disables the built-in frame.                                   |
-| `layout.customProperties`     | property       | Overrides internal CSS variables (e.g., `messages-max-width`). |
-| `openChatByDefault`           | property       | Opens the main window on mount.                                |
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Hosts the chat UI at the size of its CSS box. |
+| `messaging.customSendMessage` | property | Mock backend that echoes user input. |
+| `layout.showFrame` | property | Disables the built-in frame. |
+| `layout.customProperties` | property | Overrides internal CSS variables (e.g., `messages-max-width`). |
+| `openChatByDefault` | property | Opens the main window on mount. |
 
 ## Run it
 

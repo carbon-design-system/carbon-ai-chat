@@ -16,17 +16,17 @@ Mocks a controlled reasoning-step flow: the parent reasoning panel stays collaps
 
 ## APIs and props demonstrated
 
-| Symbol                                              | Package / kind              | Role in this example                                       |
-| --------------------------------------------------- | --------------------------- | ---------------------------------------------------------- |
-| `ChatCustomElement`                                 | `@carbon/ai-chat` component | Mounts the chat UI.                                        |
-| `PublicConfig`                                      | `@carbon/ai-chat` type      | Config shape.                                              |
-| `customSendMessage`                                 | `messaging` prop            | Runs the controlled reasoning scenario.                    |
-| `ReasoningStep` / `ReasoningStepOpenState`          | `@carbon/ai-chat` types     | Reasoning payloads + controlled open-state values.         |
-| `MessageResponseOptions`                            | `@carbon/ai-chat` type      | `message_options` carrying `reasoning.{steps,open_state}`. |
-| `StreamChunk`                                       | `@carbon/ai-chat` type      | Chunk shape for streaming.                                 |
-| `instance.messaging.addMessage` / `addMessageChunk` | `ChatInstance` API          | Emit welcome + streamed chunks.                            |
-| `instance.updateIsMessageLoadingCounter`            | `ChatInstance` API          | Custom loading label that replaces the default UI.         |
-| `CustomSendMessageOptions.signal`                   | `@carbon/ai-chat`           | Abort signal for cancellation.                             |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Runs the controlled reasoning scenario. |
+| `ReasoningStep` / `ReasoningStepOpenState` | `@carbon/ai-chat` types | Reasoning payloads + controlled open-state values. |
+| `MessageResponseOptions` | `@carbon/ai-chat` type | `message_options` carrying `reasoning.{steps,open_state}`. |
+| `StreamChunk` | `@carbon/ai-chat` type | Chunk shape for streaming. |
+| `instance.messaging.addMessage` / `addMessageChunk` | `ChatInstance` API | Emit welcome + streamed chunks. |
+| `instance.updateIsMessageLoadingCounter` | `ChatInstance` API | Custom loading label that replaces the default UI. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` | Abort signal for cancellation. |
 
 ## Run it
 

@@ -19,10 +19,10 @@
  * if it wants downstream readers (typing-indicator) to recognize it.
  */
 
-import { Extension } from "@tiptap/core";
-import { Plugin } from "@tiptap/pm/state";
+import { Extension } from '@tiptap/core';
+import { Plugin } from '@tiptap/pm/state';
 
-import { isHostOrigin } from "./origin-meta.js";
+import { isHostOrigin } from './origin-meta.js';
 
 export interface ValueSyncStorage {
   /** True iff the most recent doc-changing batch contained any host-origin tr. */
@@ -30,7 +30,7 @@ export interface ValueSyncStorage {
 }
 
 export const ValueSync = Extension.create<unknown, ValueSyncStorage>({
-  name: "carbonValueSync",
+  name: 'carbonValueSync',
 
   addStorage() {
     return { lastTransactionIsHost: false };
@@ -42,7 +42,7 @@ export const ValueSync = Extension.create<unknown, ValueSyncStorage>({
       new Plugin({
         appendTransaction(transactions) {
           storage.lastTransactionIsHost = transactions.some((tr) =>
-            isHostOrigin(tr),
+            isHostOrigin(tr)
           );
           return null;
         },
@@ -52,14 +52,14 @@ export const ValueSync = Extension.create<unknown, ValueSyncStorage>({
               return;
             }
             view.dom.dispatchEvent(
-              new CustomEvent("cds-aichat-prompt-change", {
+              new CustomEvent('cds-aichat-prompt-change', {
                 detail: {
                   rawValue: editor.getText(),
                   content: editor.getJSON(),
                 },
                 bubbles: true,
                 composed: true,
-              }),
+              })
             );
           },
         }),

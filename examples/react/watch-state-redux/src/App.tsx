@@ -34,15 +34,15 @@ import {
   ChatContainer,
   ChatInstance,
   PublicConfig,
-} from "@carbon/ai-chat";
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { Provider } from "react-redux";
+} from '@carbon/ai-chat';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
 
-import { customSendMessage } from "./customSendMessage";
-import { HomescreenStatus } from "./HomescreenStatus";
-import { chatStateSync, store } from "./store";
-import "@carbon/styles/css/styles.css";
+import { customSendMessage } from './customSendMessage';
+import { HomescreenStatus } from './HomescreenStatus';
+import { chatStateSync, store } from './store';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
@@ -51,13 +51,13 @@ const config: PublicConfig = {
   // Enable the homescreen so toggling between it and the chat view produces the STATE_CHANGE traffic this example mirrors into Redux.
   homescreen: {
     isOn: true,
-    greeting: "👋 Hello!\n\nWelcome to Carbon AI Chat.",
+    greeting: '👋 Hello!\n\nWelcome to Carbon AI Chat.',
     starters: {
       isOn: true,
       buttons: [
-        { label: "What can you help me with?" },
-        { label: "How does the Redux bridge work?" },
-        { label: "Why mirror state into Redux?" },
+        { label: 'What can you help me with?' },
+        { label: 'How does the Redux bridge work?' },
+        { label: 'Why mirror state into Redux?' },
       ],
     },
   },
@@ -101,6 +101,6 @@ function App() {
   );
 }
 
-const root = createRoot(document.querySelector("#root") as Element);
+const root = createRoot(document.querySelector('#root') as Element);
 
 root.render(<App />);

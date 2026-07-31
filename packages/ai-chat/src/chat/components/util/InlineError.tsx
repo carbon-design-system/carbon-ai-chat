@@ -7,15 +7,15 @@
  *  @license
  */
 
-import ErrorFilled16 from "@carbon/icons/es/error--filled/16.js";
-import cx from "classnames";
-import React from "react";
+import ErrorFilled16 from '@carbon/icons/es/error--filled/16.js';
+import cx from 'classnames';
+import React from 'react';
 
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import { useSelector } from "../../hooks/useSelector";
-import { shallowEqual } from "../../store/appStore";
-import { MarkdownWithDefaults } from "./MarkdownWithDefaults";
-import { AppState } from "../../../types/state/AppState";
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import { useSelector } from '../../hooks/useSelector';
+import { shallowEqual } from '../../store/appStore';
+import { MarkdownWithDefaults } from './MarkdownWithDefaults';
+import { AppState } from '../../../types/state/AppState';
 
 const ErrorFilled = carbonIconToReact(ErrorFilled16);
 
@@ -24,15 +24,15 @@ export function InlineError({ text }: { text?: string }) {
     (state: AppState) => ({
       errors_generalContent: state.languagePack.errors_generalContent,
     }),
-    shallowEqual,
+    shallowEqual
   );
   return (
     <div className="cds-aichat--inline-error">
       <div className="cds-aichat--inline-error--icon-holder">
         <ErrorFilled
           className={cx(
-            "cds-aichat--error-icon",
-            "cds-aichat--inline-error--icon",
+            'cds-aichat--error-icon',
+            'cds-aichat--inline-error--icon'
           )}
         />
       </div>

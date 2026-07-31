@@ -6,96 +6,96 @@
  *
  *  @license
  */
-import "../index";
-import { html } from "lit";
-import { action } from "storybook/actions";
+import '../index';
+import { html } from 'lit';
+import { action } from 'storybook/actions';
 import {
   BookAvatarIcon,
   ChartLineAvatarIcon,
   DatabaseAvatarIcon,
   HelpAvatarIcon,
-} from "./avatar-icons.js";
+} from './avatar-icons.js';
 
 // Flat suggestion items (no groups)
 const flatSuggestions = [
   {
-    id: "suggestion-1",
-    label: "When is the best time to eat?",
+    id: 'suggestion-1',
+    label: 'When is the best time to eat?',
   },
   {
-    id: "suggestion-2",
-    label: "When is the sun rising today?",
+    id: 'suggestion-2',
+    label: 'When is the sun rising today?',
   },
   {
-    id: "suggestion-3",
-    label: "When is the sun setting today?",
+    id: 'suggestion-3',
+    label: 'When is the sun setting today?',
   },
   {
-    id: "suggestion-4",
-    label: "When is the start of Spring?",
+    id: 'suggestion-4',
+    label: 'When is the start of Spring?',
   },
   {
-    id: "suggestion-5",
-    label: "When is the next full moon?",
+    id: 'suggestion-5',
+    label: 'When is the next full moon?',
   },
   {
-    id: "suggestion-6",
-    label: "When is the next lunar eclipse?",
+    id: 'suggestion-6',
+    label: 'When is the next lunar eclipse?',
   },
 ];
 
 // Suggestion groups with avatars and descriptions
 const suggestionGroupsWithAvatars = [
   {
-    id: "group-1",
-    title: "Domain A",
+    id: 'group-1',
+    title: 'Domain A',
     items: [
       {
-        id: "suggestion-1",
-        label: "Summarize",
-        description: "Describe selected data",
+        id: 'suggestion-1',
+        label: 'Summarize',
+        description: 'Describe selected data',
         avatar: BookAvatarIcon,
       },
       {
-        id: "suggestion-2",
-        label: "Visualization",
-        description: "Generate quick chart",
+        id: 'suggestion-2',
+        label: 'Visualization',
+        description: 'Generate quick chart',
         avatar: ChartLineAvatarIcon,
       },
     ],
   },
   {
-    id: "group-2",
-    title: "Domain B",
+    id: 'group-2',
+    title: 'Domain B',
     items: [
       {
-        id: "suggestion-3",
-        label: "Train",
-        description: "Use dataset to train model",
+        id: 'suggestion-3',
+        label: 'Train',
+        description: 'Use dataset to train model',
         avatar: DatabaseAvatarIcon,
       },
       {
-        id: "suggestion-4",
-        label: "Summarize",
-        description: "Describe selected data",
+        id: 'suggestion-4',
+        label: 'Summarize',
+        description: 'Describe selected data',
         avatar: BookAvatarIcon,
       },
     ],
   },
   {
-    id: "group-3",
-    title: "Domain C",
+    id: 'group-3',
+    title: 'Domain C',
     items: [
       {
-        id: "suggestion-5",
-        label: "Validate",
-        description: "Check quality of data",
+        id: 'suggestion-5',
+        label: 'Validate',
+        description: 'Check quality of data',
         avatar: DatabaseAvatarIcon,
       },
       {
-        id: "suggestion-6",
-        label: "Document",
-        description: "Show available commands ",
+        id: 'suggestion-6',
+        label: 'Document',
+        description: 'Show available commands ',
         avatar: HelpAvatarIcon,
       },
     ],
@@ -127,32 +127,32 @@ const filterSuggestionGroups = (groups, query) => {
     .map((group) => ({
       ...group,
       items: group.items.filter((item) =>
-        item.label.toLowerCase().includes(lower),
+        item.label.toLowerCase().includes(lower)
       ),
     }))
     .filter((group) => group.items.length > 0);
 };
 
 export default {
-  title: "Preview/Autocomplete",
-  component: "cds-aichat-autocomplete",
+  title: 'Preview/Autocomplete',
+  component: 'cds-aichat-autocomplete',
   argTypes: {
     inputText: {
-      control: "text",
-      description: "The input text to display",
+      control: 'text',
+      description: 'The input text to display',
     },
     enableSendButton: {
-      control: "boolean",
-      description: "Whether to enable the send button",
+      control: 'boolean',
+      description: 'Whether to enable the send button',
     },
     attached: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Whether the autocomplete is attached to another element (e.g., an input field). When true, the bottom corners will not be rounded.",
+        'Whether the autocomplete is attached to another element (e.g., an input field). When true, the bottom corners will not be rounded.',
     },
   },
   args: {
-    inputText: "",
+    inputText: '',
     enableSendButton: true,
     attached: true,
   },
@@ -160,7 +160,7 @@ export default {
 
 export const Default = {
   render: ({ inputText, enableSendButton, attached }) => {
-    const query = inputText || "";
+    const query = inputText || '';
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
     return html`
@@ -172,12 +172,13 @@ export const Default = {
           ?enable-send-button=${enableSendButton}
           input-text=${inputText}
           @cds-aichat-autocomplete-select=${(e) =>
-            action("cds-aichat-autocomplete-select")(e.detail)}
+            action('cds-aichat-autocomplete-select')(e.detail)}
           @cds-aichat-autocomplete-send=${(e) =>
-            action("cds-aichat-autocomplete-send")(e.detail)}
+            action('cds-aichat-autocomplete-send')(e.detail)}
           @cds-aichat-autocomplete-dismiss=${() =>
-            action("cds-aichat-autocomplete-dismiss")()}
-        ></cds-aichat-autocomplete>
+            action(
+              'cds-aichat-autocomplete-dismiss'
+            )()}></cds-aichat-autocomplete>
       </div>
     `;
   },
@@ -185,7 +186,7 @@ export const Default = {
 
 export const WithHeader = {
   render: ({ inputText, enableSendButton, attached }) => {
-    const query = inputText || "";
+    const query = inputText || '';
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
     return html`
@@ -195,15 +196,16 @@ export const WithHeader = {
           .items=${filteredItems}
           ?attached=${attached}
           ?enable-send-button=${enableSendButton}
-          .headerConfig=${{ showHeader: true, title: "Prompt suggestions" }}
+          .headerConfig=${{ showHeader: true, title: 'Prompt suggestions' }}
           input-text=${inputText}
           @cds-aichat-autocomplete-select=${(e) =>
-            action("cds-aichat-autocomplete-select")(e.detail)}
+            action('cds-aichat-autocomplete-select')(e.detail)}
           @cds-aichat-autocomplete-send=${(e) =>
-            action("cds-aichat-autocomplete-send")(e.detail)}
+            action('cds-aichat-autocomplete-send')(e.detail)}
           @cds-aichat-autocomplete-dismiss=${() =>
-            action("cds-aichat-autocomplete-dismiss")()}
-        ></cds-aichat-autocomplete>
+            action(
+              'cds-aichat-autocomplete-dismiss'
+            )()}></cds-aichat-autocomplete>
       </div>
     `;
   },
@@ -211,10 +213,10 @@ export const WithHeader = {
 
 export const WithCategories = {
   render: ({ inputText, enableSendButton, attached }) => {
-    const query = inputText || "";
+    const query = inputText || '';
     const filteredGroups = filterSuggestionGroups(
       suggestionGroupsWithAvatars,
-      query,
+      query
     );
 
     return html`
@@ -226,12 +228,13 @@ export const WithCategories = {
           ?enable-send-button=${enableSendButton}
           input-text=${inputText}
           @cds-aichat-autocomplete-select=${(e) =>
-            action("cds-aichat-autocomplete-select")(e.detail)}
+            action('cds-aichat-autocomplete-select')(e.detail)}
           @cds-aichat-autocomplete-send=${(e) =>
-            action("cds-aichat-autocomplete-send")(e.detail)}
+            action('cds-aichat-autocomplete-send')(e.detail)}
           @cds-aichat-autocomplete-dismiss=${() =>
-            action("cds-aichat-autocomplete-dismiss")()}
-        ></cds-aichat-autocomplete>
+            action(
+              'cds-aichat-autocomplete-dismiss'
+            )()}></cds-aichat-autocomplete>
       </div>
     `;
   },
@@ -242,7 +245,7 @@ export const Detached = {
     attached: false,
   },
   render: ({ inputText, enableSendButton, attached }) => {
-    const query = inputText || "";
+    const query = inputText || '';
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
     return html`
@@ -254,12 +257,13 @@ export const Detached = {
           input-text=${inputText}
           ?attached=${attached}
           @cds-aichat-autocomplete-select=${(e) =>
-            action("cds-aichat-autocomplete-select")(e.detail)}
+            action('cds-aichat-autocomplete-select')(e.detail)}
           @cds-aichat-autocomplete-send=${(e) =>
-            action("cds-aichat-autocomplete-send")(e.detail)}
+            action('cds-aichat-autocomplete-send')(e.detail)}
           @cds-aichat-autocomplete-dismiss=${() =>
-            action("cds-aichat-autocomplete-dismiss")()}
-        ></cds-aichat-autocomplete>
+            action(
+              'cds-aichat-autocomplete-dismiss'
+            )()}></cds-aichat-autocomplete>
       </div>
     `;
   },

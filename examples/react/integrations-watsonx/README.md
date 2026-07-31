@@ -17,15 +17,15 @@ Connects `ChatCustomElement` to IBM watsonx.ai for real streaming text generatio
 
 ## APIs and props demonstrated
 
-| Symbol                                                      | Package / kind                  | Role in this example                   |
-| ----------------------------------------------------------- | ------------------------------- | -------------------------------------- |
-| `ChatCustomElement`                                         | `@carbon/ai-chat` component     | Mounts the chat UI.                    |
-| `PublicConfig`                                              | `@carbon/ai-chat` type          | Config shape.                          |
-| `customSendMessage`                                         | `messaging` prop                | Streams from watsonx.ai via SSE proxy. |
-| `MessageRequest`, `MessageResponse`, `MessageResponseTypes` | `@carbon/ai-chat`               | Request/response shapes.               |
-| `PartialItemChunkWithId`                                    | `@carbon/ai-chat` type          | Streaming chunk shape.                 |
-| `instance.messaging.addMessage` / `addMessageChunk`         | `ChatInstance` API              | Welcome + streamed chunks.             |
-| `fetchEventSource`                                          | `@microsoft/fetch-event-source` | SSE client.                            |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Streams from watsonx.ai via SSE proxy. |
+| `MessageRequest`, `MessageResponse`, `MessageResponseTypes` | `@carbon/ai-chat` | Request/response shapes. |
+| `PartialItemChunkWithId` | `@carbon/ai-chat` type | Streaming chunk shape. |
+| `instance.messaging.addMessage` / `addMessageChunk` | `ChatInstance` API | Welcome + streamed chunks. |
+| `fetchEventSource` | `@microsoft/fetch-event-source` | SSE client. |
 
 ## Run it
 

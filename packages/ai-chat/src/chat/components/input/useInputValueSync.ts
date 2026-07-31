@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { MutableRefObject, useEffect, useRef, useState } from "react";
-import type { JSONContent } from "@tiptap/core";
-import type { PromptLineElement } from "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+import { MutableRefObject, useEffect, useRef, useState } from 'react';
+import type { JSONContent } from '@tiptap/core';
+import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
-import actions from "../../store/actions";
+import actions from '../../store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from "../../store/selectors";
-import type { ServiceManager } from "../../services/ServiceManager";
+} from '../../store/selectors';
+import type { ServiceManager } from '../../services/ServiceManager';
 
 interface UseInputValueSyncArgs {
   serviceManager: ServiceManager;
@@ -83,7 +83,7 @@ function useInputValueSync({
 
   // Local state for input value (rawValue only — JSONContent doc is internal).
   const [rawInputValue, setRawInputValue] = useState(
-    trackedInputState?.rawValue ?? "",
+    trackedInputState?.rawValue ?? ''
   );
 
   const rawInputValueRef = useRef(rawInputValue);
@@ -101,7 +101,7 @@ function useInputValueSync({
 
     const unsubscribe = store.subscribe(() => {
       const nextInputState = selectInputState(store.getState());
-      const nextRawValue = nextInputState.rawValue ?? "";
+      const nextRawValue = nextInputState.rawValue ?? '';
 
       if (nextRawValue !== rawInputValueRef.current) {
         setRawInputValue(nextRawValue);
@@ -131,7 +131,7 @@ function useInputValueSync({
    * tracking is enabled. `content` is Tiptap JSONContent.
    */
   const handleInputChange = (
-    event: CustomEvent<{ rawValue: string; content?: JSONContent }>,
+    event: CustomEvent<{ rawValue: string; content?: JSONContent }>
   ) => {
     const { rawValue, content } = event.detail;
 
@@ -142,9 +142,9 @@ function useInputValueSync({
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
       store.dispatch(
         actions.updateInputState(
-          { rawValue, content: content ?? { type: "doc", content: [] } },
-          isInputToHumanAgent,
-        ),
+          { rawValue, content: content ?? { type: 'doc', content: [] } },
+          isInputToHumanAgent
+        )
       );
     }
   };
@@ -173,14 +173,14 @@ function useInputValueSync({
     }
     onSendInput(text, displayContentRef.current ?? undefined);
 
-    setRawInputValue("");
+    setRawInputValue('');
     displayContentRef.current = null;
     promptLineRef.current?.clearContent();
 
     if (trackInputState) {
       const isInputToHumanAgent = selectIsInputToHumanAgent(store.getState());
       store.dispatch(
-        actions.updateInputState({ rawValue: "" }, isInputToHumanAgent),
+        actions.updateInputState({ rawValue: '' }, isInputToHumanAgent)
       );
     }
   };

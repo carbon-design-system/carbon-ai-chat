@@ -33,8 +33,8 @@ import {
   MessageResponseTypes,
   MessageState,
   OptionItemPreference,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 import {
   ScenarioKey,
@@ -42,7 +42,7 @@ import {
   runReasoningStepsScenario,
   scenarioOptions,
   scenarios,
-} from "./scenarios";
+} from './scenarios';
 
 const WELCOME_TEXT = `This example shows reasoning-step streaming patterns in Carbon AI Chat.
 
@@ -68,9 +68,9 @@ function sendWelcome(instance: ChatInstance) {
           },
           {
             response_type: MessageResponseTypes.OPTION,
-            title: "Pick a reasoning demo",
+            title: 'Pick a reasoning demo',
             description:
-              "Each option streams reasoning differently. You can edit the text for each scenario in src/scenarios.ts.",
+              'Each option streams reasoning differently. You can edit the text for each scenario in src/scenarios.ts.',
             preference: OptionItemPreference.DROPDOWN,
             options: scenarioOptions.map((option) => ({
               label: option.label,
@@ -79,7 +79,7 @@ function sendWelcome(instance: ChatInstance) {
           },
         ],
       },
-    }),
+    })
   );
 }
 
@@ -87,17 +87,17 @@ function sendWelcome(instance: ChatInstance) {
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
-  const trimmedText = request.input.text?.trim() ?? "";
+  const trimmedText = request.input.text?.trim() ?? '';
 
   // Treat the dropdown's selected value as a scenario key rather than free-form chat input.
   if (isScenarioKey(trimmedText)) {
     switch (trimmedText) {
-      case "Reasoning steps":
+      case 'Reasoning steps':
         await runReasoningStepsScenario(instance, requestOptions.signal);
         return;
-      case "Reasoning content":
+      case 'Reasoning content':
         await runReasoningContentScenario(instance, requestOptions.signal);
         return;
       default:

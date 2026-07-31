@@ -8,7 +8,7 @@
  */
 
 /* eslint-disable */
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from 'react';
 import {
   HistoryShell,
   HistoryHeader,
@@ -21,21 +21,21 @@ import {
   HistoryPanelItems,
   HistorySearchItem,
   HistoryDeletePanel,
-} from "../../../react/history";
-import "./story-styles.scss";
+} from '../../../react/history';
+import './story-styles.scss';
 
 import {
   historyItemActions,
   pinnedHistoryItemActions,
   pinnedHistoryItems,
   historyItems,
-} from "./story-data";
-import { focusElementAfterRepaint } from "../../../globals/utils/focus-utils";
+} from './story-data';
+import { focusElementAfterRepaint } from '../../../globals/utils/focus-utils';
 
-import { PinFilled, Search, Time } from "@carbon/icons-react";
+import { PinFilled, Search, Time } from '@carbon/icons-react';
 
 export default {
-  title: "Preview/Chat History",
+  title: 'Preview/Chat History',
   component: HistoryShell,
   decorators: [
     (Story) => (
@@ -65,46 +65,46 @@ const findSelectedItemId = (pinnedItems, regularItems) => {
 export const Default = {
   argTypes: {
     HeaderTitle: {
-      control: "text",
-      description: "Header title text of the chat history shell",
+      control: 'text',
+      description: 'Header title text of the chat history shell',
     },
     searchOff: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "true if search should be turned off in chat history toolbar.",
+        'true if search should be turned off in chat history toolbar.',
     },
     autofocus: {
-      control: "boolean",
-      description: "Toggles the native autofocus attribute on the text input",
+      control: 'boolean',
+      description: 'Toggles the native autofocus attribute on the text input',
     },
     searchAttributes: {
-      control: "object",
+      control: 'object',
       description:
-        "Optional attributes to pass to the cds-search component. Allows customization of search behavior and appearance (e.g., label-text, placeholder, disabled, value, close-button-label-text).",
+        'Optional attributes to pass to the cds-search component. Allows customization of search behavior and appearance (e.g., label-text, placeholder, disabled, value, close-button-label-text).',
     },
     overflowMenuLabel: {
-      control: "text",
-      description: "Overflow menu tooltip label for history panel items.",
+      control: 'text',
+      description: 'Overflow menu tooltip label for history panel items.',
     },
     showCloseAction: {
-      control: "boolean",
-      description: "renders close chat history action in header.",
+      control: 'boolean',
+      description: 'renders close chat history action in header.',
     },
     showActions: {
-      control: "boolean",
-      description: "Show actions on all history panel items.",
+      control: 'boolean',
+      description: 'Show actions on all history panel items.',
     },
   },
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
     searchOff: false,
     autofocus: false,
     searchAttributes: {
-      "label-text": "Search",
-      placeholder: "Search",
-      "close-button-label-text": "Clear search",
+      'label-text': 'Search',
+      placeholder: 'Search',
+      'close-button-label-text': 'Clear search',
     },
-    overflowMenuLabel: "Options",
+    overflowMenuLabel: 'Options',
     showCloseAction: true,
     showActions: false,
   },
@@ -112,21 +112,21 @@ export const Default = {
     const historyShellRef = useRef(null);
     const [searchResults, setSearchResults] = useState([]);
     const [searchTotalCount, setSearchTotalCount] = useState(0);
-    const [searchValue, setSearchValue] = useState("");
+    const [searchValue, setSearchValue] = useState('');
     const [selectedId, setSelectedId] = useState(
-      findSelectedItemId(pinnedHistoryItems, historyItems),
+      findSelectedItemId(pinnedHistoryItems, historyItems)
     );
     const [showDeletePanel, setShowDeletePanel] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const itemRefs = useRef({});
     const [pinnedItems, setPinnedItems] = useState(
-      pinnedHistoryItems.map((item) => ({ ...item, rename: false })),
+      pinnedHistoryItems.map((item) => ({ ...item, rename: false }))
     );
     const [regularItems, setRegularItems] = useState(
       historyItems.map((section) => ({
         ...section,
         chats: section.chats.map((chat) => ({ ...chat, rename: false })),
-      })),
+      }))
     );
 
     const handleSelectChat = (event) => {
@@ -139,7 +139,7 @@ export const Default = {
       const itemExists =
         pinnedItems.some((item) => item.id === itemId) ||
         regularItems.some((section) =>
-          section.chats.some((chat) => chat.id === itemId),
+          section.chats.some((chat) => chat.id === itemId)
         );
 
       if (itemExists) {
@@ -150,7 +150,7 @@ export const Default = {
           prev.map((item) => ({
             ...item,
             selected: item.id === itemId,
-          })),
+          }))
         );
 
         // Update regular items
@@ -161,7 +161,7 @@ export const Default = {
               ...chat,
               selected: chat.id === itemId,
             })),
-          })),
+          }))
         );
       }
     };
@@ -169,7 +169,7 @@ export const Default = {
     // Returns index that a chat item should be inserted within section ordered by descending lastUpdated timestamp
     const getIndexByTimestamp = (items, timestamp) => {
       const index = items.findIndex(
-        (item) => timestamp >= Date.parse(item.lastUpdated),
+        (item) => timestamp >= Date.parse(item.lastUpdated)
       );
       return index === -1 ? items.length : index;
     };
@@ -186,7 +186,7 @@ export const Default = {
             prev.map((section) => ({
               ...section,
               chats: section.chats.filter((chat) => chat.id !== itemToPin.id),
-            })),
+            }))
           );
 
           // Add to start of pinned items
@@ -194,11 +194,11 @@ export const Default = {
 
           focusElementAfterRepaint(
             historyShellRef.current ?? document,
-            `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+            `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
           );
         }
       },
-      [regularItems],
+      [regularItems]
     );
 
     const handleUnpin = useCallback(
@@ -208,23 +208,23 @@ export const Default = {
         if (itemToUnpin !== undefined) {
           // Remove from pinned items
           setPinnedItems((prev) =>
-            prev.filter((chat) => chat.id !== itemToUnpin.id),
+            prev.filter((chat) => chat.id !== itemToUnpin.id)
           );
 
           // Add to regular items
           setRegularItems((prev) => {
-            const now = new Date("Feb 10, 7:30 PM");
+            const now = new Date('Feb 10, 7:30 PM');
             const today = now.setHours(0, 0, 0, 0);
             const yesterday = today - 24 * 60 * 60 * 1000;
             const itemToUnpinTs = Date.parse(itemToUnpin.lastUpdated);
 
-            let sectionMatch = "";
+            let sectionMatch = '';
             if (itemToUnpinTs > today) {
-              sectionMatch = "Today";
+              sectionMatch = 'Today';
             } else if (itemToUnpinTs > yesterday) {
-              sectionMatch = "Yesterday";
+              sectionMatch = 'Yesterday';
             } else {
-              sectionMatch = "Previous 7 days";
+              sectionMatch = 'Previous 7 days';
             }
 
             return prev.map((item) => {
@@ -243,11 +243,11 @@ export const Default = {
 
           focusElementAfterRepaint(
             historyShellRef.current ?? document,
-            `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`,
+            `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
           );
         }
       },
-      [pinnedItems],
+      [pinnedItems]
     );
 
     const handleHistoryItemAction = useCallback(
@@ -255,26 +255,26 @@ export const Default = {
         const action = event.detail.action;
 
         switch (action) {
-          case "Delete":
+          case 'Delete':
             setItemToDelete(event.detail.itemId);
             setShowDeletePanel(true);
             break;
-          case "Rename":
+          case 'Rename':
             if (event.detail.element) {
               event.detail.element.rename = true;
             }
             break;
-          case "Pin to top":
+          case 'Pin to top':
             handlePinToTop(event.detail.itemId);
             break;
-          case "Unpin":
+          case 'Unpin':
             handleUnpin(event.detail.itemId);
             break;
           default:
             break;
         }
       },
-      [handlePinToTop, handleUnpin],
+      [handlePinToTop, handleUnpin]
     );
 
     const handleDeleteCancel = useCallback(() => {
@@ -286,7 +286,7 @@ export const Default = {
       if (itemToDelete) {
         // Remove from pinned items
         setPinnedItems((prev) =>
-          prev.filter((item) => item.id !== itemToDelete),
+          prev.filter((item) => item.id !== itemToDelete)
         );
 
         // Remove from regular items
@@ -294,7 +294,7 @@ export const Default = {
           prev.map((section) => ({
             ...section,
             chats: section.chats.filter((chat) => chat.id !== itemToDelete),
-          })),
+          }))
         );
       }
 
@@ -309,8 +309,8 @@ export const Default = {
         const invalid = value.length > 75;
         item.renameInvalid = invalid;
         item.renameInvalidMessage = invalid
-          ? "Title cannot exceed 75 characters."
-          : "";
+          ? 'Title cannot exceed 75 characters.'
+          : '';
       }
     }, []);
 
@@ -324,8 +324,8 @@ export const Default = {
                   ...chat,
                   name: event.detail.newName,
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         setRegularItems((prev) =>
@@ -337,9 +337,9 @@ export const Default = {
                     ...chat,
                     name: event.detail.newName,
                   }
-                : chat,
+                : chat
             ),
-          })),
+          }))
         );
       }
     }, []);
@@ -378,7 +378,7 @@ export const Default = {
         setSearchTotalCount(results.length);
         setSearchValue(searchVal);
       },
-      [pinnedItems, regularItems],
+      [pinnedItems, regularItems]
     );
 
     const showSearchResults = searchTotalCount > 0 && searchValue;
@@ -399,13 +399,11 @@ export const Default = {
         <HistoryContent
           resultsLabel="Results"
           resultsCount={
-            showSearchResults || noSearchResults ? searchTotalCount : ""
-          }
-        >
+            showSearchResults || noSearchResults ? searchTotalCount : ''
+          }>
           <HistoryPanel
             showActions={args.showActions}
-            aria-label="Chat history"
-          >
+            aria-label="Chat history">
             <HistoryPanelItems>
               {noSearchResults && (
                 <HistoryPanelMenu expanded title="Search results">
@@ -422,8 +420,7 @@ export const Default = {
                     <HistorySearchItem
                       key={result.id}
                       name={result.name}
-                      date={result.lastUpdated}
-                    ></HistorySearchItem>
+                      date={result.lastUpdated}></HistorySearchItem>
                   ))}
                 </HistoryPanelMenu>
               )}
@@ -458,8 +455,7 @@ export const Default = {
                       <HistoryPanelMenu
                         key={item.section}
                         expanded
-                        title={item.section}
-                      >
+                        title={item.section}>
                         <Time slot="title-icon" />
                         {item.chats.map((chat) => (
                           <HistoryPanelItem
@@ -488,10 +484,9 @@ export const Default = {
         </HistoryContent>
         {showDeletePanel && (
           <HistoryDeletePanel
-            itemId={itemToDelete ?? ""}
+            itemId={itemToDelete ?? ''}
             onCancel={handleDeleteCancel}
-            onConfirm={handleDeleteConfirm}
-          >
+            onConfirm={handleDeleteConfirm}>
             <div slot="title">Confirm Delete</div>
             <div slot="description">
               This conversation will be permanently deleted.
@@ -505,7 +500,7 @@ export const Default = {
 
 export const SearchResults = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return (
@@ -541,7 +536,7 @@ export const SearchResults = {
 
 export const Loading = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return (
@@ -556,7 +551,7 @@ export const Loading = {
 
 export const EmptyState = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return (
@@ -571,7 +566,7 @@ export const EmptyState = {
 
 export const DeleteFlow = {
   args: {
-    HeaderTitle: "Chats",
+    HeaderTitle: 'Chats',
   },
   render: (args) => {
     return (
@@ -597,8 +592,7 @@ export const DeleteFlow = {
                 <HistoryPanelMenu
                   key={item.section}
                   expanded
-                  title={item.section}
-                >
+                  title={item.section}>
                   <Search slot="title-icon" />
                   {item.chats.map((chat) => (
                     <HistoryPanelItem

@@ -23,9 +23,9 @@ Action type strings are defined as **private module-level constants** in `SCREAM
 
 ```typescript
 // In actions.ts
-const CHANGE_STATE = "CHANGE_STATE";
-const SET_VIEW_STATE = "SET_VIEW_STATE";
-const UPDATE_THEME_STATE = "UPDATE_THEME_STATE";
+const CHANGE_STATE = 'CHANGE_STATE';
+const SET_VIEW_STATE = 'SET_VIEW_STATE';
+const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
 ```
 
 These constants are **not exported**. They are implementation details of the action creators.
@@ -68,7 +68,7 @@ export function sendMessageFlow(text: string) {
   return (serviceManager: ServiceManager) => {
     // Dispatch multiple actions
     serviceManager.store.dispatch(actions.addMessage(text));
-    serviceManager.store.dispatch(actions.setInputState({ value: "" }));
+    serviceManager.store.dispatch(actions.setInputState({ value: '' }));
 
     // Trigger side effects
     serviceManager.messageService.send(text);
@@ -117,11 +117,11 @@ const isOpen = useSelector((state) => state.isOpen);
 **Object selections** need an equality function to avoid rerenders on every state change:
 
 ```typescript
-import { shallowEqual } from "../store/appStore";
+import { shallowEqual } from '../store/appStore';
 
 const inputState = useSelector(
   (state) => state.inputState,
-  shallowEqual, // Compare object properties, not reference
+  shallowEqual // Compare object properties, not reference
 );
 ```
 
@@ -130,7 +130,7 @@ const inputState = useSelector(
 ```typescript
 const messages = useSelector(
   (state) => state.messages,
-  (prev, next) => prev.length === next.length, // Only rerender if count changes
+  (prev, next) => prev.length === next.length // Only rerender if count changes
 );
 ```
 

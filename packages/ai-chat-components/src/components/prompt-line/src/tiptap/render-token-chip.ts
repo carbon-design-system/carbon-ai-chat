@@ -16,11 +16,11 @@
  * content. This is a thin token-specific wrapper over `renderInLightDom`.
  */
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
-import { setVarsForSelector } from "../../../shared/dynamic-css-var-sheet.js";
-import { renderInLightDom } from "./render-in-light-dom.js";
-import type { SuggestionItem, TriggerSuggestionConfig } from "./types.js";
+import { setVarsForSelector } from '../../../shared/dynamic-css-var-sheet.js';
+import { renderInLightDom } from './render-in-light-dom.js';
+import type { SuggestionItem, TriggerSuggestionConfig } from './types.js';
 
 let tokenStyleRulesInstalled = false;
 
@@ -28,16 +28,16 @@ function ensureTokenStyleRules(): void {
   if (tokenStyleRulesInstalled) {
     return;
   }
-  setVarsForSelector(".cds-aichat--token", { "white-space": "normal" });
+  setVarsForSelector('.cds-aichat--token', { 'white-space': 'normal' });
   setVarsForSelector('.cds-aichat--token[data-token-context="composer"]', {
-    color: "var(--cds-tag-color-blue)",
+    color: 'var(--cds-tag-color-blue)',
   });
   setVarsForSelector(
     '.cds-aichat--token[data-token-context="composer"]::selection',
-    { "background-color": "var(--cds-tag-background-blue)" },
+    { 'background-color': 'var(--cds-tag-background-blue)' }
   );
   setVarsForSelector('.cds-aichat--token[data-token-context="historical"]', {
-    color: "var(--cds-link-secondary)",
+    color: 'var(--cds-link-secondary)',
   });
   tokenStyleRulesInstalled = true;
 }
@@ -69,9 +69,9 @@ export interface RenderTokenChipArgs {
    * Subset of the trigger-suggestion config relevant to chip rendering. Only
    * `renderCustomToken` is read; other config fields are ignored.
    */
-  config?: Pick<TriggerSuggestionConfig, "renderCustomToken">;
+  config?: Pick<TriggerSuggestionConfig, 'renderCustomToken'>;
   /** Token type — usually `"mention"` or `"command"`. */
-  type: "mention" | "command" | string;
+  type: 'mention' | 'command' | string;
   /**
    * Where to dispatch the light-DOM portal event when `renderCustomToken`
    * returns custom content. The NodeView passes the editor's `view.dom`
@@ -88,7 +88,7 @@ export interface RenderTokenChipArgs {
    * message in the transcript. Drives the default chip's color/highlight —
    * see `ensureTokenStyleRules`.
    */
-  context: "composer" | "historical";
+  context: 'composer' | 'historical';
 }
 
 export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
@@ -101,8 +101,8 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
   }
 
   const item: SuggestionItem = {
-    id: typeof args.attrs.id === "string" ? args.attrs.id : "",
-    label: typeof args.attrs.label === "string" ? args.attrs.label : "",
+    id: typeof args.attrs.id === 'string' ? args.attrs.id : '',
+    label: typeof args.attrs.label === 'string' ? args.attrs.label : '',
     ...((args.attrs.data ?? {}) as Record<string, unknown>),
   };
 
@@ -112,8 +112,8 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(
-      "Error in renderCustomToken, falling back to default chip:",
-      error,
+      'Error in renderCustomToken, falling back to default chip:',
+      error
     );
     dom.appendChild(createDefaultChip(args.attrs));
     return dom;
@@ -140,27 +140,27 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
 function createTokenContainer(
   attrs: TokenChipAttrs,
   type: string,
-  context: "composer" | "historical",
+  context: 'composer' | 'historical'
 ): HTMLElement {
   ensureTokenStyleRules();
-  const dom = document.createElement("span");
-  const value = typeof attrs.value === "string" ? attrs.value : null;
-  const label = typeof attrs.label === "string" ? attrs.label : null;
-  dom.setAttribute("contenteditable", "false");
-  dom.setAttribute("data-token-type", type);
-  dom.setAttribute("data-token-context", context);
-  dom.setAttribute("data-raw-value", value ?? label ?? "");
-  dom.setAttribute("role", "img");
-  dom.setAttribute("aria-label", label || value || "");
-  dom.className = "cds-aichat--token";
+  const dom = document.createElement('span');
+  const value = typeof attrs.value === 'string' ? attrs.value : null;
+  const label = typeof attrs.label === 'string' ? attrs.label : null;
+  dom.setAttribute('contenteditable', 'false');
+  dom.setAttribute('data-token-type', type);
+  dom.setAttribute('data-token-context', context);
+  dom.setAttribute('data-raw-value', value ?? label ?? '');
+  dom.setAttribute('role', 'img');
+  dom.setAttribute('aria-label', label || value || '');
+  dom.className = 'cds-aichat--token';
   return dom;
 }
 
 function createDefaultChip(attrs: TokenChipAttrs): HTMLElement {
-  const chip = document.createElement("span");
-  const label = typeof attrs.label === "string" ? attrs.label : null;
-  const value = typeof attrs.value === "string" ? attrs.value : null;
-  const trigger = typeof attrs.trigger === "string" ? attrs.trigger : "";
-  chip.textContent = `${trigger}${label || value || ""}`;
+  const chip = document.createElement('span');
+  const label = typeof attrs.label === 'string' ? attrs.label : null;
+  const value = typeof attrs.value === 'string' ? attrs.value : null;
+  const trigger = typeof attrs.trigger === 'string' ? attrs.trigger : '';
+  chip.textContent = `${trigger}${label || value || ''}`;
   return chip;
 }

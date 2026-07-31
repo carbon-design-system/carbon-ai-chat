@@ -7,18 +7,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { css, html, LitElement, unsafeCSS } from "lit";
-import { property } from "lit/decorators.js";
-import { ifDefined } from "lit/directives/if-defined.js";
+import { css, html, LitElement, unsafeCSS } from 'lit';
+import { property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { carbonElement } from "../../../globals/decorators/carbon-element.js";
-import prefix from "../../../globals/settings.js";
+import { carbonElement } from '../../../globals/decorators/carbon-element.js';
+import prefix from '../../../globals/settings.js';
 
-import "@carbon/web-components/es/components/button/index.js";
+import '@carbon/web-components/es/components/button/index.js';
 
-import { iconLoader } from "@carbon/web-components/es/globals/internal/icon-loader.js";
-import Send16 from "@carbon/icons/es/send/16.js";
-import SendFilled16 from "@carbon/icons/es/send--filled/16.js";
+import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
+import Send16 from '@carbon/icons/es/send/16.js';
+import SendFilled16 from '@carbon/icons/es/send--filled/16.js';
 
 import {
   BUTTON_KIND,
@@ -26,11 +26,11 @@ import {
   BUTTON_TYPE,
   BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TOOLTIP_POSITION,
-} from "@carbon/web-components/es/components/button/defs.js";
+} from '@carbon/web-components/es/components/button/defs.js';
 
-import "./stop-streaming-button.js";
+import './stop-streaming-button.js';
 
-import styles from "./send-control.scss?lit";
+import styles from './send-control.scss?lit';
 
 /**
  * Send control component — renders the send button or stop streaming button.
@@ -46,35 +46,35 @@ class InputSendControlElement extends LitElement {
   `;
 
   /** Whether the input has valid content that can be sent. */
-  @property({ type: Boolean, attribute: "has-valid-input" })
+  @property({ type: Boolean, attribute: 'has-valid-input' })
   hasValidInput = false;
 
   /** Whether the entire input is disabled. */
-  @property({ type: Boolean, attribute: "disabled" })
+  @property({ type: Boolean, attribute: 'disabled' })
   disabled = false;
 
   /** Whether sending is disabled (separate from overall disabled state). */
-  @property({ type: Boolean, attribute: "disable-send" })
+  @property({ type: Boolean, attribute: 'disable-send' })
   disableSend = false;
 
   /** Show the stop streaming button instead of the send button. */
-  @property({ type: Boolean, attribute: "show-stop-streaming" })
+  @property({ type: Boolean, attribute: 'show-stop-streaming' })
   isStopStreamingButtonVisible = false;
 
   /** Whether the stop streaming button is disabled. */
-  @property({ type: Boolean, attribute: "disable-stop-streaming" })
+  @property({ type: Boolean, attribute: 'disable-stop-streaming' })
   isStopStreamingButtonDisabled = false;
 
   /** Label for the send button tooltip. */
-  @property({ type: String, attribute: "button-label" })
-  buttonLabel = "Send";
+  @property({ type: String, attribute: 'button-label' })
+  buttonLabel = 'Send';
 
   /** Label for the stop streaming button tooltip. */
-  @property({ type: String, attribute: "stop-response-label" })
-  stopResponseLabel = "Stop response";
+  @property({ type: String, attribute: 'stop-response-label' })
+  stopResponseLabel = 'Stop response';
 
   /** Test identifier. */
-  @property({ type: String, attribute: "test-id" })
+  @property({ type: String, attribute: 'test-id' })
   testId?: string;
 
   private _handleSendClick = () => {
@@ -83,26 +83,26 @@ class InputSendControlElement extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-input-send", {
+      new CustomEvent('cds-aichat-input-send', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   };
 
   private _handleStopStreamingClick = () => {
     this.dispatchEvent(
-      new CustomEvent("cds-aichat-input-stop-streaming", {
+      new CustomEvent('cds-aichat-input-stop-streaming', {
         bubbles: true,
         composed: true,
-      }),
+      })
     );
   };
 
   render() {
     // Check if RTL direction is set
     const isRTL =
-      document.dir === "rtl" || document.documentElement.dir === "rtl";
+      document.dir === 'rtl' || document.documentElement.dir === 'rtl';
 
     const showDisabledSend =
       !this.hasValidInput || this.disabled || this.disableSend;
@@ -112,9 +112,8 @@ class InputSendControlElement extends LitElement {
         <cds-aichat-stop-streaming-button
           label="${this.stopResponseLabel}"
           ?disabled="${this.isStopStreamingButtonDisabled}"
-          tooltip-alignment="${isRTL ? "top-left" : "top-right"}"
-          @click="${this._handleStopStreamingClick}"
-        ></cds-aichat-stop-streaming-button>
+          tooltip-alignment="${isRTL ? 'top-left' : 'top-right'}"
+          @click="${this._handleStopStreamingClick}"></cds-aichat-stop-streaming-button>
       `;
     }
 
@@ -132,12 +131,11 @@ class InputSendControlElement extends LitElement {
         tooltip-position="${BUTTON_TOOLTIP_POSITION.TOP}"
         @click="${this._handleSendClick}"
         aria-label="${this.buttonLabel}"
-        data-testid="${ifDefined(this.testId)}"
-      >
+        data-testid="${ifDefined(this.testId)}">
         ${
           this.hasValidInput
-            ? iconLoader(SendFilled16, { slot: "icon" })
-            : iconLoader(Send16, { slot: "icon" })
+            ? iconLoader(SendFilled16, { slot: 'icon' })
+            : iconLoader(Send16, { slot: 'icon' })
         }
       </cds-button>
     `;
@@ -146,7 +144,7 @@ class InputSendControlElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-input-send-control": InputSendControlElement;
+    'cds-aichat-input-send-control': InputSendControlElement;
   }
 }
 

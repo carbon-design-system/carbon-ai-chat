@@ -15,16 +15,16 @@ Mocks a chain-of-thought tool trace: the assistant ships a complete `chain_of_th
 
 ## APIs and props demonstrated
 
-| Symbol                                              | Package / kind              | Role in this example                           |
-| --------------------------------------------------- | --------------------------- | ---------------------------------------------- |
-| `ChatCustomElement`                                 | `@carbon/ai-chat` component | Mounts the chat UI.                            |
-| `PublicConfig`                                      | `@carbon/ai-chat` type      | Config shape.                                  |
-| `customSendMessage`                                 | `messaging` prop            | Runs the chain-of-thought scenario.            |
-| `ChainOfThoughtStep` / `ChainOfThoughtStepStatus`   | `@carbon/ai-chat` types     | Tool-trace payloads + status badge values.     |
-| `MessageResponseOptions`                            | `@carbon/ai-chat` type      | `message_options` carrying `chain_of_thought`. |
-| `StreamChunk`                                       | `@carbon/ai-chat` type      | Chunk shape for streaming.                     |
-| `instance.messaging.addMessage` / `addMessageChunk` | `ChatInstance` API          | Emit welcome + final response.                 |
-| `CustomSendMessageOptions.signal`                   | `@carbon/ai-chat`           | Abort signal for cancellation.                 |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Runs the chain-of-thought scenario. |
+| `ChainOfThoughtStep` / `ChainOfThoughtStepStatus` | `@carbon/ai-chat` types | Tool-trace payloads + status badge values. |
+| `MessageResponseOptions` | `@carbon/ai-chat` type | `message_options` carrying `chain_of_thought`. |
+| `StreamChunk` | `@carbon/ai-chat` type | Chunk shape for streaming. |
+| `instance.messaging.addMessage` / `addMessageChunk` | `ChatInstance` API | Emit welcome + final response. |
+| `CustomSendMessageOptions.signal` | `@carbon/ai-chat` | Abort signal for cancellation. |
 
 ## Run it
 

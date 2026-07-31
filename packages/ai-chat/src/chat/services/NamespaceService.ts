@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -38,14 +38,14 @@ class NamespaceService {
  */
 function getSuffix(namespace?: string) {
   const computedName = computeNamespaceName(namespace);
-  return computedName?.length ? `--${namespace}` : "";
+  return computedName?.length ? `--${namespace}` : '';
 }
 
 /**
  * Given a namespace, trims and returns. If no namespace provided, returns an empty string.
  */
 function computeNamespaceName(namespace?: string) {
-  return namespace ? namespace.trim() : "";
+  return namespace ? namespace.trim() : '';
 }
 
 export { NamespaceService, getSuffix };

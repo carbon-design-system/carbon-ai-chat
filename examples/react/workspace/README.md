@@ -18,22 +18,22 @@ Renders custom content inside the built-in workspace panel of `ChatCustomElement
 
 ## APIs and props demonstrated
 
-| Symbol                                                                          | Package / kind              | Role in this example                           |
-| ------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------- |
-| `ChatCustomElement`                                                             | `@carbon/ai-chat` component | Mounts the chat with custom host DOM.          |
-| `PublicConfig`                                                                  | `@carbon/ai-chat` type      | Config shape.                                  |
-| `ChatInstance`                                                                  | `@carbon/ai-chat` type      | Provided in `onBeforeRender`.                  |
-| `BusEventType.WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_CLOSE`        | `@carbon/ai-chat` enum      | Workspace lifecycle events.                    |
-| `BusEventWorkspacePreOpen` / `BusEventWorkspaceOpen` / `BusEventWorkspaceClose` | `@carbon/ai-chat` types     | Typed event payloads.                          |
-| `PanelType.WORKSPACE`                                                           | `@carbon/ai-chat` enum      | Selects the workspace panel.                   |
-| `instance.customPanels.getPanel(...).open(...)`                                 | `ChatInstance` API          | Opens the workspace imperatively.              |
-| `renderUserDefinedResponse`                                                     | prop                        | Renders the outstanding-orders preview card.   |
-| `RenderUserDefinedState`                                                        | `@carbon/ai-chat` type      | Argument to the render callback.               |
-| `writeableElements.workspacePanelElement`                                       | render slot                 | Where the workspace body is rendered.          |
-| `MessageResponseTypes.PREVIEW_CARD` / `USER_DEFINED` / `OPTION` / `TEXT`        | `@carbon/ai-chat`           | Outgoing response types from the mock backend. |
-| `OptionItemPreference.BUTTON`                                                   | `@carbon/ai-chat` enum      | Inventory-type picker.                         |
-| `layout.showFrame` / `layout.customProperties`                                  | prop                        | Flush custom-element layout.                   |
-| `openChatByDefault`                                                             | prop                        | Opens chat on load.                            |
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat with custom host DOM. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `ChatInstance` | `@carbon/ai-chat` type | Provided in `onBeforeRender`. |
+| `BusEventType.WORKSPACE_PRE_OPEN` / `WORKSPACE_OPEN` / `WORKSPACE_CLOSE` | `@carbon/ai-chat` enum | Workspace lifecycle events. |
+| `BusEventWorkspacePreOpen` / `BusEventWorkspaceOpen` / `BusEventWorkspaceClose` | `@carbon/ai-chat` types | Typed event payloads. |
+| `PanelType.WORKSPACE` | `@carbon/ai-chat` enum | Selects the workspace panel. |
+| `instance.customPanels.getPanel(...).open(...)` | `ChatInstance` API | Opens the workspace imperatively. |
+| `renderUserDefinedResponse` | prop | Renders the outstanding-orders preview card. |
+| `RenderUserDefinedState` | `@carbon/ai-chat` type | Argument to the render callback. |
+| `writeableElements.workspacePanelElement` | render slot | Where the workspace body is rendered. |
+| `MessageResponseTypes.PREVIEW_CARD` / `USER_DEFINED` / `OPTION` / `TEXT` | `@carbon/ai-chat` | Outgoing response types from the mock backend. |
+| `OptionItemPreference.BUTTON` | `@carbon/ai-chat` enum | Inventory-type picker. |
+| `layout.showFrame` / `layout.customProperties` | prop | Flush custom-element layout. |
+| `openChatByDefault` | prop | Opens chat on load. |
 
 ## Run it
 

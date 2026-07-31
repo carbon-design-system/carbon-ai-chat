@@ -27,7 +27,7 @@ import {
   CustomSendMessageOptions,
   MessageRequest,
   MessageResponseTypes,
-} from "@carbon/ai-chat";
+} from '@carbon/ai-chat';
 
 const WELCOME_TEXT = `Welcome to the feedback example.
 
@@ -42,10 +42,10 @@ Use the thumbs up / thumbs down buttons below to submit feedback for this messag
 async function customSendMessage(
   request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // The chat fires an empty-string send on first open to fetch a greeting.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -59,7 +59,7 @@ async function customSendMessage(
     return;
   }
 
-  if (request.input.text === "text") {
+  if (request.input.text === 'text') {
     instance.messaging.addMessage({
       output: {
         generic: [
@@ -73,7 +73,7 @@ async function customSendMessage(
                 // Master switch that turns the feedback widget on for this item.
                 is_on: true,
                 // Stable identifier so the host app can correlate submissions back to this message.
-                id: "1",
+                id: '1',
                 // Skip the follow-up details prompt for positive feedback to keep the happy path frictionless.
                 show_positive_details: false,
                 // Collect structured details on negative feedback so issues can be triaged.

@@ -5,9 +5,9 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/type";
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/type';
 
 .cds-aichat--media-player,
 .cds-aichat--media-player__skeleton {
@@ -89,7 +89,7 @@ cds-skeleton-placeholder.cds-aichat--media-player__skeleton-player::part(
 }
 
 .cds-aichat--media-transcript__toggle {
-  @include type.type-style("label-01");
+  @include type.type-style('label-01');
 
   display: flex;
   align-items: center;

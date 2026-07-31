@@ -7,13 +7,13 @@
  *  @license
  */
 
-import React, { useEffect, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 
 import {
   LIGHT_DOM_PORTAL_EVENT,
   type LightDomPortalEventDetail,
-} from "@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js";
+} from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
 /**
  * Tracked state for a single light-DOM portal.
@@ -73,20 +73,20 @@ function LightDomPortalsContainer({
 
       // 1. Create a <slot> inside the shadow-side container. The optional
       //    fallback shows until the portal commits on the next frame.
-      const slotEl = document.createElement("slot");
-      slotEl.setAttribute("name", slotName);
+      const slotEl = document.createElement('slot');
+      slotEl.setAttribute('name', slotName);
       if (fallback) {
         slotEl.appendChild(fallback);
       }
 
       // Replace any existing content in the container with the slot.
-      container.textContent = "";
+      container.textContent = '';
       container.appendChild(slotEl);
 
       // 2. Create a light DOM element in chatWrapper (page light DOM).
       //    Page-level CSS applies here.
-      const hostEl = document.createElement(hostTag ?? "span");
-      hostEl.setAttribute("slot", slotName);
+      const hostEl = document.createElement(hostTag ?? 'span');
+      hostEl.setAttribute('slot', slotName);
       chatWrapper.appendChild(hostEl);
 
       // 3. For HTMLElements, append directly — no React portal needed.
@@ -115,7 +115,7 @@ function LightDomPortalsContainer({
     return () => {
       chatWrapper.removeEventListener(
         LIGHT_DOM_PORTAL_EVENT,
-        handlePortalRender,
+        handlePortalRender
       );
     };
   }, [chatWrapper]);
@@ -172,7 +172,7 @@ function LightDomPortalsContainer({
       {portals
         .filter((entry) => entry.reactNode != null)
         .map((entry) =>
-          ReactDOM.createPortal(entry.reactNode, entry.hostElement, entry.key),
+          ReactDOM.createPortal(entry.reactNode, entry.hostElement, entry.key)
         )}
     </>
   );

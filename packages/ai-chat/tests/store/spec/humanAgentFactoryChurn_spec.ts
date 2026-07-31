@@ -16,18 +16,18 @@
  * still rebuilt so it adopts the new factory.
  */
 
-import { applyConfigChangesDynamically } from "../../../src/chat/utils/dynamicConfigUpdates";
-import { createAppStore } from "../../../src/chat/store/appStore";
+import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+import { createAppStore } from '../../../src/chat/store/appStore';
 import {
   createAppConfig,
   createInitialState,
-} from "../../../src/chat/store/doCreateStore";
-import { reducers } from "../../../src/chat/store/reducers";
-import { ServiceManager } from "../../../src/chat/services/ServiceManager";
-import { AppState } from "../../../src/types/state/AppState";
-import { PublicConfig } from "../../../src/types/config/PublicConfig";
+} from '../../../src/chat/store/doCreateStore';
+import { reducers } from '../../../src/chat/store/reducers';
+import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { AppState } from '../../../src/types/state/AppState';
+import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-jest.mock("../../../src/chat/services/haa/HumanAgentServiceImpl", () => ({
+jest.mock('../../../src/chat/services/haa/HumanAgentServiceImpl', () => ({
   __esModule: true,
   default: jest.fn(() => ({
     hasInitialized: false,
@@ -35,18 +35,18 @@ jest.mock("../../../src/chat/services/haa/HumanAgentServiceImpl", () => ({
     endChat: jest.fn(),
   })),
 }));
-import createHumanAgentService from "../../../src/chat/services/haa/HumanAgentServiceImpl";
+import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
 
 function createStore(initialState: AppState) {
   return createAppStore(
     (
       state: AppState,
-      action: { type: string; [key: string]: unknown } | undefined,
+      action: { type: string; [key: string]: unknown } | undefined
     ): AppState =>
       action && reducers[action.type]
         ? reducers[action.type](state, action)
         : state,
-    initialState,
+    initialState
   );
 }
 
@@ -57,10 +57,10 @@ function setup(
   options: {
     hasInitialized?: boolean;
     connected?: boolean;
-  } = {},
+  } = {}
 ) {
   const initialState = createInitialState(
-    createAppConfig({ serviceDeskFactory: factoryA }),
+    createAppConfig({ serviceDeskFactory: factoryA })
   );
   if (options.connected) {
     initialState.persistedToBrowserStorage = {
@@ -80,7 +80,7 @@ function setup(
 
   const serviceManager = {
     store: createStore(initialState),
-    namespace: { suffix: "" },
+    namespace: { suffix: '' },
     messageService: { timeoutMS: 30000 },
     humanAgentService,
   } as any as ServiceManager;
@@ -94,12 +94,12 @@ async function applyFactoryChange(serviceManager: ServiceManager) {
   await applyConfigChangesDynamically(prev, next, serviceManager);
 }
 
-describe("human-agent serviceDeskFactory reference change", () => {
+describe('human-agent serviceDeskFactory reference change', () => {
   beforeEach(() => {
     (createHumanAgentService as jest.Mock).mockClear();
   });
 
-  it("does NOT rebuild an idle service (never initialized, not connected)", async () => {
+  it('does NOT rebuild an idle service (never initialized, not connected)', async () => {
     const { serviceManager, humanAgentService } = setup();
     await applyFactoryChange(serviceManager);
 
@@ -107,7 +107,7 @@ describe("human-agent serviceDeskFactory reference change", () => {
     expect(humanAgentService.endChat).not.toHaveBeenCalled();
   });
 
-  it("still updates the config factory when skipping an idle rebuild, so a future chat adopts it", async () => {
+  it('still updates the config factory when skipping an idle rebuild, so a future chat adopts it', async () => {
     const { serviceManager } = setup();
     await applyFactoryChange(serviceManager);
 
@@ -115,11 +115,11 @@ describe("human-agent serviceDeskFactory reference change", () => {
     // chat (which reads serviceDeskFactory live from config at start) gets factoryB.
     expect(createHumanAgentService).not.toHaveBeenCalled();
     expect(
-      serviceManager.store.getState().config.public.serviceDeskFactory,
+      serviceManager.store.getState().config.public.serviceDeskFactory
     ).toBe(factoryB);
   });
 
-  it("rebuilds an initialized service so it adopts the new factory", async () => {
+  it('rebuilds an initialized service so it adopts the new factory', async () => {
     const { serviceManager, humanAgentService } = setup({
       hasInitialized: true,
     });
@@ -130,7 +130,7 @@ describe("human-agent serviceDeskFactory reference change", () => {
     expect(humanAgentService.endChat).not.toHaveBeenCalled();
   });
 
-  it("re-initializes the rebuilt service when the previous one was initialized", async () => {
+  it('re-initializes the rebuilt service when the previous one was initialized', async () => {
     const { serviceManager } = setup({ hasInitialized: true });
     await applyFactoryChange(serviceManager);
 
@@ -142,7 +142,7 @@ describe("human-agent serviceDeskFactory reference change", () => {
     expect(rebuilt.initialize).toHaveBeenCalledTimes(1);
   });
 
-  it("ends and rebuilds an active service", async () => {
+  it('ends and rebuilds an active service', async () => {
     const { serviceManager, humanAgentService } = setup({
       hasInitialized: true,
       connected: true,

@@ -33,10 +33,10 @@ import {
   MessageRequest,
   MessageResponseTypes,
   MessageState,
-} from "@carbon/ai-chat";
-import { uuid } from "@carbon/ai-chat-components/es/globals/utils/uuid.js";
+} from '@carbon/ai-chat';
+import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
-import { runControlledReasoningScenario } from "./scenarios";
+import { runControlledReasoningScenario } from './scenarios';
 
 const WELCOME_TEXT = `This example shows controlled reasoning-step open state in Carbon AI Chat.
 
@@ -45,19 +45,19 @@ Send any message to see a custom "Thinking..." indicator (driven by \`updateIsMe
 // The welcome button posts back this string; `customSendMessage` runs the
 // scenario for any non-empty input. `silent` keeps the trigger message out of
 // the visible transcript.
-const START_TRIGGER = "Show me the reasoning demo";
+const START_TRIGGER = 'Show me the reasoning demo';
 
 // Replace with a real production implementation.
 async function customSendMessage(
   request: MessageRequest,
   requestOptions: CustomSendMessageOptions,
-  instance: ChatInstance,
+  instance: ChatInstance
 ) {
   // Empty input is dispatched on first open as the welcome handshake — reply
   // with help text plus a post-back button instead of running the reasoning
   // scenario. A fresh `messageID` per call keeps repeated welcomes from
   // colliding; COMPLETE makes it a one-shot insert.
-  if (request.input.text === "") {
+  if (request.input.text === '') {
     await instance.messaging.upsertMessage(
       uuid(),
       MessageState.COMPLETE,
@@ -71,13 +71,13 @@ async function customSendMessage(
             {
               response_type: MessageResponseTypes.BUTTON,
               button_type: ButtonItemType.POST_BACK,
-              label: "Send a message to see example",
+              label: 'Send a message to see example',
               value: { input: { text: START_TRIGGER } },
               silent: true,
             },
           ],
         },
-      }),
+      })
     );
     return;
   }

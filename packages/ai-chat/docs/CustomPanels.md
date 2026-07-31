@@ -19,11 +19,11 @@ Control custom panels through {@link ChatInstance.customPanels | customPanels}. 
 Example:
 
 ```ts
-import { PanelType } from "@carbon/ai-chat";
+import { PanelType } from '@carbon/ai-chat';
 
 const panel = instance.customPanels.getPanel(PanelType.DEFAULT);
 panel.open({
-  title: "Interesting extra data",
+  title: 'Interesting extra data',
   // Keep the assistant header/back button visible
   hideBackButton: false,
 });
@@ -33,7 +33,7 @@ panel.open({
 panel.open({
   // Full-screen takeover
   hideBackButton: true,
-  title: "Required form",
+  title: 'Required form',
 });
 
 // ...later

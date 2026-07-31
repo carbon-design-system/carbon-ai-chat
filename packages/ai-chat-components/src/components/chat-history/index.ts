@@ -7,15 +7,15 @@
  *  @license
  */
 
-import "./src/history-shell";
-import "./src/history-header";
-import "./src/history-toolbar";
-import "./src/history-content";
-import "./src/history-loading";
-import "./src/history-delete-panel";
+import './src/history-shell';
+import './src/history-header';
+import './src/history-toolbar';
+import './src/history-content';
+import './src/history-loading';
+import './src/history-delete-panel';
 
-import "./src/history-panel";
-import "./src/history-panel-menu";
-import "./src/history-panel-item";
-import "./src/history-panel-items";
-import "./src/history-search-item";
+import './src/history-panel';
+import './src/history-panel-menu';
+import './src/history-panel-item';
+import './src/history-panel-items';
+import './src/history-search-item';

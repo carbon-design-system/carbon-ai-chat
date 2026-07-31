@@ -1,5 +1,5 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
@@ -7,19 +7,19 @@
  *  @license
  */
 
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import commonStyles from "../../../globals/scss/common.scss?lit";
-import styles from "./chain-of-thought.scss?lit";
-import prefix from "../../../globals/settings.js";
-import { uuid } from "../../../globals/utils/uuid.js";
-import { carbonElement } from "../../../globals/decorators/index.js";
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import commonStyles from '../../../globals/scss/common.scss?lit';
+import styles from './chain-of-thought.scss?lit';
+import prefix from '../../../globals/settings.js';
+import { uuid } from '../../../globals/utils/uuid.js';
+import { carbonElement } from '../../../globals/decorators/index.js';
 import type {
   ChainOfThoughtOnToggle,
   ChainOfThoughtStepToggleEventDetail,
   ChainOfThoughtToggleEventDetail,
-} from "../defs.js";
-import type { CDSAIChatChainOfThoughtStep } from "./chain-of-thought-step.js";
+} from '../defs.js';
+import type { CDSAIChatChainOfThoughtStep } from './chain-of-thought-step.js';
 
 const stepSelector = `${prefix}-chain-of-thought-step`;
 
@@ -46,7 +46,7 @@ class CDSAIChatChainOfThought extends LitElement {
   /**
    * ID of the content panel. Useful for wiring to an external toggle.
    */
-  @property({ type: String, attribute: "panel-id", reflect: true })
+  @property({ type: String, attribute: 'panel-id', reflect: true })
   panelId = `${prefix}-chain-of-thought-panel-id-${uuid()}`;
 
   /**
@@ -62,20 +62,20 @@ class CDSAIChatChainOfThought extends LitElement {
   onStepToggle?: ChainOfThoughtOnToggle;
 
   connectedCallback() {
-    if (!this.hasAttribute("role")) {
-      this.setAttribute("role", "list");
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'list');
     }
     this.addEventListener(
-      "chain-of-thought-step-toggled",
-      this.handleStepToggle as EventListener,
+      'chain-of-thought-step-toggled',
+      this.handleStepToggle as EventListener
     );
     super.connectedCallback();
   }
 
   disconnectedCallback() {
     this.removeEventListener(
-      "chain-of-thought-step-toggled",
-      this.handleStepToggle as EventListener,
+      'chain-of-thought-step-toggled',
+      this.handleStepToggle as EventListener
     );
     super.disconnectedCallback();
   }
@@ -85,20 +85,20 @@ class CDSAIChatChainOfThought extends LitElement {
   }
 
   protected updated(changedProperties: Map<PropertyKey, unknown>) {
-    if (changedProperties.has("controlled")) {
+    if (changedProperties.has('controlled')) {
       this.propagateControlled();
     }
 
     if (
-      changedProperties.has("open") &&
-      changedProperties.get("open") !== undefined
+      changedProperties.has('open') &&
+      changedProperties.get('open') !== undefined
     ) {
       this.dispatchToggleEvent();
     }
   }
 
   private handleStepToggle(
-    event: CustomEvent<ChainOfThoughtStepToggleEventDetail>,
+    event: CustomEvent<ChainOfThoughtStepToggleEventDetail>
   ) {
     const { detail, target } = event;
     this.onStepToggle?.(Boolean(detail?.open), target as HTMLElement);
@@ -107,11 +107,11 @@ class CDSAIChatChainOfThought extends LitElement {
   private propagateControlled() {
     this.steps.forEach((step) => {
       if (this.controlled) {
-        step.setAttribute("data-parent-controlled", "");
-        step.setAttribute("controlled", "");
-      } else if (step.hasAttribute("data-parent-controlled")) {
-        step.removeAttribute("data-parent-controlled");
-        step.removeAttribute("controlled");
+        step.setAttribute('data-parent-controlled', '');
+        step.setAttribute('controlled', '');
+      } else if (step.hasAttribute('data-parent-controlled')) {
+        step.removeAttribute('data-parent-controlled');
+        step.removeAttribute('controlled');
       }
     });
   }
@@ -123,13 +123,13 @@ class CDSAIChatChainOfThought extends LitElement {
     };
     this.dispatchEvent(
       new CustomEvent<ChainOfThoughtToggleEventDetail>(
-        "chain-of-thought-toggled",
+        'chain-of-thought-toggled',
         {
           detail,
           bubbles: true,
           composed: true,
-        },
-      ),
+        }
+      )
     );
 
     const panel = this.shadowRoot?.getElementById(this.panelId) ?? this;
@@ -143,8 +143,7 @@ class CDSAIChatChainOfThought extends LitElement {
           id=${this.panelId}
           class="${prefix}--chain-of-thought-content"
           ?aria-hidden=${!this.open}
-          ?hidden=${!this.open}
-        >
+          ?hidden=${!this.open}>
           <div class="${prefix}--chain-of-thought-inner-content">
             <slot></slot>
           </div>
@@ -156,7 +155,7 @@ class CDSAIChatChainOfThought extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "cds-aichat-chain-of-thought": CDSAIChatChainOfThought;
+    'cds-aichat-chain-of-thought': CDSAIChatChainOfThought;
   }
 }
 

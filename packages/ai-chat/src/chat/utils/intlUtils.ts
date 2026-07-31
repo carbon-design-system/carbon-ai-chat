@@ -7,12 +7,12 @@
  *  @license
  */
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
-import { createIntl } from "./i18n";
-import { loadLocale } from "./languageUtils";
-import { LanguagePack } from "../../types/config/LanguagePack";
-import { ServiceManager } from "../services/ServiceManager";
+import { createIntl } from './i18n';
+import { loadLocale } from './languageUtils';
+import { LanguagePack } from '../../types/config/LanguagePack';
+import { ServiceManager } from '../services/ServiceManager';
 
 /**
  * A simple utility function to set the i18n formatter on the given service manager.
@@ -21,7 +21,7 @@ import { ServiceManager } from "../services/ServiceManager";
 function setIntl(
   serviceManager: ServiceManager,
   locale: string,
-  messages: LanguagePack,
+  messages: LanguagePack
 ) {
   serviceManager.intl = createIntl({ locale, messages });
 }
@@ -43,13 +43,13 @@ function setIntl(
  */
 async function refreshLocalization(
   serviceManager: ServiceManager,
-  { localeChanged }: { localeChanged: boolean },
+  { localeChanged }: { localeChanged: boolean }
 ): Promise<void> {
   const state = serviceManager.store.getState();
   const languagePack = state.languagePack;
 
   if (localeChanged) {
-    const locale = state.config.public.locale || "en";
+    const locale = state.config.public.locale || 'en';
     const localePack = await loadLocale(locale);
     dayjs.locale(localePack);
     setIntl(serviceManager, localePack.name, languagePack);
@@ -58,7 +58,7 @@ async function refreshLocalization(
     // normalized name set at boot / the last locale change), so a strings edit
     // never silently shifts regional formatting.
     const locale =
-      serviceManager.intl?.locale || state.config.public.locale || "en";
+      serviceManager.intl?.locale || state.config.public.locale || 'en';
     setIntl(serviceManager, locale, languagePack);
   }
 }

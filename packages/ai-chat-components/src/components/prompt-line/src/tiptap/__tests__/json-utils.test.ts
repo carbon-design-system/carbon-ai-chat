@@ -7,22 +7,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect } from "@open-wc/testing";
+import { expect } from '@open-wc/testing';
 
-import { getRawText, textToDoc } from "../json-utils.js";
+import { getRawText, textToDoc } from '../json-utils.js';
 
-describe("textToDoc / getRawText round-trip", function () {
+describe('textToDoc / getRawText round-trip', function () {
   // textToDoc is documented as the inverse of getRawText for plain text:
   // getRawText(textToDoc(s)) === s. Cover empty, single line, blank lines, and
   // leading/trailing newlines so a regression in either direction is caught.
   const cases = [
-    "",
-    "x",
-    "x\ny",
-    "x\ny\n",
-    "\n",
-    "a\n\nb",
-    "line1\nline2\nline3",
+    '',
+    'x',
+    'x\ny',
+    'x\ny\n',
+    '\n',
+    'a\n\nb',
+    'line1\nline2\nline3',
   ];
   for (const value of cases) {
     it(`preserves ${JSON.stringify(value)}`, () => {

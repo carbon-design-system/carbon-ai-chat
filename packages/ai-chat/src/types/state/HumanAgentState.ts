@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { AgentAvailability } from "../config/ServiceDeskConfig";
-import { LanguagePack } from "../config/LanguagePack";
-import { InputState } from "./InputState";
+import { AgentAvailability } from '../config/ServiceDeskConfig';
+import { LanguagePack } from '../config/LanguagePack';
+import { InputState } from './InputState';
 
 /**
  * This piece of state contains information about any connection to a human agent system.

@@ -7,27 +7,27 @@
  *  @license
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import {
   transformStarterItems,
   transformSuggestionConfig,
-} from "@carbon/ai-chat-components/es/react/utils/transformSuggestionConfig.js";
-import type { Extension } from "@tiptap/core";
+} from '@carbon/ai-chat-components/es/react/utils/transformSuggestionConfig.js';
+import type { Extension } from '@tiptap/core';
 import type {
   TriggerSuggestionConfig,
-  SuggestionItem,
   AutocompleteConfig,
-} from "../../types/config/InputConfig";
+  StartersConfig,
+} from '../../types/config/InputConfig';
 import {
   getBuildCarbonExtensionsIfLoaded,
   loadBuildCarbonExtensions,
-} from "../components/input/buildExtensionsLoader";
+} from '../components/input/buildExtensionsLoader';
 
 interface UseInputExtensionsArgs {
   mention: TriggerSuggestionConfig | undefined;
   command: TriggerSuggestionConfig | undefined;
   autocomplete: AutocompleteConfig | undefined;
-  starters: SuggestionItem[] | undefined;
+  starters: StartersConfig | undefined;
   hostExtensions: Extension[] | undefined;
   /**
    * Whether the rich editor is active. The curated carbon extensions (and the
@@ -62,19 +62,20 @@ function useInputExtensions({
 }: UseInputExtensionsArgs) {
   const normalizedMention = useMemo(
     () => transformSuggestionConfig(mention),
-    [mention],
+    [mention]
   );
   const normalizedCommand = useMemo(
     () => transformSuggestionConfig(command),
-    [command],
+    [command]
   );
   const normalizedAutocomplete = useMemo(
     () => transformSuggestionConfig(autocomplete),
-    [autocomplete],
+    [autocomplete]
   );
   const normalizedStarters = useMemo(
     () => transformStarterItems(starters),
-    [starters],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- starters object identity is intentionally excluded; only the consumed fields matter
+    [starters?.items, starters?.renderCustomList]
   );
 
   // Re-render once the builder chunk resolves (cold rich path); the synchronous

@@ -7,14 +7,17 @@
  *  @license
  */
 
-import type { InputConfig } from "../../../types/config/InputConfig";
+import type {
+  InputConfig,
+  StartersConfig,
+} from '../../../types/config/InputConfig';
 
 /**
  * Which prompt-line surface a given input config requires.
  * - `"rich"` — the Tiptap editor (`<cds-aichat-prompt-line rich>`).
  * - `"lite"` — the lightweight textarea.
  */
-export type PromptLineMode = "rich" | "lite";
+export type PromptLineMode = 'rich' | 'lite';
 
 /**
  * Resolve the prompt-line mode from the input config: `"rich"` when any
@@ -35,13 +38,20 @@ export type PromptLineMode = "rich" | "lite";
  * in `ChatAppEntry` (to preload the Tiptap chunk) so they always agree.
  */
 export function resolvePromptLineMode(
-  input: InputConfig | undefined,
+  input: InputConfig | undefined
 ): PromptLineMode {
   const hasAdvancedFeature =
     Boolean(input?.mention) ||
     Boolean(input?.command) ||
     Boolean(input?.autocomplete) ||
-    (input?.starters?.length ?? 0) > 0 ||
+    startersHasItems(input?.starters) ||
     (input?.tiptap?.extensions?.length ?? 0) > 0;
-  return hasAdvancedFeature ? "rich" : "lite";
+  return hasAdvancedFeature ? 'rich' : 'lite';
+}
+
+function startersHasItems(starters: StartersConfig | undefined): boolean {
+  if (!starters) {
+    return false;
+  }
+  return starters.items.length > 0;
 }

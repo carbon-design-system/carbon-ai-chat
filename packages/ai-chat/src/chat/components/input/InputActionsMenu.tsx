@@ -7,24 +7,24 @@
  *  @license
  */
 
-import React, { useRef, useState } from "react";
-import Add16 from "@carbon/icons/es/add--large/16.js";
-import { transformReactIconToCarbonIcon } from "@carbon/ai-chat-components/es/globals/utils/iconTransform.js";
+import React, { useRef, useState } from 'react';
+import Add16 from '@carbon/icons/es/add--large/16.js';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 
-import IconButton from "../carbon/IconButton";
-import { BUTTON_KIND } from "../carbon/Button";
-import Menu from "../carbon/Menu";
-import MenuItem from "../carbon/MenuItem";
-import { carbonIconToReact } from "../../utils/carbonIcon";
-import { useFloatingMenuPosition } from "./useFloatingMenuPosition";
-import type { ToolbarAction } from "../../../types/config/HeaderConfig";
+import IconButton from '../carbon/IconButton';
+import { BUTTON_KIND } from '../carbon/Button';
+import Menu from '../carbon/Menu';
+import MenuItem from '../carbon/MenuItem';
+import { carbonIconToReact } from '../../utils/carbonIcon';
+import { useFloatingMenuPosition } from './useFloatingMenuPosition';
+import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 
 const AddIcon = carbonIconToReact(Add16);
 
-function renderMenuItemIcon(icon: ToolbarAction["icon"]) {
+function renderMenuItemIcon(icon: ToolbarAction['icon']) {
   const carbonIcon = transformReactIconToCarbonIcon(icon, 16);
   const IconComp = carbonIconToReact(
-    carbonIcon as Parameters<typeof carbonIconToReact>[0],
+    carbonIcon as Parameters<typeof carbonIconToReact>[0]
   );
   return <IconComp slot="render-icon" />;
 }
@@ -62,8 +62,7 @@ function InputActionsMenu({
         size="sm"
         disabled={disabled}
         data-testid="cds-aichat-input-actions-trigger"
-        onClick={() => setOpen((o) => !o)}
-      >
+        onClick={() => setOpen((o) => !o)}>
         <AddIcon slot="icon" />
         <span slot="tooltip-content">{menuLabel}</span>
       </IconButton>
@@ -74,8 +73,7 @@ function InputActionsMenu({
           }}
           open
           label={menuLabel}
-          onCdsMenuClosed={() => setOpen(false)}
-        >
+          onCdsMenuClosed={() => setOpen(false)}>
           {actions.map((opt) => (
             <MenuItem
               key={opt.testId ?? opt.text}
@@ -85,12 +83,11 @@ function InputActionsMenu({
               onClick={() => {
                 setOpen(false);
                 if (opt.href) {
-                  window.open(opt.href, opt.target || "_self");
+                  window.open(opt.href, opt.target || '_self');
                 } else {
                   opt.onClick?.();
                 }
-              }}
-            >
+              }}>
               {renderMenuItemIcon(opt.icon)}
             </MenuItem>
           ))}

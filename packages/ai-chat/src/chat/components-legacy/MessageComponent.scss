@@ -5,11 +5,11 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-@use "@carbon/layout";
-@use "@carbon/styles/scss/motion";
-@use "@carbon/styles/scss/theme";
-@use "@carbon/styles/scss/type";
-@use "@carbon/styles/scss/utilities/button-reset" as button;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/motion';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/utilities/button-reset' as button;
 
 $message-bar-width: 3px;
 
@@ -42,7 +42,7 @@ $message-bar-width: 3px;
   box-sizing: border-box;
   border: solid 2px theme.$focus;
   block-size: 100%;
-  content: "";
+  content: '';
   inline-size: 100%;
   inset-block-start: 0;
   pointer-events: none;
@@ -202,7 +202,7 @@ $message-bar-width: 3px;
 .cds-aichat--message::after {
   display: table;
   clear: both;
-  content: "";
+  content: '';
 }
 
 .cds-aichat--messages--welcome.cds-aichat--messages--welcome--typing {
@@ -221,7 +221,7 @@ $message-bar-width: 3px;
 .cds-aichat--message-user-defined-response {
   position: relative;
   color: theme.$text-primary;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 
   overflow-wrap: break-word;
   word-break: break-word;
@@ -343,10 +343,10 @@ svg.cds-aichat--sent-file-icon {
   border: solid 1px theme.$chat-bubble-user;
   border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
   background: theme.$chat-bubble-user;
-  @include type.type-style("body-01");
+  @include type.type-style('body-01');
 }
 
-.cds-aichat--container--render[dir="rtl"] .cds-aichat--sent--bubble {
+.cds-aichat--container--render[dir='rtl'] .cds-aichat--sent--bubble {
   border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
 }
 
@@ -367,7 +367,7 @@ svg.cds-aichat--sent-file-icon {
 
 .cds-aichat--assistant-message .cds-aichat--received--agent-status-message {
   color: theme.$text-helper;
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 
   padding-inline: layout.$spacing-05;
   text-align: center;
@@ -375,7 +375,7 @@ svg.cds-aichat--sent-file-icon {
 
 .cds-aichat--assistant-message .cds-aichat--received--chat-status-message {
   color: theme.$text-secondary;
-  @include type.type-style("caption-01");
+  @include type.type-style('caption-01');
 }
 
 .cds-aichat--message--system-message {
@@ -391,7 +391,7 @@ svg.cds-aichat--sent-file-icon {
 
   .cds-aichat--message__label {
     color: theme.$text-secondary;
-    @include type.type-style("caption-01");
+    @include type.type-style('caption-01');
   }
 
   .cds-aichat--message__reasoning {
@@ -508,7 +508,7 @@ svg.cds-aichat--sent-file-icon {
   padding-block-end: layout.$spacing-04;
 }
 
-.cds-aichat--container--render[dir="rtl"]
+.cds-aichat--container--render[dir='rtl']
   .cds-aichat--received--from-agent.cds-aichat--received--text {
   border-radius: layout.$spacing-03 0 layout.$spacing-03 layout.$spacing-03;
 }

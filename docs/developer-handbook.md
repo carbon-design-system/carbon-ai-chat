@@ -6,6 +6,7 @@
 - [Getting started](#getting-started)
 - [Common tasks](#common-tasks)
 - [Development workflow](#development-workflow)
+- [Agent skills](#agent-skills)
 - [Directory Structure](#directory-structure)
 - [Commit conventions](#commit-conventions)
   - [Commit message format](#commit-message-format)
@@ -25,32 +26,22 @@
 
 ## Getting started
 
-Carbon AI Chat is built using a collection of packages all built in the same Git
-repository. You might have heard this setup described as a
-[monorepo](https://en.wikipedia.org/wiki/Monorepo).
+Carbon AI Chat is built using a collection of packages all built in the same Git repository. You might have heard this setup described as a [monorepo](https://en.wikipedia.org/wiki/Monorepo).
 
-As a result, we use two pieces of tooling to help us manage installing
-dependencies and publishing our packages. These include:
+As a result, we use two pieces of tooling to help us manage installing dependencies and publishing our packages. These include:
 
-- [NPM workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) for handling
-  dependencies across all packages
-- [Lerna](https://lerna.js.org/) for publishing packages, tagging versions, and
-  more
+- [NPM workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) for handling dependencies across all packages
+- [Lerna](https://lerna.js.org/) for publishing packages, tagging versions, and more
 
-In order for you to install all the dependencies in this project, you'll need to
-[install NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and run the following
-command in your terminal:
+In order for you to install all the dependencies in this project, you'll need to [install NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and run the following command in your terminal:
 
 ```bash
 npm install
 ```
 
-This will install all of the dependencies for every package in our project. In
-addition, it allows us to link between packages that we are developing.
+This will install all of the dependencies for every package in our project. In addition, it allows us to link between packages that we are developing.
 
-This strategy is particularly useful during development, and tooling like Lerna
-will pick up on when packages are linked in this way and will automatically
-update versions when publishing new versions of packages.
+This strategy is particularly useful during development, and tooling like Lerna will pick up on when packages are linked in this way and will automatically update versions when publishing new versions of packages.
 
 Next up, you'll want to build the packages before running anything:
 
@@ -64,28 +55,24 @@ Afterwards, you should be good to go!
 
 Here are some of the top-level tasks in the root of the project that you might want to run:
 
-| Command                                                           | Usage                                                                                                                           |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run aiChat:build`                                            | Builds `@carbon/ai-chat-components`, `@carbon/ai-chat`, and the demo in sequence                                                |
-| `npm run aiChat:start`                                            | Builds both packages, then starts watch mode for both + the demo dev server (see [Development workflow](#development-workflow)) |
-| `npm run build`                                                   | Uses `lerna` to run the `build` script in every package in the monorepo                                                         |
-| `npm run test`                                                    | Runs the test suite across all packages via lerna                                                                               |
-| `npm run clean`                                                   | Resets the state of the project by removing all `node_modules` and running the `clean` script in each package                   |
-| `npm run ci-check`                                                | Runs a series of checks (format, license, and linting on all files in the repository)                                           |
-| `npm run format`, `npm run format:write`, `npm run format:staged` | Format files using Prettier, check if files have been formatted                                                                 |
-| `npm run lint`                                                    | Run eslint on files in the project                                                                                              |
-| `npm run lint:license`, `npm run lint:license:staged`             | Run a license script on files across the project to ensure all files have the license at the top of the file                    |
-| `npm run lint:styles`                                             | Run stylelint on the scss files in the project                                                                                  |
+| Command | Usage |
+| --- | --- |
+| `npm run aiChat:build` | Builds `@carbon/ai-chat-components`, `@carbon/ai-chat`, and the demo in sequence |
+| `npm run aiChat:start` | Builds both packages, then starts watch mode for both + the demo dev server (see [Development workflow](#development-workflow)) |
+| `npm run build` | Uses `lerna` to run the `build` script in every package in the monorepo |
+| `npm run test` | Runs the test suite across all packages via lerna |
+| `npm run clean` | Resets the state of the project by removing all `node_modules` and running the `clean` script in each package |
+| `npm run ci-check` | Runs a series of checks (format, license, and linting on all files in the repository) |
+| `npm run format`, `npm run format:write`, `npm run format:staged` | Format files using Prettier, check if files have been formatted |
+| `npm run lint` | Run eslint on files in the project |
+| `npm run lint:license`, `npm run lint:license:staged` | Run a license script on files across the project to ensure all files have the license at the top of the file |
+| `npm run lint:styles` | Run stylelint on the scss files in the project |
 
 ## Development workflow
 
 ### Building the packages
 
-The examples and demo depend on the compiled output of `@carbon/ai-chat` and
-`@carbon/ai-chat-components`. These packages are linked into `node_modules` via
-npm workspaces, but their `exports` point to built artifacts (`dist/es/` and
-`es/`) that don't exist until you run a build. After a fresh clone, always
-build before starting anything:
+The examples and demo depend on the compiled output of `@carbon/ai-chat` and `@carbon/ai-chat-components`. These packages are linked into `node_modules` via npm workspaces, but their `exports` point to built artifacts (`dist/es/` and `es/`) that don't exist until you run a build. After a fresh clone, always build before starting anything:
 
 ```bash
 npm run aiChat:build
@@ -93,8 +80,7 @@ npm run aiChat:build
 
 ### Starting the development environment
 
-`npm run aiChat:start` is the primary command for active development on the
-packages. It first does a full build of both packages, then concurrently starts:
+`npm run aiChat:start` is the primary command for active development on the packages. It first does a full build of both packages, then concurrently starts:
 
 - **`@carbon/ai-chat-components`**: `rollup --watch` (writes to `packages/ai-chat-components/es/`), plus Storybook on ports 6006 and 7007
 - **`@carbon/ai-chat`**: `rollup --watch` (writes to `packages/ai-chat/dist/es/`), plus TypeDoc watcher and a doc server on port 5001
@@ -108,9 +94,7 @@ npm run aiChat:start
 
 ### Running an example alongside the development environment
 
-Each example in `examples/react/` and `examples/web-components/` has its own
-webpack dev server. To develop against a live package build, run
-`aiChat:start` in one terminal and the example in a second:
+Each example in `examples/react/` and `examples/web-components/` has its own webpack dev server. To develop against a live package build, run `aiChat:start` in one terminal and the example in a second:
 
 ```bash
 # Terminal 1
@@ -120,15 +104,30 @@ npm run aiChat:start
 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
-When `aiChat:start` rebuilds a package, the example's webpack dev server will
-detect the changed files in `dist/es/` and hot-reload the browser automatically.
+When `aiChat:start` rebuilds a package, the example's webpack dev server will detect the changed files in `dist/es/` and hot-reload the browser automatically.
 
-All examples default to port 3000. If you need to run more than one example at
-the same time, override the port with the `PORT` environment variable:
+All examples default to port 3000. If you need to run more than one example at the same time, override the port with the `PORT` environment variable:
 
 ```bash
 PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 ```
+
+## Agent skills
+
+This repo's recurring task workflows — shaping work into a plan or epic, filing an issue, drafting a PR description, reviewing a diff — are packaged as agent skills. Each skill holds the full procedure, so an assistant that invokes one gets the whole workflow rather than a pointer to a document it may not open.
+
+They are slash commands in both assistants used here: `/caic-plan`, `/caic-issue`, `/caic-pr`, and `/caic-review`. You can also just read them — they are ordinary markdown.
+
+Each assistant reads skills only from its own directory — IBM Bob from `.bob/skills/`, Claude Code from `.claude/skills/` — so the tree is stored twice. **`.bob/skills/` is the canonical copy**, and `.claude/skills/` is generated from it:
+
+```bash
+npm run sync:skills      # regenerate .claude/skills/ from .bob/skills/
+npm run validate:skills  # verify the mirror, frontmatter, and links
+```
+
+Both trees are committed, because an assistant has to find its skills in a fresh clone. `validate:skills` runs as part of `ci-check` and in CI, so they cannot drift apart unnoticed. Edit the canonical copy, then sync.
+
+For what each skill covers and how the collection is organized, see [.bob/skills/README.md](../.bob/skills/README.md). Conventions for writing a skill live in [references/authoring-agents-md.md](../references/authoring-agents-md.md). Always-on guidance that is not task-specific — code patterns, commit conventions, accessibility, the definition of done — stays in [AGENTS.md](../AGENTS.md) and the `references/` docs it routes to, which remain the map for everything an agent needs.
 
 ## Directory Structure
 
@@ -149,18 +148,13 @@ carbon-ai-chat/
 
 ## Commit conventions
 
-This project follows a structured format for writing commit messages. The main
-benefit of this approach is that we can use these details to automatically
-generate things like changelogs, in addition to clarifying what changes
-correspond to when looking at our Git history.
+This project follows a structured format for writing commit messages. The main benefit of this approach is that we can use these details to automatically generate things like changelogs, in addition to clarifying what changes correspond to when looking at our Git history.
 
 ### Commit message format
 
-_Parts of this section are duplicated from
-[Angular's commit conventions](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines)_.
+_Parts of this section are duplicated from [Angular's commit conventions](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines)_.
 
-Each commit message consists of a **header**, a **body** and a **footer**. The
-header has a specific format that includes a type, a scope and a subject:
+Each commit message consists of a **header**, a **body** and a **footer**. The header has a specific format that includes a type, a scope and a subject:
 
 ```git
 <type>(<scope>): <subject>
@@ -170,24 +164,21 @@ header has a specific format that includes a type, a scope and a subject:
 <footer>
 ```
 
-The **header** is mandatory and the **scope** of the header is optional. There
-are a few validation rules that we also enforce, namely that:
+The **header** is mandatory and the **scope** of the header is optional. There are a few validation rules that we also enforce, namely that:
 
 - The header must always be fewer than **72** characters
 - Any line in the commit body must be fewer than **80** characters
 
 Most of these rules are to help with integration of `git` with common tools.
 
-_Note: we check for this commit format using a tool called
-[`commitlint`](https://commitlint.js.org/#/)_.
+_Note: we check for this commit format using a tool called [`commitlint`](https://commitlint.js.org/#/)_.
 
 ### Type
 
 Must be one of the following:
 
 - **build**: Changes that affect the build system or external dependencies
-- **chore**: Changes that do not affect the meaning of the code (white-space,
-  formatting, missing semi-colons, etc.)
+- **chore**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
 - **ci**: Changes to our CI configuration files and scripts
 - **docs**: Documentation only changes
 - **feat**: A new feature
@@ -208,16 +199,13 @@ The subject contains a succinct description of the change:
 
 ### Body
 
-Just as in the subject, use the imperative, present tense: "change" not
-"changed" nor "changes". The body should include the motivation for the change
-and contrast this with previous behavior.
+Just as in the subject, use the imperative, present tense: "change" not "changed" nor "changes". The body should include the motivation for the change and contrast this with previous behavior.
 
 ### Footer
 
 The footer should contain any information about Breaking Changes.
 
-Breaking Changes should start with the word BREAKING CHANGE: with a space or two
-newlines. The rest of the commit message is then used for this.
+Breaking Changes should start with the word BREAKING CHANGE: with a space or two newlines. The rest of the commit message is then used for this.
 
 ### Examples
 
@@ -252,8 +240,7 @@ function add(a, b) {
 <details>
   <summary>Chore (`chore`)</summary>
 
-Running things like formatting, or generally any project clean-up tasks, can be
-considered a chore that we are doing to keep things up-to-date.
+Running things like formatting, or generally any project clean-up tasks, can be considered a chore that we are doing to keep things up-to-date.
 
 </details>
 
@@ -261,17 +248,14 @@ considered a chore that we are doing to keep things up-to-date.
 
 ### Class names
 
-Prefix all class names with `#{$prefix}--` in SCSS, which is replaced with
-`cds--` by default, and design systems inheriting Carbon can override. This
-prefix prevents potential conflicts with class names from the user.
+Prefix all class names with `#{$prefix}--` in SCSS, which is replaced with `cds--` by default, and design systems inheriting Carbon can override. This prefix prevents potential conflicts with class names from the user.
 
 **HTML**
 
 ```html
 <div
   class="cds--inline-notification cds--inline-notification--error"
-  role="alert"
->
+  role="alert">
   <div class="cds--inline-notification__details">...</div>
 </div>
 ```
@@ -288,8 +272,7 @@ prefix prevents potential conflicts with class names from the user.
 }
 ```
 
-Follow BEM naming convention for classes. Again, the only thing we do
-differently is prefix all classes with `#{$prefix}--`.
+Follow BEM naming convention for classes. Again, the only thing we do differently is prefix all classes with `#{$prefix}--`.
 
 ```scss
 .#{$prefix}--block
@@ -320,10 +303,7 @@ Avoid nesting selectors, this will make it easier to maintain in the future.
 }
 ```
 
-Use
-[CSS logical properties and values](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values)
-for layout. These are impacted by the writing mode and provide support for
-right-to-left styling out of the box.
+Use [CSS logical properties and values](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values) for layout. These are impacted by the writing mode and provide support for right-to-left styling out of the box.
 
 ```scss
 // Don't do this

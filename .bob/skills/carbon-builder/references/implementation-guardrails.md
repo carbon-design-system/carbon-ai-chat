@@ -2,12 +2,16 @@
 
 ## 1. Stability Policy (Hard Rule)
 
-Never suggest or use unstable, preview, canary, or `@carbon/labs-react` components unless:
+Never suggest or use unstable, preview, canary, or deprecated Labs packages by default.
 
-- the user explicitly asks for them, or
-- they are already present in the repository.
-
-If a stable Carbon equivalent exists, use the stable option by default.
+- Do not use deprecated `@carbon/labs-react`.
+- Use modern `@carbon-labs/*` packages only when the user explicitly asks for Labs components,
+  or they are already present in the repository.
+- If a stable Carbon equivalent exists, use the stable option by default.
+- When Labs is required, verify the exact package and API before generating code. Common current
+  packages include `@carbon-labs/react-ui-shell`, `@carbon-labs/react-resizer`,
+  `@carbon-labs/react-whats-new`, `@carbon-labs/react-processing`, and
+  `@carbon-labs/react-animated-header` (draft/preview, homepage-oriented).
 
 ---
 
@@ -45,6 +49,9 @@ Before choosing imports/integration patterns, check for SSR indicators:
 
 - Prefer official Carbon packages over recreating equivalent components.
 - If the required Carbon package is missing, add the dependency instead of hand-building a clone.
+- For Carbon Labs, treat each `@carbon-labs/*` package as a separate integration. Do not assume
+  one Labs package covers another, and do not infer package names from deprecated `@carbon/labs-react`
+  examples.
 - **React**: Component styles are required in the project-level SCSS file (e.g. `src/styles.scss`): `@use '@carbon/react'` — without this, all components render unstyled. Token imports (`@use '@carbon/react/scss/spacing' as *`, `theme`, `type`, `breakpoint`) are optional — only include if custom SCSS uses those tokens. Never use `@carbon/styles/css/styles.css` for React.
 - **Theme configuration syntax (Hard Rule)**: When configuring the Carbon theme via `@use '@carbon/styles/scss/theme' with ($theme: ...)`, you must pass a **theme map variable**, never a string. Import theme maps from `@carbon/styles/scss/themes` first:
   ```scss
@@ -105,6 +112,13 @@ Before choosing imports/integration patterns, check for SSR indicators:
   Verify the correct setup via MCP or the package's own documentation before generating.
 
 - For charts, continue following `get_charts` assembly hints verbatim.
+- For Carbon Labs React packages:
+  - Verify the exact package before adding dependencies or imports.
+  - Check whether the package requires package-specific SCSS imports in addition to the Carbon baseline.
+  - Check whether the package expects a host theme attribute such as `data-carbon-theme` instead of,
+    or in addition to, standard Carbon wrappers.
+  - Explicitly validate rendered styling and behavior after setup; do not assume stable Carbon
+    styling conventions apply unchanged.
 - For Web Components projects:
   - Use `@carbon/web-components` for components and `@carbon/styles` for global Carbon styles/fonts.
   - Add `sass` only when SCSS is explicitly used.
@@ -127,6 +141,9 @@ Before choosing imports/integration patterns, check for SSR indicators:
 - Avoid targeting Carbon internal class names (for example `.bx--`, `.cds--`) unless no alternative exists and the user explicitly confirms.
 - Avoid direct style overrides of Carbon internals unless necessary and explicitly confirmed.
 - Do not force explicit `<Theme>` wrappers when the host app already provides Carbon theme context.
+- For Carbon Labs packages, prefer documented host requirements such as `data-carbon-theme`
+  when package guidance requires them. Do not assume a stable Carbon `<Theme>` wrapper alone
+  satisfies Labs theming.
 - For Web Components runtime styles, SCSS token variables are unavailable at runtime. Use CSS custom properties such as `var(--cds-spacing-05)`, `var(--cds-background)`, and `var(--cds-layer-01)` instead of `$spacing-05`, `$background`, or `$layer-01`.
 - For Web Components styling setup:
   - Prefer a minimal SCSS baseline first: `@use '@carbon/styles/scss/reset';` and `@use '@carbon/styles/scss/type';`
@@ -145,7 +162,23 @@ Before choosing imports/integration patterns, check for SSR indicators:
 
 ---
 
-## 6. Web Components Project Setup Checklist
+## 6. Carbon Labs Verification Checklist
+
+Before finalizing a Carbon Labs implementation:
+
+- Confirm the package is a current `@carbon-labs/*` package, not deprecated `@carbon/labs-react`.
+- Confirm the exact package matches the requested feature (for example UIShell, Resizer,
+  What's New, or Processing).
+- Confirm whether package-specific SCSS imports are required in addition to `@use '@carbon/react'`.
+- Confirm whether the host container needs `data-carbon-theme` or another package-specific
+  theme attribute.
+- Confirm the component renders with expected styling and behavior after installation.
+- If package docs/examples conflict with stable Carbon assumptions, follow the package-specific
+  guidance and document the deviation.
+
+---
+
+## 7. Web Components Project Setup Checklist
 
 Before finalizing a Web Components implementation:
 
@@ -156,7 +189,7 @@ Before finalizing a Web Components implementation:
 
 ---
 
-## 7. Layout and Accessibility Guardrails
+## 8. Layout and Accessibility Guardrails
 
 - Use separate Grid containers for distinct logical content groups; specify responsive spans (`sm`/`md`/`lg`) for all layout columns. See [references/grid-system.md](references/grid-system.md) for variants, vertical spacing, nested grids, and column span calculation.
 - Keep overlay/floating UI (modals, side panels, tooltips, toasts) out of normal page Grid flow.
@@ -183,7 +216,7 @@ Never set `level` manually — nesting determines level automatically. Use `with
 
 ---
 
-## 8. Image-Driven UI Workflow Guardrails
+## 9. Image-Driven UI Workflow Guardrails
 
 Apply this section when the user provides images or visual references for UI implementation.
 
