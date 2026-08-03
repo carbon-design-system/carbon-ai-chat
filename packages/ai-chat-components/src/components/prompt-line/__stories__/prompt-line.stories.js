@@ -464,15 +464,15 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
             ?has-error=${this.hasError}
             expanded>
             ${
-            this.hasError && this.errorTitle
-              ? html`<cds-aichat-error-message
-                  slot="field-messaging"
-                  title=${this.errorTitle}
-                  description=${this.errorDescription}
-                  ?collapsible=${this.errorCollapsible}
-                  ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
-              : null
-          }
+              this.hasError && this.errorTitle
+                ? html`<cds-aichat-error-message
+                    slot="field-messaging"
+                    title=${this.errorTitle}
+                    description=${this.errorDescription}
+                    ?collapsible=${this.errorCollapsible}
+                    ?fullscreen=${this.errorFullscreen}></cds-aichat-error-message>`
+                : null
+            }
             <cds-aichat-prompt-line
               slot="editor"
               placeholder=${this.placeholder}
@@ -480,7 +480,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
               rich
               .extensions=${this._extensions}
               @cds-aichat-prompt-change=${(e) =>
-              this._onPromptChange(e)}></cds-aichat-prompt-line>
+                this._onPromptChange(e)}></cds-aichat-prompt-line>
             <cds-aichat-autocomplete-controller
               slot="autocomplete-content"
               .mention=${this._mentionConfig}
