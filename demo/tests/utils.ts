@@ -26,7 +26,7 @@ const TEST_CSP =
   "default-src 'self'; " +
   "script-src 'self' https://1.www.s81c.com https://www.youtube.com https://player.vimeo.com https://cdn.embed.ly https://w.soundcloud.com; " +
   "style-src 'self' https://1.www.s81c.com; " +
-  "img-src 'self' data: blob: https://1.www.s81c.com https://live.staticflickr.com; " +
+  "img-src 'self' data: blob: https://1.www.s81c.com https://placehold.co; " +
   "font-src 'self' https://1.www.s81c.com; " +
   "connect-src 'self' https://1.www.s81c.com ws: wss:; " +
   'frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://w.soundcloud.com https://cdnapisec.kaltura.com https://web-chat.assistant.test.watson.cloud.ibm.com; ' +

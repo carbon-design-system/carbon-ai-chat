@@ -19,8 +19,7 @@ function doImage(instance: ChatInstance) {
       generic: [
         {
           title: 'The image title (optional)',
-          source:
-            'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg',
+          source: 'https://placehold.co/800x450',
           description: 'The image description (optional)',
           response_type: MessageResponseTypes.IMAGE,
         },
@@ -29,8 +28,7 @@ function doImage(instance: ChatInstance) {
           text: 'And now just an image by itself.',
         },
         {
-          source:
-            'https://onlinejpgtools.com/images/examples-onlinejpgtools/mouse.jpg',
+          source: 'https://placehold.co/800x450',
           response_type: MessageResponseTypes.IMAGE,
         },
         {
@@ -46,8 +44,7 @@ function doImage(instance: ChatInstance) {
           kind: 'LINK',
           label: 'Carbon Design System',
           target: '_blank',
-          image_url:
-            'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg',
+          image_url: 'https://placehold.co/800x450',
           button_type: ButtonItemType.URL,
           response_type: MessageResponseTypes.BUTTON,
         },
@@ -62,8 +59,7 @@ function doImage(instance: ChatInstance) {
               text: 'card',
             },
           },
-          image_url:
-            'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg',
+          image_url: 'https://placehold.co/800x450',
           button_type: ButtonItemType.POST_BACK,
           response_type: MessageResponseTypes.BUTTON,
         },
@@ -76,8 +72,7 @@ function doImage(instance: ChatInstance) {
           panel: {
             body: [
               {
-                source:
-                  'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+                source: 'https://placehold.co/800x450',
                 response_type: MessageResponseTypes.IMAGE,
               },
               {
@@ -96,8 +91,7 @@ function doImage(instance: ChatInstance) {
             title: 'Tanya panel',
             show_animations: false,
           },
-          image_url:
-            'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg',
+          image_url: 'https://placehold.co/800x450',
           button_type: ButtonItemType.SHOW_PANEL,
           response_type: MessageResponseTypes.BUTTON,
         },
@@ -107,8 +101,7 @@ function doImage(instance: ChatInstance) {
         },
         {
           kind: BUTTON_KIND.TERTIARY,
-          image_url:
-            'https://news-cdn.softpedia.com/images/news2/Picture-of-the-Day-Real-Life-Simba-and-Mufasa-Caught-on-Camera-in-Tanzania-392687-2.jpg',
+          image_url: 'https://placehold.co/800x450',
           button_type: ButtonItemType.CUSTOM_EVENT,
           user_defined: {
             text: 'Alert from a picture!',
