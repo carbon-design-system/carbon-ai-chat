@@ -1553,6 +1553,95 @@ HTTP: http://example.com
       expect(clicked, 'onClick fired').to.equal(true);
     });
 
+    it('renders links with no click listener when no custom renderer is set', async () => {
+      const clickListenerAdds: EventTarget[] = [];
+      const originalAdd = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function (
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | AddEventListenerOptions
+      ) {
+        if (type === 'click' && this instanceof HTMLAnchorElement) {
+          clickListenerAdds.push(this);
+        }
+        return originalAdd.call(this, type, listener, options);
+      };
+      try {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown .markdown=${'[link](https://example.com)'}>
+          </cds-aichat-markdown>`
+        );
+        await el.updateComplete;
+        const link = el.shadowRoot?.querySelector('a');
+        expect(link, 'anchor rendered').to.not.equal(null);
+        expect(link?.hasAttribute('onclick')).to.equal(false);
+        expect(clickListenerAdds.length, 'no click listener added').to.equal(0);
+      } finally {
+        EventTarget.prototype.addEventListener = originalAdd;
+      }
+    });
+
+    it('adds no click listener when the renderer result omits onClick', async () => {
+      const clickListenerAdds: EventTarget[] = [];
+      const originalAdd = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function (
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | AddEventListenerOptions
+      ) {
+        if (type === 'click' && this instanceof HTMLAnchorElement) {
+          clickListenerAdds.push(this);
+        }
+        return originalAdd.call(this, type, listener, options);
+      };
+      try {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown
+            .customRenderers=${{
+              link: () => ({
+                target: '_self',
+                attributes: { 'data-tracked': 'true' },
+              }),
+            }}
+            .markdown=${'[link](https://example.com)'}>
+          </cds-aichat-markdown>`
+        );
+        await el.updateComplete;
+        const link = el.shadowRoot?.querySelector('a');
+        expect(link?.getAttribute('target')).to.equal('_self');
+        expect(link?.getAttribute('data-tracked')).to.equal('true');
+        expect(link?.hasAttribute('onclick')).to.equal(false);
+        expect(clickListenerAdds.length, 'no click listener added').to.equal(0);
+      } finally {
+        EventTarget.prototype.addEventListener = originalAdd;
+      }
+    });
+
+    it('onClick still fires when sanitize-html is set', async () => {
+      let clicked = false;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          sanitize-html
+          .customRenderers=${{
+            link: () => ({
+              attributes: { 'data-safe': 'ok' },
+              onClick: (event: MouseEvent) => {
+                event.preventDefault();
+                clicked = true;
+              },
+            }),
+          }}
+          .markdown=${'[link](https://example.com)'}>
+        </cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector('a');
+      expect(link?.getAttribute('data-safe')).to.equal('ok');
+      link!.click();
+      expect(clicked, 'onClick fired despite sanitize pass').to.equal(true);
+      expect(link?.hasAttribute('onclick')).to.equal(false);
+    });
+
     it('image callback rewrites src', async () => {
       const el = await fixture<MarkdownElementInstance>(
         html`<cds-aichat-markdown
