@@ -26,8 +26,7 @@ function doIFrame(instance: ChatInstance) {
           source:
             'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/iframe-example.html',
           response_type: MessageResponseTypes.IFRAME,
-          image_url:
-            'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+          image_url: 'https://placehold.co/800x450',
           description:
             'An example page to test url unfurling and iframe permissions for the iframe response type.',
           title: 'IFrame example panel',
@@ -36,8 +35,7 @@ function doIFrame(instance: ChatInstance) {
           source:
             'https://web-chat.assistant.test.watson.cloud.ibm.com/assets/iframe-example.html',
           response_type: MessageResponseTypes.IFRAME,
-          image_url:
-            'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+          image_url: 'https://placehold.co/800x450',
           description:
             'An example page to test url unfurling and iframe permissions for the iframe response type.',
           title: 'An inline display of an iframe',

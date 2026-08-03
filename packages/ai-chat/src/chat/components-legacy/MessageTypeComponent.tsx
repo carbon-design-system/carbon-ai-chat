@@ -457,7 +457,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         title={message.item.title}
         description={message.item.description}
         altText={message.item.alt_text}
-        needsAnnouncement={message.ui_state.needsAnnouncement}
         useAITheme={aiEnabled}
       />
     );
