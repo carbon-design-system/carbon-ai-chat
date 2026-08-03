@@ -10,8 +10,8 @@
 @use '../../../globals/scss/vars' as *;
 @use '../../../globals/scss/modifiers' as *;
 @use '@carbon/styles/scss/theme';
-@use '@carbon/styles/scss/type';
 @use '@carbon/layout';
+@use '@carbon/styles/scss/type';
 
 $block-class: #{$prefix}-toolbar;
 
