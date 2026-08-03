@@ -8,8 +8,8 @@ New UI goes here, never in [`../components-legacy/`](../components-legacy/) (clo
 
 1. **No chat-specific state, reusable outside chat?** → publish to `@carbon/ai-chat-components` (leaves this package). See [code-patterns.md](../../../../../references/code-patterns.md).
 2. **Renders a message response type?** → `responseTypes/<type>/`.
-3. **App chrome that reads the store / uses `ServiceManager`** (a header, input, panel, modal)? → the matching feature folder (`header/`, `input/`, `panels/`, `modals/`, `homeScreen/`).
-4. **Reusable render helper** — attribute-driven, **no store, no `ServiceManager`**, but not worth publishing (the #1863 contract)? → `helpers/`.
+3. **App chrome** — a region the shell mounts once (a header, input, panel, modal, home screen)? → the matching feature folder (`header/`, `input/`, `panels/`, `modals/`, `homeScreen/`).
+4. **Reusable render fragment** used by more than one feature or response type, but too chat-specific to publish? → `helpers/`. Reading the store is fine here.
 5. **Pure function, no JSX/markup?** → not here — `chat/utils/` (one level up).
 6. **React-only framework glue** (a portal, a `@lit/react` binding, a Carbon React wrapper)? → `portals/` or `carbon/`. These are transitional; don't add new ones.
 
@@ -18,8 +18,8 @@ New UI goes here, never in [`../components-legacy/`](../components-legacy/) (clo
 | Folder | Holds | Destiny |
 | --- | --- | --- |
 | `responseTypes/` | one subfolder per response type (`button/`, `media/`, `card/`, `message/`, `userDefined/`, `error/`, `options/`, `datePicker/`, …) | internal Lit helpers (#1863); some primitives publish (#1803) |
-| `helpers/` | internal render helpers, **one folder per helper** | internal Lit helpers (#1863), never published |
-| `header/` `homeScreen/` `input/` `panels/` `modals/` | store-coupled app chrome | thin containers over shells + helpers |
+| `helpers/` | internal render helpers, **one folder per helper**; may read the store | internal Lit helpers (#1863), never published |
+| `header/` `homeScreen/` `input/` `panels/` `modals/` | app chrome — one region each, mounted once by the shell | thin containers over shells + helpers |
 | `aria/` | live-region components | **transitional** — being removed by [#1933](https://github.com/carbon-design-system/carbon-ai-chat/issues/1933) |
 | `carbon/` | `@lit/react` wrappers of `@carbon/web-components` | **transitional** — shrinks to 0 as React is removed |
 | `portals/` | `ReactDOM` portal bridges (light-DOM / slots) | **transitional** — shrinks to 0 as React is removed |
@@ -33,7 +33,9 @@ One test: **does it return something that goes in the DOM?**
 - **Yes** (`.tsx`, JSX / a Lit template) → `helpers/`.
 - **No** (`.ts`, pure logic) → `chat/utils/` (the sibling `utils` one level up — note the plural; there is deliberately no `components/util`).
 
-A `helpers/` component is _internal_: attribute-driven, reads no store, holds no `ServiceManager`. If it also carries zero chat-specific anything, it should be **published** instead (rule 1), not parked in `helpers/`.
+A `helpers/` component is _internal_, so it may read the store — `MarkdownWithDefaults` pulls language-pack keys and the host markdown config. That coupling is what keeps it here rather than published (rule 1). What separates `helpers/` from a feature folder is shape, not store access: a helper is a fragment several callers render; `header/`, `input/`, `panels/`, `modals/`, and `homeScreen/` each own one region the shell mounts once.
+
+[#1863](https://github.com/carbon-design-system/carbon-ai-chat/issues/1863) does end with helpers attribute-driven and store-free, but that arrives **when each converts to Lit** — [#1850](https://github.com/carbon-design-system/carbon-ai-chat/issues/1850) lifts the markdown adapters' reads as part of its own scope. It isn't a bar for landing a React helper here today.
 
 ## Naming & nesting
 
