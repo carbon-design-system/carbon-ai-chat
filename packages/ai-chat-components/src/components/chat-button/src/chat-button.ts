@@ -48,21 +48,12 @@ class CDSAIChatButton extends CDSButton {
   @property({ type: Boolean, attribute: 'is-quick-action' })
   isQuickAction = false;
 
-  /**
-   * Suppress click events when the quick-action button is selected.
-   * This mirrors the behaviour of the native `disabled` attribute without
-   * adding it to the DOM, so the button remains focusable and the selected
-   * styling is applied via CSS only.
-   *
-   * Registered manually in connectedCallback/disconnectedCallback rather than
-   * via @HostListener to avoid mutating the shared CDSButton._hostListeners
-   * table — which would cause every CDSButton in the same document to register
-   * `undefined` as a capture-phase click listener (crashing happy-dom and
-   * likely causing subtle bugs in production).
-   */
-  protected _handleSelectedClick = (event: Event): void => {
-    if (this.isQuickAction && this.isSelected) {
-      event.stopPropagation();
+  // Blocks programmatic el.click() when isSelected — `inert` only blocks user
+  // input, not programmatic calls. Registered manually (not via @HostListener)
+  // to avoid mutating the shared CDSButton._hostListeners table.
+  private readonly _handleSelectedClick = (e: Event): void => {
+    if (this.isSelected) {
+      e.stopImmediatePropagation();
     }
   };
 
@@ -100,6 +91,7 @@ class CDSAIChatButton extends CDSButton {
     if (
       changedProps.has('isQuickAction') ||
       changedProps.has('isSelected') ||
+      changedProps.has('disabled') ||
       changedProps.has('size') ||
       changedProps.has('kind')
     ) {
@@ -110,16 +102,22 @@ class CDSAIChatButton extends CDSButton {
   private _normalizeButtonState(changedProps: PropertyValues<this>): void {
     if (this.isQuickAction) {
       this.size = CHAT_BUTTON_SIZE.SMALL;
-      // Only default to ghost when kind was not explicitly provided in this update.
       if (!changedProps.has('kind')) {
         this.kind = CHAT_BUTTON_KIND.GHOST;
       }
-      // Remove from tab order when selected so keyboard users skip it,
-      // matching the non-interactive appearance. Restore to 0 when de-selected.
-      this.tabIndex = this.isSelected ? -1 : 0;
+
+      // When isSelected, set the HTML `inert` attribute on the host element to
+      // block pointer and keyboard interaction. This leaves `this.disabled`
+      // untouched so it always reflects exactly what the consumer set.
+      // tabIndex is also set explicitly — `inert` alone doesn't update it.
+      const isBlocked = this.isSelected || this.disabled;
+      this.inert = this.isSelected;
+      this.tabIndex = isBlocked ? -1 : 0;
+      this.toggleAttribute('data-is-selected', this.isSelected);
+
       return;
     }
-    // Do not allow size larger than `lg`
+
     if (!this.allowedSizes.includes(this.size as CHAT_BUTTON_SIZE)) {
       this.size = CHAT_BUTTON_SIZE.LARGE;
     }

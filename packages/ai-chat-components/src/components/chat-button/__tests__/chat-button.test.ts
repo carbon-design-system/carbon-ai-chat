@@ -60,7 +60,7 @@ describe('chat-button', function () {
       expect(clicked).to.equal(1);
     });
 
-    it('should not set the disabled attribute when isSelected=true', async () => {
+    it('should set inert and data-is-selected when isSelected=true, without touching disabled', async () => {
       const el = await fixture<ChatButton>(
         html`<cds-aichat-button is-quick-action ?isSelected="${true}">
           quick action
@@ -68,6 +68,9 @@ describe('chat-button', function () {
       );
 
       await el.updateComplete;
+      expect(el.inert).to.be.true;
+      expect(el.hasAttribute('inert')).to.be.true;
+      expect(el.hasAttribute('data-is-selected')).to.be.true;
       expect(el.disabled).to.be.false;
       expect(el.hasAttribute('disabled')).to.be.false;
     });
@@ -85,6 +88,59 @@ describe('chat-button', function () {
       el.isSelected = false;
       await el.updateComplete;
       expect(el.tabIndex).to.equal(0);
+    });
+
+    it('should clear inert and data-is-selected when isSelected clears', async () => {
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button is-quick-action ?isSelected="${true}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+
+      el.isSelected = false;
+      await el.updateComplete;
+      expect(el.inert).to.be.false;
+      expect(el.hasAttribute('data-is-selected')).to.be.false;
+    });
+
+    it('should preserve consumer disabled=true when isSelected clears', async () => {
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button
+          is-quick-action
+          ?disabled="${true}"
+          ?isSelected="${true}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+      expect(el.disabled).to.be.true;
+      expect(el.hasAttribute('data-is-selected')).to.be.true;
+
+      el.isSelected = false;
+      await el.updateComplete;
+      expect(el.disabled).to.be.true;
+      expect(el.hasAttribute('data-is-selected')).to.be.false;
+    });
+
+    it('should preserve consumer disabled=true when set while isSelected=true then isSelected clears', async () => {
+      const el = await fixture<ChatButton>(
+        html`<cds-aichat-button is-quick-action ?isSelected="${true}">
+          quick action
+        </cds-aichat-button>`
+      );
+
+      await el.updateComplete;
+
+      el.disabled = true;
+      await el.updateComplete;
+
+      el.isSelected = false;
+      await el.updateComplete;
+      expect(el.disabled).to.be.true;
+      expect(el.hasAttribute('data-is-selected')).to.be.false;
     });
   });
 });

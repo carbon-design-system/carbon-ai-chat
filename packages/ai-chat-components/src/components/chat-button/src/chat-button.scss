@@ -2,7 +2,7 @@
  *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
+ *  Apache-2.0 license found in the LICENSE file in the root directory of this source tree.
  */
 
 @use '../../../globals/scss/vars' as *;
@@ -81,26 +81,16 @@
   }
 }
 
-:host(#{$prefix}-button[is-quick-action][isselected]) {
-  // Selected state: visually matches the selected appearance without setting the
-  // HTML disabled attribute. Pointer events remain active so the button is still
-  // interactive (e.g. can be de-selected). The &[disabled] override ensures the
-  // selected colours win even when the button is also genuinely disabled.
+:host(#{$prefix}-button[is-quick-action][data-is-selected]) {
   .#{$cds-prefix}--btn {
     border: convert.to-rem(1px) solid button-tokens.$button-disabled;
     background: theme.$background-selected;
     color: theme.$text-secondary;
-    cursor: not-allowed;
+  }
 
-    &[disabled] {
-      background: theme.$background-selected;
-      color: theme.$text-secondary;
-    }
-
-    &:hover:not([disabled]) {
-      border-color: button-tokens.$button-disabled;
-      background: theme.$background-selected;
-      color: theme.$text-secondary;
-    }
+  .#{$cds-prefix}--btn.#{$cds-prefix}--btn--ghost:disabled,
+  .#{$cds-prefix}--btn.#{$cds-prefix}--btn--ghost:hover:disabled {
+    background: theme.$background-selected;
+    color: theme.$text-secondary;
   }
 }
