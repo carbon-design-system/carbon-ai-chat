@@ -632,7 +632,7 @@ export const WithLinkOverride = {
             </strong>
           </p>
         </Modal>
-        <Markdown {...args} customRenderers={customRenderers} />
+        <Markdown markdown={args.markdown} customRenderers={customRenderers} />
       </div>
     );
   },
