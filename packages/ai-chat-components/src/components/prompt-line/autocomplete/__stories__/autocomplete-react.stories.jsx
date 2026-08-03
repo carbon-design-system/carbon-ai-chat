@@ -168,11 +168,12 @@ export default {
     inputText: {
       control: 'text',
       description:
-        'The current input text. Suggestion items will apply styling to indicate what user has already typed.',
+        'The current input text. Suggestion items will apply styling to indicate what the user has already typed.',
     },
     enableSendButton: {
       control: 'boolean',
-      description: 'Whether to enable the send button',
+      description:
+        'Whether to render the send button inside each suggestion item.',
     },
     attached: {
       control: 'boolean',
