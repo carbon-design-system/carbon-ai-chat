@@ -205,9 +205,9 @@ describe('ChatInstance.input.updateContent (configured tiptap extension)', () =>
 
     // The custom node survives because the editor mounted with the staged
     // extension installed in its schema.
-    expect(JSON.stringify(promptLine.getEditor()!.getJSON())).toContain(
-      'testChip'
-    );
+    const editor = promptLine.getEditor();
+    expect(editor).not.toBeNull();
+    expect(JSON.stringify(editor.getJSON())).toContain('testChip');
   });
 });
 

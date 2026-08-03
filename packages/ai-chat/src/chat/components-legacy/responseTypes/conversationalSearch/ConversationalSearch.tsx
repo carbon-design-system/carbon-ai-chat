@@ -7,15 +7,14 @@
  *  @license
  */
 
-import React, { Suspense, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import { ScrollElementIntoViewFunction } from '../../MessagesComponent';
 import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
-import { SkeletonPlaceholder } from '../../../components/util/SkeletonPicker';
-import InlineError from '../../../components/util/InlineError';
+import InlineError from '../../../components/responseTypes/error/InlineError';
 import { CitationCard } from '../util/citations/CitationCard';
 import { ConversationalSearchText } from './ConversationalSearchText';
 import {
@@ -117,14 +116,12 @@ function ConversationalSearch({
 
     return (
       <div className="cds-aichat--conversational-search-citations">
-        <Suspense fallback={<SkeletonPlaceholder />}>
-          <Carousel
-            nextBtnText={languagePack.carousel_nextNavButton}
-            previousBtnText={languagePack.carousel_prevNavButton}
-            onChange={onChangeHandler}>
-            <div>{tiles}</div>
-          </Carousel>
-        </Suspense>
+        <Carousel
+          nextBtnText={languagePack.carousel_nextNavButton}
+          previousBtnText={languagePack.carousel_prevNavButton}
+          onChange={onChangeHandler}>
+          <div>{tiles}</div>
+        </Carousel>
       </div>
     );
   }

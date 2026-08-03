@@ -15,8 +15,23 @@ import {
 } from '../../test_helpers';
 import { fireEvent } from '@testing-library/react';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
+import type { KeyboardShortcuts } from '../../../src/types/config/ShortcutConfig';
+import type { AppStore } from '../../../src/chat/store/appStore';
+import type { AppState } from '../../../src/types/state/AppState';
+import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
+import actions from '../../../src/chat/store/actions';
 
-// Helper to create a test message
+const ANNOUNCEMENT_ID = 'input_keyboardShortcutAnnouncement';
+
+/**
+ * The clause the detailed scroll-handle labels gain only while the shortcut is enabled.
+ * Its presence is how we assert that what a screen reader is told matches what the
+ * keydown handler actually does.
+ */
+const SHORTCUT_CLAUSE =
+  'to toggle between the message list and the input field';
+
 const createTestMessage = (text: string) => ({
   output: {
     generic: [
@@ -28,614 +43,318 @@ const createTestMessage = (text: string) => ({
   },
 });
 
+interface BootedChat {
+  store: AppStore<AppState>;
+  serviceManager: ServiceManager;
+  root: ShadowRoot;
+  /** Carries `containerRef` in `AppShell`, which is where the keydown listener lives. */
+  widget: HTMLElement;
+  input: HTMLElement;
+}
+
+/**
+ * Renders an open chat with one message and returns the handles a shortcut test needs.
+ *
+ * `openChatByDefault` matters: the keydown listener is only attached while the main
+ * window is open, so a closed chat can never exercise a shortcut.
+ */
+async function bootChat(
+  messageID?: string,
+  keyboardShortcuts?: KeyboardShortcuts
+): Promise<BootedChat> {
+  const config = createBaseConfig();
+  config.openChatByDefault = true;
+  if (keyboardShortcuts) {
+    config.keyboardShortcuts = keyboardShortcuts;
+  }
+
+  const { instance, store, serviceManager } =
+    await renderChatAndGetInstanceWithStore(config);
+  if (messageID) {
+    await instance.messaging.addMessage({
+      id: messageID,
+      ...createTestMessage('Test message'),
+    });
+  }
+
+  const root = document.querySelector('cds-aichat-react').shadowRoot;
+  const widget = root.querySelector<HTMLElement>('.cds-aichat--widget');
+  const input = root.querySelector<HTMLElement>('[data-testid="input_field"]');
+
+  expect(widget).toBeTruthy();
+  expect(input).toBeTruthy();
+
+  return { store, serviceManager, root, widget, input };
+}
+
+/**
+ * Fires a keydown and reports whether a handler claimed it via `preventDefault()`, which
+ * `fireEvent` signals by returning `false`.
+ *
+ * Only sound when fired on `widget` or `input`: the scroll handles run their own
+ * `preventDefault` for Enter/Space/Escape, so firing there conflates producers.
+ */
+function pressKey(
+  target: HTMLElement,
+  init: Record<string, unknown>
+): { handled: boolean } {
+  const notPrevented = fireEvent.keyDown(target, { bubbles: true, ...init });
+  return { handled: !notPrevented };
+}
+
+/**
+ * Text of both detailed scroll handles. Asserts the arity so a rendering regression fails
+ * loudly instead of turning every `forEach` assertion into a no-op.
+ */
+function scrollHandleText(root: ShadowRoot): string[] {
+  const texts = Array.from(
+    root.querySelectorAll('.cds-aichat--messages--scroll-handle-desktop')
+  ).map((handle) => handle.textContent ?? '');
+  expect(texts).toHaveLength(2);
+  return texts;
+}
+
+/** Triggers the one-shot first-focus announcement and returns whatever was announced. */
+function announceOnInputFocus(chat: BootedChat) {
+  fireEvent.focus(chat.input);
+  return chat.store.getState().announceMessage;
+}
+
 describe('Keyboard Shortcuts', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  describe('Focus Toggle (F6)', () => {
-    it('should use default shortcut when not configured', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
+  describe('Default resolution', () => {
+    it('resolves the documented defaults when no config is supplied', async () => {
+      const { store } = await bootChat('resolve-1');
 
-      // Add a message
-      await instance.messaging.addMessage({
-        id: 'test-msg-1',
-        output: {
-          generic: [
-            {
-              response_type: MessageResponseTypes.TEXT,
-              text: 'Test message',
-            },
-          ],
-        },
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-1']).toBeDefined();
-
-      // Trigger default shortcut (F6)
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // The shortcut should be registered (we can't easily test focus changes in jsdom)
-      // but we can verify no errors occurred
-      expect(true).toBe(true);
+      expect(
+        store.getState().config.derived.keyboardShortcuts.messageFocusToggle
+      ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
 
-    it('should use custom shortcut when configured', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
+    it('fills in missing fields rather than replacing the whole object', async () => {
+      const { store } = await bootChat('resolve-2', {
+        messageFocusToggle: { key: 'F7', modifiers: {}, isOn: true },
+      });
+
+      expect(
+        store.getState().config.derived.keyboardShortcuts.messageFocusToggle
+      ).toEqual({ key: 'F7', modifiers: {}, isOn: true });
+    });
+
+    it('keeps an explicit isOn: false rather than treating it as unset', async () => {
+      const { store } = await bootChat('resolve-3', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: false },
+      });
+
+      expect(
+        store.getState().config.derived.keyboardShortcuts.messageFocusToggle
+          .isOn
+      ).toBe(false);
+    });
+  });
+
+  describe('isOn', () => {
+    it('is disabled out of the box, and says so consistently', async () => {
+      const chat = await bootChat('is-on-1');
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(false);
+      scrollHandleText(chat.root).forEach((text) => {
+        expect(text).not.toContain(SHORTCUT_CLAUSE);
+      });
+      expect(announceOnInputFocus(chat)?.messageID).not.toBe(ANNOUNCEMENT_ID);
+    });
+
+    it('stays disabled for a partial config that omits isOn', async () => {
+      // Regression test: this config used to enable the scroll-handle announcement while
+      // leaving the keydown handler switched off, so a screen reader was told to press a
+      // key that did nothing.
+      const chat = await bootChat('is-on-2', {
+        messageFocusToggle: { key: 'F6', modifiers: {} },
+      });
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(false);
+      scrollHandleText(chat.root).forEach((text) => {
+        expect(text).not.toContain(SHORTCUT_CLAUSE);
+      });
+      expect(announceOnInputFocus(chat)?.messageID).not.toBe(ANNOUNCEMENT_ID);
+    });
+
+    it('enables the shortcut, the labels, and the announcement together', async () => {
+      const chat = await bootChat('is-on-3', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+      });
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(true);
+      scrollHandleText(chat.root).forEach((text) => {
+        expect(text).toContain(`Press F6 ${SHORTCUT_CLAUSE}`);
+      });
+      expect(announceOnInputFocus(chat)).toEqual({
+        messageID: ANNOUNCEMENT_ID,
+        messageValues: { key: 'F6' },
+      });
+    });
+
+    it('suppresses the shortcut, the labels, and the announcement together', async () => {
+      const chat = await bootChat('is-on-4', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: false },
+      });
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(false);
+      scrollHandleText(chat.root).forEach((text) => {
+        expect(text).not.toContain(SHORTCUT_CLAUSE);
+      });
+      expect(announceOnInputFocus(chat)?.messageID).not.toBe(ANNOUNCEMENT_ID);
+    });
+  });
+
+  // `matchesShortcut` itself is unit-tested exhaustively in
+  // tests/utils/spec/keyboardUtils_spec.ts. These cases only prove the *resolved* config
+  // reaches it, so one positive and one negative are enough.
+  describe('Key and modifier matching', () => {
+    it('matches a custom key and ignores the default one', async () => {
+      const chat = await bootChat('match-1', {
+        messageFocusToggle: { key: 'f', modifiers: { ctrl: true }, isOn: true },
+      });
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(false);
+      expect(pressKey(chat.widget, { key: 'f', ctrlKey: true }).handled).toBe(
+        true
+      );
+    });
+
+    it('does not match when an unconfigured modifier is held', async () => {
+      const chat = await bootChat('match-2', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+      });
+
+      expect(pressKey(chat.widget, { key: 'F6', ctrlKey: true }).handled).toBe(
+        false
+      );
+    });
+  });
+
+  describe('Focus toggle behavior', () => {
+    it('returns focus to the input when focus is elsewhere', async () => {
+      const chat = await bootChat('toggle-1', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+      });
+
+      // The input autofocuses at boot, so move focus off it first — otherwise the toggle
+      // would run its other branch and this would assert nothing.
+      chat.input.blur();
+      expect(getDeepActiveElement()).not.toBe(chat.input);
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(true);
+
+      // `handleFocusToggle` swallows its own throws, so asserting on focus rather than on
+      // `preventDefault` is what makes this test able to fail.
+      expect(getDeepActiveElement()).toBe(chat.input);
+    });
+
+    it('does not move focus back to the input when the shortcut is disabled', async () => {
+      const chat = await bootChat('toggle-2');
+
+      chat.input.blur();
+
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(false);
+      expect(getDeepActiveElement()).not.toBe(chat.input);
+    });
+
+    it('claims the shortcut even when it originates in the input field', async () => {
+      const chat = await bootChat('toggle-3', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+      });
+
+      expect(pressKey(chat.input, { key: 'F6' }).handled).toBe(true);
+    });
+
+    it('does not claim the shortcut from the input when disabled', async () => {
+      const chat = await bootChat('toggle-4');
+
+      expect(pressKey(chat.input, { key: 'F6' }).handled).toBe(false);
+    });
+  });
+
+  describe('Announcement parity', () => {
+    it('announces the same formatted shortcut the scroll handles display', async () => {
+      const chat = await bootChat('announce-1', {
         messageFocusToggle: {
-          key: 'f',
-          modifiers: { ctrl: true },
+          key: 'k',
+          modifiers: { ctrl: true, shift: true },
+          isOn: true,
         },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-2',
-        ...createTestMessage('Test message'),
       });
 
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-2']).toBeDefined();
-
-      // Default shortcut should not work
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
+      expect(announceOnInputFocus(chat)).toEqual({
+        messageID: ANNOUNCEMENT_ID,
+        messageValues: { key: 'Ctrl + Shift + K' },
       });
-
-      // Custom shortcut should work
-      fireEvent.keyDown(document, {
-        key: 'f',
-        ctrlKey: true,
-        bubbles: true,
+      scrollHandleText(chat.root).forEach((text) => {
+        expect(text).toContain(`Press Ctrl + Shift + K ${SHORTCUT_CLAUSE}`);
       });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
     });
 
-    it('should not trigger with wrong modifiers', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-3',
-        ...createTestMessage('Test message'),
+    it('announces only on the first focus', async () => {
+      const chat = await bootChat('announce-2', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
       });
 
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-3']).toBeDefined();
-
-      // Try with wrong modifiers (should not trigger)
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        ctrlKey: true, // Wrong modifier (F6 has no modifiers by default)
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should not trigger with wrong key', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-4',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-4']).toBeDefined();
-
-      // Try with wrong key
-      fireEvent.keyDown(document, {
-        key: 'F7', // Wrong key
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should handle case when no messages exist', async () => {
-      const config = createBaseConfig();
-      await renderChatAndGetInstanceWithStore(config);
-
-      // Should not throw error when no messages exist
-      expect(() => {
-        fireEvent.keyDown(document, {
-          key: 'F6',
-          bubbles: true,
-        });
-      }).not.toThrow();
-    });
-
-    it('should handle multiple messages', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      // Add multiple messages
-      await instance.messaging.addMessage({
-        id: 'msg-1',
-        ...createTestMessage('First message'),
-      });
-      await instance.messaging.addMessage({
-        id: 'msg-2',
-        ...createTestMessage('Second message'),
-      });
-      await instance.messaging.addMessage({
-        id: 'msg-3',
-        ...createTestMessage('Third message'),
-      });
-
-      // Verify messages were added to store
-      const state = store.getState();
-      expect(Object.keys(state.allMessagesByID).length).toBeGreaterThanOrEqual(
-        3
+      fireEvent.focus(chat.input);
+      expect(chat.store.getState().announceMessage?.messageID).toBe(
+        ANNOUNCEMENT_ID
       );
 
-      // Trigger shortcut
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
+      // The announcement is one-shot.
+      chat.store.dispatch(actions.announceMessage(null));
+      fireEvent.blur(chat.input);
+      fireEvent.focus(chat.input);
+
+      expect(chat.store.getState().announceMessage).toBeNull();
+    });
+  });
+
+  // With the shortcut off by default, "Press escape to exit the message list" is the only
+  // keyboard promise the out-of-the-box scroll-handle label still makes.
+  describe('Escape key handling', () => {
+    it('leaves Escape alone while focus is in the input', async () => {
+      const chat = await bootChat('escape-1', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
       });
 
-      // Verify no errors occurred
-      expect(true).toBe(true);
+      // Real focus, not a synthetic focus event — the handler reads document.activeElement.
+      chat.input.focus();
+
+      expect(pressKey(chat.widget, { key: 'Escape' }).handled).toBe(false);
     });
 
-    it('should handle rapid shortcut key presses', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
+    it('leaves Escape alone while the shortcut is disabled', async () => {
+      const chat = await bootChat('escape-2');
 
-      await instance.messaging.addMessage({
-        id: 'test-msg-5',
-        ...createTestMessage('Test message'),
+      chat.input.focus();
+
+      expect(pressKey(chat.widget, { key: 'Escape' }).handled).toBe(false);
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('handles the shortcut when the conversation is empty', async () => {
+      const chat = await bootChat(undefined, {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
       });
 
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-5']).toBeDefined();
+      expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(true);
+    });
 
-      // Trigger shortcut multiple times rapidly
+    it('keeps working across repeated presses', async () => {
+      const chat = await bootChat('edge-2', {
+        messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+      });
+
       for (let i = 0; i < 5; i++) {
-        fireEvent.keyDown(document, {
-          key: 'F6',
-          bubbles: true,
-        });
+        expect(pressKey(chat.widget, { key: 'F6' }).handled).toBe(true);
       }
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should work with different keyboard layouts', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-6',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-6']).toBeDefined();
-
-      // Test with lowercase (should still work due to case-insensitive matching)
-      fireEvent.keyDown(document, {
-        key: 'f6',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-  });
-
-  describe('Escape Key Handling', () => {
-    it('should handle Escape key press', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-7',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-7']).toBeDefined();
-
-      // Trigger Escape key on document
-      fireEvent.keyDown(document, {
-        key: 'Escape',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should not interfere with other Escape key handlers', async () => {
-      const config = createBaseConfig();
-      await renderChatAndGetInstanceWithStore(config);
-
-      // Trigger Escape on document
-      fireEvent.keyDown(document, {
-        key: 'Escape',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-  });
-
-  describe('Keyboard Shortcut Configuration', () => {
-    it('should accept valid shortcut configuration', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'm',
-          modifiers: { alt: true, ctrl: true },
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-8',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-8']).toBeDefined();
-
-      // Trigger custom shortcut
-      fireEvent.keyDown(document, {
-        key: 'm',
-        altKey: true,
-        ctrlKey: true,
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should handle shortcut with only one modifier', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'F6',
-          modifiers: { shift: true },
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-9',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-9']).toBeDefined();
-
-      // Trigger custom shortcut
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        shiftKey: true,
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should handle shortcut with all modifiers', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'k',
-          modifiers: { ctrl: true, alt: true, shift: true, meta: true },
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-10',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-10']).toBeDefined();
-
-      // Trigger custom shortcut
-      fireEvent.keyDown(document, {
-        key: 'k',
-        ctrlKey: true,
-        altKey: true,
-        shiftKey: true,
-        metaKey: true,
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should handle special function keys', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'F12',
-          modifiers: { ctrl: true },
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-11',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-11']).toBeDefined();
-
-      // Trigger custom shortcut
-      fireEvent.keyDown(document, {
-        key: 'F12',
-        ctrlKey: true,
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle messages being added after shortcut registration', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      // Trigger shortcut before any messages exist
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // Now add a message
-      await instance.messaging.addMessage({
-        id: 'test-msg-12',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-12']).toBeDefined();
-
-      // Trigger shortcut again
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should handle messages being removed', async () => {
-      const config = createBaseConfig();
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-13',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added
-      let state = store.getState();
-      expect(state.allMessagesByID['test-msg-13']).toBeDefined();
-
-      // Clear conversation
-      await instance.messaging.clearConversation();
-
-      // Verify messages were cleared
-      state = store.getState();
-      expect(Object.keys(state.allMessagesByID).length).toBe(0);
-
-      // Trigger shortcut after messages removed
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should not break when event target is null', async () => {
-      const config = createBaseConfig();
-      await renderChatAndGetInstanceWithStore(config);
-
-      // Create event without target
-      const event = new KeyboardEvent('keydown', {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // Should not throw
-      expect(() => {
-        document.dispatchEvent(event);
-      }).not.toThrow();
-    });
-  });
-
-  describe('is_on Property', () => {
-    it('should enable shortcuts when is_on is true', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'F6',
-          modifiers: {},
-          is_on: true,
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-14',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-14']).toBeDefined();
-
-      // Shortcut should work
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should disable shortcuts when is_on is false', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'F6',
-          modifiers: {},
-          is_on: false,
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-15',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-15']).toBeDefined();
-
-      // Shortcut should not work (but should not throw errors)
-      expect(() => {
-        fireEvent.keyDown(document, {
-          key: 'F6',
-          bubbles: true,
-        });
-      }).not.toThrow();
-    });
-
-    it('should enable shortcuts by default when is_on is undefined (inherits from DEFAULT which is true)', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'F6',
-          modifiers: {},
-          // is_on is undefined, should default to enabled (true)
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-16',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-16']).toBeDefined();
-
-      // Shortcut should work by default
-      fireEvent.keyDown(document, {
-        key: 'F6',
-        bubbles: true,
-      });
-
-      // Verify no errors occurred
-      expect(true).toBe(true);
-    });
-
-    it('should respect is_on with custom key combinations', async () => {
-      const config = createBaseConfig();
-      config.keyboardShortcuts = {
-        messageFocusToggle: {
-          key: 'k',
-          modifiers: {
-            ctrl: true,
-            shift: true,
-          },
-          is_on: false,
-        },
-      };
-
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(config);
-
-      await instance.messaging.addMessage({
-        id: 'test-msg-17',
-        ...createTestMessage('Test message'),
-      });
-
-      // Verify message was added to store
-      const state = store.getState();
-      expect(state.allMessagesByID['test-msg-17']).toBeDefined();
-
-      // Shortcut should not work when disabled
-      expect(() => {
-        fireEvent.keyDown(document, {
-          key: 'k',
-          ctrlKey: true,
-          shiftKey: true,
-          bubbles: true,
-        });
-      }).not.toThrow();
     });
   });
 });

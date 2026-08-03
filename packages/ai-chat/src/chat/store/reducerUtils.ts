@@ -48,6 +48,7 @@ import {
   MinimizeButtonIconType,
 } from '../../types/config/HeaderConfig';
 import { LayoutConfig } from '../../types/config/LayoutConfig';
+import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
 import {
   LocalMessageItem,
   LocalMessageUIState,
@@ -93,6 +94,24 @@ const DEFAULT_LAUNCHER: LauncherConfig = {
   },
 };
 deepFreeze(DEFAULT_LAUNCHER);
+
+/**
+ * Defaults for the message focus toggle shortcut, merged field by field with whatever the
+ * host passes on {@link KeyboardShortcuts.messageFocusToggle}, so a host that sets only
+ * `key` still gets the default `modifiers` and `isOn`.
+ *
+ * F6 is a standard accessibility shortcut used in Windows and many applications for cycling
+ * between major regions and panels. It doesn't produce special characters and is widely
+ * recognized for navigation purposes.
+ *
+ * The shortcut is off by default; a host opts in with `isOn: true`.
+ */
+const DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT: ChatShortcutConfig = {
+  key: 'F6',
+  modifiers: {},
+  isOn: false,
+};
+deepFreeze(DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT);
 
 const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   hideBackButton: false,
@@ -642,6 +661,7 @@ export {
   WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
   PANEL_CONFIG_OPTIONS_BY_TYPE,
   DEFAULT_LAUNCHER,
+  DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
   DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,
   DEFAULT_LAYOUT_STATE,

@@ -636,9 +636,10 @@ class ChatActionsImpl {
       return;
     }
 
-    // Rich editor mounted: apply directly so rich nodes / marks survive.
-    if (editor) {
-      ref!.setContent(next);
+    // Rich editor mounted: apply directly so rich nodes / marks survive. `editor` is
+    // derived from `ref`, so testing both narrows the ref instead of asserting it.
+    if (ref && editor) {
+      ref.setContent(next);
       return;
     }
 
@@ -756,7 +757,7 @@ class ChatActionsImpl {
     const uploadConfig = store.getState().config.public.upload;
 
     // Silently no-op if upload is not configured or disabled.
-    if (!uploadConfig?.is_on || !uploadConfig.onFileUpload) {
+    if (!uploadConfig?.isOn || !uploadConfig.onFileUpload) {
       return;
     }
 

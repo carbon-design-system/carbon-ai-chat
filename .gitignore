@@ -105,3 +105,6 @@ packages/ai-chat-components/scss
 # Legacy repo-root draft locations, superseded by .github/*-drafts/ above.
 /PR.md
 /PLAN*.md
+
+.github/issue-drafts
+

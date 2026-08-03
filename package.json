@@ -156,6 +156,15 @@
       }
     ],
     "rules": {
+      "no-warning-comments": [
+        "error",
+        {
+          "terms": [
+            "Made with Bob"
+          ],
+          "location": "anywhere"
+        }
+      ],
       "jsdoc/check-tag-names": [
         "error",
         {
@@ -234,6 +243,15 @@
           "ignoreTypes": [
             "/^cds-/"
           ]
+        }
+      ],
+      "comment-word-disallowed-list": [
+        [
+          "Made with Bob"
+        ],
+        {
+          "message": "Remove tool-generated watermark comments ('Made with Bob')",
+          "severity": "error"
         }
       ]
     }

@@ -634,7 +634,7 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 | `MessageRequest` | `@carbon/ai-chat` type | Inspected for `structured_data` to echo files. |
 | `ChatInstance` | `@carbon/ai-chat` type | Used by the mock server response helper. |
 | `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` used to echo file metadata. |
-| `upload.is_on` | config prop | Enables attachments. |
+| `upload.isOn` | config prop | Enables attachments. |
 | `upload.onFileUpload` | config prop | Mock upload handler returning `StructuredData`. |
 | `upload.accept` (documented) | config prop | Optional MIME/extension allowlist. |
 | `upload.maxFileSizeBytes` (documented) | config prop | Optional per-file size cap. |

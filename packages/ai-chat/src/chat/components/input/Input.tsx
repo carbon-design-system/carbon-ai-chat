@@ -8,7 +8,7 @@
  */
 
 import React, { forwardRef, Ref, useMemo, useRef, useState } from 'react';
-import { AnnounceOnMountComponent } from '../util/AnnounceOnMountComponent';
+import { AnnounceOnMount } from '../helpers/AnnounceOnMount/AnnounceOnMount';
 import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
 import InputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
 import FileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
@@ -31,6 +31,7 @@ import { useServiceManager } from '../../hooks/useServiceManager';
 import { useIntl } from '../../hooks/useIntl';
 import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
 import { validateFileSelection } from '../../utils/fileUploadValidation';
+import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
 import { useInputConfig } from '../../hooks/useInputConfig';
 import { useRichSurface } from './useRichSurface';
 import { useInputValueSync } from './useInputValueSync';
@@ -381,14 +382,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     if (!hasAnnouncedShortcut) {
       const shortcutConfig =
-        store.getState().config.public.keyboardShortcuts?.messageFocusToggle;
+        store.getState().config.derived.keyboardShortcuts.messageFocusToggle;
 
-      if (shortcutConfig?.is_on) {
-        const key = shortcutConfig.key;
+      if (shortcutConfig.isOn) {
         store.dispatch(
           actions.announceMessage({
             messageID: 'input_keyboardShortcutAnnouncement',
-            messageValues: { key },
+            messageValues: {
+              // Formatted through the same helper the scroll-handle labels use, so the
+              // announced and the displayed shortcut never disagree about modifiers.
+              key: formatShortcutForDisplay(shortcutConfig),
+            },
           })
         );
         setHasAnnouncedShortcut(true);
@@ -551,7 +555,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       );
       return (
         <div slot="field-messaging">
-          <AnnounceOnMountComponent
+          <AnnounceOnMount
             announceOnce={`Error: Max character count exceeded. ${errorText}`}>
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
@@ -559,7 +563,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
               description={errorText}
               collapsible={true}
             />
-          </AnnounceOnMountComponent>
+          </AnnounceOnMount>
         </div>
       );
     }
@@ -574,14 +578,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     return (
       <div slot="field-messaging">
-        <AnnounceOnMountComponent announceOnce={announcement}>
+        <AnnounceOnMount announceOnce={announcement}>
           <ErrorMessage
             fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
             title={error.title}
             description={error?.description}
             collapsible={error?.collapsible}
           />
-        </AnnounceOnMountComponent>
+        </AnnounceOnMount>
       </div>
     );
   };

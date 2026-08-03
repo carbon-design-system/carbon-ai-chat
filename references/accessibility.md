@@ -21,7 +21,7 @@ Don't write raw `aria-live` attributes for app-level announcements. Use the cent
 
 | Package | How to announce |
 | --- | --- |
-| `@carbon/ai-chat` (React) | [`useAriaAnnouncer()`](../packages/ai-chat/src/chat/hooks/useAriaAnnouncer.tsx) for ad-hoc announcements. [`AnnounceOnMountComponent`](../packages/ai-chat/src/chat/components/util/AnnounceOnMountComponent.tsx) for content that should be announced on mount. The provider that backs both lives in [`AriaAnnouncerComponent`](../packages/ai-chat/src/chat/components/aria/AriaAnnouncerComponent.tsx). |
+| `@carbon/ai-chat` (React) | [`useAriaAnnouncer()`](../packages/ai-chat/src/chat/hooks/useAriaAnnouncer.tsx) for ad-hoc announcements. [`AnnounceOnMount`](../packages/ai-chat/src/chat/components/helpers/AnnounceOnMount/AnnounceOnMount.tsx) for content that should be announced on mount. The provider that backs both lives in [`AriaAnnouncerComponent`](../packages/ai-chat/src/chat/components/aria/AriaAnnouncerComponent.tsx). |
 | `@carbon/ai-chat-components` (Lit) | [`AriaAnnouncerManager`](../packages/ai-chat-components/src/globals/utils/aria-announcer-manager.ts) from the package's public API. Render visually-hidden regions in `render()`, `connect(regions)` in `firstUpdated`, `disconnect()` in `disconnectedCallback`, call `announce(text)` to speak. |
 
 Both back ends share the same manager class — fixes propagate to both consumers.

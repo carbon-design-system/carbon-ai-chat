@@ -12,14 +12,15 @@
  *
  * Demonstrates: replicating the built-in float / launcher view using
  * `ChatCustomElement` styled with the shipped float-layout CSS plus a
- * custom `ChatButton` launcher controlled via `VIEW_CHANGE`. Useful when
- * you need full control over launcher animations, accessibility, or
+ * standalone `Launcher` component controlled via `VIEW_CHANGE`. Useful
+ * when you need full control over launcher animations, accessibility, or
  * positioning that the built-in `ChatContainer` does not expose.
  *
  * APIs exercised:
  *   - `ChatCustomElement` styled with float-layout + launcher-layout CSS
+ *   - `Launcher` (standalone launcher component)
  *   - `BusEventType.VIEW_CHANGE` for the open/closed phase machine
- *   - `PublicConfig.launcher.isOn` (disabled to use a custom launcher)
+ *   - `PublicConfig.launcher.isOn` (disabled to use the standalone Launcher)
  *
  * Start reading at: `App()` and the `VIEW_CHANGE` handler.
  */
@@ -34,8 +35,7 @@ import {
   PublicConfig,
   ViewType,
 } from '@carbon/ai-chat';
-import { AiLaunch } from '@carbon/icons-react';
-import ChatButton from '@carbon/ai-chat-components/es/react/chat-button.js';
+import Launcher from '@carbon/ai-chat-components/es/react/launcher.js';
 import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -48,7 +48,7 @@ const config: PublicConfig = {
   messaging: {
     customSendMessage,
   },
-  // Suppress the built-in launcher — our custom ChatButton acts as the launcher.
+  // Suppress the built-in launcher — our standalone Launcher acts as the launcher.
   launcher: { isOn: false },
 };
 
@@ -149,15 +149,12 @@ function App() {
       {/* Launcher is not rendered until onAfterRender fires, guaranteeing
           instanceRef.current is set before handleLauncherClick can be called. */}
       {chatReady && (
-        <ChatButton
+        <Launcher
           className={getLauncherClass()}
-          hasIconOnly
-          iconDescription="Open chat"
-          kind="primary"
-          size="lg"
-          onClick={handleLauncherClick}>
-          <AiLaunch slot="icon" />
-        </ChatButton>
+          aiEnabled
+          closedLabel="Open chat"
+          onToggle={handleLauncherClick}
+        />
       )}
     </>
   );

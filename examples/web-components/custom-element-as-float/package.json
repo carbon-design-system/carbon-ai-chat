@@ -3,7 +3,7 @@
   "version": "1.18.0",
   "private": true,
   "type": "module",
-  "description": "Example using cds-aichat-custom-element with float layout classes and a custom icon launcher to replicate the built-in float view from cds-aichat-container.",
+  "description": "Example using cds-aichat-custom-element with float layout classes and the standalone cds-aichat-launcher component to replicate the built-in float view from cds-aichat-container.",
   "scripts": {
     "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js"

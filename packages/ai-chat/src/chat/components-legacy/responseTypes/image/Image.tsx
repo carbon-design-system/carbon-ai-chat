@@ -9,18 +9,15 @@
 
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import cx from 'classnames';
-import AISkeletonPlaceholder from '../../../components/carbon/AISkeletonPlaceholder';
-import SkeletonPlaceholder from '../../../components/carbon/SkeletonPlaceholder';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { HasClassName } from '../../../../types/utilities/HasClassName';
-import { HasNeedsAnnouncement } from '../../../../types/utilities/HasNeedsAnnouncement';
 import { getURLHostName } from '../../../utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
-import InlineError from '../../../components/util/InlineError';
-import { TextBlock } from '../../../components/util/TextBlock/TextBlock';
+import InlineError from '../../../components/responseTypes/error/InlineError';
+import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
-interface ImageProps extends HasNeedsAnnouncement, HasClassName {
+interface ImageProps extends HasClassName {
   source: string;
   title?: string;
   description?: string;
@@ -52,11 +49,6 @@ interface ImageProps extends HasNeedsAnnouncement, HasClassName {
    * The callback function to fire when the image loads.
    */
   onImageLoad?: () => void;
-
-  /**
-   * If it should use the AI theme for skeletons.
-   */
-  useAITheme?: boolean;
 
   /**
    * If the image should be displayed inline with no tile.
@@ -157,13 +149,11 @@ function ImageOnly({
   displayURL,
   preventInlineError,
   onImageLoad,
-  useAITheme,
   isLoaded,
   isError,
   setIsLoaded,
   setIsError,
   className,
-  inline,
 }: ImageOnlyProps) {
   const [isImageHidden, setIsImageHidden] = useState(false);
   const imageAlt = altText || title || description || '';
@@ -181,7 +171,7 @@ function ImageOnly({
   }, [preventInlineError, hasText, setIsError]);
 
   // This effect sets a timeout that auto error handles after 10 seconds of waiting for the image to load. Once the
-  // image has loaded, the skeleton will be hidden, and we can clear the timeout.
+  // image has loaded, we can clear the timeout.
   useEffect(() => {
     let errorTimeout: ReturnType<typeof setTimeout> = null;
     if (!isLoaded) {
@@ -193,33 +183,24 @@ function ImageOnly({
     };
   }, [isLoaded, handleError]);
 
+  if (isError || isImageHidden || !source) {
+    return null;
+  }
+
   return (
-    <>
-      {!isLoaded &&
-        !isImageHidden &&
-        !inline &&
-        source &&
-        (useAITheme ? (
-          <AISkeletonPlaceholder className="cds-aichat--image__skeleton" />
-        ) : (
-          <SkeletonPlaceholder className="cds-aichat--image__skeleton" />
-        ))}
-      {!isError && !isImageHidden && source && (
-        <img
-          className={cx('cds-aichat--image__image', {
-            [className]: className,
-            'cds-aichat--image__image--loaded': isLoaded,
-          })}
-          src={source}
-          alt={imageAlt}
-          onLoad={() => {
-            onImageLoad?.();
-            setIsLoaded(true);
-          }}
-          onError={handleError}
-        />
-      )}
-    </>
+    <img
+      className={cx('cds-aichat--image__image', {
+        [className]: className,
+        'cds-aichat--image__image--loaded': isLoaded,
+      })}
+      src={source}
+      alt={imageAlt}
+      onLoad={() => {
+        onImageLoad?.();
+        setIsLoaded(true);
+      }}
+      onError={handleError}
+    />
   );
 }
 
