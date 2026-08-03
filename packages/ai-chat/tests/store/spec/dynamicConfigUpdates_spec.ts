@@ -114,20 +114,49 @@ describe('Dynamic Config Updates', () => {
     });
 
     it('should turn the keyboard shortcut on and back off at runtime', async () => {
+      // Turn it on with a non-default key so the retraction below can't pass by
+      // coincidence: if the update failed to take, the key would still read F7.
       await applyConfigChangesDynamically(
         initialState.config.public,
         {
           keyboardShortcuts: {
-            messageFocusToggle: { key: 'F6', modifiers: {}, isOn: true },
+            messageFocusToggle: { key: 'F7', modifiers: {}, isOn: true },
           },
         },
         serviceManager
       );
       expect(
         serviceManager.store.getState().config.derived.keyboardShortcuts
-          .messageFocusToggle.isOn
-      ).toBe(true);
+          .messageFocusToggle
+      ).toEqual({ key: 'F7', modifiers: {}, isOn: true });
 
+      // Retract with an explicit `isOn: false` — the toggle alone, which is what
+      // the demo's switcher dispatches.
+      await applyConfigChangesDynamically(
+        serviceManager.store.getState().config.public,
+        { keyboardShortcuts: { messageFocusToggle: { isOn: false } } },
+        serviceManager
+      );
+      expect(
+        serviceManager.store.getState().config.derived.keyboardShortcuts
+          .messageFocusToggle
+      ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
+    });
+
+    it('should rebuild from the new config rather than merging onto the previous one', async () => {
+      await applyConfigChangesDynamically(
+        initialState.config.public,
+        {
+          keyboardShortcuts: {
+            messageFocusToggle: { key: 'F7', modifiers: {}, isOn: true },
+          },
+        },
+        serviceManager
+      );
+
+      // `applyConfigChangesDynamically` passes the new config straight to
+      // `createAppConfig`, so an omitted `keyboardShortcuts` is not "unchanged"
+      // — it drops back to the factory default rather than carrying F7 forward.
       await applyConfigChangesDynamically(
         serviceManager.store.getState().config.public,
         {},
@@ -135,8 +164,8 @@ describe('Dynamic Config Updates', () => {
       );
       expect(
         serviceManager.store.getState().config.derived.keyboardShortcuts
-          .messageFocusToggle.isOn
-      ).toBe(false);
+          .messageFocusToggle
+      ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
 
     it('should handle header property deletion correctly', async () => {

@@ -96,10 +96,13 @@ export function formatShortcutForDisplay(config: ChatShortcutConfig): string {
     parts.push(isMac ? 'Cmd' : 'Meta');
   }
 
-  // Add the key (capitalize single letters, keep special keys as-is)
+  // Add the key (capitalize single letters, keep special keys as-is). A missing
+  // key returns the modifiers alone rather than a dangling "Ctrl + " separator,
+  // which a screen reader would announce verbatim.
   const configKey = config.key ?? '';
-  const key = configKey.length === 1 ? configKey.toUpperCase() : configKey;
-  parts.push(key);
+  if (configKey) {
+    parts.push(configKey.length === 1 ? configKey.toUpperCase() : configKey);
+  }
 
   return parts.join(' + ');
 }
