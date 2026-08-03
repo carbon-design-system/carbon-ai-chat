@@ -127,7 +127,7 @@ export const WithImage = {
   },
   args: {
     ...WithActions.args,
-    image: 'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+    image: 'https://placehold.co/800x450',
   },
   render: (args) =>
     maxWidthWrapper(
@@ -159,7 +159,7 @@ export const OnlyImage = {
   },
   args: {
     ...Default.args,
-    image: 'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+    image: 'https://placehold.co/800x450',
   },
   render: (args) =>
     maxWidthWrapper(
