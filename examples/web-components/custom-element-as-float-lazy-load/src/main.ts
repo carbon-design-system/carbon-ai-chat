@@ -19,7 +19,7 @@
  * APIs exercised:
  *   - Dynamic `import()` of the chat custom-element bundle
  *   - `<cds-aichat-shell>` (overlay during bundle + init)
- *   - `<cds-aichat-button>` (custom launcher)
+ *   - `<cds-aichat-launcher>` (standalone launcher component)
  *   - `BusEventType.VIEW_CHANGE` (phase machine)
  *   - `readCarbonChatSession` for auto-mount
  *
@@ -29,7 +29,7 @@
 import '@carbon/ai-chat/css/chat-float-layout.css';
 import '@carbon/ai-chat/css/chat-launcher-layout.css';
 import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
-import '@carbon/ai-chat-components/es/components/chat-button/index.js';
+import '@carbon/ai-chat-components/es/components/launcher/index.js';
 
 import {
   type BusEventViewChange,
@@ -38,8 +38,6 @@ import {
   ViewType,
   readCarbonChatSession,
 } from '@carbon/ai-chat';
-import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
-import AiLaunch16 from '@carbon/icons/es/ai-launch/16.js';
 import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
@@ -58,7 +56,7 @@ const config: PublicConfig = {
     // real production implementation.
     customSendMessage,
   },
-  // Suppress the built-in launcher — our custom cds-aichat-button acts as the launcher.
+  // Suppress the built-in launcher — our standalone cds-aichat-launcher acts as the launcher.
   launcher: { isOn: false },
 };
 
@@ -197,18 +195,15 @@ export class Demo extends LitElement {
 
   render() {
     return html`
-      <!-- Custom launcher button — rendered immediately so the entrance animation
+      <!-- Standalone Launcher — rendered immediately so the entrance animation
            plays on first mount. Hidden (not unmounted) when the float is open so
            the animation does not replay when the float closes again. -->
-      <cds-aichat-button
+      <cds-aichat-launcher
         class=${this._getLauncherClass()}
-        has-icon-only
-        icon-description="Open chat"
-        kind="primary"
-        size="lg"
-        @click=${this._handleLauncherClick}>
-        ${iconLoader(AiLaunch16, { slot: 'icon' })}
-      </cds-aichat-button>
+        ai-enabled
+        closed-label="Open chat"
+        @cds-aichat-launcher-toggle=${this._handleLauncherClick}>
+      </cds-aichat-launcher>
 
       <!-- Not mounted until the launcher is first clicked. Stays mounted after
            that so the lazy bundle is not discarded. -->
