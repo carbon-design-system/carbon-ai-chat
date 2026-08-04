@@ -9,7 +9,7 @@
 
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import cx from 'classnames';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { getURLHostName } from '../../../utils/browserUtils';
@@ -101,7 +101,6 @@ function Image(props: ImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const rootRef = useRef(undefined);
   const hasText = Boolean(title || description || displayURL);
 
   const Icon = renderIcon;
@@ -124,7 +123,6 @@ function Image(props: ImageProps) {
 
   const baseImageCard = (
     <Card
-      ref={rootRef}
       className={cx('cds-aichat--image', {
         'cds-aichat--image__text-and-icon': hasText && Boolean(renderIcon),
         'cds-aichat--image__icon-only':
