@@ -91,6 +91,7 @@ function Image(props: ImageProps) {
     displayURL,
     hideIconAndTitle,
     renderIcon,
+    inline,
     buttonAltText,
     isLink,
     disabled,
