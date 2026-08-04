@@ -79,8 +79,11 @@ import {
   isRequest,
   isResponse,
   isSingleItemCarousel,
+  hasRequestBubbleContent,
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
+import { getMessageFileAttachments } from '../utils/fileAttachments';
+import { MessageFileAttachments } from '../components/helpers/MessageFileAttachments/MessageFileAttachments';
 import { messageHasDisplayableContent } from '../utils/streamingUtils';
 import { createDidCatchErrorData } from '../utils/miscUtils';
 import { timestampToTimeString } from '../utils/timeUtils';
@@ -153,7 +156,9 @@ const selectMessageLanguagePackStrings = (state: AppState) => ({
   agent_ariaHumanAgentAvatar: state.languagePack.agent_ariaHumanAgentAvatar,
   errors_singleMessage: state.languagePack.errors_singleMessage,
   fileSharing_statusUploading: state.languagePack.fileSharing_statusUploading,
+  messages_attachmentsLabel: state.languagePack.messages_attachmentsLabel,
   messages_focusHandle: state.languagePack.messages_focusHandle,
+  messages_unnamedAttachment: state.languagePack.messages_unnamedAttachment,
   messages_youSaid: state.languagePack.messages_youSaid,
   reasoningSteps_mainLabelClosed:
     state.languagePack.reasoningSteps_mainLabelClosed,
@@ -1260,6 +1265,21 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       messageState = this.renderMessageState(message);
     }
 
+    // Files attached to a sent message. Rendered here rather than inside the bubble
+    // so they stack underneath it, per the message-attachment design.
+    const attachments = messageIsRequest
+      ? getMessageFileAttachments(
+          (message as MessageRequest).input?.structured_data
+        )
+      : [];
+
+    // An attachment-only message has nothing to put in a bubble, so it renders the
+    // chips alone rather than an empty bubble above them. `renderRequest` asks the
+    // same question, so the two cannot disagree.
+    const hasBubbleContent =
+      !messageIsRequest ||
+      hasRequestBubbleContent(localMessageItem, message as MessageRequest);
+
     return (
       <div
         data-testid={`message-by-index-${messagesIndex}${serviceManager.namespace.suffix}`}
@@ -1369,9 +1389,21 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
                   <VisuallyHidden>
                     {languagePack.messages_youSaid}
                   </VisuallyHidden>
-                  <div className="cds-aichat--sent--bubble">
-                    <div ref={this.messageRef}>{messageComponent}</div>
-                  </div>
+                  {hasBubbleContent && (
+                    <div className="cds-aichat--sent--bubble">
+                      <div ref={this.messageRef}>{messageComponent}</div>
+                    </div>
+                  )}
+                  {/* Attachments sit below the bubble rather than inside it, and take
+                      their width cap from this column, so the chips need no knowledge
+                      of the chat's breakpoints. */}
+                  {attachments.length > 0 && (
+                    <MessageFileAttachments
+                      attachments={attachments}
+                      label={languagePack.messages_attachmentsLabel}
+                      fallbackName={languagePack.messages_unnamedAttachment}
+                    />
+                  )}
                 </div>
                 {messageState?.showBelowMessage && messageState?.element}
               </div>

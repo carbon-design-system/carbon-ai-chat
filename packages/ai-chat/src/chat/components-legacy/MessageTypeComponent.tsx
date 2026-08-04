@@ -61,9 +61,10 @@ import {
 import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
 import {
   getMediaDimensions,
+  getRequestBubbleText,
+  hasRequestBubbleContent,
   isRequest,
   isResponse,
-  isTextItem,
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
 import { parseUnknownDataToMarkdown } from '../utils/parseUnknownDataToMarkdown';
@@ -233,48 +234,47 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     localMessageItem: LocalMessageItem,
     originalMessage: MessageRequest
   ) {
-    const messageItem = localMessageItem.item;
-
-    if (isTextItem(messageItem)) {
-      const text = originalMessage.history?.label || messageItem.text;
-
-      // If this was user entered text, show the user's original text before showing the text that was actually sent to
-      // the assistant.
-      const userText = localMessageItem.ui_state.originalUserText || text;
-      const displayContent = originalMessage.input.display_content;
-      const isFile =
-        originalMessage.input.message_type ===
-        (InternalMessageRequestType.FILE as unknown as MessageInputType);
-
-      return (
-        <div className="cds-aichat--sent--text">
-          {isFile && (
-            <Attachment
-              className="cds-aichat--sent-file-icon"
-              aria-label={languagePack.fileSharing_fileIcon}
-            />
-          )}
-          {/* The use of the heading role here is a compromise to enable the use of the
-              next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
-              messages. */}
-          <div role="heading" aria-level={2}>
-            {displayContent && !isFile ? (
-              <MessageRichUserContent
-                content={displayContent}
-                message={originalMessage}
-              />
-            ) : (
-              <MarkdownWithDefaults
-                text={userText}
-                removeHTML
-                overrideSanitize={true}></MarkdownWithDefaults>
-            )}
-          </div>
-        </div>
-      );
+    // A request's file attachments are rendered by MessageComponent, below the
+    // bubble rather than inside it, so a request carrying only attachments renders
+    // no bubble at all — hence the shared predicate rather than a local check.
+    if (!hasRequestBubbleContent(localMessageItem, originalMessage)) {
+      return null;
     }
 
-    return null;
+    // If this was user entered text, show the user's original text before showing the text that was actually sent to
+    // the assistant.
+    const userText = getRequestBubbleText(localMessageItem, originalMessage);
+    const displayContent = originalMessage.input.display_content;
+    const isFile =
+      originalMessage.input.message_type ===
+      (InternalMessageRequestType.FILE as unknown as MessageInputType);
+
+    return (
+      <div className="cds-aichat--sent--text">
+        {isFile && (
+          <Attachment
+            className="cds-aichat--sent-file-icon"
+            aria-label={languagePack.fileSharing_fileIcon}
+          />
+        )}
+        {/* The use of the heading role here is a compromise to enable the use of the
+            next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
+            messages. */}
+        <div role="heading" aria-level={2}>
+          {displayContent && !isFile ? (
+            <MessageRichUserContent
+              content={displayContent}
+              message={originalMessage}
+            />
+          ) : (
+            <MarkdownWithDefaults
+              text={userText}
+              removeHTML
+              overrideSanitize={true}></MarkdownWithDefaults>
+          )}
+        </div>
+      </div>
+    );
   }
 
   /**

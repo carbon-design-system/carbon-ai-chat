@@ -1,0 +1,51 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+@use '@carbon/layout';
+
+/*
+  Attachments on a sent message, stacked underneath its bubble.
+
+  Right-aligned and wrapping, so chips fill from the trailing edge and keep upload
+  order (first to last, reading top to bottom). No max width and no breakpoints
+  here on purpose: this list sits inside `.cds-aichat--sent`, which is already
+  capped to the message column, so it inherits whatever width that resolves to at
+  the current layout.
+*/
+
+.cds-aichat--message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0;
+  gap: layout.$spacing-02;
+  list-style: none;
+  /* Let the flex item shrink below its content so long names can truncate. */
+  min-inline-size: 0;
+}
+
+/* Only separate the chips from the bubble when there is a bubble above them. */
+.cds-aichat--message-attachments:not(:first-child) {
+  margin-block-start: layout.$spacing-02;
+}
+
+/*
+  Carbon's cds-file-uploader-item, which the chip wraps, sets a 20rem max width, a
+  3rem min height, and a trailing margin sized for a stacked form list. Override
+  from out here — outer-tree rules beat the element's own `:host()` — rather than
+  reaching into its shadow root.
+*/
+
+.cds-aichat--message-attachments__chip {
+  /* The chip carries a trailing margin for the input area's horizontal strip. Here
+     the list's `gap` does that job, and the margin would push the row 8px clear of
+     the bubble's trailing edge. */
+  margin-inline-end: 0;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}

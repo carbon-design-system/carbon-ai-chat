@@ -344,6 +344,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     setRawInputValue,
     overMaxLength,
     effectiveDisableSend,
+    // Owned by the hook so the Send control and the send path cannot disagree.
+    hasValidInput,
     handleInputChange,
     sendCurrentValue,
     handleSendControlSend,
@@ -357,16 +359,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isSendDisabledFromConfig,
     onSendInput,
     hasErrorProp,
+    pendingUploads,
   });
-
-  const hasValidInput = useMemo(
-    () =>
-      Boolean(rawInputValue?.trim()) ||
-      (pendingUploads != null &&
-        pendingUploads.length > 0 &&
-        !pendingUploads.every((u) => u.isError)),
-    [rawInputValue, pendingUploads]
-  );
 
   /**
    * Handle input focus - announces keyboard shortcut on first focus if enabled,

@@ -12,10 +12,13 @@ collect:
         - align
         - aria-label
         - autoalign
+        - autofocus
         - closed-label-text
         - collapse-label
+        - collapsible
         - controlled
         - disabled
+        - enable-send-button
         - error-label
         - error-message
         - expand-label
@@ -23,11 +26,13 @@ collect:
         - header-title
         - id
         - item-id
+        - label
         - language
         - lines
         - loading-label
         - loading-status-message
         - name
+        - oncds-aichat-file-remove
         - onhistory-item-selected
         - onhistory-panel-item-input-cancel
         - onhistory-panel-item-input-change
@@ -37,21 +42,42 @@ collect:
         - open-label-text
         - overflow
         - panel-id
+        - placeholder
         - playing
         - ready-label
         - ready-status-message
+        - remove-file-label
         - show-actions
         - size
         - slot
         - source
+        - test-id
         - title
         - type
+        - uploading-file-label
         - value
         # cds-aichat-audio-player
         - oncds-aichat-audio-player-error
         - oncds-aichat-audio-player-pause
         - oncds-aichat-audio-player-play
         - oncds-aichat-audio-player-ready
+        # cds-aichat-autocomplete
+        - attached
+        - input-text
+        - oncds-aichat-autocomplete-dismiss
+        - oncds-aichat-autocomplete-select
+        - oncds-aichat-autocomplete-send
+        # cds-aichat-autocomplete-controller
+        - is-send-disabled
+        - oncds-aichat-custom-list-render
+        - oncds-aichat-starter-selected
+        # cds-aichat-autocomplete-item
+        - index
+        - is-active
+        - oncds-aichat-autocomplete-item-send
+        # cds-aichat-autocomplete-item-group
+        - data-last-group
+        - oncds-aichat-autocomplete-item-click
         # cds-aichat-button
         - is-quick-action
         # cds-aichat-card
@@ -108,6 +134,9 @@ collect:
         - oncontent-change
         - show-less-text
         - show-more-text
+        # cds-aichat-error-message
+        - description
+        - fullscreen
         # cds-aichat-feedback
         - body
         - categories-label
@@ -135,6 +164,13 @@ collect:
         - negative-label
         - onfeedback-buttons-click
         - positive-label
+        # cds-aichat-file-upload-item
+        - fallback-label
+        - read-only
+        # cds-aichat-file-uploads
+        - file-removed-label
+        - upload-failure-label
+        - upload-success-label
         # cds-aichat-history-content
         - results-count
         - results-label
@@ -163,7 +199,6 @@ collect:
         - invalid
         - invalid-message
         - labelText
-        - placeholder
         - saveLabel
         - tooltipAlignment
         # cds-aichat-history-panel-menu
@@ -177,6 +212,15 @@ collect:
         - new-chat-label
         - onchat-history-new-chat-click
         - search-off
+        # cds-aichat-input-send-control
+        - button-label
+        - disable-send
+        - disable-stop-streaming
+        - has-valid-input
+        - oncds-aichat-input-send
+        - oncds-aichat-input-stop-streaming
+        - show-stop-streaming
+        - stop-response-label
         # cds-aichat-markdown
         - code-snippet-aria-label-editable
         - code-snippet-aria-label-readonly
@@ -200,6 +244,11 @@ collect:
         # cds-aichat-processing
         - loop
         - quick-load
+        # cds-aichat-prompt-line
+        - rich
+        # cds-aichat-prompt-line-shell
+        - has-error
+        - rounded
         # cds-aichat-reasoning-step
         - onreasoning-step-beingtoggled
         - onreasoning-step-toggled
@@ -207,6 +256,9 @@ collect:
         - onreasoning-animation-start
         # cds-aichat-reasoning-steps-toggle
         - onreasoning-steps-toggle
+        # cds-aichat-stop-streaming-button
+        - onClick
+        - tooltip-alignment
         # cds-aichat-table
         - default-page-size
         - download-label-text
@@ -228,7 +280,6 @@ collect:
         - titleText
         # cds-aichat-transcript
         - hide-label
-        - label
         - oncds-aichat-transcript-toggle
         - show-label
         - text
@@ -244,7 +295,6 @@ collect:
         # cds-aichat-workspace-shell-footer
         - oncds-aichat-workspace-shell-footer-clicked
         # cds-aichat-workspace-shell-header
-        - collapsible
         - onworkspace-header-toggle
         - subtitle-text
         - title-text

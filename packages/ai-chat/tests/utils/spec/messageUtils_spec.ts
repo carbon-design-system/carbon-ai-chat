@@ -18,6 +18,7 @@ import {
   createMessageResponseForItem,
   createMessageResponseForText,
   getOptionType,
+  hasRequestBubbleContent,
   hasServiceDesk,
   isTyping,
   isButtonResponseType,
@@ -307,5 +308,109 @@ describe('System message utilities', () => {
       output: {},
     };
     expect(isStandaloneSystemMessage(noGenericMsg as any)).toBe(false);
+  });
+
+  describe('hasRequestBubbleContent', () => {
+    /** A local item with no text of its own — an attachment-only send. */
+    const emptyLocalItem = {
+      item: { response_type: MessageResponseTypes.TEXT, text: '' },
+      ui_state: { originalUserText: '' },
+    } as any;
+
+    function requestWithDisplayContent(displayContent?: any) {
+      return { input: { text: '', display_content: displayContent } } as any;
+    }
+
+    it('is false for a message with neither text nor display content', () => {
+      expect(
+        hasRequestBubbleContent(emptyLocalItem, requestWithDisplayContent())
+      ).toBe(false);
+    });
+
+    it('is false for the empty doc the prompt-line emits after a send', () => {
+      // Regression: this doc is truthy, so an attachment-only send that followed
+      // any earlier send rendered an empty bubble above its chips.
+      expect(
+        hasRequestBubbleContent(
+          emptyLocalItem,
+          requestWithDisplayContent({
+            type: 'doc',
+            content: [{ type: 'paragraph' }],
+          })
+        )
+      ).toBe(false);
+    });
+
+    it('is false for a doc holding only whitespace', () => {
+      expect(
+        hasRequestBubbleContent(
+          emptyLocalItem,
+          requestWithDisplayContent({
+            type: 'doc',
+            content: [
+              { type: 'paragraph', content: [{ type: 'text', text: '   ' }] },
+            ],
+          })
+        )
+      ).toBe(false);
+    });
+
+    it('is true for a doc holding text', () => {
+      expect(
+        hasRequestBubbleContent(
+          emptyLocalItem,
+          requestWithDisplayContent({
+            type: 'doc',
+            content: [
+              { type: 'paragraph', content: [{ type: 'text', text: 'hi' }] },
+            ],
+          })
+        )
+      ).toBe(true);
+    });
+
+    it('is true for a doc holding a custom node with no text', () => {
+      expect(
+        hasRequestBubbleContent(
+          emptyLocalItem,
+          requestWithDisplayContent({
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  { type: 'carbon-mention', attrs: { id: 'a', label: 'Ada' } },
+                ],
+              },
+            ],
+          })
+        )
+      ).toBe(true);
+    });
+
+    it('is true when the item carries text but no display content', () => {
+      const localItem = {
+        item: { response_type: MessageResponseTypes.TEXT, text: 'hello' },
+        ui_state: {},
+      } as any;
+      expect(
+        hasRequestBubbleContent(localItem, requestWithDisplayContent())
+      ).toBe(true);
+    });
+  });
+
+  it('createMessageRequestForText drops an empty display-content doc', () => {
+    const emptyDoc = { type: 'doc', content: [{ type: 'paragraph' }] };
+    expect(
+      createMessageRequestForText('', emptyDoc).input.display_content
+    ).toBeUndefined();
+
+    const richDoc = {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hi' }] }],
+    };
+    expect(
+      createMessageRequestForText('hi', richDoc).input.display_content
+    ).toBe(richDoc);
   });
 });
