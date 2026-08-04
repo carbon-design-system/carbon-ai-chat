@@ -10,14 +10,41 @@
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import cx from 'classnames';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-
+import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { getURLHostName } from '../../../utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
 import InlineError from '../../../components/responseTypes/error/InlineError';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
-interface ImageProps extends HasClassName {
+interface ClickableImageProps {
+  /**
+   * The button alt-text.
+   */
+  buttonAltText?: string;
+
+  /**
+   * Indicates if the component should render as a link instead of a button.
+   */
+  isLink?: boolean;
+
+  /**
+   * Indicates if the component should be in the disabled state.
+   */
+  disabled?: boolean;
+
+  /**
+   * The callback function to fire when the component is clicked.
+   */
+  onClick?: () => void;
+
+  /**
+   * Where to open the link. The default target is _self.
+   */
+  target?: string;
+}
+
+interface ImageProps extends ClickableImageProps, HasClassName {
   source: string;
   title?: string;
   description?: string;
@@ -64,7 +91,11 @@ function Image(props: ImageProps) {
     displayURL,
     hideIconAndTitle,
     renderIcon,
-    inline,
+    buttonAltText,
+    isLink,
+    disabled,
+    onClick,
+    target,
   } = props;
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -90,7 +121,7 @@ function Image(props: ImageProps) {
     );
   }
 
-  return (
+  const baseImageCard = (
     <Card
       ref={rootRef}
       className={cx('cds-aichat--image', {
@@ -132,6 +163,35 @@ function Image(props: ImageProps) {
       </div>
     </Card>
   );
+
+  if (isLink) {
+    return (
+      <a
+        className="cds-aichat--clickable-image"
+        href={displayURL}
+        rel="noopener noreferrer"
+        target={target}
+        onClick={onClick}>
+        {baseImageCard}
+        {buttonAltText && <VisuallyHidden>{buttonAltText}</VisuallyHidden>}
+      </a>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button
+        className="cds-aichat--clickable-image"
+        type="button"
+        onClick={onClick}
+        disabled={disabled}>
+        {baseImageCard}
+        {buttonAltText && <VisuallyHidden>{buttonAltText}</VisuallyHidden>}
+      </button>
+    );
+  }
+
+  return baseImageCard;
 }
 
 interface ImageOnlyProps extends Partial<ImageProps> {
