@@ -11,6 +11,7 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/utilities/convert' as *;
 @use '../../../globals/scss/modifiers' as *;
+@use '@carbon/styles/scss/type';
 
 @include rounded-modifiers;
 
@@ -46,5 +47,10 @@
 }
 
 .bold {
-  font-weight: 600;
+  @include type.type-style('heading-compact-01');
+}
+
+cds-aichat-toolbar {
+  background: theme.$chat-header-background;
+  border-block-end: 1px solid theme.$border-subtle-00;
 }

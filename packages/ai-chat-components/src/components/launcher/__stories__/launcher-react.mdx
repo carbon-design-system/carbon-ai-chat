@@ -1,0 +1,30 @@
+import { ArgTypes, Meta } from "@storybook/addon-docs/blocks";
+import * as LauncherReactStories from "./launcher-react.stories.jsx";
+
+<Meta of={LauncherReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+
+# Launcher — React
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/launcher) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+The `<Launcher>` React wrapper renders the `cds-aichat-launcher` web component and exposes the simple standalone launcher API for React applications.
+
+### Getting started
+
+```jsx
+import Launcher from "@carbon/ai-chat-components/es/react/launcher.js";
+
+function LauncherExample() {
+  return <Launcher closedLabel="Open chat" openLabel="Close chat" />;
+}
+```
+
+## Component API
+
+<ArgTypes of={LauncherReactStories.Default} />
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

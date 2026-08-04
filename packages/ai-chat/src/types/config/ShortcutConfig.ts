@@ -15,20 +15,24 @@
  */
 export interface ChatShortcutConfig {
   /**
-   * Whether the keyboard shortcut is enabled.
-   * Default: true
+   * Whether the keyboard shortcut is enabled. Defaults to `false`, so the shortcut is
+   * inactive until you turn it on. Setting `key` or `modifiers` alone does not enable it.
    */
-  is_on?: boolean;
+  isOn?: boolean;
 
   /**
-   * The primary key (e.g., 'c', 'F6', '/')
+   * The key to match, compared case-insensitively against `KeyboardEvent.key`.
+   * Examples: `"c"`, `"F6"`, `"/"`. Each shortcut supplies its own default, so omit this
+   * to keep the built-in binding and set only {@link ChatShortcutConfig.isOn}.
    */
-  key: string;
+  key?: string;
 
   /**
-   * Modifier keys required to be held
+   * Modifier keys that must be held for the shortcut to match. A modifier left unset must
+   * not be held, so `{ ctrl: true }` does not match Ctrl + Shift + the key. Omit this to
+   * keep the shortcut's default modifiers.
    */
-  modifiers: {
+  modifiers?: {
     alt?: boolean;
     shift?: boolean;
     ctrl?: boolean;
@@ -45,30 +49,9 @@ export interface ChatShortcutConfig {
  */
 export interface KeyboardShortcuts {
   /**
-   * Shortcut to toggle focus between the message list and input field.
-   * Default: F6 (standard Windows accessibility shortcut for cycling between regions)
+   * Shortcut to toggle focus between the message list and input field. Disabled unless you
+   * set {@link ChatShortcutConfig.isOn} to `true`. Defaults to F6, the standard Windows
+   * accessibility shortcut for cycling between regions.
    */
   messageFocusToggle?: ChatShortcutConfig;
 }
-
-/**
- * Default keyboard shortcut for toggling focus between message list and input.
- * F6 is a standard accessibility shortcut used in Windows and many applications
- * for cycling between major regions/panels. It doesn't produce special characters
- * and is widely recognized for navigation purposes.
- *
- * Default configuration:
- * {
- *   key: "F6",
- *   modifiers: {},
- *   is_on: true
- * }
- *
- * Note: This shortcut is enabled by default to improve accessibility.
- * Users can disable it via configuration if needed.
- */
-export const DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT: ChatShortcutConfig = {
-  key: 'F6',
-  modifiers: {},
-  is_on: true,
-};

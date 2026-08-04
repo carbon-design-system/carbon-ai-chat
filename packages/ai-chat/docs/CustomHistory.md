@@ -60,6 +60,41 @@ This method:
 - Can run multiple times
 - Doesn't clear existing messages (call {@link ChatInstanceMessaging.clearConversation | clearConversation} first if needed)
 
+## Restoring file attachments
+
+Files the user attached live on {@link MessageInput.structured_data | input.structured_data} of the {@link MessageRequest} inside a {@link HistoryItem}, so they need no persistence of their own — restore the message and the chat re-renders its attachment chips:
+
+```typescript
+const historyItem: HistoryItem = {
+  message: {
+    id: 'user-2',
+    input: {
+      text: 'Here it is.',
+      message_type: MessageInputType.TEXT,
+      structured_data: {
+        fields: [
+          {
+            id: 'file',
+            type: 'file',
+            value: {
+              type: 'reference',
+              id: 'doc-quarterly-report',
+              name: 'quarterly-report.pdf',
+              mime_type: 'application/pdf',
+            },
+          },
+        ],
+      },
+    },
+  },
+  time: '2026-07-30T15:59:12.000Z',
+};
+```
+
+See [Structured data](./StructuredData.md) for what the chat renders from a `file` field.
+
+> **Warning**: A raw `File` cannot be serialized, so an {@link InlineFile | inline file} does not survive the round trip — the restored value has no name left to render. Return an {@link ExternalFileReference | reference} from {@link UploadConfig.onFileUpload | onFileUpload} if you persist conversations.
+
 ## Switching between conversations
 
 To switch between conversations:
@@ -191,8 +226,9 @@ instance.on({
 
 ## Related
 
-- [history example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/history) — a complete, runnable app.
-- [chat-history-fullscreen example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/chat-history-fullscreen) — a fullscreen web-component layout with a custom history panel.
+- [history-fullscreen example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/history-fullscreen) — a complete, runnable app with a custom history panel.
+- [history-host-driven example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/history-host-driven) — clearing and re-inserting a conversation from your own UI.
+- [history-file-attachments example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/history-file-attachments) — an uploaded file surviving a reload.
 - [Slots](./WriteableElements.md) — render your own content into the history panel slot.
 - [Message format](./MessageFormat.md) — the request/response shapes history items wrap.
 - [Session state persistence](./StatePersistence.md) — own where the chat stores its session and UI state (views, disclaimer, human-agent connection), apart from conversation messages.

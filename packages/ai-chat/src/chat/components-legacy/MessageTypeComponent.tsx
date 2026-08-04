@@ -31,24 +31,24 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from '@carbon/ai-chat-components/es/react/feedback.js';
 import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
-import { SystemMessage } from '../components/SystemMessage';
+import { SystemMessage } from '../components/responseTypes/message/SystemMessage';
 import { ConnectToHumanAgent } from './responseTypes/humanAgent/ConnectToHumanAgent';
-import { AudioComponent } from '../components/messages/AudioComponent';
-import { ButtonItemComponent } from '../components/ButtonItemComponent';
-import { CardItemComponent } from '../components/messages/CardItemComponent';
+import { AudioComponent } from '../components/responseTypes/media/AudioComponent';
+import { ButtonItemComponent } from '../components/responseTypes/button/ButtonItemComponent';
+import { CardItemComponent } from '../components/responseTypes/card/CardItemComponent';
 import { PreviewCardComponent } from './responseTypes/previewCard/PreviewCardComponent';
-import { CarouselItemComponent } from '../components/messages/CarouselItemComponent';
+import { CarouselItemComponent } from '../components/responseTypes/card/CarouselItemComponent';
 import { ConversationalSearch } from './responseTypes/conversationalSearch/ConversationalSearch';
-import UserDefinedResponse from '../components/UserDefinedResponse';
+import UserDefinedResponse from '../components/responseTypes/userDefined/UserDefinedResponse';
 import CustomFooterSlot from './responseTypes/custom/CustomFooterSlot';
 import { DatePickerComponent } from '../components/responseTypes/datePicker/DatePickerComponent';
-import InlineError from '../components/util/InlineError';
+import InlineError from '../components/responseTypes/error/InlineError';
 import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
 import { IFrameMessage } from './responseTypes/iframe/IFrameMessage';
 import { Image } from './responseTypes/image/Image';
 import { OptionComponent } from '../components/responseTypes/options/OptionComponent';
-import { MarkdownWithErrorHandling } from '../components/util/MarkdownWithErrorHandling';
-import { VideoComponent } from '../components/messages/VideoComponent';
+import { MarkdownWithErrorHandling } from '../components/helpers/MarkdownWithErrorHandling/MarkdownWithErrorHandling';
+import { VideoComponent } from '../components/responseTypes/media/VideoComponent';
 import { useSelector } from '../hooks/useSelector';
 import { shallowEqual } from '../store/appStore';
 import { AppState } from '../../types/state/AppState';
@@ -61,9 +61,10 @@ import {
 import { MessageTypeComponentProps } from '../../types/messaging/MessageTypeComponentProps';
 import {
   getMediaDimensions,
+  getRequestBubbleText,
+  hasRequestBubbleContent,
   isRequest,
   isResponse,
-  isTextItem,
   renderAsUserDefinedMessage,
 } from '../utils/messageUtils';
 import { parseUnknownDataToMarkdown } from '../utils/parseUnknownDataToMarkdown';
@@ -99,7 +100,7 @@ import {
   VideoItem,
   PreviewCardItem,
 } from '../../types/messaging/Messages';
-import { MarkdownWithDefaults } from '../components/util/MarkdownWithDefaults';
+import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { MessageRichUserContent } from './MessageRichUserContent';
 import type { CDSAIChatChainOfThought } from '@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js';
 import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
@@ -146,9 +147,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   const { formatMessage } = useIntl();
   const languagePack = useSelector(selectMessageTypeStrings, shallowEqual);
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
-  );
   const feedbackDetailsRef = useRef<HTMLDivElement>(undefined);
   const chainOfThoughtRef = useRef<CDSAIChatChainOfThought>(null);
   const feedbackID = message.item.message_item_options?.feedback?.id;
@@ -236,48 +234,47 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     localMessageItem: LocalMessageItem,
     originalMessage: MessageRequest
   ) {
-    const messageItem = localMessageItem.item;
-
-    if (isTextItem(messageItem)) {
-      const text = originalMessage.history?.label || messageItem.text;
-
-      // If this was user entered text, show the user's original text before showing the text that was actually sent to
-      // the assistant.
-      const userText = localMessageItem.ui_state.originalUserText || text;
-      const displayContent = originalMessage.input.display_content;
-      const isFile =
-        originalMessage.input.message_type ===
-        (InternalMessageRequestType.FILE as unknown as MessageInputType);
-
-      return (
-        <div className="cds-aichat--sent--text">
-          {isFile && (
-            <Attachment
-              className="cds-aichat--sent-file-icon"
-              aria-label={languagePack.fileSharing_fileIcon}
-            />
-          )}
-          {/* The use of the heading role here is a compromise to enable the use of the
-              next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
-              messages. */}
-          <div role="heading" aria-level={2}>
-            {displayContent && !isFile ? (
-              <MessageRichUserContent
-                content={displayContent}
-                message={originalMessage}
-              />
-            ) : (
-              <MarkdownWithDefaults
-                text={userText}
-                removeHTML
-                overrideSanitize={true}></MarkdownWithDefaults>
-            )}
-          </div>
-        </div>
-      );
+    // A request's file attachments are rendered by MessageComponent, below the
+    // bubble rather than inside it, so a request carrying only attachments renders
+    // no bubble at all — hence the shared predicate rather than a local check.
+    if (!hasRequestBubbleContent(localMessageItem, originalMessage)) {
+      return null;
     }
 
-    return null;
+    // If this was user entered text, show the user's original text before showing the text that was actually sent to
+    // the assistant.
+    const userText = getRequestBubbleText(localMessageItem, originalMessage);
+    const displayContent = originalMessage.input.display_content;
+    const isFile =
+      originalMessage.input.message_type ===
+      (InternalMessageRequestType.FILE as unknown as MessageInputType);
+
+    return (
+      <div className="cds-aichat--sent--text">
+        {isFile && (
+          <Attachment
+            className="cds-aichat--sent-file-icon"
+            aria-label={languagePack.fileSharing_fileIcon}
+          />
+        )}
+        {/* The use of the heading role here is a compromise to enable the use of the
+            next/previous heading hotkeys in JAWS to enable a screen reader user an easier ability to navigate
+            messages. */}
+        <div role="heading" aria-level={2}>
+          {displayContent && !isFile ? (
+            <MessageRichUserContent
+              content={displayContent}
+              message={originalMessage}
+            />
+          ) : (
+            <MarkdownWithDefaults
+              text={userText}
+              removeHTML
+              overrideSanitize={true}></MarkdownWithDefaults>
+          )}
+        </div>
+      </div>
+    );
   }
 
   /**
@@ -457,8 +454,6 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         title={message.item.title}
         description={message.item.description}
         altText={message.item.alt_text}
-        needsAnnouncement={message.ui_state.needsAnnouncement}
-        useAITheme={aiEnabled}
       />
     );
   }

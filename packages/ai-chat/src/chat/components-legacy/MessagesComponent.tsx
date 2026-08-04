@@ -15,10 +15,10 @@ import DownToBottom16 from '@carbon/icons/es/down-to-bottom/16.js';
 import { HumanAgentBannerContainer } from './humanAgent/HumanAgentBannerContainer';
 import { MessagesScrollHandle } from './MessagesScrollHandle';
 import { MessagesScrollToBottomButton } from './MessagesScrollToBottomButton';
-import { ProcessingWithText } from '../components/util/ProcessingWithText';
+import { ProcessingWithText } from '../components/helpers/ProcessingWithText/ProcessingWithText';
 import { MessagesView } from './MessagesView';
-import { SystemMessage } from '../components/SystemMessage';
-import WriteableElement from '../components/util/WriteableElement';
+import { SystemMessage } from '../components/responseTypes/message/SystemMessage';
+import WriteableElement from '../components/helpers/WriteableElement/WriteableElement';
 import {
   HasServiceManager,
   withServiceManager,
@@ -43,7 +43,6 @@ import {
   isResponse,
   getMessageIDForUserInput,
 } from '../utils/messageUtils';
-import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../../types/config/ShortcutConfig';
 import {
   MessagesScrollController,
   type PortableMessage,
@@ -185,7 +184,7 @@ interface MessagesInjectedState {
   persistFeedback: boolean | undefined;
   hideAvatar: boolean | undefined;
   languagePack: MessagesLanguagePackStrings;
-  keyboardShortcutConfig: ChatShortcutConfig | undefined;
+  keyboardShortcutConfig: Required<ChatShortcutConfig>;
 }
 
 interface MessagesProps extends MessagesOwnProps, MessagesInjectedState {}
@@ -724,20 +723,13 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           : languagePack.messages_scrollHandleEnd) ||
         languagePack.messages_scrollHandle;
     } else {
-      // Get the keyboard shortcut configuration
-      const shortcutConfig =
-        keyboardShortcutConfig || DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
-
-      // Check if shortcuts are enabled (default to true if not specified)
-      const shortcutsEnabled = shortcutConfig.is_on !== false;
-
-      if (shortcutsEnabled) {
+      if (keyboardShortcutConfig.isOn) {
         // Use messages with shortcut information
         labelKey = atTop
           ? 'messages_scrollHandleDetailed'
           : 'messages_scrollHandleEndDetailed';
 
-        const shortcutText = formatShortcutForDisplay(shortcutConfig);
+        const shortcutText = formatShortcutForDisplay(keyboardShortcutConfig);
 
         // Format the message with the shortcut parameter
         ariaLabel = intl.formatMessage(
@@ -914,8 +906,10 @@ const selectMessagesState = (
   disclaimerIsOn: state.config.public.disclaimer?.isOn,
   persistFeedback: state.config.public.persistFeedback,
   hideAvatar: state.config.public.hideAvatar,
+  // Reference-stable across config replaces via reconcileAppConfigReferences, so this
+  // survives shallowEqual.
   keyboardShortcutConfig:
-    state.config.public.keyboardShortcuts?.messageFocusToggle,
+    state.config.derived.keyboardShortcuts.messageFocusToggle,
 });
 
 // Selected separately (with its own shallowEqual) rather than folded into

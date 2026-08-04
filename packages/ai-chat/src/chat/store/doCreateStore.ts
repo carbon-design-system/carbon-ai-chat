@@ -43,6 +43,7 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
   VIEW_STATE_MAIN_WINDOW_OPEN,
   DEFAULT_HEADER,
+  DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
 } from './reducerUtils';
 import { enLanguagePack } from '../../types/config/LanguagePack';
 import { LayoutConfig } from '../../types/config/LayoutConfig';
@@ -98,11 +99,16 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
       header: DEFAULT_HEADER,
       layout: DEFAULT_LAYOUT_STATE,
       launcher: DEFAULT_LAUNCHER,
+      // `mergeDefaultsDeep` skips undefined sources, so an explicit `isOn: false` survives.
+      keyboardShortcuts: {
+        messageFocusToggle: DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
+      },
     },
     {
       header: publicConfig.header,
       layout: publicConfig.layout,
       launcher: publicConfig.launcher,
+      keyboardShortcuts: publicConfig.keyboardShortcuts,
     }
   );
 
@@ -114,6 +120,10 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
       header: derived.header,
       layout: derived.layout,
       launcher: derived.launcher,
+      // The defaults above always supply `messageFocusToggle` and its `isOn`; the merge
+      // helper's return type can't express that.
+      keyboardShortcuts:
+        derived.keyboardShortcuts as AppConfig['derived']['keyboardShortcuts'],
     },
   };
 }

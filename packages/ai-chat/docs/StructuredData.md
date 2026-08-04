@@ -70,13 +70,13 @@ async function customSendMessage(request, requestOptions, instance) {
 
 A file upload is one kind of structured data: an uploaded file becomes a `file`-typed {@link StructuredField | field} that you read on the server exactly like any other field.
 
-Enable it with {@link PublicConfig.upload | upload}. Set `is_on: true`, provide an `onFileUpload` handler, and optionally constrain attachments with `accept`, `maxFileSizeBytes`, and `maxFiles` (see {@link UploadConfig} for the full list):
+Enable it with {@link PublicConfig.upload | upload}. Set `isOn: true`, provide an `onFileUpload` handler, and optionally constrain attachments with `accept`, `maxFileSizeBytes`, and `maxFiles` (see {@link UploadConfig} for the full list):
 
 ```typescript
 const config: PublicConfig = {
   messaging: { customSendMessage },
   upload: {
-    is_on: true,
+    isOn: true,
     onFileUpload: handleFileUpload,
     accept: 'image/*,.pdf',
   },
@@ -117,8 +117,29 @@ Honor the `abortSignal`; it fires when the user removes a pending upload or the 
 
 A `file` field's value is a {@link FileFieldValue | file value}, one of two types. A {@link ExternalFileReference | reference} (`type: "reference"`) points to a file you uploaded yourself — the common case shown above. An {@link InlineFile | inline file} (`type: "inline"`) carries the raw `File` through to `customSendMessage` for you to upload there.
 
+### What the chat renders
+
+The user's message bubble shows one chip per `file`-typed {@link StructuredField | field}, in field order, below the message text. A chip is not interactive: it shows the file name, and either a thumbnail or a file-type icon derived from `name` and `mime_type`.
+
+A chip previews an image or video where it can, and falls back to the file-type icon where it cannot:
+
+| Value | Preview |
+| --- | --- |
+| {@link InlineFile \| Inline file} | Image and video, read from the `File` in the page. |
+| {@link ExternalFileReference \| Reference} with a `url` | Image only, with `url` as the source. |
+| Either, restored from history | File-type icon. A `File` does not survive the round trip; a `url` does. |
+
+`url` is used as an image source and nothing else — no download link is rendered, and a video is never fetched back from the server. `size` and `label` are ignored entirely. All three remain available to your own code.
+
+A {@link ExternalFileReference | reference} renders from its metadata alone and needs no `File`, which is why it still displays after a conversation is restored.
+
+A `file` field whose value is neither shape is skipped, and the rest of the message still renders.
+
+> **Note**: A raw `File` cannot be serialized into a {@link HistoryItem}, so an inline file restored from history has no name left to show and its chip falls back to a generic label. Return an {@link ExternalFileReference | reference} from {@link UploadConfig.onFileUpload | onFileUpload} if you persist conversations. See [Conversation history](./CustomHistory.md).
+
 ## Related
 
 - [Message format](./MessageFormat.md) — the request and response shapes, including `input.structured_data`.
+- [Conversation history](./CustomHistory.md) — restoring messages, including their attachments.
 - [Server communication](./CustomServer.md) — wire the chat to your server.
 - File upload examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/prompt-line-file-upload) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/prompt-line-file-upload).

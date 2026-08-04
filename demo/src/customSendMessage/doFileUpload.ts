@@ -45,13 +45,17 @@ async function mockOnFileUpload(
     );
   });
 
-  // Build a mock external reference as if the server stored the file.
+  // Build a mock external reference as if the server stored the file. A real
+  // integration returns the URL the server stored it at, which the chat uses as the
+  // preview source for an image; the object URL here stands in for that and lasts
+  // as long as the page does.
   const reference: ExternalFileReference = {
     type: 'reference',
     id: uuid(),
     name: file.name,
     mime_type: file.type || 'application/octet-stream',
     size: file.size,
+    url: URL.createObjectURL(file),
   };
 
   const contributedData: StructuredData = {
@@ -86,9 +90,11 @@ function formatBytes(bytes: number): string {
 /**
  * Mock server response handler for messages that contain file attachments.
  *
- * Inspects `request.input.structured_data` for `file`-typed fields and
- * responds with a text message summarising the metadata of every file
- * received — simulating what a real backend might echo back.
+ * Inspects `request.input.structured_data` for `file`-typed fields and responds
+ * with a text message summarising the metadata of every file received — this is
+ * what your *server* sees, not how the user sees the attachment. The chat already
+ * renders a chip per uploaded file in the user's own message bubble; this echo
+ * exists to show the fields arriving server-side.
  */
 function doFileUploadResponse(
   request: MessageRequest,

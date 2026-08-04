@@ -115,10 +115,10 @@ function getSettings() {
   };
 
   // Re-inject non-serializable upload handler when hydrating from URL.
-  // Functions are stripped during JSON serialization, so if upload.is_on is true
+  // Functions are stripped during JSON serialization, so if upload.isOn is true
   // but onFileUpload is missing (e.g. after a page refresh), restore the mock handler.
   if (
-    defaultConfig.upload?.is_on === true &&
+    defaultConfig.upload?.isOn === true &&
     !defaultConfig.upload.onFileUpload
   ) {
     defaultConfig = {

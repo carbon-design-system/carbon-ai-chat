@@ -72,7 +72,7 @@ See the typeahead examples: [React](https://github.com/carbon-design-system/carb
 
 ## File uploads
 
-Uploads are set up on their own. You configure them with {@link PublicConfig.upload | upload} and an {@link UploadConfig}. But the attach button renders in the prompt line. Set `is_on` to `true`. Then provide {@link UploadConfig.onFileUpload | onFileUpload}. It receives the `File` and an `AbortSignal`. It returns a `Promise` of {@link StructuredData}. Constrain uploads with `accept`, `maxFileSizeBytes`, and `maxFiles`. See [Structured data](./StructuredData.md) for the payload the handler returns.
+Uploads are set up on their own. You configure them with {@link PublicConfig.upload | upload} and an {@link UploadConfig}. But the attach button renders in the prompt line. Set {@link UploadConfig.isOn | isOn} to `true`. Then provide {@link UploadConfig.onFileUpload | onFileUpload}. It receives the `File` and an `AbortSignal`. It returns a `Promise` of {@link StructuredData}. Constrain uploads with `accept`, `maxFileSizeBytes`, and `maxFiles`. See [Structured data](./StructuredData.md) for the payload the handler returns.
 
 See the file-upload examples: [React](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/prompt-line-file-upload) and [web component](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/prompt-line-file-upload).
 

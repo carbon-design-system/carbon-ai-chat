@@ -16,14 +16,6 @@
   min-inline-size: 0;
 }
 
-cds-ai-skeleton-placeholder.cds-aichat--image__skeleton::part(
-    skeleton-placeholder
-  ),
-cds-skeleton-placeholder.cds-aichat--image__skeleton::part(placeholder) {
-  block-size: 192px;
-  inline-size: 100%;
-}
-
 .cds-aichat--image__image-wrapper {
   background-color: theme.$layer-02;
 }

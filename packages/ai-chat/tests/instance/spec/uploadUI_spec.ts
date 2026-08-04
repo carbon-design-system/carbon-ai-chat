@@ -36,7 +36,7 @@ function queryFileUploaderItem(): Element | null {
 }
 
 /**
- * Creates a config with UploadConfig.is_on = true and a mock onFileUpload handler.
+ * Creates a config with UploadConfig.isOn = true and a mock onFileUpload handler.
  */
 function createUploadConfig(
   onFileUpload: (
@@ -47,7 +47,7 @@ function createUploadConfig(
   return {
     ...createBaseConfig(),
     upload: {
-      is_on: true,
+      isOn: true,
       onFileUpload,
     },
   };
@@ -228,11 +228,28 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
   // handleFileSelectedForUpload – guard: no config
   // -------------------------------------------------------------------------
 
-  it('does nothing when UploadConfig.is_on is false', async () => {
+  it('does nothing when UploadConfig.isOn is false', async () => {
     const onFileUpload = jest.fn().mockResolvedValue({});
     const config: PublicConfig = {
       ...createBaseConfig(),
-      upload: { is_on: false, onFileUpload },
+      upload: { isOn: false, onFileUpload },
+    };
+
+    const { store, serviceManager } =
+      await renderChatAndGetInstanceWithStore(config);
+
+    await serviceManager.actions.handleFileSelectedForUpload(makeFile());
+
+    expect(onFileUpload).not.toHaveBeenCalled();
+    expect(store.getState().assistantInputState.pendingUploads).toHaveLength(0);
+  });
+
+  it('does nothing when isOn is omitted', async () => {
+    // `isOn` is optional, so this config compiles. Omitting it must read as disabled.
+    const onFileUpload = jest.fn().mockResolvedValue({});
+    const config: PublicConfig = {
+      ...createBaseConfig(),
+      upload: { onFileUpload },
     };
 
     const { store, serviceManager } =
@@ -247,7 +264,7 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
   it('does nothing when onFileUpload is not provided', async () => {
     const config: PublicConfig = {
       ...createBaseConfig(),
-      upload: { is_on: true },
+      upload: { isOn: true },
     };
 
     const { store, serviceManager } =
@@ -262,14 +279,14 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
   // Startup validation
   // -------------------------------------------------------------------------
 
-  it('logs an error at startup when is_on=true but onFileUpload is missing', async () => {
+  it('logs an error at startup when isOn=true but onFileUpload is missing', async () => {
     const consoleSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
 
     const config: PublicConfig = {
       ...createBaseConfig(),
-      upload: { is_on: true }, // no onFileUpload
+      upload: { isOn: true }, // no onFileUpload
     };
 
     // The validation runs in initServiceManagerAndInstance() which completes before onBeforeRender.
@@ -282,7 +299,26 @@ describe('upload UI wiring – handleFileSelectedForUpload', () => {
     consoleSpy.mockRestore();
   });
 
-  it('does not log an error at startup when is_on=true and onFileUpload is provided', async () => {
+  it('logs an error at startup when onFileUpload is provided but isOn is omitted', async () => {
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const config: PublicConfig = {
+      ...createBaseConfig(),
+      upload: { onFileUpload: jest.fn().mockResolvedValue({}) },
+    };
+
+    await renderChatAndGetInstanceWithStore(config);
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('isOn is not true')
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it('does not log an error at startup when isOn=true and onFileUpload is provided', async () => {
     const consoleSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});

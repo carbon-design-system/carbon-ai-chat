@@ -15,6 +15,10 @@
  * an `ExternalFileReference`, plus a companion responder that echoes
  * received file metadata back to the user.
  *
+ * Returning `name` and `mime_type` on the reference is what lets the chat render
+ * the attachment as a chip in the user's message bubble, and what lets that chip
+ * come back if the conversation is restored from history.
+ *
  * APIs exercised:
  *   - `StructuredData`
  *   - `StructuredField`
@@ -105,9 +109,11 @@ function formatBytes(bytes: number): string {
 /**
  * Mock server response handler for messages that contain file attachments.
  *
- * Inspects `request.input.structured_data` for `file`-typed fields and
- * responds with a text message summarising the metadata of every file
- * received — simulating what a real backend might echo back.
+ * Inspects `request.input.structured_data` for `file`-typed fields and responds
+ * with a text message summarising the metadata of every file received — this is
+ * what your *server* sees, not how the user sees the attachment. The chat already
+ * renders a chip per uploaded file in the user's own message bubble; this echo
+ * exists to show the fields arriving server-side.
  */
 // Replace with a real production implementation.
 function doFileUploadResponse(

@@ -17,6 +17,8 @@ import {
   selectIsInputToHumanAgent,
 } from '../../store/selectors';
 import type { ServiceManager } from '../../services/ServiceManager';
+import type { FileUpload } from '../../../types/config/ServiceDeskConfig';
+import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 
 interface UseInputValueSyncArgs {
   serviceManager: ServiceManager;
@@ -56,6 +58,12 @@ interface UseInputValueSyncArgs {
    * Whether an error has been passed to the Input.
    */
   hasErrorProp: boolean;
+
+  /**
+   * Files staged in the input area. A staged file is sendable content in its own
+   * right, so their presence is part of the send predicate.
+   */
+  pendingUploads?: FileUpload[];
 }
 
 /**
@@ -73,6 +81,7 @@ function useInputValueSync({
   isSendDisabledFromConfig,
   onSendInput,
   hasErrorProp,
+  pendingUploads,
 }: UseInputValueSyncArgs) {
   const store = serviceManager.store;
 
@@ -124,7 +133,16 @@ function useInputValueSync({
   const overMaxLength = rawInputValue.length > maxInputChars;
 
   const effectiveDisableSend =
-    disableSend || isSendDisabledFromConfig || overMaxLength || hasErrorProp;
+    disableSend ||
+    isSendDisabledFromConfig ||
+    overMaxLength ||
+    hasErrorProp ||
+    hasInFlightUpload(pendingUploads);
+
+  // The single predicate behind both the Send control's enabled state and the send
+  // path itself. They disagreed before, which is why the button could light up on a
+  // file-only input and then do nothing when pressed.
+  const hasValidInput = hasSendableInput(rawInputValue, pendingUploads);
 
   /**
    * Handle input value changes from the prompt-line. Dispatches to Redux if
@@ -165,7 +183,7 @@ function useInputValueSync({
    */
   const sendCurrentValue = () => {
     const text = rawInputValueRef.current;
-    if (!text.trim()) {
+    if (!hasValidInput) {
       return;
     }
     if (effectiveDisableSend) {
@@ -200,6 +218,7 @@ function useInputValueSync({
     setRawInputValue,
     overMaxLength,
     effectiveDisableSend,
+    hasValidInput,
     handleInputChange,
     sendCurrentValue,
     handleSendControlSend,

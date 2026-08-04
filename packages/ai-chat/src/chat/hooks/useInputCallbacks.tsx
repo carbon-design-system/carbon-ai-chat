@@ -18,6 +18,7 @@ import {
 } from '../store/selectors';
 import { shallowEqual } from '../store/appStore';
 import { createMessageRequestForText } from '../utils/messageUtils';
+import { shouldSendSilently } from '../utils/fileAttachments';
 import {
   BusEventType,
   MessageSendSource,
@@ -76,7 +77,7 @@ export function useInputCallbacks({
       // Read fresh state at call time — avoids closing over a stale render snapshot
       const currentState = serviceManager.store.getState();
       const isInputToHumanAgent = selectIsInputToHumanAgent(currentState);
-      const { files } = selectInputState(currentState);
+      const { files, pendingStructuredData } = selectInputState(currentState);
 
       if (isInputToHumanAgent) {
         serviceManager.humanAgentService.sendMessageToAgent(text, files);
@@ -87,10 +88,10 @@ export function useInputCallbacks({
         );
         serviceManager.actions.sendWithCatch(messageRequest, source, {
           ...options,
-          // When the user sends with no text (e.g. file-only), mark the message
-          // silent so it is not rendered as an empty bubble in the chat UI.
-          // An explicit silent:true/false from the caller is always preserved.
-          silent: options?.silent ?? !text,
+          // `pendingStructuredData` is what `doSend` is about to merge onto this
+          // message. An explicit silent:true/false from the caller is preserved.
+          silent:
+            options?.silent ?? shouldSendSilently(text, pendingStructuredData),
         });
       }
 

@@ -3,7 +3,7 @@
   "version": "1.18.0",
   "private": true,
   "type": "module",
-  "description": "Example using dynamic import to lazy-load cds-aichat-custom-element as a floating widget, with a cds-aichat-shell overlay and a custom icon launcher.",
+  "description": "Example using dynamic import to lazy-load cds-aichat-custom-element as a floating widget, with a cds-aichat-shell overlay and the standalone cds-aichat-launcher component.",
   "scripts": {
     "start": "cross-env ENVIRONMENT=development webpack serve --config ./webpack.config.js",
     "build": "webpack --config ./webpack.config.js"

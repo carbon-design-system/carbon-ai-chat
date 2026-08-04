@@ -8,13 +8,16 @@
  */
 
 /**
+ * Configuration for the disclaimer screen shown before a user can start chatting,
+ * consumed by {@link PublicConfig.disclaimer}.
+ *
  * @category Config
  */
 export interface DisclaimerPublicConfig {
   /**
-   * If the disclaimer is turned on.
+   * If the disclaimer is turned on. Defaults to `false`.
    */
-  isOn: boolean;
+  isOn?: boolean;
 
   /**
    * HTML content to show in disclaimer.

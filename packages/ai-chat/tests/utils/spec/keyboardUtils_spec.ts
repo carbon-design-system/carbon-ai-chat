@@ -343,5 +343,18 @@ describe('keyboardUtils', () => {
       };
       expect(formatShortcutForDisplay(config)).toBe('Ctrl + Shift + F12');
     });
+
+    it('should omit the separator when the key is missing', () => {
+      // `key` is optional on ChatShortcutConfig, so the modifiers can arrive
+      // alone. Announcing "Ctrl + " would read the trailing separator aloud.
+      expect(formatShortcutForDisplay({ modifiers: { ctrl: true } })).toBe(
+        'Ctrl'
+      );
+      expect(
+        formatShortcutForDisplay({ modifiers: { ctrl: true, shift: true } })
+      ).toBe('Ctrl + Shift');
+      expect(formatShortcutForDisplay({ key: '', modifiers: {} })).toBe('');
+      expect(formatShortcutForDisplay({ modifiers: {} })).toBe('');
+    });
   });
 });

@@ -165,7 +165,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           detail: {
             ...this.config,
             upload: {
-              is_on: true,
+              isOn: true,
               onFileUpload: mockOnFileUpload,
             },
           },
@@ -293,7 +293,7 @@ export class DemoInputConfigSwitcher extends LitElement {
     if (!upload) {
       return DROPDOWN_DEFAULT;
     }
-    return upload.is_on ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+    return upload.isOn ? DROPDOWN_TRUE : DROPDOWN_FALSE;
   }
 
   private _autocompleteDropdownValue(): string {

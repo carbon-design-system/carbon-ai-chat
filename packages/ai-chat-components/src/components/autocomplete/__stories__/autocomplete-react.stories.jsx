@@ -145,14 +145,35 @@ const filterSuggestionGroups = (groups, query) => {
 export default {
   title: 'Preview/Autocomplete',
   argTypes: {
+    items: {
+      control: false,
+      description:
+        'Array of flat suggestion items to display. Each item requires an `id` and `label`, and optionally accepts a `description` and `avatar`.',
+    },
+    groups: {
+      control: false,
+      description:
+        'Array of grouped suggestion items to display. Each group requires an `id`, `title`, and `items` array. Groups are rendered after any flat `items`.',
+    },
+    headerConfig: {
+      control: false,
+      description:
+        'Optional header configuration object. Set `showHeader: true` and provide a `title` string to display a header above the suggestion list.',
+    },
+    i18n: {
+      control: 'object',
+      description:
+        'Localized strings for announcements and accessible labels. Defaults to English via `defaultAutocompleteI18n`. Override individual keys to customize or translate the component.',
+    },
     inputText: {
       control: 'text',
       description:
-        'The current input text. Suggestion items will apply styling to indicate what user has already typed.',
+        'The current input text. Suggestion items will apply styling to indicate what the user has already typed.',
     },
     enableSendButton: {
       control: 'boolean',
-      description: 'Whether to enable the send button',
+      description:
+        'Whether to render the send button inside each suggestion item.',
     },
     attached: {
       control: 'boolean',

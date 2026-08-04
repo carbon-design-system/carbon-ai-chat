@@ -16,6 +16,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import styles from './story-styles.scss?lit';
 import { action } from 'storybook/actions';
 import { cardFooterPresets, previewCardFooterPresets } from './story-data';
+import img from './placeholder.png';
 
 const cardContent = html`
   <div slot="body" class="standard-card">
@@ -127,7 +128,7 @@ export const WithImage = {
   },
   args: {
     ...WithActions.args,
-    image: 'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+    image: img,
   },
   render: (args) =>
     maxWidthWrapper(
@@ -159,7 +160,7 @@ export const OnlyImage = {
   },
   args: {
     ...Default.args,
-    image: 'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+    image: img,
   },
   render: (args) =>
     maxWidthWrapper(

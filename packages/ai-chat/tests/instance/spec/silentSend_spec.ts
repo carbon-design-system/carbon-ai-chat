@@ -8,18 +8,21 @@
  */
 
 /**
- * Tests for the silent-send behaviour introduced to handle file-only sends.
+ * Tests for the silent-send behaviour.
  *
- * When the user clicks Send with no text but with pending uploads, the message
- * should be sent silently (not rendered as an empty bubble in the chat UI).
+ * A send with nothing to show is marked silent so it does not render as an empty
+ * bubble. An attachment-only send is not such a case: a file with no caption has
+ * something to show, so it renders like any other message.
  *
- * The logic lives in useInputCallbacks.onSendInput:
- *   silent: options?.silent ?? !text
+ * The rule lives in useInputCallbacks.onSendInput, which defers to
+ * `shouldSendSilently` — covered directly in tests/utils/spec/fileAttachments_spec.
  *
- * We test the observable outcome at the doSend level:
+ * We test the observable outcome:
  *   - silent=true  → message is NOT added to the visible message list in Redux
  *   - silent=false → message IS added to the visible message list in Redux
  */
+
+import { waitFor } from '@testing-library/react';
 
 import {
   createBaseConfig,
@@ -33,7 +36,7 @@ import {
 } from '../../../src/types/events/eventBusTypes';
 import { createMessageRequestForText } from '../../../src/chat/utils/messageUtils';
 
-describe('silent send – file-only messages are not shown in the UI', () => {
+describe('silent send', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
@@ -128,23 +131,71 @@ describe('silent send – file-only messages are not shown in the UI', () => {
   });
 
   // -------------------------------------------------------------------------
-  // The silent=true logic in useInputCallbacks: !text
-  // We verify the rule directly: empty text → silent, non-empty text → not silent
+  // The Send control's enabled state. The predicates behind it are unit-tested
+  // in tests/utils/spec/sendableInput_spec; what is pinned here is that the
+  // rendered control starts out of reach when there is nothing to send.
   // -------------------------------------------------------------------------
 
-  it('empty string is falsy — !text is true (file-only send should be silent)', () => {
-    const text = '';
-    expect(!text).toBe(true);
-  });
+  describe('the Send control', () => {
+    /**
+     * The Send control sits inside the prompt-line's own shadow root, nested under
+     * the chat's, so the search has to walk shadow boundaries rather than query
+     * one level.
+     */
+    function deepQuery(
+      root: ParentNode | null,
+      selector: string
+    ): Element | null {
+      if (!root) {
+        return null;
+      }
 
-  it('non-empty string is truthy — !text is false (text send should not be silent)', () => {
-    const text = 'Hello';
-    expect(!text).toBe(false);
-  });
+      const direct = root.querySelector?.(selector);
+      if (direct) {
+        return direct;
+      }
 
-  it('whitespace-only string trimmed to empty is falsy', () => {
-    const text = '   '.trim();
-    expect(!text).toBe(true);
+      const elements = Array.from(root.querySelectorAll?.('*') ?? []);
+      for (const element of elements) {
+        const found = deepQuery((element as Element).shadowRoot, selector);
+        if (found) {
+          return found;
+        }
+      }
+
+      return null;
+    }
+
+    function sendButton(): HTMLButtonElement | null {
+      return deepQuery(
+        document.querySelector('cds-aichat-react')?.shadowRoot ?? null,
+        'button[aria-label="Send message"]'
+      ) as HTMLButtonElement | null;
+    }
+
+    /*
+      Only the starting state is asserted here. A store-driven prop change does not
+      flush into the Lit Send control in jsdom, so staging a file and watching the
+      control follow is verified in a real browser instead; a test that cannot
+      distinguish the two states would pass for the wrong reason. The predicates
+      themselves are covered in tests/utils/spec/sendableInput_spec.
+    */
+
+    it('starts disabled with neither text nor attachments', async () => {
+      await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        openChatByDefault: true,
+        // The Input only receives `pendingUploads` when uploads are configured, so
+        // the send predicate can't see a staged file without this.
+        upload: { is_on: true, onFileUpload: jest.fn() },
+      } as never);
+
+      await waitFor(() => expect(sendButton()).not.toBeNull(), {
+        timeout: 5000,
+      });
+
+      expect(sendButton()?.disabled).toBe(true);
+    });
   });
 
   // -------------------------------------------------------------------------

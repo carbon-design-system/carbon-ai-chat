@@ -30,10 +30,9 @@ export class DemoKeyboardShortcutSwitcher extends LitElement {
           ...this.config,
           keyboardShortcuts: {
             ...this.config.keyboardShortcuts,
-            messageFocusToggle: {
-              ...this.config.keyboardShortcuts?.messageFocusToggle,
-              is_on: isChecked,
-            },
+            // `key` and `modifiers` are optional; the chat fills them from its own
+            // defaults, so the switcher only owns the toggle.
+            messageFocusToggle: { isOn: isChecked },
           },
         },
         bubbles: true, // Ensure the event bubbles up to `demo-container`
@@ -44,12 +43,12 @@ export class DemoKeyboardShortcutSwitcher extends LitElement {
 
   render() {
     const isEnabled =
-      this.config.keyboardShortcuts?.messageFocusToggle?.is_on ?? true;
+      this.config.keyboardShortcuts?.messageFocusToggle?.isOn ?? false;
 
     return html`<cds-checkbox
       ?checked=${isEnabled}
       @cds-checkbox-changed=${this.checkboxChanged}
-      helper-text="Use F6 to toggle focus between message list and input field (enabled by default)"
+      helper-text="Use F6 to toggle focus between message list and input field (disabled by default)"
       label-text="Enable F6 keyboard shortcut">
     </cds-checkbox>`;
   }

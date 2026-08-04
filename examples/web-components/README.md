@@ -233,6 +233,34 @@ Lit example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInt
 
 </details>
 
+### [History / File attachments](./history-file-attachments/README.md)
+
+A restored conversation whose user message carries an uploaded file. The chat renders the attachment as a chip in the message bubble, so a file the user attached is still visible after a reload.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-history-file-attachments`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | `@carbon/ai-chat` custom element | Mounts the chat into a host element you style. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config bound onto the custom element. |
+| `messaging.customLoadHistory` | config prop | Returns the restored conversation on boot. |
+| `messaging.customSendMessage` | config prop | Minimal mock backend so the input stays usable. |
+| `layout.showFrame` | config prop | Disables the built-in frame. |
+| `openChatByDefault` | config prop | Opens the chat on mount. |
+| `HistoryItem` | `@carbon/ai-chat` type | Wraps each restored message with its timestamp. |
+| `MessageRequest` | `@carbon/ai-chat` type | The user turn that carries the attachment. |
+| `MessageResponse` | `@carbon/ai-chat` type | The assistant turns in the restored transcript. |
+| `MessageInput.structured_data` | `@carbon/ai-chat` type | Where the attachment lives on the request. |
+| `StructuredField` | `@carbon/ai-chat` type | The `file`-typed field the chat renders. |
+| `ExternalFileReference` | `@carbon/ai-chat` type | File metadata that survives serialization. |
+| `MessageInputType` | `@carbon/ai-chat` enum | `TEXT` on the restored requests. |
+| `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` on the restored responses. |
+
+</details>
+
 ### [History / Float](./history-float/README.md)
 
 Float-layout chat that exposes a custom history panel slot backed by `customLoadHistory`, letting users switch between saved conversations.
@@ -537,7 +565,7 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 | --- | --- | --- |
 | `<cds-aichat-custom-element>` | custom element | Mounts the chat UI. |
 | `messaging.customSendMessage` | property | Mock backend that echoes uploaded-file metadata. |
-| `upload.is_on` | property | Enables the attachment button. |
+| `upload.isOn` | property | Enables the attachment button. |
 | `upload.onFileUpload` | property | Mock upload handler returning `StructuredData` with an `ExternalFileReference`. |
 | `AbortSignal` | API | Cancels in-flight uploads when a pending file is removed. |
 
