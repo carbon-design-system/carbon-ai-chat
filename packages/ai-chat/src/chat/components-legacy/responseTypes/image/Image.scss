@@ -71,10 +71,6 @@
   margin: auto;
 }
 
-.cds-aichat--image__text-and-icon .cds-aichat--text-holder-tile__url {
-  padding-inline-end: calc(#{layout.$spacing-05} + 2px);
-}
-
 .cds-aichat--image__icon-only .cds-aichat--image__icon {
   padding: layout.$spacing-04;
   border-radius: layout.$spacing-03;
@@ -133,10 +129,6 @@ svg.cds-aichat--image__icon--link {
   }
 }
 
-a.cds-aichat--clickable-image .cds-aichat--text-holder-tile__title {
-  color: theme.$text-primary;
-}
-
 .cds-aichat--clickable-image .cds-aichat--image {
   position: unset;
 }
@@ -163,11 +155,13 @@ a.cds-aichat--clickable-image .cds-aichat--text-holder-tile__title {
   outline: 2px solid theme.$focus;
 }
 
-.cds-aichat--clickable-image:enabled:hover .cds-aichat--image {
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image,
+a.cds-aichat--clickable-image:hover .cds-aichat--image {
   background-color: theme.$layer-hover;
   text-decoration: underline;
 }
 
-.cds-aichat--clickable-image:enabled:hover .cds-aichat--image__image {
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image__image,
+a.cds-aichat--clickable-image:hover .cds-aichat--image__image {
   opacity: 0.8;
 }
