@@ -18,7 +18,7 @@ const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
   'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
-  title: 'Preview/Audio player/Transcript',
+  title: 'Components/Audio player/Transcript',
   component: Transcript,
   args: {
     text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',
