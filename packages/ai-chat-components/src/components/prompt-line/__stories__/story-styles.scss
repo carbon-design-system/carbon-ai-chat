@@ -29,16 +29,16 @@
 }
 
 .prompt-line-story-hint {
-  @include type.type-style('helper-text-01');
+  @include type.type-style('helper-text-02');
 
   color: theme.$text-helper;
   margin-block-end: layout.$spacing-03;
 }
 
 .prompt-line-story-hint code {
-  padding: 0.125rem 0.25rem;
-  border-radius: 2px;
-  background: var(--cds-layer-01, #f4f4f4);
-  font-family: 'IBM Plex Mono', Menlo, 'DejaVu Sans Mono', monospace;
-  font-size: 0.8125rem;
+  @include type.type-style('code-01');
+
+  padding: layout.$spacing-01 layout.$spacing-02;
+  border-radius: layout.$spacing-01;
+  background: theme.$layer-01;
 }

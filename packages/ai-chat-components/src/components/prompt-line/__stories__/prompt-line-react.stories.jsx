@@ -728,6 +728,7 @@ const _disableMeta = Object.fromEntries(
 );
 
 export const PromptLineAPI = {
+  tags: ['!dev'],
   name: 'PromptLine',
   argTypes: {
     ..._disableMeta,
@@ -779,6 +780,7 @@ export const PromptLineAPI = {
 };
 
 export const PromptLineShellAPI = {
+  tags: ['!dev'],
   name: 'PromptLineShell',
   argTypes: {
     ..._disableMeta,
@@ -822,6 +824,7 @@ export const PromptLineShellAPI = {
 };
 
 export const CDSAIChatInputSendControlAPI = {
+  tags: ['!dev'],
   name: 'CDSAIChatInputSendControl',
   argTypes: {
     ..._disableMeta,
@@ -880,6 +883,7 @@ export const CDSAIChatInputSendControlAPI = {
 };
 
 export const CDSAIChatAutocompleteAPI = {
+  tags: ['!dev'],
   name: 'CDSAIChatAutocomplete',
   argTypes: {
     ..._disableMeta,
@@ -926,6 +930,7 @@ export const CDSAIChatAutocompleteAPI = {
 };
 
 export const CDSAIChatFileUploadsAPI = {
+  tags: ['!dev'],
   name: 'CDSAIChatFileUploads',
   argTypes: {
     ..._disableMeta,
@@ -993,6 +998,7 @@ export const CDSAIChatFileUploadsAPI = {
 };
 
 export const CDSAIChatErrorMessageAPI = {
+  tags: ['!dev'],
   name: 'CDSAIChatErrorMessage',
   argTypes: {
     ..._disableMeta,
