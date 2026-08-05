@@ -17,7 +17,7 @@ import { useSelector } from '../../../hooks/useSelector';
 
 import { AppState } from '../../../../types/state/AppState';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
-import { ClickableImage } from '../../../components-legacy/responseTypes/util/ClickableImage';
+import { Image } from '../../../components-legacy/responseTypes/image/Image';
 import Button, { BUTTON_KIND, BUTTON_SIZE } from '../../carbon/Button';
 
 interface BaseButtonComponentProps extends HasClassName {
@@ -104,7 +104,7 @@ function BaseButtonItemComponent({
 
   if (imageURL) {
     return (
-      <ClickableImage
+      <Image
         imageError={errors_imageSource}
         source={imageURL}
         target={target}

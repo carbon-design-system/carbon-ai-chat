@@ -8,10 +8,10 @@
  */
 
 /* eslint-disable */
-import React from "react";
-import { Carousel } from "../../../react/carousel";
-import { Card } from "../../../react/card";
-import "./story-styles.scss";
+import React from 'react';
+import { Carousel } from '../../../react/carousel';
+import { Card } from '../../../react/card';
+import './story-styles.scss';
 
 const cards = Array(8)
   .fill(null)
@@ -19,15 +19,15 @@ const cards = Array(8)
 
 const argTypes = {
   nextBtnText: {
-    control: "text",
-    description: "Text for the next button",
+    control: 'text',
+    description: 'Text for the next button',
   },
   previousBtnText: {
-    control: "text",
-    description: "Text for the previous button",
+    control: 'text',
+    description: 'Text for the previous button',
   },
   onChange: {
-    action: "cds-aichat-carousel-onchange",
+    action: 'cds-aichat-carousel-onchange',
     table: {
       disable: true,
     },
@@ -35,7 +35,7 @@ const argTypes = {
 };
 
 export default {
-  title: "Preview/Carousel",
+  title: 'Components/Carousel',
   argTypes,
   render: (args) => (
     <Carousel {...args}>
@@ -54,7 +54,7 @@ export default {
 
 export const Default = {
   args: {
-    nextBtnText: "Next",
-    previousBtnText: "Previous",
+    nextBtnText: 'Next',
+    previousBtnText: 'Previous',
   },
 };

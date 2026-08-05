@@ -259,7 +259,7 @@ if (
 }
 
 export default {
-  title: 'Preview/Feedback/Buttons',
+  title: 'Components/Feedback/Buttons',
   component: 'cds-aichat-feedback-buttons',
   argTypes: {
     isPositiveSelected: {
