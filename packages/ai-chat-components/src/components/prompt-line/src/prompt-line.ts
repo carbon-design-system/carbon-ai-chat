@@ -58,7 +58,7 @@ import { getRawText } from './tiptap/json-utils.js';
 import styles from './prompt-line.scss?lit';
 
 @carbonElement(`${prefix}-prompt-line`)
-export class PromptLineElement extends LitElement {
+class PromptLineElement extends LitElement {
   static styles = css`
     ${unsafeCSS(styles)}
   `;

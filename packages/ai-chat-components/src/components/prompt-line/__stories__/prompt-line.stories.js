@@ -145,7 +145,8 @@ class PromptLineStartersStory extends LitElement {
       <style>
         ${styles}
       </style>
-      <div style="width:640px;max-inline-size:100%;margin-block-start:320px">
+      <div
+        class="prompt-line-story-wrapper prompt-line-story-wrapper--autocomplete">
         <cds-aichat-prompt-line-shell
           ?rounded=${this.rounded}
           ?disabled=${this.disabled}
@@ -284,7 +285,7 @@ class PromptLineFileUploadsStory extends LitElement {
       <style>
         ${styles}
       </style>
-      <div style="width:640px;max-inline-size:100%;">
+      <div class="prompt-line-story-wrapper">
         <cds-aichat-prompt-line-shell
           ?rounded=${this.rounded}
           ?disabled=${this.disabled}
@@ -457,7 +458,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
           Type <code>@</code> anywhere to mention a team member. Type
           <code>/</code> at the start of the line to run a command.
         </p>
-        <div style="margin-block-start:320px">
+        <div class="prompt-line-story-wrapper--autocomplete">
           <cds-aichat-prompt-line-shell
             ?rounded=${this.rounded}
             ?disabled=${this.disabled}
@@ -597,7 +598,8 @@ class PromptLineTypeaheadStory extends LitElement {
       <style>
         ${styles}
       </style>
-      <div class="prompt-line-story-wrapper" style="margin-block-start:320px">
+      <div
+        class="prompt-line-story-wrapper prompt-line-story-wrapper--autocomplete">
         <cds-aichat-prompt-line-shell
           ?rounded=${this.rounded}
           ?disabled=${this.disabled}

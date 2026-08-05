@@ -1,4 +1,4 @@
-import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
 import * as PromptLineReactStories from "./prompt-line-react.stories";
 
 <Meta of={PromptLineReactStories} />
@@ -372,72 +372,29 @@ function ChatInput() {
 
 ## Component API
 
-### PromptLineShell
+### `<PromptLine>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `rounded` | `boolean` | `false` | Applies rounded corners to the shell border. |
-| `expanded` | `boolean` | `false` | Expanded layout: the editor fills its own full-width row; message actions and send control move to a second row beneath it. |
-| `hasError` | `boolean` | `false` | Puts the shell into the error state (red border treatment). |
-| `disabled` | `boolean` | `false` | Disables the shell and all slotted content. |
+<ArgTypes of={PromptLineReactStories.PromptLineArgTypes} />
 
-### PromptLine
+### `<PromptLineShell>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `placeholder` | `string` | `''` | Placeholder text shown when the surface is empty. |
-| `disabled` | `boolean` | `false` | Disables editing. Surface stays mounted but non-editable. |
-| `rich` | `boolean` | `false` | Upgrades the surface to the Tiptap rich editor (lazy-loaded). Required for autocomplete / mentions / commands. |
-| `extensions` | `Extension[]` | `[]` | Host-supplied Tiptap extensions appended to the Carbon bundle. Memoize this array — a reference change recreates the editor. |
-| `content` | `JSONContent \| string` | — | Initial or controlled content. |
-| `ariaLabel` | `string` | `''` | Accessible label for the editing surface. |
-| `autofocus` | `boolean` | `false` | Focus the surface on mount. |
+<ArgTypes of={PromptLineReactStories.PromptLineShellArgTypes} />
 
-### CDSAIChatInputSendControl
+### `<CDSAIChatInputSendControl>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `hasValidInput` | `boolean` | `false` | Enables the send button and switches to the filled send icon. |
-| `disabled` | `boolean` | `false` | Disables the entire control. |
-| `disableSend` | `boolean` | `false` | Disables only the send button (independent of `disabled`). |
-| `showStopStreaming` | `boolean` | `false` | Swaps the send button for the stop-streaming button. |
-| `disableStopStreaming` | `boolean` | `false` | Disables the stop-streaming button. |
-| `buttonLabel` | `string` | `'Send'` | Tooltip label for the send button. |
-| `stopResponseLabel` | `string` | `'Stop response'` | Tooltip label for the stop-streaming button. |
+<ArgTypes of={PromptLineReactStories.CDSAIChatInputSendControlArgTypes} />
 
-### CDSAIChatErrorMessage
+### `<CDSAIChatAutocomplete>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `title` | `string` | `''` | Short error title text. |
-| `description` | `string` | `''` | Optional longer description shown below the title. |
-| `collapsible` | `boolean` | `false` | Whether the description can be toggled via a chevron button. |
-| `fullscreen` | `boolean` | `false` | Switches to the fullscreen layout (warning icon moves to the end of the row). |
+<ArgTypes of={PromptLineReactStories.CDSAIChatAutocompleteArgTypes} />
 
-### CDSAIChatAutocomplete
+### `<CDSAIChatFileUploads>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `items` | `SuggestionItem[]` | `[]` | Flat list of suggestion items to display. |
-| `groups` | `SuggestionItemGroup[]` | `[]` | Grouped suggestion items displayed after any flat `items`. |
-| `headerConfig` | `HeaderConfig` | — | Optional header rendered above the suggestion list (`{ showHeader, title }`). |
-| `i18n` | `AutocompleteI18n` | `defaultAutocompleteI18n` | Localized strings for announcements and the listbox label. |
-| `inputText` | `string` | `''` | The text already typed by the user; used to highlight the matching prefix in each item. |
-| `enableSendButton` | `boolean` | `true` | Shows a send button inside each suggestion item. |
-| `attached` | `boolean` | `true` | When `true`, suppresses bottom corner rounding (use when overlaying the input). |
+<ArgTypes of={PromptLineReactStories.CDSAIChatFileUploadsArgTypes} />
 
-### CDSAIChatFileUploads
+### `<CDSAIChatErrorMessage>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `uploads` | `FileUpload[]` | `[]` | Array of file upload objects to display. Each item must have `id`, `file`, and `status` (`FileStatusValue`). |
-| `removeFileLabel` | `string` | `'Remove file'` | Accessible label for the remove button on each file chip. |
-| `uploadingFileLabel` | `string` | `'Uploading file'` | Label shown while a file is uploading. |
-| `fileRemovedLabel` | `string` | `'File removed.'` | Screen-reader announcement when a file is removed. |
-| `uploadSuccessLabel` | `string` | `'The file was uploaded successfully.'` | Screen-reader announcement on upload success. |
-| `uploadFailureLabel` | `string` | `'There was an error uploading the file.'` | Screen-reader announcement on upload failure. |
-| `getFilesAddedText` | `(args: { count: number }) => string` | English default | Returns the announcement when one or more files are staged. Override for localization or pluralization. |
-| `getFilesUploadingText` | `(args: { count: number }) => string` | English default | Returns the announcement when one or more files begin uploading. Override for localization or pluralization. |
+<ArgTypes of={PromptLineReactStories.CDSAIChatErrorMessageArgTypes} />
 
 ## Feedback
 

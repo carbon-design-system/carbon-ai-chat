@@ -17,6 +17,8 @@
 
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { action } from 'storybook/actions';
+import { default as WCMeta } from './prompt-line.stories';
+import './story-styles.scss';
 
 import '@carbon/web-components/es/components/button/index.js';
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
@@ -24,6 +26,7 @@ import AddLarge16 from '@carbon/icons/es/add--large/16.js';
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
 import CDSAIChatInputSendControl from '../../../react/input-send-control';
+import CDSAIChatAutocomplete from '../../../react/autocomplete';
 import CDSAIChatFileUploads from '../../../react/file-uploads';
 import CDSAIChatErrorMessage from '../../../react/error-message';
 import { useChatAutocomplete } from '../../../react/hooks/useChatAutocomplete';
@@ -45,42 +48,22 @@ import {
 // ---------------------------------------------------------------------------
 
 const Wrapper = ({ children }) => (
-  <div style={{ width: '640px', maxWidth: '100%' }}>{children}</div>
+  <div className="prompt-line-story-wrapper">{children}</div>
 );
 
 // Gives the prompt line breathing room above it for the autocomplete overlay.
-// Mirrors .prompt-line-story-wrapper--bottom in story-styles.scss.
+// Mirrors .prompt-line-story-wrapper--autocomplete in story-styles.scss.
 const WrapperBottom = ({ children }) => (
-  <div style={{ width: '640px', maxWidth: '100%', marginBlockStart: '320px' }}>
+  <div className="prompt-line-story-wrapper prompt-line-story-wrapper--autocomplete">
     {children}
   </div>
 );
 
 const Hint = ({ children }) => (
-  <p
-    style={{
-      fontFamily: "'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif",
-      fontSize: '0.875rem',
-      lineHeight: '1.5',
-      color: 'var(--cds-text-helper, #6f6f6f)',
-      marginBottom: '0.5rem',
-    }}>
-    {children}
-  </p>
+  <p className="prompt-line-story-hint">{children}</p>
 );
 
-const InlineCode = ({ children }) => (
-  <code
-    style={{
-      fontFamily: "'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', monospace",
-      fontSize: '0.8125rem',
-      background: 'var(--cds-layer-01, #f4f4f4)',
-      padding: '0.125rem 0.25rem',
-      borderRadius: '2px',
-    }}>
-    {children}
-  </code>
-);
+const InlineCode = ({ children }) => <code>{children}</code>;
 
 /**
  * Renders a CarbonIcon descriptor as a React <svg> element in a named slot.
@@ -132,69 +115,11 @@ const InlineActions = ({ disabled }) => (
 
 export default {
   title: 'Preview/Prompt line',
+  component: PromptLine,
   argTypes: {
-    placeholder: {
-      control: 'text',
-      description: 'Placeholder text shown when the editor is empty.',
-    },
-    disabled: {
-      control: 'boolean',
-      description: 'Whether the prompt line is disabled.',
-    },
-    rounded: {
-      control: 'boolean',
-      description: 'Whether the shell has rounded corners.',
-    },
-    hasError: {
-      control: 'boolean',
-      description: 'Whether the shell is in an error state.',
-    },
-    errorTitle: {
-      control: 'text',
-      description:
-        'Short error title shown in the error message bar (requires hasError).',
-      table: { disable: true },
-    },
-    errorDescription: {
-      control: 'text',
-      description: 'Optional longer description shown below the error title.',
-      table: { disable: true },
-    },
-    errorCollapsible: {
-      control: 'boolean',
-      description: 'Whether the error message description can be collapsed.',
-      table: { disable: true },
-    },
-    errorFullscreen: {
-      control: 'boolean',
-      description: 'Whether the error message uses the fullscreen layout.',
-      table: { disable: true },
-    },
-    enableSendButton: {
-      control: 'boolean',
-      description:
-        'Whether the send arrow is shown inside each autocomplete suggestion item (Typeahead only).',
-      table: { category: 'Autocomplete' },
-    },
-    attached: {
-      control: 'boolean',
-      description:
-        'Whether the autocomplete popover is visually attached to the input — removes bottom-corner rounding (Typeahead only).',
-      table: { category: 'Autocomplete' },
-    },
+    ...WCMeta.argTypes,
   },
-  args: {
-    placeholder: 'Type something...',
-    disabled: false,
-    rounded: true,
-    hasError: false,
-    errorTitle: 'Something went wrong.',
-    errorDescription: '',
-    errorCollapsible: false,
-    errorFullscreen: true,
-    enableSendButton: true,
-    attached: false,
-  },
+  args: { ...WCMeta.args },
 };
 
 // ---------------------------------------------------------------------------
@@ -787,4 +712,358 @@ const TypeaheadStory = ({
 
 export const Typeahead = {
   render: (args) => <TypeaheadStory {...args} />,
+};
+
+// ---------------------------------------------------------------------------
+// Sub-component stories — each renders the component in isolation so it can
+// be explored and controlled independently. These also back the MDX
+// <ArgTypes> blocks (reactDocgen can't introspect @lit/react wrappers, so
+// argTypes are authored explicitly here).
+// ---------------------------------------------------------------------------
+
+// Suppresses every control inherited from the meta-level WCMeta.argTypes
+// spread so sub-component stories only show their own props.
+const _disableMeta = Object.fromEntries(
+  Object.keys(WCMeta.argTypes).map((k) => [k, { table: { disable: true } }])
+);
+
+export const PromptLineAPI = {
+  name: 'PromptLine',
+  argTypes: {
+    ..._disableMeta,
+    placeholder: {
+      control: 'text',
+      description: 'Placeholder text shown when the surface is empty.',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disables editing. Surface stays mounted but non-editable.',
+    },
+    rich: {
+      control: 'boolean',
+      description:
+        'Upgrades the surface to the Tiptap rich editor (lazy-loaded). Required for autocomplete, mentions, and commands.',
+    },
+    ariaLabel: {
+      control: 'text',
+      description: 'Accessible label for the editing surface.',
+    },
+    autofocus: {
+      control: 'boolean',
+      description: 'Focus the surface on mount.',
+    },
+  },
+  args: {
+    placeholder: 'Ask a question...',
+    disabled: false,
+    rich: false,
+    ariaLabel: '',
+    autofocus: false,
+  },
+  render: ({ placeholder, disabled, rich, ariaLabel, autofocus }) => (
+    <Wrapper>
+      <PromptLineShell>
+        <PromptLine
+          slot="editor"
+          placeholder={placeholder}
+          disabled={disabled}
+          rich={rich}
+          ariaLabel={ariaLabel}
+          autofocus={autofocus}
+          onChange={(e) => action('cds-aichat-prompt-change')(e.detail)}
+        />
+        <CDSAIChatInputSendControl slot="send-control" />
+      </PromptLineShell>
+    </Wrapper>
+  ),
+};
+
+export const PromptLineShellAPI = {
+  name: 'PromptLineShell',
+  argTypes: {
+    ..._disableMeta,
+    rounded: {
+      control: 'boolean',
+      description: 'Applies rounded corners to the shell border.',
+    },
+    expanded: {
+      control: 'boolean',
+      description:
+        'Expanded layout: the editor fills its own full-width row; message actions and send control move to a second row beneath it.',
+    },
+    hasError: {
+      control: 'boolean',
+      description:
+        'Puts the shell into the error state (red border treatment).',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disables the shell and all slotted content.',
+    },
+  },
+  args: {
+    rounded: false,
+    expanded: false,
+    hasError: false,
+    disabled: false,
+  },
+  render: ({ rounded, expanded, hasError, disabled }) => (
+    <Wrapper>
+      <PromptLineShell
+        rounded={rounded}
+        expanded={expanded}
+        hasError={hasError}
+        disabled={disabled}>
+        <PromptLine slot="editor" placeholder="Ask a question..." />
+        <CDSAIChatInputSendControl slot="send-control" />
+      </PromptLineShell>
+    </Wrapper>
+  ),
+};
+
+export const CDSAIChatInputSendControlAPI = {
+  name: 'CDSAIChatInputSendControl',
+  argTypes: {
+    ..._disableMeta,
+    hasValidInput: {
+      control: 'boolean',
+      description:
+        'Enables the send button and switches to the filled send icon.',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disables the entire control.',
+    },
+    disableSend: {
+      control: 'boolean',
+      description: 'Disables only the send button (independent of `disabled`).',
+    },
+    showStopStreaming: {
+      control: 'boolean',
+      description: 'Swaps the send button for the stop-streaming button.',
+    },
+    disableStopStreaming: {
+      control: 'boolean',
+      description: 'Disables the stop-streaming button.',
+    },
+    buttonLabel: {
+      control: 'text',
+      description: 'Tooltip label for the send button.',
+    },
+    stopResponseLabel: {
+      control: 'text',
+      description: 'Tooltip label for the stop-streaming button.',
+    },
+  },
+  args: {
+    hasValidInput: false,
+    disabled: false,
+    disableSend: false,
+    showStopStreaming: false,
+    disableStopStreaming: false,
+    buttonLabel: 'Send',
+    stopResponseLabel: 'Stop response',
+  },
+  render: (args) => (
+    <Wrapper>
+      <PromptLineShell>
+        <PromptLine slot="editor" placeholder="Ask a question..." />
+        <CDSAIChatInputSendControl
+          slot="send-control"
+          {...args}
+          onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
+        />
+      </PromptLineShell>
+    </Wrapper>
+  ),
+};
+
+export const CDSAIChatAutocompleteAPI = {
+  name: 'CDSAIChatAutocomplete',
+  argTypes: {
+    ..._disableMeta,
+    inputText: {
+      control: 'text',
+      description:
+        'The text already typed by the user; used to highlight the matching prefix in each item.',
+    },
+    enableSendButton: {
+      control: 'boolean',
+      description: 'Shows a send button inside each suggestion item.',
+      table: { category: '' },
+    },
+    attached: {
+      control: 'boolean',
+      description:
+        'When `true`, suppresses bottom corner rounding (use when overlaying the input).',
+      table: { category: '' },
+    },
+  },
+  args: {
+    inputText: '',
+    enableSendButton: true,
+    attached: true,
+  },
+  render: ({ inputText, enableSendButton, attached }) => (
+    <WrapperBottom>
+      <PromptLineShell rounded>
+        <CDSAIChatAutocomplete
+          slot="autocomplete-content"
+          items={typeaheadItems.slice(0, 5)}
+          inputText={inputText}
+          enableSendButton={enableSendButton}
+          attached={attached}
+          onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
+          onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
+          onDismiss={() => action('cds-aichat-autocomplete-dismiss')()}
+        />
+        <PromptLine slot="editor" placeholder="Ask a question..." />
+        <CDSAIChatInputSendControl slot="send-control" />
+      </PromptLineShell>
+    </WrapperBottom>
+  ),
+};
+
+export const CDSAIChatFileUploadsAPI = {
+  name: 'CDSAIChatFileUploads',
+  argTypes: {
+    ..._disableMeta,
+    removeFileLabel: {
+      control: 'text',
+      description: 'Accessible label for the remove button on each file chip.',
+    },
+    uploadingFileLabel: {
+      control: 'text',
+      description: 'Label shown while a file is uploading.',
+    },
+    fileRemovedLabel: {
+      control: 'text',
+      description: 'Screen-reader announcement when a file is removed.',
+    },
+    uploadSuccessLabel: {
+      control: 'text',
+      description: 'Screen-reader announcement on upload success.',
+    },
+    uploadFailureLabel: {
+      control: 'text',
+      description: 'Screen-reader announcement on upload failure.',
+    },
+  },
+  args: {
+    removeFileLabel: 'Remove file',
+    uploadingFileLabel: 'Uploading file',
+    fileRemovedLabel: 'File removed.',
+    uploadSuccessLabel: 'The file was uploaded successfully.',
+    uploadFailureLabel: 'There was an error uploading the file.',
+  },
+  render: (args) => {
+    const [uploads, setUploads] = React.useState([
+      {
+        id: 'f1',
+        file: new File([''], 'report.pdf'),
+        status: FileStatusValue.EDIT,
+      },
+      {
+        id: 'f2',
+        file: new File([''], 'data.csv'),
+        status: FileStatusValue.UPLOADING,
+      },
+    ]);
+    return (
+      <Wrapper>
+        <PromptLineShell rounded expanded>
+          <CDSAIChatFileUploads
+            slot="file-uploads"
+            uploads={uploads}
+            {...args}
+            onFileRemove={(e) => {
+              action('cds-aichat-file-remove')(e.detail);
+              setUploads((prev) =>
+                prev.filter((u) => u.id !== e.detail.fileId)
+              );
+            }}
+          />
+          <PromptLine slot="editor" placeholder="Ask a question..." />
+          <CDSAIChatInputSendControl slot="send-control" />
+        </PromptLineShell>
+      </Wrapper>
+    );
+  },
+};
+
+export const CDSAIChatErrorMessageAPI = {
+  name: 'CDSAIChatErrorMessage',
+  argTypes: {
+    ..._disableMeta,
+    title: {
+      control: 'text',
+      description: 'Short error title text.',
+    },
+    description: {
+      control: 'text',
+      description: 'Optional longer description shown below the title.',
+    },
+    collapsible: {
+      control: 'boolean',
+      description:
+        'Whether the description can be toggled via a chevron button.',
+    },
+    fullscreen: {
+      control: 'boolean',
+      description:
+        'Switches to the fullscreen layout (warning icon moves to the end of the row).',
+    },
+  },
+  args: {
+    title: 'Something went wrong.',
+    description: 'Please try again or contact support.',
+    collapsible: false,
+    fullscreen: false,
+  },
+  render: (args) => (
+    <Wrapper>
+      <PromptLineShell rounded hasError>
+        <CDSAIChatErrorMessage slot="field-messaging" {...args} />
+        <PromptLine slot="editor" placeholder="Ask a question..." />
+        <CDSAIChatInputSendControl slot="send-control" />
+      </PromptLineShell>
+    </Wrapper>
+  ),
+};
+
+// ---------------------------------------------------------------------------
+// Docs-only argTypes exports — no render, no args, hidden from sidebar.
+// <ArgTypes of={...}> reads argTypes from the story object; these exist solely
+// to give each MDX section a clean prop table with no canvas/tab chrome.
+// ---------------------------------------------------------------------------
+
+export const PromptLineArgTypes = {
+  tags: ['!dev'],
+  argTypes: PromptLineAPI.argTypes,
+};
+
+export const PromptLineShellArgTypes = {
+  tags: ['!dev'],
+  argTypes: PromptLineShellAPI.argTypes,
+};
+
+export const CDSAIChatInputSendControlArgTypes = {
+  tags: ['!dev'],
+  argTypes: CDSAIChatInputSendControlAPI.argTypes,
+};
+
+export const CDSAIChatAutocompleteArgTypes = {
+  tags: ['!dev'],
+  argTypes: CDSAIChatAutocompleteAPI.argTypes,
+};
+
+export const CDSAIChatFileUploadsArgTypes = {
+  tags: ['!dev'],
+  argTypes: CDSAIChatFileUploadsAPI.argTypes,
+};
+
+export const CDSAIChatErrorMessageArgTypes = {
+  tags: ['!dev'],
+  argTypes: CDSAIChatErrorMessageAPI.argTypes,
 };

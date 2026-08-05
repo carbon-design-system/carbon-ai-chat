@@ -10,21 +10,29 @@
 /**
  * Shared SCSS for Prompt line stories.
  *
- * .prompt-line-story-wrapper — constrains width and centres the component.
- * .prompt-line-story-hint    — muted instructional text above the input.
+ * .prompt-line-story-wrapper           — constrains width and centres the component.
+ * .prompt-line-story-wrapper--autocomplete — adds top margin so autocomplete overlays open upward.
+ * .prompt-line-story-hint              — muted instructional text above the input.
  */
+
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
 
 .prompt-line-story-wrapper {
   inline-size: 640px;
   max-inline-size: 100%;
 }
 
+.prompt-line-story-wrapper--autocomplete {
+  margin-block-start: 320px;
+}
+
 .prompt-line-story-hint {
-  color: var(--cds-text-helper, #6f6f6f);
-  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  margin-block-end: 0.5rem;
+  @include type-style('helper-text-01');
+
+  color: theme.$text-helper;
+  margin-block-end: layout.$spacing-03;
 }
 
 .prompt-line-story-hint code {
