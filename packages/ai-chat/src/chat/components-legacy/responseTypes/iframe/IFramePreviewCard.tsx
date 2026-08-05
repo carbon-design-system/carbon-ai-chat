@@ -18,8 +18,8 @@ import actions from '../../../store/actions';
 import { AppState } from '../../../../types/state/AppState';
 import { getURLHostName } from '../../../utils/browserUtils';
 import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
-import { ClickableImage } from '../util/ClickableImage';
 import { IFrameItem } from '../../../../types/messaging/Messages';
+import { Image } from '../image/Image';
 
 interface IFramePreviewCardComponentProps {
   /**
@@ -60,7 +60,7 @@ function IFramePreviewCardComponent({
 
   return (
     <div>
-      <ClickableImage
+      <Image
         title={title}
         description={description}
         source={image_url}
