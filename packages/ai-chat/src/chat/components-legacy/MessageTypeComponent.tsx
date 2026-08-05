@@ -111,6 +111,8 @@ import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
  * when one of these strings changes — not on any language-pack edit.
  */
 const selectMessageTypeStrings = (state: AppState) => ({
+  carousel_nextNavButton: state.languagePack.carousel_nextNavButton,
+  carousel_prevNavButton: state.languagePack.carousel_prevNavButton,
   chainOfThought_explainabilityLabel:
     state.languagePack.chainOfThought_explainabilityLabel,
   chainOfThought_inputLabel: state.languagePack.chainOfThought_inputLabel,
@@ -611,7 +613,9 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     const { isMessageForInput, requestInputFocus } = props;
     return (
       <div className="carousel-container">
-        <Carousel nextBtnText="Next" previousBtnText="Previous">
+        <Carousel
+          nextBtnText={languagePack.carousel_nextNavButton}
+          previousBtnText={languagePack.carousel_prevNavButton}>
           <div className="carousel-container-inner">
             <CarouselItemComponent
               localMessageItem={message}
