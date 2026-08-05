@@ -17,6 +17,7 @@ import '../autocomplete/src/autocomplete.js';
 import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
 import { resolveShowTriggerInChip } from './tiptap/carbon-mention.js';
 import { projectRawValue } from './tiptap/json-utils.js';
+import { resetTriggerChangeState } from './tiptap/trigger-utils.js';
 import type PromptLineElement from './prompt-line.js';
 import type {
   AutocompleteConfig,
@@ -266,6 +267,17 @@ export class AutocompleteController {
     this._resolveToken++;
     this._refreshEditorKeyHandler();
     this._emit();
+    // Reset the trigger-utils coalescing state so the extension can re-emit
+    // the same detail on the next onFocus/onUpdate without being swallowed.
+    const editor = this._promptLine?.getEditor();
+    if (editor) {
+      resetTriggerChangeState(editor);
+      // Fire a no-op transaction so onUpdate re-evaluates immediately (handles
+      // the case where the editor is still focused and empty after dismissal).
+      if (editor.view?.dispatch) {
+        editor.view.dispatch(editor.state.tr);
+      }
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -619,6 +631,7 @@ class AutocompleteControllerElement extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    this.addEventListener('mousedown', this._handleMousedown);
     this._controller = new AutocompleteController({
       mention: this.mention,
       command: this.command,
@@ -650,6 +663,7 @@ class AutocompleteControllerElement extends LitElement {
   }
 
   override disconnectedCallback(): void {
+    this.removeEventListener('mousedown', this._handleMousedown);
     this._eventSource?.removeEventListener(
       'cds-aichat-trigger-change',
       this._handleTriggerChange as EventListener
@@ -687,6 +701,17 @@ class AutocompleteControllerElement extends LitElement {
         ? this.firstElementChild
         : null);
     this._controller.setListElement(listEl);
+
+    // Pass the editor DOM as anchorElement so the autocomplete's outside-click
+    // guard treats clicks on the editor as inside-clicks (not dismissals).
+    const editorDom = this._controller.getPromptLine()?.getEditor()?.view
+      .dom as Element | undefined;
+    const autocompleteEl = this.querySelector<
+      HTMLElement & { anchorElement?: Element | null }
+    >('cds-aichat-autocomplete');
+    if (autocompleteEl) {
+      autocompleteEl.anchorElement = editorDom ?? null;
+    }
   }
 
   override render() {
@@ -725,6 +750,11 @@ class AutocompleteControllerElement extends LitElement {
         @cds-aichat-autocomplete-dismiss=${() => this._controller?.dismiss()}></cds-aichat-autocomplete>
     `;
   }
+
+  private _handleMousedown = (event: MouseEvent): void => {
+    // Prevent the autocomplete list from stealing focus from the editor.
+    event.preventDefault();
+  };
 
   private _handleTriggerChange = (event: Event): void => {
     this._controller?.handleTriggerChangeEvent(

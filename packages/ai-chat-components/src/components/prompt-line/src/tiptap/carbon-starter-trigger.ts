@@ -47,15 +47,13 @@ export function carbonStarterTrigger(
     },
 
     onTransaction() {
-      maybeEmit(this.editor);
+      if (this.editor.isFocused) {
+        maybeEmit(this.editor);
+      }
     },
 
-    onFocus() {
-      maybeEmit(this.editor);
-    },
-
-    onBlur() {
-      maybeEmit(this.editor, /* forceClear */ true);
+    onFocus({ editor }) {
+      maybeEmit(editor);
     },
   });
 }

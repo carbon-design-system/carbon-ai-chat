@@ -167,12 +167,25 @@ export function useChatAutocomplete(
   const setListElement = React.useCallback(
     (el: HTMLElement | null) => {
       controllerRef.current?.setListElement(el);
+      // Pass the editor DOM as anchorElement so outside-click detection on the
+      // autocomplete element doesn't dismiss the list when the user clicks the
+      // editor (the editor is not inside the autocomplete element).
+      if (el && 'anchorElement' in el) {
+        (el as HTMLElement & { anchorElement: Element | null }).anchorElement =
+          promptLineRef.current?.getEditor?.()?.view.dom ?? null;
+      }
       if (el && maxHeight) {
         el.style.setProperty('--cds-aichat-autocomplete-max-height', maxHeight);
       }
     },
-    [maxHeight]
+    [maxHeight, promptLineRef]
   );
+
+  // Prevent mousedown on the autocomplete container from stealing focus from
+  // the editor.
+  const handleContainerMousedown = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+  }, []);
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
     if (!state.trigger || state.items.length === 0) {
@@ -194,6 +207,7 @@ export function useChatAutocomplete(
             slot="autocomplete-content"
             element={result}
             onMount={setListElement}
+            onMousedown={handleContainerMousedown}
           />
         );
       }
@@ -202,6 +216,7 @@ export function useChatAutocomplete(
           slot="autocomplete-content"
           node={result as ReactNode}
           onMount={setListElement}
+          onMousedown={(e) => e.preventDefault()}
         />
       );
     }
@@ -218,7 +233,15 @@ export function useChatAutocomplete(
         onDismiss={dismiss}
       />
     );
-  }, [state, handleSelect, handleSend, dismiss, setListElement, attached]);
+  }, [
+    state,
+    handleSelect,
+    handleSend,
+    dismiss,
+    setListElement,
+    attached,
+    handleContainerMousedown,
+  ]);
 
   return { onTriggerChange, autocompleteContent };
 }
@@ -228,6 +251,7 @@ interface CustomElementHostProps {
   element: HTMLElement;
   /** Notify the parent which element is the key-forwarding target. */
   onMount?: (el: HTMLElement | null) => void;
+  onMousedown?: (e: React.MouseEvent) => void;
 }
 
 /** Mounts a host-provided HTMLElement into the React tree at `slot`. */
@@ -235,6 +259,7 @@ function CustomElementHost({
   slot,
   element,
   onMount,
+  onMousedown,
 }: CustomElementHostProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => {
@@ -251,13 +276,21 @@ function CustomElementHost({
       }
     };
   }, [element, onMount]);
-  return <div ref={containerRef} slot={slot} />;
+  return (
+    <div
+      ref={containerRef}
+      role="presentation"
+      slot={slot}
+      onMouseDown={onMousedown}
+    />
+  );
 }
 
 interface CustomReactNodePortalProps {
   slot: string;
   node: ReactNode;
   onMount?: (el: HTMLElement | null) => void;
+  onMousedown?: (e: MouseEvent) => void;
 }
 
 let autocompletePortalCounter = 0;
@@ -275,6 +308,7 @@ function CustomReactNodePortal({
   slot,
   node,
   onMount,
+  onMousedown,
 }: CustomReactNodePortalProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [hostElement, setHostElement] = React.useState<HTMLElement | null>(
@@ -300,6 +334,9 @@ function CustomReactNodePortal({
 
     const hostEl = document.createElement('div');
     hostEl.setAttribute('slot', slotName);
+    if (onMousedown) {
+      hostEl.addEventListener('mousedown', onMousedown);
+    }
     chatWrapper.appendChild(hostEl);
 
     setHostElement(hostEl);
@@ -307,6 +344,9 @@ function CustomReactNodePortal({
 
     return () => {
       onMount?.(null);
+      if (onMousedown) {
+        hostEl.removeEventListener('mousedown', onMousedown);
+      }
       slotEl.remove();
       hostEl.remove();
       setHostElement(null);

@@ -166,6 +166,13 @@ class AutocompleteElement extends LitElement {
   attached = true;
 
   /**
+   * Optional element that "owns" this list (e.g. the editor). Clicks on the
+   * anchor element are treated as inside-clicks and do not dismiss the list.
+   */
+  @property({ type: Object, attribute: false })
+  anchorElement: Element | null = null;
+
+  /**
    * Whether the component is in RTL mode.
    * @internal
    */
@@ -367,9 +374,12 @@ class AutocompleteElement extends LitElement {
   };
 
   private _handleClickOutside = (event: MouseEvent) => {
-    if (!this.contains(event.target as Node)) {
-      this._dismiss();
+    const target = event.target as Node;
+    // Clicks on the autocomplete itself or its anchor element are not outside.
+    if (this.contains(target) || this.anchorElement?.contains(target)) {
+      return;
     }
+    this._dismiss();
   };
 
   private _scrollActiveItemIntoView(): void {
