@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.MarkdownRendererCodeBlockArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.MarkdownRendererCodeBlockArgs.html
 
 Argument passed to the fenced code-block renderer callbacks on
 CustomMarkdownRenderers.codeBlock and

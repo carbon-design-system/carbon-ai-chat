@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html
 
 The subset of HumanAgentState that is persisted to browser storage.
 
@@ -20,7 +20,7 @@ interface PersistedHumanAgentState
 
 Indicates that the user is connected to a human agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#isconnected)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#isconnected)
 
 ### isSuspended
 
@@ -28,7 +28,7 @@ Indicates that the user is connected to a human agent.
 
 Indicates if the human agent conversation is currently suspended.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#issuspended)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#issuspended)
 
 ### responseUserProfile
 
@@ -36,7 +36,7 @@ Indicates if the human agent conversation is currently suspended.
 
 The profile of the last human agent to join the chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#responseuserprofile)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#responseuserprofile)
 
 ### responseUserProfiles
 
@@ -44,7 +44,7 @@ The profile of the last human agent to join the chat.
 
 Cache of known agent profiles by ID.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#responseuserprofiles)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#responseuserprofiles)
 
 ### serviceDeskState
 
@@ -52,4 +52,4 @@ Cache of known agent profiles by ID.
 
 Arbitrary state saved by the service desk.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#servicedeskstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PersistedHumanAgentState.html#servicedeskstate)

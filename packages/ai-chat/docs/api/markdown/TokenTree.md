@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.TokenTree.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.TokenTree.html
 
 Markdown-it parser node tree, surfaced on the `node` field of
 MarkdownRendererTableArgs and MarkdownRendererCodeBlockArgs

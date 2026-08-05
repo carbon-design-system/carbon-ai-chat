@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.GenericItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.GenericItem.html
 
 The basic class for items returned from an assistant as part of a message response. These are the items contained
 in the MessageOutput.generic array.

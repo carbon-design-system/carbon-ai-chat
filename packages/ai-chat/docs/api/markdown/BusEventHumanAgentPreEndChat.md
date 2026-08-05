@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html
 
 This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
 confirmation modal but it can also be fired if the chat is ended by the agent.
@@ -21,7 +21,7 @@ interface BusEventHumanAgentPreEndChat
 
 This value may be set by a listener to indicate that the process of ending the chat should be cancelled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#cancelendchat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#cancelendchat)
 
 ### endedByHumanAgent
 
@@ -29,7 +29,7 @@ This value may be set by a listener to indicate that the process of ending the c
 
 Indicates if the chat was ended by the agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#endedbyhumanagent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#endedbyhumanagent)
 
 ### preEndChatPayload
 
@@ -38,7 +38,7 @@ Indicates if the chat was ended by the agent.
 An arbitrary payload object that a listener may set. This payload will be passed to the service desk
 ServiceDesk endChat function.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#preendchatpayload)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#preendchatpayload)
 
 ### type
 
@@ -46,4 +46,4 @@ ServiceDesk endChat function.
 
 The type of the event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentPreEndChat.html#type)

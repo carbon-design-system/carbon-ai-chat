@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html
 
 ## Signature
 
@@ -18,7 +18,7 @@ interface GridItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#agent_message_type)
 
 ### columns
 
@@ -26,7 +26,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 The list of column specifications. This will determine the maximum number of columns that can be rendered.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#columns)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#columns)
 
 ### horizontal_alignment
 
@@ -34,7 +34,7 @@ The list of column specifications. This will determine the maximum number of col
 
 Determines the horizontal alignment of all items in the grid.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#horizontal_alignment)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#horizontal_alignment)
 
 ### max_width
 
@@ -43,7 +43,7 @@ Determines the horizontal alignment of all items in the grid.
 Sets an optional max width of the component. Options are small, medium and large.
 By default, the component will be 100% width of the container.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#max_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#max_width)
 
 ### message_item_options
 
@@ -51,7 +51,7 @@ By default, the component will be 100% width of the container.
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#message_item_options)
 
 ### response_type
 
@@ -59,7 +59,7 @@ Options that control additional features available for a message item.
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#response_type)
 
 ### rows
 
@@ -67,7 +67,7 @@ The response type of this message item.
 
 A list of rows to render.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#rows)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#rows)
 
 ### streaming_metadata
 
@@ -76,7 +76,7 @@ A list of rows to render.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#streaming_metadata)
 
 ### user_defined
 
@@ -84,7 +84,7 @@ for a specific item.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#user_defined)
 
 ### vertical_alignment
 
@@ -92,4 +92,4 @@ An optional buckets of additional user defined properties for this item.
 
 Determines the vertical alignment of all items in the grid.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.GridItem.html#vertical_alignment)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.GridItem.html#vertical_alignment)

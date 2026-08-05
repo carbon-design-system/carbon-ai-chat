@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html
 
 Fires before the view state is updated in the store. This event is awaited, making it ideal for async operations like animations.
 
@@ -31,7 +31,7 @@ interface BusEventViewPreChange
 This is used by the event handler to indicate that the view change should be cancelled and Carbon AI Chat's view should
 not be changed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#cancelviewchange)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#cancelviewchange)
 
 ### newViewState
 
@@ -39,7 +39,7 @@ not be changed.
 
 The new view state that Carbon AI Chat is going to switch to. This new state can be changed by the event handler.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#newviewstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#newviewstate)
 
 ### oldViewState
 
@@ -47,7 +47,7 @@ The new view state that Carbon AI Chat is going to switch to. This new state can
 
 The previous view state before this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#oldviewstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#oldviewstate)
 
 ### reason
 
@@ -55,7 +55,7 @@ The previous view state before this event.
 
 The reason the view is changing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#reason)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#reason)
 
 ### type
 
@@ -63,4 +63,4 @@ The reason the view is changing.
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.BusEventViewPreChange.html#type)

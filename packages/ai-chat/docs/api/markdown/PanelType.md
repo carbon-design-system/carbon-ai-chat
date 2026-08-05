@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.PanelType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.PanelType.html
 
 Describes the different panel types that Carbon AI Chat supports.
 
@@ -20,7 +20,7 @@ enum PanelType
 
 Opens the panel so that it overlays the main chat content.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.PanelType.html#default)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.PanelType.html#default)
 
 ### HISTORY
 
@@ -31,7 +31,7 @@ Opens the history panel.
 The history panel only appears in the chat panel when
 config.history.isMobile is true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.PanelType.html#history)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.PanelType.html#history)
 
 ### WORKSPACE
 
@@ -44,4 +44,4 @@ and pushes the chat content.
 
 On small screens, the panel behaves like `DEFAULT`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.PanelType.html#workspace)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.PanelType.html#workspace)

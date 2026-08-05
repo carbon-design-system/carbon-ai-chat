@@ -4,7 +4,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.MessageState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.MessageState.html
 
 Lifecycle state passed to ChatInstanceMessaging.upsertMessage to describe the
 message's state after the upsert completes. Carbon AI Chat tracks this state internally;
@@ -34,7 +34,7 @@ BusEventType.PRE_RECEIVE and BusEventType.RECEIVE when a message
 transitions into this state from any other state, including the case where no
 message with this ID previously existed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.MessageState.html#complete)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.MessageState.html#complete)
 
 ### ERROR
 
@@ -47,7 +47,7 @@ and does not fire BusEventType.PRE_RECEIVE or BusEventType.RECEIVE
 when a message transitions into this state. Treat `ERROR` as terminal — subsequent
 upserts targeting the same id are still accepted but should be rare.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.MessageState.html#error)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.MessageState.html#error)
 
 ### STREAMING
 
@@ -59,7 +59,7 @@ The message is still being constructed and further updates are expected. The
 "stop streaming" affordance remains available while a message is in this state if
 any item carries `streaming_metadata.cancellable: true`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.MessageState.html#streaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/enums/Type_reference.MessageState.html#streaming)
 
 ## Related
 

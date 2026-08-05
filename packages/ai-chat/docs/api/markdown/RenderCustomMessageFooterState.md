@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html
 
 The accumulated state for one custom message footer slot, passed to the
 web component WCRenderCustomMessageFooter callback.
@@ -21,7 +21,7 @@ interface RenderCustomMessageFooterState
 
 Optional application data supplied with the footer slot.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#additionaldata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#additionaldata)
 
 ### message
 
@@ -29,7 +29,7 @@ Optional application data supplied with the footer slot.
 
 The assistant response object that contains the messageItem.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#message)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#message)
 
 ### messageItem
 
@@ -37,7 +37,7 @@ The assistant response object that contains the messageItem.
 
 The message item that the footer is attached to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#messageitem)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#messageitem)
 
 ### slotName
 
@@ -45,7 +45,7 @@ The message item that the footer is attached to.
 
 The unique identifier for this footer slot.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#slotname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.RenderCustomMessageFooterState.html#slotname)
 
 ## Related
 

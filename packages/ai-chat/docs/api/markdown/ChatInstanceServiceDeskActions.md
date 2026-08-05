@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html
 
 Start or end conversations with human agent.
 
@@ -25,7 +25,13 @@ returns a Promise that only resolves when the conversation has ended. This inclu
 BusEventType.HUMAN_AGENT_PRE_END_CHAT and BusEventType.HUMAN_AGENT_END_CHAT events have been fired and
 resolved.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#endconversation)
+## Examples
+
+```ts
+await instance.serviceDesk.endConversation();
+```
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#endconversation)
 
 ### updateIsSuspended
 
@@ -36,4 +42,12 @@ user is currently connecting or connected to an agent. If a conversation is susp
 will no longer be routed to the service desk and incoming messages from the service desk will not be displayed. In
 addition, the current connection status with an agent will not be shown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#updateissuspended)
+## Examples
+
+```ts
+await instance.serviceDesk.updateIsSuspended(true);
+// ... later ...
+await instance.serviceDesk.updateIsSuspended(false);
+```
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#updateissuspended)

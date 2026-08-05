@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.MarkdownCustomRenderers.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.MarkdownCustomRenderers.html
 
 Framework-neutral per-element renderer overrides accepted by the
 underlying `cds-aichat-markdown` element. The React variant

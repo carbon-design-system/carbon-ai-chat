@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaFileAccessibility.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.MediaFileAccessibility.html
 
 Accessibility features for raw media files (not embedded platforms).
 These features only apply when using direct file URLs (e.g., .mp4, .mp3).
@@ -25,7 +25,7 @@ interface MediaFileAccessibility
 Subtitle/caption tracks for video files.
 Supports WebVTT format rendered as native HTML5 track elements.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaFileAccessibility.html#subtitle_tracks)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.MediaFileAccessibility.html#subtitle_tracks)
 
 ### transcript
 
@@ -34,4 +34,4 @@ Supports WebVTT format rendered as native HTML5 track elements.
 Text transcript for audio files.
 Displayed as expandable text below the audio player.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaFileAccessibility.html#transcript)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.MediaFileAccessibility.html#transcript)

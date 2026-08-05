@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.KeyboardShortcuts.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.KeyboardShortcuts.html
 
 Configuration for all keyboard shortcuts in the chat.
 Designed to be extensible for future shortcuts.
@@ -23,7 +23,8 @@ interface KeyboardShortcuts
 
 **Experimental.**
 
-Shortcut to toggle focus between the message list and input field.
-Default: F6 (standard Windows accessibility shortcut for cycling between regions)
+Shortcut to toggle focus between the message list and input field. Disabled unless you
+set ChatShortcutConfig.isOn to `true`. Defaults to F6, the standard Windows
+accessibility shortcut for cycling between regions.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.KeyboardShortcuts.html#messagefocustoggle)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.KeyboardShortcuts.html#messagefocustoggle)
