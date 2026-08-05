@@ -33,15 +33,17 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const buttonComponents =
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
-      nestedLocalMessage.item = {
-        ...nestedLocalMessage.item,
-        is: 'standard-button',
+      // Build a local view object so we never write back to the store object.
+      // The `is: 'standard-button'` override is a rendering concern only.
+      const messageWithStandardButton = {
+        ...nestedLocalMessage,
+        item: { ...nestedLocalMessage.item, is: 'standard-button' as const },
       };
       return (
         <React.Fragment key={nestedMessageID}>
           {props.renderMessageComponent({
             ...props,
-            message: nestedLocalMessage,
+            message: messageWithStandardButton,
             isNestedMessageItem: true,
           })}
         </React.Fragment>
