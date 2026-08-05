@@ -374,9 +374,19 @@ class AutocompleteElement extends LitElement {
   };
 
   private _handleClickOutside = (event: MouseEvent) => {
-    const target = event.target as Node;
-    // Clicks on the autocomplete itself or its anchor element are not outside.
-    if (this.contains(target) || this.anchorElement?.contains(target)) {
+    // Use composedPath() instead of event.target so clicks originating inside
+    // a shadow root are visible.
+    const path = event.composedPath();
+    const isNode = (t: EventTarget): t is Node => t instanceof Node;
+    // Check if click is on autocomplete itself
+    if (path.filter(isNode).some((n) => this.contains(n))) {
+      return;
+    }
+    // Check if click is on anchor element
+    if (
+      this.anchorElement &&
+      path.filter(isNode).some((n) => this.anchorElement!.contains(n))
+    ) {
       return;
     }
     this._dismiss();

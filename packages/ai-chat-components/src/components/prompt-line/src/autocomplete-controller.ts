@@ -272,11 +272,6 @@ export class AutocompleteController {
     const editor = this._promptLine?.getEditor();
     if (editor) {
       resetTriggerChangeState(editor);
-      // Fire a no-op transaction so onUpdate re-evaluates immediately (handles
-      // the case where the editor is still focused and empty after dismissal).
-      if (editor.view?.dispatch) {
-        editor.view.dispatch(editor.state.tr);
-      }
     }
   }
 
