@@ -143,6 +143,13 @@ export interface MarkdownRendererLinkResult {
    * the element has HTML sanitization enabled.
    */
   attributes?: Record<string, string>;
+  /**
+   * Click handler for the rendered `<a>` element. Call
+   * `event.preventDefault()` to suppress the browser's default navigation.
+   * Wired via `addEventListener` — never serialized as an HTML attribute and
+   * unaffected by HTML sanitization.
+   */
+  onClick?: (event: MouseEvent) => void;
 }
 
 /**

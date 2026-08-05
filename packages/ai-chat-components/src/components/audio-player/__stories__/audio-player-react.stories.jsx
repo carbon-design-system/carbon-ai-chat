@@ -18,7 +18,7 @@ const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
   'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
-  title: 'Preview/Audio player',
+  title: 'Components/Audio player',
   component: AudioPlayer,
   args: {
     source:
