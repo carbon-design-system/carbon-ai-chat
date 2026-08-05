@@ -521,7 +521,7 @@ if (!customElements.get('cds-aichat-history-demo')) {
 }
 
 export default {
-  title: 'Preview/Chat History',
+  title: 'Components/Chat history',
   component: 'cds-aichat-history-shell',
   decorators: [
     (story) => html`
