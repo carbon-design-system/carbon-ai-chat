@@ -33,8 +33,7 @@ function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const buttonComponents =
     props.message.ui_state.footerLocalMessageItemIDs?.map((nestedMessageID) => {
       const nestedLocalMessage = allMessageItemsByID[nestedMessageID];
-      // Build a local view object so we never write back to the store object.
-      // The `is: 'standard-button'` override is a rendering concern only.
+      // Build a local view object that does not mutate the store state, the `is: 'standard-button'` override is a rendering concern only
       const messageWithStandardButton = {
         ...nestedLocalMessage,
         item: { ...nestedLocalMessage.item, is: 'standard-button' as const },
