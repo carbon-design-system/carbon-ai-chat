@@ -42,6 +42,12 @@ interface ClickableImageProps {
    * Where to open the link. The default target is _self.
    */
   target?: string;
+
+  /**
+   * The rel or "relationship" attribute to set on the <a> tag if `isLink` is set to true.
+   * Defaults to 'noopener noreferrer' if not passed in.
+   */
+  rel?: string;
 }
 
 interface ImageProps extends ClickableImageProps, HasClassName {
@@ -97,6 +103,7 @@ function Image(props: ImageProps) {
     disabled,
     onClick,
     target,
+    rel = 'noopener noreferrer',
   } = props;
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -168,7 +175,7 @@ function Image(props: ImageProps) {
       <a
         className="cds-aichat--clickable-image"
         href={displayURL}
-        rel="noopener noreferrer"
+        rel={rel}
         target={target}
         onClick={onClick}>
         {baseImageCard}
