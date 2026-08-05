@@ -29,7 +29,7 @@
 }
 
 .prompt-line-story-hint {
-  @include type-style('helper-text-01');
+  @include type.type-style('helper-text-01');
 
   color: theme.$text-helper;
   margin-block-end: layout.$spacing-03;
