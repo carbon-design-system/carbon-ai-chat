@@ -155,13 +155,13 @@ svg.cds-aichat--image__icon--link {
   outline: 2px solid theme.$focus;
 }
 
-.cds-aichat--clickable-image:enabled:hover .cds-aichat--image,
-a.cds-aichat--clickable-image:hover .cds-aichat--image {
+a.cds-aichat--clickable-image:hover .cds-aichat--image,
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image {
   background-color: theme.$layer-hover;
   text-decoration: underline;
 }
 
-.cds-aichat--clickable-image:enabled:hover .cds-aichat--image__image,
-a.cds-aichat--clickable-image:hover .cds-aichat--image__image {
+a.cds-aichat--clickable-image:hover .cds-aichat--image__image,
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image__image {
   opacity: 0.8;
 }
