@@ -40,7 +40,6 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
    * @internal
    */
   private _ro!: ResizeObserver;
-  private _pendingRaf?: number;
 
   /**
    * @internal
@@ -64,8 +63,7 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
     // Observe component's own size changes
     // Use requestAnimationFrame to avoid ResizeObserver loop errors
     this._ro = new ResizeObserver(() => {
-      cancelAnimationFrame(this._pendingRaf!);
-      this._pendingRaf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         this._updateStacked();
       });
     });
@@ -111,7 +109,6 @@ class CDSAIChatWorkspaceShellFooter extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._ro?.disconnect();
-    cancelAnimationFrame(this._pendingRaf!);
   }
 
   private handleAction(action: Action) {
