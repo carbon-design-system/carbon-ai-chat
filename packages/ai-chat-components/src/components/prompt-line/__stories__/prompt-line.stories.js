@@ -23,14 +23,17 @@ import '../index';
 import '../autocomplete/index';
 import '../../file-uploads/index';
 import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/menu/index.js';
 
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { action } from 'storybook/actions';
+import { createOverflowHandler } from '@carbon/utilities';
 
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
 import Chat16 from '@carbon/icons/es/chat/16.js';
 import ChatOff16 from '@carbon/icons/es/chat--off/16.js';
+import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 
 import styles from './story-styles.scss?lit';
@@ -44,29 +47,183 @@ import {
 } from './story-data.js';
 import { buildCarbonExtensions, FileStatusValue } from '../index';
 
-/**
- * Renders dummy actions as a flat row of sm ghost icon buttons, matching the
- * demo's InputActionsInline pattern (no toolbar wrapper, no justify-content:end).
- */
-const renderInlineActions = (actions, disabled) => html`
-  <div slot="message-actions" style="display:flex;align-items:center;">
-    ${actions.map(
-      (a) => html`
+// ---------------------------------------------------------------------------
+// Stateful element: Inline actions with responsive overflow
+//
+// Mirrors InputActionsInline from @carbon/ai-chat: renders each action as a
+// standalone icon button, then uses createOverflowHandler to collapse
+// buttons that no longer fit into an overflow menu.
+// ---------------------------------------------------------------------------
+
+class PromptLineInlineActionsStory extends LitElement {
+  static properties = {
+    actions: { type: Array },
+    disabled: { type: Boolean },
+    _hiddenCount: { state: true },
+    _menuOpen: { state: true },
+    _measuring: { state: true },
+  };
+
+  createRenderRoot() {
+    return this;
+  }
+
+  constructor() {
+    super();
+    this.actions = [];
+    this.disabled = false;
+    this._hiddenCount = 0;
+    this._menuOpen = false;
+    this._measuring = true;
+    this._containerRef = createRef();
+    this._overflowButtonRef = createRef();
+    this._menuRef = createRef();
+    this._handler = undefined;
+    this._setupRaf = 0;
+    this._revealRaf = 0;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.slot = 'message-actions';
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    cancelAnimationFrame(this._setupRaf);
+    cancelAnimationFrame(this._revealRaf);
+    this._handler?.disconnect();
+    this._handler = undefined;
+  }
+
+  firstUpdated() {
+    this._setupRaf = requestAnimationFrame(() => {
+      this._setupHandler();
+      // One more frame after handler's own rAF measure before revealing.
+      this._revealRaf = requestAnimationFrame(() => {
+        this._measuring = false;
+      });
+    });
+  }
+
+  _setupHandler() {
+    const container = this._containerRef.value;
+    if (!container) {
+      return;
+    }
+    this._handler?.disconnect();
+
+    const nonFixedCount = this.actions.filter((a) => !a.fixed).length;
+    this._handler = createOverflowHandler({
+      container,
+      dimension: 'width',
+      onChange: (visibleItems) => {
+        const hidden = Math.max(0, nonFixedCount - visibleItems.length);
+        this._hiddenCount = hidden;
+        if (hidden === 0 && this._menuOpen) {
+          this._menuOpen = false;
+        }
+      },
+    });
+  }
+
+  get _nonFixedActions() {
+    return this.actions.filter((a) => !a.fixed);
+  }
+
+  get _fixedActions() {
+    return this.actions.filter((a) => a.fixed);
+  }
+
+  get _hiddenActions() {
+    const nf = this._nonFixedActions;
+    return this._hiddenCount > 0 ? nf.slice(nf.length - this._hiddenCount) : [];
+  }
+
+  _renderButton(a) {
+    return html`
+      <cds-icon-button
+        size="sm"
+        kind="ghost"
+        align="top-start"
+        enter-delay-ms="0"
+        leave-delay-ms="0"
+        ?disabled=${this.disabled || a.disabled}
+        @click=${a.onClick}>
+        ${iconLoader(a.icon, { slot: 'icon' })}
+        <span slot="tooltip-content">${a.text}</span>
+      </cds-icon-button>
+    `;
+  }
+
+  render() {
+    const hiddenActions = this._hiddenActions;
+
+    return html`
+      <div
+        class="prompt-line-story-inline-actions"
+        style="flex:1 1 auto; position: relative;"
+        ?data-measuring=${this._measuring}
+        ${ref(this._containerRef)}>
+        ${this._nonFixedActions.map((a) => this._renderButton(a))}
+
         <cds-icon-button
           size="sm"
           kind="ghost"
           align="top-start"
           enter-delay-ms="0"
           leave-delay-ms="0"
-          ?disabled=${disabled}
-          @click=${a.onClick}>
-          ${iconLoader(a.icon, { slot: 'icon' })}
-          <span slot="tooltip-content">${a.text}</span>
+          data-offset=""
+          ?data-hidden=${this._hiddenCount === 0}
+          ?disabled=${this.disabled}
+          ${ref(this._overflowButtonRef)}
+          @click=${() => {
+            this._menuOpen = !this._menuOpen;
+          }}>
+          ${iconLoader(OverflowMenuVertical16, { slot: 'icon' })}
+          <span slot="tooltip-content">More actions</span>
         </cds-icon-button>
-      `
-    )}
-  </div>
-`;
+
+        ${this._fixedActions.map((a) => this._renderButton(a))}
+        ${
+          this._menuOpen && hiddenActions.length > 0
+            ? html`
+                <cds-menu
+                  open
+                  label="More actions"
+                  ${ref(this._menuRef)}
+                  style="position: absolute;"
+                  @cds-menu-closed=${() => {
+                  this._menuOpen = false;
+                }}>
+                  ${hiddenActions.map(
+                  (a) => html`
+                    <cds-menu-item
+                      label=${a.text}
+                      ?disabled=${a.disabled}
+                      @click=${() => {
+                        this._menuOpen = false;
+                        a.onClick?.();
+                      }}>
+                    </cds-menu-item>
+                  `
+                )}
+                </cds-menu>
+              `
+            : nothing
+        }
+      </div>
+    `;
+  }
+}
+
+// Register the demo component
+if (!customElements.get('prompt-line-story-inline-actions')) {
+  customElements.define(
+    'prompt-line-story-inline-actions',
+    PromptLineInlineActionsStory
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Stateful element: Conversation Starters story
@@ -486,7 +643,9 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
               slot="autocomplete-content"
               .mention=${this._mentionConfig}
               .command=${this._commandConfig}></cds-aichat-autocomplete-controller>
-            ${renderInlineActions(dummyActions, this.disabled)}
+            <prompt-line-story-inline-actions
+              .actions=${dummyActions}
+              ?disabled=${this.disabled}></prompt-line-story-inline-actions>
             <cds-aichat-input-send-control
               slot="send-control"
               ?disabled=${this.disabled}
@@ -626,7 +785,9 @@ class PromptLineTypeaheadStory extends LitElement {
           <cds-aichat-autocomplete-controller
             slot="autocomplete-content"
             .autocomplete=${this._autocompleteConfig}></cds-aichat-autocomplete-controller>
-          ${renderInlineActions(dummyActions, this.disabled)}
+          <prompt-line-story-inline-actions
+            .actions=${dummyActions}
+            ?disabled=${this.disabled}></prompt-line-story-inline-actions>
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${this.disabled}
@@ -834,7 +995,9 @@ export const Expanded = {
             placeholder=${placeholder}
             ?disabled=${disabled}
             @cds-aichat-prompt-change=${onPromptChange}></cds-aichat-prompt-line>
-          ${renderInlineActions(dummyActions, disabled)}
+          <prompt-line-story-inline-actions
+            .actions=${dummyActions}
+            ?disabled=${disabled}></prompt-line-story-inline-actions>
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${disabled}

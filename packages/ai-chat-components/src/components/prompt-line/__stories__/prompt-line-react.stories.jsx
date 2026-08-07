@@ -15,13 +15,22 @@
  * directly — no higher-level `ChatCustomElement` wrapper.
  */
 
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
 import { action } from 'storybook/actions';
 import { default as WCMeta } from './prompt-line.stories';
 import './story-styles.scss';
 
 import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/menu/index.js';
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
+import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
+import { createOverflowHandler } from '@carbon/utilities';
 
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
@@ -87,27 +96,118 @@ const CarbonIconSlot = ({ icon, slot }) =>
   );
 
 /**
- * Renders dummy actions as a flat row of sm ghost icon buttons, matching the
- * demo's InputActionsInline pattern (no toolbar wrapper, no justify-content:end).
+ * Mirrors InputActionsInline from @carbon/ai-chat: renders each action as a
+ * standalone icon button, then uses createOverflowHandler to collapse
+ * buttons that no longer fit into an overflow menu.
  */
-const InlineActions = ({ disabled }) => (
-  <div slot="message-actions" style={{ display: 'flex', alignItems: 'center' }}>
-    {dummyActions.map((a) => (
-      <cds-icon-button
-        key={a.text}
-        size="sm"
-        kind="ghost"
-        align="top-start"
-        enter-delay-ms="0"
-        leave-delay-ms="0"
-        disabled={disabled || undefined}
-        onClick={a.onClick}>
-        <CarbonIconSlot icon={a.icon} slot="icon" />
-        <span slot="tooltip-content">{a.text}</span>
-      </cds-icon-button>
-    ))}
-  </div>
-);
+const InlineActions = ({ actions, disabled }) => {
+  const containerRef = useRef(null);
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+  const [hiddenCount, setHiddenCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [measuring, setMeasuring] = useState(true);
+
+  const nonFixedActions = actions.filter((a) => !a.fixed);
+  const hiddenActions =
+    hiddenCount > 0
+      ? nonFixedActions.slice(nonFixedActions.length - hiddenCount)
+      : [];
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    setMeasuring(true);
+    const nonFixedCount = actions.filter((a) => !a.fixed).length;
+    let handler;
+    const setupRaf = requestAnimationFrame(() => {
+      handler = createOverflowHandler({
+        container,
+        dimension: 'width',
+        onChange: (visibleItems) => {
+          const hidden = Math.max(0, nonFixedCount - visibleItems.length);
+          setHiddenCount(hidden);
+          if (hidden === 0) setMenuOpen(false);
+        },
+      });
+      requestAnimationFrame(() => setMeasuring(false));
+    });
+    return () => {
+      cancelAnimationFrame(setupRaf);
+      handler?.disconnect();
+    };
+  }, []);
+
+  return (
+    <>
+      <div slot="message-actions">
+        <div
+          ref={containerRef}
+          className="prompt-line-story-inline-actions"
+          style={{ position: 'relative' }}
+          data-measuring={measuring ? '' : undefined}>
+          {nonFixedActions.map((a) => (
+            <cds-icon-button
+              key={a.text}
+              size="sm"
+              kind="ghost"
+              align="top-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              disabled={disabled || undefined}
+              onClick={a.onClick}>
+              <CarbonIconSlot icon={a.icon} slot="icon" />
+              <span slot="tooltip-content">{a.text}</span>
+            </cds-icon-button>
+          ))}
+
+          <cds-icon-button
+            ref={triggerRef}
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            data-offset=""
+            data-hidden={hiddenCount === 0 ? '' : undefined}
+            disabled={disabled || undefined}
+            onClick={() => setMenuOpen((o) => !o)}>
+            <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
+            <span slot="tooltip-content">More actions</span>
+          </cds-icon-button>
+
+          {menuOpen && hiddenActions.length > 0 && (
+            <cds-menu
+              ref={(el) => {
+                menuRef.current = el;
+                if (el) {
+                  el.addEventListener('cds-menu-closed', () =>
+                    setMenuOpen(false)
+                  );
+                }
+              }}
+              open
+              label="More actions"
+              style={{ position: 'absolute' }}>
+              {hiddenActions.map((a) => (
+                <cds-menu-item
+                  key={a.text}
+                  label={a.text}
+                  disabled={a.disabled || undefined}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    a.onClick?.();
+                  }}
+                />
+              ))}
+            </cds-menu>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Story meta
@@ -232,7 +332,7 @@ export const Expanded = {
             disabled={disabled}
             onChange={onChange}
           />
-          <InlineActions disabled={disabled} />
+          <InlineActions actions={dummyActions} disabled={disabled} />
           <CDSAIChatInputSendControl
             slot="send-control"
             disabled={disabled}
@@ -347,7 +447,7 @@ const CommandsAndMentionsStory = ({
             onTriggerChange={onTriggerChange}
           />
           {autocompleteContent}
-          <InlineActions disabled={disabled} />
+          <InlineActions actions={dummyActions} disabled={disabled} />
           <CDSAIChatInputSendControl
             slot="send-control"
             disabled={disabled}
@@ -698,7 +798,7 @@ const TypeaheadStory = ({
           onTriggerChange={onTriggerChange}
         />
         {autocompleteContent}
-        <InlineActions disabled={disabled} />
+        <InlineActions actions={dummyActions} disabled={disabled} />
         <CDSAIChatInputSendControl
           slot="send-control"
           disabled={disabled}
