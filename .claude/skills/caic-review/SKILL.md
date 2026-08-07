@@ -56,6 +56,8 @@ gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-
 ## How to review
 
 - Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files — never a summary of what changed.
+- Open the issue the PR closes and walk its acceptance criteria against the diff. A criterion the diff contradicts is a **Blocker** until the issue carries an amendment saying so.
+- If the issue or its epic cites an ADR, read that ADR's Decision outcome and walk the diff against it too. A diff that contradicts an accepted ADR is a **Blocker** until a new ADR supersedes it — an implementation PR is not where a recorded decision gets reversed.
 - Tag every finding with a severity so real problems aren't buried under taste:
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
