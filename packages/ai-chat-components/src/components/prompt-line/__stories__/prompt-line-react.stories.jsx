@@ -140,72 +140,70 @@ const InlineActions = ({ actions, disabled }) => {
   }, []);
 
   return (
-    <>
-      <div slot="message-actions">
-        <div
-          ref={containerRef}
-          className="prompt-line-story-inline-actions"
-          style={{ position: 'relative' }}
-          data-measuring={measuring ? '' : undefined}>
-          {nonFixedActions.map((a) => (
-            <cds-icon-button
-              key={a.text}
-              size="sm"
-              kind="ghost"
-              align="top-start"
-              enter-delay-ms="0"
-              leave-delay-ms="0"
-              disabled={disabled || undefined}
-              onClick={a.onClick}>
-              <CarbonIconSlot icon={a.icon} slot="icon" />
-              <span slot="tooltip-content">{a.text}</span>
-            </cds-icon-button>
-          ))}
-
+    <div slot="message-actions">
+      <div
+        ref={containerRef}
+        className="prompt-line-story-inline-actions"
+        style={{ position: 'relative' }}
+        data-measuring={measuring ? '' : undefined}>
+        {nonFixedActions.map((a) => (
           <cds-icon-button
-            ref={triggerRef}
+            key={a.text}
             size="sm"
             kind="ghost"
             align="top-start"
             enter-delay-ms="0"
             leave-delay-ms="0"
-            data-offset=""
-            data-hidden={hiddenCount === 0 ? '' : undefined}
             disabled={disabled || undefined}
-            onClick={() => setMenuOpen((o) => !o)}>
-            <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
-            <span slot="tooltip-content">More actions</span>
+            onClick={a.onClick}>
+            <CarbonIconSlot icon={a.icon} slot="icon" />
+            <span slot="tooltip-content">{a.text}</span>
           </cds-icon-button>
+        ))}
 
-          {menuOpen && hiddenActions.length > 0 && (
-            <cds-menu
-              ref={(el) => {
-                menuRef.current = el;
-                if (el) {
-                  el.addEventListener('cds-menu-closed', () =>
-                    setMenuOpen(false)
-                  );
-                }
-              }}
-              open
-              label="More actions"
-              style={{ position: 'absolute' }}>
-              {hiddenActions.map((a) => (
-                <cds-menu-item
-                  key={a.text}
-                  label={a.text}
-                  disabled={a.disabled || undefined}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    a.onClick?.();
-                  }}
-                />
-              ))}
-            </cds-menu>
-          )}
-        </div>
+        <cds-icon-button
+          ref={triggerRef}
+          size="sm"
+          kind="ghost"
+          align="top-start"
+          enter-delay-ms="0"
+          leave-delay-ms="0"
+          data-offset=""
+          data-hidden={hiddenCount === 0 ? '' : undefined}
+          disabled={disabled || undefined}
+          onClick={() => setMenuOpen((o) => !o)}>
+          <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
+          <span slot="tooltip-content">More actions</span>
+        </cds-icon-button>
+
+        {menuOpen && hiddenActions.length > 0 && (
+          <cds-menu
+            ref={(el) => {
+              menuRef.current = el;
+              if (el) {
+                el.addEventListener('cds-menu-closed', () =>
+                  setMenuOpen(false)
+                );
+              }
+            }}
+            open
+            label="More actions"
+            style={{ position: 'absolute' }}>
+            {hiddenActions.map((a) => (
+              <cds-menu-item
+                key={a.text}
+                label={a.text}
+                disabled={a.disabled || undefined}
+                onClick={() => {
+                  setMenuOpen(false);
+                  a.onClick?.();
+                }}
+              />
+            ))}
+          </cds-menu>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

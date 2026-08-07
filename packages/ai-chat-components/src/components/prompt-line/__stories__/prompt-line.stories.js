@@ -49,10 +49,7 @@ import { buildCarbonExtensions, FileStatusValue } from '../index';
 
 // ---------------------------------------------------------------------------
 // Stateful element: Inline actions with responsive overflow
-//
-// Mirrors InputActionsInline from @carbon/ai-chat: renders each action as a
-// standalone icon button, then uses createOverflowHandler to collapse
-// buttons that no longer fit into an overflow menu.
+// Mirrors InputActionsInline from @carbon/ai-chat.
 // ---------------------------------------------------------------------------
 
 class PromptLineInlineActionsStory extends LitElement {
@@ -202,9 +199,9 @@ class PromptLineInlineActionsStory extends LitElement {
                         label=${a.text}
                         ?disabled=${a.disabled}
                         @click=${() => {
-                        this._menuOpen = false;
-                        a.onClick?.();
-                      }}>
+                          this._menuOpen = false;
+                          a.onClick?.();
+                        }}>
                       </cds-menu-item>
                     `
                   )}

@@ -285,6 +285,15 @@ function CustomElementHost({
   onSend,
 }: CustomElementHostProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  // Stable refs so the mount-once effect always calls the latest callbacks
+  // without needing them in its dependency array.
+  const onDismissRef = React.useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+  const onSelectRef = React.useRef(onSelect);
+  onSelectRef.current = onSelect;
+  const onSendRef = React.useRef(onSend);
+  onSendRef.current = onSend;
+
   React.useEffect(() => {
     const container = containerRef.current;
     if (!container) {
@@ -293,56 +302,37 @@ function CustomElementHost({
     container.appendChild(element);
     onMount?.(element);
 
-    const dismissListener = onDismiss ? () => onDismiss() : undefined;
-    const selectListener = onSelect
-      ? (e: Event) =>
-          onSelect((e as CustomEvent<{ item: SuggestionItem }>).detail?.item)
-      : undefined;
-    const sendListener = onSend
-      ? (e: Event) => onSend((e as CustomEvent<{ text: string }>).detail?.text)
-      : undefined;
+    const dismissListener = () => onDismissRef.current?.();
+    const selectListener = (e: Event) =>
+      onSelectRef.current?.(
+        (e as CustomEvent<{ item: SuggestionItem }>).detail?.item
+      );
+    const sendListener = (e: Event) =>
+      onSendRef.current?.((e as CustomEvent<{ text: string }>).detail?.text);
 
-    if (dismissListener) {
-      element.addEventListener(
-        'cds-aichat-autocomplete-dismiss',
-        dismissListener
-      );
-    }
-    if (selectListener) {
-      element.addEventListener(
-        'cds-aichat-autocomplete-select',
-        selectListener
-      );
-    }
-    if (sendListener) {
-      element.addEventListener('cds-aichat-autocomplete-send', sendListener);
-    }
+    element.addEventListener(
+      'cds-aichat-autocomplete-dismiss',
+      dismissListener
+    );
+    element.addEventListener('cds-aichat-autocomplete-select', selectListener);
+    element.addEventListener('cds-aichat-autocomplete-send', sendListener);
 
     return () => {
       onMount?.(null);
-      if (dismissListener) {
-        element.removeEventListener(
-          'cds-aichat-autocomplete-dismiss',
-          dismissListener
-        );
-      }
-      if (selectListener) {
-        element.removeEventListener(
-          'cds-aichat-autocomplete-select',
-          selectListener
-        );
-      }
-      if (sendListener) {
-        element.removeEventListener(
-          'cds-aichat-autocomplete-send',
-          sendListener
-        );
-      }
+      element.removeEventListener(
+        'cds-aichat-autocomplete-dismiss',
+        dismissListener
+      );
+      element.removeEventListener(
+        'cds-aichat-autocomplete-select',
+        selectListener
+      );
+      element.removeEventListener('cds-aichat-autocomplete-send', sendListener);
       if (element.parentNode === container) {
         container.removeChild(element);
       }
     };
-  }, [element, onMount, onDismiss, onSelect, onSend]);
+  }, [element, onMount]);
   return (
     <div
       ref={containerRef}

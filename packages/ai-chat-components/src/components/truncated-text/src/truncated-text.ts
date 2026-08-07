@@ -95,6 +95,7 @@ class CDSAIChatTruncatedText extends LitElement {
   private _lineHeight = 0;
   private _isLayered = false;
   private _resizeObserver?: ResizeObserver;
+  private _pendingRafs: number[] = [];
   private readonly _truncatedInstanceId = `tt-${++truncatedInstanceCounter}`;
 
   private get _truncatedSelector(): string {
@@ -118,6 +119,10 @@ class CDSAIChatTruncatedText extends LitElement {
 
   disconnectedCallback() {
     this._resizeObserver?.disconnect();
+    for (const id of this._pendingRafs) {
+      cancelAnimationFrame(id);
+    }
+    this._pendingRafs = [];
     clearSelector(this._truncatedSelector);
     super.disconnectedCallback();
   }
@@ -131,22 +136,26 @@ class CDSAIChatTruncatedText extends LitElement {
       adoptOnRoot(this.renderRoot as ShadowRoot);
       this._syncTruncatedVars();
     }
-    requestAnimationFrame(() => {
-      const computedStyle = getComputedStyle(this._textElement);
-      this._lineHeight = parseFloat(computedStyle.lineHeight);
-      this._setupResizeObserver();
-      // Initial overflow check after first render
-      this._updateOverflowStatus();
-    });
+    this._pendingRafs.push(
+      requestAnimationFrame(() => {
+        const computedStyle = getComputedStyle(this._textElement);
+        this._lineHeight = parseFloat(computedStyle.lineHeight);
+        this._setupResizeObserver();
+        // Initial overflow check after first render
+        this._updateOverflowStatus();
+      })
+    );
   }
 
   protected updated(changed: Map<string, unknown>) {
     if (changed.has('lines') || changed.has('value')) {
       // Use requestAnimationFrame to ensure DOM is updated before checking overflow
-      requestAnimationFrame(() => {
-        this._updateOverflowStatus();
-        this._updateMaxHeight();
-      });
+      this._pendingRafs.push(
+        requestAnimationFrame(() => {
+          this._updateOverflowStatus();
+          this._updateMaxHeight();
+        })
+      );
     }
     if (this._textElement) {
       this._syncTruncatedVars();
@@ -157,15 +166,17 @@ class CDSAIChatTruncatedText extends LitElement {
     if (this.type !== 'expand') {
       return;
     }
-    requestAnimationFrame(() => {
-      if (!this._textElement) {
-        return;
-      }
-      this._maxHeight =
-        this.lines > 0 && !this._isExpanded
-          ? `${this.lines * this._lineHeight}px`
-          : `${this._textElement.scrollHeight}px`;
-    });
+    this._pendingRafs.push(
+      requestAnimationFrame(() => {
+        if (!this._textElement) {
+          return;
+        }
+        this._maxHeight =
+          this.lines > 0 && !this._isExpanded
+            ? `${this.lines * this._lineHeight}px`
+            : `${this._textElement.scrollHeight}px`;
+      })
+    );
   }
 
   private _setupResizeObserver() {
@@ -253,9 +264,11 @@ class CDSAIChatTruncatedText extends LitElement {
 
   private _handleSlotChange() {
     // When slotted content changes, recalculate overflow
-    requestAnimationFrame(() => {
-      this._updateOverflowStatus();
-    });
+    this._pendingRafs.push(
+      requestAnimationFrame(() => {
+        this._updateOverflowStatus();
+      })
+    );
   }
 
   render() {
