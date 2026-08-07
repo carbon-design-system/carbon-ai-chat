@@ -32,14 +32,15 @@ $block-class: #{$prefix}-error-message;
 
   &::after {
     position: absolute;
-    z-index: 0;
     display: block;
     background: theme.$border-subtle-00;
     block-size: 1px;
     content: '';
-    inline-size: calc(100% + #{layout.$spacing-03} + #{layout.$spacing-03});
+
+    // account for padding and error outline on input container
+    inline-size: calc(100% + 2 * #{layout.$spacing-03} - 2px);
     inset-block-end: 0;
-    inset-inline-start: calc(-1 * #{layout.$spacing-03});
+    inset-inline-start: calc(-1 * #{layout.$spacing-03} + 1px);
   }
 }
 
