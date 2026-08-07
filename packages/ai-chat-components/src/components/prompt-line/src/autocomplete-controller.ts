@@ -254,8 +254,15 @@ export class AutocompleteController {
     this._refreshEditorKeyHandler();
   }
 
-  /** Clear active trigger + items. */
-  dismiss(): void {
+  /**
+   * Clear active trigger + items.
+   *
+   * @param keepCoalesced - When `true`, skip `resetTriggerChangeState` so the
+   *   trigger-utils coalescing layer stays active. Use this when the dismissal
+   *   is from a send action where the editor stays empty and focused — without
+   *   it, the starter trigger would immediately re-fire on the next transaction.
+   */
+  dismiss(keepCoalesced = false): void {
     if (this._destroyed) {
       return;
     }
@@ -267,11 +274,11 @@ export class AutocompleteController {
     this._resolveToken++;
     this._refreshEditorKeyHandler();
     this._emit();
-    // Reset the trigger-utils coalescing state so the extension can re-emit
-    // the same detail on the next onFocus/onUpdate without being swallowed.
-    const editor = this._promptLine?.getEditor();
-    if (editor) {
-      resetTriggerChangeState(editor);
+    if (!keepCoalesced) {
+      const editor = this._promptLine?.getEditor();
+      if (editor) {
+        resetTriggerChangeState(editor);
+      }
     }
   }
 
@@ -583,6 +590,10 @@ async function resolveConfigItems(
  * @element cds-aichat-autocomplete-controller
  * @fires cds-aichat-starter-selected — `{ text: string }` after a starter is
  *   inserted into the editor; consumer triggers send.
+ * @fires cds-aichat-autocomplete-item-selected — `{ item: SuggestionItem }`
+ *   after a suggestion item is selected. Fired in addition to type-specific callbacks.
+ * @fires cds-aichat-autocomplete-item-send — `{ text: string }` when the
+ *   per-item send button is clicked inside the suggestion list.
  */
 @carbonElement(`${prefix}-autocomplete-controller`)
 class AutocompleteControllerElement extends LitElement {
@@ -718,8 +729,9 @@ class AutocompleteControllerElement extends LitElement {
       const result = renderCustomList({
         items,
         query: trigger.query,
-        onSelect: (item) => this._controller?.select(item),
         onDismiss: () => this._controller?.dismiss(),
+        onSelect: (item) => this._selectItem(item),
+        onSend: (text) => this._sendItem(text),
       });
       if (result instanceof HTMLElement) {
         return html`${result}`;
@@ -740,10 +752,34 @@ class AutocompleteControllerElement extends LitElement {
       <cds-aichat-autocomplete
         .items=${items}
         @cds-aichat-autocomplete-select=${(
-          event: CustomEvent<{ item: SuggestionItem }>
-        ) => this._controller?.select(event.detail.item)}
+          e: CustomEvent<{ item: SuggestionItem }>
+        ) => this._selectItem(e.detail.item)}
+        @cds-aichat-autocomplete-send=${(e: CustomEvent<{ text: string }>) =>
+          this._sendItem(e.detail.text)}
         @cds-aichat-autocomplete-dismiss=${() => this._controller?.dismiss()}></cds-aichat-autocomplete>
     `;
+  }
+
+  private _selectItem(item: SuggestionItem): void {
+    this._controller?.select(item);
+    this.dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-item-selected', {
+        detail: { item },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _sendItem(text: string): void {
+    this._controller?.dismiss(true);
+    this.dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-item-send', {
+        detail: { text },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   private _handleMousedown = (event: MouseEvent): void => {

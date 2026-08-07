@@ -194,20 +194,20 @@ class PromptLineInlineActionsStory extends LitElement {
                   ${ref(this._menuRef)}
                   style="position: absolute;"
                   @cds-menu-closed=${() => {
-                  this._menuOpen = false;
-                }}>
+                    this._menuOpen = false;
+                  }}>
                   ${hiddenActions.map(
-                  (a) => html`
-                    <cds-menu-item
-                      label=${a.text}
-                      ?disabled=${a.disabled}
-                      @click=${() => {
+                    (a) => html`
+                      <cds-menu-item
+                        label=${a.text}
+                        ?disabled=${a.disabled}
+                        @click=${() => {
                         this._menuOpen = false;
                         a.onClick?.();
                       }}>
-                    </cds-menu-item>
-                  `
-                )}
+                      </cds-menu-item>
+                    `
+                  )}
                 </cds-menu>
               `
             : nothing
@@ -241,6 +241,8 @@ class PromptLineStartersStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    enableSendButton: { type: Boolean },
+    attached: { type: Boolean },
   };
 
   constructor() {
@@ -255,6 +257,8 @@ class PromptLineStartersStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.enableSendButton = true;
+    this.attached = false;
   }
 
   // Render in light DOM so story-styles.scss reaches the content.
@@ -271,16 +275,27 @@ class PromptLineStartersStory extends LitElement {
     action('cds-aichat-input-send')();
   }
 
-  _renderCustomList({ items, onSelect, onDismiss }) {
+  _onItemSelected(e) {
+    action('cds-aichat-autocomplete-select')(e.detail.item);
+  }
+
+  _onItemSend(e) {
+    action('cds-aichat-autocomplete-send')(e.detail.text);
+  }
+
+  _renderCustomList({ items, onSelect, onDismiss, onSend }) {
     const el = document.createElement('cds-aichat-autocomplete');
     el.items = items;
     el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
-    el.attached = false;
-    el.enableSendButton = false;
+    el.attached = this.attached;
+    el.enableSendButton = this.enableSendButton;
+    el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
     el.addEventListener('cds-aichat-autocomplete-select', (e) =>
       onSelect(e.detail.item)
     );
-    el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
+    el.addEventListener('cds-aichat-autocomplete-send', (e) =>
+      onSend(e.detail.text)
+    );
     return el;
   }
 
@@ -329,7 +344,9 @@ class PromptLineStartersStory extends LitElement {
               this._onPromptChange(e)}></cds-aichat-prompt-line>
           <cds-aichat-autocomplete-controller
             slot="autocomplete-content"
-            .starters=${startersConfig}></cds-aichat-autocomplete-controller>
+            .starters=${startersConfig}
+            @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
+            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}></cds-aichat-autocomplete-controller>
           <div slot="message-actions">
             <cds-icon-button
               size="sm"
@@ -752,6 +769,14 @@ class PromptLineTypeaheadStory extends LitElement {
     action('cds-aichat-prompt-change')(e.detail);
   }
 
+  _onItemSelected(e) {
+    action('cds-aichat-autocomplete-select')(e.detail.item);
+  }
+
+  _onItemSend(e) {
+    action('cds-aichat-autocomplete-send')(e.detail.text);
+  }
+
   render() {
     return html`
       <style>
@@ -784,7 +809,9 @@ class PromptLineTypeaheadStory extends LitElement {
               this._onPromptChange(e)}></cds-aichat-prompt-line>
           <cds-aichat-autocomplete-controller
             slot="autocomplete-content"
-            .autocomplete=${this._autocompleteConfig}></cds-aichat-autocomplete-controller>
+            .autocomplete=${this._autocompleteConfig}
+            @cds-aichat-autocomplete-item-selected=${(e) => this._onItemSelected(e)}
+            @cds-aichat-autocomplete-item-send=${(e) => this._onItemSend(e)}></cds-aichat-autocomplete-controller>
           <prompt-line-story-inline-actions
             .actions=${dummyActions}
             ?disabled=${this.disabled}></prompt-line-story-inline-actions>
@@ -1051,10 +1078,6 @@ export const CommandsAndMentions = {
 
 export const ConversationStarters = {
   name: 'Conversation starters',
-  argTypes: {
-    enableSendButton: { table: { disable: true } },
-    attached: { table: { disable: true } },
-  },
   render: ({
     placeholder,
     disabled,
@@ -1064,6 +1087,8 @@ export const ConversationStarters = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    enableSendButton,
+    attached,
   }) => {
     const el = document.createElement('prompt-line-story-starters');
     el.placeholder = placeholder;
@@ -1074,6 +1099,8 @@ export const ConversationStarters = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.enableSendButton = enableSendButton;
+    el.attached = attached;
     return el;
   },
 };

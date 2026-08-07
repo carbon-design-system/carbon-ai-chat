@@ -47,6 +47,11 @@ export interface UseChatAutocompleteOptions {
   /** Fired after a starter is selected and inserted (used to trigger send). */
   onStarterSelected?: (text: string) => void;
   /**
+   * Fired when an autocomplete suggestion item is selected.
+   * Called after the controller has already inserted the item.
+   */
+  onSelectItem?: (item: SuggestionItem) => void;
+  /**
    * Fired when the send button inside an autocomplete suggestion item is clicked.
    */
   onSendItem?: (text: string) => void;
@@ -79,6 +84,7 @@ export function useChatAutocomplete(
     promptLineRef,
     isSendDisabled,
     onStarterSelected,
+    onSelectItem,
     onSendItem,
     attached = true,
     maxHeight,
@@ -96,6 +102,8 @@ export function useChatAutocomplete(
   // but reading them out of refs avoids re-instantiation churn.
   const onStarterRef = React.useRef(onStarterSelected);
   onStarterRef.current = onStarterSelected;
+  const onSelectItemRef = React.useRef(onSelectItem);
+  onSelectItemRef.current = onSelectItem;
   const onSendItemRef = React.useRef(onSendItem);
   onSendItemRef.current = onSendItem;
 
@@ -146,14 +154,14 @@ export function useChatAutocomplete(
 
   const handleSelect = React.useCallback((item: SuggestionItem) => {
     controllerRef.current?.select(item);
+    onSelectItemRef.current?.(item);
   }, []);
 
-  const handleSend = React.useCallback((e: CustomEvent<{ text: string }>) => {
-    const text = e.detail?.text;
+  const handleSend = React.useCallback((text: string) => {
     if (!text) {
       return;
     }
-    controllerRef.current?.dismiss();
+    controllerRef.current?.dismiss(true);
     onSendItemRef.current?.(text);
   }, []);
 
@@ -195,8 +203,9 @@ export function useChatAutocomplete(
       const result = state.renderCustomList({
         items: state.items,
         query: state.trigger.query,
-        onSelect: handleSelect,
         onDismiss: dismiss,
+        onSelect: handleSelect,
+        onSend: handleSend,
       });
       if (result == null) {
         return null;
@@ -208,6 +217,9 @@ export function useChatAutocomplete(
             element={result}
             onMount={setListElement}
             onMousedown={handleContainerMousedown}
+            onDismiss={dismiss}
+            onSelect={handleSelect}
+            onSend={handleSend}
           />
         );
       }
@@ -217,6 +229,9 @@ export function useChatAutocomplete(
           node={result as ReactNode}
           onMount={setListElement}
           onMousedown={(e) => e.preventDefault()}
+          onDismiss={dismiss}
+          onSelect={handleSelect}
+          onSend={handleSend}
         />
       );
     }
@@ -226,11 +241,13 @@ export function useChatAutocomplete(
         slot="autocomplete-content"
         items={state.items}
         attached={attached}
+        onDismiss={dismiss}
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
         }
-        onSend={handleSend}
-        onDismiss={dismiss}
+        onSend={(e: CustomEvent<{ text: string }>) =>
+          handleSend(e.detail?.text)
+        }
       />
     );
   }, [
@@ -252,6 +269,9 @@ interface CustomElementHostProps {
   /** Notify the parent which element is the key-forwarding target. */
   onMount?: (el: HTMLElement | null) => void;
   onMousedown?: (e: React.MouseEvent) => void;
+  onDismiss?: () => void;
+  onSelect?: (item: SuggestionItem) => void;
+  onSend?: (text: string) => void;
 }
 
 /** Mounts a host-provided HTMLElement into the React tree at `slot`. */
@@ -260,6 +280,9 @@ function CustomElementHost({
   element,
   onMount,
   onMousedown,
+  onDismiss,
+  onSelect,
+  onSend,
 }: CustomElementHostProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => {
@@ -269,13 +292,57 @@ function CustomElementHost({
     }
     container.appendChild(element);
     onMount?.(element);
+
+    const dismissListener = onDismiss ? () => onDismiss() : undefined;
+    const selectListener = onSelect
+      ? (e: Event) =>
+          onSelect((e as CustomEvent<{ item: SuggestionItem }>).detail?.item)
+      : undefined;
+    const sendListener = onSend
+      ? (e: Event) => onSend((e as CustomEvent<{ text: string }>).detail?.text)
+      : undefined;
+
+    if (dismissListener) {
+      element.addEventListener(
+        'cds-aichat-autocomplete-dismiss',
+        dismissListener
+      );
+    }
+    if (selectListener) {
+      element.addEventListener(
+        'cds-aichat-autocomplete-select',
+        selectListener
+      );
+    }
+    if (sendListener) {
+      element.addEventListener('cds-aichat-autocomplete-send', sendListener);
+    }
+
     return () => {
       onMount?.(null);
+      if (dismissListener) {
+        element.removeEventListener(
+          'cds-aichat-autocomplete-dismiss',
+          dismissListener
+        );
+      }
+      if (selectListener) {
+        element.removeEventListener(
+          'cds-aichat-autocomplete-select',
+          selectListener
+        );
+      }
+      if (sendListener) {
+        element.removeEventListener(
+          'cds-aichat-autocomplete-send',
+          sendListener
+        );
+      }
       if (element.parentNode === container) {
         container.removeChild(element);
       }
     };
-  }, [element, onMount]);
+  }, [element, onMount, onDismiss, onSelect, onSend]);
   return (
     <div
       ref={containerRef}
@@ -291,6 +358,9 @@ interface CustomReactNodePortalProps {
   node: ReactNode;
   onMount?: (el: HTMLElement | null) => void;
   onMousedown?: (e: MouseEvent) => void;
+  onDismiss?: () => void;
+  onSelect?: (item: SuggestionItem) => void;
+  onSend?: (text: string) => void;
 }
 
 let autocompletePortalCounter = 0;
@@ -309,11 +379,22 @@ function CustomReactNodePortal({
   node,
   onMount,
   onMousedown,
+  onDismiss,
+  onSelect,
+  onSend,
 }: CustomReactNodePortalProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [hostElement, setHostElement] = React.useState<HTMLElement | null>(
     null
   );
+  // Stable refs so the mount-once effect always calls the latest callbacks
+  // without needing them in its dependency array.
+  const onDismissRef = React.useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+  const onSelectRef = React.useRef(onSelect);
+  onSelectRef.current = onSelect;
+  const onSendRef = React.useRef(onSend);
+  onSendRef.current = onSend;
 
   React.useEffect(() => {
     const container = containerRef.current;
@@ -337,6 +418,18 @@ function CustomReactNodePortal({
     if (onMousedown) {
       hostEl.addEventListener('mousedown', onMousedown);
     }
+
+    const dismissListener = () => onDismissRef.current?.();
+    const selectListener = (e: Event) =>
+      onSelectRef.current?.(
+        (e as CustomEvent<{ item: SuggestionItem }>).detail?.item
+      );
+    const sendListener = (e: Event) =>
+      onSendRef.current?.((e as CustomEvent<{ text: string }>).detail?.text);
+
+    hostEl.addEventListener('cds-aichat-autocomplete-dismiss', dismissListener);
+    hostEl.addEventListener('cds-aichat-autocomplete-select', selectListener);
+    hostEl.addEventListener('cds-aichat-autocomplete-send', sendListener);
     chatWrapper.appendChild(hostEl);
 
     setHostElement(hostEl);
@@ -347,13 +440,22 @@ function CustomReactNodePortal({
       if (onMousedown) {
         hostEl.removeEventListener('mousedown', onMousedown);
       }
+      hostEl.removeEventListener(
+        'cds-aichat-autocomplete-dismiss',
+        dismissListener
+      );
+      hostEl.removeEventListener(
+        'cds-aichat-autocomplete-select',
+        selectListener
+      );
+      hostEl.removeEventListener('cds-aichat-autocomplete-send', sendListener);
       slotEl.remove();
       hostEl.remove();
       setHostElement(null);
     };
     // Empty deps: the slot/host pair is owned by this mount cycle and should
     // not churn as `node` updates — React's portal reconciliation handles
-    // those updates in place.
+    // those updates in place. Callbacks are read via refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

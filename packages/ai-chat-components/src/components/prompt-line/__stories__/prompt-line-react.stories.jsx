@@ -470,16 +470,12 @@ export const CommandsAndMentions = {
 // Conversation starters — starters overlay + toggle action only
 // ---------------------------------------------------------------------------
 
-function renderCustomList({ items, onSelect, onDismiss }) {
+function renderStarterList({ items, enableSendButton, attached }) {
   const el = document.createElement('cds-aichat-autocomplete');
   el.items = items;
   el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
-  el.attached = false;
-  el.enableSendButton = false;
-  el.addEventListener('cds-aichat-autocomplete-select', (e) =>
-    onSelect(e.detail.item)
-  );
-  el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
+  el.attached = attached;
+  el.enableSendButton = enableSendButton;
   return el;
 }
 
@@ -492,19 +488,21 @@ const ConversationStartersStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  enableSendButton,
+  attached,
 }) => {
   const [startersEnabled, setStartersEnabled] = useState(true);
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
 
-  // Keep starters config stable — only isOn changes
-  const startersBase = useMemo(
-    () => ({ items: starterItems, renderCustomList }),
-    []
-  );
   const starters = useMemo(
-    () => ({ ...startersBase, isOn: startersEnabled }),
-    [startersBase, startersEnabled]
+    () => ({
+      items: starterItems,
+      isOn: startersEnabled,
+      renderCustomList: (props) =>
+        renderStarterList({ ...props, enableSendButton, attached }),
+    }),
+    [startersEnabled, enableSendButton, attached]
   );
 
   const extensions = useMemo(
@@ -515,7 +513,9 @@ const ConversationStartersStory = ({
   const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
     starters,
     promptLineRef,
-    attached: false,
+    attached,
+    onSelectItem: (item) => action('cds-aichat-autocomplete-select')(item),
+    onSendItem: (text) => action('cds-aichat-autocomplete-send')(text),
   });
 
   const onChange = useCallback((e) => {
@@ -581,10 +581,6 @@ const ConversationStartersStory = ({
 
 export const ConversationStarters = {
   name: 'Conversation starters',
-  argTypes: {
-    enableSendButton: { table: { disable: true } },
-    attached: { table: { disable: true } },
-  },
   render: (args) => <ConversationStartersStory {...args} />,
 };
 
@@ -752,6 +748,8 @@ const TypeaheadStory = ({
     autocomplete,
     promptLineRef,
     attached,
+    onSelectItem: (item) => action('cds-aichat-autocomplete-select')(item),
+    onSendItem: (text) => action('cds-aichat-autocomplete-send')(text),
   });
 
   const onChange = useCallback((e) => {
