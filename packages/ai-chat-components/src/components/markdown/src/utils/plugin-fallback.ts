@@ -227,7 +227,6 @@ export function renderFallback(
     slotName,
     kind: 'pluginFallback',
     token,
-    node,
     html: safe,
     isInline: token.block === false,
   });
