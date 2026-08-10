@@ -217,9 +217,6 @@ export function useChatAutocomplete(
             element={result}
             onMount={setListElement}
             onMousedown={handleContainerMousedown}
-            onDismiss={dismiss}
-            onSelect={handleSelect}
-            onSend={handleSend}
           />
         );
       }
@@ -229,9 +226,6 @@ export function useChatAutocomplete(
           node={result as ReactNode}
           onMount={setListElement}
           onMousedown={(e) => e.preventDefault()}
-          onDismiss={dismiss}
-          onSelect={handleSelect}
-          onSend={handleSend}
         />
       );
     }
@@ -269,9 +263,6 @@ interface CustomElementHostProps {
   /** Notify the parent which element is the key-forwarding target. */
   onMount?: (el: HTMLElement | null) => void;
   onMousedown?: (e: React.MouseEvent) => void;
-  onDismiss?: () => void;
-  onSelect?: (item: SuggestionItem) => void;
-  onSend?: (text: string) => void;
 }
 
 /** Mounts a host-provided HTMLElement into the React tree at `slot`. */
@@ -280,19 +271,8 @@ function CustomElementHost({
   element,
   onMount,
   onMousedown,
-  onDismiss,
-  onSelect,
-  onSend,
 }: CustomElementHostProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  // Stable refs so the mount-once effect always calls the latest callbacks
-  // without needing them in its dependency array.
-  const onDismissRef = React.useRef(onDismiss);
-  onDismissRef.current = onDismiss;
-  const onSelectRef = React.useRef(onSelect);
-  onSelectRef.current = onSelect;
-  const onSendRef = React.useRef(onSend);
-  onSendRef.current = onSend;
 
   React.useEffect(() => {
     const container = containerRef.current;
@@ -302,32 +282,8 @@ function CustomElementHost({
     container.appendChild(element);
     onMount?.(element);
 
-    const dismissListener = () => onDismissRef.current?.();
-    const selectListener = (e: Event) =>
-      onSelectRef.current?.(
-        (e as CustomEvent<{ item: SuggestionItem }>).detail?.item
-      );
-    const sendListener = (e: Event) =>
-      onSendRef.current?.((e as CustomEvent<{ text: string }>).detail?.text);
-
-    element.addEventListener(
-      'cds-aichat-autocomplete-dismiss',
-      dismissListener
-    );
-    element.addEventListener('cds-aichat-autocomplete-select', selectListener);
-    element.addEventListener('cds-aichat-autocomplete-send', sendListener);
-
     return () => {
       onMount?.(null);
-      element.removeEventListener(
-        'cds-aichat-autocomplete-dismiss',
-        dismissListener
-      );
-      element.removeEventListener(
-        'cds-aichat-autocomplete-select',
-        selectListener
-      );
-      element.removeEventListener('cds-aichat-autocomplete-send', sendListener);
       if (element.parentNode === container) {
         container.removeChild(element);
       }
@@ -348,9 +304,6 @@ interface CustomReactNodePortalProps {
   node: ReactNode;
   onMount?: (el: HTMLElement | null) => void;
   onMousedown?: (e: MouseEvent) => void;
-  onDismiss?: () => void;
-  onSelect?: (item: SuggestionItem) => void;
-  onSend?: (text: string) => void;
 }
 
 let autocompletePortalCounter = 0;
@@ -369,22 +322,11 @@ function CustomReactNodePortal({
   node,
   onMount,
   onMousedown,
-  onDismiss,
-  onSelect,
-  onSend,
 }: CustomReactNodePortalProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [hostElement, setHostElement] = React.useState<HTMLElement | null>(
     null
   );
-  // Stable refs so the mount-once effect always calls the latest callbacks
-  // without needing them in its dependency array.
-  const onDismissRef = React.useRef(onDismiss);
-  onDismissRef.current = onDismiss;
-  const onSelectRef = React.useRef(onSelect);
-  onSelectRef.current = onSelect;
-  const onSendRef = React.useRef(onSend);
-  onSendRef.current = onSend;
 
   React.useEffect(() => {
     const container = containerRef.current;
@@ -408,18 +350,6 @@ function CustomReactNodePortal({
     if (onMousedown) {
       hostEl.addEventListener('mousedown', onMousedown);
     }
-
-    const dismissListener = () => onDismissRef.current?.();
-    const selectListener = (e: Event) =>
-      onSelectRef.current?.(
-        (e as CustomEvent<{ item: SuggestionItem }>).detail?.item
-      );
-    const sendListener = (e: Event) =>
-      onSendRef.current?.((e as CustomEvent<{ text: string }>).detail?.text);
-
-    hostEl.addEventListener('cds-aichat-autocomplete-dismiss', dismissListener);
-    hostEl.addEventListener('cds-aichat-autocomplete-select', selectListener);
-    hostEl.addEventListener('cds-aichat-autocomplete-send', sendListener);
     chatWrapper.appendChild(hostEl);
 
     setHostElement(hostEl);
@@ -430,15 +360,6 @@ function CustomReactNodePortal({
       if (onMousedown) {
         hostEl.removeEventListener('mousedown', onMousedown);
       }
-      hostEl.removeEventListener(
-        'cds-aichat-autocomplete-dismiss',
-        dismissListener
-      );
-      hostEl.removeEventListener(
-        'cds-aichat-autocomplete-select',
-        selectListener
-      );
-      hostEl.removeEventListener('cds-aichat-autocomplete-send', sendListener);
       slotEl.remove();
       hostEl.remove();
       setHostElement(null);

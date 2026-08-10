@@ -468,12 +468,26 @@ export const CommandsAndMentions = {
 // Conversation starters — starters overlay + toggle action only
 // ---------------------------------------------------------------------------
 
-function renderStarterList({ items, enableSendButton, attached }) {
+function renderStarterList({
+  items,
+  onSelect,
+  onSend,
+  onDismiss,
+  enableSendButton,
+  attached,
+}) {
   const el = document.createElement('cds-aichat-autocomplete');
   el.items = items;
   el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   el.attached = attached;
   el.enableSendButton = enableSendButton;
+  el.addEventListener('cds-aichat-autocomplete-select', (e) =>
+    onSelect(e.detail.item)
+  );
+  el.addEventListener('cds-aichat-autocomplete-send', (e) =>
+    onSend(e.detail.text)
+  );
+  el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
   return el;
 }
 
