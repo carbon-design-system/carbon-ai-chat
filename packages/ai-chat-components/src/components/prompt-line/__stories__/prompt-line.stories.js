@@ -108,12 +108,11 @@ class PromptLineInlineActionsStory extends LitElement {
     }
     this._handler?.disconnect();
 
-    const nonFixedCount = this.actions.filter((a) => !a.fixed).length;
     this._handler = createOverflowHandler({
       container,
       dimension: 'width',
       onChange: (visibleItems) => {
-        const hidden = Math.max(0, nonFixedCount - visibleItems.length);
+        const hidden = Math.max(0, this.actions.length - visibleItems.length);
         this._hiddenCount = hidden;
         if (hidden === 0 && this._menuOpen) {
           this._menuOpen = false;
@@ -122,17 +121,9 @@ class PromptLineInlineActionsStory extends LitElement {
     });
   }
 
-  get _nonFixedActions() {
-    return this.actions.filter((a) => !a.fixed);
-  }
-
-  get _fixedActions() {
-    return this.actions.filter((a) => a.fixed);
-  }
-
   get _hiddenActions() {
-    const nf = this._nonFixedActions;
-    return this._hiddenCount > 0 ? nf.slice(nf.length - this._hiddenCount) : [];
+    const { actions, _hiddenCount: count } = this;
+    return count > 0 ? actions.slice(actions.length - count) : [];
   }
 
   _renderButton(a) {
@@ -160,7 +151,7 @@ class PromptLineInlineActionsStory extends LitElement {
         style="flex:1 1 auto; position: relative;"
         ?data-measuring=${this._measuring}
         ${ref(this._containerRef)}>
-        ${this._nonFixedActions.map((a) => this._renderButton(a))}
+        ${this.actions.map((a) => this._renderButton(a))}
 
         <div
           data-offset=""
@@ -207,8 +198,6 @@ class PromptLineInlineActionsStory extends LitElement {
               : nothing
           }
         </div>
-
-        ${this._fixedActions.map((a) => this._renderButton(a))}
       </div>
     `;
   }

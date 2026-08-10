@@ -106,25 +106,21 @@ const InlineActions = ({ actions, disabled }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [measuring, setMeasuring] = useState(true);
 
-  const nonFixedActions = actions.filter((a) => !a.fixed);
   const hiddenActions =
-    hiddenCount > 0
-      ? nonFixedActions.slice(nonFixedActions.length - hiddenCount)
-      : [];
+    hiddenCount > 0 ? actions.slice(actions.length - hiddenCount) : [];
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return undefined;
 
     setMeasuring(true);
-    const nonFixedCount = actions.filter((a) => !a.fixed).length;
     let handler;
     const setupRaf = requestAnimationFrame(() => {
       handler = createOverflowHandler({
         container,
         dimension: 'width',
         onChange: (visibleItems) => {
-          const hidden = Math.max(0, nonFixedCount - visibleItems.length);
+          const hidden = Math.max(0, actions.length - visibleItems.length);
           setHiddenCount(hidden);
           if (hidden === 0) setMenuOpen(false);
         },
@@ -144,7 +140,7 @@ const InlineActions = ({ actions, disabled }) => {
         className="prompt-line-story-inline-actions"
         style={{ position: 'relative' }}
         data-measuring={measuring ? '' : undefined}>
-        {nonFixedActions.map((a) => (
+        {actions.map((a) => (
           <cds-icon-button
             key={a.text}
             size="sm"
