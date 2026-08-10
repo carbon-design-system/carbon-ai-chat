@@ -11,6 +11,7 @@
 @use '@carbon/styles/scss/type';
 @use '@carbon/styles/scss/components/button' as button;
 @use '../../../globals/scss/vars' as *;
+@use './prompt-line-vars' as prompt-line-vars;
 
 // -----------------------------------------------------------
 // Host
@@ -97,8 +98,8 @@
 
 // Error state
 :host([has-error]) .#{$prefix}--input-container {
-  outline: 1px solid theme.$support-error;
-  outline-offset: -1px;
+  outline: prompt-line-vars.$error-outline-width solid theme.$support-error;
+  outline-offset: calc(-1 * #{prompt-line-vars.$error-outline-width});
 }
 
 // Non-rounded shell with file uploads — round the top corners to visually
