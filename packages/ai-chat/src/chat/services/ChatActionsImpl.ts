@@ -824,10 +824,10 @@ class ChatActionsImpl {
   }
 
   /**
-   * Sends the given message to the assistant on the remote server. This will result in a "pre:send" and "send" event
-   * being fired on the event bus. The returned promise will resolve once a response has received and processed and
-   * both the "pre:receive" and "receive" events have fired. It will reject when too many errors have occurred and
-   * the system gives up retrying.
+   * Sends the given message to the assistant. Fires `pre:send` then `send` on
+   * the event bus before delegating to `customSendMessage`. Resolves when
+   * `customSendMessage` completes or when the turn is stopped; rejects when
+   * `customSendMessage` throws or the send path fails terminally.
    *
    * @param message The message to send.
    * @param source The source of the message.
@@ -890,10 +890,10 @@ class ChatActionsImpl {
   }
 
   /**
-   * Sends the given message to the assistant on the remote server. This will result in a "pre:send" and "send" event
-   * being fired on the event bus. The returned promise will resolve once a response has received and processed and
-   * both the "pre:receive" and "receive" events have fired. It will reject when too many errors have occurred and
-   * the system gives up retrying.
+   * Inner send: fires `pre:send` and `send`, then calls `customSendMessage` via
+   * `MessageService`. Resolves when `customSendMessage` completes or the turn
+   * is stopped; rejects when `customSendMessage` throws or the send path fails
+   * terminally. Retries are handled upstream by `customSendMessage`.
    *
    * @param message The message to send.
    * @param source The source of the message.
