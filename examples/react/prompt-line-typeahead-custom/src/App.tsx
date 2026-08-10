@@ -31,6 +31,7 @@ import { createRoot } from 'react-dom/client';
 import { customSendMessage } from './customSendMessage';
 import { CANNED_SUGGESTIONS } from './suggestions';
 import { CustomSuggestionList } from './CustomSuggestionList';
+import '@carbon/styles/css/styles.css';
 
 function App() {
   const config: PublicConfig = useMemo(
