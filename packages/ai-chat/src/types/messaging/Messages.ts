@@ -214,18 +214,6 @@ interface InlineFile {
    * Optional unique ID for tracking.
    */
   id?: string;
-
-  /**
-   * Optional upload status (for UI feedback).
-   */
-  status?: FileStatusValue;
-
-  /**
-   * Optional error information.
-   */
-  error?: {
-    message: string;
-  };
 }
 
 /**
