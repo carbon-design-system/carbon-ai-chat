@@ -131,7 +131,7 @@ const InlineActions = ({ actions, disabled }) => {
       cancelAnimationFrame(setupRaf);
       handler?.disconnect();
     };
-  }, []);
+  }, [actions]);
 
   return (
     <div slot="message-actions">
@@ -148,7 +148,7 @@ const InlineActions = ({ actions, disabled }) => {
             align="top-start"
             enter-delay-ms="0"
             leave-delay-ms="0"
-            disabled={disabled || undefined}
+            disabled={disabled || a.disabled}
             onClick={a.onClick}>
             <CarbonIconSlot icon={a.icon} slot="icon" />
             <span slot="tooltip-content">{a.text}</span>
