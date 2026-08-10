@@ -91,3 +91,20 @@
     }
   }
 }
+
+:host(#{$prefix}-button-skeleton) {
+  .#{$cds-prefix}--btn.#{$cds-prefix}--skeleton {
+    overflow: hidden;
+    border-radius: convert.to-rem(24px);
+    inline-size: convert.to-rem(100px);
+    max-inline-size: 19rem;
+
+    &.#{$cds-prefix}--btn--md {
+      border-radius: convert.to-rem(20px);
+    }
+
+    &.#{$cds-prefix}--btn--sm {
+      border-radius: convert.to-rem(16px);
+    }
+  }
+}

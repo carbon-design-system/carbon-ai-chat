@@ -30,7 +30,7 @@ export {
   CHAT_BUTTON_TOOLTIP_POSITION,
 };
 
-type ChatButtonSize =
+export type ChatButtonSize =
   CHAT_BUTTON_SIZE.SMALL | CHAT_BUTTON_SIZE.MEDIUM | CHAT_BUTTON_SIZE.LARGE;
 
 /**
