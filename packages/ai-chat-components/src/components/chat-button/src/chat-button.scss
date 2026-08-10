@@ -7,7 +7,6 @@
 
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/styles/scss/theme';
-@use '@carbon/styles/scss/type';
 @use '@carbon/web-components/scss/components/button/button';
 @use '@carbon/styles/scss/utilities/layout';
 @use '@carbon/styles/scss/utilities/convert';
@@ -67,8 +66,6 @@
     }
 
     &:active:not([disabled]) {
-      @include type.type-style('body-compact-01');
-
       border-color: transparent;
       background: theme.$background-active;
       color: theme.$link-primary-hover;
