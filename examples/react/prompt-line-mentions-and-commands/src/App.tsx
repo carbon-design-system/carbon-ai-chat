@@ -39,6 +39,7 @@ import { createRoot } from 'react-dom/client';
 
 import { customSendMessage } from './customSendMessage';
 import { mentionItems, commandItems } from './suggestions';
+import '@carbon/styles/css/styles.css';
 
 function App() {
   const instanceRef = useRef<ChatInstance | null>(null);

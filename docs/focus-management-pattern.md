@@ -203,7 +203,7 @@ export interface ComponentHandle {
 import { useRef } from 'react';
 import ChatHeader, {
   ChatHeaderHandle,
-} from '@carbon/ai-chat-components/react/chat-header';
+} from '@carbon/ai-chat-components/es/react/chat-header.js';
 
 function ParentComponent() {
   const headerRef = useRef<ChatHeaderHandle>(null);

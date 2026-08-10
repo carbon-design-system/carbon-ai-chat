@@ -37,6 +37,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { customSendMessage } from './customSendMessage';
+import '@carbon/styles/css/styles.css';
 
 const config: PublicConfig = {
   messaging: {
