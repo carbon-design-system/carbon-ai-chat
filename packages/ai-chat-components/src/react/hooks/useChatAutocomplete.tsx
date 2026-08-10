@@ -273,7 +273,6 @@ function CustomElementHost({
   onMousedown,
 }: CustomElementHostProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-
   React.useEffect(() => {
     const container = containerRef.current;
     if (!container) {
@@ -281,7 +280,6 @@ function CustomElementHost({
     }
     container.appendChild(element);
     onMount?.(element);
-
     return () => {
       onMount?.(null);
       if (element.parentNode === container) {
@@ -366,7 +364,7 @@ function CustomReactNodePortal({
     };
     // Empty deps: the slot/host pair is owned by this mount cycle and should
     // not churn as `node` updates — React's portal reconciliation handles
-    // those updates in place. Callbacks are read via refs.
+    // those updates in place.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
