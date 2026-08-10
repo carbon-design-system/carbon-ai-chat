@@ -20,10 +20,13 @@
         padding: 0;
       }
       body {
-        /* Carbon's notification/card shadow roots use `font-family: inherit`,
-           so the body font propagates into them. Without this rule the
-           browser default (Times) leaks into the toast and slotted content. */
-        font-family: "IBM Plex Sans Var", "IBM Plex Sans", sans-serif;
+        font-family:
+          'IBM Plex Sans',
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          '.SFNSText-Regular',
+          sans-serif;
       }
       .chat-custom-element {
         block-size: 100vh;
@@ -45,8 +48,7 @@
     </style>
     <link
       rel="stylesheet"
-      href="https://1.www.s81c.com/common/carbon/plex/sans.css"
-    />
+      href="https://1.www.s81c.com/common/carbon/plex/sans.css" />
   </head>
   <body>
     <my-app></my-app>
