@@ -357,7 +357,7 @@ class AutocompleteElement extends LitElement {
       new CustomEvent<AutocompleteSendEventDetail>(
         'cds-aichat-autocomplete-send',
         {
-          detail: { text: item.label },
+          detail: { text: item.value ?? item.label },
           bubbles: true,
           composed: true,
         }
