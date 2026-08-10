@@ -102,8 +102,6 @@ const CarbonIconSlot = ({ icon, slot }) =>
  */
 const InlineActions = ({ actions, disabled }) => {
   const containerRef = useRef(null);
-  const triggerRef = useRef(null);
-  const menuRef = useRef(null);
   const [hiddenCount, setHiddenCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [measuring, setMeasuring] = useState(true);
@@ -161,47 +159,48 @@ const InlineActions = ({ actions, disabled }) => {
           </cds-icon-button>
         ))}
 
-        <cds-icon-button
-          ref={triggerRef}
-          size="sm"
-          kind="ghost"
-          align="top-start"
-          enter-delay-ms="0"
-          leave-delay-ms="0"
+        <div
           data-offset=""
           data-hidden={hiddenCount === 0 ? '' : undefined}
-          disabled={disabled || undefined}
-          onClick={() => setMenuOpen((o) => !o)}>
-          <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
-          <span slot="tooltip-content">More actions</span>
-        </cds-icon-button>
+          style={{ position: 'relative' }}>
+          <cds-icon-button
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            disabled={disabled || undefined}
+            onClick={() => setMenuOpen((o) => !o)}>
+            <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
+            <span slot="tooltip-content">More actions</span>
+          </cds-icon-button>
 
-        {menuOpen && hiddenActions.length > 0 && (
-          <cds-menu
-            ref={(el) => {
-              menuRef.current = el;
-              if (el) {
-                el.addEventListener('cds-menu-closed', () =>
-                  setMenuOpen(false)
-                );
-              }
-            }}
-            open
-            label="More actions"
-            style={{ position: 'absolute' }}>
-            {hiddenActions.map((a) => (
-              <cds-menu-item
-                key={a.text}
-                label={a.text}
-                disabled={a.disabled || undefined}
-                onClick={() => {
-                  setMenuOpen(false);
-                  a.onClick?.();
-                }}
-              />
-            ))}
-          </cds-menu>
-        )}
+          {menuOpen && hiddenActions.length > 0 && (
+            <cds-menu
+              ref={(el) => {
+                if (el) {
+                  el.addEventListener('cds-menu-closed', () =>
+                    setMenuOpen(false)
+                  );
+                }
+              }}
+              open
+              label="More actions"
+              style={{ position: 'absolute', bottom: '100%', left: 0 }}>
+              {hiddenActions.map((a) => (
+                <cds-menu-item
+                  key={a.text}
+                  label={a.text}
+                  disabled={a.disabled || undefined}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    a.onClick?.();
+                  }}
+                />
+              ))}
+            </cds-menu>
+          )}
+        </div>
       </div>
     </div>
   );

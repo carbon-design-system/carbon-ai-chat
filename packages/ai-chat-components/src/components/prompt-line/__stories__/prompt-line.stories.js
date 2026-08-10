@@ -73,8 +73,6 @@ class PromptLineInlineActionsStory extends LitElement {
     this._menuOpen = false;
     this._measuring = true;
     this._containerRef = createRef();
-    this._overflowButtonRef = createRef();
-    this._menuRef = createRef();
     this._handler = undefined;
     this._setupRaf = 0;
     this._revealRaf = 0;
@@ -164,51 +162,53 @@ class PromptLineInlineActionsStory extends LitElement {
         ${ref(this._containerRef)}>
         ${this._nonFixedActions.map((a) => this._renderButton(a))}
 
-        <cds-icon-button
-          size="sm"
-          kind="ghost"
-          align="top-start"
-          enter-delay-ms="0"
-          leave-delay-ms="0"
+        <div
           data-offset=""
           ?data-hidden=${this._hiddenCount === 0}
-          ?disabled=${this.disabled}
-          ${ref(this._overflowButtonRef)}
-          @click=${() => {
-            this._menuOpen = !this._menuOpen;
-          }}>
-          ${iconLoader(OverflowMenuVertical16, { slot: 'icon' })}
-          <span slot="tooltip-content">More actions</span>
-        </cds-icon-button>
+          style="position: relative;">
+          <cds-icon-button
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            ?disabled=${this.disabled}
+            @click=${() => {
+              this._menuOpen = !this._menuOpen;
+            }}>
+            ${iconLoader(OverflowMenuVertical16, { slot: 'icon' })}
+            <span slot="tooltip-content">More actions</span>
+          </cds-icon-button>
+
+          ${
+            this._menuOpen && hiddenActions.length > 0
+              ? html`
+                  <cds-menu
+                    open
+                    label="More actions"
+                    style="position: absolute; bottom: 100%; left: 0;"
+                    @cds-menu-closed=${() => {
+                      this._menuOpen = false;
+                    }}>
+                    ${hiddenActions.map(
+                      (a) => html`
+                        <cds-menu-item
+                          label=${a.text}
+                          ?disabled=${a.disabled}
+                          @click=${() => {
+                            this._menuOpen = false;
+                            a.onClick?.();
+                          }}>
+                        </cds-menu-item>
+                      `
+                    )}
+                  </cds-menu>
+                `
+              : nothing
+          }
+        </div>
 
         ${this._fixedActions.map((a) => this._renderButton(a))}
-        ${
-          this._menuOpen && hiddenActions.length > 0
-            ? html`
-                <cds-menu
-                  open
-                  label="More actions"
-                  ${ref(this._menuRef)}
-                  style="position: absolute;"
-                  @cds-menu-closed=${() => {
-                    this._menuOpen = false;
-                  }}>
-                  ${hiddenActions.map(
-                    (a) => html`
-                      <cds-menu-item
-                        label=${a.text}
-                        ?disabled=${a.disabled}
-                        @click=${() => {
-                          this._menuOpen = false;
-                          a.onClick?.();
-                        }}>
-                      </cds-menu-item>
-                    `
-                  )}
-                </cds-menu>
-              `
-            : nothing
-        }
       </div>
     `;
   }
