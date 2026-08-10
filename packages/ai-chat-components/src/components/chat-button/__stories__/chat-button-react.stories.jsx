@@ -361,3 +361,42 @@ export const QuickActionSelected = {
     isSelected: true,
   },
 };
+
+export const QuickActionSelectedWithDisabled = {
+  name: 'Quick action (selected with disabled)',
+  parameters: { controls: { disable: true } },
+  render: () => (
+    <>
+      <style>{`.quick-action-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }`}</style>
+      <div className="quick-action-group">
+        <ChatButton is-quick-action disabled>
+          audio - mp3
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          audio - soundcloud
+        </ChatButton>
+        <ChatButton is-quick-action isSelected>
+          button
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          card
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          carousel
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          code
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          code (stream)
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          conversational search
+        </ChatButton>
+        <ChatButton is-quick-action disabled>
+          conversational search (stream)
+        </ChatButton>
+      </div>
+    </>
+  ),
+};

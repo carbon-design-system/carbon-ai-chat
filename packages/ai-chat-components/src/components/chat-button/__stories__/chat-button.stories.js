@@ -374,3 +374,39 @@ export const QuickActionSelected = {
   },
   render: baseButtonTemplate,
 };
+
+export const QuickActionSelectedWithDisabled = {
+  name: 'Quick action (selected with disabled)',
+  parameters: { controls: { disable: true } },
+  render: () => html`
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >audio - mp3</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >audio - soundcloud</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?isSelected="${true}"
+        >button</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >card</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >carousel</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >code</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >code (stream)</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >conversational search</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >conversational search (stream)</cds-aichat-button
+      >
+    </div>
+  `,
+};
