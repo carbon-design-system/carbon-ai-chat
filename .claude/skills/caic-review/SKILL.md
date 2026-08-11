@@ -15,6 +15,7 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
 ## How to review
 
 - Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files — never a summary of what changed.
+- When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first — [large-diffs.md](references/large-diffs.md).
 - Open the issue the PR closes and walk its acceptance criteria against the diff. A criterion the diff contradicts is a **Blocker** until the issue carries an amendment saying so.
 - If the issue or its epic cites an ADR, read that ADR's Decision outcome and walk the diff against it too. A diff that contradicts an accepted ADR is a **Blocker** until a new ADR supersedes it — an implementation PR is not where a recorded decision gets reversed.
 - Tag every finding with a severity so real problems aren't buried under taste:
@@ -76,7 +77,7 @@ A pass returns findings and nothing else — no verdict, no cap, no ranking. It 
 
 **Synthesize before you write anything.** Merge the passes, drop duplicates, rank by severity across all of them, then apply the caps and write the verdict per [Output expectations](#output-expectations). Skip this and you ship N reviews stapled together.
 
-Skip the split under ~5 changed files. One pass reads that much without losing the thread.
+Skip the split when a single reading holds the whole diff in view. Splitting a handful of lines across five passes is ceremony.
 
 ## Evaluate the changes
 
@@ -139,6 +140,7 @@ For context on conventions being enforced:
 - **General overview**: [AGENTS.md](../../../AGENTS.md) — monorepo pointer index
 - **Package-specific rules**: see `AGENTS.md` in each package directory
 - **Reviewing a PR**: [reviewing-a-pr.md](references/reviewing-a-pr.md) — base branch, the review payload, and the `gh` call
+- **Large diffs**: [large-diffs.md](references/large-diffs.md) — ranking files by risk when the diff is too big to read evenly
 - **PR workflow**: [caic-pr](../caic-pr/SKILL.md) — drafting PR descriptions
 - **Plan-phase analog**: [plan-review.md](../caic-plan/references/plan-review.md) — the same discipline applied before code exists
 
