@@ -15,13 +15,22 @@
  * directly — no higher-level `ChatCustomElement` wrapper.
  */
 
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
 import { action } from 'storybook/actions';
 import { default as WCMeta } from './prompt-line.stories';
 import './story-styles.scss';
 
 import '@carbon/web-components/es/components/button/index.js';
+import '@carbon/web-components/es/components/menu/index.js';
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
+import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
+import { createOverflowHandler } from '@carbon/utilities';
 
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
@@ -87,27 +96,111 @@ const CarbonIconSlot = ({ icon, slot }) =>
   );
 
 /**
- * Renders dummy actions as a flat row of sm ghost icon buttons, matching the
- * demo's InputActionsInline pattern (no toolbar wrapper, no justify-content:end).
+ * Mirrors InputActionsInline from @carbon/ai-chat: renders each action as a
+ * standalone icon button, then uses createOverflowHandler to collapse
+ * buttons that no longer fit into an overflow menu.
  */
-const InlineActions = ({ disabled }) => (
-  <div slot="message-actions" style={{ display: 'flex', alignItems: 'center' }}>
-    {dummyActions.map((a) => (
-      <cds-icon-button
-        key={a.text}
-        size="sm"
-        kind="ghost"
-        align="top-start"
-        enter-delay-ms="0"
-        leave-delay-ms="0"
-        disabled={disabled || undefined}
-        onClick={a.onClick}>
-        <CarbonIconSlot icon={a.icon} slot="icon" />
-        <span slot="tooltip-content">{a.text}</span>
-      </cds-icon-button>
-    ))}
-  </div>
-);
+const InlineActions = ({ actions, disabled }) => {
+  const containerRef = useRef(null);
+  const [hiddenCount, setHiddenCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [measuring, setMeasuring] = useState(true);
+
+  const hiddenActions =
+    hiddenCount > 0 ? actions.slice(actions.length - hiddenCount) : [];
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    setMeasuring(true);
+    let handler;
+    const setupRaf = requestAnimationFrame(() => {
+      handler = createOverflowHandler({
+        container,
+        dimension: 'width',
+        onChange: (visibleItems) => {
+          const hidden = Math.max(0, actions.length - visibleItems.length);
+          setHiddenCount(hidden);
+          if (hidden === 0) setMenuOpen(false);
+        },
+      });
+      requestAnimationFrame(() => setMeasuring(false));
+    });
+    return () => {
+      cancelAnimationFrame(setupRaf);
+      handler?.disconnect();
+    };
+  }, [actions]);
+
+  return (
+    <div slot="message-actions">
+      <div
+        ref={containerRef}
+        className="prompt-line-story-inline-actions"
+        style={{ position: 'relative' }}
+        data-measuring={measuring ? '' : undefined}>
+        {actions.map((a) => (
+          <cds-icon-button
+            key={a.text}
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            disabled={disabled || a.disabled}
+            onClick={a.onClick}>
+            <CarbonIconSlot icon={a.icon} slot="icon" />
+            <span slot="tooltip-content">{a.text}</span>
+          </cds-icon-button>
+        ))}
+
+        <div
+          data-offset=""
+          data-hidden={hiddenCount === 0 ? '' : undefined}
+          style={{ position: 'relative' }}>
+          <cds-icon-button
+            size="sm"
+            kind="ghost"
+            align="top-start"
+            enter-delay-ms="0"
+            leave-delay-ms="0"
+            disabled={disabled || undefined}
+            onClick={() => setMenuOpen((o) => !o)}>
+            <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
+            <span slot="tooltip-content">More actions</span>
+          </cds-icon-button>
+
+          {menuOpen && hiddenActions.length > 0 && (
+            <cds-menu
+              ref={(el) => {
+                if (el) {
+                  el.addEventListener('cds-menu-closed', () =>
+                    setMenuOpen(false)
+                  );
+                }
+              }}
+              open
+              label="More actions"
+              style={{ position: 'absolute', bottom: '100%', left: 0 }}>
+              {hiddenActions.map((a) => (
+                <cds-menu-item
+                  key={a.text}
+                  label={a.text}
+                  disabled={a.disabled || undefined}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    a.onClick?.();
+                  }}
+                />
+              ))}
+            </cds-menu>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Story meta
@@ -232,7 +325,7 @@ export const Expanded = {
             disabled={disabled}
             onChange={onChange}
           />
-          <InlineActions disabled={disabled} />
+          <InlineActions actions={dummyActions} disabled={disabled} />
           <CDSAIChatInputSendControl
             slot="send-control"
             disabled={disabled}
@@ -347,7 +440,7 @@ const CommandsAndMentionsStory = ({
             onTriggerChange={onTriggerChange}
           />
           {autocompleteContent}
-          <InlineActions disabled={disabled} />
+          <InlineActions actions={dummyActions} disabled={disabled} />
           <CDSAIChatInputSendControl
             slot="send-control"
             disabled={disabled}
@@ -370,14 +463,24 @@ export const CommandsAndMentions = {
 // Conversation starters — starters overlay + toggle action only
 // ---------------------------------------------------------------------------
 
-function renderCustomList({ items, onSelect, onDismiss }) {
+function renderStarterList({
+  items,
+  onSelect,
+  onSend,
+  onDismiss,
+  enableSendButton,
+  attached,
+}) {
   const el = document.createElement('cds-aichat-autocomplete');
   el.items = items;
   el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
-  el.attached = false;
-  el.enableSendButton = false;
+  el.attached = attached;
+  el.enableSendButton = enableSendButton;
   el.addEventListener('cds-aichat-autocomplete-select', (e) =>
     onSelect(e.detail.item)
+  );
+  el.addEventListener('cds-aichat-autocomplete-send', (e) =>
+    onSend(e.detail.text)
   );
   el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
   return el;
@@ -392,19 +495,21 @@ const ConversationStartersStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  enableSendButton,
+  attached,
 }) => {
   const [startersEnabled, setStartersEnabled] = useState(true);
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
 
-  // Keep starters config stable — only isOn changes
-  const startersBase = useMemo(
-    () => ({ items: starterItems, renderCustomList }),
-    []
-  );
   const starters = useMemo(
-    () => ({ ...startersBase, isOn: startersEnabled }),
-    [startersBase, startersEnabled]
+    () => ({
+      items: starterItems,
+      isOn: startersEnabled,
+      renderCustomList: (props) =>
+        renderStarterList({ ...props, enableSendButton, attached }),
+    }),
+    [startersEnabled, enableSendButton, attached]
   );
 
   const extensions = useMemo(
@@ -415,7 +520,9 @@ const ConversationStartersStory = ({
   const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
     starters,
     promptLineRef,
-    attached: false,
+    attached,
+    onSelectItem: (item) => action('cds-aichat-autocomplete-select')(item),
+    onSendItem: (text) => action('cds-aichat-autocomplete-send')(text),
   });
 
   const onChange = useCallback((e) => {
@@ -481,10 +588,6 @@ const ConversationStartersStory = ({
 
 export const ConversationStarters = {
   name: 'Conversation starters',
-  argTypes: {
-    enableSendButton: { table: { disable: true } },
-    attached: { table: { disable: true } },
-  },
   render: (args) => <ConversationStartersStory {...args} />,
 };
 
@@ -652,6 +755,8 @@ const TypeaheadStory = ({
     autocomplete,
     promptLineRef,
     attached,
+    onSelectItem: (item) => action('cds-aichat-autocomplete-select')(item),
+    onSendItem: (text) => action('cds-aichat-autocomplete-send')(text),
   });
 
   const onChange = useCallback((e) => {
@@ -698,7 +803,7 @@ const TypeaheadStory = ({
           onTriggerChange={onTriggerChange}
         />
         {autocompleteContent}
-        <InlineActions disabled={disabled} />
+        <InlineActions actions={dummyActions} disabled={disabled} />
         <CDSAIChatInputSendControl
           slot="send-control"
           disabled={disabled}

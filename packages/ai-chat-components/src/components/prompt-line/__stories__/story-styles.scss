@@ -42,3 +42,18 @@
   border-radius: layout.$spacing-01;
   background: theme.$layer-01;
 }
+
+.prompt-line-story-inline-actions {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.prompt-line-story-inline-actions > [data-hidden] {
+  display: none;
+}
+
+.prompt-line-story-inline-actions[data-measuring] {
+  visibility: hidden;
+}

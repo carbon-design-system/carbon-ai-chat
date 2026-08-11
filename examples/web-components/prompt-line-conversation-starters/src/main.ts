@@ -40,7 +40,11 @@ import '@carbon/styles/css/styles.css';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 
-import { type CustomListProps, type PublicConfig } from '@carbon/ai-chat';
+import {
+  type CustomListProps,
+  type PublicConfig,
+  type SuggestionItem,
+} from '@carbon/ai-chat';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
@@ -64,22 +68,32 @@ const STARTER_ITEMS = [
  * Custom starter list renderer.
  *
  * Creates a `<cds-aichat-autocomplete>` element with a "Prompt suggestions"
- * header via `headerConfig`. The send-arrow is hidden (`enableSendButton: false`)
- * because selecting an item already auto-sends — one interaction, no ambiguity.
+ * header via `headerConfig`.
  *
  * The element is created imperatively so the chat framework can mount it into
  * its own managed slot and forward keyboard events through it.
+ *
+ * `onSelect`, `onSend`, and `onDismiss` are wired directly so the
+ * framework-agnostic `AutocompleteController` receives selection and send
+ * events regardless of whether the user clicks or presses Enter.
  */
-function renderStarterList({ items, onSelect, onDismiss }: CustomListProps) {
+function renderStarterList({
+  items,
+  onSelect,
+  onSend,
+  onDismiss,
+}: CustomListProps) {
   const starters = document.createElement('cds-aichat-autocomplete') as any;
   starters.items = items;
   starters.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   starters.attached = false;
-  starters.enableSendButton = false;
   starters.addEventListener(
     'cds-aichat-autocomplete-select',
-    (e: CustomEvent<{ item: (typeof STARTER_ITEMS)[number] }>) =>
-      onSelect(e.detail.item)
+    (e: CustomEvent<{ item: SuggestionItem }>) => onSelect(e.detail.item)
+  );
+  starters.addEventListener(
+    'cds-aichat-autocomplete-send',
+    (e: CustomEvent<{ text: string }>) => onSend(e.detail.text)
   );
   starters.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
   return starters;

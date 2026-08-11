@@ -47,6 +47,11 @@ export interface UseChatAutocompleteOptions {
   /** Fired after a starter is selected and inserted (used to trigger send). */
   onStarterSelected?: (text: string) => void;
   /**
+   * Fired when an autocomplete suggestion item is selected.
+   * Called after the controller has already inserted the item.
+   */
+  onSelectItem?: (item: SuggestionItem) => void;
+  /**
    * Fired when the send button inside an autocomplete suggestion item is clicked.
    */
   onSendItem?: (text: string) => void;
@@ -79,6 +84,7 @@ export function useChatAutocomplete(
     promptLineRef,
     isSendDisabled,
     onStarterSelected,
+    onSelectItem,
     onSendItem,
     attached = true,
     maxHeight,
@@ -96,6 +102,8 @@ export function useChatAutocomplete(
   // but reading them out of refs avoids re-instantiation churn.
   const onStarterRef = React.useRef(onStarterSelected);
   onStarterRef.current = onStarterSelected;
+  const onSelectItemRef = React.useRef(onSelectItem);
+  onSelectItemRef.current = onSelectItem;
   const onSendItemRef = React.useRef(onSendItem);
   onSendItemRef.current = onSendItem;
 
@@ -146,14 +154,14 @@ export function useChatAutocomplete(
 
   const handleSelect = React.useCallback((item: SuggestionItem) => {
     controllerRef.current?.select(item);
+    onSelectItemRef.current?.(item);
   }, []);
 
-  const handleSend = React.useCallback((e: CustomEvent<{ text: string }>) => {
-    const text = e.detail?.text;
+  const handleSend = React.useCallback((text: string) => {
     if (!text) {
       return;
     }
-    controllerRef.current?.dismiss();
+    controllerRef.current?.dismiss(true);
     onSendItemRef.current?.(text);
   }, []);
 
@@ -195,8 +203,9 @@ export function useChatAutocomplete(
       const result = state.renderCustomList({
         items: state.items,
         query: state.trigger.query,
-        onSelect: handleSelect,
         onDismiss: dismiss,
+        onSelect: handleSelect,
+        onSend: handleSend,
       });
       if (result == null) {
         return null;
@@ -226,11 +235,13 @@ export function useChatAutocomplete(
         slot="autocomplete-content"
         items={state.items}
         attached={attached}
+        onDismiss={dismiss}
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
         }
-        onSend={handleSend}
-        onDismiss={dismiss}
+        onSend={(e: CustomEvent<{ text: string }>) =>
+          handleSend(e.detail?.text)
+        }
       />
     );
   }, [

@@ -214,6 +214,24 @@ describe('file-upload-item', () => {
       ).to.exist;
     });
 
+    it('renders a video preview using the objectURL', async () => {
+      const file = new File(['data'], 'clip.mp4', { type: 'video/mp4' });
+      const el = await mountReadOnly({
+        id: 'a',
+        name: 'clip.mp4',
+        mimeType: 'video/mp4',
+        file,
+      });
+
+      const video = el.renderRoot.querySelector<HTMLVideoElement>(
+        'video.cds-aichat-file-upload-item__preview'
+      );
+      expect(video).to.exist;
+
+      // The src must be an object URL (blob:), never a plain http/data path.
+      expect(video!.getAttribute('src')).to.match(/^blob:/);
+    });
+
     it('never creates an object URL when there is no File', async () => {
       const original = URL.createObjectURL;
       let calls = 0;
