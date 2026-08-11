@@ -380,9 +380,10 @@ class AutocompleteElement extends LitElement {
       return;
     }
     // Check if click is on anchor element
+    const { anchorElement } = this;
     if (
-      this.anchorElement &&
-      path.filter(isNode).some((n) => this.anchorElement!.contains(n))
+      anchorElement &&
+      path.filter(isNode).some((n) => anchorElement.contains(n))
     ) {
       return;
     }
