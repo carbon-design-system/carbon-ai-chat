@@ -9,7 +9,7 @@ This rubric governs every code review in this repo — both user-requested revie
 
 Two jobs share this rubric. Settle which one you're doing before reading any code — ask the user when the request doesn't make it obvious:
 
-- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere.
+- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere. Hand it to a sub-agent when you have one: the context that wrote the diff already justified every choice in it, and re-reading it there replays those justifications instead of testing them. Give the sub-agent the diff and this rubric — not your reasoning for the changes, which is the bias you're trying to escape.
 - **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict. Read [reviewing-a-pr.md](references/reviewing-a-pr.md) before you diff: it carries base-branch resolution and the posting payload.
 
 ## How to review
@@ -55,6 +55,8 @@ Some observations feel like findings and aren't. These stay unsaid at every seve
 - **"Add a comment here."** The repo's default is no comments. You are here to flag the ones that restate the code, not to ask for more.
 - **Speculative extraction** — "you might want to pull this out in case…". Scope creep counts from the reviewer's side too.
 - **Code the diff didn't touch.** Real, but not this PR's job — file an issue.
+
+A pass — or a whole review — that surfaces nothing is finished, not failed. Say so and stop. Manufacturing a Nit to look thorough costs the author more than the silence would.
 
 ## Run one dimension at a time
 
