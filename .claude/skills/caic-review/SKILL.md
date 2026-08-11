@@ -23,6 +23,7 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
   - **Nit** — optional, and it still has to earn its place: a concrete one-edit fix a later reader benefits from. Everything else is noise — see [What isn't a finding](#what-isnt-a-finding).
 - Read enough to be sure before you call something a **Blocker**. A false Blocker costs the author as much as a missed one. If you have only read the happy path, file it as **Important** and say what you did not read.
+- When you can run commands, run the read-only gates for what changed before you write anything — `lint`, `lint:license`, `lint:styles`, `validate:*`, `format`. A failure you watched outranks one you inferred. Never start a build or a test run yourself: the rows in [definition-of-done.md](../../../references/definition-of-done.md) all build, and a build races the watcher a developer probably has running. Report an unrun build as a stated gap.
 
 ## How to write a finding
 
@@ -34,6 +35,8 @@ One shape, one order — severity, the defect, what it costs, the fix:
 
 Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. Never post the objection without the fix. In a line comment on a PR, the `path` and `line` fields carry the citation — drop it from the body and keep the rest of the order.
 
+The consequence names the input or path that reaches the defect — "on every close", "when the list is empty" — not the category. A defect you can't trigger is a guess: drop it, or say what you didn't check.
+
 Hold your own words to [tone.md](../../../references/tone.md) — the same standard you hold the diff's copy to. Three habits show up in reviews and all three go:
 
 - **Hedging** — "I think", "it looks like", "consider possibly", "might be worth". Uncertainty is fine; say what you checked instead. "Read the happy path only — 60% sure this leaks."
@@ -44,6 +47,11 @@ Hold your own words to [tone.md](../../../references/tone.md) — the same stand
 
 - Before: "I might be missing something, but I wonder if it could possibly be worth considering whether this early return may want to clean up the listener it registered above, since otherwise it seems like it might leak? Nice refactor overall though!"
 - After: "**Blocker** — `packages/ai-chat/src/foo.ts:42` — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
+
+The other two severities, written the same way:
+
+- **Important** — `packages/ai-chat/src/chat/store/fooReducer.ts:88` — the reducer rebuilds every item, so one changed message re-renders the whole list. Copy the array and replace the one index.
+- **Nit** — `packages/ai-chat/src/types/config/FooConfig.ts:12` — the JSDoc says "the timeout" with no unit, so a caller guesses seconds. Say "in milliseconds."
 
 Cap a finding at three sentences plus a snippet. A concern that outgrows that — a design direction, a pattern repeated across the diff — is not a line comment: give it one line in the summary and move on.
 
@@ -79,7 +87,9 @@ Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md]
 
 A pass returns findings and nothing else — no verdict, no cap, no ranking. It can't rank what it can't see.
 
-**Synthesize before you write anything.** Merge the passes, then read them against each other before you rank. Two findings are duplicates when they name the same root cause, not merely the same line — on a merge, keep the higher severity and union the fixes. Where two passes cite the same file or symbol for different reasons, decide whether you hold two findings or one larger defect neither pass could see alone. Then rank by severity, apply the caps, and write the verdict per [Output expectations](#output-expectations). Skip this and you ship N reviews stapled together.
+**Refute before you synthesize.** The caps cut volume, never falsity: a wrong Blocker is unique, top-ranked, and never dropped, so it survives every other step. Take each Blocker and Important and argue the other side — name the code path that makes it wrong. A finding you can't refute ships; one you can, dies silently. Hand this to a sub-agent with the diff and the findings, not the passes' reasoning, when the harness has one; run it as your own last pass when it doesn't. Nits skip it — they are cheap to be wrong about.
+
+**Synthesize before you write anything.** Merge the passes, then read them against each other before you rank. Two findings are duplicates when they name the same root cause, not merely the same line — on a merge, keep the higher severity and union the fixes. Where two passes cite the same file or symbol for different reasons, decide whether you hold two findings or one larger defect neither pass could see alone. A finding you create here is new, so refute it before it ships — surviving refutation twice says nothing about the claim that joins them. Then rank by severity, apply the caps, and write the verdict per [Output expectations](#output-expectations). Skip this and you ship N reviews stapled together.
 
 Skip the split when a single reading holds the whole diff in view. Splitting a handful of lines across five passes is ceremony.
 
@@ -117,7 +127,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 ## Repo-specific checks
 
-For each changed file, read every `AGENTS.md` on the path from its directory up to the repo root, plus any topic docs under their `references/` folders they link to — e.g. a change under `packages/ai-chat-components/src/components/audio-player/` is governed by [packages/ai-chat-components/AGENTS.md](../../../packages/ai-chat-components/AGENTS.md) then the root [AGENTS.md](../../../AGENTS.md). Rule definitions live in [code-patterns.md](../../../references/code-patterns.md) and [conventions.md](../../../references/conventions.md); this list is what to flag. Flag any of:
+For each changed file, read every `AGENTS.md` on the path from its directory up to the repo root, plus any topic docs under their `references/` folders they link to — e.g. a change under `packages/ai-chat-components/src/components/audio-player/` is governed by [packages/ai-chat-components/AGENTS.md](../../../packages/ai-chat-components/AGENTS.md) then the root [AGENTS.md](../../../AGENTS.md). Rule definitions live in [code-patterns.md](../../../references/code-patterns.md) and [conventions.md](../../../references/conventions.md); this list is what to flag. A convention finding links the rule it breaks — an anchor in one of those two files, or the governing `AGENTS.md`. No link, no finding: you are quoting a convention this repo may not have. Flag any of:
 
 - **Over-engineering** — code the [laziness ladder](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder) would have avoided: dead code or unused flexibility (delete it), JS re-creating what CSS or a native element/browser API already does, a dependency duplicating Carbon or an existing one, an abstraction with a single caller (YAGNI), or logic expressible in fewer lines. Correctness and security stay in the sections above — this check is only about removable complexity.
 - **Logic trapped in a component** — parsing, formatting, validation, state transitions, or timing/geometry math written inside a React or Lit component instead of a plain module it could call ([framework-agnostic logic](../../../references/code-patterns.md#framework-agnostic-logic)). The tell is a behavior you could only test by rendering.

@@ -44,6 +44,7 @@ gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-
 - **`event`** is `COMMENT` (feedback only), `APPROVE`, or `REQUEST_CHANGES`. Ask the user which — the review event is theirs, not yours. The verdict line still opens the body, per [Output expectations](../SKILL.md#output-expectations). GitHub rejects `APPROVE` and `REQUEST_CHANGES` on your own PR, so a self-authored PR can only take `COMMENT`.
 - **`line`** is the line number in the file as of `commit_id`, and it must fall inside the diff. `side: "RIGHT"` is the post-change file; use `"LEFT"` for a removed line. For a range, add `start_line` (and `start_side`).
 - A comment outside the diff hunks returns 422. Put that finding in the summary `body` rather than forcing a line onto it.
+- A fix that replaces a line range ships as a fenced `suggestion` block in the comment body, so the author commits it from the PR page. The block replaces exactly the commented range — set `start_line` to match. A fix spanning files stays prose.
 
 ## Related guidance
 
