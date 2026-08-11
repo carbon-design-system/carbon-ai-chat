@@ -51,6 +51,10 @@ import {
   renderFallback,
   shouldDelegateToPluginRule,
 } from './utils/plugin-fallback.js';
+import {
+  MARKDOWN_SLOT_PREFIX,
+  withInstanceNamespace,
+} from './utils/slot-names.js';
 import { type TokenTree } from './markdown-token-tree.js';
 import type {
   MarkdownRendererLinkResult,
@@ -77,10 +81,16 @@ export type {
 } from './markdown-renderer-types.js';
 
 /**
- * Stable, parent-scoped slot name for an overridable token. Uses `startLine`
- * (not the full `token.map`) so the name doesn't change when the token's
- * `endLine` advances during streaming. The `currentIndex` from the parent
- * context disambiguates siblings on the same start line (rare but possible).
+ * Slot name for an overridable token — unique across the page, stable across
+ * streaming ticks. Three parts:
+ *
+ * - `startLine` (not the full `token.map`) so the name doesn't change when the
+ *   token's `endLine` advances during streaming;
+ * - `currentIndex` from the parent context, disambiguating siblings that share
+ *   a start line (rare but possible);
+ * - the owning element's namespace, because slot hosts from every markdown
+ *   element on the page are hoisted into one shared light-DOM container and
+ *   projected back by name (see `./utils/slot-names.js`).
  */
 function slotNameFor(
   kind: 'table' | 'codeBlock',
@@ -89,7 +99,10 @@ function slotNameFor(
 ): string {
   const startLine = token.map?.[0] ?? 0;
   const index = options.context?.currentIndex ?? 0;
-  return `cds-aichat-markdown-renderer-${kind}-${startLine}-${index}`;
+  return withInstanceNamespace(
+    `${MARKDOWN_SLOT_PREFIX}-${kind}-${startLine}-${index}`,
+    options
+  );
 }
 
 /**
@@ -296,7 +309,6 @@ export function renderTokenTree(
         slotName,
         kind: 'codeBlock',
         token: token as Token,
-        node,
         data: {
           language,
           code: token.content ?? '',
@@ -486,7 +498,6 @@ function renderWithStaticTag(
           label: extractText(node),
           checked: isChecked,
           token,
-          node,
         });
         if (typeof override === 'boolean') {
           isChecked = override;
@@ -570,7 +581,6 @@ function renderWithStaticTag(
           text: extractText(node),
           attributes: { ...attrs },
           token,
-          node,
         });
 
         if (result) {
@@ -618,7 +628,6 @@ function renderWithStaticTag(
           title: attrs.title,
           attributes: { ...attrs },
           token,
-          node,
         });
         if (result) {
           imgAttrs = { ...attrs, ...(result.attributes ?? {}) };

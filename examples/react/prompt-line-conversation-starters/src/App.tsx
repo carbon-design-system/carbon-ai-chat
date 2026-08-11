@@ -39,6 +39,7 @@ import {
   CustomListProps,
   PublicConfig,
   StartersConfig,
+  SuggestionItem,
 } from '@carbon/ai-chat';
 import CDSAIChatAutocomplete from '@carbon/ai-chat-components/es/react/autocomplete.js';
 import { Chat, ChatOff } from '@carbon/icons-react';
@@ -63,21 +64,26 @@ const STARTER_ITEMS = [
  * Custom starter list renderer.
  *
  * Wraps `CDSAIChatAutocomplete` to add the "Prompt suggestions" header via
- * `headerConfig`. The send-arrow is hidden (`enableSendButton={false}`)
- * because selecting an item already auto-sends.
+ * `headerConfig`. The `onSelect`, `onSend`, and `onDismiss` callbacks from
+ * `CustomListProps` are wired as React props so the framework-agnostic
+ * `AutocompleteController` receives selection and send events.
  */
-function renderCustomList(props: CustomListProps) {
-  const { items, onSelect, onDismiss } = props;
+function renderCustomList({
+  items,
+  onSelect,
+  onSend,
+  onDismiss,
+}: CustomListProps) {
   return (
     <CDSAIChatAutocomplete
       items={items}
       headerConfig={{ showHeader: true, title: 'Prompt suggestions' }}
       attached={false}
-      enableSendButton={false}
       className="starter-list"
-      onSelect={(e: CustomEvent<{ item: (typeof STARTER_ITEMS)[number] }>) =>
+      onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
         onSelect(e.detail.item)
       }
+      onSend={(e: CustomEvent<{ text: string }>) => onSend(e.detail.text)}
       onDismiss={onDismiss}
     />
   );

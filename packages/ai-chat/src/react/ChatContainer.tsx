@@ -221,6 +221,10 @@ function ChatContainer(
     if (!wrapper) {
       return undefined;
     }
+    // Keyed by slot name alone: the markdown element namespaces every name it
+    // mints per element (see `markdown/src/utils/slot-names.ts` in
+    // `@carbon/ai-chat-components`), so two messages rendering the same
+    // markdown can't collide here.
     const hosts = new Map<string, HTMLElement>();
     const handleMount = (event: Event) => {
       const detail = (

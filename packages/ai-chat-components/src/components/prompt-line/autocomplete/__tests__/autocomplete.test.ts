@@ -359,7 +359,7 @@ describe('cds-aichat-autocomplete', () => {
       expect(eventDetail.item).to.deep.equal(mockItems[0]);
     });
 
-    it('should emit send event when send button is clicked', async () => {
+    it('should emit send event with label when item has no value', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
@@ -380,7 +380,39 @@ describe('cds-aichat-autocomplete', () => {
       await el.updateComplete;
 
       expect(eventDetail).to.exist;
+      // mockItems[0] has no value, so detail.text falls back to label
       expect(eventDetail.text).to.equal(mockItems[0].label);
+    });
+
+    it('should emit send event with value when item has a distinct value', async () => {
+      const itemWithValue: SuggestionItem = {
+        id: '3',
+        label: 'Display label',
+        value: 'inserted-value',
+        description: 'Item where label and value differ',
+      };
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[itemWithValue]}"></cds-aichat-autocomplete>
+      `);
+
+      let eventDetail: any = null;
+      el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
+        eventDetail = (e as CustomEvent).detail;
+      });
+
+      const sendButton = el.shadowRoot?.querySelector(
+        'li[role="option"] cds-icon-button'
+      );
+      sendButton?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, composed: true })
+      );
+
+      await el.updateComplete;
+
+      expect(eventDetail).to.exist;
+      expect(eventDetail.text).to.equal('inserted-value');
+      expect(eventDetail.text).to.not.equal(itemWithValue.label);
     });
 
     it('should emit select event without send event on item click', async () => {

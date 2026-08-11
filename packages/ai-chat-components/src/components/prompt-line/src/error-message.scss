@@ -6,6 +6,7 @@
  */
 
 @use '../../../globals/scss/vars' as *;
+@use './prompt-line-vars' as prompt-line-vars;
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
@@ -32,14 +33,20 @@ $block-class: #{$prefix}-error-message;
 
   &::after {
     position: absolute;
-    z-index: 0;
     display: block;
     background: theme.$border-subtle-00;
     block-size: 1px;
     content: '';
-    inline-size: calc(100% + #{layout.$spacing-03} + #{layout.$spacing-03});
+
+    // account for padding and error outline on input container
+    inline-size: calc(
+      100% + 2 * #{layout.$spacing-03} - 2 *
+        #{prompt-line-vars.$error-outline-width}
+    );
     inset-block-end: 0;
-    inset-inline-start: calc(-1 * #{layout.$spacing-03});
+    inset-inline-start: calc(
+      -1 * #{layout.$spacing-03} + #{prompt-line-vars.$error-outline-width}
+    );
   }
 }
 

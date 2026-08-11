@@ -53,7 +53,7 @@ const BaseCodeSnippet = withWebComponentBridge(
  * @example
  * ```tsx
  * import { Download } from '@carbon/icons-react';
- * import CodeSnippet from '@carbon/ai-chat-components/react/code-snippet';
+ * import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
  *
  * const actions = [
  *   { text: 'Download', icon: Download, onClick: () => console.log('Download') }

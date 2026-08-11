@@ -76,10 +76,15 @@ export interface CustomListProps {
   items: SuggestionItem[];
   /** Current query string (text after trigger). */
   query: string;
-  /** Callback to invoke when user selects an item. */
-  onSelect: (item: SuggestionItem) => void;
   /** Callback to invoke when list should be dismissed. */
   onDismiss: () => void;
+  /** Callback to invoke when user selects an item. */
+  onSelect: (item: SuggestionItem) => void;
+  /**
+   * Callback to invoke when user clicks the send-directly-from-item button.
+   * The text is the item's value that was sent.
+   */
+  onSend: (text: string) => void;
 }
 
 /**

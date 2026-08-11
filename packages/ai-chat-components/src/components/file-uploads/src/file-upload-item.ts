@@ -332,7 +332,7 @@ class FileUploadItemElement extends LitElement {
         @click="${openVideo}">
         <video
           class="${prefix}-file-upload-item__preview"
-          src="${url}"
+          src="${objectURL}"
           width="36"
           height="36"
           preload="metadata"

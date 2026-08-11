@@ -18,7 +18,10 @@
 
 import { Extension, type Editor } from '@tiptap/core';
 
-import { dispatchTriggerChange } from './trigger-utils.js';
+import {
+  dispatchTriggerChange,
+  resetTriggerChangeState,
+} from './trigger-utils.js';
 import type { SuggestionItem } from './types.js';
 
 export interface StarterTriggerStorage {
@@ -54,6 +57,13 @@ export function carbonStarterTrigger(
 
     onFocus({ editor }) {
       maybeEmit(editor);
+    },
+
+    onBlur({ editor }) {
+      // Clear coalescing state on blur so the next focus can re-emit the
+      // starter trigger even if the detail hasn't changed (e.g. after the
+      // send button was clicked, which uses keepCoalesced: true on dismiss).
+      resetTriggerChangeState(editor);
     },
   });
 }

@@ -37,8 +37,8 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 | `InputRule` | `@tiptap/core` API | Triggers the node swap when the user finishes typing three backticks. |
 | `addKeyboardShortcuts` / keydown | `@tiptap/core` / DOM | Escape exits the block to a new paragraph below. |
 | `<cds-aichat-code-snippet>` | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble. |
-| `CodeSnippet` | `@carbon/ai-chat-components/react` | React wrapper for the snippet, used in the sent message bubble. |
-| `Card` | `@carbon/ai-chat-components/react` | React wrapper for the card that frames the editable snippet. |
+| `CodeSnippet` | `@carbon/ai-chat-components/es/react/code-snippet.js` | React wrapper for the snippet, used in the sent message bubble. |
+| `Card` | `@carbon/ai-chat-components/es/react/card.js` | React wrapper for the card that frames the editable snippet. |
 
 ## Run it
 
