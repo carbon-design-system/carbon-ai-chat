@@ -73,6 +73,13 @@ export interface AutocompleteI18n {
    * @example (label) => `${label} inserted.`
    */
   itemInserted: (label: string) => string;
+  /**
+   * Announced when an item is sent to the chat.
+   * Receives the item label.
+   *
+   * @example (label) => `${label} sent.`
+   */
+  itemSent: (label: string) => string;
   /** Announced when the suggestions list is closed/dismissed. */
   suggestionsClosed: string;
   /** Accessible label for the listbox element. */
@@ -87,6 +94,7 @@ export const defaultAutocompleteI18n: AutocompleteI18n = {
   itemNavigation: (label, description, position) =>
     `${label}${description ? `, ${description}` : ''}, ${position}`,
   itemInserted: (label) => `${label} inserted.`,
+  itemSent: (label) => `${label} sent.`,
   suggestionsClosed: 'Suggestions closed.',
   listboxLabel: 'Autocomplete options',
 };
@@ -349,7 +357,7 @@ class AutocompleteElement extends LitElement {
       return;
     }
     this._focusedIndex = index;
-    this._announcer.announce(this.i18n.itemInserted(item.label));
+    this._announcer.announce(this.i18n.itemSent(item.label));
     this.dispatchEvent(
       new CustomEvent<AutocompleteSendEventDetail>(
         'cds-aichat-autocomplete-send',
