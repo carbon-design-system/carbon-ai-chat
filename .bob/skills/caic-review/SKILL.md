@@ -20,7 +20,7 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
 - Tag every finding with a severity so real problems aren't buried under taste:
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
-  - **Nit** — optional/taste. Keep these short and few.
+  - **Nit** — optional, and it still has to earn its place: a concrete one-edit fix a later reader benefits from. Everything else is noise — see [What isn't a finding](#what-isnt-a-finding).
 
 ## How to write a finding
 
@@ -36,7 +36,7 @@ Hold your own words to [tone.md](../../../references/tone.md) — the same stand
 
 - **Hedging** — "I think", "it looks like", "consider possibly", "might be worth". Uncertainty is fine; say what you checked instead. "Read the happy path only — 60% sure this leaks."
 - **Throat-clearing** — "just", "simply", "one small thing", "it is important to note". Delete the phrase; the sentence gets stronger.
-- **Praise inside a finding** — "nice refactor, but…". Strengths go in the summary. A finding is the defect and the fix.
+- **Praise inside a finding** — "nice refactor, but…". A finding is the defect and the fix. The summary decides whether a strength is worth a line at all.
 
 **A leaked listener**
 
@@ -44,6 +44,37 @@ Hold your own words to [tone.md](../../../references/tone.md) — the same stand
 - After: "**Blocker** — `packages/ai-chat/src/foo.ts:42` — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
 
 Cap a finding at three sentences plus a snippet. A concern that outgrows that — a design direction, a pattern repeated across the diff — is not a line comment: give it one line in the summary and move on.
+
+### What isn't a finding
+
+Some observations feel like findings and aren't. These stay unsaid at every severity, not just Nit:
+
+- **A tool already decided it.** Husky runs prettier and eslint on TS/JS, prettier and stylelint on SCSS, prettier on markdown, and commitlint on the message ([commit hooks](../../../references/conventions.md#commit-hooks)). Formatting, quote style, import order, and line length are settled before you open the diff.
+- **A naming swap with no clarity gain** — `data` → `payload`.
+- **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
+- **"Add a comment here."** The repo's default is no comments. You are here to flag the ones that restate the code, not to ask for more.
+- **Speculative extraction** — "you might want to pull this out in case…". Scope creep counts from the reviewer's side too.
+- **Code the diff didn't touch.** Real, but not this PR's job — file an issue.
+
+## Run one dimension at a time
+
+One pass over every check spends its attention on the first dimension and skims the rest. Split the review into independent passes, each holding the whole diff and one job. Pick the passes from the changed paths — a docs-only diff gets two, not seven:
+
+| Changed | Passes |
+| --- | --- |
+| Any code | correctness & security, simplicity & scope creep, test coverage |
+| `*.scss`, or any component | accessibility, prefix & SCSS, logic trapped in a component |
+| `*.md`, or JSDoc on public types | tone & docs |
+| `package.json` | dependencies |
+| Always | acceptance criteria & ADRs, commit format |
+
+Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: its one dimension, the finding shape above, and [What isn't a finding](#what-isnt-a-finding). A pass told only to find things will manufacture Nits to justify itself.
+
+A pass returns findings and nothing else — no verdict, no cap, no ranking. It can't rank what it can't see.
+
+**Synthesize before you write anything.** Merge the passes, drop duplicates, rank by severity across all of them, then apply the caps and write the verdict per [Output expectations](#output-expectations). Skip this and you ship N reviews stapled together.
+
+Skip the split under ~5 changed files. One pass reads that much without losing the thread.
 
 ## Evaluate the changes
 
@@ -92,10 +123,10 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 
 ## Output expectations
 
-- **Lead the summary with the verdict on one line** — ship, fix blockers, or rework — before any context. Then 2–3 sentences: what the change does well, and the highest-severity concerns.
+- **Open with the verdict on one line** — ship, fix blockers, or rework. Nothing precedes it: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back.
+- **Then at most three lines**, carrying only what the verdict rests on: the blocking concerns, any design-level concern that outgrew a finding, and the dropped-finding count. A strength earns a line only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
 - List findings grouped by severity (**Blocker**, **Important**, **Nit**), each written to the shape above.
-- **Cap the review at ten findings**, highest severity first. Drop Nits first, then Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage.
-- Carry design-level concerns in the summary too, one line each — they are what a finding overflows into.
+- **Cap the review at ten findings and three Nits**, highest severity first. Drop Nits first, then Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage.
 - End with a **Test / verification gaps** section if the diff lacks coverage for changed behavior.
 
 ## Related guidance
