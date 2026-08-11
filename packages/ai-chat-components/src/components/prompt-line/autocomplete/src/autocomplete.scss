@@ -161,7 +161,7 @@ $group-class: #{$item-class}-group;
     z-index: 1;
     display: flex;
     align-self: start;
-    padding-block: 11px;
+    padding-block: layout.$spacing-04;
     padding-inline: layout.$spacing-04;
     pointer-events: none;
     visibility: hidden;
