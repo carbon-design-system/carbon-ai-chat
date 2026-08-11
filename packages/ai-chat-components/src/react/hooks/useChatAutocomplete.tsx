@@ -235,7 +235,7 @@ export function useChatAutocomplete(
         slot="autocomplete-content"
         items={state.items}
         attached={attached}
-        disableDirectSend={state.disableDirectSend ?? false}
+        disableDirectSend={state.disableDirectSend}
         onDismiss={dismiss}
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)

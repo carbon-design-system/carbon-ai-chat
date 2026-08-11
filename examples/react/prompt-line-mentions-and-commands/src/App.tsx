@@ -61,7 +61,6 @@ function App() {
         // `@` for people anywhere in the message.
         mention: {
           trigger: '@',
-          disableDirectSend: true,
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
@@ -111,7 +110,6 @@ function App() {
         // `/` for slash commands constrained to the start of the line.
         command: {
           trigger: '/',
-          disableDirectSend: true,
           // Slash commands only fire at the very start of the message.
           triggerPosition: 'start',
           items: commandItems,

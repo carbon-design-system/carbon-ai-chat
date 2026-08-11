@@ -160,7 +160,6 @@ $group-class: #{$item-class}-group;
   .#{$item-class}__send-icon {
     z-index: 1;
     display: flex;
-    align-items: start;
     align-self: start;
     padding-block: 11px;
     padding-inline: layout.$spacing-04;
