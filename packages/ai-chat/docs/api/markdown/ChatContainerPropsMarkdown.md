@@ -1,7 +1,5 @@
 # ChatContainerPropsMarkdown
 
-**Experimental.**
-
 - Kind: Interface
 - Category: React
 - Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatContainerPropsMarkdown.html
@@ -21,8 +19,6 @@ interface ChatContainerPropsMarkdown
 
 `customRenderers?: CustomMarkdownRenderers`
 
-**Experimental.**
-
 Per-element renderer overrides — see CustomMarkdownRenderers.
 Pass a stable reference (`useMemo`) — an inline object literal will be a
 fresh reference each render.
@@ -32,8 +28,6 @@ fresh reference each render.
 ### markdownItPlugins
 
 `markdownItPlugins?: MarkdownItPlugin[]`
-
-**Experimental.**
 
 Markdown-it plugins applied after the built-in plugins
 (markdown-it-attrs, markdown-it-highlight, markdown-it-task-lists).

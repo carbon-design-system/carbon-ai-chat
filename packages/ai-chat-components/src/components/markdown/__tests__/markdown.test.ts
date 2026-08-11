@@ -1430,6 +1430,289 @@ HTTP: http://example.com
     });
   });
 
+  // Slot hosts are hoisted out of the markdown element into one shared
+  // page-level container (see the chat containers in `@carbon/ai-chat`) and
+  // projected back by name, so slot names have to be unique across every
+  // markdown element on the page — not just within one element. When they
+  // weren't, two messages whose code block both started on line 0 minted the
+  // same name: the first element's slot gathered both hosts and the second
+  // gathered none. See issue #2099.
+  describe('slot names across markdown elements', () => {
+    const HARNESS_TAG = 'cds-test-markdown-relocation-host';
+    const codeMarkdown = '```json\n{ "name": "Alice" }\n```';
+
+    // Minimal inline plugin whose output goes through the plugin-fallback slot
+    // path (the same page-level hoisting, a separate slot-name mint site).
+    function tagPlugin(md: any) {
+      md.inline.ruler.before(
+        'text',
+        'cds_test_tag',
+        (state: any, silent: boolean) => {
+          if (!state.src.slice(state.pos).startsWith(':tag:')) {
+            return false;
+          }
+          if (!silent) {
+            state.push('cds_test_tag', '', 0);
+          }
+          state.pos += ':tag:'.length;
+          return true;
+        }
+      );
+      md.renderer.rules.cds_test_tag = () =>
+        `<span class="cds-test-tag">tag</span>`;
+    }
+
+    if (!customElements.get(HARNESS_TAG)) {
+      customElements.define(
+        HARNESS_TAG,
+        class extends HTMLElement {
+          connectedCallback() {
+            if (!this.shadowRoot) {
+              this.attachShadow({ mode: 'open' });
+            }
+          }
+        }
+      );
+    }
+
+    /**
+     * Stands in for a chat container: accepts every host-mount offer, relocates
+     * the host into its own light DOM, and renders one `<slot name=X slot=X>`
+     * forwarder per slot name — deduplicated by name, exactly as the real
+     * containers dedupe `_pluginSlotNames`. Mirrors `ChatContainer.tsx` and
+     * `cds-aichat-container`.
+     */
+    async function createRelocationHarness() {
+      const harness = await fixture<HTMLElement>(
+        html`<cds-test-markdown-relocation-host></cds-test-markdown-relocation-host>`
+      );
+      const mounted: Array<{
+        owner: Element;
+        slotName: string;
+        host: HTMLElement;
+      }> = [];
+      const forwarderOwners = new Map<string, Element>();
+      const pluginHosts = new Map<string, HTMLElement>();
+
+      harness.addEventListener(
+        'cds-aichat-markdown-plugin-host-mount',
+        (event) => {
+          const detail = (
+            event as CustomEvent<{
+              slotName: string;
+              html?: string;
+              element?: HTMLElement;
+              isInline: boolean;
+            }>
+          ).detail;
+          const owner = event.composedPath()[0] as Element;
+          event.preventDefault();
+
+          // Custom renderers forward a live element; plugin fallbacks forward
+          // an HTML string the container hosts itself, keyed by slot name.
+          let host = detail.element;
+          if (!host) {
+            host =
+              pluginHosts.get(detail.slotName) ??
+              document.createElement(detail.isInline ? 'span' : 'div');
+            host.innerHTML = detail.html ?? '';
+            pluginHosts.set(detail.slotName, host);
+          }
+          host.setAttribute('slot', detail.slotName);
+          if (host.parentElement !== harness) {
+            harness.appendChild(host);
+          }
+
+          if (!forwarderOwners.has(detail.slotName)) {
+            forwarderOwners.set(detail.slotName, owner);
+            // Both attributes carry weight, and both mirror what the real
+            // containers render (`<slot name=${slot} slot=${slot}>`). `name`
+            // makes the forwarder gather the hoisted host back out of the
+            // harness light DOM; `slot` assigns the forwarder itself into the
+            // markdown element's own shadow slot, which is the second hop the
+            // `assignedElements({ flatten: true })` assertion below resolves
+            // through. Without `slot`, nothing is assigned to that shadow slot
+            // and `flatten` yields its fallback content instead of the host.
+            const forwarder = document.createElement('slot');
+            forwarder.setAttribute('name', detail.slotName);
+            forwarder.setAttribute('slot', detail.slotName);
+            owner.appendChild(forwarder);
+          }
+          mounted.push({ owner, slotName: detail.slotName, host });
+        }
+      );
+      harness.addEventListener(
+        'cds-aichat-markdown-plugin-host-unmount',
+        (event) => {
+          const { slotName } = (event as CustomEvent<{ slotName: string }>)
+            .detail;
+          forwarderOwners.delete(slotName);
+          pluginHosts.get(slotName)?.remove();
+          pluginHosts.delete(slotName);
+        }
+      );
+
+      /** Mounts a markdown element inside the harness's shadow root. */
+      async function addMarkdown(
+        markdown: string,
+        props: Partial<MarkdownElementInstance> = {}
+      ) {
+        const el = document.createElement(
+          MARKDOWN_ELEMENT_TAG
+        ) as MarkdownElementInstance;
+        Object.assign(el, props, { markdown });
+        harness.shadowRoot?.appendChild(el);
+        await el.updateComplete;
+        return el;
+      }
+
+      return { harness, mounted, forwarderOwners, pluginHosts, addMarkdown };
+    }
+
+    /** Returns a `codeBlock` renderer stamping its result with `owner`. */
+    function taggedCodeBlockRenderer(owner: string) {
+      return ({ code }: { code: string }) => {
+        const div = document.createElement('div');
+        div.className = 'cds-test-code-override';
+        div.dataset.owner = owner;
+        div.textContent = code;
+        return div;
+      };
+    }
+
+    it('mints a different slot name in each markdown element', async () => {
+      const slotNames: string[] = [];
+      const capture = ({ slotName }: { slotName: string }) => {
+        slotNames.push(slotName);
+        return document.createElement('div');
+      };
+      const markdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\ntrailer`;
+
+      const first = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ table: capture }}
+          .markdown=${markdown}></cds-aichat-markdown>`
+      );
+      await first.updateComplete;
+      const firstName = slotNames[slotNames.length - 1];
+
+      const second = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ table: capture }}
+          .markdown=${markdown}></cds-aichat-markdown>`
+      );
+      await second.updateComplete;
+      const secondName = slotNames[slotNames.length - 1];
+
+      expect(
+        secondName,
+        'identical markdown in two elements must not share a slot name'
+      ).to.not.equal(firstName);
+      // The prefix stays targetable by `[slot^=…]` selectors.
+      expect(firstName).to.match(/^cds-aichat-markdown-renderer-table-/);
+      expect(secondName).to.match(/^cds-aichat-markdown-renderer-table-/);
+    });
+
+    it('projects exactly one hoisted host into each markdown element', async () => {
+      const { harness, mounted, forwarderOwners, addMarkdown } =
+        await createRelocationHarness();
+
+      await addMarkdown(codeMarkdown, {
+        customRenderers: { codeBlock: taggedCodeBlockRenderer('a') },
+      } as Partial<MarkdownElementInstance>);
+      await addMarkdown(codeMarkdown, {
+        customRenderers: { codeBlock: taggedCodeBlockRenderer('b') },
+      } as Partial<MarkdownElementInstance>);
+
+      expect(mounted.length, 'both elements should offer a host').to.equal(2);
+      const [a, b] = mounted;
+      expect(a.slotName).to.not.equal(b.slotName);
+
+      // The name-keyed forwarder dedupe must never starve the second element.
+      expect(forwarderOwners.get(a.slotName)).to.equal(a.owner);
+      expect(forwarderOwners.get(b.slotName)).to.equal(b.owner);
+
+      for (const { owner, slotName, host } of [a, b]) {
+        expect(
+          harness.querySelectorAll(`[slot="${slotName}"]`).length,
+          'exactly one hoisted host per slot name'
+        ).to.equal(1);
+        const slot = owner.shadowRoot?.querySelector(
+          `slot[name="${slotName}"]`
+        ) as HTMLSlotElement | null;
+        expect(
+          slot,
+          'the element should render a placeholder slot'
+        ).to.not.equal(null);
+        // Compared by identity rather than `deep.equal`: deep-comparing DOM
+        // nodes walks the whole node graph on failure.
+        const assigned = slot?.assignedElements({ flatten: true }) ?? [];
+        expect(
+          assigned.length,
+          'each element must project exactly one host — not both, not none'
+        ).to.equal(1);
+        expect(assigned[0], 'each element must project its own host').to.equal(
+          host
+        );
+      }
+    });
+
+    it('namespaces plugin-fallback slot names per element', async () => {
+      const { mounted, pluginHosts, addMarkdown } =
+        await createRelocationHarness();
+      const plugins = [tagPlugin];
+
+      const first = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+      await addMarkdown('Bye :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+
+      expect(mounted.length).to.equal(2);
+      const [a, b] = mounted;
+      expect(
+        b.slotName,
+        'plugin-fallback names must not collide across elements'
+      ).to.not.equal(a.slotName);
+      expect(a.slotName).to.match(
+        /^cds-aichat-markdown-renderer-pluginFallback-/
+      );
+      expect(pluginHosts.size, 'each element gets its own host').to.equal(2);
+
+      // Removing the first element must not tear down the second's host.
+      first.remove();
+      expect(pluginHosts.has(b.slotName)).to.equal(true);
+      expect(pluginHosts.get(b.slotName)?.isConnected).to.equal(true);
+    });
+
+    it('keeps the same slot name across a disconnect and reconnect', async () => {
+      const slotNames: string[] = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            codeBlock: ({ slotName }: { slotName: string }) => {
+              slotNames.push(slotName);
+              return document.createElement('div');
+            },
+          }}
+          .markdown=${codeMarkdown}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const before = slotNames[slotNames.length - 1];
+
+      const parent = el.parentElement as HTMLElement;
+      el.remove();
+      parent.appendChild(el);
+      await el.updateComplete;
+
+      expect(
+        slotNames[slotNames.length - 1],
+        'the namespace is minted at construction, so it survives a move'
+      ).to.equal(before);
+    });
+  });
+
   describe('link / image attribute transforms', () => {
     it('link callback rewrites href and target', async () => {
       const el = await fixture<MarkdownElementInstance>(
