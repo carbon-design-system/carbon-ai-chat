@@ -528,7 +528,6 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
-    disableDirectSend: { type: Boolean },
   };
 
   constructor() {
@@ -541,7 +540,6 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
-    this.disableDirectSend = true;
     this._sendControlRef = createRef();
     this._mentionConfig = {
       trigger: '@',
@@ -571,34 +569,6 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
 
   createRenderRoot() {
     return this;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this._autocompleteObserver = new MutationObserver(() => {
-      this._pushAutocompleteProps();
-    });
-    this._autocompleteObserver.observe(this, {
-      childList: true,
-      subtree: true,
-    });
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this._autocompleteObserver?.disconnect();
-    this._autocompleteObserver = null;
-  }
-
-  updated() {
-    this._pushAutocompleteProps();
-  }
-
-  _pushAutocompleteProps() {
-    const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
-    if (autocompleteEl) {
-      autocompleteEl.disableDirectSend = this.disableDirectSend;
-    }
   }
 
   _onPromptChange(e) {
@@ -1030,7 +1000,6 @@ export const Expanded = {
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
-  args: { disableDirectSend: true },
   render: ({
     placeholder,
     disabled,
@@ -1040,7 +1009,6 @@ export const CommandsAndMentions = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
-    disableDirectSend,
   }) => {
     const el = document.createElement(
       'prompt-line-story-commands-and-mentions'
@@ -1053,7 +1021,6 @@ export const CommandsAndMentions = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
-    el.disableDirectSend = disableDirectSend;
     return el;
   },
 };

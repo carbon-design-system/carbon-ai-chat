@@ -351,7 +351,6 @@ const CommandsAndMentionsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
-  disableDirectSend,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
@@ -399,13 +398,6 @@ const CommandsAndMentionsStory = ({
     setHasValidInput(e.detail.rawValue.length > 0);
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
-
-  React.useEffect(() => {
-    const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
-    if (el) {
-      el.disableDirectSend = disableDirectSend ?? true;
-    }
-  }, [disableDirectSend, autocompleteContent]);
 
   return (
     <Wrapper>
@@ -455,7 +447,6 @@ const CommandsAndMentionsStory = ({
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
-  args: { disableDirectSend: true },
   render: (args) => <CommandsAndMentionsStory {...args} />,
 };
 
