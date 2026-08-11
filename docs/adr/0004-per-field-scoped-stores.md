@@ -1,6 +1,6 @@
 ---
 status: proposed
-comments-by: 2026-08-13
+comments-by: 2026-08-18
 date: 2026-08-06
 deciders: '@carbon-design-system/carbon-ai-chat-developers'
 consulted:
