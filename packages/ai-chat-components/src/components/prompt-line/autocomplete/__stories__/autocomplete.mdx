@@ -27,7 +27,7 @@ The autocomplete component includes support for:
 - **Flat Suggestions** - Simple list of suggestion items
 - **Grouped Suggestions** - Organized suggestions with category headers
 - **Rich Content** - Support for avatars and descriptions
-- **Send/Select Suggestion** - When `enable-direct-send` is `true` (default), clicking an item sends directly to chat with a send icon on hover. When `false`, clicking inserts the item into the editor with no send icon.
+- **Send/Select Suggestion** - When `disable-direct-send` is `false`, clicking an item sends directly to chat. When `true`, clicking inserts the item into the editor.
 - **Header** - Optional header with custom title
 
 ### Getting started
@@ -70,14 +70,14 @@ The autocomplete component emits the following custom events that you can listen
   <tbody>
     <tr>
       <td><code>cds-aichat-autocomplete-send</code></td>
-      <td>Fired when a suggestion item is clicked/activated and <code>enable-direct-send</code> is <code>true</code> (default). The item text is sent directly to chat.</td>
+      <td>Fired when a suggestion item is clicked/activated and <code>disable-direct-send</code> is <code>false</code> (default). The item text is sent directly to chat.</td>
       <td>
         • <code>text</code> (string) - The text of the suggestion item (<code>value</code> if set, otherwise <code>label</code>)
       </td>
     </tr>
     <tr>
       <td><code>cds-aichat-autocomplete-select</code></td>
-      <td>Fired when a suggestion item is clicked/activated and <code>enable-direct-send</code> is <code>false</code>, or via a <code>renderCustomList</code> <code>onSelect</code> callback.</td>
+      <td>Fired when a suggestion item is clicked/activated and <code>disable-direct-send</code> is <code>true</code>, or via a <code>renderCustomList</code> <code>onSelect</code> callback.</td>
       <td>
         • <code>item</code> (SuggestionItem) - The selected suggestion item
       </td>

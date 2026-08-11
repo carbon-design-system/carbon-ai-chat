@@ -521,8 +521,10 @@ export class AutocompleteController {
     if (!trigger || trigger.type === 'mention' || trigger.type === 'command') {
       return true;
     }
-    // Forwards StartersConfig.disableDirectSend to the list UI to control the send-arrow affordance on starter items.
     if (trigger.type === 'starter') {
+      if (this._isSendDisabled) {
+        return true;
+      }
       return this._starters?.disableDirectSend;
     }
     return this._autocomplete?.disableDirectSend;
