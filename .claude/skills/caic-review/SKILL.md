@@ -9,14 +9,17 @@ This rubric governs every code review in this repo — both user-requested revie
 
 Two jobs share this rubric. Settle which one you're doing before reading any code — ask the user when the request doesn't make it obvious:
 
-- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere. Name the range first: `git diff` while the work is uncommitted, `git diff <base>...HEAD` once it is committed, where `<base>` is the branch you will merge into. An empty range means you picked the wrong one, not that the work is clean. Hand it to a sub-agent when you have one: the context that wrote the diff already justified every choice in it, and re-reading it there replays those justifications instead of testing them. Give the sub-agent the diff and this rubric — not your reasoning for the changes, which is the bias you're trying to escape.
+- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere.
+  - **Name the range first.** `git diff` while the work is uncommitted, `git diff <base>...HEAD` once it is committed, where `<base>` is the branch you will merge into. An empty range means you picked the wrong one, not that the work is clean.
+  - **Hand it to a sub-agent when you have one.** The context that wrote the diff already justified every choice in it, and re-reading it there replays those justifications instead of testing them.
+  - **Pass the requirement, withhold the defense.** The sub-agent gets the diff, this rubric, and what the work had to satisfy — the issue or the user's ask, plus any ADR it cites. It does not get your design notes, the options you ruled out, or the plan's commentary. The requirement is what the review scores against; your reasoning is the bias you're trying to escape. A concern you already resolved comes back cheap — answer it in a line, and if the answer was worth having, it belonged in a comment or an ADR.
 - **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict. Read [reviewing-a-pr.md](references/reviewing-a-pr.md) before you diff: it carries base-branch resolution and the posting payload.
 
 ## How to review
 
 - Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files — never a summary of what changed.
 - When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first — [large-diffs.md](references/large-diffs.md).
-- Open the issue the PR closes and walk its acceptance criteria against the diff. A criterion the diff contradicts is a **Blocker** until the issue carries an amendment saying so.
+- Open the issue the work closes and walk its acceptance criteria against the diff — for a self-review, the issue or ask the task came from. A criterion the diff contradicts is a **Blocker** until the issue carries an amendment saying so.
 - If the issue or its epic cites an ADR, read that ADR's Decision outcome and walk the diff against it too. A diff that contradicts an accepted ADR is a **Blocker** until a new ADR supersedes it — an implementation PR is not where a recorded decision gets reversed.
 - Tag every finding with a severity so real problems aren't buried under taste:
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
@@ -33,7 +36,7 @@ One shape, one order — severity, the defect, what it costs, the fix:
 **<Severity>** — `path/to/file.ts:42` — <what is wrong>, so <what it costs>. <The fix.>
 ```
 
-Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. Never post the objection without the fix. In a line comment on a PR, the `path` and `line` fields carry the citation — drop it from the body and keep the rest of the order.
+Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. Never post the objection without the fix. When you genuinely can't name one, name the gap instead — "this drops the second update; whether that's a bug depends on whether the queue is ordered, and I didn't trace it." An objection with a stated gap is workable. An invented fix the author implements is not.
 
 The consequence names the input or path that reaches the defect — "on every close", "when the list is empty" — not the category. A defect you can't trigger is a guess: drop it, or say what you didn't check.
 
@@ -62,9 +65,9 @@ Some observations feel like findings and aren't. These stay unsaid at every seve
 - **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff.
 - **A naming swap with no clarity gain** — `data` → `payload`.
 - **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
-- **"Add a comment here."** The repo's default is no comments. You are here to flag the ones that restate the code, not to ask for more.
+- **"Add a comment here."** The repo's default is no comments ([comments](../../../references/code-patterns.md#comments)). You are here to flag the ones that restate the code, not to ask for more. One narrow exception: the diff encodes a _why_ the code cannot show — a workaround for a named bug, a constraint from outside the file, an ordering that looks arbitrary and isn't. Ask for that line, and say what it has to record.
 - **Speculative extraction** — "you might want to pull this out in case…". Scope creep counts from the reviewer's side too.
-- **Code the diff didn't touch.** Real, but not this PR's job — file an issue.
+- **Code the diff didn't touch.** A pre-existing problem is real and is not this PR's job — file an issue. Untouched code the diff _breaks_ is a different thing: a caller left on the old signature, a consumer of a changed default, a doc snippet that no longer runs. That is a regression, and a regression is a **Blocker** wherever it surfaces.
 
 A pass — or a whole review — that surfaces nothing is finished, not failed. Say so and stop. Manufacturing a Nit to look thorough costs the author more than the silence would.
 
@@ -95,7 +98,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 ## Evaluate the changes
 
-### If the PR contains documentation/text updates
+### If the diff contains documentation/text updates
 
 - Hold developer-facing copy to [tone.md](../../../references/tone.md) — voice, word economy, and the cuts it asks for.
 - Identify spelling, grammar, and punctuation errors.
@@ -104,9 +107,9 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 - Check consistency of formatting, headings, bullets, and structure.
 - Confirm the docs capture the intent and give clear instructions.
 
-### If the PR contains code changes
+### If the diff contains code changes
 
-- **Favor simplicity** — confirm the diff follows the least-code discipline and simplicity principles in [code-patterns.md](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder); flag violations (over-built code, large multi-job functions, hidden side effects, deep nesting, shared mutable state, single-caller abstractions, cleverness over a plain version).
+- **Favor simplicity** — hold the diff to the least-code discipline in [code-patterns.md](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder). Flag over-built code, large multi-job functions, hidden side effects, deep nesting, shared mutable state, single-caller abstractions (YAGNI), cleverness over a plain version, dead code or unused flexibility, logic expressible in fewer lines, and JS re-creating what CSS or a native element or browser API already does. This check is removable complexity only — correctness and security are the bullets below.
 - Analyze logic for bugs, inefficiencies, and security risks (OWASP-style: injection, XSS, unsafe deserialization, secrets in code).
 - Check variable names, function structure, and error handling for clarity and correctness.
 - Confirm edge-case handling — empty/null inputs, error paths, concurrency, cancellation, large inputs.
@@ -129,7 +132,6 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 For each changed file, read every `AGENTS.md` on the path from its directory up to the repo root, plus any topic docs under their `references/` folders they link to — e.g. a change under `packages/ai-chat-components/src/components/audio-player/` is governed by [packages/ai-chat-components/AGENTS.md](../../../packages/ai-chat-components/AGENTS.md) then the root [AGENTS.md](../../../AGENTS.md). Rule definitions live in [code-patterns.md](../../../references/code-patterns.md) and [conventions.md](../../../references/conventions.md); this list is what to flag. A convention finding links the rule it breaks — an anchor in one of those two files, or the governing `AGENTS.md`. No link, no finding: you are quoting a convention this repo may not have. Flag any of:
 
-- **Over-engineering** — code the [laziness ladder](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder) would have avoided: dead code or unused flexibility (delete it), JS re-creating what CSS or a native element/browser API already does, a dependency duplicating Carbon or an existing one, an abstraction with a single caller (YAGNI), or logic expressible in fewer lines. Correctness and security stay in the sections above — this check is only about removable complexity.
 - **Logic trapped in a component** — parsing, formatting, validation, state transitions, or timing/geometry math written inside a React or Lit component instead of a plain module it could call ([framework-agnostic logic](../../../references/code-patterns.md#framework-agnostic-logic)). The tell is a behavior you could only test by rendering.
 - **New components added under `packages/ai-chat/src/chat/components-legacy/`** — that directory is closed to new components ([component placement](../../../references/code-patterns.md#component-placement)).
 - **Prefix / SCSS violations** — hardcoded `cds--`, missing `#{$prefix}--`, descendant nesting, or physical properties instead of logical ones for RTL ([naming & prefix discipline](../../../references/code-patterns.md#naming--prefix-discipline-build-breaking), [SCSS authoring](../../../references/code-patterns.md#scss-authoring)).
@@ -141,7 +143,8 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 - **Open with the verdict on one line** — ship, fix blockers, or rework. Nothing precedes it: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back.
 - **Then at most three lines**, carrying only what the verdict rests on: the blocking concerns, any design-level concern that outgrew a finding, and the dropped-finding count. A strength earns a line only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
 - List findings grouped by severity (**Blocker**, **Important**, **Nit**), each written to the shape above.
-- **Cap the review at ten findings and three Nits**, highest severity first. Drop Nits first, then Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage.
+- **Never drop a Blocker.** List every one, however many there are. A Blocker reduced to a count in the summary blocks nothing, and merges.
+- **Cap Important and Nit at ten between them**, no more than three of those Nits, highest severity first. Drop Nits before Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants and Nits entirely — the verdict is rework, and a tail of taste under that many must-fixes is noise.
 - End with a **Test / verification gaps** section if the diff lacks coverage for changed behavior.
 
 ## Related guidance
