@@ -318,7 +318,6 @@ export {
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
-  TokenTree,
   WCCustomMarkdownRenderers,
   WCMarkdown,
   WCRenderCustomMessageFooter,

@@ -42,6 +42,8 @@ Untagged symbols fall into the `*` bucket — a sign the author forgot.
 
 Public API that may still change. Pair with a short note on why it's unstable. Renders with a visible badge on the docs site. Use on a property, enum member, or whole type.
 
+The tag is also what makes a later removal legitimate: narrowing or removing a tagged symbol ships as a `feat`, not a breaking change — see [Definition of done](#definition-of-done). Take the tag off only when you are prepared to keep the symbol for good.
+
 ### `@internal`
 
 Symbols the build pipeline forces into the public types for mechanical reasons but that consumers must never rely on (example: [../chat/services/ChatActionsImpl.ts](../chat/services/ChatActionsImpl.ts)-adjacent plumbing reached via `ChatInstance.serviceManager`). `@internal` is stripped from TypeDoc output — if a reader should never see it, tag it.
@@ -243,7 +245,7 @@ When you change anything under [.](.) (or a type in `@carbon/ai-chat-components`
 1. `npm run build --workspace=@carbon/ai-chat` — rollup + TypeDoc. The build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).
 3. If you added or changed a public instance method, confirm it carries at least one titled `@example` that meets [code-examples.md](../../references/code-examples.md) (review gate — not build-enforced).
-4. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
+4. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). **Symbols still tagged [`@experimental`](#experimental) are the exception** — narrowing or removing one ships as a `feat`, because the tag is the notice that it could happen. A `!` bumps the major, and the majors are planned windows; don't open one to retract something we said was unstable. See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
 
 ## Related Guidance
 

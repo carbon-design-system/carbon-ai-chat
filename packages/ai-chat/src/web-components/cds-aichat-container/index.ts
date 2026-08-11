@@ -722,8 +722,6 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
   /**
    * Markdown rendering customization. Extends the framework-neutral
    * `PublicConfig.markdown` with web-component `customRenderers`.
-   *
-   * @experimental
    */
   markdown?: WCMarkdown;
 

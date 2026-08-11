@@ -296,7 +296,6 @@ export function renderTokenTree(
         slotName,
         kind: 'codeBlock',
         token: token as Token,
-        node,
         data: {
           language,
           code: token.content ?? '',
@@ -486,7 +485,6 @@ function renderWithStaticTag(
           label: extractText(node),
           checked: isChecked,
           token,
-          node,
         });
         if (typeof override === 'boolean') {
           isChecked = override;
@@ -570,7 +568,6 @@ function renderWithStaticTag(
           text: extractText(node),
           attributes: { ...attrs },
           token,
-          node,
         });
 
         if (result) {
@@ -618,7 +615,6 @@ function renderWithStaticTag(
           title: attrs.title,
           attributes: { ...attrs },
           token,
-          node,
         });
         if (result) {
           imgAttrs = { ...attrs, ...(result.attributes ?? {}) };

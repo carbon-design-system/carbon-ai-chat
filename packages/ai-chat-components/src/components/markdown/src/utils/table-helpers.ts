@@ -270,7 +270,6 @@ export function renderTable(
       slotName,
       kind: 'table',
       token,
-      node,
       data: {
         headers: dataHeaders,
         rows: dataRows,
