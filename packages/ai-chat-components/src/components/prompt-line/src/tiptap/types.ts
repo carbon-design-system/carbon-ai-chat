@@ -85,9 +85,9 @@ export interface CustomListProps {
   onSend: (text: string) => void;
   /**
    * Callback to invoke when user selects an item to insert into the editor
-   * without sending to chat. Optional.
+   * without sending to chat.
    */
-  onSelect?: (item: SuggestionItem) => void;
+  onSelect: (item: SuggestionItem) => void;
 }
 
 /**

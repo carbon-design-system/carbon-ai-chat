@@ -39,7 +39,7 @@ import './custom-suggestions.css';
 interface CustomSuggestionListProps {
   items: SuggestionItem[];
   query: string;
-  onSelect?: (item: SuggestionItem) => void;
+  onSelect: (item: SuggestionItem) => void;
   onDismiss: () => void;
 }
 
@@ -70,7 +70,7 @@ function CustomSuggestionList({
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (items[selectedIndex]) {
-          onSelect?.(items[selectedIndex]);
+          onSelect(items[selectedIndex]);
         }
       } else if (e.key === 'Escape') {
         onDismiss();
@@ -97,10 +97,10 @@ function CustomSuggestionList({
           role="option"
           aria-selected={i === selectedIndex}
           className={`custom-suggestion-item ${i === selectedIndex ? 'selected' : ''}`}
-          onClick={() => onSelect?.(item)}
+          onClick={() => onSelect(item)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              onSelect?.(item);
+              onSelect(item);
             }
           }}
           onMouseEnter={() => setSelectedIndex(i)}

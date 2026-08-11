@@ -100,13 +100,13 @@ export class CustomSuggestionList extends LitElement {
   @state()
   private accessor _selectedIndex = 0;
 
-  private _onSelect?: (item: SuggestionItem) => void;
+  private _onSelect: (item: SuggestionItem) => void = () => {};
   private _onDismiss?: () => void;
 
   // Callbacks arrive imperatively after the element is created in `renderCustomList` because Lit
   // attribute reflection cannot carry function references through the DOM.
   setCallbacks(
-    onSelect: ((item: SuggestionItem) => void) | undefined,
+    onSelect: (item: SuggestionItem) => void,
     onDismiss: () => void
   ) {
     this._onSelect = onSelect;
@@ -151,7 +151,7 @@ export class CustomSuggestionList extends LitElement {
       if (this.items[this._selectedIndex]) {
         // Dispatch through the chat-provided callback so selection flows through the framework's
         // input-population and analytics pipeline rather than firing a local-only event.
-        this._onSelect?.(this.items[this._selectedIndex]);
+        this._onSelect(this.items[this._selectedIndex]);
       }
     } else if (e.key === 'Escape') {
       // Escape forwards to `onDismiss` so the chat tears the dropdown down through its normal path.
@@ -178,7 +178,7 @@ export class CustomSuggestionList extends LitElement {
               })}
               role="option"
               aria-selected="${i === this._selectedIndex}"
-              @click=${() => this._onSelect?.(item)}
+              @click=${() => this._onSelect(item)}
               @mouseenter=${() => {
                 this._selectedIndex = i;
               }}>
