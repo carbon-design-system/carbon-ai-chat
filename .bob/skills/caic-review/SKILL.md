@@ -10,48 +10,7 @@ This rubric governs every code review in this repo — both user-requested revie
 Two jobs share this rubric. Settle which one you're doing before reading any code — ask the user when the request doesn't make it obvious:
 
 - **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere.
-- **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict.
-
-### On a PR, resolve the base branch before diffing
-
-Never assume `main`. A PR usually targets `upstream/main`, but long-running integration branches are common here, and diffing against the wrong base buries the review under unrelated commits.
-
-```bash
-gh pr view <pr> --json baseRefName,headRefName,headRefOid,isCrossRepository,url
-gh pr diff <pr>   # already scoped to the PR's real base
-```
-
-Use `gh pr diff`, or diff explicitly against the reported `baseRefName`. When the base is an integration branch rather than `main`, say so in the summary — it changes what is in scope and what counts as a regression.
-
-## Posting a review on a PR
-
-Line comments beat a wall of prose: they land next to the code they're about. Build the whole review as one payload and submit it once.
-
-**Draft first, submit second. Never run a `gh` command that writes to GitHub before the user has seen the exact payload and said go.** Write it to `.github/pr-drafts/review-<pr>.json` (git-ignored), show the summary and findings, then wait.
-
-```json
-{
-  "commit_id": "<headRefOid from gh pr view>",
-  "event": "COMMENT",
-  "body": "Fix blockers before merge. <assessment, highest-severity concerns, anything dropped>",
-  "comments": [
-    {
-      "path": "packages/ai-chat/src/foo.ts",
-      "line": 42,
-      "side": "RIGHT",
-      "body": "**Blocker** — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
-    }
-  ]
-}
-```
-
-```bash
-gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-drafts/review-<pr>.json
-```
-
-- **`event`** is `COMMENT` (feedback only), `APPROVE`, or `REQUEST_CHANGES`. Ask the user which — the verdict is theirs, not yours. GitHub rejects `APPROVE` and `REQUEST_CHANGES` on your own PR, so a self-authored PR can only take `COMMENT`.
-- **`line`** is the line number in the file as of `commit_id`, and it must fall inside the diff. `side: "RIGHT"` is the post-change file; use `"LEFT"` for a removed line. For a range, add `start_line` (and `start_side`).
-- A comment outside the diff hunks returns 422. Put that finding in the summary `body` rather than forcing a line onto it.
+- **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict. Read [reviewing-a-pr.md](references/reviewing-a-pr.md) before you diff: it carries base-branch resolution and the posting payload.
 
 ## How to review
 
@@ -148,6 +107,7 @@ For context on conventions being enforced:
 - **Process conventions**: [conventions.md](../../../references/conventions.md) — commits, branches, license headers, hooks
 - **General overview**: [AGENTS.md](../../../AGENTS.md) — monorepo pointer index
 - **Package-specific rules**: see `AGENTS.md` in each package directory
+- **Reviewing a PR**: [reviewing-a-pr.md](references/reviewing-a-pr.md) — base branch, the review payload, and the `gh` call
 - **PR workflow**: [caic-pr](../caic-pr/SKILL.md) — drafting PR descriptions
 - **Plan-phase analog**: [plan-review.md](../caic-plan/references/plan-review.md) — the same discipline applied before code exists
 
