@@ -1,6 +1,6 @@
 # reviewing-a-pr.md — what changes when the target is a pull request
 
-Load this when the review target is a PR rather than your own working diff — someone else's branch, or your own PR up for review. A self-review posts nothing, so none of this applies to it.
+Load this when the review target is a PR rather than your own working diff — someone else's branch, or your own PR up for review. Both sections below need a PR number, so neither applies to a self-review; that path names its own range in [caic-review](../SKILL.md#scope-the-review-first).
 
 The rubric itself doesn't change: score the diff with [caic-review](../SKILL.md), then come back here to post.
 
@@ -41,7 +41,7 @@ Line comments beat a wall of prose: they land next to the code they're about. Bu
 gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-drafts/review-<pr>.json
 ```
 
-- **`event`** is `COMMENT` (feedback only), `APPROVE`, or `REQUEST_CHANGES`. Ask the user which — the verdict is theirs, not yours. GitHub rejects `APPROVE` and `REQUEST_CHANGES` on your own PR, so a self-authored PR can only take `COMMENT`.
+- **`event`** is `COMMENT` (feedback only), `APPROVE`, or `REQUEST_CHANGES`. Ask the user which — the review event is theirs, not yours. The verdict line still opens the body, per [Output expectations](../SKILL.md#output-expectations). GitHub rejects `APPROVE` and `REQUEST_CHANGES` on your own PR, so a self-authored PR can only take `COMMENT`.
 - **`line`** is the line number in the file as of `commit_id`, and it must fall inside the diff. `side: "RIGHT"` is the post-change file; use `"LEFT"` for a removed line. For a range, add `start_line` (and `start_side`).
 - A comment outside the diff hunks returns 422. Put that finding in the summary `body` rather than forcing a line onto it.
 

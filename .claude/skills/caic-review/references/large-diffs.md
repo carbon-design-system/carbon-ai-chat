@@ -10,9 +10,9 @@ Sort the changed files by risk per line, then spend attention in that order.
 
 **Costs a glance, not a read**
 
-- Pure renames and moves. `git diff -M --stat` reports a similarity index; at 100% there is nothing to review but the new path.
+- Pure renames and moves. `git diff -M --summary` reports a similarity index; at 100% there is nothing to review but the new path.
 - `package-lock.json`. Review the `package.json` change that caused it.
-- Generated output, per the never-edit list in [AGENTS.md](../../../../AGENTS.md). None of it belongs in a diff, so finding some is a **Blocker** on sight and costs no reading at all.
+- Generated output this repo does not commit, per the never-edit list in [AGENTS.md](../../../../AGENTS.md) — an edit there is a **Blocker** on sight and costs no reading at all. The telemetry configs are the exception on that list: `packages/ai-chat/telemetry.yml` and `packages/ai-chat-components/telemetry.yml` are committed and regenerated, so they belong in the diff. Glance and move on.
 
 **Read in full**
 

@@ -9,7 +9,7 @@ This rubric governs every code review in this repo — both user-requested revie
 
 Two jobs share this rubric. Settle which one you're doing before reading any code — ask the user when the request doesn't make it obvious:
 
-- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere. Hand it to a sub-agent when you have one: the context that wrote the diff already justified every choice in it, and re-reading it there replays those justifications instead of testing them. Give the sub-agent the diff and this rubric — not your reasoning for the changes, which is the bias you're trying to escape.
+- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere. Name the range first: `git diff` while the work is uncommitted, `git diff <base>...HEAD` once it is committed, where `<base>` is the branch you will merge into. An empty range means you picked the wrong one, not that the work is clean. Hand it to a sub-agent when you have one: the context that wrote the diff already justified every choice in it, and re-reading it there replays those justifications instead of testing them. Give the sub-agent the diff and this rubric — not your reasoning for the changes, which is the bias you're trying to escape.
 - **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict. Read [reviewing-a-pr.md](references/reviewing-a-pr.md) before you diff: it carries base-branch resolution and the posting payload.
 
 ## How to review
@@ -22,6 +22,7 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
   - **Nit** — optional, and it still has to earn its place: a concrete one-edit fix a later reader benefits from. Everything else is noise — see [What isn't a finding](#what-isnt-a-finding).
+- Read enough to be sure before you call something a **Blocker**. A false Blocker costs the author as much as a missed one. If you have only read the happy path, file it as **Important** and say what you did not read.
 
 ## How to write a finding
 
@@ -61,21 +62,24 @@ A pass — or a whole review — that surfaces nothing is finished, not failed. 
 
 ## Run one dimension at a time
 
-One pass over every check spends its attention on the first dimension and skims the rest. Split the review into independent passes, each holding the whole diff and one job. Pick the passes from the changed paths — a docs-only diff gets two, not seven:
+One pass over every check spends its attention on the first dimension and skims the rest. Split the review into independent passes, each holding the whole diff and one job. Pick the passes from the changed paths — a docs-only diff gets two of them, not the whole table:
 
 | Changed | Passes |
 | --- | --- |
 | Any code | correctness & security, simplicity & scope creep, test coverage |
-| `*.scss`, or any component | accessibility, prefix & SCSS, logic trapped in a component |
-| `*.md`, or JSDoc on public types | tone & docs |
+| `*.scss`, or any component | accessibility, prefix & SCSS, component placement & trapped logic |
+| `AGENTS.md`, `**/references/**`, `.bob/skills/**`, `.github/copilot-instructions.md` | spec conformance, tone & docs |
+| Any other `*.md`, or JSDoc on public types | tone & docs |
 | `package.json` | dependencies |
 | Always | acceptance criteria & ADRs |
 
-Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: its one dimension, the finding shape above, and [What isn't a finding](#what-isnt-a-finding). A pass told only to find things will manufacture Nits to justify itself.
+Markdown that tells an agent what to do is a specification, not copy. The spec-conformance pass asks whether an agent following the changed text does the right thing, and holds it to [authoring-agents-md.md](../../../references/authoring-agents-md.md) — the line budget, one topic per file, a "read when" trigger on every reference link, and the Related guidance footer.
+
+Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: the diff, this rubric by path, its one dimension, and the `AGENTS.md` files governing the paths it holds ([Repo-specific checks](#repo-specific-checks)). The finding shape and [What isn't a finding](#what-isnt-a-finding) travel with the rubric. A pass told only to find things will manufacture Nits to justify itself.
 
 A pass returns findings and nothing else — no verdict, no cap, no ranking. It can't rank what it can't see.
 
-**Synthesize before you write anything.** Merge the passes, drop duplicates, rank by severity across all of them, then apply the caps and write the verdict per [Output expectations](#output-expectations). Skip this and you ship N reviews stapled together.
+**Synthesize before you write anything.** Merge the passes, then read them against each other before you rank. Two findings are duplicates when they name the same root cause, not merely the same line — on a merge, keep the higher severity and union the fixes. Where two passes cite the same file or symbol for different reasons, decide whether you hold two findings or one larger defect neither pass could see alone. Then rank by severity, apply the caps, and write the verdict per [Output expectations](#output-expectations). Skip this and you ship N reviews stapled together.
 
 Skip the split when a single reading holds the whole diff in view. Splitting a handful of lines across five passes is ceremony.
 
@@ -104,7 +108,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 - Identify which changed behavior is currently untested.
 - Recommend the test style appropriate to the package:
-  - `@carbon/ai-chat` — Jest, specs under `packages/ai-chat/tests/spec/**/*_spec.ts(x)`.
+  - `@carbon/ai-chat` — Jest, specs under `packages/ai-chat/tests/<area>/spec/**/*_spec.ts(x)` ([tests.md](../../../packages/ai-chat/references/tests.md)).
   - `@carbon/ai-chat-components` — `@web/test-runner` for Lit components (colocated `__tests__/*.test.ts`) and Jest for the React wrappers.
   - `demo/` — Playwright under `demo/tests/`.
   - `examples/**` — Playwright smoke tests (see [playwright.md](../../../examples/references/playwright.md)).
