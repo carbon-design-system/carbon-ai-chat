@@ -50,6 +50,7 @@ function MyComponent() {
   return (
     <CDSAIChatAutocomplete
       items={suggestions}
+      attached={true}
       onSend={(event) => {
         console.log("Sent:", event.detail.text);
       }}

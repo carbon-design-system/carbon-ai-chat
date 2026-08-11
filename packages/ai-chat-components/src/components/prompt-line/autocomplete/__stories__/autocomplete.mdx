@@ -39,7 +39,8 @@ Here's a quick example to get you started.
   .items=${[
     { id: "1", label: "When is the best time to eat?" },
     { id: "2", label: "When is the sun rising today?" }
-  ]}>
+  ]}
+  attached>
 </cds-aichat-autocomplete>
 ```
 
@@ -70,7 +71,7 @@ The autocomplete component emits the following custom events that you can listen
   <tbody>
     <tr>
       <td><code>cds-aichat-autocomplete-send</code></td>
-      <td>Fired when a suggestion item is clicked/activated and <code>disable-direct-send</code> is <code>false</code> (default). The item text is sent directly to chat.</td>
+      <td>Sends the message immediately. Fired when a suggestion item is clicked/activated and <code>disable-direct-send</code> is <code>false</code> (default).</td>
       <td>
         • <code>text</code> (string) - The text of the suggestion item (<code>value</code> if set, otherwise <code>label</code>)
       </td>

@@ -440,13 +440,14 @@ class AutocompleteElement extends LitElement {
   private _handleItemClick(index: number) {
     if (!this.disableDirectSend) {
       this._handleSend(index);
-    } else {
-      this._focusedIndex = index;
-      const item = this._getItemAtIndex(index);
-      if (item) {
-        this._selectItem(item);
-      }
+      return;
     }
+    const item = this._getItemAtIndex(index);
+    if (!item) {
+      return;
+    }
+    this._focusedIndex = index;
+    this._selectItem(item);
   }
 
   private _getActiveOptionId(): string | undefined {

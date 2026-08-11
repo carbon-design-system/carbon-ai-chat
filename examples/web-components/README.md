@@ -497,7 +497,7 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 
 ### [Prompt line / Conversation starters](./prompt-line-conversation-starters/README.md)
 
-`<cds-aichat-custom-element>` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` callback creates a `<cds-aichat-autocomplete>` element with a "Prompt suggestions" header above the list. Selecting a starter inserts the text and auto-sends in one action.
+`<cds-aichat-custom-element>` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` callback creates a `<cds-aichat-autocomplete>` element with a "Prompt suggestions" header above the list.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-prompt-line-conversation-starters`
 
