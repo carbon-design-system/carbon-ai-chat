@@ -64,7 +64,7 @@ const STARTER_ITEMS = [
  *
  * Wraps `CDSAIChatAutocomplete` to add the "Prompt suggestions" header via
  * `headerConfig`. Uses `onSend` only — selecting a starter sends directly to
- * chat (`enableDirectSend` defaults to `true`). `onSelect` is not wired
+ * chat (`disableDirectSend` defaults to `false`). `onSelect` is not wired
  * because starters should not insert into the editor.
  */
 function renderCustomList({ items, onSend, onDismiss }: CustomListProps) {

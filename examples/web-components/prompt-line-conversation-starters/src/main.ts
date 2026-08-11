@@ -71,7 +71,7 @@ const STARTER_ITEMS = [
  *
  * Uses `onSend` only — clicking an item fires `cds-aichat-autocomplete-send`
  * and sends directly to chat. This matches the default built-in autocomplete
- * behavior (`enableDirectSend` defaults to `true`, which emits that event).
+ * behavior (`disableDirectSend` defaults to `false`, which emits that event).
  * `onSelect` (fires `cds-aichat-autocomplete-select`, insert-into-editor) is
  * optional and not needed here.
  */

@@ -227,7 +227,7 @@ class PromptLineStartersStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
-    enableDirectSend: { type: Boolean },
+    disableDirectSend: { type: Boolean },
     attached: { type: Boolean },
   };
 
@@ -243,7 +243,7 @@ class PromptLineStartersStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
-    this.enableDirectSend = true;
+    this.disableDirectSend = false;
     this.attached = false;
   }
 
@@ -274,7 +274,7 @@ class PromptLineStartersStory extends LitElement {
     el.items = items;
     el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
     el.attached = this.attached;
-    el.enableDirectSend = this.enableDirectSend;
+    el.disableDirectSend = this.disableDirectSend;
     el.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
     el.addEventListener('cds-aichat-autocomplete-select', (e) =>
       onSelect(e.detail.item)
@@ -528,7 +528,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
-    enableDirectSend: { type: Boolean },
+    disableDirectSend: { type: Boolean },
   };
 
   constructor() {
@@ -541,7 +541,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
-    this.enableDirectSend = false;
+    this.disableDirectSend = true;
     this._sendControlRef = createRef();
     this._mentionConfig = {
       trigger: '@',
@@ -597,7 +597,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
   _pushAutocompleteProps() {
     const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
     if (autocompleteEl) {
-      autocompleteEl.enableDirectSend = this.enableDirectSend;
+      autocompleteEl.disableDirectSend = this.disableDirectSend;
     }
   }
 
@@ -683,7 +683,7 @@ class PromptLineTypeaheadStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
-    enableDirectSend: { type: Boolean },
+    disableDirectSend: { type: Boolean },
     attached: { type: Boolean },
   };
 
@@ -698,7 +698,7 @@ class PromptLineTypeaheadStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
-    this.enableDirectSend = true;
+    this.disableDirectSend = false;
     this.attached = false;
     this._autocompleteConfig = {
       items: (query) => filterItems(typeaheadItems, query),
@@ -733,7 +733,7 @@ class PromptLineTypeaheadStory extends LitElement {
   }
 
   updated() {
-    // Push inputText, attached, and enableDirectSend onto the autocomplete
+    // Push inputText, attached, and disableDirectSend onto the autocomplete
     // element whenever they change (e.g. from Storybook controls or user typing).
     this._pushAutocompleteProps();
   }
@@ -741,7 +741,7 @@ class PromptLineTypeaheadStory extends LitElement {
   _pushAutocompleteProps() {
     const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
     if (autocompleteEl) {
-      autocompleteEl.enableDirectSend = this.enableDirectSend;
+      autocompleteEl.disableDirectSend = this.disableDirectSend;
       autocompleteEl.attached = this.attached;
       autocompleteEl.inputText = this._inputText;
     }
@@ -859,10 +859,10 @@ export default {
       control: 'boolean',
       description: 'Whether the error message uses the fullscreen layout.',
     },
-    enableDirectSend: {
+    disableDirectSend: {
       control: 'boolean',
       description:
-        'When `true` (default), clicking an autocomplete item fires `cds-aichat-autocomplete-send` and sends directly to chat. When `false`, clicking fires `cds-aichat-autocomplete-select` and inserts the item into the editor instead.',
+        'When `false` (default), clicking an autocomplete item fires `cds-aichat-autocomplete-send` and sends directly to chat. When `true`, clicking fires `cds-aichat-autocomplete-select` and inserts the item into the editor instead.',
       table: { category: 'Autocomplete' },
     },
     attached: {
@@ -881,7 +881,7 @@ export default {
     errorDescription: '',
     errorCollapsible: false,
     errorFullscreen: true,
-    enableDirectSend: true,
+    disableDirectSend: false,
     attached: false,
   },
 };
@@ -892,7 +892,7 @@ export default {
 
 export const Default = {
   argTypes: {
-    enableDirectSend: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
     attached: { table: { disable: true } },
   },
   render: ({
@@ -961,7 +961,7 @@ export const Default = {
 
 export const Expanded = {
   argTypes: {
-    enableDirectSend: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
     attached: { table: { disable: true } },
   },
   render: ({
@@ -1030,7 +1030,7 @@ export const Expanded = {
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
-  args: { enableDirectSend: false },
+  args: { disableDirectSend: true },
   render: ({
     placeholder,
     disabled,
@@ -1040,7 +1040,7 @@ export const CommandsAndMentions = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
-    enableDirectSend,
+    disableDirectSend,
   }) => {
     const el = document.createElement(
       'prompt-line-story-commands-and-mentions'
@@ -1053,7 +1053,7 @@ export const CommandsAndMentions = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
-    el.enableDirectSend = enableDirectSend;
+    el.disableDirectSend = disableDirectSend;
     return el;
   },
 };
@@ -1073,7 +1073,7 @@ export const ConversationStarters = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
-    enableDirectSend,
+    disableDirectSend,
     attached,
   }) => {
     const el = document.createElement('prompt-line-story-starters');
@@ -1085,7 +1085,7 @@ export const ConversationStarters = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
-    el.enableDirectSend = enableDirectSend;
+    el.disableDirectSend = disableDirectSend;
     el.attached = attached;
     return el;
   },
@@ -1098,7 +1098,7 @@ export const ConversationStarters = {
 export const FileUploads = {
   name: 'File uploads',
   argTypes: {
-    enableDirectSend: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
     attached: { table: { disable: true } },
   },
   render: ({
@@ -1138,7 +1138,7 @@ export const Typeahead = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
-    enableDirectSend,
+    disableDirectSend,
     attached,
   }) => {
     const el = document.createElement('prompt-line-story-typeahead');
@@ -1150,7 +1150,7 @@ export const Typeahead = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
-    el.enableDirectSend = enableDirectSend;
+    el.disableDirectSend = disableDirectSend;
     el.attached = attached;
     return el;
   },

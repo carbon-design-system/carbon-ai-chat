@@ -27,7 +27,7 @@
  * This example uses `onSelect` because the intent is to insert the chosen
  * suggestion into the editor so the user can review or edit it before sending.
  * The default built-in autocomplete component uses `onSend` on item click
- * (`enableDirectSend` defaults to `true`, firing `cds-aichat-autocomplete-send`).
+ * (`disableDirectSend` defaults to `false`, firing `cds-aichat-autocomplete-send`).
  *
  * Start reading at: the `setCallbacks` and `render` methods on
  * `CustomSuggestionList` below.

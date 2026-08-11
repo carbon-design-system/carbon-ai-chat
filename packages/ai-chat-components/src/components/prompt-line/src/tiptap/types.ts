@@ -114,11 +114,11 @@ export interface BaseSuggestionConfig {
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
 
   /**
-   * When `false`, clicking a suggestion item fires `cds-aichat-autocomplete-select`
+   * When `true`, clicking a suggestion item fires `cds-aichat-autocomplete-select`
    * and inserts the item into the editor rather than sending immediately.
-   * Defaults to `true`.
+   * Defaults to `false`.
    */
-  enableDirectSend?: boolean;
+  disableDirectSend?: boolean;
 }
 
 /**
@@ -190,7 +190,7 @@ export interface AutocompleteConfig extends BaseSuggestionConfig {
  */
 export interface StartersConfig extends Pick<
   BaseSuggestionConfig,
-  'renderCustomList' | 'enableDirectSend'
+  'renderCustomList' | 'disableDirectSend'
 > {
   /** The starter prompts to display. */
   items: SuggestionItem[];

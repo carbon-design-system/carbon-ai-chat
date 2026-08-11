@@ -109,8 +109,8 @@ export interface AutocompleteSendEventDetail {
  * Autocomplete component for AI Chat input suggestions.
  *
  * @element cds-aichat-autocomplete
- * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - Fired when an item is clicked/activated and `enableDirectSend` is false (insert-into-editor path)
- * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - Fired when an item is clicked/activated and `enableDirectSend` is true (default: sends directly to chat)
+ * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - Fired when an item is clicked/activated and `disableDirectSend` is true (insert-into-editor path)
+ * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - Fired when an item is clicked/activated and `disableDirectSend` is false (default: sends directly to chat)
  * @fires {CustomEvent} cds-aichat-autocomplete-dismiss - Fired when the autocomplete is dismissed
  */
 @carbonElement(`${prefix}-autocomplete`)
@@ -151,14 +151,14 @@ class AutocompleteElement extends LitElement {
   inputText = '';
 
   /**
-   * When `true`, clicking an item fires `cds-aichat-autocomplete-send` and
+   * When `false` (default), clicking an item fires `cds-aichat-autocomplete-send` and
    * the item sends directly to chat.
    *
-   * When `false`, clicking an item fires `cds-aichat-autocomplete-select` instead
+   * When `true`, clicking an item fires `cds-aichat-autocomplete-select` instead
    * and inserts it into the editor rather than send immediately.
    */
-  @property({ type: Boolean, reflect: true, attribute: 'enable-direct-send' })
-  enableDirectSend = true;
+  @property({ type: Boolean, reflect: true, attribute: 'disable-direct-send' })
+  disableDirectSend = false;
 
   /**
    * Whether the autocomplete is attached to another element (e.g., an input field).
@@ -429,7 +429,7 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleItemClick(index: number) {
-    if (this.enableDirectSend) {
+    if (!this.disableDirectSend) {
       this._handleSend(index);
     } else {
       this._focusedIndex = index;
@@ -540,7 +540,7 @@ class AutocompleteElement extends LitElement {
           </div>
         </div>
         ${
-          this.enableDirectSend
+          !this.disableDirectSend
             ? html`<span aria-hidden="true" class="${itemClass}__send-icon">
                 ${iconLoader(SendFilled16)}
               </span>`

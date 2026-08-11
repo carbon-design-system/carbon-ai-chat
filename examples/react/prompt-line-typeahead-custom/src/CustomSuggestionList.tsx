@@ -27,7 +27,7 @@
  * This example uses `onSelect` because the intent is to insert the chosen
  * suggestion into the editor so the user can review or edit it before sending.
  * The default built-in autocomplete component uses `onSend` on item click
- * (its `enableDirectSend` prop defaults to `true`).
+ * (its `disableDirectSend` prop defaults to `false`).
  *
  * Start reading at: `CustomSuggestionList()` and the keydown effect.
  */

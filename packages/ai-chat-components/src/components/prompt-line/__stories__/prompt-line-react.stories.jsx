@@ -222,7 +222,7 @@ export default {
 export const Default = {
   argTypes: {
     attached: { table: { disable: true } },
-    enableDirectSend: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
   },
   render: ({
     placeholder,
@@ -284,7 +284,7 @@ export const Default = {
 export const Expanded = {
   argTypes: {
     attached: { table: { disable: true } },
-    enableDirectSend: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
   },
   render: ({
     placeholder,
@@ -351,7 +351,7 @@ const CommandsAndMentionsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
-  enableDirectSend,
+  disableDirectSend,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
@@ -403,9 +403,9 @@ const CommandsAndMentionsStory = ({
   React.useEffect(() => {
     const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
     if (el) {
-      el.enableDirectSend = enableDirectSend ?? false;
+      el.disableDirectSend = disableDirectSend ?? true;
     }
-  }, [enableDirectSend, autocompleteContent]);
+  }, [disableDirectSend, autocompleteContent]);
 
   return (
     <Wrapper>
@@ -455,7 +455,7 @@ const CommandsAndMentionsStory = ({
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
-  args: { enableDirectSend: false },
+  args: { disableDirectSend: true },
   render: (args) => <CommandsAndMentionsStory {...args} />,
 };
 
@@ -469,13 +469,13 @@ function renderStarterList({
   onSelect,
   onDismiss,
   attached,
-  enableDirectSend,
+  disableDirectSend,
 }) {
   const el = document.createElement('cds-aichat-autocomplete');
   el.items = items;
   el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   el.attached = attached;
-  el.enableDirectSend = enableDirectSend ?? true;
+  el.disableDirectSend = disableDirectSend ?? false;
   el.addEventListener('cds-aichat-autocomplete-select', (e) =>
     onSelect(e.detail.item)
   );
@@ -496,7 +496,7 @@ const ConversationStartersStory = ({
   errorCollapsible,
   errorFullscreen,
   attached,
-  enableDirectSend,
+  disableDirectSend,
 }) => {
   const [startersEnabled, setStartersEnabled] = useState(true);
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -507,9 +507,9 @@ const ConversationStartersStory = ({
       items: starterItems,
       isOn: startersEnabled,
       renderCustomList: (props) =>
-        renderStarterList({ ...props, attached, enableDirectSend }),
+        renderStarterList({ ...props, attached, disableDirectSend }),
     }),
-    [startersEnabled, attached, enableDirectSend]
+    [startersEnabled, attached, disableDirectSend]
   );
 
   const extensions = useMemo(
@@ -713,7 +713,7 @@ export const FileUploads = {
   name: 'File uploads',
   argTypes: {
     attached: { table: { disable: true } },
-    enableDirectSend: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
   },
   render: (args) => <FileUploadsStory {...args} />,
 };
@@ -732,7 +732,7 @@ const TypeaheadStory = ({
   errorCollapsible,
   errorFullscreen,
   attached,
-  enableDirectSend,
+  disableDirectSend,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -771,9 +771,9 @@ const TypeaheadStory = ({
     const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
     if (el) {
       el.inputText = inputText;
-      el.enableDirectSend = enableDirectSend ?? true;
+      el.disableDirectSend = disableDirectSend ?? false;
     }
-  }, [inputText, enableDirectSend, autocompleteContent]);
+  }, [inputText, disableDirectSend, autocompleteContent]);
 
   return (
     <WrapperBottom>
@@ -1003,18 +1003,18 @@ export const CDSAIChatAutocompleteAPI = {
         'When `true`, suppresses bottom corner rounding (use when overlaying the input).',
       table: { category: '' },
     },
-    enableDirectSend: {
+    disableDirectSend: {
       control: 'boolean',
       description:
-        'When `true`, clicking an item fires `cds-aichat-autocomplete-send` and sends directly to chat. When `false`, clicking fires `cds-aichat-autocomplete-select` and inserts the item into the editor instead.',
+        'When `false` (default), clicking an item fires `cds-aichat-autocomplete-send` and sends directly to chat. When `true`, clicking fires `cds-aichat-autocomplete-select` and inserts the item into the editor instead.',
     },
   },
   args: {
     inputText: '',
     attached: true,
-    enableDirectSend: true,
+    disableDirectSend: false,
   },
-  render: ({ inputText, attached, enableDirectSend }) => (
+  render: ({ inputText, attached, disableDirectSend }) => (
     <WrapperBottom>
       <PromptLineShell rounded>
         <CDSAIChatAutocomplete
@@ -1022,7 +1022,7 @@ export const CDSAIChatAutocompleteAPI = {
           items={typeaheadItems.slice(0, 5)}
           inputText={inputText}
           attached={attached}
-          enableDirectSend={enableDirectSend}
+          disableDirectSend={disableDirectSend}
           onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
           onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
           onDismiss={() => action('cds-aichat-autocomplete-dismiss')()}

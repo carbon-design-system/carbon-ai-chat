@@ -69,7 +69,7 @@ function App() {
         // demonstrate alongside the default-rendered /-command trigger.
         mention: {
           trigger: '@',
-          enableDirectSend: false,
+          disableDirectSend: true,
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
@@ -133,7 +133,7 @@ function App() {
         },
         command: {
           trigger: '/',
-          enableDirectSend: false,
+          disableDirectSend: true,
           // commands only make sense at the start of the input,
           // so suppress the picker when "/" appears mid-line.
           triggerPosition: 'start',

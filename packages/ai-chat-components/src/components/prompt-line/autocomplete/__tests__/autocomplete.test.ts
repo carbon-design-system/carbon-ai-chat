@@ -58,7 +58,7 @@ describe('cds-aichat-autocomplete', () => {
       expect(options?.length).to.equal(2);
     });
 
-    it('renders the send icon affordance on items when enableDirectSend is true (default)', async () => {
+    it('renders the send icon affordance on items when disableDirectSend is false (default)', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
@@ -70,11 +70,11 @@ describe('cds-aichat-autocomplete', () => {
       expect(sendIcons?.length).to.equal(2);
     });
 
-    it('does not render send icon when enableDirectSend is false', async () => {
+    it('does not render send icon when disableDirectSend is true', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"
-          .enableDirectSend="${false}"></cds-aichat-autocomplete>
+          .disableDirectSend="${true}"></cds-aichat-autocomplete>
       `);
 
       const sendIcons = el.shadowRoot?.querySelectorAll(
@@ -388,7 +388,7 @@ describe('cds-aichat-autocomplete', () => {
       expect(eventDetail.text).to.not.equal(itemWithValue.label);
     });
 
-    it('should not emit select event when item is clicked (enableDirectSend=true)', async () => {
+    it('should not emit select event when item is clicked (disableDirectSend=false, default)', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
@@ -408,11 +408,11 @@ describe('cds-aichat-autocomplete', () => {
       expect(selectEventFired).to.be.false;
     });
 
-    it('should emit select event (not send) when item is clicked and enableDirectSend is false', async () => {
+    it('should emit select event (not send) when item is clicked and disableDirectSend is true', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"
-          .enableDirectSend="${false}"></cds-aichat-autocomplete>
+          .disableDirectSend="${true}"></cds-aichat-autocomplete>
       `);
 
       let selectDetail: any = null;
@@ -714,23 +714,23 @@ describe('cds-aichat-autocomplete', () => {
       expect(el.attached).to.be.false;
     });
 
-    it('enableDirectSend defaults to true', async () => {
+    it('disableDirectSend defaults to false', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
       `);
 
-      expect(el.enableDirectSend).to.be.true;
+      expect(el.disableDirectSend).to.be.false;
     });
 
-    it('enableDirectSend can be set to false', async () => {
+    it('disableDirectSend can be set to true', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"
-          .enableDirectSend="${false}"></cds-aichat-autocomplete>
+          .disableDirectSend="${true}"></cds-aichat-autocomplete>
       `);
 
-      expect(el.enableDirectSend).to.be.false;
+      expect(el.disableDirectSend).to.be.true;
     });
   });
 });

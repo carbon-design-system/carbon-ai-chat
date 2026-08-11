@@ -110,7 +110,7 @@ export class Demo extends LitElement {
         // `@`-mention slot — drives the inline chip UI customized below via renderCustomToken.
         mention: {
           trigger: '@',
-          enableDirectSend: false,
+          disableDirectSend: true,
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
@@ -161,7 +161,7 @@ export class Demo extends LitElement {
         command: {
           trigger: '/',
           triggerPosition: 'start',
-          enableDirectSend: false,
+          disableDirectSend: true,
           items: commandItems,
           onSelect: (item: SuggestionItem) => {
             // Mirrors the picked command into structured_data so customSendMessage can read it on submit.

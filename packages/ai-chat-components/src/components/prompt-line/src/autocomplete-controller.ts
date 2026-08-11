@@ -60,8 +60,8 @@ export interface AutocompleteControllerState {
   items: SuggestionItem[];
   /** Consumer's `renderCustomList`, if any — resolved from the active trigger. */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
-  /** Forwarded from the active trigger config's `enableDirectSend`. */
-  enableDirectSend?: boolean;
+  /** Forwarded from the active trigger config's `disableDirectSend`. */
+  disableDirectSend?: boolean;
 }
 
 export class AutocompleteController {
@@ -515,13 +515,13 @@ export class AutocompleteController {
     return config?.renderCustomList;
   }
 
-  private _resolveEnableDirectSend(): boolean | undefined {
+  private _resolveDisableDirectSend(): boolean | undefined {
     const trigger = this._trigger;
     if (!trigger) {
       return undefined;
     }
     if (trigger.type === 'starter') {
-      return this._starters?.enableDirectSend;
+      return this._starters?.disableDirectSend;
     }
     const config =
       trigger.type === 'mention'
@@ -531,7 +531,7 @@ export class AutocompleteController {
           : trigger.type === 'autocomplete'
             ? this._autocomplete
             : undefined;
-    return config?.enableDirectSend;
+    return config?.disableDirectSend;
   }
 
   private _emit(): void {
@@ -539,7 +539,7 @@ export class AutocompleteController {
       trigger: this._trigger,
       items: this._items,
       renderCustomList: this._resolveRenderCustomList(),
-      enableDirectSend: this._resolveEnableDirectSend(),
+      disableDirectSend: this._resolveDisableDirectSend(),
     });
   }
 }
@@ -743,7 +743,7 @@ class AutocompleteControllerElement extends LitElement {
   }
 
   override render() {
-    const { trigger, items, renderCustomList, enableDirectSend } = this._state;
+    const { trigger, items, renderCustomList, disableDirectSend } = this._state;
     if (!trigger || items.length === 0) {
       return nothing;
     }
@@ -773,7 +773,7 @@ class AutocompleteControllerElement extends LitElement {
     return html`
       <cds-aichat-autocomplete
         .items=${items}
-        .enableDirectSend=${enableDirectSend ?? true}
+        .disableDirectSend=${disableDirectSend ?? false}
         @cds-aichat-autocomplete-select=${(
           e: CustomEvent<{ item: SuggestionItem }>
         ) => this._selectItem(e.detail.item)}
