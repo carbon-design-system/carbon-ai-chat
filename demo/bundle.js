@@ -1143,7 +1143,7 @@
         ${(0,f.L)(e.icon,{slot:"icon"})}
         <span slot="tooltip-content">${e.text}</span>
       </cds-icon-button>
-    `}}connectedCallback(){super.connectedCallback(),this.addEventListener("keydown",this._handleToolbarKeydown)}disconnectedCallback(){this.resizeObserver?.disconnect(),this.resizeObserver=void 0,this.removeEventListener("keydown",this._handleToolbarKeydown),super.disconnectedCallback()}firstUpdated(){this.overflow&&this.setupResizeObserver()}sortActions(){return[...this.actions].sort((e,t)=>e.fixed&&!t.fixed?-1:!e.fixed&&t.fixed?1:0)}setupResizeObserver(){this.resizeObserver?.disconnect(),this.resizeObserver=new ResizeObserver(e=>{const t=e[0].contentRect.width;t!==this.containerWidth&&(this.containerWidth=t)}),this.resizeObserver.observe(this.container)}getActions(){if(!this.container||0===this.container.getBoundingClientRect().width)return{visibleActions:[],hiddenActions:[]};const e=this.actionsContainer.getBoundingClientRect().width-(40+(this.fixedActions.getBoundingClientRect().width||0)+(this.decoratorContainer.getBoundingClientRect().width||0)),t=this.actionsContainer.children;let o=0;const s=[];for(const r of t){const t=o+r.getBoundingClientRect().width;t<e&&(o=t,s.push(r))}const r=s.length,n=this.sortActions();return{visibleActions:n.slice(0,r),hiddenActions:n.slice(r)}}findFocusedOverflowMenuItem(e){return"cds-overflow-menu-item"===e.tagName.toLowerCase()?e:e?.shadowRoot?.activeElement?this.findFocusedOverflowMenuItem(e.shadowRoot.activeElement):null}getOverflowMenuSize(){return this.actions?.[0]?.size||br.MEDIUM}render(){const{hiddenActions:e,visibleActions:t}=this.getActions(),o=e.length>0,s=0===t.length&&0===e.length;return i.qy`
+    `}}connectedCallback(){super.connectedCallback(),this.addEventListener("keydown",this._handleToolbarKeydown)}disconnectedCallback(){this.resizeObserver?.disconnect(),this.resizeObserver=void 0,this.removeEventListener("keydown",this._handleToolbarKeydown),super.disconnectedCallback()}firstUpdated(){this.overflow&&this.setupResizeObserver()}sortActions(){return[...this.actions].sort((e,t)=>e.fixed&&!t.fixed?-1:!e.fixed&&t.fixed?1:0)}setupResizeObserver(){this.resizeObserver?.disconnect(),this.resizeObserver=new ResizeObserver(e=>{const t=e[0].contentRect.width;t!==this.containerWidth&&(this.containerWidth=t)}),this.resizeObserver.observe(this.container)}getActions(){if(!this.container||0===this.container.getBoundingClientRect().width)return{visibleActions:[],hiddenActions:[]};const e=this.actionsContainer.getBoundingClientRect().width-(40+(this.fixedActions.getBoundingClientRect().width||0)+(this.decoratorContainer.getBoundingClientRect().width||0)),t=this.actionsContainer.children;let o=0;const s=[];for(const r of t){const t=o+r.getBoundingClientRect().width;t<e&&(o=t,s.push(r))}const r=s.length,n=this.sortActions();return{visibleActions:n.slice(0,r),hiddenActions:n.slice(r)}}findFocusedOverflowMenuItem(e){return"cds-overflow-menu-item"===e.tagName.toLowerCase()?e:e?.shadowRoot?.activeElement?this.findFocusedOverflowMenuItem(e.shadowRoot.activeElement):null}getOverflowMenuSize(){return this.actions?.[0]?.size||br.MEDIUM}render(){const{hiddenActions:e,visibleActions:t}=this.getActions(),o=e.length>1,s=o?t:[...t,...e],r=o?e:[],n=0===t.length&&0===e.length;return i.qy`
       <div data-rounded="top" class=${Hr}>
         <div data-fixed class="${Hr}__start">
           <div data-fixed class="${Hr}__navigation">
@@ -1181,13 +1181,13 @@
             <div class="${Hr}__decorator-container">
               <slot name="decorator"></slot>
             </div>
-            ${(0,Sr.u)(s?this.actions:t,e=>e.text,this.renderIconButton)}
+            ${(0,Sr.u)(n?this.actions:s,e=>e.text,this.renderIconButton)}
             ${o?i.qy`
                     <cds-overflow-menu
                       size=${this.getOverflowMenuSize()}
                       align=${this.isRTL?"bottom-start":"bottom-end"}
                       data-offset
-                      ?data-hidden=${0===e.length}
+                      ?data-hidden=${0===r.length}
                       kind="ghost"
                       close-on-activation
                       enter-delay-ms="0"
@@ -1197,7 +1197,7 @@
                         >${Br.OVERFLOW_MENU_LABEL}</span
                       >
                       <cds-overflow-menu-body ?flipped=${!this.isRTL}>
-                        ${(0,Sr.u)(e,e=>e.text,e=>i.qy`
+                        ${(0,Sr.u)(r,e=>e.text,e=>i.qy`
                             <cds-overflow-menu-item
                               @click=${e.onClick}
                               href=${e.href||i.s6}
