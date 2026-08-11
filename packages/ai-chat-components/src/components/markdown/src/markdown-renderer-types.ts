@@ -67,9 +67,11 @@ export interface MarkdownRendererTableArgs extends MarkdownRendererTableData {
    */
   token: Readonly<Token>;
   /**
-   * Stable slot identifier for this rendered element. The same name is
-   * reused across renders while the underlying source line stays put — useful
-   * as a React key.
+   * Stable slot identifier for this rendered element. Unique across every
+   * markdown element on the page, and reused across renders — including
+   * streaming chunks — while the underlying source line stays put, which makes
+   * it a safe React key. Treat the value as opaque; its format is not part of
+   * the API.
    */
   slotName: string;
 }
@@ -86,9 +88,11 @@ export interface MarkdownRendererCodeBlockArgs extends MarkdownRendererCodeBlock
    */
   token: Readonly<Token>;
   /**
-   * Stable slot identifier for this rendered element. The same name is
-   * reused across renders while the underlying source line stays put — useful
-   * as a React key.
+   * Stable slot identifier for this rendered element. Unique across every
+   * markdown element on the page, and reused across renders — including
+   * streaming chunks — while the underlying source line stays put, which makes
+   * it a safe React key. Treat the value as opaque; its format is not part of
+   * the API.
    */
   slotName: string;
 }
@@ -433,4 +437,15 @@ export interface RenderTokenTreeOptions {
    * @internal
    */
   pluginSlotCounter?: { next: () => number };
+
+  /**
+   * Namespace appended to every slot name minted during this render, supplied
+   * by the owning `cds-aichat-markdown` element. Slot hosts are hoisted into a
+   * single page-level container, so names must be unique across every markdown
+   * element on the page — not just within one render pass. Omitted when the
+   * renderer is driven directly (unit tests), which yields un-namespaced names.
+   *
+   * @internal
+   */
+  slotNamespace?: string;
 }

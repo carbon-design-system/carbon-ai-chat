@@ -173,8 +173,6 @@ through PublicConfig.strings.
 
 `markdown?: PublicConfigMarkdown`
 
-**Experimental.**
-
 Markdown rendering customization. The framework-neutral subset; React and
 web-component layers extend this with their own `customRenderers` member.
 

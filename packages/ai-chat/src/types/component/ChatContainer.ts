@@ -245,7 +245,9 @@ export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
  * {@link CustomMarkdownRenderers.table} and
  * {@link WCCustomMarkdownRenderers.table}. Extends
  * {@link MarkdownRendererTableData} with the source markdown-it token and a
- * stable `slotName` suitable for use as a key.
+ * `slotName` that is stable across renders and unique across every rendered
+ * markdown block on the page, so it is safe to use as a key. Treat the value
+ * as opaque; its format is not part of the API.
  *
  * @category Messaging
  */
@@ -256,7 +258,9 @@ export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
  * {@link CustomMarkdownRenderers.codeBlock} and
  * {@link WCCustomMarkdownRenderers.codeBlock}. Extends
  * {@link MarkdownRendererCodeBlockData} with the source markdown-it token and
- * a stable `slotName` suitable for use as a key.
+ * a `slotName` that is stable across renders and unique across every rendered
+ * markdown block on the page, so it is safe to use as a key. Treat the value
+ * as opaque; its format is not part of the API.
  *
  * @category Messaging
  */
