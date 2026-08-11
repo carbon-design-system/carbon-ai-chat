@@ -61,9 +61,13 @@ function App() {
           // debounce keystrokes so rapid typing does not thrash the
           // resolver; 150ms balances responsiveness with reduced churn.
           debounceMs: 150,
-          // `renderCustomList` lives on the autocomplete config so the
-          // dropdown UI can be fully custom while the chat keeps
-          // ownership of when to show, update, and tear it down.
+          // `renderCustomList` lets you replace the built-in dropdown while the
+          // chat keeps ownership of when to show, update, and tear it down.
+          // The callback receives `onSelect` (inserts into the editor, fires
+          // `cds-aichat-autocomplete-select`) and `onSend` (sends directly to
+          // chat, fires `cds-aichat-autocomplete-send`). This example uses
+          // `onSelect` so the chosen suggestion lands in the editor for review
+          // before sending.
           renderCustomList: ({ items, query, onSelect, onDismiss }) => (
             <CustomSuggestionList
               items={items}

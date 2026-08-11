@@ -170,10 +170,10 @@ export default {
       description:
         'The current input text. Suggestion items will apply styling to indicate what the user has already typed.',
     },
-    enableSendButton: {
+    enableDirectSend: {
       control: 'boolean',
       description:
-        'Whether to render the send button inside each suggestion item.',
+        'When `true` (default), clicking an item fires `onSend` and shows a send icon on hover. When `false`, clicking fires `onSelect` (insert-into-editor) and no send icon is shown.',
     },
     attached: {
       control: 'boolean',
@@ -183,7 +183,7 @@ export default {
   },
   args: {
     inputText: '',
-    enableSendButton: true,
+    enableDirectSend: true,
     attached: true,
   },
 };
@@ -202,7 +202,7 @@ export const Default = {
           items={filteredItems}
           inputText={query}
           attached={args.attached ?? true}
-          enableSendButton={args.enableSendButton ?? true}
+          enableDirectSend={args.enableDirectSend ?? true}
           style={{ '--cds-aichat-autocomplete-max-height': '328px' }}
           onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
           onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
@@ -231,7 +231,7 @@ export const WithHeader = {
           }}
           inputText={query}
           attached={args.attached ?? true}
-          enableSendButton={args.enableSendButton ?? true}
+          enableDirectSend={args.enableDirectSend ?? true}
           style={{ '--cds-aichat-autocomplete-max-height': '328px' }}
           onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
           onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
@@ -256,7 +256,7 @@ export const WithCategories = {
           groups={filteredGroups}
           inputText={query}
           attached={args.attached ?? true}
-          enableSendButton={args.enableSendButton ?? true}
+          enableDirectSend={args.enableDirectSend ?? true}
           style={{ '--cds-aichat-autocomplete-max-height': '328px' }}
           onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
           onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
@@ -284,7 +284,7 @@ export const Detached = {
           items={filteredItems}
           inputText={query}
           attached={args.attached ?? false}
-          enableSendButton={args.enableSendButton ?? true}
+          enableDirectSend={args.enableDirectSend ?? true}
           style={{ '--cds-aichat-autocomplete-max-height': '328px' }}
           onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
           onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}

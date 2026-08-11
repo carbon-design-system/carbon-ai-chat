@@ -6,7 +6,7 @@
 
 - Using `input.expanded: true` so the editor occupies its own full-width row and the action buttons render inline beneath it.
 - Configuring `input.starters` so the suggestion list appears immediately when the editor is focused and empty — no typing required. Selecting a starter inserts the text and auto-sends in one action.
-- Using `starters.renderCustomList` to imperatively create a `<cds-aichat-autocomplete>` element with a `headerConfig`, adding a "Prompt suggestions" title above the list. The send-arrow is hidden (`enableSendButton: false`) because auto-send already handles submission.
+- Using `starters.renderCustomList` to imperatively create a `<cds-aichat-autocomplete>` element with a `headerConfig`, adding a "Prompt suggestions" title above the list. Selecting a starter fires `cds-aichat-autocomplete-send` directly to chat (the default click-to-send behaviour of the built-in autocomplete).
 - Using `starters.isOn` to toggle the starters list on and off without removing the config — keeping the rich editor alive so re-enabling is instant.
 - Configuring a single `input.actions` toggle button (Chat icon) that enables or disables the starters list. The action is disabled while the input has text because starters only trigger on an empty editor.
 - Listening to the `cds-aichat-prompt-change` event via `onBeforeRender` to track whether the editor has any text.

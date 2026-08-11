@@ -71,6 +71,7 @@ export class Demo extends LitElement {
         // the contract.
         mention: {
           trigger: '@',
+          enableDirectSend: false,
           items: async (query: string) => {
             if (!query) {
               return mentionItems;
@@ -123,6 +124,7 @@ export class Demo extends LitElement {
         command: {
           trigger: '/',
           triggerPosition: 'start',
+          enableDirectSend: false,
           items: commandItems,
           onSelect: (item: SuggestionItem) => {
             // Persist the pick onto the structured-data sidecar so the host can read it from `MessageRequest`.

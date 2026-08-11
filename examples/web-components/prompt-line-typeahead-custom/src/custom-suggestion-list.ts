@@ -17,7 +17,17 @@
  *
  * APIs exercised:
  *   - `SuggestionItem`
- *   - `renderCustomList` callback contract (`onSelect`, `onDismiss`)
+ *   - `renderCustomList` callback contract (`onSelect`, `onSend`, `onDismiss`)
+ *
+ * `renderCustomList` receives two action callbacks:
+ *   - `onSelect(item)` — populates the prompt-line editor with the item
+ *     (insert-into-editor path, does NOT send to chat).
+ *   - `onSend(text)` — sends the text directly to chat, bypassing the editor.
+ *
+ * This example uses `onSelect` because the intent is to insert the chosen
+ * suggestion into the editor so the user can review or edit it before sending.
+ * The default built-in autocomplete component uses `onSend` on item click
+ * (`enableDirectSend` defaults to `true`, firing `cds-aichat-autocomplete-send`).
  *
  * Start reading at: the `setCallbacks` and `render` methods on
  * `CustomSuggestionList` below.
@@ -96,7 +106,7 @@ export class CustomSuggestionList extends LitElement {
   // Callbacks arrive imperatively after the element is created in `renderCustomList` because Lit
   // attribute reflection cannot carry function references through the DOM.
   setCallbacks(
-    onSelect: (item: SuggestionItem) => void,
+    onSelect: ((item: SuggestionItem) => void) | undefined,
     onDismiss: () => void
   ) {
     this._onSelect = onSelect;

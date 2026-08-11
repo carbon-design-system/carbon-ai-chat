@@ -157,20 +157,24 @@ $group-class: #{$item-class}-group;
     color: theme.$text-helper;
   }
 
-  .#{$item-class}__send {
+  .#{$item-class}__send-icon {
     z-index: 1;
+    display: flex;
+    align-items: center;
+    align-self: center;
+    padding-inline: layout.$spacing-03;
+    pointer-events: none;
     visibility: hidden;
   }
 
-  .#{$item-class}__send svg {
+  .#{$item-class}__send-icon svg {
     fill: theme.$interactive;
   }
 
-  // Show send button on hover, focus, or active state of the item
-  .#{$item-class}:hover .#{$item-class}__send,
-  .#{$item-class}:focus .#{$item-class}__send,
-  .#{$item-class}:focus-within .#{$item-class}__send,
-  .#{$item-class}--active .#{$item-class}__send {
+  .#{$item-class}:hover .#{$item-class}__send-icon,
+  .#{$item-class}:focus .#{$item-class}__send-icon,
+  .#{$item-class}:focus-within .#{$item-class}__send-icon,
+  .#{$item-class}--active .#{$item-class}__send-icon {
     visibility: visible;
   }
 

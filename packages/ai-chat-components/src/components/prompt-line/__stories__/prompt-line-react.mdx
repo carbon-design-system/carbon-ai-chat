@@ -328,16 +328,16 @@ function ChatInput() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onSelect</code></td>
-      <td><code>cds-aichat-autocomplete-select</code></td>
-      <td>Fired when the user picks a suggestion.</td>
-      <td>• <code>item</code> (SuggestionItem)</td>
-    </tr>
-    <tr>
       <td><code>onSend</code></td>
       <td><code>cds-aichat-autocomplete-send</code></td>
-      <td>Fired when the send button inside an item is clicked.</td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>enableDirectSend</code> is <code>true</code> (default). The item text is sent directly to chat.</td>
       <td>• <code>text</code> (string)</td>
+    </tr>
+    <tr>
+      <td><code>onSelect</code></td>
+      <td><code>cds-aichat-autocomplete-select</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>enableDirectSend</code> is <code>false</code>. Use this when the item should be inserted into the editor rather than sent immediately.</td>
+      <td>• <code>item</code> (SuggestionItem)</td>
     </tr>
     <tr>
       <td><code>onDismiss</code></td>

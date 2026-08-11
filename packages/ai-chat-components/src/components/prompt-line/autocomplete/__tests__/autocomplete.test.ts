@@ -58,29 +58,29 @@ describe('cds-aichat-autocomplete', () => {
       expect(options?.length).to.equal(2);
     });
 
-    it('renders the send button by default on items', async () => {
+    it('renders the send icon affordance on items when enableDirectSend is true (default)', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
       `);
 
-      const sendButtons = el.shadowRoot?.querySelectorAll(
-        'li[role="option"] cds-icon-button'
+      const sendIcons = el.shadowRoot?.querySelectorAll(
+        'li[role="option"] .cds-aichat-autocomplete-item__send-icon'
       );
-      expect(sendButtons?.length).to.equal(2);
+      expect(sendIcons?.length).to.equal(2);
     });
 
-    it('does not render send buttons when enableSendButton is false', async () => {
+    it('does not render send icon when enableDirectSend is false', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"
-          .enableSendButton="${false}"></cds-aichat-autocomplete>
+          .enableDirectSend="${false}"></cds-aichat-autocomplete>
       `);
 
-      const sendButtons = el.shadowRoot?.querySelectorAll(
-        'li[role="option"] cds-icon-button'
+      const sendIcons = el.shadowRoot?.querySelectorAll(
+        'li[role="option"] .cds-aichat-autocomplete-item__send-icon'
       );
-      expect(sendButtons?.length).to.equal(0);
+      expect(sendIcons?.length).to.equal(0);
     });
 
     it('has role=option on flat list items', async () => {
@@ -216,17 +216,16 @@ describe('cds-aichat-autocomplete', () => {
       expect(groupEl?.getAttribute('aria-label')).to.equal('Group 1');
     });
 
-    it('should pass enableSendButton to all grouped items', async () => {
+    it('should render send icon affordance on all grouped items', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
-          .groups="${mockGroups}"
-          .enableSendButton="${false}"></cds-aichat-autocomplete>
+          .groups="${mockGroups}"></cds-aichat-autocomplete>
       `);
 
-      const sendButtons = el.shadowRoot?.querySelectorAll(
-        'li[role="group"] li[role="option"] cds-icon-button'
+      const sendIcons = el.shadowRoot?.querySelectorAll(
+        'li[role="group"] li[role="option"] .cds-aichat-autocomplete-item__send-icon'
       );
-      expect(sendButtons?.length).to.equal(0);
+      expect(sendIcons?.length).to.equal(2);
     });
 
     it('should mark grouped item as active when focused', async () => {
@@ -339,27 +338,7 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('events', () => {
-    it('should emit select event when item is clicked', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
-
-      let eventDetail: any = null;
-      el.addEventListener('cds-aichat-autocomplete-select', (e: Event) => {
-        eventDetail = (e as CustomEvent).detail;
-      });
-
-      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
-      firstOption?.dispatchEvent(new Event('click', { bubbles: true }));
-
-      await el.updateComplete;
-
-      expect(eventDetail).to.exist;
-      expect(eventDetail.item).to.deep.equal(mockItems[0]);
-    });
-
-    it('should emit send event with label when item has no value', async () => {
+    it('should emit send event when item is clicked (label falls back when no value)', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
@@ -370,12 +349,8 @@ describe('cds-aichat-autocomplete', () => {
         eventDetail = (e as CustomEvent).detail;
       });
 
-      const sendButton = el.shadowRoot?.querySelector(
-        'li[role="option"] cds-icon-button'
-      );
-      sendButton?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true, composed: true })
-      );
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      firstOption?.dispatchEvent(new Event('click', { bubbles: true }));
 
       await el.updateComplete;
 
@@ -401,10 +376,8 @@ describe('cds-aichat-autocomplete', () => {
         eventDetail = (e as CustomEvent).detail;
       });
 
-      const sendButton = el.shadowRoot?.querySelector(
-        'li[role="option"] cds-icon-button'
-      );
-      sendButton?.dispatchEvent(
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      firstOption?.dispatchEvent(
         new MouseEvent('click', { bubbles: true, composed: true })
       );
 
@@ -415,20 +388,16 @@ describe('cds-aichat-autocomplete', () => {
       expect(eventDetail.text).to.not.equal(itemWithValue.label);
     });
 
-    it('should emit select event without send event on item click', async () => {
+    it('should not emit select event when item is clicked (enableDirectSend=true)', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
       `);
 
       let selectEventFired = false;
-      let sendEventFired = false;
 
       el.addEventListener('cds-aichat-autocomplete-select', () => {
         selectEventFired = true;
-      });
-      el.addEventListener('cds-aichat-autocomplete-send', () => {
-        sendEventFired = true;
       });
 
       const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
@@ -436,8 +405,34 @@ describe('cds-aichat-autocomplete', () => {
 
       await el.updateComplete;
 
-      expect(selectEventFired).to.be.true;
-      expect(sendEventFired).to.be.false;
+      expect(selectEventFired).to.be.false;
+    });
+
+    it('should emit select event (not send) when item is clicked and enableDirectSend is false', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .enableDirectSend="${false}"></cds-aichat-autocomplete>
+      `);
+
+      let selectDetail: any = null;
+      let sendFired = false;
+
+      el.addEventListener('cds-aichat-autocomplete-select', (e: Event) => {
+        selectDetail = (e as CustomEvent).detail;
+      });
+      el.addEventListener('cds-aichat-autocomplete-send', () => {
+        sendFired = true;
+      });
+
+      const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
+      firstOption?.dispatchEvent(new Event('click', { bubbles: true }));
+
+      await el.updateComplete;
+
+      expect(selectDetail).to.exist;
+      expect(selectDetail.item).to.deep.equal(mockItems[0]);
+      expect(sendFired).to.be.false;
     });
 
     it('should emit dismiss event when Escape is pressed', async () => {
@@ -587,18 +582,18 @@ describe('cds-aichat-autocomplete', () => {
       ).to.equal('true');
     });
 
-    it('should select item with Enter key', async () => {
+    it('should send item with Enter key', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
       `);
 
       let eventDetail: any = null;
-      el.addEventListener('cds-aichat-autocomplete-select', (e: Event) => {
+      el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
         eventDetail = (e as CustomEvent).detail;
       });
 
-      // First item is already focused, pressing Enter selects it
+      // First item is already focused, pressing Enter sends it
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'Enter',
@@ -609,7 +604,7 @@ describe('cds-aichat-autocomplete', () => {
       await el.updateComplete;
 
       expect(eventDetail).to.exist;
-      expect(eventDetail.item).to.deep.equal(mockItems[0]);
+      expect(eventDetail.text).to.equal(mockItems[0].label);
     });
   });
 
@@ -695,19 +690,6 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('properties', () => {
-    it('should respect enableSendButton property', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .enableSendButton="${false}"></cds-aichat-autocomplete>
-      `);
-
-      const sendButtons = el.shadowRoot?.querySelectorAll(
-        'li[role="option"] cds-icon-button'
-      );
-      expect(sendButtons?.length).to.equal(0);
-    });
-
     it('should pass inputText for label highlighting', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
@@ -730,6 +712,25 @@ describe('cds-aichat-autocomplete', () => {
       `);
 
       expect(el.attached).to.be.false;
+    });
+
+    it('enableDirectSend defaults to true', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      expect(el.enableDirectSend).to.be.true;
+    });
+
+    it('enableDirectSend can be set to false', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .enableDirectSend="${false}"></cds-aichat-autocomplete>
+      `);
+
+      expect(el.enableDirectSend).to.be.false;
     });
   });
 });

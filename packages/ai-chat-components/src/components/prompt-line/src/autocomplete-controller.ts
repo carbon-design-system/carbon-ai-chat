@@ -60,6 +60,8 @@ export interface AutocompleteControllerState {
   items: SuggestionItem[];
   /** Consumer's `renderCustomList`, if any — resolved from the active trigger. */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
+  /** Forwarded from the active trigger config's `enableDirectSend`. */
+  enableDirectSend?: boolean;
 }
 
 export class AutocompleteController {
@@ -513,11 +515,31 @@ export class AutocompleteController {
     return config?.renderCustomList;
   }
 
+  private _resolveEnableDirectSend(): boolean | undefined {
+    const trigger = this._trigger;
+    if (!trigger) {
+      return undefined;
+    }
+    if (trigger.type === 'starter') {
+      return this._starters?.enableDirectSend;
+    }
+    const config =
+      trigger.type === 'mention'
+        ? this._mention
+        : trigger.type === 'command'
+          ? this._command
+          : trigger.type === 'autocomplete'
+            ? this._autocomplete
+            : undefined;
+    return config?.enableDirectSend;
+  }
+
   private _emit(): void {
     this._onChange({
       trigger: this._trigger,
       items: this._items,
       renderCustomList: this._resolveRenderCustomList(),
+      enableDirectSend: this._resolveEnableDirectSend(),
     });
   }
 }
@@ -721,7 +743,7 @@ class AutocompleteControllerElement extends LitElement {
   }
 
   override render() {
-    const { trigger, items, renderCustomList } = this._state;
+    const { trigger, items, renderCustomList, enableDirectSend } = this._state;
     if (!trigger || items.length === 0) {
       return nothing;
     }
@@ -751,6 +773,7 @@ class AutocompleteControllerElement extends LitElement {
     return html`
       <cds-aichat-autocomplete
         .items=${items}
+        .enableDirectSend=${enableDirectSend ?? true}
         @cds-aichat-autocomplete-select=${(
           e: CustomEvent<{ item: SuggestionItem }>
         ) => this._selectItem(e.detail.item)}

@@ -78,13 +78,16 @@ export interface CustomListProps {
   query: string;
   /** Callback to invoke when list should be dismissed. */
   onDismiss: () => void;
-  /** Callback to invoke when user selects an item. */
-  onSelect: (item: SuggestionItem) => void;
   /**
-   * Callback to invoke when user clicks the send-directly-from-item button.
-   * The text is the item's value that was sent.
+   * Callback to invoke when user sends an item directly to chat, bypassing
+   * the editor.
    */
   onSend: (text: string) => void;
+  /**
+   * Callback to invoke when user selects an item to insert into the editor
+   * without sending to chat. Optional.
+   */
+  onSelect?: (item: SuggestionItem) => void;
 }
 
 /**
@@ -109,6 +112,13 @@ export interface BaseSuggestionConfig {
 
   /** Replace the built-in suggestion list UI. */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
+
+  /**
+   * When `false`, clicking a suggestion item fires `cds-aichat-autocomplete-select`
+   * and inserts the item into the editor rather than sending immediately.
+   * Defaults to `true`.
+   */
+  enableDirectSend?: boolean;
 }
 
 /**
@@ -180,7 +190,7 @@ export interface AutocompleteConfig extends BaseSuggestionConfig {
  */
 export interface StartersConfig extends Pick<
   BaseSuggestionConfig,
-  'renderCustomList'
+  'renderCustomList' | 'enableDirectSend'
 > {
   /** The starter prompts to display. */
   items: SuggestionItem[];
