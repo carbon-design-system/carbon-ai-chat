@@ -49,7 +49,7 @@ Cap a finding at three sentences plus a snippet. A concern that outgrows that �
 
 Some observations feel like findings and aren't. These stay unsaid at every severity, not just Nit:
 
-- **A tool already decided it.** Husky runs prettier and eslint on TS/JS, prettier and stylelint on SCSS, prettier on markdown, and commitlint on the message ([commit hooks](../../../references/conventions.md#commit-hooks)). Formatting, quote style, import order, and line length are settled before you open the diff.
+- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff.
 - **A naming swap with no clarity gain** — `data` → `payload`.
 - **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
 - **"Add a comment here."** The repo's default is no comments. You are here to flag the ones that restate the code, not to ask for more.
@@ -66,7 +66,7 @@ One pass over every check spends its attention on the first dimension and skims 
 | `*.scss`, or any component | accessibility, prefix & SCSS, logic trapped in a component |
 | `*.md`, or JSDoc on public types | tone & docs |
 | `package.json` | dependencies |
-| Always | acceptance criteria & ADRs, commit format |
+| Always | acceptance criteria & ADRs |
 
 Dispatch them in parallel when the harness gives you sub-agents (see [AGENTS.md](../../../AGENTS.md)); run them as separate sequential passes when it doesn't. Either way, every pass gets the same brief: its one dimension, the finding shape above, and [What isn't a finding](#what-isnt-a-finding). A pass told only to find things will manufacture Nits to justify itself.
 
@@ -116,8 +116,6 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 - **Logic trapped in a component** — parsing, formatting, validation, state transitions, or timing/geometry math written inside a React or Lit component instead of a plain module it could call ([framework-agnostic logic](../../../references/code-patterns.md#framework-agnostic-logic)). The tell is a behavior you could only test by rendering.
 - **New components added under `packages/ai-chat/src/chat/components-legacy/`** — that directory is closed to new components ([component placement](../../../references/code-patterns.md#component-placement)).
 - **Prefix / SCSS violations** — hardcoded `cds--`, missing `#{$prefix}--`, descendant nesting, or physical properties instead of logical ones for RTL ([naming & prefix discipline](../../../references/code-patterns.md#naming--prefix-discipline-build-breaking), [SCSS authoring](../../../references/code-patterns.md#scss-authoring)).
-- **Conventional-commit format** on the PR title / squash commit ([commits](../../../references/conventions.md#commits)).
-- **Examples**: each example's README still satisfies the Indexer contract described in [examples/AGENTS.md](../../../examples/AGENTS.md).
 - **Accessibility** on UI changes: keyboard navigation, focus management, ARIA roles/labels, color contrast, and RTL behavior. Carbon is a design system — a11y regressions are blockers.
 - **Dependencies**: new or upgraded packages should be justified; flag peer-dep conflicts, duplicate functionality already available via existing deps, or license incompatibilities.
 
