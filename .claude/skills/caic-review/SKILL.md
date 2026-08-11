@@ -33,13 +33,13 @@ Line comments beat a wall of prose: they land next to the code they're about. Bu
 {
   "commit_id": "<headRefOid from gh pr view>",
   "event": "COMMENT",
-  "body": "Summary — overall assessment and the highest-severity concerns.",
+  "body": "Fix blockers before merge. <assessment, highest-severity concerns, anything dropped>",
   "comments": [
     {
       "path": "packages/ai-chat/src/foo.ts",
       "line": 42,
       "side": "RIGHT",
-      "body": "**Blocker** — the early return skips the teardown; call `dispose()` before returning."
+      "body": "**Blocker** — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
     }
   ]
 }
@@ -62,8 +62,29 @@ gh api --method POST repos/<owner>/<repo>/pulls/<pr>/reviews --input .github/pr-
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
   - **Nit** — optional/taste. Keep these short and few.
-- Cite every finding with `path/to/file.ts:line` (or range) so the author can jump to it.
-- When you flag a problem, show the fix (snippet or concrete suggestion), not just the objection.
+
+## How to write a finding
+
+One shape, one order — severity, the defect, what it costs, the fix:
+
+```
+**<Severity>** — `path/to/file.ts:42` — <what is wrong>, so <what it costs>. <The fix.>
+```
+
+Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. Never post the objection without the fix. In a line comment on a PR, the `path` and `line` fields carry the citation — drop it from the body and keep the rest of the order.
+
+Hold your own words to [tone.md](../../../references/tone.md) — the same standard you hold the diff's copy to. Three habits show up in reviews and all three go:
+
+- **Hedging** — "I think", "it looks like", "consider possibly", "might be worth". Uncertainty is fine; say what you checked instead. "Read the happy path only — 60% sure this leaks."
+- **Throat-clearing** — "just", "simply", "one small thing", "it is important to note". Delete the phrase; the sentence gets stronger.
+- **Praise inside a finding** — "nice refactor, but…". Strengths go in the summary. A finding is the defect and the fix.
+
+**A leaked listener**
+
+- Before: "I might be missing something, but I wonder if it could possibly be worth considering whether this early return may want to clean up the listener it registered above, since otherwise it seems like it might leak? Nice refactor overall though!"
+- After: "**Blocker** — `packages/ai-chat/src/foo.ts:42` — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
+
+Cap a finding at three sentences plus a snippet. A concern that outgrows that — a design direction, a pattern repeated across the diff — is not a line comment: give it one line in the summary and move on.
 
 ## Evaluate the changes
 
@@ -112,16 +133,17 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 
 ## Output expectations
 
-- Open with a short **Summary** (2–4 sentences): overall assessment, strengths, highest-severity concerns.
-- List findings grouped by severity (**Blocker**, **Important**, **Nit**), each with a `file:line` reference and a concrete suggested fix (code snippet when useful).
+- **Lead the summary with the verdict on one line** — ship, fix blockers, or rework — before any context. Then 2–3 sentences: what the change does well, and the highest-severity concerns.
+- List findings grouped by severity (**Blocker**, **Important**, **Nit**), each written to the shape above.
+- **Cap the review at ten findings**, highest severity first. Drop Nits first, then Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage.
+- Carry design-level concerns in the summary too, one line each — they are what a finding overflows into.
 - End with a **Test / verification gaps** section if the diff lacks coverage for changed behavior.
-- Keep a polite, constructive tone — note what the change does well, but don't let praise obscure real blockers.
 
 ## Related guidance
 
 For context on conventions being enforced:
 
-- **Voice and tone**: [tone.md](../../../references/tone.md) — what to hold documentation and developer-facing copy to
+- **Voice and tone**: [tone.md](../../../references/tone.md) — what to hold documentation and developer-facing copy to, and the comments you write about it
 - **Code-level patterns**: [code-patterns.md](../../../references/code-patterns.md) — the laziness ladder & simplicity principles, prefix discipline, SCSS, RTL, framework-agnostic logic, component placement, comments
 - **Process conventions**: [conventions.md](../../../references/conventions.md) — commits, branches, license headers, hooks
 - **General overview**: [AGENTS.md](../../../AGENTS.md) — monorepo pointer index
