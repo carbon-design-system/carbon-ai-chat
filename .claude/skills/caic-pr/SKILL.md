@@ -25,29 +25,35 @@ Write it like the docs: follow [tone.md](../../../references/tone.md), kept ters
 
 ## Branch check
 
-Run this before anything else. A PR from `main` is always wrong.
+Run this before anything else.
 
 1. **Read the current branch.** `git branch --show-current`.
 
-2. **If the branch is `main`:**
-   - Do not proceed with drafting.
-   - Inspect the uncommitted changes and recent commits (`git log main..HEAD --oneline`, `git status --short`) to infer what the work is about.
+2. **Determine the base branch.** The base is not always `main` — integration or release branches (e.g. `next`, `v2`, `release/3.x`) are valid PR targets too.
+   - If the user named a target branch, use it.
+   - Otherwise, inspect the upstream remote's default branch: `gh repo view <UPSTREAM_OWNER>/<REPO> --json defaultBranchRef --jq '.defaultBranchRef.name'`.
+   - If the current branch appears to have diverged from an integration branch (e.g. `git log next..HEAD --oneline` returns commits but `git log main..HEAD --oneline` returns none), surface that as the likely base and confirm with the user before proceeding.
+   - Record the resolved base as `<BASE>` — every subsequent `git log` and `git diff` command in this workflow uses `<BASE>`, not a hardcoded `main`.
+
+3. **If the current branch is the same as `<BASE>`:**
+   - Do not proceed with drafting. A PR from a base branch onto itself is always wrong.
+   - Inspect uncommitted changes and recent commits (`git log <BASE>..HEAD --oneline`, `git status --short`) to infer what the work is about.
    - Propose a kebab-case feature branch name derived from that context — e.g. `feat/add-user-auth`, `fix/modal-focus-trap`. Follow [conventions.md](../../../references/conventions.md): kebab-case, descriptive, prefixed with the conventional-commit type (`feat/`, `fix/`, `chore/`, `docs/`, etc.).
-   - Ask: _"You're on `main`. I'd suggest `<proposed-name>` — want to use that, or supply your own?"_ Wait for confirmation before creating the branch (`git checkout -b <name>`).
+   - Ask: _"You're on `<BASE>`. I'd suggest `<proposed-name>` — want to use that, or supply your own?"_ Wait for confirmation before creating the branch (`git checkout -b <name>`).
    - Once on the feature branch, continue to the workflow below.
 
-3. **If the branch is already a feature branch:**
-   - Compare the branch name's stated intent against the actual changes: run `git log main..HEAD --oneline` and `git diff main..HEAD --stat`.
+4. **If the branch is already a feature branch:**
+   - Compare the branch name's stated intent against the actual changes: run `git log <BASE>..HEAD --oneline` and `git diff <BASE>..HEAD --stat`.
    - If the diff is clearly out of scope for what the branch name implies (e.g. branch is `fix/tooltip-color` but commits touch auth, routing, or unrelated features), flag it: _"The branch name `<name>` doesn't seem to match these changes — consider renaming the branch or splitting the work before opening a PR."_ Give a concrete suggested name for the actual changes.
    - If the scope looks coherent, proceed silently.
 
 ## Workflow
 
-1. **Pick the commit range.** Default base is `main`. Run `git log main..HEAD --oneline` and present the list to the user. Ask which commits to include — they may want to exclude WIP, fixup, or chore commits, or scope the description to a subset. Wait for an answer before drafting.
+1. **Pick the commit range.** Use `<BASE>` resolved in the Branch check above. Run `git log <BASE>..HEAD --oneline` and present the list to the user. Ask which commits to include — they may want to exclude WIP, fixup, or chore commits, or scope the description to a subset. Wait for an answer before drafting.
 
 2. **Re-read the template.** Always read [.github/PULL_REQUEST_TEMPLATE.md](../../../.github/PULL_REQUEST_TEMPLATE.md) fresh — its structure may have changed since this file was written. Match its sections exactly.
 
-3. **Inspect the diff.** `git diff <base>..HEAD --stat` plus focused `git diff` on files that need it. Identify files with **particularly complex changes** (large rewrites, subtle invariants, perf-critical paths, non-obvious refactors) — these get called out by name in the Short description.
+3. **Inspect the diff.** `git diff <BASE>..HEAD --stat` plus focused `git diff` on files that need it. Identify files with **particularly complex changes** (large rewrites, subtle invariants, perf-critical paths, non-obvious refactors) — these get called out by name in the Short description.
 
 4. **Draft the file** following the template. Per-section guidance:
    - **`Closes #`** — leave the line as-is unless the user gave issue numbers. If they did, write one `Closes #N` per line; `Closes #1, #2` links only the first.
@@ -81,7 +87,7 @@ Before running the command:
 
 gh pr create \
   --repo <UPSTREAM_OWNER>/<REPO> \
-  --base main \
+  --base <BASE> \
   --head <ORIGIN_OWNER>:<BRANCH> \
   --title "<type>: <subject>" \
   --body-file .github/pr-drafts/<branch-name>.md
