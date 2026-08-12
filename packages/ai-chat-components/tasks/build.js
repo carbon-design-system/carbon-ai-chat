@@ -78,6 +78,7 @@ async function build() {
     '!src/**/*.test.ts',
     '!src/**/*.stories.ts',
     '!src/**/*.d.ts',
+    '!src/**/__tests__/**',
     '!src/globals/internal/storybook-cdn.ts',
   ]);
 

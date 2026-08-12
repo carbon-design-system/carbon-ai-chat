@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/carbon-design-system/carbon-ai-chat",
-    "directory": "packages/ai-chat"
+    "directory": "packages/ai-chat-components"
   },
   "publishConfig": {
     "access": "public",
