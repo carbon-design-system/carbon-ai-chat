@@ -9,10 +9,8 @@
 
 import { css, html, LitElement, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import '@carbon/web-components/es/components/icon-button/index.js';
 
 import { carbonElement } from '../../../../globals/decorators/carbon-element.js';
-import { isDirectionRTL } from '../../../../globals/utils/rtl-utils.js';
 import prefix from '../../../../globals/settings.js';
 import { AriaAnnouncerManager } from '../../../../globals/utils/aria-announcer-manager.js';
 
@@ -75,6 +73,13 @@ export interface AutocompleteI18n {
    * @example (label) => `${label} inserted.`
    */
   itemInserted: (label: string) => string;
+  /**
+   * Announced when an item is sent to the chat.
+   * Receives the item label.
+   *
+   * @example (label) => `${label} sent.`
+   */
+  itemSent: (label: string) => string;
   /** Announced when the suggestions list is closed/dismissed. */
   suggestionsClosed: string;
   /** Accessible label for the listbox element. */
@@ -89,6 +94,7 @@ export const defaultAutocompleteI18n: AutocompleteI18n = {
   itemNavigation: (label, description, position) =>
     `${label}${description ? `, ${description}` : ''}, ${position}`,
   itemInserted: (label) => `${label} inserted.`,
+  itemSent: (label) => `${label} sent.`,
   suggestionsClosed: 'Suggestions closed.',
   listboxLabel: 'Autocomplete options',
 };
@@ -111,8 +117,8 @@ export interface AutocompleteSendEventDetail {
  * Autocomplete component for AI Chat input suggestions.
  *
  * @element cds-aichat-autocomplete
- * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - Fired when an item is selected
- * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - Fired when send button is clicked for an item
+ * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - Fired when an item is clicked/activated and `disableDirectSend` is true (insert-into-editor path)
+ * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - Fired when an item is clicked/activated and `disableDirectSend` is false (default: sends directly to chat)
  * @fires {CustomEvent} cds-aichat-autocomplete-dismiss - Fired when the autocomplete is dismissed
  */
 @carbonElement(`${prefix}-autocomplete`)
@@ -153,10 +159,14 @@ class AutocompleteElement extends LitElement {
   inputText = '';
 
   /**
-   * Whether to render the send button inside autocomplete items.
+   * When `false` (default), clicking an item fires `cds-aichat-autocomplete-send` and
+   * the item sends directly to chat.
+   *
+   * When `true`, clicking an item fires `cds-aichat-autocomplete-select` instead
+   * and inserts it into the editor rather than send immediately.
    */
-  @property({ type: Boolean, reflect: true, attribute: 'enable-send-button' })
-  enableSendButton = true;
+  @property({ type: Boolean, reflect: true, attribute: 'disable-direct-send' })
+  disableDirectSend = false;
 
   /**
    * Whether the autocomplete is attached to another element (e.g., an input field).
@@ -171,12 +181,6 @@ class AutocompleteElement extends LitElement {
    */
   @property({ type: Object, attribute: false })
   anchorElement: Element | null = null;
-
-  /**
-   * Whether the component is in RTL mode.
-   * @internal
-   */
-  @state() private isRTL = false;
 
   /**
    * Currently active item index
@@ -353,6 +357,7 @@ class AutocompleteElement extends LitElement {
       return;
     }
     this._focusedIndex = index;
+    this._announcer.announce(this.i18n.itemSent(item.label));
     this.dispatchEvent(
       new CustomEvent<AutocompleteSendEventDetail>(
         'cds-aichat-autocomplete-send',
@@ -383,9 +388,10 @@ class AutocompleteElement extends LitElement {
       return;
     }
     // Check if click is on anchor element
+    const { anchorElement } = this;
     if (
-      this.anchorElement &&
-      path.filter(isNode).some((n) => this.anchorElement!.contains(n))
+      anchorElement &&
+      path.filter(isNode).some((n) => anchorElement.contains(n))
     ) {
       return;
     }
@@ -432,11 +438,16 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleItemClick(index: number) {
-    this._focusedIndex = index;
-    const item = this._getItemAtIndex(index);
-    if (item) {
-      this._selectItem(item);
+    if (!this.disableDirectSend) {
+      this._handleSend(index);
+      return;
     }
+    const item = this._getItemAtIndex(index);
+    if (!item) {
+      return;
+    }
+    this._focusedIndex = index;
+    this._selectItem(item);
   }
 
   private _getActiveOptionId(): string | undefined {
@@ -539,23 +550,10 @@ class AutocompleteElement extends LitElement {
           </div>
         </div>
         ${
-          this.enableSendButton
-            ? html`
-                <cds-icon-button
-                  align="${this.isRTL ? 'top-start' : 'top-end'}"
-                  aria-label="Send ${item.label}"
-                  class="${itemClass}__send"
-                  kind="ghost"
-                  size="md"
-                  tabindex="-1"
-                  @click="${(e: Event) => {
-                    e.stopPropagation();
-                    this._handleSend(index);
-                  }}">
-                  ${iconLoader(SendFilled16, { slot: 'icon' })}
-                  <span slot="tooltip-content">Send message</span>
-                </cds-icon-button>
-              `
+          !this.disableDirectSend
+            ? html`<span aria-hidden="true" class="${itemClass}__send-icon">
+                ${iconLoader(SendFilled16)}
+              </span>`
             : null
         }
       </li>
@@ -563,8 +561,6 @@ class AutocompleteElement extends LitElement {
   }
 
   render() {
-    this.isRTL = isDirectionRTL();
-
     const totalItems = this._getTotalItemCount();
 
     // Always render the live regions so the last announcement is not lost

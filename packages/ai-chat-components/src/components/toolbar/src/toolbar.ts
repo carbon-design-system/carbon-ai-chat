@@ -285,10 +285,17 @@ class CDSAIChatToolbar extends LitElement {
   }
 
   render() {
-    const { hiddenActions, visibleActions } = this.getActions();
-    const showOverflowMenu = hiddenActions.length > 0;
+    const {
+      hiddenActions: rawHiddenActions,
+      visibleActions: rawVisibleActions,
+    } = this.getActions();
+    const showOverflowMenu = rawHiddenActions.length > 1;
+    const visibleActions = showOverflowMenu
+      ? rawVisibleActions
+      : [...rawVisibleActions, ...rawHiddenActions];
+    const hiddenActions = showOverflowMenu ? rawHiddenActions : [];
     const showInitialActions =
-      visibleActions.length === 0 && hiddenActions.length === 0;
+      rawVisibleActions.length === 0 && rawHiddenActions.length === 0;
 
     return html`
       <div data-rounded="top" class=${blockClass}>

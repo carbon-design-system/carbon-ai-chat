@@ -162,10 +162,10 @@ export default {
       description:
         'The current input text. Suggestion items will apply styling to indicate what the user has already typed.',
     },
-    enableSendButton: {
+    disableDirectSend: {
       control: 'boolean',
       description:
-        'Whether to render the send button inside each suggestion item.',
+        'When `false` (default), clicking an item fires `cds-aichat-autocomplete-send` and shows a send icon on hover. When `true`, clicking fires `cds-aichat-autocomplete-select` (insert-into-editor) and no send icon is shown.',
     },
     attached: {
       control: 'boolean',
@@ -175,13 +175,13 @@ export default {
   },
   args: {
     inputText: '',
-    enableSendButton: true,
+    disableDirectSend: false,
     attached: true,
   },
 };
 
 export const Default = {
-  render: ({ inputText, enableSendButton, attached }) => {
+  render: ({ inputText, disableDirectSend, attached }) => {
     const query = inputText || '';
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
@@ -191,7 +191,7 @@ export const Default = {
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .items=${filteredItems}
           ?attached=${attached}
-          ?enable-send-button=${enableSendButton}
+          ?disable-direct-send=${disableDirectSend}
           input-text=${inputText}
           @cds-aichat-autocomplete-select=${(e) =>
             action('cds-aichat-autocomplete-select')(e.detail)}
@@ -207,7 +207,7 @@ export const Default = {
 };
 
 export const WithHeader = {
-  render: ({ inputText, enableSendButton, attached }) => {
+  render: ({ inputText, disableDirectSend, attached }) => {
     const query = inputText || '';
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
@@ -217,7 +217,7 @@ export const WithHeader = {
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .items=${filteredItems}
           ?attached=${attached}
-          ?enable-send-button=${enableSendButton}
+          ?disable-direct-send=${disableDirectSend}
           .headerConfig=${{ showHeader: true, title: 'Prompt suggestions' }}
           input-text=${inputText}
           @cds-aichat-autocomplete-select=${(e) =>
@@ -234,7 +234,7 @@ export const WithHeader = {
 };
 
 export const WithCategories = {
-  render: ({ inputText, enableSendButton, attached }) => {
+  render: ({ inputText, disableDirectSend, attached }) => {
     const query = inputText || '';
     const filteredGroups = filterSuggestionGroups(
       suggestionGroupsWithAvatars,
@@ -247,7 +247,7 @@ export const WithCategories = {
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .groups=${filteredGroups}
           ?attached=${attached}
-          ?enable-send-button=${enableSendButton}
+          ?disable-direct-send=${disableDirectSend}
           input-text=${inputText}
           @cds-aichat-autocomplete-select=${(e) =>
             action('cds-aichat-autocomplete-select')(e.detail)}
@@ -266,7 +266,7 @@ export const Detached = {
   args: {
     attached: false,
   },
-  render: ({ inputText, enableSendButton, attached }) => {
+  render: ({ inputText, disableDirectSend, attached }) => {
     const query = inputText || '';
     const filteredItems = filterSuggestions(flatSuggestions, query);
 
@@ -275,7 +275,7 @@ export const Detached = {
         <cds-aichat-autocomplete
           style="--cds-aichat-autocomplete-max-height: 328px;"
           .items=${filteredItems}
-          ?enable-send-button=${enableSendButton}
+          ?disable-direct-send=${disableDirectSend}
           input-text=${inputText}
           ?attached=${attached}
           @cds-aichat-autocomplete-select=${(e) =>

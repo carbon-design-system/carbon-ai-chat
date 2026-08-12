@@ -78,13 +78,16 @@ export interface CustomListProps {
   query: string;
   /** Callback to invoke when list should be dismissed. */
   onDismiss: () => void;
-  /** Callback to invoke when user selects an item. */
-  onSelect: (item: SuggestionItem) => void;
   /**
-   * Callback to invoke when user clicks the send-directly-from-item button.
-   * The text is the item's value that was sent.
+   * Callback to invoke when user sends an item directly to chat, bypassing
+   * the editor.
    */
   onSend: (text: string) => void;
+  /**
+   * Callback to invoke when user selects an item to insert into the editor
+   * without sending to chat.
+   */
+  onSelect: (item: SuggestionItem) => void;
 }
 
 /**
@@ -109,14 +112,29 @@ export interface BaseSuggestionConfig {
 
   /** Replace the built-in suggestion list UI. */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
+
+  /**
+   * When `true`, clicking a suggestion item fires `cds-aichat-autocomplete-select`
+   * and inserts the item into the editor rather than sending immediately.
+   * Defaults to `false`. This property is ommitted in TriggerSuggestionConfig
+   * since mentions and commands should always insert into the editor.
+   */
+  disableDirectSend?: boolean;
 }
 
 /**
  * Trigger-character-driven suggestion config. Used by `carbonMention` and
  * `carbonCommand` (the carbon factories distinguish them only by their
  * default Tiptap node `name`).
+ *
+ * Mention and command items always insert a token chip into the editor.
+ * `disableDirectSend` is always `true` for these triggers and is therefore
+ * omitted so it cannot be set or overridden.
  */
-export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
+export interface TriggerSuggestionConfig extends Omit<
+  BaseSuggestionConfig,
+  'disableDirectSend'
+> {
   /** Character that activates the suggestion (e.g. "@", "/"). */
   trigger: string;
 
@@ -180,7 +198,7 @@ export interface AutocompleteConfig extends BaseSuggestionConfig {
  */
 export interface StartersConfig extends Pick<
   BaseSuggestionConfig,
-  'renderCustomList'
+  'renderCustomList' | 'disableDirectSend'
 > {
   /** The starter prompts to display. */
   items: SuggestionItem[];

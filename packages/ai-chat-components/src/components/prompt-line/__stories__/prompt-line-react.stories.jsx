@@ -221,8 +221,8 @@ export default {
 
 export const Default = {
   argTypes: {
-    enableSendButton: { table: { disable: true } },
     attached: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
   },
   render: ({
     placeholder,
@@ -283,8 +283,8 @@ export const Default = {
 
 export const Expanded = {
   argTypes: {
-    enableSendButton: { table: { disable: true } },
     attached: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
   },
   render: ({
     placeholder,
@@ -351,7 +351,6 @@ const CommandsAndMentionsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
-  enableSendButton,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
@@ -399,13 +398,6 @@ const CommandsAndMentionsStory = ({
     setHasValidInput(e.detail.rawValue.length > 0);
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
-
-  React.useEffect(() => {
-    const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
-    if (el) {
-      el.enableSendButton = enableSendButton;
-    }
-  }, [enableSendButton, autocompleteContent]);
 
   return (
     <Wrapper>
@@ -455,7 +447,6 @@ const CommandsAndMentionsStory = ({
 
 export const CommandsAndMentions = {
   name: 'Commands and mentions',
-  args: { enableSendButton: false },
   render: (args) => <CommandsAndMentionsStory {...args} />,
 };
 
@@ -465,17 +456,17 @@ export const CommandsAndMentions = {
 
 function renderStarterList({
   items,
-  onSelect,
   onSend,
+  onSelect,
   onDismiss,
-  enableSendButton,
   attached,
+  disableDirectSend,
 }) {
   const el = document.createElement('cds-aichat-autocomplete');
   el.items = items;
   el.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   el.attached = attached;
-  el.enableSendButton = enableSendButton;
+  el.disableDirectSend = disableDirectSend ?? false;
   el.addEventListener('cds-aichat-autocomplete-select', (e) =>
     onSelect(e.detail.item)
   );
@@ -495,8 +486,8 @@ const ConversationStartersStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
-  enableSendButton,
   attached,
+  disableDirectSend,
 }) => {
   const [startersEnabled, setStartersEnabled] = useState(true);
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -507,9 +498,9 @@ const ConversationStartersStory = ({
       items: starterItems,
       isOn: startersEnabled,
       renderCustomList: (props) =>
-        renderStarterList({ ...props, enableSendButton, attached }),
+        renderStarterList({ ...props, attached, disableDirectSend }),
     }),
-    [startersEnabled, enableSendButton, attached]
+    [startersEnabled, attached, disableDirectSend]
   );
 
   const extensions = useMemo(
@@ -712,8 +703,8 @@ const FileUploadsStory = ({
 export const FileUploads = {
   name: 'File uploads',
   argTypes: {
-    enableSendButton: { table: { disable: true } },
     attached: { table: { disable: true } },
+    disableDirectSend: { table: { disable: true } },
   },
   render: (args) => <FileUploadsStory {...args} />,
 };
@@ -731,8 +722,8 @@ const TypeaheadStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
-  enableSendButton,
   attached,
+  disableDirectSend,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -770,10 +761,10 @@ const TypeaheadStory = ({
   React.useEffect(() => {
     const el = shellRef.current?.querySelector('cds-aichat-autocomplete');
     if (el) {
-      el.enableSendButton = enableSendButton;
       el.inputText = inputText;
+      el.disableDirectSend = disableDirectSend ?? false;
     }
-  }, [enableSendButton, inputText, autocompleteContent]);
+  }, [inputText, disableDirectSend, autocompleteContent]);
 
   return (
     <WrapperBottom>
@@ -997,34 +988,34 @@ export const CDSAIChatAutocompleteAPI = {
       description:
         'The text already typed by the user; used to highlight the matching prefix in each item.',
     },
-    enableSendButton: {
-      control: 'boolean',
-      description: 'Shows a send button inside each suggestion item.',
-      table: { category: '' },
-    },
     attached: {
       control: 'boolean',
       description:
         'When `true`, suppresses bottom corner rounding (use when overlaying the input).',
       table: { category: '' },
     },
+    disableDirectSend: {
+      control: 'boolean',
+      description:
+        'When `false` (default), clicking an item fires `cds-aichat-autocomplete-send` and sends directly to chat. When `true`, clicking fires `cds-aichat-autocomplete-select` and inserts the item into the editor instead.',
+    },
   },
   args: {
     inputText: '',
-    enableSendButton: true,
     attached: true,
+    disableDirectSend: false,
   },
-  render: ({ inputText, enableSendButton, attached }) => (
+  render: ({ inputText, attached, disableDirectSend }) => (
     <WrapperBottom>
       <PromptLineShell rounded>
         <CDSAIChatAutocomplete
           slot="autocomplete-content"
           items={typeaheadItems.slice(0, 5)}
           inputText={inputText}
-          enableSendButton={enableSendButton}
           attached={attached}
-          onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
+          disableDirectSend={disableDirectSend}
           onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
+          onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
           onDismiss={() => action('cds-aichat-autocomplete-dismiss')()}
         />
         <PromptLine slot="editor" placeholder="Ask a question..." />

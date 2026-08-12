@@ -282,14 +282,14 @@ Here's a minimal implementation.
   </thead>
   <tbody>
     <tr>
-      <td><code>cds-aichat-autocomplete-select</code></td>
-      <td>Fired when the user picks a suggestion.</td>
-      <td>• <code>item</code> (SuggestionItem)</td>
+      <td><code>cds-aichat-autocomplete-send</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>disable-direct-send</code> is <code>false</code> (default). The item text is sent directly to chat.</td>
+      <td>• <code>text</code> (string)</td>
     </tr>
     <tr>
-      <td><code>cds-aichat-autocomplete-send</code></td>
-      <td>Fired when the send button inside an item is clicked.</td>
-      <td>• <code>text</code> (string)</td>
+      <td><code>cds-aichat-autocomplete-select</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>disable-direct-send</code> is <code>true</code>. Use this when the item should be inserted into the editor rather than sent immediately.</td>
+      <td>• <code>item</code> (SuggestionItem)</td>
     </tr>
     <tr>
       <td><code>cds-aichat-autocomplete-dismiss</code></td>
