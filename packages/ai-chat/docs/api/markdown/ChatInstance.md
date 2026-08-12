@@ -234,10 +234,23 @@ instance.scrollToMessage("a3f1c9e0-2b7d-4e51-9c8a-1d2f3b4c5d6e");
 Sends the given message to the assistant. Fires `pre:send` then `send` on
 the event bus before delegating to `customSendMessage`.
 
+**Settlement points:**
+- Resolves when `customSendMessage` completes, or when the turn is stopped
+  or the conversation restarted while the message is in flight.
+- Rejects when `customSendMessage` throws, when the send path fails
+  terminally (for example a timeout), or when called in read-only mode.
+
+The promise settling does **not** mean a response has arrived. Response
+delivery is handled asynchronously by `customSendMessage` itself; use
+`{@link EventHandlers.on}` with the `receive` event to react to incoming
+messages.
+
 ## Examples
 
 ```ts
 await instance.send("What is the weather today?");
+// The promise resolves once customSendMessage has completed.
+// Listen for the receive event to handle the assistant's response.
 ```
 
 ```ts

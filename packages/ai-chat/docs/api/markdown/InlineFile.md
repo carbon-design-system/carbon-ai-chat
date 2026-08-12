@@ -19,16 +19,6 @@ interface InlineFile
 
 ## Members
 
-### error
-
-`error?: { message: string }`
-
-**Experimental.**
-
-Optional error information.
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.InlineFile.html#error)
-
 ### file
 
 `file: File`
@@ -48,16 +38,6 @@ The actual File object.
 Optional unique ID for tracking.
 
 [Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.InlineFile.html#id)
-
-### status
-
-`status?: FileStatusValue`
-
-**Experimental.**
-
-Optional upload status (for UI feedback).
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.InlineFile.html#status)
 
 ### type
 
