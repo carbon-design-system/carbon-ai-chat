@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.BaseSuggestionConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.BaseSuggestionConfig.html
 
 Fields shared by every Carbon suggestion config (mention, command,
 autocomplete). Provides the item source, debounce, minimum query length,

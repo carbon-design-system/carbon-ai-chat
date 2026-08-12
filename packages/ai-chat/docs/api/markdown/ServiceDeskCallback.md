@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html
 
 This interface represents the operations that a service desk integration can call on Carbon AI Chat when it wants web
 chat to do something. When a service desk integration instance is created, Carbon AI Chat will provide an
@@ -22,7 +22,7 @@ interface ServiceDeskCallback
 
 Informs the chat widget that the agent has ended the conversation.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentendedchat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentendedchat)
 
 ### agentJoined
 
@@ -30,7 +30,7 @@ Informs the chat widget that the agent has ended the conversation.
 
 Informs the chat widget that an agent has joined the chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentjoined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentjoined)
 
 ### agentLeftChat
 
@@ -40,7 +40,7 @@ Informs the chat widget that the agent has left the conversation. This does not 
 rather the only action that occurs is the visitor receives the agent left status message. If the user sends
 another message, it is up to the service desk to decide what to do with it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentleftchat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentleftchat)
 
 ### agentReadMessages
 
@@ -48,7 +48,7 @@ another message, it is up to the service desk to decide what to do with it.
 
 Informs the chat widget that the agent has read all the messages that have been sent to the service desk.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentreadmessages)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#agentreadmessages)
 
 ### agentTyping
 
@@ -56,7 +56,7 @@ Informs the chat widget that the agent has read all the messages that have been 
 
 Tells the chat widget if an agent has started or stopped typing.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#agenttyping)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#agenttyping)
 
 ### beginTransferToAnotherAgent
 
@@ -67,7 +67,7 @@ optional if the service desk doesn't have the information available. This messag
 that the transfer has started. The service desk should inform the widget when the transfer is complete by
 sending a agentJoined message later.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#begintransfertoanotheragent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#begintransfertoanotheragent)
 
 ### persistedState
 
@@ -76,7 +76,7 @@ sending a agentJoined message later.
 Returns the persisted agent state from the store. This is the current state as updated by
 updatePersistedState. The object returned here is frozen and may not be modified.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#persistedstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#persistedstate)
 
 ### screenShareEnded
 
@@ -85,7 +85,7 @@ updatePersistedState. The object returned here is frozen and may not be modified
 Informs Carbon AI Chat that a screen sharing session has ended or been cancelled. This may occur while waiting for a
 screen sharing request to be accepted or while screen sharing is in progress.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#screenshareended)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#screenshareended)
 
 ### screenShareRequest
 
@@ -95,7 +95,7 @@ Requests that the user share their screen with the agent. This will present a mo
 respond before continuing the conversation. This method returns a Promise that resolves when the user has
 responded to the request or the request times out.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#screensharerequest)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#screensharerequest)
 
 ### sendMessageToUser
 
@@ -106,7 +106,7 @@ Sends a message to the chat widget from an agent.
 Note: The text response type from the standard Watson API is supported in addition to the Carbon AI Chat specific
 MessageResponseTypes.INLINE_ERROR response type.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#sendmessagetouser)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#sendmessagetouser)
 
 ### setErrorStatus
 
@@ -114,7 +114,7 @@ MessageResponseTypes.INLINE_ERROR response type.
 
 Sets the state of the given error type.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#seterrorstatus)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#seterrorstatus)
 
 ### setFileUploadStatus
 
@@ -131,7 +131,7 @@ case, the file no longer appears in the input area but appears as a sent message
 error occurs during this time, an icon will appear next to the message to indicate an error occurred and an
 error message will be added to the message list.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#setfileuploadstatus)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#setfileuploadstatus)
 
 ### updateAgentAvailability
 
@@ -145,7 +145,7 @@ Note: Of the fields in the AgentAvailability object, only one of positionInQueue
 rendered in the widget. If both fields are provided, estimatedWaitTime will take priority and the
 positionInQueue field will be ignored.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#updateagentavailability)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#updateagentavailability)
 
 ### updateCapabilities
 
@@ -154,7 +154,7 @@ positionInQueue field will be ignored.
 Updates Carbon AI Chat with the capabilities supported by the service desk. Some of these capabilities may support
 being changed dynamically and can be updated at any time.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#updatecapabilities)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#updatecapabilities)
 
 ### updatePersistedState
 
@@ -168,4 +168,4 @@ When Carbon AI Chat is reloaded, the data provided here will be returned to the 
 ServiceDeskFactoryParameters.persistedState property. This data may also be retrieved by using the
 persistedState method.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ServiceDeskCallback.html#updatepersistedstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ServiceDeskCallback.html#updatepersistedstate)

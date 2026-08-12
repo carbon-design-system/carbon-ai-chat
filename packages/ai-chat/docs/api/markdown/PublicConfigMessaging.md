@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html
 
 Config options for controlling messaging.
 
@@ -23,7 +23,7 @@ this function is defined, it will be used instead of any other mechanism for fet
 
 If this function is mutated after it was initially called, the chat does not re-call it.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html#customloadhistory)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html#customloadhistory)
 
 ### customSendMessage
 
@@ -37,7 +37,7 @@ sent when the previous is still processing. If the Promise rejects, an error ind
 
 If the request takes longer than PublicConfigMessaging.messageTimeoutSecs than the AbortSignal will be sent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html#customsendmessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html#customsendmessage)
 
 ### messageLoadingIndicatorTimeoutSecs
 
@@ -48,7 +48,7 @@ the loading indicator on its own. This is tied to either ChatInstanceMessaging.a
 ChatInstanceMessaging.addMessageChunk being called after this message was sent. If neither of those methods
 are called with in the window defined here, the loading indicator will be shown.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html#messageloadingindicatortimeoutsecs)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html#messageloadingindicatortimeoutsecs)
 
 ### messageTimeoutSecs
 
@@ -60,7 +60,7 @@ to customSendMessage. If set to 0, the chat will never timeout.  This is tied to
 ChatInstanceMessaging.addMessageChunk being called after this message was sent. If neither of those methods
 are called with in the window defined here, the chat will timeout (unless the value is set to 0).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html#messagetimeoutsecs)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html#messagetimeoutsecs)
 
 ### showStopButtonImmediately
 
@@ -81,7 +81,7 @@ When `false` (default), the stop button only appears after the first streaming c
 arrives with `cancellable: true` metadata, maintaining backward compatibility with
 existing behavior.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html#showstopbuttonimmediately)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html#showstopbuttonimmediately)
 
 ### skipWelcome
 
@@ -93,4 +93,4 @@ true, then Carbon AI Chat will start with an empty conversation.
 **Manual session management required**: Changes to this property after conversation has started have no effect.
 To apply new welcome behavior, call `instance.messaging.restartConversation()`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PublicConfigMessaging.html#skipwelcome)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMessaging.html#skipwelcome)

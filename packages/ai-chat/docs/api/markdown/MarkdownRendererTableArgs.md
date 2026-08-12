@@ -1,16 +1,18 @@
 # MarkdownRendererTableArgs
 
+**Experimental.**
+
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.MarkdownRendererTableArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.MarkdownRendererTableArgs.html
 
 Argument passed to the markdown table renderer callbacks on
 CustomMarkdownRenderers.table and
 WCCustomMarkdownRenderers.table. Extends
-MarkdownRendererTableData with the source markdown-it token and a
-`slotName` that is stable across renders and unique across every rendered
-markdown block on the page, so it is safe to use as a key. Treat the value
-as opaque; its format is not part of the API.
+MarkdownRendererTableData with the source token, full
+TokenTree node, and a `slotName` that is stable across renders and
+unique across every rendered markdown block on the page, so it is safe to
+use as a key. Treat the value as opaque; its format is not part of the API.
 
 ## Signature
 
@@ -22,4 +24,5 @@ type MarkdownRendererTableArgs = _MarkdownRendererTableArgs
 
 - [CustomMarkdownRenderers.table](./CustomMarkdownRenderers.md)
 - [MarkdownRendererTableData](./MarkdownRendererTableData.md)
+- [TokenTree](./TokenTree.md)
 - [WCCustomMarkdownRenderers.table](./WCCustomMarkdownRenderers.md)

@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.StartersConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.StartersConfig.html
 
 Configuration for starter prompts consumed by InputConfig.starters.
 Extends BaseSuggestionConfig so a `renderCustomList` callback can

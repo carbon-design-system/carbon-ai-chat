@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.ToolbarAction.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.ToolbarAction.html
 
 A single custom action button, used by both the chat header toolbar
 (HeaderConfig.actions) and the chat input actions row

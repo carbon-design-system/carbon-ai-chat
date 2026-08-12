@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.WCRenderUserDefinedResponse.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.WCRenderUserDefinedResponse.html
 
 The type of the render function used to render user defined responses in web components.
 This function should return an HTMLElement to display for the given user defined state,

@@ -1,12 +1,14 @@
 # MarkdownRendererImageArgs
 
+**Experimental.**
+
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.MarkdownRendererImageArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.MarkdownRendererImageArgs.html
 
 Argument passed to an CustomMarkdownRenderers.image /
 WCCustomMarkdownRenderers.image callback — the parsed image data
-(src, alt, title, attributes) plus the source markdown-it token.
+(src, alt, title, attributes) plus the source token and node.
 
 ## Signature
 
