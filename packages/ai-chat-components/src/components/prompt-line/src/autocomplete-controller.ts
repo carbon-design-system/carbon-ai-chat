@@ -517,17 +517,21 @@ export class AutocompleteController {
 
   private _resolveDisableDirectSend(): boolean | undefined {
     const trigger = this._trigger;
-    // mention and command always insert into the editor.
-    if (!trigger || trigger.type === 'mention' || trigger.type === 'command') {
-      return true;
+
+    if (!trigger) {
+      return undefined;
     }
-    if (trigger.type === 'starter') {
-      if (this._isSendDisabled) {
+
+    switch (trigger.type) {
+      case 'starter':
+        return this._starters?.disableDirectSend;
+      case 'mention':
         return true;
-      }
-      return this._starters?.disableDirectSend;
+      case 'command':
+        return true;
+      default:
+        return this._autocomplete?.disableDirectSend;
     }
-    return this._autocomplete?.disableDirectSend;
   }
 
   private _emit(): void {
@@ -791,6 +795,9 @@ class AutocompleteControllerElement extends LitElement {
   }
 
   private _sendItem(text: string): void {
+    if (this.isSendDisabled) {
+      return;
+    }
     this._controller?.dismiss(true);
     this.dispatchEvent(
       new CustomEvent('cds-aichat-autocomplete-item-send', {

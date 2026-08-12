@@ -157,8 +157,11 @@ export function useChatAutocomplete(
     onSelectItemRef.current?.(item);
   }, []);
 
+  const isSendDisabledRef = React.useRef(isSendDisabled);
+  isSendDisabledRef.current = isSendDisabled;
+
   const handleSend = React.useCallback((text: string) => {
-    if (!text) {
+    if (!text || isSendDisabledRef.current) {
       return;
     }
     controllerRef.current?.dismiss(true);
