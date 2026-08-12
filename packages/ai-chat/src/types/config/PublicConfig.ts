@@ -239,8 +239,6 @@ export interface PublicConfig {
   /**
    * Markdown rendering customization. The framework-neutral subset; React and
    * web-component layers extend this with their own `customRenderers` member.
-   *
-   * @experimental
    */
   markdown?: PublicConfigMarkdown;
 }
@@ -251,7 +249,6 @@ export interface PublicConfig {
  * matching `MarkdownIt.use(...)`.
  *
  * @category Config
- * @experimental
  */
 export type MarkdownItPlugin = _MarkdownItPlugin;
 
@@ -262,7 +259,6 @@ export type MarkdownItPlugin = _MarkdownItPlugin;
  * (`ReactNode` vs `HTMLElement | null`).
  *
  * @category Config
- * @experimental
  */
 export interface PublicConfigMarkdown {
   /**
@@ -270,8 +266,6 @@ export interface PublicConfigMarkdown {
    * (markdown-it-attrs, markdown-it-highlight, markdown-it-task-lists).
    * Memoize this array — a new reference each render rebuilds the
    * markdown-it instance.
-   *
-   * @experimental
    */
   markdownItPlugins?: MarkdownItPlugin[];
 }

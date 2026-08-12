@@ -18,6 +18,11 @@ body:
     validations:
       required: true
   - type: textarea
+    id: decisions
+    attributes:
+      label: Decisions
+      description: "The architecture decision records governing this epic, one line each. Leave empty when there are none. An epic states what work; an ADR states why this shape and what it costs consumers. A choice asserted here that a consumer can feel — an API removed, a default reversed, a behavior dropped — wants a record behind it, or the reasoning lives nowhere and gets re-argued in every child PR. See docs/adr/README.md."
+  - type: textarea
     id: out-of-scope
     attributes:
       label: Out of scope

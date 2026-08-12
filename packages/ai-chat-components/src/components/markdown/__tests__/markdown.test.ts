@@ -1320,6 +1320,68 @@ HTTP: http://example.com
       ).to.not.equal(null);
     });
 
+    it('does not pass the internal token tree to any callback', async () => {
+      // `node` was a `TokenTree` escape hatch on all five arg types. TokenTree is
+      // the streaming-diff structure and is not a consumer contract, so it must
+      // stay out of the payload — nothing else would catch it being re-added.
+      const source = [
+        '| h1 | h2 |',
+        '| --- | --- |',
+        '| a | b |',
+        '',
+        '```ts',
+        'const x = 1;',
+        '```',
+        '',
+        '[label](https://example.com "link title")',
+        '',
+        '![alt text](https://example.com/i.png "image title")',
+        '',
+        '- [ ] Task',
+      ].join('\n');
+      const keysByKind: Record<string, string[]> = {};
+      const capture =
+        (kind: string) =>
+        (args: Record<string, unknown>): null => {
+          keysByKind[kind] = Object.keys(args);
+          return null;
+        };
+
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            table: capture('table'),
+            codeBlock: capture('codeBlock'),
+            link: capture('link'),
+            image: capture('image'),
+            checklist: {
+              onToggle: () => {},
+              getChecked: capture('checklistItem'),
+            },
+          }}
+          .markdown=${source}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+
+      expect(Object.keys(keysByKind).sort()).to.deep.equal([
+        'checklistItem',
+        'codeBlock',
+        'image',
+        'link',
+        'table',
+      ]);
+      for (const [kind, keys] of Object.entries(keysByKind)) {
+        expect(
+          keys,
+          `${kind} args should not carry the token tree`
+        ).to.not.include('node');
+        expect(
+          keys,
+          `${kind} args should still carry the markdown-it token`
+        ).to.include('token');
+      }
+    });
+
     it('re-invokes the callback after each render', async () => {
       const calls: string[] = [];
       const el = await fixture<MarkdownElementInstance>(

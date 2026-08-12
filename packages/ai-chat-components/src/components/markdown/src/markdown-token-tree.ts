@@ -82,8 +82,6 @@ export const PLUGIN_DELEGABLE_TOKEN_TYPES: ReadonlySet<string> = new Set([
  * A markdown-it plugin reference. Either a bare plugin function or a
  * `[plugin, options]` / `[plugin, ...params]` tuple matching
  * `MarkdownIt.use(...)`.
- *
- * @experimental
  */
 export type MarkdownItPlugin =
   | MarkdownIt.PluginSimple

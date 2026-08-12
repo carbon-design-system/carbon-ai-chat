@@ -1,7 +1,5 @@
 # MarkdownRendererCodeBlockArgs
 
-**Experimental.**
-
 - Kind: TypeAlias
 - Category: Messaging
 - Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.MarkdownRendererCodeBlockArgs.html
@@ -24,5 +22,4 @@ type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs
 
 - [CustomMarkdownRenderers.codeBlock](./CustomMarkdownRenderers.md)
 - [MarkdownRendererCodeBlockData](./MarkdownRendererCodeBlockData.md)
-- [TokenTree](./TokenTree.md)
 - [WCCustomMarkdownRenderers.codeBlock](./WCCustomMarkdownRenderers.md)

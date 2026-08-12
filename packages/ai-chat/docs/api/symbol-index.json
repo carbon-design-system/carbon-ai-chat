@@ -4972,7 +4972,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CdsAiChatContainerAttributes.html#markdown",
       "anchor": "markdown"
     },
@@ -5706,7 +5706,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#markdown",
       "anchor": "markdown"
     },
@@ -6632,7 +6632,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerProps.html#markdown",
       "anchor": "markdown"
     },
@@ -7032,7 +7032,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerPropsMarkdown.html",
       "anchor": null
     },
@@ -7052,7 +7052,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerPropsMarkdown.html#customrenderers",
       "anchor": "customrenderers"
     },
@@ -7070,7 +7070,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerPropsMarkdown.html#markdownitplugins",
       "anchor": "markdownitplugins"
     },
@@ -7516,7 +7516,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatCustomElementProps.html#markdown",
       "anchor": "markdown"
     },
@@ -8201,14 +8201,14 @@
       "kind": "Property",
       "parent": "ChatInstance",
       "category": "Instance",
-      "summary": "Sends the given message to the assistant on the remote server. This will result in a \"pre:send\" and \"send\" event\nbeing fired on the event bus. The returned promise will resolve once a response has received and processed and\nboth the \"pre:receive\" and \"receive\" events have fired. It will reject when too many errors have occurred and\nthe system gives up retrying.",
+      "summary": "Sends the given message to the assistant. Fires `pre:send` then `send` on\nthe event bus before delegating to `customSendMessage`.\n\n**Settlement points:**\n- Resolves when `customSendMessage` completes, or when the turn is stopped\n  or the conversation restarted while the message is in flight.\n- Rejects when `customSendMessage` throws, when the send path fails\n  terminally (for example a timeout), or when called in read-only mode.\n\nThe promise settling does **not** mean a response has arrived. Response\ndelivery is handled asynchronously by `customSendMessage` itself; use\n`{@link EventHandlers.on}` with the `receive` event to react to incoming\nmessages.",
       "description": "",
       "signature": "send: (message: string | MessageRequest<MessageInput>, options?: SendOptions) => Promise<void>",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [
-        "```ts\nawait instance.send(\"What is the weather today?\");\n```",
+        "```ts\nawait instance.send(\"What is the weather today?\");\n// The promise resolves once customSendMessage has completed.\n// Listen for the receive event to handle the assistant's response.\n```",
         "```ts\nawait instance.send(\"Resync context\", { silent: true });\n```"
       ],
       "deprecated": false,
@@ -9617,7 +9617,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html",
       "anchor": null
     },
@@ -9637,7 +9637,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#checklist",
       "anchor": "checklist"
     },
@@ -9655,7 +9655,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#codeblock",
       "anchor": "codeblock"
     },
@@ -9673,7 +9673,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#image",
       "anchor": "image"
     },
@@ -9691,7 +9691,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#link",
       "anchor": "link"
     },
@@ -9709,7 +9709,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#table",
       "anchor": "table"
     },
@@ -13734,10 +13734,8 @@
       "signature": "interface InlineFile",
       "signatures": [],
       "members": [
-        "InlineFile.error",
         "InlineFile.file",
         "InlineFile.id",
-        "InlineFile.status",
         "InlineFile.type"
       ],
       "related": [],
@@ -13747,24 +13745,6 @@
       "experimental": true,
       "url": "interfaces/Type_reference.InlineFile.html",
       "anchor": null
-    },
-    "InlineFile.error": {
-      "name": "error",
-      "kind": "Property",
-      "parent": "InlineFile",
-      "category": "Messaging",
-      "summary": "Optional error information.",
-      "description": "",
-      "signature": "error?: { message: string }",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.InlineFile.html#error",
-      "anchor": "error"
     },
     "InlineFile.file": {
       "name": "file",
@@ -13801,24 +13781,6 @@
       "experimental": true,
       "url": "interfaces/Type_reference.InlineFile.html#id",
       "anchor": "id"
-    },
-    "InlineFile.status": {
-      "name": "status",
-      "kind": "Property",
-      "parent": "InlineFile",
-      "category": "Messaging",
-      "summary": "Optional upload status (for UI feedback).",
-      "description": "",
-      "signature": "status?: FileStatusValue",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.InlineFile.html#status",
-      "anchor": "status"
     },
     "InlineFile.type": {
       "name": "type",
@@ -15147,7 +15109,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownCustomRenderers.html",
       "anchor": null
     },
@@ -15167,7 +15129,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownItPlugin.html",
       "anchor": null
     },
@@ -15185,7 +15147,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererChecklist.html",
       "anchor": null
     },
@@ -15203,7 +15165,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererChecklistItemArgs.html",
       "anchor": null
     },
@@ -15221,7 +15183,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererChecklistToggleArgs.html",
       "anchor": null
     },
@@ -15230,7 +15192,7 @@
       "kind": "TypeAlias",
       "parent": null,
       "category": "Messaging",
-      "summary": "Argument passed to the fenced code-block renderer callbacks on\nCustomMarkdownRenderers.codeBlock and\nWCCustomMarkdownRenderers.codeBlock. Extends\nMarkdownRendererCodeBlockData with the source token, full\nTokenTree node, and a `slotName` that is stable across renders and\nunique across every rendered markdown block on the page, so it is safe to\nuse as a key. Treat the value as opaque; its format is not part of the API.",
+      "summary": "Argument passed to the fenced code-block renderer callbacks on\nCustomMarkdownRenderers.codeBlock and\nWCCustomMarkdownRenderers.codeBlock. Extends\nMarkdownRendererCodeBlockData with the source markdown-it token and\na `slotName` that is stable across renders and unique across every rendered\nmarkdown block on the page, so it is safe to use as a key. Treat the value\nas opaque; its format is not part of the API.",
       "description": "",
       "signature": "type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs",
       "signatures": [],
@@ -15238,13 +15200,12 @@
       "related": [
         "CustomMarkdownRenderers.codeBlock",
         "MarkdownRendererCodeBlockData",
-        "TokenTree",
         "WCCustomMarkdownRenderers.codeBlock"
       ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererCodeBlockArgs.html",
       "anchor": null
     },
@@ -15264,7 +15225,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererCodeBlockData.html",
       "anchor": null
     },
@@ -15273,7 +15234,7 @@
       "kind": "TypeAlias",
       "parent": null,
       "category": "Messaging",
-      "summary": "Argument passed to an CustomMarkdownRenderers.image /\nWCCustomMarkdownRenderers.image callback — the parsed image data\n(src, alt, title, attributes) plus the source token and node.",
+      "summary": "Argument passed to an CustomMarkdownRenderers.image /\nWCCustomMarkdownRenderers.image callback — the parsed image data\n(src, alt, title, attributes) plus the source markdown-it token.",
       "description": "",
       "signature": "type MarkdownRendererImageArgs = _MarkdownRendererImageArgs",
       "signatures": [],
@@ -15285,7 +15246,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererImageArgs.html",
       "anchor": null
     },
@@ -15303,7 +15264,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererImageResult.html",
       "anchor": null
     },
@@ -15312,7 +15273,7 @@
       "kind": "TypeAlias",
       "parent": null,
       "category": "Messaging",
-      "summary": "Argument passed to a CustomMarkdownRenderers.link /\nWCCustomMarkdownRenderers.link callback — the parsed link data\n(href, title, text, attributes) plus the source token and node.",
+      "summary": "Argument passed to a CustomMarkdownRenderers.link /\nWCCustomMarkdownRenderers.link callback — the parsed link data\n(href, title, text, attributes) plus the source markdown-it token.",
       "description": "",
       "signature": "type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs",
       "signatures": [],
@@ -15324,7 +15285,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererLinkArgs.html",
       "anchor": null
     },
@@ -15345,7 +15306,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererLinkResult.html",
       "anchor": null
     },
@@ -15354,7 +15315,7 @@
       "kind": "TypeAlias",
       "parent": null,
       "category": "Messaging",
-      "summary": "Argument passed to the markdown table renderer callbacks on\nCustomMarkdownRenderers.table and\nWCCustomMarkdownRenderers.table. Extends\nMarkdownRendererTableData with the source token, full\nTokenTree node, and a `slotName` that is stable across renders and\nunique across every rendered markdown block on the page, so it is safe to\nuse as a key. Treat the value as opaque; its format is not part of the API.",
+      "summary": "Argument passed to the markdown table renderer callbacks on\nCustomMarkdownRenderers.table and\nWCCustomMarkdownRenderers.table. Extends\nMarkdownRendererTableData with the source markdown-it token and a\n`slotName` that is stable across renders and unique across every rendered\nmarkdown block on the page, so it is safe to use as a key. Treat the value\nas opaque; its format is not part of the API.",
       "description": "",
       "signature": "type MarkdownRendererTableArgs = _MarkdownRendererTableArgs",
       "signatures": [],
@@ -15362,13 +15323,12 @@
       "related": [
         "CustomMarkdownRenderers.table",
         "MarkdownRendererTableData",
-        "TokenTree",
         "WCCustomMarkdownRenderers.table"
       ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererTableArgs.html",
       "anchor": null
     },
@@ -15388,7 +15348,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownRendererTableData.html",
       "anchor": null
     },
@@ -20234,7 +20194,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicConfig.html#markdown",
       "anchor": "markdown"
     },
@@ -20476,7 +20436,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicConfigMarkdown.html",
       "anchor": null
     },
@@ -20494,7 +20454,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicConfigMarkdown.html#markdownitplugins",
       "anchor": "markdownitplugins"
     },
@@ -23386,27 +23346,6 @@
       "url": "interfaces/Type_reference.TextItem.html#user_defined",
       "anchor": "user_defined"
     },
-    "TokenTree": {
-      "name": "TokenTree",
-      "kind": "TypeAlias",
-      "parent": null,
-      "category": "Messaging",
-      "summary": "Markdown-it parser node tree, surfaced on the `node` field of\nMarkdownRendererTableArgs and MarkdownRendererCodeBlockArgs\nso custom renderers can inspect the parsed token structure when the\nhigh-level data payload isn't enough.",
-      "description": "",
-      "signature": "type TokenTree = _TokenTree",
-      "signatures": [],
-      "members": [],
-      "related": [
-        "MarkdownRendererCodeBlockArgs",
-        "MarkdownRendererTableArgs"
-      ],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "types/Type_reference.TokenTree.html",
-      "anchor": null
-    },
     "ToolbarAction": {
       "name": "ToolbarAction",
       "kind": "TypeAlias",
@@ -24200,7 +24139,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html",
       "anchor": null
     },
@@ -24220,7 +24159,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#checklist",
       "anchor": "checklist"
     },
@@ -24238,7 +24177,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#codeblock",
       "anchor": "codeblock"
     },
@@ -24256,7 +24195,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#image",
       "anchor": "image"
     },
@@ -24274,7 +24213,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#link",
       "anchor": "link"
     },
@@ -24292,7 +24231,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#table",
       "anchor": "table"
     },
@@ -24315,7 +24254,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCMarkdown.html",
       "anchor": null
     },
@@ -24335,7 +24274,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCMarkdown.html#customrenderers",
       "anchor": "customrenderers"
     },
@@ -24353,7 +24292,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCMarkdown.html#markdownitplugins",
       "anchor": "markdownitplugins"
     },

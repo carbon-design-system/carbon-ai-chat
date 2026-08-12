@@ -447,8 +447,6 @@ interface CdsAiChatCustomElementAttributes extends Omit<
   /**
    * Markdown rendering customization. Extends the framework-neutral
    * `PublicConfig.markdown` with web-component `customRenderers`.
-   *
-   * @experimental
    */
   markdown?: WCMarkdown;
 

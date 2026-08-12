@@ -1,7 +1,5 @@
 # PublicConfigMarkdown
 
-**Experimental.**
-
 - Kind: Interface
 - Category: Config
 - Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PublicConfigMarkdown.html
@@ -22,8 +20,6 @@ interface PublicConfigMarkdown
 ### markdownItPlugins
 
 `markdownItPlugins?: MarkdownItPlugin[]`
-
-**Experimental.**
 
 Markdown-it plugins applied after the built-in plugins
 (markdown-it-attrs, markdown-it-highlight, markdown-it-task-lists).

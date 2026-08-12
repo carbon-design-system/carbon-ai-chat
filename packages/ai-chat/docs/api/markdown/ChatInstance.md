@@ -231,10 +231,8 @@ instance.scrollToMessage("a3f1c9e0-2b7d-4e51-9c8a-1d2f3b4c5d6e");
 
 `send: (message: string | MessageRequest<MessageInput>, options?: SendOptions) => Promise<void>`
 
-Sends the given message to the assistant on the remote server. This will result in a "pre:send" and "send" event
-being fired on the event bus. The returned promise will resolve once a response has received and processed and
-both the "pre:receive" and "receive" events have fired. It will reject when too many errors have occurred and
-the system gives up retrying.
+Sends the given message to the assistant. Fires `pre:send` then `send` on
+the event bus before delegating to `customSendMessage`.
 
 ## Examples
 

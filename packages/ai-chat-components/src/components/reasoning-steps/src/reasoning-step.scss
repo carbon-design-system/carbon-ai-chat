@@ -16,9 +16,8 @@
 :host {
   display: block;
   border: 0;
-  border-radius: 0;
   background-color: transparent;
-  color: theme.$text-helper;
+  color: theme.$text-secondary;
 }
 
 :host([hidden]) {
@@ -35,16 +34,23 @@
 
 .#{$prefix}--reasoning-step__trigger {
   display: flex;
-  align-items: start;
+  align-items: center;
   padding: 0;
   border: 0;
+  border-radius: layout.$spacing-01;
   background: transparent;
+  block-size: layout.$spacing-06;
   color: theme.$text-helper;
   cursor: pointer;
   font: inherit;
   gap: layout.$spacing-02;
   inline-size: 100%;
+  padding-inline-start: layout.$spacing-02;
   text-align: start;
+
+  &:hover {
+    background-color: theme.$layer-hover-01;
+  }
 
   &:focus-visible {
     outline: 2px solid theme.$focus;
@@ -76,13 +82,14 @@
   flex: 1;
   @include type.type-style('heading-01');
 
-  color: theme.$text-helper;
+  color: theme.$text-secondary;
 }
 
 .#{$prefix}--reasoning-step__static {
   display: flex;
   align-items: start;
   gap: layout.$spacing-02;
+  padding-inline-start: layout.$spacing-02;
 }
 
 .#{$prefix}--reasoning-step__static-icon {
@@ -105,7 +112,7 @@
   opacity: 0;
   padding-block-end: 0;
   padding-block-start: 0;
-  padding-inline: calc(#{layout.$spacing-05} + #{layout.$spacing-02});
+  padding-inline: calc(#{layout.$spacing-05} + #{layout.$spacing-03});
   pointer-events: none;
   transition:
     grid-template-rows motion.$duration-fast-02

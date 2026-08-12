@@ -6,6 +6,7 @@ Recurring task workflows are packaged as agent skills, which Copilot does not lo
 
 | Task | Read |
 | --- | --- |
+| Recording an architecture decision | [caic-adr](../.bob/skills/caic-adr/SKILL.md) |
 | Drafting a plan, or shaping work into an epic | [caic-plan](../.bob/skills/caic-plan/SKILL.md) |
 | Filing a GitHub issue or sub-issue | [caic-issue](../.bob/skills/caic-issue/SKILL.md) |
 | Writing a PR description | [caic-pr](../.bob/skills/caic-pr/SKILL.md) |

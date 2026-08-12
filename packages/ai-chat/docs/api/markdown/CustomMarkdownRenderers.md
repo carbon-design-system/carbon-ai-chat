@@ -1,7 +1,5 @@
 # CustomMarkdownRenderers
 
-**Experimental.**
-
 - Kind: Interface
 - Category: React
 - Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomMarkdownRenderers.html
@@ -30,8 +28,6 @@ interface CustomMarkdownRenderers
 
 `checklist?: MarkdownRendererChecklist`
 
-**Experimental.**
-
 Make task-list checkboxes actionable so the host can persist and react to
 checklist state. See MarkdownRendererChecklist.
 
@@ -40,8 +36,6 @@ checklist state. See MarkdownRendererChecklist.
 ### codeBlock
 
 `codeBlock?: (args: MarkdownRendererCodeBlockArgs) => ReactNode`
-
-**Experimental.**
 
 Override the default rendering for fenced code blocks. Receives parsed
 code-block data; return `null` to fall back to the default Carbon code
@@ -53,8 +47,6 @@ snippet renderer.
 
 `image?: (args: MarkdownRendererImageArgs) => MarkdownRendererImageResult`
 
-**Experimental.**
-
 Transform how images render — return attribute overrides (`src`, extra
 `attributes`) or `null` to keep the defaults.
 
@@ -63,8 +55,6 @@ Transform how images render — return attribute overrides (`src`, extra
 ### link
 
 `link?: (args: MarkdownRendererLinkArgs) => MarkdownRendererLinkResult`
-
-**Experimental.**
 
 Transform how links render — return attribute overrides (`href`, `target`,
 `rel`, extra `attributes`) or `null` to keep the defaults. Unlike
@@ -76,8 +66,6 @@ replacement, so its signature matches the web-component layer.
 ### table
 
 `table?: (args: MarkdownRendererTableArgs) => ReactNode`
-
-**Experimental.**
 
 Override the default rendering for markdown tables. Receives parsed table
 data; return `null` to fall back to the default Carbon table renderer.

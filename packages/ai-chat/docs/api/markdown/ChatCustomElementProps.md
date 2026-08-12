@@ -197,8 +197,6 @@ through PublicConfig.strings.
 
 `markdown?: ChatContainerPropsMarkdown`
 
-**Experimental.**
-
 Markdown rendering customization. Extends the framework-neutral
 PublicConfigMarkdown with React-layer custom renderers.
 

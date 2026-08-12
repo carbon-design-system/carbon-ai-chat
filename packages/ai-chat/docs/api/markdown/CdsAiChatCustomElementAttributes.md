@@ -175,8 +175,6 @@ through PublicConfig.strings.
 
 `markdown?: WCMarkdown`
 
-**Experimental.**
-
 Markdown rendering customization. Extends the framework-neutral
 `PublicConfig.markdown` with web-component `customRenderers`.
 

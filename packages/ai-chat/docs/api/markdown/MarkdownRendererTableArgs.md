@@ -1,7 +1,5 @@
 # MarkdownRendererTableArgs
 
-**Experimental.**
-
 - Kind: TypeAlias
 - Category: Messaging
 - Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.MarkdownRendererTableArgs.html
@@ -24,5 +22,4 @@ type MarkdownRendererTableArgs = _MarkdownRendererTableArgs
 
 - [CustomMarkdownRenderers.table](./CustomMarkdownRenderers.md)
 - [MarkdownRendererTableData](./MarkdownRendererTableData.md)
-- [TokenTree](./TokenTree.md)
 - [WCCustomMarkdownRenderers.table](./WCCustomMarkdownRenderers.md)
