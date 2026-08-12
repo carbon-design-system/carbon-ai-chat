@@ -418,6 +418,8 @@ export const Skeleton = {
     size: 'md',
   },
   render: skeletonButtonTemplate,
+};
+
 export const QuickActionSelected = {
   name: 'Quick action (selected)',
   argTypes: {
