@@ -242,7 +242,7 @@ Why it works: the first sentence tells the reader where this type is reached fro
 
 When you change anything under [.](.) (or a type in `@carbon/ai-chat-components` that crosses into this package's public surface):
 
-1. `npm run build --workspace=@carbon/ai-chat` — rollup + TypeDoc. The build fails on `validation.invalidLink` errors.
+1. `npm run build --workspace=@carbon/ai-chat` — rollup only. Use `npm run build:docs --workspace=@carbon/ai-chat` to also generate TypeDoc; the build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).
 3. If you added or changed a public instance method, confirm it carries at least one titled `@example` that meets [code-examples.md](../../references/code-examples.md) (review gate — not build-enforced).
 4. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). **Symbols still tagged [`@experimental`](#experimental) are the exception** — narrowing or removing one ships as a `feat`, because the tag is the notice that it could happen. A `!` bumps the major, and the majors are planned windows; don't open one to retract something we said was unstable. See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.

@@ -152,7 +152,8 @@
     "use-sync-external-store": "^1.2.0"
   },
   "scripts": {
-    "build": "rollup -c ./tasks/rollup.aichat.js && typedoc",
+    "build": "rollup -c ./tasks/rollup.aichat.js",
+    "build:docs": "rollup -c ./tasks/rollup.aichat.js && typedoc",
     "docs:api": "cross-env WRITE_API_INDEX=1 typedoc",
     "docs:api:check": "cross-env WRITE_API_INDEX=1 typedoc && git diff --exit-code -- docs/api",
     "postinstall": "ibmtelemetry --config=telemetry.yml",

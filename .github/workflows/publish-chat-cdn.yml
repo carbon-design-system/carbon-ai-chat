@@ -28,10 +28,10 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
-      - name: Install dependencies
+      - name: Install dependencies and build
         run: |
           npm ci --prefer-offline
-          npm run build
+          npm run build:docs --workspace=@carbon/ai-chat
       - name: Check release type
         if: contains(github.event.client_payload.tag, '-rc.') || contains(github.event.inputs.tag, '-rc.')
         run: echo "PRE_RELEASE=true" >> $GITHUB_ENV
