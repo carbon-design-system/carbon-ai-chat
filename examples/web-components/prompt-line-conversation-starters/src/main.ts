@@ -40,11 +40,7 @@ import '@carbon/styles/css/styles.css';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 
-import {
-  type CustomListProps,
-  type PublicConfig,
-  type SuggestionItem,
-} from '@carbon/ai-chat';
+import { type CustomListProps, type PublicConfig } from '@carbon/ai-chat';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
@@ -73,24 +69,17 @@ const STARTER_ITEMS = [
  * The element is created imperatively so the chat framework can mount it into
  * its own managed slot and forward keyboard events through it.
  *
- * `onSelect`, `onSend`, and `onDismiss` are wired directly so the
- * framework-agnostic `AutocompleteController` receives selection and send
- * events regardless of whether the user clicks or presses Enter.
+ * Uses `onSend` only — clicking an item fires `cds-aichat-autocomplete-send`
+ * and sends directly to chat. This matches the default built-in autocomplete
+ * behavior (`disableDirectSend` defaults to `false`, which emits that event).
+ * `onSelect` (fires `cds-aichat-autocomplete-select`, insert-into-editor) is
+ * optional and not needed here.
  */
-function renderStarterList({
-  items,
-  onSelect,
-  onSend,
-  onDismiss,
-}: CustomListProps) {
+function renderStarterList({ items, onSend, onDismiss }: CustomListProps) {
   const starters = document.createElement('cds-aichat-autocomplete') as any;
   starters.items = items;
   starters.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   starters.attached = false;
-  starters.addEventListener(
-    'cds-aichat-autocomplete-select',
-    (e: CustomEvent<{ item: SuggestionItem }>) => onSelect(e.detail.item)
-  );
   starters.addEventListener(
     'cds-aichat-autocomplete-send',
     (e: CustomEvent<{ text: string }>) => onSend(e.detail.text)

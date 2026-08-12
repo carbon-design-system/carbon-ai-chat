@@ -157,8 +157,11 @@ export function useChatAutocomplete(
     onSelectItemRef.current?.(item);
   }, []);
 
+  const isSendDisabledRef = React.useRef(isSendDisabled);
+  isSendDisabledRef.current = isSendDisabled;
+
   const handleSend = React.useCallback((text: string) => {
-    if (!text) {
+    if (!text || isSendDisabledRef.current) {
       return;
     }
     controllerRef.current?.dismiss(true);
@@ -235,6 +238,7 @@ export function useChatAutocomplete(
         slot="autocomplete-content"
         items={state.items}
         attached={attached}
+        disableDirectSend={state.disableDirectSend}
         onDismiss={dismiss}
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
