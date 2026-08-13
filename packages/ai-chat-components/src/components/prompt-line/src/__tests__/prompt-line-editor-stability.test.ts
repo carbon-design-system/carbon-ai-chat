@@ -66,6 +66,11 @@ async function setExtensions(
   await Promise.resolve();
 }
 
+/** Let the deferred teardown scheduled by `disconnectedCallback` run. */
+async function flushTeardown(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 function starterStorage(el: PromptLineElement): StarterTriggerStorage {
   return (el.getEditor()!.storage as unknown as Record<string, unknown>)
     .carbonStarterTrigger as StarterTriggerStorage;
@@ -191,6 +196,120 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
     );
   });
 
+  it('keeps the editor across a same-frame detach and reattach', async () => {
+    // A host reparenting the node (or a framework remounting it for one frame)
+    // must not cost the user their editor or its history.
+    const el = await makeRichPromptLine();
+    const editor = el.getEditor();
+    const parent = el.parentElement!;
+    type(el, 'still here');
+
+    parent.removeChild(el);
+    parent.appendChild(el);
+    await flushTeardown();
+
+    expect(el.getEditor()).to.equal(editor);
+    expect(el.getEditor()!.getText()).to.equal('still here');
+    type(el, ' and typing');
+    expect(el.getEditor()!.getText()).to.equal('still here and typing');
+    while (el.undo()) {
+      /* drain the history stack */
+    }
+    expect(el.getEditor()!.getText()).to.equal('');
+  });
+
+  it('keeps a pending ensureEditor() alive across a same-frame remount', async () => {
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line aria-label="test prompt"></cds-aichat-prompt-line>
+    `);
+    const pending = el.ensureEditor();
+    const parent = el.parentElement!;
+
+    parent.removeChild(el);
+    parent.appendChild(el);
+    await flushTeardown();
+
+    const editor = await pending;
+    expect(editor).to.equal(el.getEditor());
+  });
+
+  it('recovers a working surface when reattached after teardown', async () => {
+    // `firstUpdated` never runs twice, so without an explicit re-init the
+    // element used to come back with no controller and ignore every prop.
+    const el = await makeRichPromptLine();
+    const parent = el.parentElement!;
+
+    parent.removeChild(el);
+    await flushTeardown();
+    expect(el.getEditor()).to.equal(null);
+
+    parent.appendChild(el);
+    await waitForRich(el);
+
+    expect(el.getEditor()).to.not.equal(null);
+    type(el, 'back in business');
+    expect(el.getEditor()!.getText()).to.equal('back in business');
+    el.placeholder = 'still wired';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(el.getEditor()!.view.dom.isConnected).to.equal(true);
+  });
+
+  it('clears in-flight composition state on a real teardown', async () => {
+    // The old host div (with its composition listeners) is discarded at
+    // teardown, so its `compositionend` can never arrive. Stale flags would
+    // park the first upgrade after a reattach forever.
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line aria-label="test prompt"></cds-aichat-prompt-line>
+    `);
+    await el.updateComplete;
+    const host = el.querySelector<HTMLElement>('[data-aichat-editor-host]')!;
+    host.dispatchEvent(
+      new CompositionEvent('compositionstart', { bubbles: true })
+    );
+    const parent = el.parentElement!;
+
+    parent.removeChild(el);
+    await flushTeardown();
+    parent.appendChild(el);
+
+    const editor = await el.ensureEditor();
+    expect(editor).to.equal(el.getEditor());
+  });
+
+  it('destroys the editor when the element is really unmounted', async () => {
+    const el = await makeRichPromptLine();
+    const editor = el.getEditor()!;
+    el.parentElement!.removeChild(el);
+
+    await flushTeardown();
+
+    expect(el.getEditor()).to.equal(null);
+    expect(editor.isDestroyed).to.equal(true);
+  });
+
+  it('does not re-apply the content seed after a reattach', async () => {
+    // Every mount seeds `content`, not just the first, so the guard has to be
+    // per-mount. React's order is assign-props-then-insert, which lands the new
+    // value in the re-init's seed and again in the queued `updated()`.
+    const el = await makeRichPromptLine();
+    const parent = el.parentElement!;
+
+    parent.removeChild(el);
+    await flushTeardown();
+
+    const events: Event[] = [];
+    el.addEventListener('cds-aichat-prompt-change', (event) =>
+      events.push(event)
+    );
+    el.content = 'restored draft';
+    parent.appendChild(el);
+    await waitForRich(el);
+
+    expect(el.getEditor()!.getText()).to.equal('restored draft');
+    expect(events).to.have.lengthOf(0);
+  });
+
   it('does not emit a change event for the mount-time content seed', async () => {
     // `content` present before the first update is the mount seed, already
     // applied by the controller's init — re-applying it in `updated()` would
@@ -212,5 +331,28 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
 
     expect(el.getEditor()!.getText()).to.equal('seeded');
     expect(events).to.have.lengthOf(0);
+  });
+
+  it('applies a content update that returns to the seeded value', async () => {
+    // The seed is skipped once, not for the life of the surface: suppressing
+    // every update equal to it silently drops the third step here and leaves
+    // the editor showing 'b'.
+    const el = await fixture<PromptLineElement>(html`
+      <cds-aichat-prompt-line
+        rich
+        aria-label="test prompt"></cds-aichat-prompt-line>
+    `);
+    el.content = 'a';
+    await el.updateComplete;
+    await waitForRich(el);
+    expect(el.getEditor()!.getText()).to.equal('a');
+
+    el.content = 'b';
+    await el.updateComplete;
+    expect(el.getEditor()!.getText()).to.equal('b');
+
+    el.content = 'a';
+    await el.updateComplete;
+    expect(el.getEditor()!.getText()).to.equal('a');
   });
 });

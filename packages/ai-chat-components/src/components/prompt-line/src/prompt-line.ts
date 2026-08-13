@@ -121,8 +121,17 @@ class PromptLineElement extends LitElement {
   private _mode: 'textarea' | 'rich' = 'textarea';
   private _editorHost: HTMLElement | null = null;
   private _lastExtensionsRef: Extension[] | null = null;
-  /** Guards the mount-time `content` seed from being applied a second time. */
-  private _initialUpdateDone = false;
+  /**
+   * The `content` value the current surface was seeded with, and whether that
+   * seed is still unconsumed. Both are needed: the value catches the echo, and
+   * the latch releases after one `updated()` so a later change back to the same
+   * value still lands. Comparing on the value alone suppressed it for the life
+   * of the surface, dropping `a` in an `a` -> `b` -> `a` sequence.
+   */
+  private _seededContent?: JSONContent | string;
+  private _seedPending = false;
+  /** Pending deferred teardown, cancelled if the element is reattached. */
+  private _pendingTeardownTimer: ReturnType<typeof setTimeout> | null = null;
   /** Sticky latch — once rich is wanted it never reverts. */
   private _richLatched = false;
   private _upgrading = false;
@@ -142,29 +151,33 @@ class PromptLineElement extends LitElement {
   // ---------------------------------------------------------------------------
 
   override firstUpdated(): void {
-    const host = this._mountEditorHost();
-    this._lastExtensionsRef = this.extensions;
-    this._richLatched = this._wantsRich();
+    this._initializeSurface();
+  }
 
-    const warmRuntime = this._richLatched ? getRichRuntimeIfLoaded() : null;
-    if (warmRuntime) {
-      // Runtime already loaded (e.g. preloaded at boot) — mount rich directly,
-      // no textarea flash.
-      this._mode = 'rich';
-      this._controller = warmRuntime.createRichController();
-      this._controller.mount(host, this._makeInit());
-    } else {
-      this._mode = 'textarea';
-      this._controller = new TextareaController();
-      this._controller.mount(host, this._makeInit());
-      if (this._richLatched) {
-        void this._upgradeToRich();
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (this._pendingTeardownTimer !== null) {
+      // Reattached before the deferred teardown ran — a move, not an unmount.
+      // The controller and its editor host travelled with the element, so the
+      // Tiptap instance (and its undo history) survives untouched.
+      //
+      // Unlike `_teardownSurface`, this deliberately leaves `_isComposing` /
+      // `_pendingUpgrade` alone: the host div and its composition listeners are
+      // still attached, so a later `compositionend` reaches them and releases
+      // whatever was parked. Teardown has to reset eagerly only because it
+      // discards the listeners that would otherwise do it.
+      clearTimeout(this._pendingTeardownTimer);
+      this._pendingTeardownTimer = null;
+      const root = this._editorHost?.getRootNode();
+      if (root instanceof ShadowRoot || root instanceof Document) {
+        adoptOnRoot(root);
       }
+      return;
     }
-
-    if (this.autofocus) {
-      // Defer so consumer listeners are attached first.
-      Promise.resolve().then(() => this._controller?.focus());
+    // Reattached after a real teardown. `firstUpdated` is a one-shot, so
+    // without this the element would come back permanently inert.
+    if (this._isTornDown()) {
+      this._initializeSurface();
     }
   }
 
@@ -193,12 +206,18 @@ class PromptLineElement extends LitElement {
     if (changed.has('disabled')) {
       this._controller.setEditable(!this.disabled);
     }
-    // Skipped on the first update only — mount already seeded `content`, and
-    // re-applying it would emit a spurious host-origin change event. After that
-    // a content update always lands, including alongside an extensions change
-    // (which may no-op or recreate; either way the seed is the previous doc).
-    if (changed.has('content') && this._initialUpdateDone) {
-      this._controller.setContent(this.content ?? '');
+    // The seed echo is skipped once — re-applying it would emit a spurious
+    // host-origin change event. Every later update lands, including one that
+    // returns to the seed value, and including one alongside an extensions
+    // change (which may no-op or recreate; either way the seed is the previous
+    // doc).
+    if (changed.has('content')) {
+      const echoesSeed =
+        this._seedPending && this.content === this._seededContent;
+      this._seedPending = false;
+      if (!echoesSeed) {
+        this._controller.setContent(this.content ?? '');
+      }
     }
     if (changed.has('placeholder')) {
       this._controller.setPlaceholder(this.placeholder);
@@ -209,17 +228,72 @@ class PromptLineElement extends LitElement {
     if (changed.has('ariaLabel')) {
       this._controller.setAriaLabel(this.ariaLabel);
     }
-    this._initialUpdateDone = true;
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    if (!this._controller || this._pendingTeardownTimer !== null) {
+      return;
+    }
+    // Deferred by a task so a reparent — remove and re-append in the same
+    // frame — keeps the live editor instead of destroying and rebuilding it.
+    // A macrotask rather than a microtask because the reconnect can be
+    // scheduled separately from the removal, and rather than a frame callback
+    // because those never fire in a background tab, which would leak the
+    // editor of a chat that really was unmounted.
+    this._pendingTeardownTimer = setTimeout(() => {
+      this._pendingTeardownTimer = null;
+      this._teardownSurface();
+    }, 0);
+  }
+
+  /** Destroy the editing surface. Deferred from `disconnectedCallback`. */
+  private _teardownSurface(): void {
     this._failRichReady(new Error('Input is not currently rendered'));
     this._controller?.destroy();
     this._controller = null;
     this._editorHost?.remove();
     this._editorHost = null;
     this._lastExtensionsRef = null;
+    // Back to the default surface. `_richLatched` is the sticky flag, so a late
+    // reconnect still comes back rich; leaving `_mode` on 'rich' with no
+    // controller would just be a field outliving what it describes.
+    this._mode = 'textarea';
+    // The host div (and its composition listeners) is gone, so a composition
+    // that was in flight can never fire its `compositionend`. Left set, these
+    // would park the first upgrade after a reattach forever.
+    this._isComposing = false;
+    this._pendingUpgrade = false;
+  }
+
+  /** Mount the editing surface. Runs on first render and on a late reconnect. */
+  private _initializeSurface(): void {
+    const host = this._mountEditorHost();
+    this._lastExtensionsRef = this.extensions;
+    this._seededContent = this.content;
+    this._seedPending = true;
+    this._richLatched = this._wantsRich();
+
+    const warmRuntime = this._richLatched ? getRichRuntimeIfLoaded() : null;
+    if (warmRuntime) {
+      // Runtime already loaded (e.g. preloaded at boot) — mount rich directly,
+      // no textarea flash.
+      this._mode = 'rich';
+      this._controller = warmRuntime.createRichController();
+      this._controller.mount(host, this._makeInit());
+    } else {
+      this._mode = 'textarea';
+      this._controller = new TextareaController();
+      this._controller.mount(host, this._makeInit());
+      if (this._richLatched) {
+        void this._upgradeToRich();
+      }
+    }
+
+    if (this.autofocus) {
+      // Defer so consumer listeners are attached first.
+      Promise.resolve().then(() => this._controller?.focus());
+    }
   }
 
   override render() {
@@ -327,6 +401,15 @@ class PromptLineElement extends LitElement {
 
   private _wantsRich(): boolean {
     return this._richLatched || this.rich;
+  }
+
+  /**
+   * Rendered once and then torn down — the element is inert until something
+   * re-runs the mount path. Distinct from "not yet rendered", where Lit's own
+   * `firstUpdated` still has it.
+   */
+  private _isTornDown(): boolean {
+    return this.hasUpdated && !this._controller;
   }
 
   private _mountEditorHost(): HTMLElement {
@@ -456,6 +539,10 @@ class PromptLineElement extends LitElement {
     previous.destroy();
     this._controller = rich;
     this._mode = 'rich';
+    // Seeded losslessly from the textarea's text, which already reflects
+    // `content`, so an in-flight identical `content` update stays a no-op.
+    this._seededContent = this.content;
+    this._seedPending = true;
     rich.mount(host, this._makeInit(value));
 
     // Map plain-text caret offsets into the seeded doc. `textToDoc` makes one

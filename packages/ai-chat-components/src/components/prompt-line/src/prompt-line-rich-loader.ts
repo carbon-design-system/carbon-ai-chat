@@ -34,6 +34,11 @@ export function loadRichRuntime(): Promise<RichRuntimeModule | null> {
       runtime = module;
       return module;
     });
+    // Don't memoize a rejection: `ensureEditor()` clears its shared promise on
+    // failure so callers can retry, and the retry must reach a fresh import().
+    runtimePromise.catch(() => {
+      runtimePromise = null;
+    });
   }
   return runtimePromise;
 }
