@@ -68,8 +68,16 @@ class PromptLineElement extends LitElement {
    * rich editor mounts. These are *staged*, not a rich-mode trigger: setting
    * them while in textarea mode does not load Tiptap. Select rich explicitly
    * with `rich` or call `ensureEditor()`; the upgrade mounts with these
-   * already installed. Memoize on the host side — a reference change recreates
-   * a live editor.
+   * already installed.
+   *
+   * A new array is compared by value against the set last supplied, so a config
+   * update that rebuilds an equivalent one leaves the live editor and its undo
+   * history in place, writing any starter `items`/`isOn` through to storage.
+   * Only a genuinely different set recreates the editor, preserving content,
+   * selection, and focus but resetting history.
+   * Extensions built by `buildCarbonExtensions` compare by their source
+   * config; anything you supply directly compares by reference, so memoize
+   * those (a fresh instance each render reads as a real change).
    */
   @property({ type: Array, attribute: false })
   extensions: Extension[] = [];
@@ -113,6 +121,8 @@ class PromptLineElement extends LitElement {
   private _mode: 'textarea' | 'rich' = 'textarea';
   private _editorHost: HTMLElement | null = null;
   private _lastExtensionsRef: Extension[] | null = null;
+  /** Guards the mount-time `content` seed from being applied a second time. */
+  private _initialUpdateDone = false;
   /** Sticky latch — once rich is wanted it never reverts. */
   private _richLatched = false;
   private _upgrading = false;
@@ -183,7 +193,11 @@ class PromptLineElement extends LitElement {
     if (changed.has('disabled')) {
       this._controller.setEditable(!this.disabled);
     }
-    if (changed.has('content') && !changed.has('extensions')) {
+    // Skipped on the first update only — mount already seeded `content`, and
+    // re-applying it would emit a spurious host-origin change event. After that
+    // a content update always lands, including alongside an extensions change
+    // (which may no-op or recreate; either way the seed is the previous doc).
+    if (changed.has('content') && this._initialUpdateDone) {
       this._controller.setContent(this.content ?? '');
     }
     if (changed.has('placeholder')) {
@@ -195,6 +209,7 @@ class PromptLineElement extends LitElement {
     if (changed.has('ariaLabel')) {
       this._controller.setAriaLabel(this.ariaLabel);
     }
+    this._initialUpdateDone = true;
   }
 
   override disconnectedCallback(): void {

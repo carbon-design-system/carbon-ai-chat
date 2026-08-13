@@ -39,6 +39,11 @@ import type {
   SetContentUpdater,
 } from './prompt-line-controller.js';
 import { applyEditorStyles } from './tiptap/editor-styles.js';
+import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
+import {
+  areExtensionSetsEquivalent,
+  getExtensionSource,
+} from './tiptap/extension-equivalence.js';
 import {
   carbonChatEnter,
   HISTORY_DEFAULTS,
@@ -49,6 +54,7 @@ import {
   UndoRedo,
   ValueSync,
 } from './tiptap/index.js';
+import type { StartersConfig } from './tiptap/types.js';
 import { textToDoc } from './tiptap/json-utils.js';
 import { setHostOriginMeta } from './tiptap/origin-meta.js';
 
@@ -209,9 +215,14 @@ class RichController implements PromptLineController {
   }
 
   setPlaceholder(placeholder: string): void {
-    // Placeholder is fixed at editor creation (matches the pre-split element);
-    // record it so a later extension-driven recreate keeps the latest value.
     this._placeholder = placeholder;
+    // The Placeholder extension reads this back through the resolver installed
+    // in `_createEditor`; the empty transaction repaints the decoration so the
+    // new text shows without waiting for the next edit.
+    const editor = this._editor;
+    if (editor) {
+      editor.view.dispatch(editor.state.tr);
+    }
   }
 
   setAriaLabel(ariaLabel: string): void {
@@ -231,8 +242,50 @@ class RichController implements PromptLineController {
   }
 
   setExtensions(extensions: Extension[]): void {
+    const equivalent = areExtensionSetsEquivalent(this._extensions, extensions);
+    // Adopt the new list either way — a later genuine change is compared
+    // against what the host most recently supplied.
     this._extensions = extensions;
+    if (equivalent) {
+      // Starter items / isOn ride on extension storage precisely so they can be
+      // swapped without a recreate.
+      this._syncStarterStorage();
+      return;
+    }
     this._recreateEditor();
+  }
+
+  /**
+   * Push the current starter config onto the live editor's storage. Starter
+   * differences never justify recreating the editor (which would drop undo
+   * history), so they are applied in place instead.
+   */
+  private _syncStarterStorage(): void {
+    const editor = this._editor;
+    if (!editor) {
+      return;
+    }
+    const storage = (editor.storage as unknown as Record<string, unknown>)
+      .carbonStarterTrigger as StarterTriggerStorage | undefined;
+    if (!storage) {
+      return;
+    }
+    const source = this._extensions
+      .map(getExtensionSource)
+      .find((descriptor) => descriptor?.kind === 'starters');
+    const config = source?.config as StartersConfig | undefined;
+    if (!config) {
+      return;
+    }
+    const isOn = config.isOn !== false;
+    if (storage.items === config.items && storage.isOn === isOn) {
+      return;
+    }
+    storage.items = config.items;
+    storage.isOn = isOn;
+    // Re-run the trigger's transaction handler so a toggle takes effect on the
+    // current selection instead of waiting for the next keystroke.
+    editor.view.dispatch(editor.state.tr);
   }
 
   undo(): boolean {
@@ -261,7 +314,10 @@ class RichController implements PromptLineController {
       TextNode as unknown as Extension,
       HardBreakNode as unknown as Extension,
       UndoRedo.configure({ ...HISTORY_DEFAULTS }),
-      Placeholder.configure({ placeholder: this._placeholder }),
+      // Resolved per decoration build rather than captured, so `setPlaceholder`
+      // lands on the live editor. Tiptap snapshots an extension's options when
+      // it builds plugins, so a value here could never be updated in place.
+      Placeholder.configure({ placeholder: () => this._placeholder }),
       PlainTextPaste,
       Keymap,
       // Plain Enter sends (non-empty); empty Enter falls through to a newline.
@@ -313,6 +369,9 @@ class RichController implements PromptLineController {
         }
       : null;
     const wasFocused = this._editor?.isFocused ?? false;
+    const wasKeyboardFocus =
+      this._editor?.view.dom.classList.contains(PM_KEYBOARD_FOCUS_CLASS) ??
+      false;
     this._editor?.destroy();
     this._editor = this._createEditor(host, previousJson);
     this._wireEditorEvents(this._editor);
@@ -326,9 +385,6 @@ class RichController implements PromptLineController {
       this._editor.commands.setTextSelection({ from, to });
     }
 
-    const wasKeyboardFocus = this._editor.view.dom.classList.contains(
-      PM_KEYBOARD_FOCUS_CLASS
-    );
     if (wasFocused) {
       this._focusFromMouse = !wasKeyboardFocus;
       this._editor.commands.focus();
