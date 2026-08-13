@@ -30,14 +30,14 @@ function ensureTokenStyleRules(): void {
   }
   setVarsForSelector('.cds-aichat--token', { 'white-space': 'normal' });
   setVarsForSelector('.cds-aichat--token[data-token-context="composer"]', {
-    color: 'var(--cds-tag-color-blue)',
+    color: 'var(--cds-tag-color-blue, #0043ce)',
   });
   setVarsForSelector(
     '.cds-aichat--token[data-token-context="composer"]::selection',
-    { 'background-color': 'var(--cds-tag-background-blue)' }
+    { 'background-color': 'var(--cds-tag-background-blue, #d0e2ff)' }
   );
   setVarsForSelector('.cds-aichat--token[data-token-context="historical"]', {
-    color: 'var(--cds-link-secondary)',
+    color: 'var(--cds-link-secondary, #0043ce)',
   });
   tokenStyleRulesInstalled = true;
 }
