@@ -172,7 +172,6 @@ function renderParagraphInline(
     // the space between the chip and the adjacent text gets eaten. Capture the
     // boundary whitespace explicitly and emit it as plain text siblings so the
     // rendered bubble matches what the user composed.
-    console.log(textRun);
     const leading = textRun.match(/^\s+/)?.[0] ?? '';
     const afterLeading = textRun.slice(leading.length);
     const trailing = afterLeading.match(/\s+$/)?.[0] ?? '';
