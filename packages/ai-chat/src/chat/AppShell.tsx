@@ -627,16 +627,21 @@ function AppShell({
     }
   }, []);
 
-  // Stable wrapper so <Input> receives a referentially stable onSendInput prop
+  // Stable wrapper so <Input> receives a referentially stable onSendInput prop.
+  // When the home screen is active the single unconditional <Input> acts as the
+  // home-screen prompt line, so it must emit HOME_SCREEN_INPUT; otherwise it is
+  // the message-list input and emits MESSAGE_INPUT.
   const onSendInputFromInput = useCallback(
     (text: string, displayContent?: JSONContent) =>
       onSendInput(
         text,
-        MessageSendSource.MESSAGE_INPUT,
+        showHomeScreen
+          ? MessageSendSource.HOME_SCREEN_INPUT
+          : MessageSendSource.MESSAGE_INPUT,
         undefined,
         displayContent
       ),
-    [onSendInput]
+    [onSendInput, showHomeScreen]
   );
 
   // Add keyboard event listener for focus toggle shortcut and Escape to exit message navigation

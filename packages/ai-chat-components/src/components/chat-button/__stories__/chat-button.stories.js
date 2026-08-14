@@ -10,6 +10,7 @@
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
 import '../src/chat-button';
+import '../src/chat-button-skeleton';
 import { html } from 'lit';
 import {
   BUTTON_KIND,
@@ -104,6 +105,11 @@ const baseButtonTemplate = (args) => html`
     ?is-quick-action="${args.isQuickAction}">
     ${args.buttonText} ${args.iconSlot?.()}
   </cds-aichat-button>
+`;
+
+const skeletonButtonTemplate = (args) => html`
+  <cds-aichat-button-skeleton size=${ifDefined(args.size)}>
+  </cds-aichat-button-skeleton>
 `;
 
 export default {
@@ -409,4 +415,21 @@ export const QuickActionSelectedWithDisabled = {
       >
     </div>
   `,
+};
+
+export const Skeleton = {
+  argTypes: {
+    size: {
+      control: 'select',
+      description: 'Specify the size of the skeleton button.',
+      options: ['sm', 'md', 'lg'],
+    },
+    'is-quick-action': {
+      table: { disable: true },
+    },
+  },
+  args: {
+    size: 'md',
+  },
+  render: skeletonButtonTemplate,
 };
