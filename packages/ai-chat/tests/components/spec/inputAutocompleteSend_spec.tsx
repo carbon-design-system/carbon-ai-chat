@@ -51,11 +51,7 @@ const testIntl = createIntl({ locale: 'en', messages: {} });
 jest.mock('@carbon/ai-chat-components/es/react/prompt-line-shell.js', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }): React.ReactElement =>
-    React.createElement(
-      'div',
-      { 'data-testid': 'prompt-line-shell' },
-      children
-    ),
+    React.createElement('div', null, children),
 }));
 // clearContent is the imperative clear called by sendCurrentValue() after send.
 // If the regression is present (onSendItem calls onSendInput directly), this
@@ -65,24 +61,12 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
   const MockPromptLine = React.forwardRef(
     (_props: unknown, ref: React.Ref<unknown>): React.ReactElement => {
       React.useImperativeHandle(ref, () => ({ clearContent: clearContentSpy }));
-      return React.createElement('div', { 'data-testid': 'prompt-line' });
+      return React.createElement('div', null);
     }
   );
   MockPromptLine.displayName = 'MockPromptLine';
   return { __esModule: true, default: MockPromptLine };
 });
-jest.mock('@carbon/ai-chat-components/es/react/input-send-control.js', () => ({
-  __esModule: true,
-  default: (): null => null,
-}));
-jest.mock('@carbon/ai-chat-components/es/react/file-uploads.js', () => ({
-  __esModule: true,
-  default: (): null => null,
-}));
-jest.mock('@carbon/ai-chat-components/es/react/error-message.js', () => ({
-  __esModule: true,
-  default: (): null => null,
-}));
 
 // ---------------------------------------------------------------------------
 // Spy on useChatAutocomplete to capture the onSendItem wired by Input.tsx
