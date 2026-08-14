@@ -424,7 +424,7 @@ export const Skeleton = {
       description: 'Specify the size of the skeleton button.',
       options: ['sm', 'md', 'lg'],
     },
-    isQuickAction: {
+    'is-quick-action': {
       table: { disable: true },
     },
   },
