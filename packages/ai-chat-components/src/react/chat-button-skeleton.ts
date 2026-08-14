@@ -11,7 +11,6 @@ import { createComponent } from '@lit/react';
 import React from 'react';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 import CDSAIChatButtonSkeleton from '../components/chat-button/src/chat-button-skeleton.js';
-import { CHAT_BUTTON_SIZE } from '../components/chat-button/src/chat-button.js';
 
 const ChatButtonSkeleton = withWebComponentBridge(
   createComponent({
@@ -22,4 +21,3 @@ const ChatButtonSkeleton = withWebComponentBridge(
 );
 
 export default ChatButtonSkeleton;
-export { CHAT_BUTTON_SIZE };

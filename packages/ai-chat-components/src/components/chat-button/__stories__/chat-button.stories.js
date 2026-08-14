@@ -367,6 +367,20 @@ export const QuickAction = {
   render: baseButtonTemplate,
 };
 
+export const QuickActionSelected = {
+  name: 'Quick action (selected)',
+  argTypes: {
+    ...QuickAction.argTypes,
+  },
+  args: {
+    ...sharedArgs,
+    buttonText: 'Quick action',
+    isQuickAction: true,
+    isSelected: true,
+  },
+  render: baseButtonTemplate,
+};
+
 export const QuickActionSelectedWithDisabled = {
   name: 'Quick action (selected with disabled)',
   parameters: { controls: { disable: true } },
@@ -418,18 +432,4 @@ export const Skeleton = {
     size: 'md',
   },
   render: skeletonButtonTemplate,
-};
-
-export const QuickActionSelected = {
-  name: 'Quick action (selected)',
-  argTypes: {
-    ...QuickAction.argTypes,
-  },
-  args: {
-    ...sharedArgs,
-    buttonText: 'Quick action',
-    isQuickAction: true,
-    isSelected: true,
-  },
-  render: baseButtonTemplate,
 };
