@@ -241,6 +241,7 @@ export type TokenTree = _TokenTree;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererTableData = _MarkdownRendererTableData;
 
@@ -251,6 +252,7 @@ export type MarkdownRendererTableData = _MarkdownRendererTableData;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
 
@@ -265,6 +267,7 @@ export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
 
@@ -279,6 +282,7 @@ export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
 
@@ -289,6 +293,7 @@ export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
 
@@ -300,6 +305,7 @@ export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
 
@@ -310,6 +316,7 @@ export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
 
@@ -319,6 +326,7 @@ export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
 
@@ -328,6 +336,7 @@ export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
 
@@ -337,6 +346,7 @@ export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererChecklistItemArgs =
   _MarkdownRendererChecklistItemArgs;
@@ -347,6 +357,7 @@ export type MarkdownRendererChecklistItemArgs =
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererChecklistToggleArgs =
   _MarkdownRendererChecklistToggleArgs;
@@ -361,6 +372,7 @@ export type MarkdownRendererChecklistToggleArgs =
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
 

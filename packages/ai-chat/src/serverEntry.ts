@@ -64,6 +64,10 @@ export { AutoScrollOptions } from './types/utilities/HasDoAutoScroll';
 export { LayoutCustomProperties } from './types/config/LayoutCustomProperties';
 
 export { CornersType } from './types/config/CornersType';
+export type {
+  PerCornerConfig,
+  ResolvedCornerConfig,
+} from './types/config/CornersType';
 
 export {
   BusEvent,
@@ -78,6 +82,7 @@ export {
   BusEventChatReady,
   BusEventChunkUserDefinedResponse,
   BusEventClosePanelButtonClicked,
+  BusEventCustomFooterSlot,
   BusEventCustomPanelClose,
   BusEventCustomPanelOpen,
   BusEventCustomPanelPreClose,
@@ -150,6 +155,7 @@ export type {
   BaseSuggestionConfig,
   TriggerSuggestionConfig,
   AutocompleteConfig,
+  StartersConfig,
   SuggestionItem,
   CustomListProps,
 } from './types/config/InputConfig';
@@ -170,6 +176,11 @@ export {
 // rule. Raw `@tiptap/core` types are not re-exported — import those from
 // `@tiptap/core` directly. The Carbon suggestion-config types are exported
 // from `./types/config/InputConfig` alongside `InputConfig`.
+export type {
+  RenderInLightDomArgs,
+  RenderInLightDomResult,
+} from './types/utilities/inputUtils';
+
 export {
   carbonMention,
   carbonCommand,
@@ -232,6 +243,7 @@ export {
   EventInputData,
   FinalResponseChunk,
   GenericItem,
+  GenericItemCustomFooterSlotOptions,
   GenericItemMessageFeedbackCategories,
   GridItem,
   HorizontalCellAlignment,
@@ -309,8 +321,15 @@ export {
   ChatContainerPropsMarkdown,
   CustomMarkdownRenderers,
   MarkdownCustomRenderers,
+  MarkdownRendererChecklist,
+  MarkdownRendererChecklistItemArgs,
+  MarkdownRendererChecklistToggleArgs,
   MarkdownRendererCodeBlockArgs,
   MarkdownRendererCodeBlockData,
+  MarkdownRendererImageArgs,
+  MarkdownRendererImageResult,
+  MarkdownRendererLinkArgs,
+  MarkdownRendererLinkResult,
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
   RenderCustomMessageFooter,
@@ -323,6 +342,9 @@ export {
   WCMarkdown,
   WCRenderCustomMessageFooter,
   WCRenderUserDefinedResponse,
+  RenderUserDefinedInputNode,
+  RenderUserDefinedInputNodeState,
+  WCRenderUserDefinedInputNode,
 } from './types/component/ChatContainer';
 
 export type {
