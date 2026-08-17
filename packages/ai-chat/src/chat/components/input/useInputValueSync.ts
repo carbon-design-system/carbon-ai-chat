@@ -183,7 +183,7 @@ function useInputValueSync({
    * by @lit/react's native-event scheduling. See issue #1382.
    */
   const sendCurrentValue = () => {
-    const text = rawInputValueRef.current;
+    const text = rawInputValueRef.current.trim();
     // Re-evaluate from the ref at call time: callers like the starter and
     // autocomplete-item send paths seed the ref synchronously before calling
     // here, so using the closure-captured `hasValidInput` (derived from
