@@ -52,6 +52,7 @@ From this package directory:
 
 ```bash
 npm run build      # rollup + typedoc
+npm run docs       # typedoc only — the fast docs loop, no rollup needed
 npm start          # rollup --watch + typedoc --watch + local doc server on :5001
 npm test           # jest with coverage
 npx jest path/to/file_spec.ts

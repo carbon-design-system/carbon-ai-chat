@@ -12,7 +12,7 @@ Skills exist because always-on guidance and task guidance need different deliver
 | [caic-plan](caic-plan/SKILL.md)     | shaping upcoming work at any size — a plan, an epic, or a single issue-sized slice | the plan-review rubric it closes with |
 | [caic-issue](caic-issue/SKILL.md)   | filing a GitHub issue or sub-issue                                                 | epic authoring, for umbrella work     |
 | [caic-pr](caic-pr/SKILL.md)         | drafting a PR description                                                          | —                                     |
-| [caic-review](caic-review/SKILL.md) | reviewing a diff, including self-review before marking a task done                 | —                                     |
+| [caic-review](caic-review/SKILL.md) | reviewing a diff, including self-review before marking a task done                 | PR posting, and large-diff triage     |
 
 `carbon-builder` also lives here. It is a vendored Carbon Design System skill from upstream, not a repo workflow — the sync and mirror rules below apply to it, but its content is not ours to edit.
 

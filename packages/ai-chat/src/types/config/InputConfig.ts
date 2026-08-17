@@ -8,10 +8,11 @@
  */
 
 // Raw `@tiptap/core` types come from `@tiptap/core` directly. The Carbon
-// suggestion-config types are re-declared below (rather than imported from
-// the upstream symbols directly) so TypeDoc resolution stays pointed at our
-// JSDoc + `@category` placement; see [../AGENTS.md](../AGENTS.md) for the
-// cross-package re-export rule.
+// suggestion-config types are aliased below (rather than imported from the
+// upstream symbols directly) so TypeDoc resolution stays pointed at our
+// JSDoc + `@category` placement; `@interface` is what makes it render the
+// checker-resolved members rather than the bare alias. See
+// [../AGENTS.md](../AGENTS.md) for the cross-package re-export rule.
 import type { Extension } from '@tiptap/core';
 import type {
   BaseSuggestionConfig as _BaseSuggestionConfig,
@@ -26,9 +27,12 @@ import type { ToolbarAction } from './HeaderConfig';
 /**
  * Fields shared by every Carbon suggestion config (mention, command,
  * autocomplete). Provides the item source, debounce, minimum query length,
- * selection callback, and an optional custom list renderer.
+ * selection callback, an optional custom list renderer, and a
+ * `disableDirectSend` flag that inserts a clicked item into the editor
+ * instead of sending it straight to the assistant.
  *
  * @category Config
+ * @interface
  */
 export type BaseSuggestionConfig = _BaseSuggestionConfig;
 
@@ -43,6 +47,7 @@ export type BaseSuggestionConfig = _BaseSuggestionConfig;
  * {@link BaseSuggestionConfig}.
  *
  * @category Config
+ * @interface
  */
 export type TriggerSuggestionConfig = _TriggerSuggestionConfig;
 
@@ -52,6 +57,7 @@ export type TriggerSuggestionConfig = _TriggerSuggestionConfig;
  * rendered.
  *
  * @category Config
+ * @interface
  */
 export type AutocompleteConfig = _AutocompleteConfig;
 
@@ -61,29 +67,32 @@ export type AutocompleteConfig = _AutocompleteConfig;
  * replace the built-in suggestion list (e.g. to add a header above the items).
  *
  * @category Config
+ * @interface
  */
 export type StartersConfig = _StartersConfig;
 
 /**
  * Single list-item shape used by every Carbon suggestion surface
  * (mention, command, autocomplete, starters). Carries the id, label,
- * optional value override, optional description / avatar / icon, and a
+ * optional value override, optional description and avatar, and a
  * disabled flag. `showTriggerInChip` additionally controls, per item,
  * whether a mention/command selection renders with its trigger character —
  * chip-less surfaces (autocomplete, starters) ignore it.
  *
  * @category Config
+ * @interface
  */
 export type SuggestionItem = _SuggestionItem;
 
 /**
  * Props passed to a custom suggestion-list renderer (the `renderCustomList`
  * field on {@link BaseSuggestionConfig}). Includes the filtered
- * {@link SuggestionItem} array, the current `query`, and `onSelect` /
- * `onDismiss` callbacks.
+ * {@link SuggestionItem} array, the current `query`, and the `onSelect` /
+ * `onSend` / `onDismiss` callbacks.
  *
  * @category Config
  * @experimental
+ * @interface
  */
 export type CustomListProps = _CustomListProps;
 

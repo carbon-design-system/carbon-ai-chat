@@ -133,7 +133,7 @@
   "dependencies": {
     "@carbon/ai-chat-components": "^1.9.0-rc.1",
     "@carbon/icons": "^11.53.0",
-    "@carbon/utilities": "^0.20.0",
+    "@carbon/utilities": "^0.24.0",
     "@floating-ui/dom": "^1.6.3",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",
@@ -152,6 +152,7 @@
   },
   "scripts": {
     "build": "rollup -c ./tasks/rollup.aichat.js && typedoc",
+    "docs": "typedoc",
     "docs:api": "cross-env WRITE_API_INDEX=1 typedoc",
     "docs:api:check": "cross-env WRITE_API_INDEX=1 typedoc && git diff --exit-code -- docs/api",
     "postinstall": "ibmtelemetry --config=telemetry.yml",

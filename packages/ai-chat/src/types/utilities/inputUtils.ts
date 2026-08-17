@@ -200,8 +200,18 @@ export const renderTokenChip = _renderTokenChip;
  */
 export const renderInLightDom = _renderInLightDom;
 
-/** Args for {@link renderInLightDom}. @category Utilities */
+/**
+ * Args for {@link renderInLightDom}.
+ *
+ * @category Utilities
+ * @interface
+ */
 export type RenderInLightDomArgs = _RenderInLightDomArgs;
 
-/** Result of {@link renderInLightDom}. @category Utilities */
+/**
+ * Result of {@link renderInLightDom}.
+ *
+ * @category Utilities
+ * @interface
+ */
 export type RenderInLightDomResult = _RenderInLightDomResult;

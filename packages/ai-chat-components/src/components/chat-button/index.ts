@@ -8,3 +8,4 @@
  */
 
 import './src/chat-button';
+import './src/chat-button-skeleton';

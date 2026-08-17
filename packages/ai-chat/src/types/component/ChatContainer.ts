@@ -228,6 +228,7 @@ type RenderWriteableElementResponse = {
  * headers, rows, and streaming/loading flags.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererTableData = _MarkdownRendererTableData;
 
@@ -237,6 +238,7 @@ export type MarkdownRendererTableData = _MarkdownRendererTableData;
  * Carries the language, code text, and streaming flag.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
 
@@ -250,6 +252,7 @@ export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
  * as opaque; its format is not part of the API.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
 
@@ -263,6 +266,7 @@ export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
  * as opaque; its format is not part of the API.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
 
@@ -272,6 +276,7 @@ export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
  * (href, title, text, attributes) plus the source markdown-it token.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
 
@@ -282,6 +287,7 @@ export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
  * entirely. Supply `onClick` to intercept link clicks.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
 
@@ -291,6 +297,7 @@ export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
  * (src, alt, title, attributes) plus the source markdown-it token.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
 
@@ -299,6 +306,7 @@ export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
  * `attributes`). Return `null` to keep the defaults.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
 
@@ -307,6 +315,7 @@ export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
  * an optional `getChecked` source-of-truth. See {@link MarkdownRendererChecklist}.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
 
@@ -315,6 +324,7 @@ export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
  * `checklist.getChecked`.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererChecklistItemArgs =
   _MarkdownRendererChecklistItemArgs;
@@ -324,6 +334,7 @@ export type MarkdownRendererChecklistItemArgs =
  * (item identity + new checked state).
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownRendererChecklistToggleArgs =
   _MarkdownRendererChecklistToggleArgs;
@@ -337,6 +348,7 @@ export type MarkdownRendererChecklistToggleArgs =
  * than this baseline directly.
  *
  * @category Messaging
+ * @interface
  */
 export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
 
