@@ -17,29 +17,25 @@ const defaultSteps = [
     title: 'Understand the request',
     open: true,
     body: html`<cds-aichat-markdown
-      .markdown=${`Parsed the user's intent and restated it as a concise objective to make
-sure downstream steps share the same goal.`}></cds-aichat-markdown>`,
+      .markdown=${`Parsed the user's intent and restated it as a concise objective to make sure downstream steps share the same goal.`}></cds-aichat-markdown>`,
   },
   {
     title: 'Review retrieved context',
     open: false,
     body: html`<cds-aichat-markdown
-      .markdown=${`Checked the documents and conversation history to identify facts that are
-relevant to the objective and noted confidence levels.`}></cds-aichat-markdown>`,
+      .markdown=${`Checked the documents and conversation history to identify facts that are relevant to the objective and noted confidence levels.`}></cds-aichat-markdown>`,
   },
   {
     title: 'Draft an answer',
     open: false,
     body: html`<cds-aichat-markdown
-      .markdown=${`Combined the prompt with trusted context and generated a structured
-response with bullet points summarizing each insight.`}></cds-aichat-markdown>`,
+      .markdown=${`Combined the prompt with trusted context and generated a structured response with bullet points summarizing each insight.`}></cds-aichat-markdown>`,
   },
   {
     title: 'Validate the response',
     open: false,
     body: html`<cds-aichat-markdown
-      .markdown=${`Compared the answer with the original request, double-checked citations,
-and ensured tone guidelines were followed.`}></cds-aichat-markdown>`,
+      .markdown=${`Compared the answer with the original request, double-checked citations, and ensured tone guidelines were followed.`}></cds-aichat-markdown>`,
   },
 ];
 
@@ -48,8 +44,7 @@ const mixedSteps = [
     title: 'Detect missing data',
     open: true,
     body: html`<cds-aichat-markdown
-      .markdown=${`Noticed the prompt referenced an attachment that was not available, so I
-documented the gap before drafting an answer.`}></cds-aichat-markdown>`,
+      .markdown=${`Noticed the prompt referenced an attachment that was not available, so I documented the gap before drafting an answer.`}></cds-aichat-markdown>`,
   },
   {
     title: 'Awaiting supporting citations',
@@ -57,8 +52,7 @@ documented the gap before drafting an answer.`}></cds-aichat-markdown>`,
   {
     title: 'Ready for escalation',
     body: html`<cds-aichat-markdown
-      .markdown=${`The final recommendation needs human approval. I summarized the findings
-and highlighted the open questions to review.`}></cds-aichat-markdown>`,
+      .markdown=${`The final recommendation needs human approval. I summarized the findings and highlighted the open questions to review.`}></cds-aichat-markdown>`,
   },
 ];
 
