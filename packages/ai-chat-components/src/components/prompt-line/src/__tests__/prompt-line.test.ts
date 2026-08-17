@@ -360,3 +360,36 @@ describe('<cds-aichat-prompt-line> staged extensions', function () {
     expect(names).to.include('stagedMarker');
   });
 });
+
+// Regression: long unbroken text does not widen textarea past its declared width.
+describe('<cds-aichat-prompt-line> long unbroken text wraps', function () {
+  const LONG_URL = `https://example.com/x/${'a'.repeat(200)}`;
+
+  async function makeAtWidth(widthPx: number): Promise<PromptLineElement> {
+    const el = await fixture<PromptLineElement>(
+      html`<cds-aichat-prompt-line
+        style="width:${widthPx}px;display:block;"></cds-aichat-prompt-line>`
+    );
+    await el.updateComplete;
+    await Promise.resolve();
+    return el;
+  }
+
+  it('textarea width ≤ declared width in a narrow (378px) layout', async () => {
+    const el = await makeAtWidth(378);
+    typeInto(el, LONG_URL);
+    await el.updateComplete;
+    await Promise.resolve();
+
+    expect(getTextarea(el).offsetWidth).to.be.at.most(378);
+  });
+
+  it('textarea width ≤ declared width in a wide (864px) layout', async () => {
+    const el = await makeAtWidth(864);
+    typeInto(el, LONG_URL);
+    await el.updateComplete;
+    await Promise.resolve();
+
+    expect(getTextarea(el).offsetWidth).to.be.at.most(864);
+  });
+});

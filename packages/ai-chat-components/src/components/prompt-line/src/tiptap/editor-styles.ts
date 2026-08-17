@@ -25,7 +25,7 @@ function ensurePmContentStyleRules(): void {
     color: 'var(--cds-text-primary, #161616)',
     outline: 'none',
     'white-space': 'pre-wrap',
-    'word-wrap': 'break-word',
+    'overflow-wrap': 'anywhere',
     'font-size': 'var(--cds-body-01-font-size, 0.875rem)',
     'font-weight': 'var(--cds-body-01-font-weight, 400)',
     'letter-spacing': 'var(--cds-body-01-letter-spacing, 0.16px)',
