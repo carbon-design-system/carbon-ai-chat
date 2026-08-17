@@ -14,6 +14,7 @@ import {
   Default as DefaultWC,
   WithHeader as WithHeaderWC,
   WithCategories as WithCategoriesWC,
+  WithDisabledItems as WithDisabledItemsWC,
   Detached as DetachedWC,
 } from './autocomplete.stories';
 import {
@@ -255,6 +256,50 @@ export const WithCategories = {
         <CDSAIChatAutocomplete
           groups={filteredGroups}
           inputText={query}
+          attached={args.attached ?? true}
+          disableDirectSend={args.disableDirectSend ?? false}
+          style={{ '--cds-aichat-autocomplete-max-height': '328px' }}
+          onSelect={(e) => action('cds-aichat-autocomplete-select')(e.detail)}
+          onSend={(e) => action('cds-aichat-autocomplete-send')(e.detail)}
+          onDismiss={() => action('cds-aichat-autocomplete-dismiss')()}
+        />
+      </Wrapper>
+    );
+  },
+};
+
+export const WithDisabledItems = {
+  render: (args) => {
+    const mixedItems = [
+      {
+        id: 'suggestion-1',
+        label: 'When is the best time to eat?',
+      },
+      {
+        id: 'suggestion-2',
+        label: 'When is the sun rising today?',
+        disabled: true,
+      },
+      {
+        id: 'suggestion-3',
+        label: 'When is the sun setting today?',
+      },
+      {
+        id: 'suggestion-4',
+        label: 'When is the start of Spring?',
+        disabled: true,
+      },
+      {
+        id: 'suggestion-5',
+        label: 'When is the next full moon?',
+      },
+    ];
+
+    return (
+      <Wrapper width="320px">
+        <CDSAIChatAutocomplete
+          items={mixedItems}
+          inputText={args.inputText || ''}
           attached={args.attached ?? true}
           disableDirectSend={args.disableDirectSend ?? false}
           style={{ '--cds-aichat-autocomplete-max-height': '328px' }}
