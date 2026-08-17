@@ -319,7 +319,7 @@ export class DemoInputConfigSwitcher extends LitElement {
       if (value === DROPDOWN_TRUE) {
         next.actions = DEMO_MENU_OPTIONS;
       } else if (value === DROPDOWN_FALSE) {
-        next.actions = [];
+        delete next.actions;
       } else {
         delete next.actions;
       }
