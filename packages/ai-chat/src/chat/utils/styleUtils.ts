@@ -71,11 +71,16 @@ function convertCSSVariablesToString(
 /**
  * Validates the CSS variables supplied through `layout.customProperties`, dropping any Carbon theme token
  * (a key starting with "$") whose value is not a hexadecimal color.
+ *
+ * The copy is load-bearing: the map arriving here belongs to the merged config, which `ChatAppEntry` also
+ * keeps as its change-detection baseline. Pruning the rejected key from it would leave the baseline missing
+ * a key every freshly merged config still carries, so a value-identical update would compare as changed and
+ * dispatch a config replace on every host render.
  */
 function validateCustomProperties(
   publicVars: ObjectMap<string>
 ): ObjectMap<string> {
-  const result = publicVars || {};
+  const result = { ...publicVars };
 
   Object.entries(result).forEach(([key, value]) => {
     // Variables starting with "$" are carbon theme tokens and should all be colors

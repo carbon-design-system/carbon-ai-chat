@@ -15,6 +15,7 @@
  * pass's job; see configReferenceSharing_spec.
  */
 
+import { createAppConfig } from '../../../src/chat/store/doCreateStore';
 import {
   DEFAULT_PUBLIC_CONFIG,
   mergePublicConfig,
@@ -93,6 +94,27 @@ describe('mergePublicConfig', () => {
     expect(config.launcher).toBeUndefined();
     expect(config.serviceDesk).toBeUndefined();
     expect(DEFAULT_PUBLIC_CONFIG.launcher).toEqual(launcherDefault);
+  });
+
+  it('leaves the merged snapshot intact when boot rejects a Carbon token', () => {
+    // A `$` token whose value is not a hex color is dropped from the derived
+    // overrides, but must survive on the merged config: `ChatAppEntry` keeps that
+    // object as its change-detection baseline, and a baseline missing a key every
+    // fresh merge still carries compares as changed on every host render.
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const merged = mergePublicConfig({
+      layout: { customProperties: { '$button-primary': 'var(--brand)' } },
+    } as Partial<PublicConfig>);
+
+    const appConfig = createAppConfig(merged);
+
+    expect(appConfig.derived.cssVariableOverrides['$button-primary']).toBe(
+      undefined
+    );
+    expect(merged.layout.customProperties['$button-primary']).toBe(
+      'var(--brand)'
+    );
+    warn.mockRestore();
   });
 
   it('lets an explicitly-undefined field fall back to its default', () => {
