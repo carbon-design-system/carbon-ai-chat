@@ -135,7 +135,7 @@
   "dependencies": {
     "@carbon/ai-chat-components": "^1.9.0-rc.1",
     "@carbon/icons": "^11.53.0",
-    "@carbon/utilities": "^0.20.0",
+    "@carbon/utilities": "^0.24.0",
     "@floating-ui/dom": "^1.6.3",
     "@ibm/telemetry-js": "^1.10.2",
     "@lit/react": "^1.0.6",
