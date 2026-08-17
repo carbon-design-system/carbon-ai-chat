@@ -13,6 +13,7 @@ import {
   MessageResponseTypes,
   SuggestionItem,
 } from '@carbon/ai-chat';
+import { RESPONSE_MAP } from './responseMap';
 
 /**
  * Mock `InputConfig.mention` / `InputConfig.command` fixtures and callbacks
@@ -159,9 +160,19 @@ function doMentionCommandResponse(
   });
 }
 
+const _responseMapKeys = Object.keys(RESPONSE_MAP);
+
+function autocompleteItems(query: string): SuggestionItem[] {
+  const q = query.toLowerCase();
+  return _responseMapKeys
+    .filter((key) => key.toLowerCase().includes(q))
+    .map((key) => ({ id: key, label: key, value: key }));
+}
+
 export {
   mentionItems,
   commandItems,
+  autocompleteItems,
   mentionOnSelect,
   mentionOnRemove,
   commandOnSelect,

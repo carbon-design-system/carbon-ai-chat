@@ -118,11 +118,9 @@ export class ConfigManager {
             onFileUpload: undefined,
           }
         : undefined,
-      // Strip the mention/command onSelect/onRemove callbacks (functions) so
-      // they don't appear as "[object Object]" in the URL. `items` is a
-      // required field and, for the demo's static fixtures, already plain
-      // JSON — left as-is. Re-injected by getSettings() on page load
-      // whenever a mention/command config is present.
+      // Strip function-valued fields from input sub-configs so they don't
+      // appear as "[object Object]" in the URL. All are re-injected by
+      // getSettings() on page load whenever the relevant config is present.
       input: config.input
         ? {
             ...config.input,
@@ -139,6 +137,9 @@ export class ConfigManager {
                   onSelect: undefined,
                   onRemove: undefined,
                 }
+              : undefined,
+            autocomplete: config.input.autocomplete
+              ? { ...config.input.autocomplete, items: [] }
               : undefined,
           }
         : undefined,
