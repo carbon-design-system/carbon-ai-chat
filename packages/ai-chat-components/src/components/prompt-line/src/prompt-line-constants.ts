@@ -16,3 +16,11 @@
  * constant so they can't drift.
  */
 export const PROMPT_LINE_MAX_BLOCK_SIZE = '157px';
+
+/**
+ * Undo/redo tuning for the rich editor's `UndoRedo` extension. Lives here rather
+ * than in the tiptap barrel so [./prompt-line-rich-runtime.ts] can read it
+ * without importing the barrel — that would pull the whole curated bundle into
+ * the lazily-imported Tiptap chunk. Re-exported from [./tiptap/index.ts].
+ */
+export const HISTORY_DEFAULTS = { depth: 100, newGroupDelay: 500 } as const;

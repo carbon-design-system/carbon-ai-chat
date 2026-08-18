@@ -29,7 +29,9 @@ import { Editor, type Extension, type JSONContent } from '@tiptap/core';
 import DocumentNode from '@tiptap/extension-document';
 import HardBreakNode from '@tiptap/extension-hard-break';
 import ParagraphNode from '@tiptap/extension-paragraph';
+import Placeholder from '@tiptap/extension-placeholder';
 import TextNode from '@tiptap/extension-text';
+import { UndoRedo } from '@tiptap/extensions';
 
 import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
 import { setVarsForSelector } from '../../shared/dynamic-css-var-sheet.js';
@@ -39,26 +41,24 @@ import type {
   SetContentUpdater,
 } from './prompt-line-controller.js';
 import { applyEditorStyles } from './tiptap/editor-styles.js';
+import { HISTORY_DEFAULTS } from './prompt-line-constants.js';
 import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
 import {
   areExtensionSetsEquivalent,
   getExtensionSource,
 } from './tiptap/extension-equivalence.js';
-import {
-  carbonChatEnter,
-  HISTORY_DEFAULTS,
-  Keymap,
-  PlainTextPaste,
-  Placeholder,
-  TypingIndicator,
-  UndoRedo,
-  ValueSync,
-} from './tiptap/index.js';
+import { carbonChatEnter } from './tiptap/chat-enter.js';
+import { Keymap } from './tiptap/keymap.js';
+import { PlainTextPaste } from './tiptap/plain-text-paste.js';
+import { TypingIndicator } from './tiptap/typing-indicator.js';
+import { ValueSync } from './tiptap/value-sync.js';
 import type { StartersConfig } from './tiptap/types.js';
 import { textToDoc } from './tiptap/json-utils.js';
 import { setHostOriginMeta } from './tiptap/origin-meta.js';
 
-const PM_KEYBOARD_FOCUS_CLASS = 'cds-aichat--input-pm-content--keyboard-focus';
+/** Exported so tests assert the ring without retyping the literal. */
+export const PM_KEYBOARD_FOCUS_CLASS =
+  'cds-aichat--input-pm-content--keyboard-focus';
 
 let keyboardFocusRuleInstalled = false;
 function ensureKeyboardFocusRule(): void {
@@ -77,10 +77,25 @@ class RichController implements PromptLineController {
   private _editor: Editor | null = null;
   private _host: HTMLElement | null = null;
   private _extensions: Extension[] = [];
+  /**
+   * The set the live editor was built from. `_createEditor` assigns it the same
+   * reference as `_extensions`, so the two are normally identical; they diverge
+   * only between a `setExtensions` that adopted an equivalent set without
+   * rebuilding and the next `_createEditor`. Only `_flushPendingRecreate` needs
+   * the distinction: a rebuild withheld for a composition has to be judged
+   * against what is installed, not against the set that was pending when the
+   * composition began, or a host that changed the config and changed it back
+   * loses its undo history for nothing.
+   */
+  private _installedExtensions: Extension[] = [];
   private _placeholder = '';
   private _testId = '';
   private _disabled = false;
   private _focusFromMouse = false;
+  private _isComposing = false;
+  /** Set when a recreate is withheld during an IME composition. */
+  private _pendingRecreate = false;
+  private _pendingRecreateTimer: ReturnType<typeof setTimeout> | null = null;
 
   mount(host: HTMLElement, init: PromptLineControllerInit): void {
     this._host = host;
@@ -122,6 +137,12 @@ class RichController implements PromptLineController {
       host.removeEventListener('mousedown', this._setMouseFlag);
       host.removeEventListener('touchstart', this._setMouseFlag);
     }
+    if (this._pendingRecreateTimer) {
+      clearTimeout(this._pendingRecreateTimer);
+      this._pendingRecreateTimer = null;
+    }
+    this._isComposing = false;
+    this._pendingRecreate = false;
     this._editor?.destroy();
     this._editor = null;
     this._host = null;
@@ -255,6 +276,21 @@ class RichController implements PromptLineController {
     this._recreateEditor();
   }
 
+  setComposing(composing: boolean): void {
+    this._isComposing = composing;
+    if (composing || !this._pendingRecreate || this._pendingRecreateTimer) {
+      return;
+    }
+    // ProseMirror defers the last composed segment to a microtask after
+    // compositionend, so recreating here would snapshot the doc without it and
+    // lose the character the user just committed. A macrotask runs after that
+    // flush.
+    this._pendingRecreateTimer = setTimeout(() => {
+      this._pendingRecreateTimer = null;
+      this._flushPendingRecreate();
+    });
+  }
+
   /**
    * Push the current starter config onto the live editor's storage. Starter
    * differences never justify recreating the editor (which would drop undo
@@ -304,6 +340,31 @@ class RichController implements PromptLineController {
     this._focusFromMouse = true;
   };
 
+  private _flushPendingRecreate(): void {
+    // A fresh composition may have started while the flush was queued; its own
+    // compositionend re-queues this. A detached host means the element's own
+    // deferred teardown is already pending, so rebuilding would raise an editor
+    // only to destroy it a task later.
+    if (
+      !this._host?.isConnected ||
+      !this._pendingRecreate ||
+      this._isComposing
+    ) {
+      return;
+    }
+    // Compare against what is installed, not the set that was pending when the
+    // composition began: a host that changed the config and changed it back has
+    // nothing left to rebuild, and rebuilding anyway would drop undo history.
+    if (
+      areExtensionSetsEquivalent(this._installedExtensions, this._extensions)
+    ) {
+      this._pendingRecreate = false;
+      this._syncStarterStorage();
+      return;
+    }
+    this._recreateEditor();
+  }
+
   private _createEditor(
     element: HTMLElement,
     content: JSONContent | string | undefined
@@ -327,6 +388,7 @@ class RichController implements PromptLineController {
       ValueSync,
       TypingIndicator,
     ];
+    this._installedExtensions = this._extensions;
     return new Editor({
       element,
       extensions: [...baseExtensions, ...this._extensions],
@@ -361,6 +423,11 @@ class RichController implements PromptLineController {
     if (!host) {
       return;
     }
+    if (this._isComposing) {
+      this._pendingRecreate = true;
+      return;
+    }
+    this._pendingRecreate = false;
     const previousJson = this._editor?.getJSON();
     const previousSelection = this._editor
       ? {
@@ -397,8 +464,8 @@ class RichController implements PromptLineController {
       return;
     }
     // Chain a no-op command that meta-tags the accumulator tr as host-origin,
-    // then setContent on the same tr so downstream readers (typing-indicator,
-    // value-sync's storage flag) recognize the update.
+    // then setContent on the same tr so downstream readers (typing-indicator)
+    // recognize the update.
     editor
       .chain()
       .command(({ tr }) => {

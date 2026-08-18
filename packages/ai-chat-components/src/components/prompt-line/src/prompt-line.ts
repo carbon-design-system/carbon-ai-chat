@@ -135,6 +135,12 @@ class PromptLineElement extends LitElement {
   /** Sticky latch — once rich is wanted it never reverts. */
   private _richLatched = false;
   private _upgrading = false;
+  /**
+   * The element owns the host's composition listeners for both layers — it
+   * gates its own textarea→rich upgrade on this, and pushes the state to the
+   * active controller via `setComposing` so rich mode can withhold a recreate.
+   * One observer, so the two layers cannot disagree.
+   */
   private _isComposing = false;
   private _pendingUpgrade = false;
   /**
@@ -433,10 +439,12 @@ class PromptLineElement extends LitElement {
 
   private _onCompositionStart = (): void => {
     this._isComposing = true;
+    this._controller?.setComposing(true);
   };
 
   private _onCompositionEnd = (): void => {
     this._isComposing = false;
+    this._controller?.setComposing(false);
     if (this._pendingUpgrade) {
       this._pendingUpgrade = false;
       void this._upgradeToRich();
