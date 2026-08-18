@@ -57,7 +57,10 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line-shell.js', () => ({
 
 jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
   const MockPromptLine = React.forwardRef(
-    (props: MockPromptLineProps, ref: React.Ref<unknown>): React.ReactElement => {
+    (
+      props: MockPromptLineProps,
+      ref: React.Ref<unknown>
+    ): React.ReactElement => {
       // Capture the callbacks on every render so we always have the latest.
       capturedOnChange = props.onChange;
       capturedOnSendIntent = props.onSendIntent;
@@ -88,9 +91,8 @@ jest.mock(
 // ---------------------------------------------------------------------------
 
 async function renderInput(onSendInput: jest.Mock) {
-  const { Input: InputExport } = await import(
-    '../../../src/chat/components/input/Input'
-  );
+  const { Input: InputExport } =
+    await import('../../../src/chat/components/input/Input');
 
   const store = makeConfigStore({});
   const serviceManager = {
