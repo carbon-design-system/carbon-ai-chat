@@ -27,6 +27,7 @@ jobs:
             node_modules
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Run build
@@ -47,6 +48,7 @@ jobs:
             node_modules
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: |
           npm ci --prefer-offline
@@ -71,6 +73,7 @@ jobs:
             node_modules
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Check formatting of project files (staged)
@@ -95,6 +98,7 @@ jobs:
             node_modules
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Lint
@@ -115,6 +119,7 @@ jobs:
             node_modules
             */**/node_modules
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: License check

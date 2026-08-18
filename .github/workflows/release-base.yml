@@ -60,6 +60,11 @@ jobs:
           npm ci --prefer-offline
           npx playwright install --with-deps
           npm run aiChat:build
+      - name: Build examples
+        run: npm run examples:build
+      - name: Test examples
+        # TODO: replace with npm run examples:test once example Playwright tests are in place
+        run: echo "Example tests not yet wired — placeholder for forthcoming test runs"
       - name: Continuous integration check
         run: npm run ci-check
 

@@ -32,6 +32,7 @@ jobs:
         run: |
           npm ci --prefer-offline
           npm run build:docs --workspace=@carbon/ai-chat
+          npm run build --workspace=@carbon/ai-chat-examples-demo
       - name: Check release type
         if: contains(github.event.client_payload.tag, '-rc.') || contains(github.event.inputs.tag, '-rc.')
         run: echo "PRE_RELEASE=true" >> $GITHUB_ENV
