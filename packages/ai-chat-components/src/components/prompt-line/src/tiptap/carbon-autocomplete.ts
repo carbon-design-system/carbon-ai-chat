@@ -130,4 +130,3 @@ async function resolveItems(
     item.label.toLowerCase().includes(lower)
   );
 }
-

@@ -177,7 +177,7 @@ export interface TriggerSuggestionConfig extends Omit<
  * Note: only one autocomplete config per editor is supported, because Tiptap
  * resolves extensions by name.
  */
-export interface AutocompleteConfig extends BaseSuggestionConfig {}
+export type AutocompleteConfig = BaseSuggestionConfig;
 
 /**
  * Configuration for starter prompts — shown when the editor is empty and
