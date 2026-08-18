@@ -42,7 +42,7 @@ import type {
 } from './prompt-line-controller.js';
 import { applyEditorStyles } from './tiptap/editor-styles.js';
 import { HISTORY_DEFAULTS } from './prompt-line-constants.js';
-import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
+import { writeStarterStorage } from './tiptap/carbon-starter-trigger.js';
 import {
   areExtensionSetsEquivalent,
   getExtensionSource,
@@ -291,21 +291,8 @@ class RichController implements PromptLineController {
     });
   }
 
-  /**
-   * Push the current starter config onto the live editor's storage. Starter
-   * differences never justify recreating the editor (which would drop undo
-   * history), so they are applied in place instead.
-   */
+  /** Push the current starter config onto the live editor's storage. */
   private _syncStarterStorage(): void {
-    const editor = this._editor;
-    if (!editor) {
-      return;
-    }
-    const storage = (editor.storage as unknown as Record<string, unknown>)
-      .carbonStarterTrigger as StarterTriggerStorage | undefined;
-    if (!storage) {
-      return;
-    }
     const source = this._extensions
       .map(getExtensionSource)
       .find((descriptor) => descriptor?.kind === 'starters');
@@ -313,15 +300,10 @@ class RichController implements PromptLineController {
     if (!config) {
       return;
     }
-    const isOn = config.isOn !== false;
-    if (storage.items === config.items && storage.isOn === isOn) {
-      return;
-    }
-    storage.items = config.items;
-    storage.isOn = isOn;
-    // Re-run the trigger's transaction handler so a toggle takes effect on the
-    // current selection instead of waiting for the next keystroke.
-    editor.view.dispatch(editor.state.tr);
+    writeStarterStorage(this._editor, {
+      items: config.items,
+      isOn: config.isOn !== false,
+    });
   }
 
   undo(): boolean {

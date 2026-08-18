@@ -29,6 +29,41 @@ export interface StarterTriggerStorage {
   isOn: boolean;
 }
 
+/** Read the starter trigger's live storage, or `undefined` if not installed. */
+export function readStarterStorage(
+  editor: Editor | null | undefined
+): StarterTriggerStorage | undefined {
+  return (editor?.storage as unknown as Record<string, unknown> | undefined)
+    ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
+}
+
+/**
+ * Apply a starter-config patch to the live editor. Starter differences never
+ * justify recreating the editor — that would drop undo history — so they are
+ * written in place. The empty transaction re-runs this extension's
+ * `onTransaction` hook, so a toggle takes effect against the current selection
+ * instead of waiting for the next keystroke. No-ops when nothing changed, so
+ * callers do not have to guard.
+ */
+export function writeStarterStorage(
+  editor: Editor | null | undefined,
+  patch: Partial<StarterTriggerStorage>
+): void {
+  const storage = readStarterStorage(editor);
+  if (!editor || !storage) {
+    return;
+  }
+  const entries = Object.entries(patch) as [
+    keyof StarterTriggerStorage,
+    StarterTriggerStorage[keyof StarterTriggerStorage],
+  ][];
+  if (entries.every(([key, value]) => storage[key] === value)) {
+    return;
+  }
+  Object.assign(storage, patch);
+  editor.view.dispatch(editor.state.tr);
+}
+
 export function carbonStarterTrigger(
   initialItems: SuggestionItem[],
   initialIsOn = true
@@ -69,8 +104,7 @@ export function carbonStarterTrigger(
 }
 
 function maybeEmit(editor: Editor, forceClear = false): void {
-  const storage = (editor.storage as unknown as Record<string, unknown>)
-    .carbonStarterTrigger as StarterTriggerStorage | undefined;
+  const storage = readStarterStorage(editor);
   const isActive =
     !forceClear &&
     storage?.isOn !== false &&

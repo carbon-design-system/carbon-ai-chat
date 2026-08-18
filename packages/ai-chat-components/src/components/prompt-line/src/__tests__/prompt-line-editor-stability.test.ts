@@ -20,7 +20,10 @@ import '../prompt-line.js';
 import type PromptLineElement from '../prompt-line.js';
 import { PM_KEYBOARD_FOCUS_CLASS } from '../prompt-line-rich-runtime.js';
 import { buildCarbonExtensions } from '../tiptap/build-extensions.js';
-import type { StarterTriggerStorage } from '../tiptap/carbon-starter-trigger.js';
+import {
+  readStarterStorage,
+  type StarterTriggerStorage,
+} from '../tiptap/carbon-starter-trigger.js';
 import type { SuggestionItem } from '../tiptap/types.js';
 
 const PEOPLE: SuggestionItem[] = [{ id: 'u1', label: 'Alice' }];
@@ -83,8 +86,7 @@ async function flushTeardown(): Promise<void> {
 }
 
 function starterStorage(el: PromptLineElement): StarterTriggerStorage {
-  return (el.getEditor()!.storage as unknown as Record<string, unknown>)
-    .carbonStarterTrigger as StarterTriggerStorage;
+  return readStarterStorage(el.getEditor())!;
 }
 
 describe('<cds-aichat-prompt-line> editor stability', function () {
