@@ -13,11 +13,12 @@
  *
  * It renders a lightweight `<textarea>` by default and **never statically
  * imports `@tiptap/*`**, so chats that don't use advanced input features ship
- * no Tiptap. When the `rich` property is set (or host `extensions` are
- * supplied), the element dynamically imports a Tiptap runtime and upgrades the
- * surface in place — text, caret, and focus carry over because the textarea
- * holds plain text. The upgrade is **sticky**: once rich, the element stays
- * rich for the rest of its life.
+ * no Tiptap. When the `rich` property is set, or `ensureEditor()` is called,
+ * the element dynamically imports a Tiptap runtime and upgrades the surface in
+ * place — text, caret, and focus carry over because the textarea holds plain
+ * text. Host `extensions` alone do not trigger it; they are staged for whichever
+ * surface mounts. The upgrade is **sticky**: once rich, the element stays rich
+ * for the rest of its life.
  *
  * Both modes expose the same imperative API (`getEditor`, `setContent`,
  * `insertContent`, …) and emit the same events, so the React wrapper and

@@ -18,14 +18,13 @@ import { Extension } from '@tiptap/core';
 
 import '../prompt-line.js';
 import type PromptLineElement from '../prompt-line.js';
+import { PM_KEYBOARD_FOCUS_CLASS } from '../prompt-line-rich-runtime.js';
 import { buildCarbonExtensions } from '../tiptap/build-extensions.js';
 import type { StarterTriggerStorage } from '../tiptap/carbon-starter-trigger.js';
 import type { SuggestionItem } from '../tiptap/types.js';
 
 const PEOPLE: SuggestionItem[] = [{ id: 'u1', label: 'Alice' }];
 const STARTERS: SuggestionItem[] = [{ id: 's1', label: 'Summarize this' }];
-/** Mirrors the private constant in prompt-line-rich-runtime.ts. */
-const KEYBOARD_FOCUS_CLASS = 'cds-aichat--input-pm-content--keyboard-focus';
 
 async function makeRichPromptLine(
   extensions: Extension[] = []
@@ -88,7 +87,7 @@ function starterStorage(el: PromptLineElement): StarterTriggerStorage {
     .carbonStarterTrigger as StarterTriggerStorage;
 }
 
-describe('<cds-aichat-prompt-line> editor stability across config updates', function () {
+describe('<cds-aichat-prompt-line> editor stability', function () {
   it('keeps the editor and its undo history when an equivalent set is rebuilt', async () => {
     const configs = { mention: { trigger: '@', items: PEOPLE } };
     const el = await makeRichPromptLine(buildCarbonExtensions(configs));
@@ -126,7 +125,7 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
     expect(el.getEditor()!.getText()).to.equal('keep me');
   });
 
-  it('applies starters changes to live storage without recreating', async () => {
+  it('keeps the editor when the starters list is toggled or swapped', async () => {
     const el = await makeRichPromptLine(
       buildCarbonExtensions({ starters: { items: STARTERS, isOn: true } })
     );
@@ -249,7 +248,7 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
     expect(el.getEditor()!.getText()).to.equal('hi X');
   });
 
-  it('re-defers when a fresh composition opens before the flush', async () => {
+  it('does not rebuild while a second composition is still open', async () => {
     const el = await makeRichPromptLine(
       buildCarbonExtensions({ mention: { trigger: '@', items: PEOPLE } })
     );
@@ -284,7 +283,7 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
     el.getEditor()!.view.dom.focus();
     await nextFrame();
     expect(
-      el.getEditor()!.view.dom.classList.contains(KEYBOARD_FOCUS_CLASS)
+      el.getEditor()!.view.dom.classList.contains(PM_KEYBOARD_FOCUS_CLASS)
     ).to.equal(true);
 
     await setExtensions(
@@ -295,11 +294,11 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
 
     expect(el.getEditor()!.isFocused).to.equal(true);
     expect(
-      el.getEditor()!.view.dom.classList.contains(KEYBOARD_FOCUS_CLASS)
+      el.getEditor()!.view.dom.classList.contains(PM_KEYBOARD_FOCUS_CLASS)
     ).to.equal(true);
   });
 
-  it('drops a deferred recreate the host reverted during composition', async () => {
+  it('keeps the editor when the host reverts the config mid-composition', async () => {
     // A→B→A while composing: the pending rebuild is latched against B, but by
     // the time the composition commits nothing differs from what is installed.
     // Rebuilding anyway would cost the undo history for no change.
@@ -326,7 +325,7 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
     expect(el.getEditor()!.getText()).to.equal('');
   });
 
-  it('applies a starters change carried by a dropped rebuild', async () => {
+  it('applies a starters toggle made during a reverted config change', async () => {
     // Same drop branch as above, but the reverted set also carries a starters
     // change. Nothing rebuilds, so the drop has to write it through to storage
     // or the toggle is lost with no recreate left to reinstall it.
@@ -430,12 +429,21 @@ describe('<cds-aichat-prompt-line> editor stability across config updates', func
     await waitForRich(el);
 
     expect(el.getEditor()).to.not.equal(null);
-    type(el, 'back in business');
-    expect(el.getEditor()!.getText()).to.equal('back in business');
+
+    // Props used to be ignored after a reattach, so assert one actually lands.
+    // Placeholder decorations only render on an empty doc, hence before typing.
     el.placeholder = 'still wired';
     await el.updateComplete;
     await Promise.resolve();
-    expect(el.getEditor()!.view.dom.isConnected).to.equal(true);
+    expect(
+      el
+        .getEditor()!
+        .view.dom.querySelector('p')
+        ?.getAttribute('data-placeholder')
+    ).to.equal('still wired');
+
+    type(el, 'back in business');
+    expect(el.getEditor()!.getText()).to.equal('back in business');
   });
 
   it('clears in-flight composition state on a real teardown', async () => {
