@@ -51,8 +51,6 @@ function App() {
             CANNED_SUGGESTIONS.filter((s) =>
               s.label.toLowerCase().includes(query.toLowerCase())
             ),
-          // throttle resolver calls so each keystroke does not trigger a fetch — 150ms keeps typing responsive.
-          debounceMs: 150,
         },
       },
     }),

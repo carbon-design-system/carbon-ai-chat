@@ -104,9 +104,6 @@ export interface BaseSuggestionConfig {
   /** Minimum query length before items() is called. Defaults to 0. */
   minQueryLength?: number;
 
-  /** Debounce delay in ms for the async items function. Defaults to 200. */
-  debounceMs?: number;
-
   /** Called after the user selects an item and insertion is complete. */
   onSelect?: (item: SuggestionItem) => void;
 
