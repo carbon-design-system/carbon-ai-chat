@@ -231,6 +231,7 @@ type RenderWriteableElementResponse = {
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type TokenTree = _TokenTree;
 
