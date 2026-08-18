@@ -261,12 +261,10 @@ class ChatActionsImpl {
    * welcome node. This message behaves a little differently from the welcome node in that it's assumed that this
    * message is actively needed. It will bypass the home screen if it is enabled and it was always append this
    * message to the end of any session history that is retrieved.
-   * @param alternateWelcomeRequestSource The source of the alternate welcome message.
    * @param alternateOptions The send to send along with the alternate welcome request.
    */
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
-    alternateWelcomeRequestSource?: MessageSendSource,
     alternateOptions?: SendOptions
   ) {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
@@ -276,7 +274,6 @@ class ChatActionsImpl {
         this.hydrating = true;
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
-          alternateWelcomeRequestSource,
           alternateOptions
         );
         fireReady = true;
@@ -299,18 +296,15 @@ class ChatActionsImpl {
    * welcome node. This message behaves a little differently from the welcome node in that it's assumed that this
    * message is actively needed. It will bypass the home screen if it is enabled and it was always append this
    * message to the end of any session history that is retrieved.
-   * @param alternateWelcomeRequestSource The source of the alternate welcome message.
    * @param alternateOptions The options to send along with the alternate welcome request.
    */
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
-    alternateWelcomeRequestSource?: MessageSendSource,
     alternateOptions?: SendOptions
   ) {
     debugLog(
       'Hydrating Carbon AI Chat',
       alternateWelcomeRequest,
-      alternateWelcomeRequestSource,
       alternateOptions
     );
 
@@ -884,7 +878,7 @@ class ChatActionsImpl {
       // If no hydration has started, then we need to start the hydration and use this message as the alternate for
       // the welcome node.
       this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
-      await this.hydrateChat(messageRequest, source, options);
+      await this.hydrateChat(messageRequest, options);
       await this.doSend(messageRequest, source, options);
     }
   }

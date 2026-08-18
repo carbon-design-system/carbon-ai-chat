@@ -18,6 +18,7 @@ import type { ToolbarAction as _ToolbarAction } from '@carbon/ai-chat-components
  * rather than collapsing into the overflow menu when space is tight.
  *
  * @category Config
+ * @interface
  */
 export type ToolbarAction = _ToolbarAction;
 

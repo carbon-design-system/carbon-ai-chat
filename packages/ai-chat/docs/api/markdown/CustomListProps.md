@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.CustomListProps.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.CustomListProps.html
 
 Props passed to a custom suggestion-list renderer (the `renderCustomList`
 field on BaseSuggestionConfig). Includes the filtered

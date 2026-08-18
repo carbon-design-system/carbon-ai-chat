@@ -41,6 +41,7 @@ export type FileStatusValue = _FileStatusValue;
  * {@link FileStatusValue} and any error metadata.
  *
  * @category Service desk
+ * @interface
  */
 export type FileUpload = _FileUpload;
 

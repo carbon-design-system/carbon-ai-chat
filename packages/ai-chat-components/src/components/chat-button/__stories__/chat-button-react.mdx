@@ -1,20 +1,23 @@
-import { ArgTypes, Canvas, Markdown, Meta } from "@storybook/addon-docs/blocks";
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ChatButtonReactStories from "./chat-button-react.stories.jsx";
+import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as ChatButtonReactStories from './chat-button-react.stories.jsx';
 
-<Meta of={ChatButtonReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ChatButtonReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Button
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-button) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -25,7 +28,7 @@ The `<ChatButton>` component wraps the `cds-aichat-button` web component and exp
 Here's a quick example to get you started.
 
 ```jsx
-import ChatButton from "@carbon/ai-chat-components/es/react/chat-button.js";
+import ChatButton from '@carbon/ai-chat-components/es/react/chat-button.js';
 
 function ChatButtonExample() {
   return (

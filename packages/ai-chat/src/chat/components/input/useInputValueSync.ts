@@ -139,9 +139,10 @@ function useInputValueSync({
     hasErrorProp ||
     hasInFlightUpload(pendingUploads);
 
-  // The single predicate behind both the Send control's enabled state and the send
-  // path itself. They disagreed before, which is why the button could light up on a
-  // file-only input and then do nothing when pressed.
+  // Drives the Send control's enabled state (React render path). The send
+  // function itself re-evaluates from the ref so it stays correct even when
+  // called synchronously after seeding the ref (e.g. starter / autocomplete
+  // item send) before React has re-rendered with the new state value.
   const hasValidInput = hasSendableInput(rawInputValue, pendingUploads);
 
   /**
@@ -182,8 +183,12 @@ function useInputValueSync({
    * by @lit/react's native-event scheduling. See issue #1382.
    */
   const sendCurrentValue = () => {
-    const text = rawInputValueRef.current;
-    if (!hasValidInput) {
+    const text = rawInputValueRef.current.trim();
+    // Re-evaluate from the ref at call time: callers like the starter and
+    // autocomplete-item send paths seed the ref synchronously before calling
+    // here, so using the closure-captured `hasValidInput` (derived from
+    // `rawInputValue` state) would race the React re-render and bail early.
+    if (!hasSendableInput(text, pendingUploads)) {
       return;
     }
     if (effectiveDisableSend) {

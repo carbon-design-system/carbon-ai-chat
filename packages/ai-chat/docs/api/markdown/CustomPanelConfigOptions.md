@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html
 
 Options that change how the custom panel looks. When a header is shown, it inherits styling and behavior from the
 configured HeaderConfig (title, assistant name, AI slug, minimize button style, overflow menu, etc.) unless
@@ -26,7 +26,7 @@ interface CustomPanelConfigOptions
 
 Determines if the panel open/close animation should be turned off.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#disableanimation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#disableanimation)
 
 ### disableDefaultCloseAction
 
@@ -39,7 +39,7 @@ button will run Carbon AI Chat's standard close routine (after verifying no view
 to true when you want to keep the experience open or handle closing asynchronously; you'll need to perform the
 desired close work inside onClickClose.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#disabledefaultcloseaction)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#disabledefaultcloseaction)
 
 ### hideBackButton
 
@@ -51,7 +51,7 @@ Indicates if the back button in the custom panel should be hidden. When hidePane
 button is hidden automatically. When the back button is visible the panel opens beneath the chat header so users
 can always access the assistant-level header controls while the panel is active.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#hidebackbutton)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#hidebackbutton)
 
 ### hideCloseButton
 
@@ -61,7 +61,7 @@ can always access the assistant-level header controls while the panel is active.
 
 Indicates if the close/minimize button in the custom panel should be hidden.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#hideclosebutton)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#hideclosebutton)
 
 ### hidePanelHeader
 
@@ -74,7 +74,7 @@ button, and back button chrome entirely. Leave this undefined to animate the pan
 it to true when you need a chrome-free experience (for example, when the panel content provides its own close
 controls or you want the panel to cover the chat header without animating the header into view).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#hidepanelheader)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#hidepanelheader)
 
 ### onClickBack
 
@@ -85,7 +85,7 @@ controls or you want the panel to cover the chat header without animating the he
 Called after the header's back button is clicked. The panel automatically closes before this callback is invoked,
 so you can safely run follow-up logic or analytics once the panel has been dismissed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#onclickback)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#onclickback)
 
 ### onClickClose
 
@@ -98,7 +98,7 @@ behavior (which collapses the experience) before this callback fires; set disabl
 if you plan to intercept the event and manage closing yourself. The callback still fires even when the default
 action is disabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#onclickclose)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#onclickclose)
 
 ### onClickRestart
 
@@ -109,7 +109,7 @@ action is disabled.
 Called when the restart button in the header is clicked. Use this to trigger a conversation reset or your own
 telemetry when the restart control is surfaced.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#onclickrestart)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#onclickrestart)
 
 ### title
 
@@ -122,7 +122,7 @@ title/name to be shown instead. When a back button is visible the inherited head
 so this title acts like a breadcrumb; when the back button is hidden, the header fills the panel chrome and this
 title becomes the primary heading within the overlay.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.CustomPanelConfigOptions.html#title)
 
 ## Related
 

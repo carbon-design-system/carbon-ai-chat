@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html
 
 Start or end conversations with human agent.
 
@@ -31,7 +31,7 @@ resolved.
 await instance.serviceDesk.endConversation();
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#endconversation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#endconversation)
 
 ### updateIsSuspended
 
@@ -50,4 +50,4 @@ await instance.serviceDesk.updateIsSuspended(true);
 await instance.serviceDesk.updateIsSuspended(false);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#updateissuspended)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceServiceDeskActions.html#updateissuspended)

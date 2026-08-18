@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html
 
 Methods for controlling the input field.
 
@@ -83,7 +83,7 @@ editor.commands.focus();
    re-creates the editor on every host render, losing selection
    mid-edit.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#geteditor)
 
 ### updateContent
 
@@ -126,7 +126,7 @@ For cursor-position insertion, use the {@link ChatInstanceInput.getEditor}
 escape hatch:
 `(await instance.input.getEditor()).commands.insertContent(...)`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#updatecontent)
 
 ### updateRawValue
 
@@ -148,7 +148,7 @@ Throws if the editor doc contains any node type other than
 marks. Empty paragraphs pass through; `hardBreak` renders as `\n` in
 the rawValue projection. Emits one deprecation warning per session.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#updaterawvalue)
 
 ### updateStructuredData
 
@@ -186,4 +186,4 @@ instance.input.updateStructuredData(() => ({
 instance.input.updateStructuredData(() => undefined);
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ChatInstanceInput.html#updatestructureddata)

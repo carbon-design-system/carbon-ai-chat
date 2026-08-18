@@ -10,6 +10,7 @@
 import React from 'react';
 import { action } from 'storybook/actions';
 import ChatButton from '../../../react/chat-button';
+import ChatButtonSkeleton from '../../../react/chat-button-skeleton';
 import {
   BUTTON_KIND,
   BUTTON_SIZE,
@@ -92,6 +93,10 @@ const BaseButtonTemplate = (args) => {
       {IconSlot && <IconSlot slot="icon" />}
     </ChatButton>
   );
+};
+
+const SkeletonButtonTemplate = (args) => {
+  return <ChatButtonSkeleton size={args.size} />;
 };
 
 export default {
@@ -399,4 +404,21 @@ export const QuickActionSelectedWithDisabled = {
       </div>
     </>
   ),
+};
+
+export const Skeleton = {
+  render: SkeletonButtonTemplate,
+  argTypes: {
+    size: {
+      control: 'select',
+      description: 'Specify the size of the skeleton button.',
+      options: ['sm', 'md', 'lg'],
+    },
+    isQuickAction: {
+      table: { disable: true },
+    },
+  },
+  args: {
+    size: 'md',
+  },
 };

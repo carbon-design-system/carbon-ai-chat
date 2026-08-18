@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.UpsertMessageUpdater.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.UpsertMessageUpdater.html
 
 The updater function passed to ChatInstanceMessaging.upsertMessage. Receives the
 message currently stored under the target ID (or `undefined` when no message with that

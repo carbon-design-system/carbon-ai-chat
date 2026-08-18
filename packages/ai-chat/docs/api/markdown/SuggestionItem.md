@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/types/Type_reference.SuggestionItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.SuggestionItem.html
 
 Single list-item shape used by every Carbon suggestion surface
 (mention, command, autocomplete, starters). Carries the id, label,

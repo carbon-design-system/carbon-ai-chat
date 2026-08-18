@@ -104,9 +104,6 @@ export interface BaseSuggestionConfig {
   /** Minimum query length before items() is called. Defaults to 0. */
   minQueryLength?: number;
 
-  /** Debounce delay in ms for the async items function. Defaults to 200. */
-  debounceMs?: number;
-
   /** Called after the user selects an item and insertion is complete. */
   onSelect?: (item: SuggestionItem) => void;
 
@@ -116,7 +113,7 @@ export interface BaseSuggestionConfig {
   /**
    * When `true`, clicking a suggestion item fires `cds-aichat-autocomplete-select`
    * and inserts the item into the editor rather than sending immediately.
-   * Defaults to `false`. This property is ommitted in TriggerSuggestionConfig
+   * Defaults to `false`. This property is omitted in TriggerSuggestionConfig
    * since mentions and commands should always insert into the editor.
    */
   disableDirectSend?: boolean;

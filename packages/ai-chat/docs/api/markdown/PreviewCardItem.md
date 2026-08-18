@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html
 
 This message item represents a preview card that can trigger a workflow view.
 
@@ -20,7 +20,7 @@ interface PreviewCardItem
 
 Additional data to be passed to workspace.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#additional_data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#additional_data)
 
 ### agent_message_type
 
@@ -28,7 +28,7 @@ Additional data to be passed to workspace.
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#agent_message_type)
 
 ### message_item_options
 
@@ -36,7 +36,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#message_item_options)
 
 ### response_type
 
@@ -44,7 +44,7 @@ Options that control additional features available for a message item.
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#response_type)
 
 ### streaming_metadata
 
@@ -53,7 +53,7 @@ The response type of this message item.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#streaming_metadata)
 
 ### subtitle
 
@@ -61,7 +61,7 @@ for a specific item.
 
 The subtitle of the preview card.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#subtitle)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#subtitle)
 
 ### title
 
@@ -69,7 +69,7 @@ The subtitle of the preview card.
 
 The title of the preview card.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#title)
 
 ### user_defined
 
@@ -77,7 +77,7 @@ The title of the preview card.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#user_defined)
 
 ### workspace_id
 
@@ -85,7 +85,7 @@ An optional buckets of additional user defined properties for this item.
 
 The id of the workspace that is attached to this card.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#workspace_id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#workspace_id)
 
 ### workspace_options
 
@@ -93,4 +93,4 @@ The id of the workspace that is attached to this card.
 
 Options for opening the workspace.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/interfaces/Type_reference.PreviewCardItem.html#workspace_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.PreviewCardItem.html#workspace_options)

@@ -2,7 +2,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.0/docs/functions/Type_reference.setHostOriginMeta.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/functions/Type_reference.setHostOriginMeta.html
 
 Tag a Tiptap transaction as host-originated so the value-sync extension
 (and any other origin-aware reader) can suppress its own change-event
