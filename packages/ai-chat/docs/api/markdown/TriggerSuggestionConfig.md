@@ -6,12 +6,14 @@
 
 Trigger-character-driven suggestion config consumed by
 InputConfig.mention and InputConfig.command. Adds the
-trigger character, an optional `triggerPosition`, an optional schema-node
-`name` override, a custom-token renderer, an `onRemove` callback (the
-mirror of `onSelect`, fired when a token is deleted), and a
-`showTriggerInChip` default (whether selected items render as
-`/summarize` or a bare `summarize`, overridable per item) on top of
+trigger character, an optional `triggerPosition`, a custom-token renderer,
+an `onRemove` callback (the mirror of `onSelect`, fired when a token is
+deleted), and a `showTriggerInChip` default (whether selected items render
+as `/summarize` or a bare `summarize`, overridable per item) on top of
 BaseSuggestionConfig.
+
+Each chat supports one mention trigger and one command trigger, because
+Tiptap resolves extensions by name.
 
 ## Signature
 

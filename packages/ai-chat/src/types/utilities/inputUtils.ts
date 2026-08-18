@@ -49,8 +49,8 @@ import type {
  * Tiptap extension factory for `@`-style mention triggers. Wraps
  * `@tiptap/extension-mention` with Carbon-specific chip rendering, extended
  * schema attributes (`value`, `data`), and direct
- * `cds-aichat-trigger-change` dispatch. Pass distinct `name` values when
- * composing multiple instances.
+ * `cds-aichat-trigger-change` dispatch. Each chat supports one mention
+ * trigger, because Tiptap resolves extensions by name.
  *
  * @function
  * @category Utilities

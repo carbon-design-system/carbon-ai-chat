@@ -26,11 +26,10 @@ import { dispatchTriggerChange } from './trigger-utils.js';
 import type { AutocompleteConfig, SuggestionItem } from './types.js';
 
 export function carbonAutocomplete(config: AutocompleteConfig): Extension {
-  const name = config.name ?? 'autocomplete';
-  const pluginKey = new PluginKey(`carbonAutocompleteSuggestion_${name}`);
+  const pluginKey = new PluginKey('carbonAutocompleteSuggestion');
 
   return Extension.create({
-    name: `carbon${capitalize(name)}`,
+    name: 'carbonAutocomplete',
 
     addProseMirrorPlugins() {
       const editor = this.editor;
@@ -132,6 +131,3 @@ async function resolveItems(
   );
 }
 
-function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}

@@ -23372,7 +23372,7 @@
       "kind": "TypeAlias",
       "parent": null,
       "category": "Config",
-      "summary": "Trigger-character-driven suggestion config consumed by\nInputConfig.mention and InputConfig.command. Adds the\ntrigger character, an optional `triggerPosition`, an optional schema-node\n`name` override, a custom-token renderer, an `onRemove` callback (the\nmirror of `onSelect`, fired when a token is deleted), and a\n`showTriggerInChip` default (whether selected items render as\n`/summarize` or a bare `summarize`, overridable per item) on top of\nBaseSuggestionConfig.",
+      "summary": "Trigger-character-driven suggestion config consumed by\nInputConfig.mention and InputConfig.command. Adds the\ntrigger character, an optional `triggerPosition`, a custom-token renderer,\nan `onRemove` callback (the mirror of `onSelect`, fired when a token is\ndeleted), and a `showTriggerInChip` default (whether selected items render\nas `/summarize` or a bare `summarize`, overridable per item) on top of\nBaseSuggestionConfig.\n\nEach chat supports one mention trigger and one command trigger, because\nTiptap resolves extensions by name.",
       "description": "",
       "signature": "type TriggerSuggestionConfig = _TriggerSuggestionConfig",
       "signatures": [],
