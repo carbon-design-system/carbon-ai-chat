@@ -54,7 +54,7 @@ import {
   getRichRuntimeIfLoaded,
   loadRichRuntime,
 } from './prompt-line-rich-loader.js';
-import { getRawText } from './tiptap/json-utils.js';
+import { getRawText, textOffsetToDocPos } from './tiptap/json-utils.js';
 
 import styles from './prompt-line.scss?lit';
 
@@ -554,14 +554,9 @@ class PromptLineElement extends LitElement {
     this._seedPending = true;
     rich.mount(host, this._makeInit(value));
 
-    // Map plain-text caret offsets into the seeded doc. `textToDoc` makes one
-    // paragraph per line, so a position costs +1 for the doc/first-paragraph
-    // start plus +1 for every newline before it (each opens a new paragraph).
-    const toDocPos = (offset: number): number =>
-      offset + 1 + (value.slice(0, offset).split('\n').length - 1);
     rich.setTextSelection({
-      from: toDocPos(selection.from),
-      to: toDocPos(selection.to),
+      from: textOffsetToDocPos(value, selection.from),
+      to: textOffsetToDocPos(value, selection.to),
     });
     if (hadFocus) {
       rich.focus();
