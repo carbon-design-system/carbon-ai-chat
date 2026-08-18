@@ -150,8 +150,6 @@ function createTokenContainer(
   dom.setAttribute('data-token-type', type);
   dom.setAttribute('data-token-context', context);
   dom.setAttribute('data-raw-value', value ?? label ?? '');
-  dom.setAttribute('role', 'img');
-  dom.setAttribute('aria-label', label || value || '');
   dom.className = 'cds-aichat--token';
   return dom;
 }
