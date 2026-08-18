@@ -6,7 +6,6 @@
 
 - Configuring `input.autocomplete` with a single resolver — autocomplete has no trigger character; the dropdown opens whenever there is input and filters as the user types.
 - Resolving suggestions asynchronously from an `items` callback that filters a canned list by case-insensitive label match.
-- Using `debounceMs: 150` to coalesce rapid keystrokes before invoking `items`.
 - Returning an empty array when no entries match to suppress the dropdown.
 
 ## When to use this pattern
@@ -24,7 +23,6 @@
 | `SuggestionItem` | type | Shape of each entry returned from `items`. |
 | `.input` (`input.autocomplete`) | property | Registers the typeahead behavior on the input. |
 | `autocomplete.items` | property | Async filter that returns matching `SuggestionItem`s. |
-| `autocomplete.debounceMs` | property | Coalesces keystrokes before calling `items`. |
 | `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the host. |
 | `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
 | `.messaging.customSendMessage` | property | Mock backend echoing the user's message. |

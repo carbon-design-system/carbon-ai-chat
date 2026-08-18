@@ -52,8 +52,6 @@ const config: PublicConfig = {
         CANNED_SUGGESTIONS.filter((s) =>
           s.label.toLowerCase().includes(query.toLowerCase())
         ),
-      // Wait 150ms after the last keystroke to avoid firing the resolver on every character.
-      debounceMs: 150,
       // renderCustomList replaces the built-in dropdown UI with a fully custom Lit element while
       // keeping the chat in charge of when to show, update, and tear it down.
       // The callback receives `onSelect` (inserts into the editor, fires

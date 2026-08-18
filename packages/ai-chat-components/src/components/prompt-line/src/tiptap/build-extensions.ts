@@ -23,7 +23,10 @@
 
 import type { Extension } from '@tiptap/core';
 
-import { carbonAutocomplete } from './carbon-autocomplete.js';
+import {
+  carbonAutocomplete,
+  type ExcludedTrigger,
+} from './carbon-autocomplete.js';
 import { carbonCommand, carbonMention } from './carbon-mention.js';
 import { carbonStarterTrigger } from './carbon-starter-trigger.js';
 import type {
@@ -50,7 +53,22 @@ export function buildCarbonExtensions(
     out.push(carbonCommand(configs.command) as unknown as Extension);
   }
   if (configs.autocomplete) {
-    out.push(carbonAutocomplete(configs.autocomplete));
+    const excludeTriggers: ExcludedTrigger[] = [];
+    if (configs.mention) {
+      excludeTriggers.push({
+        char: configs.mention.trigger,
+        position:
+          configs.mention.triggerPosition === 'start' ? 'start' : 'anywhere',
+      });
+    }
+    if (configs.command) {
+      excludeTriggers.push({
+        char: configs.command.trigger,
+        position:
+          configs.command.triggerPosition === 'start' ? 'start' : 'anywhere',
+      });
+    }
+    out.push(carbonAutocomplete(configs.autocomplete, excludeTriggers));
   }
   if (configs.starters?.items.length) {
     out.push(

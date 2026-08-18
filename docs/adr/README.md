@@ -84,6 +84,14 @@ Generated from the records themselves — run `npm run sync:adrs` after adding o
 | ADR | Title | Status |
 | --- | --- | --- |
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
+| [0002](0002-core-react-wrapper-headless-sdk-split.md) | The core, React wrapper, and headless SDK ship from one package | Proposed |
+| [0003](0003-instance-lifetime-belongs-to-the-acquire.md) | Instance lifetime belongs to the acquire, not the host mount | Proposed |
+| [0004](0004-per-field-scoped-stores.md) | Chat state is read through per-field scoped stores | Proposed |
+| [0005](0005-chat-instance-survives-as-the-composition.md) | `ChatInstance` survives the split as the composition of both halves | Proposed |
+| [0007](0007-one-store-pipeline-behind-both-delivery-apis.md) | Both message-delivery APIs run on one store pipeline | Proposed |
+| [0009](0009-conversation-verbs-on-instance-messaging.md) | Every conversation verb is reached through `instance.messaging` | Proposed |
+| [0023](0023-sdk-prefixed-seam-types.md) | Callbacks survive the split unchanged through a parameterized config | Proposed |
+| [0025](0025-the-sdk-entry-point-shape.md) | The SDK is acquired, and lifecycle lives on what the acquire returns | Proposed |
 
 <!-- adr-index:end -->
 

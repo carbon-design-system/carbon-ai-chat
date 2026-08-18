@@ -58,9 +58,6 @@ function App() {
             CANNED_SUGGESTIONS.filter((s) =>
               s.label.toLowerCase().includes(query.toLowerCase())
             ),
-          // debounce keystrokes so rapid typing does not thrash the
-          // resolver; 150ms balances responsiveness with reduced churn.
-          debounceMs: 150,
           // `renderCustomList` lets you replace the built-in dropdown while the
           // chat keeps ownership of when to show, update, and tear it down.
           // The callback receives `onSelect` (inserts into the editor, fires
