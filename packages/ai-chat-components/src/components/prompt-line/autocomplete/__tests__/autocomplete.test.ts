@@ -15,6 +15,8 @@ import type {
   SuggestionItem,
   SuggestionItemGroup,
 } from '../src/autocomplete.js';
+import { defaultAutocompleteI18n } from '../src/autocomplete.js';
+import prefix from '../../../../globals/settings.js';
 
 describe('cds-aichat-autocomplete', () => {
   const mockItems: SuggestionItem[] = [
@@ -731,6 +733,220 @@ describe('cds-aichat-autocomplete', () => {
       `);
 
       expect(el.disableDirectSend).to.be.true;
+    });
+  });
+
+  describe('disabled items', () => {
+    const disabledItem: SuggestionItem = {
+      id: 'disabled-1',
+      label: 'Disabled Option',
+      disabled: true,
+    };
+    const enabledItem: SuggestionItem = {
+      id: 'enabled-1',
+      label: 'Enabled Option',
+    };
+
+    it('should set aria-disabled correctly for disabled and enabled items', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-disabled')
+      ).to.equal('true');
+      expect(
+        (options?.[1] as HTMLElement)?.getAttribute('aria-disabled')
+      ).to.equal('false');
+    });
+
+    it('should add the disabled class', async () => {
+      const el = await fixture<AutocompleteElement>(
+        html` <cds-aichat-autocomplete
+          .items="${[disabledItem]}"></cds-aichat-autocomplete>`
+      );
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      const disabledClass = `${prefix}-autocomplete-item--disabled`;
+
+      expect((options?.[0] as HTMLElement).classList.contains(disabledClass)).to
+        .be.true;
+    });
+
+    it('click on disabled item does not fire cds-aichat-autocomplete-send (disableDirectSend=false)', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
+      `);
+
+      let sendFired = false;
+      el.addEventListener('cds-aichat-autocomplete-send', () => {
+        sendFired = true;
+      });
+
+      const disabledOption = el.shadowRoot?.querySelector('li[role="option"]');
+      disabledOption?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, composed: true })
+      );
+      await el.updateComplete;
+
+      expect(sendFired).to.be.false;
+    });
+
+    it('click on disabled item does not fire cds-aichat-autocomplete-select (disableDirectSend=true)', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[disabledItem, enabledItem]}"
+          .disableDirectSend="${true}"></cds-aichat-autocomplete>
+      `);
+
+      let selectFired = false;
+      el.addEventListener('cds-aichat-autocomplete-select', () => {
+        selectFired = true;
+      });
+
+      const disabledOption = el.shadowRoot?.querySelector('li[role="option"]');
+      disabledOption?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, composed: true })
+      );
+      await el.updateComplete;
+
+      expect(selectFired).to.be.false;
+    });
+
+    it('Enter on a disabled item does not fire send or select', async () => {
+      // Place the only-disabled item alone so _focusedIndex stays at 0 (no
+      // enabled item to skip to) and Enter has no valid target.
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[disabledItem]}"></cds-aichat-autocomplete>
+      `);
+
+      let sendFired = false;
+      let selectFired = false;
+      el.addEventListener('cds-aichat-autocomplete-send', () => {
+        sendFired = true;
+      });
+      el.addEventListener('cds-aichat-autocomplete-select', () => {
+        selectFired = true;
+      });
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(sendFired).to.be.false;
+      expect(selectFired).to.be.false;
+    });
+
+    it('ArrowDown skips a disabled item and lands on the next enabled item', async () => {
+      // Layout: enabled(0) → disabled(1) → enabled(2)
+      const threeItems: SuggestionItem[] = [
+        enabledItem,
+        disabledItem,
+        { id: 'enabled-2', label: 'Enabled Option 2' },
+      ];
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${threeItems}"></cds-aichat-autocomplete>
+      `);
+
+      // Focus starts at index 0 (first enabled). One ArrowDown should skip
+      // the disabled item at index 1 and land on index 2.
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (options?.[2] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+      expect(
+        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+    });
+
+    it('ArrowDown stays put when no enabled item exists beyond current', async () => {
+      // Layout: enabled(0) → disabled(1). From 0, ArrowDown should not move.
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[enabledItem, disabledItem]}"></cds-aichat-autocomplete>
+      `);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      // Still on index 0 — no enabled item to land on.
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+    });
+
+    it('initial focus skips a leading disabled item', async () => {
+      // Render with disabled first — _focusedIndex should initialise to the
+      // first enabled item, not index 0.
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+    });
+
+    it('all-disabled list fires suggestionsAvailable with the correct count', async () => {
+      const allDisabledItems: SuggestionItem[] = [
+        { id: 'd1', label: 'Disabled A', disabled: true },
+        { id: 'd2', label: 'Disabled B', disabled: true },
+      ];
+
+      let announcedCount: number | null = null;
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        suggestionsAvailable: (count: number) => {
+          announcedCount = count;
+          return defaultAutocompleteI18n.suggestionsAvailable(count);
+        },
+      };
+
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .i18n="${trackingI18n}"></cds-aichat-autocomplete>
+      `);
+
+      // Setting items after mount triggers updated() → suggestionsAvailable
+      el.items = allDisabledItems;
+      await el.updateComplete;
+
+      expect(announcedCount).to.equal(2);
     });
   });
 });

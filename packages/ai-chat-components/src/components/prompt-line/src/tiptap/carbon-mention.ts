@@ -28,9 +28,8 @@
  * Either default can be overridden per-config (`TriggerSuggestionConfig.
  * showTriggerInChip`) or per-item (`SuggestionItem.showTriggerInChip`, which
  * wins when set — e.g. a single `@` picker mixing people and agents).
- * Hosts compose multiple instances cleanly by passing distinct `name`
- * values — the factory threads the name through `Mention.extend({ name })`
- * to sidestep the [Tiptap stacking caveat](https://github.com/ueberdosis/tiptap/issues/2219).
+ * Each chat supports one mention trigger and one command trigger, because
+ * Tiptap resolves extensions by name.
  */
 
 import type { Editor, Range } from '@tiptap/core';
@@ -52,7 +51,7 @@ function buildTriggerExtension(
   config: TriggerSuggestionConfig,
   build: BuildOptions
 ) {
-  const name = config.name ?? build.defaultName;
+  const name = build.defaultName;
   const pluginKey = new PluginKey(`${build.defaultPluginKeyName}_${name}`);
 
   return Mention.extend({

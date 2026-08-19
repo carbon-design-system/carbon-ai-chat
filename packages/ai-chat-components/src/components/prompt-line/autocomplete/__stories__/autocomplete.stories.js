@@ -262,6 +262,54 @@ export const WithCategories = {
   },
 };
 
+export const WithDisabledItems = {
+  render: ({ inputText, disableDirectSend, attached }) => {
+    const mixedItems = [
+      {
+        id: 'suggestion-1',
+        label: 'When is the best time to eat?',
+      },
+      {
+        id: 'suggestion-2',
+        label: 'When is the sun rising today?',
+        disabled: true,
+      },
+      {
+        id: 'suggestion-3',
+        label: 'When is the sun setting today?',
+      },
+      {
+        id: 'suggestion-4',
+        label: 'When is the start of Spring?',
+        disabled: true,
+      },
+      {
+        id: 'suggestion-5',
+        label: 'When is the next full moon?',
+      },
+    ];
+
+    return html`
+      <div style="width: 320px;">
+        <cds-aichat-autocomplete
+          style="--cds-aichat-autocomplete-max-height: 328px;"
+          .items=${mixedItems}
+          ?attached=${attached}
+          ?disable-direct-send=${disableDirectSend}
+          input-text=${inputText}
+          @cds-aichat-autocomplete-select=${(e) =>
+            action('cds-aichat-autocomplete-select')(e.detail)}
+          @cds-aichat-autocomplete-send=${(e) =>
+            action('cds-aichat-autocomplete-send')(e.detail)}
+          @cds-aichat-autocomplete-dismiss=${() =>
+            action(
+              'cds-aichat-autocomplete-dismiss'
+            )()}></cds-aichat-autocomplete>
+      </div>
+    `;
+  },
+};
+
 export const Detached = {
   args: {
     attached: false,
