@@ -45,8 +45,7 @@ export type BaseSuggestionConfig = _BaseSuggestionConfig;
  * as `/summarize` or a bare `summarize`, overridable per item) on top of
  * {@link BaseSuggestionConfig}.
  *
- * Each chat supports one mention trigger and one command trigger, because
- * Tiptap resolves extensions by name.
+ * Each chat supports one mention trigger and one command trigger.
  *
  * @category Config
  * @interface
