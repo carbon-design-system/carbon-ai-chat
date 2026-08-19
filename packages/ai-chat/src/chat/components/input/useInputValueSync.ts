@@ -221,6 +221,7 @@ function useInputValueSync({
     rawInputValue,
     rawInputValueRef,
     setRawInputValue,
+    displayContentRef,
     overMaxLength,
     effectiveDisableSend,
     hasValidInput,
