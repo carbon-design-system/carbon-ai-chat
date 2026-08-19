@@ -545,17 +545,19 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   const renderErrorMessage = () => {
     if (overMaxLength) {
+      const errorTitle = intl.formatMessage({
+        id: 'input_maxCharCountExceededTitle',
+      });
       const errorText = intl.formatMessage(
         { id: 'input_maxCharCountExceeded' },
         { max: maxInputChars, current: rawInputValue.length }
       );
       return (
         <div slot="field-messaging">
-          <AnnounceOnMount
-            announceOnce={`Error: Max character count exceeded. ${errorText}`}>
+          <AnnounceOnMount announceOnce={`${errorTitle}. ${errorText}`}>
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-              title="Error: Max character count exceeded"
+              title={errorTitle}
               description={errorText}
               collapsible={true}
             />
