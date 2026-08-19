@@ -200,6 +200,10 @@ function reconcileObjectReferences<T extends object>(prev: T, next: T): T {
  * `createAppConfig` always rebuilds the whole tree, so call this on its output
  * (against the previously stored `AppConfig`) before dispatching the replace.
  * At boot there is no previous config; pass `null` and `next` is returned as-is.
+ *
+ * Reconciliation is one level deep, with `public.input` the single deliberate
+ * exception — see the comment at that call. Everything else stays all-or-nothing
+ * per top-level key.
  */
 function reconcileAppConfigReferences(
   prev: AppConfig | null | undefined,
@@ -211,6 +215,22 @@ function reconcileAppConfigReferences(
 
   const publicConfig = reconcileObjectReferences(prev.public, next.public);
   const derived = reconcileObjectReferences(prev.derived, next.derived);
+
+  // `input` is the one key reconciled a second level down. It is the only slot
+  // whose siblings are consumed as memo dependencies, so an unrelated change
+  // inside it (an action's `disabled` flag flipping as the user types) would
+  // otherwise hand `input.starters` / `input.mention` / `input.tiptap` fresh
+  // references and rebuild the prompt-line's extensions for nothing.
+  if (
+    prev.public.input &&
+    publicConfig.input &&
+    publicConfig.input !== prev.public.input
+  ) {
+    publicConfig.input = reconcileObjectReferences(
+      prev.public.input,
+      publicConfig.input
+    );
+  }
 
   if (publicConfig === prev.public && derived === prev.derived) {
     return prev;
