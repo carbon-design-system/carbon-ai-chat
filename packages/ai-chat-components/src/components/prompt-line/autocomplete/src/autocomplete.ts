@@ -22,10 +22,7 @@ import type {
   SuggestionItem,
   SuggestionItemGroup,
 } from '../../src/tiptap/types.js';
-export type {
-  SuggestionItem,
-  SuggestionItemGroup,
-} from '../../src/tiptap/types.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 const blockClass = `${prefix}-autocomplete`;
 const itemClass = `${blockClass}-item`;
@@ -243,8 +240,15 @@ class AutocompleteElement extends LitElement {
         this._openAnnounced = false;
         return;
       }
-      // Reset to first item and announce list opened (once per show).
-      this._focusedIndex = 0;
+      // Reset to first enabled item and announce list opened (once per show).
+      let firstEnabled = 0;
+      while (
+        firstEnabled < totalItems &&
+        this._getItemAtIndex(firstEnabled)?.disabled
+      ) {
+        firstEnabled++;
+      }
+      this._focusedIndex = firstEnabled < totalItems ? firstEnabled : 0;
       if (!this._openAnnounced) {
         this._openAnnounced = true;
         this._announcer.announce(this.i18n.suggestionsAvailable(totalItems));
@@ -283,6 +287,25 @@ class AutocompleteElement extends LitElement {
     return null;
   }
 
+  /**
+   * Move focus to the next enabled item in the given direction (+1 / -1),
+   * skipping over any disabled items. Mirrors the Carbon Dropdown `_navigate`
+   * pattern. Returns the resolved index, or the current index if no enabled
+   * item exists in that direction.
+   */
+  private _navigateTo(from: number, direction: 1 | -1): number {
+    const totalItems = this._getTotalItemCount();
+    let next = from + direction;
+    while (next >= 0 && next < totalItems) {
+      if (!this._getItemAtIndex(next)?.disabled) {
+        return next;
+      }
+      next += direction;
+    }
+    // No enabled item found in that direction — stay put.
+    return from;
+  }
+
   private _handleKeydown = (event: KeyboardEvent) => {
     const totalItems = this._getTotalItemCount();
     if (totalItems === 0) {
@@ -292,31 +315,43 @@ class AutocompleteElement extends LitElement {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        this._focusedIndex = Math.min(this._focusedIndex + 1, totalItems - 1);
+        this._focusedIndex = this._navigateTo(this._focusedIndex, 1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
       case 'ArrowUp':
         event.preventDefault();
-        this._focusedIndex = Math.max(this._focusedIndex - 1, 0);
+        this._focusedIndex = this._navigateTo(this._focusedIndex, -1);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
 
-      case 'Home':
+      case 'Home': {
         event.preventDefault();
-        this._focusedIndex = 0;
+        // Find first enabled item from the top.
+        let first = 0;
+        while (first < totalItems && this._getItemAtIndex(first)?.disabled) {
+          first++;
+        }
+        this._focusedIndex = first < totalItems ? first : this._focusedIndex;
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
+      }
 
-      case 'End':
+      case 'End': {
         event.preventDefault();
-        this._focusedIndex = totalItems - 1;
+        // Find last enabled item from the bottom.
+        let last = totalItems - 1;
+        while (last >= 0 && this._getItemAtIndex(last)?.disabled) {
+          last--;
+        }
+        this._focusedIndex = last >= 0 ? last : this._focusedIndex;
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
+      }
 
       case 'Escape':
         event.preventDefault();
@@ -413,6 +448,9 @@ class AutocompleteElement extends LitElement {
   }
 
   private _selectItem(item: SuggestionItem) {
+    if (item.disabled) {
+      return;
+    }
     this._announcer.announce(this.i18n.itemInserted(item.label));
     this.dispatchEvent(
       new CustomEvent<AutocompleteSelectEventDetail>(
@@ -438,12 +476,13 @@ class AutocompleteElement extends LitElement {
   }
 
   private _handleItemClick(index: number) {
-    if (!this.disableDirectSend) {
-      this._handleSend(index);
+    const item = this._getItemAtIndex(index);
+    if (!item || item.disabled) {
       return;
     }
-    const item = this._getItemAtIndex(index);
-    if (!item) {
+
+    if (!this.disableDirectSend) {
+      this._handleSend(index);
       return;
     }
     this._focusedIndex = index;
@@ -504,6 +543,7 @@ class AutocompleteElement extends LitElement {
   ) {
     const { typed, remainder } = this._getLabelParts(item);
     const isActive = index === this._focusedIndex;
+    const isDisabled = !!item.disabled;
     const id = `${item.id}--option`;
 
     return html`
@@ -516,7 +556,12 @@ class AutocompleteElement extends LitElement {
           }
         }}"
         aria-selected="${isActive ? 'true' : 'false'}"
-        class="${itemClass} ${isActive ? `${itemClass}--active` : ''}"
+        aria-disabled="${isDisabled ? 'true' : 'false'}"
+        class=${classMap({
+          [itemClass]: true,
+          [`${itemClass}--active`]: isActive,
+          [`${itemClass}--disabled`]: isDisabled,
+        })}
         id="${id}"
         role="option"
         tabindex="-1"
@@ -654,3 +699,7 @@ declare global {
 }
 
 export default AutocompleteElement;
+export type {
+  SuggestionItem,
+  SuggestionItemGroup,
+} from '../../src/tiptap/types.js';

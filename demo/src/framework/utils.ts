@@ -18,6 +18,7 @@ import { mockOnFileUpload } from '../customSendMessage/doFileUpload';
 import {
   mentionItems,
   commandItems,
+  autocompleteItems,
   mentionOnSelect,
   mentionOnRemove,
   commandOnSelect,
@@ -130,10 +131,10 @@ function getSettings() {
     };
   }
 
-  // Re-inject non-serializable mention/command callbacks when hydrating from
-  // URL. Functions are stripped during JSON serialization, so if a
-  // mention/command config is present but its callbacks are missing (e.g.
-  // after a page refresh), restore the mock fixtures/handlers.
+  // Re-inject non-serializable mention/command/autocomplete callbacks when hydrating
+  // from URL. Functions are stripped during JSON serialization, so if a mention/command
+  // config is present but its callbacks are missing (e.g. after a page refresh),
+  // restore the mock fixtures/handlers.
   if (defaultConfig.input?.mention && !defaultConfig.input.mention.onSelect) {
     defaultConfig = {
       ...defaultConfig,
@@ -159,6 +160,22 @@ function getSettings() {
           items: commandItems,
           onSelect: commandOnSelect,
           onRemove: commandOnRemove,
+        },
+      },
+    };
+  }
+  if (
+    defaultConfig.input?.autocomplete &&
+    Array.isArray(defaultConfig.input.autocomplete.items) &&
+    defaultConfig.input.autocomplete.items.length === 0
+  ) {
+    defaultConfig = {
+      ...defaultConfig,
+      input: {
+        ...defaultConfig.input,
+        autocomplete: {
+          ...defaultConfig.input.autocomplete,
+          items: autocompleteItems,
         },
       },
     };

@@ -122,6 +122,26 @@ $group-class: #{$item-class}-group;
     &--active:hover {
       background: theme.$background-selected;
     }
+
+    &--disabled {
+      cursor: default;
+      pointer-events: none;
+
+      .#{$item-class}__label-remainder,
+      .#{$item-class}__label-typed {
+        color: theme.$text-disabled;
+      }
+
+      .#{$item-class}__description {
+        color: theme.$text-disabled;
+      }
+
+      // Override --active selector: send icon stays hidden even when
+      // the disabled item is keyboard-focused (--active class still present).
+      .#{$item-class}__send-icon svg {
+        fill: theme.$icon-disabled;
+      }
+    }
   }
 
   .#{$item-class}__content {

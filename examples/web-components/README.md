@@ -677,7 +677,6 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `SuggestionItem` | type | Shape of each entry returned from `items`. |
 | `.input` (`input.autocomplete`) | property | Registers the typeahead behavior on the input. |
 | `autocomplete.items` | property | Async filter that returns matching `SuggestionItem`s. |
-| `autocomplete.debounceMs` | property | Coalesces keystrokes before calling `items`. |
 | `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the host. |
 | `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
 | `.messaging.customSendMessage` | property | Mock backend echoing the user's message. |
@@ -703,7 +702,6 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `.input` (`input.autocomplete`) | property | Registers the typeahead behavior on the input. |
 | `autocomplete.renderCustomList` | property | Returns an `HTMLElement` that replaces the default dropdown. |
 | `autocomplete.items` | property | Async filter providing entries to the custom list. |
-| `autocomplete.debounceMs` | property | Coalesces keystrokes before calling `items`. |
 | `.layout` (`layout.showFrame`) | property | Hides the default frame so the chat fills the host. |
 | `.openChatByDefault` | property | Mounts straight into the conversation, no launcher. |
 | `.messaging.customSendMessage` | property | Mock backend echoing the user's message. |

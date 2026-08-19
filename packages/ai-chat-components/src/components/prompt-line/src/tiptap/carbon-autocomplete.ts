@@ -25,7 +25,15 @@ import Suggestion from '@tiptap/suggestion';
 import { dispatchTriggerChange } from './trigger-utils.js';
 import type { AutocompleteConfig, SuggestionItem } from './types.js';
 
-export function carbonAutocomplete(config: AutocompleteConfig): Extension {
+export interface ExcludedTrigger {
+  char: string;
+  position: 'anywhere' | 'start';
+}
+
+export function carbonAutocomplete(
+  config: AutocompleteConfig,
+  excludeTriggers: ExcludedTrigger[] = []
+): Extension {
   const pluginKey = new PluginKey('carbonAutocompleteSuggestion');
 
   return Extension.create({
@@ -58,6 +66,19 @@ export function carbonAutocomplete(config: AutocompleteConfig): Extension {
               return null;
             }
             const query = trailing[0];
+            // Yield to co-installed mention/command extensions so they win
+            // when their trigger char is active.
+            for (const excluded of excludeTriggers) {
+              if (!query.startsWith(excluded.char)) {
+                continue;
+              }
+              if (excluded.position === 'anywhere') {
+                return null;
+              }
+              if (text === query) {
+                return null;
+              }
+            }
             const matchStart =
               $position.start() + $position.parentOffset - query.length;
             return {
