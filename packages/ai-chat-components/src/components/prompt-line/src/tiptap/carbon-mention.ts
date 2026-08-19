@@ -28,9 +28,8 @@
  * Either default can be overridden per-config (`TriggerSuggestionConfig.
  * showTriggerInChip`) or per-item (`SuggestionItem.showTriggerInChip`, which
  * wins when set — e.g. a single `@` picker mixing people and agents).
- * Hosts compose multiple instances cleanly by passing distinct `name`
- * values — the factory threads the name through `Mention.extend({ name })`
- * to sidestep the [Tiptap stacking caveat](https://github.com/ueberdosis/tiptap/issues/2219).
+ * Each chat supports one mention trigger and one command trigger, because
+ * Tiptap resolves extensions by name.
  */
 
 import type { Editor, Range } from '@tiptap/core';
@@ -52,7 +51,7 @@ function buildTriggerExtension(
   config: TriggerSuggestionConfig,
   build: BuildOptions
 ) {
-  const name = config.name ?? build.defaultName;
+  const name = build.defaultName;
   const pluginKey = new PluginKey(`${build.defaultPluginKeyName}_${name}`);
 
   return Mention.extend({
@@ -83,8 +82,8 @@ function buildTriggerExtension(
       }
 
       // Fire `onRemove` once per token node of this type that leaves the doc
-      // via a USER edit. Mirrors the value-sync extension's origin model:
-      // `appendTransaction` records whether the batch was host-origin, and the
+      // via a USER edit. `appendTransaction` records whether the batch was
+      // host-origin — `some`, where typing-indicator uses `every` — and the
       // view's `update` runs the diff (after state is applied, so host
       // callbacks never re-enter `dispatch`). Host-origin batches — the
       // framework's post-send clear and any `getEditor()`/`updateContent`
