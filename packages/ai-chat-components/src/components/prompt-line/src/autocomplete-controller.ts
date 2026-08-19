@@ -14,7 +14,7 @@ import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 
 import '../autocomplete/src/autocomplete.js';
-import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
+import { writeStarterStorage } from './tiptap/carbon-starter-trigger.js';
 import { resolveShowTriggerInChip } from './tiptap/carbon-mention.js';
 import { projectRawValue } from './tiptap/json-utils.js';
 import { resetTriggerChangeState } from './tiptap/trigger-utils.js';
@@ -155,13 +155,7 @@ export class AutocompleteController {
       // Focus state is unchanged — the list appears on the next focus if the
       // editor is not currently focused, or immediately if it is.
       if (prevIsOn !== isOn) {
-        const editor = this._promptLine?.getEditor();
-        const storage = (editor?.storage as unknown as Record<string, unknown>)
-          ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
-        if (storage && editor) {
-          storage.isOn = isOn;
-          editor.view.dispatch(editor.state.tr);
-        }
+        writeStarterStorage(this._promptLine?.getEditor(), { isOn });
       }
     }
     if ('isSendDisabled' in next) {
@@ -184,14 +178,9 @@ export class AutocompleteController {
     this._promptLine = promptLine;
     // Reconcile the isOn flag into the newly attached prompt-line's storage.
     if (promptLine) {
-      const isOn = this._starters?.isOn !== false;
-      const editor = promptLine.getEditor();
-      const storage = (editor?.storage as unknown as Record<string, unknown>)
-        ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
-      if (storage && editor && storage.isOn !== isOn) {
-        storage.isOn = isOn;
-        editor.view.dispatch(editor.state.tr);
-      }
+      writeStarterStorage(promptLine.getEditor(), {
+        isOn: this._starters?.isOn !== false,
+      });
     }
     // Re-evaluate the key-forwarding handler — the editor DOM we were bound
     // to may now be gone, or a new one may need binding.

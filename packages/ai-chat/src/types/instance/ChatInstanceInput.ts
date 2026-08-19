@@ -156,11 +156,10 @@ export interface ChatInstanceInput {
    *
    * **Working with the resolved editor from React** — two patterns:
    *
-   * 1. **Don't capture in state.** Holding the resolved editor in `useState`
-   *    retains a stale reference after recreate; the editor is destroyed when
-   *    `tiptap.extensions` (or any chat-domain config) changes. Re-await
-   *    `getEditor()` inside handlers, or in a `useEffect` keyed on the
-   *    configs that trigger recreate:
+   * 1. **Don't capture in state.** A config update that genuinely changes the
+   *    extension set still replaces the editor, and holding the old one in
+   *    `useState` retains a stale reference. Re-await `getEditor()` inside
+   *    handlers, or in a `useEffect` keyed on the configs behind the editor:
    *    ```ts
    *    useEffect(() => {
    *      let off: (() => void) | undefined;
@@ -173,11 +172,13 @@ export interface ChatInstanceInput {
    *    }, [extensions, mention, command]);
    *    ```
    *
-   * 2. **Memoize the configs.** `tiptap.extensions` (and the chat-domain
-   *    configs) must be reference-stable across renders. The editor
-   *    recreates on every reference change; an unmemoized array
-   *    re-creates the editor on every host render, losing selection
-   *    mid-edit.
+   * 2. **Memoize `tiptap.extensions`.** The Carbon-curated configs are
+   *    compared by value, so rebuilding an equivalent one costs nothing
+   *    beyond the comparison — as long as the callbacks inside it hold their
+   *    identity, since those compare by reference. Extensions you construct
+   *    yourself are compared by reference — a fresh array of new instances
+   *    every render reads as a real change and replaces the editor mid-edit,
+   *    losing its undo history.
    *
    * @experimental
    */

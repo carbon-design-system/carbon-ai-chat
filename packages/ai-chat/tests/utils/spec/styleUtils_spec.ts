@@ -77,5 +77,18 @@ describe('styleUtils', () => {
       expect(result.width).toBe('420px');
       expect(result['launcher-color-background']).toBe('#1a1a2e');
     });
+
+    it('drops the invalid token without mutating the map it was given', () => {
+      // The caller's map is the merged config's, and `ChatAppEntry` holds that same
+      // object as its change-detection baseline — see the note on the function.
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const hostProperties = { '$button-primary': 'rebeccapurple' };
+
+      const result = validateCustomProperties(hostProperties);
+
+      expect(result['$button-primary']).toBeUndefined();
+      expect(hostProperties['$button-primary']).toBe('rebeccapurple');
+      warn.mockRestore();
+    });
   });
 });
