@@ -88,9 +88,10 @@ export function getExtensionSource(
  *   same as before.
  * - Starter triggers are always equivalent: every difference they can carry
  *   (`items`, `isOn`) is applied to the live editor's storage instead. See
- *   `RichController.setExtensions`. The exception is `items` emptying, which
- *   drops the extension from the built list — the length check then rejects the
- *   pair before this rule is reached.
+ *   `RichController.setExtensions`. `buildCarbonExtensions` installs the
+ *   extension for an empty list too, so emptying `items` stays a storage write
+ *   instead of a length change that rejects the pair before this rule is
+ *   reached.
  */
 export function areExtensionSetsEquivalent(
   previous: readonly Extension[],

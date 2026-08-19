@@ -158,6 +158,26 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     expect(el.getEditor()!.getText()).to.equal('');
   });
 
+  it('keeps the editor when the starters list empties', async () => {
+    // Emptying `items` used to drop the extension from the built set, so the
+    // length changed and the editor was recreated — the last starters change
+    // that still cost the user their undo history.
+    const el = await makeRichPromptLine(
+      buildCarbonExtensions({ starters: { items: STARTERS } })
+    );
+    const editor = el.getEditor();
+    type(el, 'typing');
+
+    await setExtensions(el, buildCarbonExtensions({ starters: { items: [] } }));
+
+    expect(el.getEditor()).to.equal(editor);
+    expect(starterStorage(el).items).to.deep.equal([]);
+    while (el.undo()) {
+      /* drain the history stack */
+    }
+    expect(el.getEditor()!.getText()).to.equal('');
+  });
+
   it('recreates when a host extension identity changes', async () => {
     const el = await makeRichPromptLine([
       Extension.create({ name: 'hostThing' }),

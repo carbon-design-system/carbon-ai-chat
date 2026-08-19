@@ -176,6 +176,15 @@ describe('areExtensionSetsEquivalent', function () {
       expect(areExtensionSetsEquivalent(previous, next)).to.equal(true);
     });
 
+    it('is equivalent when the list empties', () => {
+      // The one starters change that used to shorten the set and recreate the
+      // editor. The extension is installed for an empty list too, so this is a
+      // storage write like any other swap.
+      const previous = buildCarbonExtensions({ starters: { items: STARTERS } });
+      const next = buildCarbonExtensions({ starters: { items: [] } });
+      expect(areExtensionSetsEquivalent(previous, next)).to.equal(true);
+    });
+
     it('still detects a sibling config change alongside starters', () => {
       const previous = buildCarbonExtensions({
         mention: { trigger: '@', items: PEOPLE },

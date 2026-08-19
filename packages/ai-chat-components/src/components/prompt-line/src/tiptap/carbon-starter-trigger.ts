@@ -108,6 +108,7 @@ function maybeEmit(editor: Editor, forceClear = false): void {
   const isActive =
     !forceClear &&
     storage?.isOn !== false &&
+    (storage?.items.length ?? 0) > 0 &&
     editor.isEditable &&
     editor.isFocused &&
     editor.isEmpty;

@@ -98,7 +98,11 @@ export function buildCarbonExtensions(
       )
     );
   }
-  if (configs.starters?.items.length) {
+  // Installed whenever `starters` is configured, empty list included: it is how
+  // `items`/`isOn` reach the live editor, and omitting it for an empty list
+  // shortens the set, which the equivalence check rejects — recreating the
+  // editor and dropping its undo history. `maybeEmit` stays silent when empty.
+  if (configs.starters) {
     out.push(
       tagExtensionSource(
         carbonStarterTrigger(configs.starters.items, configs.starters.isOn),
