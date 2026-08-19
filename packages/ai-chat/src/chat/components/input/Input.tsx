@@ -336,12 +336,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Local value (rawValue) + Redux mirror (when tracking) + the send path.
-  // `setRawInputValue`/`rawInputValueRef` are exposed for the autocomplete
-  // starter path below.
+  // `setRawInputValue`/`rawInputValueRef`/`displayContentRef` are exposed for
+  // the autocomplete/starter send paths below.
   const {
     rawInputValue,
     rawInputValueRef,
     setRawInputValue,
+    displayContentRef,
     overMaxLength,
     effectiveDisableSend,
     // Owned by the hook so the Send control and the send path cannot disagree.
@@ -506,6 +507,10 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     onSendItem: (text) => {
       setRawInputValue(text);
       rawInputValueRef.current = text;
+      // The autocomplete item's text is both the sent value and the display
+      // value — discard any stale editor JSONContent so the bubble doesn't
+      // render the old typed text instead of the selected item.
+      displayContentRef.current = null;
       sendCurrentValue();
     },
   });

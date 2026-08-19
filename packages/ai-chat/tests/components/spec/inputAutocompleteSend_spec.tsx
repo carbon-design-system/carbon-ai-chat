@@ -147,4 +147,58 @@ describe('input autocomplete send regression', () => {
     // If onSendItem bypasses sendCurrentValue() (the regression), this is never called.
     expect(clearContentSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('onSendItem passes only the item text — no stale editor JSONContent', async () => {
+    const { Input: InputExport } =
+      await import('../../../src/chat/components/input/Input');
+
+    const store = makeConfigStore({});
+    const onSendInput = jest.fn();
+    const serviceManager = {
+      store,
+      setInputFunctionsRef: jest.fn(),
+    } as any;
+
+    capturedOnSendItem = undefined;
+
+    render(
+      React.createElement(
+        StoreProvider,
+        { store },
+        React.createElement(
+          IntlProvider,
+          { intl: testIntl },
+          React.createElement(
+            AriaAnnouncerContext.Provider,
+            { value: jest.fn() },
+            React.createElement(
+              ServiceManagerContext.Provider,
+              { value: serviceManager },
+              React.createElement(InputExport, {
+                disableInput: false,
+                isInputVisible: true,
+                disableSend: false,
+                onSendInput,
+              })
+            )
+          )
+        )
+      )
+    );
+
+    await waitFor(() => expect(capturedOnSendItem).toBeDefined());
+
+    // Call onSendItem directly. Even if displayContentRef had been seeded by a
+    // prior handleInputChange (editor typing), the fix clears it before send so
+    // onSendInput receives (text, undefined) rather than (text, staleDoc).
+    act(() => {
+      capturedOnSendItem?.('selected autocomplete item');
+    });
+
+    expect(onSendInput).toHaveBeenCalledTimes(1);
+    const [sentText, sentDisplayContent] = onSendInput.mock.calls[0];
+    expect(sentText).toBe('selected autocomplete item');
+    // displayContent must be undefined — the selected item has no rich doc.
+    expect(sentDisplayContent).toBeUndefined();
+  });
 });
