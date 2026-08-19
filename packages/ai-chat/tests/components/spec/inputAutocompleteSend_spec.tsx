@@ -57,9 +57,17 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line-shell.js', () => ({
 // If the regression is present (onSendItem calls onSendInput directly), this
 // spy is never reached.
 const clearContentSpy = jest.fn();
+let capturedOnChange:
+  | ((e: CustomEvent<{ rawValue: string; content?: unknown }>) => void)
+  | undefined;
+
 jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
   const MockPromptLine = React.forwardRef(
-    (_props: unknown, ref: React.Ref<unknown>): React.ReactElement => {
+    (
+      props: { onChange?: (e: unknown) => void },
+      ref: React.Ref<unknown>
+    ): React.ReactElement => {
+      capturedOnChange = props.onChange as typeof capturedOnChange;
       React.useImperativeHandle(ref, () => ({ clearContent: clearContentSpy }));
       return React.createElement('div', null);
     }
@@ -95,6 +103,7 @@ describe('input autocomplete send regression', () => {
   beforeEach(() => {
     setupBeforeEach();
     clearContentSpy.mockClear();
+    capturedOnChange = undefined;
   });
   afterEach(setupAfterEach);
 
@@ -188,9 +197,19 @@ describe('input autocomplete send regression', () => {
 
     await waitFor(() => expect(capturedOnSendItem).toBeDefined());
 
-    // Call onSendItem directly. Even if displayContentRef had been seeded by a
-    // prior handleInputChange (editor typing), the fix clears it before send so
-    // onSendInput receives (text, undefined) rather than (text, staleDoc).
+    // Simulate the user typing something in the editor first. This seeds
+    // displayContentRef with a stale JSONContent doc. Without the fix,
+    // onSendItem would forward this stale doc to onSendInput instead of
+    // undefined, because sendCurrentValue() reads displayContentRef before
+    // clearing it.
+    const staleDoc = { type: 'doc', content: [{ type: 'paragraph' }] };
+    act(() => {
+      capturedOnChange?.({
+        detail: { rawValue: 'some typed text', content: staleDoc },
+      } as CustomEvent<{ rawValue: string; content?: unknown }>);
+    });
+
+    // Now the user picks an autocomplete item instead of sending what they typed.
     act(() => {
       capturedOnSendItem?.('selected autocomplete item');
     });
