@@ -30,7 +30,7 @@ For what makes a good example — self-contained, minimal, realistically typed, 
 - For full examples, create a standalone entry in [examples/](../../../examples/) that follows the [Indexer Contract](../../../examples/references/indexer-contract.md). Reference implementation: [examples/react/basic-custom-element-fullscreen/](../../../examples/react/basic-custom-element-fullscreen/).
 - When public API changes, update affected docs and corresponding example projects in the same PR.
 
-`typedoc/` holds `moduleNamePlugin.js` (a small TypeDoc hook) — only edit when changing TypeDoc behavior. The Carbon theme lives in [`packages/typedoc-theme/`](../../typedoc-theme/); see its [AGENTS.md](../../typedoc-theme/AGENTS.md) for the loading model.
+`typedoc/` holds the build's TypeDoc plugins and their helper modules — `moduleNamePlugin.js`, `demoteValidationWarningsPlugin.js`, `apiIndexPlugin.js`, and `crossPackageLinksPlugin.js`, each registered in [../typedoc.json](../typedoc.json). Only edit when changing TypeDoc behavior, and keep the directory free of unregistered plugins. The Carbon theme lives in [`packages/typedoc-theme/`](../../typedoc-theme/); see its [AGENTS.md](../../typedoc-theme/AGENTS.md) for the loading model.
 
 ## Build + preview
 
