@@ -238,22 +238,20 @@ function ChatContainer(
       if (!detail?.slotName) {
         return;
       }
-      event.preventDefault();
-      // Custom-renderer hosts (table/codeBlock) forward a live element — the
-      // markdown element keeps ownership of its content; we only relocate the
-      // node into page light DOM so the consumer's global CSS reaches it.
-      // Plugin fallbacks forward an HTML string instead.
+      // Consumer-renderer hosts (table/codeBlock) carry a live element. The
+      // named <slot> in the markdown element's shadow DOM projects only its own
+      // light-DOM children, so these hosts must stay as children of the
+      // markdown element itself — do not relocate them. Let the markdown
+      // element's own reconcile handle appendChild and do not call
+      // preventDefault() so it takes the local path.
       if (detail.element) {
-        const element = detail.element;
-        element.setAttribute('slot', detail.slotName);
-        if (!detail.isInline) {
-          element.style.marginBlockStart = '1rem';
-        }
-        if (element.parentElement !== wrapper) {
-          wrapper.appendChild(element);
-        }
         return;
       }
+      // Plugin-fallback hosts carry an HTML string. Hoist them to page light
+      // DOM so consumer-loaded global stylesheets (e.g. KaTeX) can reach the
+      // rendered output — the markdown element's own light DOM sits inside this
+      // wrapper's shadow root, where global CSS does not apply.
+      event.preventDefault();
       let host = hosts.get(detail.slotName);
       if (!host) {
         host = document.createElement(detail.isInline ? 'span' : 'div');

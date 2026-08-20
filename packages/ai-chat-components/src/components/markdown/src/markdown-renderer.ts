@@ -259,6 +259,21 @@ export function renderTokenTree(
     return html`${token.content}`;
   }
 
+  // Hard line break (two trailing spaces + newline, or backslash + newline).
+  // Must be handled before the tag-based dispatch because the token has
+  // tag="br" but is not a plugin-introduced token and should never route
+  // through the plugin-fallback slot machinery.
+  if (token.type === 'hardbreak') {
+    return html`<br />`;
+  }
+
+  // Soft line break (single newline inside a paragraph). With `breaks: true`
+  // (which this component uses) markdown-it renders softbreak as <br>; match
+  // that to avoid swallowing the token or routing it through renderFallback.
+  if (token.type === 'softbreak') {
+    return html`<br />`;
+  }
+
   // Handle inline code spans
   if (token.type === 'code_inline') {
     if (shouldDelegateToPluginRule(token, options.md) && options.md) {

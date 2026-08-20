@@ -2374,3 +2374,107 @@ describe('streaming table loading mode', () => {
     expect(calls.at(-1)?.rowCount).to.equal(2);
   });
 });
+
+describe('cds-aichat-markdown hard/soft line break rendering', () => {
+  it('renders a hard line break (two trailing spaces + newline) as a <br>', async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${'**Summary**  \nNext line'}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const br = el.shadowRoot?.querySelector('br');
+    expect(br, '<br> should be present for a hard line break').to.not.equal(
+      null
+    );
+  });
+
+  it('renders a soft line break (single newline) as a <br> when breaks mode is active', async () => {
+    // The markdown-it instance uses `breaks: true`, so a bare newline inside a
+    // paragraph produces a softbreak token that must render as <br>.
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${'line one\nline two'}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const brs = el.shadowRoot?.querySelectorAll('br');
+    expect(
+      brs?.length ?? 0,
+      '<br> should be present for a soft line break (breaks mode)'
+    ).to.be.greaterThan(0);
+  });
+
+  it('does not route hardbreak or softbreak through the plugin-fallback slot system', async () => {
+    // plugin-fallback slots create <slot name="..."> elements in the shadow DOM;
+    // a break token should never produce one.
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${'line one  \nline two\nline three'}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const pluginSlots = el.shadowRoot?.querySelectorAll(
+      'slot[name*="pluginFallback"]'
+    );
+    expect(
+      pluginSlots?.length ?? 0,
+      'break tokens must not produce plugin-fallback slots'
+    ).to.equal(0);
+  });
+});
+
+describe('customRenderers.table slot host stays in markdown element light DOM', () => {
+  const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailer`;
+
+  it('keeps the slot host as a direct child of the markdown element', async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .customRenderers=${{
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-slot-host-check';
+            return div;
+          },
+        }}
+        .markdown=${tableMarkdown}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const hostWrapper = el.querySelector(
+      '[slot*="cds-aichat-markdown-renderer-table"]'
+    );
+    expect(
+      hostWrapper,
+      'slot host wrapper should be a direct child of the markdown element'
+    ).to.not.equal(null);
+    expect(
+      hostWrapper?.parentElement,
+      'slot host wrapper parent should be the markdown element itself'
+    ).to.equal(el);
+  });
+
+  it('the <slot> in the shadow DOM projects the light-DOM host', async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .customRenderers=${{
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-projected-content';
+            return div;
+          },
+        }}
+        .markdown=${tableMarkdown}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    // The named <slot> in the shadow DOM should exist for the table override.
+    const slotEl = el.shadowRoot?.querySelector(
+      'slot[name*="cds-aichat-markdown-renderer-table"]'
+    );
+    expect(slotEl, 'named slot should exist in shadow DOM').to.not.equal(null);
+    // The slot's assigned nodes should include our host wrapper.
+    const assigned = (slotEl as HTMLSlotElement)?.assignedNodes({
+      flatten: true,
+    });
+    expect(
+      assigned?.length,
+      'slot should have at least one assigned node'
+    ).to.be.greaterThan(0);
+  });
+});

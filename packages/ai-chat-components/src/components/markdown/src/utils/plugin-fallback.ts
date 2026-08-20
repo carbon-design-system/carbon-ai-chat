@@ -36,6 +36,8 @@ export const PLUGIN_FALLBACK_SLOT_PREFIX =
 const NATIVELY_HANDLED_TOKEN_TYPES = new Set<string>([
   'root',
   'text',
+  'softbreak',
+  'hardbreak',
   'code_inline',
   'fence',
   'html_block',
