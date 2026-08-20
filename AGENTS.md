@@ -24,7 +24,7 @@ Lerna + npm-workspaces monorepo.
 - `packages/typedoc-theme` — `@carbon/typedoc-theme`: Carbon-themed TypeDoc theme used by the `@carbon/ai-chat` docs build.
 - `demo/` — full demo app (`@carbon/ai-chat-examples-demo`); Playwright tests under `tests/`.
 - `examples/react/*` and `examples/web-components/*` — webpack dev-server examples; default port 3000 (override with `PORT=`).
-- `docs/` — developer handbook, peer-dep history. Not the consumer-facing site (that lives in `packages/ai-chat/docs/`).
+- `docs/` — developer handbook, peer-dep history, architecture decision records. Not the consumer-facing site (that lives in `packages/ai-chat/docs/`).
 
 ## Which package am I editing?
 
@@ -44,13 +44,14 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | --- | --- |
 | Writing or changing any code | [code-patterns.md](references/code-patterns.md) |
 | Choosing `@carbon/react` vs `@carbon/web-components` for the file you're in | [code-patterns.md](references/code-patterns.md#carbon-flavor-by-area) |
+| Understanding why a public-API decision went the way it did | [docs/adr/README.md](docs/adr/README.md) |
 | Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
 | Building, testing, linting, using prettier, or running a single example/test | [commands.md](references/commands.md) |
 | Knowing which gate to run before shipping | [definition-of-done.md](references/definition-of-done.md) |
 | Writing developer-facing copy (README/JSDoc/MDX) | [tone.md](references/tone.md) |
 | Editing an `AGENTS.md`, `references/`, or skill file | [authoring-agents-md.md](references/authoring-agents-md.md) |
 
-Working drafts are git-ignored and never committed: plans in `.github/plan-drafts/{name}/`, PR descriptions in `.github/pr-drafts/`, issue bodies in `.github/issue-drafts/`.
+Working drafts are git-ignored and never committed: plans in `.github/plan-drafts/{name}/`, PR descriptions in `.github/pr-drafts/`, issue bodies in `.github/issue-drafts/`, ADR drafts in `.github/adr-drafts/`. An ADR draft is the one that graduates — it moves into [docs/adr/](docs/adr/README.md) and is committed.
 
 ## Conventions
 

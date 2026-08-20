@@ -27,25 +27,68 @@ Short, descriptive, imperative — name the change, not the area. No forced pref
 
 Internal development work uses these sections — the same ones the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prompts, so a `gh`-filed issue and a form-filed one read identically:
 
-- **Background** — the _why_. Link the parent epic if this is a sub-issue.
+- **Background** — the _why_. Link the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision — that is what [caic-review](../caic-review/SKILL.md) checks the diff against.
 - **Goal** — the change that exists when this is done.
-- **Acceptance criteria** — a `- [ ]` checkbox list of conditions that must hold before closing.
-- **Public API / contract** — the up-front type contract (see below); omit when there's no public-API change.
+- **Acceptance criteria** — a `- [ ]` list of observable outcomes, each carrying its proof. See [Acceptance criteria](#acceptance-criteria).
+- **Public API / contract** — the up-front contract, shape and behavior (see below); omit only when nothing a consumer can observe changes.
 - **Out of scope** — what this deliberately does not cover.
 - **Related** — parent epic, siblings, PRs, designs. A `Depends on: #N (reason)` line carries the _reason_ a blocker blocks; the relationship itself is a dependency link, not prose — see [Recording blockers](#recording-blockers).
 
+## Acceptance criteria
+
+Each box is one observable outcome plus the proof it holds. Write the outcome, then how anyone checks it: a command that exits 0, a named spec, or demo steps with the expected result. An outcome nobody can check is a wish.
+
+- **One outcome per box.** If it needs an "and", split it — a half-true box can't be ticked.
+- **Observable from outside.** Say what the chat, the type surface, or the build does, not which function gets edited. "Route all three sites through the merged config" is a plan step; "a partial config still inherits the default field by field" is a criterion.
+- **No spec-dump box.** A single `Specs cover: a, b, c…` box is unfalsifiable, and in practice it restates criteria already written above it. Attach each case to the criterion it proves. The cases left over with nowhere to attach are the criteria you forgot to write — promote them.
+- **Name the proof.** A spec path, a command, or demo steps. Reuse the spec that already owns the area; for new surface, name the spec that will own it — see the package testing guides ([ai-chat](../../../packages/ai-chat/references/tests.md), [ai-chat-components](../../../packages/ai-chat-components/references/testing.md)).
+- **One box carries the gate.** The last criterion is the definition-of-done gate for every area this touches, as the commands that must exit 0. Link [definition-of-done.md](../../../references/definition-of-done.md) rather than restating it — the rows change, and its ordering rule and watcher precondition are load-bearing. Don't settle for "tests pass".
+- **Nothing new here.** Every criterion projects the Goal or an epic outcome — see [the spine](../caic-plan/SKILL.md#the-spine). A criterion with no parent is scope nobody agreed to.
+
+When implementation proves a criterion wrong, say so in a **comment** on the issue — what the code does instead, and why the original was wrong. Never rewrite the criterion in the body; the original reasoning has to stay readable beside the correction. An amendment takes the same approval gate as filing.
+
 ## Drafting the body
 
-Draft the body into `.github/issue-drafts/<kebab-case-slug>.md` and file it with `--body-file`. That directory is git-ignored, so drafts stay local. Keep the draft in sync with the live issue whenever you edit one — correcting only the GitHub copy means the next edit from the draft silently reverts it.
+Draft the body into `.github/issue-drafts/<kebab-case-slug>.md` and file it with `--body-file`. That directory is git-ignored, so drafts stay local. Rename to `<issue#>-<slug>.md` once filed, so the draft and the live issue are findable from either side. Use `###` headings: the form emits `### <label>` per field, so a form-filed issue is `###` by construction and a `gh`-filed one has to match.
+
+Keep the draft in sync with the live issue whenever you edit one — correcting only the GitHub copy means the next edit from the draft silently reverts it.
+
+Don't cite repo guidance from an issue body. External readers can't follow a repo-relative path and the target rots — an already-filed issue still links references/issue-authoring.md, deleted when these workflows became skills. State the contract; the rule that made you state it is internal.
 
 ## Define the contract up front
 
-When a task introduces or changes public API — anything exported from [packages/ai-chat/src/aiChatEntry.tsx](../../../packages/ai-chat/src/aiChatEntry.tsx) or [packages/ai-chat/src/serverEntry.ts](../../../packages/ai-chat/src/serverEntry.ts) — state the TypeScript contract **in the issue, before implementation**:
+State the contract **in the issue, before implementation**, whenever a task changes what a consumer can observe on the public surface — anything exported from [packages/ai-chat/src/aiChatEntry.tsx](../../../packages/ai-chat/src/aiChatEntry.tsx) or [packages/ai-chat/src/serverEntry.ts](../../../packages/ai-chat/src/serverEntry.ts). A change with no signature change still qualifies: behavior is public too.
 
-- **Data types** — the interfaces / type aliases the change adds or alters.
-- **Method signatures** — the signature of every method or function introduced on the public surface.
+Start with the shape — the interfaces and type aliases added or altered, and the signature of every method put on the surface. Then the half the compiler can't hold.
 
-Locking the shape up front turns review into "does the code match the agreed contract?" instead of a design debate inside the PR. The semver and JSDoc rules for that surface are canonical in [packages/ai-chat/AGENTS.md](../../../packages/ai-chat/AGENTS.md) and [packages/ai-chat/src/types/AGENTS.md](../../../packages/ai-chat/src/types/AGENTS.md) — link to them, don't restate them here.
+Rows apply per subject. A method takes them all. A type-only change — a rename, a new optional field, a JSDoc fix — takes Defaults, Derivation, and Ownership; say that in one line rather than writing ten "N/A"s. Answer the rest in the JSDoc you're proposing or in prose beside it. "N/A" is an answer; silence is not.
+
+| Lock          | The question it settles                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| Preconditions | What state must hold to call this, and what happens when it doesn't?                                    |
+| No-op case    | Which inputs do nothing, and does the promise still resolve?                                            |
+| Failure       | What rejects, what throws, what resolves carrying an error state — and which is which?                  |
+| Events        | Which bus events fire, in what order, and which deliberately do not?                                    |
+| Timing        | When the promise settles: on send, on ack, or on completion?                                            |
+| Repeat calls  | Idempotent, coalesced, or queued? What does an overlapping caller get?                                  |
+| Defaults      | Every optional field's value when omitted, and which layer merges it.                                   |
+| Derivation    | For a state or enum a host can read: the rule producing **each** value, and which are unreachable today. |
+| Announcement  | What does a screen reader hear, and where does focus land? See [accessibility.md](../../../references/accessibility.md). |
+| Ownership     | Which side does the work — the framework, or the host's callback?                                       |
+
+Derivation is the row that gets skipped, and it is the expensive one. A type can be right while every rule behind it is wrong.
+
+Locking shape _and_ behavior turns review into "does the code match the agreed contract?" instead of a design debate inside the PR. The semver and JSDoc rules for that surface are canonical in [packages/ai-chat/AGENTS.md](../../../packages/ai-chat/AGENTS.md) and [packages/ai-chat/src/types/AGENTS.md](../../../packages/ai-chat/src/types/AGENTS.md) — link to them, don't restate them here.
+
+## Before anything is filed
+
+Drafting ends at the file. Filing is a separate ask — **never run a `gh` command that writes to GitHub before the user has seen the body and said go.** An issue opened on a public repo is visible immediately, and closing it doesn't undo that. The same gate covers amending a filed issue.
+
+Then, before the command:
+
+- **Resolve the repo.** Every call below takes an explicit `<owner>/<repo>`, and nothing here fills it in for you. Run `git remote -v`; if more than one remote is configured, or any of them points somewhere other than where this issue belongs, ask which repo to file against rather than letting `gh` pick a default. Same check [caic-pr](../caic-pr/SKILL.md) runs before opening a PR.
+- **Carry it through.** The sub-issue and dependency calls take the same `<owner>/<repo>`. A child filed on one repo can't be linked under a parent on another.
+- **No agent attribution** in the title or body.
 
 ## Filing a sub-issue via `gh`
 

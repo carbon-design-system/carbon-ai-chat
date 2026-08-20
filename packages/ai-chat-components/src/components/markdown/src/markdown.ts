@@ -867,7 +867,6 @@ class CDSAIChatMarkdown extends LitElement {
         )({
           ...descriptor.data,
           token: descriptor.token,
-          node: descriptor.node,
           slotName: descriptor.slotName,
         });
       } catch (error) {

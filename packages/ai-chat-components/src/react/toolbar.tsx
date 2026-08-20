@@ -49,7 +49,7 @@ const BaseToolbar = withWebComponentBridge(
  * @example
  * ```tsx
  * import { Add, Edit } from '@carbon/icons-react';
- * import Toolbar from '@carbon/ai-chat-components/react/toolbar';
+ * import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
  *
  * const actions = [
  *   { text: 'Add', icon: Add, onClick: () => console.log('Add') },

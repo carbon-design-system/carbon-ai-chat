@@ -198,7 +198,27 @@ export interface CustomSendMessageOptions {
   silent: boolean;
 
   /**
-   *  BusEventSend provides extra context such as MessageSendSource.
+   * The {@link BusEventSend} event that triggered this send. Use its `source`
+   * field to distinguish which UI surface the user typed from:
+   *
+   * - {@link MessageSendSource.HOME_SCREEN_INPUT} — the prompt line on the home
+   *   screen (the chat has not yet left the home screen).
+   * - {@link MessageSendSource.MESSAGE_INPUT} — the prompt line on the message
+   *   list (the user is already in an active conversation).
+   * - {@link MessageSendSource.HOME_SCREEN_STARTER} — a starter button on the
+   *   home screen.
+   * - {@link MessageSendSource.OPTION_BUTTON} / {@link MessageSendSource.OPTION_DROP_DOWN}
+   *   — an option-response control.
+   * - {@link MessageSendSource.POST_BACK_BUTTON} — a post-back button in a
+   *   response.
+   * - {@link MessageSendSource.DATE_PICKER} — a date-picker response.
+   * - {@link MessageSendSource.INSTANCE_SEND} — a programmatic call to
+   *   {@link ChatInstance.send}.
+   * - {@link MessageSendSource.WELCOME_REQUEST} — the internally generated
+   *   welcome request fired during hydration.
+   *
+   * `busEventSend` is `undefined` when the send does not originate from the
+   * event bus (for example, when called directly by internal plumbing).
    */
   busEventSend?: BusEventSend;
 }

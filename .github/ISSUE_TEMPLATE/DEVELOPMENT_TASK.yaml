@@ -7,7 +7,7 @@ body:
     id: background
     attributes:
       label: Background
-      description: "Why this work matters. If this is a sub-issue, link the parent epic."
+      description: "Why this work matters. If this is a sub-issue, link the parent epic. If this implements a decision already recorded in an ADR, link that too — it is where a reviewer checks the diff against what was agreed."
     validations:
       required: true
   - type: textarea
@@ -21,7 +21,7 @@ body:
     id: acceptance-criteria
     attributes:
       label: Acceptance criteria
-      description: "The conditions that must hold before this can be closed, as a checkbox list."
+      description: "The conditions that must hold before this can be closed, as a checkbox list. One observable outcome per box, each carrying its proof — a command that exits 0, a named spec, or demo steps with the expected result. The last box is the definition-of-done gate for every area this touches; see references/definition-of-done.md."
       value: |
         - [ ]
         - [ ]
@@ -31,7 +31,7 @@ body:
     id: public-api-contract
     attributes:
       label: Public API / contract
-      description: "If this introduces or changes public API — anything exported from packages/ai-chat/src/aiChatEntry.tsx or serverEntry.ts — define the TypeScript contract here up front: both the data types (interfaces / type aliases) and the method signatures introduced."
+      description: "If this changes what a consumer can observe on the public surface — anything exported from packages/ai-chat/src/aiChatEntry.tsx or serverEntry.ts — define the contract here up front. A change with no signature change still qualifies: behavior is public too. Give the data types (interfaces / type aliases) and method signatures, then the behavior the shape can't carry — preconditions, the no-op case, failure, events, timing, repeat calls, defaults, the derivation rule for each value of any state a host can read, what a screen reader hears, and which side does the work."
       render: typescript
   - type: textarea
     id: out-of-scope

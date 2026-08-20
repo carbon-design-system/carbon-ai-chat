@@ -81,7 +81,7 @@ interface ResponseTrackData {
   numErrors: number;
 
   /**
-   * The total time that all the requests took (including the time spent waiting before retries).
+   * The total time that all the requests took, in milliseconds.
    */
   totalRequestTime: number;
 }
