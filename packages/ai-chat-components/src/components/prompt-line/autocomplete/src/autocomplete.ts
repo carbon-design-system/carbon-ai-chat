@@ -665,25 +665,22 @@ class AutocompleteElement extends LitElement {
             const isLastGroup = groupIndex === this.groups.length - 1;
             return html`
               <li
-                role="group"
-                aria-label="${group.title}"
-                class="${groupClass}">
-                ${
-                  group.title
-                    ? html`<div class="${groupClass}__title">
-                        ${group.title}
-                      </div>`
-                    : null
-                }
-                <ul class="${groupClass}__items">
-                  ${group.items.map((item, itemIndex) =>
-                    this._renderItem(item, groupStartIndex + itemIndex, {
-                      lastItem:
-                        isLastGroup && itemIndex === group.items.length - 1,
-                    })
-                  )}
-                </ul>
+                role="presentation"
+                id="group-label-${groupIndex}"
+                class="${groupClass}__title">
+                ${group.title}
               </li>
+              <ul
+                role="group"
+                aria-labelledby="group-label-${groupIndex}"
+                class="${groupClass}__items">
+                ${group.items.map((item, itemIndex) =>
+                  this._renderItem(item, groupStartIndex + itemIndex, {
+                    lastItem:
+                      isLastGroup && itemIndex === group.items.length - 1,
+                  })
+                )}
+              </ul>
             `;
           })}
         </ul>
