@@ -51,14 +51,20 @@ Run this before anything else.
 
 1. **Pick the commit range.** Use `<BASE>` resolved in the Branch check above. Run `git log <BASE>..HEAD --oneline` and present the list to the user. Ask which commits to include — they may want to exclude WIP, fixup, or chore commits, or scope the description to a subset. Wait for an answer before drafting.
 
-2. **Re-read the template.** Always read [.github/PULL_REQUEST_TEMPLATE.md](../../../.github/PULL_REQUEST_TEMPLATE.md) fresh — its structure may have changed since this file was written. Match its sections exactly.
+2. **Re-read the template.** Always read [.github/PULL_REQUEST_TEMPLATE.md](../../../.github/PULL_REQUEST_TEMPLATE.md) fresh — its structure may have changed since this file was written. Match its sections exactly. The one permitted addition is `#### Commit map`, between the short description and `#### Changelog` — see step 4 for when it earns its place.
 
 3. **Inspect the diff.** `git diff <BASE>..HEAD --stat` plus focused `git diff` on files that need it. Identify files with **particularly complex changes** (large rewrites, subtle invariants, perf-critical paths, non-obvious refactors) — these get called out by name in the Short description.
 
 4. **Draft the file** following the template. Per-section guidance:
    - **`Closes #`** — leave the line as-is unless the user gave issue numbers. If they did, write one `Closes #N` per line; `Closes #1, #2` links only the first.
    - **`{{ Short description }}`** — 1–2 sentences on the _why_ and shape of the change. Add a short bulleted list of files with genuinely complex changes **only when there are any** — one line each (file + what's tricky, e.g. "`path/to/Bar.ts` — rewrites the X loop; check the early-return at line 142"). Skip the list entirely when the diff is straightforward.
+   - **`#### Commit map`** — a numbered map of the branch's commits, oldest first. **Include it only when the commits are the unit a reviewer walks** — several commits, each standing on its own. A single-commit PR gets none, and neither does one whose commits are arbitrary slices of a single change; a map there is filler.
+     - One line per commit: subject, then what it does. Bold the load-bearing ones — drop one and the change, a proof the issue named, or the build breaks. Leave supporting proof, docs, and cleanup plain, so the reviewer knows what to read closely and what to skim.
+     - Group under a package or area lead-in when the branch spans more than one, numbering straight through.
+     - A map entry and a changelog bullet may cover the same change — the map indexes commits, the changelog indexes behavior.
+     - The map belongs here, not in the commit bodies — those are written for the pre-merge read only, and stay governed by the [commit bodies](../../../references/conventions.md#commit-bodies) rubric rather than by this template.
    - **`#### Changelog`** — populate **New** / **Changed** / **Removed** from the commits and diff. One short fragment per user-visible change. Drop any subsection with nothing in it. Split into `#### Major changes` / `#### Minor changes` (each keeping the New/Changed/Removed subheadings) whenever there's a real triage benefit — a mix of headline changes and incidental ones — so the reviewer can skim the majors and skip the rest. The split organizes bullets; it doesn't license more or longer ones.
+     - **Trace it both ways before handing back**: every bullet comes from at least one commit in range, and every commit that changes what a consumer sees has a bullet. A commit that resists the trace usually changed nothing user-visible — proof, docs, internal cleanup — and needs no bullet. If it did change behavior, the changelog has a hole; write the bullet.
    - **`#### Testing / Reviewing`** — the fewest steps a reviewer needs to confirm it works, as terse imperatives. First ask: _can this be exercised from the demo site?_ Check [demo/AGENTS.md](../../../demo/AGENTS.md) for the query-param toggles, switchers, writeable elements, mock backend (`customSendMessage/`), and mock service desk. If reachable through any of those, give demo steps (commands, query params, what to click, expected result). Otherwise fall back to unit-test pointers or manual steps. Don't re-explain what the changelog already said. These are the acceptance criteria's proofs, in the order a reviewer would run them — not a second list.
 
 5. **Hand back.** Tell the user the draft is ready, with its path, and stop.
@@ -101,6 +107,7 @@ The draft file goes inert once the PR exists — later edits need `gh pr edit <n
 
 - `.github/pr-drafts/` is git-ignored; never commit a draft.
 - The PR title is the eventual squash commit, so it follows conventional-commit format — see [conventions.md](../../../references/conventions.md).
+- The PR description is the durable record: commit bodies die at the squash, so anything a post-merge reader needs lives here, not in a branch commit body ([commit bodies](../../../references/conventions.md#commit-bodies)).
 
 ## Related guidance
 
