@@ -22,6 +22,8 @@ import type {
   MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
   MarkdownRendererTableData as _MarkdownRendererTableData,
 } from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import type { TableCellData as _TableCellData } from '@carbon/ai-chat-components/es/components/markdown/src/utils/table-helpers.js';
+import type { TokenTree as _TokenTree } from '@carbon/ai-chat-components/es/components/markdown/src/markdown-token-tree.js';
 import { type ChatInstance } from '../instance/ChatInstance';
 import { WriteableElements } from '../instance/WriteableElements';
 import {
@@ -255,6 +257,28 @@ export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
  * @interface
  */
 export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
+
+/**
+ * One cell of a parsed markdown table, as it arrives on
+ * {@link MarkdownRendererTableData.headers} and
+ * {@link MarkdownRendererTableData.rows}. Read `text` for the cell's plain
+ * string, or walk `tokens` to render its inline markup yourself.
+ *
+ * @category Messaging
+ * @interface
+ */
+export type TableCellData = _TableCellData;
+
+/**
+ * A node in the parsed markdown token tree, reached through
+ * {@link TableCellData.tokens}. Each node pairs a markdown-it token with its
+ * children, so a custom renderer can walk a table cell's inline content
+ * instead of settling for the flattened text.
+ *
+ * @category Messaging
+ * @interface
+ */
+export type TokenTree = _TokenTree;
 
 /**
  * Argument passed to the fenced code-block renderer callbacks on

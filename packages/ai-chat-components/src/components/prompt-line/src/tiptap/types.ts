@@ -174,7 +174,15 @@ export interface TriggerSuggestionConfig extends Omit<
  * Note: only one autocomplete config per editor is supported, because Tiptap
  * resolves extensions by name.
  */
-export type AutocompleteConfig = BaseSuggestionConfig;
+/*
+ * The empty extends is deliberate. `type AutocompleteConfig =
+ * BaseSuggestionConfig` is transparent to the checker, so TypeDoc resolves
+ * `InputConfig.autocomplete` past it and links the docs site to the
+ * BaseSuggestionConfig page instead. An interface gives this type its own
+ * symbol, which survives the lookup.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface AutocompleteConfig extends BaseSuggestionConfig {}
 
 /**
  * Configuration for starter prompts — shown when the editor is empty and
