@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html
 
 This is the main interface that represents a request from a user sent to an assistant.
 
@@ -20,7 +20,7 @@ interface MessageRequest
 
 Optional context which is added from external resources.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html#context)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html#context)
 
 ### history
 
@@ -29,7 +29,7 @@ Optional context which is added from external resources.
 The history information to store as part of this request. This includes extra information that was provided to
 the user and about the user that was used in making the request.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html#history)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html#history)
 
 ### id
 
@@ -38,7 +38,7 @@ the user and about the user that was used in making the request.
 The unique identifier for this request object. This value may be assigned by the client when a request is
 made but should be assigned by the service if one is not provided.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html#id)
 
 ### input
 
@@ -46,7 +46,7 @@ made but should be assigned by the service if one is not provided.
 
 The input data to the back-end to make in this request.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html#input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html#input)
 
 ### parent_thread_id
 
@@ -55,7 +55,7 @@ The input data to the back-end to make in this request.
 The parent ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
 responses.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html#parent_thread_id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html#parent_thread_id)
 
 ### thread_id
 
@@ -64,4 +64,4 @@ responses.
 The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
 responses.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageRequest.html#thread_id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageRequest.html#thread_id)

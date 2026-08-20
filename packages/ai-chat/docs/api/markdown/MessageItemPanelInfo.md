@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html
 
 ## Signature
 
@@ -20,7 +20,7 @@ Shows the AI gradient background on your panel. Can be used with in concert with
 
 Defaults to PublicConfig.aiEnabled value.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#ai_enabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#ai_enabled)
 
 ### body
 
@@ -28,7 +28,7 @@ Defaults to PublicConfig.aiEnabled value.
 
 A list of message items to render in a Carbon AI Chat panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#body)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#body)
 
 ### footer
 
@@ -36,7 +36,7 @@ A list of message items to render in a Carbon AI Chat panel.
 
 A list of button items that are rendered under the panel body.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#footer)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#footer)
 
 ### full_width
 
@@ -47,7 +47,7 @@ width slot, set full_width to true.
 
 Defaults to false.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#full_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#full_width)
 
 ### show_animations
 
@@ -57,7 +57,7 @@ Determines if the panel close and open animations should be enabled or not.
 
 Defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#show_animations)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#show_animations)
 
 ### show_frame
 
@@ -67,7 +67,7 @@ Show a frame with the chat shell background instead of the gradient background f
 
 Defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#show_frame)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#show_frame)
 
 ### show_header
 
@@ -77,7 +77,7 @@ Determines if the panel header should not be visible or not.
 
 Defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#show_header)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#show_header)
 
 ### title
 
@@ -85,4 +85,4 @@ Defaults to true.
 
 The title to give the panel in Carbon AI Chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.MessageItemPanelInfo.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageItemPanelInfo.html#title)

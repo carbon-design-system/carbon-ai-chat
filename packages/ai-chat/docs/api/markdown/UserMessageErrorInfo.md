@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.UserMessageErrorInfo.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UserMessageErrorInfo.html
 
 This error is used to report when there was an error sending a message to the agent.
 
@@ -20,7 +20,7 @@ interface UserMessageErrorInfo
 
 An optional value that will be logged to the console as an error.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.UserMessageErrorInfo.html#loginfo)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UserMessageErrorInfo.html#loginfo)
 
 ### messageID
 
@@ -28,7 +28,7 @@ An optional value that will be logged to the console as an error.
 
 The ID of the message that is in error.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.UserMessageErrorInfo.html#messageid)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UserMessageErrorInfo.html#messageid)
 
 ### type
 
@@ -36,4 +36,4 @@ The ID of the message that is in error.
 
 The discriminating value for this type.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.UserMessageErrorInfo.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UserMessageErrorInfo.html#type)

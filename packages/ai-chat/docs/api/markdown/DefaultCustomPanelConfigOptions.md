@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html
 
 Options supported by the default custom panel implementation.
 
@@ -23,7 +23,7 @@ interface DefaultCustomPanelConfigOptions
 
 Shows the AI gradient background on your panel. Can be used with in concert with showFrame.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#aienabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#aienabled)
 
 ### backButtonPosition
 
@@ -33,7 +33,7 @@ Controls the position of the back button in the panel header.
 Use "start" to position it at the beginning in the navigation slot,
 or "end" to position it at the end in the toolbar actions.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#backbuttonposition)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#backbuttonposition)
 
 ### backButtonType
 
@@ -42,7 +42,7 @@ or "end" to position it at the end in the toolbar actions.
 Controls the icon used for the back button. Use "minimize" to indicate the
 panel can be returned to, or "close" to indicate the panel will not return.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#backbuttontype)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#backbuttontype)
 
 ### disableAnimation
 
@@ -51,7 +51,7 @@ panel can be returned to, or "close" to indicate the panel will not return.
 Determines if the panel open/close animation should be turned off. By default, the panel will animate up from the
 bottom of the chat window.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#disableanimation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#disableanimation)
 
 ### fullWidth
 
@@ -60,7 +60,7 @@ bottom of the chat window.
 By default, the panel will render at the width of the messages list. If you want to be able to render to a full screen
 width slot, set fullWidth to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#fullwidth)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#fullwidth)
 
 ### hideBackButton
 
@@ -68,7 +68,7 @@ width slot, set fullWidth to true.
 
 Indicates if the back button in the custom panel should be hidden.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#hidebackbutton)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#hidebackbutton)
 
 ### openFromSide
 
@@ -77,7 +77,7 @@ Indicates if the back button in the custom panel should be hidden.
 When true, the panel will slide in/out from the side instead of from the bottom.
 By default, panels animate from the bottom.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#openfromside)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#openfromside)
 
 ### showChatHeader
 
@@ -85,7 +85,7 @@ By default, panels animate from the bottom.
 
 Make the main chat header visible while the panel is open.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#showchatheader)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#showchatheader)
 
 ### showFrame
 
@@ -93,7 +93,7 @@ Make the main chat header visible while the panel is open.
 
 Show a frame with the chat shell background instead of the gradient background for your panel content.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#showframe)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#showframe)
 
 ### title
 
@@ -103,7 +103,7 @@ The panel title displayed in the custom panel header. When a back button is visi
 on screen above the panel so this title acts like a breadcrumb; when the back button is hidden, the header fills
 the panel chrome and this title becomes the primary heading within the overlay.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.DefaultCustomPanelConfigOptions.html#title)
 
 ## Related
 

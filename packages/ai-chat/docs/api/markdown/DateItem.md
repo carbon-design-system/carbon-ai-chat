@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.DateItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.DateItem.html
 
 This is the response item that represents a request for a date which should prompt the client to use a date picker or
 similar control to provide a date. There are currently no additional properties of the response.

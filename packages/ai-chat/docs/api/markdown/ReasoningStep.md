@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ReasoningStep.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningStep.html
 
 An individual reasoning step.
 
@@ -25,7 +25,7 @@ GenericItem variants that render purely from their own item data (TextItem, Imag
 ButtonItem, InlineErrorItem, etc.) are fully supported. Variants whose renderers rely on nested-body
 hydration (Card, Carousel, Grid bodies) will not hydrate those nested children when used here.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ReasoningStep.html#content)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningStep.html#content)
 
 ### open_state
 
@@ -38,7 +38,7 @@ next step(s) have content or the first GenericItem is returned with something to
 
 No matter what you choose, if the user manually marks something open/closed they retain control.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ReasoningStep.html#open_state)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningStep.html#open_state)
 
 ### title
 
@@ -46,4 +46,4 @@ No matter what you choose, if the user manually marks something open/closed they
 
 The title of the reasoning step.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.ReasoningStep.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningStep.html#title)
