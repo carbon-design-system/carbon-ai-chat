@@ -1773,6 +1773,97 @@ HTTP: http://example.com
         'the namespace is minted at construction, so it survives a move'
       ).to.equal(before);
     });
+
+    // ── customRenderers.table — container topology ──────────────────────────
+    // These tests use createRelocationHarness so the mount event is intercepted
+    // by a container-like ancestor (event.preventDefault() called, host hoisted
+    // to outer light DOM). The standalone fixture path was never broken; the
+    // regression only surfaces when a container ancestor owns the slot host.
+
+    const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailer`;
+
+    it('customRenderers.table: host is hoisted to container light DOM', async () => {
+      const { harness, mounted, addMarkdown } = await createRelocationHarness();
+
+      const el = await addMarkdown(tableMarkdown, {
+        customRenderers: {
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-table-host';
+            return div;
+          },
+        },
+      } as Partial<MarkdownElementInstance>);
+
+      expect(
+        mounted.length,
+        'container should receive one mount event'
+      ).to.equal(1);
+      const { host, slotName } = mounted[0];
+
+      // Host lives in harness light DOM, not in the markdown element's light DOM.
+      expect(
+        host.parentElement,
+        'host should be a direct child of the harness (container light DOM)'
+      ).to.equal(harness);
+      expect(
+        host.getAttribute('slot'),
+        'host should carry the slot name attribute'
+      ).to.equal(slotName);
+
+      // The shadow slot in the markdown element must project the hoisted host
+      // via the two-hop forwarder the harness appended.
+      const slotEl = el.shadowRoot?.querySelector(
+        `slot[name="${slotName}"]`
+      ) as HTMLSlotElement | null;
+      expect(slotEl, 'named slot should exist in shadow DOM').to.not.equal(
+        null
+      );
+      const assigned = slotEl?.assignedElements({ flatten: true }) ?? [];
+      expect(
+        assigned.length,
+        'slot should project exactly one element'
+      ).to.be.greaterThan(0);
+    });
+
+    it('customRenderers.table: restores default table when callback returns null (container topology)', async () => {
+      const { addMarkdown } = await createRelocationHarness();
+
+      const el = await addMarkdown(tableMarkdown, {
+        customRenderers: {
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-table-toggle';
+            return div;
+          },
+        },
+      } as Partial<MarkdownElementInstance>);
+
+      // First render: custom element should be visible through the slot.
+      const slotEl = el.shadowRoot?.querySelector(
+        'slot[name*="cds-aichat-markdown-renderer-table"]'
+      ) as HTMLSlotElement | null;
+      expect(slotEl, 'named slot should exist on first render').to.not.equal(
+        null
+      );
+      expect(
+        slotEl?.assignedElements({ flatten: true }).length ?? 0,
+        'custom host should be projected on first render'
+      ).to.be.greaterThan(0);
+
+      // Switch to null — the slot host is removed and the slot's fallback
+      // (default cds-aichat-table) should render instead. This is the exact
+      // regression: in the broken version, markdown.tsx added a stale <slot>
+      // forwarder that kept the named slot occupied even after the host was
+      // removed, so the fallback never appeared.
+      el.customRenderers = { table: () => null };
+      await el.updateComplete;
+
+      expect(
+        el.shadowRoot?.querySelector('cds-aichat-table'),
+        'default cds-aichat-table should appear after callback returns null'
+      ).to.not.equal(null);
+    });
   });
 
   describe('link / image attribute transforms', () => {
@@ -2421,94 +2512,6 @@ describe('cds-aichat-markdown hard/soft line break rendering', () => {
   });
 });
 
-describe('customRenderers.table slot host and slot projection (standalone)', () => {
-  const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailer`;
-
-  it('slot host is a direct child of the markdown element', async () => {
-    const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown
-        .customRenderers=${{
-          table: () => {
-            const div = document.createElement('div');
-            div.className = 'cds-test-slot-host-check';
-            return div;
-          },
-        }}
-        .markdown=${tableMarkdown}></cds-aichat-markdown>`
-    );
-    await el.updateComplete;
-    const hostWrapper = el.querySelector(
-      '[slot*="cds-aichat-markdown-renderer-table"]'
-    );
-    expect(
-      hostWrapper,
-      'slot host wrapper should be a direct child of the markdown element'
-    ).to.not.equal(null);
-    expect(
-      hostWrapper?.parentElement,
-      'slot host wrapper parent should be the markdown element itself'
-    ).to.equal(el);
-  });
-
-  it('named <slot> in shadow DOM projects the light-DOM host', async () => {
-    const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown
-        .customRenderers=${{
-          table: () => {
-            const div = document.createElement('div');
-            div.className = 'cds-test-projected-content';
-            return div;
-          },
-        }}
-        .markdown=${tableMarkdown}></cds-aichat-markdown>`
-    );
-    await el.updateComplete;
-    const slotEl = el.shadowRoot?.querySelector(
-      'slot[name*="cds-aichat-markdown-renderer-table"]'
-    );
-    expect(slotEl, 'named slot should exist in shadow DOM').to.not.equal(null);
-    const assigned = (slotEl as HTMLSlotElement)?.assignedElements({
-      flatten: true,
-    });
-    expect(
-      assigned?.length,
-      'slot should have at least one assigned element'
-    ).to.be.greaterThan(0);
-  });
-
-  it('restores the default table when the callback returns null', async () => {
-    const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown
-        .customRenderers=${{
-          table: () => {
-            const div = document.createElement('div');
-            div.className = 'cds-test-custom-table-toggle';
-            return div;
-          },
-        }}
-        .markdown=${tableMarkdown}></cds-aichat-markdown>`
-    );
-    await el.updateComplete;
-    // First render: custom element is hosted in the light DOM.
-    expect(
-      el.querySelector('.cds-test-custom-table-toggle'),
-      'custom element should be adopted as a light-DOM descendant on first render'
-    ).to.not.equal(null);
-
-    // Switch to null — host is removed and the slot's fallback renders.
-    el.customRenderers = { table: () => null };
-    await el.updateComplete;
-    expect(
-      el.querySelector('[slot*="cds-aichat-markdown-renderer-table"]'),
-      'slot host wrapper should be removed when callback returns null'
-    ).to.equal(null);
-    expect(
-      el.shadowRoot?.querySelector('cds-aichat-table'),
-      'default table should show after callback returns null'
-    ).to.not.equal(null);
-  });
-});
-
 describe('renderTokenTree — softbreak with breaks: false', () => {
   // The component always uses breaks: true, but renderTokenTree is exported and
   // may be called directly by consumers. When a caller passes an md instance with
@@ -2551,34 +2554,5 @@ describe('renderTokenTree — softbreak with breaks: false', () => {
       container.innerHTML,
       'softbreak with breaks:false should contain a newline'
     ).to.include('\n');
-  });
-});
-
-describe('customRenderers.codeBlock slot host (standalone)', () => {
-  const codeMarkdown = '```js\nconsole.log("hi");\n```\n\nTrailer';
-
-  it('slot host is a direct child of the markdown element', async () => {
-    const el = await fixture<MarkdownElementInstance>(
-      html`<cds-aichat-markdown
-        .customRenderers=${{
-          codeBlock: () => {
-            const div = document.createElement('div');
-            div.className = 'cds-test-custom-code';
-            return div;
-          },
-        }}
-        .markdown=${codeMarkdown}></cds-aichat-markdown>`
-    );
-    await el.updateComplete;
-    const host = el.querySelector(
-      '[slot*="cds-aichat-markdown-renderer-codeBlock"]'
-    );
-    expect(host, 'codeBlock slot host should exist in light DOM').to.not.equal(
-      null
-    );
-    expect(
-      host?.parentElement,
-      'codeBlock slot host should be a direct child of the markdown element'
-    ).to.equal(el);
   });
 });
