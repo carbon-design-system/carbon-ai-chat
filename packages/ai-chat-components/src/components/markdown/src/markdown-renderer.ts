@@ -259,6 +259,26 @@ export function renderTokenTree(
     return html`${token.content}`;
   }
 
+  // Hard and soft line breaks. Handled before the tag-based dispatch because
+  // hardbreak has tag="br" but is not a plugin-introduced token and must not
+  // route through the plugin-fallback slot machinery on the default path.
+  // A plugin that overrides md.renderer.rules.hardbreak / .softbreak takes
+  // precedence via the normal shouldDelegateToPluginRule check.
+  if (token.type === 'hardbreak' || token.type === 'softbreak') {
+    if (shouldDelegateToPluginRule(token, options.md) && options.md) {
+      return renderFallback(
+        token as Token,
+        node,
+        options.md,
+        sanitize,
+        options
+      );
+    }
+    return token.type === 'softbreak' && options.md?.options.breaks === false
+      ? html`${'\n'}`
+      : html`<br />`;
+  }
+
   // Handle inline code spans
   if (token.type === 'code_inline') {
     if (shouldDelegateToPluginRule(token, options.md) && options.md) {

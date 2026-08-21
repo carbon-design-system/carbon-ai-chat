@@ -167,13 +167,21 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
       return undefined;
     }
     const handleMount = (event: Event) => {
-      const slotName = (event as CustomEvent<{ slotName: string }>).detail
-        ?.slotName;
-      if (!slotName) {
+      const detail = (
+        event as CustomEvent<{ slotName: string; element?: HTMLElement }>
+      ).detail;
+      if (!detail?.slotName) {
+        return;
+      }
+      // Consumer-renderer hosts (table/codeBlock) forward a live element that
+      // is adopted directly by the markdown element's own reconcile. They do
+      // not need a <slot> forwarder here — adding one would suppress the
+      // slot's fallback content if the callback later returns null.
+      if (detail.element) {
         return;
       }
       setPluginSlotNames((prev) =>
-        prev.includes(slotName) ? prev : [...prev, slotName]
+        prev.includes(detail.slotName) ? prev : [...prev, detail.slotName]
       );
     };
     const handleUnmount = (event: Event) => {

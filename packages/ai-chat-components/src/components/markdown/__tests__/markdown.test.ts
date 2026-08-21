@@ -1773,6 +1773,97 @@ HTTP: http://example.com
         'the namespace is minted at construction, so it survives a move'
       ).to.equal(before);
     });
+
+    // ── customRenderers.table — container topology ──────────────────────────
+    // These tests use createRelocationHarness so the mount event is intercepted
+    // by a container-like ancestor (event.preventDefault() called, host hoisted
+    // to outer light DOM). The standalone fixture path was never broken; the
+    // regression only surfaces when a container ancestor owns the slot host.
+
+    const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailer`;
+
+    it('customRenderers.table: host is hoisted to container light DOM', async () => {
+      const { harness, mounted, addMarkdown } = await createRelocationHarness();
+
+      const el = await addMarkdown(tableMarkdown, {
+        customRenderers: {
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-table-host';
+            return div;
+          },
+        },
+      } as Partial<MarkdownElementInstance>);
+
+      expect(
+        mounted.length,
+        'container should receive one mount event'
+      ).to.equal(1);
+      const { host, slotName } = mounted[0];
+
+      // Host lives in harness light DOM, not in the markdown element's light DOM.
+      expect(
+        host.parentElement,
+        'host should be a direct child of the harness (container light DOM)'
+      ).to.equal(harness);
+      expect(
+        host.getAttribute('slot'),
+        'host should carry the slot name attribute'
+      ).to.equal(slotName);
+
+      // The shadow slot in the markdown element must project the hoisted host
+      // via the two-hop forwarder the harness appended.
+      const slotEl = el.shadowRoot?.querySelector(
+        `slot[name="${slotName}"]`
+      ) as HTMLSlotElement | null;
+      expect(slotEl, 'named slot should exist in shadow DOM').to.not.equal(
+        null
+      );
+      const assigned = slotEl?.assignedElements({ flatten: true }) ?? [];
+      expect(
+        assigned.length,
+        'slot should project exactly one element'
+      ).to.be.greaterThan(0);
+    });
+
+    it('customRenderers.table: restores default table when callback returns null (container topology)', async () => {
+      const { addMarkdown } = await createRelocationHarness();
+
+      const el = await addMarkdown(tableMarkdown, {
+        customRenderers: {
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-table-toggle';
+            return div;
+          },
+        },
+      } as Partial<MarkdownElementInstance>);
+
+      // First render: custom element should be visible through the slot.
+      const slotEl = el.shadowRoot?.querySelector(
+        'slot[name*="cds-aichat-markdown-renderer-table"]'
+      ) as HTMLSlotElement | null;
+      expect(slotEl, 'named slot should exist on first render').to.not.equal(
+        null
+      );
+      expect(
+        slotEl?.assignedElements({ flatten: true }).length ?? 0,
+        'custom host should be projected on first render'
+      ).to.be.greaterThan(0);
+
+      // Switch to null — the slot host is removed and the slot's fallback
+      // (default cds-aichat-table) should render instead. This is the exact
+      // regression: in the broken version, markdown.tsx added a stale <slot>
+      // forwarder that kept the named slot occupied even after the host was
+      // removed, so the fallback never appeared.
+      el.customRenderers = { table: () => null };
+      await el.updateComplete;
+
+      expect(
+        el.shadowRoot?.querySelector('cds-aichat-table'),
+        'default cds-aichat-table should appear after callback returns null'
+      ).to.not.equal(null);
+    });
   });
 
   describe('link / image attribute transforms', () => {
@@ -2372,5 +2463,96 @@ describe('streaming table loading mode', () => {
 
     expect(calls.at(-1)?.isLoading).to.equal(false);
     expect(calls.at(-1)?.rowCount).to.equal(2);
+  });
+});
+
+describe('cds-aichat-markdown hard/soft line break rendering', () => {
+  it('renders a hard line break (two trailing spaces + newline) as a <br>', async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${'**Summary**  \nNext line'}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const br = el.shadowRoot?.querySelector('br');
+    expect(br, '<br> should be present for a hard line break').to.not.equal(
+      null
+    );
+  });
+
+  it('renders a soft line break (single newline) as a <br> when breaks mode is active', async () => {
+    // The markdown-it instance uses `breaks: true`, so a bare newline inside a
+    // paragraph produces a softbreak token that must render as <br>.
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${'line one\nline two'}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const brs = el.shadowRoot?.querySelectorAll('br');
+    expect(
+      brs?.length ?? 0,
+      '<br> should be present for a soft line break (breaks mode)'
+    ).to.be.greaterThan(0);
+  });
+
+  it('does not route hardbreak or softbreak through the plugin-fallback slot system', async () => {
+    // plugin-fallback slots create <slot name="..."> elements in the shadow DOM;
+    // a break token should never produce one.
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .markdown=${'line one  \nline two\nline three'}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const pluginSlots = el.shadowRoot?.querySelectorAll(
+      'slot[name*="pluginFallback"]'
+    );
+    expect(
+      pluginSlots?.length ?? 0,
+      'break tokens must not produce plugin-fallback slots'
+    ).to.equal(0);
+  });
+});
+
+describe('renderTokenTree — softbreak with breaks: false', () => {
+  // The component always uses breaks: true, but renderTokenTree is exported and
+  // may be called directly by consumers. When a caller passes an md instance with
+  // breaks: false, a softbreak token must render as a literal newline character,
+  // not a <br>, to match markdown-it's own behaviour for that setting.
+  it('emits a newline character (not <br>) for softbreak when breaks is false', async () => {
+    const { renderTokenTree } = await import('../src/markdown-renderer.js');
+    const MarkdownIt = (await import('markdown-it')).default;
+
+    const md = new MarkdownIt({ breaks: false });
+    const node = {
+      key: 'softbreak-0',
+      token: {
+        type: 'softbreak',
+        tag: '',
+        nesting: 0 as const,
+        level: 0,
+        content: '',
+        attrs: null,
+        children: null,
+        markup: '',
+        block: false,
+        hidden: false,
+        map: null,
+        info: '',
+        meta: null,
+      },
+      children: [],
+    };
+
+    const { render } = await import('lit');
+    const container = document.createElement('div');
+    render(renderTokenTree(node, { sanitize: false, md }), container);
+
+    expect(
+      container.innerHTML,
+      'softbreak with breaks:false should not contain <br>'
+    ).to.not.include('<br');
+    expect(
+      container.innerHTML,
+      'softbreak with breaks:false should contain a newline'
+    ).to.include('\n');
   });
 });
