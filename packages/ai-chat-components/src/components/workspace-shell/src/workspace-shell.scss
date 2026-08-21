@@ -61,10 +61,18 @@
   }
 }
 
+// Carbon's global `.cds--inline-notification` sets a responsive max-inline-size
+// ladder (18/38/46/52rem). In the React build that class lands on a light-DOM
+// element, and document-tree declarations beat `::slotted()` no matter how
+// specific it is — for normal declarations the outer tree always wins, so
+// `!important` is the only way to override it from inside this shadow root.
+// The web components build encapsulates the class in the notification's own
+// shadow root, where the global rule can't reach it, so this is a no-op there.
 ::slotted([slot='notification']) {
   box-sizing: border-box;
   margin-block-end: 0;
-  max-inline-size: 100%;
+  /* stylelint-disable-next-line declaration-no-important */
+  max-inline-size: 100% !important;
 }
 
 // Typography inherits through the toolbar's shadow boundary onto its title;
