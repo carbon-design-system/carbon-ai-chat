@@ -81,6 +81,11 @@ export interface AutocompleteI18n {
   suggestionsClosed: string;
   /** Accessible label for the listbox element. */
   listboxLabel: string;
+  /**
+   * Accessible label for the implicit group that wraps flat (non-grouped) items
+   * when the listbox element also contains grouped items.
+   */
+  nonGroupedItemsLabel: string;
 }
 
 /** Default English strings — used as the fallback value for `i18n`. */
@@ -94,6 +99,7 @@ export const defaultAutocompleteI18n: AutocompleteI18n = {
   itemSent: (label) => `${label} sent.`,
   suggestionsClosed: 'Suggestions closed.',
   listboxLabel: 'Autocomplete options',
+  nonGroupedItemsLabel: 'Non-grouped options',
 };
 
 /**
@@ -626,6 +632,7 @@ class AutocompleteElement extends LitElement {
     }
 
     let currentIndex = 0;
+    const hasGroups = this.groups.length > 0;
 
     return html`
       ${liveRegions}
@@ -641,49 +648,81 @@ class AutocompleteElement extends LitElement {
               `
             : ''
         }
+        ${
+          hasGroups
+            ? html`
+                <div
+                  aria-activedescendant="${this._getActiveOptionId()}"
+                  aria-label="${this.i18n.listboxLabel}"
+                  class="${blockClass}__items"
+                  id="${blockClass}-listbox"
+                  role="listbox">
+                  <!-- Flat items wrapped in their own implicit group -->
+                  ${
+                    this.items.length > 0
+                      ? html`
+                          <ul
+                            role="group"
+                            aria-label="${this.i18n.nonGroupedItemsLabel}"
+                            class="${groupClass}__items">
+                            ${this.items.map((item, index) => {
+                            const itemIndex = currentIndex++;
+                            return this._renderItem(item, itemIndex, {
+                              firstItem:
+                                !this.headerConfig?.showHeader && index === 0,
+                            });
+                          })}
+                          </ul>
+                        `
+                      : ''
+                  }
 
-        <ul
-          aria-activedescendant="${this._getActiveOptionId()}"
-          aria-label="${this.i18n.listboxLabel}"
-          class="${blockClass}__items"
-          id="${blockClass}-listbox"
-          role="listbox">
-          <!-- Flat items -->
-          ${this.items.map((item, index) => {
-            const itemIndex = currentIndex++;
-            return this._renderItem(item, itemIndex, {
-              firstItem: !this.headerConfig?.showHeader && index === 0,
-              lastItem:
-                this.groups.length === 0 && index === this.items.length - 1,
-            });
-          })}
-
-          <!-- Grouped items -->
-          ${this.groups.map((group, groupIndex) => {
-            const groupStartIndex = currentIndex;
-            currentIndex += group.items.length;
-            const isLastGroup = groupIndex === this.groups.length - 1;
-            return html`
-              <li
-                role="presentation"
-                id="group-label-${groupIndex}"
-                class="${groupClass}__title">
-                ${group.title}
-              </li>
-              <ul
-                role="group"
-                aria-labelledby="group-label-${groupIndex}"
-                class="${groupClass}__items">
-                ${group.items.map((item, itemIndex) =>
-                  this._renderItem(item, groupStartIndex + itemIndex, {
-                    lastItem:
-                      isLastGroup && itemIndex === group.items.length - 1,
-                  })
-                )}
-              </ul>
-            `;
-          })}
-        </ul>
+                  <!-- Grouped items -->
+                  ${this.groups.map((group, groupIndex) => {
+                    const groupStartIndex = currentIndex;
+                    currentIndex += group.items.length;
+                    const isLastGroup = groupIndex === this.groups.length - 1;
+                    return html`
+                      <ul
+                        role="group"
+                        aria-labelledby="group-label-${groupIndex}"
+                        class="${groupClass}__items">
+                        <li
+                          role="presentation"
+                          id="group-label-${groupIndex}"
+                          class="${groupClass}__title">
+                          ${group.title}
+                        </li>
+                        ${group.items.map((item, itemIndex) =>
+                          this._renderItem(item, groupStartIndex + itemIndex, {
+                            lastItem:
+                              isLastGroup &&
+                              itemIndex === group.items.length - 1,
+                          })
+                        )}
+                      </ul>
+                    `;
+                  })}
+                </div>
+              `
+            : html`
+                <!-- Flat items only -->
+                <ul
+                  aria-activedescendant="${this._getActiveOptionId()}"
+                  aria-label="${this.i18n.listboxLabel}"
+                  class="${blockClass}__items"
+                  id="${blockClass}-listbox"
+                  role="listbox">
+                  ${this.items.map((item, index) => {
+                    const itemIndex = currentIndex++;
+                    return this._renderItem(item, itemIndex, {
+                      firstItem: !this.headerConfig?.showHeader && index === 0,
+                      lastItem: index === this.items.length - 1,
+                    });
+                  })}
+                </ul>
+              `
+        }
       </div>
     `;
   }
