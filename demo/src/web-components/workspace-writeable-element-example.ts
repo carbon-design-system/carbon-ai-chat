@@ -138,7 +138,6 @@ class WorkspaceWriteableElementExample extends LitElement {
       <cds-aichat-toolbar
         slot="toolbar"
         overflow
-        workspace
         .actions=${this.toolbarActions}
         titleText="Optimizing excess inventory">
         <cds-ai-label slot="decorator" alignment="bottom" size="2xs">

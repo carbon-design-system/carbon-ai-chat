@@ -67,7 +67,13 @@
   max-inline-size: 100%;
 }
 
+// Typography inherits through the toolbar's shadow boundary onto its title;
+// the padding needs the custom property because it isn't an inherited property.
 ::slotted(#{$prefix}-toolbar) {
+  --#{$prefix}-toolbar-title-padding-inline-start: #{layout.$spacing-07};
+
+  @include type.type-style('heading-03');
+
   box-sizing: border-box;
   border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
   inline-size: 100%;

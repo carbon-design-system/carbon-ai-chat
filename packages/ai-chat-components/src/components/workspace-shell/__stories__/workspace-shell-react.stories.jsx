@@ -135,8 +135,7 @@ export const Default = {
           slot="toolbar"
           actions={toolbarAction}
           overflow={toolbarOverflow}
-          titleText={toolbarTitle}
-          workspace>
+          titleText={toolbarTitle}>
           <AILabel
             size="2xs"
             autoalign

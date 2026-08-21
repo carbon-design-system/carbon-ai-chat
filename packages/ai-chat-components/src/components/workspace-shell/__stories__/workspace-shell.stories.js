@@ -148,8 +148,7 @@ export const Default = {
         slot="toolbar"
         ?overflow=${args.toolbarOverflow}
         .actions=${args.toolbarAction}
-        titleText=${args.toolbarTitle}
-        workspace>
+        titleText=${args.toolbarTitle}>
         <cds-ai-label autoalign="" slot="toolbar-ai-label" size="2xs">
           <div slot="body-text">
             <p class="secondary">
