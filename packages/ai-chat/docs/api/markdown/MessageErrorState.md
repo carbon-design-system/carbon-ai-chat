@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.MessageErrorState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MessageErrorState.html
 
 The different type of error states a given message can be in.
 
@@ -20,7 +20,7 @@ enum MessageErrorState
 
 The message failed to be sent and no more attempts will be made.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.MessageErrorState.html#failed)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MessageErrorState.html#failed)
 
 ### FAILED_WHILE_STREAMING
 
@@ -28,7 +28,7 @@ The message failed to be sent and no more attempts will be made.
 
 The message failed while streaming.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.MessageErrorState.html#failed_while_streaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MessageErrorState.html#failed_while_streaming)
 
 ### NONE
 
@@ -36,7 +36,7 @@ The message failed while streaming.
 
 No errors.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.MessageErrorState.html#none)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MessageErrorState.html#none)
 
 ### RETRYING
 
@@ -44,7 +44,7 @@ No errors.
 
 There was an error sending the message but the system is retrying the message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.MessageErrorState.html#retrying)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MessageErrorState.html#retrying)
 
 ### WAITING
 
@@ -54,4 +54,4 @@ Indicates that the previous message has entered the retrying state and that this
 finish or fail. This message will remain in the waiting state until it finishes successfully or it enters a
 retrying state itself.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.MessageErrorState.html#waiting)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MessageErrorState.html#waiting)

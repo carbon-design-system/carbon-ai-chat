@@ -1,8 +1,10 @@
 # MarkdownItPlugin
 
+**Experimental.**
+
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.MarkdownItPlugin.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.MarkdownItPlugin.html
 
 Element type of PublicConfigMarkdown.markdownItPlugins. Either a
 bare plugin function or a `[plugin, options]` / `[plugin, ...params]` tuple

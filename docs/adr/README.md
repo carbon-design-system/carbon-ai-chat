@@ -34,20 +34,20 @@ Status runs `proposed` → `accepted` or `rejected`. An accepted ADR that a late
 
 ## How an ADR gets decided
 
-GitHub Discussions is off for this repo, and review comments on a merged PR stop being findable. So the comment venue is a tracking issue, and the ADR itself merges early.
+Review comments on a merged PR stop being findable, so the comment venue is a [GitHub Discussion](https://github.com/carbon-design-system/carbon-ai-chat/discussions) in the **RFC Discussions** category, and the ADR itself merges early.
 
 1. **Draft it.** Copy [template.md](template.md), fill it in, claim a number. Drafts go in `.github/adr-drafts/`, which is git-ignored.
 2. **Pick the window.** Set `comments-by` to the earliest date this decision should be ratified. Ten working days is the recommended minimum; a decision with a wide blast radius, or one that lands over a holiday, deserves longer.
 3. **Open the PR**, titled `docs: ADR-NNNN <title>`.
-4. **File the tracking issue**, titled `Comment on ADR-NNNN: <title>`, and put its number in the ADR's `discussion` field. That issue is where the discussion happens, and it stays open until the ADR is decided.
+4. **Open the RFC discussion**, titled `[RFC]: <title>`, in the **RFC Discussions** category, and put its URL in the ADR's `discussion` field. That discussion is where the feedback happens, and it stays open until the ADR is decided.
 5. **Merge it.** Merge once the ADR reads clearly, not once everyone agrees. Status stays `proposed`, so nothing is settled — but the ADR is on `main` where people can find it, and it stops collecting rebases.
-6. **Accept or reject it**, on or after `comments-by`. Someone on `@carbon-design-system/carbon-ai-chat-developers` sets the status in a follow-up PR and closes the tracking issue.
+6. **Accept or reject it**, on or after `comments-by`. Someone on `@carbon-design-system/carbon-ai-chat-developers` sets the status in a follow-up PR and closes the discussion.
 
 > **Note**: Silence is not agreement. A window closing does not accept an ADR — someone has to. `comments-by` is the earliest date that decision can be made, not a timer that makes it for you. Until a person sets the status, the ADR is still `proposed` and the decision is still open.
 
 An objection pushes `comments-by` out. It does not reject the ADR. Rejection is its own outcome and needs the same write-up as acceptance — the next person to have the idea deserves to know it was already tried.
 
-**Find the undecided ones through the open tracking issues**, not by reading frontmatter. That is what they are for: an open `Comment on ADR-NNNN` issue is an ADR nobody has ratified yet.
+**Find the undecided ones through the open RFC discussions**, not by reading frontmatter. That is what they are for: an open discussion in the [RFC Discussions category](https://github.com/carbon-design-system/carbon-ai-chat/discussions/categories/rfc-discussions) is an ADR nobody has ratified yet.
 
 ## What happens to your comment
 
@@ -95,4 +95,4 @@ Generated from the records themselves — run `npm run sync:adrs` after adding o
 
 <!-- adr-index:end -->
 
-Every `proposed` row has an open tracking issue behind it. `is:issue is:open in:title "Comment on ADR"` is the same list, with the discussion attached.
+Every `proposed` row has an open RFC discussion behind it. The [Discussions tab, filtered to RFC Discussions](https://github.com/carbon-design-system/carbon-ai-chat/discussions/categories/rfc-discussions), is the same list, with the discussion attached.
