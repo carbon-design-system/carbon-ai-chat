@@ -21,10 +21,17 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Run build
-        run: npm run build
+        run: npm run aiChat:build
 
   test:
     runs-on: ubuntu-latest
@@ -35,14 +42,19 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: |
           npm ci --prefer-offline
           npx playwright install --with-deps
       - name: Build ai-chat
         run: npm run aiChat:build
-      - name: Build ai-chat-components
-        run: cd packages/ai-chat-components && npm run build
       - name: Run test
         run: npm run test
 
@@ -55,6 +67,13 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Check formatting of project files (staged)
@@ -73,6 +92,13 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Lint
@@ -87,6 +113,13 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: License check

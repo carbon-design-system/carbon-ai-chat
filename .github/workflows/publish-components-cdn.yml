@@ -28,10 +28,10 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: "npm"
-      - name: Install dependencies
+      - name: Install dependencies and build
         run: |
           npm ci --prefer-offline
-          npm run build
+          npm run aiChat:build
       - name: Build Storybook
         run: |
           cd packages/ai-chat-components
