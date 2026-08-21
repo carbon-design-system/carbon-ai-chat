@@ -111,6 +111,7 @@ describe('aichat workspace shell', function () {
     expect(assigned.length).to.equal(1);
     expect(assigned[0].tagName.toLowerCase()).to.equal('cds-aichat-toolbar');
   });
+
   it('should render notification inside the notification slot', async () => {
     const el = await fixture<CDSAIChatWorkspaceShell>(
       html`<cds-aichat-workspace-shell>
