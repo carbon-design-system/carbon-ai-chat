@@ -458,14 +458,6 @@ class ChatContainer extends FlattenedConfigElement {
     if (!detail?.slotName) {
       return;
     }
-    // Consumer-renderer hosts (table/codeBlock) carry a live element. The
-    // named <slot> in the markdown element's shadow DOM projects only its own
-    // light-DOM children, so these hosts must stay as children of the markdown
-    // element itself. Do not take over hosting — let the markdown element's
-    // own reconcile handle appendChild.
-    if (detail.element) {
-      return;
-    }
     // Track the slot regardless of who owns hosting so our render forwarder
     // projects the page-level content into cds-aichat-internal's slot.
     if (!this._pluginSlotNames.includes(detail.slotName)) {
@@ -473,13 +465,27 @@ class ChatContainer extends FlattenedConfigElement {
     }
     if (this.hasOuterChatHandler(event)) {
       // An outer chat element will create the page-level host; just forward.
+      // This applies to the live-element path too: appending here would land
+      // the node in this element's light DOM (inside the outer chat element's
+      // shadow root), where global CSS still wouldn't reach it.
       return;
     }
-    // Plugin-fallback hosts carry an HTML string. Hoist them to this element's
-    // outer light DOM so consumer-loaded global stylesheets (e.g. KaTeX) can
-    // reach the rendered output — the markdown element's own light DOM sits
-    // inside this element's shadow root, where global CSS does not apply.
     event.preventDefault();
+    // Custom-renderer hosts (table/codeBlock) forward a live element — the
+    // markdown element keeps ownership of its content; we only relocate the
+    // node into our outer light DOM so the consumer's global CSS reaches it.
+    // Plugin fallbacks forward an HTML string instead.
+    if (detail.element) {
+      const element = detail.element;
+      element.setAttribute('slot', detail.slotName);
+      if (!detail.isInline) {
+        element.style.marginBlockStart = '1rem';
+      }
+      if (element.parentElement !== this) {
+        this.appendChild(element);
+      }
+      return;
+    }
     let host = this._pluginHosts.get(detail.slotName);
     if (!host) {
       host = document.createElement(detail.isInline ? 'span' : 'div');

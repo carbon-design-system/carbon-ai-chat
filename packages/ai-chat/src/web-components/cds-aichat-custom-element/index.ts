@@ -250,21 +250,28 @@ class ChatCustomElement extends FlattenedConfigElement {
     if (!detail?.slotName) {
       return;
     }
-    // Consumer-renderer hosts (table/codeBlock) carry a live element. The
-    // named <slot> in the markdown element's shadow DOM projects only its own
-    // light-DOM children, so these hosts must stay as children of the markdown
-    // element itself. Do not take over hosting — let the markdown element's
-    // own reconcile handle appendChild.
-    if (detail.element) {
-      return;
-    }
     if (!this._pluginSlotNames.includes(detail.slotName)) {
       this._pluginSlotNames = [...this._pluginSlotNames, detail.slotName];
     }
     // cds-aichat-custom-element is always the outermost chat element in its
     // shadow chain; there is no further chat ancestor to defer to. Take
-    // hosting unconditionally for plugin-fallback HTML-string hosts.
+    // hosting unconditionally.
     event.preventDefault();
+    // Custom-renderer hosts (table/codeBlock) forward a live element — the
+    // markdown element keeps ownership of its content; we only relocate the
+    // node into our outer light DOM so the consumer's global CSS reaches it.
+    // Plugin fallbacks forward an HTML string instead.
+    if (detail.element) {
+      const element = detail.element;
+      element.setAttribute('slot', detail.slotName);
+      if (!detail.isInline) {
+        element.style.marginBlockStart = '1rem';
+      }
+      if (element.parentElement !== this) {
+        this.appendChild(element);
+      }
+      return;
+    }
     let host = this._pluginHosts.get(detail.slotName);
     if (!host) {
       host = document.createElement(detail.isInline ? 'span' : 'div');

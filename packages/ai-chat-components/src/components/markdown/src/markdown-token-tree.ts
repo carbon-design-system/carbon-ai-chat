@@ -76,6 +76,8 @@ export const PLUGIN_DELEGABLE_TOKEN_TYPES: ReadonlySet<string> = new Set([
   'image',
   'code_inline',
   'html_block',
+  'softbreak',
+  'hardbreak',
 ]);
 
 /**

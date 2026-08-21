@@ -2421,10 +2421,10 @@ describe('cds-aichat-markdown hard/soft line break rendering', () => {
   });
 });
 
-describe('customRenderers.table slot host stays in markdown element light DOM', () => {
+describe('customRenderers.table slot host and slot projection (standalone)', () => {
   const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailer`;
 
-  it('keeps the slot host as a direct child of the markdown element', async () => {
+  it('slot host is a direct child of the markdown element', async () => {
     const el = await fixture<MarkdownElementInstance>(
       html`<cds-aichat-markdown
         .customRenderers=${{
@@ -2450,7 +2450,7 @@ describe('customRenderers.table slot host stays in markdown element light DOM', 
     ).to.equal(el);
   });
 
-  it('the <slot> in the shadow DOM projects the light-DOM host', async () => {
+  it('named <slot> in shadow DOM projects the light-DOM host', async () => {
     const el = await fixture<MarkdownElementInstance>(
       html`<cds-aichat-markdown
         .customRenderers=${{
@@ -2463,18 +2463,122 @@ describe('customRenderers.table slot host stays in markdown element light DOM', 
         .markdown=${tableMarkdown}></cds-aichat-markdown>`
     );
     await el.updateComplete;
-    // The named <slot> in the shadow DOM should exist for the table override.
     const slotEl = el.shadowRoot?.querySelector(
       'slot[name*="cds-aichat-markdown-renderer-table"]'
     );
     expect(slotEl, 'named slot should exist in shadow DOM').to.not.equal(null);
-    // The slot's assigned nodes should include our host wrapper.
-    const assigned = (slotEl as HTMLSlotElement)?.assignedNodes({
+    const assigned = (slotEl as HTMLSlotElement)?.assignedElements({
       flatten: true,
     });
     expect(
       assigned?.length,
-      'slot should have at least one assigned node'
+      'slot should have at least one assigned element'
     ).to.be.greaterThan(0);
+  });
+
+  it('restores the default table when the callback returns null', async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .customRenderers=${{
+          table: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-custom-table-toggle';
+            return div;
+          },
+        }}
+        .markdown=${tableMarkdown}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    // First render: custom element is hosted in the light DOM.
+    expect(
+      el.querySelector('.cds-test-custom-table-toggle'),
+      'custom element should be adopted as a light-DOM descendant on first render'
+    ).to.not.equal(null);
+
+    // Switch to null — host is removed and the slot's fallback renders.
+    el.customRenderers = { table: () => null };
+    await el.updateComplete;
+    expect(
+      el.querySelector('[slot*="cds-aichat-markdown-renderer-table"]'),
+      'slot host wrapper should be removed when callback returns null'
+    ).to.equal(null);
+    expect(
+      el.shadowRoot?.querySelector('cds-aichat-table'),
+      'default table should show after callback returns null'
+    ).to.not.equal(null);
+  });
+});
+
+describe('renderTokenTree — softbreak with breaks: false', () => {
+  // The component always uses breaks: true, but renderTokenTree is exported and
+  // may be called directly by consumers. When a caller passes an md instance with
+  // breaks: false, a softbreak token must render as a literal newline character,
+  // not a <br>, to match markdown-it's own behaviour for that setting.
+  it('emits a newline character (not <br>) for softbreak when breaks is false', async () => {
+    const { renderTokenTree } = await import('../src/markdown-renderer.js');
+    const MarkdownIt = (await import('markdown-it')).default;
+
+    const md = new MarkdownIt({ breaks: false });
+    const node = {
+      key: 'softbreak-0',
+      token: {
+        type: 'softbreak',
+        tag: '',
+        nesting: 0 as const,
+        level: 0,
+        content: '',
+        attrs: null,
+        children: null,
+        markup: '',
+        block: false,
+        hidden: false,
+        map: null,
+        info: '',
+        meta: null,
+      },
+      children: [],
+    };
+
+    const { render } = await import('lit');
+    const container = document.createElement('div');
+    render(renderTokenTree(node, { sanitize: false, md }), container);
+
+    expect(
+      container.innerHTML,
+      'softbreak with breaks:false should not contain <br>'
+    ).to.not.include('<br');
+    expect(
+      container.innerHTML,
+      'softbreak with breaks:false should contain a newline'
+    ).to.include('\n');
+  });
+});
+
+describe('customRenderers.codeBlock slot host (standalone)', () => {
+  const codeMarkdown = '```js\nconsole.log("hi");\n```\n\nTrailer';
+
+  it('slot host is a direct child of the markdown element', async () => {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        .customRenderers=${{
+          codeBlock: () => {
+            const div = document.createElement('div');
+            div.className = 'cds-test-custom-code';
+            return div;
+          },
+        }}
+        .markdown=${codeMarkdown}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    const host = el.querySelector(
+      '[slot*="cds-aichat-markdown-renderer-codeBlock"]'
+    );
+    expect(host, 'codeBlock slot host should exist in light DOM').to.not.equal(
+      null
+    );
+    expect(
+      host?.parentElement,
+      'codeBlock slot host should be a direct child of the markdown element'
+    ).to.equal(el);
   });
 });
