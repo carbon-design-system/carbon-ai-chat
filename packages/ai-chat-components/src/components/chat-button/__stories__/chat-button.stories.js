@@ -10,6 +10,7 @@
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
 import '../src/chat-button';
+import '../src/chat-button-skeleton';
 import { html } from 'lit';
 import {
   BUTTON_KIND,
@@ -104,6 +105,11 @@ const baseButtonTemplate = (args) => html`
     ?is-quick-action="${args.isQuickAction}">
     ${args.buttonText} ${args.iconSlot?.()}
   </cds-aichat-button>
+`;
+
+const skeletonButtonTemplate = (args) => html`
+  <cds-aichat-button-skeleton size=${ifDefined(args.size)}>
+  </cds-aichat-button-skeleton>
 `;
 
 export default {
@@ -356,6 +362,74 @@ export const QuickAction = {
     buttonText: 'Quick action',
     isQuickAction: true,
     isSelected: false,
+    disabled: false,
   },
   render: baseButtonTemplate,
+};
+
+export const QuickActionSelected = {
+  name: 'Quick action (selected)',
+  argTypes: {
+    ...QuickAction.argTypes,
+  },
+  args: {
+    ...sharedArgs,
+    buttonText: 'Quick action',
+    isQuickAction: true,
+    isSelected: true,
+  },
+  render: baseButtonTemplate,
+};
+
+export const QuickActionSelectedWithDisabled = {
+  name: 'Quick action (selected with disabled)',
+  parameters: { controls: { disable: true } },
+  render: () => html`
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >audio - mp3</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >audio - soundcloud</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?isSelected="${true}"
+        >button</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >card</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >carousel</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >code</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >code (stream)</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >conversational search</cds-aichat-button
+      >
+      <cds-aichat-button ?is-quick-action="${true}" ?disabled="${true}"
+        >conversational search (stream)</cds-aichat-button
+      >
+    </div>
+  `,
+};
+
+export const Skeleton = {
+  argTypes: {
+    size: {
+      control: 'select',
+      description: 'Specify the size of the skeleton button.',
+      options: ['sm', 'md', 'lg'],
+    },
+    'is-quick-action': {
+      table: { disable: true },
+    },
+  },
+  args: {
+    size: 'md',
+  },
+  render: skeletonButtonTemplate,
 };

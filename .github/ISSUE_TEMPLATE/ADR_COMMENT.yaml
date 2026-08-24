@@ -1,0 +1,53 @@
+name: ADR comment period 📐
+description: Open the comment venue for an architecture decision record
+title: 'Comment on ADR-'
+type: 'task'
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One of these per ADR, opened by whoever wrote it, right after the ADR's pull request.
+
+        **To give feedback on a decision, comment on its existing issue** — search `is:issue is:open in:title "Comment on ADR"`. Don't open a new one.
+
+        The record itself lives in `docs/adr/`. This issue is only the place to discuss it, so keep the decision text here to a single sentence: two copies drift, and people end up arguing with the stale one.
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision
+      description: "The ADR's Decision outcome in one sentence, then a link to the full record. Nothing else from the ADR belongs here."
+      placeholder: |
+        <one sentence>
+
+        Full record: https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/NNNN-slug.md (added by #PR)
+    validations:
+      required: true
+  - type: input
+    id: comments-by
+    attributes:
+      label: Comments by
+      description: "The ADR's comments-by date. The earliest this can be ratified — not a deadline that ratifies it."
+      placeholder: 'YYYY-MM-DD'
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: The feedback that helps most
+      description: 'Prompts for a reader who has not followed the work. Edit them when a particular ADR needs different questions.'
+      value: |
+        - Is there an option missing from Considered options?
+        - Is a rejected option described weakly enough that you would still argue for it?
+        - Does **For consumers** miss how this breaks your integration?
+        - Is there a constraint we do not know about?
+
+        Naming and wording can be fixed after acceptance. The option set cannot.
+
+        Silence is not agreement. Nothing is accepted until a maintainer sets the status, on or after the date above.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: 'Left empty until the ADR is decided. Fill it in with what was accepted or rejected and why, then close this issue — a closed issue with an empty outcome tells the next reader nothing.'

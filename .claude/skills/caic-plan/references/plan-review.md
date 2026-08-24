@@ -1,8 +1,37 @@
-# plan-review.md — reviewing an implementation plan
+# plan-review.md — reviewing a plan before execution
 
-How to review an implementation plan before any code is written. The planning-phase analog of [code review](../../caic-review/SKILL.md).
+How to review a plan before any code is written. The planning-phase analog of [code review](../../caic-review/SKILL.md).
 
-Load this when closing out a planning session (the `caic-plan` skill ends here), or when the user asks you to "review the plan", "look over PLAN.md", "check the design", or "give feedback before I start" — for any plan document or set of plan documents (PLAN.md, design docs, multi-PR series, RFC drafts).
+Load this when closing out a planning session (the `caic-plan` skill ends here), or when the user asks you to "review the plan", "look over PLAN.md", "check the design", or "give feedback before I start".
+
+## Which level are you reviewing?
+
+A plan is two documents with different jobs, and reviewing one against the other's standard wastes everyone's time. Establish the level first:
+
+| Level | Document | What a review is looking for |
+| ----- | -------- | ----------------------------- |
+| Shaping | `PLAN.md`, or an epic draft | Boundaries, traceability, and whether the work is carved right |
+| Implementation | `PLAN-{N}-*.md` | Whether every claim about the codebase holds |
+
+Phases 1–3 below are written at implementation depth. **For a shaping plan, swap them for the shorter pass in [Reviewing a shaping plan](#reviewing-a-shaping-plan)** — then come back for the per-step files once the shape is settled. Phases 4 and 5 apply at either level: the open questions still get asked one at a time, and the resolutions still get baked into the files.
+
+Reviewing an ADR is a third thing again, with its own rubric: [adr-review.md](../../caic-adr/references/adr-review.md).
+
+Demanding file-and-line verification of a shaping plan is the common mistake. At that level, "we will extend the existing config merge" is a direction, not yet a claim — asking it to cite line numbers forces the author to do implementation planning for steps that may not survive the review.
+
+## Reviewing a shaping plan
+
+Five questions. None of them needs the codebase open for long.
+
+1. **Does every step trace up, and every outcome trace down?** Every Done when item has a step that delivers it; every step traces to one. An orphan on either side is a scope bug. See [the spine](../SKILL.md#the-spine).
+2. **Is each step one PR's worth?** A step whose scope needs more than one line, or whose file list would sprawl, is two steps. Splitting is cheap now and expensive later.
+3. **Is the boundary real?** Read Out of scope and ask whether a reviewer three weeks in could use it to reject a scope expansion. "Other improvements" is not a boundary.
+4. **Is the ordering forced, or invented?** For each dependency the plan asserts between steps, ask what actually breaks if they run in the other order. Invented sequencing is the most common reason a plan takes longer than it should.
+5. **Is a consumer-visible decision sitting in the Decisions list with no ADR?** That reasoning is deleted with the plan file. Flag it as a finding — see [caic-adr](../../caic-adr/SKILL.md).
+
+Verify only the claims that decide a boundary. If the plan says a step is separable because two modules do not import each other, check that — it changes the breakdown. Leave everything else for the implementation-level pass.
+
+Write the findings up, then continue at [Phase 4](#phase-4--resolve-decisions). A shaping review that stops at five questions leaves the author with homework, which is the anti-pattern this file closes with.
 
 ## The core principle
 
@@ -21,7 +50,8 @@ The right posture: read the plan fully → identify its load-bearing claims → 
   - "The pattern in this area is Z, and we'll follow it."
   - "Component A integrates with B via mechanism C."
   - "File D is already structured the way we need."
-- Build a separate list of **design judgments** — choices the plan makes that don't depend on existing code (naming, API shape, deprecation policy, error-handling defaults). These need feedback but don't need verification.
+- Build a separate list of **design judgments** — choices the plan makes that don't depend on existing code (naming, API shape, deprecation policy, error-handling defaults). These need feedback but don't need verification. Mark the ones a **consumer can feel**: if such a judgment has no ADR behind it, that is a finding, not a note. The plan file is deleted when the work merges, and the reasoning goes with it — see [caic-adr](../../caic-adr/SKILL.md).
+- Build a third list of **spec gaps** — places the plan states a shape but not a behavior. For every public value it introduces, ask what produces it; for every method, what it does on the no-op, failure, and repeat-call paths. An unanswered one is a design judgment the executor will make alone, in the PR, under time pressure.
 
 ## Phase 2 — Verify the load-bearing claims
 
@@ -42,6 +72,8 @@ Output structure (use this; don't improvise):
 ### 1. General API/design feedback (terse)
 
 ≤ 6 bullets covering the design-judgment items from Phase 1. Naming, API shape, deprecation behavior, error policies, abstraction boundaries. Anything that would change the public surface or the mental model. Don't bury this under verification detail — the plan author reads this section first.
+
+Check the spine too — question 1 of [the shaping pass](#reviewing-a-shaping-plan) applies at this level as well.
 
 ### 2. Verified vs. contradicted claims
 
