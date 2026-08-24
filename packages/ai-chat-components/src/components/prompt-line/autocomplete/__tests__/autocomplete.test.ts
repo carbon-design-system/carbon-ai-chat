@@ -953,4 +953,53 @@ describe('cds-aichat-autocomplete', () => {
       expect(announcedCount).to.equal(2);
     });
   });
+
+  describe('screen reader announcements', () => {
+    it('includes the group title in arrow-key navigation announcements for grouped items', async () => {
+      let announcedMessage: string | null = null;
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        itemNavigation: (
+          label: string,
+          description: string | undefined,
+          groupLabel: string | undefined,
+          position: string
+        ) => {
+          announcedMessage = defaultAutocompleteI18n.itemNavigation(
+            label,
+            description,
+            groupLabel,
+            position
+          );
+          return announcedMessage;
+        },
+      };
+
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"
+          .i18n="${trackingI18n}"></cds-aichat-autocomplete>
+      `);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await new Promise((resolve) => window.setTimeout(resolve, 75));
+
+      expect(announcedMessage).to.equal('Group item 1, Group 1, 3 of 4');
+    });
+  });
 });

@@ -54,13 +54,14 @@ export interface AutocompleteI18n {
   suggestionsAvailable: (count: number) => string;
   /**
    * Announced when the user moves focus to an item via arrow keys.
-   * Receives the item label, optional description, and position info.
+   * Receives the item label, optional description, optional group label, and position info.
    *
-   * @example (label, description, position) => `${label}${description ? `, ${description}` : ""}, ${position}`
+   * @example (label, description, groupLabel, position) => `${label}${description ? `, ${description}` : ""}${groupLabel ? `, ${groupLabel}` : ""}, ${position}`
    */
   itemNavigation: (
     label: string,
     description: string | undefined,
+    groupLabel: string | undefined,
     position: string
   ) => string;
   /**
@@ -93,8 +94,8 @@ export const defaultAutocompleteI18n: AutocompleteI18n = {
   noSuggestions: 'No suggestions.',
   suggestionsAvailable: (count) =>
     `${count} suggestion${count === 1 ? '' : 's'}. Use up and down arrows to move, Enter to pick, Escape to close.`,
-  itemNavigation: (label, description, position) =>
-    `${label}${description ? `, ${description}` : ''}, ${position}`,
+  itemNavigation: (label, description, groupLabel, position) =>
+    `${label}${description ? `, ${description}` : ''}${groupLabel ? `, ${groupLabel}` : ''}, ${position}`,
   itemInserted: (label) => `${label} inserted.`,
   itemSent: (label) => `${label} sent.`,
   suggestionsClosed: 'Suggestions closed.',
@@ -387,7 +388,12 @@ class AutocompleteElement extends LitElement {
       }
       const position = `${index + 1} of ${total}`;
       this._announcer.announce(
-        this.i18n.itemNavigation(item.label, item.description, position)
+        this.i18n.itemNavigation(
+          item.label,
+          item.description,
+          this._getGroupTitleAtIndex(index),
+          position
+        )
       );
     }, 50);
   }
@@ -498,6 +504,25 @@ class AutocompleteElement extends LitElement {
   private _getActiveOptionId(): string | undefined {
     const item = this._getItemAtIndex(this._focusedIndex);
     return item ? `${item.id}--option` : undefined;
+  }
+
+  private _getGroupTitleAtIndex(index: number): string | undefined {
+    if (index < this.items.length) {
+      return this.groups.length > 0
+        ? this.i18n.nonGroupedItemsLabel
+        : undefined;
+    }
+
+    let currentIndex = this.items.length;
+    for (const group of this.groups) {
+      const groupEndIndex = currentIndex + group.items.length;
+      if (index < groupEndIndex) {
+        return group.title;
+      }
+      currentIndex = groupEndIndex;
+    }
+
+    return undefined;
   }
 
   private _getLabelParts(item: SuggestionItem): {
@@ -666,12 +691,12 @@ class AutocompleteElement extends LitElement {
                             aria-label="${this.i18n.nonGroupedItemsLabel}"
                             class="${groupClass}__items">
                             ${this.items.map((item, index) => {
-                            const itemIndex = currentIndex++;
-                            return this._renderItem(item, itemIndex, {
-                              firstItem:
-                                !this.headerConfig?.showHeader && index === 0,
-                            });
-                          })}
+                              const itemIndex = currentIndex++;
+                              return this._renderItem(item, itemIndex, {
+                                firstItem:
+                                  !this.headerConfig?.showHeader && index === 0,
+                              });
+                            })}
                           </ul>
                         `
                       : ''
