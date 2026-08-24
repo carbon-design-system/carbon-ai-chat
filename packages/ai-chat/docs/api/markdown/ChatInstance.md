@@ -238,7 +238,9 @@ the event bus before delegating to `customSendMessage`.
 - Resolves when `customSendMessage` completes, or when the turn is stopped
   or the conversation restarted while the message is in flight.
 - Rejects when `customSendMessage` throws, when the send path fails
-  terminally (for example a timeout), or when called in read-only mode.
+  terminally (for example a timeout), when called in read-only mode, or
+  when a file upload is still in progress. For the upload case, check
+  `instance.getState().input.hasInFlightUploads` before calling.
 
 The promise settling does **not** mean a response has arrived. Response
 delivery is handled asynchronously by `customSendMessage` itself; use
