@@ -23,5 +23,5 @@ export type {
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
 } from './src/markdown-renderer-types.js';
-export type { MarkdownItPlugin } from './src/markdown-token-tree.js';
+export type { MarkdownItPlugin, TokenTree } from './src/markdown-token-tree.js';
 export { markdownToMarkdownItTokens } from './src/markdown-token-tree.js';

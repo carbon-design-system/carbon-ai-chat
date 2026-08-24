@@ -4,7 +4,7 @@
 
 - Kind: Enum
 - Category: Testing
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html
 
 An enum of all of our data-testid we use. For some elements (like INPUT) they can appear in multiple "panels"
 (e.g. on the home screen and in the main chat window). There are provided testids for "panels" as well so you
@@ -28,7 +28,7 @@ enum PageObjectId
 
 A panel that opens from a button response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#button_response_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#button_response_panel)
 
 ### CATASTROPHIC_PANEL
 
@@ -38,7 +38,7 @@ A panel that opens from a button response.
 
 Catastrophic error panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#catastrophic_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#catastrophic_panel)
 
 ### CHAT_HEADER
 
@@ -48,7 +48,7 @@ Catastrophic error panel.
 
 Chat header container element (from @carbon/ai-chat-components).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#chat_header)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#chat_header)
 
 ### CHAT_WIDGET
 
@@ -58,7 +58,7 @@ Chat header container element (from @carbon/ai-chat-components).
 
 The root chat widget container (for scoping tests/accessibility checks).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#chat_widget)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#chat_widget)
 
 ### CLOSE_CHAT
 
@@ -68,7 +68,7 @@ The root chat widget container (for scoping tests/accessibility checks).
 
 Minimize chat button in header.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#close_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#close_chat)
 
 ### CONVERSATIONAL_SEARCH_CITATION_PANEL
 
@@ -78,7 +78,7 @@ Minimize chat button in header.
 
 Conversational search panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#conversational_search_citation_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#conversational_search_citation_panel)
 
 ### CUSTOM_PANEL
 
@@ -88,7 +88,7 @@ Conversational search panel.
 
 Custom panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#custom_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#custom_panel)
 
 ### DISCLAIMER_ACCEPT_BUTTON
 
@@ -98,7 +98,7 @@ Custom panel.
 
 Disclaimer accept button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#disclaimer_accept_button)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#disclaimer_accept_button)
 
 ### DISCLAIMER_PANEL
 
@@ -108,7 +108,7 @@ Disclaimer accept button.
 
 Disclaimer panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#disclaimer_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#disclaimer_panel)
 
 ### HEADER_NAME
 
@@ -118,7 +118,7 @@ Disclaimer panel.
 
 Header name element (from @carbon/ai-chat-components).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#header_name)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#header_name)
 
 ### HEADER_TITLE
 
@@ -128,7 +128,7 @@ Header name element (from @carbon/ai-chat-components).
 
 Header title element (from @carbon/ai-chat-components).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#header_title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#header_title)
 
 ### HOME_SCREEN_PANEL
 
@@ -138,7 +138,7 @@ Header title element (from @carbon/ai-chat-components).
 
 Homescreen Panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#home_screen_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#home_screen_panel)
 
 ### HYDRATING_PANEL
 
@@ -148,7 +148,7 @@ Homescreen Panel.
 
 Hydration/loading state panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#hydrating_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#hydrating_panel)
 
 ### IFRAME_PANEL
 
@@ -158,7 +158,7 @@ Hydration/loading state panel.
 
 Iframe panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#iframe_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#iframe_panel)
 
 ### INPUT
 
@@ -168,7 +168,7 @@ Iframe panel.
 
 Input field.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#input)
 
 ### INPUT_SEND
 
@@ -178,7 +178,7 @@ Input field.
 
 Input send button.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#input_send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#input_send)
 
 ### LAUNCHER
 
@@ -188,7 +188,7 @@ Input send button.
 
 The launcher button to open the chat. This id is maintained across desktop and mobile launchers.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#launcher)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#launcher)
 
 ### MAIN_PANEL
 
@@ -198,4 +198,4 @@ The launcher button to open the chat. This id is maintained across desktop and m
 
 The main chat messages list.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/enums/Type_reference.PageObjectId.html#main_panel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.PageObjectId.html#main_panel)
