@@ -606,7 +606,7 @@ export function itemsToGroups(flat: SuggestionItem[]): {
     if (!group) {
       group = {
         id: item.groupId,
-        title: item.groupTitle ?? item.groupId,
+        title: item.groupTitle ?? '',
         items: [],
       };
       groupMap.set(item.groupId, group);
