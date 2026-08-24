@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.RenderInLightDomArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.RenderInLightDomArgs.html
 
 Args for renderInLightDom.
 
@@ -26,7 +26,7 @@ block-level (e.g. an atom-block Tiptap node containing a
 `display: block` child in an inline line-box, adding the parent's
 line-height as phantom leading.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.RenderInLightDomArgs.html#containertag)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.RenderInLightDomArgs.html#containertag)
 
 ### content
 
@@ -37,7 +37,7 @@ directly. A `ReactNode` is `createPortal`-ed by the chat's React tree —
 the same path the token `renderCustomToken` ReactNode case uses; it relies
 on the host and chat sharing a single React instance.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.RenderInLightDomArgs.html#content)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.RenderInLightDomArgs.html#content)
 
 ### dispatchTarget
 
@@ -47,7 +47,7 @@ Where to dispatch the handshake event. A host `addNodeView` should pass
 `editor.view.dom` so the event reaches the listener on the chat wrapper.
 Defaults to the returned `container` (the event bubbles and is composed).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.RenderInLightDomArgs.html#dispatchtarget)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.RenderInLightDomArgs.html#dispatchtarget)
 
 ### fallback
 
@@ -56,7 +56,7 @@ Defaults to the returned `container` (the event bubbles and is composed).
 Optional element shown inside the `<slot>` until the portal commits on the
 next frame.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.RenderInLightDomArgs.html#fallback)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.RenderInLightDomArgs.html#fallback)
 
 ### meta
 
@@ -65,7 +65,7 @@ next frame.
 Opaque metadata forwarded verbatim in the event detail. The portal
 container does not read it; listeners may.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.RenderInLightDomArgs.html#meta)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.RenderInLightDomArgs.html#meta)
 
 ## Related
 

@@ -2,7 +2,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/functions/Type_reference.buildCarbonExtensions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/functions/Type_reference.buildCarbonExtensions.html
 
 Translate the Carbon-curated configs surfaced on InputConfig into
 a Tiptap `Extension` list. Filters out empty configs so the returned list

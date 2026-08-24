@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.StartersConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.StartersConfig.html
 
 Configuration for starter prompts consumed by InputConfig.starters.
 Extends BaseSuggestionConfig so a `renderCustomList` callback can
@@ -25,7 +25,7 @@ and inserts the item into the editor rather than sending immediately.
 Defaults to `false`. This property is omitted in TriggerSuggestionConfig
 since mentions and commands should always insert into the editor.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.StartersConfig.html#disabledirectsend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.StartersConfig.html#disabledirectsend)
 
 ### isOn
 
@@ -38,7 +38,7 @@ and empty. Set to false to suppress the list without removing the config
 entirely. Keeping the config present with isOn: false leaves the editor
 intact and lets you toggle the list on and off instantly.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.StartersConfig.html#ison)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.StartersConfig.html#ison)
 
 ### items
 
@@ -46,7 +46,7 @@ intact and lets you toggle the list on and off instantly.
 
 The starter prompts to display.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.StartersConfig.html#items)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.StartersConfig.html#items)
 
 ### renderCustomList
 
@@ -54,7 +54,7 @@ The starter prompts to display.
 
 Replace the built-in suggestion list UI.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.StartersConfig.html#rendercustomlist)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.StartersConfig.html#rendercustomlist)
 
 ## Related
 

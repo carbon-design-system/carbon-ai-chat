@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UploadConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.UploadConfig.html
 
 Configuration for file upload behavior in the chat input.
 
@@ -26,7 +26,7 @@ Accepted MIME types or file extensions, in the same format as the HTML `accept` 
 Examples: `"image/*"`, `".pdf,.docx"`, `"application/pdf"`.
 If omitted, all file types are accepted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UploadConfig.html#accept)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.UploadConfig.html#accept)
 
 ### isOn
 
@@ -40,7 +40,7 @@ in the input area. Defaults to `false`.
 If `isOn` is `true` but `onFileUpload` is not provided, an error is logged and
 file upload is disabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UploadConfig.html#ison)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.UploadConfig.html#ison)
 
 ### maxFileSizeBytes
 
@@ -51,7 +51,7 @@ file upload is disabled.
 Maximum file size in bytes. Files exceeding this limit are rejected client-side
 before `onFileUpload` is called.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UploadConfig.html#maxfilesizebytes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.UploadConfig.html#maxfilesizebytes)
 
 ### maxFiles
 
@@ -61,7 +61,7 @@ before `onFileUpload` is called.
 
 Maximum number of files that can be attached at once. If omitted, there is no limit.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UploadConfig.html#maxfiles)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.UploadConfig.html#maxfiles)
 
 ### onFileUpload
 
@@ -79,4 +79,4 @@ removed before the message is sent.
 On failure: throw or return a rejected `Promise` — the widget marks the file as
 errored in the UI.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.UploadConfig.html#onfileupload)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.UploadConfig.html#onfileupload)

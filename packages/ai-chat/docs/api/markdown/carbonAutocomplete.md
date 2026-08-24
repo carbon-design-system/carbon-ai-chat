@@ -2,7 +2,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/functions/Type_reference.carbonAutocomplete.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/functions/Type_reference.carbonAutocomplete.html
 
 Tiptap extension factory for live autocomplete. Wraps `@tiptap/suggestion`
 directly (no Mention node) — the `command` callback inserts plain text
