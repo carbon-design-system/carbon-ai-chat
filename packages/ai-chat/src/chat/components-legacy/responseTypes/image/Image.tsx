@@ -9,18 +9,48 @@
 
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import cx from 'classnames';
-import AISkeletonPlaceholder from '../../../components/carbon/AISkeletonPlaceholder';
-import SkeletonPlaceholder from '../../../components/carbon/SkeletonPlaceholder';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-
+import React, { useCallback, useEffect, useState } from 'react';
+import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
-import { HasNeedsAnnouncement } from '../../../../types/utilities/HasNeedsAnnouncement';
 import { getURLHostName } from '../../../utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
-import InlineError from '../../../components/util/InlineError';
-import { TextBlock } from '../../../components/util/TextBlock/TextBlock';
+import InlineError from '../../../components/responseTypes/error/InlineError';
+import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
-interface ImageProps extends HasNeedsAnnouncement, HasClassName {
+interface ClickableImageProps {
+  /**
+   * The button alt-text.
+   */
+  buttonAltText?: string;
+
+  /**
+   * Indicates if the component should render as a link instead of a button.
+   */
+  isLink?: boolean;
+
+  /**
+   * Indicates if the component should be in the disabled state.
+   */
+  disabled?: boolean;
+
+  /**
+   * The callback function to fire when the component is clicked.
+   */
+  onClick?: () => void;
+
+  /**
+   * Where to open the link. The default target is _self.
+   */
+  target?: string;
+
+  /**
+   * The rel or "relationship" attribute to set on the <a> tag if `isLink` is set to true.
+   * Defaults to 'noopener noreferrer' if not passed in.
+   */
+  rel?: string;
+}
+
+interface ImageProps extends ClickableImageProps, HasClassName {
   source: string;
   title?: string;
   description?: string;
@@ -54,11 +84,6 @@ interface ImageProps extends HasNeedsAnnouncement, HasClassName {
   onImageLoad?: () => void;
 
   /**
-   * If it should use the AI theme for skeletons.
-   */
-  useAITheme?: boolean;
-
-  /**
    * If the image should be displayed inline with no tile.
    */
   inline?: boolean;
@@ -73,11 +98,16 @@ function Image(props: ImageProps) {
     hideIconAndTitle,
     renderIcon,
     inline,
+    buttonAltText,
+    isLink,
+    disabled,
+    onClick,
+    target,
+    rel = 'noopener noreferrer',
   } = props;
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const rootRef = useRef(undefined);
   const hasText = Boolean(title || description || displayURL);
 
   const Icon = renderIcon;
@@ -98,9 +128,8 @@ function Image(props: ImageProps) {
     );
   }
 
-  return (
+  const baseImageCard = (
     <Card
-      ref={rootRef}
       className={cx('cds-aichat--image', {
         'cds-aichat--image__text-and-icon': hasText && Boolean(renderIcon),
         'cds-aichat--image__icon-only':
@@ -140,6 +169,35 @@ function Image(props: ImageProps) {
       </div>
     </Card>
   );
+
+  if (isLink) {
+    return (
+      <a
+        className="cds-aichat--clickable-image"
+        href={displayURL}
+        rel={rel}
+        target={target}
+        onClick={onClick}>
+        {baseImageCard}
+        {buttonAltText && <VisuallyHidden>{buttonAltText}</VisuallyHidden>}
+      </a>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button
+        className="cds-aichat--clickable-image"
+        type="button"
+        onClick={onClick}
+        disabled={disabled}>
+        {baseImageCard}
+        {buttonAltText && <VisuallyHidden>{buttonAltText}</VisuallyHidden>}
+      </button>
+    );
+  }
+
+  return baseImageCard;
 }
 
 interface ImageOnlyProps extends Partial<ImageProps> {
@@ -157,13 +215,11 @@ function ImageOnly({
   displayURL,
   preventInlineError,
   onImageLoad,
-  useAITheme,
   isLoaded,
   isError,
   setIsLoaded,
   setIsError,
   className,
-  inline,
 }: ImageOnlyProps) {
   const [isImageHidden, setIsImageHidden] = useState(false);
   const imageAlt = altText || title || description || '';
@@ -181,7 +237,7 @@ function ImageOnly({
   }, [preventInlineError, hasText, setIsError]);
 
   // This effect sets a timeout that auto error handles after 10 seconds of waiting for the image to load. Once the
-  // image has loaded, the skeleton will be hidden, and we can clear the timeout.
+  // image has loaded, we can clear the timeout.
   useEffect(() => {
     let errorTimeout: ReturnType<typeof setTimeout> = null;
     if (!isLoaded) {
@@ -193,33 +249,24 @@ function ImageOnly({
     };
   }, [isLoaded, handleError]);
 
+  if (isError || isImageHidden || !source) {
+    return null;
+  }
+
   return (
-    <>
-      {!isLoaded &&
-        !isImageHidden &&
-        !inline &&
-        source &&
-        (useAITheme ? (
-          <AISkeletonPlaceholder className="cds-aichat--image__skeleton" />
-        ) : (
-          <SkeletonPlaceholder className="cds-aichat--image__skeleton" />
-        ))}
-      {!isError && !isImageHidden && source && (
-        <img
-          className={cx('cds-aichat--image__image', {
-            [className]: className,
-            'cds-aichat--image__image--loaded': isLoaded,
-          })}
-          src={source}
-          alt={imageAlt}
-          onLoad={() => {
-            onImageLoad?.();
-            setIsLoaded(true);
-          }}
-          onError={handleError}
-        />
-      )}
-    </>
+    <img
+      className={cx('cds-aichat--image__image', {
+        [className]: className,
+        'cds-aichat--image__image--loaded': isLoaded,
+      })}
+      src={source}
+      alt={imageAlt}
+      onLoad={() => {
+        onImageLoad?.();
+        setIsLoaded(true);
+      }}
+      onError={handleError}
+    />
   );
 }
 

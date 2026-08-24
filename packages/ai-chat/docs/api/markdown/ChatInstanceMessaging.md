@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html
 
 Messaging actions for a chat instance.
 
@@ -21,7 +21,7 @@ interface ChatInstanceMessaging
 Instructs the widget to process the given message as an incoming message received from the assistant. This will
 fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#addmessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#addmessage)
 
 ### addMessageChunk
 
@@ -29,7 +29,7 @@ fire a "pre:receive" event immediately and a "receive" event after the event has
 
 Adds a streaming message chunk to the chat widget.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#addmessagechunk)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#addmessagechunk)
 
 ### clearConversation
 
@@ -39,7 +39,7 @@ Clears the current conversation. This will trigger a restart of the conversation
 conversation (hydration). It will also clear any loading indicators UNLESS you have set
 PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs to 0.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#clearconversation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#clearconversation)
 
 ### insertHistory
 
@@ -48,7 +48,7 @@ PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs to 0.
 Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
 and history:end events.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#inserthistory)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#inserthistory)
 
 ### removeMessages
 
@@ -56,7 +56,7 @@ and history:end events.
 
 Removes the messages with the given IDs from the chat view.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#removemessages)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#removemessages)
 
 ### restartConversation
 
@@ -67,7 +67,7 @@ This will clear all the current assistant messages from the main assistant view 
 messages. It will also clear any loading indicators UNLESS you have set
 PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs to 0.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#restartconversation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#restartconversation)
 
 ### upsertMessage
 
@@ -95,4 +95,4 @@ If the returned message has no `id`, Carbon AI Chat assigns `messageID`. The
 cancellation contract for outbound messages is unchanged — see
 CustomSendMessageOptions.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.ChatInstanceMessaging.html#upsertmessage)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ChatInstanceMessaging.html#upsertmessage)

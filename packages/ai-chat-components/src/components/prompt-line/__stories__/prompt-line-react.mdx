@@ -1,0 +1,401 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as PromptLineReactStories from "./prompt-line-react.stories";
+
+<Meta of={PromptLineReactStories} />
+
+# Prompt line
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/prompt-line) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Events](#events)
+- [Component API](#component-api)
+- [Feedback](#feedback)
+
+
+## Overview
+
+The prompt line is the **input interface component for the chat**. It provides the editing surface where users compose and send messages. It scales from a simple text input up to a rich editor with autocomplete suggestions, context chips, file attachments, and custom extensions.
+
+The prompt line supports:
+
+- **Text input** — text entry with placeholder, disabled, and autofocus states.
+- **Autocomplete** — trigger-driven suggestion overlays via `useChatAutocomplete` and the `buildCarbonExtensions` helper.
+- **Message actions** — icon action buttons projected into the `message-actions` slot (e.g. attach file, switch mode).
+- **File uploads** — a visual file chip list projected into the `file-uploads` slot via `<CDSAIChatFileUploads>`.
+- **Context chips** — inline token chips rendered inside the rich editor (e.g. `@mention`, `/command`).
+- **Error state** — displays error message `field-messaging` slot and applies error styling.
+
+It composes three React components into a complete input surface:
+
+- `<PromptLineShell>` - layout chrome that defines named slots and controls inline/expanded layout modes.
+- `<PromptLine>` — the editing surface; renders a plain `<textarea>` or a Tiptap rich-text editor with additional capabilities (context chips, custom Tiptap nodes, etc.) when `extensions` are provided.
+- `<CDSAIChatInputSendControl>` — renders the send button or stop streaming button.
+
+Additional components used with the prompt line:
+
+- `<CDSAIChatAutocomplete>` - suggestion list overlay rendered by the `useChatAutocomplete` hook in the `autocomplete-content` slot.
+- `<CDSAIChatFileUploads>` — container of file attachment chips rendered in the `file-uploads` slot.
+- `<CDSAIChatErrorMessage>` — error message rendered in the `field-messaging` slot.
+
+### Getting started
+
+Here's a minimal implementation.
+
+```jsx
+import { useState, useCallback } from 'react';
+import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
+import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
+import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+
+function ChatInput() {
+  const [hasValidInput, setHasValidInput] = useState(false);
+
+  const handleChange = useCallback((e) => {
+    setHasValidInput(e.detail.rawValue.length > 0);
+  }, []);
+
+  const handleSend = useCallback(() => {
+    // submit the message
+  }, []);
+
+  return (
+    <PromptLineShell rounded>
+      <PromptLine
+        slot="editor"
+        placeholder="Ask a question..."
+        onChange={handleChange}
+        onSendIntent={handleSend}
+      />
+      <CDSAIChatInputSendControl
+        slot="send-control"
+        hasValidInput={hasValidInput}
+        onSend={handleSend}
+      />
+    </PromptLineShell>
+  );
+}
+```
+
+### Using with autocomplete
+
+```jsx
+import { useState, useCallback, useMemo, useRef } from 'react';
+import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
+import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
+import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+import { useChatAutocomplete } from '@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js';
+import { buildCarbonExtensions } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+
+const ALL_ITEMS = [
+  { id: '1', label: 'Summarize this document' },
+  { id: '2', label: 'Translate to Spanish' },
+  { id: '3', label: 'Write a follow-up email' },
+];
+
+function ChatInput() {
+  const promptLineRef = useRef(null);
+  const [hasValidInput, setHasValidInput] = useState(false);
+
+  const autocomplete = useMemo(
+    () => ({
+      items: (query) =>
+        ALL_ITEMS.filter((i) =>
+          i.label.toLowerCase().includes(query.toLowerCase())
+        ),
+    }),
+    []
+  );
+
+  const extensions = useMemo(
+    () => buildCarbonExtensions({ autocomplete }),
+    [autocomplete]
+  );
+
+  const { onTriggerChange, autocompleteContent } = useChatAutocomplete({
+    autocomplete,
+    promptLineRef,
+  });
+
+  const handleChange = useCallback((e) => {
+    setHasValidInput(e.detail.rawValue.length > 0);
+  }, []);
+
+  return (
+    <PromptLineShell rounded expanded>
+      <PromptLine
+        ref={promptLineRef}
+        slot="editor"
+        placeholder="Ask a question..."
+        rich
+        extensions={extensions}
+        onChange={handleChange}
+        onTriggerChange={onTriggerChange}
+      />
+      {autocompleteContent}
+      <CDSAIChatInputSendControl
+        slot="send-control"
+        hasValidInput={hasValidInput}
+        onSend={() => { /* submit */ }}
+      />
+    </PromptLineShell>
+  );
+}
+```
+
+### Using with file uploads
+
+```jsx
+import { useState, useCallback, useRef } from 'react';
+import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
+import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
+import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+import CDSAIChatFileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
+import { FileStatusValue } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+
+function ChatInput() {
+  const fileInputRef = useRef(null);
+  const [uploads, setUploads] = useState([]);
+  const [hasValidInput, setHasValidInput] = useState(false);
+
+  const handleAttachClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileSelected = useCallback((e) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ''; // reset so re-selecting the same file fires `change`
+    const newUploads = files.map((file) => ({
+      id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      file,
+      status: FileStatusValue.EDIT,
+    }));
+    setUploads((prev) => [...prev, ...newUploads]);
+  }, []);
+
+  const handleFileRemove = useCallback((e) => {
+    setUploads((prev) => prev.filter((u) => u.id !== e.detail.fileId));
+  }, []);
+
+  const hasValidInputOrUploads =
+    hasValidInput || uploads.some((u) => !u.isError);
+
+  return (
+    <PromptLineShell rounded expanded>
+      {/* Always mounted so live regions persist after the last file is removed */}
+      <CDSAIChatFileUploads
+        slot="file-uploads"
+        uploads={uploads}
+        onFileRemove={handleFileRemove}
+      />
+      <PromptLine
+        slot="editor"
+        placeholder="Ask a question..."
+        onChange={(e) => setHasValidInput(e.detail.rawValue.length > 0)}
+      />
+      <div slot="message-actions">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          tabIndex={-1}
+          hidden
+          onChange={handleFileSelected}
+        />
+        <cds-icon-button
+          size="sm"
+          kind="ghost"
+          align="top-start"
+          onClick={handleAttachClick}>
+          {/* attach icon */}
+          <span slot="tooltip-content">Attach file</span>
+        </cds-icon-button>
+      </div>
+      <CDSAIChatInputSendControl
+        slot="send-control"
+        hasValidInput={hasValidInputOrUploads}
+        onSend={() => { /* submit */ }}
+      />
+    </PromptLineShell>
+  );
+}
+```
+
+
+## Events
+
+### `<PromptLine>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Event name</th>
+      <th>Description</th>
+      <th>Event detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onChange</code></td>
+      <td><code>cds-aichat-prompt-change</code></td>
+      <td>Fired on every content change. Use <code>rawValue</code> to enable/disable the send button and <code>content</code> to persist structured input (e.g. with mention tokens).</td>
+      <td>
+        • <code>rawValue</code> (string) — plain-text value<br/>
+        • <code>content</code> (JSONContent) — Tiptap document (plain-text doc in textarea mode)
+      </td>
+    </tr>
+    <tr>
+      <td><code>onSendIntent</code></td>
+      <td><code>cds-aichat-prompt-send-intent</code></td>
+      <td>Fired when the user presses <kbd>Enter</kbd> (inline mode) or <kbd>Mod+Enter</kbd> (expanded mode). Wire this to the same handler as the send button's <code>onSend</code>.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>onTriggerChange</code></td>
+      <td><code>cds-aichat-prompt-trigger-change</code></td>
+      <td>Fired when the autocomplete trigger state changes (e.g. a <code>@</code> or <code>/</code> is typed or dismissed). Pass this directly to <code>useChatAutocomplete</code>.</td>
+      <td>Trigger context object (internal to <code>useChatAutocomplete</code>)</td>
+    </tr>
+    <tr>
+      <td><code>onTyping</code></td>
+      <td><code>cds-aichat-prompt-typing</code></td>
+      <td>Fired when the user starts typing and again after a 5-second idle period. Useful for "user is typing…" indicators in collaborative or agent-driven UIs.</td>
+      <td>• <code>isTyping</code> (boolean)</td>
+    </tr>
+    <tr>
+      <td><code>onFocus</code></td>
+      <td><code>cds-aichat-prompt-focus</code></td>
+      <td>Fired when the editing surface gains focus.</td>
+      <td>• <code>keyboard</code> (boolean) — <code>true</code> when focus arrived via keyboard</td>
+    </tr>
+    <tr>
+      <td><code>onBlur</code></td>
+      <td><code>cds-aichat-prompt-blur</code></td>
+      <td>Fired when the editing surface loses focus.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>onKeydown</code></td>
+      <td><code>cds-aichat-prompt-keydown</code></td>
+      <td>Fired on every keydown inside the editing surface.</td>
+      <td>• <code>originalEvent</code> (KeyboardEvent)</td>
+    </tr>
+  </tbody>
+</table>
+
+### `<CDSAIChatInputSendControl>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Event name</th>
+      <th>Description</th>
+      <th>Event detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onSend</code></td>
+      <td><code>cds-aichat-input-send</code></td>
+      <td>Fired when the send button is clicked. Only fires when <code>hasValidInput</code> is <code>true</code> and the control is not disabled.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>onStopStreaming</code></td>
+      <td><code>cds-aichat-input-stop-streaming</code></td>
+      <td>Fired when the stop-streaming button is clicked (visible when <code>showStopStreaming</code> is <code>true</code>).</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+
+### `<CDSAIChatAutocomplete>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Event name</th>
+      <th>Description</th>
+      <th>Event detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onSend</code></td>
+      <td><code>cds-aichat-autocomplete-send</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>disableDirectSend</code> is <code>false</code> (default). The item text is sent directly to chat.</td>
+      <td>• <code>text</code> (string)</td>
+    </tr>
+    <tr>
+      <td><code>onSelect</code></td>
+      <td><code>cds-aichat-autocomplete-select</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>disableDirectSend</code> is <code>true</code>. Use this when the item should be inserted into the editor rather than sent immediately.</td>
+      <td>• <code>item</code> (SuggestionItem)</td>
+    </tr>
+    <tr>
+      <td><code>onDismiss</code></td>
+      <td><code>cds-aichat-autocomplete-dismiss</code></td>
+      <td>Fired when the autocomplete is dismissed (Escape or click outside).</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+### `<CDSAIChatFileUploads>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Event name</th>
+      <th>Description</th>
+      <th>Event detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>onFileRemove</code></td>
+      <td><code>cds-aichat-file-remove</code></td>
+      <td>Fired when the user clicks the remove button on a file chip.</td>
+      <td>• <code>fileId</code> (string)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Component API
+
+### `<PromptLine>`
+
+<ArgTypes of={PromptLineReactStories.PromptLineArgTypes} />
+
+### `<PromptLineShell>`
+
+<ArgTypes of={PromptLineReactStories.PromptLineShellArgTypes} />
+
+### `<CDSAIChatInputSendControl>`
+
+<ArgTypes of={PromptLineReactStories.CDSAIChatInputSendControlArgTypes} />
+
+### `<CDSAIChatAutocomplete>`
+
+<ArgTypes of={PromptLineReactStories.CDSAIChatAutocompleteArgTypes} />
+
+### `<CDSAIChatFileUploads>`
+
+<ArgTypes of={PromptLineReactStories.CDSAIChatFileUploadsArgTypes} />
+
+### `<CDSAIChatErrorMessage>`
+
+<ArgTypes of={PromptLineReactStories.CDSAIChatErrorMessageArgTypes} />
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

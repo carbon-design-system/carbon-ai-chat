@@ -100,10 +100,22 @@ export interface PromptLineController {
   setAriaLabel(ariaLabel: string): void;
   setTestId(testId: string): void;
   /**
-   * Apply a new host-extension list. Rich mode recreates the editor preserving
-   * content/selection/focus; textarea mode ignores it.
+   * Apply a new extension list. Rich mode compares it by value against the set
+   * last supplied: an equivalent set keeps the editor and its undo history,
+   * writing any starter `items`/`isOn` through to live storage; a genuinely
+   * different one recreates the editor preserving content/selection/focus,
+   * deferred to the end of an IME composition. Textarea mode ignores it.
    */
   setExtensions(extensions: Extension[]): void;
+  /**
+   * Report whether an IME composition is in flight. The element owns the host's
+   * composition listeners and pushes the state down, so there is one observer
+   * and the two layers cannot disagree. Rich mode withholds an
+   * extension-driven recreate for the duration — destroying the editor would
+   * strand the IME's candidate — and flushes it once composition commits;
+   * textarea mode ignores it.
+   */
+  setComposing(composing: boolean): void;
 
   undo(): boolean;
   redo(): boolean;
@@ -148,8 +160,7 @@ function ensureTextareaStyleRules(): void {
     padding: '0',
     border: 'none',
     'white-space': 'pre-wrap',
-    'word-wrap': 'break-word',
-    'overflow-wrap': 'break-word',
+    'overflow-wrap': 'anywhere',
     'font-family': 'inherit',
     'font-size': 'var(--cds-body-01-font-size, 0.875rem)',
     'font-weight': 'var(--cds-body-01-font-weight, 400)',
@@ -411,6 +422,11 @@ export class TextareaController implements PromptLineController {
   setExtensions(_extensions: Extension[]): void {
     // Textarea mode has no Tiptap extensions; the shell upgrades to the rich
     // controller when host extensions appear.
+  }
+
+  setComposing(_composing: boolean): void {
+    // Nothing to withhold: a `<textarea>` survives its own recreate, and the
+    // element gates the upgrade on composition itself.
   }
 
   undo(): boolean {

@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaSubtitleTrack.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MediaSubtitleTrack.html
 
 Represents a single subtitle/caption track for video content.
 Uses WebVTT format for accessibility. Rendered as native HTML5 track elements.
@@ -22,7 +22,7 @@ interface MediaSubtitleTrack
 Whether this track should be enabled by default.
 Only one track should be default.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaSubtitleTrack.html#default)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MediaSubtitleTrack.html#default)
 
 ### kind
 
@@ -33,7 +33,7 @@ The kind of text track.
 - "captions": Transcription including sound effects
 - "descriptions": Audio descriptions for visually impaired
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaSubtitleTrack.html#kind)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MediaSubtitleTrack.html#kind)
 
 ### label
 
@@ -42,7 +42,7 @@ The kind of text track.
 Human-readable label for the track (e.g., "English", "Spanish").
 Displayed in the browser's subtitle menu.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaSubtitleTrack.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MediaSubtitleTrack.html#label)
 
 ### language
 
@@ -51,7 +51,7 @@ Displayed in the browser's subtitle menu.
 The language code (e.g., "en", "es", "fr").
 Used for the track's srclang attribute.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaSubtitleTrack.html#language)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MediaSubtitleTrack.html#language)
 
 ### src
 
@@ -59,4 +59,4 @@ Used for the track's srclang attribute.
 
 URL pointing to the WebVTT subtitle file.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MediaSubtitleTrack.html#src)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MediaSubtitleTrack.html#src)

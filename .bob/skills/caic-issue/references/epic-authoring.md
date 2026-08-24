@@ -21,7 +21,8 @@ Fail either test and it is **not** an epic:
 File epics with the [EPIC.yaml](../../../../.github/ISSUE_TEMPLATE/EPIC.yaml) form. The body holds:
 
 - **Value proposition** — why we're doing this, framed from the user/stakeholder's side.
-- **Expected outcomes** — the done-state: the measurable result or observable change that tells you the epic is complete and can be closed.
+- **Expected outcomes** — the done-state as a `- [ ]` list: the observable results that let this epic close. When a plan produced the epic, these are its Done when items carried over, not rewritten — see [caic-plan](../../caic-plan/SKILL.md#the-spine). For internal engineering work these are engineering outcomes, not KPIs, whatever the form's prompt suggests. Every child's acceptance criteria trace back to one of them.
+- **Decisions** — the ADRs governing this epic, one line each. Optional, and empty for most epics. An epic states _what work_; an ADR states _why this shape_. When the epic asserts a choice a consumer can feel — an API removed, a default reversed, a behavior dropped — that choice needs a record behind it, or the reasoning exists nowhere and reviewers re-argue it in every child PR. See [caic-adr](../../caic-adr/SKILL.md).
 - **Out of scope** — what this epic deliberately excludes. This boundary is what keeps an epic from drifting into a feature-area bucket.
 - **Details / child work** — the parent link, plus what the sub-issue list can't show. See below.
 

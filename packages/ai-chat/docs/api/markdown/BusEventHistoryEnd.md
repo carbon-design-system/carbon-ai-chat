@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHistoryEnd.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventHistoryEnd.html
 
 The event is fired whenever the widget begins processing a list of messages that have been loaded from history.
 This event may be fired not only when the history is first loaded but it may be fired later during the life of
@@ -26,7 +26,7 @@ interface BusEventHistoryEnd
 
 The list of all the messages that were loaded by this history event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHistoryEnd.html#messages)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventHistoryEnd.html#messages)
 
 ### type
 
@@ -34,4 +34,4 @@ The list of all the messages that were loaded by this history event.
 
 The discriminating type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventHistoryEnd.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventHistoryEnd.html#type)

@@ -1,0 +1,361 @@
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as PromptLineStories from "./prompt-line.stories";
+
+<Meta of={PromptLineStories} />
+
+# Prompt line
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/prompt-line) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Events](#events)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+
+## Overview
+
+The prompt line is the **input interface component for the chat**. It provides the editing surface where users compose and send messages. It scales from a simple text input up to a rich editor with autocomplete suggestions, context chips, file attachments, and custom extensions.
+
+The prompt line supports:
+
+- **Text input** — text entry with placeholder, disabled, and autofocus states.
+- **Autocomplete** — trigger-driven suggestion overlays via the `buildCarbonExtensions` helper and `<cds-aichat-autocomplete>`.
+- **Message actions** — icon action buttons projected into the `message-actions` slot (e.g. attach file, switch mode).
+- **File uploads** — a visual file chip list projected into the `file-uploads` slot via `<cds-aichat-file-uploads>`.
+- **Context chips** — inline token chips rendered inside the rich editor (e.g. `@mention`, `/command`).
+- **Error state** — displays error message in `field-messaging` slot and applies error styling.
+
+It composes three web components into a complete input surface:
+
+- `<cds-aichat-prompt-line-shell>` — layout chrome that defines named slots and controls inline/expanded layout modes.
+- `<cds-aichat-prompt-line>` — the editing surface; renders a plain `<textarea>` or a Tiptap rich-text editor with additional capabilities (context chips, custom Tiptap nodes, etc.) when `extensions` are provided.
+- `<cds-aichat-input-send-control>` — renders the send button or stop streaming button.
+
+Additional components used with the prompt line:
+
+- `<cds-aichat-autocomplete>` — suggestion list overlay rendered in the `autocomplete-content` slot.
+- `<cds-aichat-file-uploads>` — container of file attachment chips rendered in the `file-uploads` slot.
+- `<cds-aichat-error-message>` — error message rendered in the `field-messaging` slot.
+
+### Getting started
+
+Here's a minimal implementation.
+
+```html
+<cds-aichat-prompt-line-shell rounded>
+  <cds-aichat-prompt-line
+    slot="editor"
+    placeholder="Ask a question..."
+  ></cds-aichat-prompt-line>
+  <cds-aichat-input-send-control slot="send-control"></cds-aichat-input-send-control>
+</cds-aichat-prompt-line-shell>
+
+<script>
+  const shell = document.querySelector('cds-aichat-prompt-line-shell');
+  const promptLine = document.querySelector('cds-aichat-prompt-line');
+  const sendControl = document.querySelector('cds-aichat-input-send-control');
+
+  promptLine.addEventListener('cds-aichat-prompt-change', (e) => {
+    sendControl.hasValidInput = e.detail.rawValue.length > 0;
+  });
+
+  promptLine.addEventListener('cds-aichat-prompt-send-intent', () => {
+    // submit the message
+  });
+
+  sendControl.addEventListener('cds-aichat-input-send', () => {
+    // submit the message
+  });
+</script>
+```
+
+### Using with autocomplete
+
+```html
+<cds-aichat-prompt-line-shell rounded expanded>
+  <cds-aichat-prompt-line
+    slot="editor"
+    placeholder="Ask a question..."
+    rich
+  ></cds-aichat-prompt-line>
+  <cds-aichat-autocomplete-controller
+    slot="autocomplete-content"
+  ></cds-aichat-autocomplete-controller>
+  <cds-aichat-input-send-control slot="send-control"></cds-aichat-input-send-control>
+</cds-aichat-prompt-line-shell>
+
+<script type="module">
+  import { buildCarbonExtensions } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+
+  const ALL_ITEMS = [
+    { id: '1', label: 'Summarize this document' },
+    { id: '2', label: 'Translate to Spanish' },
+    { id: '3', label: 'Write a follow-up email' },
+  ];
+
+  const promptLine = document.querySelector('cds-aichat-prompt-line');
+  const sendControl = document.querySelector('cds-aichat-input-send-control');
+
+  promptLine.extensions = buildCarbonExtensions({
+    autocomplete: {
+      items: (query) =>
+        ALL_ITEMS.filter((i) =>
+          i.label.toLowerCase().includes(query.toLowerCase())
+        ),
+    },
+  });
+
+  promptLine.addEventListener('cds-aichat-prompt-change', (e) => {
+    sendControl.hasValidInput = e.detail.rawValue.length > 0;
+  });
+
+  sendControl.addEventListener('cds-aichat-input-send', () => {
+    // submit the message
+  });
+</script>
+```
+
+### Using with file uploads
+
+```html
+<cds-aichat-prompt-line-shell rounded expanded>
+  <cds-aichat-file-uploads slot="file-uploads"></cds-aichat-file-uploads>
+  <cds-aichat-prompt-line
+    slot="editor"
+    placeholder="Ask a question..."
+  ></cds-aichat-prompt-line>
+  <div slot="message-actions">
+    <input id="file-input" type="file" multiple tabindex="-1" hidden />
+    <cds-icon-button size="sm" kind="ghost" align="top-start">
+      <!-- attach icon -->
+      <span slot="tooltip-content">Attach file</span>
+    </cds-icon-button>
+  </div>
+  <cds-aichat-input-send-control slot="send-control"></cds-aichat-input-send-control>
+</cds-aichat-prompt-line-shell>
+
+<script>
+  import { FileStatusValue } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+
+  const fileInput = document.getElementById('file-input');
+  const fileUploads = document.querySelector('cds-aichat-file-uploads');
+  const promptLine = document.querySelector('cds-aichat-prompt-line');
+  const sendControl = document.querySelector('cds-aichat-input-send-control');
+  const attachButton = document.querySelector('cds-icon-button');
+
+  let uploads = [];
+  let hasValidInput = false;
+
+  attachButton.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ''; // reset so re-selecting the same file fires `change`
+    const newUploads = files.map((file) => ({
+      id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      file,
+      status: FileStatusValue.EDIT,
+    }));
+    uploads = [...uploads, ...newUploads];
+    fileUploads.uploads = uploads;
+    updateSendControl();
+  });
+
+  fileUploads.addEventListener('cds-aichat-file-remove', (e) => {
+    uploads = uploads.filter((u) => u.id !== e.detail.fileId);
+    fileUploads.uploads = uploads;
+    updateSendControl();
+  });
+
+  promptLine.addEventListener('cds-aichat-prompt-change', (e) => {
+    hasValidInput = e.detail.rawValue.length > 0;
+    updateSendControl();
+  });
+
+  function updateSendControl() {
+    sendControl.hasValidInput =
+      hasValidInput || uploads.some((u) => !u.isError);
+  }
+
+  sendControl.addEventListener('cds-aichat-input-send', () => {
+    // submit the message
+  });
+</script>
+```
+
+
+## Events
+
+### `<cds-aichat-prompt-line>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cds-aichat-prompt-change</code></td>
+      <td>Fired on every content change. Use <code>rawValue</code> to enable/disable the send button and <code>content</code> to persist structured input (e.g. with mention tokens).</td>
+      <td>
+        • <code>rawValue</code> (string) — plain-text value<br/>
+        • <code>content</code> (JSONContent) — Tiptap document (plain-text doc in textarea mode)
+      </td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-prompt-send-intent</code></td>
+      <td>Fired when the user presses <kbd>Enter</kbd> (inline mode) or <kbd>Mod+Enter</kbd> (expanded mode). Wire this to the same handler as the send button's <code>cds-aichat-input-send</code>.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-prompt-trigger-change</code></td>
+      <td>Fired when the autocomplete trigger state changes (e.g. a <code>@</code> or <code>/</code> is typed or dismissed). Pass this to <code>cds-aichat-autocomplete-controller</code>.</td>
+      <td>Trigger context object (internal to the autocomplete controller)</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-prompt-typing</code></td>
+      <td>Fired when the user starts typing and again after a 5-second idle period. Useful for "user is typing…" indicators in collaborative or agent-driven UIs.</td>
+      <td>• <code>isTyping</code> (boolean)</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-prompt-focus</code></td>
+      <td>Fired when the editing surface gains focus.</td>
+      <td>• <code>keyboard</code> (boolean) — <code>true</code> when focus arrived via keyboard</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-prompt-blur</code></td>
+      <td>Fired when the editing surface loses focus.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-prompt-keydown</code></td>
+      <td>Fired on every keydown inside the editing surface.</td>
+      <td>• <code>originalEvent</code> (KeyboardEvent)</td>
+    </tr>
+  </tbody>
+</table>
+
+### `<cds-aichat-input-send-control>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cds-aichat-input-send</code></td>
+      <td>Fired when the send button is clicked. Only fires when <code>has-valid-input</code> is set and the control is not disabled.</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-input-stop-streaming</code></td>
+      <td>Fired when the stop-streaming button is clicked (visible when <code>show-stop-streaming</code> is set).</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+
+### `<cds-aichat-autocomplete>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cds-aichat-autocomplete-send</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>disable-direct-send</code> is <code>false</code> (default). The item text is sent directly to chat.</td>
+      <td>• <code>text</code> (string)</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-autocomplete-select</code></td>
+      <td>Fired when an item is clicked or activated via keyboard and <code>disable-direct-send</code> is <code>true</code>. Use this when the item should be inserted into the editor rather than sent immediately.</td>
+      <td>• <code>item</code> (SuggestionItem)</td>
+    </tr>
+    <tr>
+      <td><code>cds-aichat-autocomplete-dismiss</code></td>
+      <td>Fired when the autocomplete is dismissed (Escape or click outside).</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+
+### `<cds-aichat-file-uploads>` Events
+
+<table style={{width: '100%'}}>
+  <thead>
+    <tr>
+      <th>Event Name</th>
+      <th>Description</th>
+      <th>Event Detail Properties</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cds-aichat-file-remove</code></td>
+      <td>Fired when the user clicks the remove button on a file chip.</td>
+      <td>• <code>fileId</code> (string)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+## Component API
+
+### cds-aichat-prompt-line-shell
+
+<ArgTypes of="cds-aichat-prompt-line-shell" />
+
+### cds-aichat-prompt-line
+
+<ArgTypes of="cds-aichat-prompt-line" />
+
+### cds-aichat-input-send-control
+
+<ArgTypes of="cds-aichat-input-send-control" />
+
+### cds-aichat-autocomplete
+
+<ArgTypes of="cds-aichat-autocomplete" />
+
+### cds-aichat-error-message
+
+<ArgTypes of="cds-aichat-error-message" />
+
+### cds-aichat-file-uploads
+
+<ArgTypes of="cds-aichat-file-uploads" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/prompt-line/index.js";
+```
+
+
+<Markdown>{`${cdnJs(["prompt-line"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

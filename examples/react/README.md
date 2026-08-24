@@ -303,6 +303,34 @@ Vite-powered React example that mounts `ChatContainer` with a minimal mock backe
 
 </details>
 
+### [History / File attachments](./history-file-attachments/README.md)
+
+A restored conversation whose user message carries an uploaded file. The chat renders the attachment as a chip in the message bubble, so a file the user attached is still visible after a reload.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-history-file-attachments`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the config passed to `ChatCustomElement`. |
+| `messaging.customLoadHistory` | config prop | Returns the restored conversation on boot. |
+| `messaging.customSendMessage` | config prop | Minimal mock backend so the input stays usable. |
+| `layout.showFrame` | config prop | Disables the built-in frame. |
+| `openChatByDefault` | config prop | Opens the chat on mount. |
+| `HistoryItem` | `@carbon/ai-chat` type | Wraps each restored message with its timestamp. |
+| `MessageRequest` | `@carbon/ai-chat` type | The user turn that carries the attachment. |
+| `MessageResponse` | `@carbon/ai-chat` type | The assistant turns in the restored transcript. |
+| `MessageInput.structured_data` | `@carbon/ai-chat` type | Where the attachment lives on the request. |
+| `StructuredField` | `@carbon/ai-chat` type | The `file`-typed field the chat renders. |
+| `ExternalFileReference` | `@carbon/ai-chat` type | File metadata that survives serialization. |
+| `MessageInputType` | `@carbon/ai-chat` enum | `TEXT` on the restored requests. |
+| `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` on the restored responses. |
+
+</details>
+
 ### [History / Float](./history-float/README.md)
 
 `ChatContainer` with the history feature enabled, using the `historyPanelElement` slot to render a custom conversation picker in the default float layout.
@@ -551,14 +579,14 @@ A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input
 | `InputRule` | `@tiptap/core` API | Triggers the node swap when the user finishes typing three backticks. |
 | `addKeyboardShortcuts` / keydown | `@tiptap/core` / DOM | Escape exits the block to a new paragraph below. |
 | `<cds-aichat-code-snippet>` | `@carbon/ai-chat-components` element | Editable CodeMirror-backed snippet inside the input; read-only in the bubble. |
-| `CodeSnippet` | `@carbon/ai-chat-components/react` | React wrapper for the snippet, used in the sent message bubble. |
-| `Card` | `@carbon/ai-chat-components/react` | React wrapper for the card that frames the editable snippet. |
+| `CodeSnippet` | `@carbon/ai-chat-components/es/react/code-snippet.js` | React wrapper for the snippet, used in the sent message bubble. |
+| `Card` | `@carbon/ai-chat-components/es/react/card.js` | React wrapper for the card that frames the editable snippet. |
 
 </details>
 
 ### [Prompt line / Conversation starters](./prompt-line-conversation-starters/README.md)
 
-`ChatCustomElement` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` wraps `CDSAIChatAutocomplete` to add a "Prompt suggestions" header above the list. Selecting a starter inserts the text and auto-sends in one action.
+`ChatCustomElement` configured with `input.expanded` layout and `input.starters` so conversation-starter prompts appear immediately when the editor is focused and empty — no typing required. A `renderCustomList` wraps `CDSAIChatAutocomplete` to add a "Prompt suggestions" header above the list.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-prompt-line-conversation-starters`
 
@@ -634,7 +662,7 @@ The chat sits in a docked sidebar while the page body holds a grid of clickable 
 | `MessageRequest` | `@carbon/ai-chat` type | Inspected for `structured_data` to echo files. |
 | `ChatInstance` | `@carbon/ai-chat` type | Used by the mock server response helper. |
 | `MessageResponseTypes` | `@carbon/ai-chat` enum | `TEXT` used to echo file metadata. |
-| `upload.is_on` | config prop | Enables attachments. |
+| `upload.isOn` | config prop | Enables attachments. |
 | `upload.onFileUpload` | config prop | Mock upload handler returning `StructuredData`. |
 | `upload.accept` (documented) | config prop | Optional MIME/extension allowlist. |
 | `upload.maxFileSizeBytes` (documented) | config prop | Optional per-file size cap. |
@@ -750,7 +778,6 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `SuggestionItem` | `@carbon/ai-chat` type | Shape of each entry returned from `items`. |
 | `input.autocomplete` | config prop | Registers the typeahead behavior on the input. |
 | `autocomplete.items` | config prop | Async filter that returns matching `SuggestionItem`s. |
-| `autocomplete.debounceMs` | config prop | Coalesces keystrokes before calling `items`. |
 | `layout.showFrame` | config prop | Hides the default frame so the chat fills the host. |
 | `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
 | `messaging.customSendMessage` | config prop | Mock backend echoing the user's message. |
@@ -775,7 +802,6 @@ The Mentions & Commands example with a `renderCustomToken` supplied for mentions
 | `input.autocomplete` | config prop | Registers the typeahead behavior on the input. |
 | `autocomplete.renderCustomList` | config prop | Returns a React node that replaces the default dropdown. |
 | `autocomplete.items` | config prop | Async filter providing entries to the custom list. |
-| `autocomplete.debounceMs` | config prop | Coalesces keystrokes before calling `items`. |
 | `layout.showFrame` | config prop | Hides the default frame so the chat fills the host. |
 | `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
 | `messaging.customSendMessage` | config prop | Mock backend echoing the user's message. |

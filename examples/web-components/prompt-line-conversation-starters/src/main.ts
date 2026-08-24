@@ -38,7 +38,7 @@
 
 import '@carbon/styles/css/styles.css';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
-import '@carbon/ai-chat-components/es/components/autocomplete/src/autocomplete.js';
+import '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 
 import { type CustomListProps, type PublicConfig } from '@carbon/ai-chat';
 import { css, html, LitElement } from 'lit';
@@ -64,22 +64,25 @@ const STARTER_ITEMS = [
  * Custom starter list renderer.
  *
  * Creates a `<cds-aichat-autocomplete>` element with a "Prompt suggestions"
- * header via `headerConfig`. The send-arrow is hidden (`enableSendButton: false`)
- * because selecting an item already auto-sends — one interaction, no ambiguity.
+ * header via `headerConfig`.
  *
  * The element is created imperatively so the chat framework can mount it into
  * its own managed slot and forward keyboard events through it.
+ *
+ * Uses `onSend` only — clicking an item fires `cds-aichat-autocomplete-send`
+ * and sends directly to chat. This matches the default built-in autocomplete
+ * behavior (`disableDirectSend` defaults to `false`, which emits that event).
+ * `onSelect` (fires `cds-aichat-autocomplete-select`, insert-into-editor) is
+ * optional and not needed here.
  */
-function renderStarterList({ items, onSelect, onDismiss }: CustomListProps) {
+function renderStarterList({ items, onSend, onDismiss }: CustomListProps) {
   const starters = document.createElement('cds-aichat-autocomplete') as any;
   starters.items = items;
   starters.headerConfig = { showHeader: true, title: 'Prompt suggestions' };
   starters.attached = false;
-  starters.enableSendButton = false;
   starters.addEventListener(
-    'cds-aichat-autocomplete-select',
-    (e: CustomEvent<{ item: (typeof STARTER_ITEMS)[number] }>) =>
-      onSelect(e.detail.item)
+    'cds-aichat-autocomplete-send',
+    (e: CustomEvent<{ text: string }>) => onSend(e.detail.text)
   );
   starters.addEventListener('cds-aichat-autocomplete-dismiss', onDismiss);
   return starters;

@@ -70,5 +70,5 @@ export { PlainTextPaste } from './plain-text-paste.js';
 export { Keymap } from './keymap.js';
 export { default as Placeholder } from '@tiptap/extension-placeholder';
 export { UndoRedo } from '@tiptap/extensions';
-export const HISTORY_DEFAULTS = { depth: 100, newGroupDelay: 500 } as const;
+export { HISTORY_DEFAULTS } from '../prompt-line-constants.js';
 export type { StarterTriggerStorage } from './carbon-starter-trigger.js';

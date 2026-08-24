@@ -12,15 +12,15 @@
  *
  * Demonstrates: replicating the built-in float / launcher view using
  * `<cds-aichat-custom-element>` styled with the shipped float-layout CSS
- * plus a `<cds-aichat-button>` custom launcher controlled via
+ * plus a `<cds-aichat-launcher>` standalone launcher controlled via
  * `VIEW_CHANGE`. Useful when you need full control over launcher
  * behavior, accessibility, or positioning.
  *
  * APIs exercised:
  *   - `<cds-aichat-custom-element>` styled with float-layout + launcher CSS
- *   - `<cds-aichat-button>` (custom launcher)
+ *   - `<cds-aichat-launcher>` (standalone launcher component)
  *   - `BusEventType.VIEW_CHANGE` for the open/closed phase machine
- *   - `PublicConfig.launcher.isOn` (disabled to use a custom launcher)
+ *   - `PublicConfig.launcher.isOn` (disabled to use the standalone launcher)
  *
  * Start reading at: the `Demo` element below and the `VIEW_CHANGE` handler.
  */
@@ -28,7 +28,7 @@
 import '@carbon/ai-chat/css/chat-float-layout.css';
 import '@carbon/ai-chat/css/chat-launcher-layout.css';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
-import '@carbon/ai-chat-components/es/components/chat-button/index.js';
+import '@carbon/ai-chat-components/es/components/launcher/index.js';
 
 import {
   type BusEventViewChange,
@@ -36,8 +36,6 @@ import {
   type PublicConfig,
   ViewType,
 } from '@carbon/ai-chat';
-import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
-import AiLaunch16 from '@carbon/icons/es/ai-launch/16.js';
 import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
@@ -51,7 +49,7 @@ const config: PublicConfig = {
     // with no back-end. Replace with a real production implementation.
     customSendMessage,
   },
-  // Suppress the built-in launcher — our custom cds-aichat-button acts as the launcher.
+  // Suppress the built-in launcher — our standalone cds-aichat-launcher acts as the launcher.
   launcher: { isOn: false },
 };
 
@@ -173,15 +171,12 @@ export class Demo extends LitElement {
       ${
         this._chatReady
           ? html`
-              <cds-aichat-button
+              <cds-aichat-launcher
                 class=${this._getLauncherClass()}
-                has-icon-only
-                icon-description="Open chat"
-                kind="primary"
-                size="lg"
-                @click=${this._handleLauncherClick}>
-                ${iconLoader(AiLaunch16, { slot: 'icon' })}
-              </cds-aichat-button>
+                ai-enabled
+                closed-label="Open chat"
+                @cds-aichat-launcher-toggle=${this._handleLauncherClick}>
+              </cds-aichat-launcher>
             `
           : nothing
       }

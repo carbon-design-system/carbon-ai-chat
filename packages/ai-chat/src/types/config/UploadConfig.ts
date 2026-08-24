@@ -20,10 +20,10 @@ export interface UploadConfig {
    * Whether file upload is enabled. When `true`, the chat renders a file attachment button
    * in the input area. Defaults to `false`.
    *
-   * If `is_on` is `true` but `onFileUpload` is not provided, an error is logged and
+   * If `isOn` is `true` but `onFileUpload` is not provided, an error is logged and
    * file upload is disabled.
    */
-  is_on: boolean;
+  isOn?: boolean;
 
   /**
    * Accepted MIME types or file extensions, in the same format as the HTML `accept` attribute.

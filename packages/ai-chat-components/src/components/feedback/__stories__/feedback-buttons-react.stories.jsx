@@ -8,75 +8,75 @@
  */
 
 /* eslint-disable */
-import React from "react";
+import React from 'react';
 
-import Feedback from "../../../react/feedback";
-import FeedbackButtons from "../../../react/feedback-buttons";
+import Feedback from '../../../react/feedback';
+import FeedbackButtons from '../../../react/feedback-buttons';
 
 export default {
-  title: "Preview/Feedback/Buttons",
+  title: 'Components/Feedback/Buttons',
   argTypes: {
     isPositiveSelected: {
-      control: "boolean",
-      description: "Whether the positive button is selected",
+      control: 'boolean',
+      description: 'Whether the positive button is selected',
     },
     isNegativeSelected: {
-      control: "boolean",
-      description: "Whether the negative button is selected",
+      control: 'boolean',
+      description: 'Whether the negative button is selected',
     },
     isPositiveDisabled: {
-      control: "boolean",
-      description: "Whether the positive button is disabled",
+      control: 'boolean',
+      description: 'Whether the positive button is disabled',
     },
     isNegativeDisabled: {
-      control: "boolean",
-      description: "Whether the negative button is disabled",
+      control: 'boolean',
+      description: 'Whether the negative button is disabled',
     },
     positiveLabel: {
-      control: "text",
-      description: "Accessibility label for positive button",
+      control: 'text',
+      description: 'Accessibility label for positive button',
     },
     negativeLabel: {
-      control: "text",
-      description: "Accessibility label for negative button",
+      control: 'text',
+      description: 'Accessibility label for negative button',
     },
     // Panel-related properties - hidden by default, shown only in WithDetailsPanel story
     hasPositiveDetails: {
-      control: "boolean",
-      description: "Whether positive button opens a details panel",
+      control: 'boolean',
+      description: 'Whether positive button opens a details panel',
       table: { disable: true },
     },
     hasNegativeDetails: {
-      control: "boolean",
-      description: "Whether negative button opens a details panel",
+      control: 'boolean',
+      description: 'Whether negative button opens a details panel',
       table: { disable: true },
     },
     isPositiveOpen: {
-      control: "boolean",
-      description: "Whether the positive details panel is open",
+      control: 'boolean',
+      description: 'Whether the positive details panel is open',
       table: { disable: true },
     },
     isNegativeOpen: {
-      control: "boolean",
-      description: "Whether the negative details panel is open",
+      control: 'boolean',
+      description: 'Whether the negative details panel is open',
       table: { disable: true },
     },
     panelID: {
-      control: "text",
-      description: "ID of the associated feedback panel",
+      control: 'text',
+      description: 'ID of the associated feedback panel',
       table: { disable: true },
     },
   },
 };
 
 const renderButtons = (args, options) => {
-  const description = options?.description ?? "";
+  const description = options?.description ?? '';
   const clickHandler = options?.onClick;
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ padding: '2rem' }}>
       {description ? (
-        <p style={{ marginBottom: "1rem" }}>{description}</p>
+        <p style={{ marginBottom: '1rem' }}>{description}</p>
       ) : null}
       <FeedbackButtons
         isPositiveSelected={args.isPositiveSelected}
@@ -100,17 +100,17 @@ const renderButtons = (args, options) => {
 };
 
 const reactPositiveCategories = [
-  "Accurate",
-  "Helpful",
-  "Clear explanation",
-  "Comprehensive",
+  'Accurate',
+  'Helpful',
+  'Clear explanation',
+  'Comprehensive',
 ];
 
 const reactNegativeCategories = [
-  "Inaccurate",
-  "Unhelpful",
-  "Inappropriate",
-  "Too verbose",
+  'Inaccurate',
+  'Unhelpful',
+  'Inappropriate',
+  'Too verbose',
 ];
 
 const FeedbackButtonsWithDetailsDemo = ({
@@ -133,14 +133,14 @@ const FeedbackButtonsWithDetailsDemo = ({
     (prevState, isPositive, details) => {
       const submission = {
         isPositive,
-        text: details?.text || "",
+        text: details?.text || '',
         selectedCategories: details?.selectedCategories || [],
       };
 
       // eslint-disable-next-line no-console
       console.log(
-        `[Feedback Demo] ${isPositive ? "Positive" : "Negative"} submission recorded`,
-        submission,
+        `[Feedback Demo] ${isPositive ? 'Positive' : 'Negative'} submission recorded`,
+        submission
       );
 
       return {
@@ -153,7 +153,7 @@ const FeedbackButtonsWithDetailsDemo = ({
         lastSubmission: submission,
       };
     },
-    [],
+    []
   );
 
   const handleButtonClick = React.useCallback(
@@ -172,7 +172,7 @@ const FeedbackButtonsWithDetailsDemo = ({
 
         if (toggleToSelected && !hasDetails) {
           return recordSubmission(prev, isPositive, {
-            text: "",
+            text: '',
             selectedCategories: [],
           });
         }
@@ -186,22 +186,22 @@ const FeedbackButtonsWithDetailsDemo = ({
         };
       });
     },
-    [hasNegativeDetails, hasPositiveDetails, recordSubmission],
+    [hasNegativeDetails, hasPositiveDetails, recordSubmission]
   );
 
   const handleSubmit = React.useCallback(
     (isPositive, details) => {
       setState((prev) => recordSubmission(prev, isPositive, details));
     },
-    [recordSubmission],
+    [recordSubmission]
   );
 
   const renderFeedbackPanel = (isPositive) => {
-    const label = isPositive ? "positive" : "negative";
+    const label = isPositive ? 'positive' : 'negative';
     const categories = isPositive
       ? reactPositiveCategories
       : reactNegativeCategories;
-    const placeholder = "Add a comment";
+    const placeholder = 'Add a comment';
 
     return (
       <Feedback
@@ -227,11 +227,11 @@ const FeedbackButtonsWithDetailsDemo = ({
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <p style={{ marginBottom: "1rem" }}>
+    <div style={{ padding: '2rem' }}>
+      <p style={{ marginBottom: '1rem' }}>
         {hasPositiveDetails && hasNegativeDetails
-          ? "Both buttons open details panels for collecting more information."
-          : "Negative feedback opens a details panel for more information."}
+          ? 'Both buttons open details panels for collecting more information.'
+          : 'Negative feedback opens a details panel for more information.'}
       </p>
       <FeedbackButtons
         isPositiveSelected={state.isPositiveSelected}
@@ -249,15 +249,15 @@ const FeedbackButtonsWithDetailsDemo = ({
           handleButtonClick(event.detail.isPositive);
         }}
       />
-      <div style={{ marginTop: "1rem", maxWidth: "26rem" }}>
+      <div style={{ marginTop: '1rem', maxWidth: '26rem' }}>
         {hasPositiveDetails ? renderFeedbackPanel(true) : null}
         {hasNegativeDetails ? renderFeedbackPanel(false) : null}
       </div>
       {state.lastSubmission ? (
-        <p style={{ marginTop: "0.5rem", fontSize: "0.875rem" }}>
-          Last submission:{" "}
+        <p style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
+          Last submission:{' '}
           <strong>
-            {state.lastSubmission.isPositive ? "Positive" : "Negative"}
+            {state.lastSubmission.isPositive ? 'Positive' : 'Negative'}
           </strong>
           {state.lastSubmission.text ? ` — ${state.lastSubmission.text}` : null}
         </p>
@@ -272,17 +272,17 @@ export const Default = {
     isNegativeSelected: false,
     isPositiveDisabled: false,
     isNegativeDisabled: false,
-    positiveLabel: "I like this response",
-    negativeLabel: "I dislike this response",
+    positiveLabel: 'I like this response',
+    negativeLabel: 'I dislike this response',
   },
   render: (args) =>
     renderButtons(args, {
-      description: "Click the buttons to provide feedback on this message.",
+      description: 'Click the buttons to provide feedback on this message.',
       onClick: (isPositive) => {
-        console.log(`${isPositive ? "Positive" : "Negative"} button clicked`);
-        if (typeof window !== "undefined") {
+        console.log(`${isPositive ? 'Positive' : 'Negative'} button clicked`);
+        if (typeof window !== 'undefined') {
           window.alert(
-            `${isPositive ? "Positive" : "Negative"} feedback recorded!`,
+            `${isPositive ? 'Positive' : 'Negative'} feedback recorded!`
           );
         }
       },
@@ -291,27 +291,27 @@ export const Default = {
 
 export const WithDetailsPanel = {
   args: {
-    positiveLabel: "I like this response",
-    negativeLabel: "I dislike this response",
-    panelID: "feedback-panel-example",
+    positiveLabel: 'I like this response',
+    negativeLabel: 'I dislike this response',
+    panelID: 'feedback-panel-example',
     hasPositiveDetails: true,
     hasNegativeDetails: true,
   },
   argTypes: {
     // Show panel-related properties in the table but make them read-only
     hasPositiveDetails: {
-      control: "boolean",
-      description: "Whether positive button opens a details panel",
+      control: 'boolean',
+      description: 'Whether positive button opens a details panel',
       table: { disable: false },
     },
     hasNegativeDetails: {
-      control: "boolean",
-      description: "Whether negative button opens a details panel",
+      control: 'boolean',
+      description: 'Whether negative button opens a details panel',
       table: { disable: false },
     },
     panelID: {
       control: false,
-      description: "ID of the associated feedback panel",
+      description: 'ID of the associated feedback panel',
       table: { disable: false },
     },
   },

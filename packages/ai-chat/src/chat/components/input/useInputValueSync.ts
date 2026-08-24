@@ -17,6 +17,8 @@ import {
   selectIsInputToHumanAgent,
 } from '../../store/selectors';
 import type { ServiceManager } from '../../services/ServiceManager';
+import type { FileUpload } from '../../../types/config/ServiceDeskConfig';
+import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
 
 interface UseInputValueSyncArgs {
   serviceManager: ServiceManager;
@@ -56,6 +58,12 @@ interface UseInputValueSyncArgs {
    * Whether an error has been passed to the Input.
    */
   hasErrorProp: boolean;
+
+  /**
+   * Files staged in the input area. A staged file is sendable content in its own
+   * right, so their presence is part of the send predicate.
+   */
+  pendingUploads?: FileUpload[];
 }
 
 /**
@@ -73,6 +81,7 @@ function useInputValueSync({
   isSendDisabledFromConfig,
   onSendInput,
   hasErrorProp,
+  pendingUploads,
 }: UseInputValueSyncArgs) {
   const store = serviceManager.store;
 
@@ -124,7 +133,17 @@ function useInputValueSync({
   const overMaxLength = rawInputValue.length > maxInputChars;
 
   const effectiveDisableSend =
-    disableSend || isSendDisabledFromConfig || overMaxLength || hasErrorProp;
+    disableSend ||
+    isSendDisabledFromConfig ||
+    overMaxLength ||
+    hasErrorProp ||
+    hasInFlightUpload(pendingUploads);
+
+  // Drives the Send control's enabled state (React render path). The send
+  // function itself re-evaluates from the ref so it stays correct even when
+  // called synchronously after seeding the ref (e.g. starter / autocomplete
+  // item send) before React has re-rendered with the new state value.
+  const hasValidInput = hasSendableInput(rawInputValue, pendingUploads);
 
   /**
    * Handle input value changes from the prompt-line. Dispatches to Redux if
@@ -164,8 +183,12 @@ function useInputValueSync({
    * by @lit/react's native-event scheduling. See issue #1382.
    */
   const sendCurrentValue = () => {
-    const text = rawInputValueRef.current;
-    if (!text.trim()) {
+    const text = rawInputValueRef.current.trim();
+    // Re-evaluate from the ref at call time: callers like the starter and
+    // autocomplete-item send paths seed the ref synchronously before calling
+    // here, so using the closure-captured `hasValidInput` (derived from
+    // `rawInputValue` state) would race the React re-render and bail early.
+    if (!hasSendableInput(text, pendingUploads)) {
       return;
     }
     if (effectiveDisableSend) {
@@ -198,8 +221,10 @@ function useInputValueSync({
     rawInputValue,
     rawInputValueRef,
     setRawInputValue,
+    displayContentRef,
     overMaxLength,
     effectiveDisableSend,
+    hasValidInput,
     handleInputChange,
     sendCurrentValue,
     handleSendControlSend,

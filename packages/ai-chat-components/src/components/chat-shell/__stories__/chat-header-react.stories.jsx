@@ -8,100 +8,98 @@
  */
 
 /* eslint-disable */
-import React, { useState, useRef } from "react";
+import React, { useState, useRef } from 'react';
 
-import ChatShell from "../../../react/chat-shell";
-import ChatHeader from "../../../react/chat-header";
+import ChatShell from '../../../react/chat-shell';
+import ChatHeader from '../../../react/chat-header';
 import {
   Button,
   ContentSwitcher,
   Switch,
   AILabel,
   AILabelContent,
-} from "@carbon/react";
-import { Close, Restart, Menu, ChevronLeft } from "@carbon/icons-react";
-import "./story-styles.scss";
+} from '@carbon/react';
+import { Close, Restart, Menu, ChevronLeft } from '@carbon/icons-react';
+import './story-styles.scss';
 
 const sampleActions = [
   {
-    text: "Restart conversation",
+    text: 'Restart conversation',
     icon: Restart,
-    onClick: () => console.log("Restart clicked"),
+    onClick: () => console.log('Restart clicked'),
   },
   {
-    text: "Close chat",
+    text: 'Close chat',
     icon: Close,
-    onClick: () => console.log("Close clicked"),
+    onClick: () => console.log('Close clicked'),
     fixed: true,
   },
 ];
 
 const sampleOverflowItems = [
   {
-    text: "Settings",
-    onClick: () => console.log("Settings clicked"),
+    text: 'Settings',
+    onClick: () => console.log('Settings clicked'),
   },
   {
-    text: "Help",
-    onClick: () => console.log("Help clicked"),
+    text: 'Help',
+    onClick: () => console.log('Help clicked'),
   },
   {
-    text: "About",
-    onClick: () => console.log("About clicked"),
+    text: 'About',
+    onClick: () => console.log('About clicked'),
   },
 ];
 
 export default {
-  title: "Preview/Chat shell/Header",
+  title: 'Preview/Chat shell/Header',
   args: {
-    headerTitle: "title",
-    headerName: "name",
+    headerTitle: 'title',
+    headerName: 'name',
   },
   argTypes: {
     headerTitle: {
-      control: "text",
-      description: "Main title text",
+      control: 'text',
+      description: 'Main title text',
     },
     headerName: {
-      control: "text",
-      description: "Subtitle/name text",
+      control: 'text',
+      description: 'Subtitle/name text',
     },
     fixedActions: {
-      control: "select",
-      options: ["content switcher", "custom button", "none"],
+      control: 'select',
+      options: ['content switcher', 'custom button', 'none'],
       mapping: {
-        "content switcher": (
+        'content switcher': (
           <div slot="fixed-actions">
             <ContentSwitcher
               onChange={(e) => console.log(e)}
               selectionMode="automatic"
               selectedIndex={0}
-              size="sm"
-            >
+              size="sm">
               <Switch name="one" text="Code" />
               <Switch name="two" text="Preview" />
             </ContentSwitcher>
           </div>
         ),
-        "custom button": (
+        'custom button': (
           <div slot="fixed-actions">
             <Button
-              onClick={() => console.log("Custom button clicked")}
-              size="md"
-            >
+              onClick={() => console.log('Custom button clicked')}
+              size="md">
               Custom
             </Button>
           </div>
         ),
         none: undefined,
       },
-      table: { category: "slot" },
+      table: { category: 'slot' },
       description:
         "Fixed actions slot for chat header component. `slot='fixed-actions'`",
     },
     aiLabel: {
-      table: { category: "slot" },
-      control: "boolean",
+      table: { category: 'slot' },
+      control: 'boolean',
       description:
         "AI Label slot in the chat header component `slot='decorator'`",
     },
@@ -111,13 +109,13 @@ export default {
 export const Default = {
   args: {
     showActions: true,
-    fixedActions: "none",
+    fixedActions: 'none',
     aiLabel: false,
   },
   argTypes: {
     showActions: {
-      control: "boolean",
-      description: "Show or hide action buttons",
+      control: 'boolean',
+      description: 'Show or hide action buttons',
     },
   },
   render: (args) => {
@@ -128,8 +126,7 @@ export const Default = {
           slot="header"
           headerTitle={args.headerTitle}
           headerName={args.headerName}
-          actions={actions}
-        >
+          actions={actions}>
           {args.fixedActions}
           {args.aiLabel && (
             <div slot="decorator">
@@ -159,24 +156,24 @@ export const Default = {
 
 export const WithOverflowNavigation = {
   args: {
-    navigationOverflowLabel: "Menu",
-    navigationOverflowAriaLabel: "Open menu",
+    navigationOverflowLabel: 'Menu',
+    navigationOverflowAriaLabel: 'Open menu',
     showActions: true,
-    fixedActions: "none",
+    fixedActions: 'none',
     aiLabel: false,
   },
   argTypes: {
     navigationOverflowLabel: {
-      control: "text",
-      description: "Label for overflow menu button",
+      control: 'text',
+      description: 'Label for overflow menu button',
     },
     navigationOverflowAriaLabel: {
-      control: "text",
-      description: "Aria label for overflow menu",
+      control: 'text',
+      description: 'Aria label for overflow menu',
     },
     showActions: {
-      control: "boolean",
-      description: "Show or hide action buttons",
+      control: 'boolean',
+      description: 'Show or hide action buttons',
     },
   },
   render: (args) => {
@@ -192,8 +189,7 @@ export const WithOverflowNavigation = {
           navigationOverflowIcon={Menu}
           navigationOverflowLabel={args.navigationOverflowLabel}
           navigationOverflowAriaLabel={args.navigationOverflowAriaLabel}
-          navigationOverflowItems={sampleOverflowItems}
-        >
+          navigationOverflowItems={sampleOverflowItems}>
           {args.fixedActions}
           {args.aiLabel && (
             <div slot="decorator">
@@ -223,13 +219,13 @@ export const WithOverflowNavigation = {
 
 export const WithFocusManagement = {
   args: {
-    headerTitle: "title",
-    headerName: "name",
-    navigationType: "back",
-    navigationBackLabel: "Back",
+    headerTitle: 'title',
+    headerName: 'name',
+    navigationType: 'back',
+    navigationBackLabel: 'Back',
     showActions: true,
     overflow: false,
-    fixedActions: "none",
+    fixedActions: 'none',
     aiLabel: false,
   },
   render: (args) => {
@@ -239,13 +235,13 @@ export const WithFocusManagement = {
     const handleRequestFocus = () => {
       if (headerRef.current) {
         const success = headerRef.current.requestFocus();
-        console.log("Focus request:", success ? "successful" : "failed");
+        console.log('Focus request:', success ? 'successful' : 'failed');
       }
     };
 
     return (
       <div>
-        <Button onClick={handleRequestFocus} style={{ marginBottom: "16px" }}>
+        <Button onClick={handleRequestFocus} style={{ marginBottom: '16px' }}>
           Request Focus on Header
         </Button>
         <ChatShell>
@@ -259,8 +255,7 @@ export const WithFocusManagement = {
             navigationType={args.navigationType}
             navigationBackIcon={ChevronLeft}
             navigationBackLabel={args.navigationBackLabel}
-            navigationBackOnClick={() => console.log("Back clicked")}
-          >
+            navigationBackOnClick={() => console.log('Back clicked')}>
             {args.fixedActions}
             {args.aiLabel && (
               <div slot="decorator">

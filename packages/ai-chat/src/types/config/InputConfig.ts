@@ -8,10 +8,11 @@
  */
 
 // Raw `@tiptap/core` types come from `@tiptap/core` directly. The Carbon
-// suggestion-config types are re-declared below (rather than imported from
-// the upstream symbols directly) so TypeDoc resolution stays pointed at our
-// JSDoc + `@category` placement; see [../AGENTS.md](../AGENTS.md) for the
-// cross-package re-export rule.
+// suggestion-config types are aliased below (rather than imported from the
+// upstream symbols directly) so TypeDoc resolution stays pointed at our
+// JSDoc + `@category` placement; `@interface` is what makes it render the
+// checker-resolved members rather than the bare alias. See
+// [../AGENTS.md](../AGENTS.md) for the cross-package re-export rule.
 import type { Extension } from '@tiptap/core';
 import type {
   BaseSuggestionConfig as _BaseSuggestionConfig,
@@ -26,23 +27,28 @@ import type { ToolbarAction } from './HeaderConfig';
 /**
  * Fields shared by every Carbon suggestion config (mention, command,
  * autocomplete). Provides the item source, debounce, minimum query length,
- * selection callback, and an optional custom list renderer.
+ * selection callback, an optional custom list renderer, and a
+ * `disableDirectSend` flag that inserts a clicked item into the editor
+ * instead of sending it straight to the assistant.
  *
  * @category Config
+ * @interface
  */
 export type BaseSuggestionConfig = _BaseSuggestionConfig;
 
 /**
  * Trigger-character-driven suggestion config consumed by
  * {@link InputConfig.mention} and {@link InputConfig.command}. Adds the
- * trigger character, an optional `triggerPosition`, an optional schema-node
- * `name` override, a custom-token renderer, an `onRemove` callback (the
- * mirror of `onSelect`, fired when a token is deleted), and a
- * `showTriggerInChip` default (whether selected items render as
- * `/summarize` or a bare `summarize`, overridable per item) on top of
+ * trigger character, an optional `triggerPosition`, a custom-token renderer,
+ * an `onRemove` callback (the mirror of `onSelect`, fired when a token is
+ * deleted), and a `showTriggerInChip` default (whether selected items render
+ * as `/summarize` or a bare `summarize`, overridable per item) on top of
  * {@link BaseSuggestionConfig}.
  *
+ * Each chat supports one mention trigger and one command trigger.
+ *
  * @category Config
+ * @interface
  */
 export type TriggerSuggestionConfig = _TriggerSuggestionConfig;
 
@@ -52,6 +58,7 @@ export type TriggerSuggestionConfig = _TriggerSuggestionConfig;
  * rendered.
  *
  * @category Config
+ * @interface
  */
 export type AutocompleteConfig = _AutocompleteConfig;
 
@@ -61,29 +68,32 @@ export type AutocompleteConfig = _AutocompleteConfig;
  * replace the built-in suggestion list (e.g. to add a header above the items).
  *
  * @category Config
+ * @interface
  */
 export type StartersConfig = _StartersConfig;
 
 /**
  * Single list-item shape used by every Carbon suggestion surface
  * (mention, command, autocomplete, starters). Carries the id, label,
- * optional value override, optional description / avatar / icon, and a
+ * optional value override, optional description and avatar, and a
  * disabled flag. `showTriggerInChip` additionally controls, per item,
  * whether a mention/command selection renders with its trigger character —
  * chip-less surfaces (autocomplete, starters) ignore it.
  *
  * @category Config
+ * @interface
  */
 export type SuggestionItem = _SuggestionItem;
 
 /**
  * Props passed to a custom suggestion-list renderer (the `renderCustomList`
  * field on {@link BaseSuggestionConfig}). Includes the filtered
- * {@link SuggestionItem} array, the current `query`, and `onSelect` /
- * `onDismiss` callbacks.
+ * {@link SuggestionItem} array, the current `query`, and the `onSelect` /
+ * `onSend` / `onDismiss` callbacks.
  *
  * @category Config
  * @experimental
+ * @interface
  */
 export type CustomListProps = _CustomListProps;
 
@@ -167,9 +177,17 @@ export interface InputConfig {
     /**
      * Host-supplied Tiptap extensions appended after the curated bundle.
      * Use to add custom marks, nodes, keymaps, paste rules, input rules,
-     * or any other Tiptap extension. Reference equality on the array
-     * short-circuits — memoize so the editor doesn't recreate on every
-     * render.
+     * or any other Tiptap extension. These are compared by reference, so
+     * memoize them — a fresh array of new instances each render reads as a
+     * genuinely different editor and replaces the live one, losing its undo
+     * history. The Carbon-curated configs above are compared by value, so
+     * rebuilding an equivalent one is free. Callbacks inside them still
+     * compare by reference. On {@link InputConfig.mention} and
+     * {@link InputConfig.command} keep `onSelect`, `onRemove`,
+     * `renderCustomList`, `renderCustomToken`, and a function-valued `items`
+     * stable across renders; on {@link InputConfig.autocomplete}, which carries
+     * neither `onRemove` nor `renderCustomToken`, keep `onSelect`,
+     * `renderCustomList`, and `items`.
      */
     extensions?: Extension[];
   };

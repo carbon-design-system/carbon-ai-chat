@@ -30,14 +30,14 @@ function ensureTokenStyleRules(): void {
   }
   setVarsForSelector('.cds-aichat--token', { 'white-space': 'normal' });
   setVarsForSelector('.cds-aichat--token[data-token-context="composer"]', {
-    color: 'var(--cds-tag-color-blue)',
+    color: 'var(--cds-tag-color-blue, #0043ce)',
   });
   setVarsForSelector(
     '.cds-aichat--token[data-token-context="composer"]::selection',
-    { 'background-color': 'var(--cds-tag-background-blue)' }
+    { 'background-color': 'var(--cds-tag-background-blue, #d0e2ff)' }
   );
   setVarsForSelector('.cds-aichat--token[data-token-context="historical"]', {
-    color: 'var(--cds-link-secondary)',
+    color: 'var(--cds-link-secondary, #0043ce)',
   });
   tokenStyleRulesInstalled = true;
 }
@@ -150,8 +150,6 @@ function createTokenContainer(
   dom.setAttribute('data-token-type', type);
   dom.setAttribute('data-token-context', context);
   dom.setAttribute('data-raw-value', value ?? label ?? '');
-  dom.setAttribute('role', 'img');
-  dom.setAttribute('aria-label', label || value || '');
   dom.className = 'cds-aichat--token';
   return dom;
 }

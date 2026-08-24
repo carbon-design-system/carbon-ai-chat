@@ -97,7 +97,9 @@ packages/ai-chat-components/scss
 
 # Agent working drafts (per-task throwaway, never committed).
 # Issue bodies mirror live GitHub issues; PR drafts feed `gh pr create --body-file`;
-# plan files are consumed by the epic or the merged PRs. See .bob/skills/README.md.
+# plan files are consumed by the epic or the merged PRs; ADR drafts graduate into
+# docs/adr/ once numbered. See .bob/skills/README.md.
+.github/adr-drafts/
 .github/issue-drafts/
 .github/pr-drafts/
 .github/plan-drafts/
@@ -105,3 +107,6 @@ packages/ai-chat-components/scss
 # Legacy repo-root draft locations, superseded by .github/*-drafts/ above.
 /PR.md
 /PLAN*.md
+
+.github/issue-drafts
+

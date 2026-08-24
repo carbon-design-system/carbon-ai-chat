@@ -10,8 +10,8 @@
 import {
   ChatShortcutConfig,
   KeyboardShortcuts,
-  DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
 } from '../../../src/types/config/ShortcutConfig';
+import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../../../src/chat/store/reducerUtils';
 
 describe('ShortcutConfig', () => {
   describe('Type Exports', () => {
@@ -45,20 +45,20 @@ describe('ShortcutConfig', () => {
       expect(shortcuts.messageFocusToggle?.key).toBe('f');
     });
 
-    it('should allow optional is_on property in ChatShortcutConfig', () => {
+    it('should allow optional isOn property in ChatShortcutConfig', () => {
       const config: ChatShortcutConfig = {
         key: 'c',
         modifiers: {
           alt: true,
           shift: true,
         },
-        is_on: false,
+        isOn: false,
       };
 
-      expect(config.is_on).toBe(false);
+      expect(config.isOn).toBe(false);
     });
 
-    it('should allow is_on to be undefined (defaults to false)', () => {
+    it('should allow isOn to be undefined (defaults to false)', () => {
       const config: ChatShortcutConfig = {
         key: 'c',
         modifiers: {
@@ -66,7 +66,7 @@ describe('ShortcutConfig', () => {
         },
       };
 
-      expect(config.is_on).toBeUndefined();
+      expect(config.isOn).toBeUndefined();
     });
 
     it('should allow optional modifiers in ChatShortcutConfig', () => {
@@ -138,8 +138,8 @@ describe('ShortcutConfig', () => {
       expect(DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT.modifiers.meta).toBeFalsy();
     });
 
-    it('should be enabled by default (is_on: true)', () => {
-      expect(DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT.is_on).toBe(true);
+    it('should be disabled by default (isOn: false)', () => {
+      expect(DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT.isOn).toBe(false);
     });
 
     it('should be a valid ChatShortcutConfig', () => {
@@ -321,49 +321,49 @@ describe('ShortcutConfig', () => {
     });
   });
 
-  describe('is_on Property', () => {
-    it('should allow is_on to be true', () => {
+  describe('isOn Property', () => {
+    it('should allow isOn to be true', () => {
       const config: ChatShortcutConfig = {
         key: 'F6',
         modifiers: {},
-        is_on: true,
+        isOn: true,
       };
 
-      expect(config.is_on).toBe(true);
+      expect(config.isOn).toBe(true);
     });
 
-    it('should allow is_on to be false', () => {
+    it('should allow isOn to be false', () => {
       const config: ChatShortcutConfig = {
         key: 'F6',
         modifiers: {},
-        is_on: false,
+        isOn: false,
       };
 
-      expect(config.is_on).toBe(false);
+      expect(config.isOn).toBe(false);
     });
 
-    it('should work with messageFocusToggle when is_on is true', () => {
+    it('should work with messageFocusToggle when isOn is true', () => {
       const shortcuts: KeyboardShortcuts = {
         messageFocusToggle: {
           key: 'F6',
           modifiers: {},
-          is_on: true,
+          isOn: true,
         },
       };
 
-      expect(shortcuts.messageFocusToggle?.is_on).toBe(true);
+      expect(shortcuts.messageFocusToggle?.isOn).toBe(true);
     });
 
-    it('should work with messageFocusToggle when is_on is false', () => {
+    it('should work with messageFocusToggle when isOn is false', () => {
       const shortcuts: KeyboardShortcuts = {
         messageFocusToggle: {
           key: 'F6',
           modifiers: {},
-          is_on: false,
+          isOn: false,
         },
       };
 
-      expect(shortcuts.messageFocusToggle?.is_on).toBe(false);
+      expect(shortcuts.messageFocusToggle?.isOn).toBe(false);
     });
 
     it('should default to undefined when not specified', () => {
@@ -374,7 +374,7 @@ describe('ShortcutConfig', () => {
         },
       };
 
-      expect(shortcuts.messageFocusToggle?.is_on).toBeUndefined();
+      expect(shortcuts.messageFocusToggle?.isOn).toBeUndefined();
     });
 
     it('should work with complex shortcut configurations', () => {
@@ -385,14 +385,14 @@ describe('ShortcutConfig', () => {
             ctrl: true,
             shift: true,
           },
-          is_on: false,
+          isOn: false,
         },
       };
 
       expect(shortcuts.messageFocusToggle?.key).toBe('k');
       expect(shortcuts.messageFocusToggle?.modifiers.ctrl).toBe(true);
       expect(shortcuts.messageFocusToggle?.modifiers.shift).toBe(true);
-      expect(shortcuts.messageFocusToggle?.is_on).toBe(false);
+      expect(shortcuts.messageFocusToggle?.isOn).toBe(false);
     });
   });
 });

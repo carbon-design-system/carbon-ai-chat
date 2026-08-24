@@ -27,8 +27,7 @@ function doCarousel(instance: ChatInstance) {
             {
               body: [
                 {
-                  source:
-                    'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+                  source: 'https://placehold.co/400x300',
                   response_type: 'image',
                 },
                 {
@@ -60,8 +59,7 @@ function doCarousel(instance: ChatInstance) {
             {
               body: [
                 {
-                  source:
-                    'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+                  source: 'https://placehold.co/400x300',
                   response_type: 'image',
                 },
                 {
@@ -93,8 +91,7 @@ function doCarousel(instance: ChatInstance) {
             {
               body: [
                 {
-                  source:
-                    'https://live.staticflickr.com/540/18795217173_39e0b63304_c.jpg',
+                  source: 'https://placehold.co/400x300',
                   response_type: 'image',
                 },
                 {

@@ -16,13 +16,15 @@ import {
   type TokenTree,
 } from '../markdown-token-tree.js';
 import { sanitizeHtmlContent } from './lit-directives.js';
+import { withInstanceNamespace } from './slot-names.js';
 import type { RenderTokenTreeOptions } from '../markdown-renderer-types.js';
 
 /**
- * Slot-name prefix shared by every plugin-fallback descriptor. The element
- * suffixes a render-scoped sequence number; the markdown component uses this
- * prefix when adopting the light-DOM host so external observers can target
- * plugin output with CSS or query selectors.
+ * Slot-name prefix shared by every plugin-fallback descriptor. A render-scoped
+ * sequence number follows, then the owning element's namespace (see
+ * `./slot-names.js`); the markdown component uses this prefix when adopting the
+ * light-DOM host so external observers can target plugin output with CSS or
+ * query selectors.
  *
  * @internal
  */
@@ -222,12 +224,14 @@ export function renderFallback(
   }
 
   const index = options.pluginSlotCounter?.next() ?? 0;
-  const slotName = `${PLUGIN_FALLBACK_SLOT_PREFIX}-${index}`;
+  const slotName = withInstanceNamespace(
+    `${PLUGIN_FALLBACK_SLOT_PREFIX}-${index}`,
+    options
+  );
   options.recordCustomRender?.({
     slotName,
     kind: 'pluginFallback',
     token,
-    node,
     html: safe,
     isInline: token.block === false,
   });

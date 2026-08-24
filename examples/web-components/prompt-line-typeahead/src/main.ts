@@ -55,9 +55,6 @@ const config: PublicConfig = {
         CANNED_SUGGESTIONS.filter((s) =>
           s.label.toLowerCase().includes(query.toLowerCase())
         ),
-      // Debounce keystrokes so we do not invoke `items` on every character
-      // when this resolver is later wired to a remote endpoint.
-      debounceMs: 150,
     },
   },
 };

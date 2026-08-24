@@ -47,6 +47,11 @@ export interface UseChatAutocompleteOptions {
   /** Fired after a starter is selected and inserted (used to trigger send). */
   onStarterSelected?: (text: string) => void;
   /**
+   * Fired when an autocomplete suggestion item is selected.
+   * Called after the controller has already inserted the item.
+   */
+  onSelectItem?: (item: SuggestionItem) => void;
+  /**
    * Fired when the send button inside an autocomplete suggestion item is clicked.
    */
   onSendItem?: (text: string) => void;
@@ -79,6 +84,7 @@ export function useChatAutocomplete(
     promptLineRef,
     isSendDisabled,
     onStarterSelected,
+    onSelectItem,
     onSendItem,
     attached = true,
     maxHeight,
@@ -96,6 +102,8 @@ export function useChatAutocomplete(
   // but reading them out of refs avoids re-instantiation churn.
   const onStarterRef = React.useRef(onStarterSelected);
   onStarterRef.current = onStarterSelected;
+  const onSelectItemRef = React.useRef(onSelectItem);
+  onSelectItemRef.current = onSelectItem;
   const onSendItemRef = React.useRef(onSendItem);
   onSendItemRef.current = onSendItem;
 
@@ -146,14 +154,17 @@ export function useChatAutocomplete(
 
   const handleSelect = React.useCallback((item: SuggestionItem) => {
     controllerRef.current?.select(item);
+    onSelectItemRef.current?.(item);
   }, []);
 
-  const handleSend = React.useCallback((e: CustomEvent<{ text: string }>) => {
-    const text = e.detail?.text;
-    if (!text) {
+  const isSendDisabledRef = React.useRef(isSendDisabled);
+  isSendDisabledRef.current = isSendDisabled;
+
+  const handleSend = React.useCallback((text: string) => {
+    if (!text || isSendDisabledRef.current) {
       return;
     }
-    controllerRef.current?.dismiss();
+    controllerRef.current?.dismiss(true);
     onSendItemRef.current?.(text);
   }, []);
 
@@ -167,12 +178,25 @@ export function useChatAutocomplete(
   const setListElement = React.useCallback(
     (el: HTMLElement | null) => {
       controllerRef.current?.setListElement(el);
+      // Pass the editor DOM as anchorElement so outside-click detection on the
+      // autocomplete element doesn't dismiss the list when the user clicks the
+      // editor (the editor is not inside the autocomplete element).
+      if (el && 'anchorElement' in el) {
+        (el as HTMLElement & { anchorElement: Element | null }).anchorElement =
+          promptLineRef.current?.getEditor?.()?.view.dom ?? null;
+      }
       if (el && maxHeight) {
         el.style.setProperty('--cds-aichat-autocomplete-max-height', maxHeight);
       }
     },
-    [maxHeight]
+    [maxHeight, promptLineRef]
   );
+
+  // Prevent mousedown on the autocomplete container from stealing focus from
+  // the editor.
+  const handleContainerMousedown = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+  }, []);
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
     if (!state.trigger || state.items.length === 0) {
@@ -182,8 +206,9 @@ export function useChatAutocomplete(
       const result = state.renderCustomList({
         items: state.items,
         query: state.trigger.query,
-        onSelect: handleSelect,
         onDismiss: dismiss,
+        onSelect: handleSelect,
+        onSend: handleSend,
       });
       if (result == null) {
         return null;
@@ -194,6 +219,7 @@ export function useChatAutocomplete(
             slot="autocomplete-content"
             element={result}
             onMount={setListElement}
+            onMousedown={handleContainerMousedown}
           />
         );
       }
@@ -202,6 +228,7 @@ export function useChatAutocomplete(
           slot="autocomplete-content"
           node={result as ReactNode}
           onMount={setListElement}
+          onMousedown={(e) => e.preventDefault()}
         />
       );
     }
@@ -211,14 +238,25 @@ export function useChatAutocomplete(
         slot="autocomplete-content"
         items={state.items}
         attached={attached}
+        disableDirectSend={state.disableDirectSend}
+        onDismiss={dismiss}
         onSelect={(e: CustomEvent<{ item: SuggestionItem }>) =>
           handleSelect(e.detail.item)
         }
-        onSend={handleSend}
-        onDismiss={dismiss}
+        onSend={(e: CustomEvent<{ text: string }>) =>
+          handleSend(e.detail?.text)
+        }
       />
     );
-  }, [state, handleSelect, handleSend, dismiss, setListElement, attached]);
+  }, [
+    state,
+    handleSelect,
+    handleSend,
+    dismiss,
+    setListElement,
+    attached,
+    handleContainerMousedown,
+  ]);
 
   return { onTriggerChange, autocompleteContent };
 }
@@ -228,6 +266,7 @@ interface CustomElementHostProps {
   element: HTMLElement;
   /** Notify the parent which element is the key-forwarding target. */
   onMount?: (el: HTMLElement | null) => void;
+  onMousedown?: (e: React.MouseEvent) => void;
 }
 
 /** Mounts a host-provided HTMLElement into the React tree at `slot`. */
@@ -235,6 +274,7 @@ function CustomElementHost({
   slot,
   element,
   onMount,
+  onMousedown,
 }: CustomElementHostProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => {
@@ -251,13 +291,21 @@ function CustomElementHost({
       }
     };
   }, [element, onMount]);
-  return <div ref={containerRef} slot={slot} />;
+  return (
+    <div
+      ref={containerRef}
+      role="presentation"
+      slot={slot}
+      onMouseDown={onMousedown}
+    />
+  );
 }
 
 interface CustomReactNodePortalProps {
   slot: string;
   node: ReactNode;
   onMount?: (el: HTMLElement | null) => void;
+  onMousedown?: (e: MouseEvent) => void;
 }
 
 let autocompletePortalCounter = 0;
@@ -275,6 +323,7 @@ function CustomReactNodePortal({
   slot,
   node,
   onMount,
+  onMousedown,
 }: CustomReactNodePortalProps): JSX.Element {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [hostElement, setHostElement] = React.useState<HTMLElement | null>(
@@ -300,13 +349,17 @@ function CustomReactNodePortal({
 
     const hostEl = document.createElement('div');
     hostEl.setAttribute('slot', slotName);
+    if (onMousedown) {
+      hostEl.addEventListener('mousedown', onMousedown);
+    }
     chatWrapper.appendChild(hostEl);
 
     setHostElement(hostEl);
-    onMount?.(hostEl);
-
     return () => {
       onMount?.(null);
+      if (onMousedown) {
+        hostEl.removeEventListener('mousedown', onMousedown);
+      }
       slotEl.remove();
       hostEl.remove();
       setHostElement(null);
@@ -316,6 +369,21 @@ function CustomReactNodePortal({
     // those updates in place.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // After the portal content is committed into hostElement, hand the first
+  // child element to the controller. This is typically a custom element (e.g.
+  // <cds-aichat-autocomplete>) whose properties (anchorElement, keydown
+  // forwarding) only work on the element itself — not on the plain <div>
+  // wrapper that createPortal renders into. Custom elements are defined
+  // synchronously at module load, so by the time useEffect fires (post-paint)
+  // the element is fully upgraded and its properties are available.
+  React.useEffect(() => {
+    if (!hostElement) {
+      return;
+    }
+    const child = hostElement.firstElementChild as HTMLElement | null;
+    onMount?.(child ?? hostElement);
+  }, [hostElement, onMount]);
 
   return (
     <div slot={slot} ref={containerRef}>

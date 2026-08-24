@@ -166,6 +166,11 @@ class ChatContainer extends FlattenedConfigElement {
    * Page-level host elements created for plugin-output slots, keyed by slot
    * name. Created in this element's outer light DOM so consumer-loaded
    * stylesheets (e.g. KaTeX) reach the rendered HTML normally.
+   *
+   * Keying by slot name alone is safe because the markdown element namespaces
+   * every name it mints per element (see `markdown/src/utils/slot-names.ts` in
+   * `@carbon/ai-chat-components`), so two messages rendering the same markdown
+   * can't collide here.
    */
   private _pluginHosts: Map<string, HTMLElement> = new Map();
 
@@ -722,8 +727,6 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
   /**
    * Markdown rendering customization. Extends the framework-neutral
    * `PublicConfig.markdown` with web-component `customRenderers`.
-   *
-   * @experimental
    */
   markdown?: WCMarkdown;
 

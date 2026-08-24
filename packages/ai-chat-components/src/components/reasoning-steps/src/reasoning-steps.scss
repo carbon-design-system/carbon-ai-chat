@@ -41,7 +41,6 @@
   border-inline-start: 1px solid theme.$border-subtle-02;
   grid-template-rows: 1fr;
   opacity: 1;
-  padding-inline-start: layout.$spacing-02;
   pointer-events: auto;
 }
 
@@ -49,7 +48,7 @@
   display: flex;
   overflow: hidden;
   flex-direction: column;
-  padding: layout.$spacing-03;
-  gap: layout.$spacing-03;
+  padding: layout.$spacing-02;
+  gap: layout.$spacing-01;
   min-block-size: 0;
 }

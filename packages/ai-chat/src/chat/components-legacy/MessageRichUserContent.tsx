@@ -29,8 +29,8 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 
-import { MarkdownWithDefaults } from '../components/util/MarkdownWithDefaults';
-import { renderInlineMarkdown } from '../components/util/inline-markdown';
+import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
+import { renderInlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
 import { renderTokenChip } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type { JSONContent } from '@tiptap/core';
 import type { MessageRequest } from '../../types/messaging/Messages';
@@ -167,9 +167,35 @@ function renderParagraphInline(
     if (!textRun) {
       return;
     }
-    out.push(
-      <React.Fragment key={key}>{renderInlineMarkdown(textRun)}</React.Fragment>
+    // The block-level markdown parser trims leading/trailing whitespace from
+    // each run it parses. When a chip splits a paragraph into separate runs,
+    // the space between the chip and the adjacent text gets eaten. Capture the
+    // boundary whitespace explicitly and emit it as plain text siblings so the
+    // rendered bubble matches what the user composed.
+    const leading = textRun.match(/^\s+/)?.[0] ?? '';
+    const afterLeading = textRun.slice(leading.length);
+    const trailing = afterLeading.match(/\s+$/)?.[0] ?? '';
+    const trimmed = afterLeading.slice(
+      0,
+      afterLeading.length - trailing.length
     );
+    if (leading) {
+      out.push(
+        <React.Fragment key={`${key}-ws-pre`}>{leading}</React.Fragment>
+      );
+    }
+    if (trimmed) {
+      out.push(
+        <React.Fragment key={key}>
+          {renderInlineMarkdown(trimmed)}
+        </React.Fragment>
+      );
+    }
+    if (trailing) {
+      out.push(
+        <React.Fragment key={`${key}-ws-post`}>{trailing}</React.Fragment>
+      );
+    }
     textRun = '';
   };
 

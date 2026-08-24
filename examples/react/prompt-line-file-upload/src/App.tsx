@@ -10,13 +10,13 @@
 /**
  * Example: Carbon AI Chat — File upload
  *
- * Demonstrates: enabling the file-attachment button via `upload.is_on` and
+ * Demonstrates: enabling the file-attachment button via `upload.isOn` and
  * wiring an `onFileUpload` handler so attached files become
  * `ExternalFileReference` payloads on the next user message.
  *
  * APIs exercised:
  *   - `ChatCustomElement`
- *   - `PublicConfig.upload.is_on`
+ *   - `PublicConfig.upload.isOn`
  *   - `PublicConfig.upload.onFileUpload` (see `./mockOnFileUpload.ts`)
  *   - `PublicConfig.messaging.customSendMessage` (see `./customSendMessage.ts`)
  *
@@ -38,7 +38,7 @@ const config: PublicConfig = {
   },
   upload: {
     // Enables the paperclip attachment button in the input area.
-    is_on: true,
+    isOn: true,
     // Per-file upload handler; resolves to a StructuredData payload that becomes a user-message attachment.
     onFileUpload: mockOnFileUpload,
   },

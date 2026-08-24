@@ -16,7 +16,16 @@ Write for a consumer who has never seen the codebase.
 
 In scope: anything exported from [../aiChatEntry.tsx](../aiChatEntry.tsx) or [../serverEntry.ts](../serverEntry.ts), or transitively referenced (property type, generic arg, union member).
 
-Quick check: after a build, the rendered TypeDoc page for the symbol should exist under `dist/docs/carbon-tsdocs/` or the symbol name should appear in the rendered shape of something that does.
+Quick check: after a build, the symbol's rendered TypeDoc page under `dist/docs/carbon-tsdocs/` should list **its properties**, or the symbol name should appear in the rendered shape of something that does. A page that exists but renders no members is the failure mode this bar exists to catch — see [Object-shaped targets need `@interface`](#object-shaped-targets-need-interface).
+
+`npm run docs --workspace=@carbon/ai-chat` is the fast loop — TypeDoc only, no rollup, because the entry point is TS source:
+
+```bash
+npm run docs --workspace=@carbon/ai-chat
+grep -c 'tsd-index-heading' packages/ai-chat/dist/docs/carbon-tsdocs/interfaces/Type_reference.YourType.html
+```
+
+Don't reach for `npm run docs:api` to check this. It rewrites the committed [../../docs/api/](../../docs/api/), which is generated on a release or release candidate, not per PR.
 
 **Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and surfaced here through a **local re-declaration**, not a transparent re-export. TypeDoc reads the JSDoc at the declaration site it sees — and the declaration site we want it to see is the local alias in this package, not the upstream source. The bar below therefore applies at the local declaration site you control. See [Cross-package re-exports](#cross-package-re-exports).
 
@@ -92,9 +101,30 @@ import type { AutocompleteConfig as _AutocompleteConfig } from '@carbon/ai-chat-
  * rendered.
  *
  * @category Config
+ * @interface
  */
 export type AutocompleteConfig = _AutocompleteConfig;
 ```
+
+#### Object-shaped targets need `@interface`
+
+Without it, the alias renders as a Type Alias page with **no properties**. TypeDoc documents the alias, not what it resolves to — so `trigger`, `items`, `onSelect` and the rest are absent from the docs site, the search index, and the MCP server, while the build still exits 0.
+
+`@interface` makes TypeDoc ask the type checker for the resolved member list, so `Omit<>` / `Pick<>` and inherited members all render flat, each carrying the upstream property's own JSDoc. Your prose and `@category` still win — they are read from the alias, not the target.
+
+Branch on the shape of the upstream target:
+
+| Upstream target | Local re-declaration |
+| --- | --- |
+| `interface` or object type | `export type X = _X;` **with `@interface`** |
+| union, function type, tuple | `export type X = _X;` — **no `@interface`** |
+| enum | `export const X = _X;` + `export type X = _X;` — **no `@interface`** |
+
+`@interface` on a union emits a `converting_union_as_interface` warning and keeps only the members common to every branch, so reach for it only when the target is object-shaped.
+
+The tag moves the generated page from `types/` to `interfaces/`. That is a one-time URL change per symbol; `{@link}` references update themselves.
+
+**Convert interlinked types together.** Property-level JSDoc is not parsed at all until properties exist, so a `{@link OtherType.someProp}` in an upstream comment only resolves once `OtherType` is also converted. Adding `@interface` to one half of a linked pair can turn a green build red under `validation.invalidLink`.
 
 For runtime values, use `export const`:
 
@@ -140,6 +170,7 @@ import type { TriggerSuggestionConfig } from '../../types/config/InputConfig'; /
 
 - **Unexported Carbon symbols in the public surface produce a TypeDoc warning.** If a Carbon type is referenced (even indirectly) by a public ai-chat type — as a property type, generic arg, or union member — but isn't re-exported from [../aiChatEntry.tsx](../aiChatEntry.tsx), `validation.notExported: true` in [../../typedoc.json](../../typedoc.json) warns. (Third-party types like `@tiptap/core`'s show as external references and are fine to import directly; see [Cross-linking](#cross-linking) for how to reference them in JSDoc.)
 - **`@category` values come from `categoryOrder`** in [../../typedoc.json](../../typedoc.json). A category outside that list lands in the `*` catchall.
+- **A missing `@interface` is build-green but caught by a test.** [tests/typedoc/spec/alias_members_spec.ts](../../tests/typedoc/spec/alias_members_spec.ts) parses this directory and fails on any `export type X = _X` alias missing the tag, with an allowlist for the targets that are genuinely not object-shaped. Add your exemption there, with a reason, or add the tag.
 
 ## Property-level JSDoc
 
@@ -230,11 +261,12 @@ import type { AutocompleteConfig as _AutocompleteConfig } from '@carbon/ai-chat-
  * rendered.
  *
  * @category Config
+ * @interface
  */
 export type AutocompleteConfig = _AutocompleteConfig;
 ```
 
-Why it works: the first sentence tells the reader where this type is reached from in the public API, so anyone landing on `AutocompleteConfig` in TypeDoc or the MCP index can jump straight to `InputConfig.autocomplete` to see it in context.
+Why it works: the first sentence tells the reader where this type is reached from in the public API, so anyone landing on `AutocompleteConfig` in TypeDoc or the MCP index can jump straight to `InputConfig.autocomplete` to see it in context. `@interface` is what makes the type's own properties render — see [Object-shaped targets need `@interface`](#object-shaped-targets-need-interface).
 
 ## Definition of done
 
@@ -242,8 +274,9 @@ When you change anything under [.](.) (or a type in `@carbon/ai-chat-components`
 
 1. `npm run build --workspace=@carbon/ai-chat` — rollup + TypeDoc. The build fails on `validation.invalidLink` errors.
 2. If you added a new public export, confirm it appears in both [../aiChatEntry.tsx](../aiChatEntry.tsx) and [../serverEntry.ts](../serverEntry.ts).
-3. If you added or changed a public instance method, confirm it carries at least one titled `@example` that meets [code-examples.md](../../references/code-examples.md) (review gate — not build-enforced).
-4. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
+3. If you added or changed a [cross-package re-export](#cross-package-re-exports), confirm its rendered page lists the type's properties — see the quick check under [Scope](#scope). Leave [../../docs/api/](../../docs/api/) alone; it is regenerated at release time.
+4. If you added or changed a public instance method, confirm it carries at least one titled `@example` that meets [code-examples.md](../../references/code-examples.md) (review gate — not build-enforced).
+5. Semver: any change to a public type is a `feat` (additive) or a `fix!` / `BREAKING CHANGE` (non-additive). See [../../AGENTS.md](../../AGENTS.md) → _Authoring rules_ → _Public API changes_.
 
 ## Related Guidance
 

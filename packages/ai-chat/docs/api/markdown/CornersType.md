@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.CornersType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.CornersType.html
 
 The types of corners the chat can have.
 
@@ -20,7 +20,7 @@ enum CornersType
 
 Makes the corners on the chat component rounded.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.CornersType.html#round)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.CornersType.html#round)
 
 ### SQUARE
 
@@ -28,4 +28,4 @@ Makes the corners on the chat component rounded.
 
 Makes the corners on the chat component square.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.CornersType.html#square)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.CornersType.html#square)

@@ -17,7 +17,17 @@
  * APIs exercised:
  *   - `SuggestionItem` shape from `@carbon/ai-chat`
  *   - `renderCustomList` callback contract: `items`, `query`, `onSelect`,
- *     `onDismiss`
+ *     `onSend`, `onDismiss`
+ *
+ * `renderCustomList` receives two action callbacks:
+ *   - `onSelect(item)` — populates the prompt-line editor with the item
+ *     (insert-into-editor path, does NOT send to chat).
+ *   - `onSend(text)` — sends the text directly to chat, bypassing the editor.
+ *
+ * This example uses `onSelect` because the intent is to insert the chosen
+ * suggestion into the editor so the user can review or edit it before sending.
+ * The default built-in autocomplete component uses `onSend` on item click
+ * (its `disableDirectSend` prop defaults to `false`).
  *
  * Start reading at: `CustomSuggestionList()` and the keydown effect.
  */

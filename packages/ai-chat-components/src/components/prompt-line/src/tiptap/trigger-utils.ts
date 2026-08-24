@@ -54,6 +54,16 @@ export function dispatchTriggerChange(
   );
 }
 
+/**
+ * Reset the coalescing state for an editor. Call this when the controller
+ * dismisses a trigger externally (not via the extension) so that the next
+ * `dispatchTriggerChange` call for the same detail re-dispatches instead of
+ * being swallowed as a no-op.
+ */
+export function resetTriggerChangeState(editor: Editor): void {
+  lastDetailByEditor.delete(editor);
+}
+
 function areDetailsEqual(
   a: TriggerChangeEventDetail | null,
   b: TriggerChangeEventDetail | null

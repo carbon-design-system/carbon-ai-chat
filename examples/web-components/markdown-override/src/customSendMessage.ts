@@ -20,6 +20,11 @@
  *      the image is clickable (alert on click).
  *   5. `checklist` — the task list becomes actionable; toggles are logged and
  *      persisted via `getChecked`.
+ *
+ * Each turn answers with two messages on purpose. The `codeBlock` and `table`
+ * overrides are hosted in one shared page-level container and projected back
+ * into each message by slot name, so a single-message example can't show that
+ * two messages containing the same constructs each keep their own overrides.
  */
 
 import {
@@ -71,6 +76,19 @@ The \`checklist\` hook makes task lists actionable. Toggle a box and watch the c
 - [ ] Ship it
 `;
 
+const FOLLOW_UP_REPLY = `Every message renders its own overrides. This second reply repeats the \`codeBlock\` and \`table\` hooks so you can see each message keep its own:
+
+\`\`\`
+def farewell(name):
+    print(f"Goodbye, {name}!")
+\`\`\`
+
+| Service | Status | Region |
+| --- | --- | --- |
+| Scheduler | Healthy | eu-west-1 |
+| Cache | Degraded | eu-west-1 |
+`;
+
 async function customSendMessage(
   _request: MessageRequest,
   _requestOptions: CustomSendMessageOptions,
@@ -82,6 +100,16 @@ async function customSendMessage(
         {
           response_type: MessageResponseTypes.TEXT,
           text: REPLY,
+        },
+      ],
+    },
+  });
+  instance.messaging.addMessage({
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.TEXT,
+          text: FOLLOW_UP_REPLY,
         },
       ],
     },

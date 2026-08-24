@@ -26,7 +26,7 @@ import { selectHumanAgentDisplayState } from '../../store/selectors';
 import { AppState } from '../../../types/state/AppState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { doFocusRef } from '../../utils/domUtils';
-import { AnnounceOnMountComponent } from '../../components/util/AnnounceOnMountComponent';
+import { AnnounceOnMount } from '../../components/helpers/AnnounceOnMount/AnnounceOnMount';
 import { ResponseUserAvatar } from '../ResponseUserAvatar';
 import { AvailabilityMessage } from './AvailabilityMessage';
 
@@ -86,12 +86,12 @@ function HumanAgentBanner(
     );
     line1 = languagePack.agent_connecting;
     line2 = (
-      <AnnounceOnMountComponent announceOnce={languagePack.agent_connecting}>
+      <AnnounceOnMount announceOnce={languagePack.agent_connecting}>
         <AvailabilityMessage
           availability={availability}
           fallbackText={languagePack.agent_connectWaiting}
         />
-      </AnnounceOnMountComponent>
+      </AnnounceOnMount>
     );
     buttonLabel = languagePack.agent_connectButtonCancel;
   } else {

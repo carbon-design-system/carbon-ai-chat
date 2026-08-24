@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/types/Type_reference.DeepPartial.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.DeepPartial.html
 
 Utility type that makes all properties in T optional recursively.
 

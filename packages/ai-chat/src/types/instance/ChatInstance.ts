@@ -76,17 +76,28 @@ interface ChatActions {
   requestFocus: () => boolean | void;
 
   /**
-   * Sends the given message to the assistant on the remote server. This will result in a "pre:send" and "send" event
-   * being fired on the event bus. The returned promise will resolve once a response has received and processed and
-   * both the "pre:receive" and "receive" events have fired. It will reject when too many errors have occurred and
-   * the system gives up retrying.
+   * Sends the given message to the assistant. Fires `pre:send` then `send` on
+   * the event bus before delegating to `customSendMessage`.
+   *
+   * **Settlement points:**
+   * - Resolves when `customSendMessage` completes, or when the turn is stopped
+   *   or the conversation restarted while the message is in flight.
+   * - Rejects when `customSendMessage` throws, when the send path fails
+   *   terminally (for example a timeout), or when called in read-only mode.
+   *
+   * The promise settling does **not** mean a response has arrived. Response
+   * delivery is handled asynchronously by `customSendMessage` itself; use
+   * `{@link EventHandlers.on}` with the `receive` event to react to incoming
+   * messages.
    *
    * @param message The message to send.
    * @param options Options for the message sent.
    *
-   * @example Send a plain-text message and await the response
+   * @example Send a plain-text message
    * ```ts
    * await instance.send("What is the weather today?");
+   * // The promise resolves once customSendMessage has completed.
+   * // Listen for the receive event to handle the assistant's response.
    * ```
    *
    * @example Send a message to the assistant without showing it in the UI

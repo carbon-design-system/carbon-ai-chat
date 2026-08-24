@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html
 
 An option item returned in a message response from an assistant. This response type is used when displaying a list
 of options to the user. How the options are displayed is up to the client but is often displayed in either a
@@ -22,7 +22,7 @@ interface OptionItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#agent_message_type)
 
 ### description
 
@@ -30,7 +30,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 An optional description to be shown alongside the options.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#description)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#description)
 
 ### message_item_options
 
@@ -38,7 +38,7 @@ An optional description to be shown alongside the options.
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#message_item_options)
 
 ### options
 
@@ -46,7 +46,7 @@ Options that control additional features available for a message item.
 
 An array of objects describing the options from which the user can choose.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#options)
 
 ### preference
 
@@ -54,7 +54,7 @@ An array of objects describing the options from which the user can choose.
 
 The preferred type of control to display (e.g. button or dropdown).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#preference)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#preference)
 
 ### response_type
 
@@ -62,7 +62,7 @@ The preferred type of control to display (e.g. button or dropdown).
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#response_type)
 
 ### streaming_metadata
 
@@ -71,7 +71,7 @@ The response type of this message item.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#streaming_metadata)
 
 ### title
 
@@ -79,7 +79,7 @@ for a specific item.
 
 An optional title to be shown alongside the options.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#title)
 
 ### user_defined
 
@@ -87,4 +87,4 @@ An optional title to be shown alongside the options.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.OptionItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.OptionItem.html#user_defined)

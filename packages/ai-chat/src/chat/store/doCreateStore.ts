@@ -43,6 +43,7 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
   VIEW_STATE_MAIN_WINDOW_OPEN,
   DEFAULT_HEADER,
+  DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
 } from './reducerUtils';
 import { enLanguagePack } from '../../types/config/LanguagePack';
 import { LayoutConfig } from '../../types/config/LayoutConfig';
@@ -98,11 +99,16 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
       header: DEFAULT_HEADER,
       layout: DEFAULT_LAYOUT_STATE,
       launcher: DEFAULT_LAUNCHER,
+      // `mergeDefaultsDeep` skips undefined sources, so an explicit `isOn: false` survives.
+      keyboardShortcuts: {
+        messageFocusToggle: DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
+      },
     },
     {
       header: publicConfig.header,
       layout: publicConfig.layout,
       launcher: publicConfig.launcher,
+      keyboardShortcuts: publicConfig.keyboardShortcuts,
     }
   );
 
@@ -114,6 +120,10 @@ function createAppConfig(publicConfig: PublicConfig): AppConfig {
       header: derived.header,
       layout: derived.layout,
       launcher: derived.launcher,
+      // The defaults above always supply `messageFocusToggle` and its `isOn`; the merge
+      // helper's return type can't express that.
+      keyboardShortcuts:
+        derived.keyboardShortcuts as AppConfig['derived']['keyboardShortcuts'],
     },
   };
 }
@@ -190,6 +200,10 @@ function reconcileObjectReferences<T extends object>(prev: T, next: T): T {
  * `createAppConfig` always rebuilds the whole tree, so call this on its output
  * (against the previously stored `AppConfig`) before dispatching the replace.
  * At boot there is no previous config; pass `null` and `next` is returned as-is.
+ *
+ * Reconciliation is one level deep, with `public.input` the single deliberate
+ * exception — see the comment at that call. Everything else stays all-or-nothing
+ * per top-level key.
  */
 function reconcileAppConfigReferences(
   prev: AppConfig | null | undefined,
@@ -201,6 +215,22 @@ function reconcileAppConfigReferences(
 
   const publicConfig = reconcileObjectReferences(prev.public, next.public);
   const derived = reconcileObjectReferences(prev.derived, next.derived);
+
+  // `input` is the one key reconciled a second level down. It is the only slot
+  // whose siblings are consumed as memo dependencies, so an unrelated change
+  // inside it (an action's `disabled` flag flipping as the user types) would
+  // otherwise hand `input.starters` / `input.mention` / `input.tiptap` fresh
+  // references and rebuild the prompt-line's extensions for nothing.
+  if (
+    prev.public.input &&
+    publicConfig.input &&
+    publicConfig.input !== prev.public.input
+  ) {
+    publicConfig.input = reconcileObjectReferences(
+      prev.public.input,
+      publicConfig.input
+    );
+  }
 
   if (publicConfig === prev.public && derived === prev.derived) {
     return prev;

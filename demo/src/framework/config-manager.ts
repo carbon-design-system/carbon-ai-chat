@@ -42,7 +42,6 @@ export class ConfigManager {
     // Use newConfig as the base since all switchers dispatch the full desired
     // config (via {...this.config, ...changes}).  Only messaging.customSendMessage
     // needs recovery from oldConfig because functions can't survive URL serialization.
-    const toggle = newConfig.keyboardShortcuts?.messageFocusToggle;
     const config: PublicConfig = {
       ...newConfig,
       messaging: {
@@ -52,25 +51,6 @@ export class ConfigManager {
           oldConfig.messaging?.customSendMessage ||
           customSendMessage,
       },
-      // Ensure messageFocusToggle always has required key/modifiers defaults
-      // because the keyboard-shortcut switcher only sends { is_on }.
-      ...(toggle
-        ? {
-            keyboardShortcuts: {
-              ...newConfig.keyboardShortcuts,
-              messageFocusToggle: {
-                key: toggle.key || 'F6',
-                modifiers: {
-                  ctrl: false,
-                  alt: false,
-                  shift: false,
-                  ...toggle.modifiers,
-                },
-                is_on: toggle.is_on ?? true,
-              },
-            },
-          }
-        : {}),
     };
 
     // Check for changes that require session restart
@@ -131,18 +111,16 @@ export class ConfigManager {
           }
         : undefined,
       // Strip onFileUpload (function) so it doesn't appear as "[object Object]" in the URL.
-      // It will be re-injected by getSettings() on page load when upload.is_on === true.
+      // It will be re-injected by getSettings() on page load when upload.isOn === true.
       upload: config.upload
         ? {
             ...config.upload,
             onFileUpload: undefined,
           }
         : undefined,
-      // Strip the mention/command onSelect/onRemove callbacks (functions) so
-      // they don't appear as "[object Object]" in the URL. `items` is a
-      // required field and, for the demo's static fixtures, already plain
-      // JSON — left as-is. Re-injected by getSettings() on page load
-      // whenever a mention/command config is present.
+      // Strip function-valued fields from input sub-configs so they don't
+      // appear as "[object Object]" in the URL. All are re-injected by
+      // getSettings() on page load whenever the relevant config is present.
       input: config.input
         ? {
             ...config.input,
@@ -159,6 +137,9 @@ export class ConfigManager {
                   onSelect: undefined,
                   onRemove: undefined,
                 }
+              : undefined,
+            autocomplete: config.input.autocomplete
+              ? { ...config.input.autocomplete, items: [] }
               : undefined,
           }
         : undefined,

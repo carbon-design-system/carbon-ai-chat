@@ -28,7 +28,7 @@ const positiveCategories = [
 ];
 
 export default {
-  title: 'Preview/Feedback',
+  title: 'Components/Feedback',
   component: 'cds-aichat-feedback',
   argTypes: {
     isOpen: {

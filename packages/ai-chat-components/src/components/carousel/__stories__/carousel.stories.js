@@ -35,7 +35,7 @@ const argTypes = {
 };
 
 export default {
-  title: 'Preview/Carousel',
+  title: 'Components/Carousel',
   argTypes,
   decorators: [
     (story) => html`

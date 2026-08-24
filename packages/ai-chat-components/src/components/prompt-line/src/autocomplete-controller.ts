@@ -13,10 +13,11 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 
-import '../../autocomplete/src/autocomplete.js';
-import type { StarterTriggerStorage } from './tiptap/carbon-starter-trigger.js';
+import '../autocomplete/src/autocomplete.js';
+import { writeStarterStorage } from './tiptap/carbon-starter-trigger.js';
 import { resolveShowTriggerInChip } from './tiptap/carbon-mention.js';
 import { projectRawValue } from './tiptap/json-utils.js';
+import { resetTriggerChangeState } from './tiptap/trigger-utils.js';
 import type PromptLineElement from './prompt-line.js';
 import type {
   AutocompleteConfig,
@@ -59,6 +60,8 @@ export interface AutocompleteControllerState {
   items: SuggestionItem[];
   /** Consumer's `renderCustomList`, if any — resolved from the active trigger. */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
+  /** Forwarded from the active trigger config's `disableDirectSend`. */
+  disableDirectSend?: boolean;
 }
 
 export class AutocompleteController {
@@ -152,13 +155,7 @@ export class AutocompleteController {
       // Focus state is unchanged — the list appears on the next focus if the
       // editor is not currently focused, or immediately if it is.
       if (prevIsOn !== isOn) {
-        const editor = this._promptLine?.getEditor();
-        const storage = (editor?.storage as unknown as Record<string, unknown>)
-          ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
-        if (storage && editor) {
-          storage.isOn = isOn;
-          editor.view.dispatch(editor.state.tr);
-        }
+        writeStarterStorage(this._promptLine?.getEditor(), { isOn });
       }
     }
     if ('isSendDisabled' in next) {
@@ -181,14 +178,9 @@ export class AutocompleteController {
     this._promptLine = promptLine;
     // Reconcile the isOn flag into the newly attached prompt-line's storage.
     if (promptLine) {
-      const isOn = this._starters?.isOn !== false;
-      const editor = promptLine.getEditor();
-      const storage = (editor?.storage as unknown as Record<string, unknown>)
-        ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
-      if (storage && editor && storage.isOn !== isOn) {
-        storage.isOn = isOn;
-        editor.view.dispatch(editor.state.tr);
-      }
+      writeStarterStorage(promptLine.getEditor(), {
+        isOn: this._starters?.isOn !== false,
+      });
     }
     // Re-evaluate the key-forwarding handler — the editor DOM we were bound
     // to may now be gone, or a new one may need binding.
@@ -253,8 +245,15 @@ export class AutocompleteController {
     this._refreshEditorKeyHandler();
   }
 
-  /** Clear active trigger + items. */
-  dismiss(): void {
+  /**
+   * Clear active trigger + items.
+   *
+   * @param keepCoalesced - When `true`, skip `resetTriggerChangeState` so the
+   *   trigger-utils coalescing layer stays active. Use this when the dismissal
+   *   is from a send action where the editor stays empty and focused — without
+   *   it, the starter trigger would immediately re-fire on the next transaction.
+   */
+  dismiss(keepCoalesced = false): void {
     if (this._destroyed) {
       return;
     }
@@ -266,6 +265,12 @@ export class AutocompleteController {
     this._resolveToken++;
     this._refreshEditorKeyHandler();
     this._emit();
+    if (!keepCoalesced) {
+      const editor = this._promptLine?.getEditor();
+      if (editor) {
+        resetTriggerChangeState(editor);
+      }
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -499,11 +504,31 @@ export class AutocompleteController {
     return config?.renderCustomList;
   }
 
+  private _resolveDisableDirectSend(): boolean | undefined {
+    const trigger = this._trigger;
+
+    if (!trigger) {
+      return undefined;
+    }
+
+    switch (trigger.type) {
+      case 'starter':
+        return this._starters?.disableDirectSend;
+      case 'mention':
+        return true;
+      case 'command':
+        return true;
+      default:
+        return this._autocomplete?.disableDirectSend;
+    }
+  }
+
   private _emit(): void {
     this._onChange({
       trigger: this._trigger,
       items: this._items,
       renderCustomList: this._resolveRenderCustomList(),
+      disableDirectSend: this._resolveDisableDirectSend(),
     });
   }
 }
@@ -576,6 +601,10 @@ async function resolveConfigItems(
  * @element cds-aichat-autocomplete-controller
  * @fires cds-aichat-starter-selected — `{ text: string }` after a starter is
  *   inserted into the editor; consumer triggers send.
+ * @fires cds-aichat-autocomplete-item-selected — `{ item: SuggestionItem }`
+ *   after a suggestion item is selected. Fired in addition to type-specific callbacks.
+ * @fires cds-aichat-autocomplete-item-send — `{ text: string }` when the
+ *   per-item send button is clicked inside the suggestion list.
  */
 @carbonElement(`${prefix}-autocomplete-controller`)
 class AutocompleteControllerElement extends LitElement {
@@ -619,6 +648,7 @@ class AutocompleteControllerElement extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    this.addEventListener('mousedown', this._handleMousedown);
     this._controller = new AutocompleteController({
       mention: this.mention,
       command: this.command,
@@ -650,6 +680,7 @@ class AutocompleteControllerElement extends LitElement {
   }
 
   override disconnectedCallback(): void {
+    this.removeEventListener('mousedown', this._handleMousedown);
     this._eventSource?.removeEventListener(
       'cds-aichat-trigger-change',
       this._handleTriggerChange as EventListener
@@ -687,10 +718,21 @@ class AutocompleteControllerElement extends LitElement {
         ? this.firstElementChild
         : null);
     this._controller.setListElement(listEl);
+
+    // Pass the editor DOM as anchorElement so the autocomplete's outside-click
+    // guard treats clicks on the editor as inside-clicks (not dismissals).
+    const editorDom = this._controller.getPromptLine()?.getEditor()?.view
+      .dom as Element | undefined;
+    const autocompleteEl = this.querySelector<
+      HTMLElement & { anchorElement?: Element | null }
+    >('cds-aichat-autocomplete');
+    if (autocompleteEl) {
+      autocompleteEl.anchorElement = editorDom ?? null;
+    }
   }
 
   override render() {
-    const { trigger, items, renderCustomList } = this._state;
+    const { trigger, items, renderCustomList, disableDirectSend } = this._state;
     if (!trigger || items.length === 0) {
       return nothing;
     }
@@ -698,8 +740,9 @@ class AutocompleteControllerElement extends LitElement {
       const result = renderCustomList({
         items,
         query: trigger.query,
-        onSelect: (item) => this._controller?.select(item),
         onDismiss: () => this._controller?.dismiss(),
+        onSelect: (item) => this._selectItem(item),
+        onSend: (text) => this._sendItem(text),
       });
       if (result instanceof HTMLElement) {
         return html`${result}`;
@@ -719,12 +762,45 @@ class AutocompleteControllerElement extends LitElement {
     return html`
       <cds-aichat-autocomplete
         .items=${items}
+        .disableDirectSend=${disableDirectSend}
         @cds-aichat-autocomplete-select=${(
-          event: CustomEvent<{ item: SuggestionItem }>
-        ) => this._controller?.select(event.detail.item)}
+          e: CustomEvent<{ item: SuggestionItem }>
+        ) => this._selectItem(e.detail.item)}
+        @cds-aichat-autocomplete-send=${(e: CustomEvent<{ text: string }>) =>
+          this._sendItem(e.detail.text)}
         @cds-aichat-autocomplete-dismiss=${() => this._controller?.dismiss()}></cds-aichat-autocomplete>
     `;
   }
+
+  private _selectItem(item: SuggestionItem): void {
+    this._controller?.select(item);
+    this.dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-item-selected', {
+        detail: { item },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _sendItem(text: string): void {
+    if (this.isSendDisabled) {
+      return;
+    }
+    this._controller?.dismiss(true);
+    this.dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-item-send', {
+        detail: { text },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _handleMousedown = (event: MouseEvent): void => {
+    // Prevent the autocomplete list from stealing focus from the editor.
+    event.preventDefault();
+  };
 
   private _handleTriggerChange = (event: Event): void => {
     this._controller?.handleTriggerChangeEvent(

@@ -231,6 +231,7 @@ type RenderWriteableElementResponse = {
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type TokenTree = _TokenTree;
 
@@ -241,6 +242,7 @@ export type TokenTree = _TokenTree;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererTableData = _MarkdownRendererTableData;
 
@@ -251,6 +253,7 @@ export type MarkdownRendererTableData = _MarkdownRendererTableData;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
 
@@ -259,10 +262,13 @@ export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
  * {@link CustomMarkdownRenderers.table} and
  * {@link WCCustomMarkdownRenderers.table}. Extends
  * {@link MarkdownRendererTableData} with the source token, full
- * {@link TokenTree} node, and a stable `slotName` suitable for use as a key.
+ * {@link TokenTree} node, and a `slotName` that is stable across renders and
+ * unique across every rendered markdown block on the page, so it is safe to
+ * use as a key. Treat the value as opaque; its format is not part of the API.
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
 
@@ -271,10 +277,13 @@ export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
  * {@link CustomMarkdownRenderers.codeBlock} and
  * {@link WCCustomMarkdownRenderers.codeBlock}. Extends
  * {@link MarkdownRendererCodeBlockData} with the source token, full
- * {@link TokenTree} node, and a stable `slotName` suitable for use as a key.
+ * {@link TokenTree} node, and a `slotName` that is stable across renders and
+ * unique across every rendered markdown block on the page, so it is safe to
+ * use as a key. Treat the value as opaque; its format is not part of the API.
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
 
@@ -285,15 +294,19 @@ export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
 
 /**
- * Attribute overrides returned by a link renderer callback (`href`, `target`,
- * `rel`, extra `attributes`). Return `null` to keep the defaults.
+ * Attribute overrides returned by a {@link CustomMarkdownRenderers.link} /
+ * {@link WCCustomMarkdownRenderers.link} callback. Fields left `undefined` keep
+ * the framework default; returning `null` from the callback skips the override
+ * entirely. Supply `onClick` to intercept link clicks.
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
 
@@ -304,6 +317,7 @@ export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
 
@@ -313,6 +327,7 @@ export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
 
@@ -322,6 +337,7 @@ export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
 
@@ -331,6 +347,7 @@ export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererChecklistItemArgs =
   _MarkdownRendererChecklistItemArgs;
@@ -341,6 +358,7 @@ export type MarkdownRendererChecklistItemArgs =
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownRendererChecklistToggleArgs =
   _MarkdownRendererChecklistToggleArgs;
@@ -355,6 +373,7 @@ export type MarkdownRendererChecklistToggleArgs =
  *
  * @category Messaging
  * @experimental
+ * @interface
  */
 export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
 

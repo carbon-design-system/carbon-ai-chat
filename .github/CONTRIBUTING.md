@@ -6,6 +6,8 @@ Carbon AI Chat is an **open source** project at IBM. We pride ourselves on open 
 
 This project is made possible not just by the Carbon team, but by community members who’ve generously contributed their time to give back.
 
+Decisions that change public API or break an integration are written up as [architecture decision records](../docs/adr/README.md) before the code lands. Each one merges while it is still open for comment, with an [RFC discussion](https://github.com/carbon-design-system/carbon-ai-chat/discussions/categories/rfc-discussions) and a date. If a decision is wrong for how you use this library, that is where to say so.
+
 ## Code of conduct
 
 [Code of conduct](./CODE_OF_CONDUCT.md)

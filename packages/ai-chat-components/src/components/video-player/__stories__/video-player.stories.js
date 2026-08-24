@@ -12,7 +12,7 @@ import '../../card/index.js';
 import { html } from 'lit';
 
 export default {
-  title: 'Preview/Video player',
+  title: 'Components/Video player',
   args: {
     source: 'https://www.youtube.com/watch?v=eZ1NizUx9U4',
     title: 'Sample Video Title',

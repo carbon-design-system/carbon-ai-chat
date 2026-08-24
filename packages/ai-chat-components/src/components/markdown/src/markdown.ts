@@ -33,6 +33,7 @@ import {
   hasNodeAfterTable,
   hasTrailingTableToken,
 } from './utils/streaming-table.js';
+import { nextMarkdownInstanceId } from './utils/slot-names.js';
 
 const CONSOLE_PREFIX = '[carbon-ai-chat-components]';
 
@@ -270,6 +271,19 @@ class CDSAIChatMarkdown extends LitElement {
   private slotHosts: Map<string, HTMLElement> = new Map();
 
   /**
+   * Namespace appended to every slot name this element mints, so two markdown
+   * elements rendering identical markdown never collide in the shared
+   * page-level host container a chat container hoists slot hosts into.
+   *
+   * Assigned in the field initializer (construction) rather than
+   * `connectedCallback`, which runs again after a DOM move — the namespace, and
+   * therefore every slot name and every adopted host, must survive a
+   * disconnect/reconnect.
+   * @internal
+   */
+  private readonly slotNamespace = nextMarkdownInstanceId();
+
+  /**
    * Slot names whose host was created by an outer listener (a chat container
    * that called `preventDefault()` on the host-mount event). We track these
    * so we can fire matching unmount events without trying to remove a host we
@@ -298,8 +312,22 @@ class CDSAIChatMarkdown extends LitElement {
   private renderTask: Promise<void> | null = null;
 
   private hasRenderedStreamingTableLoadingFrame = false;
+  /**
+   * The most recent tree parsed while in streaming table loading mode, held back
+   * from rendering. It seeds `previousTreeForDiff`, so the tick that leaves loading
+   * mode without a reparse still renders the content staged during it.
+   * @internal
+   */
   private stagedStreamingTokenTree: TokenTree | null = null;
+
+  /**
+   * @internal
+   */
   private isStreamingTableLoadingMode = false;
+
+  /**
+   * @internal
+   */
   private hasConnected = false;
 
   /**
@@ -632,6 +660,7 @@ class CDSAIChatMarkdown extends LitElement {
           tableGetPaginationStatusText: this.tableGetPaginationStatusText,
           // Custom-renderer hooks
           customRenderers: this.customRenderers,
+          slotNamespace: this.slotNamespace,
           md: this.markdownItInstance,
         });
         this.renderedContent = template;
@@ -652,16 +681,18 @@ class CDSAIChatMarkdown extends LitElement {
         return;
       }
 
-      const renderTree = this.stagedStreamingTokenTree ?? nextTokenTree;
+      // Never prefer the staged tree here: when nothing was reparsed `nextTokenTree`
+      // *is* the staged tree (see `previousTreeForDiff` above), and when something
+      // was, it came from newer source.
       this.stagedStreamingTokenTree = null;
       this.hasRenderedStreamingTableLoadingFrame = false;
-      if (renderTree !== this.tokenTree) {
-        this.tokenTree = renderTree;
+      if (nextTokenTree !== this.tokenTree) {
+        this.tokenTree = nextTokenTree;
       }
 
       // Next we take that tree and transform it into Lit content to be rendered into the template.
       // this.renderedContent is what is rendered in the template directly.
-      renderAndDispatch(renderTree);
+      renderAndDispatch(nextTokenTree);
     } catch (error) {
       console.error(`${CONSOLE_PREFIX} Failed to parse markdown`, error);
     }
@@ -836,7 +867,6 @@ class CDSAIChatMarkdown extends LitElement {
         )({
           ...descriptor.data,
           token: descriptor.token,
-          node: descriptor.node,
           slotName: descriptor.slotName,
         });
       } catch (error) {

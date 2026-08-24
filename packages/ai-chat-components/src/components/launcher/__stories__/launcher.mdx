@@ -1,0 +1,55 @@
+import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
+
+import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
+import * as LauncherStories from "./launcher.stories";
+
+<Meta
+  of={LauncherStories}
+  parameters={{
+    previewTabs: { "storybook/docs/panel": { title: "Overview" } },
+  }}
+/>
+
+# Launcher
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/launcher) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component API](#component-api)
+- [JS (via import)](#js-via-import)
+- [JS (via CDN)](#js-via-cdn)
+- [Feedback](#feedback)
+
+## Overview
+
+The `cds-aichat-launcher` is a floating action button that opens and closes the AI Chat window.
+It ships as a standalone web component so consumers can wire it to their own state management
+, when the built-in launcher is removed in 2.0.
+
+### Getting started
+
+```html
+<cds-aichat-launcher
+  closed-label="Open chat"
+  open-label="Close chat"
+></cds-aichat-launcher>
+```
+
+## Component API
+
+<ArgTypes of="cds-aichat-launcher" />
+
+## JS (via import)
+
+```javascript
+import "@carbon/ai-chat-components/es/components/launcher/index.js";
+```
+
+<Markdown>{`${cdnJs(["launcher"])}`}</Markdown>
+<Markdown>{`${cdnCss()}`}</Markdown>
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

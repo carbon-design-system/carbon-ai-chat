@@ -261,12 +261,10 @@ class ChatActionsImpl {
    * welcome node. This message behaves a little differently from the welcome node in that it's assumed that this
    * message is actively needed. It will bypass the home screen if it is enabled and it was always append this
    * message to the end of any session history that is retrieved.
-   * @param alternateWelcomeRequestSource The source of the alternate welcome message.
    * @param alternateOptions The send to send along with the alternate welcome request.
    */
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
-    alternateWelcomeRequestSource?: MessageSendSource,
     alternateOptions?: SendOptions
   ) {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
@@ -276,7 +274,6 @@ class ChatActionsImpl {
         this.hydrating = true;
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
-          alternateWelcomeRequestSource,
           alternateOptions
         );
         fireReady = true;
@@ -299,18 +296,15 @@ class ChatActionsImpl {
    * welcome node. This message behaves a little differently from the welcome node in that it's assumed that this
    * message is actively needed. It will bypass the home screen if it is enabled and it was always append this
    * message to the end of any session history that is retrieved.
-   * @param alternateWelcomeRequestSource The source of the alternate welcome message.
    * @param alternateOptions The options to send along with the alternate welcome request.
    */
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
-    alternateWelcomeRequestSource?: MessageSendSource,
     alternateOptions?: SendOptions
   ) {
     debugLog(
       'Hydrating Carbon AI Chat',
       alternateWelcomeRequest,
-      alternateWelcomeRequestSource,
       alternateOptions
     );
 
@@ -636,9 +630,10 @@ class ChatActionsImpl {
       return;
     }
 
-    // Rich editor mounted: apply directly so rich nodes / marks survive.
-    if (editor) {
-      ref!.setContent(next);
+    // Rich editor mounted: apply directly so rich nodes / marks survive. `editor` is
+    // derived from `ref`, so testing both narrows the ref instead of asserting it.
+    if (ref && editor) {
+      ref.setContent(next);
       return;
     }
 
@@ -756,7 +751,7 @@ class ChatActionsImpl {
     const uploadConfig = store.getState().config.public.upload;
 
     // Silently no-op if upload is not configured or disabled.
-    if (!uploadConfig?.is_on || !uploadConfig.onFileUpload) {
+    if (!uploadConfig?.isOn || !uploadConfig.onFileUpload) {
       return;
     }
 
@@ -823,10 +818,10 @@ class ChatActionsImpl {
   }
 
   /**
-   * Sends the given message to the assistant on the remote server. This will result in a "pre:send" and "send" event
-   * being fired on the event bus. The returned promise will resolve once a response has received and processed and
-   * both the "pre:receive" and "receive" events have fired. It will reject when too many errors have occurred and
-   * the system gives up retrying.
+   * Sends the given message to the assistant. Fires `pre:send` then `send` on
+   * the event bus before delegating to `customSendMessage`. Resolves when
+   * `customSendMessage` completes or when the turn is stopped; rejects when
+   * `customSendMessage` throws or the send path fails terminally.
    *
    * @param message The message to send.
    * @param source The source of the message.
@@ -883,16 +878,16 @@ class ChatActionsImpl {
       // If no hydration has started, then we need to start the hydration and use this message as the alternate for
       // the welcome node.
       this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
-      await this.hydrateChat(messageRequest, source, options);
+      await this.hydrateChat(messageRequest, options);
       await this.doSend(messageRequest, source, options);
     }
   }
 
   /**
-   * Sends the given message to the assistant on the remote server. This will result in a "pre:send" and "send" event
-   * being fired on the event bus. The returned promise will resolve once a response has received and processed and
-   * both the "pre:receive" and "receive" events have fired. It will reject when too many errors have occurred and
-   * the system gives up retrying.
+   * Inner send: fires `pre:send` and `send`, then calls `customSendMessage` via
+   * `MessageService`. Resolves when `customSendMessage` completes or the turn
+   * is stopped; rejects when `customSendMessage` throws or the send path fails
+   * terminally. Retries are handled upstream by `customSendMessage`.
    *
    * @param message The message to send.
    * @param source The source of the message.

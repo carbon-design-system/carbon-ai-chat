@@ -66,12 +66,12 @@ export interface MarkdownRendererTableArgs extends MarkdownRendererTableData {
    * the `markdown-it` `Token` documentation for the field shape.
    */
   token: Readonly<Token>;
-  /** The full token-tree node, including descendants. */
-  node: Readonly<TokenTree>;
   /**
-   * Stable slot identifier for this rendered element. The same name is
-   * reused across renders while the underlying source line stays put — useful
-   * as a React key.
+   * Stable slot identifier for this rendered element. Unique across every
+   * markdown element on the page, and reused across renders — including
+   * streaming chunks — while the underlying source line stays put, which makes
+   * it a safe React key. Treat the value as opaque; its format is not part of
+   * the API.
    */
   slotName: string;
 }
@@ -87,12 +87,12 @@ export interface MarkdownRendererCodeBlockArgs extends MarkdownRendererCodeBlock
    * `markdown-it` `Token` documentation for the field shape.
    */
   token: Readonly<Token>;
-  /** The full token-tree node. */
-  node: Readonly<TokenTree>;
   /**
-   * Stable slot identifier for this rendered element. The same name is
-   * reused across renders while the underlying source line stays put — useful
-   * as a React key.
+   * Stable slot identifier for this rendered element. Unique across every
+   * markdown element on the page, and reused across renders — including
+   * streaming chunks — while the underlying source line stays put, which makes
+   * it a safe React key. Treat the value as opaque; its format is not part of
+   * the API.
    */
   slotName: string;
 }
@@ -120,8 +120,6 @@ export interface MarkdownRendererLinkArgs {
   attributes: Record<string, string>;
   /** The markdown-it `link_open` `Token`. */
   token: Readonly<Token>;
-  /** The full token-tree node, including descendants. */
-  node: Readonly<TokenTree>;
 }
 
 /**
@@ -143,6 +141,13 @@ export interface MarkdownRendererLinkResult {
    * the element has HTML sanitization enabled.
    */
   attributes?: Record<string, string>;
+  /**
+   * Click handler for the rendered `<a>` element. Call
+   * `event.preventDefault()` to suppress the browser's default navigation.
+   * Wired via `addEventListener` — never serialized as an HTML attribute and
+   * unaffected by HTML sanitization.
+   */
+  onClick?: (event: MouseEvent) => void;
 }
 
 /**
@@ -163,8 +168,6 @@ export interface MarkdownRendererImageArgs {
   attributes: Record<string, string>;
   /** The markdown-it `image` `Token`. */
   token: Readonly<Token>;
-  /** The full token-tree node. */
-  node: Readonly<TokenTree>;
 }
 
 /**
@@ -203,16 +206,14 @@ export interface MarkdownRendererChecklistItemArgs {
   checked: boolean;
   /** The markdown-it checkbox `Token`. */
   token: Readonly<Token>;
-  /** The full token-tree node. */
-  node: Readonly<TokenTree>;
 }
 
 /**
  * Payload passed to {@link MarkdownRendererChecklist.onToggle} when a user
  * toggles a task-list checkbox. Carries the item identity and the new state.
- * The markdown-it token/node are intentionally omitted — they are not
- * available at DOM-event time; use {@link MarkdownRendererChecklistItemArgs}
- * (via `getChecked`) when you need them.
+ * The markdown-it token is intentionally omitted — it is not available at
+ * DOM-event time; use {@link MarkdownRendererChecklistItemArgs} (via
+ * `getChecked`) when you need it.
  *
  * @category Messaging
  */
@@ -299,21 +300,18 @@ export type MarkdownRendererSlotDescriptor =
       slotName: string;
       kind: 'table';
       token: Readonly<Token>;
-      node: Readonly<TokenTree>;
       data: MarkdownRendererTableData;
     }
   | {
       slotName: string;
       kind: 'codeBlock';
       token: Readonly<Token>;
-      node: Readonly<TokenTree>;
       data: MarkdownRendererCodeBlockData;
     }
   | {
       slotName: string;
       kind: 'pluginFallback';
       token: Readonly<Token>;
-      node: Readonly<TokenTree>;
       /**
        * Sanitized HTML produced by the user plugin's renderer rule. The
        * markdown element assigns this to a light-DOM slot host's `innerHTML`
@@ -439,4 +437,15 @@ export interface RenderTokenTreeOptions {
    * @internal
    */
   pluginSlotCounter?: { next: () => number };
+
+  /**
+   * Namespace appended to every slot name minted during this render, supplied
+   * by the owning `cds-aichat-markdown` element. Slot hosts are hoisted into a
+   * single page-level container, so names must be unique across every markdown
+   * element on the page — not just within one render pass. Omitted when the
+   * renderer is driven directly (unit tests), which yields un-namespaced names.
+   *
+   * @internal
+   */
+  slotNamespace?: string;
 }

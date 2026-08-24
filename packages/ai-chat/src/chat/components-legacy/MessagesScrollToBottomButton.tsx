@@ -12,7 +12,7 @@ import ChatButton, {
   CHAT_BUTTON_SIZE,
 } from '@carbon/ai-chat-components/es/react/chat-button.js';
 import React from 'react';
-import { MountChildrenOnDelay } from '../components/util/MountChildrenOnDelay';
+import { MountChildrenOnDelay } from '../components/helpers/MountChildrenOnDelay/MountChildrenOnDelay';
 
 interface MessagesScrollToBottomButtonProps {
   ariaLabel: string;

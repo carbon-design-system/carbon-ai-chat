@@ -18,12 +18,50 @@
 
 import { Extension, type Editor } from '@tiptap/core';
 
-import { dispatchTriggerChange } from './trigger-utils.js';
+import {
+  dispatchTriggerChange,
+  resetTriggerChangeState,
+} from './trigger-utils.js';
 import type { SuggestionItem } from './types.js';
 
 export interface StarterTriggerStorage {
   items: SuggestionItem[];
   isOn: boolean;
+}
+
+/** Read the starter trigger's live storage, or `undefined` if not installed. */
+export function readStarterStorage(
+  editor: Editor | null | undefined
+): StarterTriggerStorage | undefined {
+  return (editor?.storage as unknown as Record<string, unknown> | undefined)
+    ?.carbonStarterTrigger as StarterTriggerStorage | undefined;
+}
+
+/**
+ * Apply a starter-config patch to the live editor. Starter differences never
+ * justify recreating the editor — that would drop undo history — so they are
+ * written in place. The empty transaction re-runs this extension's
+ * `onTransaction` hook, so a toggle takes effect against the current selection
+ * instead of waiting for the next keystroke. No-ops when nothing changed, so
+ * callers do not have to guard.
+ */
+export function writeStarterStorage(
+  editor: Editor | null | undefined,
+  patch: Partial<StarterTriggerStorage>
+): void {
+  const storage = readStarterStorage(editor);
+  if (!editor || !storage) {
+    return;
+  }
+  const entries = Object.entries(patch) as [
+    keyof StarterTriggerStorage,
+    StarterTriggerStorage[keyof StarterTriggerStorage],
+  ][];
+  if (entries.every(([key, value]) => storage[key] === value)) {
+    return;
+  }
+  Object.assign(storage, patch);
+  editor.view.dispatch(editor.state.tr);
 }
 
 export function carbonStarterTrigger(
@@ -47,25 +85,30 @@ export function carbonStarterTrigger(
     },
 
     onTransaction() {
-      maybeEmit(this.editor);
+      if (this.editor.isFocused) {
+        maybeEmit(this.editor);
+      }
     },
 
-    onFocus() {
-      maybeEmit(this.editor);
+    onFocus({ editor }) {
+      maybeEmit(editor);
     },
 
-    onBlur() {
-      maybeEmit(this.editor, /* forceClear */ true);
+    onBlur({ editor }) {
+      // Clear coalescing state on blur so the next focus can re-emit the
+      // starter trigger even if the detail hasn't changed (e.g. after the
+      // send button was clicked, which uses keepCoalesced: true on dismiss).
+      resetTriggerChangeState(editor);
     },
   });
 }
 
 function maybeEmit(editor: Editor, forceClear = false): void {
-  const storage = (editor.storage as unknown as Record<string, unknown>)
-    .carbonStarterTrigger as StarterTriggerStorage | undefined;
+  const storage = readStarterStorage(editor);
   const isActive =
     !forceClear &&
     storage?.isOn !== false &&
+    (storage?.items.length ?? 0) > 0 &&
     editor.isEditable &&
     editor.isFocused &&
     editor.isEmpty;

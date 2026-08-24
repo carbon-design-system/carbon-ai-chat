@@ -17,9 +17,9 @@ import { useServiceManager } from '../../../hooks/useServiceManager';
 import actions from '../../../store/actions';
 import { AppState } from '../../../../types/state/AppState';
 import { getURLHostName } from '../../../utils/browserUtils';
-import VisuallyHidden from '../../../components/util/VisuallyHidden';
-import { ClickableImage } from '../util/ClickableImage';
+import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { IFrameItem } from '../../../../types/messaging/Messages';
+import { Image } from '../image/Image';
 
 interface IFramePreviewCardComponentProps {
   /**
@@ -35,9 +35,6 @@ function IFramePreviewCardComponent({
   messageItem,
 }: IFramePreviewCardComponentProps) {
   const { source, image_url, title, description } = messageItem;
-  const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
-  );
   const urlHostName = getURLHostName(source);
   const { store } = useServiceManager();
   const iframe_ariaImageAltText = useSelector(
@@ -63,7 +60,7 @@ function IFramePreviewCardComponent({
 
   return (
     <div>
-      <ClickableImage
+      <Image
         title={title}
         description={description}
         source={image_url}
@@ -72,7 +69,6 @@ function IFramePreviewCardComponent({
         renderIcon={ArrowRight}
         onClick={handleCardClick}
         preventInlineError
-        useAITheme={aiEnabled}
       />
       <VisuallyHidden>{iframeAriaClickPreviewCardMessage}</VisuallyHidden>
     </div>

@@ -27,6 +27,7 @@ import { mockOnFileUpload } from '../customSendMessage/doFileUpload';
 import {
   mentionItems,
   commandItems,
+  autocompleteItems,
   mentionOnSelect,
   mentionOnRemove,
   commandOnSelect,
@@ -165,7 +166,7 @@ export class DemoInputConfigSwitcher extends LitElement {
           detail: {
             ...this.config,
             upload: {
-              is_on: true,
+              isOn: true,
               onFileUpload: mockOnFileUpload,
             },
           },
@@ -293,25 +294,11 @@ export class DemoInputConfigSwitcher extends LitElement {
     if (!upload) {
       return DROPDOWN_DEFAULT;
     }
-    return upload.is_on ? DROPDOWN_TRUE : DROPDOWN_FALSE;
+    return upload.isOn ? DROPDOWN_TRUE : DROPDOWN_FALSE;
   }
 
   private _autocompleteDropdownValue(): string {
-    const suggestions = this.config?.input?.suggestions;
-
-    // Check if autocomplete is explicitly enabled
-    if (suggestions && Array.isArray(suggestions)) {
-      const hasAutocomplete = suggestions.some(
-        (suggestion) =>
-          suggestion.type === 'autocomplete' &&
-          suggestion.trigger === '' &&
-          suggestion.triggerPosition === 'start'
-      );
-      return hasAutocomplete ? DROPDOWN_TRUE : DROPDOWN_FALSE;
-    }
-
-    // Default is off (false)
-    return DROPDOWN_FALSE;
+    return this.config?.input?.autocomplete ? DROPDOWN_TRUE : DROPDOWN_FALSE;
   }
 
   private _menuOptionsDropdownValue(): string {
@@ -332,7 +319,7 @@ export class DemoInputConfigSwitcher extends LitElement {
       if (value === DROPDOWN_TRUE) {
         next.actions = DEMO_MENU_OPTIONS;
       } else if (value === DROPDOWN_FALSE) {
-        next.actions = [];
+        delete next.actions;
       } else {
         delete next.actions;
       }
@@ -345,49 +332,17 @@ export class DemoInputConfigSwitcher extends LitElement {
     const customEvent = event as CustomEvent;
     const value = customEvent.detail.item.value as string;
 
-    if (value === DROPDOWN_TRUE) {
-      // Enable autocomplete - dispatch event to let parent handle it
-      this.dispatchEvent(
-        new CustomEvent('autocomplete-toggle', {
-          detail: { enabled: true },
-          bubbles: true,
-          composed: true,
-        })
-      );
-    } else {
-      // Disable autocomplete
-      const newConfig = { ...this.config };
+    this._updateInput((input) => {
+      const next: InputConfig = { ...(input ?? {}) };
 
-      if (newConfig.input?.suggestions) {
-        // Remove autocomplete suggestions but keep other suggestions
-        newConfig.input.suggestions = newConfig.input.suggestions.filter(
-          (suggestion) =>
-            !(
-              suggestion.type === 'autocomplete' &&
-              suggestion.trigger === '' &&
-              suggestion.triggerPosition === 'start'
-            )
-        );
-
-        // If no suggestions left, remove the suggestions array
-        if (newConfig.input.suggestions.length === 0) {
-          delete newConfig.input.suggestions;
-        }
-
-        // If input config is empty, remove it
-        if (Object.keys(newConfig.input).length === 0) {
-          delete newConfig.input;
-        }
+      if (value === DROPDOWN_TRUE) {
+        next.autocomplete = { items: autocompleteItems };
+      } else {
+        delete next.autocomplete;
       }
 
-      this.dispatchEvent(
-        new CustomEvent('config-changed', {
-          detail: newConfig,
-          bubbles: true,
-          composed: true,
-        })
-      );
-    }
+      return this._normalizeInput(next);
+    });
   }
 
   private _handleErrorCheckbox(event: Event) {

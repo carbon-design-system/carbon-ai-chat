@@ -63,21 +63,18 @@ const STARTER_ITEMS = [
  * Custom starter list renderer.
  *
  * Wraps `CDSAIChatAutocomplete` to add the "Prompt suggestions" header via
- * `headerConfig`. The send-arrow is hidden (`enableSendButton={false}`)
- * because selecting an item already auto-sends.
+ * `headerConfig`. Uses `onSend` only — selecting a starter sends directly to
+ * chat (`disableDirectSend` defaults to `false`). `onSelect` is not wired
+ * because starters should not insert into the editor.
  */
-function renderCustomList(props: CustomListProps) {
-  const { items, onSelect, onDismiss } = props;
+function renderCustomList({ items, onSend, onDismiss }: CustomListProps) {
   return (
     <CDSAIChatAutocomplete
       items={items}
       headerConfig={{ showHeader: true, title: 'Prompt suggestions' }}
       attached={false}
-      enableSendButton={false}
       className="starter-list"
-      onSelect={(e: CustomEvent<{ item: (typeof STARTER_ITEMS)[number] }>) =>
-        onSelect(e.detail.item)
-      }
+      onSend={(e: CustomEvent<{ text: string }>) => onSend(e.detail.text)}
       onDismiss={onDismiss}
     />
   );

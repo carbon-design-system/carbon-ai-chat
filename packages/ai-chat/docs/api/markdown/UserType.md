@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.UserType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.UserType.html
 
 Types of users we accept messages from.
 
@@ -22,7 +22,7 @@ A message from a non-watsonx assistant, used for interacting with assistants tha
 
 Official guidance is to not use this for IBM products without explicit exception.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.UserType.html#bot)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.UserType.html#bot)
 
 ### HUMAN
 
@@ -30,7 +30,7 @@ Official guidance is to not use this for IBM products without explicit exception
 
 A message from a human.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.UserType.html#human)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.UserType.html#human)
 
 ### WATSONX
 
@@ -38,4 +38,4 @@ A message from a human.
 
 A message from watsonx.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.UserType.html#watsonx)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.UserType.html#watsonx)

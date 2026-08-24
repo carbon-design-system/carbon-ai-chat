@@ -17,8 +17,9 @@ import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
  * React wrapper for `<cds-aichat-prompt-line>`. Mirrors the WC's prompt-line
  * surface verbatim — no host-side prop transformation required. The element
  * renders a Tiptap-free textarea by default and upgrades to the rich Tiptap
- * editor in place when the `rich` prop is set (or `extensions` are supplied);
- * chat-domain config layering happens one level up at the shell. Imperative
+ * editor in place when the `rich` prop is set, or `ensureEditor()` is called —
+ * `extensions` alone are staged, not a trigger. Chat-domain config layering
+ * happens one level up at the shell. Imperative
  * methods are reachable via ref.
  *
  * Wrapped in `withWebComponentBridge` so testId / rich / extensions / content

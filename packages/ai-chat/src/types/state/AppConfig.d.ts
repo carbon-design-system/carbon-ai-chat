@@ -13,6 +13,7 @@ import { LayoutConfig } from '../config/LayoutConfig';
 import { ThemeState } from './ThemeState';
 import ObjectMap from '../utilities/ObjectMap';
 import { LauncherConfig } from '../config/LauncherConfig';
+import { ChatShortcutConfig } from '../config/ShortcutConfig';
 
 /**
  * This contains the top level interface that defines the configuration options for the application.
@@ -54,6 +55,15 @@ interface AppConfig {
      * Passed launcher config merged with defaults.
      */
     launcher: LauncherConfig;
+
+    /**
+     * Passed keyboard shortcuts merged with defaults, field by field. The single source of
+     * truth for whether a shortcut is active — every consumer reads the resolved value from
+     * here rather than defaulting the raw public config itself.
+     */
+    keyboardShortcuts: {
+      messageFocusToggle: Required<ChatShortcutConfig>;
+    };
   };
 }
 

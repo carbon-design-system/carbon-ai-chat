@@ -14,13 +14,13 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 // `@vscode/markdown-it-katex` is a CommonJS module that assigns the plugin to
 // `exports.default` without an `__esModule` marker. Under Vite's interop the
 // default import resolves to the whole module namespace (`{ default: fn }`)
 // rather than the function, so unwrap `.default` before handing it to
 // `markdownItPlugins`, which expects plugin functions.
-import markdownItKatexModule from "@vscode/markdown-it-katex";
+import markdownItKatexModule from '@vscode/markdown-it-katex';
 import {
   Table,
   TableBody,
@@ -28,9 +28,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@carbon/react";
+  Modal,
+} from '@carbon/react';
 
-import Markdown from "../../../react/markdown";
+import Markdown from '../../../react/markdown';
 
 const comprehensiveMarkdown = `# Markdown Rendering Demo
 
@@ -188,18 +189,18 @@ Regular markdown works fine:
 
 const chunkMarkdownBySpaces = (markdown) => {
   const chunks = [];
-  let currentChunk = "";
+  let currentChunk = '';
   let spaceCount = 0;
 
   for (let i = 0; i < markdown.length; i += 1) {
     const char = markdown[i];
     currentChunk += char;
 
-    if (char === " ") {
+    if (char === ' ') {
       spaceCount += 1;
       if (spaceCount === 3) {
         chunks.push(currentChunk);
-        currentChunk = "";
+        currentChunk = '';
         spaceCount = 0;
       }
     }
@@ -216,7 +217,7 @@ const StreamingMarkdownDemo = ({
   source = comprehensiveMarkdown,
   customRenderers,
 }) => {
-  const [streamedContent, setStreamedContent] = useState("");
+  const [streamedContent, setStreamedContent] = useState('');
   const [streaming, setStreaming] = useState(true);
   const intervalRef = useRef(null);
 
@@ -231,7 +232,7 @@ const StreamingMarkdownDemo = ({
 
   const startStreaming = useCallback(() => {
     clearExistingInterval();
-    setStreamedContent("");
+    setStreamedContent('');
     setStreaming(true);
 
     let chunkIndex = 0;
@@ -258,16 +259,15 @@ const StreamingMarkdownDemo = ({
 
   return (
     <div>
-      <div style={{ marginBottom: "1rem" }}>
+      <div style={{ marginBottom: '1rem' }}>
         <button
           type="button"
           onClick={startStreaming}
           style={{
-            padding: "0.5rem 1rem",
-            cursor: "pointer",
-            marginRight: "0.5rem",
-          }}
-        >
+            padding: '0.5rem 1rem',
+            cursor: 'pointer',
+            marginRight: '0.5rem',
+          }}>
           Restart Streaming
         </button>
       </div>
@@ -281,59 +281,59 @@ const StreamingMarkdownDemo = ({
 };
 
 export default {
-  title: "Components/Markdown",
+  title: 'Components/Markdown',
   argTypes: {
     markdown: {
-      control: "text",
-      description: "Markdown content to render",
+      control: 'text',
+      description: 'Markdown content to render',
     },
     streaming: {
-      control: "boolean",
-      description: "Enable streaming mode for progressive rendering",
+      control: 'boolean',
+      description: 'Enable streaming mode for progressive rendering',
     },
     sanitizeHTML: {
-      control: "boolean",
-      description: "Sanitize HTML content using DOMPurify",
+      control: 'boolean',
+      description: 'Sanitize HTML content using DOMPurify',
     },
     removeHTML: {
-      control: "boolean",
-      description: "Remove all HTML tags",
+      control: 'boolean',
+      description: 'Remove all HTML tags',
     },
     codeSnippetHighlight: {
-      control: "boolean",
-      description: "Enable syntax highlighting for code blocks",
+      control: 'boolean',
+      description: 'Enable syntax highlighting for code blocks',
     },
     codeSnippetCopyButtonTooltipContent: {
-      control: "text",
-      description: "Tooltip text for copy button",
+      control: 'text',
+      description: 'Tooltip text for copy button',
     },
     codeSnippetShowMoreText: {
-      control: "text",
-      description: "Text for expand button",
+      control: 'text',
+      description: 'Text for expand button',
     },
     codeSnippetShowLessText: {
-      control: "text",
-      description: "Text for collapse button",
+      control: 'text',
+      description: 'Text for collapse button',
     },
     tableFilterPlaceholderText: {
-      control: "text",
-      description: "Placeholder for table filter",
+      control: 'text',
+      description: 'Placeholder for table filter',
     },
     tablePreviousPageText: {
-      control: "text",
-      description: "Previous page button text",
+      control: 'text',
+      description: 'Previous page button text',
     },
     tableNextPageText: {
-      control: "text",
-      description: "Next page button text",
+      control: 'text',
+      description: 'Next page button text',
     },
     tableItemsPerPageText: {
-      control: "text",
-      description: "Items per page label",
+      control: 'text',
+      description: 'Items per page label',
     },
     tableLocale: {
-      control: "text",
-      description: "Locale for number formatting",
+      control: 'text',
+      description: 'Locale for number formatting',
     },
   },
   args: {
@@ -342,14 +342,14 @@ export default {
     sanitizeHTML: false,
     removeHTML: false,
     codeSnippetHighlight: false,
-    codeSnippetCopyButtonTooltipContent: "Copy code",
-    codeSnippetShowMoreText: "Show more",
-    codeSnippetShowLessText: "Show less",
-    tableFilterPlaceholderText: "Filter table...",
-    tablePreviousPageText: "Previous page",
-    tableNextPageText: "Next page",
-    tableItemsPerPageText: "Items per page:",
-    tableLocale: "en",
+    codeSnippetCopyButtonTooltipContent: 'Copy code',
+    codeSnippetShowMoreText: 'Show more',
+    codeSnippetShowLessText: 'Show less',
+    tableFilterPlaceholderText: 'Filter table...',
+    tablePreviousPageText: 'Previous page',
+    tableNextPageText: 'Next page',
+    tableItemsPerPageText: 'Items per page:',
+    tableLocale: 'en',
   },
 };
 
@@ -359,7 +359,7 @@ export const Default = {
 
 export const Streaming = {
   args: {
-    markdown: "",
+    markdown: '',
   },
   argTypes: {
     markdown: {
@@ -380,13 +380,12 @@ export const WithHTMLSanitization = {
     <div>
       <p
         style={{
-          marginBottom: "1rem",
-          padding: "0.5rem",
-          background: "#f4f4f4",
-        }}
-      >
+          marginBottom: '1rem',
+          padding: '0.5rem',
+          background: '#f4f4f4',
+        }}>
         <strong>Note:</strong> With <code>sanitize-html</code> enabled,
-        dangerous HTML like <code>&lt;script&gt;</code> tags and{" "}
+        dangerous HTML like <code>&lt;script&gt;</code> tags and{' '}
         <code>onclick</code> attributes are removed while safe HTML is
         preserved.
       </p>
@@ -404,11 +403,10 @@ export const WithHTMLRemoval = {
     <div>
       <p
         style={{
-          marginBottom: "1rem",
-          padding: "0.5rem",
-          background: "#f4f4f4",
-        }}
-      >
+          marginBottom: '1rem',
+          padding: '0.5rem',
+          background: '#f4f4f4',
+        }}>
         <strong>Note:</strong> With <code>remove-html</code> enabled, all HTML
         tags are stripped, leaving only plain text and markdown.
       </p>
@@ -430,22 +428,21 @@ export const WithMarkdownItPlugin = {
     markdown: katexMarkdown,
   },
   argTypes: {
-    markdown: { control: "text" },
+    markdown: { control: 'text' },
   },
   render: (args) => {
     const plugins = useMemo(
       () => [markdownItKatexModule.default ?? markdownItKatexModule],
-      [],
+      []
     );
     return (
       <div>
         <p
           style={{
-            marginBottom: "1rem",
-            padding: "0.5rem",
-            background: "#f4f4f4",
-          }}
-        >
+            marginBottom: '1rem',
+            padding: '0.5rem',
+            background: '#f4f4f4',
+          }}>
           <strong>Note:</strong> Pass a <code>markdownItPlugins</code> array to
           add custom rules. Plugin output is rendered into a light-DOM slot, so
           consumer-supplied CSS (such as KaTeX's stylesheet loaded via the
@@ -476,7 +473,7 @@ export const WithTableOverride = {
     markdown: tableOverrideMarkdown,
   },
   argTypes: {
-    markdown: { control: "text" },
+    markdown: { control: 'text' },
   },
   render: (args) => {
     const customRenderers = useMemo(
@@ -502,7 +499,7 @@ export const WithTableOverride = {
           </Table>
         ),
       }),
-      [],
+      []
     );
 
     return (
@@ -510,6 +507,133 @@ export const WithTableOverride = {
         source={args.markdown}
         customRenderers={customRenderers}
       />
+    );
+  },
+};
+
+const linkOverrideMarkdown = `Explore the [Carbon Design System](https://carbondesignsystem.com) for design guidance, reusable components, and accessibility best practices, or visit the [Carbon AI Chat documentation](https://chat.carbondesignsystem.com/tag/latest/docs/documents/Overview.html) for APIs, examples, and customization guides.`;
+
+export const WithLinkOverride = {
+  parameters: {
+    controls: { sort: 'none' },
+  },
+  args: {
+    markdown: linkOverrideMarkdown,
+    rewriteHref: false,
+    linkTarget: '_blank',
+    linkRel: '',
+    addDataAttribute: false,
+    showConfirmDialog: false,
+    confirmUrlFilter: '',
+  },
+  argTypes: {
+    // Story-specific controls
+    rewriteHref: {
+      control: 'boolean',
+      description:
+        'Uses the `href` override — rewrites every link destination to `/redirect?url=…`',
+    },
+    linkTarget: {
+      control: 'select',
+      options: ['_blank', '_self', '_parent', '_top'],
+      description: 'Uses the `target` override — controls how the link opens',
+    },
+    linkRel: {
+      control: 'text',
+      description: 'Uses the `rel` override — leave blank to keep the default',
+    },
+    addDataAttribute: {
+      control: 'boolean',
+      description:
+        'Uses the `attributes` override — merges `data-tracked="true"` onto every rendered `<a>`',
+    },
+    showConfirmDialog: {
+      control: 'boolean',
+      description:
+        'Uses the `onClick` override — opens a Carbon Modal so the user can confirm or cancel navigation',
+    },
+    confirmUrlFilter: {
+      control: 'text',
+      description:
+        'Filters which links trigger the confirmation dialog by matching their `href` (for example, `carbondesignsystem.com`). Leave blank to apply to all links.',
+      if: { arg: 'showConfirmDialog', truthy: true },
+    },
+    // Hide global args that are not relevant to this story
+    streaming: { table: { disable: true } },
+    sanitizeHTML: { table: { disable: true } },
+    removeHTML: { table: { disable: true } },
+    codeSnippetHighlight: { table: { disable: true } },
+    codeSnippetCopyButtonTooltipContent: { table: { disable: true } },
+    codeSnippetShowMoreText: { table: { disable: true } },
+    codeSnippetShowLessText: { table: { disable: true } },
+    tableFilterPlaceholderText: { table: { disable: true } },
+    tablePreviousPageText: { table: { disable: true } },
+    tableNextPageText: { table: { disable: true } },
+    tableItemsPerPageText: { table: { disable: true } },
+    tableLocale: { table: { disable: true } },
+  },
+  render: (args) => {
+    const [confirmHref, setConfirmHref] = useState(null);
+
+    const customRenderers = useMemo(
+      () => ({
+        link: ({ href }) => {
+          const result = { target: args.linkTarget };
+          if (args.rewriteHref) {
+            result.href = `/redirect?url=${encodeURIComponent(href)}`;
+          }
+          if (args.linkRel) {
+            result.rel = args.linkRel;
+          }
+          if (args.addDataAttribute) {
+            result.attributes = { 'data-tracked': 'true' };
+          }
+          if (args.showConfirmDialog) {
+            const matches =
+              !args.confirmUrlFilter || href.includes(args.confirmUrlFilter);
+            if (matches) {
+              result.onClick = (event) => {
+                event.preventDefault();
+                setConfirmHref(href);
+              };
+            }
+          }
+          return result;
+        },
+      }),
+      [
+        args.rewriteHref,
+        args.linkTarget,
+        args.linkRel,
+        args.addDataAttribute,
+        args.showConfirmDialog,
+        args.confirmUrlFilter,
+      ]
+    );
+
+    return (
+      <div>
+        <h2 style={{ marginBottom: '1rem' }}>Markdown Link Override Demo</h2>
+        <Modal
+          open={!!confirmHref}
+          modalHeading="Confirm navigation"
+          primaryButtonText="Open link"
+          secondaryButtonText="Cancel"
+          onRequestSubmit={() => {
+            window.open(confirmHref, args.linkTarget || '_blank');
+            setConfirmHref(null);
+          }}
+          onRequestClose={() => setConfirmHref(null)}
+          onSecondarySubmit={() => setConfirmHref(null)}>
+          <p>
+            You are about to navigate to:{' '}
+            <strong>
+              <code>{confirmHref}</code>
+            </strong>
+          </p>
+        </Modal>
+        <Markdown markdown={args.markdown} customRenderers={customRenderers} />
+      </div>
     );
   },
 };

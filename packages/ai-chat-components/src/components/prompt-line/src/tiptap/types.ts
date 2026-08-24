@@ -76,10 +76,18 @@ export interface CustomListProps {
   items: SuggestionItem[];
   /** Current query string (text after trigger). */
   query: string;
-  /** Callback to invoke when user selects an item. */
-  onSelect: (item: SuggestionItem) => void;
   /** Callback to invoke when list should be dismissed. */
   onDismiss: () => void;
+  /**
+   * Callback to invoke when user sends an item directly to chat, bypassing
+   * the editor.
+   */
+  onSend: (text: string) => void;
+  /**
+   * Callback to invoke when user selects an item to insert into the editor
+   * without sending to chat.
+   */
+  onSelect: (item: SuggestionItem) => void;
 }
 
 /**
@@ -96,37 +104,40 @@ export interface BaseSuggestionConfig {
   /** Minimum query length before items() is called. Defaults to 0. */
   minQueryLength?: number;
 
-  /** Debounce delay in ms for the async items function. Defaults to 200. */
-  debounceMs?: number;
-
   /** Called after the user selects an item and insertion is complete. */
   onSelect?: (item: SuggestionItem) => void;
 
   /** Replace the built-in suggestion list UI. */
   renderCustomList?: (props: CustomListProps) => HTMLElement | unknown;
+
+  /**
+   * When `true`, clicking a suggestion item fires `cds-aichat-autocomplete-select`
+   * and inserts the item into the editor rather than sending immediately.
+   * Defaults to `false`. This property is omitted in TriggerSuggestionConfig
+   * since mentions and commands should always insert into the editor.
+   */
+  disableDirectSend?: boolean;
 }
 
 /**
  * Trigger-character-driven suggestion config. Used by `carbonMention` and
  * `carbonCommand` (the carbon factories distinguish them only by their
  * default Tiptap node `name`).
+ *
+ * Mention and command items always insert a token chip into the editor.
+ * `disableDirectSend` is always `true` for these triggers and is therefore
+ * omitted so it cannot be set or overridden.
  */
-export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
+export interface TriggerSuggestionConfig extends Omit<
+  BaseSuggestionConfig,
+  'disableDirectSend'
+> {
   /** Character that activates the suggestion (e.g. "@", "/"). */
   trigger: string;
 
   /** Whether the trigger must appear at the start of the input/line, or
    *  anywhere. Defaults to "anywhere". */
   triggerPosition?: 'start' | 'anywhere';
-
-  /**
-   * Override the schema-node name. Threaded through `Mention.extend({ name })`
-   * inside the carbon factory to sidestep Tiptap's last-named-wins stacking
-   * caveat when multiple triggers coexist.
-   *
-   * Defaults: `"mention"` (carbonMention) / `"command"` (carbonCommand).
-   */
-  name?: string;
 
   /** Replace the visual element rendered inside the token chip. */
   renderCustomToken?: (item: SuggestionItem) => HTMLElement | ReactNode;
@@ -159,11 +170,11 @@ export interface TriggerSuggestionConfig extends BaseSuggestionConfig {
 
 /**
  * Live autocomplete config. Selection inserts plain text (no token chip).
+ *
+ * Note: only one autocomplete config per editor is supported, because Tiptap
+ * resolves extensions by name.
  */
-export interface AutocompleteConfig extends BaseSuggestionConfig {
-  /** Override the suggestion plugin key name. Defaults to `"autocomplete"`. */
-  name?: string;
-}
+export type AutocompleteConfig = BaseSuggestionConfig;
 
 /**
  * Configuration for starter prompts — shown when the editor is empty and
@@ -175,7 +186,7 @@ export interface AutocompleteConfig extends BaseSuggestionConfig {
  */
 export interface StartersConfig extends Pick<
   BaseSuggestionConfig,
-  'renderCustomList'
+  'renderCustomList' | 'disableDirectSend'
 > {
   /** The starter prompts to display. */
   items: SuggestionItem[];

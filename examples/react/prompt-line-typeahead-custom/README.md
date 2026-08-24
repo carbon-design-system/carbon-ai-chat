@@ -26,7 +26,6 @@
 | `input.autocomplete` | config prop | Registers the typeahead behavior on the input. |
 | `autocomplete.renderCustomList` | config prop | Returns a React node that replaces the default dropdown. |
 | `autocomplete.items` | config prop | Async filter providing entries to the custom list. |
-| `autocomplete.debounceMs` | config prop | Coalesces keystrokes before calling `items`. |
 | `layout.showFrame` | config prop | Hides the default frame so the chat fills the host. |
 | `openChatByDefault` | config prop | Mounts straight into the conversation, no launcher. |
 | `messaging.customSendMessage` | config prop | Mock backend echoing the user's message. |

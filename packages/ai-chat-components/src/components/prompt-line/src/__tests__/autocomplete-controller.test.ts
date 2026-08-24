@@ -17,11 +17,16 @@
 import { expect } from '@open-wc/testing';
 
 import { AutocompleteController } from '../autocomplete-controller.js';
+import {
+  dispatchTriggerChange,
+  resetTriggerChangeState,
+} from '../tiptap/trigger-utils.js';
 import type {
   AutocompleteConfig,
   CustomListProps,
   StartersConfig,
   SuggestionItem,
+  TriggerChangeEventDetail,
   TriggerSuggestionConfig,
 } from '../tiptap/types.js';
 
@@ -199,6 +204,119 @@ describe('AutocompleteController', () => {
     controller.dismiss();
     expect(last.trigger).to.equal(null);
     expect(last.items.length).to.equal(0);
+  });
+
+  describe('dismiss(keepCoalesced)', () => {
+    function makeEditorWithTriggerEvents(): {
+      editor: any;
+      promptLine: any;
+      events: (TriggerChangeEventDetail | null)[];
+      cleanup: () => void;
+    } {
+      // A real DOM node is needed so dispatchTriggerChange can fire events on it.
+      const dom = document.createElement('div');
+      document.body.appendChild(dom);
+      const editorWrapper = {
+        view: { dom },
+        commands: { insertContent: () => {} },
+        chain: () => ({
+          focus: () => ({ insertContentAt: () => ({ run: () => {} }) }),
+        }),
+        state: { selection: { from: 0 } },
+        getJSON: () => ({ type: 'doc', content: [] }),
+      };
+      const promptLine = { getEditor: () => editorWrapper };
+      const events: (TriggerChangeEventDetail | null)[] = [];
+      dom.addEventListener('cds-aichat-trigger-change', (e) => {
+        events.push((e as CustomEvent<TriggerChangeEventDetail | null>).detail);
+      });
+      return {
+        editor: editorWrapper,
+        promptLine,
+        events,
+        cleanup: () => dom.remove(),
+      };
+    }
+
+    it('dismiss() resets coalescing state so the same detail re-fires on next dispatchTriggerChange', async () => {
+      const { editor, promptLine, events, cleanup } =
+        makeEditorWithTriggerEvents();
+      try {
+        const controller = new AutocompleteController({
+          starters: STARTERS,
+          onChange: () => {},
+        });
+        controller.setPromptLine(promptLine);
+
+        // Activate a trigger so dismiss() does not short-circuit on the
+        // "no active trigger" guard.
+        controller.handleTriggerChange({
+          type: 'starter',
+          query: '',
+          triggerOffset: 0,
+        });
+        await flush();
+
+        const detail: TriggerChangeEventDetail = {
+          type: 'starter',
+          query: '',
+          triggerOffset: 0,
+        };
+
+        // Record the detail in the coalescing WeakMap.
+        dispatchTriggerChange(editor, detail);
+        const countAfterFirst = events.length;
+
+        // dismiss() (keepCoalesced=false) resets coalescing; same detail re-fires.
+        controller.dismiss();
+        dispatchTriggerChange(editor, detail);
+        expect(events.length).to.equal(countAfterFirst + 1);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('dismiss(true) keeps coalescing state so the same detail is swallowed', async () => {
+      const { editor, promptLine, events, cleanup } =
+        makeEditorWithTriggerEvents();
+      try {
+        const controller = new AutocompleteController({
+          starters: STARTERS,
+          onChange: () => {},
+        });
+        controller.setPromptLine(promptLine);
+
+        // Activate a trigger so dismiss() does not short-circuit.
+        controller.handleTriggerChange({
+          type: 'starter',
+          query: '',
+          triggerOffset: 0,
+        });
+        await flush();
+
+        const detail: TriggerChangeEventDetail = {
+          type: 'starter',
+          query: '',
+          triggerOffset: 0,
+        };
+
+        // Record the detail in the coalescing WeakMap.
+        dispatchTriggerChange(editor, detail);
+        const countAfterFirst = events.length;
+
+        // dismiss(true) skips resetTriggerChangeState; same detail is coalesced.
+        controller.dismiss(true);
+        dispatchTriggerChange(editor, detail);
+        expect(events.length).to.equal(countAfterFirst);
+
+        // resetTriggerChangeState (simulating onBlur) unblocks the next dispatch.
+        resetTriggerChangeState(editor);
+        dispatchTriggerChange(editor, detail);
+        expect(events.length).to.equal(countAfterFirst + 1);
+      } finally {
+        cleanup();
+      }
+    });
   });
 
   it('protects against stale async resolves clobbering a newer trigger', async () => {

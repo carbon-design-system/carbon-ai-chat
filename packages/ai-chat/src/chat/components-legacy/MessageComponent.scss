@@ -13,6 +13,14 @@
 
 $message-bar-width: 3px;
 
+.cds-aichat--icon-holder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  inline-size: 100%;
+}
+
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--message {
     position: relative;
@@ -551,6 +559,16 @@ svg.cds-aichat--sent-file-icon {
         )
         layout.$spacing-05;
     }
+
+    /* Workspaces: open should use the no-margin-block-start variant regardless of width. */
+    &[show-workspace] {
+      .cds-aichat--message__avatar-line
+        + .cds-aichat--message--padding
+        .cds-aichat--assistant-message
+        > div.cds-aichat--received {
+        margin-block-start: 0;
+      }
+    }
   }
 
   /* Force narrow view mode when workspace is in inline container mode.
@@ -582,16 +600,6 @@ svg.cds-aichat--sent-file-icon {
       .cds-aichat--message
       .cds-aichat--sent-container {
       margin-inline: layout.$spacing-05;
-    }
-  }
-
-  /* Workspaces: open should use the no-margin-block-start variant regardless of width. */
-  :where(cds-aichat-shell[show-workspace]) {
-    .cds-aichat--message__avatar-line
-      + .cds-aichat--message--padding
-      .cds-aichat--assistant-message
-      > div.cds-aichat--received {
-      margin-block-start: 0;
     }
   }
 }

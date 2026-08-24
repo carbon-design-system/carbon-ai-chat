@@ -8,7 +8,7 @@
  */
 
 import React, { forwardRef, Ref, useMemo, useRef, useState } from 'react';
-import { AnnounceOnMountComponent } from '../util/AnnounceOnMountComponent';
+import { AnnounceOnMount } from '../helpers/AnnounceOnMount/AnnounceOnMount';
 import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
 import InputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
 import FileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
@@ -31,6 +31,7 @@ import { useServiceManager } from '../../hooks/useServiceManager';
 import { useIntl } from '../../hooks/useIntl';
 import { useAriaAnnouncer } from '../../hooks/useAriaAnnouncer';
 import { validateFileSelection } from '../../utils/fileUploadValidation';
+import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
 import { useInputConfig } from '../../hooks/useInputConfig';
 import { useRichSurface } from './useRichSurface';
 import { useInputValueSync } from './useInputValueSync';
@@ -335,14 +336,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Local value (rawValue) + Redux mirror (when tracking) + the send path.
-  // `setRawInputValue`/`rawInputValueRef` are exposed for the autocomplete
-  // starter path below.
+  // `setRawInputValue`/`rawInputValueRef`/`displayContentRef` are exposed for
+  // the autocomplete/starter send paths below.
   const {
     rawInputValue,
     rawInputValueRef,
     setRawInputValue,
+    displayContentRef,
     overMaxLength,
     effectiveDisableSend,
+    // Owned by the hook so the Send control and the send path cannot disagree.
+    hasValidInput,
     handleInputChange,
     sendCurrentValue,
     handleSendControlSend,
@@ -356,16 +360,8 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     isSendDisabledFromConfig,
     onSendInput,
     hasErrorProp,
+    pendingUploads,
   });
-
-  const hasValidInput = useMemo(
-    () =>
-      Boolean(rawInputValue?.trim()) ||
-      (pendingUploads != null &&
-        pendingUploads.length > 0 &&
-        !pendingUploads.every((u) => u.isError)),
-    [rawInputValue, pendingUploads]
-  );
 
   /**
    * Handle input focus - announces keyboard shortcut on first focus if enabled,
@@ -381,14 +377,17 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     if (!hasAnnouncedShortcut) {
       const shortcutConfig =
-        store.getState().config.public.keyboardShortcuts?.messageFocusToggle;
+        store.getState().config.derived.keyboardShortcuts.messageFocusToggle;
 
-      if (shortcutConfig?.is_on) {
-        const key = shortcutConfig.key;
+      if (shortcutConfig.isOn) {
         store.dispatch(
           actions.announceMessage({
             messageID: 'input_keyboardShortcutAnnouncement',
-            messageValues: { key },
+            messageValues: {
+              // Formatted through the same helper the scroll-handle labels use, so the
+              // announced and the displayed shortcut never disagree about modifiers.
+              key: formatShortcutForDisplay(shortcutConfig),
+            },
           })
         );
         setHasAnnouncedShortcut(true);
@@ -506,7 +505,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       sendCurrentValue();
     },
     onSendItem: (text) => {
-      onSendInput(text);
+      setRawInputValue(text);
+      rawInputValueRef.current = text;
+      // The autocomplete item's text is both the sent value and the display
+      // value — discard any stale editor JSONContent so the bubble doesn't
+      // render the old typed text instead of the selected item.
+      displayContentRef.current = null;
+      sendCurrentValue();
     },
   });
 
@@ -545,21 +550,23 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
    */
   const renderErrorMessage = () => {
     if (overMaxLength) {
+      const errorTitle = intl.formatMessage({
+        id: 'input_maxCharCountExceededTitle',
+      });
       const errorText = intl.formatMessage(
         { id: 'input_maxCharCountExceeded' },
         { max: maxInputChars, current: rawInputValue.length }
       );
       return (
         <div slot="field-messaging">
-          <AnnounceOnMountComponent
-            announceOnce={`Error: Max character count exceeded. ${errorText}`}>
+          <AnnounceOnMount announceOnce={`${errorTitle}. ${errorText}`}>
             <ErrorMessage
               fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-              title="Error: Max character count exceeded"
+              title={errorTitle}
               description={errorText}
               collapsible={true}
             />
-          </AnnounceOnMountComponent>
+          </AnnounceOnMount>
         </div>
       );
     }
@@ -574,14 +581,14 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
 
     return (
       <div slot="field-messaging">
-        <AnnounceOnMountComponent announceOnce={announcement}>
+        <AnnounceOnMount announceOnce={announcement}>
           <ErrorMessage
             fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
             title={error.title}
             description={error?.description}
             collapsible={error?.collapsible}
           />
-        </AnnounceOnMountComponent>
+        </AnnounceOnMount>
       </div>
     );
   };

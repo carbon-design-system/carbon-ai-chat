@@ -49,9 +49,10 @@ import type {
  * Tiptap extension factory for `@`-style mention triggers. Wraps
  * `@tiptap/extension-mention` with Carbon-specific chip rendering, extended
  * schema attributes (`value`, `data`), and direct
- * `cds-aichat-trigger-change` dispatch. Pass distinct `name` values when
- * composing multiple instances.
+ * `cds-aichat-trigger-change` dispatch. Each chat supports one mention
+ * trigger.
  *
+ * @function
  * @category Utilities
  */
 export const carbonMention = _carbonMention;
@@ -62,6 +63,7 @@ export const carbonMention = _carbonMention;
  * (`"command"` vs `"mention"`), the dispatched trigger type, and the default
  * chip color.
  *
+ * @function
  * @category Utilities
  */
 export const carbonCommand = _carbonCommand;
@@ -72,6 +74,7 @@ export const carbonCommand = _carbonCommand;
  * rather than a schema node. Activates whenever the input has any non-empty
  * trailing word.
  *
+ * @function
  * @category Utilities
  */
 export const carbonAutocomplete = _carbonAutocomplete;
@@ -83,6 +86,7 @@ export const carbonAutocomplete = _carbonAutocomplete;
  * `extension.storage.items` so the host can swap the list without
  * recreating the editor.
  *
+ * @function
  * @category Utilities
  */
 export const carbonStarterTrigger = _carbonStarterTrigger;
@@ -93,6 +97,7 @@ export const carbonStarterTrigger = _carbonStarterTrigger;
  * contains exactly the extensions whose backing config was supplied. Use
  * directly when mounting `<cds-aichat-prompt-line>` outside the chat shell.
  *
+ * @function
  * @category Utilities
  */
 export const buildCarbonExtensions = _buildCarbonExtensions;
@@ -107,6 +112,7 @@ export const buildCarbonExtensions = _buildCarbonExtensions;
  * emission for the round-trip. Use when dispatching transactions via
  * `(await getEditor()).view.dispatch(tr)` to opt out of the change loop.
  *
+ * @function
  * @category Utilities
  */
 export const setHostOriginMeta = _setHostOriginMeta;
@@ -115,6 +121,7 @@ export const setHostOriginMeta = _setHostOriginMeta;
  * Return a new Tiptap `JSONContent` tree with every node whose `type` matches
  * one of `types` removed. Marks on text nodes are preserved.
  *
+ * @function
  * @category Utilities
  */
 export const removeNodesByType = _removeNodesByType;
@@ -125,6 +132,7 @@ export const removeNodesByType = _removeNodesByType;
  * replaces it. The walk is post-order — children are visited before their
  * parents.
  *
+ * @function
  * @category Utilities
  */
 export const mapNodes = _mapNodes;
@@ -133,6 +141,7 @@ export const mapNodes = _mapNodes;
  * Collect every node in a Tiptap `JSONContent` tree whose `type` matches
  * `type`. Returns a flat array in document order.
  *
+ * @function
  * @category Utilities
  */
 export const findNodesByType = _findNodesByType;
@@ -143,6 +152,7 @@ export const findNodesByType = _findNodesByType;
  * nodes contribute `attrs.value || attrs.label`, paragraph boundaries
  * become `"\n"`, and `hardBreak` nodes contribute `"\n"`.
  *
+ * @function
  * @category Utilities
  */
 export const getRawText = _getRawText;
@@ -155,6 +165,7 @@ export const getRawText = _getRawText;
  * {@link ChatInstanceInput.updateContent}:
  * `updateContent((prev) => textToDoc(updater(getRawText(prev))))`.
  *
+ * @function
  * @category Utilities
  */
 export const textToDoc = _textToDoc;
@@ -170,6 +181,7 @@ export const textToDoc = _textToDoc;
  * {@link renderInLightDom} when the renderer returns custom content. Shared
  * so editor chips and bubble chips render identically.
  *
+ * @function
  * @category Utilities
  */
 export const renderTokenChip = _renderTokenChip;
@@ -183,12 +195,23 @@ export const renderTokenChip = _renderTokenChip;
  * back into position via a `<slot>`. `renderTokenChip` is a token-specific
  * wrapper over this primitive.
  *
+ * @function
  * @category Utilities
  */
 export const renderInLightDom = _renderInLightDom;
 
-/** Args for {@link renderInLightDom}. @category Utilities */
+/**
+ * Args for {@link renderInLightDom}.
+ *
+ * @category Utilities
+ * @interface
+ */
 export type RenderInLightDomArgs = _RenderInLightDomArgs;
 
-/** Result of {@link renderInLightDom}. @category Utilities */
+/**
+ * Result of {@link renderInLightDom}.
+ *
+ * @category Utilities
+ * @interface
+ */
 export type RenderInLightDomResult = _RenderInLightDomResult;

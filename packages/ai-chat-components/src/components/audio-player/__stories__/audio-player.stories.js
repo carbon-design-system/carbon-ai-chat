@@ -16,7 +16,7 @@ const WITH_TRANSCRIPT_SOURCE_CHROMATIC_DATA_URI =
   'data:audio/wav;base64,UklGRiUAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQEAAACA';
 
 export default {
-  title: 'Preview/Audio player',
+  title: 'Components/Audio player',
   args: {
     source:
       'https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill',

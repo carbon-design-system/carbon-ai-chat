@@ -23,9 +23,13 @@
 
 import type { Extension } from '@tiptap/core';
 
-import { carbonAutocomplete } from './carbon-autocomplete.js';
+import {
+  carbonAutocomplete,
+  type ExcludedTrigger,
+} from './carbon-autocomplete.js';
 import { carbonCommand, carbonMention } from './carbon-mention.js';
 import { carbonStarterTrigger } from './carbon-starter-trigger.js';
+import { tagExtensionSource } from './extension-equivalence.js';
 import type {
   AutocompleteConfig,
   StartersConfig,
@@ -42,19 +46,68 @@ export interface BuildCarbonExtensionsConfig {
 export function buildCarbonExtensions(
   configs: BuildCarbonExtensionsConfig
 ): Extension[] {
+  // Each entry is tagged with the config it was built from so the rich runtime
+  // can tell a genuinely different extension set from a rebuilt-but-identical
+  // one without recreating the editor. See ./extension-equivalence.ts.
   const out: Extension[] = [];
   if (configs.mention) {
-    out.push(carbonMention(configs.mention) as unknown as Extension);
+    out.push(
+      tagExtensionSource(
+        carbonMention(configs.mention) as unknown as Extension,
+        {
+          kind: 'mention',
+          config: configs.mention,
+        }
+      )
+    );
   }
   if (configs.command) {
-    out.push(carbonCommand(configs.command) as unknown as Extension);
+    out.push(
+      tagExtensionSource(
+        carbonCommand(configs.command) as unknown as Extension,
+        {
+          kind: 'command',
+          config: configs.command,
+        }
+      )
+    );
   }
   if (configs.autocomplete) {
-    out.push(carbonAutocomplete(configs.autocomplete));
-  }
-  if (configs.starters?.items.length) {
+    const excludeTriggers: ExcludedTrigger[] = [];
+    if (configs.mention) {
+      excludeTriggers.push({
+        char: configs.mention.trigger,
+        position:
+          configs.mention.triggerPosition === 'start' ? 'start' : 'anywhere',
+      });
+    }
+    if (configs.command) {
+      excludeTriggers.push({
+        char: configs.command.trigger,
+        position:
+          configs.command.triggerPosition === 'start' ? 'start' : 'anywhere',
+      });
+    }
     out.push(
-      carbonStarterTrigger(configs.starters.items, configs.starters.isOn)
+      tagExtensionSource(
+        carbonAutocomplete(configs.autocomplete, excludeTriggers),
+        {
+          kind: 'autocomplete',
+          config: configs.autocomplete,
+        }
+      )
+    );
+  }
+  // Installed whenever `starters` is configured, empty list included: it is how
+  // `items`/`isOn` reach the live editor, and omitting it for an empty list
+  // shortens the set, which the equivalence check rejects — recreating the
+  // editor and dropping its undo history. `maybeEmit` stays silent when empty.
+  if (configs.starters) {
+    out.push(
+      tagExtensionSource(
+        carbonStarterTrigger(configs.starters.items, configs.starters.isOn),
+        { kind: 'starters', config: configs.starters }
+      )
     );
   }
   return out;

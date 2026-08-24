@@ -30,7 +30,7 @@ export {
   CHAT_BUTTON_TOOLTIP_POSITION,
 };
 
-type ChatButtonSize =
+export type ChatButtonSize =
   CHAT_BUTTON_SIZE.SMALL | CHAT_BUTTON_SIZE.MEDIUM | CHAT_BUTTON_SIZE.LARGE;
 
 /**
@@ -47,6 +47,29 @@ class CDSAIChatButton extends CDSButton {
    */
   @property({ type: Boolean, attribute: 'is-quick-action' })
   isQuickAction = false;
+
+  // Blocks programmatic el.click() when isSelected — `inert` only blocks user
+  // input, not programmatic calls. Registered manually (not via @HostListener)
+  // to avoid mutating the shared CDSButton._hostListeners table.
+  private readonly _handleSelectedClick = (e: Event): void => {
+    if (this.isSelected) {
+      e.stopImmediatePropagation();
+    }
+  };
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener('click', this._handleSelectedClick, {
+      capture: true,
+    });
+  }
+
+  disconnectedCallback(): void {
+    this.removeEventListener('click', this._handleSelectedClick, {
+      capture: true,
+    });
+    super.disconnectedCallback();
+  }
 
   /**
    * Button size.
@@ -67,6 +90,8 @@ class CDSAIChatButton extends CDSButton {
   protected willUpdate(changedProps: PropertyValues<this>): void {
     if (
       changedProps.has('isQuickAction') ||
+      changedProps.has('isSelected') ||
+      changedProps.has('disabled') ||
       changedProps.has('size') ||
       changedProps.has('kind')
     ) {
@@ -77,13 +102,22 @@ class CDSAIChatButton extends CDSButton {
   private _normalizeButtonState(changedProps: PropertyValues<this>): void {
     if (this.isQuickAction) {
       this.size = CHAT_BUTTON_SIZE.SMALL;
-      // Only default to ghost when kind was not explicitly provided in this update.
       if (!changedProps.has('kind')) {
         this.kind = CHAT_BUTTON_KIND.GHOST;
       }
+
+      // When isSelected, set the HTML `inert` attribute on the host element to
+      // block pointer and keyboard interaction. This leaves `this.disabled`
+      // untouched so it always reflects exactly what the consumer set.
+      // tabIndex is also set explicitly — `inert` alone doesn't update it.
+      const isBlocked = this.isSelected || this.disabled;
+      this.inert = this.isSelected;
+      this.tabIndex = isBlocked ? -1 : 0;
+      this.toggleAttribute('data-is-selected', this.isSelected);
+
       return;
     }
-    // Do not allow size larger than `lg`
+
     if (!this.allowedSizes.includes(this.size as CHAT_BUTTON_SIZE)) {
       this.size = CHAT_BUTTON_SIZE.LARGE;
     }

@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventChunkUserDefinedResponse.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventChunkUserDefinedResponse.html
 
 ## Signature
 
@@ -16,7 +16,7 @@ interface BusEventChunkUserDefinedResponse
 
 `data: { chunk: PartialOrCompleteItemChunk; messageItem: DeepPartial<GenericItem>; slot?: string }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventChunkUserDefinedResponse.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventChunkUserDefinedResponse.html#data)
 
 ### type
 
@@ -24,4 +24,4 @@ interface BusEventChunkUserDefinedResponse
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.BusEventChunkUserDefinedResponse.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventChunkUserDefinedResponse.html#type)

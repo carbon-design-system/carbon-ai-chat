@@ -106,6 +106,50 @@ describe('reconcileAppConfigReferences', () => {
     expect(reconciled.derived.themeWithDefaults).toBe(
       prev.derived.themeWithDefaults
     );
+    // MessagesComponent's shallowEqual selector reads this one, so a fresh identity here
+    // would re-render the message list on every unrelated config change.
+    expect(reconciled.derived.keyboardShortcuts).toBe(
+      prev.derived.keyboardShortcuts
+    );
+  });
+
+  it('preserves input siblings when only one input field changes', () => {
+    // The prompt-line's extension memos key on `input.starters` / `input.mention`
+    // identity, so an unrelated change inside `input` — an action's `disabled`
+    // flag flipping as the user types — used to rebuild the extension set and
+    // recreate the live editor. See issue #2152.
+    const starters = { items: [{ id: 's1', label: 'Summarize' }] };
+    const mention = { trigger: '@', items: [{ id: 'u1', label: 'Alice' }] };
+    const onClick = (): void => undefined;
+    const action = { text: 'Toggle', icon: {}, onClick };
+
+    const prevPublic = buildPublicConfig();
+    prevPublic.input = {
+      ...prevPublic.input,
+      starters,
+      mention,
+      actions: [{ ...action, disabled: false }],
+    } as PublicConfig['input'];
+    const prev = createAppConfig(prevPublic);
+
+    const nextPublic = buildPublicConfig();
+    nextPublic.input = {
+      ...nextPublic.input,
+      starters: { ...starters },
+      mention: { ...mention },
+      actions: [{ ...action, disabled: true }],
+    } as PublicConfig['input'];
+    const next = createAppConfig(nextPublic);
+
+    const reconciled = reconcileAppConfigReferences(prev, next);
+
+    // The genuinely-changed field lands...
+    expect(reconciled.public.input).not.toBe(prev.public.input);
+    expect(reconciled.public.input.actions[0].disabled).toBe(true);
+
+    // ...while its value-equal siblings keep the references the memos compare.
+    expect(reconciled.public.input.starters).toBe(prev.public.input.starters);
+    expect(reconciled.public.input.mention).toBe(prev.public.input.mention);
   });
 
   it('does not churn value-equal sub-objects when only a function prop changes', () => {

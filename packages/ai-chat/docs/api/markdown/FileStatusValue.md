@@ -1,39 +1,19 @@
 # FileStatusValue
 
-- Kind: Enum
+- Kind: TypeAlias
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.FileStatusValue.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.FileStatusValue.html
 
-Constants for the Carbon FileStatus type because they weren't kind enough to include their own enum.
+Lifecycle status for a FileUpload. Values:
+`EDIT` (selected but not yet sent), `UPLOADING` (transfer in progress),
+`COMPLETE` (processing finished), `SUCCESS` (upload finished cleanly).
 
 ## Signature
 
 ```ts
-enum FileStatusValue
+type FileStatusValue = _FileStatusValue
 ```
 
-## Members
+## Related
 
-### COMPLETE
-
-`COMPLETE = "complete"`
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.FileStatusValue.html#complete)
-
-### EDIT
-
-`EDIT = "edit"`
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.FileStatusValue.html#edit)
-
-### SUCCESS
-
-`SUCCESS = "success"`
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.FileStatusValue.html#success)
-
-### UPLOADING
-
-`UPLOADING = "uploading"`
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/enums/Type_reference.FileStatusValue.html#uploading)
+- [FileUpload](./FileUpload.md)

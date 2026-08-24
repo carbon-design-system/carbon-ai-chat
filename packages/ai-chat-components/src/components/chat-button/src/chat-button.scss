@@ -2,7 +2,7 @@
  *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
+ * LICENSE file in the root directory of this source tree.
  */
 
 @use '../../../globals/scss/vars' as *;
@@ -10,6 +10,7 @@
 @use '@carbon/web-components/scss/components/button/button';
 @use '@carbon/styles/scss/utilities/layout';
 @use '@carbon/styles/scss/utilities/convert';
+@use '@carbon/styles/scss/components/button/tokens' as button-tokens;
 
 :host(#{$prefix}-button) {
   @extend :host(#{$cds-prefix}-button);
@@ -43,26 +44,20 @@
 
 :host(#{$prefix}-button[is-quick-action]) {
   .#{$cds-prefix}--btn {
-    border: convert.to-rem(1px) solid theme.$chat-button;
+    border: convert.to-rem(1px) solid theme.$border-interactive;
     background: transparent;
-    color: theme.$chat-button;
+    color: theme.$link-primary;
 
     &[disabled] {
-      &:not(.#{$cds-prefix}--btn--selected) {
-        border: convert.to-rem(1px) solid theme.$border-disabled;
-        background: transparent;
-        color: theme.$text-disabled;
-      }
+      border: convert.to-rem(1px) solid button-tokens.$button-disabled;
+      background: transparent;
+      color: theme.$text-disabled;
     }
 
     &:hover:not([disabled]) {
       border-color: transparent;
-      background: theme.$chat-button-hover;
-      color: theme.$chat-button-text-hover;
-
-      &.#{$cds-prefix}--btn--selected {
-        color: theme.$chat-button-text-selected;
-      }
+      background: theme.$background-hover;
+      color: theme.$link-primary-hover;
 
       &:focus {
         border-color: theme.$focus;
@@ -71,23 +66,45 @@
     }
 
     &:active:not([disabled]) {
-      background: theme.$chat-button-active;
-    }
-
-    &.#{$cds-prefix}--btn--selected {
       border-color: transparent;
-      background: theme.$chat-button-selected;
-      color: theme.$chat-button-text-selected;
-
-      &:focus {
-        border-color: theme.$focus;
-        box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
-      }
+      background: theme.$background-active;
+      color: theme.$link-primary-hover;
     }
 
     &:focus {
       border-color: theme.$focus;
       box-shadow: inset 0 0 0 convert.to-rem(1px) theme.$focus;
+    }
+  }
+}
+
+:host(#{$prefix}-button[is-quick-action][data-is-selected]) {
+  .#{$cds-prefix}--btn {
+    border: convert.to-rem(1px) solid button-tokens.$button-disabled;
+    background: theme.$background-selected;
+    color: theme.$text-secondary;
+  }
+
+  .#{$cds-prefix}--btn.#{$cds-prefix}--btn--ghost:disabled,
+  .#{$cds-prefix}--btn.#{$cds-prefix}--btn--ghost:hover:disabled {
+    background: theme.$background-selected;
+    color: theme.$text-secondary;
+  }
+}
+
+:host(#{$prefix}-button-skeleton) {
+  .#{$cds-prefix}--btn.#{$cds-prefix}--skeleton {
+    overflow: hidden;
+    border-radius: convert.to-rem(24px);
+    inline-size: convert.to-rem(100px);
+    max-inline-size: 19rem;
+
+    &.#{$cds-prefix}--btn--md {
+      border-radius: convert.to-rem(20px);
+    }
+
+    &.#{$cds-prefix}--btn--sm {
+      border-radius: convert.to-rem(16px);
     }
   }
 }

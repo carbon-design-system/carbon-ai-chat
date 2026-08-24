@@ -1,0 +1,59 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * Shared SCSS for Prompt line stories.
+ *
+ * .prompt-line-story-wrapper           — constrains width and centres the component.
+ * .prompt-line-story-wrapper--autocomplete — adds top margin so autocomplete overlays open upward.
+ * .prompt-line-story-hint              — muted instructional text above the input.
+ */
+
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+
+.prompt-line-story-wrapper {
+  inline-size: 640px;
+  max-inline-size: 100%;
+}
+
+.prompt-line-story-wrapper--autocomplete {
+  margin-block-start: 320px;
+}
+
+.prompt-line-story-hint {
+  @include type.type-style('helper-text-02');
+
+  color: theme.$text-helper;
+  margin-block-end: layout.$spacing-03;
+}
+
+.prompt-line-story-hint code {
+  @include type.type-style('code-01');
+
+  padding: layout.$spacing-01 layout.$spacing-02;
+  border-radius: layout.$spacing-01;
+  background: theme.$layer-01;
+}
+
+.prompt-line-story-inline-actions {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.prompt-line-story-inline-actions > [data-hidden] {
+  display: none;
+}
+
+.prompt-line-story-inline-actions[data-measuring] {
+  visibility: hidden;
+}

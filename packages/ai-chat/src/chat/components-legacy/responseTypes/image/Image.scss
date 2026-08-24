@@ -8,20 +8,13 @@
 @use '@carbon/layout';
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/theme';
+@use '../../../../globals/scss/chat-theme';
 
 .cds-aichat--image {
   overflow: hidden;
   padding: 0;
   min-block-size: 0;
   min-inline-size: 0;
-}
-
-cds-ai-skeleton-placeholder.cds-aichat--image__skeleton::part(
-    skeleton-placeholder
-  ),
-cds-skeleton-placeholder.cds-aichat--image__skeleton::part(placeholder) {
-  block-size: 192px;
-  inline-size: 100%;
 }
 
 .cds-aichat--image__image-wrapper {
@@ -78,10 +71,6 @@ cds-skeleton-placeholder.cds-aichat--image__skeleton::part(placeholder) {
   margin: auto;
 }
 
-.cds-aichat--image__text-and-icon .cds-aichat--text-holder-tile__url {
-  padding-inline-end: calc(#{layout.$spacing-05} + 2px);
-}
-
 .cds-aichat--image__icon-only .cds-aichat--image__icon {
   padding: layout.$spacing-04;
   border-radius: layout.$spacing-03;
@@ -112,4 +101,67 @@ svg.cds-aichat--image__icon--link {
 
 .cds-aichat--container--render[dir='rtl'] svg.cds-aichat--image__icon--link {
   inset-inline: layout.$spacing-03 unset;
+}
+
+/*
+  Clickable image styles
+*/
+
+.cds-aichat--clickable-image {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  border-radius: chat-theme.$card-border-radius;
+  background-color: unset;
+  color: unset;
+  cursor: pointer;
+  inline-size: 100%;
+  max-inline-size: chat-theme.$card-max-width;
+  outline: none;
+  outline-offset: -2px;
+  text-align: unset;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--clickable-image {
+    transition: motion.$duration-moderate-01 motion.motion(standard, productive);
+  }
+}
+
+.cds-aichat--clickable-image .cds-aichat--image {
+  position: unset;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cds-aichat--clickable-image .cds-aichat--image {
+    transition: motion.$duration-moderate-01 motion.motion(standard, productive);
+  }
+}
+
+.cds-aichat--clickable-image .cds-aichat--image__image {
+  user-select: none;
+}
+
+.cds-aichat--clickable-image:disabled {
+  cursor: not-allowed;
+}
+
+.cds-aichat--clickable-image:disabled .cds-aichat--image {
+  opacity: 0.5;
+}
+
+.cds-aichat--clickable-image:enabled:focus {
+  outline: 2px solid theme.$focus;
+}
+
+a.cds-aichat--clickable-image:hover .cds-aichat--image,
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image {
+  background-color: theme.$layer-hover;
+  text-decoration: underline;
+}
+
+a.cds-aichat--clickable-image:hover .cds-aichat--image__image,
+.cds-aichat--clickable-image:enabled:hover .cds-aichat--image__image {
+  opacity: 0.8;
 }

@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html
 
 This interface represents the main response content that is received by a client from an assistant. It is generally
 in response to a previous message request.
@@ -21,7 +21,7 @@ interface MessageResponse
 
 The context information returned by the back-end.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#context)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#context)
 
 ### history
 
@@ -29,7 +29,7 @@ The context information returned by the back-end.
 
 The history information to store as part of this request.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#history)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#history)
 
 ### id
 
@@ -37,7 +37,7 @@ The history information to store as part of this request.
 
 A unique identifier for this response object.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#id)
 
 ### message_options
 
@@ -45,7 +45,7 @@ A unique identifier for this response object.
 
 Options for the MessageResponse. This includes metadata about the user or assistant sending this response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#message_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#message_options)
 
 ### output
 
@@ -53,7 +53,7 @@ Options for the MessageResponse. This includes metadata about the user or assist
 
 The output from the back-end to be rendered or processed by the client.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#output)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#output)
 
 ### request_id
 
@@ -61,7 +61,7 @@ The output from the back-end to be rendered or processed by the client.
 
 The id of the request that this is the response of.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#request_id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#request_id)
 
 ### thread_id
 
@@ -70,4 +70,4 @@ The id of the request that this is the response of.
 The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
 responses.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.18.0-rc.0/docs/interfaces/Type_reference.MessageResponse.html#thread_id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.MessageResponse.html#thread_id)

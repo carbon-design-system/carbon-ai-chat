@@ -17,7 +17,17 @@
  *
  * APIs exercised:
  *   - `SuggestionItem`
- *   - `renderCustomList` callback contract (`onSelect`, `onDismiss`)
+ *   - `renderCustomList` callback contract (`onSelect`, `onSend`, `onDismiss`)
+ *
+ * `renderCustomList` receives two action callbacks:
+ *   - `onSelect(item)` — populates the prompt-line editor with the item
+ *     (insert-into-editor path, does NOT send to chat).
+ *   - `onSend(text)` — sends the text directly to chat, bypassing the editor.
+ *
+ * This example uses `onSelect` because the intent is to insert the chosen
+ * suggestion into the editor so the user can review or edit it before sending.
+ * The default built-in autocomplete component uses `onSend` on item click
+ * (`disableDirectSend` defaults to `false`, firing `cds-aichat-autocomplete-send`).
  *
  * Start reading at: the `setCallbacks` and `render` methods on
  * `CustomSuggestionList` below.
@@ -90,7 +100,7 @@ export class CustomSuggestionList extends LitElement {
   @state()
   private accessor _selectedIndex = 0;
 
-  private _onSelect?: (item: SuggestionItem) => void;
+  private _onSelect: (item: SuggestionItem) => void = () => {};
   private _onDismiss?: () => void;
 
   // Callbacks arrive imperatively after the element is created in `renderCustomList` because Lit
@@ -141,7 +151,7 @@ export class CustomSuggestionList extends LitElement {
       if (this.items[this._selectedIndex]) {
         // Dispatch through the chat-provided callback so selection flows through the framework's
         // input-population and analytics pipeline rather than firing a local-only event.
-        this._onSelect?.(this.items[this._selectedIndex]);
+        this._onSelect(this.items[this._selectedIndex]);
       }
     } else if (e.key === 'Escape') {
       // Escape forwards to `onDismiss` so the chat tears the dropdown down through its normal path.
@@ -168,7 +178,7 @@ export class CustomSuggestionList extends LitElement {
               })}
               role="option"
               aria-selected="${i === this._selectedIndex}"
-              @click=${() => this._onSelect?.(item)}
+              @click=${() => this._onSelect(item)}
               @mouseenter=${() => {
                 this._selectedIndex = i;
               }}>

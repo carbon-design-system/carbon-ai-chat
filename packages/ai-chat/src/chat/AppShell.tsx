@@ -21,7 +21,6 @@ import { useHistoryMobileDetection } from './hooks/useHistoryMobileDetection';
 import { useAriaAnnouncer } from './hooks/useAriaAnnouncer';
 import { matchesShortcut } from './utils/keyboardUtils';
 import { getDeepActiveElement } from './utils/domUtils';
-import { DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT } from '../types/config/ShortcutConfig';
 
 import AppShellErrorBoundary from './AppShellErrorBoundary';
 import { LauncherContainer } from './components-legacy/launcher/LauncherContainer';
@@ -37,7 +36,7 @@ import { Input } from './components/input/Input';
 import { AppShellWriteableElements } from './AppShellWriteableElements';
 import { EndHumanAgentChatModal } from './components/modals/EndHumanAgentChatModal';
 import { RequestScreenShareModal } from './components/modals/RequestScreenShareModal';
-import WriteableElement from './components/util/WriteableElement';
+import WriteableElement from './components/helpers/WriteableElement/WriteableElement';
 import { createUnmappingMemoizer } from './utils/memoizerUtils';
 import { WriteableElementName } from './utils/constants';
 import { LocalMessageItem } from '../types/messaging/LocalMessageItem';
@@ -129,6 +128,8 @@ const selectLauncherConfig = (state: AppState) => state.config.derived.launcher;
 const selectCssVariableOverrides = (state: AppState) =>
   state.config.derived.cssVariableOverrides;
 const selectHeaderConfig = (state: AppState) => state.config.derived.header;
+const selectMessageFocusToggleShortcut = (state: AppState) =>
+  state.config.derived.keyboardShortcuts.messageFocusToggle;
 const selectPublicConfig = (state: AppState) => state.config.public;
 const selectPersistedToBrowserStorage = (state: AppState) =>
   state.persistedToBrowserStorage;
@@ -233,6 +234,9 @@ function AppShell({
   const launcher = useSelector(selectLauncherConfig);
   const cssVariableOverrides = useSelector(selectCssVariableOverrides);
   const header = useSelector(selectHeaderConfig);
+  const messageFocusToggleShortcut = useSelector(
+    selectMessageFocusToggleShortcut
+  );
   const publicConfig = useSelector(selectPublicConfig);
   const namespaceName = serviceManager.namespace.originalName;
   const languageKey = namespaceName
@@ -416,10 +420,10 @@ function AppShell({
     useAssistantUploadCallbacks({ serviceManager });
 
   // Determine whether the assistant upload button should be shown.
-  // It is shown when UploadConfig.is_on is true AND we are not in a human-agent session.
+  // It is shown when UploadConfig.isOn is true AND we are not in a human-agent session.
   const uploadConfig = publicConfig.upload;
   const isAssistantUploadEnabled =
-    uploadConfig?.is_on === true &&
+    uploadConfig?.isOn === true &&
     Boolean(uploadConfig.onFileUpload) &&
     !agentDisplayState.isConnectingOrConnected;
 
@@ -623,29 +627,30 @@ function AppShell({
     }
   }, []);
 
-  // Stable wrapper so <Input> receives a referentially stable onSendInput prop
+  // Stable wrapper so <Input> receives a referentially stable onSendInput prop.
+  // When the home screen is active the single unconditional <Input> acts as the
+  // home-screen prompt line, so it must emit HOME_SCREEN_INPUT; otherwise it is
+  // the message-list input and emits MESSAGE_INPUT.
   const onSendInputFromInput = useCallback(
     (text: string, displayContent?: JSONContent) =>
       onSendInput(
         text,
-        MessageSendSource.MESSAGE_INPUT,
+        showHomeScreen
+          ? MessageSendSource.HOME_SCREEN_INPUT
+          : MessageSendSource.MESSAGE_INPUT,
         undefined,
         displayContent
       ),
-    [onSendInput]
+    [onSendInput, showHomeScreen]
   );
 
   // Add keyboard event listener for focus toggle shortcut and Escape to exit message navigation
   useEffect(() => {
-    const shortcutConfig =
-      publicConfig.keyboardShortcuts?.messageFocusToggle ||
-      DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT;
-
-    // Check if shortcuts are enabled (default to false if not specified)
-    const shortcutsEnabled = shortcutConfig.is_on === true;
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (shortcutsEnabled && matchesShortcut(event, shortcutConfig)) {
+      if (
+        messageFocusToggleShortcut.isOn &&
+        matchesShortcut(event, messageFocusToggleShortcut)
+      ) {
         // Always handle the shortcut, even if it originates from the input field
         event.preventDefault();
         event.stopPropagation();
@@ -689,7 +694,7 @@ function AppShell({
 
     return undefined;
   }, [
-    publicConfig.keyboardShortcuts,
+    messageFocusToggleShortcut,
     handleFocusToggle,
     viewState.mainWindow,
     containerRef,

@@ -21,7 +21,7 @@ Load only what you need:
 - Working across the React/Lit boundary, shadow DOM, or slots → [architecture.md](references/architecture.md)
 - Adding, editing, or wiring a service → [services.md](references/services.md)
 - Writing or fixing a Jest test → [tests.md](references/tests.md)
-- Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns) → [Root accessibility.md](../../references/accessibility.md). For announcements use [`useAriaAnnouncer`](src/chat/hooks/useAriaAnnouncer.tsx) / [`AnnounceOnMountComponent`](src/chat/components/util/AnnounceOnMountComponent.tsx); for blocking-error announcements pass `assertive: true` on the `AnnounceMessage`.
+- Shipping any UI change (WCAG 2.1 AA checklist, live-region patterns) → [Root accessibility.md](../../references/accessibility.md). For announcements use [`useAriaAnnouncer`](src/chat/hooks/useAriaAnnouncer.tsx) / [`AnnounceOnMount`](src/chat/components/helpers/AnnounceOnMount/AnnounceOnMount.tsx); for blocking-error announcements pass `assertive: true` on the `AnnounceMessage`.
 - Touching the store → [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md)
 - Touching public types or JSDoc → [src/types/AGENTS.md](src/types/AGENTS.md)
 - Writing a code example (JSDoc `@example`, docs snippet) → [code-examples.md](references/code-examples.md)
@@ -52,6 +52,7 @@ From this package directory:
 
 ```bash
 npm run build      # rollup + typedoc
+npm run docs       # typedoc only — the fast docs loop, no rollup needed
 npm start          # rollup --watch + typedoc --watch + local doc server on :5001
 npm test           # jest with coverage
 npx jest path/to/file_spec.ts

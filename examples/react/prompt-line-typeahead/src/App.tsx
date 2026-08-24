@@ -29,6 +29,7 @@ import { createRoot } from 'react-dom/client';
 
 import { customSendMessage } from './customSendMessage';
 import { CANNED_SUGGESTIONS } from './suggestions';
+import '@carbon/styles/css/styles.css';
 
 function App() {
   const config: PublicConfig = useMemo(
@@ -50,8 +51,6 @@ function App() {
             CANNED_SUGGESTIONS.filter((s) =>
               s.label.toLowerCase().includes(query.toLowerCase())
             ),
-          // throttle resolver calls so each keystroke does not trigger a fetch — 150ms keeps typing responsive.
-          debounceMs: 150,
         },
       },
     }),

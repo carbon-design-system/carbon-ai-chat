@@ -19,6 +19,7 @@
  * APIs exercised:
  *   - `React.lazy` + `Suspense` to defer the chat bundle
  *   - `ChatShell` (overlay during bundle + init)
+ *   - `Launcher` (standalone launcher component)
  *   - `BusEventType.VIEW_CHANGE` (phase machine)
  *   - `readCarbonChatSession` for auto-mount
  *
@@ -36,8 +37,7 @@ import {
   readCarbonChatSession,
 } from '@carbon/ai-chat';
 import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
-import { AiLaunch } from '@carbon/icons-react';
-import ChatButton from '@carbon/ai-chat-components/es/react/chat-button.js';
+import Launcher from '@carbon/ai-chat-components/es/react/launcher.js';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -66,7 +66,7 @@ const config: PublicConfig = {
     // Routes outbound user messages to the in-memory mock backend instead of a real service.
     customSendMessage,
   },
-  // Suppress the built-in launcher — our custom Button acts as the launcher.
+  // Suppress the built-in launcher — our standalone Launcher acts as the launcher.
   launcher: { isOn: false },
 };
 
@@ -171,18 +171,15 @@ function App() {
 
   return (
     <>
-      {/* Custom launcher button — rendered immediately so the entrance animation
+      {/* Standalone Launcher — rendered immediately so the entrance animation
           plays on first mount. Hidden (not unmounted) when the float is open so
           the animation does not replay when the float closes again. */}
-      <ChatButton
+      <Launcher
         className={getLauncherClass()}
-        hasIconOnly
-        iconDescription="Open chat"
-        kind="primary"
-        size="lg"
-        onClick={handleLauncherClick}>
-        <AiLaunch slot="icon" />
-      </ChatButton>
+        aiEnabled
+        closedLabel="Open chat"
+        onToggle={handleLauncherClick}
+      />
 
       {/* Not mounted until the launcher is first clicked. Stays mounted after
           that so the lazy bundle is not discarded. */}

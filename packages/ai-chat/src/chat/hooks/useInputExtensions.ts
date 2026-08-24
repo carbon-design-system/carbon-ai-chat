@@ -75,7 +75,12 @@ function useInputExtensions({
   const normalizedStarters = useMemo(
     () => transformStarterItems(starters),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- starters object identity is intentionally excluded; only the consumed fields matter
-    [starters?.items, starters?.renderCustomList]
+    [
+      starters?.items,
+      starters?.renderCustomList,
+      starters?.isOn,
+      starters?.disableDirectSend,
+    ]
   );
 
   // Re-render once the builder chunk resolves (cold rich path); the synchronous

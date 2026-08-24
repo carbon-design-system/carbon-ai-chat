@@ -25,7 +25,12 @@ export function matchesShortcut(
   event: KeyboardEvent,
   config: ChatShortcutConfig
 ): boolean {
+  const modifiers = config.modifiers ?? {};
   let keyMatches = false;
+
+  if (!config.key) {
+    return false;
+  }
 
   // Try event.code first (more reliable with modifiers)
   if (event.code) {
@@ -54,10 +59,10 @@ export function matchesShortcut(
   }
 
   // Check all modifiers
-  const altMatches = !!config.modifiers.alt === event.altKey;
-  const shiftMatches = !!config.modifiers.shift === event.shiftKey;
-  const ctrlMatches = !!config.modifiers.ctrl === event.ctrlKey;
-  const metaMatches = !!config.modifiers.meta === event.metaKey;
+  const altMatches = !!modifiers.alt === event.altKey;
+  const shiftMatches = !!modifiers.shift === event.shiftKey;
+  const ctrlMatches = !!modifiers.ctrl === event.ctrlKey;
+  const metaMatches = !!modifiers.meta === event.metaKey;
 
   return altMatches && shiftMatches && ctrlMatches && metaMatches;
 }
@@ -70,19 +75,20 @@ export function matchesShortcut(
  * @returns A human-readable string representation of the shortcut
  */
 export function formatShortcutForDisplay(config: ChatShortcutConfig): string {
+  const modifiers = config.modifiers ?? {};
   const parts: string[] = [];
 
   // Add modifiers in a consistent order
-  if (config.modifiers.ctrl) {
+  if (modifiers.ctrl) {
     parts.push('Ctrl');
   }
-  if (config.modifiers.alt) {
+  if (modifiers.alt) {
     parts.push('Alt');
   }
-  if (config.modifiers.shift) {
+  if (modifiers.shift) {
     parts.push('Shift');
   }
-  if (config.modifiers.meta) {
+  if (modifiers.meta) {
     // Use platform-specific name for meta key
     const isMac =
       typeof navigator !== 'undefined' &&
@@ -90,9 +96,13 @@ export function formatShortcutForDisplay(config: ChatShortcutConfig): string {
     parts.push(isMac ? 'Cmd' : 'Meta');
   }
 
-  // Add the key (capitalize single letters, keep special keys as-is)
-  const key = config.key.length === 1 ? config.key.toUpperCase() : config.key;
-  parts.push(key);
+  // Add the key (capitalize single letters, keep special keys as-is). A missing
+  // key returns the modifiers alone rather than a dangling "Ctrl + " separator,
+  // which a screen reader would announce verbatim.
+  const configKey = config.key ?? '';
+  if (configKey) {
+    parts.push(configKey.length === 1 ? configKey.toUpperCase() : configKey);
+  }
 
   return parts.join(' + ');
 }

@@ -1320,6 +1320,68 @@ HTTP: http://example.com
       ).to.not.equal(null);
     });
 
+    it('does not pass the internal token tree to any callback', async () => {
+      // `node` was a `TokenTree` escape hatch on all five arg types. TokenTree is
+      // the streaming-diff structure and is not a consumer contract, so it must
+      // stay out of the payload — nothing else would catch it being re-added.
+      const source = [
+        '| h1 | h2 |',
+        '| --- | --- |',
+        '| a | b |',
+        '',
+        '```ts',
+        'const x = 1;',
+        '```',
+        '',
+        '[label](https://example.com "link title")',
+        '',
+        '![alt text](https://example.com/i.png "image title")',
+        '',
+        '- [ ] Task',
+      ].join('\n');
+      const keysByKind: Record<string, string[]> = {};
+      const capture =
+        (kind: string) =>
+        (args: Record<string, unknown>): null => {
+          keysByKind[kind] = Object.keys(args);
+          return null;
+        };
+
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            table: capture('table'),
+            codeBlock: capture('codeBlock'),
+            link: capture('link'),
+            image: capture('image'),
+            checklist: {
+              onToggle: () => {},
+              getChecked: capture('checklistItem'),
+            },
+          }}
+          .markdown=${source}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+
+      expect(Object.keys(keysByKind).sort()).to.deep.equal([
+        'checklistItem',
+        'codeBlock',
+        'image',
+        'link',
+        'table',
+      ]);
+      for (const [kind, keys] of Object.entries(keysByKind)) {
+        expect(
+          keys,
+          `${kind} args should not carry the token tree`
+        ).to.not.include('node');
+        expect(
+          keys,
+          `${kind} args should still carry the markdown-it token`
+        ).to.include('token');
+      }
+    });
+
     it('re-invokes the callback after each render', async () => {
       const calls: string[] = [];
       const el = await fixture<MarkdownElementInstance>(
@@ -1430,6 +1492,289 @@ HTTP: http://example.com
     });
   });
 
+  // Slot hosts are hoisted out of the markdown element into one shared
+  // page-level container (see the chat containers in `@carbon/ai-chat`) and
+  // projected back by name, so slot names have to be unique across every
+  // markdown element on the page — not just within one element. When they
+  // weren't, two messages whose code block both started on line 0 minted the
+  // same name: the first element's slot gathered both hosts and the second
+  // gathered none. See issue #2099.
+  describe('slot names across markdown elements', () => {
+    const HARNESS_TAG = 'cds-test-markdown-relocation-host';
+    const codeMarkdown = '```json\n{ "name": "Alice" }\n```';
+
+    // Minimal inline plugin whose output goes through the plugin-fallback slot
+    // path (the same page-level hoisting, a separate slot-name mint site).
+    function tagPlugin(md: any) {
+      md.inline.ruler.before(
+        'text',
+        'cds_test_tag',
+        (state: any, silent: boolean) => {
+          if (!state.src.slice(state.pos).startsWith(':tag:')) {
+            return false;
+          }
+          if (!silent) {
+            state.push('cds_test_tag', '', 0);
+          }
+          state.pos += ':tag:'.length;
+          return true;
+        }
+      );
+      md.renderer.rules.cds_test_tag = () =>
+        `<span class="cds-test-tag">tag</span>`;
+    }
+
+    if (!customElements.get(HARNESS_TAG)) {
+      customElements.define(
+        HARNESS_TAG,
+        class extends HTMLElement {
+          connectedCallback() {
+            if (!this.shadowRoot) {
+              this.attachShadow({ mode: 'open' });
+            }
+          }
+        }
+      );
+    }
+
+    /**
+     * Stands in for a chat container: accepts every host-mount offer, relocates
+     * the host into its own light DOM, and renders one `<slot name=X slot=X>`
+     * forwarder per slot name — deduplicated by name, exactly as the real
+     * containers dedupe `_pluginSlotNames`. Mirrors `ChatContainer.tsx` and
+     * `cds-aichat-container`.
+     */
+    async function createRelocationHarness() {
+      const harness = await fixture<HTMLElement>(
+        html`<cds-test-markdown-relocation-host></cds-test-markdown-relocation-host>`
+      );
+      const mounted: Array<{
+        owner: Element;
+        slotName: string;
+        host: HTMLElement;
+      }> = [];
+      const forwarderOwners = new Map<string, Element>();
+      const pluginHosts = new Map<string, HTMLElement>();
+
+      harness.addEventListener(
+        'cds-aichat-markdown-plugin-host-mount',
+        (event) => {
+          const detail = (
+            event as CustomEvent<{
+              slotName: string;
+              html?: string;
+              element?: HTMLElement;
+              isInline: boolean;
+            }>
+          ).detail;
+          const owner = event.composedPath()[0] as Element;
+          event.preventDefault();
+
+          // Custom renderers forward a live element; plugin fallbacks forward
+          // an HTML string the container hosts itself, keyed by slot name.
+          let host = detail.element;
+          if (!host) {
+            host =
+              pluginHosts.get(detail.slotName) ??
+              document.createElement(detail.isInline ? 'span' : 'div');
+            host.innerHTML = detail.html ?? '';
+            pluginHosts.set(detail.slotName, host);
+          }
+          host.setAttribute('slot', detail.slotName);
+          if (host.parentElement !== harness) {
+            harness.appendChild(host);
+          }
+
+          if (!forwarderOwners.has(detail.slotName)) {
+            forwarderOwners.set(detail.slotName, owner);
+            // Both attributes carry weight, and both mirror what the real
+            // containers render (`<slot name=${slot} slot=${slot}>`). `name`
+            // makes the forwarder gather the hoisted host back out of the
+            // harness light DOM; `slot` assigns the forwarder itself into the
+            // markdown element's own shadow slot, which is the second hop the
+            // `assignedElements({ flatten: true })` assertion below resolves
+            // through. Without `slot`, nothing is assigned to that shadow slot
+            // and `flatten` yields its fallback content instead of the host.
+            const forwarder = document.createElement('slot');
+            forwarder.setAttribute('name', detail.slotName);
+            forwarder.setAttribute('slot', detail.slotName);
+            owner.appendChild(forwarder);
+          }
+          mounted.push({ owner, slotName: detail.slotName, host });
+        }
+      );
+      harness.addEventListener(
+        'cds-aichat-markdown-plugin-host-unmount',
+        (event) => {
+          const { slotName } = (event as CustomEvent<{ slotName: string }>)
+            .detail;
+          forwarderOwners.delete(slotName);
+          pluginHosts.get(slotName)?.remove();
+          pluginHosts.delete(slotName);
+        }
+      );
+
+      /** Mounts a markdown element inside the harness's shadow root. */
+      async function addMarkdown(
+        markdown: string,
+        props: Partial<MarkdownElementInstance> = {}
+      ) {
+        const el = document.createElement(
+          MARKDOWN_ELEMENT_TAG
+        ) as MarkdownElementInstance;
+        Object.assign(el, props, { markdown });
+        harness.shadowRoot?.appendChild(el);
+        await el.updateComplete;
+        return el;
+      }
+
+      return { harness, mounted, forwarderOwners, pluginHosts, addMarkdown };
+    }
+
+    /** Returns a `codeBlock` renderer stamping its result with `owner`. */
+    function taggedCodeBlockRenderer(owner: string) {
+      return ({ code }: { code: string }) => {
+        const div = document.createElement('div');
+        div.className = 'cds-test-code-override';
+        div.dataset.owner = owner;
+        div.textContent = code;
+        return div;
+      };
+    }
+
+    it('mints a different slot name in each markdown element', async () => {
+      const slotNames: string[] = [];
+      const capture = ({ slotName }: { slotName: string }) => {
+        slotNames.push(slotName);
+        return document.createElement('div');
+      };
+      const markdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\ntrailer`;
+
+      const first = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ table: capture }}
+          .markdown=${markdown}></cds-aichat-markdown>`
+      );
+      await first.updateComplete;
+      const firstName = slotNames[slotNames.length - 1];
+
+      const second = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{ table: capture }}
+          .markdown=${markdown}></cds-aichat-markdown>`
+      );
+      await second.updateComplete;
+      const secondName = slotNames[slotNames.length - 1];
+
+      expect(
+        secondName,
+        'identical markdown in two elements must not share a slot name'
+      ).to.not.equal(firstName);
+      // The prefix stays targetable by `[slot^=…]` selectors.
+      expect(firstName).to.match(/^cds-aichat-markdown-renderer-table-/);
+      expect(secondName).to.match(/^cds-aichat-markdown-renderer-table-/);
+    });
+
+    it('projects exactly one hoisted host into each markdown element', async () => {
+      const { harness, mounted, forwarderOwners, addMarkdown } =
+        await createRelocationHarness();
+
+      await addMarkdown(codeMarkdown, {
+        customRenderers: { codeBlock: taggedCodeBlockRenderer('a') },
+      } as Partial<MarkdownElementInstance>);
+      await addMarkdown(codeMarkdown, {
+        customRenderers: { codeBlock: taggedCodeBlockRenderer('b') },
+      } as Partial<MarkdownElementInstance>);
+
+      expect(mounted.length, 'both elements should offer a host').to.equal(2);
+      const [a, b] = mounted;
+      expect(a.slotName).to.not.equal(b.slotName);
+
+      // The name-keyed forwarder dedupe must never starve the second element.
+      expect(forwarderOwners.get(a.slotName)).to.equal(a.owner);
+      expect(forwarderOwners.get(b.slotName)).to.equal(b.owner);
+
+      for (const { owner, slotName, host } of [a, b]) {
+        expect(
+          harness.querySelectorAll(`[slot="${slotName}"]`).length,
+          'exactly one hoisted host per slot name'
+        ).to.equal(1);
+        const slot = owner.shadowRoot?.querySelector(
+          `slot[name="${slotName}"]`
+        ) as HTMLSlotElement | null;
+        expect(
+          slot,
+          'the element should render a placeholder slot'
+        ).to.not.equal(null);
+        // Compared by identity rather than `deep.equal`: deep-comparing DOM
+        // nodes walks the whole node graph on failure.
+        const assigned = slot?.assignedElements({ flatten: true }) ?? [];
+        expect(
+          assigned.length,
+          'each element must project exactly one host — not both, not none'
+        ).to.equal(1);
+        expect(assigned[0], 'each element must project its own host').to.equal(
+          host
+        );
+      }
+    });
+
+    it('namespaces plugin-fallback slot names per element', async () => {
+      const { mounted, pluginHosts, addMarkdown } =
+        await createRelocationHarness();
+      const plugins = [tagPlugin];
+
+      const first = await addMarkdown('Hi :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+      await addMarkdown('Bye :tag:', {
+        markdownItPlugins: plugins,
+      } as Partial<MarkdownElementInstance>);
+
+      expect(mounted.length).to.equal(2);
+      const [a, b] = mounted;
+      expect(
+        b.slotName,
+        'plugin-fallback names must not collide across elements'
+      ).to.not.equal(a.slotName);
+      expect(a.slotName).to.match(
+        /^cds-aichat-markdown-renderer-pluginFallback-/
+      );
+      expect(pluginHosts.size, 'each element gets its own host').to.equal(2);
+
+      // Removing the first element must not tear down the second's host.
+      first.remove();
+      expect(pluginHosts.has(b.slotName)).to.equal(true);
+      expect(pluginHosts.get(b.slotName)?.isConnected).to.equal(true);
+    });
+
+    it('keeps the same slot name across a disconnect and reconnect', async () => {
+      const slotNames: string[] = [];
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            codeBlock: ({ slotName }: { slotName: string }) => {
+              slotNames.push(slotName);
+              return document.createElement('div');
+            },
+          }}
+          .markdown=${codeMarkdown}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const before = slotNames[slotNames.length - 1];
+
+      const parent = el.parentElement as HTMLElement;
+      el.remove();
+      parent.appendChild(el);
+      await el.updateComplete;
+
+      expect(
+        slotNames[slotNames.length - 1],
+        'the namespace is minted at construction, so it survives a move'
+      ).to.equal(before);
+    });
+  });
+
   describe('link / image attribute transforms', () => {
     it('link callback rewrites href and target', async () => {
       const el = await fixture<MarkdownElementInstance>(
@@ -1499,6 +1844,147 @@ HTTP: http://example.com
         false
       );
       expect(link?.getAttribute('data-safe')).to.equal('ok');
+    });
+
+    it('onClick fires with the correct MouseEvent and is never set as an HTML attribute', async () => {
+      let receivedEvent: MouseEvent | null = null;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            link: () => ({
+              onClick: (event: MouseEvent) => {
+                event.preventDefault();
+                receivedEvent = event;
+              },
+            }),
+          }}
+          .markdown=${'[link](https://example.com)'}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector('a');
+      link!.click();
+      expect(receivedEvent, 'handler called').to.be.instanceOf(MouseEvent);
+      expect(
+        link?.hasAttribute('onclick'),
+        'onClick must not be serialised as an attribute'
+      ).to.equal(false);
+    });
+
+    it('onClick works alongside other link result fields', async () => {
+      let clicked = false;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .customRenderers=${{
+            link: ({ href }: { href: string }) => ({
+              href: `${href}?utm=test`,
+              target: '_self',
+              rel: 'noopener',
+              onClick: (event: MouseEvent) => {
+                event.preventDefault();
+                clicked = true;
+              },
+            }),
+          }}
+          .markdown=${'[link](https://example.com)'}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector('a');
+      expect(link?.getAttribute('href')).to.equal(
+        'https://example.com?utm=test'
+      );
+      expect(link?.getAttribute('target')).to.equal('_self');
+      expect(link?.getAttribute('rel')).to.equal('noopener');
+      link!.click();
+      expect(clicked, 'onClick fired').to.equal(true);
+    });
+
+    it('renders links with no click listener when no custom renderer is set', async () => {
+      const clickListenerAdds: EventTarget[] = [];
+      const originalAdd = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function (
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | AddEventListenerOptions
+      ) {
+        if (type === 'click' && this instanceof HTMLAnchorElement) {
+          clickListenerAdds.push(this);
+        }
+        return originalAdd.call(this, type, listener, options);
+      };
+      try {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown .markdown=${'[link](https://example.com)'}>
+          </cds-aichat-markdown>`
+        );
+        await el.updateComplete;
+        const link = el.shadowRoot?.querySelector('a');
+        expect(link, 'anchor rendered').to.not.equal(null);
+        expect(link?.hasAttribute('onclick')).to.equal(false);
+        expect(clickListenerAdds.length, 'no click listener added').to.equal(0);
+      } finally {
+        EventTarget.prototype.addEventListener = originalAdd;
+      }
+    });
+
+    it('adds no click listener when the renderer result omits onClick', async () => {
+      const clickListenerAdds: EventTarget[] = [];
+      const originalAdd = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function (
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | AddEventListenerOptions
+      ) {
+        if (type === 'click' && this instanceof HTMLAnchorElement) {
+          clickListenerAdds.push(this);
+        }
+        return originalAdd.call(this, type, listener, options);
+      };
+      try {
+        const el = await fixture<MarkdownElementInstance>(
+          html`<cds-aichat-markdown
+            .customRenderers=${{
+              link: () => ({
+                target: '_self',
+                attributes: { 'data-tracked': 'true' },
+              }),
+            }}
+            .markdown=${'[link](https://example.com)'}>
+          </cds-aichat-markdown>`
+        );
+        await el.updateComplete;
+        const link = el.shadowRoot?.querySelector('a');
+        expect(link?.getAttribute('target')).to.equal('_self');
+        expect(link?.getAttribute('data-tracked')).to.equal('true');
+        expect(link?.hasAttribute('onclick')).to.equal(false);
+        expect(clickListenerAdds.length, 'no click listener added').to.equal(0);
+      } finally {
+        EventTarget.prototype.addEventListener = originalAdd;
+      }
+    });
+
+    it('onClick still fires when sanitize-html is set', async () => {
+      let clicked = false;
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          sanitize-html
+          .customRenderers=${{
+            link: () => ({
+              attributes: { 'data-safe': 'ok' },
+              onClick: (event: MouseEvent) => {
+                event.preventDefault();
+                clicked = true;
+              },
+            }),
+          }}
+          .markdown=${'[link](https://example.com)'}>
+        </cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      const link = el.shadowRoot?.querySelector('a');
+      expect(link?.getAttribute('data-safe')).to.equal('ok');
+      link!.click();
+      expect(clicked, 'onClick fired despite sanitize pass').to.equal(true);
+      expect(link?.hasAttribute('onclick')).to.equal(false);
     });
 
     it('image callback rewrites src', async () => {
@@ -1821,5 +2307,70 @@ describe('cds-aichat-markdown thematic break (hr) rendering', () => {
       getComputedStyle(slot as Element).display,
       'inline fallback slot should stay display:contents (inline flow), not block'
     ).to.equal('contents');
+  });
+});
+
+describe('streaming table loading mode', () => {
+  const TABLE = `| h1 | h2 |\n| --- | --- |\n| a | b |`;
+
+  it('renders the newest content on the tick that leaves loading mode', async () => {
+    // While a trailing table is streaming the element stages each tree instead of
+    // rendering it. On the tick that leaves loading mode it must render the tree it
+    // just parsed — rendering the staged one instead dropped the final chunk, which
+    // stuck permanently when that tick was the last.
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        streaming
+        .markdown=${TABLE}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+
+    el.markdown = `${TABLE}\n| c | d |`;
+    await el.updateComplete;
+
+    el.markdown = `${TABLE}\n| c | d |\n\nAfter the table.`;
+    await el.updateComplete;
+
+    // Table cell text lives in the table element's own shadow root, so assert on the
+    // trailing paragraph — it only exists in the tree parsed on this tick.
+    expect(el.shadowRoot?.textContent ?? '').to.contain('After the table.');
+    expect(el.shadowRoot?.querySelector('cds-aichat-table')).to.not.equal(null);
+  });
+
+  it('renders the staged tree when streaming stops without a reparse', async () => {
+    // Leaving loading mode by dropping `streaming` does not reparse, so this tick
+    // renders whatever `previousTreeForDiff` seeds from — the staged tree. It is the
+    // only path that reads `stagedStreamingTokenTree`, so it is what stops that field
+    // from looking like dead state, and it is where a dropped final row would show up.
+    const calls: Array<{ isLoading: boolean; rowCount: number }> = [];
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        streaming
+        .customRenderers=${{
+          table: ({
+            isLoading,
+            rows,
+          }: {
+            isLoading: boolean;
+            rows: unknown[][];
+          }) => {
+            calls.push({ isLoading, rowCount: rows.length });
+            return document.createElement('div');
+          },
+        }}
+        .markdown=${TABLE}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    expect(calls.at(-1)?.isLoading).to.equal(true);
+
+    // Staged, not rendered — the element is holding the table in its loading frame.
+    el.markdown = `${TABLE}\n| c | d |`;
+    await el.updateComplete;
+
+    el.streaming = false;
+    await el.updateComplete;
+
+    expect(calls.at(-1)?.isLoading).to.equal(false);
+    expect(calls.at(-1)?.rowCount).to.equal(2);
   });
 });
