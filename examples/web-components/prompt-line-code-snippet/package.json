@@ -1,6 +1,6 @@
 {
   "name": "@carbon/ai-chat-examples-web-components-prompt-line-code-snippet",
-  "version": "1.19.0-rc.2",
+  "version": "1.19.0",
   "private": true,
   "type": "module",
   "description": "An example demonstrating a Tiptap input rule that converts triple backticks into an editable @carbon/ai-chat-components code-snippet block, using @carbon/ai-chat as a web component.",
@@ -12,8 +12,8 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.19.0-rc.2",
-    "@carbon/ai-chat-components": "^1.9.0-rc.2",
+    "@carbon/ai-chat": "^1.19.0",
+    "@carbon/ai-chat-components": "^1.9.0",
     "@carbon/web-components": "^2.58.1",
     "@tiptap/core": "^3.22.5",
     "lit": "^3.1.0",
