@@ -157,6 +157,6 @@
     "typescript": "^5.2.2",
     "vite": "^8.0.16",
     "web-dev-server-plugin-lit-css": "^4.0.0",
-    "webpack-dev-server": "^5.2.5"
+    "webpack-dev-server": "^6.0.0"
   }
 }
