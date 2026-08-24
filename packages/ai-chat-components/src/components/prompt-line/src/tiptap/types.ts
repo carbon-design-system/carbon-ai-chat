@@ -54,17 +54,30 @@ export interface SuggestionItem {
    * items that read as `@name` (files, agents, ...).
    */
   showTriggerInChip?: boolean;
+  /**
+   * Optional group identifier. Items sharing the same `groupId` are rendered
+   * together under a single group heading in the suggestion list. Items
+   * without a `groupId` are rendered as ungrouped before any groups.
+   * Group order follows first-occurrence of each `groupId` in the array.
+   */
+  groupId?: string;
+  /**
+   * Human-readable title for the group header. Every item in the group should
+   * supply this so the header renders correctly if filtering leaves only a
+   * non-first item visible.
+   */
+  groupTitle?: string;
 }
 
 /**
  * Represents a group of related suggestion items with a title.
  */
 export interface SuggestionItemGroup {
-  /** Unique identifier for the group */
+  /** Unique identifier for the group (matches the items' `groupId`). */
   id: string;
-  /** Title displayed above the group */
+  /** Title displayed above the group. */
   title: string;
-  /** Array of suggestion items in this group */
+  /** Items that belong to this group. */
   items: SuggestionItem[];
 }
 
