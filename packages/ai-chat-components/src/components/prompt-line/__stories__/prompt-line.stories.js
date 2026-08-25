@@ -528,6 +528,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    attached: { type: Boolean },
   };
 
   constructor() {
@@ -540,6 +541,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.attached = false;
     this._sendControlRef = createRef();
     this._mentionConfig = {
       trigger: '@',
@@ -569,6 +571,34 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
 
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._autocompleteObserver = new MutationObserver(() => {
+      this._pushAttached();
+    });
+    this._autocompleteObserver.observe(this, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._autocompleteObserver?.disconnect();
+    this._autocompleteObserver = null;
+  }
+
+  updated() {
+    this._pushAttached();
+  }
+
+  _pushAttached() {
+    const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
+    if (autocompleteEl) {
+      autocompleteEl.attached = this.attached;
+    }
   }
 
   _onPromptChange(e) {
@@ -964,6 +994,7 @@ export const CommandsAndMentions = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    attached,
   }) => {
     const el = document.createElement(
       'prompt-line-story-commands-and-mentions'
@@ -976,6 +1007,7 @@ export const CommandsAndMentions = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.attached = attached;
     return el;
   },
 };

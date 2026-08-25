@@ -309,6 +309,7 @@ const CommandsAndMentionsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  attached,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
   const promptLineRef = useRef(null);
@@ -349,7 +350,7 @@ const CommandsAndMentionsStory = ({
     mention,
     command,
     promptLineRef,
-    attached: false,
+    attached,
   });
 
   const onChange = useCallback((e) => {
