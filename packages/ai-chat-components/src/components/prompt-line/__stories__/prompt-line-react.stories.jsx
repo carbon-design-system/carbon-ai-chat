@@ -211,8 +211,13 @@ export default {
   component: PromptLine,
   argTypes: {
     ...WCMeta.argTypes,
+    expanded: {
+      control: 'boolean',
+      description:
+        'Whether the shell uses the expanded layout (full-width editor row with inline actions beneath it).',
+    },
   },
-  args: { ...WCMeta.args },
+  args: { ...WCMeta.args, expanded: false },
 };
 
 // ---------------------------------------------------------------------------
@@ -228,68 +233,7 @@ export const Default = {
     placeholder,
     disabled,
     rounded,
-    hasError,
-    errorTitle,
-    errorDescription,
-    errorCollapsible,
-    errorFullscreen,
-  }) => {
-    const [hasValidInput, setHasValidInput] = useState(false);
-
-    const onChange = useCallback((e) => {
-      setHasValidInput(e.detail.rawValue.length > 0);
-      action('cds-aichat-prompt-change')(e.detail);
-    }, []);
-
-    return (
-      <Wrapper>
-        <PromptLineShell
-          rounded={rounded}
-          disabled={disabled}
-          hasError={hasError}>
-          {hasError && errorTitle && (
-            <CDSAIChatErrorMessage
-              slot="field-messaging"
-              title={errorTitle}
-              description={errorDescription}
-              collapsible={errorCollapsible}
-              fullscreen={errorFullscreen}
-            />
-          )}
-          <PromptLine
-            slot="editor"
-            placeholder={placeholder}
-            disabled={disabled}
-            onChange={onChange}
-            onSendIntent={(e) =>
-              action('cds-aichat-prompt-send-intent')(e.detail)
-            }
-          />
-          <CDSAIChatInputSendControl
-            slot="send-control"
-            disabled={disabled}
-            hasValidInput={hasValidInput}
-            onSend={() => action('cds-aichat-input-send')()}
-          />
-        </PromptLineShell>
-      </Wrapper>
-    );
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Expanded — full-width editor row + 10 dummy action buttons beneath it
-// ---------------------------------------------------------------------------
-
-export const Expanded = {
-  argTypes: {
-    attached: { table: { disable: true } },
-    disableDirectSend: { table: { disable: true } },
-  },
-  render: ({
-    placeholder,
-    disabled,
-    rounded,
+    expanded,
     hasError,
     errorTitle,
     errorDescription,
@@ -309,7 +253,7 @@ export const Expanded = {
           rounded={rounded}
           disabled={disabled}
           hasError={hasError}
-          expanded>
+          expanded={expanded}>
           {hasError && errorTitle && (
             <CDSAIChatErrorMessage
               slot="field-messaging"
@@ -324,8 +268,13 @@ export const Expanded = {
             placeholder={placeholder}
             disabled={disabled}
             onChange={onChange}
+            onSendIntent={(e) =>
+              action('cds-aichat-prompt-send-intent')(e.detail)
+            }
           />
-          <InlineActions actions={dummyActions} disabled={disabled} />
+          {expanded && (
+            <InlineActions actions={dummyActions} disabled={disabled} />
+          )}
           <CDSAIChatInputSendControl
             slot="send-control"
             disabled={disabled}
@@ -336,6 +285,15 @@ export const Expanded = {
       </Wrapper>
     );
   },
+};
+
+// ---------------------------------------------------------------------------
+// Expanded — full-width editor row + 10 dummy action buttons beneath it
+// ---------------------------------------------------------------------------
+
+export const Expanded = {
+  args: { ...Default.args, expanded: true },
+  render: Default.render,
 };
 
 // ---------------------------------------------------------------------------
