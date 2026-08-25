@@ -823,7 +823,7 @@ const _disableMeta = Object.fromEntries(
   Object.keys(WCMeta.argTypes).map((k) => [k, { table: { disable: true } }])
 );
 
-export const PromptLineAPI = {
+const PromptLineAPI = {
   tags: ['!dev'],
   name: 'PromptLine',
   argTypes: {
@@ -875,7 +875,7 @@ export const PromptLineAPI = {
   ),
 };
 
-export const PromptLineShellAPI = {
+const PromptLineShellAPI = {
   tags: ['!dev'],
   name: 'PromptLineShell',
   argTypes: {
@@ -919,7 +919,7 @@ export const PromptLineShellAPI = {
   ),
 };
 
-export const CDSAIChatInputSendControlAPI = {
+const CDSAIChatInputSendControlAPI = {
   tags: ['!dev'],
   name: 'CDSAIChatInputSendControl',
   argTypes: {
@@ -978,7 +978,7 @@ export const CDSAIChatInputSendControlAPI = {
   ),
 };
 
-export const CDSAIChatAutocompleteAPI = {
+const CDSAIChatAutocompleteAPI = {
   tags: ['!dev'],
   name: 'CDSAIChatAutocomplete',
   argTypes: {
@@ -1025,7 +1025,7 @@ export const CDSAIChatAutocompleteAPI = {
   ),
 };
 
-export const CDSAIChatFileUploadsAPI = {
+const CDSAIChatFileUploadsAPI = {
   tags: ['!dev'],
   name: 'CDSAIChatFileUploads',
   argTypes: {
@@ -1093,7 +1093,7 @@ export const CDSAIChatFileUploadsAPI = {
   },
 };
 
-export const CDSAIChatErrorMessageAPI = {
+const CDSAIChatErrorMessageAPI = {
   tags: ['!dev'],
   name: 'CDSAIChatErrorMessage',
   argTypes: {
@@ -1142,30 +1142,36 @@ export const CDSAIChatErrorMessageAPI = {
 
 export const PromptLineArgTypes = {
   tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
   argTypes: PromptLineAPI.argTypes,
 };
 
 export const PromptLineShellArgTypes = {
   tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
   argTypes: PromptLineShellAPI.argTypes,
 };
 
 export const CDSAIChatInputSendControlArgTypes = {
   tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
   argTypes: CDSAIChatInputSendControlAPI.argTypes,
 };
 
 export const CDSAIChatAutocompleteArgTypes = {
   tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
   argTypes: CDSAIChatAutocompleteAPI.argTypes,
 };
 
 export const CDSAIChatFileUploadsArgTypes = {
   tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
   argTypes: CDSAIChatFileUploadsAPI.argTypes,
 };
 
 export const CDSAIChatErrorMessageArgTypes = {
   tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
   argTypes: CDSAIChatErrorMessageAPI.argTypes,
 };
