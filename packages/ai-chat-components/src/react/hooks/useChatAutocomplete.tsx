@@ -194,9 +194,12 @@ export function useChatAutocomplete(
 
   // Prevent mousedown on the autocomplete container from stealing focus from
   // the editor.
-  const handleContainerMousedown = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-  }, []);
+  const handleContainerMousedown = React.useCallback(
+    (e: Event | React.MouseEvent) => {
+      e.preventDefault();
+    },
+    []
+  );
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
     if (!state.trigger || state.items.length === 0) {
@@ -228,7 +231,7 @@ export function useChatAutocomplete(
           slot="autocomplete-content"
           node={result as ReactNode}
           onMount={setListElement}
-          onMousedown={(e) => e.preventDefault()}
+          onMousedown={handleContainerMousedown}
         />
       );
     }
