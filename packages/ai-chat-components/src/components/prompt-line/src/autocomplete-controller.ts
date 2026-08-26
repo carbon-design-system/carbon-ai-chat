@@ -150,10 +150,9 @@ export class AutocompleteController {
       const prevIsOn = this._starters?.isOn !== false;
       const isOn = next.starters?.isOn !== false;
       this._starters = next.starters;
-      // isOn toggled: push the new value into the Tiptap extension storage and
-      // fire a no-op transaction so onTransaction → maybeEmit re-evaluates.
-      // Focus state is unchanged — the list appears on the next focus if the
-      // editor is not currently focused, or immediately if it is.
+      // isOn toggled: push the new value into the Tiptap extension storage.
+      // onTransaction is gated on editor.isFocused, so re-evaluation happens
+      // immediately when the editor is focused, and on the next focus otherwise.
       if (prevIsOn !== isOn) {
         writeStarterStorage(this._promptLine?.getEditor(), { isOn });
       }
