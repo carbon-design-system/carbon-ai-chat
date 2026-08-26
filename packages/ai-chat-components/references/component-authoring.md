@@ -20,6 +20,34 @@ component-name/
 
 Shared pieces: [../src/components/shared/](../src/components/shared/); design tokens / utilities: [../src/globals/](../src/globals/); test helpers: [../src/testing/](../src/testing/); ambient types: [../src/typings/](../src/typings/).
 
+### Nested sub-component directories
+
+When a component grows a logically independent child element that can be used standalone (e.g. [`prompt-line/autocomplete/`](../src/components/prompt-line/autocomplete/)), that child lives as a **sibling directory** next to `src/` and `__stories__/` rather than as another file under `src/`:
+
+```
+component-name/
+  index.ts              # re-exports parent elements AND the sub-component's public API
+  src/                  # parent element implementation (unchanged)
+  __stories__/          # parent stories (unchanged)
+  __tests__/            # parent tests (unchanged)
+  sub-component/
+    index.ts            # sub-component's own public entry
+    src/
+      sub-component.ts
+      sub-component.scss
+    __stories__/        # stories specific to the sub-component
+    __tests__/
+      sub-component.test.ts
+```
+
+Rules for this pattern:
+
+- **Use it when** the child element has meaningful standalone use and its own story set. A helper element that only ever exists inside the parent belongs in `src/` instead.
+- **Both `index.ts` files matter.** The parent's `index.ts` re-exports the sub-component so consumers have one import path; the sub-component's own `index.ts` exists so it can also be imported directly.
+- **Types may flow upward.** If the sub-component's types are shared with the parent (e.g. `SuggestionItem` defined in `src/tiptap/types.ts` and re-used by `autocomplete/src/autocomplete.ts`), import from the parent rather than duplicating them.
+- **Stories are scoped to the sub-component directory.** The sub-component's `__stories__/` produces its own Storybook group; the parent's `__stories__/` does not need to duplicate those stories.
+- **Tests mirror the same split.** `__tests__/` directories exist at both levels; tests for the sub-component's element live under `sub-component/__tests__/`, not alongside the parent's tests.
+
 **Experimental components** use a `preview-*` prefix and a `Preview/` story title. Their APIs may change without a deprecation window and are not recommended for production; they graduate to the main directory (and `Components/` group) when stable.
 
 ## Generated artifacts — never hand-edit
