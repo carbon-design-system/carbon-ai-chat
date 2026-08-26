@@ -463,6 +463,33 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('keyboard navigation', () => {
+    it('responds to a synthetic ArrowDown dispatched directly on the element (controller forwarding path)', async () => {
+      // The autocomplete-controller dispatches a synthetic KeyboardEvent directly
+      // on the registered list element. Verify the element handles it identically
+      // to a user-initiated keydown so the custom-list code path works.
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      await el.updateComplete;
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+    });
+
     it('should move focus down with ArrowDown', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
@@ -607,6 +634,120 @@ describe('cds-aichat-autocomplete', () => {
 
       expect(eventDetail).to.exist;
       expect(eventDetail.text).to.equal(mockItems[0].label);
+    });
+  });
+
+  describe('hover navigation', () => {
+    it('mouseenter on a non-active row makes it the active option', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      // First item is auto-focused on render
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+
+      // Hover over the second item
+      (options?.[1] as HTMLElement)?.dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: true })
+      );
+      await el.updateComplete;
+
+      const updatedOptions =
+        el.shadowRoot?.querySelectorAll('li[role="option"]');
+      expect(
+        (updatedOptions?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+      expect(
+        (updatedOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
+    });
+
+    it('aria-activedescendant follows the pointer', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+
+      // Hover the second item
+      (options?.[1] as HTMLElement)?.dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: true })
+      );
+      await el.updateComplete;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // mockItems[1] has id '2', so its option id is '2--option'
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '2--option'
+      );
+    });
+
+    it('Enter picks the hovered row, not the previously active row', async () => {
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"></cds-aichat-autocomplete>
+      `);
+
+      let sentText: string | null = null;
+      el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
+        sentText = (e as CustomEvent<{ text: string }>).detail.text;
+      });
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+
+      // Hover the second item while the first is active
+      (options?.[1] as HTMLElement)?.dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: true })
+      );
+      await el.updateComplete;
+
+      // Enter should pick the hovered (now active) second item
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+
+      expect(sentText).to.equal(mockItems[1].label);
+    });
+
+    it('mouseenter on a disabled item does not move the active option', async () => {
+      const disabledItem = {
+        id: 'disabled-1',
+        label: 'Disabled',
+        disabled: true,
+      };
+      const enabledItem = { id: 'enabled-1', label: 'Enabled' };
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${[enabledItem, disabledItem]}"></cds-aichat-autocomplete>
+      `);
+
+      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+
+      // Hover the disabled item (index 1)
+      (options?.[1] as HTMLElement)?.dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: true })
+      );
+      await el.updateComplete;
+
+      const updatedOptions =
+        el.shadowRoot?.querySelectorAll('li[role="option"]');
+      // Active option must remain on index 0 (enabled)
+      expect(
+        (updatedOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('true');
+      expect(
+        (updatedOptions?.[1] as HTMLElement)?.getAttribute('aria-selected')
+      ).to.equal('false');
     });
   });
 
