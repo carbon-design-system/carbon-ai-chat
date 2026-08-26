@@ -405,6 +405,9 @@ const CommandsAndMentionsStory = ({
 };
 
 export const CommandsAndMentions = {
+  argTypes: {
+    disableDirectSend: { table: { disable: true } },
+  },
   name: 'Commands and mentions',
   render: (args) => <CommandsAndMentionsStory {...args} />,
 };

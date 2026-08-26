@@ -984,6 +984,9 @@ export const Expanded = {
 // ---------------------------------------------------------------------------
 
 export const CommandsAndMentions = {
+  argTypes: {
+    disableDirectSend: { table: { disable: true } },
+  },
   name: 'Commands and mentions',
   render: ({
     placeholder,
