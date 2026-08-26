@@ -950,7 +950,7 @@ const CDSAIChatAutocompleteAPI = {
     attached: {
       control: 'boolean',
       description:
-        'When `true`, suppresses bottom corner rounding (use when overlaying the input).',
+        'When `true`, suppresses bottom corner rounding. Use in float and sidebar layouts when there is no gap between autocomplete and input bar.',
       table: { category: '' },
     },
     disableDirectSend: {

@@ -873,7 +873,7 @@ export default {
     attached: {
       control: 'boolean',
       description:
-        'Whether the autocomplete popover is visually attached to the input — removes bottom-corner rounding (Typeahead only).',
+        'When `true`, suppresses bottom corner rounding. Use in float and sidebar layouts when there is no gap between autocomplete and input bar.',
       table: { category: 'Autocomplete' },
     },
   },
