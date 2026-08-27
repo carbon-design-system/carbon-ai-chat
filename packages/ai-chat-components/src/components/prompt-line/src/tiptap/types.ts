@@ -139,15 +139,6 @@ export interface TriggerSuggestionConfig extends Omit<
    *  anywhere. Defaults to "anywhere". */
   triggerPosition?: 'start' | 'anywhere';
 
-  /**
-   * Override the schema-node name. Threaded through `Mention.extend({ name })`
-   * inside the carbon factory to sidestep Tiptap's last-named-wins stacking
-   * caveat when multiple triggers coexist.
-   *
-   * Defaults: `"mention"` (carbonMention) / `"command"` (carbonCommand).
-   */
-  name?: string;
-
   /** Replace the visual element rendered inside the token chip. */
   renderCustomToken?: (item: SuggestionItem) => HTMLElement | ReactNode;
 
@@ -179,11 +170,11 @@ export interface TriggerSuggestionConfig extends Omit<
 
 /**
  * Live autocomplete config. Selection inserts plain text (no token chip).
+ *
+ * Note: only one autocomplete config per editor is supported, because Tiptap
+ * resolves extensions by name.
  */
-export interface AutocompleteConfig extends BaseSuggestionConfig {
-  /** Override the suggestion plugin key name. Defaults to `"autocomplete"`. */
-  name?: string;
-}
+export type AutocompleteConfig = BaseSuggestionConfig;
 
 /**
  * Configuration for starter prompts — shown when the editor is empty and

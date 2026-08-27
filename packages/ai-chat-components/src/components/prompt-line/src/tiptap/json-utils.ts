@@ -184,3 +184,14 @@ export function textToDoc(text: string): JSONContent {
       ),
   };
 }
+
+/**
+ * Map a plain-text offset into a ProseMirror position inside the doc
+ * {@link textToDoc} builds from the same text. Lives here because it encodes
+ * that function's shape: one paragraph per line, so a position costs +1 for the
+ * doc/first-paragraph start plus +1 for every newline before it, each of which
+ * opens another paragraph. Change `textToDoc` and this has to change with it.
+ */
+export function textOffsetToDocPos(text: string, offset: number): number {
+  return offset + 1 + (text.slice(0, offset).split('\n').length - 1);
+}

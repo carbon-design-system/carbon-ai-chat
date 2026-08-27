@@ -6,7 +6,7 @@ deciders: '@carbon-design-system/carbon-ai-chat-developers'
 consulted:
 informed:
 epic: https://github.com/carbon-design-system/carbon-ai-chat/issues/2030
-discussion: https://github.com/carbon-design-system/carbon-ai-chat/issues/2112
+discussion: https://github.com/carbon-design-system/carbon-ai-chat/discussions/2210
 supersedes:
 superseded-by:
 ---

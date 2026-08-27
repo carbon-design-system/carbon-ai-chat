@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html
 
 A text item returned in a message response from an assistant.
 
@@ -86,7 +86,7 @@ interface TextItem
 
 For messages that are sent between the user and a human agent, we assign an agent type to the message to distinguish what type it is.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html#agent_message_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html#agent_message_type)
 
 ### message_item_options
 
@@ -94,7 +94,7 @@ For messages that are sent between the user and a human agent, we assign an agen
 
 Options that control additional features available for a message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html#message_item_options)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html#message_item_options)
 
 ### response_type
 
@@ -102,7 +102,7 @@ Options that control additional features available for a message item.
 
 The response type of this message item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html#response_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html#response_type)
 
 ### streaming_metadata
 
@@ -111,7 +111,7 @@ The response type of this message item.
 Metadata used to identify a generic item within the context of a stream in order to correlate any updates meant
 for a specific item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html#streaming_metadata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html#streaming_metadata)
 
 ### text
 
@@ -119,7 +119,7 @@ for a specific item.
 
 The text of the response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html#text)
 
 ### user_defined
 
@@ -127,7 +127,7 @@ The text of the response.
 
 An optional buckets of additional user defined properties for this item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.TextItem.html#user_defined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.TextItem.html#user_defined)
 
 ## Related
 

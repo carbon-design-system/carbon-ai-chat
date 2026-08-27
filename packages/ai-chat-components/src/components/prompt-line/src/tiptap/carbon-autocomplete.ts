@@ -34,11 +34,10 @@ export function carbonAutocomplete(
   config: AutocompleteConfig,
   excludeTriggers: ExcludedTrigger[] = []
 ): Extension {
-  const name = config.name ?? 'autocomplete';
-  const pluginKey = new PluginKey(`carbonAutocompleteSuggestion_${name}`);
+  const pluginKey = new PluginKey('carbonAutocompleteSuggestion');
 
   return Extension.create({
-    name: `carbon${capitalize(name)}`,
+    name: 'carbonAutocomplete',
 
     addProseMirrorPlugins() {
       const editor = this.editor;
@@ -151,8 +150,4 @@ async function resolveItems(
   return config.items.filter((item) =>
     item.label.toLowerCase().includes(lower)
   );
-}
-
-function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }

@@ -18,7 +18,6 @@ collect:
         - collapsible
         - controlled
         - disabled
-        - enable-send-button
         - error-label
         - error-message
         - expand-label
@@ -63,21 +62,17 @@ collect:
         - oncds-aichat-audio-player-ready
         # cds-aichat-autocomplete
         - attached
+        - disable-direct-send
         - input-text
         - oncds-aichat-autocomplete-dismiss
         - oncds-aichat-autocomplete-select
         - oncds-aichat-autocomplete-send
         # cds-aichat-autocomplete-controller
         - is-send-disabled
+        - oncds-aichat-autocomplete-item-selected
+        - oncds-aichat-autocomplete-item-send
         - oncds-aichat-custom-list-render
         - oncds-aichat-starter-selected
-        # cds-aichat-autocomplete-item
-        - index
-        - is-active
-        - oncds-aichat-autocomplete-item-send
-        # cds-aichat-autocomplete-item-group
-        - data-last-group
-        - oncds-aichat-autocomplete-item-click
         # cds-aichat-button
         - is-quick-action
         # cds-aichat-card
@@ -221,6 +216,16 @@ collect:
         - oncds-aichat-input-stop-streaming
         - show-stop-streaming
         - stop-response-label
+        # cds-aichat-launcher
+        - ai-enabled
+        - closed-label
+        - launcher-avatar-url
+        - oncds-aichat-launcher-toggle
+        - open-label
+        - show-unread-indicator
+        - tooltip-position
+        - unread-label
+        - unread-message-count
         # cds-aichat-markdown
         - code-snippet-aria-label-editable
         - code-snippet-aria-label-readonly

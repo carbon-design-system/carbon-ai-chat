@@ -164,12 +164,7 @@ Each commit message consists of a **header**, a **body** and a **footer**. The h
 <footer>
 ```
 
-The **header** is mandatory and the **scope** of the header is optional. There are a few validation rules that we also enforce, namely that:
-
-- The header must always be fewer than **72** characters
-- Any line in the commit body must be fewer than **80** characters
-
-Most of these rules are to help with integration of `git` with common tools.
+The **header** is mandatory and the **scope** of the header is optional. One validation rule is enforced: the header must be fewer than **72** characters.
 
 _Note: we check for this commit format using a tool called [`commitlint`](https://commitlint.js.org/#/)_.
 
@@ -199,7 +194,7 @@ The subject contains a succinct description of the change:
 
 ### Body
 
-Just as in the subject, use the imperative, present tense: "change" not "changed" nor "changes". The body should include the motivation for the change and contrast this with previous behavior.
+[references/conventions.md](../references/conventions.md#commit-bodies) covers what a body carries and who reads it.
 
 ### Footer
 

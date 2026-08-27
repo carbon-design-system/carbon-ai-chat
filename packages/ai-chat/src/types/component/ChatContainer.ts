@@ -21,6 +21,7 @@ import type {
   MarkdownRendererLinkResult as _MarkdownRendererLinkResult,
   MarkdownRendererTableArgs as _MarkdownRendererTableArgs,
   MarkdownRendererTableData as _MarkdownRendererTableData,
+  TokenTree as _TokenTree,
 } from '@carbon/ai-chat-components/es/components/markdown/index.js';
 import { type ChatInstance } from '../instance/ChatInstance';
 import { WriteableElements } from '../instance/WriteableElements';
@@ -223,11 +224,24 @@ type RenderWriteableElementResponse = {
 };
 
 /**
+ * Markdown-it parser node tree, surfaced on the `node` field of
+ * {@link MarkdownRendererTableArgs} and {@link MarkdownRendererCodeBlockArgs}
+ * so custom renderers can inspect the parsed token structure when the
+ * high-level data payload isn't enough.
+ *
+ * @category Messaging
+ * @experimental
+ * @interface
+ */
+export type TokenTree = _TokenTree;
+
+/**
  * Parsed table payload extended by {@link MarkdownRendererTableArgs} — the
  * argument shape the table renderer callback actually receives. Carries the
  * headers, rows, and streaming/loading flags.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererTableData = _MarkdownRendererTableData;
@@ -238,6 +252,7 @@ export type MarkdownRendererTableData = _MarkdownRendererTableData;
  * Carries the language, code text, and streaming flag.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
@@ -246,12 +261,13 @@ export type MarkdownRendererCodeBlockData = _MarkdownRendererCodeBlockData;
  * Argument passed to the markdown table renderer callbacks on
  * {@link CustomMarkdownRenderers.table} and
  * {@link WCCustomMarkdownRenderers.table}. Extends
- * {@link MarkdownRendererTableData} with the source markdown-it token and a
- * `slotName` that is stable across renders and unique across every rendered
- * markdown block on the page, so it is safe to use as a key. Treat the value
- * as opaque; its format is not part of the API.
+ * {@link MarkdownRendererTableData} with the source token, full
+ * {@link TokenTree} node, and a `slotName` that is stable across renders and
+ * unique across every rendered markdown block on the page, so it is safe to
+ * use as a key. Treat the value as opaque; its format is not part of the API.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
@@ -260,12 +276,13 @@ export type MarkdownRendererTableArgs = _MarkdownRendererTableArgs;
  * Argument passed to the fenced code-block renderer callbacks on
  * {@link CustomMarkdownRenderers.codeBlock} and
  * {@link WCCustomMarkdownRenderers.codeBlock}. Extends
- * {@link MarkdownRendererCodeBlockData} with the source markdown-it token and
- * a `slotName` that is stable across renders and unique across every rendered
- * markdown block on the page, so it is safe to use as a key. Treat the value
- * as opaque; its format is not part of the API.
+ * {@link MarkdownRendererCodeBlockData} with the source token, full
+ * {@link TokenTree} node, and a `slotName` that is stable across renders and
+ * unique across every rendered markdown block on the page, so it is safe to
+ * use as a key. Treat the value as opaque; its format is not part of the API.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
@@ -273,9 +290,10 @@ export type MarkdownRendererCodeBlockArgs = _MarkdownRendererCodeBlockArgs;
 /**
  * Argument passed to a {@link CustomMarkdownRenderers.link} /
  * {@link WCCustomMarkdownRenderers.link} callback — the parsed link data
- * (href, title, text, attributes) plus the source markdown-it token.
+ * (href, title, text, attributes) plus the source token and node.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
@@ -287,6 +305,7 @@ export type MarkdownRendererLinkArgs = _MarkdownRendererLinkArgs;
  * entirely. Supply `onClick` to intercept link clicks.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
@@ -294,9 +313,10 @@ export type MarkdownRendererLinkResult = _MarkdownRendererLinkResult;
 /**
  * Argument passed to an {@link CustomMarkdownRenderers.image} /
  * {@link WCCustomMarkdownRenderers.image} callback — the parsed image data
- * (src, alt, title, attributes) plus the source markdown-it token.
+ * (src, alt, title, attributes) plus the source token and node.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
@@ -306,6 +326,7 @@ export type MarkdownRendererImageArgs = _MarkdownRendererImageArgs;
  * `attributes`). Return `null` to keep the defaults.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
@@ -315,6 +336,7 @@ export type MarkdownRendererImageResult = _MarkdownRendererImageResult;
  * an optional `getChecked` source-of-truth. See {@link MarkdownRendererChecklist}.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
@@ -324,6 +346,7 @@ export type MarkdownRendererChecklist = _MarkdownRendererChecklist;
  * `checklist.getChecked`.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererChecklistItemArgs =
@@ -334,6 +357,7 @@ export type MarkdownRendererChecklistItemArgs =
  * (item identity + new checked state).
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownRendererChecklistToggleArgs =
@@ -348,6 +372,7 @@ export type MarkdownRendererChecklistToggleArgs =
  * than this baseline directly.
  *
  * @category Messaging
+ * @experimental
  * @interface
  */
 export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
@@ -365,6 +390,7 @@ export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
  * row, more code lines), the same `slotName` is reused and the callback is
  * invoked again with the updated payload.
  *
+ * @experimental
  * @category React
  */
 interface CustomMarkdownRenderers {
@@ -409,6 +435,7 @@ interface CustomMarkdownRenderers {
  * Callbacks fire once per matching element per render pass; return the same
  * element reference across renders to avoid unnecessary DOM churn.
  *
+ * @experimental
  * @category Web component
  */
 interface WCCustomMarkdownRenderers {
@@ -447,6 +474,7 @@ interface WCCustomMarkdownRenderers {
  * React-layer `markdown` config — extends {@link PublicConfigMarkdown} with
  * React renderers.
  *
+ * @experimental
  * @category React
  */
 interface ChatContainerPropsMarkdown extends PublicConfigMarkdown {
@@ -454,6 +482,8 @@ interface ChatContainerPropsMarkdown extends PublicConfigMarkdown {
    * Per-element renderer overrides — see {@link CustomMarkdownRenderers}.
    * Pass a stable reference (`useMemo`) — an inline object literal will be a
    * fresh reference each render.
+   *
+   * @experimental
    */
   customRenderers?: CustomMarkdownRenderers;
 }
@@ -462,6 +492,7 @@ interface ChatContainerPropsMarkdown extends PublicConfigMarkdown {
  * Web-component-layer `markdown` config — extends {@link PublicConfigMarkdown}
  * with renderers returning `HTMLElement` (or `null`).
  *
+ * @experimental
  * @category Web component
  */
 interface WCMarkdown extends PublicConfigMarkdown {
@@ -469,6 +500,8 @@ interface WCMarkdown extends PublicConfigMarkdown {
    * Per-element renderer overrides — see {@link WCCustomMarkdownRenderers}.
    * Return the same element reference across renders to avoid unnecessary DOM
    * churn.
+   *
+   * @experimental
    */
   customRenderers?: WCCustomMarkdownRenderers;
 }
@@ -488,6 +521,8 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   /**
    * Markdown rendering customization. Extends the framework-neutral
    * {@link PublicConfigMarkdown} with React-layer custom renderers.
+   *
+   * @experimental
    */
   markdown?: ChatContainerPropsMarkdown;
 

@@ -62,7 +62,7 @@ Cap a finding at three sentences plus a snippet. A concern that outgrows that �
 
 Some observations feel like findings and aren't. These stay unsaid at every severity, not just Nit:
 
-- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff.
+- **A tool already decided it.** Husky runs prettier, eslint, stylelint, and commitlint on what you commit ([commit hooks](../../../references/conventions.md#commit-hooks)); `ci-check` adds license headers plus ADR, AGENTS, skill, and example-README validation. Formatting, quote style, import order, line length, and anything else a gate fails on are settled before you open the diff. commitlint settles commit format, not content — a body that buries or omits its why when the diff can't carry it is a **Nit**, citing [commit bodies](../../../references/conventions.md#commit-bodies).
 - **A naming swap with no clarity gain** — `data` → `payload`.
 - **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
 - **"Add a comment here."** The repo's default is no comments ([comments](../../../references/code-patterns.md#comments)). You are here to flag the ones that restate the code, not to ask for more. One narrow exception: the diff encodes a _why_ the code cannot show — a workaround for a named bug, a constraint from outside the file, an ordering that looks arbitrary and isn't. Ask for that line, and say what it has to record.
@@ -120,6 +120,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 ### Test coverage
 
 - Identify which changed behavior is currently untested.
+- Check whether any existing proof got weaker, which a passing run will not tell you. A loosened assertion, a deleted case, a case newly skipped, or a regenerated snapshot all turn the light green while the criterion still reads as written — **Blocker** when the weakened proof covers behavior this diff changed, **Important** otherwise. Regenerating is allowed and sometimes correct ([testing.md](../../../packages/ai-chat-components/references/testing.md) asks for the diff to be read before committing); what the review demands is the reason, not the command's absence.
 - Recommend the test style appropriate to the package:
   - `@carbon/ai-chat` — Jest, specs under `packages/ai-chat/tests/<area>/spec/**/*_spec.ts(x)` ([tests.md](../../../packages/ai-chat/references/tests.md)).
   - `@carbon/ai-chat-components` — `@web/test-runner` for Lit components (colocated `__tests__/*.test.ts`) and Jest for the React wrappers.
