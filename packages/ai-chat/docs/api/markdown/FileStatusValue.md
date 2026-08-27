@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.FileStatusValue.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.FileStatusValue.html
 
 Lifecycle status for a FileUpload. Values:
 `EDIT` (selected but not yet sent), `UPLOADING` (transfer in progress),

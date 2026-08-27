@@ -55,7 +55,9 @@ $group-class: #{$item-class}-group;
   }
 
   .#{$block-class}__items {
+    display: flex;
     flex: 1 1 auto;
+    flex-direction: column;
     padding: 0;
     margin: 0;
     min-block-size: 0;
@@ -71,12 +73,6 @@ $group-class: #{$item-class}-group;
     clip: rect(0, 0, 0, 0);
     inline-size: 1px;
     white-space: nowrap;
-  }
-
-  // Item group styles (now inlined `li[role="group"]` elements)
-  .#{$group-class} {
-    display: flex;
-    flex-direction: column;
   }
 
   .#{$group-class}__title {

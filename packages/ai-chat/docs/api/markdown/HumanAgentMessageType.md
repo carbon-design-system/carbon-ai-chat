@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html
 
 These are the human agent specific message types.
 
@@ -20,7 +20,7 @@ enum HumanAgentMessageType
 
 The conversation was ended.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#chat_was_ended)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#chat_was_ended)
 
 ### DISCONNECTED
 
@@ -28,7 +28,7 @@ The conversation was ended.
 
 The conversation was disconnected.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#disconnected)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#disconnected)
 
 ### FROM_HUMAN_AGENT
 
@@ -36,7 +36,7 @@ The conversation was disconnected.
 
 The agent sent a message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#from_human_agent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#from_human_agent)
 
 ### FROM_USER
 
@@ -44,7 +44,7 @@ The agent sent a message.
 
 The user sent a message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#from_user)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#from_user)
 
 ### HUMAN_AGENT_ENDED_CHAT
 
@@ -52,7 +52,7 @@ The user sent a message.
 
 The agent ended the conversation.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#human_agent_ended_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#human_agent_ended_chat)
 
 ### HUMAN_AGENT_JOINED
 
@@ -60,7 +60,7 @@ The agent ended the conversation.
 
 The agent joined the conversation.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#human_agent_joined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#human_agent_joined)
 
 ### HUMAN_AGENT_LEFT_CHAT
 
@@ -68,7 +68,7 @@ The agent joined the conversation.
 
 The agent left the chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#human_agent_left_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#human_agent_left_chat)
 
 ### INLINE_ERROR
 
@@ -76,7 +76,7 @@ The agent left the chat.
 
 There was an error in a message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#inline_error)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#inline_error)
 
 ### RECONNECTED
 
@@ -84,7 +84,7 @@ There was an error in a message.
 
 The conversation was re-connected.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#reconnected)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#reconnected)
 
 ### RELOAD_WARNING
 
@@ -92,7 +92,7 @@ The conversation was re-connected.
 
 A disconnection warning was emitted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#reload_warning)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#reload_warning)
 
 ### SHARING_ACCEPTED
 
@@ -100,7 +100,7 @@ A disconnection warning was emitted.
 
 Screen sharing accepted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_accepted)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_accepted)
 
 ### SHARING_CANCELLED
 
@@ -108,7 +108,7 @@ Screen sharing accepted.
 
 Screen sharing cancelled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_cancelled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_cancelled)
 
 ### SHARING_DECLINED
 
@@ -116,7 +116,7 @@ Screen sharing cancelled.
 
 Screen sharing declined.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_declined)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_declined)
 
 ### SHARING_ENDED
 
@@ -124,7 +124,7 @@ Screen sharing declined.
 
 Screen sharing ended.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_ended)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_ended)
 
 ### SHARING_REQUESTED
 
@@ -132,7 +132,7 @@ Screen sharing ended.
 
 Screen sharing requested.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_requested)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#sharing_requested)
 
 ### SYSTEM
 
@@ -140,7 +140,7 @@ Screen sharing requested.
 
 A system message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#system)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#system)
 
 ### TRANSFER_TO_HUMAN_AGENT
 
@@ -148,7 +148,7 @@ A system message.
 
 The conversation was transferred to another agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#transfer_to_human_agent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#transfer_to_human_agent)
 
 ### USER_ENDED_CHAT
 
@@ -156,4 +156,4 @@ The conversation was transferred to another agent.
 
 The end user ended the conversation with the agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.HumanAgentMessageType.html#user_ended_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.HumanAgentMessageType.html#user_ended_chat)

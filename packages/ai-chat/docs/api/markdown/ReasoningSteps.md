@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningSteps.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ReasoningSteps.html
 
 The interface describing how to pass reasoning steps to the UI.
 
@@ -26,7 +26,7 @@ GenericItem variants that render purely from their own item data (TextItem, Imag
 ButtonItem, InlineErrorItem, etc.) are fully supported. Variants whose renderers rely on nested-body
 hydration (Card, Carousel, Grid bodies) will not hydrate those nested children when used here.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningSteps.html#content)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ReasoningSteps.html#content)
 
 ### open_state
 
@@ -39,7 +39,7 @@ GenericItem is returned with something to display.
 
 No matter what you choose, if the user manually marks something open/closed they retain control.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningSteps.html#open_state)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ReasoningSteps.html#open_state)
 
 ### steps
 
@@ -47,4 +47,4 @@ No matter what you choose, if the user manually marks something open/closed they
 
 The array of reasoning steps for this message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.ReasoningSteps.html#steps)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ReasoningSteps.html#steps)

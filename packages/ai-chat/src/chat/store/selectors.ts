@@ -11,6 +11,7 @@ import {
   AppState,
   HumanAgentDisplayState,
   InputState,
+  PendingUploadStatus,
 } from '../../types/state/AppState';
 import { LanguagePack } from '../../types/config/LanguagePack';
 
@@ -86,6 +87,17 @@ function selectInputState(state: AppState) {
   return selectIsInputToHumanAgent(state)
     ? getHumanAgentInputState(state)
     : getAssistantInputState(state);
+}
+
+/**
+ * Whether any file attached to the active input is still transferring. A send
+ * is refused for this window, so both the send guard and the public
+ * `hasInFlightUploads` state read this one predicate.
+ */
+function selectHasInFlightUpload(state: AppState): boolean {
+  return selectInputState(state).pendingUploads.some(
+    (upload) => upload.status === PendingUploadStatus.UPLOADING
+  );
 }
 
 /**
@@ -226,4 +238,5 @@ export {
   selectInputUploadAndStreamingFields,
   selectHasOpenPanelWithBackButton,
   selectLanguagePack,
+  selectHasInFlightUpload,
 };

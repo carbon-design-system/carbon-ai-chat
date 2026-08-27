@@ -44,12 +44,6 @@
     flex-shrink: 0;
   }
 
-  ::slotted([slot='notification']) {
-    box-sizing: border-box;
-    /* stylelint-disable-next-line declaration-no-important */
-    max-inline-size: 100% !important;
-  }
-
   // Prevent header from shrinking - it should maintain its natural height
   slot[name='header'] {
     flex-shrink: 0;
@@ -67,7 +61,27 @@
   }
 }
 
+// Carbon's global `.cds--inline-notification` sets a responsive max-inline-size
+// ladder (18/38/46/52rem). In the React build that class lands on a light-DOM
+// element, and document-tree declarations beat `::slotted()` no matter how
+// specific it is — for normal declarations the outer tree always wins, so
+// `!important` is the only way to override it from inside this shadow root.
+// The web components build encapsulates the class in the notification's own
+// shadow root, where the global rule can't reach it, so this is a no-op there.
+::slotted([slot='notification']) {
+  box-sizing: border-box;
+  margin-block-end: 0;
+  /* stylelint-disable-next-line declaration-no-important */
+  max-inline-size: 100% !important;
+}
+
+// Typography inherits through the toolbar's shadow boundary onto its title;
+// the padding needs the custom property because it isn't an inherited property.
 ::slotted(#{$prefix}-toolbar) {
+  --#{$prefix}-toolbar-title-padding-inline-start: #{layout.$spacing-07};
+
+  @include type.type-style('heading-03');
+
   box-sizing: border-box;
   border-block-end: 0.0625rem solid var(--cds-chat-bubble-border);
   inline-size: 100%;

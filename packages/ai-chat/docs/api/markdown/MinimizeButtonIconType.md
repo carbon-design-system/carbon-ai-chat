@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MinimizeButtonIconType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.MinimizeButtonIconType.html
 
 ## Signature
 
@@ -18,7 +18,7 @@ enum MinimizeButtonIconType
 
 This shows an "X" icon.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MinimizeButtonIconType.html#close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.MinimizeButtonIconType.html#close)
 
 ### MINIMIZE
 
@@ -26,7 +26,7 @@ This shows an "X" icon.
 
 This shows a "-" icon.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MinimizeButtonIconType.html#minimize)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.MinimizeButtonIconType.html#minimize)
 
 ### SIDE_PANEL_DOWN
 
@@ -34,7 +34,7 @@ This shows a "-" icon.
 
 This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MinimizeButtonIconType.html#side_panel_down)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.MinimizeButtonIconType.html#side_panel_down)
 
 ### SIDE_PANEL_LEFT
 
@@ -42,7 +42,7 @@ This shows an icon that indicates that the Carbon AI Chat can be collapsed into 
 
 This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MinimizeButtonIconType.html#side_panel_left)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.MinimizeButtonIconType.html#side_panel_left)
 
 ### SIDE_PANEL_RIGHT
 
@@ -50,4 +50,4 @@ This shows an icon that indicates that the Carbon AI Chat can be collapsed into 
 
 This shows an icon that indicates that the Carbon AI Chat can be collapsed into a side panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.MinimizeButtonIconType.html#side_panel_right)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.MinimizeButtonIconType.html#side_panel_right)

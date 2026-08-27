@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.ServiceDeskErrorInfo.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.ServiceDeskErrorInfo.html
 
 The type for the information passed to ServiceDeskCallback#setErrorStatus. It is a discriminating union
 where the type property is the discriminating value that determines which child interface is to be used.

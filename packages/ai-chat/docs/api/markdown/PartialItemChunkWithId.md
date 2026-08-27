@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/types/Type_reference.PartialItemChunkWithId.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.PartialItemChunkWithId.html
 
 A stricter partial item chunk type for streaming implementations that want compile-time enforcement of
 ItemStreamingMetadata.id. This is optional and not required for compatibility.

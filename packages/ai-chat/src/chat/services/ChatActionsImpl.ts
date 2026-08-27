@@ -26,6 +26,7 @@ import {
   VIEW_STATE_LAUNCHER_OPEN,
 } from '../store/reducerUtils';
 import {
+  selectHasInFlightUpload,
   selectInputState,
   selectIsInputToHumanAgent,
 } from '../store/selectors';
@@ -435,9 +436,7 @@ class ChatActionsImpl {
       structuredData: inputState.pendingStructuredData
         ? cloneDeep(inputState.pendingStructuredData)
         : undefined,
-      hasInFlightUploads: inputState.pendingUploads.some(
-        (u) => u.status === PendingUploadStatus.UPLOADING
-      ),
+      hasInFlightUploads: selectHasInFlightUpload(state),
     });
 
     const customPanels = deepFreeze({
@@ -818,10 +817,23 @@ class ChatActionsImpl {
   }
 
   /**
+   * Throws if a file attached to the active input is still transferring. The
+   * outgoing message would otherwise omit that file's contributed data.
+   */
+  private assertNoInFlightUpload() {
+    if (selectHasInFlightUpload(this.serviceManager.store.getState())) {
+      throw new Error(
+        'Cannot send while a file upload is in progress. Check instance.getState().input.hasInFlightUploads before sending, or wait for the upload to finish.'
+      );
+    }
+  }
+
+  /**
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
    * the event bus before delegating to `customSendMessage`. Resolves when
    * `customSendMessage` completes or when the turn is stopped; rejects when
-   * `customSendMessage` throws or the send path fails terminally.
+   * `customSendMessage` throws, when the send path fails terminally, or when a
+   * file upload is still in progress.
    *
    * @param message The message to send.
    * @param source The source of the message.
@@ -834,6 +846,8 @@ class ChatActionsImpl {
     options: SendOptions = {},
     ignoreHydration = false
   ) {
+    this.assertNoInFlightUpload();
+
     const messageRequest =
       typeof message === 'string'
         ? createMessageRequestForText(message)
@@ -873,14 +887,18 @@ class ChatActionsImpl {
       if (!ignoreHydration) {
         await this.hydrationPromise;
       }
-      await this.doSend(messageRequest, source, options);
     } else {
       // If no hydration has started, then we need to start the hydration and use this message as the alternate for
       // the welcome node.
       this.serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false));
       await this.hydrateChat(messageRequest, options);
-      await this.doSend(messageRequest, source, options);
     }
+
+    // Re-check: an upload can begin while hydration is awaited above, and the
+    // message would otherwise go out without that file's contributed data.
+    this.assertNoInFlightUpload();
+
+    await this.doSend(messageRequest, source, options);
   }
 
   /**
@@ -902,21 +920,7 @@ class ChatActionsImpl {
 
     addDefaultsToMessage(message);
 
-    // Clear any currently active response while awaiting the next one.
-    store.dispatch(actions.setActiveResponseId(null));
-
-    // Block send while any file upload is still in progress.
     const inputState = selectInputState(store.getState());
-    if (
-      inputState.pendingUploads.some(
-        (u) => u.status === PendingUploadStatus.UPLOADING
-      )
-    ) {
-      consoleWarn(
-        'Cannot send message while file uploads are in progress. Wait for all uploads to complete or remove them.'
-      );
-      return;
-    }
 
     // Merge pending structured data from InputState into the message if the message doesn't already
     // have structured_data set. This handles UI-originated sends (text input + Enter/Send button).
