@@ -594,7 +594,7 @@ class AutocompleteElement extends LitElement {
           }
         }}"
         @mouseenter="${() => this._handleItemMouseEnter(index)}"
-        aria-selected="${isActive ? 'true' : 'false'}"
+        aria-selected="false"
         aria-disabled="${isDisabled ? 'true' : 'false'}"
         class=${classMap({
           [itemClass]: true,

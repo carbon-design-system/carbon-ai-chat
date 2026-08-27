@@ -109,20 +109,21 @@ describe('cds-aichat-autocomplete', () => {
       });
     });
 
-    it('sets aria-selected=false when item is not active', async () => {
+    it('sets aria-selected=false on all items (focus is tracked via aria-activedescendant)', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
       `);
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      // Second item should not be active (first is auto-focused on render)
-      expect(
-        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      options?.forEach((option) => {
+        expect((option as HTMLElement).getAttribute('aria-selected')).to.equal(
+          'false'
+        );
+      });
     });
 
-    it('sets aria-selected=true and active class when item is focused', async () => {
+    it('adds active class and updates aria-activedescendant when item is focused', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .items="${mockItems}"></cds-aichat-autocomplete>
@@ -130,10 +131,14 @@ describe('cds-aichat-autocomplete', () => {
 
       // First item is auto-focused on render
       const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
-      expect(firstOption?.getAttribute('aria-selected')).to.equal('true');
       expect(
         firstOption?.classList.contains('cds-aichat-autocomplete-item--active')
       ).to.be.true;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '1--option'
+      );
     });
 
     it('displays input text in bold when label starts with typed text', async () => {
@@ -218,7 +223,7 @@ describe('cds-aichat-autocomplete', () => {
       expect(sendIcons?.length).to.equal(2);
     });
 
-    it('should mark grouped item as active when focused', async () => {
+    it('should mark grouped item as active when focused via aria-activedescendant and active class', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .groups="${mockGroups}"></cds-aichat-autocomplete>
@@ -229,8 +234,15 @@ describe('cds-aichat-autocomplete', () => {
         'ul[role="group"] li[role="option"]'
       );
       expect(
-        (groupOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+        (groupOptions?.[0] as HTMLElement)?.classList.contains(
+          'cds-aichat-autocomplete-item--active'
+        )
+      ).to.be.true;
+
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '3--option'
+      );
     });
   });
 
@@ -297,8 +309,8 @@ describe('cds-aichat-autocomplete', () => {
       await el.updateComplete;
 
       const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      const activeOption = Array.from(allOptions || []).find(
-        (li) => li.getAttribute('aria-selected') === 'true'
+      const activeOption = Array.from(allOptions || []).find((li) =>
+        li.classList.contains('cds-aichat-autocomplete-item--active')
       );
 
       expect(activeOption?.textContent).to.include('Group item 1');
@@ -485,13 +497,10 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
-      expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '2--option'
+      );
     });
 
     it('should move focus down with ArrowDown', async () => {
@@ -503,8 +512,10 @@ describe('cds-aichat-autocomplete', () => {
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       // First item is auto-focused on render
       expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+        (options?.[0] as HTMLElement)?.classList.contains(
+          'cds-aichat-autocomplete-item--active'
+        )
+      ).to.be.true;
 
       // Move down to second item
       el.dispatchEvent(
@@ -516,15 +527,10 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      // Refresh query since aria-selected has changed
-      const updatedOptions =
-        el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (updatedOptions?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
-      expect(
-        (updatedOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '2--option'
+      );
     });
 
     it('should move focus up with ArrowUp', async () => {
@@ -553,10 +559,10 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '1--option'
+      );
     });
 
     it('should jump to first item with Home key', async () => {
@@ -586,10 +592,10 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (allOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '1--option'
+      );
     });
 
     it('should jump to last item with End key', async () => {
@@ -608,11 +614,11 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const allOptions = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      const lastOption = allOptions?.[allOptions.length - 1];
-      expect(
-        (lastOption as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // mockGroups[0].items[1] has id '4', so its option id is '4--option'
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '4--option'
+      );
     });
 
     it('should send item with Enter key', async () => {
@@ -651,8 +657,10 @@ describe('cds-aichat-autocomplete', () => {
       // First item is auto-focused on render
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+        (options?.[0] as HTMLElement)?.classList.contains(
+          'cds-aichat-autocomplete-item--active'
+        )
+      ).to.be.true;
 
       // Hover over the second item
       (options?.[1] as HTMLElement)?.dispatchEvent(
@@ -660,14 +668,10 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const updatedOptions =
-        el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (updatedOptions?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
-      expect(
-        (updatedOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '2--option'
+      );
     });
 
     it('aria-activedescendant follows the pointer', async () => {
@@ -676,7 +680,13 @@ describe('cds-aichat-autocomplete', () => {
           .items="${mockItems}"></cds-aichat-autocomplete>
       `);
 
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+
+      // First item is the initial active option
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '1--option'
+      );
 
       // Hover the second item
       (options?.[1] as HTMLElement)?.dispatchEvent(
@@ -684,10 +694,13 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       // mockItems[1] has id '2', so its option id is '2--option'
       expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
         '2--option'
+      );
+      // Previously active item (1--option) is no longer pointed to
+      expect(listbox?.getAttribute('aria-activedescendant')).to.not.equal(
+        '1--option'
       );
     });
 
@@ -743,15 +756,11 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const updatedOptions =
-        el.shadowRoot?.querySelectorAll('li[role="option"]');
-      // Active option must remain on index 0 (enabled)
-      expect(
-        (updatedOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
-      expect(
-        (updatedOptions?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Active option must remain pointing to the enabled item (index 0)
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'enabled-1--option'
+      );
     });
   });
 
@@ -1015,16 +1024,11 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (options?.[2] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
-      expect(
-        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
-      expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Should have landed on index 2 (id 'enabled-2')
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'enabled-2--option'
+      );
     });
 
     it('ArrowDown stays put when no enabled item exists beyond current', async () => {
@@ -1043,11 +1047,11 @@ describe('cds-aichat-autocomplete', () => {
       );
       await el.updateComplete;
 
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      // Still on index 0 — no enabled item to land on.
-      expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Still on index 0 (enabled-1) — no enabled item to land on.
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'enabled-1--option'
+      );
     });
 
     it('initial focus skips a leading disabled item', async () => {
@@ -1058,13 +1062,11 @@ describe('cds-aichat-autocomplete', () => {
           .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
       `);
 
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      expect(
-        (options?.[1] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('true');
-      expect(
-        (options?.[0] as HTMLElement)?.getAttribute('aria-selected')
-      ).to.equal('false');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      // Initial focus should be on the first enabled item (index 1, id 'enabled-1')
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'enabled-1--option'
+      );
     });
 
     it('all-disabled list fires suggestionsAvailable with the correct count', async () => {
