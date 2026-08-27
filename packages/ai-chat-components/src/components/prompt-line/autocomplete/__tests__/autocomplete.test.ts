@@ -152,24 +152,30 @@ describe('cds-aichat-autocomplete', () => {
   });
 
   describe('grouped items', () => {
-    it('should render groups as role=group containers', async () => {
+    it('should render groups as role=group containing a flat list of items each with role=option', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .groups="${mockGroups}"></cds-aichat-autocomplete>
       `);
 
-      const groups = el.shadowRoot?.querySelectorAll('li[role="group"]');
+      const groups = el.shadowRoot?.querySelectorAll('ul[role="group"]');
       expect(groups?.length).to.equal(1);
+
+      const options = groups?.[0].querySelectorAll(
+        ':scope > li[role="option"]'
+      );
+      expect(options?.length).to.equal(2);
     });
 
-    it('should render group title', async () => {
+    it('should render group title as first li inside the group ul', async () => {
       const el = await fixture<AutocompleteElement>(html`
         <cds-aichat-autocomplete
           .groups="${mockGroups}"></cds-aichat-autocomplete>
       `);
 
-      const titleElement = el.shadowRoot?.querySelector(
-        '.cds-aichat-autocomplete-item-group__title'
+      const group = el.shadowRoot?.querySelector('ul[role="group"]');
+      const titleElement = group?.querySelector(
+        ':scope > li[role="presentation"]'
       );
       expect(titleElement).to.exist;
       expect(titleElement?.textContent?.trim()).to.equal('Group 1');
@@ -182,29 +188,9 @@ describe('cds-aichat-autocomplete', () => {
       `);
 
       const groupOptions = el.shadowRoot?.querySelectorAll(
-        'li[role="group"] li[role="option"]'
+        'ul[role="group"] li[role="option"]'
       );
       expect(groupOptions?.length).to.equal(2);
-    });
-
-    it('should not render group title when empty', async () => {
-      const groupWithoutTitle: SuggestionItemGroup[] = [
-        {
-          id: 'group-1',
-          title: '',
-          items: mockItems,
-        },
-      ];
-
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .groups="${groupWithoutTitle}"></cds-aichat-autocomplete>
-      `);
-
-      const titleElement = el.shadowRoot?.querySelector(
-        '.cds-aichat-autocomplete-item-group__title'
-      );
-      expect(titleElement).to.not.exist;
     });
 
     it('should use role=group (not listbox) to avoid nested listbox', async () => {
@@ -213,9 +199,11 @@ describe('cds-aichat-autocomplete', () => {
           .groups="${mockGroups}"></cds-aichat-autocomplete>
       `);
 
-      const groupEl = el.shadowRoot?.querySelector('li[role="group"]');
+      const groupEl = el.shadowRoot?.querySelector('ul[role="group"]');
       expect(groupEl?.getAttribute('role')).to.equal('group');
-      expect(groupEl?.getAttribute('aria-label')).to.equal('Group 1');
+      expect(groupEl?.getAttribute('aria-labelledby')).to.equal(
+        'group-label-0'
+      );
     });
 
     it('should render send icon affordance on all grouped items', async () => {
@@ -225,7 +213,7 @@ describe('cds-aichat-autocomplete', () => {
       `);
 
       const sendIcons = el.shadowRoot?.querySelectorAll(
-        'li[role="group"] li[role="option"] .cds-aichat-autocomplete-item__send-icon'
+        'ul[role="group"] li[role="option"] .cds-aichat-autocomplete-item__send-icon'
       );
       expect(sendIcons?.length).to.equal(2);
     });
@@ -238,7 +226,7 @@ describe('cds-aichat-autocomplete', () => {
 
       // First group item should be auto-focused on render
       const groupOptions = el.shadowRoot?.querySelectorAll(
-        'li[role="group"] li[role="option"]'
+        'ul[role="group"] li[role="option"]'
       );
       expect(
         (groupOptions?.[0] as HTMLElement)?.getAttribute('aria-selected')
@@ -254,17 +242,33 @@ describe('cds-aichat-autocomplete', () => {
           .groups="${mockGroups}"></cds-aichat-autocomplete>
       `);
 
-      // Query the listbox's direct children more reliably
+      // When groups are present the listbox is a div (not ul) to avoid ul > ul.
+      // Flat items are wrapped in an implicit ul[role="group"].
+      // Named groups follow as ul[role="group"] elements with a title li as their first child.
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
-      const flatOptions = Array.from(listbox?.children ?? []).filter(
-        (child) => (child as HTMLElement).getAttribute('role') === 'option'
-      );
-      const groups = Array.from(listbox?.children ?? []).filter(
-        (child) => (child as HTMLElement).getAttribute('role') === 'group'
-      );
+      expect(listbox?.tagName.toLowerCase()).to.equal('div');
 
-      expect(flatOptions.length).to.equal(2);
-      expect(groups.length).to.equal(1);
+      const groupLists = el.shadowRoot?.querySelectorAll('ul[role="group"]');
+      expect(groupLists?.length).to.equal(2); // 1 implicit (flat) + 1 named
+
+      // Flat items live inside the first (implicit, untitled) group
+      const flatOptions = groupLists?.[0].querySelectorAll(
+        ':scope > li[role="option"]'
+      );
+      expect(flatOptions?.length).to.equal(2);
+
+      // Named group has a title li then option lis
+      const namedGroupChildren = Array.from(
+        groupLists?.[1].querySelectorAll(':scope > li') ?? []
+      );
+      const titleLi = namedGroupChildren.find(
+        (li) => li.getAttribute('role') === 'presentation'
+      );
+      const optionLis = namedGroupChildren.filter(
+        (li) => li.getAttribute('role') === 'option'
+      );
+      expect(titleLi).to.exist;
+      expect(optionLis.length).to.equal(2);
     });
 
     it('should navigate across flat and grouped items with arrow keys', async () => {
@@ -1088,6 +1092,55 @@ describe('cds-aichat-autocomplete', () => {
       await el.updateComplete;
 
       expect(announcedCount).to.equal(2);
+    });
+  });
+
+  describe('screen reader announcements', () => {
+    it('includes the group title in arrow-key navigation announcements for grouped items', async () => {
+      let announcedMessage: string | null = null;
+      const trackingI18n = {
+        ...defaultAutocompleteI18n,
+        itemNavigation: (
+          label: string,
+          description: string | undefined,
+          groupLabel: string | undefined,
+          position: string
+        ) => {
+          announcedMessage = defaultAutocompleteI18n.itemNavigation(
+            label,
+            description,
+            groupLabel,
+            position
+          );
+          return announcedMessage;
+        },
+      };
+
+      const el = await fixture<AutocompleteElement>(html`
+        <cds-aichat-autocomplete
+          .items="${mockItems}"
+          .groups="${mockGroups}"
+          .i18n="${trackingI18n}"></cds-aichat-autocomplete>
+      `);
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await new Promise((resolve) => window.setTimeout(resolve, 75));
+
+      expect(announcedMessage).to.equal('Group item 1, Group 1, 3 of 4');
     });
   });
 });

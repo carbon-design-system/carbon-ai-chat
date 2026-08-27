@@ -39,6 +39,7 @@ export type {
   AutocompleteConfig,
   StartersConfig,
   SuggestionItem,
+  SuggestionItemGroup,
   CustomListProps,
   TriggerChangeEventDetail,
 } from './types.js';
