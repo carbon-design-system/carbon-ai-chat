@@ -31,6 +31,7 @@ jobs:
       - name: Install dependencies and build
         run: |
           npm ci --prefer-offline
+          npm run build --workspace=@carbon/ai-chat-components
           npm run build:docs --workspace=@carbon/ai-chat
           npm run build --workspace=@carbon/ai-chat-examples-demo
       - name: Check release type

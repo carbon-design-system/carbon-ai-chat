@@ -59,7 +59,9 @@ jobs:
         run: |
           npm ci --prefer-offline
           npx playwright install --with-deps
-          npm run aiChat:build
+          npm run build --workspace=@carbon/ai-chat-components
+          npm run build:docs --workspace=@carbon/ai-chat
+          npm run build --workspace=@carbon/ai-chat-examples-demo
       - name: Build examples
         run: npm run examples:build
       - name: Test examples

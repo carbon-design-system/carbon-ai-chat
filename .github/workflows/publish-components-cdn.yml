@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies and build
         run: |
           npm ci --prefer-offline
-          npm run aiChat:build
+          npm run build --workspace=@carbon/ai-chat-components
       - name: Build Storybook
         run: |
           cd packages/ai-chat-components
