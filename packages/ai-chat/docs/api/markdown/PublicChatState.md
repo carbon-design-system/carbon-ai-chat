@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/types/Type_reference.PublicChatState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.PublicChatState.html
 
 Type returned by ChatInstance.getState.
 

@@ -16,11 +16,6 @@ collect:
         - config
         - onAfterRender
         - onBeforeRender
-        # cds-aichat-stop-streaming-button
-        - disabled
-        - label
-        - onClick
-        - tooltip-alignment
       allowedAttributeStringValues:
         # General - boolean attributes
         - "true"

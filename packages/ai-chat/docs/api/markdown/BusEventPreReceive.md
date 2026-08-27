@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.BusEventPreReceive.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventPreReceive.html
 
 ## Signature
 
@@ -16,7 +16,7 @@ interface BusEventPreReceive
 
 `data: MessageResponse`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.BusEventPreReceive.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventPreReceive.html#data)
 
 ### type
 
@@ -24,4 +24,4 @@ interface BusEventPreReceive
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.BusEventPreReceive.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventPreReceive.html#type)

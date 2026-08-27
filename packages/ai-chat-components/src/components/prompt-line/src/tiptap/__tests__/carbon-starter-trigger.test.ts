@@ -21,7 +21,7 @@ const ITEMS = [
   { id: '2', label: 'Introduce yourself' },
 ];
 
-function makeEditor() {
+function makeEditor(items = ITEMS) {
   const mount = document.createElement('div');
   // Must be in the document and have layout for focus() to work.
   mount.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;';
@@ -32,7 +32,7 @@ function makeEditor() {
       DocumentNode,
       ParagraphNode,
       TextNode,
-      carbonStarterTrigger(ITEMS),
+      carbonStarterTrigger(items),
     ],
     content: '',
   });
@@ -66,6 +66,19 @@ describe('tiptap/carbon-starter-trigger', function () {
       query: '',
       triggerOffset: 0,
     });
+    cleanup();
+  });
+
+  it('stays silent while the list is empty', () => {
+    // `buildCarbonExtensions` installs the extension for an empty list so that
+    // emptying `items` is a storage write rather than an editor recreate. The
+    // emission stays gated on the list, or those hosts get a starter trigger
+    // with nothing behind it.
+    const { editor, events, cleanup } = makeEditor([]);
+
+    editor.view.dom.focus();
+
+    expect(events).to.have.lengthOf(0);
     cleanup();
   });
 

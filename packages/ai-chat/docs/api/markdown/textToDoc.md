@@ -2,7 +2,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/functions/Type_reference.textToDoc.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/functions/Type_reference.textToDoc.html
 
 Build a Tiptap `JSONContent` doc from a plain-text string — one paragraph
 per line. The inverse of getRawText for plain text, so

@@ -2,7 +2,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/functions/Type_reference.findNodesByType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/functions/Type_reference.findNodesByType.html
 
 Collect every node in a Tiptap `JSONContent` tree whose `type` matches
 `type`. Returns a flat array in document order.

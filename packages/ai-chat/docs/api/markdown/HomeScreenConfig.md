@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.HomeScreenConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenConfig.html
 
 Configuration for the optional home screen that appears before the assistant chat window.
 
@@ -20,7 +20,7 @@ interface HomeScreenConfig
 
 Do not show the greeting or starters.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.HomeScreenConfig.html#customcontentonly)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenConfig.html#customcontentonly)
 
 ### disableReturn
 
@@ -29,7 +29,7 @@ Do not show the greeting or starters.
 Defaults to false. If enabled, a user can not navigate back to the home screen after they have sent a message to the
 assistant. If false, the home screen is navigatable after an initial message is sent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.HomeScreenConfig.html#disablereturn)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenConfig.html#disablereturn)
 
 ### greeting
 
@@ -37,7 +37,7 @@ assistant. If false, the home screen is navigatable after an initial message is 
 
 The greeting to show to the user to prompt them to start a conversation.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.HomeScreenConfig.html#greeting)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenConfig.html#greeting)
 
 ### isOn
 
@@ -45,7 +45,7 @@ The greeting to show to the user to prompt them to start a conversation.
 
 If the home page is turned on via config or remote config.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.HomeScreenConfig.html#ison)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenConfig.html#ison)
 
 ### starters
 
@@ -53,4 +53,4 @@ If the home page is turned on via config or remote config.
 
 Optional conversation starter utterances that are displayed as buttons.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.1/docs/interfaces/Type_reference.HomeScreenConfig.html#starters)
+[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenConfig.html#starters)

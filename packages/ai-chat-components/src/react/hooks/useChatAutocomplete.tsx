@@ -355,8 +355,6 @@ function CustomReactNodePortal({
     chatWrapper.appendChild(hostEl);
 
     setHostElement(hostEl);
-    onMount?.(hostEl);
-
     return () => {
       onMount?.(null);
       if (onMousedown) {
@@ -371,6 +369,21 @@ function CustomReactNodePortal({
     // those updates in place.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // After the portal content is committed into hostElement, hand the first
+  // child element to the controller. This is typically a custom element (e.g.
+  // <cds-aichat-autocomplete>) whose properties (anchorElement, keydown
+  // forwarding) only work on the element itself — not on the plain <div>
+  // wrapper that createPortal renders into. Custom elements are defined
+  // synchronously at module load, so by the time useEffect fires (post-paint)
+  // the element is fully upgraded and its properties are available.
+  React.useEffect(() => {
+    if (!hostElement) {
+      return;
+    }
+    const child = hostElement.firstElementChild as HTMLElement | null;
+    onMount?.(child ?? hostElement);
+  }, [hostElement, onMount]);
 
   return (
     <div slot={slot} ref={containerRef}>
