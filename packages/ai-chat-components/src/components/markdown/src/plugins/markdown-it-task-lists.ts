@@ -18,11 +18,10 @@
  */
 
 import MarkdownIt from 'markdown-it';
-import type StateCore from 'markdown-it/lib/rules_core/state_core.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
 
 function markdownItTaskLists(md: MarkdownIt) {
-  md.core.ruler.after('inline', 'task-lists', (state: StateCore) => {
+  md.core.ruler.after('inline', 'task-lists', (state) => {
     const tokens = state.tokens;
 
     for (let i = 0; i < tokens.length; i++) {
