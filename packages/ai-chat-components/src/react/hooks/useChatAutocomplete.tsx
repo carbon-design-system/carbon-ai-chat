@@ -25,6 +25,7 @@ import Autocomplete from '../autocomplete.js';
 import type PromptLineElement from '../../components/prompt-line/src/prompt-line.js';
 import {
   AutocompleteController,
+  itemsToGroups,
   type AutocompleteControllerState,
 } from '../../components/prompt-line/src/autocomplete-controller.js';
 import type {
@@ -205,6 +206,7 @@ export function useChatAutocomplete(
     if (!state.trigger || state.items.length === 0) {
       return null;
     }
+    const { items: flatItems, groups } = itemsToGroups(state.items);
     if (state.renderCustomList) {
       const result = state.renderCustomList({
         items: state.items,
@@ -239,7 +241,8 @@ export function useChatAutocomplete(
       <Autocomplete
         ref={setListElement}
         slot="autocomplete-content"
-        items={state.items}
+        items={flatItems}
+        groups={groups}
         attached={attached}
         disableDirectSend={state.disableDirectSend}
         onDismiss={dismiss}

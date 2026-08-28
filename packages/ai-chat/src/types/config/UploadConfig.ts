@@ -52,7 +52,14 @@ export interface UploadConfig {
    * removed before the message is sent.
    *
    * On failure: throw or return a rejected `Promise` — the widget marks the file as
-   * errored in the UI.
+   * errored in the UI. Your `Error`'s `message` becomes the description of that
+   * error, so write it as the reason the file was rejected.
+   *
+   * The chat owns the rest of the copy: the title above your message, and the
+   * instruction to remove the attachment and try again. Both come from the
+   * `fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery` keys of
+   * {@link LanguagePack}, so don't repeat the recovery step in your own message.
+   * Reword either one through {@link PublicConfig.strings}.
    *
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it

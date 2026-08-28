@@ -24,6 +24,7 @@ import type {
   CustomListProps,
   StartersConfig,
   SuggestionItem,
+  SuggestionItemGroup,
   TriggerChangeEventDetail,
   TriggerSuggestionConfig,
 } from './tiptap/types.js';
@@ -580,6 +581,47 @@ async function resolveConfigItems(
   );
 }
 
+/**
+ * Partition a flat `SuggestionItem[]` into ungrouped items and derived
+ * `SuggestionItemGroup[]` for the `<cds-aichat-autocomplete>` element.
+ * Items with no `groupId` go into `items`; items with a `groupId` are
+ * bucketed into groups preserving first-occurrence order. The group title
+ * is taken from the first item in the bucket that carries a `groupTitle`.
+ */
+export function itemsToGroups(flat: SuggestionItem[]): {
+  items: SuggestionItem[];
+  groups: SuggestionItemGroup[];
+} {
+  const items: SuggestionItem[] = [];
+  const groupMap = new Map<string, SuggestionItemGroup>();
+  const groupOrder: string[] = [];
+
+  for (const item of flat) {
+    if (!item.groupId) {
+      items.push(item);
+      continue;
+    }
+    let group = groupMap.get(item.groupId);
+    if (!group) {
+      group = {
+        id: item.groupId,
+        title: item.groupTitle ?? '',
+        items: [],
+      };
+      groupMap.set(item.groupId, group);
+      groupOrder.push(item.groupId);
+    }
+    group.items.push(item);
+  }
+
+  return {
+    items,
+    groups: groupOrder
+      .map((id) => groupMap.get(id))
+      .filter((g): g is SuggestionItemGroup => g !== undefined),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // <cds-aichat-autocomplete-controller> — Lit element wrapping the class
 // ---------------------------------------------------------------------------
@@ -758,9 +800,11 @@ class AutocompleteControllerElement extends LitElement {
       );
       return nothing;
     }
+    const { items: flatItems, groups } = itemsToGroups(items);
     return html`
       <cds-aichat-autocomplete
-        .items=${items}
+        .items=${flatItems}
+        .groups=${groups}
         .disableDirectSend=${disableDirectSend}
         @cds-aichat-autocomplete-select=${(
           e: CustomEvent<{ item: SuggestionItem }>

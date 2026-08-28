@@ -103,7 +103,6 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
         `
       }
       <slot name="header-description"></slot>
-      <slot name="header-action"></slot>
     `;
 
     if (collapsible) {
@@ -129,6 +128,7 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
           }
           <div class="${prefix}-workspace-shell__header-content">
             ${headerContent}
+            <slot name="header-action"></slot>
           </div>
         </details>
       `;
@@ -150,6 +150,7 @@ class CDSAIChatWorkspaceShellHeader extends LitElement {
         }
         ${headerContent}
       </div>
+      <slot name="header-action"></slot>
     `;
   }
 }

@@ -461,10 +461,15 @@ function AppShell({
 
     const uploadError = fileWithError || pendingUploadWithError;
     if (uploadError) {
+      // The recovery instruction is appended unconditionally: a host's message
+      // says what went wrong, not how to get out of it.
+      const hostMessage =
+        'errorMessage' in uploadError ? uploadError.errorMessage : undefined;
       return {
-        title: 'File upload error',
-        description:
-          'errorMessage' in uploadError ? uploadError.errorMessage : undefined,
+        title: languagePack.fileSharing_uploadErrorTitle,
+        description: [hostMessage, languagePack.fileSharing_uploadErrorRecovery]
+          .filter(Boolean)
+          .join(' '),
         collapsible: false,
       };
     }
@@ -474,6 +479,8 @@ function AppShell({
   }, [
     inputFields.files,
     inputFields.pendingUploads,
+    languagePack.fileSharing_uploadErrorTitle,
+    languagePack.fileSharing_uploadErrorRecovery,
     publicConfig.input?.error,
   ]);
 
