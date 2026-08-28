@@ -425,6 +425,13 @@ class AutocompleteElement extends LitElement {
     event.preventDefault();
   };
 
+  private _handleItemMouseEnter(index: number): void {
+    if (this._getItemAtIndex(index)?.disabled) {
+      return;
+    }
+    this._focusedIndex = index;
+  }
+
   private _handleClickOutside = (event: MouseEvent) => {
     // Use composedPath() instead of event.target so clicks originating inside
     // a shadow root are visible.
@@ -586,7 +593,8 @@ class AutocompleteElement extends LitElement {
             this._handleItemClick(index);
           }
         }}"
-        aria-selected="${isActive ? 'true' : 'false'}"
+        @mouseenter="${() => this._handleItemMouseEnter(index)}"
+        aria-selected="false"
         aria-disabled="${isDisabled ? 'true' : 'false'}"
         class=${classMap({
           [itemClass]: true,
