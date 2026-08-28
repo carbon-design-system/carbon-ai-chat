@@ -61,6 +61,7 @@ function buildTriggerExtension(
       const parent = (this.parent?.() ?? {}) as Record<string, unknown>;
       return {
         ...parent,
+        mentionSuggestionChar: { default: config.trigger },
         value: { default: null },
         data: { default: null },
         trigger: { default: null },
