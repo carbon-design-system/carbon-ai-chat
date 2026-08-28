@@ -475,16 +475,16 @@ describe('cds-aichat-autocomplete', () => {
       root.appendChild(anchor);
       el.anchorElement = anchor;
 
+      let dismissEventFired = false;
+      el.addEventListener('cds-aichat-autocomplete-dismiss', () => {
+        dismissEventFired = true;
+      });
+
       root
         .querySelector('#deep')!
         .dispatchEvent(
           new MouseEvent('click', { bubbles: true, composed: true })
         );
-
-      let dismissEventFired = false;
-      el.addEventListener('cds-aichat-autocomplete-dismiss', () => {
-        dismissEventFired = true;
-      });
 
       anchor.dispatchEvent(
         new MouseEvent('click', { bubbles: true, composed: true })

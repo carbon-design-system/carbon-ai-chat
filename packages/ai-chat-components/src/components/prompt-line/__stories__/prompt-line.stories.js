@@ -975,6 +975,10 @@ export const Default = {
 // ---------------------------------------------------------------------------
 
 export const Expanded = {
+  argTypes: {
+    disableDirectSend: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
   args: { ...Default.args, expanded: true },
   render: Default.render,
 };

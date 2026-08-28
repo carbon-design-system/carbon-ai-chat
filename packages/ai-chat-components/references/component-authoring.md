@@ -44,7 +44,7 @@ Rules for this pattern:
 
 - **Use it when** the child element has meaningful standalone use and its own story set. A helper element that only ever exists inside the parent belongs in `src/` instead.
 - **Both `index.ts` files matter.** The parent's `index.ts` re-exports the sub-component so consumers have one import path; the sub-component's own `index.ts` exists so it can also be imported directly.
-- **Types may flow upward.** If the sub-component's types are shared with the parent (e.g. `SuggestionItem` defined in `src/tiptap/types.ts` and re-used by `autocomplete/src/autocomplete.ts`), import from the parent rather than duplicating them.
+- **Types may flow upward.** If the sub-component's types are shared with the parent (e.g. `SuggestionItem` defined in `src/components/prompt-line/src/tiptap/types.ts` and re-used by `autocomplete/src/autocomplete.ts`), import from the parent rather than duplicating them.
 - **Stories are scoped to the sub-component directory.** The sub-component's `__stories__/` produces its own Storybook group; the parent's `__stories__/` does not need to duplicate those stories.
 - **Tests mirror the same split.** `__tests__/` directories exist at both levels; tests for the sub-component's element live under `sub-component/__tests__/`, not alongside the parent's tests.
 
