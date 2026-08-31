@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.ChangeFunction.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/types/Type_reference.ChangeFunction.html
 
 ## Signature
 

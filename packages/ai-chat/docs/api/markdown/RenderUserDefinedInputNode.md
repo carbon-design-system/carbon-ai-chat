@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.RenderUserDefinedInputNode.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/types/Type_reference.RenderUserDefinedInputNode.html
 
 React-side renderer for custom TipTap node types in user message bubbles.
 Returned content mounts into LIGHT DOM so consumer stylesheets apply. The

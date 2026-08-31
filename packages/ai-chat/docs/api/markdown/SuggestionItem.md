@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html
 
 Single list-item shape used by every Carbon suggestion surface
 (mention, command, autocomplete, starters). Carries the id, label,
@@ -33,7 +33,7 @@ Can be:
 React components are automatically transformed to CarbonIcon format when
 rendered through the React wrapper.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#avatar)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#avatar)
 
 ### description
 
@@ -41,7 +41,7 @@ rendered through the React wrapper.
 
 Optional description shown below the label.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#description)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#description)
 
 ### disabled
 
@@ -49,7 +49,28 @@ Optional description shown below the label.
 
 Whether the item is disabled and cannot be selected.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#disabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#disabled)
+
+### groupId
+
+`groupId?: string`
+
+Optional group identifier. Items sharing the same `groupId` are rendered
+together under a single group heading in the suggestion list. Items
+without a `groupId` are rendered as ungrouped before any groups.
+Group order follows first-occurrence of each `groupId` in the array.
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#groupid)
+
+### groupTitle
+
+`groupTitle?: string`
+
+Human-readable title for the group header. Every item in the group should
+supply this so the header renders correctly if filtering leaves only a
+non-first item visible.
+
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#grouptitle)
 
 ### id
 
@@ -57,7 +78,7 @@ Whether the item is disabled and cannot be selected.
 
 Unique identifier for the item.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#id)
 
 ### label
 
@@ -65,7 +86,7 @@ Unique identifier for the item.
 
 Display label shown in the suggestion list.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#label)
 
 ### showTriggerInChip
 
@@ -80,7 +101,7 @@ default (commands show their trigger, mentions don't) when set, so a
 single `@` picker can mix items that read as a bare name (people) with
 items that read as `@name` (files, agents, ...).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#showtriggerinchip)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#showtriggerinchip)
 
 ### value
 
@@ -88,4 +109,4 @@ items that read as `@name` (files, agents, ...).
 
 String value inserted into the message on selection. Defaults to label.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.SuggestionItem.html#value)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.SuggestionItem.html#value)

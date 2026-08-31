@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomListProps.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomListProps.html
 
 Props passed to a custom suggestion-list renderer (the `renderCustomList`
 field on BaseSuggestionConfig). Includes the filtered
@@ -27,7 +27,7 @@ interface CustomListProps
 
 Current filtered items to display.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomListProps.html#items)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomListProps.html#items)
 
 ### onDismiss
 
@@ -37,7 +37,7 @@ Current filtered items to display.
 
 Callback to invoke when list should be dismissed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomListProps.html#ondismiss)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomListProps.html#ondismiss)
 
 ### onSelect
 
@@ -48,7 +48,7 @@ Callback to invoke when list should be dismissed.
 Callback to invoke when user selects an item to insert into the editor
 without sending to chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomListProps.html#onselect)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomListProps.html#onselect)
 
 ### onSend
 
@@ -59,7 +59,7 @@ without sending to chat.
 Callback to invoke when user sends an item directly to chat, bypassing
 the editor.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomListProps.html#onsend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomListProps.html#onsend)
 
 ### query
 
@@ -69,7 +69,7 @@ the editor.
 
 Current query string (text after trigger).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomListProps.html#query)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomListProps.html#query)
 
 ## Related
 

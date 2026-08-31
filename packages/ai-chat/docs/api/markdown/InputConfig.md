@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html
 
 Configuration for the input field in the main chat and homescreen.
 
@@ -31,7 +31,7 @@ uploads are also enabled, an "Add files" action is automatically
 prepended and the standalone upload button is not rendered. The button
 size is controlled by the input, so a per-action `size` is ignored.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#actions)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#actions)
 
 ### autocomplete
 
@@ -42,7 +42,7 @@ size is controlled by the input, so a per-action `size` is ignored.
 Live-typeahead autocomplete config. Selection inserts plain text; no
 token chip is rendered.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#autocomplete)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#autocomplete)
 
 ### command
 
@@ -53,7 +53,7 @@ token chip is rendered.
 `/`-style command trigger config. Same shape as InputConfig.mention;
 inserts a `command` node on selection.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#command)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#command)
 
 ### error
 
@@ -64,7 +64,7 @@ inserts a `command` node on selection.
 Error configuration for displaying an error message in the input field.
 When provided, an error message will be displayed in the prompt line.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#error)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#error)
 
 ### expanded
 
@@ -81,7 +81,7 @@ inside the Add ("+") popover, and the
 WriteableElementName.PROMPT_LINE_ACTIONS_END slot becomes
 available. Defaults to false.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#expanded)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#expanded)
 
 ### isDisabled
 
@@ -90,7 +90,7 @@ available. Defaults to false.
 If true, the main input surface starts in a disabled (read-only) state.
 Equivalent to PublicConfig.isReadonly, but scoped just to the assistant input.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#isdisabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#isdisabled)
 
 ### isSendDisabled
 
@@ -104,7 +104,7 @@ editable, only the send path is suppressed.
 
 Programmatic `instance.send(...)` is NOT gated by this flag.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#issenddisabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#issenddisabled)
 
 ### isVisible
 
@@ -113,7 +113,7 @@ Programmatic `instance.send(...)` is NOT gated by this flag.
 Controls whether the main input surface is visible when the chat loads.
 Defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#isvisible)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#isvisible)
 
 ### maxInputCharacters
 
@@ -121,7 +121,7 @@ Defaults to true.
 
 The maximum number of characters allowed in the input field. Defaults to 10000.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#maxinputcharacters)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#maxinputcharacters)
 
 ### mention
 
@@ -134,7 +134,7 @@ The maximum number of characters allowed in the input field. Defaults to 10000.
 selection and surfaces token chip rendering via the light-DOM portal
 handshake.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#mention)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#mention)
 
 ### starters
 
@@ -146,7 +146,7 @@ Starter prompts shown while the editor is empty + focused + editable.
 Selection inserts the item's `value` (or `label`) AND auto-sends in
 the same turn (gated by InputConfig.isSendDisabled).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#starters)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#starters)
 
 ### tiptap
 
@@ -158,4 +158,4 @@ Tiptap-shaped configuration. The `tiptap` namespace signals "you're
 stepping into Tiptap's API directly" — use InputConfig.mention /
 `command` / `autocomplete` / `starters` for Carbon-curated chat features.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InputConfig.html#tiptap)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InputConfig.html#tiptap)

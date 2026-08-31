@@ -2,7 +2,7 @@
 
 - Kind: Function
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/functions/Type_reference.carbonMention.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/functions/Type_reference.carbonMention.html
 
 Tiptap extension factory for `@`-style mention triggers. Wraps
 `@tiptap/extension-mention` with Carbon-specific chip rendering, extended

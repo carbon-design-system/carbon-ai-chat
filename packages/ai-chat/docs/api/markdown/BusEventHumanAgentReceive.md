@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html
 
 ## Signature
 
@@ -16,13 +16,13 @@ interface BusEventHumanAgentReceive
 
 `data: MessageResponse`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html#data)
 
 ### responseUserProfile
 
 `responseUserProfile?: ResponseUserProfile`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html#responseuserprofile)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html#responseuserprofile)
 
 ### type
 
@@ -30,4 +30,4 @@ interface BusEventHumanAgentReceive
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventHumanAgentReceive.html#type)

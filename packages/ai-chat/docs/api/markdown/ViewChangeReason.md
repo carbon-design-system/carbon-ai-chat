@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.ViewChangeReason.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.ViewChangeReason.html
 
 The possible reasons why the view may be changed.
 
@@ -20,7 +20,7 @@ enum ViewChangeReason
 
 Indicates the view was changed by a call to ChatInstance.changeView.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.ViewChangeReason.html#called_change_view)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.ViewChangeReason.html#called_change_view)
 
 ### LAUNCHER_CLICKED
 
@@ -28,7 +28,7 @@ Indicates the view was changed by a call to ChatInstance.changeView.
 
 Indicates the user clicked on our built-in launcher button that opened the main window.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.ViewChangeReason.html#launcher_clicked)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.ViewChangeReason.html#launcher_clicked)
 
 ### MAIN_WINDOW_MINIMIZED
 
@@ -36,7 +36,7 @@ Indicates the user clicked on our built-in launcher button that opened the main 
 
 Indicates the user clicked on our built-in minimize button that closed the launcher.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.ViewChangeReason.html#main_window_minimized)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.ViewChangeReason.html#main_window_minimized)
 
 ### WEB_CHAT_LOADED
 
@@ -45,4 +45,4 @@ Indicates the user clicked on our built-in minimize button that closed the launc
 Indicates the Carbon AI Chat has loaded for the first time and a view is trying to open. If openChatByDefault is
 true then the main window will be trying to open, otherwise the launcher will be trying to open.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/enums/Type_reference.ViewChangeReason.html#web_chat_loaded)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.ViewChangeReason.html#web_chat_loaded)
