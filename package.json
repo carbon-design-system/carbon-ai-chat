@@ -61,7 +61,7 @@
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
-    "babel-preset-carbon": "^0.8.0",
+    "babel-preset-carbon": "^0.9.0",
     "chromatic": "^17.0.0",
     "commander": "^15.0.0",
     "concurrently": "^10.0.0",
