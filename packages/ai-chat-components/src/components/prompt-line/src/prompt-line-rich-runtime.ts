@@ -34,12 +34,12 @@ import TextNode from '@tiptap/extension-text';
 import { UndoRedo } from '@tiptap/extensions';
 
 import { IS_PHONE } from '../../../globals/utils/browser-utils.js';
-import { setVarsForSelector } from '../../shared/dynamic-css-var-sheet.js';
+import { MouseFocusController } from './prompt-line-mouse-focus.js';
 import type {
   PromptLineController,
   PromptLineControllerInit,
   SetContentUpdater,
-} from './prompt-line-controller.js';
+} from './prompt-line-types.js';
 import { applyEditorStyles } from './tiptap/editor-styles.js';
 import { HISTORY_DEFAULTS } from './prompt-line-constants.js';
 import { writeStarterStorage } from './tiptap/carbon-starter-trigger.js';
@@ -56,24 +56,14 @@ import type { StartersConfig } from './tiptap/types.js';
 import { textToDoc } from './tiptap/json-utils.js';
 import { setHostOriginMeta } from './tiptap/origin-meta.js';
 
-/** Exported so tests assert the ring without retyping the literal. */
-export const PM_KEYBOARD_FOCUS_CLASS =
-  'cds-aichat--input-pm-content--keyboard-focus';
-
-let keyboardFocusRuleInstalled = false;
-function ensureKeyboardFocusRule(): void {
-  if (keyboardFocusRuleInstalled) {
-    return;
-  }
-  setVarsForSelector(`.${PM_KEYBOARD_FOCUS_CLASS}`, { outline: 'revert' });
-  keyboardFocusRuleInstalled = true;
-}
-
 /**
  * Tiptap-backed prompt-line controller. Mirrors the editor lifecycle the
  * element owned before the textarea/rich split.
  */
-class RichController implements PromptLineController {
+class RichController
+  extends MouseFocusController
+  implements PromptLineController
+{
   private _editor: Editor | null = null;
   private _host: HTMLElement | null = null;
   private _extensions: Extension[] = [];
@@ -91,7 +81,6 @@ class RichController implements PromptLineController {
   private _placeholder = '';
   private _testId = '';
   private _disabled = false;
-  private _focusFromMouse = false;
   private _isComposing = false;
   /** Set when a recreate is withheld during an IME composition. */
   private _pendingRecreate = false;
@@ -114,11 +103,7 @@ class RichController implements PromptLineController {
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
-    host.addEventListener('pointerdown', this._setMouseFlag);
-    host.addEventListener('mousedown', this._setMouseFlag);
-    host.addEventListener('touchstart', this._setMouseFlag);
-
-    ensureKeyboardFocusRule();
+    this._attachMouseFocusListeners(host);
 
     // Prefer a structured `content` seed (mentions / custom nodes); otherwise
     // rebuild a doc from the plain-text value (lossless from the textarea).
@@ -133,9 +118,7 @@ class RichController implements PromptLineController {
   destroy(): void {
     const host = this._host;
     if (host) {
-      host.removeEventListener('pointerdown', this._setMouseFlag);
-      host.removeEventListener('mousedown', this._setMouseFlag);
-      host.removeEventListener('touchstart', this._setMouseFlag);
+      this._detachMouseFocusListeners(host);
     }
     if (this._pendingRecreateTimer) {
       clearTimeout(this._pendingRecreateTimer);
@@ -318,10 +301,6 @@ class RichController implements PromptLineController {
   // Internals
   // -------------------------------------------------------------------------
 
-  private _setMouseFlag = (): void => {
-    this._focusFromMouse = true;
-  };
-
   private _flushPendingRecreate(): void {
     // A fresh composition may have started while the flush was queued; its own
     // compositionend re-queues this. A detached host means the element's own
@@ -382,15 +361,10 @@ class RichController implements PromptLineController {
 
   private _wireEditorEvents(editor: Editor): void {
     editor.on('focus', () => {
-      const wasMouseFocus = this._focusFromMouse;
-      this._focusFromMouse = false;
-      if (!wasMouseFocus) {
-        editor.view.dom.classList.add(PM_KEYBOARD_FOCUS_CLASS);
-      }
+      const wasMouseFocus = this._consumeMouseFocus();
       this._dispatch('cds-aichat-prompt-focus', { keyboard: !wasMouseFocus });
     });
     editor.on('blur', () => {
-      editor.view.dom.classList.remove(PM_KEYBOARD_FOCUS_CLASS);
       this._dispatch('cds-aichat-prompt-blur');
     });
     // Forward keydown for hosts wanting raw-key access. ValueSync /
@@ -418,9 +392,6 @@ class RichController implements PromptLineController {
         }
       : null;
     const wasFocused = this._editor?.isFocused ?? false;
-    const wasKeyboardFocus =
-      this._editor?.view.dom.classList.contains(PM_KEYBOARD_FOCUS_CLASS) ??
-      false;
     this._editor?.destroy();
     this._editor = this._createEditor(host, previousJson);
     this._wireEditorEvents(this._editor);
@@ -435,7 +406,7 @@ class RichController implements PromptLineController {
     }
 
     if (wasFocused) {
-      this._focusFromMouse = !wasKeyboardFocus;
+      this._focusFromMouse = this._lastFocusFromMouse;
       this._editor.commands.focus();
     }
   }

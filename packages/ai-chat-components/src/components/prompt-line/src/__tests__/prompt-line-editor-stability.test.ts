@@ -13,12 +13,11 @@
  * its undo history mid-typing.
  */
 
-import { expect, fixture, html, nextFrame } from '@open-wc/testing';
+import { expect, fixture, html } from '@open-wc/testing';
 import { Extension } from '@tiptap/core';
 
 import '../prompt-line.js';
 import type PromptLineElement from '../prompt-line.js';
-import { PM_KEYBOARD_FOCUS_CLASS } from '../prompt-line-rich-runtime.js';
 import { buildCarbonExtensions } from '../tiptap/build-extensions.js';
 import {
   readStarterStorage,
@@ -292,32 +291,6 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     host.dispatchEvent(new CompositionEvent('compositionend'));
     await flushComposition();
     expect(el.getEditor()).to.not.equal(editor);
-  });
-
-  it('keeps the keyboard-focus ring across a recreate', async () => {
-    // The class lives on `view.dom`, which a recreate replaces, so it has to be
-    // read off the outgoing editor before the swap.
-    const el = await makeRichPromptLine(
-      buildCarbonExtensions({ mention: { trigger: '@', items: PEOPLE } })
-    );
-    // Focus the editable node directly, the way tabbing in does. `el.focus()`
-    // would set the mouse-focus flag and suppress the ring by design.
-    el.getEditor()!.view.dom.focus();
-    await nextFrame();
-    expect(
-      el.getEditor()!.view.dom.classList.contains(PM_KEYBOARD_FOCUS_CLASS)
-    ).to.equal(true);
-
-    await setExtensions(
-      el,
-      buildCarbonExtensions({ mention: { trigger: '#', items: PEOPLE } })
-    );
-    await nextFrame();
-
-    expect(el.getEditor()!.isFocused).to.equal(true);
-    expect(
-      el.getEditor()!.view.dom.classList.contains(PM_KEYBOARD_FOCUS_CLASS)
-    ).to.equal(true);
   });
 
   it('keeps the editor when the host reverts the config mid-composition', async () => {

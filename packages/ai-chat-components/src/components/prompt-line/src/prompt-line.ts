@@ -44,12 +44,12 @@ import { property } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/carbon-element.js';
 import prefix from '../../../globals/settings.js';
 import { adoptOnRoot } from '../../shared/dynamic-css-var-sheet.js';
-import {
-  type PromptLineController,
-  type PromptLineControllerInit,
-  type SetContentUpdater,
-  TextareaController,
-} from './prompt-line-controller.js';
+import { TextareaController } from './prompt-line-textarea.js';
+import type {
+  PromptLineController,
+  PromptLineControllerInit,
+  SetContentUpdater,
+} from './prompt-line-types.js';
 import {
   getRichRuntimeIfLoaded,
   loadRichRuntime,

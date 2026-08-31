@@ -8,22 +8,11 @@
  */
 
 /**
- * Editing-surface controller abstraction for `<cds-aichat-prompt-line>`.
- *
- * The prompt-line shell ([./prompt-line.ts]) delegates all editing behavior to
- * a `PromptLineController`. Two implementations exist:
- *
- * - `TextareaController` (this file) — a Tiptap-free `<textarea>`. It is the
- *   default and keeps the shell's static import graph free of `@tiptap/*`.
- * - The rich controller ([./prompt-line-rich-runtime.ts]) — a Tiptap `Editor`,
- *   reached only through a dynamic `import()` so Tiptap lands in its own lazy
- *   chunk.
- *
- * Both controllers emit the **same** `cds-aichat-prompt-*` events with the
- * same detail shapes, so the React wrapper and `@carbon/ai-chat`'s `Input`
- * handlers are identical regardless of mode. The shell can swap a
- * `TextareaController` for the rich controller in place (text, caret, and
- * focus transfer losslessly because the textarea holds plain text).
+ * `<textarea>`-backed controller. Tiptap-free; emits the same prompt events as
+ * the rich editor. Auto-grows via a hidden mirror, capped at
+ * `PROMPT_LINE_MAX_BLOCK_SIZE` with the field scrolling past it — the same cap
+ * the rich contenteditable applies (see ./tiptap/editor-styles.ts), so the
+ * textarea→rich swap is imperceptible.
  *
  * `Editor` / `JSONContent` are **type-only** imports here — erased at compile,
  * so this module carries no Tiptap runtime.
@@ -37,89 +26,13 @@ import {
   setVarsForSelector,
 } from '../../shared/dynamic-css-var-sheet.js';
 import { PROMPT_LINE_MAX_BLOCK_SIZE } from './prompt-line-constants.js';
+import { MouseFocusController } from './prompt-line-mouse-focus.js';
+import type {
+  PromptLineController,
+  PromptLineControllerInit,
+  SetContentUpdater,
+} from './prompt-line-types.js';
 import { getRawText, textToDoc } from './tiptap/json-utils.js';
-
-/** Updater shape accepted by `setContent` for reduce-style edits. */
-export type SetContentUpdater = (prev: JSONContent) => JSONContent;
-
-/** Initial state handed to a controller when it mounts into the host. */
-export interface PromptLineControllerInit {
-  /**
-   * Plain-text seed value. Always the textarea's source of truth and the
-   * lossless seed used when the rich editor mounts without richer `content`.
-   */
-  value: string;
-  /**
-   * Optional structured seed (a `content` prop carrying mentions / custom
-   * nodes). Consumed by the rich controller; the textarea ignores it and
-   * relies on `value`.
-   */
-  content?: JSONContent | string;
-  placeholder: string;
-  /** When `true`, the surface is non-editable (still focusable). */
-  disabled: boolean;
-  ariaLabel: string;
-  testId: string;
-  /**
-   * Host-supplied Tiptap extensions. Consumed by the rich controller; ignored
-   * by the textarea controller.
-   */
-  extensions?: Extension[];
-}
-
-/**
- * The surface the shell drives. Both the textarea and the rich editor satisfy
- * it, so the shell never branches on mode beyond construction.
- */
-export interface PromptLineController {
-  /** Mount the editing surface into the (already-slotted) light-DOM host. */
-  mount(host: HTMLElement, init: PromptLineControllerInit): void;
-  /** Tear down listeners / editor and remove the surface from the host. */
-  destroy(): void;
-
-  /** Current plain-text value (the lossless transfer + change payload). */
-  getValue(): string;
-  setContent(next: JSONContent | string | SetContentUpdater): void;
-  insertContent(content: JSONContent | string, opts?: { at?: number }): void;
-  clearContent(): void;
-
-  /** Live Tiptap editor, or `null` in textarea mode. */
-  getEditor(): Editor | null;
-
-  focus(): void;
-  blur(): void;
-  hasFocus(): boolean;
-
-  /** Selection as plain-text offsets (used for seamless transfer). */
-  getSelection(): { from: number; to: number };
-  setTextSelection(pos: number | { from: number; to: number }): void;
-  selectAll(): void;
-
-  setEditable(editable: boolean): void;
-  setPlaceholder(placeholder: string): void;
-  setAriaLabel(ariaLabel: string): void;
-  setTestId(testId: string): void;
-  /**
-   * Apply a new extension list. Rich mode compares it by value against the set
-   * last supplied: an equivalent set keeps the editor and its undo history,
-   * writing any starter `items`/`isOn` through to live storage; a genuinely
-   * different one recreates the editor preserving content/selection/focus,
-   * deferred to the end of an IME composition. Textarea mode ignores it.
-   */
-  setExtensions(extensions: Extension[]): void;
-  /**
-   * Report whether an IME composition is in flight. The element owns the host's
-   * composition listeners and pushes the state down, so there is one observer
-   * and the two layers cannot disagree. Rich mode withholds an
-   * extension-driven recreate for the duration — destroying the editor would
-   * strand the IME's candidate — and flushes it once composition commits;
-   * textarea mode ignores it.
-   */
-  setComposing(composing: boolean): void;
-
-  undo(): boolean;
-  redo(): boolean;
-}
 
 // ---------------------------------------------------------------------------
 // Textarea styling (CSP-safe — installed on the shared dynamic stylesheet,
@@ -202,19 +115,14 @@ function ensureTextareaStyleRules(): void {
 
 const TYPING_TIMEOUT_MS = 5000;
 
-/**
- * `<textarea>`-backed controller. Tiptap-free; emits the same prompt events as
- * the rich editor. Auto-grows via a hidden mirror, capped at
- * `PROMPT_LINE_MAX_BLOCK_SIZE` with the field scrolling past it — the same cap
- * the rich contenteditable applies (see ./tiptap/editor-styles.ts), so the
- * textarea→rich swap is imperceptible.
- */
-export class TextareaController implements PromptLineController {
+export class TextareaController
+  extends MouseFocusController
+  implements PromptLineController
+{
   private _wrap: HTMLDivElement | null = null;
   private _textarea: HTMLTextAreaElement | null = null;
   private _mirror: HTMLDivElement | null = null;
   private _host: HTMLElement | null = null;
-  private _focusFromMouse = false;
 
   private _isTyping = false;
   private _typingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -266,9 +174,7 @@ export class TextareaController implements PromptLineController {
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
-    host.addEventListener('pointerdown', this._setMouseFlag);
-    host.addEventListener('mousedown', this._setMouseFlag);
-    host.addEventListener('touchstart', this._setMouseFlag);
+    this._attachMouseFocusListeners(host);
 
     this._syncMirror();
   }
@@ -284,9 +190,7 @@ export class TextareaController implements PromptLineController {
     }
     const host = this._host;
     if (host) {
-      host.removeEventListener('pointerdown', this._setMouseFlag);
-      host.removeEventListener('mousedown', this._setMouseFlag);
-      host.removeEventListener('touchstart', this._setMouseFlag);
+      this._detachMouseFocusListeners(host);
     }
     this._wrap?.remove();
     this._wrap = null;
@@ -474,13 +378,8 @@ export class TextareaController implements PromptLineController {
     }
   };
 
-  private _setMouseFlag = (): void => {
-    this._focusFromMouse = true;
-  };
-
   private _onFocus = (): void => {
-    const wasMouseFocus = this._focusFromMouse;
-    this._focusFromMouse = false;
+    const wasMouseFocus = this._consumeMouseFocus();
     this._dispatch('cds-aichat-prompt-focus', { keyboard: !wasMouseFocus });
   };
 
