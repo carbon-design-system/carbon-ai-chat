@@ -298,8 +298,9 @@ class PromptLineElement extends LitElement {
     }
 
     if (this.autofocus) {
-      // Defer so consumer listeners are attached first.
-      Promise.resolve().then(() => this._controller?.focus());
+      // Defer so consumer listeners are attached first. Autofocus is always
+      // programmatic — treat it as keyboard so the focus ring appears.
+      Promise.resolve().then(() => this._controller?.focus(true));
     }
   }
 
@@ -359,7 +360,7 @@ class PromptLineElement extends LitElement {
   }
 
   override focus(): void {
-    this._controller?.focus();
+    this._controller?.focus(true);
   }
 
   override blur(): void {
@@ -544,6 +545,7 @@ class PromptLineElement extends LitElement {
     const value = previous.getValue();
     const selection = previous.getSelection();
     const hadFocus = previous.hasFocus();
+    const hadKeyboardFocus = previous.getKeyboardFocus();
 
     previous.destroy();
     this._controller = rich;
@@ -559,7 +561,7 @@ class PromptLineElement extends LitElement {
       to: textOffsetToDocPos(value, selection.to),
     });
     if (hadFocus) {
-      rich.focus();
+      rich.focus(hadKeyboardFocus);
     }
     this._settleRichReady();
   }

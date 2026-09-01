@@ -38,8 +38,8 @@ export abstract class MouseFocusController {
     return wasMouseFocus;
   }
 
-  getFocusFromMouse(): boolean {
-    return this._lastFocusFromMouse;
+  getKeyboardFocus(): boolean {
+    return !this._lastFocusFromMouse;
   }
 
   protected _attachMouseFocusListeners(host: HTMLElement): void {

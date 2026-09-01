@@ -63,7 +63,9 @@ export interface PromptLineController {
   /** Live Tiptap editor, or `null` in textarea mode. */
   getEditor(): Editor | null;
 
-  focus(): void;
+  /** Accepts `keyboardFocus`, which when true specifies that a focus ring should be visible around the prompt line text area */
+  focus(keyboardFocus: boolean): void;
+
   blur(): void;
   hasFocus(): boolean;
 
@@ -97,6 +99,6 @@ export interface PromptLineController {
   undo(): boolean;
   redo(): boolean;
 
-  /** Whether the most recent focus event was pointer/touch-driven (not keyboard). */
-  getFocusFromMouse(): boolean;
+  /** Whether the most recent focus event was driven by keyboard (not pointer/touch-driven). */
+  getKeyboardFocus(): boolean;
 }

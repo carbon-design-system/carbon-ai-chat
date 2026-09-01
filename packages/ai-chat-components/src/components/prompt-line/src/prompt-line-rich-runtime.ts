@@ -187,8 +187,8 @@ class RichController
     return this._editor;
   }
 
-  focus(): void {
-    this._focusFromMouse = true;
+  focus(keyboardFocus: boolean): void {
+    this._focusFromMouse = !keyboardFocus;
     this._editor?.commands.focus();
   }
 
