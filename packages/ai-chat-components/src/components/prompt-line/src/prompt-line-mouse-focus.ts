@@ -17,7 +17,7 @@
  *  - call `this._detachMouseFocusListeners(host)` in `destroy()`
  *  - call `this._consumeMouseFocus()` when the focus event fires to get the
  *    `wasMouseFocus` boolean and latch it into `_lastFocusFromMouse`
- *  - set `this._focusFromMouse = true` in `focus()` before delegating
+ *  - set `this._focusFromMouse = !keyboardFocus` in `focus(keyboardFocus)` before delegating
  */
 export abstract class MouseFocusController {
   protected _focusFromMouse = false;
