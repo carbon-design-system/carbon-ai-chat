@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventWorkspacePreOpen.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventWorkspacePreOpen.html
 
 ## Signature
 
@@ -16,7 +16,7 @@ interface BusEventWorkspacePreOpen
 
 `data: { additionalData?: unknown; fullMessage: MessageResponse; message: GenericItem; workspaceId?: string }`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventWorkspacePreOpen.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventWorkspacePreOpen.html#data)
 
 ### type
 
@@ -24,4 +24,4 @@ interface BusEventWorkspacePreOpen
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventWorkspacePreOpen.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventWorkspacePreOpen.html#type)

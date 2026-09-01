@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.HomeScreenState.html
 
 Current state of home screen (currently, limited to if it is open or closed).
 
@@ -20,7 +20,7 @@ interface HomeScreenState
 
 Indicates if the home screen is currently open.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenState.html#ishomescreenopen)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.HomeScreenState.html#ishomescreenopen)
 
 ### showBackToAssistant
 
@@ -29,4 +29,4 @@ Indicates if the home screen is currently open.
 Indicates if the home screen should display a "return to assistant" button. This button is displayed when the user
 has clicked the "back to home" button from the assistant.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.HomeScreenState.html#showbacktoassistant)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.HomeScreenState.html#showbacktoassistant)

@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: React
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html
 
 Per-element renderer overrides for the React `ChatContainer`. Each callback
 receives the parsed token data and returns a `ReactNode` that renders in
@@ -35,7 +35,7 @@ interface CustomMarkdownRenderers
 Make task-list checkboxes actionable so the host can persist and react to
 checklist state. See MarkdownRendererChecklist.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#checklist)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#checklist)
 
 ### codeBlock
 
@@ -47,7 +47,7 @@ Override the default rendering for fenced code blocks. Receives parsed
 code-block data; return `null` to fall back to the default Carbon code
 snippet renderer.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#codeblock)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#codeblock)
 
 ### image
 
@@ -58,7 +58,7 @@ snippet renderer.
 Transform how images render — return attribute overrides (`src`, extra
 `attributes`) or `null` to keep the defaults.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#image)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#image)
 
 ### link
 
@@ -71,7 +71,7 @@ Transform how links render — return attribute overrides (`href`, `target`,
 `table`/`codeBlock` this is an attribute transform, not an element
 replacement, so its signature matches the web-component layer.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#link)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#link)
 
 ### table
 
@@ -82,4 +82,4 @@ replacement, so its signature matches the web-component layer.
 Override the default rendering for markdown tables. Receives parsed table
 data; return `null` to fall back to the default Carbon table renderer.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#table)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomMarkdownRenderers.html#table)

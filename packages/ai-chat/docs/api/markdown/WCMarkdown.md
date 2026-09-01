@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.WCMarkdown.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.WCMarkdown.html
 
 Web-component-layer `markdown` config — extends PublicConfigMarkdown
 with renderers returning `HTMLElement` (or `null`).
@@ -27,7 +27,7 @@ Per-element renderer overrides — see WCCustomMarkdownRenderers.
 Return the same element reference across renders to avoid unnecessary DOM
 churn.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.WCMarkdown.html#customrenderers)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.WCMarkdown.html#customrenderers)
 
 ### markdownItPlugins
 
@@ -40,7 +40,7 @@ Markdown-it plugins applied after the built-in plugins
 Memoize this array — a new reference each render rebuilds the
 markdown-it instance.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.WCMarkdown.html#markdownitplugins)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.WCMarkdown.html#markdownitplugins)
 
 ## Related
 

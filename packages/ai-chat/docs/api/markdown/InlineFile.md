@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InlineFile.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InlineFile.html
 
 Represents an inline file — the actual File object to be uploaded.
 Use this when the file needs to be uploaded as part of the message send.
@@ -19,16 +19,6 @@ interface InlineFile
 
 ## Members
 
-### error
-
-`error?: { message: string }`
-
-**Experimental.**
-
-Optional error information.
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InlineFile.html#error)
-
 ### file
 
 `file: File`
@@ -37,7 +27,7 @@ Optional error information.
 
 The actual File object.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InlineFile.html#file)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InlineFile.html#file)
 
 ### id
 
@@ -47,17 +37,7 @@ The actual File object.
 
 Optional unique ID for tracking.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InlineFile.html#id)
-
-### status
-
-`status?: FileStatusValue`
-
-**Experimental.**
-
-Optional upload status (for UI feedback).
-
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InlineFile.html#status)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InlineFile.html#id)
 
 ### type
 
@@ -67,4 +47,4 @@ Optional upload status (for UI feedback).
 
 Type discriminator.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.InlineFile.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.InlineFile.html#type)

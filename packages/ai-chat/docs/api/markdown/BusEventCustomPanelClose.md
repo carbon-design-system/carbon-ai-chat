@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventCustomPanelClose.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventCustomPanelClose.html
 
 ## Signature
 
@@ -18,4 +18,4 @@ interface BusEventCustomPanelClose
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.BusEventCustomPanelClose.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.BusEventCustomPanelClose.html#type)

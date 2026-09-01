@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.ImageItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/types/Type_reference.ImageItem.html
 
 The image response type definition. This is currently the same as MediaItem.
 
