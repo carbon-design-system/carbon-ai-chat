@@ -8,11 +8,22 @@
  */
 
 /**
- * `<textarea>`-backed controller. Tiptap-free; emits the same prompt events as
- * the rich editor. Auto-grows via a hidden mirror, capped at
- * `PROMPT_LINE_MAX_BLOCK_SIZE` with the field scrolling past it — the same cap
- * the rich contenteditable applies (see ./tiptap/editor-styles.ts), so the
- * textarea→rich swap is imperceptible.
+ * Textarea runtime for `<cds-aichat-prompt-line>`'s default (non-rich) mode.
+ * This module is **statically imported** by the prompt-line shell
+ * ([./prompt-line.ts]), so it is always part of the initial bundle — but it
+ * carries **no `@tiptap/*` runtime**. The only Tiptap symbols used here are
+ * type imports erased at compile time.
+ *
+ * `TextareaController` implements {@link PromptLineController} backed by a
+ * native `<textarea>`. It mirrors the typography and sizing of the Tiptap
+ * editor exactly (auto-grow via a CSS grid mirror, Carbon `body-01` tokens,
+ * the same `max-block-size` cap) so the textarea→editor swap triggered by
+ * the rich-mode loader ([./prompt-line-rich-loader.ts]) is visually
+ * imperceptible. State — plain text, caret position, and keyboard-focus
+ * tracking — transfers losslessly to the rich controller because the textarea
+ * is always the plain-text source of truth. The same `cds-aichat-prompt-*`
+ * events are emitted, keeping the React wrapper and `Input` handlers
+ * mode-agnostic.
  *
  * `Editor` / `JSONContent` are **type-only** imports here — erased at compile,
  * so this module carries no Tiptap runtime.
@@ -115,6 +126,13 @@ function ensureTextareaStyleRules(): void {
 
 const TYPING_TIMEOUT_MS = 5000;
 
+/**
+ * `<textarea>`-backed controller. Tiptap-free; emits the same prompt events as
+ * the rich editor. Auto-grows via a hidden mirror, capped at
+ * `PROMPT_LINE_MAX_BLOCK_SIZE` with the field scrolling past it — the same cap
+ * the rich contenteditable applies (see ./tiptap/editor-styles.ts), so the
+ * textarea→rich swap is imperceptible.
+ */
 export class TextareaController
   extends MouseFocusController
   implements PromptLineController

@@ -45,8 +45,23 @@ export interface PromptLineControllerInit {
 }
 
 /**
- * The surface the shell drives. Both the textarea and the rich editor satisfy
- * it, so the shell never branches on mode beyond construction.
+ * The editing-surface controller abstraction for `<cds-aichat-prompt-line>`.
+ *
+ * The prompt-line shell ([./prompt-line.ts]) delegates all editing behavior to
+ * a `PromptLineController`. Two implementations exist:
+ *
+ * - `TextareaController` (./prompt-line-textarea.ts) — a Tiptap-free `<textarea>`.
+ *   It is the default and keeps the shell's static import graph free of `@tiptap/*`.
+ * - The rich controller ([./prompt-line-rich-runtime.ts]) — a Tiptap `Editor`,
+ *   reached only through a dynamic `import()` so Tiptap lands in its own lazy
+ *   chunk.
+ *
+ * Both controllers emit the **same** `cds-aichat-prompt-*` events with the
+ * same detail shapes, so the React wrapper and `@carbon/ai-chat`'s `Input`
+ * handlers are identical regardless of mode. The shell can swap a
+ * `TextareaController` for the rich controller in place (text, caret, focus,
+ * and keyboard-focus state transfer losslessly because the textarea holds plain
+ * text and both controllers share the same focus-tracking contract).
  */
 export interface PromptLineController {
   /** Mount the editing surface into the (already-slotted) light-DOM host. */
