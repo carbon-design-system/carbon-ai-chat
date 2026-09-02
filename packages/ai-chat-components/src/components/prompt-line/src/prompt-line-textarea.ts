@@ -259,7 +259,7 @@ export class TextareaController
   }
 
   focus(keyboardFocus: boolean): void {
-    this._focusFromMouse = !keyboardFocus;
+    this._setNextFocusOrigin(keyboardFocus);
     this._textarea?.focus();
   }
 

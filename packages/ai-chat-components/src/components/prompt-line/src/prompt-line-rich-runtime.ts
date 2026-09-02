@@ -82,6 +82,7 @@ class RichController
   private _testId = '';
   private _disabled = false;
   private _isComposing = false;
+  private _hadFocus = false;
   /** Set when a recreate is withheld during an IME composition. */
   private _pendingRecreate = false;
   private _pendingRecreateTimer: ReturnType<typeof setTimeout> | null = null;
@@ -125,6 +126,7 @@ class RichController
       this._pendingRecreateTimer = null;
     }
     this._isComposing = false;
+    this._hadFocus = false;
     this._pendingRecreate = false;
     this._editor?.destroy();
     this._editor = null;
@@ -188,7 +190,7 @@ class RichController
   }
 
   focus(keyboardFocus: boolean): void {
-    this._focusFromMouse = !keyboardFocus;
+    this._setNextFocusOrigin(keyboardFocus);
     this._editor?.commands.focus();
   }
 
@@ -361,6 +363,7 @@ class RichController
 
   private _wireEditorEvents(editor: Editor): void {
     editor.on('focus', () => {
+      this._hadFocus = true;
       const wasMouseFocus = this._consumeMouseFocus();
       this._dispatch('cds-aichat-prompt-focus', { keyboard: !wasMouseFocus });
     });
@@ -391,7 +394,8 @@ class RichController
           to: this._editor.state.selection.to,
         }
       : null;
-    const wasFocused = this._editor?.isFocused ?? false;
+    const wasFocused = this._hadFocus;
+    const wasKeyboardFocus = this.getKeyboardFocus();
     this._editor?.destroy();
     this._editor = this._createEditor(host, previousJson);
     this._wireEditorEvents(this._editor);
@@ -406,8 +410,7 @@ class RichController
     }
 
     if (wasFocused) {
-      this._focusFromMouse = this._lastFocusFromMouse;
-      this._editor.commands.focus();
+      this.focus(wasKeyboardFocus);
     }
   }
 

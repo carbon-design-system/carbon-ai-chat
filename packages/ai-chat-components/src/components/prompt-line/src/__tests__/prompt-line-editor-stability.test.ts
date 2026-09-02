@@ -323,6 +323,37 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     expect((await postFocus).detail.keyboard).to.equal(true);
   });
 
+  it('preserves mouse-focus state (no ring) across a recreate', async () => {
+    const el = await makeRichPromptLine(
+      buildCarbonExtensions({ mention: { trigger: '@', items: PEOPLE } })
+    );
+    // Simulate a pointer-driven focus: dispatch mousedown before focusing so
+    // the controller latches mouse origin.
+    const preFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    el.getEditor()!.view.dom.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true })
+    );
+    el.getEditor()!.view.dom.focus();
+    await nextFrame();
+    expect((await preFocus).detail.keyboard).to.equal(false);
+
+    // Trigger a recreate; the new editor should still report mouse focus.
+    const postFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    await setExtensions(
+      el,
+      buildCarbonExtensions({ mention: { trigger: '#', items: PEOPLE } })
+    );
+    await nextFrame();
+    expect(el.getEditor()!.isFocused).to.equal(true);
+    expect((await postFocus).detail.keyboard).to.equal(false);
+  });
+
   it('keeps the editor when the host reverts the config mid-composition', async () => {
     // A→B→A while composing: the pending rebuild is latched against B, but by
     // the time the composition commits nothing differs from what is installed.
