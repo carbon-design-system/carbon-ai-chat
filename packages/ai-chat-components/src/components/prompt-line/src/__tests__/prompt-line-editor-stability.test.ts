@@ -13,7 +13,7 @@
  * its undo history mid-typing.
  */
 
-import { expect, fixture, html } from '@open-wc/testing';
+import { expect, fixture, html, nextFrame, oneEvent } from '@open-wc/testing';
 import { Extension } from '@tiptap/core';
 
 import '../prompt-line.js';
@@ -291,6 +291,36 @@ describe('<cds-aichat-prompt-line> editor stability', function () {
     host.dispatchEvent(new CompositionEvent('compositionend'));
     await flushComposition();
     expect(el.getEditor()).to.not.equal(editor);
+  });
+
+  it('preserves keyboard-focus state across a recreate', async () => {
+    const el = await makeRichPromptLine(
+      buildCarbonExtensions({ mention: { trigger: '@', items: PEOPLE } })
+    );
+    // Focus directly (no preceding pointer event) so the rich controller latches
+    // keyboard origin. Await a frame so Tiptap registers isFocused before the
+    // recreate reads it.
+    const preFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    el.getEditor()!.view.dom.focus();
+    await nextFrame();
+    expect((await preFocus).detail.keyboard).to.equal(true);
+
+    // Trigger a recreate while the editor is focused; the new editor should
+    // report keyboard focus, not silently reset to mouse.
+    const postFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    await setExtensions(
+      el,
+      buildCarbonExtensions({ mention: { trigger: '#', items: PEOPLE } })
+    );
+    await nextFrame();
+    expect(el.getEditor()!.isFocused).to.equal(true);
+    expect((await postFocus).detail.keyboard).to.equal(true);
   });
 
   it('keeps the editor when the host reverts the config mid-composition', async () => {
