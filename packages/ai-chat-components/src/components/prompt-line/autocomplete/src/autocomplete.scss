@@ -116,7 +116,7 @@ $group-class: #{$item-class}-group;
 
     &--active,
     &--active:hover {
-      background: theme.$background-selected;
+      background: theme.$background-hover;
     }
 
     &--disabled {
@@ -170,7 +170,7 @@ $group-class: #{$item-class}-group;
   .#{$item-class}__description {
     @include type.type-style('helper-text-01');
 
-    color: theme.$text-helper;
+    color: theme.$text-secondary;
   }
 
   .#{$item-class}__send-icon {
