@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.DisclaimerPublicConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.DisclaimerPublicConfig.html
 
 Configuration for the disclaimer screen shown before a user can start chatting,
 consumed by PublicConfig.disclaimer.
@@ -21,7 +21,7 @@ interface DisclaimerPublicConfig
 
 HTML content to show in disclaimer.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.DisclaimerPublicConfig.html#disclaimerhtml)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.DisclaimerPublicConfig.html#disclaimerhtml)
 
 ### isOn
 
@@ -29,7 +29,7 @@ HTML content to show in disclaimer.
 
 If the disclaimer is turned on. Defaults to `false`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.DisclaimerPublicConfig.html#ison)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.DisclaimerPublicConfig.html#ison)
 
 ## Related
 

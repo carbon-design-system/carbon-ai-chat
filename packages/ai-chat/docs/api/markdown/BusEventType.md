@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html
 
 ## Signature
 
@@ -18,7 +18,7 @@ enum BusEventType
 
 When the chat has finished hydrating from history or welcome node request.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#chat_ready)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#chat_ready)
 
 ### CHUNK_USER_DEFINED_RESPONSE
 
@@ -26,7 +26,7 @@ When the chat has finished hydrating from history or welcome node request.
 
 Fired when a new chunk in a user_defined response comes through.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#chunk_user_defined_response)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#chunk_user_defined_response)
 
 ### CLOSE_PANEL_BUTTON_TOGGLED
 
@@ -34,7 +34,7 @@ Fired when a new chunk in a user_defined response comes through.
 
 When a panel has been closed.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#close_panel_button_toggled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#close_panel_button_toggled)
 
 ### CUSTOM_FOOTER_SLOT
 
@@ -42,7 +42,7 @@ When a panel has been closed.
 
 Fired when a message with custom_footer_slot.is_on is received.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#custom_footer_slot)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#custom_footer_slot)
 
 ### CUSTOM_PANEL_CLOSE
 
@@ -50,7 +50,7 @@ Fired when a message with custom_footer_slot.is_on is received.
 
 Fired after a custom panel closes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#custom_panel_close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#custom_panel_close)
 
 ### CUSTOM_PANEL_OPEN
 
@@ -58,7 +58,7 @@ Fired after a custom panel closes.
 
 Fired after a custom panel opens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#custom_panel_open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#custom_panel_open)
 
 ### CUSTOM_PANEL_PRE_CLOSE
 
@@ -66,7 +66,7 @@ Fired after a custom panel opens.
 
 Fired before a custom panel closes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#custom_panel_pre_close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#custom_panel_pre_close)
 
 ### CUSTOM_PANEL_PRE_OPEN
 
@@ -74,7 +74,7 @@ Fired before a custom panel closes.
 
 Fired before a custom panel opens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#custom_panel_pre_open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#custom_panel_pre_open)
 
 ### DISCLAIMER_ACCEPTED
 
@@ -82,7 +82,7 @@ Fired before a custom panel opens.
 
 Fired if the disclaimer is accepted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#disclaimer_accepted)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#disclaimer_accepted)
 
 ### FEEDBACK
 
@@ -91,7 +91,7 @@ Fired if the disclaimer is accepted.
 This event is fired when the user interacts with the feedback controls on a message. This includes both the feedback
 buttons (thumbs up/down) as well as the details popup where the user can submit additional information.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#feedback)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#feedback)
 
 ### HEADER_MENU_CLICK
 
@@ -99,7 +99,7 @@ buttons (thumbs up/down) as well as the details popup where the user can submit 
 
 Fired when a user clicks on navigation items in the chat header (homescreen button or overflow menu).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#header_menu_click)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#header_menu_click)
 
 ### HISTORY_BEGIN
 
@@ -107,7 +107,7 @@ Fired when a user clicks on navigation items in the chat header (homescreen butt
 
 Fired when history begins to load.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#history_begin)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#history_begin)
 
 ### HISTORY_END
 
@@ -115,7 +115,7 @@ Fired when history begins to load.
 
 Fired after history is loaded.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#history_end)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#history_end)
 
 ### HISTORY_PANEL_NEW_CHAT
 
@@ -123,7 +123,7 @@ Fired after history is loaded.
 
 Fired when new chat option within the chat header menu is selected.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#history_panel_new_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#history_panel_new_chat)
 
 ### HISTORY_PANEL_PRE_OPEN
 
@@ -131,7 +131,7 @@ Fired when new chat option within the chat header menu is selected.
 
 Fired before mobile chat history panel opens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#history_panel_pre_open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#history_panel_pre_open)
 
 ### HUMAN_AGENT_ARE_ANY_AGENTS_ONLINE
 
@@ -140,7 +140,7 @@ Fired before mobile chat history panel opens.
 This event is fired after Carbon AI Chat calls "areAnyAgentsOnline" for a service desk. It will report the value returned
 from that call. This is particularly useful if some custom code wants to take action if no agents are online.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_are_any_agents_online)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_are_any_agents_online)
 
 ### HUMAN_AGENT_END_CHAT
 
@@ -149,7 +149,7 @@ from that call. This is particularly useful if some custom code wants to take ac
 This event is fired after a chat with an agent has ended. This is fired after BusEventType.HUMAN_AGENT_PRE_END_CHAT but
 can be fired both from the user leaving the chat or the agent ending the chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_end_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_end_chat)
 
 ### HUMAN_AGENT_PRE_END_CHAT
 
@@ -159,7 +159,7 @@ This event is fired before a chat with an agent is ended. This occurs after the 
 confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
 request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_pre_end_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_pre_end_chat)
 
 ### HUMAN_AGENT_PRE_RECEIVE
 
@@ -168,7 +168,7 @@ request for an agent is cancelled. The human_agent:endChat event however is fire
 This event is fired before Carbon AI Chat processes a message received from a human agent from a service desk.
 You can use this to filter messages before they are displayed to the end user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_pre_receive)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_pre_receive)
 
 ### HUMAN_AGENT_PRE_SEND
 
@@ -177,7 +177,7 @@ You can use this to filter messages before they are displayed to the end user.
 This event is fired before Carbon AI Chat sends a message to a human agent from a service desk.
 You can use this to filter messages before they are sent to the agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_pre_send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_pre_send)
 
 ### HUMAN_AGENT_PRE_START_CHAT
 
@@ -186,7 +186,7 @@ You can use this to filter messages before they are sent to the agent.
 This event is fired before a chat with a service desk has started. This occurs as soon as the user clicks the
 "Request agent" button and before any attempt is made to communicate with the service desk.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_pre_start_chat)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_pre_start_chat)
 
 ### HUMAN_AGENT_RECEIVE
 
@@ -195,7 +195,7 @@ This event is fired before a chat with a service desk has started. This occurs a
 This event is fired after Carbon AI Chat processes a message received from a human agent from a service desk.
 You can use this to update your history store.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_receive)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_receive)
 
 ### HUMAN_AGENT_SEND
 
@@ -204,7 +204,7 @@ You can use this to update your history store.
 This event is fired after Carbon AI Chat sends a message to a human agent from a service desk.
 You can use this to update your history store.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#human_agent_send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#human_agent_send)
 
 ### MESSAGE_ITEM_CUSTOM
 
@@ -213,7 +213,7 @@ You can use this to update your history store.
 Fired when a button response item with button_type "custom_event" is clicked.
 Provides the originating button item and the full message payload to handlers.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#message_item_custom)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#message_item_custom)
 
 ### PRE_RECEIVE
 
@@ -221,7 +221,7 @@ Provides the originating button item and the full message payload to handlers.
 
 Fired before a message is received. Can take mutations to the message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#pre_receive)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#pre_receive)
 
 ### PRE_RESTART_CONVERSATION
 
@@ -229,7 +229,7 @@ Fired before a message is received. Can take mutations to the message.
 
 Fired before a conversation restarts.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#pre_restart_conversation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#pre_restart_conversation)
 
 ### PRE_SEND
 
@@ -237,7 +237,7 @@ Fired before a conversation restarts.
 
 Fired before a message is sent to customSendMessage. Can take mutations to the message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#pre_send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#pre_send)
 
 ### RECEIVE
 
@@ -245,7 +245,7 @@ Fired before a message is sent to customSendMessage. Can take mutations to the m
 
 Fired after a message is received.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#receive)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#receive)
 
 ### RESTART_CONVERSATION
 
@@ -253,7 +253,7 @@ Fired after a message is received.
 
 Fired after a conversation restarts.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#restart_conversation)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#restart_conversation)
 
 ### SEND
 
@@ -261,7 +261,7 @@ Fired after a conversation restarts.
 
 Fired after the message is sent to customSendMessage.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#send)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#send)
 
 ### STATE_CHANGE
 
@@ -270,7 +270,7 @@ Fired after the message is sent to customSendMessage.
 This event is fired whenever the public state returned by ChatInstance.getState() changes.
 This includes changes to viewState, showUnreadIndicator, and other persisted state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#state_change)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#state_change)
 
 ### STOP_STREAMING
 
@@ -278,7 +278,7 @@ This includes changes to viewState, showUnreadIndicator, and other persisted sta
 
 This event is fired when the "stop streaming" button in the input field is clicked.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#stop_streaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#stop_streaming)
 
 ### USER_DEFINED_RESPONSE
 
@@ -286,7 +286,7 @@ This event is fired when the "stop streaming" button in the input field is click
 
 Fired when a userDefined message is received.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#user_defined_response)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#user_defined_response)
 
 ### VIEW_CHANGE
 
@@ -294,7 +294,7 @@ Fired when a userDefined message is received.
 
 Fired after the view changes (e.g. when the chat window closes).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#view_change)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#view_change)
 
 ### VIEW_PRE_CHANGE
 
@@ -302,7 +302,7 @@ Fired after the view changes (e.g. when the chat window closes).
 
 Fired before the view changes (e.g. when the chat window closes).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#view_pre_change)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#view_pre_change)
 
 ### WORKSPACE_CLOSE
 
@@ -310,7 +310,7 @@ Fired before the view changes (e.g. when the chat window closes).
 
 Fired after a workspace closes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#workspace_close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#workspace_close)
 
 ### WORKSPACE_OPEN
 
@@ -318,7 +318,7 @@ Fired after a workspace closes.
 
 Fired after a workspace opens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#workspace_open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#workspace_open)
 
 ### WORKSPACE_PRE_CLOSE
 
@@ -326,7 +326,7 @@ Fired after a workspace opens.
 
 Fired before a workspace closes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#workspace_pre_close)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#workspace_pre_close)
 
 ### WORKSPACE_PRE_OPEN
 
@@ -334,4 +334,4 @@ Fired before a workspace closes.
 
 Fired before a workspace opens.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.BusEventType.html#workspace_pre_open)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.BusEventType.html#workspace_pre_open)

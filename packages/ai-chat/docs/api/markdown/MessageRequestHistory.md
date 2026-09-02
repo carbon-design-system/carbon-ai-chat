@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html
 
 This interface contains information about the history of a given MessageRequest. This information should be
 saved your history store.
@@ -21,7 +21,7 @@ interface MessageRequestHistory
 
 The error state of this message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html#error_state)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html#error_state)
 
 ### is_welcome_request
 
@@ -29,7 +29,7 @@ The error state of this message.
 
 If the message was a welcome node request.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html#is_welcome_request)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html#is_welcome_request)
 
 ### label
 
@@ -40,7 +40,7 @@ user to the assistant to request a response. This is the user displayed text tha
 the user when that request was made. Most commonly used to make sure a OptionItem shows the correct button
 selected when loading history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html#label)
 
 ### related_message_id
 
@@ -50,7 +50,7 @@ If this message is related to another message, this is the ID of that other mess
 choices an option and it includes the ID of the message response that presented the options to the user so we
 can associate the user's request with that earlier response and display the appropriate selected state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html#related_message_id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html#related_message_id)
 
 ### silent
 
@@ -59,7 +59,7 @@ can associate the user's request with that earlier response and display the appr
 Indicates if this is a "silent" message. These messages are sent to or received from the assistant but should
 not be displayed to the user.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html#silent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html#silent)
 
 ### timestamp
 
@@ -67,7 +67,7 @@ not be displayed to the user.
 
 The time at which this message occurred.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MessageRequestHistory.html#timestamp)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MessageRequestHistory.html#timestamp)
 
 ## Related
 

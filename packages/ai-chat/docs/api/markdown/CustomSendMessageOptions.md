@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomSendMessageOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomSendMessageOptions.html
 
 ## Signature
 
@@ -38,7 +38,7 @@ field to distinguish which UI surface the user typed from:
 `busEventSend` is `undefined` when the send does not originate from the
 event bus (for example, when called directly by internal plumbing).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomSendMessageOptions.html#buseventsend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomSendMessageOptions.html#buseventsend)
 
 ### signal
 
@@ -46,7 +46,7 @@ event bus (for example, when called directly by internal plumbing).
 
 A signal to let customSendMessage to cancel a request if it has exceeded Carbon AI Chat's timeout.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomSendMessageOptions.html#signal)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomSendMessageOptions.html#signal)
 
 ### silent
 
@@ -54,4 +54,4 @@ A signal to let customSendMessage to cancel a request if it has exceeded Carbon 
 
 If the message was sent with "silent" set to true to not be displayed in the conversation history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.CustomSendMessageOptions.html#silent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomSendMessageOptions.html#silent)

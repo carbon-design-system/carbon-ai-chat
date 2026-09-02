@@ -1,10 +1,8 @@
 # MarkdownRendererImageResult
 
-**Experimental.**
-
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageResult.html
 
 Attribute overrides returned by an image renderer callback (`src`, extra
 `attributes`). Return `null` to keep the defaults.
@@ -21,19 +19,15 @@ interface MarkdownRendererImageResult
 
 `attributes?: Record<string, string>`
 
-**Experimental.**
-
 Extra attributes merged over the image's existing ones. Re-sanitized when
 the element has HTML sanitization enabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#attributes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#attributes)
 
 ### src
 
 `src?: string`
 
-**Experimental.**
-
 Replacement `src`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#src)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageResult.html#src)

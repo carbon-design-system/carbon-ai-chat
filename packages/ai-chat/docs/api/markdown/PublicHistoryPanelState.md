@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.PublicHistoryPanelState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicHistoryPanelState.html
 
 Represents public state for history panel.
 
@@ -20,7 +20,7 @@ interface PublicHistoryPanelState
 
 Indicates if the history panel should open in chat panel.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.PublicHistoryPanelState.html#ismobile)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicHistoryPanelState.html#ismobile)
 
 ### isOpen
 
@@ -28,4 +28,4 @@ Indicates if the history panel should open in chat panel.
 
 Indicates if the history panel is currently open.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.PublicHistoryPanelState.html#isopen)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicHistoryPanelState.html#isopen)

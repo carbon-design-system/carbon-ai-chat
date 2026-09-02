@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.StructuredField.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.StructuredField.html
 
 A single field within a StructuredData payload.
 
@@ -25,7 +25,7 @@ interface StructuredField
 Unique identifier for this field. Read it back in
 PublicConfigMessaging.customSendMessage to find the field you sent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.StructuredField.html#id)
 
 ### label
 
@@ -35,7 +35,7 @@ PublicConfigMessaging.customSendMessage to find the field you sent.
 
 Human-readable label (optional).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.StructuredField.html#label)
 
 ### type
 
@@ -48,7 +48,7 @@ anything to the chat (see StructuredFieldType); any other value is
 carried through untouched for your own
 PublicConfigMessaging.customSendMessage to interpret.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.StructuredField.html#type)
 
 ### value
 
@@ -61,7 +61,7 @@ FileFieldValue; for every other field it is whatever your backend
 needs — narrow it yourself in
 PublicConfigMessaging.customSendMessage.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.StructuredField.html#value)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.StructuredField.html#value)
 
 ## Related
 

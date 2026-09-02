@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.HomeScreenStarterButton.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.HomeScreenStarterButton.html
 
 A conversation starter button on the home screen. Currently, only label is provided by tooling.
 
@@ -20,7 +20,7 @@ interface HomeScreenStarterButton
 
 Indicates if the button was previously clicked and should be displayed as selected.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.HomeScreenStarterButton.html#isselected)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.HomeScreenStarterButton.html#isselected)
 
 ### label
 
@@ -29,4 +29,4 @@ Indicates if the button was previously clicked and should be displayed as select
 The display label of the button. This is also the value that is sent as the user's utterance to the assistant
 when the button is clicked.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/interfaces/Type_reference.HomeScreenStarterButton.html#label)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.HomeScreenStarterButton.html#label)

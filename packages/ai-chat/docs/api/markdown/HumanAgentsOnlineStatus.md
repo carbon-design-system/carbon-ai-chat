@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.HumanAgentsOnlineStatus.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.HumanAgentsOnlineStatus.html
 
 Represents the different states for the availability of a human agent from a service desk.
 
@@ -20,7 +20,7 @@ enum HumanAgentsOnlineStatus
 
 Indicates that no agents are online.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.HumanAgentsOnlineStatus.html#offline)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.HumanAgentsOnlineStatus.html#offline)
 
 ### ONLINE
 
@@ -28,7 +28,7 @@ Indicates that no agents are online.
 
 Indicates that agents are online.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.HumanAgentsOnlineStatus.html#online)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.HumanAgentsOnlineStatus.html#online)
 
 ### UNKNOWN
 
@@ -37,4 +37,4 @@ Indicates that agents are online.
 Indicates that it is unknown whether any agents are available. This may be because the service desk being used
 doesn't support the ability to determine this information.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.0/docs/enums/Type_reference.HumanAgentsOnlineStatus.html#unknown)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.HumanAgentsOnlineStatus.html#unknown)
