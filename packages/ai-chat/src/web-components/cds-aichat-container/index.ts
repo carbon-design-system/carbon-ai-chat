@@ -470,22 +470,14 @@ class ChatContainer extends FlattenedConfigElement {
       // shadow root), where global CSS still wouldn't reach it.
       return;
     }
-    event.preventDefault();
-    // Custom-renderer hosts (table/codeBlock) forward a live element — the
-    // markdown element keeps ownership of its content; we only relocate the
-    // node into our outer light DOM so the consumer's global CSS reaches it.
-    // Plugin fallbacks forward an HTML string instead.
+    // Custom-renderer hosts (table/codeBlock) forward a live element that
+    // the markdown element manages directly — do not preventDefault or hoist,
+    // or the named slot loses its host and falls back to the default Carbon
+    // component. Plugin fallbacks forward an HTML string instead.
     if (detail.element) {
-      const element = detail.element;
-      element.setAttribute('slot', detail.slotName);
-      if (!detail.isInline) {
-        element.style.marginBlockStart = '1rem';
-      }
-      if (element.parentElement !== this) {
-        this.appendChild(element);
-      }
       return;
     }
+    event.preventDefault();
     let host = this._pluginHosts.get(detail.slotName);
     if (!host) {
       host = document.createElement(detail.isInline ? 'span' : 'div');
