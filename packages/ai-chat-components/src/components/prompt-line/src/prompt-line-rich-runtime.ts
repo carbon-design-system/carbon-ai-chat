@@ -88,6 +88,7 @@ class RichController implements PromptLineController {
    * loses its undo history for nothing.
    */
   private _installedExtensions: Extension[] = [];
+  private _ariaLabel = '';
   private _placeholder = '';
   private _testId = '';
   private _disabled = false;
@@ -100,17 +101,14 @@ class RichController implements PromptLineController {
   mount(host: HTMLElement, init: PromptLineControllerInit): void {
     this._host = host;
     this._extensions = init.extensions ?? [];
+    this._ariaLabel = init.ariaLabel;
     this._placeholder = init.placeholder;
     this._testId = init.testId;
     this._disabled = init.disabled;
 
-    host.setAttribute('role', 'textbox');
     host.setAttribute('aria-multiline', 'true');
     host.setAttribute('spellcheck', 'true');
     host.setAttribute('tabindex', '-1');
-    if (init.ariaLabel) {
-      host.setAttribute('aria-label', init.ariaLabel);
-    }
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
@@ -247,14 +245,7 @@ class RichController implements PromptLineController {
   }
 
   setAriaLabel(ariaLabel: string): void {
-    if (!this._host) {
-      return;
-    }
-    if (ariaLabel) {
-      this._host.setAttribute('aria-label', ariaLabel);
-    } else {
-      this._host.removeAttribute('aria-label');
-    }
+    this._ariaLabel = ariaLabel;
   }
 
   setTestId(testId: string): void {
@@ -374,6 +365,15 @@ class RichController implements PromptLineController {
     return new Editor({
       element,
       extensions: [...baseExtensions, ...this._extensions],
+      editorProps: {
+        attributes: () => {
+          const attrs: Record<string, string> = { role: 'textbox' };
+          if (this._ariaLabel) {
+            attrs['aria-label'] = this._ariaLabel;
+          }
+          return attrs;
+        },
+      },
       content: content ?? undefined,
       autofocus: false,
       injectCSS: false,
