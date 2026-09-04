@@ -233,6 +233,7 @@ export class TextareaController implements PromptLineController {
     textarea.className = TA_FIELD_CLASS;
     textarea.classList.toggle(TA_PHONE_CLASS, IS_PHONE);
     textarea.setAttribute('rows', '1');
+    textarea.setAttribute('name', 'message');
     textarea.setAttribute('spellcheck', 'true');
     textarea.setAttribute('tabindex', '0');
     textarea.placeholder = init.placeholder;
