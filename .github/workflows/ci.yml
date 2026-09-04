@@ -25,6 +25,8 @@ jobs:
         run: npm ci --prefer-offline
       - name: Run build
         run: npm run aiChat:build
+      - name: Validate TypeDoc links
+        run: npm run docs --workspace=@carbon/ai-chat
 
   test:
     runs-on: ubuntu-latest

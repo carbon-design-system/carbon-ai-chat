@@ -14,6 +14,8 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Storybook (React wrappers) | `npm run aiChat:start:storybook:react` |
 | Build everything | `npm run build` |
 | Build only the ai-chat stack (components + ai-chat + demo) | `npm run aiChat:build` |
+| Build the ai-chat stack + generate TypeDoc | `npm run aiChat:build:docs` |
+| Build example applications | `npm run examples:build` |
 | Lint (eslint on `packages/`) | `npm run lint` |
 | Stylelint | `npm run lint:styles` |
 | License header check | `npm run lint:license` |

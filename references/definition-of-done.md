@@ -11,7 +11,7 @@ Load this to pick the minimum verification gate for what you changed, before mar
 | Area edited | Minimum gate before shipping |
 | --- | --- |
 | Cross-cutting / multiple packages | `npm run build && npm run ci-check` |
-| `packages/ai-chat/` | `npm run build --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat` |
+| `packages/ai-chat/` | `npm run build:docs --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat` |
 | `packages/ai-chat-components/` | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites) |
 | `demo/` | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright) |
 | `examples/**` | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
