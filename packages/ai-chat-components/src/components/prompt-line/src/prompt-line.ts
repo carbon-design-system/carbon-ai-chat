@@ -108,7 +108,7 @@ class PromptLineElement extends LitElement {
 
   /** Accessible label for the editing surface. */
   @property({ type: String, attribute: 'aria-label', reflect: true })
-  override ariaLabel = '';
+  override ariaLabel = 'Message';
 
   /** Test id, applied to the inner editable element. */
   @property({ type: String, attribute: 'test-id' })

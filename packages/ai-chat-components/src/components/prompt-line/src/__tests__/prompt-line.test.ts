@@ -361,6 +361,28 @@ describe('<cds-aichat-prompt-line> staged extensions', function () {
   });
 });
 
+describe('<cds-aichat-prompt-line> accessible name', function () {
+  it('places aria-label on the focusable textarea in textarea mode', async () => {
+    const el = await makePromptLine({ ariaLabel: 'Ask a question' });
+    expect(getTextarea(el).getAttribute('aria-label')).to.equal(
+      'Ask a question'
+    );
+  });
+
+  it('places aria-label and role on the ProseMirror contenteditable in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      ariaLabel: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-label')).to.equal('Ask a question');
+    expect(pm.getAttribute('role')).to.equal('textbox');
+  });
+});
+
 // Regression: long unbroken text does not widen textarea past its declared width.
 describe('<cds-aichat-prompt-line> long unbroken text wraps', function () {
   const LONG_URL = `https://example.com/x/${'a'.repeat(200)}`;
