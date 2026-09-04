@@ -301,12 +301,14 @@
   outline-offset: calc(-1 * button.$button-border-width);
 }
 
-// Focus outline for expanded state — only on text area, and only when focus
-// arrived via keyboard navigation. `prompt-line-shell` listens for
-// `cds-aichat-prompt-focus` and reads `event.detail.keyboard`; the rich runtime
-// sets that flag when no pointer/touch event preceded the focus. The shell
-// toggles `--keyboard-focus` on the shadow-DOM text-area node, which this rule
-// targets directly.
+// Focus outline for expanded state — both on text area and rich text, and only
+// when focus arrived via keyboard navigation. `prompt-line-shell` listens for
+// `cds-aichat-prompt-focus` and reads `event.detail.keyboard`; both the textarea
+// and rich controllers set that flag — true when no pointer/touch event preceded
+// the focus, or when a programmatic `focus(keyboardFocus)` call explicitly
+// requests it (e.g. `_swapToRich` preserving focus state across the upgrade).
+// The shell toggles `--keyboard-focus` on the shadow-DOM text-area node, which
+// this rule targets directly.
 .#{$prefix}--input-container--expanded
   .#{$prefix}--input-text-area--keyboard-focus {
   outline-color: theme.$focus;

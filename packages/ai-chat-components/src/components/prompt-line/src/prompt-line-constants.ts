@@ -10,7 +10,7 @@
 /**
  * Max block size the prompt line grows to before it caps and shows a vertical
  * scrollbar. Shared by both editing surfaces — the lite `<textarea>`
- * ([./prompt-line-controller.ts]) and the rich Tiptap content node
+ * ([./prompt-line-textarea.ts]) and the rich Tiptap content node
  * ([./tiptap/editor-styles.ts]) — so the two modes cap at the same height and
  * the textarea→rich swap stays imperceptible. Keep them reading this one
  * constant so they can't drift.

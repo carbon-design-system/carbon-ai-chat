@@ -301,6 +301,28 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
     expect(removed).to.have.lengthOf(0);
     expect(el.getEditor()!.getText()).to.equal('');
   });
+
+  it('preserves keyboard-focus state across the upgrade', async () => {
+    const el = await makePromptLine();
+
+    // Establish keyboard focus on the textarea (no preceding pointer event).
+    const preFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    getTextarea(el).focus();
+    expect((await preFocus).detail.keyboard).to.equal(true);
+
+    // The upgrade calls rich.focus() internally. Capture that re-focus event
+    // and assert the keyboard flag is preserved — not silently dropped.
+    const postFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    el.rich = true;
+    await waitForRich(el);
+    expect((await postFocus).detail.keyboard).to.equal(true);
+  });
 });
 
 describe('<cds-aichat-prompt-line> ensureEditor()', function () {

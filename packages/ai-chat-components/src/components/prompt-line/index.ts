@@ -22,7 +22,7 @@ export { preloadPromptLineRich } from './src/prompt-line-rich-loader.js';
 export type {
   PromptLineController,
   PromptLineControllerInit,
-} from './src/prompt-line-controller.js';
+} from './src/prompt-line-types.js';
 export { default as ErrorMessage } from './src/error-message.js';
 export { default as InputSendControlElement } from './src/send-control.js';
 export { default as StopStreamingButton } from './src/stop-streaming-button.js';
