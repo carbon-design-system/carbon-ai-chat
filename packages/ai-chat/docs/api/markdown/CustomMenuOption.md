@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html
 
 A single menu option.
 
@@ -20,7 +20,7 @@ interface CustomMenuOption
 
 If true, the menu option will be disabled and cannot be selected.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html#disabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html#disabled)
 
 ### handler
 
@@ -29,7 +29,7 @@ If true, the menu option will be disabled and cannot be selected.
 The callback handler to call when the option is selected.
 Provide either this or `href`, but not both.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html#handler)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html#handler)
 
 ### href
 
@@ -38,7 +38,7 @@ Provide either this or `href`, but not both.
 The URL to navigate to when the option is selected.
 Provide either this or `handler`, but not both.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html#href)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html#href)
 
 ### target
 
@@ -48,7 +48,7 @@ The target attribute for the link when using `href`.
 Defaults to "_self" if not specified.
 Common values: "_self", "_blank", "_parent", "_top"
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html#target)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html#target)
 
 ### testId
 
@@ -57,7 +57,7 @@ Common values: "_self", "_blank", "_parent", "_top"
 Optional data-testid attribute for testing purposes.
 This allows tests to reliably find and interact with specific menu options.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html#testid)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html#testid)
 
 ### text
 
@@ -65,4 +65,4 @@ This allows tests to reliably find and interact with specific menu options.
 
 The text to display for the menu option.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.CustomMenuOption.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CustomMenuOption.html#text)

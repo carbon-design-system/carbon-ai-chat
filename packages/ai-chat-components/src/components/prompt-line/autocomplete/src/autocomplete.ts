@@ -425,21 +425,22 @@ class AutocompleteElement extends LitElement {
     event.preventDefault();
   };
 
+  private _handleItemMouseEnter(index: number): void {
+    if (this._getItemAtIndex(index)?.disabled) {
+      return;
+    }
+    this._focusedIndex = index;
+  }
+
   private _handleClickOutside = (event: MouseEvent) => {
     // Use composedPath() instead of event.target so clicks originating inside
     // a shadow root are visible.
     const path = event.composedPath();
-    const isNode = (t: EventTarget): t is Node => t instanceof Node;
-    // Check if click is on autocomplete itself
-    if (path.filter(isNode).some((n) => this.contains(n))) {
+
+    if (path.includes(this)) {
       return;
     }
-    // Check if click is on anchor element
-    const { anchorElement } = this;
-    if (
-      anchorElement &&
-      path.filter(isNode).some((n) => anchorElement.contains(n))
-    ) {
+    if (this.anchorElement && path.includes(this.anchorElement)) {
       return;
     }
     this._dismiss();
@@ -586,7 +587,8 @@ class AutocompleteElement extends LitElement {
             this._handleItemClick(index);
           }
         }}"
-        aria-selected="${isActive ? 'true' : 'false'}"
+        @mouseenter="${() => this._handleItemMouseEnter(index)}"
+        aria-selected="false"
         aria-disabled="${isDisabled ? 'true' : 'false'}"
         class=${classMap({
           [itemClass]: true,

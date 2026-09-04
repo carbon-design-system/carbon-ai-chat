@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ConnectToHumanAgentItemTransferInfo.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ConnectToHumanAgentItemTransferInfo.html
 
 Additional information as part of a ConnectToHumanAgentItem that may be needed to perform a transfer to an agent.
 
@@ -21,7 +21,7 @@ interface ConnectToHumanAgentItemTransferInfo
 Each service desk may require different information to start the connection. It can be account details or
 security information. This is a bucket of all the service desk specific properties.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ConnectToHumanAgentItemTransferInfo.html#additional_data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ConnectToHumanAgentItemTransferInfo.html#additional_data)
 
 ### summary_message_to_agent
 
@@ -29,7 +29,7 @@ security information. This is a bucket of all the service desk specific properti
 
 An initial set of message items to send to the agent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ConnectToHumanAgentItemTransferInfo.html#summary_message_to_agent)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ConnectToHumanAgentItemTransferInfo.html#summary_message_to_agent)
 
 ## Related
 

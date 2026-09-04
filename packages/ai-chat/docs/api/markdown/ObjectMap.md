@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Utilities
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.ObjectMap.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/types/Type_reference.ObjectMap.html
 
 This interface represents an object which behaves like a map. The object contains a set of properties representing
 keys in the map and the values of those properties are all of the same type (TPropertyType). The type of the keys

@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ViewState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ViewState.html
 
 Whether a particular Carbon AI Chat view is visible or not.
 
@@ -20,7 +20,7 @@ interface ViewState
 
 Whether the launcher is visible or not.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ViewState.html#launcher)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ViewState.html#launcher)
 
 ### mainWindow
 
@@ -28,4 +28,4 @@ Whether the launcher is visible or not.
 
 Whether the main window is visible or not.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ViewState.html#mainwindow)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ViewState.html#mainwindow)

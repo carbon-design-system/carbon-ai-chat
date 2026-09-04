@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.AutocompleteConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutocompleteConfig.html
 
 Live autocomplete config consumed by InputConfig.autocomplete.
 Selection inserts plain text rather than a schema node; no chip is
@@ -25,7 +25,7 @@ and inserts the item into the editor rather than sending immediately.
 Defaults to `false`. This property is omitted in TriggerSuggestionConfig
 since mentions and commands should always insert into the editor.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.AutocompleteConfig.html#disabledirectsend)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutocompleteConfig.html#disabledirectsend)
 
 ### items
 
@@ -33,7 +33,7 @@ since mentions and commands should always insert into the editor.
 
 Static item list or async function called with the current query string.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.AutocompleteConfig.html#items)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutocompleteConfig.html#items)
 
 ### minQueryLength
 
@@ -41,7 +41,7 @@ Static item list or async function called with the current query string.
 
 Minimum query length before items() is called. Defaults to 0.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.AutocompleteConfig.html#minquerylength)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutocompleteConfig.html#minquerylength)
 
 ### onSelect
 
@@ -49,7 +49,7 @@ Minimum query length before items() is called. Defaults to 0.
 
 Called after the user selects an item and insertion is complete.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.AutocompleteConfig.html#onselect)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutocompleteConfig.html#onselect)
 
 ### renderCustomList
 
@@ -57,7 +57,7 @@ Called after the user selects an item and insertion is complete.
 
 Replace the built-in suggestion list UI.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.AutocompleteConfig.html#rendercustomlist)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutocompleteConfig.html#rendercustomlist)
 
 ## Related
 

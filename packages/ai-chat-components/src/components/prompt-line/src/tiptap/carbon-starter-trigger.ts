@@ -103,10 +103,9 @@ export function carbonStarterTrigger(
   });
 }
 
-function maybeEmit(editor: Editor, forceClear = false): void {
+function maybeEmit(editor: Editor): void {
   const storage = readStarterStorage(editor);
   const isActive =
-    !forceClear &&
     storage?.isOn !== false &&
     (storage?.items.length ?? 0) > 0 &&
     editor.isEditable &&

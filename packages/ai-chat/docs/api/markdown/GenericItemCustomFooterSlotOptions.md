@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html
 
 Options that control the custom content in a message footer.
 
@@ -21,7 +21,7 @@ interface GenericItemCustomFooterSlotOptions
 Optional additional data to pass to the render function. This can contain
 any custom metadata that the frontend needs to render the footer appropriately.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html#additional_data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html#additional_data)
 
 ### is_on
 
@@ -29,7 +29,7 @@ any custom metadata that the frontend needs to render the footer appropriately.
 
 Indicates whether to show the custom footer slot. This defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html#is_on)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html#is_on)
 
 ### slot_name
 
@@ -41,4 +41,4 @@ This value **must be unique to this message** — every message that shows a foo
 `slot_name`. Reusing the same value across messages collapses them onto a single slot, so only the first
 message's footer renders. A per-message counter or UUID works well, e.g. `` `copy_footer_${id}` ``.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html#slot_name)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.GenericItemCustomFooterSlotOptions.html#slot_name)

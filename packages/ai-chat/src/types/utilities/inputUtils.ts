@@ -39,7 +39,11 @@ import {
 import type {
   RenderInLightDomArgs as _RenderInLightDomArgs,
   RenderInLightDomResult as _RenderInLightDomResult,
+  RenderTokenChipArgs as _RenderTokenChipArgs,
+  TokenChipAttrs as _TokenChipAttrs,
 } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import type { ExcludedTrigger as _ExcludedTrigger } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/carbon-autocomplete.js';
+import type { BuildCarbonExtensionsConfig as _BuildCarbonExtensionsConfig } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/build-extensions.js';
 
 // ---------------------------------------------------------------------------
 // Carbon Tiptap extension factories.
@@ -80,6 +84,17 @@ export const carbonCommand = _carbonCommand;
 export const carbonAutocomplete = _carbonAutocomplete;
 
 /**
+ * A trigger character that {@link carbonAutocomplete} stands down for, passed
+ * as its second argument. Use it when autocomplete runs alongside a mention
+ * or command picker, so the picker wins while its trigger is active.
+ * {@link buildCarbonExtensions} assembles this list for you.
+ *
+ * @category Utilities
+ * @interface
+ */
+export type ExcludedTrigger = _ExcludedTrigger;
+
+/**
  * Tiptap extension factory for starter prompts shown while the editor is
  * empty + focused + editable. Selection inserts the item's `value` (or
  * `label`) and auto-sends in the same turn. Items are stored on
@@ -101,6 +116,16 @@ export const carbonStarterTrigger = _carbonStarterTrigger;
  * @category Utilities
  */
 export const buildCarbonExtensions = _buildCarbonExtensions;
+
+/**
+ * The input configs {@link buildCarbonExtensions} turns into Tiptap
+ * extensions. Each field mirrors the matching one on {@link InputConfig};
+ * leave a field out to leave its extension out.
+ *
+ * @category Utilities
+ * @interface
+ */
+export type BuildCarbonExtensionsConfig = _BuildCarbonExtensionsConfig;
 
 // ---------------------------------------------------------------------------
 // Tiptap transaction / JSONContent helpers.
@@ -199,6 +224,29 @@ export const renderTokenChip = _renderTokenChip;
  * @category Utilities
  */
 export const renderInLightDom = _renderInLightDom;
+
+/**
+ * Args for {@link renderTokenChip}. Carries the chip's stored attributes, the
+ * trigger config whose `renderCustomToken` should draw it, and where the chip
+ * is being rendered.
+ *
+ * @category Utilities
+ * @interface
+ */
+export type RenderTokenChipArgs = _RenderTokenChipArgs;
+
+/**
+ * The attributes stored on a token chip's editor node, reached through
+ * {@link RenderTokenChipArgs.attrs}. A chip stores the item's `id`, `label`,
+ * and `value`, plus any custom fields in `data`. The presentation-only fields
+ * of {@link SuggestionItem} are dropped. A custom renderer and a
+ * {@link TriggerSuggestionConfig.onRemove} handler read the item back from
+ * what is left.
+ *
+ * @category Utilities
+ * @interface
+ */
+export type TokenChipAttrs = _TokenChipAttrs;
 
 /**
  * Args for {@link renderInLightDom}.

@@ -4,7 +4,7 @@
 
 - Kind: TypeAlias
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.PersistableState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/types/Type_reference.PersistableState.html
 
 The subset of session state that Carbon AI Chat can persist and restore, consumed by
 PersistedStateConfig. It is the full internal PersistedState minus the
