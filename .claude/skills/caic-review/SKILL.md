@@ -26,7 +26,7 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
   - **Nit** — optional, and it still has to earn its place: a concrete one-edit fix a later reader benefits from. Everything else is noise — see [What isn't a finding](#what-isnt-a-finding).
 - Read enough to be sure before you call something a **Blocker**. A false Blocker costs the author as much as a missed one. If you have only read the happy path, file it as **Important** and say what you did not read.
-- When you can run commands, run the read-only gates for what changed before you write anything — `lint`, `lint:license`, `lint:styles`, `validate:*`, `format`. A failure you watched outranks one you inferred. Never start a build or a test run yourself: the rows in [definition-of-done.md](../../../references/definition-of-done.md) all build, and a build races the watcher a developer probably has running. Report an unrun build as a stated gap.
+- When you can run commands, run the read-only gates for what changed before you write anything — `lint`, `lint:dead`, `lint:license`, `lint:styles`, `validate:*`, `format`. A failure you watched outranks one you inferred. Never start a build or a test run yourself: the rows in [definition-of-done.md](../../../references/definition-of-done.md) all build, and a build races the watcher a developer probably has running. Report an unrun build as a stated gap.
 
 ## How to write a finding
 
@@ -109,7 +109,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 ### If the diff contains code changes
 
-- **Favor simplicity** — hold the diff to the least-code discipline in [code-patterns.md](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder). Flag over-built code, large multi-job functions, hidden side effects, deep nesting, shared mutable state, single-caller abstractions (YAGNI), cleverness over a plain version, dead code or unused flexibility, logic expressible in fewer lines, and JS re-creating what CSS or a native element or browser API already does. This check is removable complexity only — correctness and security are the bullets below.
+- **Favor simplicity** — hold the diff to the least-code discipline in [code-patterns.md](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder). Flag over-built code, large multi-job functions, hidden side effects, deep nesting, shared mutable state, single-caller abstractions (YAGNI), cleverness over a plain version, dead code or unused flexibility, logic expressible in fewer lines, and JS re-creating what CSS or a native element or browser API already does. Run `npm run lint:dead` to verify no unreferenced source files were introduced or left behind. This check is removable complexity only — correctness and security are the bullets below.
 - Analyze logic for bugs, inefficiencies, and security risks (OWASP-style: injection, XSS, unsafe deserialization, secrets in code).
 - Check variable names, function structure, and error handling for clarity and correctness.
 - Confirm edge-case handling — empty/null inputs, error paths, concurrency, cancellation, large inputs.

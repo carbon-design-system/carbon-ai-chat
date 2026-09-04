@@ -28,7 +28,7 @@ import type { RenderTokenTreeOptions } from '../markdown-renderer-types.js';
  *
  * @internal
  */
-export const PLUGIN_FALLBACK_SLOT_PREFIX =
+const PLUGIN_FALLBACK_SLOT_PREFIX =
   'cds-aichat-markdown-renderer-pluginFallback';
 
 // Token types our hand-written renderer handles natively (no markdown-it

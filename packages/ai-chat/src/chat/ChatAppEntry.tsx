@@ -453,5 +453,3 @@ export function ChatAppEntry({
     </StoreProvider>
   );
 }
-
-export default ChatAppEntry;

@@ -138,8 +138,3 @@ function formatBytes(bytes: number): string {
 }
 
 export { validateFileSelection };
-export type {
-  FileUploadValidationConfig,
-  FileUploadRejection,
-  FileUploadValidationResult,
-};

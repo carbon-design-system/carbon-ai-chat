@@ -27,8 +27,3 @@ export enum PageObjectId {
    */
   HEADER_NAME = 'header_name',
 }
-
-/**
- * Ids used for data-testid.
- */
-export type TestId = PageObjectId;

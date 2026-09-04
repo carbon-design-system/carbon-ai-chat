@@ -7,7 +7,7 @@ Editing rules for the store. See parent [packages/ai-chat/AGENTS.md](../../../AG
 - **Middleware, enhancers, async thunk libraries, DevTools integrations.** Dispatch is synchronous-only.
 - **Direct mutation of state** from components, services, or hooks. Every change goes through a reducer.
 - **Cross-slice reducer wiring**: keep `humanAgentReducers.ts` separate from the main reducer.
-- **Imports from `redux` / `react-redux`** — those packages are intentionally not deps. Use the local `useSelector` / `useDispatch`.
+- **Imports from `redux` / `react-redux`** — those packages are intentionally not deps. Use the local `useSelector`.
 
 ## Always
 
@@ -171,7 +171,7 @@ See [`reactReduxShim_spec.tsx`](../../tests/store/spec/reactReduxShim_spec.tsx:4
 - `selectors.ts` — memoized reads. All component reads go through here.
 - `subscriptions.ts` — store-subscription side effects (replaces middleware).
 
-`useSelector` and `useDispatch` hooks live one level up in `../hooks/` and are what components import.
+The `useSelector` hook lives one level up in `../hooks/` and is what components import.
 
 ## Adding a new state slice — checklist
 

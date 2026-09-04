@@ -59,23 +59,3 @@ export function detectAudioSource(url: string): AudioSource {
 
   return AudioSource.UNKNOWN;
 }
-
-/**
- * Check if a URL is a SoundCloud audio
- *
- * @param url - The URL to check
- * @returns True if the URL is a SoundCloud audio
- */
-export function isSoundCloudUrl(url: string): boolean {
-  return detectAudioSource(url) === AudioSource.SOUNDCLOUD;
-}
-
-/**
- * Check if a URL is a native audio file
- *
- * @param url - The URL to check
- * @returns True if the URL is a native audio file
- */
-export function isNativeAudioUrl(url: string): boolean {
-  return detectAudioSource(url) === AudioSource.NATIVE;
-}

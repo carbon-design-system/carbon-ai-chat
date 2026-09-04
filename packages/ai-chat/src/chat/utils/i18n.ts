@@ -189,17 +189,3 @@ export function createIntl({
     },
   };
 }
-
-/**
- * Helper function to check if a formatter is valid.
- * Useful for validation and error handling.
- */
-export function isValidFormatter(formatter: any): formatter is IntlShape {
-  return (
-    formatter &&
-    typeof formatter === 'object' &&
-    typeof formatter.formatMessage === 'function' &&
-    typeof formatter.locale === 'string' &&
-    typeof formatter.messages === 'object'
-  );
-}

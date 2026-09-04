@@ -176,4 +176,3 @@ const MarkdownWithDefaultsExport = React.memo(
 );
 
 export { MarkdownWithDefaultsExport as MarkdownWithDefaults };
-export default MarkdownWithDefaultsExport;

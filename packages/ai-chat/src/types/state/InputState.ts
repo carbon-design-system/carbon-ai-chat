@@ -167,4 +167,4 @@ interface InputState extends FileUploadCapabilities {
   pendingStructuredData?: StructuredData;
 }
 
-export type { InputState, StopStreamingButtonState };
+export type { InputState };

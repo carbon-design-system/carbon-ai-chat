@@ -726,13 +726,12 @@ export interface BusEventCustomPanelClose extends BusEvent {
 /**
  * @category Events
  */
+/** @category Events */
 export interface BusEventHistoryPanelNewChat extends BusEvent {
   type: BusEventType.HISTORY_PANEL_NEW_CHAT;
 }
 
-/**
- * @category Events
- */
+/** @category Events */
 export interface BusEventHistoryPanelPreOpen extends BusEvent {
   type: BusEventType.HISTORY_PANEL_PRE_OPEN;
 }

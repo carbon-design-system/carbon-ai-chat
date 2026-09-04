@@ -249,5 +249,3 @@ export function markdownItAttrs(md: MarkdownIt): void {
     }
   });
 }
-
-export default markdownItAttrs;

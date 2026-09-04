@@ -13,7 +13,6 @@ export {
   BUTTON_KIND,
   BUTTON_TYPE,
   BUTTON_SIZE,
-  BUTTON_TOOLTIP_ALIGNMENT,
   BUTTON_TOOLTIP_POSITION,
 } from '@carbon/web-components/es/components/button/defs.js';
 // Export the actual class for the component that will *directly* be wrapped with React.

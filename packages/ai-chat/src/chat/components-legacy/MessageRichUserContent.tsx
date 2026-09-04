@@ -41,7 +41,7 @@ import type { MessageRequest } from '../../types/messaging/Messages';
  * exists so the slot is also queryable (e.g. by the slot-key contract test).
  */
 export const INPUT_NODE_SLOT_ATTR = 'data-aichat-input-node-slot';
-export const INPUT_NODE_TYPE_ATTR = 'data-aichat-input-node-type';
+const INPUT_NODE_TYPE_ATTR = 'data-aichat-input-node-type';
 
 interface MessageRichUserContentProps {
   content: JSONContent;
@@ -291,5 +291,3 @@ function UnknownNodeSlot({ node, slotKey }: UnknownNodeSlotProps) {
     </slot>
   );
 }
-
-export default MessageRichUserContent;

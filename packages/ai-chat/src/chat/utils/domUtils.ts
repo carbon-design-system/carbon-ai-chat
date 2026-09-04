@@ -199,17 +199,6 @@ function isTextAreaNode(node: Node): node is HTMLTextAreaElement {
  *
  * @returns boolean explaining if there was a focusable element or not.
  */
-function focusOnFirstFocusableItemInArrayOfElements(
-  elements: HTMLElement[]
-): boolean {
-  for (let index = 0; index < elements.length; index++) {
-    if (focusOnFirstFocusableElement(elements[index])) {
-      return true;
-    }
-  }
-  return false;
-}
-
 /**
  * Searches through the children of an element for an element to focus on. The first child that can get focus that is
  * found will receive focus. If no elements are found, returns false.
@@ -448,7 +437,6 @@ function isDirectionRTL(): boolean {
 
 export {
   SCROLLBAR_WIDTH,
-  doScrollElement,
   doScrollElementIntoView,
   doFocusRef,
   isElement,
@@ -456,8 +444,6 @@ export {
   isInputNode,
   isTextAreaNode,
   isImageNode,
-  isSlotElement,
-  focusOnFirstFocusableItemInArrayOfElements,
   focusOnFirstFocusableElement,
   isEnterKey,
   getScrollBottom,

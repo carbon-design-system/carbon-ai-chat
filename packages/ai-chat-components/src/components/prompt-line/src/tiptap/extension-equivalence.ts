@@ -35,8 +35,7 @@ import type {
 } from './types.js';
 
 /** Which carbon factory produced an extension. */
-export type ExtensionSourceKind =
-  'mention' | 'command' | 'autocomplete' | 'starters';
+type ExtensionSourceKind = 'mention' | 'command' | 'autocomplete' | 'starters';
 
 /** The config an extension was built from, recorded at build time. */
 export interface ExtensionSourceDescriptor {

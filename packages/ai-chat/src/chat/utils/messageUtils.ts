@@ -742,7 +742,6 @@ export {
   isResponse,
   isCardResponseType,
   getRequestBubbleText,
-  hasRenderableDisplayContent,
   hasRequestBubbleContent,
   isTextItem,
   isTyping,
