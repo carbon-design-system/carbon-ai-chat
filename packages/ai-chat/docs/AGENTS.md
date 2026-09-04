@@ -34,7 +34,7 @@ For what makes a good example — self-contained, minimal, realistically typed, 
 
 ## Build + preview
 
-Run `npm run build:docs` from the **monorepo root** to regenerate. This builds TypeDoc for all packages, not just `@carbon/ai-chat`.
+Run `npm run aiChat:build:docs` from the **monorepo root** to regenerate. This builds the ai-chat stack (components + ai-chat rollup + demo) and runs TypeDoc.
 
 To build docs for only this package:
 
@@ -45,9 +45,9 @@ npm run build:docs
 
 Generated docs appear in `packages/ai-chat/dist/docs/`.
 
-From [../](../) (the package root): `npm run build` runs rollup + typedoc; `npm start` runs rollup (watch) + typedoc (watch) + serves `dist/docs/carbon-tsdocs` on `:5001`.
+From [../](../) (the package root): `npm run build:docs` runs rollup + typedoc (or `npm run docs` for TypeDoc only); `npm start` runs rollup (watch) + typedoc (watch) + serves `dist/docs/carbon-tsdocs` on `:5001`.
 
-**Run `npm run build` before pushing.** TypeDoc's `validation.invalidLink` rejects broken `{@link …}` references.
+**Run `npm run build:docs` before pushing.** TypeDoc's `validation.invalidLink` rejects broken `{@link …}` references.
 
 ## Related guidance
 
