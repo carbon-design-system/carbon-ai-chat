@@ -13,6 +13,7 @@
  * - Outdated file references
  * - Missing required sections
  * - Inconsistent formatting
+ * - Size budgets, per file and per chain (see MAX_FILE_BYTES below)
  *
  * Discovery crawls from the root AGENTS.md, following links to other bare
  * AGENTS.md entry points and to per-directory topic docs, which live as
@@ -25,6 +26,20 @@ const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const ROOT_AGENTS_FILE = 'AGENTS.md';
+
+// Budgets are in bytes, not lines. Markdown here is soft-wrapped, so a line is
+// a paragraph and its size varies ~3x — a 190-line file in this repo is lighter
+// than a 92-line one, which makes a line budget rank files backwards. Bytes are
+// what a harness actually spends.
+//
+// The chain budget exists because per-file limits cannot see cumulative cost.
+// Codex concatenates every AGENTS.md from the repo root down to the working
+// directory and silently stops at `project_doc_max_bytes` — dropping the
+// deepest file, which is the most specific guidance. This budget is set well
+// under that cap so CI fails first, with a message, instead of a contributor
+// silently losing the tail of the chain.
+const MAX_FILE_BYTES = 8 * 1024;
+const MAX_CHAIN_BYTES = 24 * 1024;
 
 let errors = 0;
 let warnings = 0;
@@ -357,6 +372,97 @@ function validatePathNotation(file, content) {
   }
 }
 
+function formatBytes(bytes) {
+  return `${(bytes / 1024).toFixed(1)} KiB`;
+}
+
+// Every AGENTS.md on disk, as repo-relative paths. The link crawl below follows
+// links and also picks up references/ topic docs; a budget has to follow
+// directories instead, because that is how a harness assembles a chain.
+function agentsFilesOnDisk() {
+  const skip = new Set([
+    'node_modules',
+    'dist',
+    'es',
+    'es-custom',
+    'lib',
+    'umd',
+    'build',
+    'storybook-static',
+  ]);
+  const found = [];
+
+  const walk = (dir) => {
+    const entries = fs.readdirSync(path.join(REPO_ROOT, dir || '.'), {
+      withFileTypes: true,
+    });
+    for (const entry of entries) {
+      const relative = dir ? `${dir}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        if (!skip.has(entry.name) && !entry.name.startsWith('.')) {
+          walk(relative);
+        }
+      } else if (entry.name === 'AGENTS.md') {
+        found.push(relative);
+      }
+    }
+  };
+
+  walk('');
+  return found.sort();
+}
+
+// Two budgets: one file, and the chain a harness loads when work happens in
+// that file's directory (the root file plus every AGENTS.md on the path down).
+function validateBudgets() {
+  const files = agentsFilesOnDisk();
+  const sizes = new Map(
+    files.map((file) => [file, fs.statSync(path.join(REPO_ROOT, file)).size])
+  );
+
+  for (const [file, size] of sizes) {
+    if (size > MAX_FILE_BYTES) {
+      error(
+        file,
+        `${formatBytes(size)} exceeds the ${formatBytes(
+          MAX_FILE_BYTES
+        )} per-file budget by ${formatBytes(
+          size - MAX_FILE_BYTES
+        )}. Move topic detail into a references/ file and link to it with a "read when…" hint.`
+      );
+    }
+  }
+
+  for (const leaf of files) {
+    const leafDir = path.dirname(leaf);
+    const chain = files.filter((file) => {
+      const dir = path.dirname(file);
+      return dir === '.' || dir === leafDir || leafDir.startsWith(`${dir}/`);
+    });
+    const total = chain.reduce((sum, file) => sum + sizes.get(file), 0);
+
+    if (total > MAX_CHAIN_BYTES) {
+      const breakdown = chain
+        .map((file) => `${file} (${formatBytes(sizes.get(file))})`)
+        .join(' + ');
+      error(
+        leaf,
+        `Working in ${leafDir} loads ${formatBytes(
+          total
+        )}, over the ${formatBytes(
+          MAX_CHAIN_BYTES
+        )} chain budget: ${breakdown}. Trim the heaviest file in the chain — an ancestor pays into every chain below it.`
+      );
+    }
+  }
+
+  info(
+    `Checked ${files.length} AGENTS.md files against the ${formatBytes(
+      MAX_FILE_BYTES
+    )} file and ${formatBytes(MAX_CHAIN_BYTES)} chain budgets.`
+  );
+}
+
 // Discover AGENTS-related docs by crawling markdown links from the root AGENTS.md
 function discoverAgentsFiles() {
   const discovered = new Set();
@@ -441,6 +547,8 @@ info(
 for (const file of agentsFiles) {
   validateFile(file);
 }
+
+validateBudgets();
 
 console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors, ${warnings} warnings`);

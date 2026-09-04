@@ -11,24 +11,22 @@
  * Validates the agent skills that carry this repo's task workflows.
  *
  * Each assistant reads skills only from its own directory: IBM Bob from
- * `.bob/skills/`, Claude Code from `.claude/skills/`. Neither reads a shared
- * location, so the tree is stored twice — `.bob/skills/` is canonical (most
- * contributors here work in Bob) and `.claude/skills/` is a byte-identical
- * generated mirror. Both sit at the same directory depth, so relative links
- * inside a skill resolve the same way in either copy. This script checks:
+ * `.bob/skills/`, Claude Code from `.claude/skills/`, Codex from
+ * `.agents/skills/`; Copilot reads the last two. None of them reads a shared
+ * location, so the tree is stored three times — `.bob/skills/` is canonical
+ * (most contributors here work in Bob) and the other two are byte-identical
+ * generated mirrors. All three sit at the same directory depth, so relative
+ * links inside a skill resolve the same way in any copy. This script checks:
  *
  * 1. Mirror identity — every tree holds the same files, byte for byte.
  * 2. Skill shape — every SKILL.md has frontmatter whose `name` matches its
- *    directory, plus a non-empty `description` (the field both harnesses use to
+ *    directory, plus a non-empty `description` (the field every harness uses to
  *    decide when a skill applies).
  * 3. Link resolution — every relative link and backtick file path in a `caic-*`
  *    skill resolves on disk. These live outside the AGENTS.md link graph that
  *    tools/validate-agents-docs.js crawls, so nothing else would catch a typo.
- * 4. Fallback pointer — .github/copilot-instructions.md still links every
- *    caic-* skill. Bob and Claude Code load skills on their own, so AGENTS.md
- *    stays out of it; Copilot does not, and that file is its way in.
  *
- * Run with --fix to regenerate the mirror from the canonical tree.
+ * Run with --fix to regenerate the mirrors from the canonical tree.
  */
 
 const fs = require('fs');
@@ -36,8 +34,7 @@ const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const CANONICAL_DIR = '.bob/skills';
-const MIRROR_DIRS = ['.claude/skills'];
-const FALLBACK_POINTER_FILE = '.github/copilot-instructions.md';
+const MIRROR_DIRS = ['.claude/skills', '.agents/skills'];
 
 // Skills this repo owns. The vendored carbon-builder skill is mirrored and
 // shape-checked like any other, but its internal links belong to its upstream
@@ -360,29 +357,6 @@ function validateCollectionDocs() {
   }
 }
 
-// Skills advertise themselves to assistants that support them, which is why
-// AGENTS.md doesn't list them. Copilot has no such mechanism, so its
-// instructions file carries the pointers — and has to keep carrying them.
-function validateFallbackPointer(ownedSkills) {
-  const fullPath = path.join(REPO_ROOT, FALLBACK_POINTER_FILE);
-  if (!fs.existsSync(fullPath)) {
-    error(FALLBACK_POINTER_FILE, 'File not found.');
-    return;
-  }
-
-  const content = fs.readFileSync(fullPath, 'utf-8');
-  for (const name of ownedSkills) {
-    // A real markdown link, not just the path in passing — a mention inside a
-    // comment or a sentence gives a reader nothing to follow.
-    if (!content.includes(`](../${CANONICAL_DIR}/${name}/SKILL.md)`)) {
-      error(
-        FALLBACK_POINTER_FILE,
-        `Does not link ${CANONICAL_DIR}/${name}/SKILL.md — without it, an assistant that cannot load skills has no way to find that workflow.`
-      );
-    }
-  }
-}
-
 function syncMirror() {
   const from = path.join(REPO_ROOT, CANONICAL_DIR);
 
@@ -445,7 +419,6 @@ for (const name of ownedSkills) {
   validateSkillLinks(name);
 }
 validateCollectionDocs();
-validateFallbackPointer(ownedSkills);
 
 console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors`);

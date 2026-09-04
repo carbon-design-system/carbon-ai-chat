@@ -79,5 +79,6 @@ The summary count can lag a cached read; when the summary and the paginated list
 
 - [caic-issue](../SKILL.md) — writing the child issues and wiring the sub-issue link
 - [caic-plan](../../caic-plan/SKILL.md) — when the effort needs a written implementation plan, not just an issue tree
-- [tone.md](../../../../references/tone.md) — voice and word economy for the epic body
+- [issue-bodies.md](../../caic-copy-writer/references/issue-bodies.md) — how to word an epic body, and the gate before filing
+- [tone.md](../../../../references/tone.md) — voice and quick rules for the epic body
 - [Root AGENTS.md](../../../../AGENTS.md) — repo overview and pointer index

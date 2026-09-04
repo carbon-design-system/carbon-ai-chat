@@ -54,11 +54,13 @@ See [Examples smoke tests](references/playwright.md) for instructions on creatin
 
 Capitalize a slug-family prefix the first time you introduce a new family, even when the slug is a singleton today, if you anticipate siblings (e.g. `Integrations / watsonx.ai`).
 
-**Inline comments rule**: every example source file has a top-of-file purpose comment (what it demonstrates, which APIs, where to start) plus inline _why_ comments on non-obvious config and bus wiring. Comments must be self-contained — no "see the basic example", no "same as the previous one but…". Each example is indexed in isolation by the Carbon MCP indexer, so context cannot rely on cross-example references.
+**Inline comments rule**: comments are the product here, and how to word them is [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — type 5. Read it before writing one. The constraint driving those rules is local: the Carbon MCP indexer reads each example in isolation, so nothing in this directory may point at another one.
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — monorepo conventions
 - [indexer-contract.md](references/indexer-contract.md) — README format for the docs-site indexer
+- [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — how to word a README and a comment here (type 5)
+- [tone.md](../references/tone.md) — voice and quick rules
 - [react/AGENTS.md](react/AGENTS.md) — React flavor deltas
 - [web-components/AGENTS.md](web-components/AGENTS.md) — Web Components flavor deltas

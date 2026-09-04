@@ -17,15 +17,15 @@ An issue is a projection of a decision that has already been made. Filing one be
 
 A one-PR change with an obvious approach needs no plan. Don't manufacture one.
 
-Issue text is developer-facing copy: follow [tone.md](../../../references/tone.md). Terse beats thorough — a reader skims an issue to decide whether it concerns them.
+This skill owns the body's structure, its criteria, and the `gh` calls that file it. **How the words go is [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md)** — type 10 — including the title, the reading-level gate on the draft, and the claim-before-scaffolding rule that bites hardest here.
 
 ## Title style
 
-Short, descriptive, imperative — name the change, not the area. No forced prefix for `gh`-filed sub-issues ("Add an AGENTS guide for authoring epics"); the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prepends `[Task]: ` for scannability in lists.
+How to word one: [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md). The only mechanical rule is the prefix, and there isn't one for `gh`-filed sub-issues — the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prepends `[Task]: ` for scannability in lists, and a `gh`-filed issue goes without.
 
 ## Body structure
 
-Internal development work uses these sections — the same ones the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prompts, so a `gh`-filed issue and a form-filed one read identically:
+Internal development work uses these sections — the same ones the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prompts, so a `gh`-filed issue and a form-filed one read identically. Read that form's `description:` text for what each section has to contain; it is the per-field instruction for both paths, and `gh` never renders it.
 
 - **Background** — the _why_. Link the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision — that is what [caic-review](../caic-review/SKILL.md) checks the diff against.
 - **Goal** — the change that exists when this is done.
@@ -55,15 +55,13 @@ Draft the body into `.github/issue-drafts/<kebab-case-slug>.md` and file it with
 
 Keep the draft in sync with the live issue whenever you edit one — correcting only the GitHub copy means the next edit from the draft silently reverts it.
 
-Don't cite repo guidance from an issue body. External readers can't follow a repo-relative path and the target rots — an already-filed issue still links references/issue-authoring.md, deleted when these workflows became skills. State the contract; the rule that made you state it is internal.
-
 ## Define the contract up front
 
 State the contract **in the issue, before implementation**, whenever a task changes what a consumer can observe on the public surface — anything exported from [packages/ai-chat/src/aiChatEntry.tsx](../../../packages/ai-chat/src/aiChatEntry.tsx) or [packages/ai-chat/src/serverEntry.ts](../../../packages/ai-chat/src/serverEntry.ts). A change with no signature change still qualifies: behavior is public too.
 
 Start with the shape — the interfaces and type aliases added or altered, and the signature of every method put on the surface. Then the half the compiler can't hold.
 
-Rows apply per subject. A method takes them all. A type-only change — a rename, a new optional field, a JSDoc fix — takes Defaults, Derivation, and Ownership; say that in one line rather than writing ten "N/A"s. Answer the rest in the JSDoc you're proposing or in prose beside it. "N/A" is an answer; silence is not.
+Work the locks below while drafting. They are a checklist, not a layout — what reaches the issue is the section described under **Writing it down**, not this grid. Which ones apply depends on the subject: a method takes them all, while a type-only change — a rename, a new optional field, a JSDoc fix — takes Defaults, Derivation, and Ownership, and answers the rest in the JSDoc you're proposing.
 
 | Lock          | The question it settles                                                                                 |
 | ------------- | ------------------------------------------------------------------------------------------------------- |
@@ -78,7 +76,19 @@ Rows apply per subject. A method takes them all. A type-only change — a rename
 | Announcement  | What does a screen reader hear, and where does focus land? See [accessibility.md](../../../references/accessibility.md). |
 | Ownership     | Which side does the work — the framework, or the host's callback?                                       |
 
-Derivation is the row that gets skipped, and it is the expensive one. A type can be right while every rule behind it is wrong.
+Derivation is the lock that gets skipped, and it is the expensive one. A type can be right while every rule behind it is wrong.
+
+### Writing it down
+
+Answer in prose, and only where the answer bites. The reader lands on the issue without this skill open, so a bare row label — `Derivation | N/A` — asks them to decode a term whose definition lives in a file they can't see. Write the finding instead: the state that must hold, the input that does nothing, what a screen reader hears.
+
+Then close with a single line accounting for every lock you left out, naming them:
+
+> Everything else is unchanged: no new events, no failure path, no new defaults, nothing derived, no consumer action.
+
+That line is the point. It is what keeps silence from passing as an answer, and it is why a settled lock costs a clause rather than a table row. A lock you can't fit into that sentence is one you haven't settled — go settle it.
+
+Reach for a table only when four or more locks genuinely move, and then put the question in the left column rather than the keyword. Ten rows of "Unchanged" around one real answer bury it, which is the claim-before-scaffolding failure [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md) covers for the rest of the body.
 
 Locking shape _and_ behavior turns review into "does the code match the agreed contract?" instead of a design debate inside the PR. The semver and JSDoc rules for that surface are canonical in [packages/ai-chat/AGENTS.md](../../../packages/ai-chat/AGENTS.md) and [packages/ai-chat/src/types/AGENTS.md](../../../packages/ai-chat/src/types/AGENTS.md) — link to them, don't restate them here.
 
@@ -154,7 +164,8 @@ Apply labels only when they drive a workflow (triage queue, release notes, a boa
 ## Related guidance
 
 - [epic-authoring.md](references/epic-authoring.md) — when to group sub-issues under an epic, and how to track them
-- [tone.md](../../../references/tone.md) — voice and word economy for the issue body
+- [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md) — how to word the body and the title, and the gate before filing
+- [tone.md](../../../references/tone.md) — voice and quick rules for the issue body
 - [caic-pr](../caic-pr/SKILL.md) — turning a completed issue into a PR description
 - [Root AGENTS.md](../../../AGENTS.md) — repo overview and pointer index
 

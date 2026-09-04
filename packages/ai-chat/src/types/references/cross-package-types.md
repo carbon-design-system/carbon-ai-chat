@@ -4,7 +4,7 @@ Load this when you re-declare a type from [@carbon/ai-chat-components](../../../
 
 Public types declared in [@carbon/ai-chat-components](../../../../ai-chat-components/) are surfaced through a local re-declaration in this package, not a transparent re-export. JSDoc + `@category` live **here**, in `@carbon/ai-chat`, via that re-declaration. This way the upstream package doesn't need to carry our category vocabulary, and TypeDoc resolves to the JSDoc we own.
 
-Third-party packages (`@tiptap/core`, etc.) are **never** re-declared or re-exported. Import them directly from the upstream package — both in this package's internal code and in consumer apps. See "External (third-party) types" in [Cross-linking](../AGENTS.md#cross-linking) for how to reference them in JSDoc.
+Third-party packages (`@tiptap/core`, etc.) are **never** re-declared or re-exported. Import them directly from the upstream package — both in this package's internal code and in consumer apps. See [External (third-party) types](cross-linking.md#external-third-party-types) for how to reference them in JSDoc.
 
 ### Anti-pattern (silently broken)
 
@@ -104,12 +104,12 @@ import type { TriggerSuggestionConfig } from '../../types/config/InputConfig'; /
 
 ### Other rules
 
-- **`validation.notExported` does not cover cross-package symbols.** It returns early on any reference whose package differs from the project's own, so it catches only symbols declared in this package. [Signature links come from a plugin](#signature-links-come-from-a-plugin) gates the rest. (Third-party types like `@tiptap/core`'s stay external and are fine to import directly; see [Cross-linking](../AGENTS.md#cross-linking) for how to reference them in JSDoc.)
+- **`validation.notExported` does not cover cross-package symbols.** It returns early on any reference whose package differs from the project's own, so it catches only symbols declared in this package. [Signature links come from a plugin](#signature-links-come-from-a-plugin) gates the rest. (Third-party types like `@tiptap/core`'s stay external and are fine to import directly; see [Cross-linking](cross-linking.md#external-third-party-types) for how to reference them in JSDoc.)
 - **`@category` values come from `categoryOrder`** in [../../typedoc.json](../../../typedoc.json). A category outside that list lands in the `*` catchall.
 - **A missing `@interface` is build-green but caught by a test.** [tests/typedoc/spec/alias_members_spec.ts](../../../tests/typedoc/spec/alias_members_spec.ts) parses this directory and fails on any `export type X = _X` alias missing the tag, with an allowlist for the targets that are genuinely not object-shaped. Add your exemption there, with a reason, or add the tag.
 
 ## Related guidance
 
 - [src/types/AGENTS.md](../AGENTS.md) — the JSDoc bar these re-declarations have to clear
-- [tone.md](../../../../../references/tone.md) — voice and word economy for the copy you write
+- [tone.md](../../../../../references/tone.md) — voice and quick rules for the copy you write
 - [jsdoc-examples.md](jsdoc-examples.md) — worked good/bad examples

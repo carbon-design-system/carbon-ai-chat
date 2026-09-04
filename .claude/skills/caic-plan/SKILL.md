@@ -122,7 +122,7 @@ When execution proves a criterion wrong, strike it in place and write the correc
 
 - **Cite file paths and line numbers** for every claim about the current codebase. The review phase verifies load-bearing claims — citations make that possible.
 - **Mark unverified assumptions.** "I believe X (not yet read)" is more useful than asserting X without checking. Flagging your own uncertainty saves the reviewer time and keeps the executor from inheriting a wrong premise.
-- **Terse.** Plans are read in the middle of work; long prose buries the action items. Bullets, short paragraphs, code snippets only when pinning a decision. [tone.md](../../../references/tone.md) applies here as much as to shipped docs — a plan is read under time pressure, so word economy matters more, not less.
+- **Terse.** Plans are read in the middle of work; long prose buries the action items. Bullets, short paragraphs, code snippets only when pinning a decision. [tone.md](../../../references/tone.md) applies here as much as to shipped docs, and so does [revision-pass.md](../caic-copy-writer/references/revision-pass.md) — a plan is read under time pressure, so it matters more, not less. A plan has no copy type of its own; that pass is the whole of what reaches it.
 - **Don't defer load-bearing decisions.** "We'll figure that out later" is acceptable for trivia but not for choices that block the executor (API shape, naming, deprecation behavior, error policy). Lock them now or list them as explicit open questions.
 
 ## Review before executing
@@ -153,7 +153,8 @@ Resolve what the review surfaces and bake the resolutions into the plan files be
 ## Related guidance
 
 - [plan-review.md](references/plan-review.md) — the review rubric this workflow closes with
-- [tone.md](../../../references/tone.md) — voice and word economy for the plan itself
+- [revision-pass.md](../caic-copy-writer/references/revision-pass.md) — the tightening pass a plan takes before hand-off
+- [tone.md](../../../references/tone.md) — voice and quick rules for the plan itself
 - [epic-authoring.md](../caic-issue/references/epic-authoring.md) — projecting a plan onto a GitHub epic
 - [Root AGENTS.md](../../../AGENTS.md) — repo overview and pointer index
 

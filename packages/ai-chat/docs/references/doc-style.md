@@ -141,5 +141,6 @@ title: <Sentence-case task title>
 ## Related guidance
 
 - [AGENTS.md](../AGENTS.md) — authoring rules and publishing flow.
-- [tone.md](../../../../references/tone.md) — voice and word economy.
+- [tone.md](../../../../references/tone.md) — voice and quick rules.
+- [docs-pages.md](../../../../.bob/skills/caic-copy-writer/references/docs-pages.md) — the copy rules this structure carries, and the reading-level gate (type 3).
 - [../src/types/AGENTS.md](../../src/types/AGENTS.md) — JSDoc that becomes the API reference.

@@ -60,5 +60,5 @@ External best practice these principles draw on:
 
 - [src/types/AGENTS.md](../src/types/AGENTS.md) — where `@example` is required, plus JSDoc rules (`@category`, `{@link}`, content bar)
 - [docs/AGENTS.md](../docs/AGENTS.md) — testing docs-site snippets in `examples/`
-- [tone.md](../../../references/tone.md) — voice and word economy for public copy
+- [tone.md](../../../references/tone.md) — voice and quick rules for public copy
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview

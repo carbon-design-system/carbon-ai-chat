@@ -63,6 +63,8 @@ Copy [docs/adr/template.md](../../../docs/adr/template.md) rather than writing t
 
 ## Filling in the sections
 
+The sections and what each has to settle are below. **How the words go is [adr-prose.md](../caic-copy-writer/references/adr-prose.md)** — type 11 — and it binds every one of them.
+
 **Context and problem statement.** Why this is on the table now, and what stays broken if nothing changes. Link the epic and issues; don't restate them. Two or three paragraphs. Cite real evidence from the codebase — a type that can't narrow, a field with zero read sites, a TODO naming an upstream package. A context section built from assertions produces a decision nobody can check.
 
 **Considered options.** The reason the file exists. One subsection per option, winner marked. Pros and cons live with the option, not in a second list.
@@ -71,7 +73,7 @@ Write each rejected option well enough that a reader who has the same idea next 
 
 Two rejected options is usually right. One means you didn't look; five means you're padding.
 
-**Decision outcome.** Present tense, active voice, one decision. This is the sentence people will quote back at you in review — make it precise enough to review a diff against.
+**Decision outcome.** One decision, worded per [adr-prose.md](../caic-copy-writer/references/adr-prose.md) — this is the sentence people quote back at you in review.
 
 **Consequences.** What gets easier, what gets harder, what becomes impossible. Include the costs you took knowingly. An ADR listing only upsides is a pitch, not a record, and it reads as one.
 
@@ -194,6 +196,7 @@ If the amendment turns it into a different decision — the title no longer desc
 - [adr-review.md](references/adr-review.md) — the review this skill closes with
 - [caic-plan](../caic-plan/SKILL.md) — where a decision starts life as `D<n>`, and the spine an ADR sits on top of
 - [caic-issue](../caic-issue/SKILL.md) — filing the tracking issue, and the same approval gate
-- [tone.md](../../../references/tone.md) — voice and word economy for developer-facing copy
+- [adr-prose.md](../caic-copy-writer/references/adr-prose.md) — how to word every section above
+- [tone.md](../../../references/tone.md) — voice and quick rules for developer-facing copy
 
 Task input from the user, if any: $ARGUMENTS

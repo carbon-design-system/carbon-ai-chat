@@ -85,13 +85,19 @@ test-results
 next-env.d.ts
 
 packages/ai-chat-components/scss
-# Skill trees stay tracked: .bob/skills/ is canonical and .claude/skills/ is a
-# generated mirror (npm run sync:skills), but both must be committed because
-# each assistant only reads its own directory.
+# Skill trees stay tracked: .bob/skills/ is canonical and .claude/skills/ and
+# .agents/skills/ are generated mirrors (npm run sync:skills), but all three
+# must be committed because each assistant only reads its own directory.
 .bob/*
 !.bob/skills/
 .claude/*
 !.claude/skills/
+.agents/*
+!.agents/skills/
+
+# Codex project config is shared; anything else it drops here is machine-local.
+.codex/*
+!.codex/config.toml
 
 .playwright-mcp
 

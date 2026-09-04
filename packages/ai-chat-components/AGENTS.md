@@ -51,7 +51,8 @@ npm test                        # both test suites (see testing.md)
 - **Component structure**: [component-authoring.md](references/component-authoring.md) — layout, manifest, wrappers, public API
 - **Stories & docs**: [storybook.md](references/storybook.md) — templates, story-vs-control ruleset
 - **Tests**: [testing.md](references/testing.md) — WTR (Lit) + Jest (React)
-- **Voice and tone**: [tone.md](../../references/tone.md) — for Storybook MDX and JSDoc
+- **Voice and tone**: [tone.md](../../references/tone.md) — voice for everything here
+- **Copy rules**: [storybook-mdx.md](../../.bob/skills/caic-copy-writer/references/storybook-mdx.md) — MDX and Lit prop JSDoc (type 4); other source comments are [internal-comments.md](../../.bob/skills/caic-copy-writer/references/internal-comments.md) (type 2)
 - **Consumer package**: [../ai-chat/AGENTS.md](../ai-chat/AGENTS.md) — how the React app uses these components
 - **Shipping gate**: [definition-of-done.md](../../references/definition-of-done.md)
 
