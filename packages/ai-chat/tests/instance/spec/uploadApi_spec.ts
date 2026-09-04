@@ -353,7 +353,7 @@ describe('upload API – Redux store lifecycle', () => {
     );
 
     mockCustomSendMessage.mockClear();
-    await instance.send('hello');
+    await instance.send('hello').catch(() => {});
 
     // customSendMessage should NOT have been called because the upload is in progress.
     expect(mockCustomSendMessage).not.toHaveBeenCalled();

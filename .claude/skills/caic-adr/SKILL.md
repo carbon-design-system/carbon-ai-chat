@@ -43,7 +43,7 @@ Stop investigating an option when you know what would kill it. If you are drafti
 
 **Promotion, which is more common.** The plan is already underway. `D3` turns out to be something a consumer can feel, so it graduates: write the ADR, shrink `D3` to a pointer, keep going. Most of the investigation is already done — that is why this path is cheaper, and why it is worth reaching for the promotion test during plan review rather than at the start.
 
-Either way, if the comment window changes the decision, the spine's propagation rule fires downward — Done when, then the epic, then the issues. See [caic-plan](../caic-plan/SKILL.md#the-spine).
+Either way, if the comment window changes the decision, the spine's propagation rule fires downward — Done when first, then whichever artifact the plan's fork produces. See [caic-plan](../caic-plan/SKILL.md#the-spine).
 
 ## One decision per ADR
 

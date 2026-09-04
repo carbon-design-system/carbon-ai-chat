@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-examples-react-prompt-line-history-mechanism",
   "private": true,
-  "version": "1.19.0-rc.2",
+  "version": "1.20.0-rc.1",
   "type": "module",
   "description": "An example demonstrating ArrowUp/ArrowDown shell-style history navigation in the chat prompt line using a Tiptap keyboard extension.",
   "scripts": {
@@ -12,7 +12,7 @@
   "license": "Apache-2.0",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@carbon/ai-chat": "^1.19.0-rc.2",
+    "@carbon/ai-chat": "^1.20.0-rc.1",
     "@carbon/web-components": "^2.58.1",
     "@tiptap/core": "^3.22.5",
     "lit": "^3.1.0",

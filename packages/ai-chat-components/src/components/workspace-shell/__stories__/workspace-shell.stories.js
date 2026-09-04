@@ -164,6 +164,7 @@ export const Default = {
         .title="${args.notificationTitle}"
         .subtitle="${args.notificationSubTitle}"
         kind="warning"
+        low-contrast
         hide-close-button>
       </cds-inline-notification>
       <cds-aichat-workspace-shell-header

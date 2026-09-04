@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Events
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventPreSend.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.BusEventPreSend.html
 
 ## Signature
 
@@ -16,7 +16,7 @@ interface BusEventPreSend
 
 `data: MessageRequest`
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventPreSend.html#data)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.BusEventPreSend.html#data)
 
 ### source
 
@@ -24,7 +24,7 @@ interface BusEventPreSend
 
 The source of the message being sent.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventPreSend.html#source)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.BusEventPreSend.html#source)
 
 ### type
 
@@ -32,4 +32,4 @@ The source of the message being sent.
 
 The type of this event.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.BusEventPreSend.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.BusEventPreSend.html#type)

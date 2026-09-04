@@ -528,6 +528,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     errorDescription: {},
     errorCollapsible: { type: Boolean },
     errorFullscreen: { type: Boolean },
+    attached: { type: Boolean },
   };
 
   constructor() {
@@ -540,6 +541,7 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
     this.errorDescription = '';
     this.errorCollapsible = false;
     this.errorFullscreen = true;
+    this.attached = false;
     this._sendControlRef = createRef();
     this._mentionConfig = {
       trigger: '@',
@@ -569,6 +571,34 @@ class PromptLineCommandsAndMentionsStory extends LitElement {
 
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._autocompleteObserver = new MutationObserver(() => {
+      this._pushAttached();
+    });
+    this._autocompleteObserver.observe(this, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._autocompleteObserver?.disconnect();
+    this._autocompleteObserver = null;
+  }
+
+  updated() {
+    this._pushAttached();
+  }
+
+  _pushAttached() {
+    const autocompleteEl = this.querySelector('cds-aichat-autocomplete');
+    if (autocompleteEl) {
+      autocompleteEl.attached = this.attached;
+    }
   }
 
   _onPromptChange(e) {
@@ -808,6 +838,11 @@ export default {
       control: 'boolean',
       description: 'Whether the shell has rounded corners.',
     },
+    expanded: {
+      control: 'boolean',
+      description:
+        'Whether the shell uses the expanded layout (full-width editor row with inline actions beneath it).',
+    },
     hasError: {
       control: 'boolean',
       description: 'Whether the shell is in an error state.',
@@ -838,7 +873,7 @@ export default {
     attached: {
       control: 'boolean',
       description:
-        'Whether the autocomplete popover is visually attached to the input — removes bottom-corner rounding (Typeahead only).',
+        'When `true`, suppresses bottom corner rounding. Use in float and sidebar layouts when there is no gap between autocomplete and input bar.',
       table: { category: 'Autocomplete' },
     },
   },
@@ -846,6 +881,7 @@ export default {
     placeholder: 'Type something...',
     disabled: false,
     rounded: true,
+    expanded: false,
     hasError: false,
     errorTitle: 'Something went wrong.',
     errorDescription: '',
@@ -869,75 +905,7 @@ export const Default = {
     placeholder,
     disabled,
     rounded,
-    hasError,
-    errorTitle,
-    errorDescription,
-    errorCollapsible,
-    errorFullscreen,
-  }) => {
-    let sendControlEl = null;
-
-    const onPromptChange = (e) => {
-      if (sendControlEl) {
-        sendControlEl.hasValidInput = e.detail.rawValue.length > 0;
-      }
-      action('cds-aichat-prompt-change')(e.detail);
-    };
-
-    return html`
-      <style>
-        ${styles}
-      </style>
-      <div class="prompt-line-story-wrapper">
-        <cds-aichat-prompt-line-shell
-          ?rounded=${rounded}
-          ?disabled=${disabled}
-          ?has-error=${hasError}>
-          ${
-            hasError && errorTitle
-              ? html`<cds-aichat-error-message
-                  slot="field-messaging"
-                  title=${errorTitle}
-                  description=${errorDescription}
-                  ?collapsible=${errorCollapsible}
-                  ?fullscreen=${errorFullscreen}></cds-aichat-error-message>`
-              : null
-          }
-          <cds-aichat-prompt-line
-            slot="editor"
-            placeholder=${placeholder}
-            ?disabled=${disabled}
-            @cds-aichat-prompt-change=${onPromptChange}
-            @cds-aichat-prompt-send-intent=${(e) =>
-              action('cds-aichat-prompt-send-intent')(
-                e.detail
-              )}></cds-aichat-prompt-line>
-          <cds-aichat-input-send-control
-            slot="send-control"
-            ?disabled=${disabled}
-            @cds-aichat-input-send=${() => action('cds-aichat-input-send')()}
-            ${ref((el) => {
-              sendControlEl = el ?? null;
-            })}></cds-aichat-input-send-control>
-        </cds-aichat-prompt-line-shell>
-      </div>
-    `;
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Expanded — full-width editor row + 10 dummy action buttons beneath it
-// ---------------------------------------------------------------------------
-
-export const Expanded = {
-  argTypes: {
-    disableDirectSend: { table: { disable: true } },
-    attached: { table: { disable: true } },
-  },
-  render: ({
-    placeholder,
-    disabled,
-    rounded,
+    expanded,
     hasError,
     errorTitle,
     errorDescription,
@@ -962,7 +930,7 @@ export const Expanded = {
           ?rounded=${rounded}
           ?disabled=${disabled}
           ?has-error=${hasError}
-          expanded>
+          ?expanded=${expanded}>
           ${
             hasError && errorTitle
               ? html`<cds-aichat-error-message
@@ -977,10 +945,18 @@ export const Expanded = {
             slot="editor"
             placeholder=${placeholder}
             ?disabled=${disabled}
-            @cds-aichat-prompt-change=${onPromptChange}></cds-aichat-prompt-line>
-          <prompt-line-story-inline-actions
-            .actions=${dummyActions}
-            ?disabled=${disabled}></prompt-line-story-inline-actions>
+            @cds-aichat-prompt-change=${onPromptChange}
+            @cds-aichat-prompt-send-intent=${(e) =>
+              action('cds-aichat-prompt-send-intent')(
+                e.detail
+              )}></cds-aichat-prompt-line>
+          ${
+            expanded
+              ? html`<prompt-line-story-inline-actions
+                  .actions=${dummyActions}
+                  ?disabled=${disabled}></prompt-line-story-inline-actions>`
+              : null
+          }
           <cds-aichat-input-send-control
             slot="send-control"
             ?disabled=${disabled}
@@ -995,10 +971,26 @@ export const Expanded = {
 };
 
 // ---------------------------------------------------------------------------
+// Expanded — full-width editor row + 10 dummy action buttons beneath it
+// ---------------------------------------------------------------------------
+
+export const Expanded = {
+  argTypes: {
+    disableDirectSend: { table: { disable: true } },
+    attached: { table: { disable: true } },
+  },
+  args: { ...Default.args, expanded: true },
+  render: Default.render,
+};
+
+// ---------------------------------------------------------------------------
 // Commands and mentions — rich editor, @ + / pickers, hint callout
 // ---------------------------------------------------------------------------
 
 export const CommandsAndMentions = {
+  argTypes: {
+    disableDirectSend: { table: { disable: true } },
+  },
   name: 'Commands and mentions',
   render: ({
     placeholder,
@@ -1009,6 +1001,7 @@ export const CommandsAndMentions = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    attached,
   }) => {
     const el = document.createElement(
       'prompt-line-story-commands-and-mentions'
@@ -1021,6 +1014,7 @@ export const CommandsAndMentions = {
     el.errorDescription = errorDescription;
     el.errorCollapsible = errorCollapsible;
     el.errorFullscreen = errorFullscreen;
+    el.attached = attached;
     return el;
   },
 };

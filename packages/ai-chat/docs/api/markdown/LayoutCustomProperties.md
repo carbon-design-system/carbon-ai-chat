@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html
 
 These variables map to CSS custom properties used in styling the AI chat interface.
 
@@ -28,7 +28,7 @@ Distance from the bottom of the viewport for the floating container.
 
 Defaults to `48px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#bottom_position)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#bottom_position)
 
 ### card_max_width
 
@@ -40,7 +40,7 @@ Maximum width for card components.
 
 Defaults to `424px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#card_max_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#card_max_width)
 
 ### height
 
@@ -52,7 +52,7 @@ Minimum height of the chat container.
 
 Defaults to `calc(100vh - 4rem)`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#height)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#height)
 
 ### launcher_color_avatar
 
@@ -62,7 +62,7 @@ Shared token.
 
 Launcher avatar/icon color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_avatar)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_avatar)
 
 ### launcher_color_background
 
@@ -72,7 +72,7 @@ Shared token.
 
 Launcher button background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_background)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_background)
 
 ### launcher_color_background_active
 
@@ -82,7 +82,7 @@ Shared token.
 
 Launcher active state background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_background_active)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_background_active)
 
 ### launcher_color_background_hover
 
@@ -92,7 +92,7 @@ Shared token.
 
 Launcher hover state background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_background_hover)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_background_hover)
 
 ### launcher_color_focus_border
 
@@ -102,7 +102,7 @@ Shared token.
 
 Launcher focus border color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_focus_border)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_color_focus_border)
 
 ### launcher_default_size
 
@@ -114,7 +114,7 @@ Default launcher button size.
 
 Defaults to `56px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_default_size)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_default_size)
 
 ### launcher_expanded_message_color_background
 
@@ -124,7 +124,7 @@ Shared token.
 
 Expanded launcher message background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_background)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_background)
 
 ### launcher_expanded_message_color_background_active
 
@@ -134,7 +134,7 @@ Shared token.
 
 Expanded launcher message active background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_background_active)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_background_active)
 
 ### launcher_expanded_message_color_background_hover
 
@@ -144,7 +144,7 @@ Shared token.
 
 Expanded launcher message hover background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_background_hover)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_background_hover)
 
 ### launcher_expanded_message_color_focus_border
 
@@ -154,7 +154,7 @@ Shared token.
 
 Expanded launcher message focus border color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_focus_border)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_focus_border)
 
 ### launcher_expanded_message_color_text
 
@@ -164,7 +164,7 @@ Shared token.
 
 Expanded launcher message text color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_expanded_message_color_text)
 
 ### launcher_extended_width
 
@@ -176,7 +176,7 @@ Extended launcher width.
 
 Defaults to `280px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_extended_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_extended_width)
 
 ### launcher_mobile_color_text
 
@@ -186,7 +186,7 @@ Shared token.
 
 Launcher text color on mobile.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_mobile_color_text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_mobile_color_text)
 
 ### launcher_position_bottom
 
@@ -198,7 +198,7 @@ Distance from the bottom of the viewport for the launcher.
 
 Defaults to `48px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_position_bottom)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_position_bottom)
 
 ### launcher_position_right
 
@@ -210,7 +210,7 @@ Distance from the right of the viewport for the launcher.
 
 Defaults to `32px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_position_right)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#launcher_position_right)
 
 ### left_position
 
@@ -222,7 +222,7 @@ Distance from the left of the viewport for the floating container.
 
 Defaults to `auto`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#left_position)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#left_position)
 
 ### max_height
 
@@ -234,7 +234,7 @@ Maximum height of the chat container (float layout).
 
 Defaults to `640px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#max_height)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#max_height)
 
 ### max_width
 
@@ -246,7 +246,7 @@ Maximum width of the chat container (float layout).
 
 Defaults to the inherited value of `--cds-aichat-max-width` (not explicitly set).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#max_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#max_width)
 
 ### messages_max_width
 
@@ -258,7 +258,7 @@ Maximum width for message content area.
 
 Defaults to `672px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#messages_max_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#messages_max_width)
 
 ### messages_min_width
 
@@ -270,7 +270,7 @@ Minimum width for message content area.
 
 Defaults to `320px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#messages_min_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#messages_min_width)
 
 ### min_height
 
@@ -282,7 +282,7 @@ Minimum height of the chat container.
 
 Defaults to `max(150px, calc(min(256px, 100vh) - var(--cds-aichat-bottom-position)))`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#min_height)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#min_height)
 
 ### right_position
 
@@ -294,7 +294,7 @@ Distance from the right of the viewport for the floating container.
 
 Defaults to `32px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#right_position)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#right_position)
 
 ### top_position
 
@@ -306,7 +306,7 @@ Distance from the top of the viewport for the floating container.
 
 Defaults to `auto`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#top_position)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#top_position)
 
 ### unread_indicator_color_background
 
@@ -316,7 +316,7 @@ Shared token.
 
 Unread indicator background color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#unread_indicator_color_background)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#unread_indicator_color_background)
 
 ### unread_indicator_color_text
 
@@ -326,7 +326,7 @@ Shared token.
 
 Unread indicator text color.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#unread_indicator_color_text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#unread_indicator_color_text)
 
 ### width
 
@@ -338,7 +338,7 @@ Width of the chat panel (float layout).
 
 Defaults to `min(380px, var(--cds-aichat-max-width))`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#width)
 
 ### workspace_min_width
 
@@ -350,7 +350,7 @@ Minimum width for workspace panel.
 
 Defaults to `480px`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#workspace_min_width)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#workspace_min_width)
 
 ### z_index
 
@@ -362,4 +362,4 @@ z-index of the chat overlay or container (float layout).
 
 Defaults to `99999`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.LayoutCustomProperties.html#z_index)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.LayoutCustomProperties.html#z_index)

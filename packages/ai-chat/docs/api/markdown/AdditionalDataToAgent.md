@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Service desk
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.AdditionalDataToAgent.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AdditionalDataToAgent.html
 
 This is a set of additional data that may be included when the user sends a message to an agent.
 
@@ -21,4 +21,4 @@ interface AdditionalDataToAgent
 A set of files that user has selected to upload to an agent. This value may be undefined if there are no files
 to upload.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.AdditionalDataToAgent.html#filestoupload)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AdditionalDataToAgent.html#filestoupload)

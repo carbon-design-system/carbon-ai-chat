@@ -1,10 +1,8 @@
 # PublicConfigMarkdown
 
-**Experimental.**
-
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicConfigMarkdown.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicConfigMarkdown.html
 
 Framework-neutral markdown configuration shared by the React `ChatContainer`
 and the `cds-aichat-container` web component. Each layer extends this with
@@ -23,11 +21,9 @@ interface PublicConfigMarkdown
 
 `markdownItPlugins?: MarkdownItPlugin[]`
 
-**Experimental.**
-
 Markdown-it plugins applied after the built-in plugins
 (markdown-it-attrs, markdown-it-highlight, markdown-it-task-lists).
 Memoize this array — a new reference each render rebuilds the
 markdown-it instance.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicConfigMarkdown.html#markdownitplugins)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicConfigMarkdown.html#markdownitplugins)

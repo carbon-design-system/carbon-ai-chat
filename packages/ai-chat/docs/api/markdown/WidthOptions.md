@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.WidthOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.WidthOptions.html
 
 ## Signature
 
@@ -18,7 +18,7 @@ enum WidthOptions
 
 Max width of 585px, the full with of chat in fullscreen view with hasContentMaxWidth: true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.WidthOptions.html#large)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.WidthOptions.html#large)
 
 ### MEDIUM
 
@@ -26,7 +26,7 @@ Max width of 585px, the full with of chat in fullscreen view with hasContentMaxW
 
 Max width of 438px, 2/3rd of the width of chat in fullscreen view with hasContentMaxWidth: true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.WidthOptions.html#medium)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.WidthOptions.html#medium)
 
 ### SMALL
 
@@ -34,4 +34,4 @@ Max width of 438px, 2/3rd of the width of chat in fullscreen view with hasConten
 
 Width the size of the floating chat for smaller content.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.WidthOptions.html#small)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.WidthOptions.html#small)

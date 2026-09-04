@@ -2,7 +2,7 @@
 
 - Kind: Enum
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.OptionItemPreference.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.OptionItemPreference.html
 
 The set of possible response preferences for an options response.
 
@@ -20,7 +20,7 @@ enum OptionItemPreference
 
 Indicates the options should be displayed as buttons.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.OptionItemPreference.html#button)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.OptionItemPreference.html#button)
 
 ### DROPDOWN
 
@@ -28,4 +28,4 @@ Indicates the options should be displayed as buttons.
 
 Indicates the options should be displayed as a drop-down.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/enums/Type_reference.OptionItemPreference.html#dropdown)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/enums/Type_reference.OptionItemPreference.html#dropdown)

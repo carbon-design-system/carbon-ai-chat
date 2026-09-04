@@ -106,6 +106,29 @@ function rewrite(): void {
 }
 
 /**
+ * Flush a rewrite on a microtask rather than inline.
+ *
+ * The teardown helpers below run from component `disconnectedCallback`s, which
+ * WebKit invokes while draining the custom-element reaction queue inside
+ * `Element.remove()`. Mutating an adopted sheet in that window segfaults WebKit
+ * in `Style::Invalidator::invalidateHostAndSlottedStyleIfNeeded`: it walks every
+ * style scope adopting the sheet and dereferences a shadow-root host that isn't
+ * valid mid-removal (#2201). Deferring past the removal sidesteps the window,
+ * and is unobservable — nothing reads the sheet back after a rule is cleared.
+ */
+let teardownFlushScheduled = false;
+function rewriteAfterTeardown(): void {
+  if (teardownFlushScheduled) {
+    return;
+  }
+  teardownFlushScheduled = true;
+  queueMicrotask(() => {
+    teardownFlushScheduled = false;
+    rewrite();
+  });
+}
+
+/**
  * Adopt the shared dynamic stylesheet on a root so its rules apply within
  * that tree. Idempotent per root: subsequent calls for the same root are a
  * no-op so we don't spuriously create a fallback `<style>` element on top of
@@ -174,7 +197,7 @@ function clearSelector(selector: string): void {
   if (!declarationsBySelector.delete(selector)) {
     return;
   }
-  rewrite();
+  rewriteAfterTeardown();
 }
 
 /**
@@ -198,7 +221,7 @@ function clearVarsForSelector(selector: string, props: string[]): void {
   if (existing.size === 0) {
     declarationsBySelector.delete(selector);
   }
-  rewrite();
+  rewriteAfterTeardown();
 }
 
 export { adoptOnRoot, setVarsForSelector, clearSelector, clearVarsForSelector };

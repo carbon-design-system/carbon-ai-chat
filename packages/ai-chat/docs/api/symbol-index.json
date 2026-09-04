@@ -1,6 +1,6 @@
 {
-  "version": "v1.19.0-rc.2",
-  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/",
+  "version": "v1.20.0-rc.1",
+  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/",
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
     "AdditionalDataToAgent": {
@@ -594,6 +594,112 @@
       "experimental": false,
       "url": "interfaces/Type_reference.BaseSuggestionConfig.html#rendercustomlist",
       "anchor": "rendercustomlist"
+    },
+    "BuildCarbonExtensionsConfig": {
+      "name": "BuildCarbonExtensionsConfig",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Utilities",
+      "summary": "The input configs buildCarbonExtensions turns into Tiptap\nextensions. Each field mirrors the matching one on InputConfig;\nleave a field out to leave its extension out.",
+      "description": "",
+      "signature": "interface BuildCarbonExtensionsConfig",
+      "signatures": [],
+      "members": [
+        "BuildCarbonExtensionsConfig.autocomplete",
+        "BuildCarbonExtensionsConfig.command",
+        "BuildCarbonExtensionsConfig.mention",
+        "BuildCarbonExtensionsConfig.starters"
+      ],
+      "related": [
+        "InputConfig",
+        "buildCarbonExtensions"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BuildCarbonExtensionsConfig.html",
+      "anchor": null
+    },
+    "BuildCarbonExtensionsConfig.autocomplete": {
+      "name": "autocomplete",
+      "kind": "Property",
+      "parent": "BuildCarbonExtensionsConfig",
+      "category": "Utilities",
+      "summary": "Config for live autocomplete. Builds carbonAutocomplete, set to\nstand down for whichever mention and command triggers you also pass.",
+      "description": "",
+      "signature": "autocomplete?: AutocompleteConfig",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "carbonAutocomplete"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BuildCarbonExtensionsConfig.html#autocomplete",
+      "anchor": "autocomplete"
+    },
+    "BuildCarbonExtensionsConfig.command": {
+      "name": "command",
+      "kind": "Property",
+      "parent": "BuildCarbonExtensionsConfig",
+      "category": "Utilities",
+      "summary": "Config for the `/`-style command picker. Builds carbonCommand.",
+      "description": "",
+      "signature": "command?: TriggerSuggestionConfig",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "carbonCommand"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BuildCarbonExtensionsConfig.html#command",
+      "anchor": "command"
+    },
+    "BuildCarbonExtensionsConfig.mention": {
+      "name": "mention",
+      "kind": "Property",
+      "parent": "BuildCarbonExtensionsConfig",
+      "category": "Utilities",
+      "summary": "Config for the `@`-style mention picker. Builds carbonMention.",
+      "description": "",
+      "signature": "mention?: TriggerSuggestionConfig",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "carbonMention"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BuildCarbonExtensionsConfig.html#mention",
+      "anchor": "mention"
+    },
+    "BuildCarbonExtensionsConfig.starters": {
+      "name": "starters",
+      "kind": "Property",
+      "parent": "BuildCarbonExtensionsConfig",
+      "category": "Utilities",
+      "summary": "Config for the starter prompts shown while the editor is empty and\nfocused. Builds carbonStarterTrigger. An empty `items` list still\ninstalls the extension, so you can fill the list later without\nrecreating the editor.",
+      "description": "",
+      "signature": "starters?: StartersConfig",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "carbonStarterTrigger"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BuildCarbonExtensionsConfig.html#starters",
+      "anchor": "starters"
     },
     "BusEvent": {
       "name": "BusEvent",
@@ -5164,7 +5270,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CdsAiChatContainerAttributes.html#markdown",
       "anchor": "markdown"
     },
@@ -5898,7 +6004,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#markdown",
       "anchor": "markdown"
     },
@@ -6824,7 +6930,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerProps.html#markdown",
       "anchor": "markdown"
     },
@@ -7224,7 +7330,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerPropsMarkdown.html",
       "anchor": null
     },
@@ -7244,7 +7350,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerPropsMarkdown.html#customrenderers",
       "anchor": "customrenderers"
     },
@@ -7262,7 +7368,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatContainerPropsMarkdown.html#markdownitplugins",
       "anchor": "markdownitplugins"
     },
@@ -7708,7 +7814,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatCustomElementProps.html#markdown",
       "anchor": "markdown"
     },
@@ -8393,14 +8499,14 @@
       "kind": "Property",
       "parent": "ChatInstance",
       "category": "Instance",
-      "summary": "Sends the given message to the assistant on the remote server. This will result in a \"pre:send\" and \"send\" event\nbeing fired on the event bus. The returned promise will resolve once a response has received and processed and\nboth the \"pre:receive\" and \"receive\" events have fired. It will reject when too many errors have occurred and\nthe system gives up retrying.",
+      "summary": "Sends the given message to the assistant. Fires `pre:send` then `send` on\nthe event bus before delegating to `customSendMessage`.\n\n**Settlement points:**\n- Resolves when `customSendMessage` completes, or when the turn is stopped\n  or the conversation restarted while the message is in flight.\n- Rejects when `customSendMessage` throws, when the send path fails\n  terminally (for example a timeout), when called in read-only mode, or\n  when a file upload is still in progress. For the upload case, check\n  `instance.getState().input.hasInFlightUploads` before calling.\n\nThe promise settling does **not** mean a response has arrived. Response\ndelivery is handled asynchronously by `customSendMessage` itself; use\n`{@link EventHandlers.on}` with the `receive` event to react to incoming\nmessages.",
       "description": "",
       "signature": "send: (message: string | MessageRequest<MessageInput>, options?: SendOptions) => Promise<void>",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [
-        "```ts\nawait instance.send(\"What is the weather today?\");\n```",
+        "```ts\nawait instance.send(\"What is the weather today?\");\n// The promise resolves once customSendMessage has completed.\n// Listen for the receive event to handle the assistant's response.\n```",
         "```ts\nawait instance.send(\"Resync context\", { silent: true });\n```"
       ],
       "deprecated": false,
@@ -9905,7 +10011,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html",
       "anchor": null
     },
@@ -9925,7 +10031,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#checklist",
       "anchor": "checklist"
     },
@@ -9943,7 +10049,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#codeblock",
       "anchor": "codeblock"
     },
@@ -9961,7 +10067,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#image",
       "anchor": "image"
     },
@@ -9979,7 +10085,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#link",
       "anchor": "link"
     },
@@ -9997,7 +10103,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.CustomMarkdownRenderers.html#table",
       "anchor": "table"
     },
@@ -10494,12 +10600,24 @@
       "kind": "Property",
       "parent": "CustomSendMessageOptions",
       "category": "Messaging",
-      "summary": "BusEventSend provides extra context such as MessageSendSource.",
+      "summary": "The BusEventSend event that triggered this send. Use its `source`\nfield to distinguish which UI surface the user typed from:\n\n- MessageSendSource.HOME_SCREEN_INPUT — the prompt line on the home\n  screen (the chat has not yet left the home screen).\n- MessageSendSource.MESSAGE_INPUT — the prompt line on the message\n  list (the user is already in an active conversation).\n- MessageSendSource.HOME_SCREEN_STARTER — a starter button on the\n  home screen.\n- MessageSendSource.OPTION_BUTTON / MessageSendSource.OPTION_DROP_DOWN\n  — an option-response control.\n- MessageSendSource.POST_BACK_BUTTON — a post-back button in a\n  response.\n- MessageSendSource.DATE_PICKER — a date-picker response.\n- MessageSendSource.INSTANCE_SEND — a programmatic call to\n  ChatInstance.send.\n- MessageSendSource.WELCOME_REQUEST — the internally generated\n  welcome request fired during hydration.\n\n`busEventSend` is `undefined` when the send does not originate from the\nevent bus (for example, when called directly by internal plumbing).",
       "description": "",
       "signature": "busEventSend?: BusEventSend",
       "signatures": [],
       "members": [],
-      "related": [],
+      "related": [
+        "BusEventSend",
+        "ChatInstance.send",
+        "MessageSendSource.DATE_PICKER",
+        "MessageSendSource.HOME_SCREEN_INPUT",
+        "MessageSendSource.HOME_SCREEN_STARTER",
+        "MessageSendSource.INSTANCE_SEND",
+        "MessageSendSource.MESSAGE_INPUT",
+        "MessageSendSource.OPTION_BUTTON",
+        "MessageSendSource.OPTION_DROP_DOWN",
+        "MessageSendSource.POST_BACK_BUTTON",
+        "MessageSendSource.WELCOME_REQUEST"
+      ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -11264,6 +11382,68 @@
       "experimental": false,
       "url": "interfaces/Type_reference.EventInputData.html#name",
       "anchor": "name"
+    },
+    "ExcludedTrigger": {
+      "name": "ExcludedTrigger",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Utilities",
+      "summary": "A trigger character that carbonAutocomplete stands down for, passed\nas its second argument. Use it when autocomplete runs alongside a mention\nor command picker, so the picker wins while its trigger is active.\nbuildCarbonExtensions assembles this list for you.",
+      "description": "",
+      "signature": "interface ExcludedTrigger",
+      "signatures": [],
+      "members": [
+        "ExcludedTrigger.char",
+        "ExcludedTrigger.position"
+      ],
+      "related": [
+        "buildCarbonExtensions",
+        "carbonAutocomplete"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ExcludedTrigger.html",
+      "anchor": null
+    },
+    "ExcludedTrigger.char": {
+      "name": "char",
+      "kind": "Property",
+      "parent": "ExcludedTrigger",
+      "category": "Utilities",
+      "summary": "The character to stand down for, such as `\"@\"` or `\"/\"`.",
+      "description": "",
+      "signature": "char: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ExcludedTrigger.html#char",
+      "anchor": "char"
+    },
+    "ExcludedTrigger.position": {
+      "name": "position",
+      "kind": "Property",
+      "parent": "ExcludedTrigger",
+      "category": "Utilities",
+      "summary": "Where that character has to sit. `\"anywhere\"` stands down for any word\nstarting with it; `\"start\"` stands down only when that word starts the\nline. Mirrors the picker's own\nTriggerSuggestionConfig.triggerPosition.",
+      "description": "",
+      "signature": "position: \"start\" | \"anywhere\"",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "TriggerSuggestionConfig.triggerPosition"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ExcludedTrigger.html#position",
+      "anchor": "position"
     },
     "ExternalFileReference": {
       "name": "ExternalFileReference",
@@ -14118,10 +14298,8 @@
       "signature": "interface InlineFile",
       "signatures": [],
       "members": [
-        "InlineFile.error",
         "InlineFile.file",
         "InlineFile.id",
-        "InlineFile.status",
         "InlineFile.type"
       ],
       "related": [],
@@ -14131,24 +14309,6 @@
       "experimental": true,
       "url": "interfaces/Type_reference.InlineFile.html",
       "anchor": null
-    },
-    "InlineFile.error": {
-      "name": "error",
-      "kind": "Property",
-      "parent": "InlineFile",
-      "category": "Messaging",
-      "summary": "Optional error information.",
-      "description": "",
-      "signature": "error?: { message: string }",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.InlineFile.html#error",
-      "anchor": "error"
     },
     "InlineFile.file": {
       "name": "file",
@@ -14185,24 +14345,6 @@
       "experimental": true,
       "url": "interfaces/Type_reference.InlineFile.html#id",
       "anchor": "id"
-    },
-    "InlineFile.status": {
-      "name": "status",
-      "kind": "Property",
-      "parent": "InlineFile",
-      "category": "Messaging",
-      "summary": "Optional upload status (for UI feedback).",
-      "description": "",
-      "signature": "status?: FileStatusValue",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.InlineFile.html#status",
-      "anchor": "status"
     },
     "InlineFile.type": {
       "name": "type",
@@ -14281,7 +14423,7 @@
       "category": "Config",
       "summary": "Live-typeahead autocomplete config. Selection inserts plain text; no\ntoken chip is rendered.",
       "description": "",
-      "signature": "autocomplete?: BaseSuggestionConfig",
+      "signature": "autocomplete?: AutocompleteConfig",
       "signatures": [],
       "members": [],
       "related": [],
@@ -15537,7 +15679,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownCustomRenderers.html",
       "anchor": null
     },
@@ -15557,7 +15699,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownCustomRenderers.html#checklist",
       "anchor": "checklist"
     },
@@ -15575,7 +15717,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownCustomRenderers.html#codeblock",
       "anchor": "codeblock"
     },
@@ -15593,7 +15735,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownCustomRenderers.html#image",
       "anchor": "image"
     },
@@ -15611,7 +15753,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownCustomRenderers.html#link",
       "anchor": "link"
     },
@@ -15629,7 +15771,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownCustomRenderers.html#table",
       "anchor": "table"
     },
@@ -15649,7 +15791,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.MarkdownItPlugin.html",
       "anchor": null
     },
@@ -15670,7 +15812,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklist.html",
       "anchor": null
     },
@@ -15688,7 +15830,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklist.html#getchecked",
       "anchor": "getchecked"
     },
@@ -15706,7 +15848,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklist.html#ontoggle",
       "anchor": "ontoggle"
     },
@@ -15723,14 +15865,13 @@
         "MarkdownRendererChecklistItemArgs.checked",
         "MarkdownRendererChecklistItemArgs.id",
         "MarkdownRendererChecklistItemArgs.label",
-        "MarkdownRendererChecklistItemArgs.node",
         "MarkdownRendererChecklistItemArgs.token"
       ],
       "related": [],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html",
       "anchor": null
     },
@@ -15748,7 +15889,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#checked",
       "anchor": "checked"
     },
@@ -15766,7 +15907,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#id",
       "anchor": "id"
     },
@@ -15784,27 +15925,9 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#label",
       "anchor": "label"
-    },
-    "MarkdownRendererChecklistItemArgs.node": {
-      "name": "node",
-      "kind": "Property",
-      "parent": "MarkdownRendererChecklistItemArgs",
-      "category": "Messaging",
-      "summary": "The full token-tree node.",
-      "description": "",
-      "signature": "node: Readonly<TokenTree>",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#node",
-      "anchor": "node"
     },
     "MarkdownRendererChecklistItemArgs.token": {
       "name": "token",
@@ -15820,7 +15943,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistItemArgs.html#token",
       "anchor": "token"
     },
@@ -15842,7 +15965,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistToggleArgs.html",
       "anchor": null
     },
@@ -15860,7 +15983,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistToggleArgs.html#checked",
       "anchor": "checked"
     },
@@ -15880,7 +16003,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistToggleArgs.html#id",
       "anchor": "id"
     },
@@ -15898,7 +16021,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererChecklistToggleArgs.html#label",
       "anchor": "label"
     },
@@ -15915,7 +16038,6 @@
         "MarkdownRendererCodeBlockArgs.code",
         "MarkdownRendererCodeBlockArgs.isStreaming",
         "MarkdownRendererCodeBlockArgs.language",
-        "MarkdownRendererCodeBlockArgs.node",
         "MarkdownRendererCodeBlockArgs.slotName",
         "MarkdownRendererCodeBlockArgs.token"
       ],
@@ -15928,7 +16050,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html",
       "anchor": null
     },
@@ -15946,7 +16068,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#code",
       "anchor": "code"
     },
@@ -15964,7 +16086,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#isstreaming",
       "anchor": "isstreaming"
     },
@@ -15982,27 +16104,9 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#language",
       "anchor": "language"
-    },
-    "MarkdownRendererCodeBlockArgs.node": {
-      "name": "node",
-      "kind": "Property",
-      "parent": "MarkdownRendererCodeBlockArgs",
-      "category": "Messaging",
-      "summary": "The full token-tree node.",
-      "description": "",
-      "signature": "node: Readonly<TokenTree>",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#node",
-      "anchor": "node"
     },
     "MarkdownRendererCodeBlockArgs.slotName": {
       "name": "slotName",
@@ -16018,7 +16122,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#slotname",
       "anchor": "slotname"
     },
@@ -16036,7 +16140,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#token",
       "anchor": "token"
     },
@@ -16060,7 +16164,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockData.html",
       "anchor": null
     },
@@ -16078,7 +16182,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockData.html#code",
       "anchor": "code"
     },
@@ -16096,7 +16200,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockData.html#isstreaming",
       "anchor": "isstreaming"
     },
@@ -16114,7 +16218,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererCodeBlockData.html#language",
       "anchor": "language"
     },
@@ -16130,7 +16234,6 @@
       "members": [
         "MarkdownRendererImageArgs.alt",
         "MarkdownRendererImageArgs.attributes",
-        "MarkdownRendererImageArgs.node",
         "MarkdownRendererImageArgs.src",
         "MarkdownRendererImageArgs.title",
         "MarkdownRendererImageArgs.token"
@@ -16142,7 +16245,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html",
       "anchor": null
     },
@@ -16160,7 +16263,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html#alt",
       "anchor": "alt"
     },
@@ -16178,27 +16281,9 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html#attributes",
       "anchor": "attributes"
-    },
-    "MarkdownRendererImageArgs.node": {
-      "name": "node",
-      "kind": "Property",
-      "parent": "MarkdownRendererImageArgs",
-      "category": "Messaging",
-      "summary": "The full token-tree node.",
-      "description": "",
-      "signature": "node: Readonly<TokenTree>",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html#node",
-      "anchor": "node"
     },
     "MarkdownRendererImageArgs.src": {
       "name": "src",
@@ -16214,7 +16299,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html#src",
       "anchor": "src"
     },
@@ -16232,7 +16317,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html#title",
       "anchor": "title"
     },
@@ -16250,7 +16335,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageArgs.html#token",
       "anchor": "token"
     },
@@ -16271,7 +16356,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageResult.html",
       "anchor": null
     },
@@ -16289,7 +16374,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageResult.html#attributes",
       "anchor": "attributes"
     },
@@ -16307,7 +16392,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererImageResult.html#src",
       "anchor": "src"
     },
@@ -16323,7 +16408,6 @@
       "members": [
         "MarkdownRendererLinkArgs.attributes",
         "MarkdownRendererLinkArgs.href",
-        "MarkdownRendererLinkArgs.node",
         "MarkdownRendererLinkArgs.text",
         "MarkdownRendererLinkArgs.title",
         "MarkdownRendererLinkArgs.token"
@@ -16335,7 +16419,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html",
       "anchor": null
     },
@@ -16353,7 +16437,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html#attributes",
       "anchor": "attributes"
     },
@@ -16371,27 +16455,9 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html#href",
       "anchor": "href"
-    },
-    "MarkdownRendererLinkArgs.node": {
-      "name": "node",
-      "kind": "Property",
-      "parent": "MarkdownRendererLinkArgs",
-      "category": "Messaging",
-      "summary": "The full token-tree node, including descendants.",
-      "description": "",
-      "signature": "node: Readonly<TokenTree>",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html#node",
-      "anchor": "node"
     },
     "MarkdownRendererLinkArgs.text": {
       "name": "text",
@@ -16407,7 +16473,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html#text",
       "anchor": "text"
     },
@@ -16425,7 +16491,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html#title",
       "anchor": "title"
     },
@@ -16443,7 +16509,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkArgs.html#token",
       "anchor": "token"
     },
@@ -16470,7 +16536,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkResult.html",
       "anchor": null
     },
@@ -16488,7 +16554,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkResult.html#attributes",
       "anchor": "attributes"
     },
@@ -16506,7 +16572,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkResult.html#href",
       "anchor": "href"
     },
@@ -16524,7 +16590,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkResult.html#onclick",
       "anchor": "onclick"
     },
@@ -16542,7 +16608,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkResult.html#rel",
       "anchor": "rel"
     },
@@ -16560,7 +16626,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererLinkResult.html#target",
       "anchor": "target"
     },
@@ -16577,7 +16643,6 @@
         "MarkdownRendererTableArgs.headers",
         "MarkdownRendererTableArgs.isLoading",
         "MarkdownRendererTableArgs.isStreaming",
-        "MarkdownRendererTableArgs.node",
         "MarkdownRendererTableArgs.rows",
         "MarkdownRendererTableArgs.slotName",
         "MarkdownRendererTableArgs.token"
@@ -16591,7 +16656,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html",
       "anchor": null
     },
@@ -16609,7 +16674,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#headers",
       "anchor": "headers"
     },
@@ -16627,7 +16692,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#isloading",
       "anchor": "isloading"
     },
@@ -16645,27 +16710,9 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#isstreaming",
       "anchor": "isstreaming"
-    },
-    "MarkdownRendererTableArgs.node": {
-      "name": "node",
-      "kind": "Property",
-      "parent": "MarkdownRendererTableArgs",
-      "category": "Messaging",
-      "summary": "The full token-tree node, including descendants.",
-      "description": "",
-      "signature": "node: Readonly<TokenTree>",
-      "signatures": [],
-      "members": [],
-      "related": [],
-      "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": true,
-      "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#node",
-      "anchor": "node"
     },
     "MarkdownRendererTableArgs.rows": {
       "name": "rows",
@@ -16681,7 +16728,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#rows",
       "anchor": "rows"
     },
@@ -16699,7 +16746,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#slotname",
       "anchor": "slotname"
     },
@@ -16717,7 +16764,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableArgs.html#token",
       "anchor": "token"
     },
@@ -16742,7 +16789,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableData.html",
       "anchor": null
     },
@@ -16760,7 +16807,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableData.html#headers",
       "anchor": "headers"
     },
@@ -16778,7 +16825,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableData.html#isloading",
       "anchor": "isloading"
     },
@@ -16796,7 +16843,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableData.html#isstreaming",
       "anchor": "isstreaming"
     },
@@ -16814,7 +16861,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.MarkdownRendererTableData.html#rows",
       "anchor": "rows"
     },
@@ -21660,7 +21707,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicConfig.html#markdown",
       "anchor": "markdown"
     },
@@ -21902,7 +21949,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicConfigMarkdown.html",
       "anchor": null
     },
@@ -21920,7 +21967,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PublicConfigMarkdown.html#markdownitplugins",
       "anchor": "markdownitplugins"
     },
@@ -22959,6 +23006,122 @@
       "experimental": false,
       "url": "interfaces/Type_reference.RenderInLightDomResult.html#container",
       "anchor": "container"
+    },
+    "RenderTokenChipArgs": {
+      "name": "RenderTokenChipArgs",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Utilities",
+      "summary": "Args for renderTokenChip. Carries the chip's stored attributes, the\ntrigger config whose `renderCustomToken` should draw it, and where the chip\nis being rendered.",
+      "description": "",
+      "signature": "interface RenderTokenChipArgs",
+      "signatures": [],
+      "members": [
+        "RenderTokenChipArgs.attrs",
+        "RenderTokenChipArgs.config",
+        "RenderTokenChipArgs.context",
+        "RenderTokenChipArgs.dispatchTarget",
+        "RenderTokenChipArgs.type"
+      ],
+      "related": [
+        "renderTokenChip"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RenderTokenChipArgs.html",
+      "anchor": null
+    },
+    "RenderTokenChipArgs.attrs": {
+      "name": "attrs",
+      "kind": "Property",
+      "parent": "RenderTokenChipArgs",
+      "category": "Utilities",
+      "summary": "Node attrs in mention shape.",
+      "description": "",
+      "signature": "attrs: TokenChipAttrs",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RenderTokenChipArgs.html#attrs",
+      "anchor": "attrs"
+    },
+    "RenderTokenChipArgs.config": {
+      "name": "config",
+      "kind": "Property",
+      "parent": "RenderTokenChipArgs",
+      "category": "Utilities",
+      "summary": "Subset of the trigger-suggestion config relevant to chip rendering. Only\n`renderCustomToken` is read; other config fields are ignored.",
+      "description": "",
+      "signature": "config?: Pick<TriggerSuggestionConfig, \"renderCustomToken\">",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RenderTokenChipArgs.html#config",
+      "anchor": "config"
+    },
+    "RenderTokenChipArgs.context": {
+      "name": "context",
+      "kind": "Property",
+      "parent": "RenderTokenChipArgs",
+      "category": "Utilities",
+      "summary": "Visual variant to render. `\"composer\"` is the live, being-typed token in\nthe prompt-line editor; `\"historical\"` is a token inside an already-sent\nmessage in the transcript. Drives the default chip's color/highlight —\nsee `ensureTokenStyleRules`.",
+      "description": "",
+      "signature": "context: \"historical\" | \"composer\"",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RenderTokenChipArgs.html#context",
+      "anchor": "context"
+    },
+    "RenderTokenChipArgs.dispatchTarget": {
+      "name": "dispatchTarget",
+      "kind": "Property",
+      "parent": "RenderTokenChipArgs",
+      "category": "Utilities",
+      "summary": "Where to dispatch the light-DOM portal event when `renderCustomToken`\nreturns custom content. The NodeView passes the editor's `view.dom`\n(already mounted under the chat wrapper) so the event reaches the portal\nlistener synchronously. When omitted, the event fires from the portal\ncontainer element itself with `bubbles: true, composed: true` — callers\nthat mount the chip lazily must ensure it lives under a listener subtree\nbefore connection.",
+      "description": "",
+      "signature": "dispatchTarget?: EventTarget",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RenderTokenChipArgs.html#dispatchtarget",
+      "anchor": "dispatchtarget"
+    },
+    "RenderTokenChipArgs.type": {
+      "name": "type",
+      "kind": "Property",
+      "parent": "RenderTokenChipArgs",
+      "category": "Utilities",
+      "summary": "Token type — usually `\"mention\"` or `\"command\"`.",
+      "description": "",
+      "signature": "type: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.RenderTokenChipArgs.html#type",
+      "anchor": "type"
     },
     "RenderUserDefinedInputNode": {
       "name": "RenderUserDefinedInputNode",
@@ -24674,6 +24837,8 @@
         "SuggestionItem.avatar",
         "SuggestionItem.description",
         "SuggestionItem.disabled",
+        "SuggestionItem.groupId",
+        "SuggestionItem.groupTitle",
         "SuggestionItem.id",
         "SuggestionItem.label",
         "SuggestionItem.showTriggerInChip",
@@ -24740,6 +24905,42 @@
       "experimental": false,
       "url": "interfaces/Type_reference.SuggestionItem.html#disabled",
       "anchor": "disabled"
+    },
+    "SuggestionItem.groupId": {
+      "name": "groupId",
+      "kind": "Property",
+      "parent": "SuggestionItem",
+      "category": "Config",
+      "summary": "Optional group identifier. Items sharing the same `groupId` are rendered\ntogether under a single group heading in the suggestion list. Items\nwithout a `groupId` are rendered as ungrouped before any groups.\nGroup order follows first-occurrence of each `groupId` in the array.",
+      "description": "",
+      "signature": "groupId?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.SuggestionItem.html#groupid",
+      "anchor": "groupid"
+    },
+    "SuggestionItem.groupTitle": {
+      "name": "groupTitle",
+      "kind": "Property",
+      "parent": "SuggestionItem",
+      "category": "Config",
+      "summary": "Human-readable title for the group header. Every item in the group should\nsupply this so the header renders correctly if filtering leaves only a\nnon-first item visible.",
+      "description": "",
+      "signature": "groupTitle?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.SuggestionItem.html#grouptitle",
+      "anchor": "grouptitle"
     },
     "SuggestionItem.id": {
       "name": "id",
@@ -24987,6 +25188,66 @@
       "url": "types/Type_reference.SystemMessageVariant.html",
       "anchor": null
     },
+    "TableCellData": {
+      "name": "TableCellData",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Messaging",
+      "summary": "One cell of a parsed markdown table, as it arrives on\nMarkdownRendererTableData.headers and\nMarkdownRendererTableData.rows. Read `text` for the cell's plain\nstring, or walk `tokens` to render its inline markup yourself.",
+      "description": "",
+      "signature": "interface TableCellData",
+      "signatures": [],
+      "members": [
+        "TableCellData.text",
+        "TableCellData.tokens"
+      ],
+      "related": [
+        "MarkdownRendererTableArgs.headers",
+        "MarkdownRendererTableArgs.rows"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TableCellData.html",
+      "anchor": null
+    },
+    "TableCellData.text": {
+      "name": "text",
+      "kind": "Property",
+      "parent": "TableCellData",
+      "category": "Messaging",
+      "summary": "Plain text of the cell, with markdown syntax stripped.",
+      "description": "",
+      "signature": "text: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TableCellData.html#text",
+      "anchor": "text"
+    },
+    "TableCellData.tokens": {
+      "name": "tokens",
+      "kind": "Property",
+      "parent": "TableCellData",
+      "category": "Messaging",
+      "summary": "Token tree for the cell's content, or `null` when the cell is plain\ntext. Render it to keep the links, code spans, and emphasis that `text`\ndrops.",
+      "description": "",
+      "signature": "tokens: TokenTree[]",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TableCellData.html#tokens",
+      "anchor": "tokens"
+    },
     "TestId": {
       "name": "TestId",
       "kind": "TypeAlias",
@@ -25141,12 +25402,130 @@
       "url": "interfaces/Type_reference.TextItem.html#user_defined",
       "anchor": "user_defined"
     },
+    "TokenChipAttrs": {
+      "name": "TokenChipAttrs",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Utilities",
+      "summary": "The attributes stored on a token chip's editor node, reached through\nRenderTokenChipArgs.attrs. A chip stores the item's `id`, `label`,\nand `value`, plus any custom fields in `data`. The presentation-only fields\nof SuggestionItem are dropped. A custom renderer and a\nTriggerSuggestionConfig.onRemove handler read the item back from\nwhat is left.",
+      "description": "",
+      "signature": "interface TokenChipAttrs",
+      "signatures": [],
+      "members": [
+        "TokenChipAttrs.data",
+        "TokenChipAttrs.id",
+        "TokenChipAttrs.label",
+        "TokenChipAttrs.trigger",
+        "TokenChipAttrs.value"
+      ],
+      "related": [
+        "RenderTokenChipArgs.attrs",
+        "SuggestionItem",
+        "TriggerSuggestionConfig.onRemove"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TokenChipAttrs.html",
+      "anchor": null
+    },
+    "TokenChipAttrs.data": {
+      "name": "data",
+      "kind": "Property",
+      "parent": "TokenChipAttrs",
+      "category": "Utilities",
+      "summary": "Custom fields carried over from the selected item. Everything the\nsuggestion item held beyond `id`, `label`, `value`, `avatar`,\n`description`, `disabled`, and `showTriggerInChip` lands here, so it\nsurvives a round trip through the editor's JSON.",
+      "description": "",
+      "signature": "data?: unknown",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TokenChipAttrs.html#data",
+      "anchor": "data"
+    },
+    "TokenChipAttrs.id": {
+      "name": "id",
+      "kind": "Property",
+      "parent": "TokenChipAttrs",
+      "category": "Utilities",
+      "summary": "Identifier of the item the chip came from.",
+      "description": "",
+      "signature": "id?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TokenChipAttrs.html#id",
+      "anchor": "id"
+    },
+    "TokenChipAttrs.label": {
+      "name": "label",
+      "kind": "Property",
+      "parent": "TokenChipAttrs",
+      "category": "Utilities",
+      "summary": "Text shown on the chip.",
+      "description": "",
+      "signature": "label?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TokenChipAttrs.html#label",
+      "anchor": "label"
+    },
+    "TokenChipAttrs.trigger": {
+      "name": "trigger",
+      "kind": "Property",
+      "parent": "TokenChipAttrs",
+      "category": "Utilities",
+      "summary": "Trigger character to prefix onto the default chip text (e.g.\n`/summarize` vs `summarize`). Set at insert time by\n`resolveShowTriggerInChip` — defaults to command nodes only, but is\noverridable per-config or per-item via `TriggerSuggestionConfig`/\n`SuggestionItem`'s `showTriggerInChip`.",
+      "description": "",
+      "signature": "trigger?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TokenChipAttrs.html#trigger",
+      "anchor": "trigger"
+    },
+    "TokenChipAttrs.value": {
+      "name": "value",
+      "kind": "Property",
+      "parent": "TokenChipAttrs",
+      "category": "Utilities",
+      "summary": "String the chip contributes to the message text. Falls back to `label`\nwhen unset.",
+      "description": "",
+      "signature": "value?: string",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.TokenChipAttrs.html#value",
+      "anchor": "value"
+    },
     "TokenTree": {
       "name": "TokenTree",
       "kind": "Interface",
       "parent": null,
       "category": "Messaging",
-      "summary": "Markdown-it parser node tree, surfaced on the `node` field of\nMarkdownRendererTableArgs and MarkdownRendererCodeBlockArgs\nso custom renderers can inspect the parsed token structure when the\nhigh-level data payload isn't enough.",
+      "summary": "Markdown-it parser node tree, surfaced on the `node` field of\nMarkdownRendererTableArgs and MarkdownRendererCodeBlockArgs,\nand reached through TableCellData.tokens. Each node pairs a\nmarkdown-it token with its children, so a custom renderer can inspect the\nparsed token structure — or walk a table cell's inline content — when the\nhigh-level data payload isn't enough.",
       "description": "",
       "signature": "interface TokenTree",
       "signatures": [],
@@ -25157,12 +25536,13 @@
       ],
       "related": [
         "MarkdownRendererCodeBlockArgs",
-        "MarkdownRendererTableArgs"
+        "MarkdownRendererTableArgs",
+        "TableCellData.tokens"
       ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.TokenTree.html",
       "anchor": null
     },
@@ -25180,7 +25560,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.TokenTree.html#children",
       "anchor": "children"
     },
@@ -25198,7 +25578,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.TokenTree.html#key",
       "anchor": "key"
     },
@@ -25216,7 +25596,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.TokenTree.html#token",
       "anchor": "token"
     },
@@ -25826,12 +26206,14 @@
       "kind": "Property",
       "parent": "UploadConfig",
       "category": "Config",
-      "summary": "Called once per file when the user selects it.\n\nReturn a StructuredData object representing this file's contribution to the\npending message. The widget merges the returned `StructuredData` into\n`pendingStructuredData` and tracks it per-upload so that individual files can be\nremoved before the message is sent.\n\nOn failure: throw or return a rejected `Promise` — the widget marks the file as\nerrored in the UI.",
+      "summary": "Called once per file when the user selects it.\n\nReturn a StructuredData object representing this file's contribution to the\npending message. The widget merges the returned `StructuredData` into\n`pendingStructuredData` and tracks it per-upload so that individual files can be\nremoved before the message is sent.\n\nOn failure: throw or return a rejected `Promise` — the widget marks the file as\nerrored in the UI. Your `Error`'s `message` becomes the description of that\nerror, so write it as the reason the file was rejected.\n\nThe chat owns the rest of the copy: the title above your message, and the\ninstruction to remove the attachment and try again. Both come from the\n`fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery` keys of\nLanguagePack, so don't repeat the recovery step in your own message.\nReword either one through PublicConfig.strings.",
       "description": "",
       "signature": "onFileUpload?: (file: File, abortSignal: AbortSignal) => Promise<StructuredData>",
       "signatures": [],
       "members": [],
       "related": [
+        "LanguagePack",
+        "PublicConfig.strings",
         "StructuredData"
       ],
       "examples": [],
@@ -26418,7 +26800,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html",
       "anchor": null
     },
@@ -26438,7 +26820,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#checklist",
       "anchor": "checklist"
     },
@@ -26456,7 +26838,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#codeblock",
       "anchor": "codeblock"
     },
@@ -26474,7 +26856,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#image",
       "anchor": "image"
     },
@@ -26492,7 +26874,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#link",
       "anchor": "link"
     },
@@ -26510,7 +26892,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCCustomMarkdownRenderers.html#table",
       "anchor": "table"
     },
@@ -26533,7 +26915,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCMarkdown.html",
       "anchor": null
     },
@@ -26553,7 +26935,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCMarkdown.html#customrenderers",
       "anchor": "customrenderers"
     },
@@ -26571,7 +26953,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.WCMarkdown.html#markdownitplugins",
       "anchor": "markdownitplugins"
     },
@@ -27289,7 +27671,7 @@
       "category": "Utilities",
       "summary": "Tiptap extension factory for live autocomplete. Wraps `@tiptap/suggestion`\ndirectly (no Mention node) — the `command` callback inserts plain text\nrather than a schema node. Activates whenever the input has any non-empty\ntrailing word.",
       "description": "",
-      "signature": "carbonAutocomplete(config: BaseSuggestionConfig, excludeTriggers?: ExcludedTrigger[]): Extension",
+      "signature": "carbonAutocomplete(config: AutocompleteConfig, excludeTriggers?: ExcludedTrigger[]): Extension",
       "signatures": [],
       "members": [],
       "related": [],
@@ -27363,7 +27745,7 @@
       "category": "Config",
       "summary": "The raw strings used for PublicConfig.strings. Presented in ICU format.",
       "description": "",
-      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
+      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
       "signatures": [],
       "members": [],
       "related": [

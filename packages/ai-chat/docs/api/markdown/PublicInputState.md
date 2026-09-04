@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicInputState.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicInputState.html
 
 This is the state made available by calling ChatInstance.getState. This is a public method that returns immutable values.
 
@@ -30,7 +30,7 @@ Hosts persisting this value should serialize through `editor.getJSON()`
 (canonical) rather than partial walks; the JSONContent shape is
 governed by Tiptap's stability guarantees.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicInputState.html#content)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicInputState.html#content)
 
 ### focused
 
@@ -47,7 +47,7 @@ Toggles in the same dispatch pass as the underlying focus event, so
 subscribing via BusEventType.STATE_CHANGE fires once per
 focus/blur transition.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicInputState.html#focused)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicInputState.html#focused)
 
 ### hasInFlightUploads
 
@@ -58,7 +58,7 @@ focus/blur transition.
 `true` while one or more file uploads initiated via UploadConfig.onFileUpload are still
 in progress.  The send button is disabled while this is `true`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicInputState.html#hasinflightuploads)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicInputState.html#hasinflightuploads)
 
 ### rawValue
 
@@ -68,7 +68,7 @@ in progress.  The send button is disabled while this is `true`.
 
 Raw text currently queued in the input before being sent to customSendMessage.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicInputState.html#rawvalue)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicInputState.html#rawvalue)
 
 ### structuredData
 
@@ -79,7 +79,7 @@ Raw text currently queued in the input before being sent to customSendMessage.
 A snapshot of the pending structured data currently queued in the input. This data will be merged
 into the next outgoing MessageRequest when the user sends a message via the UI.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.PublicInputState.html#structureddata)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.PublicInputState.html#structureddata)
 
 ## Related
 

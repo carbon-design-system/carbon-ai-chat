@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.AutoScrollOptions.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutoScrollOptions.html
 
 Options for controlling how the scrolling occurs.
 
@@ -20,7 +20,7 @@ interface AutoScrollOptions
 
 If appropriate, prefer animations.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.AutoScrollOptions.html#preferanimate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutoScrollOptions.html#preferanimate)
 
 ### scrollToBottom
 
@@ -29,7 +29,7 @@ If appropriate, prefer animations.
 Indicates that the container should scroll to the given "scroll bottom" value meaning the content is scrolled up
 from the bottom by that amount. A value of 0 will scroll to the very bottom.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.AutoScrollOptions.html#scrolltobottom)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutoScrollOptions.html#scrolltobottom)
 
 ### scrollToTop
 
@@ -38,4 +38,4 @@ from the bottom by that amount. A value of 0 will scroll to the very bottom.
 Indicates that the container should scroll to the given "scroll bottom" value meaning the content is scrolled down
 from the top by that amount. A value of 0 will scroll to the very top.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.AutoScrollOptions.html#scrolltotop)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.AutoScrollOptions.html#scrolltotop)

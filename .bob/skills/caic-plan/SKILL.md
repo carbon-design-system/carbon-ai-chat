@@ -16,6 +16,17 @@ Plans, epics, and issues are the same act — shaping upcoming work — at three
 | A plan whose steps others will pick up, or work that needs tracking on GitHub | The plan, then project its per-step breakdown onto an epic — see [epic-authoring.md](../caic-issue/references/epic-authoring.md). |
 | A choice a consumer can feel, not yet settled — which shape, whether to remove it at all | An ADR, alongside the plan — see [caic-adr](../caic-adr/SKILL.md). |
 
+Then settle the fork, before opening a single step file. A plan produces one of two things, and which one decides where the acceptance criteria live:
+
+| Fork          | Consumed by                          | Criteria live in                                                                | Step files    |
+| ------------- | ------------------------------------ | ------------------------------------------------------------------------------- | ------------- |
+| Plan → issues | Producing an epic and its sub-issues | The issues — see [caic-issue](../caic-issue/SKILL.md#acceptance-criteria)       | None          |
+| Plan → work   | Producing the PRs directly           | The `PLAN-{N}` step file, above its implementation steps                        | One per step  |
+
+**Never both.** Two copies of one criteria list drift, and then neither is trusted. A plan on the issues fork that also writes per-step criteria has produced a stale second copy — the issue outlives the plan, so the issue owns them.
+
+This is not the single-step carve-out under File layout. That one is about _how many_ step files a plan needs; the fork is about whether step files are the deliverable at all.
+
 A plan and an epic are not alternatives. Big work usually gets a plan file first, and the epic is a projection of the plan's step breakdown — so don't make the user choose between them.
 
 Nor is an ADR an alternative to either. It answers a different question — _why this shape_ — and it is the only one of the three that survives the work.
@@ -26,16 +37,16 @@ Nor is an ADR an alternative to either. It answers a different question — _why
 
 One requirement, restated at each scale, never re-invented:
 
-| Level | Section             | Rule                                                          |
-| ----- | ------------------- | ------------------------------------------------------------- |
-| ADR   | Decision outcome    | The why: one decision, what lost, what it costs consumers.    |
-| Plan  | Done when           | The observable outcomes. Written first; survives redesign.    |
-| Epic  | Expected outcomes   | One per plan outcome, in the same words where they still fit. |
-| Issue | Acceptance criteria | Each traces to one epic outcome and carries its proof.        |
-| PR    | Testing / Reviewing | The steps that exercise the criteria that PR closes.          |
-| Diff  | Review              | The criteria walked against the code that shipped.            |
+| Level                       | Section             | Rule                                                                                                                                     |
+| --------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| ADR                         | Decision outcome    | The why: one decision, what lost, what it costs consumers.                                                                               |
+| Plan                        | Done when           | The observable outcomes. Written first; survives redesign.                                                                               |
+| Epic                        | Expected outcomes   | One per plan outcome, in the same words where they still fit.                                                                            |
+| Issue, or Step (`PLAN-{N}`) | Acceptance criteria | Each traces to one epic outcome — or, with no epic above it, to a Done when item — and carries its proof. The fork decides which of the two holds them; never both. |
+| PR                          | Testing / Reviewing | The steps that exercise the criteria that PR closes.                                                                                     |
+| Diff                        | Review              | The criteria walked against the code that shipped.                                                                                       |
 
-Two rules make it a spine rather than six lists. **Nothing appears at a lower level without a parent above it** — a criterion with no outcome is scope nobody agreed to. **A change propagates down from where it was made** — when a decision moves the goalposts, fix Done when, then the epic, then the issues. Skip that and the artifacts describe different products.
+Two rules make it a spine rather than six lists. **Nothing appears at a lower level without a parent above it** — a criterion with no outcome is scope nobody agreed to. **A change propagates down from where it was made** — when a decision moves the goalposts, fix Done when, then the epic and its issues, or the step files, depending on the fork. Skip that and the artifacts describe different products.
 
 The ADR row is the exception to the first rule: it is the only optional level, and most plans don't have one. Where a plan does sit under an ADR, the propagation rule still applies from the top — a superseding ADR reopens the Done when list below it.
 
@@ -73,7 +84,9 @@ Planning is two activities and the files split along the same seam. Doing them a
 | Phase | You are deciding | File | Stop when |
 | ----- | ----------------- | ---- | ---------- |
 | Shaping | What the work is, and where it ends | `PLAN.md` | Every step is one PR's worth and traces to a Done when item |
-| Implementation | How one step gets built | `PLAN-{N}-*.md` | An agent loading cold can execute it without a design question |
+| Implementation | How one step gets built | `PLAN-{N}-*.md` | An agent loading cold can execute it without a design question, and can tell whether it succeeded without asking |
+
+The fork decides how far you go. On the issues fork, shaping is the whole job: you stop at the end of the first row and file, and the issues carry what the second row would have held.
 
 **Don't open a `PLAN-{N}` file while `PLAN.md` still has an open question that would move the step boundaries.** Finish shaping first. The tell is a step you can't state in one line — that is an undecided shape, not a long step.
 
@@ -84,8 +97,8 @@ Decision shaping sits above both, and is its own skill: [caic-adr](../caic-adr/S
 The overview, and the output of the shaping phase. Read once at the start of execution; referenced back to as needed.
 
 - **Context** — what problem this solves, why now, links to issues / PRs / discussions.
-- **Done when** — the observable outcomes that make this plan finished, as a `- [ ]` list. Written before the decisions, so a redesign can't quietly change what done means. An outcome is something the next thing you build with this observably does; if it reads "the file now says X", it is a step — move it to the breakdown. These become the epic's Expected outcomes verbatim.
-- **Decisions** — numbered `D1`, `D2`, … and cited by that id everywhere else, per-step files included. Terse and settled: a sentence or two, rationale only when not obvious. When a real alternative was rejected, name it and why in one clause, or the next reader re-proposes it. Ids are stable — supersede a decision with a new one rather than renumbering. A decision a **consumer can feel**, or one someone will re-propose in a year, outgrows this list: write it up as an ADR ([caic-adr](../caic-adr/SKILL.md)) and leave `D<n>` as a one-line pointer. This list is git-ignored and gets deleted; an ADR doesn't.
+- **Done when** — the observable outcomes that make this plan finished, as a `- [ ]` list. Written before the decisions, so a redesign can't quietly change what done means. An outcome is something the next thing you build with this observably does; if it reads "the file now says X", it is a step — move it to the breakdown, and see the prose carve-out under Acceptance criteria below. These become the epic's Expected outcomes, carried across per [the spine](#the-spine) rather than re-derived.
+- **Decisions** — numbered `D1`, `D2`, … and cited by that id everywhere else, per-step files included. Terse and settled: a sentence or two, rationale only when not obvious. When a real alternative was rejected, name it and why in one clause, or the next reader re-proposes it. Ids are stable — supersede a decision with a new one rather than renumbering. A decision that meets the promotion test in [caic-adr](../caic-adr/SKILL.md) outgrows this list: write the ADR and leave `D<n>` as a one-line pointer. Apply that test as written rather than from memory: it has two clauses and a set of sub-criteria, and abbreviating it is how a decision that needed a record stays a `D<n>` and gets deleted with the plan. This list is git-ignored and gets deleted; an ADR doesn't.
 - **Public API surface** — when the plan changes what a consumer can observe, lock it here: the TypeScript shape, plus the behavior the shape can't carry — preconditions, no-op and failure paths, events, timing, repeat calls, defaults, derivation, announcement, and ownership. The questions behind each are in [caic-issue](../caic-issue/SKILL.md#define-the-contract-up-front). Per-step files implement against the locked contract rather than re-deriving it. A change with no signature change still needs this section.
 - **Per-step breakdown** — a table: step → file → one-line scope, plus a status cell while the plan is in flight. The index, not the detail. One row is one PR's worth of work: if you can't state a step's scope in one line, or its Files touched sprawls, it's two steps.
 - **Cross-cutting concerns** — anything that affects multiple steps (telemetry, deprecation timeline, release notes, peer-dep constraints, migration path).
@@ -93,13 +106,16 @@ The overview, and the output of the shaping phase. Read once at the start of exe
 
 ## What goes in `PLAN-{N}-{title}.md`
 
-The execution detail for one step. Written so an agent loading cold can implement without re-deriving the design.
+The execution detail for one step, on the work fork only — a plan producing issues has none of these. Written so an agent loading cold can implement without re-deriving the design.
+
+When execution proves a criterion wrong, strike it in place and write the correction beneath it, so the original reasoning stays readable next to it. An amendment takes the same approval the plan took. A `Done when` change is shaping-level: strike it in `PLAN.md` instead, so the propagation rule can carry it down.
 
 - **Read-first / depends-on header** — pointer to `PLAN.md` plus any earlier steps that must merge first.
 - **Scope** — one paragraph: what this step does and what it explicitly does not. Resist the urge to repeat `PLAN.md` context here.
 - **Files touched** — concrete paths the executor will create / edit / delete. Vague plans produce drift; specific paths force you to verify the codebase as you draft.
+- **Acceptance criteria** — what makes this step correct, settled **before** the implementation steps below and not derived from them. Written after them, they describe whatever got built. Each is one observable outcome plus the proof it holds, in the format [caic-issue](../caic-issue/SKILL.md#acceptance-criteria) already defines — don't invent a second one. Name the case that fails today, not the properties the proof will have — and the no-op and failure paths, which are where an executor under time pressure decides alone. Name which existing tests must pass **unchanged**; that is the half authors drop, and it is what makes a weakened proof visible later. For a change whose deliverable is prose, the outcome is what a reader can do after loading the file and where the text sits — not that the file contains a string.
 - **Implementation steps** — ordered list. Each step short enough that a reasonable executor can complete it without further design questions. Cite file paths and line numbers for any claim about existing code.
-- **Validation** — how to know the step is correct: which tests to add, which existing tests must still pass, which manual checks (browser smoke, type-check, build) are required. Refer to the relevant gate in [definition-of-done.md](../../../references/definition-of-done.md).
+- **Gate** — the commands that must exit 0 for the areas this step touches, from [definition-of-done.md](../../../references/definition-of-done.md), plus any manual check (browser smoke, type-check, build). Looked up rather than authored, which is why it is its own section and not the last acceptance box — buried in a checklist it becomes the item nobody reads.
 - **Risk / open questions** — anything you're not sure about; flag uncertainty rather than burying it. A question that changes what the step builds has to close before the step is handed off. Carry forward only the ones the executor can hit and route around.
 
 ## Style
@@ -130,6 +146,8 @@ Resolve what the review surfaces and bake the resolutions into the plan files be
 - **Missing the "out of scope" section.** Without it, every reviewer comment becomes a scope expansion request.
 - **Bare numeric filenames** (`PLAN-1.md`). A number alone doesn't survive grep or a glance at the file tree. Always include the kebab-case title slug.
 - **Narrating merged work.** A status cell (`DONE`, `blocked on #N`) in the step table is how a cold resume finds its place — keep it current, and let `DONE` mean merged. If you can't confirm that from `git log`, leave the cell blank; a wrong `DONE` is worse than an empty one. Prose about _how_ a merged step went does not belong; that is what the commit and the PR are for. When the last step merges the whole plan goes, status cells included.
+- **Criteria on both sides of the fork.** A plan that files issues _and_ writes per-step criteria has two lists that will disagree. Pick the fork, and let the artifact that outlives the plan hold them.
+- **Weakening a proof instead of amending a criterion.** Once a plan is approved its criteria are frozen — correct one through the amendment route above, never by making its proof weaker. Loosening an assertion, deleting a case, skipping a case, or regenerating a snapshot to match current output all turn the light green while leaving the criterion looking untouched, which is what makes this worse than missing the target outright. Same rule [caic-issue](../caic-issue/SKILL.md) states for a filed issue's criteria; catching it in a diff is [caic-review](../caic-review/SKILL.md)'s job.
 - **Skipping the review phase.** An unreviewed plan hands its unverified assumptions straight to the executor.
 
 ## Related guidance

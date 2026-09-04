@@ -11,9 +11,9 @@ If the work is an umbrella that splits into multiple children, author it as an e
 
 An issue is a projection of a decision that has already been made. Filing one before the shape is settled produces an issue that gets rewritten twice, so for anything beyond a single obvious PR, plan first.
 
-- **If you already know of a plan for this work, use it** — the issue's Goal, acceptance criteria, and API contract come straight out of it, and an epic's children come from the plan's per-step breakdown.
+- **If you already know of a plan, ask which fork it is on** — see [caic-plan](../caic-plan/SKILL.md#pick-the-artifact-first). A plan that produces issues is consumed by filing this one: its Goal, acceptance criteria, and API contract come straight out of it, and an epic's children come from its per-step breakdown table. A plan that produces work keeps its criteria in its `PLAN-{N}` step files and is consumed by producing the PRs — don't lift them into an issue. Whichever artifact holds the criteria owns them; two copies drift.
 - **If you don't, ask.** Check `.github/plan-drafts/` for a folder covering this effort and ask the user whether a plan exists that you haven't seen — plans are git-ignored, so one may be sitting on their working copy or in a past session.
-- **If there is none and the work spans multiple PRs, draft one first** with the [caic-plan](../caic-plan/SKILL.md) skill, then come back and file.
+- **If there is none and the work spans multiple PRs, draft one first** with the [caic-plan](../caic-plan/SKILL.md) skill. Come back and file only if that plan turns out to be issue-producing; if it produces the work directly, there is nothing to file.
 
 A one-PR change with an obvious approach needs no plan. Don't manufacture one.
 
@@ -41,11 +41,13 @@ Each box is one observable outcome plus the proof it holds. Write the outcome, t
 - **One outcome per box.** If it needs an "and", split it — a half-true box can't be ticked.
 - **Observable from outside.** Say what the chat, the type surface, or the build does, not which function gets edited. "Route all three sites through the merged config" is a plan step; "a partial config still inherits the default field by field" is a criterion.
 - **No spec-dump box.** A single `Specs cover: a, b, c…` box is unfalsifiable, and in practice it restates criteria already written above it. Attach each case to the criterion it proves. The cases left over with nowhere to attach are the criteria you forgot to write — promote them.
-- **Name the proof.** A spec path, a command, or demo steps. Reuse the spec that already owns the area; for new surface, name the spec that will own it — see the package testing guides ([ai-chat](../../../packages/ai-chat/references/tests.md), [ai-chat-components](../../../packages/ai-chat-components/references/testing.md)).
+- **Name the proof.** A spec path, a command, or demo steps. Reuse the spec that already owns the area; for new surface, name the spec that will own it — see the package testing guides ([ai-chat](../../../packages/ai-chat/references/tests.md), [ai-chat-components](../../../packages/ai-chat-components/references/testing.md)). Name the case that fails today, not the properties the proof will have: "a symbol of kind `Interface` with no members and no allowlist entry fails the run" is a proof; "a guard that runs in milliseconds and catches the next one too" is a description of one, and it passes the day it is written.
 - **One box carries the gate.** The last criterion is the definition-of-done gate for every area this touches, as the commands that must exit 0. Link [definition-of-done.md](../../../references/definition-of-done.md) rather than restating it — the rows change, and its ordering rule and watcher precondition are load-bearing. Don't settle for "tests pass".
-- **Nothing new here.** Every criterion projects the Goal or an epic outcome — see [the spine](../caic-plan/SKILL.md#the-spine). A criterion with no parent is scope nobody agreed to.
+- **Nothing new here.** Every criterion projects a parent one level up — an epic outcome, a plan's Done when item, or the Goal on a standalone issue. The rule is [the spine](../caic-plan/SKILL.md#the-spine).
 
 When implementation proves a criterion wrong, say so in a **comment** on the issue — what the code does instead, and why the original was wrong. Never rewrite the criterion in the body; the original reasoning has to stay readable beside the correction. An amendment takes the same approval gate as filing.
+
+Changing a criterion and weakening its proof are different acts, and only the first has that route. Loosening an assertion, deleting a case, skipping a case, or regenerating a snapshot to match current output all turn the light green while the criterion still reads exactly as filed — which is what makes them worse than an unmet criterion, not better. None is an amendment. Catching one in a diff is [caic-review](../caic-review/SKILL.md)'s job.
 
 ## Drafting the body
 

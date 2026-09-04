@@ -47,7 +47,6 @@
  */
 
 import type MarkdownIt from 'markdown-it';
-import type StateCore from 'markdown-it/lib/rules_core/state_core.mjs';
 import type { Token } from 'markdown-it';
 
 const LEFT = '{{';
@@ -237,7 +236,7 @@ function handleEndOfBlock(tokens: Token[], inlineIndex: number): void {
  * headings, and paragraphs using `{{key=value}}` syntax.
  */
 export function markdownItAttrs(md: MarkdownIt): void {
-  function curlyAttrs(state: StateCore): void {
+  md.core.ruler.before('linkify', 'curly_attributes', (state) => {
     const tokens = state.tokens;
     for (let i = 0; i < tokens.length; i++) {
       if (tokens[i].type !== 'inline') {
@@ -248,9 +247,7 @@ export function markdownItAttrs(md: MarkdownIt): void {
       }
       handleEndOfBlock(tokens, i);
     }
-  }
-
-  md.core.ruler.before('linkify', 'curly_attributes', curlyAttrs);
+  });
 }
 
 export default markdownItAttrs;

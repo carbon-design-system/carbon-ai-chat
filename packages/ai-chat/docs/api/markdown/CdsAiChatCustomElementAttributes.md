@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Web component
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html
 
 Attributes interface for the cds-aichat-custom-element web component.
 This interface extends PublicConfig with additional component-specific props,
@@ -22,7 +22,7 @@ interface CdsAiChatCustomElementAttributes
 
 Enables Carbon AI theme styling. Defaults to true.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#aienabled)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#aienabled)
 
 ### assistantAvatarUrl
 
@@ -30,7 +30,7 @@ Enables Carbon AI theme styling. Defaults to true.
 
 Sets the URL pointing to a custom avatar for the response author. This image should be a square. If not provided, the default Watsonx icon will be used.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#assistantavatarurl)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#assistantavatarurl)
 
 ### assistantName
 
@@ -38,7 +38,7 @@ Sets the URL pointing to a custom avatar for the response author. This image sho
 
 Sets the name of the assistant. Defaults to "watsonx". Used in screen reader announcements and error messages.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#assistantname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#assistantname)
 
 ### debug
 
@@ -46,7 +46,7 @@ Sets the name of the assistant. Defaults to "watsonx". Used in screen reader ann
 
 Add a bunch of noisy console.log messages!
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#debug)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#debug)
 
 ### disableCustomElementMobileEnhancements
 
@@ -56,7 +56,7 @@ This value is only used when a custom element is being used to render the widget
 enhancements to the widget are activated on mobile devices which can interfere with a custom element. This
 value can be used to disable those enhancements while using a custom element.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#disablecustomelementmobileenhancements)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#disablecustomelementmobileenhancements)
 
 ### disclaimer
 
@@ -66,7 +66,7 @@ Disclaimer screen configuration.
 
 If `disclaimerHTML` changes after the disclaimer has been accepted, we request a user to accept again.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#disclaimer)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#disclaimer)
 
 ### header
 
@@ -74,7 +74,7 @@ If `disclaimerHTML` changes after the disclaimer has been accepted, we request a
 
 Extra config for controlling the behavior of the header.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#header)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#header)
 
 ### hideAvatar
 
@@ -82,7 +82,7 @@ Extra config for controlling the behavior of the header.
 
 Toggles the chat avatar on and off
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#hideavatar)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#hideavatar)
 
 ### history
 
@@ -90,7 +90,7 @@ Toggles the chat avatar on and off
 
 The config object for chat history.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#history)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#history)
 
 ### homescreen
 
@@ -103,7 +103,7 @@ If you change anything but `isOn` after the chat session has started, the chat w
 If you turn on the homescreen after the user has already started chatting, it will show up in the header as
 an icon, but the user won't be forced to go back to the homescreen (unlike turning on the disclaimer mid-chat).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#homescreen)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#homescreen)
 
 ### injectCarbonTheme
 
@@ -112,7 +112,7 @@ an icon, but the user won't be forced to go back to the homescreen (unlike turni
 Which Carbon theme tokens to inject. If unset (falsy), the chat inherits tokens from the host page.
 Set to a specific theme to force token injection.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#injectcarbontheme)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#injectcarbontheme)
 
 ### input
 
@@ -120,7 +120,7 @@ Set to a specific theme to force token injection.
 
 Configuration for the main input field on the chat.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#input)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#input)
 
 ### isReadonly
 
@@ -128,7 +128,7 @@ Configuration for the main input field on the chat.
 
 Sets the chat into a read only mode for displaying old conversations.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#isreadonly)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#isreadonly)
 
 ### keyboardShortcuts
 
@@ -141,7 +141,7 @@ Allows customization of keyboard shortcuts for various actions.
 
 Shortcuts are off by default. Turn one on with ChatShortcutConfig.isOn.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#keyboardshortcuts)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#keyboardshortcuts)
 
 ### launcher
 
@@ -149,7 +149,7 @@ Shortcuts are off by default. Turn one on with ChatShortcutConfig.isOn.
 
 Configuration for the launcher.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#launcher)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#launcher)
 
 ### layout
 
@@ -157,7 +157,7 @@ Configuration for the launcher.
 
 The config object for changing Carbon AI Chat's layout.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#layout)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#layout)
 
 ### locale
 
@@ -169,18 +169,16 @@ and which plural rules apply to translated text. Example values include: 'en', '
 This does not translate the interface. To render the chat in another language, supply the translated text
 through PublicConfig.strings.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#locale)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#locale)
 
 ### markdown
 
 `markdown?: WCMarkdown`
 
-**Experimental.**
-
 Markdown rendering customization. Extends the framework-neutral
 `PublicConfig.markdown` with web-component `customRenderers`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#markdown)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#markdown)
 
 ### messaging
 
@@ -188,7 +186,7 @@ Markdown rendering customization. Extends the framework-neutral
 
 Config options for controlling messaging.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#messaging)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#messaging)
 
 ### namespace
 
@@ -202,7 +200,7 @@ multiple Carbon AI Chats on the same page.
 Note: this value is used in the aria region label for the Carbon AI Chat. This means this value will be read out loud
 by users using a screen reader.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#namespace)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#namespace)
 
 ### onAfterRender
 
@@ -210,7 +208,7 @@ by users using a screen reader.
 
 This function is called after the render function of Carbon AI Chat is called.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onafterrender)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onafterrender)
 
 ### onBeforeRender
 
@@ -219,7 +217,7 @@ This function is called after the render function of Carbon AI Chat is called.
 This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
 which will cause Carbon AI Chat to wait for it before rendering.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onbeforerender)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onbeforerender)
 
 ### onError
 
@@ -228,7 +226,7 @@ which will cause Carbon AI Chat to wait for it before rendering.
 This is a one-off listener for catastrophic errors. This is used instead of a normal event bus handler because this function can be
 defined and called before the event bus has been created.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onerror)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onerror)
 
 ### onViewChange
 
@@ -245,7 +243,7 @@ is opened or closed.
 Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the event
 handler will not be updated.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onviewchange)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onviewchange)
 
 ### onViewPreChange
 
@@ -258,7 +256,7 @@ hidden. A common pattern is to use this when the chat is closing and `onViewChan
 Note that this function can only be provided before Carbon AI Chat is loaded. After Carbon AI Chat is loaded, the
 callback will not be updated.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onviewprechange)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#onviewprechange)
 
 ### openChatByDefault
 
@@ -266,7 +264,7 @@ callback will not be updated.
 
 By default, the chat window will be rendered in a "closed" state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#openchatbydefault)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#openchatbydefault)
 
 ### persistFeedback
 
@@ -274,7 +272,7 @@ By default, the chat window will be rendered in a "closed" state.
 
 Allows for feedback to persist in all messages, not just the latest message.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#persistfeedback)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#persistfeedback)
 
 ### persistedState
 
@@ -285,7 +283,7 @@ the browser's `sessionStorage`; set this to boot from your own
 PersistedStateConfig.initialState and receive changes via
 PersistedStateConfig.onStateChange instead. See PersistedStateConfig.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#persistedstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#persistedstate)
 
 ### renderCustomMessageFooter
 
@@ -294,7 +292,7 @@ PersistedStateConfig.onStateChange instead. See PersistedStateConfig.
 Optional callback to render custom message footers. When provided, the inner cds-aichat-container
 manages all event listening, slot tracking, and element lifecycle.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#rendercustommessagefooter)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#rendercustommessagefooter)
 
 ### renderUserDefinedInputNode
 
@@ -305,7 +303,7 @@ manages all event listening, slot tracking, and element lifecycle.
 Renderer for custom TipTap node types inside sent user message bubbles
 (rich user message content). Forwarded to the inner cds-aichat-container.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#renderuserdefinedinputnode)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#renderuserdefinedinputnode)
 
 ### renderUserDefinedResponse
 
@@ -314,7 +312,7 @@ Renderer for custom TipTap node types inside sent user message bubbles
 Optional callback to render user defined responses. When provided, the inner cds-aichat-container
 manages all event listening, slot tracking, streaming state, and element lifecycle.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#renderuserdefinedresponse)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#renderuserdefinedresponse)
 
 ### serviceDesk
 
@@ -322,7 +320,7 @@ manages all event listening, slot tracking, streaming state, and element lifecyc
 
 Any public config to apply to service desks.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#servicedesk)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#servicedesk)
 
 ### serviceDeskFactory
 
@@ -339,7 +337,7 @@ a module-level function or a memoized `useCallback`); a new function identity
 on every render is treated as a change and, while an agent chat is active, tears
 down and rebuilds the service desk connection.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#servicedeskfactory)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#servicedeskfactory)
 
 ### shouldSanitizeHTML
 
@@ -347,7 +345,7 @@ down and rebuilds the service desk connection.
 
 Indicates if Carbon AI Chat should sanitize HTML from the assistant.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#shouldsanitizehtml)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#shouldsanitizehtml)
 
 ### shouldTakeFocusIfOpensAutomatically
 
@@ -355,7 +353,7 @@ Indicates if Carbon AI Chat should sanitize HTML from the assistant.
 
 If the Carbon AI Chat should grab focus if the chat is open on page load.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#shouldtakefocusifopensautomatically)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#shouldtakefocusifopensautomatically)
 
 ### strings
 
@@ -363,7 +361,7 @@ If the Carbon AI Chat should grab focus if the chat is open on page load.
 
 Optional partial language pack overrides. Values merge with defaults.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#strings)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#strings)
 
 ### upload
 
@@ -374,7 +372,7 @@ Optional partial language pack overrides. Values merge with defaults.
 Configuration for file upload behavior in the chat input.
 When `isOn` is `true`, the chat renders a file attachment button in the input area.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0-rc.2/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#upload)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.CdsAiChatCustomElementAttributes.html#upload)
 
 ## Related
 

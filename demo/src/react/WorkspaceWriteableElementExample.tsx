@@ -163,6 +163,7 @@ function WorkspaceWriteableElementExample({
         title="Notification Title"
         subtitle="Notification Subtitle"
         kind="warning"
+        lowContrast
         hideCloseButton
       />
       <WorkspaceShellHeader

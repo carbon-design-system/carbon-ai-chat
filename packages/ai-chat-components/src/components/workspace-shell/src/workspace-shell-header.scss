@@ -10,20 +10,24 @@
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/type';
+@use '@carbon/styles/scss/spacing';
 @use '../../../globals/scss/vars' as *;
 @use '@carbon/styles/scss/utilities/convert' as *;
 @use '@carbon/styles/scss/breakpoint' as *;
 
 :host(#{$prefix}-workspace-shell-header) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   padding: rem(24px) rem(32px);
   border-block-end: solid rem(1px) theme.$chat-bubble-border;
   color: theme.$text-secondary;
+  gap: spacing.$spacing-05;
 
   @include type.type-style('body-01');
 
-  @include breakpoint-down('md') {
-    gap: 16px;
-    grid-auto-flow: row;
+  @include breakpoint-up('md') {
+    flex-direction: row;
   }
 
   ::marker {
@@ -53,7 +57,9 @@
     &-content {
       display: flex;
       flex-direction: column;
+      align-items: start;
       gap: rem(16px);
+      inline-size: 100%;
     }
 
     &-title {
@@ -71,6 +77,7 @@
       display: flex;
       align-items: baseline;
       justify-content: space-between;
+      inline-size: 100%;
     }
   }
 }
