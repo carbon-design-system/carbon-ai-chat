@@ -9,13 +9,13 @@
 
 /**
  * `carbonAutocomplete` factory. Wraps `@tiptap/suggestion` directly (no
- * Mention node) — the `command` callback inserts plain text rather than a
- * schema node. Activates whenever the input has any non-empty text (the
+ * Mention node). Activates whenever the input has any non-empty text (the
  * legacy autocomplete contract).
  *
  * Dispatches `cds-aichat-trigger-change` with `type: "autocomplete"` from
  * the suggestion-render lifecycle via the shared `dispatchTriggerChange`
- * helper.
+ * helper. Selection is routed through `AutocompleteController.select()` —
+ * the `@tiptap/suggestion` `command` hook is intentionally unused.
  */
 
 import { Extension } from '@tiptap/core';
@@ -42,8 +42,11 @@ export interface ExcludedTrigger {
   position: 'anywhere' | 'start';
 }
 
+// `_config` is unused: AutocompleteController owns item resolution and
+// insertion. Kept so the exported signature holds for callers already
+// passing a config.
 export function carbonAutocomplete(
-  config: AutocompleteConfig,
+  _config: AutocompleteConfig,
   excludeTriggers: ExcludedTrigger[] = []
 ): Extension {
   const pluginKey = new PluginKey('carbonAutocompleteSuggestion');
@@ -102,16 +105,6 @@ export function carbonAutocomplete(
               text: query,
             };
           },
-          items: ({ query }) => resolveItems(config, query),
-          command: ({ editor: ed, range, props }) => {
-            const item = props as SuggestionItem;
-            const insertText = item.value ?? item.label;
-            ed.chain()
-              .focus()
-              .insertContentAt(range, [{ type: 'text', text: insertText }])
-              .run();
-            config.onSelect?.(item);
-          },
           render: () => ({
             onStart: (props) => {
               lastQuery = props.query;
@@ -142,24 +135,4 @@ export function carbonAutocomplete(
       ];
     },
   });
-}
-
-async function resolveItems(
-  config: AutocompleteConfig,
-  query: string
-): Promise<SuggestionItem[]> {
-  const minQueryLength = config.minQueryLength ?? 0;
-  if (query.length < minQueryLength) {
-    return [];
-  }
-  if (typeof config.items === 'function') {
-    return Promise.resolve(config.items(query));
-  }
-  if (!query) {
-    return config.items;
-  }
-  const lower = query.toLowerCase();
-  return config.items.filter((item) =>
-    item.label.toLowerCase().includes(lower)
-  );
 }
