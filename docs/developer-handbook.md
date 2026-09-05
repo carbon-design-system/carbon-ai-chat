@@ -70,6 +70,11 @@ Here are some of the top-level tasks in the root of the project that you might w
 | `npm run reading-level -- <file.md>` | Flesch-Kincaid grade for Markdown prose; `--max <n>` exits 1 above a grade |
 | `npm run complexity` | Cyclomatic and cognitive score per function, with a render-branch count and a per-file footer |
 | `npm run coupling` | Fan-in, fan-out, instability, and the type-only import count per file |
+| `npm run smells` | Seventeen code-smell rules, plus code copied from another file when run on a diff |
+| `npm run measure -- --changed <base>` | Runs those three over a diff, then adds what only a diff shows: each new file's size beside its neighbours, and what the added lines contain |
+| `npm run measure -- --changed <base> --source head` | Same, against the last commit instead of the working tree (`--source` also takes `index`) |
+
+The measurement commands above are opt-in. No CI job runs them. A score is not a finding. It picks what to read. See [measuring.md](../references/measuring.md) for the bands and the blind spots.
 
 ## Development workflow
 

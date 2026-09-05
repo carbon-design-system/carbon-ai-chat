@@ -49,6 +49,8 @@
     "reading-level": "node scripts/reading-level.mjs",
     "complexity": "node scripts/complexity.mjs",
     "coupling": "node scripts/coupling.mjs",
+    "smells": "node scripts/smells.mjs",
+    "measure": "node scripts/measure.mjs",
     "postinstall": "husky"
   },
   "devDependencies": {
