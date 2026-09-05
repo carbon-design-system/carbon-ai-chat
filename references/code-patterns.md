@@ -1,6 +1,6 @@
 # code-patterns.md — code-level patterns
 
-Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments), and the complexity and coupling measurements that put a number on "simpler". Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
+Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments), and the complexity, coupling, and smells measurements that put a number on "simpler". Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
 
 ## Writing the least code (laziness ladder)
 
@@ -150,6 +150,29 @@ Severity bands (applied to the after score):
 **Entry points and barrels.** An entry point (`aiChatEntry.tsx`) imports everything, so its fan-out is high. A re-export `index.ts` is imported by many, so its fan-in is high. Both are structural. The script prints the note `(entry/barrel — structural, not judged)` in place of a label.
 
 **Blind spot.** A path outside the cruised roots is an error, not a clean score. The script prints `not in the cruised tree` and exits 1 rather than reporting nothing.
+
+## Measuring code smells
+
+`npm run smells` runs five rules for what a function score cannot see:
+
+| Rule                     | Fires on                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| `max-lines-per-function` | a function over 80 non-blank lines (ESLint's core rule, so React components count) |
+| `no-nested-functions`    | a callback nested three or more functions deep                                      |
+| `no-identical-functions` | identical function bodies in one file                                               |
+| `no-duplicated-branches` | identical `if`/`else` branches                                                      |
+| `no-dead-store`          | a local assigned and never read                                                     |
+
+How to run:
+
+- `npm run smells -- <file>` — list every finding in a file.
+- `npm run smells -- --changed <base>` — scope to the diff.
+- `--report <n>` — print files with at least `n` findings (default 1).
+- `--max <n>` — exit 1 when a file has more than `n` findings.
+
+Rows carry no severity: a row is a place to read, not a finding. A finding is present or absent, not scored.
+
+**Blind spot.** Nothing here sees duplication across files. `no-identical-functions` compares bodies within one file only.
 
 ## Related guidance
 
