@@ -67,6 +67,8 @@ Here are some of the top-level tasks in the root of the project that you might w
 | `npm run lint` | Run eslint on files in the project |
 | `npm run lint:license`, `npm run lint:license:staged` | Run a license script on files across the project to ensure all files have the license at the top of the file |
 | `npm run lint:styles` | Run stylelint on the scss files in the project |
+| `npm run reading-level -- <file.md>` | Flesch-Kincaid grade for Markdown prose; `--max <n>` exits 1 above a grade |
+| `npm run complexity` | Cyclomatic and cognitive score per function, with a render-branch count and a per-file footer |
 
 ## Development workflow
 
