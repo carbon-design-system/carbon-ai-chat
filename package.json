@@ -48,6 +48,7 @@
     "repair:example-readmes": "node scripts/repair-example-readmes.mjs",
     "reading-level": "node scripts/reading-level.mjs",
     "complexity": "node scripts/complexity.mjs",
+    "coupling": "node scripts/coupling.mjs",
     "postinstall": "husky"
   },
   "devDependencies": {
@@ -67,6 +68,7 @@
     "commander": "^15.0.0",
     "concurrently": "^10.0.0",
     "cross-env": "^10.0.0",
+    "dependency-cruiser": "^18.2.0",
     "eslint": "^8.53.0",
     "eslint-config-carbon": "3.10.0",
     "eslint-plugin-sonarjs": "^4.0.0",

@@ -1,6 +1,6 @@
 # code-patterns.md — code-level patterns
 
-Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments), and the complexity measurement that puts a number on "simpler". Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
+Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments), and the complexity and coupling measurements that put a number on "simpler". Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
 
 ## Writing the least code (laziness ladder)
 
@@ -125,6 +125,31 @@ Severity bands (applied to the after score):
 - All other paths (scripts, unlisted packages): no label; scores still appear.
 
 **Render-code blind spot.** `cond && <Panel />` adds a branch on both metrics but is not hard to read. A high score in a render function means read it, not file a finding.
+
+## Measuring coupling
+
+Two metrics, one score. **Ca** (fan-in) counts how many repo modules import a file. **Ce** (fan-out) counts how many repo modules a file imports; npm packages are not counted. **Instability** = Ce / (Ca + Ce): 0 is a stable hub everything depends on, 1 is a leaf that depends on everything. Watch a hub — low instability, high fan-in — whose fan-out grows. Each new import drags every dependent along with it.
+
+This is the dimension that function-level complexity cannot see. A file can have simple functions and still be a structural bottleneck.
+
+The population is `packages/`, `demo/`, `examples/`, and `scripts/`, with tests, stories, and SCSS excluded. Every run cruises the whole tree. Fan-in is a property of the graph, not of one file.
+
+How to run:
+
+- `npm run coupling -- <file>` — score a file.
+- `npm run coupling -- --changed <base>` — score only the diff. Each row shows before→after (`fanin:12→13  fanout:20→22`), or `new`. Severity attaches only when fan-in or fan-out rose, or the file is new.
+- `--report <n>` — the print floor: files at or above `n` on either metric appear (default 15).
+- `--max-fanout <n>` / `--max-fanin <n>` — exit 1 when a file's Ce or Ca exceeds `n`.
+
+Severity bands (applied to the after score):
+
+- `packages/ai-chat`, `packages/ai-chat-components`, `packages/typedoc-theme`, `examples/**`: fan-out >15 Important, >30 Blocker; fan-in >20 Important, >40 Blocker.
+- `demo/**`: one notch down — fan-out >15 Nit, >30 Important; fan-in >20 Nit, >40 Important.
+- All other paths: no label; scores still appear.
+
+**Entry points and barrels.** An entry point (`aiChatEntry.tsx`) imports everything, so its fan-out is high. A re-export `index.ts` is imported by many, so its fan-in is high. Both are structural. The script prints the note `(entry/barrel — structural, not judged)` in place of a label.
+
+**Blind spot.** A path outside the cruised roots is an error, not a clean score. The script prints `not in the cruised tree` and exits 1 rather than reporting nothing.
 
 ## Related guidance
 
