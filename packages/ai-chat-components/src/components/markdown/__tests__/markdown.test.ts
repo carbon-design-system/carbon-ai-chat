@@ -2567,3 +2567,123 @@ describe('renderTokenTree — softbreak with breaks: false', () => {
     ).to.include('\n');
   });
 });
+
+describe('cds-aichat-markdown line breaks inside merged inline-HTML runs', () => {
+  // `combineConsecutiveHtmlInline` collapses consecutive html_inline / text /
+  // break tokens into one `html_container` node serialized by
+  // `serializeInlineToken`. Before the fix, both softbreak and hardbreak
+  // returned token.content (the empty string) and the break was deleted.
+
+  async function renderMarkdown(
+    markdown: string,
+    opts: { sanitize?: boolean; removeHtml?: boolean } = {}
+  ) {
+    if (opts.removeHtml) {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          remove-html
+          .markdown=${markdown}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      return el;
+    }
+    if (opts.sanitize === false) {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown .markdown=${markdown}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      return el;
+    }
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        sanitize-html
+        .markdown=${markdown}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    return el;
+  }
+
+  it('renders a soft break inside a merged inline-HTML run as one <br> (sanitize-html)', async () => {
+    // <span>one\ntwo</span> — the newline becomes a softbreak token that
+    // combineConsecutiveHtmlInline merges into the span's html_container.
+    const el = await renderMarkdown('<span>one\ntwo</span>', {
+      sanitize: true,
+    });
+    const span = el.shadowRoot?.querySelector('span');
+    expect(span, '<span> should be in the shadow root').to.not.equal(null);
+    const br = span?.querySelector('br');
+    expect(br, 'soft break inside span should produce a <br>').to.not.equal(
+      null
+    );
+    // Text content must be "onetwo" — no stray whitespace node.
+    expect(span?.textContent, 'text content should be "onetwo"').to.equal(
+      'onetwo'
+    );
+  });
+
+  it('renders a hard break inside a merged inline-HTML run as one <br> (sanitize-html)', async () => {
+    // Two trailing spaces + newline produce a hardbreak token.
+    const el = await renderMarkdown('<span>one  \ntwo</span>', {
+      sanitize: true,
+    });
+    const span = el.shadowRoot?.querySelector('span');
+    expect(span, '<span> should be in the shadow root').to.not.equal(null);
+    const br = span?.querySelector('br');
+    expect(br, 'hard break inside span should produce a <br>').to.not.equal(
+      null
+    );
+    expect(span?.textContent, 'text content should be "onetwo"').to.equal(
+      'onetwo'
+    );
+  });
+
+  it('renders a soft break inside a merged inline-HTML run with remove-html set', async () => {
+    // With remove-html the span tag is stripped; the text content and break
+    // still need to survive.
+    const el = await renderMarkdown('<span>one\ntwo</span>', {
+      removeHtml: true,
+    });
+    const br = el.shadowRoot?.querySelector('br');
+    expect(
+      br,
+      'soft break should produce a <br> even when the wrapping tag is removed'
+    ).to.not.equal(null);
+  });
+
+  it('the <br> node has no adjacent stray whitespace text node', async () => {
+    const el = await renderMarkdown('<span>one\ntwo</span>', {
+      sanitize: true,
+    });
+    const span = el.shadowRoot?.querySelector('span');
+    expect(span).to.not.equal(null);
+    if (!span) {
+      return;
+    }
+    const childNodes = Array.from(span.childNodes);
+    // Expected: text("one"), <br>, text("two") — exactly three nodes.
+    expect(
+      childNodes.length,
+      `span should have exactly 3 child nodes, got: ${childNodes.map((n) => (n.nodeType === 3 ? JSON.stringify(n.textContent) : n.nodeName)).join(', ')}`
+    ).to.equal(3);
+    expect(childNodes[0].nodeType, 'first node should be a text node').to.equal(
+      Node.TEXT_NODE
+    );
+    expect(
+      childNodes[1].nodeName.toLowerCase(),
+      'second node should be <br>'
+    ).to.equal('br');
+    expect(childNodes[2].nodeType, 'third node should be a text node').to.equal(
+      Node.TEXT_NODE
+    );
+  });
+
+  it('inline HTML with no line break serializes exactly as before (no-op)', async () => {
+    const el = await renderMarkdown('<span>hello world</span>', {
+      sanitize: true,
+    });
+    const span = el.shadowRoot?.querySelector('span');
+    expect(span).to.not.equal(null);
+    expect(span?.textContent).to.equal('hello world');
+    expect(span?.querySelector('br')).to.equal(null);
+  });
+});

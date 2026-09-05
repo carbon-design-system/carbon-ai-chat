@@ -68,6 +68,22 @@ function messageWith(content: JSONContent): MessageRequest {
   } as unknown as MessageRequest;
 }
 
+/** Count <br> elements inside every <p> in the rendered bubble. */
+function brCount(content: JSONContent): number {
+  const { container } = render(
+    <StoreProvider store={makeStore()}>
+      <MessageRichUserContent
+        content={content}
+        message={messageWith(content)}
+      />
+    </StoreProvider>
+  );
+  return Array.from(container.querySelectorAll('p')).reduce(
+    (n, p) => n + p.querySelectorAll('br').length,
+    0
+  );
+}
+
 /** Return the text content of every <p> in the rendered bubble, joined. */
 function renderedText(content: JSONContent): string {
   const { container } = render(
@@ -222,5 +238,34 @@ describe('MessageRichUserContent chip spacing (issue #2155)', () => {
       ],
     };
     expect(renderedText(content)).toBe('run deploy now');
+  });
+
+  it('a Shift+Enter in a chip paragraph renders a <br>, same as in a plain paragraph (issue #2272)', () => {
+    // A `hardBreak` TipTap node encodes Shift+Enter. The chip-bearing path
+    // routes through renderInlineMarkdown (inline walker); the all-textual path
+    // goes through MarkdownWithDefaults (mocked here as a passthrough).
+    // Both should produce a <br> so the same message renders identically
+    // regardless of whether it contains a chip.
+
+    // Chip path: text → hardBreak → text, with a chip before the text.
+    const withChip: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: ' line one' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'line two' },
+          ],
+        },
+      ],
+    };
+
+    // No-chip path (all-textual): same text content, no chip.
+    // MarkdownWithDefaults is mocked to a passthrough, so we check br count
+    // on the chip path only — that is the path this fix touches.
+    expect(brCount(withChip)).toBe(1);
   });
 });

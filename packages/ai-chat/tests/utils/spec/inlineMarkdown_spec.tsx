@@ -61,6 +61,21 @@ describe('renderInlineMarkdown', () => {
     expect(a?.textContent).toBe('docs');
   });
 
+  it('renders a soft break (single newline) as <br>', () => {
+    const { container } = renderInline('one\ntwo');
+    const root = container.querySelector('[data-testid=root]');
+    expect(root?.querySelector('br')).not.toBeNull();
+    // textContent collapses inline; just verify both words survive.
+    expect(root?.textContent).toContain('one');
+    expect(root?.textContent).toContain('two');
+  });
+
+  it('renders a hard break (two trailing spaces + newline) as <br>', () => {
+    const { container } = renderInline('one  \ntwo');
+    const root = container.querySelector('[data-testid=root]');
+    expect(root?.querySelector('br')).not.toBeNull();
+  });
+
   it('strips raw HTML (removeHTML=true at tokenize time)', () => {
     // Malicious-ish input: an inline <img> tag with onerror. With HTML disabled
     // in the tokenizer, the parser keeps the raw `<` text but does not produce
