@@ -28,6 +28,11 @@ There is no per-file variant. `format:write` is `--cache`d, so re-running it acr
 
 Which gate to run before shipping a change → [definition-of-done.md](definition-of-done.md).
 
+## scripts/ vs tools/
+
+- **`tools/`** — enforcement. It runs on every commit. A gate calls it: `ci-check`, `lint-staged`, or CI. The license check lives here.
+- **`scripts/`** — opt-in. A developer runs it on purpose. So does a release workflow. The measurement tools live here, and so do the release steps. One exception: `ci-check` and the pre-commit hook run [`scripts/verify-example-readmes.mjs`](../scripts/verify-example-readmes.mjs).
+
 ## Running a single example or test
 
 Each lives with the thing it tests — no recipes are restated here:

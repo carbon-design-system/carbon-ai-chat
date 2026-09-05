@@ -1,6 +1,6 @@
 # code-patterns.md — code-level patterns
 
-Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments). Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
+Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments), and the complexity measurement that puts a number on "simpler". Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
 
 ## Writing the least code (laziness ladder)
 
@@ -93,6 +93,38 @@ Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden co
 ## Accessibility code patterns
 
 The shared RTL / logical-property rule is canonicalized above. For everything else accessibility — the centralized announcer utilities, live-region politeness levels, ARIA pitfalls — see [accessibility.md](accessibility.md). Don't restate those patterns here.
+
+## Measuring complexity
+
+Two metrics, two jobs. **Cyclomatic** counts branches (`if`, `||`, loops, `case`). **Cognitive** counts how hard the flow is to read. Nesting and chained conditions cost extra. A wide render function can score low on one and high on the other. Both matter.
+
+Current percentiles for this repo. The population is every function in `packages/*/src` and `demo/src`, tests and stories excluded (5,183 functions; 75 above cognitive 10, 33 above 15):
+
+| Metric     | p50 | p90 | p95 | p99 | max |
+| ---------- | --- | --- | --- | --- | --- |
+| Cyclomatic | 1   | 4   | 7   | 13  | 76  |
+| Cognitive  | 0   | 3   | 5   | 12  | 65  |
+
+To regenerate the table, take percentiles over the cyc/cog columns of:
+
+```sh
+find packages/*/src demo/src -name '*.ts' -o -name '*.tsx' | grep -vE '__tests__|\.test\.|\.spec\.|\.stories\.|storybook' | xargs -n 300 npm run complexity -- --report 0
+```
+
+How to run:
+
+- `npm run complexity -- <file>` — score a file.
+- `npm run complexity -- --changed <base>` — score only the diff. Each row shows base→after (`cyc:54→55  cog:45→46`), or `new` when the function has no counterpart at `<base>`. Severity attaches only to functions that are new or scored worse.
+- `--report <n>` — the print floor: functions at or above `n` on either metric appear (default 10).
+- `--max <n>` — exit 1 when a function's cognitive score exceeds `n`.
+
+Severity bands (applied to the after score):
+
+- `packages/ai-chat`, `packages/ai-chat-components`, `packages/typedoc-theme`, `examples/**`: >15 Important, >25 Blocker.
+- `demo/**`: >15 Nit, >25 Important.
+- All other paths (scripts, unlisted packages): no label; scores still appear.
+
+**Render-code blind spot.** `cond && <Panel />` adds a branch on both metrics but is not hard to read. A high score in a render function means read it, not file a finding.
 
 ## Related guidance
 

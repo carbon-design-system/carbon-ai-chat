@@ -109,7 +109,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 ### If the diff contains code changes
 
-- **Favor simplicity** — hold the diff to the least-code discipline in [code-patterns.md](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder). Flag over-built code, large multi-job functions, hidden side effects, deep nesting, shared mutable state, single-caller abstractions (YAGNI), cleverness over a plain version, dead code or unused flexibility, logic expressible in fewer lines, and JS re-creating what CSS or a native element or browser API already does. This check is removable complexity only — correctness and security are the bullets below.
+- **Favor simplicity** — run `npm run complexity -- <changed-files>` (or `--changed <base>`) before reading. A bare score is not a finding — the score selects which function to read. The finding is the removable complexity inside it — the bands and the render-code caveat are in [measuring complexity](../../../references/code-patterns.md#measuring-complexity), the rungs in the [laziness ladder](../../../references/code-patterns.md#writing-the-least-code-laziness-ladder). Flag over-built code, large multi-job functions, hidden side effects, deep nesting, shared mutable state, single-caller abstractions (YAGNI), cleverness over a plain version, dead code or unused flexibility, logic expressible in fewer lines, and JS re-creating what CSS or a native element or browser API already does. This check is removable complexity only — correctness and security are the bullets below.
 - Analyze logic for bugs, inefficiencies, and security risks (OWASP-style: injection, XSS, unsafe deserialization, secrets in code).
 - Check variable names, function structure, and error handling for clarity and correctness.
 - Confirm edge-case handling — empty/null inputs, error paths, concurrency, cancellation, large inputs.
@@ -153,7 +153,7 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 For context on conventions being enforced:
 
 - **Voice and tone**: [tone.md](../../../references/tone.md) — what to hold documentation and developer-facing copy to, and the comments you write about it
-- **Code-level patterns**: [code-patterns.md](../../../references/code-patterns.md) — the laziness ladder & simplicity principles, prefix discipline, SCSS, RTL, framework-agnostic logic, component placement, comments
+- **Code-level patterns**: [code-patterns.md](../../../references/code-patterns.md) — the laziness ladder & simplicity principles, prefix discipline, SCSS, RTL, framework-agnostic logic, component placement, comments, and the complexity measurement
 - **Process conventions**: [conventions.md](../../../references/conventions.md) — commits, branches, license headers, hooks
 - **General overview**: [AGENTS.md](../../../AGENTS.md) — monorepo pointer index
 - **Package-specific rules**: see `AGENTS.md` in each package directory

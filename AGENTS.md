@@ -47,6 +47,7 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | Understanding why a public-API decision went the way it did | [docs/adr/README.md](docs/adr/README.md) |
 | Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
 | Building, testing, linting, using prettier, or running a single example/test | [commands.md](references/commands.md) |
+| Adding a root-level Node script (`scripts/` vs `tools/`) | [commands.md](references/commands.md#scripts-vs-tools) |
 | Knowing which gate to run before shipping, and how to report that you ran it | [definition-of-done.md](references/definition-of-done.md) |
 | Writing developer-facing copy (README/JSDoc/MDX) | [tone.md](references/tone.md) |
 | Editing an `AGENTS.md`, `references/`, or skill file | [authoring-agents-md.md](references/authoring-agents-md.md) |
