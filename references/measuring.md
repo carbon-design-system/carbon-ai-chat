@@ -59,6 +59,32 @@ The initializer is judged by its outermost node, so `const x = [f()]` reads as i
 
 **Blind spot.** The render count comes from a second parse, joined to the score rows by position. When that parse fails the file prints `render 0` on every row and `top-level 0` — low, never wrong.
 
+## Measuring coupling
+
+Two metrics, one score, both counting **runtime** imports. **Ca** (fan-in) counts how many repo modules import a file at runtime. **Ce** (fan-out) counts how many repo modules a file imports at runtime; npm packages are not counted. **Instability** = Ce / (Ca + Ce): 0 is a stable hub everything depends on, 1 is a leaf that depends on everything. Watch a hub — low instability, high fan-in — whose fan-out grows. Each new import drags every dependent along with it.
+
+This is the dimension that function-level complexity cannot see. A file can have simple functions and still be a structural bottleneck.
+
+The population is `packages/`, `demo/`, `examples/`, `scripts/`, and `tools/`, with tests, stories, and SCSS excluded. Every run cruises the whole tree. Fan-in is a property of the graph, not of one file.
+
+How to run:
+
+- `npm run coupling -- <file>` — score a file.
+- `npm run coupling -- --changed <base>` — score only the diff, as `fanin:12→13  fanout:20→22`.
+- `--report <n>` — the print floor: files at or above `n` on either metric appear (default 15).
+- `--max-fanout <n>` / `--max-fanin <n>` — exit 1 when a file's Ce or Ca exceeds `n`.
+- `--source <s>` — see [Which "after"](#which-after).
+
+Severity bands, on the after score: in a primary area, fan-out above 15 is Important and above 30 a Blocker; fan-in above 20 and above 40.
+
+**Entry points and barrels.** An entry point (`aiChatEntry.tsx`) imports everything, so its fan-out is high. A re-export `index.ts` is imported by many, so its fan-in is high. Both are structural. The script prints the note `(entry/barrel — structural, not judged)` in place of a label.
+
+**Type edges.** Each cell carries `(type N)`: the imports `tsc` erases, taken as the difference between a pre-compilation cruise and the runtime one. `import type { X }` and a plain import of a type both count, because what matters is what compiles away, not how it was written. The two numbers answer different questions: `packages/ai-chat/src/types/state/AppState.ts` reads `fanin:11 (type 61)`, so 61 files depend on its shape and 11 on its code — a hub for readers, not for the bundle. Bands and `--max-*` use the runtime numbers alone. 162 modules here have a type edge.
+
+**Joined a cycle.** `--changed <base>` adds `joined a cycle with <file>` to a changed file that is in a runtime cycle at HEAD and was not at `<base>`. It is a delta, not a census: a file already in a cycle prints nothing, and a cycle closed by a type import prints nothing, because it does not exist at runtime. File mode prints none of this. The existing tail is 7 modules, all of `demo/src/customSendMessage`. Counting type edges too would make it 162, which is why the row is scoped to runtime.
+
+**Blind spot.** A path outside the cruised roots is an error, not a clean score. The script prints `not in the cruised tree` and exits 1 rather than reporting nothing. Nothing here reports the tree's existing cycles; only a diff that adds one.
+
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index

@@ -48,6 +48,7 @@
     "repair:example-readmes": "node scripts/repair-example-readmes.mjs",
     "reading-level": "node scripts/reading-level.mjs",
     "complexity": "node scripts/complexity.mjs",
+    "coupling": "node scripts/coupling.mjs",
     "postinstall": "husky"
   },
   "devDependencies": {
