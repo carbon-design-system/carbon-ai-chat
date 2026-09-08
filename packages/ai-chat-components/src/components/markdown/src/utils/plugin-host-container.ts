@@ -25,8 +25,6 @@
 
 /**
  * Mount detail for plugin output the element hands over as an HTML string.
- *
- * @category Messaging
  */
 export interface MarkdownPluginFallbackMountDetail {
   /** Marks the payload as an HTML string rather than a live element. */
@@ -65,8 +63,6 @@ export interface MarkdownPluginFallbackMountDetail {
  * synchronously, and nothing else: never rewrite its content, never style it,
  * never remove it. The markdown element renders the `<slot>` hop that projects
  * it back.
- *
- * @category Messaging
  */
 export interface MarkdownCustomRendererMountDetail {
   /** Marks the payload as a live element rather than an HTML string. */
@@ -100,8 +96,6 @@ export interface MarkdownCustomRendererMountDetail {
  * Narrow on `kind`, never on which of `html` / `element` is present — the two
  * members deliberately declare only their own fields, so reading the wrong one
  * is a compile error rather than a silent `undefined`.
- *
- * @category Messaging
  */
 export type MarkdownPluginHostMountDetail =
   MarkdownPluginFallbackMountDetail | MarkdownCustomRendererMountDetail;
@@ -115,8 +109,6 @@ export type MarkdownPluginHostMountDetail =
  * `resolveMarkdownPluginHostMountDetail`, exported from
  * `@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js`,
  * and narrow on the result.
- *
- * @category Messaging
  */
 export type MarkdownPluginHostMountDetailInput =
   | MarkdownPluginHostMountDetail
