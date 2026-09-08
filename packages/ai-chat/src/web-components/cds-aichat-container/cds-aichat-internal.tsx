@@ -18,7 +18,7 @@ import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import isEqual from 'lodash-es/isEqual.js';
 
-import ChatAppEntry from '../../chat/ChatAppEntry';
+import { ChatAppEntry } from '../../chat/ChatAppEntry';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ChatInstance } from '../../types/instance/ChatInstance';
@@ -156,5 +156,3 @@ declare global {
     'cds-aichat-internal': ChatContainerInternal;
   }
 }
-
-export default ChatContainerInternal;

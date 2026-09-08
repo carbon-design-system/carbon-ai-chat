@@ -150,4 +150,3 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
 const MarkdownWithDefaultsExport = React.memo(MarkdownWithDefaults);
 
 export { MarkdownWithDefaultsExport as MarkdownWithDefaults };
-export default MarkdownWithDefaultsExport;

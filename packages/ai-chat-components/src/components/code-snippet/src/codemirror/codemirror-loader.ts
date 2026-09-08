@@ -22,12 +22,4 @@ export function loadCodeMirrorRuntime(): Promise<CodeMirrorRuntimeModule> {
   return runtimePromise;
 }
 
-/**
- * Public helper so tests or higher-level packages can preload the heavy
- * CodeMirror dependencies ahead of time (e.g., in Jest setup files).
- */
-export function loadCodeSnippetDeps(): Promise<CodeMirrorRuntimeModule> {
-  return loadCodeMirrorRuntime();
-}
-
 export type { CodeMirrorRuntimeModule };

@@ -29,7 +29,7 @@ import { ChatActionsImpl } from './ChatActionsImpl';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import type { InputFunctions } from '../components/input/Input';
 
-export interface UserDefinedElementRegistryItem {
+interface UserDefinedElementRegistryItem {
   slotName: string;
 }
 

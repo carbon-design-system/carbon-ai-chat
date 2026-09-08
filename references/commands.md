@@ -17,6 +17,7 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Lint (eslint on `packages/`) | `npm run lint` |
 | Stylelint | `npm run lint:styles` |
 | License header check | `npm run lint:license` |
+| Dead-code check (knip) | `npm run lint:dead` |
 | Prettier check / write | `npm run format` / `npm run format:write` |
 | All tests | `npm run test` |
 | Lint + format + license + test gate (no build) | `npm run ci-check` |

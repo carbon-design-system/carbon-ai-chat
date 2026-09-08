@@ -31,5 +31,3 @@ const DropdownItem = createComponent({
 });
 
 export { Dropdown, DropdownItem };
-
-export default Dropdown;

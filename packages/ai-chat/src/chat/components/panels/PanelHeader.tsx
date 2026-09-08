@@ -113,4 +113,3 @@ function PanelHeader({
 }
 
 export { PanelHeader };
-export type { PanelHeaderProps };

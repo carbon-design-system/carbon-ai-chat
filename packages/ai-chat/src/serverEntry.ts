@@ -95,6 +95,8 @@ export {
   BusEventHeaderMenuClick,
   BusEventHistoryBegin,
   BusEventHistoryEnd,
+  BusEventHistoryPanelNewChat,
+  BusEventHistoryPanelPreOpen,
   BusEventMessageItemCustom,
   BusEventPreReceive,
   BusEventPreReset,

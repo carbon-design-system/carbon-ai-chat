@@ -14,7 +14,7 @@ import cx from 'classnames';
 import ChatButton, {
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-} from '../carbon/ChatButton';
+} from '@carbon/ai-chat-components/es/react/chat-button.js';
 import { ErrorMessage } from './ErrorMessage';
 import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { useCarbonTheme } from '../../hooks/useCarbonTheme';

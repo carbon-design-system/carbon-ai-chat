@@ -28,7 +28,7 @@ store.dispatch(someAction());
 expect(screen.getByText('expected')).toBeInTheDocument();
 ```
 
-Add when: new actions/reducers, new `useSelector`/`useDispatch` patterns, state-dependent component behavior.
+Add when: new actions/reducers, new `useSelector` patterns, state-dependent component behavior.
 
 ### Service example
 

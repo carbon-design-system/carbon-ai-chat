@@ -19,6 +19,8 @@ Load this to pick the minimum verification gate for what you changed, before mar
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file — husky's pre-commit only runs prettier/eslint/stylelint on staged files and does not check license headers.
 
+If you deleted a file, dropped an `export`, or removed the last caller of one, also run `npm run lint:dead` — knip fails on source files nothing imports and on exports nothing reads. Nothing runs it for you: it is deliberately outside `ci-check` and CI, so an orphan you leave behind lands quietly unless you run it here.
+
 Report a gate by showing it: the command you ran and what its output said. "Tests pass" is a claim about the gate, not the gate — and a gate that goes green because an assertion was loosened, a case was deleted, a case was skipped, or a snapshot was regenerated to match current output is not the gate passing either. If you had to change a proof to get green, say which one and why; that is a finding, not a step.
 
 Before declaring a task done, self-review the diff against this repo's review rubric — the `caic-review` skill carries it. Prefer a sub-agent for independence and to keep the main conversation lean. Act on **Blocker** findings before handing back; surface **Important** findings to the user.

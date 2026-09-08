@@ -29,14 +29,6 @@ import { carbonIconToReact } from '../../../utils/carbonIcon';
 const ChevronDown = carbonIconToReact(ChevronDown16);
 const ChevronUp = carbonIconToReact(ChevronUp16);
 
-interface ConversationalSearchTextFunctions {
-  /**
-   * Returns the html element of the toggle button in the conversational search text that opens and closes the
-   * conversational search citation cards view.
-   */
-  getToggleCitationsElement: () => HTMLButtonElement;
-}
-
 interface ConversationalSearchTextProps {
   /**
    * The item to render.
@@ -175,7 +167,4 @@ function insertHighlightMarkdown(
 
 const ConversationalSearchTextExport = React.memo(ConversationalSearchText);
 
-export {
-  ConversationalSearchTextExport as ConversationalSearchText,
-  ConversationalSearchTextFunctions,
-};
+export { ConversationalSearchTextExport as ConversationalSearchText };

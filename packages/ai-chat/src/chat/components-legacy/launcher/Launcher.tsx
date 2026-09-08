@@ -44,7 +44,7 @@ const AiLaunch = carbonIconToReact(AiLaunch24);
 const ChatLaunch = carbonIconToReact(ChatLaunch24);
 const CloseIcon = carbonIconToReact(Close16);
 
-export enum LauncherOpenState {
+enum LauncherOpenState {
   Opening = 'opening',
   Open = 'open',
   Closing = 'closing',

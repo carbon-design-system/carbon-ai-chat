@@ -184,37 +184,6 @@ function selectInputUploadAndStreamingFields(
  * Determines if the currently open panel has a back button visible.
  * Returns true if any panel with a back button is open.
  */
-function selectHasOpenPanelWithBackButton(state: AppState): boolean {
-  const {
-    iFramePanelState,
-    viewSourcePanelState,
-    responsePanelState,
-    customPanelState,
-  } = state;
-
-  // IFramePanel always has back button
-  if (iFramePanelState.isOpen) {
-    return true;
-  }
-
-  // ViewSourcePanel always has back button
-  if (viewSourcePanelState.isOpen) {
-    return true;
-  }
-
-  // ResponsePanel always has back button
-  if (responsePanelState.isOpen) {
-    return true;
-  }
-
-  // CustomPanel has back button unless explicitly hidden
-  if (customPanelState.isOpen && !customPanelState.options.hideBackButton) {
-    return true;
-  }
-
-  return false;
-}
-
 /**
  * The active language pack (defaults + host `strings`). Lives in its own
  * top-level slice, so this is a direct read whose reference changes only when
@@ -236,7 +205,6 @@ export {
   selectInputIsDisabled,
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
-  selectHasOpenPanelWithBackButton,
   selectLanguagePack,
   selectHasInFlightUpload,
 };

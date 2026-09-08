@@ -56,4 +56,3 @@ function IntlProvider({ intl, children }: IntlProviderProps): JSX.Element {
 }
 
 export { IntlProvider };
-export type { IntlProviderProps };

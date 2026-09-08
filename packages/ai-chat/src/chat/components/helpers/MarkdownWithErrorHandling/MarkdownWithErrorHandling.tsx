@@ -13,7 +13,7 @@ import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItemStreamingState } from '../../../../types/messaging/LocalMessageItem';
-import InlineError from '../../responseTypes/error/InlineError';
+import { InlineError } from '../../responseTypes/error/InlineError';
 import { MarkdownWithDefaults } from '../MarkdownWithDefaults/MarkdownWithDefaults';
 import { TextItem } from '../../../../types/messaging/Messages';
 

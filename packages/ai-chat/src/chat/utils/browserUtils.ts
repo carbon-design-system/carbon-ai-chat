@@ -15,8 +15,6 @@ import { memoizeFunction } from './memoizerUtils';
 
 // Device detection — canonical definitions live in @carbon/ai-chat-components
 export {
-  IS_IOS,
-  IS_ANDROID,
   IS_MOBILE,
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,

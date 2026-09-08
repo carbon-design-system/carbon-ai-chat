@@ -20,22 +20,6 @@ import { isTableAtStreamingTail } from './streaming-table.js';
 import type { RenderTokenTreeOptions } from '../markdown-renderer-types.js';
 import type { TokenTree } from '../markdown-token-tree';
 
-// Default localization functions for table pagination
-export const DEFAULT_PAGINATION_SUPPLEMENTAL_TEXT = ({
-  count,
-}: {
-  count: number;
-}) => `${count} items`;
-export const DEFAULT_PAGINATION_STATUS_TEXT = ({
-  start,
-  end,
-  count,
-}: {
-  start: number;
-  end: number;
-  count: number;
-}) => `${start}–${end} of ${count} items`;
-
 /**
  * One cell of a parsed markdown table. A custom table renderer reads these
  * from the `headers` and `rows` it is handed.
@@ -58,7 +42,7 @@ export interface TableCellData {
  * header/rows format expected by the cds-aichat-table component while retaining
  * the TokenTree children required for rich rendering within cells.
  */
-export function extractTableData(tableNode: TokenTree): {
+function extractTableData(tableNode: TokenTree): {
   headers: TableCellData[];
   rows: TableCellData[][];
 } {
@@ -102,7 +86,7 @@ export function extractTableData(tableNode: TokenTree): {
  * This is used for table cells and other contexts where we need the
  * text content without HTML formatting.
  */
-export function extractTextContent(node: TokenTree): string {
+function extractTextContent(node: TokenTree): string {
   // Handle direct text tokens
   if (node.token.type === 'text') {
     return node.token.content || '';

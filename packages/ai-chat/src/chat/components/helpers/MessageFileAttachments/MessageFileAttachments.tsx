@@ -64,4 +64,3 @@ function MessageFileAttachments({
 }
 
 export { MessageFileAttachments };
-export type { MessageFileAttachmentsProps };

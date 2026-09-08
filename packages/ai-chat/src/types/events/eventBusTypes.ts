@@ -724,6 +724,8 @@ export interface BusEventCustomPanelClose extends BusEvent {
 }
 
 /**
+ * Fired when the user selects the new chat option in the chat header menu.
+ *
  * @category Events
  */
 export interface BusEventHistoryPanelNewChat extends BusEvent {
@@ -731,6 +733,8 @@ export interface BusEventHistoryPanelNewChat extends BusEvent {
 }
 
 /**
+ * Fired before the mobile chat history panel opens.
+ *
  * @category Events
  */
 export interface BusEventHistoryPanelPreOpen extends BusEvent {
