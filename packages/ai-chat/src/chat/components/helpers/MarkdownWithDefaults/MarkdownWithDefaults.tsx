@@ -147,33 +147,7 @@ function MarkdownWithDefaults(props: MarkdownWithDefaultsProps) {
   );
 }
 
-const MarkdownWithDefaultsExport = React.memo(
-  MarkdownWithDefaults,
-  (prevProps, nextProps) => {
-    // Custom comparison to prevent re-render when only streaming changes but content is the same
-    const textEqual = prevProps.text === nextProps.text;
-    const htmlConversionEqual = prevProps.removeHTML === nextProps.removeHTML;
-    const sanitizeEqual =
-      prevProps.overrideSanitize === nextProps.overrideSanitize;
-    const highlightEqual = prevProps.highlight === nextProps.highlight;
-
-    // If text content is identical, we don't need to re-render regardless of streaming state
-    if (textEqual && htmlConversionEqual && sanitizeEqual && highlightEqual) {
-      return true; // Skip re-render
-    }
-
-    // If text content changed, check if streaming state is relevant
-    const streamingEqual = prevProps.streaming === nextProps.streaming;
-
-    return (
-      textEqual &&
-      htmlConversionEqual &&
-      sanitizeEqual &&
-      highlightEqual &&
-      streamingEqual
-    );
-  }
-);
+const MarkdownWithDefaultsExport = React.memo(MarkdownWithDefaults);
 
 export { MarkdownWithDefaultsExport as MarkdownWithDefaults };
 export default MarkdownWithDefaultsExport;

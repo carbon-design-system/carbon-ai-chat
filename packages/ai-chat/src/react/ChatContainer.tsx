@@ -22,6 +22,7 @@ import { createPortal } from 'react-dom';
 import ChatAppEntry from '../chat/ChatAppEntry';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import { ChatContainerProps } from '../types/component/ChatContainer';
+import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
 import { ChatInstance } from '../types/instance/ChatInstance';
 import { BusEventType } from '../types/events/eventBusTypes';
 import {
@@ -210,112 +211,18 @@ function ChatContainer(
    * Plugin-fallback slot hosts (e.g. KaTeX rendered by a markdown-it plugin)
    * need to live in the page light DOM so a consumer-loaded stylesheet can
    * reach them — the markdown element's own light DOM sits inside this
-   * wrapper's shadow root, where global CSS doesn't apply. The markdown
-   * element bubbles a composed `cds-aichat-markdown-plugin-host-mount` event
-   * for each new plugin slot; we accept the offer (`preventDefault()`),
-   * create the host as a slot-attributed child of the wrapper (= page light
-   * DOM, since this is the outermost chat element on the React path), and
-   * tear it down when the matching unmount event fires.
+   * wrapper's shadow root, where global CSS doesn't apply. The wrapper is the
+   * outermost chat element on the React path, so it is the one that claims the
+   * offer. Nothing forwards a slot name here: the React `Markdown` wrapper in
+   * `@carbon/ai-chat-components` supplies the single hop this topology needs.
    */
   useEffect(() => {
     if (!wrapper) {
       return undefined;
     }
-    // Keyed by slot name alone: the markdown element namespaces every name it
-    // mints per element (see `markdown/src/utils/slot-names.ts` in
-    // `@carbon/ai-chat-components`), so two messages rendering the same
-    // markdown can't collide here.
-    const hosts = new Map<string, HTMLElement>();
-    const handleMount = (event: Event) => {
-      const detail = (
-        event as CustomEvent<{
-          slotName: string;
-          html?: string;
-          element?: HTMLElement;
-          isInline: boolean;
-        }>
-      ).detail;
-      if (!detail?.slotName) {
-        return;
-      }
-      // Custom-renderer hosts (table/codeBlock) forward a live element that
-      // the markdown element manages directly — do not preventDefault or hoist,
-      // or the named slot loses its host and falls back to the default Carbon
-      // component. Plugin fallbacks forward an HTML string instead.
-      if (detail.element) {
-        return;
-      }
-      event.preventDefault();
-      let host = hosts.get(detail.slotName);
-      if (!host) {
-        host = document.createElement(detail.isInline ? 'span' : 'div');
-        host.setAttribute('slot', detail.slotName);
-        // Match the spacing applied to direct children of
-        // `.cds-aichat-markdown-stack`; shadow CSS doesn't reach this host
-        // (we mounted it in page light DOM), so apply it inline. Inline
-        // plugin output flows with text and gets no extra spacing.
-        if (!detail.isInline) {
-          host.style.marginBlockStart = '1rem';
-        }
-        hosts.set(detail.slotName, host);
-        wrapper.appendChild(host);
-      }
-      if (host.innerHTML !== (detail.html ?? '')) {
-        host.innerHTML = detail.html ?? '';
-      }
-    };
-    const handleUpdate = (event: Event) => {
-      const detail = (event as CustomEvent<{ slotName: string; html: string }>)
-        .detail;
-      if (!detail?.slotName) {
-        return;
-      }
-      const host = hosts.get(detail.slotName);
-      if (host && host.innerHTML !== detail.html) {
-        host.innerHTML = detail.html;
-      }
-    };
-    const handleUnmount = (event: Event) => {
-      const detail = (event as CustomEvent<{ slotName: string }>).detail;
-      if (!detail?.slotName) {
-        return;
-      }
-      const host = hosts.get(detail.slotName);
-      if (host) {
-        host.remove();
-        hosts.delete(detail.slotName);
-      }
-    };
-    wrapper.addEventListener(
-      'cds-aichat-markdown-plugin-host-mount',
-      handleMount
-    );
-    wrapper.addEventListener(
-      'cds-aichat-markdown-plugin-host-update',
-      handleUpdate
-    );
-    wrapper.addEventListener(
-      'cds-aichat-markdown-plugin-host-unmount',
-      handleUnmount
-    );
-    return () => {
-      wrapper.removeEventListener(
-        'cds-aichat-markdown-plugin-host-mount',
-        handleMount
-      );
-      wrapper.removeEventListener(
-        'cds-aichat-markdown-plugin-host-update',
-        handleUpdate
-      );
-      wrapper.removeEventListener(
-        'cds-aichat-markdown-plugin-host-unmount',
-        handleUnmount
-      );
-      for (const host of hosts.values()) {
-        host.remove();
-      }
-      hosts.clear();
-    };
+    const controller = createMarkdownPluginHostController(wrapper);
+    controller.connect();
+    return () => controller.disconnect();
   }, [wrapper]);
 
   const onBeforeRenderOverride = useCallback(

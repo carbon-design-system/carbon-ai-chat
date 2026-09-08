@@ -190,9 +190,12 @@ function sliceForFallback(token: Token, node: TokenTree): Token[] {
 
 /**
  * Renders an unknown token via markdown-it's HTML renderer and emits a named
- * `<slot>` placeholder. The markdown element adopts a light-DOM
- * `<div slot="…">` host containing the sanitized HTML so consumer-supplied
- * CSS (e.g. KaTeX's stylesheet) reaches the rendered output.
+ * `<slot>` placeholder carrying the token's text as its fallback content. The
+ * markdown element adopts a light-DOM `<div slot="…">` host containing the
+ * sanitized HTML so consumer-supplied CSS (e.g. KaTeX's stylesheet) reaches the
+ * rendered output; the fallback is what a reader sees if that host never
+ * arrives — a container claimed the slot and no forwarder was minted — so a
+ * stranded host degrades to plain text instead of vanishing.
  *
  * For leaf token types in {@link PLUGIN_DELEGABLE_TOKEN_TYPES} the rendered
  * HTML is cached on the {@link TokenTree} node and inherited across
@@ -225,7 +228,7 @@ export function renderFallback(
     }
   }
 
-  const index = options.pluginSlotCounter?.next() ?? 0;
+  const index = options.pluginSlotCounter?.next(node) ?? 0;
   const slotName = withInstanceNamespace(
     `${PLUGIN_FALLBACK_SLOT_PREFIX}-${index}`,
     options
@@ -237,5 +240,11 @@ export function renderFallback(
     html: safe,
     isInline: token.block === false,
   });
-  return html`<slot name=${slotName}></slot>`;
+  // Text, not `safe`: the rendered markup already exists once as the light-DOM
+  // host, and duplicating it inside the slot doubles the DOM of a plugin-heavy
+  // message — 40 KaTeX expressions measured 3,288 extra elements. Prefer the
+  // author's own source, which is what a formula or diagram token carries, and
+  // fall back to the output's text for marker tokens that carry no source.
+  const fallbackText = token.content || safe.replace(/<[^>]*>/g, '');
+  return html`<slot name=${slotName}>${fallbackText}</slot>`;
 }
