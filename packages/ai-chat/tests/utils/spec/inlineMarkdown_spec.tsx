@@ -52,6 +52,13 @@ describe('renderInlineMarkdown', () => {
     expect(getByTestId('root').querySelector('s')?.textContent).toBe('strike');
   });
 
+  it('emits <mark> for ==highlight==', () => {
+    const { getByTestId } = renderInline('a ==marked== word');
+    const root = getByTestId('root');
+    expect(root.querySelector('mark')?.textContent).toBe('marked');
+    expect(root.textContent).toBe('a marked word');
+  });
+
   it('emits <a target=_blank rel=noopener> for links', () => {
     const { getByTestId } = renderInline('see [docs](https://example.com)');
     const a = getByTestId('root').querySelector('a');
