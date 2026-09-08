@@ -1581,21 +1581,72 @@ HTTP: http://example.com
      * the `<slot name=X slot=X>` forwarder into the markdown element's own
      * light DOM is the wrapper's, and is the only hop that crosses that
      * element's shadow boundary.
+     *
+     * `hops` is how many forwarders stand between the relocated host and the
+     * markdown element's own shadow slot, and therefore how many nested shadow
+     * roots the harness builds. It matches the three shipped topologies: 1 is
+     * the React `ChatContainer`, 2 is `cds-aichat-container`, 3 is
+     * `cds-aichat-custom-element` wrapping that container. The outermost level
+     * hosts, every level below it defers and forwards the name inward, and the
+     * innermost holds the markdown element.
      */
-    async function createRelocationHarness() {
+    async function createRelocationHarness(hops = 1) {
       const harness = await fixture<HTMLElement>(
         html`<cds-test-markdown-relocation-host></cds-test-markdown-relocation-host>`
       );
+      const levels: HTMLElement[] = [harness];
+      for (let depth = 1; depth < hops; depth += 1) {
+        const level = document.createElement(HARNESS_TAG);
+        levels[depth - 1].shadowRoot?.appendChild(level);
+        levels.push(level);
+      }
+      const innermost = levels[levels.length - 1];
       const mounted: Array<{
         owner: Element;
         slotName: string;
         host: HTMLElement;
       }> = [];
 
+      /**
+       * Stands in for a container's `${slotNames.map(...)}` render: one
+       * `<slot name=X slot=X>` per live name, in the next level's light DOM.
+       */
+      const forwardInto = (level: HTMLElement) => (slotNames: string[]) => {
+        for (const child of [...level.children]) {
+          if (
+            child instanceof HTMLSlotElement &&
+            !slotNames.includes(child.getAttribute('name') ?? '')
+          ) {
+            child.remove();
+          }
+        }
+        for (const slotName of slotNames) {
+          if (!level.querySelector(`:scope > slot[name="${slotName}"]`)) {
+            const forwarder = document.createElement('slot');
+            forwarder.setAttribute('name', slotName);
+            forwarder.setAttribute('slot', slotName);
+            level.appendChild(forwarder);
+          }
+        }
+      };
+
       // The container half is the shipped one, so this harness cannot drift
       // from the surfaces it stands in for.
-      const controller = createMarkdownPluginHostController(harness);
+      const controller = createMarkdownPluginHostController(
+        harness,
+        hops > 1 ? { onSlotNamesChange: forwardInto(levels[1]) } : {}
+      );
       controller.connect();
+
+      // Levels between the host and the markdown element host nothing but
+      // still forward the name inward — a `cds-aichat-container` nested in a
+      // `cds-aichat-custom-element`.
+      for (let depth = 1; depth < levels.length - 1; depth += 1) {
+        createMarkdownPluginHostController(levels[depth], {
+          onSlotNamesChange: forwardInto(levels[depth + 1]),
+          shouldDefer: () => true,
+        }).connect();
+      }
 
       // Bookkeeping only. Nothing here mints a forwarder: the markdown element
       // mints the innermost hop itself, for both claim kinds, in the pass that
@@ -1625,7 +1676,7 @@ HTTP: http://example.com
         }
       );
 
-      /** Mounts a markdown element inside the harness's shadow root. */
+      /** Mounts a markdown element inside the innermost shadow root. */
       async function addMarkdown(
         markdown: string,
         props: Partial<MarkdownElementInstance> = {}
@@ -1634,13 +1685,14 @@ HTTP: http://example.com
           MARKDOWN_ELEMENT_TAG
         ) as MarkdownElementInstance;
         Object.assign(el, props, { markdown });
-        harness.shadowRoot?.appendChild(el);
+        innermost.shadowRoot?.appendChild(el);
         await el.updateComplete;
         return el;
       }
 
       return {
         harness,
+        levels,
         mounted,
         pluginHosts: controller.hosts,
         addMarkdown,
@@ -1988,9 +2040,215 @@ HTTP: http://example.com
         harness.querySelector(`[slot="${slotName}"]:not(slot)`)
       );
     });
+
+    // Every case above runs at one shadow boundary, which is only the React
+    // topology. The two web-component containers compose two and three, and a
+    // chain that resolves at one hop can still break at three — a missing
+    // middle forwarder, or a name the deferring level never tracked. These run
+    // the same protocol at each depth.
+    describe('across composed shadow boundaries', () => {
+      const TOPOLOGIES: Array<{ hops: number; surface: string }> = [
+        { hops: 1, surface: 'React ChatContainer' },
+        { hops: 2, surface: 'cds-aichat-container' },
+        { hops: 3, surface: 'cds-aichat-custom-element' },
+      ];
+
+      const MAX_HOPS = TOPOLOGIES[TOPOLOGIES.length - 1].hops;
+
+      /**
+       * Resolves the projection one hop at a time and returns the forwarders
+       * it passed through. `assignedElements({ flatten: true })` collapses the
+       * whole chain, so it cannot tell a three-hop chain from a host that
+       * never left the element; this counts the hops and names the one that
+       * broke.
+       */
+      function walkProjection(slot: HTMLSlotElement) {
+        const forwarders: HTMLSlotElement[] = [];
+        let current = slot;
+        while (forwarders.length <= MAX_HOPS) {
+          const assigned = current.assignedElements();
+          expect(
+            assigned.length,
+            `slot "${current.getAttribute('name')}" must have exactly one assigned element`
+          ).to.equal(1);
+          const [next] = assigned;
+          if (!(next instanceof HTMLSlotElement)) {
+            return { forwarders, projected: next as HTMLElement };
+          }
+          forwarders.push(next);
+          current = next;
+        }
+        throw new Error('the forwarder chain never reached a host');
+      }
+
+      /** The markdown element's own shadow slot for `slotName`. */
+      function shadowSlot(el: MarkdownElementInstance, slotName: string) {
+        const slot = el.shadowRoot?.querySelector(
+          `slot[name="${slotName}"]`
+        ) as HTMLSlotElement | null;
+        expect(
+          slot,
+          `the element should render slot "${slotName}"`
+        ).to.not.equal(null);
+        return slot as HTMLSlotElement;
+      }
+
+      for (const { hops, surface } of TOPOLOGIES) {
+        it(`customRenderers.table: projects the relocated host through ${hops} hop(s) (${surface})`, async () => {
+          const { harness, mounted, addMarkdown } =
+            await createRelocationHarness(hops);
+          const rendered = document.createElement('div');
+          rendered.className = 'cds-test-multihop-table';
+
+          const el = await addMarkdown(tableMarkdown, {
+            customRenderers: { table: () => rendered },
+          } as Partial<MarkdownElementInstance>);
+
+          expect(
+            mounted.length,
+            'the offer reaches the outermost surface, whatever the depth'
+          ).to.equal(1);
+          const { host, slotName } = mounted[0];
+          expect(
+            host.parentElement,
+            'the outermost surface is the one that hosts'
+          ).to.equal(harness);
+          expect(
+            host.firstElementChild,
+            'the element keeps writing the consumer node into the host'
+          ).to.equal(rendered);
+
+          const { forwarders, projected } = walkProjection(
+            shadowSlot(el, slotName)
+          );
+          expect(
+            forwarders.length,
+            'one forwarder per shadow boundary between the host and the element'
+          ).to.equal(hops);
+          expect(
+            forwarders[0].parentElement,
+            'the element mints the innermost hop itself'
+          ).to.equal(el);
+          expect(
+            projected,
+            'the chain must land on the relocated host, not on a fallback'
+          ).to.equal(host);
+        });
+
+        it(`pluginFallback: projects the relocated host through ${hops} hop(s) (${surface})`, async () => {
+          const { harness, pluginHosts, addMarkdown } =
+            await createRelocationHarness(hops);
+
+          const el = await addMarkdown('Hi :tag:', {
+            markdownItPlugins: [tagPlugin],
+          } as Partial<MarkdownElementInstance>);
+
+          expect(pluginHosts.size, 'the container hosts the string').to.equal(
+            1
+          );
+          const [slotName] = [...pluginHosts.keys()];
+          const host = pluginHosts.get(slotName) as HTMLElement;
+          expect(
+            host.parentElement,
+            'the outermost surface is the one that hosts'
+          ).to.equal(harness);
+          expect(host.querySelector('.cds-test-tag')).to.not.equal(null);
+
+          const { forwarders, projected } = walkProjection(
+            shadowSlot(el, slotName)
+          );
+          expect(
+            forwarders.length,
+            'one forwarder per shadow boundary between the host and the element'
+          ).to.equal(hops);
+          expect(
+            forwarders[0].parentElement,
+            'the wrapper mints the innermost hop for a plugin-fallback claim'
+          ).to.equal(el);
+          expect(
+            projected,
+            'the chain must land on the relocated host, not on a fallback'
+          ).to.equal(host);
+        });
+
+        it(`customRenderers.table: retires every hop when the callback returns null (${hops} hop(s))`, async () => {
+          const { harness, levels, mounted, addMarkdown } =
+            await createRelocationHarness(hops);
+
+          const el = await addMarkdown(tableMarkdown, {
+            customRenderers: { table: () => document.createElement('div') },
+          } as Partial<MarkdownElementInstance>);
+          const { slotName } = mounted[0];
+          expect(
+            walkProjection(shadowSlot(el, slotName)).forwarders.length
+          ).to.equal(hops);
+
+          el.customRenderers = { table: () => null };
+          await el.updateComplete;
+
+          expect(
+            harness.querySelector(`[slot="${slotName}"]:not(slot)`),
+            'the relocated node leaves the outermost surface'
+          ).to.equal(null);
+          levels.forEach((level, depth) => {
+            expect(
+              level.querySelector(`slot[name="${slotName}"]`),
+              `the forwarder at depth ${depth} must retire with the claim`
+            ).to.equal(null);
+          });
+          expect(
+            el.querySelector(`slot[name="${slotName}"]`),
+            'and so must the hop the element minted'
+          ).to.equal(null);
+          expect(
+            shadowSlot(el, slotName).assignedNodes().length,
+            'any surviving hop keeps the default table suppressed'
+          ).to.equal(0);
+          expect(
+            el.shadowRoot?.querySelector('cds-aichat-table'),
+            'the default table comes back at every depth'
+          ).to.not.equal(null);
+        });
+
+        it(`pluginFallback: retires every hop when the token leaves the content (${hops} hop(s))`, async () => {
+          const { harness, levels, pluginHosts, addMarkdown } =
+            await createRelocationHarness(hops);
+
+          const el = await addMarkdown('Hi :tag:', {
+            markdownItPlugins: [tagPlugin],
+          } as Partial<MarkdownElementInstance>);
+          const [slotName] = [...pluginHosts.keys()];
+          expect(
+            walkProjection(shadowSlot(el, slotName)).forwarders.length
+          ).to.equal(hops);
+
+          el.markdown = 'Hi.';
+          await el.updateComplete;
+
+          expect(
+            pluginHosts.size,
+            'the container drops the host it created'
+          ).to.equal(0);
+          expect(
+            harness.querySelector(`[slot="${slotName}"]`),
+            'and nothing is left in the outermost light DOM'
+          ).to.equal(null);
+          levels.forEach((level, depth) => {
+            expect(
+              level.querySelector(`slot[name="${slotName}"]`),
+              `the forwarder at depth ${depth} must retire with the claim`
+            ).to.equal(null);
+          });
+          expect(
+            el.querySelector(`slot[name="${slotName}"]`),
+            'the wrapper retires its hop on the unmount event'
+          ).to.equal(null);
+        });
+      }
+    });
   });
 
-  // ── The mount detail's `kind` discriminant (#2273) ────────────────────
+  // ── The mount detail's `kind` discriminant ────────────────────────────
   // Both dispatch sites offer a host over the same event, and a listener used
   // to tell them apart by testing whether `detail.element` was set — the shape
   // was the discriminant. `kind` publishes what the element already knows.
@@ -2120,6 +2378,111 @@ HTTP: http://example.com
       });
 
       expect(controller.hosts.get('no-html-update')?.innerHTML).to.equal('');
+    });
+  });
+
+  // Both web-component containers build the controller in a field initializer
+  // and only `connect()` / `disconnect()` from their lifecycle callbacks, so
+  // one controller survives a DOM move. `disconnect()` keeps the forwarder
+  // slot names on purpose: the markdown element re-offers every claim once it
+  // reconnects, and retiring the names mid-move would drop the forwarder a
+  // relocated `customRenderers` node still needs to project.
+  describe('plugin-host container across a disconnect', () => {
+    async function createReconnectTarget() {
+      const target = await fixture<HTMLElement>(html`<div></div>`);
+      const announced: string[][] = [];
+      const controller = createMarkdownPluginHostController(target, {
+        onSlotNamesChange: (slotNames) => {
+          announced.push(slotNames);
+        },
+      });
+      controller.connect();
+
+      function mount(detail: MarkdownPluginHostMountDetailInput) {
+        target.dispatchEvent(
+          new CustomEvent('cds-aichat-markdown-plugin-host-mount', {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail,
+          })
+        );
+      }
+
+      return { target, controller, announced, mount };
+    }
+
+    it('drops the hosts it created and keeps the slot names', async () => {
+      const { target, controller, announced, mount } =
+        await createReconnectTarget();
+      const relocated = document.createElement('div');
+      mount({
+        kind: 'pluginFallback',
+        slotName: 'reconnect-fallback',
+        html: '<i>x</i>',
+        isInline: false,
+      });
+      mount({
+        kind: 'customRenderer',
+        slotName: 'reconnect-renderer',
+        element: relocated,
+        isInline: false,
+      });
+
+      controller.disconnect();
+
+      expect(controller.hosts.size).to.equal(0);
+      expect(target.querySelector('[slot="reconnect-fallback"]')).to.equal(
+        null
+      );
+      // Never created here, so never destroyed here — the node belongs to the
+      // markdown element and rides along with the container's DOM move.
+      expect(relocated.parentElement).to.equal(target);
+      expect(
+        announced,
+        'a retirement would announce a third, shorter list'
+      ).to.deep.equal([
+        ['reconnect-fallback'],
+        ['reconnect-fallback', 'reconnect-renderer'],
+      ]);
+    });
+
+    it('hosts one node per mount once it reconnects', async () => {
+      const { target, controller, announced, mount } =
+        await createReconnectTarget();
+      const detail: MarkdownPluginHostMountDetailInput = {
+        kind: 'pluginFallback',
+        slotName: 'reconnect-rehost',
+        html: '<i>x</i>',
+        isInline: false,
+      };
+      mount(detail);
+
+      controller.disconnect();
+      controller.connect();
+      mount(detail);
+
+      expect(
+        target.querySelectorAll('[slot="reconnect-rehost"]').length
+      ).to.equal(1);
+      expect(controller.hosts.get('reconnect-rehost')?.innerHTML).to.equal(
+        '<i>x</i>'
+      );
+
+      mount({
+        kind: 'pluginFallback',
+        slotName: 'reconnect-second',
+        html: '<i>y</i>',
+        isInline: false,
+      });
+
+      expect(
+        announced,
+        'the retained name is not re-announced, and the new one extends it'
+      ).to.deep.equal([
+        ['reconnect-rehost'],
+        ['reconnect-rehost', 'reconnect-second'],
+      ]);
     });
   });
 

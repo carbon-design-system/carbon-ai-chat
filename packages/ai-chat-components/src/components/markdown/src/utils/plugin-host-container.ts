@@ -23,11 +23,38 @@
  * policy the framework cannot infer.
  */
 
-/** Mount detail for plugin output the element hands over as an HTML string. */
+/**
+ * Mount detail for plugin output the element hands over as an HTML string.
+ *
+ * @category Messaging
+ */
 export interface MarkdownPluginFallbackMountDetail {
+  /** Marks the payload as an HTML string rather than a live element. */
   kind: 'pluginFallback';
+  /**
+   * Name to put on the host's `slot` attribute, and the key the matching
+   * `-update` and `-unmount` events arrive under. Unique across every markdown
+   * element on the page, and reused across renders while the token stays put,
+   * so a streaming message rewrites one host instead of growing a new one per
+   * chunk. Treat the value as opaque; its format is not part of the API.
+   */
   slotName: string;
+  /**
+   * The plugin rule's rendered HTML, to assign to the host's `innerHTML`.
+   *
+   * DOMPurify runs over it only when the markdown element has `sanitize-html`
+   * set, and that setting is off by default. `remove-html` does not stand in
+   * for it either — that one escapes HTML written in the markdown source and
+   * never filters what a plugin's renderer rule emits. Treat the string as
+   * exactly as trustworthy as the markdown-it plugins the page registered.
+   */
   html: string;
+  /**
+   * True when the plugin's token is inline, such as a `math_inline` span.
+   * Picks the host tag — `span` when true, so the output stays in paragraph
+   * flow, `div` when false — and gates the block spacing that matches the
+   * markdown element's own stack gap.
+   */
   isInline: boolean;
 }
 
@@ -38,11 +65,32 @@ export interface MarkdownPluginFallbackMountDetail {
  * synchronously, and nothing else: never rewrite its content, never style it,
  * never remove it. The markdown element renders the `<slot>` hop that projects
  * it back.
+ *
+ * @category Messaging
  */
 export interface MarkdownCustomRendererMountDetail {
+  /** Marks the payload as a live element rather than an HTML string. */
   kind: 'customRenderer';
+  /**
+   * Name already set on `element`'s `slot` attribute, and the key the matching
+   * `-unmount` event arrives under. Page-unique, reused across renders and
+   * opaque, like the plugin-fallback name. No `-update` event follows this
+   * one: the markdown element writes the consumer's node into `element`
+   * itself.
+   */
   slotName: string;
+  /**
+   * The host to re-parent. The markdown element created it, replaces its
+   * children on every render, and removes it when the renderer stops matching
+   * — a claimant only moves it.
+   */
   element: HTMLElement;
+  /**
+   * True when the claimed output is inline flow content. Always `false` here:
+   * the markdown element hosts every `customRenderers` result in a `<div>` it
+   * created, so a claimant has no host tag to choose. Declared on both members
+   * so a listener can read it before narrowing on `kind`.
+   */
   isInline: boolean;
 }
 
@@ -52,6 +100,8 @@ export interface MarkdownCustomRendererMountDetail {
  * Narrow on `kind`, never on which of `html` / `element` is present — the two
  * members deliberately declare only their own fields, so reading the wrong one
  * is a compile error rather than a silent `undefined`.
+ *
+ * @category Messaging
  */
 export type MarkdownPluginHostMountDetail =
   MarkdownPluginFallbackMountDetail | MarkdownCustomRendererMountDetail;
@@ -62,7 +112,11 @@ export type MarkdownPluginHostMountDetail =
  * `kind` is newer than the events themselves, and `@carbon/ai-chat` depends on
  * this package through a caret range, so a listener can still receive the
  * original shape from an older build. Pass anything you receive through
- * {@link resolveMarkdownPluginHostMountDetail} and narrow on the result.
+ * `resolveMarkdownPluginHostMountDetail`, exported from
+ * `@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js`,
+ * and narrow on the result.
+ *
+ * @category Messaging
  */
 export type MarkdownPluginHostMountDetailInput =
   | MarkdownPluginHostMountDetail
@@ -263,9 +317,12 @@ export function createMarkdownPluginHostController(
         host.remove();
       }
       hosts.clear();
-      // Slot names deliberately survive: a reconnect re-hosts from the events
-      // that follow, and clearing here would make the next mount replace the
-      // consumer's list rather than extend it.
+      // Slot names deliberately survive. `handleUpdate` drops an update whose
+      // host is missing, so retention would strand a slot if only this element
+      // cycled — it is safe because the markdown element is a shadow-including
+      // descendant, so it cycles too, clears its own claims and re-offers a
+      // mount rather than an update. Clearing here would also make that next
+      // mount replace the consumer's list rather than extend it.
     },
   };
 }
