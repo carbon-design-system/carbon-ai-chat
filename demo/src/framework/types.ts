@@ -12,6 +12,14 @@ interface Settings {
   layout: 'float' | 'sidebar' | 'fullscreen';
   writeableElements: 'true' | 'false';
   hideDefaultAiLabelContent?: 'true' | 'false';
+  /**
+   * Renders markdown tables through `markdown.customRenderers.table` instead
+   * of the built-in Carbon table. Deep-link only — there is no sidebar
+   * switcher, because the reason it exists is a Playwright case that proves a
+   * page stylesheet reaches the node the callback returns, and that only holds
+   * while the node sits in page light DOM.
+   */
+  markdownCustomRenderers?: 'true' | 'false';
   direction: 'default' | 'ltr' | 'rtl';
   showHeader?: boolean;
   showMenuOptions?: boolean;
