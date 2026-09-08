@@ -81,9 +81,6 @@ function renderInlineTokenList(tokens: Token[] | null): ReactNode {
         break;
 
       case 'softbreak':
-        pushChild(<Fragment key={nextKey()}> </Fragment>);
-        break;
-
       case 'hardbreak':
         pushChild(<br key={nextKey()} />);
         break;

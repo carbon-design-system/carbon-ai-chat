@@ -3318,7 +3318,7 @@ describe('renderTokenTree — softbreak with breaks: false', () => {
 
 describe('cds-aichat-markdown line breaks inside merged inline-HTML runs', () => {
   // `combineConsecutiveHtmlInline` collapses consecutive html_inline / text /
-  // break tokens into one `html_container` node serialized by
+  // break tokens into one `html_inline` node serialized by
   // `serializeInlineToken`. Before the fix, both softbreak and hardbreak
   // returned token.content (the empty string) and the break was deleted.
 
