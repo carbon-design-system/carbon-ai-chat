@@ -8,14 +8,25 @@
  */
 
 /**
- * `<textarea>`-backed implementation of `PromptLineController`. Tiptap-free;
- * emits the same `cds-aichat-prompt-*` events as the rich editor. Auto-grows
- * via a hidden mirror, capped at `PROMPT_LINE_MAX_BLOCK_SIZE` with the field
- * scrolling past it — the same cap the rich contenteditable applies (see
- * ./tiptap/editor-styles.ts), so the textarea→rich swap is imperceptible.
+ * Textarea runtime for `<cds-aichat-prompt-line>`'s default (non-rich) mode.
+ * This module is **statically imported** by the prompt-line shell
+ * ([./prompt-line.ts]), so it is always part of the initial bundle — but it
+ * carries **no `@tiptap/*` runtime**. The only Tiptap symbols used here are
+ * type imports erased at compile time.
  *
- * Named to mirror `prompt-line-rich-runtime.ts`: each file is one
- * implementation of `PromptLineController`.
+ * `TextareaController` implements {@link PromptLineController} backed by a
+ * native `<textarea>`. It mirrors the typography and sizing of the Tiptap
+ * editor exactly (auto-grow via a CSS grid mirror, Carbon `body-01` tokens,
+ * the same `max-block-size` cap) so the textarea→editor swap triggered by
+ * the rich-mode loader ([./prompt-line-rich-loader.ts]) is visually
+ * imperceptible. State — plain text, caret position, and keyboard-focus
+ * tracking — transfers losslessly to the rich controller because the textarea
+ * is always the plain-text source of truth. The same `cds-aichat-prompt-*`
+ * events are emitted, keeping the React wrapper and `Input` handlers
+ * mode-agnostic.
+ *
+ * `Editor` / `JSONContent` are **type-only** imports here — erased at compile,
+ * so this module carries no Tiptap runtime.
  */
 
 import type { Editor, Extension, JSONContent } from '@tiptap/core';
@@ -29,6 +40,7 @@ import {
   PROMPT_LINE_MAX_BLOCK_SIZE,
   TYPING_TIMEOUT_MS,
 } from './prompt-line-constants.js';
+import { MouseFocusController } from './prompt-line-mouse-focus.js';
 import type {
   PromptLineController,
   PromptLineControllerInit,
@@ -122,12 +134,14 @@ function ensureTextareaStyleRules(): void {
  * the rich contenteditable applies (see ./tiptap/editor-styles.ts), so the
  * textarea→rich swap is imperceptible.
  */
-export class TextareaController implements PromptLineController {
+export class TextareaController
+  extends MouseFocusController
+  implements PromptLineController
+{
   private _wrap: HTMLDivElement | null = null;
   private _textarea: HTMLTextAreaElement | null = null;
   private _mirror: HTMLDivElement | null = null;
   private _host: HTMLElement | null = null;
-  private _focusFromMouse = false;
 
   private _isTyping = false;
   private _typingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -179,9 +193,7 @@ export class TextareaController implements PromptLineController {
 
     // Pointer/touch before focus marks the next focus as mouse-driven so we
     // suppress the keyboard-focus outline.
-    host.addEventListener('pointerdown', this._setMouseFlag);
-    host.addEventListener('mousedown', this._setMouseFlag);
-    host.addEventListener('touchstart', this._setMouseFlag);
+    this._attachMouseFocusListeners(host);
 
     this._syncMirror();
   }
@@ -197,9 +209,7 @@ export class TextareaController implements PromptLineController {
     }
     const host = this._host;
     if (host) {
-      host.removeEventListener('pointerdown', this._setMouseFlag);
-      host.removeEventListener('mousedown', this._setMouseFlag);
-      host.removeEventListener('touchstart', this._setMouseFlag);
+      this._detachMouseFocusListeners(host);
     }
     this._wrap?.remove();
     this._wrap = null;
@@ -249,8 +259,8 @@ export class TextareaController implements PromptLineController {
     return null;
   }
 
-  focus(): void {
-    this._focusFromMouse = true;
+  focus(keyboardFocus: boolean): void {
+    this._setNextFocusOrigin(keyboardFocus);
     this._textarea?.focus();
   }
 
@@ -387,13 +397,8 @@ export class TextareaController implements PromptLineController {
     }
   };
 
-  private _setMouseFlag = (): void => {
-    this._focusFromMouse = true;
-  };
-
   private _onFocus = (): void => {
-    const wasMouseFocus = this._focusFromMouse;
-    this._focusFromMouse = false;
+    const wasMouseFocus = this._consumeMouseFocus();
     this._dispatch('cds-aichat-prompt-focus', { keyboard: !wasMouseFocus });
   };
 
