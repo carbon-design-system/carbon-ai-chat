@@ -14,10 +14,9 @@ interface Settings {
   hideDefaultAiLabelContent?: 'true' | 'false';
   /**
    * Renders markdown tables through `markdown.customRenderers.table` instead
-   * of the built-in Carbon table. Deep-link only — there is no sidebar
-   * switcher, because the reason it exists is a Playwright case that proves a
-   * page stylesheet reaches the node the callback returns, and that only holds
-   * while the node sits in page light DOM.
+   * of the built-in Carbon table. Exists for the Playwright case that proves a
+   * page stylesheet reaches the node the callback returns, which only holds
+   * while that node sits in the chat element's own light DOM.
    */
   markdownCustomRenderers?: 'true' | 'false';
   direction: 'default' | 'ltr' | 'rtl';
