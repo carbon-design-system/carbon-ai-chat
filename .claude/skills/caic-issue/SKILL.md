@@ -27,7 +27,7 @@ How to word one: [issue-bodies.md](../caic-copy-writer/references/issue-bodies.m
 
 Internal development work uses these sections — the same ones the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prompts, so a `gh`-filed issue and a form-filed one read identically. Read that form's `description:` text for what each section has to contain; it is the per-field instruction for both paths, and `gh` never renders it.
 
-- **Background** — the _why_. Link the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision — that is what [caic-review](../caic-review/SKILL.md) checks the diff against.
+- **Background** — the _why_, opening with the problem in plain language: who is bitten and what goes wrong today, before any file, script, or type name. A reader meets the problem here and the proposed implementation later, so they can judge whether it fits — see [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md). Then the links: the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision — that is what [caic-review](../caic-review/SKILL.md) checks the diff against.
 - **Goal** — the change that exists when this is done.
 - **Acceptance criteria** — a `- [ ]` list of observable outcomes, each carrying its proof. See [Acceptance criteria](#acceptance-criteria).
 - **Public API / contract** — the up-front contract, shape and behavior (see below); omit only when nothing a consumer can observe changes.
@@ -57,7 +57,7 @@ Keep the draft in sync with the live issue whenever you edit one — correcting 
 
 ## Define the contract up front
 
-State the contract **in the issue, before implementation**, whenever a task changes what a consumer can observe on the public surface — anything exported from [packages/ai-chat/src/aiChatEntry.tsx](../../../packages/ai-chat/src/aiChatEntry.tsx) or [packages/ai-chat/src/serverEntry.ts](../../../packages/ai-chat/src/serverEntry.ts). A change with no signature change still qualifies: behavior is public too.
+State the contract **in the issue, before implementation starts** — not at the top of the body. It sits after the acceptance criteria, so the reader meets the problem and the outcome before the API shape. Write it whenever a task changes what a consumer can observe on the public surface — anything exported from [packages/ai-chat/src/aiChatEntry.tsx](../../../packages/ai-chat/src/aiChatEntry.tsx) or [packages/ai-chat/src/serverEntry.ts](../../../packages/ai-chat/src/serverEntry.ts). A change with no signature change still qualifies: behavior is public too.
 
 Start with the shape — the interfaces and type aliases added or altered, and the signature of every method put on the surface. Then the half the compiler can't hold.
 

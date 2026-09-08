@@ -7,7 +7,7 @@ body:
     id: value-proposition
     attributes:
       label: Value proposition
-      description: "Why are we doing this? Describe the benefit or value the initiative will deliver to users, customers, or the business. Frame it from the perspective of the user or stakeholder to focus on the problem being solved or the opportunity being captured."
+      description: "Why are we doing this? Describe the benefit or value the initiative will deliver to users, customers, or the business. Frame it from the perspective of the user or stakeholder to focus on the problem being solved or the opportunity being captured. Open with that problem in plain language, and keep file names, scripts, and type names out of it — a reader decides from those first sentences whether this epic concerns them."
     validations:
       required: true
   - type: textarea

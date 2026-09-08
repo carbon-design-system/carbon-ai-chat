@@ -18,7 +18,7 @@ Seven rules, all checkable by reading. The first six tighten sentences; the seve
 
 ## Claim before scaffolding
 
-Put the claim ahead of the material supporting it: a JSDoc block opens with what the symbol is for, a docs page with the task, an issue with the ask, a commit body with the problem, an ADR with the decision. Then keep the section carrying the ask **larger than** Background, Out of scope, and Related. A 57-word Goal sitting under 200 words of Background, beside a 221-word Out of scope, is a document that buries what it wants.
+Put the claim ahead of the material supporting it: a JSDoc block opens with what the symbol is for, a docs page with the task, an issue with the problem it fixes, a commit body with the problem, an ADR with the decision. Then keep the section carrying the ask **larger than** Background, Out of scope, and Related. A 57-word Goal sitting under 200 words of Background, beside a 221-word Out of scope, is a document that buries what it wants.
 
 **`reading-level` is blind to this rule.** It scores sentence length and syllables, and nothing else. A buried lede scores exactly like a front-loaded one, and a document four times longer than its subject warrants scores exactly like a tight one. **A grade under the ceiling is not evidence that the copy is tight.** Order and length are checked by reading, or not at all.
 

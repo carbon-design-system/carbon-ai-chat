@@ -4,7 +4,8 @@ Load this before drafting an issue or epic body into `.github/issue-drafts/`. St
 
 **A reader skims an issue to decide whether it concerns them.** Terse beats thorough.
 
-- **Claim before scaffolding is the rule that bites here.** The ask goes ahead of Background, Out of scope, and Related, and stays larger than them — [revision-pass.md](revision-pass.md#claim-before-scaffolding) carries the worked failure.
+- **Open with the problem, in plain language.** The first two or three sentences of Background say who is bitten and what goes wrong today. Keep type names, file paths, script names, and the shape of the fix out of them — those start at Goal. A reader has to understand the problem before they meet the proposed implementation, or they can't judge whether it is the right one. Plain, not simplistic: write it for a colleague who doesn't work in this area.
+- **Claim before scaffolding is the rule that bites here.** That opening and Goal carry the ask, so they go ahead of the rest of Background, Out of scope, and Related, and stay larger than them — [revision-pass.md](revision-pass.md#claim-before-scaffolding) carries the worked failure.
 - **The title names the change, not the area.** Short, descriptive, imperative: "Add an AGENTS guide for authoring epics".
 - **One instruction per sentence**, hardest in acceptance criteria — a box that needs an "and" is two boxes, and a half-true box can't be ticked.
 - **Never cite repo guidance from the body.** External readers can't follow a repo-relative path and the target rots; an already-filed issue still links references/issue-authoring.md, deleted when these workflows became skills. State the contract; the rule that made you state it is internal.
@@ -12,7 +13,7 @@ Load this before drafting an issue or epic body into `.github/issue-drafts/`. St
 
 ## Gate
 
-`npm run reading-level -- .github/issue-drafts/<slug>.md` at grade 10 or below, then read it once for order — the score is blind to a buried ask. The draft is the gate, because the body is reviewed before it is filed and an edit to a live issue is a second ask.
+`npm run reading-level -- .github/issue-drafts/<slug>.md` at grade 10 or below, then read it once for order — the score is blind to a buried ask, and blind to an opening only its author can follow. The draft is the gate, because the body is reviewed before it is filed and an edit to a live issue is a second ask.
 
 ## Related guidance
 
