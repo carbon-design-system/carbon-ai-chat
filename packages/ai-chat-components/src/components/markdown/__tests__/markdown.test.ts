@@ -3315,3 +3315,140 @@ describe('renderTokenTree — softbreak with breaks: false', () => {
     ).to.include('\n');
   });
 });
+
+describe('cds-aichat-markdown line breaks inside merged inline-HTML runs', () => {
+  // `combineConsecutiveHtmlInline` collapses consecutive html_inline / text /
+  // break tokens into one `html_container` node serialized by
+  // `serializeInlineToken`. Before the fix, both softbreak and hardbreak
+  // returned token.content (the empty string) and the break was deleted.
+
+  type RenderOptions = { sanitize?: boolean; removeHtml?: boolean };
+
+  async function renderMarkdown(markdown: string, opts: RenderOptions = {}) {
+    const el = await fixture<MarkdownElementInstance>(
+      html`<cds-aichat-markdown
+        ?sanitize-html=${opts.sanitize ?? false}
+        ?remove-html=${opts.removeHtml ?? false}
+        .markdown=${markdown}></cds-aichat-markdown>`
+    );
+    await el.updateComplete;
+    return el;
+  }
+
+  // Lit brackets each rendered part with comment markers, so what landed either
+  // side of the break has to be read past them.
+  function contentNodes(parent: Element) {
+    return Array.from(parent.childNodes).filter(
+      (node) => node.nodeType !== Node.COMMENT_NODE
+    );
+  }
+
+  const BREAK_CASES = [
+    { label: 'soft break', markdown: '<span>one\ntwo</span>' },
+    { label: 'hard break', markdown: '<span>one  \ntwo</span>' },
+  ];
+
+  // Default mode — neither flag — is the one that hands the serialized run to
+  // unsafeHTML with nothing filtering it in between.
+  const MERGING_MODES: Array<{ label: string; opts: RenderOptions }> = [
+    { label: 'default', opts: {} },
+    { label: 'sanitize-html', opts: { sanitize: true } },
+  ];
+
+  for (const { label, markdown } of BREAK_CASES) {
+    for (const mode of MERGING_MODES) {
+      it(`renders a ${label} inside a merged inline-HTML run as one <br> (${mode.label})`, async () => {
+        const el = await renderMarkdown(markdown, mode.opts);
+        const span = el.shadowRoot?.querySelector('span');
+        expect(span, '<span> should be in the shadow root').to.not.equal(null);
+        expect(
+          span?.querySelectorAll('br').length,
+          `${label} inside span should produce exactly one <br>`
+        ).to.equal(1);
+        expect(span?.textContent, 'text content should be "onetwo"').to.equal(
+          'onetwo'
+        );
+      });
+    }
+
+    // remove-html parses with `html: false`, so `<span>` is never tokenized as
+    // html_inline and the run is never merged — the serializer does not run
+    // here at all. What this mode still owes is narrower: the tag stays inert
+    // text and the break splits it.
+    it(`renders a ${label} with remove-html set, keeping the tag as inert text`, async () => {
+      const el = await renderMarkdown(markdown, { removeHtml: true });
+      expect(
+        el.shadowRoot?.querySelector('span'),
+        'remove-html must not produce a live <span>'
+      ).to.equal(null);
+
+      const paragraph = el.shadowRoot?.querySelector('p');
+      if (!paragraph) {
+        throw new Error('Expected a <p> in the shadow root');
+      }
+
+      const nodes = contentNodes(paragraph);
+      const breaks = nodes.filter(
+        (node) => node.nodeName.toLowerCase() === 'br'
+      );
+      expect(
+        breaks.length,
+        `${label} should produce exactly one <br>`
+      ).to.equal(1);
+
+      const textAround = (from: number, to: number) =>
+        nodes
+          .slice(from, to)
+          .map((node) => node.textContent)
+          .join('');
+      const breakIndex = nodes.indexOf(breaks[0]);
+      expect(
+        textAround(0, breakIndex),
+        'the escaped opening tag should survive'
+      ).to.equal('<span>one');
+      expect(
+        textAround(breakIndex + 1, nodes.length),
+        'the escaped closing tag should survive'
+      ).to.equal('two</span>');
+    });
+  }
+
+  for (const mode of MERGING_MODES) {
+    it(`the <br> node has no adjacent stray whitespace text node (${mode.label})`, async () => {
+      const el = await renderMarkdown('<span>one\ntwo</span>', mode.opts);
+      const span = el.shadowRoot?.querySelector('span');
+      expect(span).to.not.equal(null);
+      if (!span) {
+        return;
+      }
+      const childNodes = Array.from(span.childNodes);
+      expect(
+        childNodes.length,
+        `span should have exactly 3 child nodes, got: ${childNodes.map((n) => (n.nodeType === 3 ? JSON.stringify(n.textContent) : n.nodeName)).join(', ')}`
+      ).to.equal(3);
+      // Text, not just node type: a serializer emitting '<br />\n' also yields
+      // three nodes, because the newline is parsed into the following text
+      // node. The exact strings are what separate it from '<br />'.
+      expect(childNodes[0].textContent, 'first node is text "one"').to.equal(
+        'one'
+      );
+      expect(
+        childNodes[1].nodeName.toLowerCase(),
+        'second node should be <br>'
+      ).to.equal('br');
+      expect(childNodes[2].textContent, 'third node is text "two"').to.equal(
+        'two'
+      );
+    });
+  }
+
+  it('inline HTML with no line break serializes exactly as before (no-op)', async () => {
+    const el = await renderMarkdown('<span>hello world</span>', {
+      sanitize: true,
+    });
+    const span = el.shadowRoot?.querySelector('span');
+    expect(span).to.not.equal(null);
+    expect(span?.textContent).to.equal('hello world');
+    expect(span?.querySelector('br')).to.equal(null);
+  });
+});
