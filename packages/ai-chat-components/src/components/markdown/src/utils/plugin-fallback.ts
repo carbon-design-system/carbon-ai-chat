@@ -225,7 +225,7 @@ export function renderFallback(
     }
   }
 
-  const index = options.pluginSlotCounter?.next() ?? 0;
+  const index = options.pluginSlotCounter?.next(node) ?? 0;
   const slotName = withInstanceNamespace(
     `${PLUGIN_FALLBACK_SLOT_PREFIX}-${index}`,
     options

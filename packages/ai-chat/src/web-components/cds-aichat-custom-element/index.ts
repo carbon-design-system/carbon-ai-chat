@@ -18,6 +18,7 @@ import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
 import { ChatInstance } from '../../types/instance/ChatInstance';
@@ -199,18 +200,6 @@ class ChatCustomElement extends FlattenedConfigElement {
   @state()
   private _pluginSlotNames: string[] = [];
 
-  /**
-   * Page-level host elements created for plugin-output slots, keyed by slot
-   * name. Created in this element's outer light DOM so consumer-loaded
-   * stylesheets (e.g. KaTeX) reach the rendered HTML normally.
-   *
-   * Keying by slot name alone is safe because the markdown element namespaces
-   * every name it mints per element (see `markdown/src/utils/slot-names.ts` in
-   * `@carbon/ai-chat-components`), so two messages rendering the same markdown
-   * can't collide here.
-   */
-  private _pluginHosts: Map<string, HTMLElement> = new Map();
-
   @state()
   private _instance!: ChatInstance;
 
@@ -238,111 +227,26 @@ class ChatCustomElement extends FlattenedConfigElement {
     }
   };
 
-  private handlePluginHostMount = (event: Event) => {
-    const detail = (
-      event as CustomEvent<{
-        slotName: string;
-        html?: string;
-        element?: HTMLElement;
-        isInline: boolean;
-      }>
-    ).detail;
-    if (!detail?.slotName) {
-      return;
-    }
-    if (!this._pluginSlotNames.includes(detail.slotName)) {
-      this._pluginSlotNames = [...this._pluginSlotNames, detail.slotName];
-    }
-    // cds-aichat-custom-element is always the outermost chat element in its
-    // shadow chain; there is no further chat ancestor to defer to. Take
-    // hosting unconditionally.
-    // Custom-renderer hosts (table/codeBlock) forward a live element that
-    // the markdown element manages directly — do not preventDefault or hoist,
-    // or the named slot loses its host and falls back to the default Carbon
-    // component. Plugin fallbacks forward an HTML string instead.
-    if (detail.element) {
-      return;
-    }
-    event.preventDefault();
-    let host = this._pluginHosts.get(detail.slotName);
-    if (!host) {
-      host = document.createElement(detail.isInline ? 'span' : 'div');
-      host.setAttribute('slot', detail.slotName);
-      // Match `.cds-aichat-markdown-stack > *:not(:first-child)` spacing;
-      // shadow CSS doesn't reach this host (it lives in this element's
-      // outer light DOM), so apply it inline. Inline output flows with
-      // text and gets no extra spacing.
-      if (!detail.isInline) {
-        host.style.marginBlockStart = '1rem';
-      }
-      this._pluginHosts.set(detail.slotName, host);
-      this.appendChild(host);
-    }
-    if (host.innerHTML !== (detail.html ?? '')) {
-      host.innerHTML = detail.html ?? '';
-    }
-  };
-
-  private handlePluginHostUpdate = (event: Event) => {
-    const detail = (event as CustomEvent<{ slotName: string; html: string }>)
-      .detail;
-    if (!detail?.slotName) {
-      return;
-    }
-    const host = this._pluginHosts.get(detail.slotName);
-    if (host && host.innerHTML !== detail.html) {
-      host.innerHTML = detail.html;
-    }
-  };
-
-  private handlePluginHostUnmount = (event: Event) => {
-    const detail = (event as CustomEvent<{ slotName: string }>).detail;
-    if (!detail?.slotName) {
-      return;
-    }
-    this._pluginSlotNames = this._pluginSlotNames.filter(
-      (n) => n !== detail.slotName
-    );
-    const host = this._pluginHosts.get(detail.slotName);
-    if (host) {
-      host.remove();
-      this._pluginHosts.delete(detail.slotName);
-    }
-  };
+  /**
+   * The container half of the plugin-host protocol. Hosts land in this
+   * element's own light DOM — page DOM, since a `cds-aichat-custom-element` is
+   * always the outermost chat element in its shadow chain — so a
+   * consumer-loaded stylesheet reaches the plugin output. There is no outer
+   * chat ancestor to defer to, so this surface takes hosting unconditionally.
+   */
+  private pluginHostController = createMarkdownPluginHostController(this, {
+    onSlotNamesChange: (slotNames) => {
+      this._pluginSlotNames = slotNames;
+    },
+  });
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener(
-      'cds-aichat-markdown-plugin-host-mount',
-      this.handlePluginHostMount
-    );
-    this.addEventListener(
-      'cds-aichat-markdown-plugin-host-update',
-      this.handlePluginHostUpdate
-    );
-    this.addEventListener(
-      'cds-aichat-markdown-plugin-host-unmount',
-      this.handlePluginHostUnmount
-    );
+    this.pluginHostController.connect();
   }
 
   disconnectedCallback() {
-    this.removeEventListener(
-      'cds-aichat-markdown-plugin-host-mount',
-      this.handlePluginHostMount
-    );
-    this.removeEventListener(
-      'cds-aichat-markdown-plugin-host-update',
-      this.handlePluginHostUpdate
-    );
-    this.removeEventListener(
-      'cds-aichat-markdown-plugin-host-unmount',
-      this.handlePluginHostUnmount
-    );
-    for (const host of this._pluginHosts.values()) {
-      host.remove();
-    }
-    this._pluginHosts.clear();
+    this.pluginHostController.disconnect();
     super.disconnectedCallback();
   }
 
