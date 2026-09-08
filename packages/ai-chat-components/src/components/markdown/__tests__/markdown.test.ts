@@ -950,6 +950,12 @@ HTTP: http://example.com
       md.renderer.rules.paragraph_close = () => `</section>`;
     }
 
+    // Break override — should be IGNORED (breaks not in allow-list).
+    function breakOverridePlugin(md: any) {
+      md.renderer.rules.hardbreak = () => `<i class="cds-test-hardbreak"></i>`;
+      md.renderer.rules.softbreak = () => `<i class="cds-test-softbreak"></i>`;
+    }
+
     it('routes fence through a closure-wrapping plugin rule', async () => {
       const el = await fixture<MarkdownElementInstance>(
         html`<cds-aichat-markdown
@@ -1081,6 +1087,28 @@ HTTP: http://example.com
       // Container overrides are intentionally NOT honored — native <p> wins.
       expect(root?.querySelector('p')).to.not.equal(null);
       expect(root?.querySelector('.cds-test-section')).to.equal(null);
+    });
+
+    it('ignores plugin overrides on break tokens (hardbreak/softbreak)', async () => {
+      const el = await fixture<MarkdownElementInstance>(
+        html`<cds-aichat-markdown
+          .markdownItPlugins=${[breakOverridePlugin]}
+          .markdown=${'line one  \nline two\nline three'}></cds-aichat-markdown>`
+      );
+      await el.updateComplete;
+      // Delegation is priced per token, so a break override would mint a slot
+      // host and a mount/unmount event pair for every line break. Native <br>
+      // wins instead.
+      expect(el.shadowRoot?.querySelectorAll('br').length).to.equal(2);
+      expect(
+        el.querySelectorAll('.cds-test-hardbreak, .cds-test-softbreak').length,
+        'plugin break HTML should not be adopted as a light-DOM host'
+      ).to.equal(0);
+      expect(
+        el.shadowRoot?.querySelectorAll('slot[name*="pluginFallback"]')
+          .length ?? 0,
+        'break tokens must not mint a plugin-fallback slot'
+      ).to.equal(0);
     });
 
     it('preserves sanitization on plugin-emitted HTML', async () => {
