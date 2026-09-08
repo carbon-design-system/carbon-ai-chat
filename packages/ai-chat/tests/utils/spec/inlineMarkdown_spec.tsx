@@ -52,6 +52,13 @@ describe('renderInlineMarkdown', () => {
     expect(getByTestId('root').querySelector('s')?.textContent).toBe('strike');
   });
 
+  it('emits <mark> for ==highlight==', () => {
+    const { getByTestId } = renderInline('a ==marked== word');
+    const root = getByTestId('root');
+    expect(root.querySelector('mark')?.textContent).toBe('marked');
+    expect(root.textContent).toBe('a marked word');
+  });
+
   it('emits <a target=_blank rel=noopener> for links', () => {
     const { getByTestId } = renderInline('see [docs](https://example.com)');
     const a = getByTestId('root').querySelector('a');
@@ -59,6 +66,21 @@ describe('renderInlineMarkdown', () => {
     expect(a?.getAttribute('target')).toBe('_blank');
     expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
     expect(a?.textContent).toBe('docs');
+  });
+
+  it('renders a soft break (single newline) as <br>', () => {
+    const { container } = renderInline('one\ntwo');
+    const root = container.querySelector('[data-testid=root]');
+    expect(root?.querySelectorAll('br')).toHaveLength(1);
+    // Exact text, not `toContain`: a half-fix that emitted the <br> and kept
+    // the old space Fragment would render the same two lines and still pass.
+    expect(root?.textContent).toBe('onetwo');
+  });
+
+  it('renders a hard break (two trailing spaces + newline) as <br>', () => {
+    const { container } = renderInline('one  \ntwo');
+    const root = container.querySelector('[data-testid=root]');
+    expect(root?.querySelectorAll('br')).toHaveLength(1);
   });
 
   it('strips raw HTML (removeHTML=true at tokenize time)', () => {

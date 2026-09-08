@@ -9,7 +9,11 @@
 
 import { type ReactNode } from 'react';
 import type {
+  MarkdownCustomRendererMountDetail as _MarkdownCustomRendererMountDetail,
   MarkdownCustomRenderers as _MarkdownCustomRenderers,
+  MarkdownPluginFallbackMountDetail as _MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail as _MarkdownPluginHostMountDetail,
+  MarkdownPluginHostMountDetailInput as _MarkdownPluginHostMountDetailInput,
   MarkdownRendererChecklist as _MarkdownRendererChecklist,
   MarkdownRendererChecklistItemArgs as _MarkdownRendererChecklistItemArgs,
   MarkdownRendererChecklistToggleArgs as _MarkdownRendererChecklistToggleArgs,
@@ -377,6 +381,62 @@ export type MarkdownRendererChecklistToggleArgs =
  * @interface
  */
 export type MarkdownCustomRenderers = _MarkdownCustomRenderers;
+
+/**
+ * Payload of the `cds-aichat-markdown-plugin-host-mount` event when the
+ * markdown element hands over plugin output as an HTML string.
+ *
+ * Claiming the offer means calling `preventDefault()` on the event and
+ * appending a host carrying {@link MarkdownPluginFallbackMountDetail.html} to
+ * a tree the page's own stylesheet can reach. Only a container hosting
+ * markdown output on the element's behalf needs this; application code does
+ * not.
+ *
+ * @category Messaging
+ * @interface
+ */
+export type MarkdownPluginFallbackMountDetail =
+  _MarkdownPluginFallbackMountDetail;
+
+/**
+ * Payload of the `cds-aichat-markdown-plugin-host-mount` event when the
+ * markdown element hands over a live `customRenderers` host.
+ *
+ * Claiming it means re-parenting
+ * {@link MarkdownCustomRendererMountDetail.element} into your own light DOM,
+ * synchronously, and nothing else: never rewrite its content, never style it,
+ * never remove it. The markdown element owns that node across renders and
+ * renders the `<slot>` hop that projects it back.
+ *
+ * @category Messaging
+ * @interface
+ */
+export type MarkdownCustomRendererMountDetail =
+  _MarkdownCustomRendererMountDetail;
+
+/**
+ * The `cds-aichat-markdown-plugin-host-mount` detail, discriminated on `kind`.
+ *
+ * Narrow on `kind`, never on which of `html` / `element` is present — the two
+ * members deliberately declare only their own fields, so reading the wrong one
+ * is a compile error rather than a silent `undefined`.
+ *
+ * @category Messaging
+ */
+export type MarkdownPluginHostMountDetail = _MarkdownPluginHostMountDetail;
+
+/**
+ * A mount detail as it arrives on the wire, `kind` included or not.
+ *
+ * `kind` is newer than the events themselves, and `@carbon/ai-chat` depends on
+ * `@carbon/ai-chat-components` through a caret range, so a listener can still
+ * receive the original shape from an older build. Pass anything you receive
+ * through `resolveMarkdownPluginHostMountDetail` and narrow on the result.
+ *
+ * @category Messaging
+ */
+export type MarkdownPluginHostMountDetailInput =
+  _MarkdownPluginHostMountDetailInput;
 
 /**
  * Per-element renderer overrides for the React `ChatContainer`. Each callback
