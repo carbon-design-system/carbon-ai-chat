@@ -50,8 +50,9 @@ export interface PromptLineControllerInit {
  * The prompt-line shell ([./prompt-line.ts]) delegates all editing behavior to
  * a `PromptLineController`. Two implementations exist:
  *
- * - `TextareaController` (./prompt-line-textarea.ts) — a Tiptap-free `<textarea>`.
- *   It is the default and keeps the shell's static import graph free of `@tiptap/*`.
+ * - `TextareaController` (./prompt-line-textarea-runtime.ts) — a Tiptap-free
+ *   `<textarea>`. It is the default and keeps the shell's static import graph
+ *   free of `@tiptap/*`.
  * - The rich controller ([./prompt-line-rich-runtime.ts]) — a Tiptap `Editor`,
  *   reached only through a dynamic `import()` so Tiptap lands in its own lazy
  *   chunk.
