@@ -13,15 +13,7 @@ A `.github/pr-drafts/<branch-name>.md` file, populated from [.github/PULL_REQUES
 
 ## Style
 
-Brevity is the goal. The reviewer is busy and the diff is the source of truth — the description points at what's non-obvious, it does not narrate the diff. Default to the shortest version that still conveys the change; err on the side of cutting.
-
-Write it like the docs: follow [tone.md](../../../references/tone.md), kept terse. A description favors fragments, so its reading level lands low — that's fine. Just keep it at grade 11 or below; a description should read like a note to a busy teammate, not a technical manual.
-
-- Sentence fragments over full sentences. Cut filler: "this PR", "in order to", "as well as", "note that", restated context.
-- One idea per line. Don't stack parenthetical asides inside a bullet.
-- Say each thing once. Don't repeat a change across Short description, Changelog, and Testing.
-- Omit empty or trivial sections rather than padding them (no "None" placeholders).
-- Check the reading level before handing back: `npm run reading-level -- .github/pr-drafts/<branch-name>.md`. If it reads above grade 11, split long sentences and cut clauses.
+This skill owns the template's sections and what belongs in each. **How the words go is [pr-descriptions.md](../caic-copy-writer/references/pr-descriptions.md)** — type 9 — and it governs every section you draft below, down to the reading-level check you run before handing back.
 
 ## Branch check
 
@@ -111,7 +103,8 @@ The draft file goes inert once the PR exists — later edits need `gh pr edit <n
 
 ## Related guidance
 
-- [tone.md](../../../references/tone.md) — voice and word economy for developer-facing copy
+- [pr-descriptions.md](../caic-copy-writer/references/pr-descriptions.md) — how to word the description, and the gate it takes
+- [tone.md](../../../references/tone.md) — voice and quick rules for developer-facing copy
 - [conventions.md](../../../references/conventions.md) — commits, branches, PR titles
 - [Root AGENTS.md](../../../AGENTS.md) — repo overview and pointer index
 

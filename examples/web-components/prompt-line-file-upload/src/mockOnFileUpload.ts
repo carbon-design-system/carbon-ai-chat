@@ -18,6 +18,9 @@
  * next user turn, plus parsing those references back out of
  * `MessageRequest.input.structured_data` on the assistant side.
  *
+ * Also demonstrates the failure path: throwing from `onFileUpload` marks the
+ * attachment as errored and blocks sending until the user removes it.
+ *
  * Returning `name` and `mime_type` on the reference is what lets the chat render
  * the attachment as a chip in the user's message bubble, and what lets that chip
  * come back if the conversation is restored from history.
@@ -44,7 +47,9 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
  * Mock `UploadConfig.onFileUpload` handler.
  *
  * Simulates a 1-second server-side upload, then returns a {@link StructuredData}
- * containing an {@link ExternalFileReference} with the file's metadata.
+ * containing an {@link ExternalFileReference} with the file's metadata. Files
+ * whose name starts with "a" are rejected instead, so the example can show the
+ * errored-attachment state.
  *
  * In a real integration this function would POST the file to a backend and
  * return the server-assigned reference instead.
@@ -70,6 +75,16 @@ async function mockOnFileUpload(
       { once: true }
     );
   });
+
+  // Reject names starting with "a" so this example has a reproducible way to
+  // show an upload failing: the chip moves from uploading to errored and the
+  // prompt line blocks sending until the attachment is removed. The check runs
+  // after the delay above, not before it, so that transition stays visible.
+  if (file.name.toLowerCase().startsWith('a')) {
+    throw new Error(
+      'Files whose name starts with "a" are blocked by this server\'s content policy.'
+    );
+  }
 
   // Shape required by the chat: `type: "reference"` + a stable `id` is
   // what `customSendMessage` uses to look the file back up on the next turn.

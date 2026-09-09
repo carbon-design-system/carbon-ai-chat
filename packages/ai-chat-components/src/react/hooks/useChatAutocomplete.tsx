@@ -25,6 +25,7 @@ import Autocomplete from '../autocomplete.js';
 import type PromptLineElement from '../../components/prompt-line/src/prompt-line.js';
 import {
   AutocompleteController,
+  itemsToGroups,
   type AutocompleteControllerState,
 } from '../../components/prompt-line/src/autocomplete-controller.js';
 import type {
@@ -194,14 +195,18 @@ export function useChatAutocomplete(
 
   // Prevent mousedown on the autocomplete container from stealing focus from
   // the editor.
-  const handleContainerMousedown = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-  }, []);
+  const handleContainerMousedown = React.useCallback(
+    (e: Event | React.MouseEvent) => {
+      e.preventDefault();
+    },
+    []
+  );
 
   const autocompleteContent = React.useMemo<ReactNode>(() => {
     if (!state.trigger || state.items.length === 0) {
       return null;
     }
+    const { items: flatItems, groups } = itemsToGroups(state.items);
     if (state.renderCustomList) {
       const result = state.renderCustomList({
         items: state.items,
@@ -228,7 +233,7 @@ export function useChatAutocomplete(
           slot="autocomplete-content"
           node={result as ReactNode}
           onMount={setListElement}
-          onMousedown={(e) => e.preventDefault()}
+          onMousedown={handleContainerMousedown}
         />
       );
     }
@@ -236,7 +241,8 @@ export function useChatAutocomplete(
       <Autocomplete
         ref={setListElement}
         slot="autocomplete-content"
-        items={state.items}
+        items={flatItems}
+        groups={groups}
         attached={attached}
         disableDirectSend={state.disableDirectSend}
         onDismiss={dismiss}

@@ -4,8 +4,12 @@ dist
 umd
 node_modules
 *.snap.js
+# Skill trees. .bob/skills/ is canonical and the other two are byte-identical
+# generated mirrors, so formatting any of them would drift them apart and fail
+# `npm run validate:skills`. A new mirror directory belongs here too.
 .claude
 .bob
+.agents
 references
 
 packages/ai-chat/tasks/**

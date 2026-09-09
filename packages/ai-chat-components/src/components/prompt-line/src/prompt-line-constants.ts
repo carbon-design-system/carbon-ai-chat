@@ -10,7 +10,7 @@
 /**
  * Max block size the prompt line grows to before it caps and shows a vertical
  * scrollbar. Shared by both editing surfaces — the lite `<textarea>`
- * ([./prompt-line-controller.ts]) and the rich Tiptap content node
+ * ([./prompt-line-textarea-runtime.ts]) and the rich Tiptap content node
  * ([./tiptap/editor-styles.ts]) — so the two modes cap at the same height and
  * the textarea→rich swap stays imperceptible. Keep them reading this one
  * constant so they can't drift.
@@ -24,3 +24,12 @@ export const PROMPT_LINE_MAX_BLOCK_SIZE = '157px';
  * the lazily-imported Tiptap chunk. Re-exported from [./tiptap/index.ts].
  */
 export const HISTORY_DEFAULTS = { depth: 100, newGroupDelay: 500 } as const;
+
+/**
+ * How long (in milliseconds) to wait after the last keystroke before the
+ * `cds-aichat-prompt-typing` event fires with `isTyping = false`. Shared by
+ * the textarea controller ([./prompt-line-textarea-runtime.ts]) and the
+ * Tiptap typing-indicator extension ([./tiptap/typing-indicator.ts]) so the
+ * two surfaces can't drift.
+ */
+export const TYPING_TIMEOUT_MS = 5000;

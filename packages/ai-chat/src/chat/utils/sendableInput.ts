@@ -39,8 +39,8 @@ function hasSendableInput(
 /**
  * Whether a file is still transferring.
  *
- * `doSend` refuses to send during a transfer, so the Send control has to be
- * disabled for the same window. Left enabled it would light up and do nothing.
+ * `send` refuses to send during a transfer, so the Send control has to be
+ * disabled for the same window. Left enabled it would light up and throw.
  */
 function hasInFlightUpload(pendingUploads?: FileUpload[]): boolean {
   return Boolean(

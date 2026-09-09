@@ -61,6 +61,7 @@ export type {
   AutocompleteConfig,
   StartersConfig,
   SuggestionItem,
+  SuggestionItemGroup,
   CustomListProps,
   TriggerChangeEventDetail,
   RenderTokenChipArgs,

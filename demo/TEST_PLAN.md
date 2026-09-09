@@ -86,6 +86,14 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **user_defined (stream)**
 - [ ] **video**
 
+#### Markdown custom renderers
+
+Set **Chat Configuration → Markdown → Table rendering** to `customRenderers.table` in the sidebar (or deep-link it: append `markdownCustomRenderers` to the `settings` query param), then send **table**.
+
+- [ ] The table renders as the demo's own "Custom table: N columns, M rows" node instead of the Carbon table, in all four container shapes (react/web-component × float/fullscreen).
+- [ ] That node is a child of the outermost chat element, not of the markdown element inside the shadow root — check in devtools. The tree that element sits in differs by shape: the document for the React ones, `<demo-app>`'s shadow root for the web-component ones. Add a rule to that root and confirm it reaches the node.
+- [ ] Send **table (stream)** and confirm one node is reused as chunks arrive, rather than a new one per chunk.
+
 ### Track 3: Mobile & Non-Chrome Browser Support
 
 **Focus:** Smoke testing across browsers, emphasis on mobile.

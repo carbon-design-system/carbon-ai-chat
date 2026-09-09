@@ -55,4 +55,14 @@ describe('toolbar', function () {
     expect(el.shadowRoot).to.exist;
     await expect(el).dom.to.equalSnapshot();
   });
+
+  it('should render the title div inside the shadow root', async () => {
+    const el = await fixture<Toolbar>(
+      html`<cds-aichat-toolbar
+        titleText="My Title"
+        .actions=${actionLists['Advanced list'] as Action[]}></cds-aichat-toolbar>`
+    );
+    const titleDiv = el.shadowRoot!.querySelector('.cds-aichat-toolbar__title');
+    expect(titleDiv).to.exist;
+  });
 });

@@ -68,6 +68,22 @@ function messageWith(content: JSONContent): MessageRequest {
   } as unknown as MessageRequest;
 }
 
+/** Count <br> elements inside every <p> in the rendered bubble. */
+function brCount(content: JSONContent): number {
+  const { container } = render(
+    <StoreProvider store={makeStore()}>
+      <MessageRichUserContent
+        content={content}
+        message={messageWith(content)}
+      />
+    </StoreProvider>
+  );
+  return Array.from(container.querySelectorAll('p')).reduce(
+    (n, p) => n + p.querySelectorAll('br').length,
+    0
+  );
+}
+
 /** Return the text content of every <p> in the rendered bubble, joined. */
 function renderedText(content: JSONContent): string {
   const { container } = render(
@@ -222,5 +238,196 @@ describe('MessageRichUserContent chip spacing (issue #2155)', () => {
       ],
     };
     expect(renderedText(content)).toBe('run deploy now');
+  });
+
+  it('a Shift+Enter renders a <br> with a chip and keeps its newline without one (issue #2272)', () => {
+    // A `hardBreak` TipTap node encodes Shift+Enter. The chip-bearing path
+    // routes through renderInlineMarkdown and emits the <br> itself. The
+    // all-textual path flattens to a string for MarkdownWithDefaults, which
+    // is mocked to a passthrough here, so all this side can pin is that the
+    // newline reaches the element intact; rendering it as a <br> belongs to
+    // the element and is covered in @carbon/ai-chat-components.
+    const withChip: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: ' line one' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'line two' },
+          ],
+        },
+      ],
+    };
+    expect(brCount(withChip)).toBe(1);
+
+    const noChip: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'line one' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'line two' },
+          ],
+        },
+      ],
+    };
+    const { getByTestId } = render(
+      <StoreProvider store={makeStore()}>
+        <MessageRichUserContent
+          content={noChip}
+          message={messageWith(noChip)}
+        />
+      </StoreProvider>
+    );
+    expect(getByTestId('markdown').textContent).toBe('line one\nline two');
+  });
+
+  it('a Shift+Enter immediately before a chip renders a <br> (issue #2272)', () => {
+    // `carbon-mention` appends a text node after every inserted chip, so
+    // typing "line one" Shift+Enter "@Alice" "tail" flushes a run whose
+    // newline sits at the trailing boundary rather than inside the run.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'line one' },
+            { type: 'hardBreak' },
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: ' tail' },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(1);
+    expect(renderedText(content)).toBe('line oneAlice tail');
+  });
+
+  it('a Shift+Enter immediately after a chip renders a <br> (issue #2272)', () => {
+    // Mirror of the case above: the newline opens the run instead of closing
+    // it, so it lands at the leading boundary.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'x' },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(1);
+    expect(renderedText(content)).toBe('Alicex');
+  });
+
+  it('drops a break that opens the paragraph, as the block parser does', () => {
+    // markdown-it trims a leading newline, so the chip path has to as well —
+    // otherwise the same message renders a blank first line only when it
+    // carries a chip, which is the divergence #2272 exists to remove.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'hardBreak' },
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(0);
+  });
+
+  it('drops a break that closes the paragraph, as the block parser does', () => {
+    // The shape `carbon-mention` produces when Shift+Enter follows a chip: the
+    // appended text node plus the newline are both trailing boundary
+    // whitespace, so the break would land last.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: ' ' },
+            { type: 'hardBreak' },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(0);
+  });
+
+  it('drops an opening break that a space separates from the edge', () => {
+    // The break is not the first node: the run's leading whitespace is " \n",
+    // which emits the space as its own sibling ahead of the <br>. A scan that
+    // only reads out[0] stops on that space and leaves a blank first line the
+    // same text without a chip does not have.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: ' ' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'line one' },
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(0);
+  });
+
+  it('drops a closing break that a space separates from the edge', () => {
+    // The mirror: `carbon-mention` appends a text node after the chip, so a
+    // trailing run of "\n " puts the space after the <br> and the break is no
+    // longer the last node.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: 'line one' },
+            { type: 'hardBreak' },
+            { type: 'text', text: ' ' },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(0);
+  });
+
+  it('keeps a break between two spaces inside the paragraph', () => {
+    // The guard against over-correcting: an interior break surrounded by the
+    // same boundary whitespace must survive, or the trim eats real lines.
+    const content: JSONContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'u1', label: 'Alice' } },
+            { type: 'text', text: ' ' },
+            { type: 'hardBreak' },
+            { type: 'text', text: ' line two' },
+          ],
+        },
+      ],
+    };
+    expect(brCount(content)).toBe(1);
   });
 });

@@ -56,7 +56,11 @@ $block-class: #{$prefix}-toolbar;
     margin-block: auto;
     margin-inline-end: auto;
     min-inline-size: layout.$spacing-10;
-    padding-inline: layout.$spacing-04;
+    padding-inline-end: layout.$spacing-04;
+    padding-inline-start: var(
+      --#{$prefix}-toolbar-title-padding-inline-start,
+      #{layout.$spacing-04}
+    );
   }
 
   // Style for name text - this needs to be at the host level to style slotted content

@@ -114,9 +114,9 @@ PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 
 ## Agent skills
 
-This repo's recurring task workflows — shaping work into a plan or epic, filing an issue, drafting a PR description, reviewing a diff — are packaged as agent skills. Each skill holds the full procedure, so an assistant that invokes one gets the whole workflow rather than a pointer to a document it may not open.
+This repo's recurring task workflows are packaged as agent skills. They cover recording a decision, shaping work into a plan or epic, filing an issue, drafting a PR description, reviewing a diff, and writing the copy itself. Each skill holds the full procedure, so an assistant that invokes one gets the whole workflow rather than a pointer to a document it may not open.
 
-They are slash commands in both assistants used here: `/caic-plan`, `/caic-issue`, `/caic-pr`, and `/caic-review`. You can also just read them — they are ordinary markdown.
+They are slash commands in both assistants used here: `/caic-adr`, `/caic-plan`, `/caic-issue`, `/caic-pr`, `/caic-review`, and `/caic-copy-writer`. You can also just read them — they are ordinary markdown.
 
 Each assistant reads skills only from its own directory — IBM Bob from `.bob/skills/`, Claude Code from `.claude/skills/` — so the tree is stored twice. **`.bob/skills/` is the canonical copy**, and `.claude/skills/` is generated from it:
 

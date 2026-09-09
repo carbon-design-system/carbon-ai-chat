@@ -54,17 +54,30 @@ export interface SuggestionItem {
    * items that read as `@name` (files, agents, ...).
    */
   showTriggerInChip?: boolean;
+  /**
+   * Optional group identifier. Items sharing the same `groupId` are rendered
+   * together under a single group heading in the suggestion list. Items
+   * without a `groupId` are rendered as ungrouped before any groups.
+   * Group order follows first-occurrence of each `groupId` in the array.
+   */
+  groupId?: string;
+  /**
+   * Human-readable title for the group header. Every item in the group should
+   * supply this so the header renders correctly if filtering leaves only a
+   * non-first item visible.
+   */
+  groupTitle?: string;
 }
 
 /**
  * Represents a group of related suggestion items with a title.
  */
 export interface SuggestionItemGroup {
-  /** Unique identifier for the group */
+  /** Unique identifier for the group (matches the items' `groupId`). */
   id: string;
-  /** Title displayed above the group */
+  /** Title displayed above the group. */
   title: string;
-  /** Array of suggestion items in this group */
+  /** Items that belong to this group. */
   items: SuggestionItem[];
 }
 
@@ -174,7 +187,15 @@ export interface TriggerSuggestionConfig extends Omit<
  * Note: only one autocomplete config per editor is supported, because Tiptap
  * resolves extensions by name.
  */
-export type AutocompleteConfig = BaseSuggestionConfig;
+/*
+ * The empty extends is deliberate. `type AutocompleteConfig =
+ * BaseSuggestionConfig` is transparent to the checker, so TypeDoc resolves
+ * `InputConfig.autocomplete` past it and links the docs site to the
+ * BaseSuggestionConfig page instead. An interface gives this type its own
+ * symbol, which survives the lookup.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface AutocompleteConfig extends BaseSuggestionConfig {}
 
 /**
  * Configuration for starter prompts — shown when the editor is empty and
