@@ -8,6 +8,7 @@
 - Simulating a 1-second upload with `AbortSignal` support and returning an `ExternalFileReference` wrapped in `StructuredData`.
 - The chat rendering each uploaded file as a chip in the user's own message bubble, from the `name` and `mime_type` on the returned reference.
 - Echoing attached file metadata back as a text message via `instance.messaging.addMessage` and `MessageResponseTypes.TEXT`, showing what the server receives.
+- Demonstrating the upload failure path: attaching a file whose name starts with "a" makes `onFileUpload` throw after the simulated delay, and the chat shows the attachment chip moving from uploading to errored with a description of what went wrong.
 - Documenting the optional `accept`, `maxFileSizeBytes`, and `maxFiles` config knobs (commented in source).
 
 ## When to use this pattern

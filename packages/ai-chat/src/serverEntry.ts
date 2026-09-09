@@ -177,8 +177,12 @@ export {
 // `@tiptap/core` directly. The Carbon suggestion-config types are exported
 // from `./types/config/InputConfig` alongside `InputConfig`.
 export type {
+  BuildCarbonExtensionsConfig,
+  ExcludedTrigger,
   RenderInLightDomArgs,
   RenderInLightDomResult,
+  RenderTokenChipArgs,
+  TokenChipAttrs,
 } from './types/utilities/inputUtils';
 
 export {
@@ -320,7 +324,11 @@ export {
 export {
   ChatContainerPropsMarkdown,
   CustomMarkdownRenderers,
+  MarkdownCustomRendererMountDetail,
   MarkdownCustomRenderers,
+  MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail,
+  MarkdownPluginHostMountDetailInput,
   MarkdownRendererChecklist,
   MarkdownRendererChecklistItemArgs,
   MarkdownRendererChecklistToggleArgs,
@@ -337,6 +345,7 @@ export {
   RenderUserDefinedResponse,
   RenderUserDefinedState,
   RenderWriteableElementResponse,
+  TableCellData,
   TokenTree,
   WCCustomMarkdownRenderers,
   WCMarkdown,

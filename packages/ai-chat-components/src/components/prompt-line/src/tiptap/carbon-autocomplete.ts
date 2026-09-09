@@ -25,8 +25,20 @@ import Suggestion from '@tiptap/suggestion';
 import { dispatchTriggerChange } from './trigger-utils.js';
 import type { AutocompleteConfig, SuggestionItem } from './types.js';
 
+/**
+ * A trigger character that autocomplete stands down for, so a co-installed
+ * mention or command picker wins while its trigger is active. Pass a list of
+ * these as the second argument to {@link carbonAutocomplete}.
+ */
 export interface ExcludedTrigger {
+  /** The character to stand down for, such as `"@"` or `"/"`. */
   char: string;
+  /**
+   * Where that character has to sit. `"anywhere"` stands down for any word
+   * starting with it; `"start"` stands down only when that word starts the
+   * line. Mirrors the picker's own
+   * {@link TriggerSuggestionConfig.triggerPosition}.
+   */
   position: 'anywhere' | 'start';
 }
 

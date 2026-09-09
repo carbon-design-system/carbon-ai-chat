@@ -36,8 +36,18 @@ export const DEFAULT_PAGINATION_STATUS_TEXT = ({
   count: number;
 }) => `${start}–${end} of ${count} items`;
 
+/**
+ * One cell of a parsed markdown table. A custom table renderer reads these
+ * from the `headers` and `rows` it is handed.
+ */
 export interface TableCellData {
+  /** Plain text of the cell, with markdown syntax stripped. */
   text: string;
+  /**
+   * Token tree for the cell's content, or `null` when the cell is plain
+   * text. Render it to keep the links, code spans, and emphasis that `text`
+   * drops.
+   */
   tokens: TokenTree[] | null;
 }
 

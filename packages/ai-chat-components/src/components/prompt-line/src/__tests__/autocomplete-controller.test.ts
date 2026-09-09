@@ -15,8 +15,13 @@
  */
 
 import { expect } from '@open-wc/testing';
+import { Editor } from '@tiptap/core';
+import DocumentNode from '@tiptap/extension-document';
+import ParagraphNode from '@tiptap/extension-paragraph';
+import TextNode from '@tiptap/extension-text';
 
 import { AutocompleteController } from '../autocomplete-controller.js';
+import { carbonStarterTrigger } from '../tiptap/carbon-starter-trigger.js';
 import {
   dispatchTriggerChange,
   resetTriggerChangeState,
@@ -808,6 +813,111 @@ describe('AutocompleteController', () => {
       await flush();
       // The mention config has no renderCustomList, so it must be undefined.
       expect(last.renderCustomList).to.equal(undefined);
+    });
+  });
+
+  describe('Escape / dismiss does not re-open the starter overlay', () => {
+    function makeEditorWithController(items = STARTERS.items) {
+      const mount = document.createElement('div');
+      // Must be in the document and have layout for focus() to work.
+      mount.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;';
+      document.body.appendChild(mount);
+
+      const editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          carbonStarterTrigger(items),
+        ],
+        content: '',
+      });
+
+      const editorEvents: (TriggerChangeEventDetail | null)[] = [];
+      editor.view.dom.addEventListener('cds-aichat-trigger-change', (e) => {
+        editorEvents.push(
+          (e as CustomEvent<TriggerChangeEventDetail | null>).detail
+        );
+      });
+
+      const states: Array<{ trigger: TriggerChangeEventDetail | null }> = [];
+      const controller = new AutocompleteController({
+        starters: STARTERS,
+        onChange: (state) => {
+          states.push({ trigger: state.trigger });
+        },
+      });
+
+      // Wire the real editor into the controller through a minimal promptLine
+      // stub — `getEditor()` must expose `view.dom` (for resetTriggerChangeState)
+      // and the Tiptap `Editor` satisfies that interface.
+      const promptLine = { getEditor: () => editor as any };
+      controller.setPromptLine(promptLine as any);
+
+      // Feed trigger-change events from the real editor into the controller.
+      editor.view.dom.addEventListener('cds-aichat-trigger-change', (e) => {
+        controller.handleTriggerChangeEvent(
+          e as CustomEvent<TriggerChangeEventDetail | null>
+        );
+      });
+
+      return {
+        editor,
+        mount,
+        controller,
+        states,
+        editorEvents,
+        cleanup: () => {
+          controller.destroy();
+          editor.destroy();
+          mount.remove();
+        },
+      };
+    }
+
+    it('dismiss() leaves trigger null and emits no further starter detail', async () => {
+      const { editor, controller, states, editorEvents, cleanup } =
+        makeEditorWithController();
+      try {
+        // Focus the real editor — carbonStarterTrigger.onFocus fires synchronously
+        // and the controller receives the starter detail via the DOM listener.
+        editor.view.dom.focus();
+        await flush();
+
+        const lastStateBeforeDismiss = states[states.length - 1];
+        expect(lastStateBeforeDismiss?.trigger?.type).to.equal('starter');
+
+        // Snapshot the event count before dismissing.
+        const editorEventCountBeforeDismiss = editorEvents.length;
+        states.length = 0;
+
+        // Simulate what happens when the overlay's Escape handler calls dismiss().
+        controller.dismiss();
+
+        // Controller state must be null immediately.
+        expect(states[states.length - 1]?.trigger).to.equal(null);
+
+        // Allow any microtask / macrotask queue to drain.
+        await new Promise<void>((resolve) => setTimeout(resolve));
+
+        // The real editor is still focused and still empty — but no new
+        // starter detail should have been dispatched by the extension.  The
+        // coalescing state was reset by dismiss(), so if the extension fired
+        // again it would appear in editorEvents.
+        const newStarterEvents = editorEvents
+          .slice(editorEventCountBeforeDismiss)
+          .filter((d) => d?.type === 'starter');
+        expect(newStarterEvents).to.have.lengthOf(0);
+
+        // And the controller must not have re-opened the overlay.
+        const reopenedStates = states.filter(
+          (s) => s.trigger?.type === 'starter'
+        );
+        expect(reopenedStates).to.have.lengthOf(0);
+      } finally {
+        cleanup();
+      }
     });
   });
 
