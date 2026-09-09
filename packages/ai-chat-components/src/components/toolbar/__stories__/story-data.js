@@ -14,6 +14,7 @@ import {
   Launch16,
   Maximize16,
   Close16,
+  StarFilled16,
 } from '@carbon/icons';
 import { action } from 'storybook/actions';
 
@@ -88,4 +89,26 @@ export const actionLists = {
     },
   ],
   None: [],
+  'Toggle actions': [
+    {
+      text: 'Favourite (off)',
+      icon: StarFilled16,
+      size: 'md',
+      isSelected: false,
+      onClick: action('onClick'),
+    },
+    {
+      text: 'Download',
+      icon: Download16,
+      size: 'md',
+      onClick: action('onClick'),
+    },
+    {
+      text: 'Close',
+      fixed: true,
+      icon: Close16,
+      size: 'md',
+      onClick: action('onClick'),
+    },
+  ],
 };

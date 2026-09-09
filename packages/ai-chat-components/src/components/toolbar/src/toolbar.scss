@@ -108,4 +108,15 @@ $block-class: #{$prefix}-toolbar;
     min-block-size: layout.$spacing-08;
     min-inline-size: layout.$spacing-08;
   }
+
+  // Pressed / selected state for toggle actions
+  cds-icon-button[data-selected] {
+    background-color: theme.$layer-selected;
+  }
+
+  // Pressed / selected state for overflow item
+  cds-overflow-menu-item[data-selected] {
+    background-color: theme.$layer-selected;
+    color: theme.$text-primary;
+  }
 }

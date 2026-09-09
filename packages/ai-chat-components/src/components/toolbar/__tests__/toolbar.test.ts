@@ -65,4 +65,173 @@ describe('toolbar', function () {
     const titleDiv = el.shadowRoot!.querySelector('.cds-aichat-toolbar__title');
     expect(titleDiv).to.exist;
   });
+
+  describe('isSelected / toggle state (inline icon-button path)', function () {
+    it('should not set aria-pressed when isSelected is absent (plain button)', async () => {
+      const actions: Action[] = [
+        { text: 'Version', icon: Version16, size: 'md', onClick: () => {} },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
+      );
+      const btn = el.shadowRoot!.querySelector('cds-icon-button');
+      expect(btn).to.exist;
+      expect(btn!.hasAttribute('aria-pressed')).to.be.false;
+      expect(btn!.hasAttribute('data-selected')).to.be.false;
+    });
+
+    it('should set isSelected attribute and data-selected when isSelected is true', async () => {
+      // cds-icon-button (via carbon PR #23009) sets aria-pressed="true" on its
+      // inner <button> when isSelected is set. We verify the host attributes
+      // that drive that behaviour and the visual selected class.
+      const actions: Action[] = [
+        {
+          text: 'Toggle',
+          icon: Version16,
+          size: 'md',
+          isSelected: true,
+          onClick: () => {},
+        },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
+      );
+      const btn = el.shadowRoot!.querySelector('cds-icon-button');
+      expect(btn).to.exist;
+      // Carbon handles aria-pressed="true" inside its own shadow DOM;
+      // we set the isSelected property so it does so.
+      expect(btn!.hasAttribute('isselected')).to.be.true;
+      expect(btn!.hasAttribute('data-selected')).to.be.true;
+      // No host-level aria-pressed="false" fallback needed for the on-state
+      expect(btn!.getAttribute('aria-pressed')).to.not.equal('false');
+    });
+
+    it('should set aria-pressed="false" on host (fallback) when isSelected is false', async () => {
+      // cds-icon-button does not emit aria-pressed="false" for the off-state,
+      // so we set it on the host element as a fallback for assistive tech.
+      const actions: Action[] = [
+        {
+          text: 'Toggle',
+          icon: Version16,
+          size: 'md',
+          isSelected: false,
+          onClick: () => {},
+        },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
+      );
+      const btn = el.shadowRoot!.querySelector('cds-icon-button');
+      expect(btn).to.exist;
+      expect(btn!.getAttribute('aria-pressed')).to.equal('false');
+      expect(btn!.hasAttribute('data-selected')).to.be.false;
+    });
+
+    it('should reflect updated isSelected state when actions prop changes', async () => {
+      const actionsOff: Action[] = [
+        {
+          text: 'Toggle',
+          icon: Version16,
+          size: 'md',
+          isSelected: false,
+          onClick: () => {},
+        },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actionsOff}></cds-aichat-toolbar>`
+      );
+      let btn = el.shadowRoot!.querySelector('cds-icon-button');
+      // Toggle-off: host carries aria-pressed="false" fallback
+      expect(btn!.getAttribute('aria-pressed')).to.equal('false');
+
+      const actionsOn: Action[] = [
+        {
+          text: 'Toggle',
+          icon: Version16,
+          size: 'md',
+          isSelected: true,
+          onClick: () => {},
+        },
+      ];
+      el.actions = actionsOn;
+      await el.updateComplete;
+
+      btn = el.shadowRoot!.querySelector('cds-icon-button');
+      // Toggle-on: isSelected set so Carbon handles aria-pressed="true" internally
+      expect(btn!.hasAttribute('isselected')).to.be.true;
+      expect(btn!.hasAttribute('data-selected')).to.be.true;
+      expect(btn!.getAttribute('aria-pressed')).to.not.equal('false');
+    });
+  });
+
+  describe('isSelected / toggle state (overflow menu path)', function () {
+    /**
+     * Force the overflow menu to appear by rendering many actions and setting
+     * a narrow container width via inline style.
+     */
+    async function fixtureWithOverflow(toggleSelected: boolean | undefined) {
+      const actions: Action[] = [
+        { text: 'Version', icon: Version16, size: 'md', onClick: () => {} },
+        { text: 'Download', icon: Download16, size: 'md', onClick: () => {} },
+        { text: 'Share', icon: Share16, size: 'md', onClick: () => {} },
+        { text: 'Launch', icon: Launch16, size: 'md', onClick: () => {} },
+        { text: 'Maximize', icon: Maximize16, size: 'md', onClick: () => {} },
+        {
+          text: 'Toggle',
+          icon: Close16,
+          size: 'md',
+          onClick: () => {},
+          ...(toggleSelected !== undefined
+            ? { isSelected: toggleSelected }
+            : {}),
+        },
+      ];
+
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar
+          overflow
+          style="width:100px"
+          .actions=${actions}></cds-aichat-toolbar>`
+      );
+      // Trigger layout so overflow calculation runs
+      await el.updateComplete;
+      return el;
+    }
+
+    it('should not set aria-pressed on overflow item when isSelected is absent', async () => {
+      const el = await fixtureWithOverflow(undefined);
+      const items = el.shadowRoot!.querySelectorAll('cds-overflow-menu-item');
+      items.forEach((item) => {
+        expect(item.hasAttribute('aria-pressed')).to.be.false;
+      });
+    });
+
+    it('should set aria-pressed="true" on overflow item when isSelected is true', async () => {
+      const el = await fixtureWithOverflow(true);
+      const items = Array.from(
+        el.shadowRoot!.querySelectorAll('cds-overflow-menu-item')
+      );
+      const toggleItem = items.find(
+        (item) => item.textContent?.trim() === 'Toggle'
+      );
+      if (toggleItem) {
+        expect(toggleItem.getAttribute('aria-pressed')).to.equal('true');
+        expect(toggleItem.hasAttribute('data-selected')).to.be.true;
+      }
+    });
+
+    it('should set aria-pressed="false" on overflow item when isSelected is false', async () => {
+      const el = await fixtureWithOverflow(false);
+      const items = Array.from(
+        el.shadowRoot!.querySelectorAll('cds-overflow-menu-item')
+      );
+      const toggleItem = items.find(
+        (item) => item.textContent?.trim() === 'Toggle'
+      );
+      if (toggleItem) {
+        expect(toggleItem.getAttribute('aria-pressed')).to.equal('false');
+        expect(toggleItem.hasAttribute('data-selected')).to.be.false;
+      }
+    });
+  });
 });

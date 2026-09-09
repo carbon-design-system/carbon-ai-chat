@@ -51,6 +51,11 @@ export interface Action extends BaseOverflowMenuItem {
    * When overflow handling is enabled, setting fixed to true will force this action out of the overflow menu.
    */
   fixed?: boolean;
+
+  /**
+   * Determines if a button has toggle functionality
+   */
+  isSelected?: boolean;
 }
 
 /**
@@ -257,10 +262,12 @@ class CDSAIChatToolbar extends LitElement {
    */
   private renderIconButton = (action: Action) => {
     const tooltipAlign = this.isRTL ? 'bottom-start' : 'bottom-end';
+    const { isSelected } = action;
 
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
+        ?data-selected=${isSelected === true}
         data-testid=${action.testId || nothing}
         @click=${action.onClick}
         href=${action.href || nothing}
@@ -270,6 +277,8 @@ class CDSAIChatToolbar extends LitElement {
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
+        ?isSelected=${isSelected === true}
+        aria-pressed=${isSelected === false ? 'false' : nothing}
         ?disabled=${action.disabled}>
         ${iconLoader(action.icon, {
           slot: 'icon',
@@ -377,23 +386,32 @@ class CDSAIChatToolbar extends LitElement {
                         ${repeat(
                           hiddenActions,
                           (item) => item.text,
-                          (item) => html`
-                            <cds-overflow-menu-item
-                              @click=${item.onClick}
-                              href=${item.href || nothing}
-                              target=${
-                                item.href ? item.target || '_self' : nothing
-                              }
-                              ?disabled=${item.disabled}
-                              ?danger=${item.danger}
-                              danger-description=${
-                                item.dangerDescription || nothing
-                              }
-                              ?divider=${item.divider}
-                              data-testid=${item.testId || nothing}>
-                              ${item.text}
-                            </cds-overflow-menu-item>
-                          `
+                          (item) => {
+                            const { isSelected } = item;
+                            return html`
+                              <cds-overflow-menu-item
+                                @click=${item.onClick}
+                                href=${item.href || nothing}
+                                target=${
+                                  item.href ? item.target || '_self' : nothing
+                                }
+                                ?disabled=${item.disabled}
+                                ?danger=${item.danger}
+                                danger-description=${
+                                  item.dangerDescription || nothing
+                                }
+                                ?divider=${item.divider}
+                                ?data-selected=${isSelected === true}
+                                aria-pressed=${
+                                  isSelected !== undefined
+                                    ? String(isSelected)
+                                    : nothing
+                                }
+                                data-testid=${item.testId || nothing}>
+                                ${item.text}
+                              </cds-overflow-menu-item>
+                            `;
+                          }
                         )}
                       </cds-overflow-menu-body>
                     </cds-overflow-menu>
