@@ -15,6 +15,8 @@ superseded-by:
 
 ## Context and problem statement
 
+Hosts write the type of the chat object into their own callbacks, by hand, everywhere they use one. Cut that type in half and every one of those lines comes into question. So the split needs names for the halves, and a rule for which half a callback receives.
+
 [ADR-0002](0002-core-react-wrapper-headless-sdk-split.md) splits the package into a conversation layer and a view layer. It does not name the two halves. It also does not say what a callback gets once the type it gets today is cut in half. Both are this record's job.
 
 Cutting that type is not free. Four public callback slots hand a host a `ChatInstance`: `customSendMessage` and `customLoadHistory` (`config/PublicConfigMessaging.ts:59` and `:68`), `EventBusHandler` (`instance/EventHandlers.ts:83`), and the service-desk factory (`config/ServiceDeskConfig.ts:119`). Hosts do not treat it as an implementation detail. This repo's own consumers annotate it 409 times — 82 in `demo/`, and 327 across 185 files under `examples/`. All 89 consumer `tsconfig.json` files set `strict: true`. The package itself sets `strictFunctionTypes: false` (`packages/ai-chat/tsconfig.json:16`). So the package build cannot see a parameter-variance break that every consumer would.

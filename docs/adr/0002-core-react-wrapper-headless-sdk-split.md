@@ -15,6 +15,10 @@ superseded-by:
 
 ## Context and problem statement
 
+A host that does not use React still ships React to use this chat. Every way into the package boots a React tree, including the two that present themselves as plain custom elements. So a team on Vue, on Angular, or on no framework at all pays for a rendering library it never chose, and cannot drive a conversation without also mounting a UI.
+
+The split that would fix this is closer than it looks, because the conversation code and the interface code already sit apart. What is missing is a published way in that reaches only the first half.
+
 ### Every path boots React today
 
 The package publishes three entry points — `.`, `./es-custom`, and `./server` — plus two web-component paths. All of them run React. `cds-aichat-container` and `cds-aichat-custom-element` are real Lit elements, but they render no chat. They flatten props and forward slots to `cds-aichat-internal`. That element adds a div to its own shadow root, calls `createRoot`, and renders the same React tree the React wrapper renders (`web-components/cds-aichat-container/cds-aichat-internal.tsx:126-167`). `react` and `react-dom` are hard peer dependencies.
@@ -36,48 +40,9 @@ Imports sharpen the same picture. Six modules boot a conversation: `loadServices
 
 The React wrapper is already thin: `src/react/` is two files, `ChatContainer.tsx` and `ChatCustomElement.tsx`.
 
-### Source tree layout
-
-The two layers and the SDK entry point map to three top-level directories under `src/`:
-
-| Directory | Contents | May import from | React permitted |
-| --- | --- | --- | --- |
-| `src/shared/` | The framework-agnostic conversation layer: `services/`, `store/`, `instance/`, `events/`, `schema/`, and the shared utilities and public types. The base that nothing beneath it pulls upward. | Nothing inside `src/` | No |
-| `src/sdk/` | The headless SDK entry point (`acquireChatSDK`), the public SDK types, and the lifecycle adapter. A curated surface over `src/shared/`. | `src/shared/` only | No |
-| `src/chat/` | The React view layer: `components/`, `hooks/`, `providers/`, `contexts/`, `hocs/`, and the app shell. | `src/sdk/` and `src/shared/` | Yes |
-
-The no-React rule on `src/shared/` and `src/sdk/` is not a style preference. It is the mechanism. Add a React import to either directory and a non-React host that takes the SDK entry point pays the React cost. That cost is the problem the split exists to solve. `chat/utils/carbonIcon.ts` breaks the rule today. It calls `createElement`, and it sits under the conversation layer's `utils/`. It moves to `src/react/` as part of the extraction work, because it is a React render helper and `src/react/` is where React helpers live.
-
-The import graph rule is asymmetric by design:
-
-- **`src/sdk/` must not import from `src/chat/`**, ever. An SDK entry point that reaches into the view layer drags in React, framework state, and DOM assumptions. All three belong to the view. Types get no exception. A type import that only a React-bearing module can satisfy still pulls that module into the build graph.
-- **`src/chat/` may import from `src/sdk/` and `src/shared/`**. The React UI drives the same conversation machinery the SDK wraps, so those edges are correct.
-- **`src/shared/` imports nothing from `src/`**. It is the dependency floor. Anything it imported upward would create a cycle or collapse the layers.
-
-`src/react/` and `src/web-components/` sit beside these three and mount the view layer. They are entry-point hosts, not part of the layer stack. So they carry no import limit beyond being entry points.
-
 ### What forces a UI today
 
 Three things. `initServiceManagerAndInstance` takes a required `container: HTMLElement` (`chat/utils/chatBoot.ts:93`), even though its own docs say the function does not render. Only a mounted component ever produces that container. And the theme watcher built during boot falls back to `document.documentElement`, because the container is not set yet when it constructs (`chat/services/loadServices.ts:81-84`, falling back at `chat/services/ThemeWatcherService.ts:37`). The watcher then starts a `MutationObserver` on it whenever the theme is inherited, which is the default. Nothing else in the conversation path needs a DOM. The send path ends in the host's own `customSendMessage`, so the framework does no I/O of its own.
-
-### Two layers, three ways in
-
-The split produces two runtime layers, not three:
-
-- **The conversation layer**, informally the core: services, store, instance, events, schema, and utilities, plus the public types. These are the 107 modules that remain once the four edges are cut. It talks to the assistant, holds the state, and fires the events. It renders nothing, and it depends on no framework.
-- **The view layer**: the React UI in `chat/components` with its hooks, providers, and contexts.
-
-Three entry points sit on top, and they are siblings rather than a stack:
-
-- **The React wrapper** (`src/react/`) mounts the view layer.
-- **The web-component host** mounts the same view layer through a Lit shell.
-- **The headless SDK** skips the view layer and drives the conversation layer directly.
-
-So the React app consumes the conversation layer, and the SDK consumes it too. Nothing consumes the SDK. It is a way in, not a tier beneath the core.
-
-That makes "core" and "SDK" two views of one body of code, not two pieces. The core is the implementation. The SDK is the public surface over it: a curated entry point, the public types, and the lifecycle. It is also why the seam vocabulary has no `ChatCore*` type. [ADR-0023](0023-sdk-prefixed-seam-types.md) owns that call.
-
-**This record does not settle where that public surface ends.** Which parts of the conversation layer become SDK surface, which stay internal, and how the boundary is enforced all rest on open decisions about the state surface and the instance surface. A record of its own settles that once those land. This record decides that the boundary exists and where it ships, not where it falls.
 
 ### What is undecided
 
@@ -108,6 +73,45 @@ Publication is additive, so the staging follows:
 - The SDK entry point ships no earlier than 2.0.0, possibly in 2.0.0 itself. It is not committed to that release, because committing holds the major to packaging work.
 
 What the entry point looks like and what it hands back are [ADR-0025](0025-the-sdk-entry-point-shape.md)'s. The type names it uses are [ADR-0023](0023-sdk-prefixed-seam-types.md)'s. This record decides only that the SDK is an entry point in this package, and when it may appear.
+
+### Two layers, three ways in
+
+The split produces two runtime layers, not three:
+
+- **The conversation layer**, informally the core: services, store, instance, events, schema, and utilities, plus the public types. These are the 107 modules that remain once the four edges are cut. It talks to the assistant, holds the state, and fires the events. It renders nothing, and it depends on no framework.
+- **The view layer**: the React UI in `chat/components` with its hooks, providers, and contexts.
+
+Three entry points sit on top, and they are siblings rather than a stack:
+
+- **The React wrapper** (`src/react/`) mounts the view layer.
+- **The web-component host** mounts the same view layer through a Lit shell.
+- **The headless SDK** skips the view layer and drives the conversation layer directly.
+
+So the React app consumes the conversation layer, and the SDK consumes it too. Nothing consumes the SDK. It is a way in, not a tier beneath the core.
+
+That makes "core" and "SDK" two views of one body of code, not two pieces. The core is the implementation. The SDK is the public surface over it: a curated entry point, the public types, and the lifecycle. It is also why the seam vocabulary has no `ChatCore*` type. [ADR-0023](0023-sdk-prefixed-seam-types.md) owns that call.
+
+**This record does not settle where that public surface ends.** Which parts of the conversation layer become SDK surface, which stay internal, and how the boundary is enforced all rest on open decisions about the state surface and the instance surface. A record of its own settles that once those land. This record decides that the boundary exists and where it ships, not where it falls.
+
+### Source tree layout
+
+The two layers and the SDK entry point map to three top-level directories under `src/`:
+
+| Directory | Contents | May import from | React permitted |
+| --- | --- | --- | --- |
+| `src/shared/` | The framework-agnostic conversation layer: `services/`, `store/`, `instance/`, `events/`, `schema/`, and the shared utilities and public types. The base that nothing beneath it pulls upward. | Nothing inside `src/` | No |
+| `src/sdk/` | The headless SDK entry point (`acquireChatSDK`), the public SDK types, and the lifecycle adapter. A curated surface over `src/shared/`. | `src/shared/` only | No |
+| `src/chat/` | The React view layer: `components/`, `hooks/`, `providers/`, `contexts/`, `hocs/`, and the app shell. | `src/sdk/` and `src/shared/` | Yes |
+
+The no-React rule on `src/shared/` and `src/sdk/` is not a style preference. It is the mechanism. Add a React import to either directory and a non-React host that takes the SDK entry point pays the React cost. That cost is the problem the split exists to solve. `chat/utils/carbonIcon.ts` breaks the rule today. It calls `createElement`, and it sits under the conversation layer's `utils/`. It moves to `src/react/` as part of the extraction work, because it is a React render helper and `src/react/` is where React helpers live.
+
+The import graph rule is asymmetric by design:
+
+- **`src/sdk/` must not import from `src/chat/`**, ever. An SDK entry point that reaches into the view layer drags in React, framework state, and DOM assumptions. All three belong to the view. Types get no exception. A type import that only a React-bearing module can satisfy still pulls that module into the build graph.
+- **`src/chat/` may import from `src/sdk/` and `src/shared/`**. The React UI drives the same conversation machinery the SDK wraps, so those edges are correct.
+- **`src/shared/` imports nothing from `src/`**. It is the dependency floor. Anything it imported upward would create a cycle or collapse the layers.
+
+`src/react/` and `src/web-components/` sit beside these three and mount the view layer. They are entry-point hosts, not part of the layer stack. So they carry no import limit beyond being entry points.
 
 ### Consequences
 

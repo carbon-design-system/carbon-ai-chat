@@ -15,6 +15,8 @@ superseded-by:
 
 ## Context and problem statement
 
+A host with no interface needs two things this package has never offered: a way to start a conversation without mounting anything, and a way to say it is finished with one. There is no component to unmount, so nothing else can say it.
+
 [ADR-0002](0002-core-react-wrapper-headless-sdk-split.md) decides that the headless SDK ships as an entry point over the conversation layer, and when it ships. It does not say what calling that entry point looks like. It does not say what you hold afterwards.
 
 The question is not open-ended, because boot already has a shape. `initServiceManagerAndInstance` is an `async` function (`chat/utils/chatBoot.ts:93`). It builds the config, creates the service manager, and returns an instance. It already splits construction from rendering, and its own comment says the function does not render. What makes it unusable headlessly is nearly down to one argument: a required `container: HTMLElement`, which only a mounted component produces. One more thing gets in the way. A theme watcher reaches for `document` before that container is even assigned, so the headless boot has to guard it.

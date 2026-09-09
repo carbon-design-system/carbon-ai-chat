@@ -15,6 +15,8 @@ superseded-by:
 
 ## Context and problem statement
 
+The chat hands a host one object carrying everything it can do. The split now under way needs that object to come apart along a clean line. Nobody has checked whether it does, and this record is that check.
+
 [ADR-0002](0002-core-react-wrapper-headless-sdk-split.md) splits the package into a conversation layer and a view layer. [ADR-0023](0023-sdk-prefixed-seam-types.md) names the two halves. Between them they record one assumption that neither can check. `ChatViewInstance` is a **sibling** of `ChatSDKInstance`, not a subtype, and `ChatInstance` composes the two.
 
 That shape only works if the instance member set really partitions. If enough members belong to both halves, the sibling cut is decoration. The fallback is then `ChatViewInstance extends ChatSDKInstance`, with `ChatInstance` as a two-parent alias that decomposes nothing.
