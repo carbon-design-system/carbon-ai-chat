@@ -7,6 +7,7 @@ Enables file attachments on `<cds-aichat-custom-element>` with a mock `onFileUpl
 - Turning on the file-attachment button in the chat input via `upload.isOn: true`.
 - Supplying an `upload.onFileUpload` handler that returns an `ExternalFileReference` / `StructuredData` payload after a simulated 1-second upload.
 - Respecting `AbortSignal` so removing a pending attachment cancels its in-flight upload.
+- Reporting a rejected upload by throwing from `onFileUpload`, so the chip shows the error and a screen reader hears the reason. Attach a file named `fail.txt` to see it.
 - The chat rendering each uploaded file as a chip in the user's own message bubble, from the `name` and `mime_type` on the returned reference.
 - Echoing file metadata (name, type, size, server id) back through `customSendMessage`, showing what the server receives.
 - Documenting optional upload guards (`accept`, `maxFileSizeBytes`, `maxFiles`) as commented configuration.

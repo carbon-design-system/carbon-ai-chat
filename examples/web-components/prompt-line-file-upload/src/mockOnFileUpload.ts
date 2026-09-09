@@ -71,6 +71,15 @@ async function mockOnFileUpload(
     );
   });
 
+  // The failure path. `onFileUpload` reports a rejected upload by throwing, and the
+  // `Error`'s message becomes the reason shown on the chip and announced to a screen
+  // reader. The chat supplies the title and the "remove the attachment" instruction, so
+  // state only the reason here. Rejecting after the delay mirrors a server that accepts
+  // the file, then refuses it — attach a file named `fail.txt` to see it.
+  if (file.name.toLowerCase().includes('fail')) {
+    throw new Error('The server rejected this file after a virus scan.');
+  }
+
   // Shape required by the chat: `type: "reference"` + a stable `id` is
   // what `customSendMessage` uses to look the file back up on the next turn.
   const reference: ExternalFileReference = {
