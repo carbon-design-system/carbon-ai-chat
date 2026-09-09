@@ -134,7 +134,7 @@ The costs, taken knowingly:
 
 **This is almost all new surface.** The SDK entry point does not exist yet, and ADR-0002 stages it no earlier than 2.0.0.
 
-One part is not new, and you can see it in the shells today. The React and web-component shells already reconcile prop changes as a wholesale replace: each change rebuilds the complete config from current props, the result is snapshotted, and an omitted field reverts to its default rather than surviving (`chat/utils/dynamicConfigUpdates.ts:84`). Mutating a config object in place has no effect either, because the shells compare by identity. `updateConfig` is that same implementation given a public name, so a host moving to the SDK inherits reconciliation behavior the shells already ship.
+One part is not new, and you can see it in the shells today. The React and web-component shells already reconcile prop changes as a wholesale replace: each change rebuilds the complete config from current props, the result is snapshotted, and an omitted field reverts to its default rather than surviving (`chat/utils/dynamicConfigUpdates.ts:82-95`). Mutating a config object in place has no effect either, because the shells compare by identity. `updateConfig` is that same implementation given a public name, so a host moving to the SDK inherits reconciliation behavior the shells already ship.
 
 ```ts
 import { acquireChatSDK, MessageState } from '@carbon/ai-chat/sdk';

@@ -17,7 +17,7 @@ superseded-by:
 
 ### Every path boots React today
 
-The package publishes three entry points — `.`, `./es-custom`, and `./server` — plus two web-component paths, and all of them run React. `cds-aichat-container` and `cds-aichat-custom-element` are real Lit elements, but they render no chat. They flatten props and forward slots to `cds-aichat-internal`, which appends a div to its own shadow root, calls `createRoot`, and renders the same React tree the React wrapper renders (`web-components/cds-aichat-container/cds-aichat-internal.tsx:142`). `react` and `react-dom` are hard peer dependencies.
+The package publishes three entry points — `.`, `./es-custom`, and `./server` — plus two web-component paths, and all of them run React. `cds-aichat-container` and `cds-aichat-custom-element` are real Lit elements, but they render no chat. They flatten props and forward slots to `cds-aichat-internal`, which appends a div to its own shadow root, calls `createRoot`, and renders the same React tree the React wrapper renders (`web-components/cds-aichat-container/cds-aichat-internal.tsx:126-167`). `react` and `react-dom` are hard peer dependencies.
 
 The cost is visible in this repo. Of the 41 examples under `examples/web-components/`, 39 declare `react` and `react-dom`, and not one of them contains a line of React.
 
@@ -58,7 +58,7 @@ The import graph rule is asymmetric by design:
 
 ### What forces a UI today
 
-Three things. `initServiceManagerAndInstance` takes a required `container: HTMLElement` (`chat/utils/chatBoot.ts:93`), even though its own documentation says the function does not render. That container is only ever produced by a mounted component. And the theme watcher built during boot falls back to `document.documentElement`, because the container is not assigned yet when it constructs (`chat/services/loadServices.ts:82`), then starts a `MutationObserver` on it whenever the theme is inherited — the default. Beyond those, nothing in the conversation path itself needs a DOM — the send path ends in the host's own `customSendMessage`, so the framework performs no I/O of its own.
+Three things. `initServiceManagerAndInstance` takes a required `container: HTMLElement` (`chat/utils/chatBoot.ts:93`), even though its own documentation says the function does not render. That container is only ever produced by a mounted component. And the theme watcher built during boot falls back to `document.documentElement`, because the container is not assigned yet when it constructs (`chat/services/loadServices.ts:81-84`, falling back at `chat/services/ThemeWatcherService.ts:37`), then starts a `MutationObserver` on it whenever the theme is inherited — the default. Beyond those, nothing in the conversation path itself needs a DOM — the send path ends in the host's own `customSendMessage`, so the framework performs no I/O of its own.
 
 ### Two layers, three ways in
 
@@ -113,7 +113,7 @@ What the entry point looks like and what it hands back are [ADR-0025](0025-the-s
 
 The packaging question stops reopening. An issue touching the seam has a decided answer for where the SDK lives and when it ships, and the argument moves to what the halves are called, which ADR-0023 owns.
 
-**It opens a path to a Lit view that this record does not take.** The view layer is React today, but every Carbon element it renders already comes from a Lit library, reached through `@lit/react` wrappers at 42 sites — `src/chat/` imports Lit directly zero times. Those wrappers exist only because the view is React; a Lit view would delete them and let the elements be used natively. A framework-free core is what makes that buildable at all, and it would leave React in two places: the React entry points, where it belongs, and the icon utility. The shells would then invert — today a Lit element wraps a React tree, and it would become a React wrapper over a Lit view.
+**It opens a path to a Lit view that this record does not take.** The view layer is React today, but every Carbon element it renders already comes from a Lit library, reached through `@lit/react` wrappers at 28 sites across 24 files — `src/chat/` imports Lit directly zero times. Those wrappers exist only because the view is React; a Lit view would delete them and let the elements be used natively. A framework-free core is what makes that buildable at all, and it would leave React in two places: the React entry points, where it belongs, and the icon utility. The shells would then invert — today a Lit element wraps a React tree, and it would become a React wrapper over a Lit view.
 
 None of that is the goal of this pass, and nothing here commits to it. It is worth recording because it is the reason to enforce the core boundary strictly rather than approximately: a boundary that merely holds today is enough for the SDK, but only a boundary that stays clean keeps this option open.
 

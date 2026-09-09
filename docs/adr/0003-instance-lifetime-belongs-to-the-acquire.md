@@ -17,13 +17,13 @@ superseded-by:
 
 A chat is built by a mount effect and belongs to it. `ChatAppEntry`'s effect calls `initServiceManagerAndInstance` (`chat/ChatAppEntry.tsx:188-193`) with no condition and no registry lookup, so every mount constructs a fresh service manager, a fresh store, and a fresh instance.
 
-The effect returns no cleanup, so the previous graph is not torn down — it is abandoned. Nothing in `packages/ai-chat/src` disposes a service manager at all; there is no `unloadServices` and no `destroy` on the instance. Each boot registers store subscriptions (`chat/services/loadServices.ts:59-78`) that nothing removes, so a remount leaves a live set behind on a store nobody releases. The consequence for the consumer is not a clean restart; it is amnesia plus a leak.
+The effect returns no cleanup, so the previous graph is not torn down — it is abandoned. Nothing in `packages/ai-chat/src` disposes a service manager at all; there is no `unloadServices` and no `destroy` on the instance. Each boot registers store subscriptions (`chat/services/loadServices.ts:59-79`) that nothing removes, so a remount leaves a live set behind on a store nobody releases. The consequence for the consumer is not a clean restart; it is amnesia plus a leak.
 
 The conversation does not come back on its own. `PersistedState` carries view state, unread and launcher flags, disclaimers, the home screen, and human-agent state — and no messages. Only a host-supplied history loader can restore a transcript.
 
 The human-agent case is louder than a lost transcript. On the new boot, hydration reads the persisted connection flag and either forces a desk-level reconnect or ends the chat and writes "chat was ended" messages into the transcript (`chat/services/haa/HumanAgentServiceImpl.ts:793-850`). A remount the host did not think of as a lifecycle event can therefore tell a user their agent conversation is over.
 
-Hosts hit this through ordinary React: a StrictMode double-mount, a changing `key`, or conditional rendering. `ChatContainer` pins `key="stable-chat-instance"` on its own child (`react/ChatContainer.tsx:378`), which guards remounts originating inside `ChatContainer` and nothing above it.
+Hosts hit this through ordinary React: a StrictMode double-mount, a changing `key`, or conditional rendering. `ChatContainer` pins `key="stable-chat-instance"` on its own child (`react/ChatContainer.tsx:297`), which guards remounts originating inside `ChatContainer` and nothing above it.
 
 ## Considered options
 
