@@ -11,15 +11,13 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   // server.js and the browser bundle read the same WATSONX_* names out of
-  // .env, so widen the prefix allow-list instead of renaming them to VITE_*.
+  // .env,  widen prefix allow-list instead of renaming them to VITE_*
   envPrefix: ['VITE_', 'WATSONX_'],
   server: {
     port: Number(process.env.PORT) || 3000,
     open: true,
   },
-  // @carbon/ai-chat and @carbon/ai-chat-components are symlinked workspace
-  // packages. Keeping them out of the dependency pre-bundle means a package
-  // rebuild reaches this dev server without a manual optimizer purge.
+  // exclude these packages from pre-bundle
   optimizeDeps: {
     exclude: ['@carbon/ai-chat', '@carbon/ai-chat-components'],
   },

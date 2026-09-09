@@ -10,7 +10,7 @@
 /// <reference types="vite/client" />
 
 // These are read from .env and allow-listed through `envPrefix` in
-// vite.config.ts, so they need declaring alongside Vite's built-in env keys.
+// vite.config.ts,  declare alongside Vite's built-in env keys.
 interface ImportMetaEnv {
   readonly WATSONX_API_KEY?: string;
   readonly WATSONX_PROJECT_ID?: string;

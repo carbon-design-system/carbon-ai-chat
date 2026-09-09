@@ -15,10 +15,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    // The monorepo root hoists React 19. Pin both packages to this example's
-    // own node_modules so the example really exercises React 17, and so the
-    // symlinked @carbon/ai-chat resolves to the same copy rather than a second
-    // React instance.
     alias: {
       react: path.resolve(__dirname, 'node_modules/react'),
       'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),

@@ -22,9 +22,8 @@ export default defineConfig({
   // anything that fails twice in a row is a real bug, not a race. Local
   // runs get 0 retries so devs see flakes immediately.
   retries: process.env.CI ? 1 : 0,
-  // Serve the production build. Vite's `@vite/client` injects inline <style>
-  // tags that trip the test-time CSP (`style-src 'self'`); preview has no
-  // client and matches what GitHub Pages serves.
+  // Serve production build. Vite's `@vite/client` injects inline <style>
+  // to trip CSP tests (`style-src 'self'`)
   webServer: {
     command:
       'npm run build && npm run preview -- --host 127.0.0.1 --port 3001 --strictPort',

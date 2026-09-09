@@ -58,10 +58,11 @@ export const installTestCsp = async (page: Page) => {
       // than passing through to the network unconditionally.
       return route.fallback();
     }
-    // Some Vite / proxy keep-alive sockets can close between tests; Playwright's
-    // APIRequestContext may then reuse a dead socket and surface
-    // `read ECONNRESET`. Force a fresh connection per document fetch and retry
-    // once on transient socket errors as defense in depth.
+    // Some Vite / proxy keep-alive sockets can close between tests. Playwright's
+    // APIRequestContext can reuse a socket that the server has already closed,
+    // surfacing as `read ECONNRESET` on the next request between tests. Force a
+    // fresh connection per document fetch to avoid the stale-socket window, and
+    // retry once on transient socket errors as defense in depth.
     const fetchHeaders = { ...request.headers(), connection: 'close' };
     let response;
     for (let attempt = 0; attempt < 2; attempt += 1) {

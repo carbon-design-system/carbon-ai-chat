@@ -14,11 +14,7 @@ import { defineConfig, type Plugin } from 'vite';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const versionsSource = path.resolve(__dirname, '..', 'versions.js');
 
-/**
- * Serves /versions.js in dev and copies it into dist on build. The version
- * switcher fetches `./versions.js` when running on localhost; the previous
- * bundler copied it into dist with a custom plugin.
- */
+// serve /versions.js in dev and copies it into dist on build
 function versionsJsPlugin(): Plugin {
   return {
     name: 'demo-versions-js',
@@ -55,25 +51,19 @@ function versionsJsPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [
-    // Only transform the demo's own React sources. Prebuilt workspace wrappers
-    // under packages/*/es already call react/jsx-runtime; running Refresh over
-    // them injects `$RefreshSig$` without loading the runtime.
+    // transform demo's own React sources only
     react({ include: [/\/demo\/src\/.*\.[jt]sx?$/] }),
     versionsJsPlugin(),
   ],
-  // analytics-init.js (and anything else under public/) is served at the site
-  // root so the same-origin CSP in tests can pass it under script-src 'self'.
+  // public/ served at site root, so same-origin CSP for tests
   publicDir: 'public',
   server: {
     port: Number(process.env.PORT) || 3001,
-    // Playwright pins PORT=3001; fail rather than silently binding elsewhere.
     strictPort: Boolean(process.env.PORT),
     host: true,
     open: true,
   },
-  // @carbon/ai-chat and @carbon/ai-chat-components are symlinked workspace
-  // packages. Keeping them out of the dependency pre-bundle means a package
-  // rebuild reaches this dev server without a manual optimizer purge.
+  // exclude these packages from pre-bundle
   optimizeDeps: {
     exclude: ['@carbon/ai-chat', '@carbon/ai-chat-components'],
   },

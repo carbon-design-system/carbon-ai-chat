@@ -12,6 +12,14 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: Number(process.env.PORT) || 3000,
+    open: true,
+  },
+  // exclude these packages from pre-bundle
+  optimizeDeps: {
+    exclude: ['@carbon/ai-chat', '@carbon/ai-chat-components'],
+  },
   test: {
     environment: 'happy-dom',
     globals: true,
