@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect, fixture, html, oneEvent } from '@open-wc/testing';
+import { aTimeout, expect, fixture, html, oneEvent } from '@open-wc/testing';
 import '@carbon/ai-chat-components/es/components/file-uploads/index.js';
 import type FileUploadItemElement from '@carbon/ai-chat-components/es/components/file-uploads/src/file-upload-item.js';
 import {
@@ -41,6 +41,20 @@ async function mount(upload: FileUpload): Promise<FileUploadItemElement> {
     html`<cds-aichat-file-upload-item
       .upload="${upload}"></cds-aichat-file-upload-item>`
   );
+}
+
+/**
+ * The chip wires its error state after awaiting Carbon's own render, so settle
+ * both before asserting.
+ */
+async function settle(el: FileUploadItemElement): Promise<void> {
+  await el.updateComplete;
+  await aTimeout(0);
+}
+
+/** Carbon's shadow root, where the error text and remove button both live. */
+function innerRoot(el: FileUploadItemElement): ShadowRoot {
+  return el.renderRoot.querySelector('cds-file-uploader-item')!.shadowRoot!;
 }
 
 describe('file-upload-item', () => {
@@ -279,5 +293,133 @@ describe('file-upload-item', () => {
     );
     const uploaderItem = el.renderRoot.querySelector('cds-file-uploader-item')!;
     expect(uploaderItem.hasAttribute('invalid')).to.be.true;
+  });
+  describe('remove button name', () => {
+    it('prefers the named label over the generic one', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+      el.removeFileNamedLabel = 'Remove a.txt';
+      await settle(el);
+
+      const button = innerRoot(el).querySelector('button.cds--file-close')!;
+      expect(button.getAttribute('aria-label')).to.equal('Remove a.txt');
+    });
+
+    it('gives two chips two distinct button names', async () => {
+      const first = await mount(makeUpload('a', FileStatusValue.EDIT));
+      first.removeFileNamedLabel = 'Remove ok.txt';
+      const second = await mount(makeUpload('b', FileStatusValue.EDIT));
+      second.removeFileNamedLabel = 'Remove a-reject.txt';
+      await settle(first);
+      await settle(second);
+
+      const nameOf = (el: FileUploadItemElement) =>
+        innerRoot(el)
+          .querySelector('button.cds--file-close')!
+          .getAttribute('aria-label');
+
+      // Two buttons both named "Remove file" are indistinguishable to a screen
+      // reader — WCAG 2.1 AA 4.1.2.
+      expect(nameOf(first)).to.contain('ok.txt');
+      expect(nameOf(second)).to.contain('a-reject.txt');
+      expect(nameOf(first)).to.not.equal(nameOf(second));
+    });
+
+    it('falls back to the generic label when no name is supplied', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+      await settle(el);
+
+      // A chip with no resolvable name states the generic label rather than
+      // rendering an empty accessible name.
+      const button = innerRoot(el).querySelector('button.cds--file-close')!;
+      expect(button.getAttribute('aria-label')).to.equal('Remove file');
+    });
+  });
+
+  describe('error state', () => {
+    it('marks the host aria-invalid and describes the remove button with the reason', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'File is too large.',
+        })
+      );
+      await settle(el);
+
+      // aria-invalid needs a role to be exposed; on a role-less host it is
+      // dropped.
+      expect(el.getAttribute('role')).to.equal('group');
+      expect(el.getAttribute('aria-invalid')).to.equal('true');
+
+      const root = innerRoot(el);
+      const button = root.querySelector('button.cds--file-close')!;
+      expect(button.getAttribute('aria-invalid')).to.equal('true');
+
+      // The description must resolve to the node holding the reason — an
+      // aria-describedby pointing at nothing is the bug this fixes.
+      const describedBy = button.getAttribute('aria-describedby');
+      expect(describedBy).to.be.a('string');
+      expect(root.getElementById(describedBy!)?.textContent).to.contain(
+        'File is too large.'
+      );
+    });
+
+    it('leaves a healthy chip with no error wiring', async () => {
+      const el = await mount(makeUpload('a', FileStatusValue.EDIT));
+      await settle(el);
+
+      expect(el.hasAttribute('aria-invalid')).to.be.false;
+      const button = innerRoot(el).querySelector('button.cds--file-close')!;
+      expect(button.hasAttribute('aria-invalid')).to.be.false;
+      expect(button.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    it('describes nothing when a failure carries no reason', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, { isError: true })
+      );
+      await settle(el);
+
+      // Still invalid — the state is real even when the host said nothing about
+      // why — but pointing at Carbon's empty requirement node would describe the
+      // button with silence.
+      expect(el.getAttribute('aria-invalid')).to.equal('true');
+      const button = innerRoot(el).querySelector('button.cds--file-close')!;
+      expect(button.getAttribute('aria-invalid')).to.equal('true');
+      expect(button.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    it('clears the error wiring when the upload recovers', async () => {
+      const el = await mount(
+        makeUpload('a', FileStatusValue.EDIT, {
+          isError: true,
+          errorMessage: 'Boom',
+        })
+      );
+      await settle(el);
+      expect(el.getAttribute('aria-invalid')).to.equal('true');
+
+      el.upload = makeUpload('a', FileStatusValue.EDIT);
+      await settle(el);
+
+      expect(el.hasAttribute('aria-invalid')).to.be.false;
+      const button = innerRoot(el).querySelector('button.cds--file-close')!;
+      expect(button.hasAttribute('aria-describedby')).to.be.false;
+    });
+
+    it('does not mark a read-only chip invalid', async () => {
+      const el = await fixture<FileUploadItemElement>(
+        html`<cds-aichat-file-upload-item
+          read-only
+          .upload="${makeUpload('a', FileStatusValue.EDIT, {
+            isError: true,
+            errorMessage: 'Boom',
+          })}"></cds-aichat-file-upload-item>`
+      );
+      await settle(el);
+
+      // A sent message's attachment has no failure to report and no remove
+      // button to describe.
+      expect(el.hasAttribute('aria-invalid')).to.be.false;
+    });
   });
 });

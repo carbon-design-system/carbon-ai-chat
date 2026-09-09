@@ -37,6 +37,12 @@ import type { FileAttachment } from './types.js';
 import styles from './file-upload-item.scss?lit';
 
 /**
+ * Ids are scoped to their shadow root and each `cds-file-uploader-item` has its
+ * own, so a constant collides with nothing.
+ */
+const ERROR_MESSAGE_ID = 'cds-aichat-file-upload-item-error';
+
+/**
  * The name, type, and (when available) `File` behind the chip, resolved from
  * whichever input was supplied.
  */
@@ -81,9 +87,16 @@ class FileUploadItemElement extends LitElement {
   @property({ type: Boolean, attribute: 'read-only', reflect: true })
   readOnly = false;
 
-  /** Label for the remove file button. */
+  /** Label for the remove file button, used when no file name is available. */
   @property({ type: String, attribute: 'remove-file-label' })
   removeFileLabel = 'Remove file';
+
+  /**
+   * Accessible name for the remove button, with the file name already
+   * interpolated by the caller. Falls back to {@link removeFileLabel}.
+   */
+  @property({ type: String, attribute: 'remove-file-named-label' })
+  removeFileNamedLabel?: string;
 
   /** Label for the uploading status. */
   @property({ type: String, attribute: 'uploading-file-label' })
@@ -211,6 +224,86 @@ class FileUploadItemElement extends LitElement {
       changedProperties.has('_failedPreviewURL')
     ) {
       this._syncInjectedStyles();
+    }
+
+    if (
+      changedProperties.has('readOnly') ||
+      changedProperties.has('upload') ||
+      !this._syncedErrorState
+    ) {
+      this._syncErrorState();
+    }
+  }
+
+  private _syncedErrorState = false;
+
+  /**
+   * Carbon leaves the failure message unreferenced and hides the invalid icon, so
+   * the remove button — the chip's only focusable node — states no reason. The
+   * message and the button are siblings in Carbon's shadow root, so the
+   * `aria-describedby` is wired there: an id reference cannot cross the boundary.
+   */
+  private async _syncErrorState() {
+    const { isError, message } = this._uploadError;
+    const invalid = !this.readOnly && isError;
+
+    // Shadow DOM hides the chip's implicit semantics, and `aria-invalid` on a
+    // role-less host is dropped — so the host states a role and names itself.
+    this.setAttribute('role', 'group');
+    const name = this._resolved?.name;
+    if (name) {
+      this.setAttribute('aria-label', name);
+    } else {
+      this.removeAttribute('aria-label');
+    }
+
+    if (invalid) {
+      this.setAttribute('aria-invalid', 'true');
+    } else {
+      this.removeAttribute('aria-invalid');
+    }
+
+    const inner = this.shadowRoot?.querySelector(
+      'cds-file-uploader-item'
+    ) as LitElement | null;
+    if (!inner) {
+      return;
+    }
+
+    // A failure also flips `state`, and Carbon re-renders that subtree — replacing
+    // the button being described. Wait for the new one.
+    await inner.updateComplete;
+
+    const innerRoot = inner.shadowRoot;
+    if (!innerRoot) {
+      return;
+    }
+    this._syncedErrorState = true;
+
+    // Carbon renders the requirement node even when it holds no message.
+    const describe = invalid && Boolean(message);
+
+    const title = innerRoot.querySelector('.cds--form-requirement__title');
+    if (title) {
+      if (describe) {
+        title.id = ERROR_MESSAGE_ID;
+      } else {
+        title.removeAttribute('id');
+      }
+    }
+
+    const removeButton = innerRoot.querySelector('button.cds--file-close');
+    if (removeButton) {
+      if (invalid) {
+        removeButton.setAttribute('aria-invalid', 'true');
+      } else {
+        removeButton.removeAttribute('aria-invalid');
+      }
+      if (describe) {
+        removeButton.setAttribute('aria-describedby', ERROR_MESSAGE_ID);
+      } else {
+        removeButton.removeAttribute('aria-describedby');
+      }
     }
   }
 
@@ -410,7 +503,9 @@ class FileUploadItemElement extends LitElement {
         size="md"
         .state="${state}"
         .iconDescription="${
-          state === 'uploading' ? this.uploadingFileLabel : this.removeFileLabel
+          state === 'uploading'
+            ? this.uploadingFileLabel
+            : this.removeFileNamedLabel || this.removeFileLabel
         }"
         .errorSubject="${error.message}"
         ?invalid="${!this.readOnly && error.isError}"

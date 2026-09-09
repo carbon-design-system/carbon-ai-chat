@@ -47,6 +47,28 @@ function liveText(el: FileUploadsElement): string {
     .trim();
 }
 
+function liveRegionCount(
+  el: FileUploadsElement,
+  politeness: 'polite' | 'assertive'
+): number {
+  return el.renderRoot.querySelectorAll(
+    `${LIVE_REGION}[aria-live="${politeness}"]`
+  ).length;
+}
+
+/** Text currently in one politeness channel's regions. */
+function liveTextIn(
+  el: FileUploadsElement,
+  politeness: 'polite' | 'assertive'
+): string {
+  return Array.from(
+    el.renderRoot.querySelectorAll(`${LIVE_REGION}[aria-live="${politeness}"]`)
+  )
+    .map((region) => region.textContent ?? '')
+    .join('')
+    .trim();
+}
+
 function clearRegions(el: FileUploadsElement): void {
   el.renderRoot
     .querySelectorAll(LIVE_REGION)
@@ -71,7 +93,11 @@ async function mount(): Promise<FileUploadsElement> {
 describe('file-uploads', () => {
   it('renders hidden live regions even when empty', async () => {
     const el = await mount();
-    expect(el.renderRoot.querySelectorAll(LIVE_REGION).length).to.equal(2);
+    // Two regions per channel: the announcer rotates between them so that two
+    // consecutive identical messages still register as a change and are spoken
+    // twice rather than once.
+    expect(liveRegionCount(el, 'polite')).to.equal(2);
+    expect(liveRegionCount(el, 'assertive')).to.equal(2);
     expect(el.hasAttribute('has-uploads')).to.be.false;
   });
 
@@ -84,13 +110,14 @@ describe('file-uploads', () => {
   it('announces when a file is added', async () => {
     const el = await mount();
     await setUploads(el, [makeUpload('a', FileStatusValue.EDIT)]);
-    expect(liveText(el)).to.contain('File added.');
+    expect(liveTextIn(el, 'polite')).to.contain('File added.');
+    expect(liveTextIn(el, 'assertive')).to.equal('');
   });
 
   it('announces an upload starting', async () => {
     const el = await mount();
     await setUploads(el, [makeUpload('a', FileStatusValue.UPLOADING)]);
-    expect(liveText(el)).to.contain('Uploading file');
+    expect(liveTextIn(el, 'polite')).to.contain('Uploading file');
   });
 
   it('announces upload start when a staged file begins uploading', async () => {
@@ -98,7 +125,8 @@ describe('file-uploads', () => {
     await setUploads(el, [makeUpload('a', FileStatusValue.EDIT)]);
     clearRegions(el);
     await setUploads(el, [makeUpload('a', FileStatusValue.UPLOADING)]);
-    expect(liveText(el)).to.contain('Uploading file');
+    expect(liveTextIn(el, 'polite')).to.contain('Uploading file');
+    expect(liveTextIn(el, 'assertive')).to.equal('');
   });
 
   it('coalesces several files added in one frame into one counted announcement', async () => {
@@ -109,8 +137,8 @@ describe('file-uploads', () => {
       makeUpload('c', FileStatusValue.EDIT),
     ]);
     // One counted message via the default formatter, not "File added." repeated.
-    expect(liveText(el)).to.contain('3 files added.');
-    expect(liveText(el)).to.not.contain('File added. File added.');
+    expect(liveTextIn(el, 'polite')).to.contain('3 files added.');
+    expect(liveTextIn(el, 'polite')).to.not.contain('File added. File added.');
   });
 
   it('coalesces several files starting to upload in one frame', async () => {
@@ -119,7 +147,7 @@ describe('file-uploads', () => {
       makeUpload('a', FileStatusValue.UPLOADING),
       makeUpload('b', FileStatusValue.UPLOADING),
     ]);
-    expect(liveText(el)).to.contain('Uploading 2 files.');
+    expect(liveTextIn(el, 'polite')).to.contain('Uploading 2 files.');
   });
 
   it('uses the consumer-supplied formatter for counted announcements', async () => {
@@ -130,7 +158,7 @@ describe('file-uploads', () => {
       makeUpload('a', FileStatusValue.EDIT),
       makeUpload('b', FileStatusValue.EDIT),
     ]);
-    expect(liveText(el)).to.contain('added 2 (custom)');
+    expect(liveTextIn(el, 'polite')).to.contain('added 2 (custom)');
   });
 
   it('announces success on uploading -> settled transition', async () => {
@@ -138,10 +166,12 @@ describe('file-uploads', () => {
     await setUploads(el, [makeUpload('a', FileStatusValue.UPLOADING)]);
     clearRegions(el);
     await setUploads(el, [makeUpload('a', FileStatusValue.EDIT)]);
-    expect(liveText(el)).to.contain('uploaded successfully');
+    // Success does not block the user, so it stays on the polite channel.
+    expect(liveTextIn(el, 'polite')).to.contain('uploaded successfully');
+    expect(liveTextIn(el, 'assertive')).to.equal('');
   });
 
-  it('announces failure when an upload errors', async () => {
+  it('announces failure assertively, carrying the file-specific reason', async () => {
     const el = await mount();
     await setUploads(el, [makeUpload('a', FileStatusValue.UPLOADING)]);
     clearRegions(el);
@@ -151,7 +181,175 @@ describe('file-uploads', () => {
         errorMessage: 'Boom',
       }),
     ]);
-    expect(liveText(el)).to.contain('error uploading');
+    // A failed upload blocks sending, so it interrupts rather than queueing.
+    expect(liveTextIn(el, 'assertive')).to.contain('error uploading');
+    expect(liveTextIn(el, 'assertive')).to.contain('Boom');
+    expect(liveTextIn(el, 'polite')).to.equal('');
+  });
+
+  it('keeps both reasons when two uploads fail in the same frame', async () => {
+    const el = await mount();
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.UPLOADING),
+      makeUpload('b', FileStatusValue.UPLOADING),
+    ]);
+    clearRegions(el);
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Wrong type',
+      }),
+    ]);
+    // Failures are not counted the way adds are — a count would lose the
+    // per-file reason, which is the only thing that says what to fix.
+    const announced = liveTextIn(el, 'assertive');
+    expect(announced).to.contain('Too big');
+    expect(announced).to.contain('Wrong type');
+  });
+
+  it('announces once when two uploads fail in the same frame', async () => {
+    const el = await mount();
+    el.getFileUploadFailureText = ({ messages }) =>
+      `failed: ${messages.join(' | ')}`;
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.UPLOADING),
+      makeUpload('b', FileStatusValue.UPLOADING),
+    ]);
+    clearRegions(el);
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Wrong type',
+      }),
+    ]);
+
+    // One call carrying both reasons, so a shared title and recovery sentence are
+    // not repeated inside a single interruption.
+    expect(liveTextIn(el, 'assertive')).to.equal(
+      'failed: Too big | Wrong type'
+    );
+  });
+
+  it('re-announces when the reason changes on an already-failed upload', async () => {
+    const el = await mount();
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+    ]);
+    clearRegions(el);
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Wrong type',
+      }),
+    ]);
+
+    // The upload never leaves the error state, so the isError edge never fires.
+    expect(liveTextIn(el, 'assertive')).to.contain('Wrong type');
+  });
+
+  it('announces a failure already present at mount', async () => {
+    // The element remounts whenever the input is hidden and re-shown, and the
+    // React side no longer announces upload errors — seeding a failure as
+    // already-seen would leave it announced nowhere.
+    const el = await fixture<FileUploadsElement>(
+      html`<cds-aichat-file-uploads
+        .uploads="${[
+          makeUpload('ok', FileStatusValue.EDIT),
+          makeUpload('bad', FileStatusValue.EDIT, {
+            isError: true,
+            errorMessage: 'Boom',
+          }),
+        ]}"></cds-aichat-file-uploads>`
+    );
+    await aTimeout(ANNOUNCE_DELAY);
+
+    expect(liveTextIn(el, 'assertive')).to.contain('Boom');
+    // The healthy file was already on screen, so it is not announced as added.
+    expect(liveTextIn(el, 'polite')).to.equal('');
+  });
+
+  it('still honours uploadFailureLabel without a custom formatter', async () => {
+    const el = await mount();
+    // The label is public API on the published element. A standalone consumer
+    // localizes by setting it alone, so the default formatter must build on it
+    // rather than hardcode English.
+    el.uploadFailureLabel = 'Upload failed.';
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Boom',
+      }),
+    ]);
+    expect(liveTextIn(el, 'assertive')).to.contain('Upload failed. Boom');
+  });
+
+  it('uses the consumer-supplied formatter for the failure announcement', async () => {
+    const el = await mount();
+    el.getFileUploadFailureText = ({ messages }) =>
+      `nope (${messages.join(', ')})`;
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Boom',
+      }),
+    ]);
+    expect(liveTextIn(el, 'assertive')).to.contain('nope (Boom)');
+  });
+
+  it('names each remove button after its own file', async () => {
+    const el = await mount();
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, { name: 'ok.txt' }),
+      makeUpload('b', FileStatusValue.EDIT, { name: 'a-reject.txt' }),
+    ]);
+
+    const names = Array.from(
+      el.renderRoot.querySelectorAll('cds-aichat-file-upload-item')
+    ).map(
+      (chip) =>
+        chip
+          .shadowRoot!.querySelector('cds-file-uploader-item')!
+          .shadowRoot!.querySelector('button.cds--file-close')
+          ?.getAttribute('aria-label') ?? ''
+    );
+
+    // Two buttons both called "Remove file" are indistinguishable to a screen
+    // reader — WCAG 2.1 AA 4.1.2. The distinctness is the requirement, not the
+    // wording.
+    expect(names).to.have.lengthOf(2);
+    expect(names[0]).to.contain('ok.txt');
+    expect(names[1]).to.contain('a-reject.txt');
+    expect(names[0]).to.not.equal(names[1]);
+  });
+
+  it('uses the consumer-supplied formatter for remove-button names', async () => {
+    const el = await mount();
+    el.getRemoveFileLabel = ({ name }) => `discard ${name}`;
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, { name: 'ok.txt' }),
+    ]);
+
+    const label = el.renderRoot
+      .querySelector('cds-aichat-file-upload-item')!
+      .shadowRoot!.querySelector('cds-file-uploader-item')!
+      .shadowRoot!.querySelector('button.cds--file-close')
+      ?.getAttribute('aria-label');
+    expect(label).to.equal('discard ok.txt');
   });
 
   it('announces removal and fires the remove event on a user delete', async () => {
@@ -176,7 +374,8 @@ describe('file-uploads', () => {
     expect(event.detail.fileId).to.equal('testId');
 
     await aTimeout(ANNOUNCE_DELAY);
-    expect(liveText(el)).to.contain('File removed.');
+    expect(liveTextIn(el, 'polite')).to.contain('File removed.');
+    expect(liveTextIn(el, 'assertive')).to.equal('');
   });
 
   it('does not announce when the list clears for other reasons (e.g. send)', async () => {
