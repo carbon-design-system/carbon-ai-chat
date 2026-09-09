@@ -1746,10 +1746,10 @@ HTTP: http://example.com
     it('projects exactly one host into each markdown element', async () => {
       const { harness, mounted, addMarkdown } = await createRelocationHarness();
 
-      await addMarkdown(codeMarkdown, {
+      const elA = await addMarkdown(codeMarkdown, {
         customRenderers: { codeBlock: taggedCodeBlockRenderer('a') },
       } as Partial<MarkdownElementInstance>);
-      await addMarkdown(codeMarkdown, {
+      const elB = await addMarkdown(codeMarkdown, {
         customRenderers: { codeBlock: taggedCodeBlockRenderer('b') },
       } as Partial<MarkdownElementInstance>);
 
