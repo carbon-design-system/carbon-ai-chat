@@ -100,7 +100,7 @@ Skip the split when a single reading holds the whole diff in view. Splitting a h
 
 ### If the diff contains documentation/text updates
 
-- Hold developer-facing copy to [tone.md](../../../references/tone.md) — voice, word economy, and the cuts it asks for.
+- Hold developer-facing copy to [tone.md](../../../references/tone.md) for voice and quick rules, to [caic-copy-writer](../caic-copy-writer/SKILL.md) for the rules of the copy type in the diff, and to [revision-pass.md](../caic-copy-writer/references/revision-pass.md) for the tightening pass. The commit bodies and the PR description are copy too — types 8 and 9.
 - Identify spelling, grammar, and punctuation errors.
 - Assess clarity, conciseness, and readability; suggest improvements.
 - Ensure technical terminology is correct and standard.
@@ -153,6 +153,7 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 For context on conventions being enforced:
 
 - **Voice and tone**: [tone.md](../../../references/tone.md) — what to hold documentation and developer-facing copy to, and the comments you write about it
+- **Copy by type**: [caic-copy-writer](../caic-copy-writer/SKILL.md) — which of the thirteen rule sets applies to the copy in the diff, since JSDoc and internal comments carry opposite ones
 - **Code-level patterns**: [code-patterns.md](../../../references/code-patterns.md) — the laziness ladder & simplicity principles, prefix discipline, SCSS, RTL, framework-agnostic logic, component placement, comments
 - **Process conventions**: [conventions.md](../../../references/conventions.md) — commits, branches, license headers, hooks
 - **General overview**: [AGENTS.md](../../../AGENTS.md) — monorepo pointer index

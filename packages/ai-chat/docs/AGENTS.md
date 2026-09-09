@@ -6,7 +6,7 @@ Guidance for authoring inside [packages/ai-chat/docs/](.). The documents here sh
 
 ## Authoring net-new docs
 
-For markdown structure (page anatomy, cross-linking, code blocks, tables), see [doc-style.md](references/doc-style.md). For voice and word economy, see [tone.md](../../../references/tone.md). Routine edits don't need them.
+For markdown structure (page anatomy, cross-linking, code blocks, tables), see [doc-style.md](references/doc-style.md). For voice and quick rules, see [tone.md](../../../references/tone.md). For what a page owes its reader and the gate it clears, see [docs-pages.md](../../../.bob/skills/caic-copy-writer/references/docs-pages.md) — type 3. Routine edits don't need them.
 
 ## Authoring rules
 
@@ -53,6 +53,7 @@ From [../](../) (the package root): `npm run build` runs rollup + typedoc; `npm 
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
 - [doc-style.md](references/doc-style.md) — markdown structure for net-new docs
-- [tone.md](../../../references/tone.md) — voice and word economy
+- [tone.md](../../../references/tone.md) — voice and quick rules
+- [docs-pages.md](../../../.bob/skills/caic-copy-writer/references/docs-pages.md) — the copy rules and gate for a docs page (type 3)
 - [../src/types/AGENTS.md](../src/types/AGENTS.md) — JSDoc standards for API docs
 - [../../typedoc-theme/AGENTS.md](../../typedoc-theme/AGENTS.md) — theme customization

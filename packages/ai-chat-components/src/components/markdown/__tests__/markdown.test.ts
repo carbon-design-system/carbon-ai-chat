@@ -1771,10 +1771,9 @@ HTTP: http://example.com
         const slot = el.shadowRoot?.querySelector(
           `slot[name="${slotName}"]`
         ) as HTMLSlotElement | null;
-        expect(
-          slot,
-          'the element should render a placeholder slot'
-        ).to.not.equal(null);
+        expect(slot, 'the element should render a named slot').to.not.equal(
+          null
+        );
         // Compared by identity rather than `deep.equal`: deep-comparing DOM
         // nodes walks the whole node graph on failure.
         const assigned = slot?.assignedElements({ flatten: true }) ?? [];
