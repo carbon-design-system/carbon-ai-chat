@@ -4,7 +4,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html
 
 Represents an external file reference — a file already uploaded elsewhere.
 Use this when files are uploaded separately and you just need to reference them.
@@ -25,7 +25,7 @@ interface ExternalFileReference
 
 File identifier (could be a database ID, UUID, etc.).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html#id)
 
 ### mime_type
 
@@ -35,7 +35,7 @@ File identifier (could be a database ID, UUID, etc.).
 
 Optional MIME type.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html#mime_type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html#mime_type)
 
 ### name
 
@@ -45,7 +45,7 @@ Optional MIME type.
 
 Optional filename for display.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html#name)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html#name)
 
 ### size
 
@@ -55,7 +55,7 @@ Optional filename for display.
 
 Optional file size in bytes.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html#size)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html#size)
 
 ### type
 
@@ -65,7 +65,7 @@ Optional file size in bytes.
 
 Type discriminator.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html#type)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html#type)
 
 ### url
 
@@ -75,4 +75,4 @@ Type discriminator.
 
 Optional URL to the file.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.19.0/docs/interfaces/Type_reference.ExternalFileReference.html#url)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.ExternalFileReference.html#url)

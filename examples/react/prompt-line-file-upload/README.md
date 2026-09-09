@@ -6,9 +6,9 @@
 
 - Enabling attachments with `upload.isOn: true` and providing an `onFileUpload` handler.
 - Simulating a 1-second upload with `AbortSignal` support and returning an `ExternalFileReference` wrapped in `StructuredData`.
-- Reporting a rejected upload by throwing from `onFileUpload`, so the chip shows the error and a screen reader hears the reason. Attach a file named `fail.txt` to see it.
 - The chat rendering each uploaded file as a chip in the user's own message bubble, from the `name` and `mime_type` on the returned reference.
 - Echoing attached file metadata back as a text message via `instance.messaging.addMessage` and `MessageResponseTypes.TEXT`, showing what the server receives.
+- Reporting a rejected upload by throwing from `onFileUpload`. The throw lands after the simulated delay, so the chip moves from uploading to error and shows the reason. Attach a file named `fail.txt` to see it.
 - Documenting the optional `accept`, `maxFileSizeBytes`, and `maxFiles` config knobs (commented in source).
 
 ## When to use this pattern

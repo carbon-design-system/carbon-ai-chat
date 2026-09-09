@@ -48,9 +48,21 @@ function ensureTokenStyleRules(): void {
  * `data`, and `trigger` extensions added by `carbonMention`/`carbonCommand`.
  */
 export interface TokenChipAttrs {
+  /** Identifier of the item the chip came from. */
   id?: string;
+  /** Text shown on the chip. */
   label?: string;
+  /**
+   * String the chip contributes to the message text. Falls back to `label`
+   * when unset.
+   */
   value?: string;
+  /**
+   * Custom fields carried over from the selected item. Everything the
+   * suggestion item held beyond `id`, `label`, `value`, `avatar`,
+   * `description`, `disabled`, and `showTriggerInChip` lands here, so it
+   * survives a round trip through the editor's JSON.
+   */
   data?: unknown;
   /**
    * Trigger character to prefix onto the default chip text (e.g.

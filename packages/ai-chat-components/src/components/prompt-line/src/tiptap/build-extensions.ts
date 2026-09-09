@@ -36,10 +36,27 @@ import type {
   TriggerSuggestionConfig,
 } from './types.js';
 
+/**
+ * The input configs {@link buildCarbonExtensions} turns into Tiptap
+ * extensions.
+ * Leave a field out to leave its extension out.
+ */
 export interface BuildCarbonExtensionsConfig {
+  /** Config for the `@`-style mention picker. Builds {@link carbonMention}. */
   mention?: TriggerSuggestionConfig;
+  /** Config for the `/`-style command picker. Builds {@link carbonCommand}. */
   command?: TriggerSuggestionConfig;
+  /**
+   * Config for live autocomplete. Builds {@link carbonAutocomplete}, set to
+   * stand down for whichever mention and command triggers you also pass.
+   */
   autocomplete?: AutocompleteConfig;
+  /**
+   * Config for the starter prompts shown while the editor is empty and
+   * focused. Builds {@link carbonStarterTrigger}. An empty `items` list still
+   * installs the extension, so you can fill the list later without
+   * recreating the editor.
+   */
   starters?: StartersConfig;
 }
 

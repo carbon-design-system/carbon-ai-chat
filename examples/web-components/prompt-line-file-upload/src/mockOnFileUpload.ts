@@ -18,6 +18,9 @@
  * next user turn, plus parsing those references back out of
  * `MessageRequest.input.structured_data` on the assistant side.
  *
+ * Also demonstrates the failure path: throwing from `onFileUpload` marks the
+ * attachment as errored and blocks sending until the user removes it.
+ *
  * Returning `name` and `mime_type` on the reference is what lets the chat render
  * the attachment as a chip in the user's message bubble, and what lets that chip
  * come back if the conversation is restored from history.
@@ -44,7 +47,9 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
  * Mock `UploadConfig.onFileUpload` handler.
  *
  * Simulates a 1-second server-side upload, then returns a {@link StructuredData}
- * containing an {@link ExternalFileReference} with the file's metadata.
+ * containing an {@link ExternalFileReference} with the file's metadata. A file
+ * whose name contains "fail" is rejected instead, so the example can show the
+ * errored-attachment state.
  *
  * In a real integration this function would POST the file to a backend and
  * return the server-assigned reference instead.
@@ -71,11 +76,12 @@ async function mockOnFileUpload(
     );
   });
 
-  // The failure path. `onFileUpload` reports a rejected upload by throwing, and the
-  // `Error`'s message becomes the reason shown on the chip and announced to a screen
-  // reader. The chat supplies the title and the "remove the attachment" instruction, so
-  // state only the reason here. Rejecting after the delay mirrors a server that accepts
-  // the file, then refuses it — attach a file named `fail.txt` to see it.
+  // The failure path. `onFileUpload` reports a rejected upload by throwing. The
+  // `Error`'s message becomes the reason the chat shows on the chip and above the input.
+  // The chat supplies the title and the "remove the attachment" step, so state only the
+  // reason here. Throwing after the delay mirrors a server that accepts the file, then
+  // refuses it. The chip moves from uploading to error, and the chat blocks sending
+  // until you remove it. Attach a file named `fail.txt` to see it.
   if (file.name.toLowerCase().includes('fail')) {
     throw new Error('The server rejected this file after a virus scan.');
   }

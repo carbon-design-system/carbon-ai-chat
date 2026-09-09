@@ -25,12 +25,14 @@ import {
   BusEventViewPreChange,
   ChatInstance,
   GenericItem,
+  MarkdownRendererTableArgs,
   PublicConfig,
   RenderUserDefinedState,
   ServiceDesk,
   ServiceDeskFactoryParameters,
   UserDefinedItem,
   ViewType,
+  WCMarkdown,
 } from '@carbon/ai-chat';
 // Raw CSS text of the shipped sidebar layout. demo-app keeps its shadow DOM, so
 // the compiled stylesheet is imported as a string (webpack `?raw` loader) and
@@ -152,6 +154,20 @@ export class DemoApp extends LitElement {
    */
   private _userDefinedElements = new Set<HTMLElement>();
 
+  /**
+   * One node per table slot, kept so the callback returns the same reference
+   * across renders — a streaming table re-invokes it on every chunk, and a new
+   * element each time would tear the consumer's subtree down and rebuild it.
+   */
+  private _customTableNodes = new Map<string, HTMLElement>();
+
+  /**
+   * Rebuilt in `willUpdate` rather than per render: `.markdown` is compared by
+   * reference, and the parent-state timer re-renders this element every 1.5s,
+   * so a fresh literal would restart the chat's markdown config on every tick.
+   */
+  private _markdownConfig?: WCMarkdown;
+
   private _interval?: ReturnType<typeof setInterval>;
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -166,6 +182,40 @@ export class DemoApp extends LitElement {
     this._interval = setInterval(() => {
       this.valueFromParent = Date.now().toString();
     }, 1500);
+  }
+
+  /**
+   * Stand-in for a consumer's own table component. The class is the only hook
+   * a page stylesheet has: the chat's own CSS lives in a shadow root, so a
+   * page rule that lands on this node proves the chat put it in page light
+   * DOM.
+   */
+  private renderCustomTable = ({
+    headers,
+    rows,
+    slotName,
+  }: MarkdownRendererTableArgs) => {
+    let node = this._customTableNodes.get(slotName);
+    if (!node) {
+      node = document.createElement('div');
+      node.className = 'demo-markdown-custom-table';
+      node.dataset.testid = 'demo_markdown_custom_table';
+      this._customTableNodes.set(slotName, node);
+    }
+    node.textContent = `Custom table: ${headers.length} columns, ${rows.length} rows`;
+    return node;
+  };
+
+  protected willUpdate(changedProperties: PropertyValues): void {
+    if (changedProperties.has('config') || changedProperties.has('settings')) {
+      this._markdownConfig =
+        this.settings.markdownCustomRenderers === 'true'
+          ? {
+              ...this.config.markdown,
+              customRenderers: { table: this.renderCustomTable },
+            }
+          : this.config.markdown;
+    }
   }
 
   protected updated(changedProperties: PropertyValues): void {
@@ -494,6 +544,7 @@ export class DemoApp extends LitElement {
                 hideDefaultAiLabelContent: true,
               }}
               .layout=${this.config.layout}
+              .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
               .isReadonly=${this.config.isReadonly ?? undefined}
               .persistFeedback=${this.config.persistFeedback ?? undefined}
@@ -535,6 +586,7 @@ export class DemoApp extends LitElement {
                 hideDefaultAiLabelContent: true,
               }}
               .layout=${this.config.layout}
+              .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
               .isReadonly=${this.config.isReadonly ?? undefined}
               .persistFeedback=${this.config.persistFeedback ?? undefined}
@@ -577,6 +629,7 @@ export class DemoApp extends LitElement {
                 hideDefaultAiLabelContent: true,
               }}
               .layout=${this.config.layout}
+              .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
               .isReadonly=${this.config.isReadonly ?? undefined}
               .assistantName=${this.config.assistantName}

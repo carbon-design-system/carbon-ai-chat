@@ -88,7 +88,7 @@ Beyond testability, this is directional: the React layer is meant to get thinner
 
 ## Comments
 
-Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden constraint, a subtle invariant, or a bug workaround. Delete comments that restate the code or reference the current task/PR/issue.
+Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden constraint, a subtle invariant, or a bug workaround. Delete comments that restate the code or reference the current task/PR/issue. How to word one that survives: [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — type 2.
 
 ## Accessibility code patterns
 
@@ -99,4 +99,6 @@ The shared RTL / logical-property rule is canonicalized above. For everything el
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks
 - [accessibility.md](accessibility.md) — announcer utilities and live-region patterns
+- [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — how to word a comment that survives the no-comment default (type 2)
+- [error-strings.md](../.bob/skills/caic-copy-writer/references/error-strings.md) — how to word a thrown error or a console message (type 12)
 - [definition-of-done.md](definition-of-done.md) — the gate to run before shipping a change

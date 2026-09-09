@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.19.0/docs/types/Type_reference.VideoItem.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/types/Type_reference.VideoItem.html
 
 The video response type definition for future reuse. This is currently the same as MediaItem.
 
