@@ -8,7 +8,7 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js --experimental-loader=./tests/alias-loader.js' playwright test --workers=2"
+    "test": "NODE_OPTIONS='--import ./tests/node-polyfill.js' playwright test --workers=2"
   },
   "author": "IBM Corp",
   "license": "Apache-2.0",
