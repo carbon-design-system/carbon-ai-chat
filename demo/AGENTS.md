@@ -36,7 +36,7 @@ demo/
 - **React vs web-components parity**: anything in `src/react/` should have a `src/web-components/` counterpart with the same filename stem so the framework can switch between them (`DemoApp.tsx` ↔ `demo-app.ts`).
 - **Slots / custom footer / user-defined responses**: follow the existing `*WriteableElementExample` and `UserDefinedResponseExample` patterns and mirror them across both directories.
 - **Service desk changes**: the mock service desk in `mockServiceDesk/` is the reference implementation of the service-desk interface. Keep it updated when the interface in `@carbon/ai-chat` changes — tests here often catch breaking changes first.
-- **Playwright tests**: put new specs under `tests/`. The `node-polyfill.js` + `alias-loader.js` are required via `NODE_OPTIONS`; use `npm test`, not `playwright test` directly. When behavior changes, update [TEST_PLAN.md](TEST_PLAN.md) alongside the automated test.
+- **Playwright tests**: put new specs under `tests/`. `node-polyfill.js` is required via `NODE_OPTIONS`; use `npm test`, not `playwright test` directly. Don't reach for `--experimental-loader` here — an off-thread loader and Playwright's own sync `module.registerHooks` transform can't coexist, and the pair fails while loading the CJS entry point. When behavior changes, update [TEST_PLAN.md](TEST_PLAN.md) alongside the automated test.
 - **Carbon flavor is per-directory here**, unlike the two primary packages: `src/react/` uses `@carbon/react`, `src/web-components/` uses `@carbon/web-components`. Match the directory you're in — a React counterpart is the one place in this repo where JSX + `@carbon/react` is the correct answer. See [code-patterns.md](../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
 - **Dependencies**: as a `"private": true` app, depend freely on `@carbon/react`, `@carbon/web-components`, etc. — but don't import demo-only helpers from `@carbon/ai-chat` source.
 - **Copy on screen**: the demo is a harness, not a shipped surface, so it has no copy type of its own. Voice still binds ([tone.md](../references/tone.md)), and anything a person reads follows [ui-strings.md](../.bob/skills/caic-copy-writer/references/ui-strings.md) — type 6 — minus the public-API gate that applies inside the package.
@@ -56,7 +56,7 @@ Local shortcuts from this directory:
 ```bash
 npm start          # webpack dev-server
 npm run build      # production webpack build
-npm test           # playwright (uses node-polyfill.js + alias-loader.js)
+npm test           # playwright (uses node-polyfill.js)
 ```
 
 Single Playwright test:

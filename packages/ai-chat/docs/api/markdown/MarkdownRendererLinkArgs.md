@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html
 
 Argument passed to a CustomMarkdownRenderers.link /
 WCCustomMarkdownRenderers.link callback — the parsed link data
@@ -22,7 +22,7 @@ interface MarkdownRendererLinkArgs
 
 The link's parsed attributes (post-sanitize), as a plain object.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#attributes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#attributes)
 
 ### href
 
@@ -30,7 +30,7 @@ The link's parsed attributes (post-sanitize), as a plain object.
 
 Resolved `href` of the link (may be a linkified bare URL).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#href)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#href)
 
 ### text
 
@@ -39,7 +39,7 @@ Resolved `href` of the link (may be a linkified bare URL).
 Plain text of the link's rendered children, a convenience for
 context-aware rewrites. The rich children render regardless of this value.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#text)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#text)
 
 ### title
 
@@ -47,7 +47,7 @@ context-aware rewrites. The rich children render regardless of this value.
 
 The link's `title` attribute, when present.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#title)
 
 ### token
 
@@ -55,7 +55,7 @@ The link's `title` attribute, when present.
 
 The markdown-it `link_open` `Token`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#token)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkArgs.html#token)
 
 ## Related
 
