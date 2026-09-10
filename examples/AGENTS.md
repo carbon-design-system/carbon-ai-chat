@@ -13,14 +13,15 @@ npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
-When `npm run aiChat:start` is running in another terminal, example webpack servers hot-reload on package rebuilds.
+When `npm run aiChat:start` is running in another terminal, example Vite dev servers hot-reload on package rebuilds. This relies on each `vite.config.ts` listing `@carbon/ai-chat` and `@carbon/ai-chat-components` under `optimizeDeps.exclude` — without that, Vite pre-bundles the symlinked workspace packages and a rebuild will not reach the browser.
 
 ## Adding a new example
 
-1. **Pick a base and copy it.** Each flavor lists its canonical scaffolds in its own `AGENTS.md`. Both include webpack config, `tsconfig.json`, HTML entry, and `package.json`. Rename the folder to `<slug>` and update the workspace name to the flavor's naming pattern.
-2. **Modify only what your example needs to demonstrate.** Keep the bundler, scripts, and file layout unless the example is specifically about a different toolchain (e.g. `frameworks-vite/`, `frameworks-next/`, `frameworks-react-17/`, `tests-jest-*/`). For a different toolchain, copy from the closest matching existing example.
-3. **Write a `README.md`** from [README_TEMPLATE.md](README_TEMPLATE.md) — required. It must follow the [Indexer Contract](references/indexer-contract.md).
-4. **Regenerate the aggregator** by running `npm run repair:example-readmes` — this rewrites the section list in [react/README.md](react/README.md) / [web-components/README.md](web-components/README.md) from the per-example READMEs.
+1. **Pick a base and copy it.** Each flavor lists its canonical scaffolds in its own `AGENTS.md`. Both include `vite.config.ts`, `tsconfig.json`, HTML entry, and `package.json`. Rename the folder to `<slug>` and update the workspace name to the flavor's naming pattern.
+2. **Modify only what your example needs to demonstrate.** Keep the bundler, scripts, and file layout unless the example is specifically about a different toolchain (e.g. `frameworks-next/`, `frameworks-react-17/`, `tests-jest-*/`). For a different toolchain, copy from the closest matching existing example.
+3. **Point `index.html` at your entry module.** Vite resolves the entry from a `<script type="module" src="/src/App.tsx">` tag in the HTML (`/src/main.ts` for web components) rather than injecting one, so renaming the entry file means editing the HTML too.
+4. **Write a `README.md`** from [README_TEMPLATE.md](README_TEMPLATE.md) — required. It must follow the [Indexer Contract](references/indexer-contract.md).
+5. **Regenerate the aggregator** by running `npm run repair:example-readmes` — this rewrites the section list in [react/README.md](react/README.md) / [web-components/README.md](web-components/README.md) from the per-example READMEs.
 
 ## Smoke tests
 
@@ -54,11 +55,13 @@ See [Examples smoke tests](references/playwright.md) for instructions on creatin
 
 Capitalize a slug-family prefix the first time you introduce a new family, even when the slug is a singleton today, if you anticipate siblings (e.g. `Integrations / watsonx.ai`).
 
-**Inline comments rule**: every example source file has a top-of-file purpose comment (what it demonstrates, which APIs, where to start) plus inline _why_ comments on non-obvious config and bus wiring. Comments must be self-contained — no "see the basic example", no "same as the previous one but…". Each example is indexed in isolation by the Carbon MCP indexer, so context cannot rely on cross-example references.
+**Inline comments rule**: comments are the product here, and how to word them is [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — type 5. Read it before writing one. The constraint driving those rules is local: the Carbon MCP indexer reads each example in isolation, so nothing in this directory may point at another one.
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — monorepo conventions
 - [indexer-contract.md](references/indexer-contract.md) — README format for the docs-site indexer
+- [example-copy.md](../.bob/skills/caic-copy-writer/references/example-copy.md) — how to word a README and a comment here (type 5)
+- [tone.md](../references/tone.md) — voice and quick rules
 - [react/AGENTS.md](react/AGENTS.md) — React flavor deltas
 - [web-components/AGENTS.md](web-components/AGENTS.md) — Web Components flavor deltas

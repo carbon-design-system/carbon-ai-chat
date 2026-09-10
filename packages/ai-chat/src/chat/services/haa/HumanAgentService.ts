@@ -19,6 +19,7 @@ import {
   Message,
   MessageResponse,
 } from '../../../types/messaging/Messages';
+import { JSONContent } from '@tiptap/core';
 
 /**
  * This is the public contract between the chat widget and the human agent service. This interface allows us to keep
@@ -79,9 +80,14 @@ interface HumanAgentService {
    *
    * @param text The message from the user.
    * @param files An optional set of files to upload.
+   * @param displayContent An optional tiptap JSONContent paramerter that makes the interface match the additional data the caller needs to pass.
    * @returns Returns a Promise that resolves when the service desk has successfully handled the call.
    */
-  sendMessageToAgent(text: string, files: FileUpload[]): Promise<void>;
+  sendMessageToAgent(
+    text: string,
+    files: FileUpload[],
+    displayContent?: JSONContent
+  ): Promise<void>;
 
   /**
    * Tells the service desk if a user has started or stopped typing.

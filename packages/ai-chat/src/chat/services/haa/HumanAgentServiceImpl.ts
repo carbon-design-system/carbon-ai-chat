@@ -88,6 +88,7 @@ import {
   BusEventHumanAgentPreStartChat,
   BusEventType,
 } from '../../../types/events/eventBusTypes';
+import { JSONContent } from '@tiptap/core';
 
 /**
  * The amount of time to wait when a message is sent to the service desk before displaying a warning if the service
@@ -476,7 +477,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   public async sendMessageToAgent(
     text: string,
-    uploads: FileUpload[]
+    uploads: FileUpload[],
+    displayContent?: JSONContent
   ): Promise<void> {
     if (!this.serviceDesk || !this.chatStarted) {
       // No service desk connected.
@@ -486,8 +488,17 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const { serviceManager } = this;
     deepFreeze(uploads);
 
-    const originalMessage = createMessageRequestForText(text);
+    const originalMessage = createMessageRequestForText(text, displayContent);
     originalMessage.input.agent_message_type = FROM_USER;
+
+    const { pendingStructuredData } =
+      serviceManager.store.getState().humanAgentState.inputState;
+
+    if (pendingStructuredData && !originalMessage.input.structured_data) {
+      originalMessage.input.structured_data = cloneDeep(pendingStructuredData);
+    }
+
+    serviceManager.store.dispatch(actions.clearStructuredData(true));
 
     // Fire the pre:send event that will allow code to customize the message.
     await serviceManager.fire({

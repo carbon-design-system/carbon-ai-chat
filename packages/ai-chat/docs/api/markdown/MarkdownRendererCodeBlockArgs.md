@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html
 
 Argument passed to the fenced code-block renderer callbacks on
 CustomMarkdownRenderers.codeBlock and
@@ -26,7 +26,7 @@ interface MarkdownRendererCodeBlockArgs
 
 The raw code text inside the fence. May be incomplete while streaming.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#code)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#code)
 
 ### isStreaming
 
@@ -35,7 +35,7 @@ The raw code text inside the fence. May be incomplete while streaming.
 True while the chat is still receiving chunks of the message this code
 block belongs to.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#isstreaming)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#isstreaming)
 
 ### language
 
@@ -43,7 +43,7 @@ block belongs to.
 
 Language identifier from the fence info string (empty when unset).
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#language)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#language)
 
 ### slotName
 
@@ -55,7 +55,7 @@ streaming chunks — while the underlying source line stays put, which makes
 it a safe React key. Treat the value as opaque; its format is not part of
 the API.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#slotname)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#slotname)
 
 ### token
 
@@ -64,7 +64,7 @@ the API.
 The markdown-it `Token` (a `fence`) for the matched element — see the
 `markdown-it` `Token` documentation for the field shape.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#token)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererCodeBlockArgs.html#token)
 
 ## Related
 

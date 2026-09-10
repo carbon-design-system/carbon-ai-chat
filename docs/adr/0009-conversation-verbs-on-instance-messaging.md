@@ -15,18 +15,15 @@ superseded-by:
 
 ## Context and problem statement
 
-Conversation verbs have two homes. `ChatInstanceMessaging` declares seven methods (`types/config/MessagingConfig.ts:95-171`), and two of them also exist at the instance root: `send` (`types/instance/ChatInstance.ts:97-100`) and `restartConversation` (`:189`). The root `restartConversation` already carries a `@deprecated` tag pointing at the messaging namespace, so the direction is set and half-applied — `send` is the one that never moved.
+Conversation verbs have two homes, and the split is half-applied in both directions at once. `ChatInstanceMessaging` declares seven methods (`types/config/MessagingConfig.ts:95-171`). One of them also sits at the instance root: `restartConversation` (`types/instance/ChatInstance.ts:202`), which already carries a `@deprecated` tag pointing at the messaging namespace. `send` (`:110-113`) is the mirror case. It sits at the root and nowhere else, so it is the verb that never moved.
 
-The larger problem is that the contract written on `send` is not the contract the code implements. Its JSDoc (`types/instance/ChatInstance.ts:79-82`) makes two promises. The first: it resolves "once a response has received and processed and both the `pre:receive` and `receive` events have fired." The second: it rejects "when too many errors have occurred and the system gives up retrying." Neither holds:
+The contract written on `send` was wrong for as long as it was published. The source has since been fixed. Its JSDoc used to promise two things: that it resolved "once a response has received and processed and both the `pre:receive` and `receive` events have fired," and that it rejected "when too many errors have occurred and the system gives up retrying." Neither held. It resolves as soon as the host's `customSendMessage` settles. The coordinator finishes with `received = null`, so `actions.receive` never runs (`chat/services/OutboundMessageCoordinator.ts:254-265`, `chat/services/MessageService.ts:299`). And no retry loop exists anywhere in the send path, so nothing could exhaust one.
 
-- It resolves as soon as the host's `customSendMessage` settles. The coordinator finishes with `received = null`, so `actions.receive` is skipped entirely (`chat/services/OutboundMessageCoordinator.ts:254-265`, `chat/services/MessageService.ts:299`).
-- There is no retry loop anywhere in the send path, so nothing can exhaust one.
+Both claims are gone from the source now. `types/instance/ChatInstance.ts:78-109` carries a **Settlement points** block naming the real resolve and reject conditions. The two restatements in the code agree with it (`chat/services/ChatActionsImpl.ts:831-842` and `:904-913`). So this record fixes no live defect. It writes down the contract those three sites assert, for two reasons. A promise contract that lives only in JSDoc is one careless edit from drifting back. And the wording was corrected with nothing written down about what the settlement points should be.
 
-The same text is duplicated twice more in the implementation (`chat/services/ChatActionsImpl.ts:827-830` and `:893-896`), so a reader who checks the source finds the claim restated rather than corrected. This is a contract that has been wrong in three places for as long as it has been published.
+One typing bounds what the promise can honestly claim, and it has not changed. `customSendMessage` is typed `(...) => Promise<void> | void` (`types/config/PublicConfigMessaging.ts:56-60`). A host may return nothing. The send promise then settles at once, whatever the transport is doing.
 
-The promise also cannot mean much while `customSendMessage` is typed `(...) => Promise<void> | void` (`types/config/PublicConfigMessaging.ts:56-60`). A host may return nothing, in which case the send promise settles immediately regardless of what the transport is doing.
-
-Two smaller mismatches sit in the same path. The read-only guard is documented as a throw but is declared inside an `async` arrow (`chat/instance/ChatInstanceImpl.ts:84-88`), so it rejects — the repo's own spec pins the rejection. And it guards only the instance method; `ChatActionsImpl.send` has no such check, so the chat's own UI send path is not read-only at all.
+One mismatch does survive in the code. The read-only guard sits inside an `async` arrow (`chat/instance/ChatInstanceImpl.ts:84-88`), so it rejects rather than throws. The JSDoc now says so, and the repo's own spec pins it. But it guards only the instance method. `ChatActionsImpl.send` has no read-only check at all, so the chat's own UI send path is not read-only.
 
 ## Considered options
 
@@ -69,7 +66,7 @@ Stop and restart resolve rather than reject, because neither is a failure. A hos
 
 Two things this record names as defects rather than ratifying:
 
-- **A send with a file upload in flight resolves without sending.** `doSend` warns and returns (`chat/services/ChatActionsImpl.ts:914-925`), so the promise resolves successfully with no message sent. Silent success for a message that never left is the worst available outcome, so the table above rejects it. A refused send must also leave no state behind: today it clears `activeResponseId` before the guard runs, so the chat reports a turn that never began.
+- **A send with a file upload in flight rejects, and the source already does this.** `assertNoInFlightUpload` throws (`chat/services/ChatActionsImpl.ts:823-829`) and runs at `:849`, before `activeResponseId` is cleared at `:870`, with a second check after hydration at `:899`. An earlier draft of this record described the old behavior — a warn-and-return that resolved successfully with no message sent — as present tense; that was fixed before this record was written. The table above ratifies the current behavior rather than changing it, because silent success for a message that never left is the worst available outcome and should not be reachable again.
 - **The read-only guard is instance-only.** `ChatActionsImpl.send` has no check, so the chat's own send path bypasses it. Read-only is a property of the chat, not of which caller reached it.
 
 Rejecting was not the only way out of the upload case. Queueing the send until the transfer finishes is closest to what pressing send meant, but it makes settlement wait on what the framework does not control — the network, or whether the user removes the file. That is the unbounded wait option D was rejected for. A failed transfer would still have to reject, so queueing adds a mode rather than replacing one. Sending without the pending attachments is the same silent loss in a different costume. Rejecting is also the more capable contract: `hasInFlightUploads` is public state, so a host that wants to defer can write that itself, while a host that wants to know its message vanished cannot.
@@ -115,7 +112,7 @@ Stopping a turn resolves the pending send rather than rejecting it, so a `catch`
 
 **Two settlement outcomes change.** Both are defect fixes named above, and both are visible:
 
-- A send issued while a file upload is in flight now rejects. Today it resolves successfully without sending anything. If you await `send` and have no `catch`, add one.
+- A send issued while a file upload is in flight rejects. That is already true in the source, so nothing changes for you here — but if you await `send` and have no `catch`, add one.
 - Read-only now blocks the chat's own send path, not just `instance.send`. A host that relied on the UI still sending while read-only will find it does not.
 
 ## More information

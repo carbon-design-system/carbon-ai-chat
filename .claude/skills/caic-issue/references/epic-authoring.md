@@ -20,7 +20,7 @@ Fail either test and it is **not** an epic:
 
 File epics with the [EPIC.yaml](../../../../.github/ISSUE_TEMPLATE/EPIC.yaml) form. The body holds:
 
-- **Value proposition** — why we're doing this, framed from the user/stakeholder's side.
+- **Value proposition** — why we're doing this, framed from the user/stakeholder's side. Open with the problem in plain language, the same rule an issue follows: what goes wrong today, before any file, script, or type name. See [issue-bodies.md](../../caic-copy-writer/references/issue-bodies.md).
 - **Expected outcomes** — the done-state as a `- [ ]` list: the observable results that let this epic close. When a plan produced the epic, these are its Done when items carried over, not rewritten — see [caic-plan](../../caic-plan/SKILL.md#the-spine). For internal engineering work these are engineering outcomes, not KPIs, whatever the form's prompt suggests. Every child's acceptance criteria trace back to one of them.
 - **Decisions** — the ADRs governing this epic, one line each. Optional, and empty for most epics. An epic states _what work_; an ADR states _why this shape_. When the epic asserts a choice a consumer can feel — an API removed, a default reversed, a behavior dropped — that choice needs a record behind it, or the reasoning exists nowhere and reviewers re-argue it in every child PR. See [caic-adr](../../caic-adr/SKILL.md).
 - **Out of scope** — what this epic deliberately excludes. This boundary is what keeps an epic from drifting into a feature-area bucket.
@@ -79,5 +79,6 @@ The summary count can lag a cached read; when the summary and the paginated list
 
 - [caic-issue](../SKILL.md) — writing the child issues and wiring the sub-issue link
 - [caic-plan](../../caic-plan/SKILL.md) — when the effort needs a written implementation plan, not just an issue tree
-- [tone.md](../../../../references/tone.md) — voice and word economy for the epic body
+- [issue-bodies.md](../../caic-copy-writer/references/issue-bodies.md) — how to word an epic body, and the gate before filing
+- [tone.md](../../../../references/tone.md) — voice and quick rules for the epic body
 - [Root AGENTS.md](../../../../AGENTS.md) — repo overview and pointer index

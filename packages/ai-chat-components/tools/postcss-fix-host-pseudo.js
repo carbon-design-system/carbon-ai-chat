@@ -7,7 +7,6 @@
  *  @license
  */
 
-import postcss from 'postcss';
 import parser from 'postcss-selector-parser';
 
 const pseudoElementNames = [
@@ -54,61 +53,63 @@ const rePseudoElements = new RegExp(`::?(${pseudoElementNames.join('|')})`);
  * }
  * ```
  */
-// eslint-disable-next-line prefer-arrow-callback
-export default postcss.plugin(
-  'fix-host-pseudo',
-  function postCssPluginFixHostPseudo() {
-    return function fixHostPseudo(css) {
-      css.walkRules(async (rule) => {
-        await parser((selectors) => {
-          selectors.walkPseudos((pseudo) => {
-            if (pseudo.value === ':host') {
-              if (
-                pseudo.nodes.length !== 1 ||
-                pseudo.first.type !== 'selector'
-              ) {
+const fixHostPseudo = () => ({
+  postcssPlugin: 'fix-host-pseudo',
+  Once(css) {
+    css.walkRules(async (rule) => {
+      await parser((selectors) => {
+        selectors.walkPseudos((pseudo) => {
+          if (pseudo.value === ':host') {
+            if (pseudo.nodes.length !== 1 || pseudo.first.type !== 'selector') {
+              // suppress warning when `:host` has no args, and nothing to hoist
+              // which is correct
+              if (pseudo.nodes.length > 0) {
                 // eslint-disable-next-line no-console
                 console.warn(
                   'Found :host() with more than one child or with a non-selector child. Skipping...'
                 );
-              } else {
-                const pseudosToMove = [];
-                for (
-                  let precedingNode = pseudo.prev();
-                  precedingNode && precedingNode.type !== 'combinator';
-                  precedingNode = precedingNode.prev()
-                ) {
-                  if (
-                    precedingNode.type !== 'pseudo' ||
-                    !rePseudoElements.test(precedingNode.value)
-                  ) {
-                    pseudosToMove.unshift(precedingNode);
-                  }
-                }
-                for (
-                  let followingNode = pseudo.next();
-                  followingNode && followingNode.type !== 'combinator';
-                  followingNode = followingNode.next()
-                ) {
-                  if (
-                    followingNode.type !== 'pseudo' ||
-                    !rePseudoElements.test(followingNode.value)
-                  ) {
-                    pseudosToMove.push(followingNode);
-                  }
-                }
-                pseudosToMove.forEach((item) => {
-                  const newNode = item.clone();
-                  newNode.spaces.before = '';
-                  newNode.spaces.after = '';
-                  pseudo.first.append(newNode);
-                  item.remove();
-                });
               }
+            } else {
+              const pseudosToMove = [];
+              for (
+                let precedingNode = pseudo.prev();
+                precedingNode && precedingNode.type !== 'combinator';
+                precedingNode = precedingNode.prev()
+              ) {
+                if (
+                  precedingNode.type !== 'pseudo' ||
+                  !rePseudoElements.test(precedingNode.value)
+                ) {
+                  pseudosToMove.unshift(precedingNode);
+                }
+              }
+              for (
+                let followingNode = pseudo.next();
+                followingNode && followingNode.type !== 'combinator';
+                followingNode = followingNode.next()
+              ) {
+                if (
+                  followingNode.type !== 'pseudo' ||
+                  !rePseudoElements.test(followingNode.value)
+                ) {
+                  pseudosToMove.push(followingNode);
+                }
+              }
+              pseudosToMove.forEach((item) => {
+                const newNode = item.clone();
+                newNode.spaces.before = '';
+                newNode.spaces.after = '';
+                pseudo.first.append(newNode);
+                item.remove();
+              });
             }
-          });
-        }).process(rule);
-      });
-    };
-  }
-);
+          }
+        });
+      }).process(rule);
+    });
+  },
+});
+
+fixHostPseudo.postcss = true;
+
+export default fixHostPseudo;

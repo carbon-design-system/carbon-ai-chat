@@ -9,15 +9,11 @@ Conventional-commits, enforced by commitlint.
 - **Types**: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, `test`.
 - **Header** ≤ 72 chars (commitlint-enforced); body lines have no enforced limit.
 - **Subject**: imperative present tense, lowercase, no trailing period.
+- **Attribution**: the person running the session is the sole author. An agent never lists itself as author or co-author — no `Co-Authored-By` trailer, no "generated with" footer.
 
 ### Commit bodies
 
-A body has two readers, both pre-merge: the reviewer walking the branch commit by commit, and whoever later splits, rebases, or cherry-picks it. Nothing survives the squash — the PR description is the durable record — so write for the review, not for history.
-
-- **Open with the problem.** State the defect, constraint, or drift the commit answers, then what it does about it — a plain-English claim the reviewer verifies the diff against. Never narrate the diff; it speaks for itself.
-- **Skip the what when the subject carries it.** Spend body only on what the diff can't show: why this approach over the obvious one, a cost accepted, an untested path and why.
-- **Place the commit in its arc** in one clause when it has one — the trigger the issue declared in scope, the commit it cleans up after. Name sibling commits by subject, not hash; a rebase renumbers them.
-- **3–6 lines covers most commits.** An empty body is right when the subject alone does; a body that won't compress to six lines is usually two commits.
+A body is copy, so its rules sit with the rest of them: [commit-bodies.md](../.bob/skills/caic-copy-writer/references/commit-bodies.md), type 8. Read it before writing one. commitlint enforces the header format above and never reads the body, so a reviewer is the only thing standing between a bad body and the branch.
 
 ### Commit sequencing
 
@@ -47,4 +43,4 @@ Because pre-commit only touches staged files and skips license headers, run `npm
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
 - [code-patterns.md](code-patterns.md) — naming, SCSS, component placement, comments
-- [tone.md](tone.md) — voice & word economy for developer-facing copy
+- [tone.md](tone.md) — voice & quick rules for developer-facing copy

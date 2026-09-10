@@ -436,7 +436,7 @@ export interface RenderTokenTreeOptions {
    *
    * @internal
    */
-  pluginSlotCounter?: { next: () => number };
+  pluginSlotCounter?: { next: (node: TokenTree) => number };
 
   /**
    * Namespace appended to every slot name minted during this render, supplied

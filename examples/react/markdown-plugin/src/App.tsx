@@ -25,12 +25,19 @@ import {
   type MarkdownItPlugin,
   type PublicConfig,
 } from '@carbon/ai-chat';
-import markdownItKatex from '@vscode/markdown-it-katex';
+import markdownItKatexModule from '@vscode/markdown-it-katex';
 import React, { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { customSendMessage } from './customSendMessage';
 import '@carbon/styles/css/styles.css';
+
+// `@vscode/markdown-it-katex` ships CJS with no `exports` map
+const markdownItKatex = ((
+  markdownItKatexModule as unknown as {
+    default?: MarkdownItPlugin;
+  }
+).default ?? markdownItKatexModule) as MarkdownItPlugin;
 
 const config: PublicConfig = {
   messaging: {

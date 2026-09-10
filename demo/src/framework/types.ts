@@ -12,6 +12,13 @@ interface Settings {
   layout: 'float' | 'sidebar' | 'fullscreen';
   writeableElements: 'true' | 'false';
   hideDefaultAiLabelContent?: 'true' | 'false';
+  /**
+   * Renders markdown tables through `markdown.customRenderers.table` instead
+   * of the built-in Carbon table. Exists for the Playwright case that proves a
+   * page stylesheet reaches the node the callback returns, which only holds
+   * while that node sits in the chat element's own light DOM.
+   */
+  markdownCustomRenderers?: 'true' | 'false';
   direction: 'default' | 'ltr' | 'rtl';
   showHeader?: boolean;
   showMenuOptions?: boolean;
