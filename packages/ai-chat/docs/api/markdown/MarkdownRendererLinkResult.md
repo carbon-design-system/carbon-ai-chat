@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html
 
 Attribute overrides returned by a CustomMarkdownRenderers.link /
 WCCustomMarkdownRenderers.link callback. Fields left `undefined` keep
@@ -24,7 +24,7 @@ interface MarkdownRendererLinkResult
 Extra attributes merged over the link's existing ones. Re-sanitized when
 the element has HTML sanitization enabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#attributes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#attributes)
 
 ### href
 
@@ -32,7 +32,7 @@ the element has HTML sanitization enabled.
 
 Replacement `href`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#href)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#href)
 
 ### onClick
 
@@ -43,7 +43,7 @@ Click handler for the rendered `<a>` element. Call
 Wired via `addEventListener` — never serialized as an HTML attribute and
 unaffected by HTML sanitization.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#onclick)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#onclick)
 
 ### rel
 
@@ -51,7 +51,7 @@ unaffected by HTML sanitization.
 
 Replacement `rel`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#rel)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#rel)
 
 ### target
 
@@ -59,7 +59,7 @@ Replacement `rel`.
 
 Replacement `target` (e.g. `"_self"`). Overrides the `_blank` default.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#target)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererLinkResult.html#target)
 
 ## Related
 
