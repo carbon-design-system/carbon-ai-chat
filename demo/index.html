@@ -1,1 +1,57 @@
-<!doctype html><html lang=en><head><meta charset=utf-8><meta name=robots content=noindex><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Interactive demo and configuration tool for Carbon AI Chat component. Test and customize chat settings, themes, layouts, and features in real-time."><title>@carbon/ai-chat - functionality demo</title><link rel=stylesheet href=https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/latest/plex.css><script src=analytics-init.js></script><script src=https://1.www.s81c.com/common/stats/ibm-common.js async></script><link href=main.css rel=stylesheet></head><body><nav aria-label="Skip navigation"><a href=#main-content class=skip-to-main>Skip to main content</a></nav><demo-container><div slot=demo-header><demo-header></demo-header></div><demo-body slot=demo-body><h1 class=visually-hidden>Carbon AI Chat Demo</h1><div id=root></div></demo-body></demo-container><script defer src=bundle.js></script></body></html>
+<!--
+  Copyright IBM Corp. 2025, 2026
+
+  This source code is licensed under the Apache-2.0 license found in the
+  LICENSE file in the root directory of this source tree.
+ -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      No production CSP enforcement on the demo: ibm-common.js (and the cascade
+      it kicks off — Tealium, TrustArc, etc.) needs broad origin/inline-style
+      access that's not worth maintaining in a meta-tag allowlist for a
+      GitHub Pages demo. Strict CSP is enforced at test time only via
+      `installTestCsp` in demo/tests/utils.ts, which route-rewrites this
+      document response to inject a strict policy. ibm-common.js is route-
+      aborted in tests so it doesn't run under the strict policy.
+    -->
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive demo and configuration tool for Carbon AI Chat component. Test and customize chat settings, themes, layouts, and features in real-time." />
+    <title>@carbon/ai-chat - functionality demo</title>
+    <link
+      rel="stylesheet"
+      href="https://1.www.s81c.com/common/carbon-for-ibm-dotcom/tag/latest/plex.css" />
+
+    <!-- Tealium/GA set up: globals must exist before ibm-common.js loads, so this <script src> precedes it. -->
+    <script src="analytics-init.js"></script>
+    <script
+      src="https://1.www.s81c.com/common/stats/ibm-common.js"
+      type="text/javascript"
+      async="async"></script>
+    <script type="module" crossorigin src="/assets/index-Cvpz_iXw.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/floating-ui.dom-L-gD1HC-.js">
+    <link rel="modulepreload" crossorigin href="/assets/16-D2nShn_L.js">
+    <link rel="modulepreload" crossorigin href="/assets/w3c-keyname-BOAvb0qz.js">
+    <link rel="modulepreload" crossorigin href="/assets/isObjectLike-BPYCoGzU.js">
+    <link rel="modulepreload" crossorigin href="/assets/extension-equivalence-BGbBMBJx.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-BjwfZFQp.css">
+  </head>
+  <body>
+    <nav aria-label="Skip navigation">
+      <a href="#main-content" class="skip-to-main">Skip to main content</a>
+    </nav>
+    <demo-container>
+      <div slot="demo-header"><demo-header></demo-header></div>
+      <demo-body slot="demo-body">
+        <h1 class="visually-hidden">Carbon AI Chat Demo</h1>
+        <div id="root"></div>
+      </demo-body>
+    </demo-container>
+  </body>
+</html>
