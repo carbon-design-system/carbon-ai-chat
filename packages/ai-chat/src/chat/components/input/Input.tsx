@@ -292,6 +292,39 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
     [intl]
   );
 
+  // Interpolated here rather than in the component so a translation can order
+  // the name however its language needs.
+  const getRemoveFileLabel = useMemo(
+    () =>
+      ({ name }: { name?: string }) =>
+        name
+          ? intl.formatMessage(
+              { id: 'fileSharing_removeNamedFile' },
+              { filename: name }
+            )
+          : languagePack.fileSharing_removeButtonTitle,
+    [intl, languagePack.fileSharing_removeButtonTitle]
+  );
+
+  // Mirrors the composition in `AppShell`'s `inputError`, so the announcement and
+  // the on-screen message cannot drift apart. The title is punctuated so a screen
+  // reader pauses before the reason instead of running the two together.
+  const getFileUploadFailureText = useMemo(
+    () =>
+      ({ messages }: { messages: string[] }) =>
+        [
+          `${languagePack.fileSharing_uploadErrorTitle}.`,
+          ...messages,
+          languagePack.fileSharing_uploadErrorRecovery,
+        ]
+          .filter(Boolean)
+          .join(' '),
+    [
+      languagePack.fileSharing_uploadErrorTitle,
+      languagePack.fileSharing_uploadErrorRecovery,
+    ]
+  );
+
   // Get chat width breakpoint and height to determine autocomplete settings
   const chatWidthBreakpoint = useSelector(
     (state: AppState) => state.chatWidthBreakpoint
@@ -575,19 +608,34 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       return null;
     }
 
+    const hasUploadError =
+      pendingUploads?.some((upload) => upload.isError) ?? false;
+
     const announcement = error.description
       ? `${error.title}. ${error.description}`
       : error.title;
 
+    const errorMessage = (
+      <ErrorMessage
+        fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
+        title={error.title}
+        description={error?.description}
+        collapsible={error?.collapsible}
+      />
+    );
+
     return (
       <div slot="field-messaging">
-        <AnnounceOnMount announceOnce={announcement}>
-          <ErrorMessage
-            fullscreen={chatWidthBreakpoint === ChatWidthBreakpoint.WIDE}
-            title={error.title}
-            description={error?.description}
-            collapsible={error?.collapsible}
-          />
+        {/*
+          <FileUploads> announces upload failures itself, so this wrapper goes
+          silent for them — otherwise its announcer call and its own live region
+          would each repeat the text. Kept mounted rather than swapped out: a
+          changed element type here remounts it, and a remount re-announces.
+        */}
+        <AnnounceOnMount
+          live={!hasUploadError}
+          announceOnce={hasUploadError ? undefined : announcement}>
+          {errorMessage}
         </AnnounceOnMount>
       </div>
     );
@@ -709,12 +757,13 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
           slot="file-uploads"
           uploads={pendingUploads || EMPTY_UPLOADS}
           removeFileLabel={languagePack.fileSharing_removeButtonTitle}
+          getRemoveFileLabel={getRemoveFileLabel}
           uploadingFileLabel={languagePack.fileSharing_statusUploading}
           getFilesAddedText={getFilesAddedText}
           getFilesUploadingText={getFilesUploadingText}
           fileRemovedLabel={languagePack.fileSharing_ariaAnnounceFileRemoved}
           uploadSuccessLabel={languagePack.fileSharing_ariaAnnounceSuccess}
-          uploadFailureLabel={languagePack.fileSharing_uploadFailed}
+          getFileUploadFailureText={getFileUploadFailureText}
           onFileRemove={handleRemoveFile}
         />
       )}

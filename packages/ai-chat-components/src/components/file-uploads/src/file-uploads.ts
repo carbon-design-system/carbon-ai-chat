@@ -32,6 +32,7 @@ import styles from './file-uploads.scss?lit';
 interface UploadSnapshot {
   status: FileUpload['status'];
   isError: boolean;
+  errorMessage?: string;
 }
 
 /**
@@ -57,9 +58,20 @@ class FileUploadsElement extends LitElement {
   @property({ type: Array, attribute: false })
   uploads: FileUpload[] = [];
 
-  /** Label for the remove file button. */
+  /** Label for the remove file button, used when no file name is available. */
   @property({ type: String, attribute: 'remove-file-label' })
   removeFileLabel = 'Remove file';
+
+  /**
+   * Returns the accessible name for one file's remove button. Receives the file
+   * name so the consumer can interpolate it, giving each button a distinct name.
+   * The default English formatter is for standalone use; `@carbon/ai-chat`
+   * supplies an `intl`-backed one. A file with no name falls back to
+   * {@link removeFileLabel}.
+   */
+  @property({ type: Object, attribute: false })
+  getRemoveFileLabel: (args: { name?: string }) => string = ({ name }) =>
+    name ? `Remove ${name}` : this.removeFileLabel;
 
   /** Label announced and shown while a file is uploading. */
   @property({ type: String, attribute: 'uploading-file-label' })
@@ -73,7 +85,7 @@ class FileUploadsElement extends LitElement {
   @property({ type: String, attribute: 'upload-success-label' })
   uploadSuccessLabel = 'The file was uploaded successfully.';
 
-  /** Announced when a file fails to upload. */
+  /** Announced when a file fails to upload, ahead of the host's own reason. */
   @property({ type: String, attribute: 'upload-failure-label' })
   uploadFailureLabel = 'There was an error uploading the file.';
 
@@ -97,8 +109,21 @@ class FileUploadsElement extends LitElement {
   getFilesUploadingText: (args: { count: number }) => string = ({ count }) =>
     count === 1 ? 'Uploading file.' : `Uploading ${count} files.`;
 
+  /**
+   * Returns the announcement made when uploads fail, receiving one reason per
+   * failed file so every reason is carried without repeating a shared title. The
+   * default builds on {@link uploadFailureLabel} and is for standalone use;
+   * `@carbon/ai-chat` supplies one composed from its language pack. Failures
+   * with no stated reason announce the label alone.
+   */
+  @property({ type: Object, attribute: false })
+  getFileUploadFailureText: (args: { messages: string[] }) => string = ({
+    messages,
+  }) => [this.uploadFailureLabel, ...messages].filter(Boolean).join(' ');
+
   /** Whether scrolling is required to view the entire width of all file upload items. */
-  @state() private _hasOverflow = false;
+  @state()
+  private _hasOverflow = false;
 
   private _announcer = new AriaAnnouncerManager();
 
@@ -118,13 +143,21 @@ class FileUploadsElement extends LitElement {
   }
 
   protected firstUpdated() {
-    const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
-      `.${prefix}--file-uploads-live-region`
+    const politeRegions = this.renderRoot.querySelectorAll<HTMLDivElement>(
+      `.${prefix}--file-uploads-live-region[aria-live="polite"]`
     );
-    this._announcer.connect(Array.from(regions));
+    const assertiveRegions = this.renderRoot.querySelectorAll<HTMLDivElement>(
+      `.${prefix}--file-uploads-live-region[aria-live="assertive"]`
+    );
+
+    this._announcer.connect([...politeRegions], [...assertiveRegions]);
     // Seed from the initial uploads so the already-rendered set does not
-    // produce a burst of "added" announcements on first paint.
-    this._snapshots = this._snapshotOf(this.uploads);
+    // produce a burst of "added" announcements on first paint. Failures are left
+    // unseeded so the first diff still reports them: the element remounts when the
+    // input is hidden and re-shown, and a blocking failure must not be swallowed.
+    this._snapshots = this._snapshotOf(
+      this.uploads.filter((upload) => !upload.isError)
+    );
   }
 
   disconnectedCallback() {
@@ -155,7 +188,11 @@ class FileUploadsElement extends LitElement {
     return new Map(
       uploads.map((upload) => [
         upload.id,
-        { status: upload.status, isError: Boolean(upload.isError) },
+        {
+          status: upload.status,
+          isError: Boolean(upload.isError),
+          errorMessage: upload.errorMessage,
+        },
       ])
     );
   }
@@ -172,13 +209,14 @@ class FileUploadsElement extends LitElement {
    * or start uploading in the same frame, a single counted announcement is made
    * (via {@link getFilesAddedText} / {@link getFilesUploadingText}) rather than
    * one per file. Success and failure settle per file in their own frames, so
-   * they are announced inline.
+   * they are announced inline — a failure assertively, since it blocks sending.
    */
   private _announceTransitions() {
     const previous = this._snapshots;
 
     let addedCount = 0;
     let uploadingCount = 0;
+    const failures: string[] = [];
 
     for (const upload of this.uploads) {
       const before = previous.get(upload.id);
@@ -189,12 +227,16 @@ class FileUploadsElement extends LitElement {
         if (upload.status === 'uploading') {
           uploadingCount += 1;
         } else if (isError) {
-          this._announcer.announce(this.uploadFailureLabel);
+          failures.push(upload.errorMessage ?? '');
         } else {
           addedCount += 1;
         }
       } else if (!before.isError && isError) {
-        this._announcer.announce(this.uploadFailureLabel);
+        failures.push(upload.errorMessage ?? '');
+      } else if (isError && before.errorMessage !== upload.errorMessage) {
+        // The host can revise why a file failed without it ever leaving the error
+        // state; nothing else would speak the new reason.
+        failures.push(upload.errorMessage ?? '');
       } else if (
         before.status === 'uploading' &&
         upload.status !== 'uploading' &&
@@ -213,6 +255,14 @@ class FileUploadsElement extends LitElement {
       }
     }
 
+    if (failures.length > 0) {
+      this._announcer.announce(
+        this.getFileUploadFailureText({
+          messages: failures.filter(Boolean),
+        }),
+        'assertive'
+      );
+    }
     if (addedCount > 0) {
       this._announcer.announce(this.getFilesAddedText({ count: addedCount }));
     }
@@ -237,6 +287,12 @@ class FileUploadsElement extends LitElement {
     return html`
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
       <div class="${prefix}--file-uploads-live-region" aria-live="polite"></div>
+      <div
+        class="${prefix}--file-uploads-live-region"
+        aria-live="assertive"></div>
+      <div
+        class="${prefix}--file-uploads-live-region"
+        aria-live="assertive"></div>
       ${
         this.uploads && this.uploads.length > 0
           ? html`
@@ -248,6 +304,9 @@ class FileUploadsElement extends LitElement {
                       <cds-aichat-file-upload-item
                         .upload="${upload}"
                         remove-file-label="${this.removeFileLabel}"
+                        remove-file-named-label="${this.getRemoveFileLabel({
+                          name: upload.file?.name,
+                        })}"
                         uploading-file-label="${this.uploadingFileLabel}"
                         @cds-aichat-file-remove="${this._handleFileRemove}"></cds-aichat-file-upload-item>
                     `

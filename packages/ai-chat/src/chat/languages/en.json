@@ -190,6 +190,7 @@
   "fileSharing_ariaAnnounceSuccess": "The file was uploaded successfully.",
   "fileSharing_fileIcon": "File icon",
   "fileSharing_removeButtonTitle": "Remove file",
+  "fileSharing_removeNamedFile": "Remove {filename}",
   "fileSharing_statusUploading": "Uploading file",
   "fileSharing_uploadFailed": "There was an error uploading the file.",
   "fileSharing_uploadErrorTitle": "File upload error",
