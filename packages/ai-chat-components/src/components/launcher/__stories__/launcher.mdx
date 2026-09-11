@@ -1,12 +1,12 @@
-import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as LauncherStories from "./launcher.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as LauncherStories from './launcher.stories';
 
 <Meta
   of={LauncherStories}
   parameters={{
-    previewTabs: { "storybook/docs/panel": { title: "Overview" } },
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
   }}
 />
 
@@ -24,17 +24,14 @@ import * as LauncherStories from "./launcher.stories";
 
 ## Overview
 
-The `cds-aichat-launcher` is a floating action button that opens and closes the AI Chat window.
-It ships as a standalone web component so consumers can wire it to their own state management
-, when the built-in launcher is removed in 2.0.
+The `cds-aichat-launcher` is a floating action button that opens and closes the AI Chat window. It ships as a standalone web component so consumers can wire it to their own state management , when the built-in launcher is removed in 2.0.
 
 ### Getting started
 
 ```html
 <cds-aichat-launcher
   closed-label="Open chat"
-  open-label="Close chat"
-></cds-aichat-launcher>
+  open-label="Close chat"></cds-aichat-launcher>
 ```
 
 ## Component API
@@ -44,10 +41,10 @@ It ships as a standalone web component so consumers can wire it to their own sta
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/launcher/index.js";
+import '@carbon/ai-chat-components/es/components/launcher/index.js';
 ```
 
-<Markdown>{`${cdnJs(["launcher"])}`}</Markdown>
+<Markdown>{`${cdnJs(['launcher'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

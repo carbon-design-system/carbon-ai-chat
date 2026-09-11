@@ -1,4 +1,4 @@
-import { Meta } from "@storybook/addon-docs/blocks";
+import { Meta } from '@storybook/addon-docs/blocks';
 
 <Meta title="Introduction/Styling & Modifiers" />
 
@@ -26,7 +26,7 @@ Controls corner rounding. Behavior depends on whether a value is provided:
 **Available Values:**
 
 | Value | Who gets rounded |
-|-------|-----------------|
+| --- | --- |
 | `""` (no value) | The element itself — all corners |
 | `"top"` | Without `data-stacked`: first child top-left, last child top-right. With `data-stacked`: first child both top corners |
 | `"bottom"` | Without `data-stacked`: first child bottom-left, last child bottom-right. With `data-stacked`: last child both bottom corners |
@@ -171,11 +171,11 @@ Without `data-stacked`, `data-rounded="bottom"` would round only the outer corne
 
 Applies a negative margin to an element equal to the parent container's padding, pulling the element flush (edge-to-edge) against the container's inner edges.
 
-| Value | Effect |
-|-------|--------|
-| `""` (no value) | Removes margin on all four sides |
-| `"top"` | Removes top margin and both inline (left/right) margins |
-| `"bottom"` | Removes bottom margin and both inline (left/right) margins |
+| Value           | Effect                                                     |
+| --------------- | ---------------------------------------------------------- |
+| `""` (no value) | Removes margin on all four sides                           |
+| `"top"`         | Removes top margin and both inline (left/right) margins    |
+| `"bottom"`      | Removes bottom margin and both inline (left/right) margins |
 
 **Example — flush content inside a panel:**
 
@@ -200,11 +200,13 @@ Applies a negative margin to an element equal to the parent container's padding,
 `Card` has an `isFlush` prop that controls the card's inherited tile padding. By default, tile padding is preserved. Use `data-flush` on individual slots to selectively pull specific content flush while other slots retain their padding:
 
 ```jsx
-{/* Media fills edge-to-edge; body keeps tile padding */}
+{
+  /* Media fills edge-to-edge; body keeps tile padding */
+}
 <Card>
   <img slot="media" src="..." data-flush="" />
   <div slot="body">This content has padding around it</div>
-</Card>
+</Card>;
 ```
 
 When `isFlush={true}`, the tile padding is removed for all slots, so you do not need `data-flush` on slotted content.
@@ -222,12 +224,11 @@ CSS custom properties control the visual appearance of components. They're defin
 **Individual corner control (RTL-safe):**
 
 | Property | Default | Description |
-|----------|---------|-------------|
+| --- | --- | --- |
 | `--cds-aichat-border-radius-start-start` | `0.5rem` | Top-left (LTR) / Top-right (RTL) |
 | `--cds-aichat-border-radius-start-end` | `0.5rem` | Top-right (LTR) / Top-left (RTL) |
 | `--cds-aichat-border-radius-end-start` | `0.5rem` | Bottom-left (LTR) / Bottom-right (RTL) |
 | `--cds-aichat-border-radius-end-end` | `0.5rem` | Bottom-right (LTR) / Bottom-left (RTL) |
-
 
 ### Using the Properties in Your CSS
 
@@ -254,6 +255,7 @@ If you're building custom components with SCSS, use the provided mixins from `@c
 **Purpose:** Applies border radius directly to the current element using all four corner custom properties.
 
 **When to use:**
+
 - On inner wrapper elements that need to inherit rounding from a parent with `data-rounded`
 - When you want to apply rounding directly to an element without attribute support
 - For elements that don't need to respond to `data-rounded` attributes themselves
@@ -261,9 +263,9 @@ If you're building custom components with SCSS, use the provided mixins from `@c
 **Example — applying rounding to an inner wrapper:**
 
 ```scss
-@use "@carbon/ai-chat-components/scss/modifiers";
+@use '@carbon/ai-chat-components/scss/modifiers';
 
-.my-component:is([data-rounded], [data-rounded=""]) {
+.my-component:is([data-rounded], [data-rounded='']) {
   overflow: hidden;
 
   .my-component__inner-wrapper {
@@ -278,10 +280,22 @@ This pattern is used by components like `cds-aichat-table` and `cds-aichat-code-
 
 ```scss
 // Applies all four corners using logical properties (RTL-safe)
-border-start-start-radius: var(--cds-aichat-border-radius-start-start, var(--cds-aichat-border-radius));
-border-start-end-radius: var(--cds-aichat-border-radius-start-end, var(--cds-aichat-border-radius));
-border-end-start-radius: var(--cds-aichat-border-radius-end-start, var(--cds-aichat-border-radius));
-border-end-end-radius: var(--cds-aichat-border-radius-end-end, var(--cds-aichat-border-radius));
+border-start-start-radius: var(
+  --cds-aichat-border-radius-start-start,
+  var(--cds-aichat-border-radius)
+);
+border-start-end-radius: var(
+  --cds-aichat-border-radius-start-end,
+  var(--cds-aichat-border-radius)
+);
+border-end-start-radius: var(
+  --cds-aichat-border-radius-end-start,
+  var(--cds-aichat-border-radius)
+);
+border-end-end-radius: var(
+  --cds-aichat-border-radius-end-end,
+  var(--cds-aichat-border-radius)
+);
 ```
 
 Note the fallback mechanism: each corner-specific property falls back to the base `--cds-aichat-border-radius` if not defined.
@@ -293,6 +307,7 @@ Note the fallback mechanism: each corner-specific property falls back to the bas
 **Purpose:** Adds complete `data-rounded` attribute support to a component, enabling it to respond to all rounding scenarios including positional values and child element rounding.
 
 **When to use:**
+
 - On React component root elements that need full `data-rounded` attribute support
 - When building custom components that should behave like built-in components
 - When you need positional rounding that targets child elements
@@ -301,7 +316,7 @@ Note the fallback mechanism: each corner-specific property falls back to the bas
 **Example — full attribute support for a custom React component:**
 
 ```scss
-@use "@carbon/ai-chat-components/scss/modifiers";
+@use '@carbon/ai-chat-components/scss/modifiers';
 
 .my-custom-component {
   @include modifiers.rounded-modifiers;
@@ -316,8 +331,7 @@ function MyCustomComponent({ rounded, stacked, children }) {
     <div
       className="my-custom-component"
       data-rounded={rounded}
-      data-stacked={stacked || undefined}
-    >
+      data-stacked={stacked || undefined}>
       {children}
     </div>
   );
@@ -327,26 +341,33 @@ function MyCustomComponent({ rounded, stacked, children }) {
 **What it enables:**
 
 ```jsx
-{/* Self-rounding (all corners) */}
-<MyCustomComponent rounded="">...</MyCustomComponent>
+{
+  /* Self-rounding (all corners) */
+}
+<MyCustomComponent rounded="">...</MyCustomComponent>;
 
-{/* Positional rounding on children */}
+{
+  /* Positional rounding on children */
+}
 <MyCustomComponent rounded="top">
   <button>First (top-left rounded)</button>
   <button>Middle (no rounding)</button>
   <button>Last (top-right rounded)</button>
-</MyCustomComponent>
+</MyCustomComponent>;
 
-{/* Vertical layout with stacked */}
+{
+  /* Vertical layout with stacked */
+}
 <MyCustomComponent rounded="bottom" stacked>
   <button>First</button>
   <button>Last (both bottom corners rounded)</button>
-</MyCustomComponent>
+</MyCustomComponent>;
 ```
 
 **What it generates:**
 
 The `rounded-modifiers` mixin includes four sub-mixins:
+
 1. `rounded-base` — handles `data-rounded=""` (self-rounding)
 2. `rounded-host-positions` — handles positional values on the root element itself
 3. `rounded-non-stacked` — handles child rounding in horizontal layouts
@@ -357,7 +378,7 @@ The `rounded-modifiers` mixin includes four sub-mixins:
 ### Comparison: When to Use Each
 
 | Scenario | Use `rounded-self` | Use `rounded-modifiers` |
-|----------|-------------------|------------------------|
+| --- | --- | --- |
 | Apply rounding to the element itself | ✅ | ❌ |
 | Apply rounding to an inner wrapper | ✅ | ❌ |
 | Enable `data-rounded` attribute support | ❌ | ✅ |
@@ -372,18 +393,19 @@ The `rounded-modifiers` mixin includes four sub-mixins:
 Many components use both mixins together. Here's the pattern from `cds-aichat-code-snippet`:
 
 ```scss
-@use "@carbon/ai-chat-components/scss/modifiers";
+@use '@carbon/ai-chat-components/scss/modifiers';
 
 .cds-aichat-code-snippet {
-  @include modifiers.rounded-modifiers;  // Root responds to data-rounded attribute
+  @include modifiers.rounded-modifiers; // Root responds to data-rounded attribute
 }
 
 .cds--snippet {
-  @include modifiers.rounded-self;       // Inner element gets the actual rounding
+  @include modifiers.rounded-self; // Inner element gets the actual rounding
 }
 ```
 
 This allows the component to work correctly:
+
 - The root element handles the attribute logic
 - The `.cds--snippet` inner element receives the actual border-radius styles
 
@@ -394,12 +416,12 @@ This allows the component to work correctly:
 For fine-grained control over specific corners:
 
 ```scss
-@use "@carbon/ai-chat-components/scss/modifiers";
+@use '@carbon/ai-chat-components/scss/modifiers';
 
 .my-custom-element {
   // Round only top corners
   @include modifiers.radius(start-start, start-end);
-  
+
   // Or round only bottom-left corner
   @include modifiers.radius(end-start);
 }
@@ -416,12 +438,14 @@ The rounding system uses a two-tier fallback:
 ```scss
 // Each corner-specific property falls back to the base property
 border-start-start-radius: var(
-  --cds-aichat-border-radius-start-start,  // Try corner-specific first
-  var(--cds-aichat-border-radius)          // Fall back to base
+  --cds-aichat-border-radius-start-start,
+  // Try corner-specific first
+  var(--cds-aichat-border-radius) // Fall back to base
 );
 ```
 
 This means you can:
+
 - Set only `--cds-aichat-border-radius` to round all corners uniformly
 - Override individual corners with `--cds-aichat-border-radius-start-start` etc.
 - Mix and match: set the base for most corners, override specific ones as needed
@@ -432,7 +456,7 @@ This means you can:
 .my-element {
   /* All corners default to 8px */
   --cds-aichat-border-radius: 8px;
-  
+
   /* Override just the top-left to be square */
   --cds-aichat-border-radius-start-start: 0;
 }
@@ -483,6 +507,7 @@ Use `data-flush` when rendering custom content in a `Panel` or workspace shell t
 ```
 
 **Key Points:**
+
 - These properties are defined at `:root` with defaults
 - Parent components (like Card, Panel) may override these values in their scope; child elements inherit the override
 - `data-rounded` without a value rounds the element itself; with a value it targets children based on layout direction

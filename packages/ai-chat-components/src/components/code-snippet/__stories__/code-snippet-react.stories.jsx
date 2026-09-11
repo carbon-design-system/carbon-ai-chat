@@ -14,13 +14,13 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 
-import CodeSnippet from "../../../react/code-snippet";
-import Card from "../../../react/card";
-import { Download, Share } from "@carbon/icons-react";
-import { AILabel, AILabelContent, Button } from "@carbon/react";
-import { multilineCode } from "./sample-code.js";
+import CodeSnippet from '../../../react/code-snippet';
+import Card from '../../../react/card';
+import { Download, Share } from '@carbon/icons-react';
+import { AILabel, AILabelContent, Button } from '@carbon/react';
+import { multilineCode } from './sample-code.js';
 
 const renderSnippet = (args, code) => {
   const {
@@ -53,34 +53,34 @@ const renderSnippet = (args, code) => {
     hideFold,
   };
 
-  if (typeof maxCollapsedNumberOfRows !== "undefined") {
+  if (typeof maxCollapsedNumberOfRows !== 'undefined') {
     commonProps.maxCollapsedNumberOfRows = maxCollapsedNumberOfRows;
   }
-  if (typeof maxExpandedNumberOfRows !== "undefined") {
+  if (typeof maxExpandedNumberOfRows !== 'undefined') {
     commonProps.maxExpandedNumberOfRows = maxExpandedNumberOfRows;
   }
-  if (typeof minCollapsedNumberOfRows !== "undefined") {
+  if (typeof minCollapsedNumberOfRows !== 'undefined') {
     commonProps.minCollapsedNumberOfRows = minCollapsedNumberOfRows;
   }
-  if (typeof minExpandedNumberOfRows !== "undefined") {
+  if (typeof minExpandedNumberOfRows !== 'undefined') {
     commonProps.minExpandedNumberOfRows = minExpandedNumberOfRows;
   }
-  if (typeof showMoreText !== "undefined") {
+  if (typeof showMoreText !== 'undefined') {
     commonProps.showMoreText = showMoreText;
   }
-  if (typeof showLessText !== "undefined") {
+  if (typeof showLessText !== 'undefined') {
     commonProps.showLessText = showLessText;
   }
-  if (typeof copyButtonTooltipContent !== "undefined") {
+  if (typeof copyButtonTooltipContent !== 'undefined') {
     commonProps.copyButtonTooltipContent = copyButtonTooltipContent;
   }
-  if (typeof language !== "undefined") {
+  if (typeof language !== 'undefined') {
     commonProps.language = language;
   }
-  if (typeof defaultLanguage !== "undefined") {
+  if (typeof defaultLanguage !== 'undefined') {
     commonProps.defaultLanguage = defaultLanguage;
   }
-  if (typeof onChange !== "undefined") {
+  if (typeof onChange !== 'undefined') {
     commonProps.onChange = onChange;
   }
 
@@ -117,7 +117,7 @@ const StreamingDemo = (args) => {
     copyButtonTooltipContent,
   } = args;
 
-  const [streamedContent, setStreamedContent] = useState("");
+  const [streamedContent, setStreamedContent] = useState('');
   const intervalRef = useRef(null);
   const chunks = useMemo(() => chunkContent(multilineCode), []);
 
@@ -130,7 +130,7 @@ const StreamingDemo = (args) => {
 
   const startStreaming = useCallback(() => {
     clearExistingInterval();
-    setStreamedContent("");
+    setStreamedContent('');
 
     let index = 0;
     intervalRef.current = setInterval(() => {
@@ -158,31 +158,31 @@ const StreamingDemo = (args) => {
     hideFold,
   };
 
-  if (typeof language !== "undefined") {
+  if (typeof language !== 'undefined') {
     commonProps.language = language;
   }
-  if (typeof defaultLanguage !== "undefined") {
+  if (typeof defaultLanguage !== 'undefined') {
     commonProps.defaultLanguage = defaultLanguage;
   }
-  if (typeof maxCollapsedNumberOfRows !== "undefined") {
+  if (typeof maxCollapsedNumberOfRows !== 'undefined') {
     commonProps.maxCollapsedNumberOfRows = maxCollapsedNumberOfRows;
   }
-  if (typeof maxExpandedNumberOfRows !== "undefined") {
+  if (typeof maxExpandedNumberOfRows !== 'undefined') {
     commonProps.maxExpandedNumberOfRows = maxExpandedNumberOfRows;
   }
-  if (typeof minCollapsedNumberOfRows !== "undefined") {
+  if (typeof minCollapsedNumberOfRows !== 'undefined') {
     commonProps.minCollapsedNumberOfRows = minCollapsedNumberOfRows;
   }
-  if (typeof minExpandedNumberOfRows !== "undefined") {
+  if (typeof minExpandedNumberOfRows !== 'undefined') {
     commonProps.minExpandedNumberOfRows = minExpandedNumberOfRows;
   }
-  if (typeof showMoreText !== "undefined") {
+  if (typeof showMoreText !== 'undefined') {
     commonProps.showMoreText = showMoreText;
   }
-  if (typeof showLessText !== "undefined") {
+  if (typeof showLessText !== 'undefined') {
     commonProps.showLessText = showLessText;
   }
-  if (typeof copyButtonTooltipContent !== "undefined") {
+  if (typeof copyButtonTooltipContent !== 'undefined') {
     commonProps.copyButtonTooltipContent = copyButtonTooltipContent;
   }
 
@@ -194,11 +194,10 @@ const StreamingDemo = (args) => {
         type="button"
         onClick={startStreaming}
         style={{
-          marginBottom: "1rem",
-          padding: "0.5rem 1rem",
-          cursor: "pointer",
-        }}
-      >
+          marginBottom: '1rem',
+          padding: '0.5rem 1rem',
+          cursor: 'pointer',
+        }}>
         Restart Streaming
       </button>
       {useCard ? (
@@ -213,27 +212,27 @@ const StreamingDemo = (args) => {
 };
 
 export default {
-  title: "Components/Code snippet",
+  title: 'Components/Code snippet',
   component: CodeSnippet,
   argTypes: {
     // Story-specific control (not a component property)
     useCard: {
-      control: "boolean",
-      description: "Wrap in Card (story-only control)",
+      control: 'boolean',
+      description: 'Wrap in Card (story-only control)',
       table: {
-        category: "Story",
+        category: 'Story',
       },
     },
     // Disable control for complex array property
     actions: {
       control: false,
       description:
-        "Array of actions that can overflow into a menu when space is limited.",
+        'Array of actions that can overflow into a menu when space is limited.',
     },
     // Event handler
     onChange: {
-      action: "onChange",
-      table: { category: "events" },
+      action: 'onChange',
+      table: { category: 'events' },
     },
   },
   args: {
@@ -251,8 +250,8 @@ export const Default = {
     hideLineNumbers: false,
     hideFold: false,
     maxCollapsedNumberOfRows: 15,
-    showMoreText: "Show more",
-    showLessText: "Show less",
+    showMoreText: 'Show more',
+    showLessText: 'Show less',
   },
   render: (args) => renderSnippet(args, multilineCode),
 };
@@ -280,14 +279,14 @@ export const WithHeaderSlotsFilled = {
   render: (args) => {
     const actions = [
       {
-        text: "Download",
+        text: 'Download',
         icon: Download,
-        onClick: () => console.log("Download clicked"),
+        onClick: () => console.log('Download clicked'),
       },
       {
-        text: "Share",
+        text: 'Share',
         icon: Share,
-        onClick: () => console.log("Share clicked"),
+        onClick: () => console.log('Share clicked'),
       },
     ];
 
@@ -297,15 +296,14 @@ export const WithHeaderSlotsFilled = {
         code={multilineCode}
         data-rounded={args.useCard}
         actions={actions}
-        overflow
-      >
+        overflow>
         <AILabel size="2xs" autoalign alignment="bottom" slot="decorator">
           <AILabelContent>
             <div>This code was generated. Review carefully before use.</div>
           </AILabelContent>
         </AILabel>
         <div slot="fixed-actions">
-          <Button size="sm" onClick={() => console.log("Fixed action clicked")}>
+          <Button size="sm" onClick={() => console.log('Fixed action clicked')}>
             Action
           </Button>
         </div>
@@ -420,15 +418,14 @@ export const FullHeightMode = {
     return (
       <div
         style={{
-          height: "500px",
-          display: "flex",
-          flexDirection: "column",
-          border: "1px solid #ccc",
-          padding: "1rem",
-        }}
-      >
-        <h3 style={{ margin: "0 0 1rem 0" }}>SQL Editor (Full-Height Mode)</h3>
-        <p style={{ margin: "0 0 1rem 0", color: "#666" }}>
+          height: '500px',
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid #ccc',
+          padding: '1rem',
+        }}>
+        <h3 style={{ margin: '0 0 1rem 0' }}>SQL Editor (Full-Height Mode)</h3>
+        <p style={{ margin: '0 0 1rem 0', color: '#666' }}>
           When both max-collapsed-number-of-rows and max-expanded-number-of-rows
           are set to 0, the component fills its container's height with a
           scrollbar. Perfect for edit mode scenarios.
@@ -437,9 +434,8 @@ export const FullHeightMode = {
           style={{
             flex: 1,
             minHeight: 0,
-            overflow: "hidden",
-          }}
-        >
+            overflow: 'hidden',
+          }}>
           {content}
         </div>
       </div>

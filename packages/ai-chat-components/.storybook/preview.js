@@ -1,7 +1,7 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
@@ -9,21 +9,21 @@
 
 /** @type { import('@storybook/web-components-vite').Preview } */
 
-import { html } from "lit";
-import containerStyles from "./_container.scss?inline";
-import { white, g10, g90, g100 } from "@carbon/themes";
-import { breakpoints } from "@carbon/layout";
-import { setCustomElementsManifest } from "@storybook/web-components-vite";
-import customElements from "../custom-elements.json";
-import prettier from "prettier/standalone";
+import { html } from 'lit';
+import containerStyles from './_container.scss?inline';
+import { white, g10, g90, g100 } from '@carbon/themes';
+import { breakpoints } from '@carbon/layout';
+import { setCustomElementsManifest } from '@storybook/web-components-vite';
+import customElements from '../custom-elements.json';
+import prettier from 'prettier/standalone';
 
-if (typeof document !== "undefined") {
+if (typeof document !== 'undefined') {
   const existing = document.head.querySelector(
-    'style[data-storybook-container="true"]',
+    'style[data-storybook-container="true"]'
   );
   if (!existing) {
-    const style = document.createElement("style");
-    style.setAttribute("data-storybook-container", "true");
+    const style = document.createElement('style');
+    style.setAttribute('data-storybook-container', 'true');
     style.textContent = containerStyles;
     document.head.appendChild(style);
   }
@@ -40,7 +40,7 @@ function filterPrivateMembers(manifest) {
     (module.declarations || []).forEach((declaration) => {
       if (declaration.members) {
         declaration.members = declaration.members.filter(
-          (member) => member.privacy !== "private",
+          (member) => member.privacy !== 'private'
         );
       }
     });
@@ -54,36 +54,36 @@ setCustomElementsManifest(filteredManifest);
 
 export const globalTypes = {
   theme: {
-    name: "Theme",
-    description: "Set the global theme for displaying components",
-    defaultValue: "white",
+    name: 'Theme',
+    description: 'Set the global theme for displaying components',
+    defaultValue: 'white',
     toolbar: {
-      icon: "paintbrush",
-      items: ["white", "g10", "g90", "g100"],
+      icon: 'paintbrush',
+      items: ['white', 'g10', 'g90', 'g100'],
     },
   },
   dir: {
-    name: "Text direction",
-    description: "Set the text direction for the story",
-    defaultValue: "ltr",
+    name: 'Text direction',
+    description: 'Set the text direction for the story',
+    defaultValue: 'ltr',
     toolbar: {
-      icon: "transfer",
-      title: "Text direction",
+      icon: 'transfer',
+      title: 'Text direction',
       items: [
         {
-          right: "🔄",
-          title: "auto",
-          value: "auto",
+          right: '🔄',
+          title: 'auto',
+          value: 'auto',
         },
         {
-          right: "➡️",
-          title: "left-to-right (ltr)",
-          value: "ltr",
+          right: '➡️',
+          title: 'left-to-right (ltr)',
+          value: 'ltr',
         },
         {
-          right: "⬅️",
-          title: "right-to-left (rtl)",
-          value: "rtl",
+          right: '⬅️',
+          title: 'right-to-left (rtl)',
+          value: 'rtl',
         },
       ],
     },
@@ -99,22 +99,22 @@ export const parameters = {
     },
     options: {
       white: {
-        name: "white",
+        name: 'white',
         value: white.background,
       },
 
       g10: {
-        name: "g10",
+        name: 'g10',
         value: g10.background,
       },
 
       g90: {
-        name: "g90",
+        name: 'g90',
         value: g90.background,
       },
 
       g100: {
-        name: "g100",
+        name: 'g100',
         value: g100.background,
       },
     },
@@ -127,30 +127,30 @@ export const parameters = {
     // presetColors: [],
 
     // https://storybook.js.org/docs/react/essentials/controls#sorting-controls
-    sort: "alpha",
+    sort: 'alpha',
 
     hideNoControlsWarning: true,
   },
   darkMode: {
-    current: "light",
+    current: 'light',
   },
   docs: {
     codePanel: true,
-    defaultName: "Overview",
+    defaultName: 'Overview',
     source: {
       excludeDecorators: true,
       transform: async (source) => {
         return prettier.format(source, {
-          parser: "html",
-          plugins: [await import("prettier/parser-html")],
+          parser: 'html',
+          plugins: [await import('prettier/parser-html')],
           printWidth: 80,
         });
       },
     },
   },
   previewTabs: {
-    "storybook/docs/panel": {
-      title: "Overview",
+    'storybook/docs/panel': {
+      title: 'Overview',
       index: 0,
     },
   },
@@ -162,71 +162,71 @@ export const parameters = {
   viewport: {
     options: {
       sm: {
-        name: "Small",
+        name: 'Small',
         styles: {
           width: breakpoints.sm.width,
-          height: "100%",
+          height: '100%',
         },
       },
       md: {
-        name: "Medium",
+        name: 'Medium',
         styles: {
           width: breakpoints.md.width,
-          height: "100%",
+          height: '100%',
         },
       },
       lg: {
-        name: "Large",
+        name: 'Large',
         styles: {
           width: breakpoints.lg.width,
-          height: "100%",
+          height: '100%',
         },
       },
       xlg: {
-        name: "X-Large",
+        name: 'X-Large',
         styles: {
           width: breakpoints.xlg.width,
-          height: "100%",
+          height: '100%',
         },
       },
       Max: {
-        name: "Max",
+        name: 'Max',
         styles: {
           width: breakpoints.max.width,
-          height: "100%",
+          height: '100%',
         },
       },
     },
   },
   options: {
     storySort: {
-      method: "alphabetical",
+      method: 'alphabetical',
       order: [
-        "Introduction",
+        'Introduction',
         [
-          "Welcome",
-          "Custom styles",
-          "Carbon CDN style helpers",
-          "Form Participation",
+          'Welcome',
+          'Custom styles',
+          'Carbon CDN style helpers',
+          'Form Participation',
         ],
-        "Components",
+        'Components',
         [
-          "Card",
-          "Chat shell",
-          "Chain of thought",
-          "Chat button",
-          "Code snippet",
+          'Card',
+          'Chat shell',
+          'Chain of thought',
+          'Chat button',
+          'Code snippet',
           [
-            "Default",
-            "Highlight",
-            "Streaming With Language Set",
-            "Streaming With Language Detection",
-            "With No Tile Container",
-            "Editable",
-            "Editable Empty",
+            'Default',
+            'Highlight',
+            'Streaming With Language Set',
+            'Streaming With Language Detection',
+            'With No Tile Container',
+            'Editable',
+            'Editable Empty',
           ],
         ],
-        "Layout",
+        'Layout',
       ],
     },
   },
@@ -236,15 +236,14 @@ export const decorators = [
   function decoratorContainer(story, context) {
     const { theme, dir } = context.globals;
 
-    document.documentElement.setAttribute("storybook-carbon-theme", theme);
+    document.documentElement.setAttribute('storybook-carbon-theme', theme);
     document.documentElement.dir = dir;
     return html` <div
       id="main-content"
       name="main-content"
       data-floating-menu-container
       data-modal-container
-      role="main"
-    >
+      role="main">
       ${story()}
     </div>`;
   },

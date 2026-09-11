@@ -1,19 +1,22 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as FeedbackButtonsReactStories from "./feedback-buttons-react.stories.jsx";
+import * as FeedbackButtonsReactStories from './feedback-buttons-react.stories.jsx';
 
-<Meta of={FeedbackButtonsReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={FeedbackButtonsReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Feedback buttons
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -24,7 +27,7 @@ The `<FeedbackButtons>` component wraps the `cds-aichat-feedback-buttons` web co
 Here's a quick example to get you started.
 
 ```jsx
-import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
+import FeedbackButtons from '@carbon/ai-chat-components/es/react/feedback-buttons.js';
 
 function FeedbackButtonsExample() {
   return (
@@ -33,7 +36,7 @@ function FeedbackButtonsExample() {
       negativeLabel="I dislike this response"
       onClick={(event) => {
         const { isPositive } = event.detail;
-        console.log(isPositive ? "Positive feedback" : "Negative feedback");
+        console.log(isPositive ? 'Positive feedback' : 'Negative feedback');
       }}
     />
   );
@@ -66,14 +69,13 @@ function SimpleFeedback() {
       negativeLabel="I dislike this response"
       onClick={(event) => {
         const { isPositive } = event.detail;
-        const updates =
-          isPositive
-            ? { positiveSelected: true, negativeSelected: false }
-            : { positiveSelected: false, negativeSelected: true };
+        const updates = isPositive
+          ? { positiveSelected: true, negativeSelected: false }
+          : { positiveSelected: false, negativeSelected: true };
         setState({ ...state, ...updates, disabled: true });
         recordFeedback({
-          messageId: "123",
-          sentiment: isPositive ? "positive" : "negative",
+          messageId: '123',
+          sentiment: isPositive ? 'positive' : 'negative',
         });
       }}
     />
@@ -84,8 +86,8 @@ function SimpleFeedback() {
 #### With Feedback Details Panel
 
 ```jsx
-import FeedbackButtons from "@carbon/ai-chat-components/es/react/feedback-buttons.js";
-import Feedback from "@carbon/ai-chat-components/es/react/feedback.js";
+import FeedbackButtons from '@carbon/ai-chat-components/es/react/feedback-buttons.js';
+import Feedback from '@carbon/ai-chat-components/es/react/feedback.js';
 
 function DetailedFeedback() {
   const [isNegativeOpen, setNegativeOpen] = React.useState(false);
@@ -101,7 +103,7 @@ function DetailedFeedback() {
         onClick={(event) => {
           const { isPositive } = event.detail;
           if (isPositive) {
-            recordFeedback({ messageId: "123", sentiment: "positive" });
+            recordFeedback({ messageId: '123', sentiment: 'positive' });
           } else {
             setNegativeOpen(true);
           }
@@ -110,7 +112,7 @@ function DetailedFeedback() {
       <Feedback
         isOpen={isNegativeOpen}
         title="What went wrong?"
-        categories={["Inaccurate", "Unhelpful", "Inappropriate"]}
+        categories={['Inaccurate', 'Unhelpful', 'Inappropriate']}
         onClose={() => setNegativeOpen(false)}
       />
     </>
@@ -141,11 +143,11 @@ function ToggleableFeedback() {
         };
         setSelection(nextSelection);
         const sentiment = nextSelection.positive
-          ? "positive"
+          ? 'positive'
           : nextSelection.negative
-            ? "negative"
+            ? 'negative'
             : null;
-        recordFeedback({ messageId: "123", sentiment });
+        recordFeedback({ messageId: '123', sentiment });
       }}
     />
   );

@@ -1,5 +1,5 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as PromptLineReactStories from "./prompt-line-react.stories";
+import * as PromptLineReactStories from './prompt-line-react.stories';
 
 <Meta of={PromptLineReactStories} />
 
@@ -7,14 +7,12 @@ import * as PromptLineReactStories from "./prompt-line-react.stories";
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/prompt-line) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
 
 - [Overview](#overview)
 - [Events](#events)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -139,7 +137,9 @@ function ChatInput() {
       <CDSAIChatInputSendControl
         slot="send-control"
         hasValidInput={hasValidInput}
-        onSend={() => { /* submit */ }}
+        onSend={() => {
+          /* submit */
+        }}
       />
     </PromptLineShell>
   );
@@ -217,19 +217,20 @@ function ChatInput() {
       <CDSAIChatInputSendControl
         slot="send-control"
         hasValidInput={hasValidInputOrUploads}
-        onSend={() => { /* submit */ }}
+        onSend={() => {
+          /* submit */
+        }}
       />
     </PromptLineShell>
   );
 }
 ```
 
-
 ## Events
 
 ### `<PromptLine>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Prop</th>
@@ -240,56 +241,110 @@ function ChatInput() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onChange</code></td>
-      <td><code>cds-aichat-prompt-change</code></td>
-      <td>Fired on every content change. Use <code>rawValue</code> to enable/disable the send button and <code>content</code> to persist structured input (e.g. with mention tokens).</td>
       <td>
-        • <code>rawValue</code> (string) — plain-text value<br/>
-        • <code>content</code> (JSONContent) — Tiptap document (plain-text doc in textarea mode)
+        <code>onChange</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-change</code>
+      </td>
+      <td>
+        Fired on every content change. Use <code>rawValue</code> to
+        enable/disable the send button and <code>content</code> to persist
+        structured input (e.g. with mention tokens).
+      </td>
+      <td>
+        • <code>rawValue</code> (string) — plain-text value
+        <br />• <code>content</code> (JSONContent) — Tiptap document (plain-text
+        doc in textarea mode)
       </td>
     </tr>
     <tr>
-      <td><code>onSendIntent</code></td>
-      <td><code>cds-aichat-prompt-send-intent</code></td>
-      <td>Fired when the user presses <kbd>Enter</kbd> (inline mode) or <kbd>Mod+Enter</kbd> (expanded mode). Wire this to the same handler as the send button's <code>onSend</code>.</td>
+      <td>
+        <code>onSendIntent</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-send-intent</code>
+      </td>
+      <td>
+        Fired when the user presses <kbd>Enter</kbd> (inline mode) or{' '}
+        <kbd>Mod+Enter</kbd> (expanded mode). Wire this to the same handler as
+        the send button's <code>onSend</code>.
+      </td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onTriggerChange</code></td>
-      <td><code>cds-aichat-prompt-trigger-change</code></td>
-      <td>Fired when the autocomplete trigger state changes (e.g. a <code>@</code> or <code>/</code> is typed or dismissed). Pass this directly to <code>useChatAutocomplete</code>.</td>
-      <td>Trigger context object (internal to <code>useChatAutocomplete</code>)</td>
+      <td>
+        <code>onTriggerChange</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-trigger-change</code>
+      </td>
+      <td>
+        Fired when the autocomplete trigger state changes (e.g. a <code>@</code>{' '}
+        or <code>/</code> is typed or dismissed). Pass this directly to{' '}
+        <code>useChatAutocomplete</code>.
+      </td>
+      <td>
+        Trigger context object (internal to <code>useChatAutocomplete</code>)
+      </td>
     </tr>
     <tr>
-      <td><code>onTyping</code></td>
-      <td><code>cds-aichat-prompt-typing</code></td>
-      <td>Fired when the user starts typing and again after a 5-second idle period. Useful for "user is typing…" indicators in collaborative or agent-driven UIs.</td>
-      <td>• <code>isTyping</code> (boolean)</td>
+      <td>
+        <code>onTyping</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-typing</code>
+      </td>
+      <td>
+        Fired when the user starts typing and again after a 5-second idle
+        period. Useful for "user is typing…" indicators in collaborative or
+        agent-driven UIs.
+      </td>
+      <td>
+        • <code>isTyping</code> (boolean)
+      </td>
     </tr>
     <tr>
-      <td><code>onFocus</code></td>
-      <td><code>cds-aichat-prompt-focus</code></td>
+      <td>
+        <code>onFocus</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-focus</code>
+      </td>
       <td>Fired when the editing surface gains focus.</td>
-      <td>• <code>keyboard</code> (boolean) — <code>true</code> when focus arrived via keyboard</td>
+      <td>
+        • <code>keyboard</code> (boolean) — <code>true</code> when focus arrived
+        via keyboard
+      </td>
     </tr>
     <tr>
-      <td><code>onBlur</code></td>
-      <td><code>cds-aichat-prompt-blur</code></td>
+      <td>
+        <code>onBlur</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-blur</code>
+      </td>
       <td>Fired when the editing surface loses focus.</td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onKeydown</code></td>
-      <td><code>cds-aichat-prompt-keydown</code></td>
+      <td>
+        <code>onKeydown</code>
+      </td>
+      <td>
+        <code>cds-aichat-prompt-keydown</code>
+      </td>
       <td>Fired on every keydown inside the editing surface.</td>
-      <td>• <code>originalEvent</code> (KeyboardEvent)</td>
+      <td>
+        • <code>originalEvent</code> (KeyboardEvent)
+      </td>
     </tr>
   </tbody>
 </table>
 
 ### `<CDSAIChatInputSendControl>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Prop</th>
@@ -300,24 +355,38 @@ function ChatInput() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onSend</code></td>
-      <td><code>cds-aichat-input-send</code></td>
-      <td>Fired when the send button is clicked. Only fires when <code>hasValidInput</code> is <code>true</code> and the control is not disabled.</td>
+      <td>
+        <code>onSend</code>
+      </td>
+      <td>
+        <code>cds-aichat-input-send</code>
+      </td>
+      <td>
+        Fired when the send button is clicked. Only fires when{' '}
+        <code>hasValidInput</code> is <code>true</code> and the control is not
+        disabled.
+      </td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onStopStreaming</code></td>
-      <td><code>cds-aichat-input-stop-streaming</code></td>
-      <td>Fired when the stop-streaming button is clicked (visible when <code>showStopStreaming</code> is <code>true</code>).</td>
+      <td>
+        <code>onStopStreaming</code>
+      </td>
+      <td>
+        <code>cds-aichat-input-stop-streaming</code>
+      </td>
+      <td>
+        Fired when the stop-streaming button is clicked (visible when{' '}
+        <code>showStopStreaming</code> is <code>true</code>).
+      </td>
       <td>None</td>
     </tr>
   </tbody>
 </table>
 
-
 ### `<CDSAIChatAutocomplete>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Prop</th>
@@ -328,21 +397,47 @@ function ChatInput() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onSend</code></td>
-      <td><code>cds-aichat-autocomplete-send</code></td>
-      <td>Fired when an item is clicked or activated via keyboard and <code>disableDirectSend</code> is <code>false</code> (default). The item text is sent directly to chat.</td>
-      <td>• <code>text</code> (string)</td>
+      <td>
+        <code>onSend</code>
+      </td>
+      <td>
+        <code>cds-aichat-autocomplete-send</code>
+      </td>
+      <td>
+        Fired when an item is clicked or activated via keyboard and{' '}
+        <code>disableDirectSend</code> is <code>false</code> (default). The item
+        text is sent directly to chat.
+      </td>
+      <td>
+        • <code>text</code> (string)
+      </td>
     </tr>
     <tr>
-      <td><code>onSelect</code></td>
-      <td><code>cds-aichat-autocomplete-select</code></td>
-      <td>Fired when an item is clicked or activated via keyboard and <code>disableDirectSend</code> is <code>true</code>. Use this when the item should be inserted into the editor rather than sent immediately.</td>
-      <td>• <code>item</code> (SuggestionItem)</td>
+      <td>
+        <code>onSelect</code>
+      </td>
+      <td>
+        <code>cds-aichat-autocomplete-select</code>
+      </td>
+      <td>
+        Fired when an item is clicked or activated via keyboard and{' '}
+        <code>disableDirectSend</code> is <code>true</code>. Use this when the
+        item should be inserted into the editor rather than sent immediately.
+      </td>
+      <td>
+        • <code>item</code> (SuggestionItem)
+      </td>
     </tr>
     <tr>
-      <td><code>onDismiss</code></td>
-      <td><code>cds-aichat-autocomplete-dismiss</code></td>
-      <td>Fired when the autocomplete is dismissed (Escape or click outside).</td>
+      <td>
+        <code>onDismiss</code>
+      </td>
+      <td>
+        <code>cds-aichat-autocomplete-dismiss</code>
+      </td>
+      <td>
+        Fired when the autocomplete is dismissed (Escape or click outside).
+      </td>
       <td>None</td>
     </tr>
   </tbody>
@@ -350,7 +445,7 @@ function ChatInput() {
 
 ### `<CDSAIChatFileUploads>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Prop</th>
@@ -361,14 +456,19 @@ function ChatInput() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onFileRemove</code></td>
-      <td><code>cds-aichat-file-remove</code></td>
+      <td>
+        <code>onFileRemove</code>
+      </td>
+      <td>
+        <code>cds-aichat-file-remove</code>
+      </td>
       <td>Fired when the user clicks the remove button on a file chip.</td>
-      <td>• <code>fileId</code> (string)</td>
+      <td>
+        • <code>fileId</code> (string)
+      </td>
     </tr>
   </tbody>
 </table>
-
 
 ## Component API
 

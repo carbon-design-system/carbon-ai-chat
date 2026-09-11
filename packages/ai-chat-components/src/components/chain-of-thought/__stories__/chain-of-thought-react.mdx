@@ -1,19 +1,22 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as ChainOfThoughtReactStories from "./chain-of-thought-react.stories.jsx";
+import * as ChainOfThoughtReactStories from './chain-of-thought-react.stories.jsx';
 
-<Meta of={ChainOfThoughtReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ChainOfThoughtReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Chain of thought
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chain-of-thought) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -24,18 +27,18 @@ The `<ChainOfThought>` component wraps the `cds-aichat-chain-of-thought` web com
 Here's a quick example to get you started.
 
 ```jsx
-import React from "react";
-import ChainOfThought from "@carbon/ai-chat-components/es/react/chain-of-thought.js";
-import ChainOfThoughtStep from "@carbon/ai-chat-components/es/react/chain-of-thought-step.js";
-import ChainOfThoughtToggle from "@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js";
-import ToolCallData from "@carbon/ai-chat-components/es/react/tool-call-data.js";
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+import React from 'react';
+import ChainOfThought from '@carbon/ai-chat-components/es/react/chain-of-thought.js';
+import ChainOfThoughtStep from '@carbon/ai-chat-components/es/react/chain-of-thought-step.js';
+import ChainOfThoughtToggle from '@carbon/ai-chat-components/es/react/chain-of-thought-toggle.js';
+import ToolCallData from '@carbon/ai-chat-components/es/react/tool-call-data.js';
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 
 const steps = [
   {
-    title: "Search documentation",
-    description: "Find authentication guidance in the product docs",
-    tool_name: "documentation_search",
+    title: 'Search documentation',
+    description: 'Find authentication guidance in the product docs',
+    tool_name: 'documentation_search',
     request: {
       args: `\`\`\`
 {
@@ -55,11 +58,11 @@ const steps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Fetch account settings",
-    tool_name: "database_query",
+    title: 'Fetch account settings',
+    tool_name: 'database_query',
     request: {
       args: `\`\`\`
 {
@@ -76,11 +79,11 @@ const steps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Draft response",
-    tool_name: "response_generator",
+    title: 'Draft response',
+    tool_name: 'response_generator',
     request: {
       args: `\`\`\`
 {
@@ -96,7 +99,7 @@ const steps = [
 }
 \`\`\``,
     },
-    status: "processing",
+    status: 'processing',
   },
 ];
 
@@ -123,8 +126,7 @@ function ChainOfThoughtExample() {
               key={step.title || index}
               title={step.title}
               status={step.status}
-              stepNumber={index + 1}
-            >
+              stepNumber={index + 1}>
               <ToolCallData toolName={step.tool_name}>
                 {step.description ? (
                   <Markdown slot="description" markdown={step.description} />

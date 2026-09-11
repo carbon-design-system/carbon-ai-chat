@@ -54,17 +54,14 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      description:
-        'How do we reproduce the error you described using the
-        reproduction/example link above?'
+      description: 'How do we reproduce the error you described using the reproduction/example link above?'
     validations:
       required: true
   - type: dropdown
     id: severity
     attributes:
       label: Suggested severity
-      description:
-        'Read more to understand our [severity levels](https://github.com/carbon-design-system/carbon/blob/main/docs/guides/support.md#severity)'
+      description: 'Read more to understand our [severity levels](https://github.com/carbon-design-system/carbon/blob/main/docs/guides/support.md#severity)'
       options:
         - 'Severity 1 = Must be fixed ASAP. The response must be swift. Someone from the team must drop all current work and be immediately reassigned to address the issue.'
         - 'Severity 2 = User cannot complete task, and/or no workaround within the user experience of a given component.'
@@ -74,18 +71,13 @@ body:
     id: application
     attributes:
       label: Application / product
-      description: "What application, product, or Carbon local system do you work on?"
+      description: 'What application, product, or Carbon local system do you work on?'
   - type: checkboxes
     id: terms
     attributes:
       label: Code of Conduct
       description: Please confirm the following
       options:
-        - label:
-            I agree to follow this project's [Code of
-            Conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
           required: true
-        - label:
-            I checked the [current
-            issues](https://github.com/carbon-design-system/carbon-ai-chat/issues) for
-            duplicate problems
+        - label: I checked the [current issues](https://github.com/carbon-design-system/carbon-ai-chat/issues) for duplicate problems

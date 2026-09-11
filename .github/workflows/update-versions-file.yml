@@ -10,9 +10,9 @@ on:
         # Recently published stable version
         # This is used to create branch to push the changes to
         required: true
-        description: "release tag (ie. v1.1.0)"
+        description: 'release tag (ie. v1.1.0)'
         type: string
-        default: "v1.1.0"
+        default: 'v1.1.0'
   repository_dispatch:
     types: [update-versions-file]
 
@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
           ref: ${{ github.event.client_payload.branch || github.ref_name }}
           token: ${{ secrets.PAT }}
 
@@ -94,4 +94,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "temp"
+          SOURCE_DIR: 'temp'

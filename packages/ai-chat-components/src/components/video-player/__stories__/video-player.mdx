@@ -1,6 +1,6 @@
-import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as VideoPlayerStories from "./video-player.stories";
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as VideoPlayerStories from './video-player.stories';
 
 <Meta of={VideoPlayerStories} />
 
@@ -33,18 +33,17 @@ Here's a quick example to get you started.
   source="https://www.youtube.com/watch?v=eZ1NizUx9U4"
   title="Video Title"
   description="Video description"
-  aria-label="Educational video"
->
+  aria-label="Educational video">
 </cds-aichat-video-player>
 ```
 
 ### JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/video-player/index.js";
+import '@carbon/ai-chat-components/es/components/video-player/index.js';
 ```
 
-<Markdown>{`${cdnJs(["video-player"])}`}</Markdown>
+<Markdown>{`${cdnJs(['video-player'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Events

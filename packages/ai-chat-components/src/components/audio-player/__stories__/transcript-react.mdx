@@ -1,5 +1,5 @@
-import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
-import * as TranscriptReactStories from "./transcript-react.stories";
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import * as TranscriptReactStories from './transcript-react.stories';
 
 <Meta of={TranscriptReactStories} />
 
@@ -37,7 +37,7 @@ npm install @carbon/ai-chat-components
 ### Basic Usage
 
 ```jsx
-import { Transcript } from "@carbon/ai-chat-components/es/react/transcript";
+import { Transcript } from '@carbon/ai-chat-components/es/react/transcript';
 
 function MyComponent() {
   return (
@@ -55,9 +55,9 @@ function MyComponent() {
 The transcript component works seamlessly with the audio player in a Card layout:
 
 ```jsx
-import { AudioPlayer } from "@carbon/ai-chat-components/es/react/audio-player";
-import { Card } from "@carbon/ai-chat-components/es/react/card";
-import { Transcript } from "@carbon/ai-chat-components/es/react/transcript";
+import { AudioPlayer } from '@carbon/ai-chat-components/es/react/audio-player';
+import { Card } from '@carbon/ai-chat-components/es/react/card';
+import { Transcript } from '@carbon/ai-chat-components/es/react/transcript';
 
 function AudioWithTranscript() {
   return (
@@ -85,15 +85,15 @@ function AudioWithTranscript() {
 ### With Event Handling
 
 ```jsx
-import { Transcript } from "@carbon/ai-chat-components/es/react/transcript";
-import { useState } from "react";
+import { Transcript } from '@carbon/ai-chat-components/es/react/transcript';
+import { useState } from 'react';
 
 function TranscriptWithState() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div>
-      <p>Transcript is currently: {isExpanded ? "Expanded" : "Collapsed"}</p>
+      <p>Transcript is currently: {isExpanded ? 'Expanded' : 'Collapsed'}</p>
       <Transcript
         text="Transcript text here..."
         label="English Transcript"
@@ -112,7 +112,7 @@ function TranscriptWithState() {
 The component supports the following event:
 
 | Event Name | Description | Event Detail |
-|------------|-------------|--------------|
+| --- | --- | --- |
 | `onCdsAichatTranscriptToggle` | Fired when transcript is expanded or collapsed | `{ expanded: boolean }` |
 
 ## Component API

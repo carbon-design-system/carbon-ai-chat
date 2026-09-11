@@ -1,16 +1,21 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ProcessingStories from "./processing.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as ProcessingStories from './processing.stories';
 
-<Meta of={ProcessingStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ProcessingStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Processing
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/processing) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
+
 - [Overview](#overview)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
@@ -36,11 +41,10 @@ Here's a quick example to get you started.
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/processing/index.js";
+import '@carbon/ai-chat-components/es/components/processing/index.js';
 ```
 
-
-<Markdown>{`${cdnJs(["processing"])}`}</Markdown>
+<Markdown>{`${cdnJs(['processing'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

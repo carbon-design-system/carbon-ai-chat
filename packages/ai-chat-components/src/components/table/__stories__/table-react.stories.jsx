@@ -7,21 +7,21 @@
  *  @license
  */
 
-import React from "react";
-import { createComponent } from "@lit/react";
-import "../index";
-import { CDSAIChatTable } from "../src/table";
-import { headers, rows } from "./story-data";
-import Card from "../../../react/card";
+import React from 'react';
+import { createComponent } from '@lit/react';
+import '../index';
+import { CDSAIChatTable } from '../src/table';
+import { headers, rows } from './story-data';
+import Card from '../../../react/card';
 
 const Table = createComponent({
-  tagName: "cds-aichat-table",
+  tagName: 'cds-aichat-table',
   elementClass: CDSAIChatTable,
   react: React,
   events: {
-    "cds-table-filtered": "onFilter",
-    "cds-pagination-changed-current": "onPageChange",
-    "cds-pagination-changed-page-size": "onPageSizeChange",
+    'cds-table-filtered': 'onFilter',
+    'cds-pagination-changed-current': 'onPageChange',
+    'cds-pagination-changed-page-size': 'onPageSizeChange',
   },
 });
 
@@ -54,25 +54,25 @@ const renderTable = (args) => {
 };
 
 export default {
-  title: "Components/Table",
+  title: 'Components/Table',
   component: Table,
   argTypes: {
     // Story-specific control (not a component property)
     useCard: {
-      control: "boolean",
-      description: "Wrap in card wrapper (story-only control)",
+      control: 'boolean',
+      description: 'Wrap in card wrapper (story-only control)',
       table: {
-        category: "Story",
+        category: 'Story',
       },
     },
     // Disable controls for complex array/object properties
     headers: {
       control: false,
-      table: { category: "Data" },
+      table: { category: 'Data' },
     },
     rows: {
       control: false,
-      table: { category: "Data" },
+      table: { category: 'Data' },
     },
   },
 };
@@ -80,16 +80,16 @@ export default {
 export const Default = {
   args: {
     useCard: true,
-    tableTitle: "Agent roster",
-    tableDescription: "Operational view of AI chat team members.",
+    tableTitle: 'Agent roster',
+    tableDescription: 'Operational view of AI chat team members.',
     headers,
     rows,
     loading: false,
-    filterPlaceholderText: "Filter rows",
-    previousPageText: "Previous page",
-    nextPageText: "Next page",
-    itemsPerPageText: "Items per page",
-    locale: "en",
+    filterPlaceholderText: 'Filter rows',
+    previousPageText: 'Previous page',
+    nextPageText: 'Next page',
+    itemsPerPageText: 'Items per page',
+    locale: 'en',
     defaultPageSize: 5,
   },
   render: (args) => renderTable(args),

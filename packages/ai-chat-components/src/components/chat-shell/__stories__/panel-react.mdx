@@ -1,5 +1,5 @@
-import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
-import * as PanelReactStories from "./panel-react.stories";
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as PanelReactStories from './panel-react.stories';
 
 <Meta of={PanelReactStories} />
 
@@ -7,19 +7,18 @@ import * as PanelReactStories from "./panel-react.stories";
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
-
 ## Overview
 
 The `<ChatPanel>` component wraps the `cds-aichat-panel` web component to create overlay panels that display on top of the chat interface inside React applications. Panels support priority management, animations, and flexible content layouts with header, body, and footer slots. Multiple panels can be defined, with the highest priority panel being displayed when multiple are open simultaneously.
 
 Panels provide:
+
 - **Priority-based display** - Control which panel shows when multiple are open
 - **Configurable animations** - Slide-in/slide-out effects on open and close
 - **Full-width mode** - Panels can span the entire chat interface width
@@ -32,8 +31,8 @@ Panels provide:
 Here's a quick example to get you started.
 
 ```jsx
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import ChatPanel from "@carbon/ai-chat-components/es/react/panel.js";
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
 
 function ChatWithPanel() {
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
@@ -43,7 +42,7 @@ function ChatWithPanel() {
       <div slot="header">Chat Header</div>
       <div slot="messages">Messages</div>
       <div slot="input">Input</div>
-      
+
       <div slot="panels">
         <ChatPanel
           open={isPanelOpen}
@@ -82,7 +81,7 @@ function BasicPanelExample() {
         </button>
       </div>
       <div slot="input">Input Area</div>
-      
+
       <div slot="panels">
         <ChatPanel
           open={isOpen}
@@ -115,7 +114,7 @@ function FullWidthPanelExample() {
       <div slot="header">Chat Header</div>
       <div slot="messages">Messages</div>
       <div slot="input">Input</div>
-      
+
       <div slot="panels">
         <ChatPanel
           open={isOpen}
@@ -155,7 +154,7 @@ function MultiPanelExample() {
         </button>
       </div>
       <div slot="input">Input</div>
-      
+
       <div slot="panels">
         <ChatPanel
           open={panel1Open}
@@ -166,7 +165,7 @@ function MultiPanelExample() {
           <div slot="header">Low Priority Panel</div>
           <div slot="body">This panel has priority 0</div>
         </ChatPanel>
-        
+
         <ChatPanel
           open={panel2Open}
           priority={2}

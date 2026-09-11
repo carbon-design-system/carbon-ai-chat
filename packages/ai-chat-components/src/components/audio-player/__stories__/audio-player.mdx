@@ -1,6 +1,6 @@
-import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as AudioPlayerStories from "./audio-player.stories";
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as AudioPlayerStories from './audio-player.stories';
 
 <Meta of={AudioPlayerStories} />
 
@@ -31,18 +31,17 @@ Here's a quick example to get you started.
   source="https://soundcloud.com/ibmthinkleaders/leveraging-ai-to-tackle-large-problems-being-an-optimistic-futurist-feat-kate-oneill"
   title="Audio Title"
   description="Audio description"
-  aria-label="Podcast episode"
->
+  aria-label="Podcast episode">
 </cds-aichat-audio-player>
 ```
 
 ### JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/audio-player/index.js";
+import '@carbon/ai-chat-components/es/components/audio-player/index.js';
 ```
 
-<Markdown>{`${cdnJs(["audio-player"])}`}</Markdown>
+<Markdown>{`${cdnJs(['audio-player'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Events

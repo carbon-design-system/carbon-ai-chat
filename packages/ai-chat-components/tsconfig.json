@@ -32,8 +32,9 @@
     "src/**/*.tsx",
     "tests/**/*.ts",
     ".storybook/**/*.ts",
-    ".storybook/**/*.tsx"
-, ".storybook/preview.js"  ],
+    ".storybook/**/*.tsx",
+    ".storybook/preview.js"
+  ],
   "exclude": [
     "src/**/*.stories.ts",
     "src/**/*.test.ts",

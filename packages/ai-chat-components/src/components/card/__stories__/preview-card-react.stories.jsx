@@ -8,22 +8,22 @@
  */
 
 /* eslint-disable */
-import React, { useState, useEffect } from "react";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
+import React, { useState, useEffect } from 'react';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/defs.js';
 import {
   Small as SmallWC,
   Default as DefaultWC,
   WithToolbar as WithToolbarWC,
   WithSteps as WithStepsWC,
   CardSteps as CardStepsWC,
-} from "./preview-card.stories";
-import { Card, CardFooter, CardSteps } from "../../../react/card";
-import { AILabel, AILabelContent } from "@carbon/react";
-import Toolbar from "../../../react/toolbar";
-import "./story-styles.scss";
-import { action } from "storybook/actions";
-import { name } from "@carbon/icons/lib/caret--down";
-import { previewCardFooterPresets, toolbarActions } from "./story-data";
+} from './preview-card.stories';
+import { Card, CardFooter, CardSteps } from '../../../react/card';
+import { AILabel, AILabelContent } from '@carbon/react';
+import Toolbar from '../../../react/toolbar';
+import './story-styles.scss';
+import { action } from 'storybook/actions';
+import { name } from '@carbon/icons/lib/caret--down';
+import { previewCardFooterPresets, toolbarActions } from './story-data';
 
 const aiContent = (
   <AILabelContent>
@@ -39,7 +39,7 @@ const aiContent = (
 );
 
 const Wrapper = ({ width, children }) => {
-  return width === "unset" ? (
+  return width === 'unset' ? (
     children
   ) : (
     <div style={{ maxWidth: width }}>{children}</div>
@@ -47,7 +47,7 @@ const Wrapper = ({ width, children }) => {
 };
 
 export default {
-  title: "Components/Card/Preview Card",
+  title: 'Components/Card/Preview Card',
   decorators: [
     (Story, { args }) => (
       <Wrapper width={args.maxWidth}>
@@ -75,7 +75,7 @@ export const Small = {
         <CardFooter
           size="md"
           actions={previewCardFooterPresets[args.footerActions]}
-          onFooterAction={(e) => action("action")(e.detail)}
+          onFooterAction={(e) => action('action')(e.detail)}
         />
       </div>
       {args.aiLabel && (
@@ -119,7 +119,7 @@ export const Default = {
         <CardFooter
           size="md"
           actions={previewCardFooterPresets[args.footerActions]}
-          onFooterAction={(e) => action("action")(e.detail)}
+          onFooterAction={(e) => action('action')(e.detail)}
         />
       )}
 
@@ -148,8 +148,7 @@ export const WithToolbar = {
         <Toolbar
           overflow
           actions={toolbarActions}
-          onToolbarAction={(e) => action("toolbar-action")(e.detail)}
-        >
+          onToolbarAction={(e) => action('toolbar-action')(e.detail)}>
           <div slot="title">
             <h4>
               <span className="truncated-text">Resource consumption</span>
@@ -180,7 +179,7 @@ export const WithToolbar = {
         <CardFooter
           size="md"
           actions={previewCardFooterPresets[args.footerActions]}
-          onFooterAction={(e) => action("footer-action")(e.detail)}
+          onFooterAction={(e) => action('footer-action')(e.detail)}
         />
       )}
     </Card>
@@ -198,41 +197,41 @@ export const WithSteps = {
   render: (args) => {
     const initialSteps = [
       {
-        label: "Step 1",
-        kind: ICON_INDICATOR_KIND["IN-PROGRESS"],
-        title: "Estimate inventory needs in all locations",
-        description: "In progress...",
+        label: 'Step 1',
+        kind: ICON_INDICATOR_KIND['IN-PROGRESS'],
+        title: 'Estimate inventory needs in all locations',
+        description: 'In progress...',
       },
       {
-        label: "Step 2",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Identify locations with excess inventory",
-        description: "Not started",
+        label: 'Step 2',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Identify locations with excess inventory',
+        description: 'Not started',
       },
       {
-        label: "Step 3",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Prepare multiple rebalancing scenarios",
-        description: "Not started",
+        label: 'Step 3',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Prepare multiple rebalancing scenarios',
+        description: 'Not started',
       },
       {
-        label: "Step 4",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Rank rebalancing scenarios for speed and cost",
-        description: "Not started",
+        label: 'Step 4',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Rank rebalancing scenarios for speed and cost',
+        description: 'Not started',
       },
       {
-        label: "Step 5",
-        kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-        title: "Prepare recommendations",
-        description: "Not started",
+        label: 'Step 5',
+        kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+        title: 'Prepare recommendations',
+        description: 'Not started',
       },
     ];
 
     const timeSteps = [3000, 1000, 500, 4000, 2000];
 
     const [steps, setSteps] = useState(initialSteps);
-    const [status, setStatus] = useState("Status: running");
+    const [status, setStatus] = useState('Status: running');
     const [currentStep, setCurrentStep] = useState(0);
     const [showFooter, setShowFooter] = useState(false);
 
@@ -243,11 +242,11 @@ export const WithSteps = {
         setSteps((prev) => {
           const updated = [...prev];
           updated[currentStep].kind = ICON_INDICATOR_KIND.SUCCEEDED;
-          updated[currentStep].description = "Completed successfully";
+          updated[currentStep].description = 'Completed successfully';
 
           if (updated[currentStep + 1]) {
-            updated[currentStep + 1].kind = ICON_INDICATOR_KIND["IN-PROGRESS"];
-            updated[currentStep + 1].description = "In progress...";
+            updated[currentStep + 1].kind = ICON_INDICATOR_KIND['IN-PROGRESS'];
+            updated[currentStep + 1].description = 'In progress...';
           }
 
           return updated;
@@ -256,7 +255,7 @@ export const WithSteps = {
         if (currentStep + 1 < steps.length) {
           setCurrentStep(currentStep + 1);
         } else {
-          setStatus("Status: completed");
+          setStatus('Status: completed');
           setShowFooter(true);
         }
       }, timeSteps[currentStep]);
@@ -293,7 +292,7 @@ export const WithSteps = {
           <CardFooter
             size="md"
             actions={previewCardFooterPresets[args.footerActions]}
-            onFooterAction={(e) => action("action")(e.detail)}
+            onFooterAction={(e) => action('action')(e.detail)}
           />
         )}
       </Card>
@@ -302,7 +301,7 @@ export const WithSteps = {
 };
 
 export const CardStepsStory = {
-  name: "Card Steps",
+  name: 'Card Steps',
   argTypes: {
     ...CardStepsWC.argTypes,
   },
@@ -315,7 +314,7 @@ export const CardStepsStory = {
     const steps = Array.from({ length: args.numberOfSteps }, (_, i) => ({
       label: `${args.label}`,
       kind:
-        args.kind === "none"
+        args.kind === 'none'
           ? undefined
           : ICON_INDICATOR_KIND[args.kind] || args.kind,
       title: args.title,
