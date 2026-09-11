@@ -9,9 +9,13 @@
 
 /**
  * React hook for the chat-input autocomplete overlay. Thin wrapper around
- * the framework-agnostic `AutocompleteController` co-located in
- * [../../components/prompt-line/src/autocomplete-controller.ts] (which also exports
- * the `<cds-aichat-autocomplete-controller>` element). The controller owns
+ * the framework-agnostic `AutocompleteController` in
+ * [../../components/prompt-line/src/autocomplete-controller.ts]. That module
+ * holds no Lit and registers no custom element, so reaching the controller
+ * costs this hook neither. It still loads `<cds-aichat-autocomplete>` — it
+ * renders that list itself — but never
+ * `<cds-aichat-autocomplete-controller>`, the other surface on the same
+ * class. The controller owns
  * trigger handling, async resolution, and selection routing; this hook
  * adapts those callbacks into React state and returns a JSX node to slot
  * into `<PromptLineShell>`.

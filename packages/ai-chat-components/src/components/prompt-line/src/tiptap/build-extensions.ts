@@ -106,13 +106,10 @@ export function buildCarbonExtensions(
       });
     }
     out.push(
-      tagExtensionSource(
-        carbonAutocomplete(configs.autocomplete, excludeTriggers),
-        {
-          kind: 'autocomplete',
-          config: configs.autocomplete,
-        }
-      )
+      tagExtensionSource(carbonAutocomplete(excludeTriggers), {
+        kind: 'autocomplete',
+        config: configs.autocomplete,
+      })
     );
   }
   // Installed whenever `starters` is configured, empty list included: it is how

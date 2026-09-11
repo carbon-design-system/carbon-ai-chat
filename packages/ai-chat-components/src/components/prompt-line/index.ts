@@ -12,7 +12,7 @@ import './src/prompt-line.js';
 import './src/error-message.js';
 import './src/send-control.js';
 import './src/stop-streaming-button.js';
-import './src/autocomplete-controller.js';
+import './src/autocomplete-controller-element.js';
 
 export { default as PromptLineShellElement } from './src/prompt-line-shell.js';
 export { default as PromptLineElement } from './src/prompt-line.js';
@@ -26,8 +26,8 @@ export type {
 export { default as ErrorMessage } from './src/error-message.js';
 export { default as InputSendControlElement } from './src/send-control.js';
 export { default as StopStreamingButton } from './src/stop-streaming-button.js';
+export { default as AutocompleteControllerElement } from './src/autocomplete-controller-element.js';
 export {
-  default as AutocompleteControllerElement,
   AutocompleteController,
   type AutocompleteControllerOptions,
   type AutocompleteControllerState,

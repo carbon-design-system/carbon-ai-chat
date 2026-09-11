@@ -221,4 +221,73 @@ describe('tiptap/carbon-command Backspace', function () {
     expect(editor.state.doc.textContent).to.equal('/');
     cleanup();
   });
+
+  describe('the data attr contract', () => {
+    it('keeps host custom fields out of HTML but inside the JSON', () => {
+      const { editor, cleanup } = makeEditor('mention');
+
+      editor.commands.insertContent({
+        type: 'mention',
+        attrs: {
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+          data: { team: 'design' },
+        },
+      });
+
+      // renderHTML returns nothing for `data`, so the object never reaches
+      // serialized markup — no "[object Object]", no host fields in a copy.
+      expect(editor.getHTML()).to.not.contain('object Object');
+      expect(editor.getHTML()).to.not.contain('design');
+
+      // The JSON round-trip is the path that has to keep them.
+      const [node] = (editor.getJSON().content?.[0].content ?? []).filter(
+        (child) => child.type === 'mention'
+      );
+      expect(node?.attrs?.data).to.deep.equal({ team: 'design' });
+      cleanup();
+    });
+
+    // An array is `typeof 'object'`, so it clears a bare object check and
+    // still spreads to index keys — it needs the same guard the string does.
+    [
+      { label: 'string', data: 'abc' },
+      { label: 'array', data: ['a', 'b'] },
+      { label: 'number', data: 42 },
+    ].forEach(({ label, data }) => {
+      it(`never spreads a ${label} data attr into the removed item`, () => {
+        const removed: SuggestionItem[] = [];
+        const { editor, cleanup } = makeEditor('mention', {
+          onRemove: (item) => removed.push(item),
+        });
+
+        // insertContent takes a raw node spec, so a host can put anything in
+        // attrs.data — this is the reachable route, not hand-authored HTML.
+        editor.commands.insertContent({
+          type: 'mention',
+          attrs: { id: 'u1', label: 'Alice', value: '@alice', data },
+        });
+
+        const positions = tokenPositions(editor, 'mention');
+        expect(positions).to.have.lengthOf(1);
+
+        editor
+          .chain()
+          .deleteRange({ from: positions[0], to: positions[0] + 1 })
+          .run();
+
+        expect(removed).to.have.lengthOf(1);
+        // Unguarded, 'abc' spreads to {0:'a',1:'b',2:'c'} and ['a','b'] to
+        // {0:'a',1:'b'}.
+        expect(removed[0]).to.not.have.property('0');
+        expect(removed[0]).to.deep.equal({
+          id: 'u1',
+          label: 'Alice',
+          value: '@alice',
+        });
+        cleanup();
+      });
+    });
+  });
 });
