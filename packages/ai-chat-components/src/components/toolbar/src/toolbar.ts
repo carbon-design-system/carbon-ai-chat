@@ -51,6 +51,14 @@ export interface Action extends BaseOverflowMenuItem {
    * When overflow handling is enabled, setting fixed to true will force this action out of the overflow menu.
    */
   fixed?: boolean;
+
+  /**
+   * Renders this action as a two-state toggle and sets its current state.
+   * When `true` or `false`, the button exposes `aria-pressed` and a visible
+   * pressed treatment. Omit the field for a plain button with no toggle
+   * semantics — `undefined` is intentionally distinct from `false`.
+   */
+  isSelected?: boolean;
 }
 
 /**
@@ -120,6 +128,30 @@ class CDSAIChatToolbar extends LitElement {
     if (this.overflow) {
       this.setupResizeObserver();
     }
+  }
+
+  updated() {
+    // cds-icon-button's ?aria-pressed binding emits aria-pressed="" (boolean
+    // attribute) on the inner <button> for the on-state and removes the
+    // attribute entirely for the off-state, neither of which is valid for
+    // assistive tech. After the host finishes its own update cycle we await
+    // each cds-icon-button's updateComplete so Carbon has already written its
+    // own attributes, then overwrite with the correct string value.
+    void Promise.all(
+      Array.from(
+        this.shadowRoot?.querySelectorAll<LitElement & HTMLElement>(
+          'cds-icon-button[data-pressed]'
+        ) ?? []
+      ).map(async (el) => {
+        await el.updateComplete;
+        const value = el.getAttribute('data-pressed');
+        if (value !== null) {
+          el.shadowRoot
+            ?.querySelector('button')
+            ?.setAttribute('aria-pressed', value);
+        }
+      })
+    );
   }
 
   private sortActions() {
@@ -257,10 +289,12 @@ class CDSAIChatToolbar extends LitElement {
    */
   private renderIconButton = (action: Action) => {
     const tooltipAlign = this.isRTL ? 'bottom-start' : 'bottom-end';
+    const { isSelected } = action;
 
     return html`
       <cds-icon-button
         ?data-fixed=${action.fixed}
+        ?data-selected=${isSelected === true}
         data-testid=${action.testId || nothing}
         @click=${action.onClick}
         href=${action.href || nothing}
@@ -270,6 +304,8 @@ class CDSAIChatToolbar extends LitElement {
         kind="ghost"
         enter-delay-ms="0"
         leave-delay-ms="0"
+        ?isSelected=${isSelected === true}
+        data-pressed=${isSelected !== undefined ? String(isSelected) : nothing}
         ?disabled=${action.disabled}>
         ${iconLoader(action.icon, {
           slot: 'icon',
@@ -377,23 +413,36 @@ class CDSAIChatToolbar extends LitElement {
                         ${repeat(
                           hiddenActions,
                           (item) => item.text,
-                          (item) => html`
-                            <cds-overflow-menu-item
-                              @click=${item.onClick}
-                              href=${item.href || nothing}
-                              target=${
-                                item.href ? item.target || '_self' : nothing
-                              }
-                              ?disabled=${item.disabled}
-                              ?danger=${item.danger}
-                              danger-description=${
-                                item.dangerDescription || nothing
-                              }
-                              ?divider=${item.divider}
-                              data-testid=${item.testId || nothing}>
-                              ${item.text}
-                            </cds-overflow-menu-item>
-                          `
+                          (item) => {
+                            return html`
+                              <cds-overflow-menu-item
+                                @click=${item.onClick}
+                                href=${item.href || nothing}
+                                target=${
+                                  item.href ? item.target || '_self' : nothing
+                                }
+                                ?disabled=${item.disabled}
+                                ?danger=${item.danger}
+                                danger-description=${
+                                  item.dangerDescription || nothing
+                                }
+                                ?divider=${item.divider}
+                                ?data-selected=${item.isSelected === true}
+                                role=${
+                                  item.isSelected !== undefined
+                                    ? 'menuitemcheckbox'
+                                    : nothing
+                                }
+                                aria-checked=${
+                                  item.isSelected !== undefined
+                                    ? String(item.isSelected)
+                                    : nothing
+                                }
+                                data-testid=${item.testId || nothing}>
+                                ${item.text}
+                              </cds-overflow-menu-item>
+                            `;
+                          }
                         )}
                       </cds-overflow-menu-body>
                     </cds-overflow-menu>

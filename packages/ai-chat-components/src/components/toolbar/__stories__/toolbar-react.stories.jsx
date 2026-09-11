@@ -8,8 +8,8 @@
  */
 
 /* eslint-disable */
-import React from "react";
-import Toolbar from "../../../react/toolbar";
+import React, { useState } from 'react';
+import Toolbar from '../../../react/toolbar';
 import {
   Button,
   OverflowMenu,
@@ -18,29 +18,37 @@ import {
   Switch,
   IconButton,
   AILabel,
-} from "@carbon/react";
-import { actionLists } from "./story-data-react";
-import { Home, ArrowLeft, OverflowMenuVertical } from "@carbon/icons-react";
-import "./story-styles.scss";
-import { Default as DefaultWC } from "./toolbar.stories";
+} from '@carbon/react';
+import { actionLists } from './story-data-react';
+import {
+  Home,
+  ArrowLeft,
+  OverflowMenuVertical,
+  Star,
+  StarFilled,
+  Download,
+  Close,
+} from '@carbon/icons-react';
+import './story-styles.scss';
+import { Default as DefaultWC } from './toolbar.stories';
 
-import { action } from "storybook/actions";
+import { action } from 'storybook/actions';
 
 export default {
-  title: "Components/Toolbar",
+  title: 'Components/Toolbar',
   component: Toolbar,
   argTypes: {
     title: {
-      control: "select",
-      table: { category: "slot" },
-      options: ["default", "with truncation", "none"],
+      control: 'select',
+      table: { category: 'slot' },
+      options: ['default', 'with truncation', 'none'],
       mapping: {
         default: (
           <div slot="title">
             Title <span class="bold">text</span>
           </div>
         ),
-        "with truncation": (
+        'with truncation': (
           <div slot="title">
             <span class="truncated-text">
               Lorem ipsum dolor sit amet <span class="bold">consectetur</span>
@@ -53,8 +61,8 @@ export default {
         "Title text for the Toolbar component. This Storybook-only control populates the title slot. `slot='title'`",
     },
     navigation: {
-      control: "select",
-      options: ["home", "back", "custom 1", "custom 2", "none"],
+      control: 'select',
+      options: ['home', 'back', 'custom 1', 'custom 2', 'none'],
       mapping: {
         home: (
           <div slot="navigation">
@@ -65,9 +73,8 @@ export default {
               align="bottom-start"
               enterDelayMs={0}
               leaveDelayMs={0}
-              onClick={action("onClick")}
-              label="Home"
-            >
+              onClick={action('onClick')}
+              label="Home">
               <Home />
             </IconButton>
           </div>
@@ -81,20 +88,18 @@ export default {
               align="bottom-start"
               enterDelayMs={0}
               leaveDelayMs={0}
-              onClick={action("onClick")}
-              label="Back"
-            >
+              onClick={action('onClick')}
+              label="Back">
               <ArrowLeft />
             </IconButton>
           </div>
         ),
-        "custom 1": (
+        'custom 1': (
           <div slot="navigation" data-rounded="top-left">
             <OverflowMenu
               size="md"
               renderIcon={OverflowMenuVertical}
-              iconDescription="Menu"
-            >
+              iconDescription="Menu">
               <OverflowMenuItem itemText="Stop app" />
               <OverflowMenuItem itemText="Restart app" />
               <OverflowMenuItem itemText="Rename app" />
@@ -104,31 +109,30 @@ export default {
             </OverflowMenu>
           </div>
         ),
-        "custom 2": (
+        'custom 2': (
           <div slot="navigation" data-rounded="top-left">
-            <Button onClick={action("onClick")} size="md">
+            <Button onClick={action('onClick')} size="md">
               test
             </Button>
           </div>
         ),
         none: undefined,
       },
-      table: { category: "slot" },
+      table: { category: 'slot' },
       description:
         "Navigation slot in the toolbar component. `slot='navigation'`",
     },
     fixedActions: {
-      control: "select",
-      options: ["content switcher", "custom 1", "none"],
+      control: 'select',
+      options: ['content switcher', 'custom 1', 'none'],
       mapping: {
-        "content switcher": (
+        'content switcher': (
           <div slot="fixed-actions">
             <ContentSwitcher
               onSelected={(e) => console.log(e)}
               selectionMode="automatic"
               selectedIndex="0"
-              size="sm"
-            >
+              size="sm">
               <Switch value="code" name="one">
                 code
               </Switch>
@@ -138,40 +142,40 @@ export default {
             </ContentSwitcher>
           </div>
         ),
-        "custom 1": (
+        'custom 1': (
           <div slot="fixed-actions">
-            <Button onClick={action("onClick")} size="md">
+            <Button onClick={action('onClick')} size="md">
               test
             </Button>
           </div>
         ),
         none: undefined,
       },
-      table: { category: "slot" },
+      table: { category: 'slot' },
       description:
         "Fixed actions slot for toolbar component. `slot='fixed-actions'`",
     },
     overflow: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "Option to overflow non fixed actions into an overflow menu.",
+        'Option to overflow non fixed actions into an overflow menu.',
     },
     actions: {
-      control: "select",
+      control: 'select',
       options: Object.keys(actionLists),
       mapping: actionLists,
       description:
-        "Select which predefined set of actions to render in the Toolbar component.",
+        'Select which predefined set of actions to render in the Toolbar component.',
     },
     aiLabel: {
-      table: { category: "slot" },
-      control: "boolean",
+      table: { category: 'slot' },
+      control: 'boolean',
       description: "AI Label slot in the toolbar component `slot='decorator'`",
     },
-    "--cds-aichat-border-radius": {
-      control: "boolean",
+    '--cds-aichat-border-radius': {
+      control: 'boolean',
       description:
-        "This is a story only control, which defines css custom property on the toolbar. this gets inherited automatically when placed inside ai-chat. override this to 0px in any particular scope to opt out of rounded border-radius",
+        'This is a story only control, which defines css custom property on the toolbar. this gets inherited automatically when placed inside ai-chat. override this to 0px in any particular scope to opt out of rounded border-radius',
     },
   },
 };
@@ -186,7 +190,7 @@ export const Default = {
     actions,
     aiLabel,
     navigation,
-    "--cds-aichat-border-radius": borderRadius,
+    '--cds-aichat-border-radius': borderRadius,
     fixedActions,
   }) => {
     return (
@@ -194,9 +198,8 @@ export const Default = {
         actions={actions}
         overflow={overflow}
         style={
-          borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined
-        }
-      >
+          borderRadius ? { '--cds-aichat-border-radius': '8px' } : undefined
+        }>
         {/* Navigation slot */}
         {navigation}
 
@@ -222,4 +225,45 @@ export const Default = {
       </Toolbar>
     );
   },
+};
+
+const ToggleDemo = () => {
+  const [isOn, setIsOn] = useState(false);
+
+  const actions = [
+    {
+      text: 'Favourite',
+      icon: isOn ? StarFilled : Star,
+      isSelected: isOn,
+      onClick: () => setIsOn((prev) => !prev),
+    },
+    {
+      text: 'Download',
+      icon: Download,
+      onClick: () => {},
+    },
+    {
+      text: 'Close',
+      fixed: true,
+      icon: Close,
+      onClick: () => {},
+    },
+  ];
+
+  return <Toolbar actions={actions} overflow />;
+};
+
+export const Toggle = {
+  name: 'Toggle action (isSelected)',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates `isSelected` on a toolbar action. Click the star to toggle its pressed state. ' +
+          'The icon switches between unfilled (off) and filled (on) to reinforce the state visually. ' +
+          '`aria-pressed` is set on the inner `<button>` in both states via a Lit `updated()` hook.',
+      },
+    },
+  },
+  render: () => <ToggleDemo />,
 };
