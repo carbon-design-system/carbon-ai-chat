@@ -10,9 +10,9 @@ on:
       tag:
         # Recently published stable version
         required: true
-        description: "release tag (ie. v1.1.0)"
+        description: 'release tag (ie. v1.1.0)'
         type: string
-        default: "v1.1.0"
+        default: 'v1.1.0'
       previous-tag:
         # Previous release tag to grab changelogs from
         # To pick the previous tag:
@@ -20,9 +20,9 @@ on:
         # - If published tag is a subsequent release candidate, choose the previous release candidate.
         # - If published tag is a full release, choose the previous full release tag.
         required: true
-        description: "previous release tag (ie. v1.0.0)"
+        description: 'previous release tag (ie. v1.0.0)'
         type: string
-        default: "v1.0.0"
+        default: 'v1.0.0'
   repository_dispatch:
     types: [check-peer-dependencies]
 
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
           ref: ${{ github.event.client_payload.branch || github.ref_name }}
 
       - name: Get package.json from previous release

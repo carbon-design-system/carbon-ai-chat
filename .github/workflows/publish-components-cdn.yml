@@ -9,9 +9,9 @@ on:
       tag:
         # Recently published version
         required: true
-        description: "release tag (ie. v1.1.0-rc.0 or v1.1.0)"
+        description: 'release tag (ie. v1.1.0-rc.0 or v1.1.0)'
         type: string
-        default: "v1.1.0-rc.0"
+        default: 'v1.1.0-rc.0'
   repository_dispatch:
     types: [publish-cdn-artifacts]
 
@@ -21,13 +21,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
           ref: ${{ github.event.client_payload.branch }}
       - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: |
           npm ci --prefer-offline
@@ -59,8 +59,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/dist"
-          DEST_DIR: "components/tag/next"
+          SOURCE_DIR: 'packages/ai-chat-components/dist'
+          DEST_DIR: 'components/tag/next'
 
       # If tag is a release candidate, upload the ai-chat-components Storybook to `next` tag folder
       # ie. chat.carbondesignsystem.com/components/storybook/tag/next/index.html
@@ -75,9 +75,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-static"
-          DEST_DIR: "components/storybook/tag/next"
-
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-static'
+          DEST_DIR: 'components/storybook/tag/next'
 
       # If tag is a release candidate, upload the ai-chat-components React Storybook to `next` tag folder
       # ie. chat.carbondesignsystem.com/components/storybook/react/tag/next/index.html
@@ -92,8 +91,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
-          DEST_DIR: "components/storybook/react/tag/next"
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-react-static'
+          DEST_DIR: 'components/storybook/react/tag/next'
 
       # If tag is a full release, upload the CDN artifacts to the `latest` tag folder
       # ie. chat.carbondesignsystem.com/components/tag/latest/breadcrumb.min.js
@@ -108,8 +107,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/dist"
-          DEST_DIR: "components/tag/latest"
+          SOURCE_DIR: 'packages/ai-chat-components/dist'
+          DEST_DIR: 'components/tag/latest'
 
       # If tag is a full candidate, upload the ai-chat-components Storybook to `latest` tag folder
       # ie. chat.carbondesignsystem.com/components/storybook/tag/latest/index.html
@@ -124,8 +123,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-static"
-          DEST_DIR: "components/storybook/tag/latest"
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-static'
+          DEST_DIR: 'components/storybook/tag/latest'
 
       # If tag is a full candidate, upload the ai-chat-components React Storybook to `latest` tag folder
       # ie. chat.carbondesignsystem.com/components/storybook/react/tag/latest/index.html
@@ -140,9 +139,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
-          DEST_DIR: "components/storybook/react/tag/latest"
-
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-react-static'
+          DEST_DIR: 'components/storybook/react/tag/latest'
 
       # Upload the CDN artifacts to versioned folder
       # ie. chat.carbondesignsystem.com/components/version/v1.x.0/breadcrumb.min.js
@@ -156,8 +154,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/dist"
-          DEST_DIR: "components/version/v${{steps.package-version.outputs.current-version}}"
+          SOURCE_DIR: 'packages/ai-chat-components/dist'
+          DEST_DIR: 'components/version/v${{steps.package-version.outputs.current-version}}'
 
       # Upload the ai-chat-components Storybook to versioned folder
       # ie. chat.carbondesignsystem.com/components/storybook/version/v1.x.0/index.html
@@ -171,8 +169,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-static"
-          DEST_DIR: "components/storybook/version/v${{steps.package-version.outputs.current-version}}"
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-static'
+          DEST_DIR: 'components/storybook/version/v${{steps.package-version.outputs.current-version}}'
 
       # Upload the ai-chat-components React Storybook to versioned folder
       # ie. chat.carbondesignsystem.com/components/storybook/react/version/v1.x.0/index.html
@@ -186,6 +184,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
-          DEST_DIR: "components/storybook/react/version/v${{steps.package-version.outputs.current-version}}"
-
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-react-static'
+          DEST_DIR: 'components/storybook/react/version/v${{steps.package-version.outputs.current-version}}'

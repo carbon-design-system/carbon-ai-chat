@@ -7,31 +7,31 @@ body:
     id: value-proposition
     attributes:
       label: Value proposition
-      description: "Why are we doing this? Describe the benefit or value the initiative will deliver to users, customers, or the business. Frame it from the perspective of the user or stakeholder to focus on the problem being solved or the opportunity being captured. Open with that problem in plain language, and keep file names, scripts, and type names out of it — a reader decides from those first sentences whether this epic concerns them."
+      description: 'Why are we doing this? Describe the benefit or value the initiative will deliver to users, customers, or the business. Frame it from the perspective of the user or stakeholder to focus on the problem being solved or the opportunity being captured. Open with that problem in plain language, and keep file names, scripts, and type names out of it — a reader decides from those first sentences whether this epic concerns them.'
     validations:
       required: true
   - type: textarea
     id: expected-outcomes
     attributes:
       label: Expected outcomes
-      description: "What will success look like? Include measurable results or changes in behavior you expect to see if the value proposition is delivered. These are often KPIs, metrics, or observable changes that indicate the epic has achieved its goal."
+      description: 'What will success look like? Include measurable results or changes in behavior you expect to see if the value proposition is delivered. These are often KPIs, metrics, or observable changes that indicate the epic has achieved its goal.'
     validations:
       required: true
   - type: textarea
     id: decisions
     attributes:
       label: Decisions
-      description: "The architecture decision records governing this epic, one line each. Leave empty when there are none. An epic states what work; an ADR states why this shape and what it costs consumers. A choice asserted here that a consumer can feel — an API removed, a default reversed, a behavior dropped — wants a record behind it, or the reasoning lives nowhere and gets re-argued in every child PR. See docs/adr/README.md."
+      description: 'The architecture decision records governing this epic, one line each. Leave empty when there are none. An epic states what work; an ADR states why this shape and what it costs consumers. A choice asserted here that a consumer can feel — an API removed, a default reversed, a behavior dropped — wants a record behind it, or the reasoning lives nowhere and gets re-argued in every child PR. See docs/adr/README.md.'
   - type: textarea
     id: out-of-scope
     attributes:
       label: Out of scope
-      description: "What this epic deliberately does not cover. Bounding the scope is what separates an epic from an open-ended feature area. One line per excluded item, with the reason it is excluded. If an exclusion needs a paragraph, the reasoning belongs in an ADR or a sibling issue. Link to it from one line here."
+      description: 'What this epic deliberately does not cover. Bounding the scope is what separates an epic from an open-ended feature area. One line per excluded item, with the reason it is excluded. If an exclusion needs a paragraph, the reasoning belongs in an ADR or a sibling issue. Link to it from one line here.'
   - type: textarea
     id: details
     attributes:
       label: Details
-      description: "Include links to related epics, issues, Figma files, etc."
+      description: 'Include links to related epics, issues, Figma files, etc.'
   - type: textarea
     id: screenshots
     attributes:
@@ -43,7 +43,5 @@ body:
       label: Code of conduct
       description: Please confirm the following
       options:
-        - label:
-            I agree to follow this project's [code of
-            conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
+        - label: I agree to follow this project's [code of conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
           required: true

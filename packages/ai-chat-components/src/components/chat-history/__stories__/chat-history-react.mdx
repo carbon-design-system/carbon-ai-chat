@@ -1,11 +1,10 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ChatHistoryStories from "./chat-history-react.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as ChatHistoryStories from './chat-history-react.stories';
 
 <Meta of={ChatHistoryStories} />
 
 # AI Chat History
-
 
 ## Getting started
 
@@ -14,7 +13,7 @@ Here's a quick example to get you started.
 ### JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/react/history.js";
+import '@carbon/ai-chat-components/es/react/history.js';
 ```
 
 ### HTML
@@ -32,18 +31,18 @@ import {
   HistoryPanelItems,
   HistorySearchItem,
   HistoryDeletePanel,
-} from "@carbon/ai-chat-components/es/react/history";
-import { PinFilled, Search } from "@carbon/icons-react";
+} from '@carbon/ai-chat-components/es/react/history';
+import { PinFilled, Search } from '@carbon/icons-react';
 
 function ChatHistory() {
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
 
   const handleSearchInput = (event) => {
     setSearchValue(event.detail.value);
   };
 
   const handleHistoryItemAction = (event) => {
-    if (event.detail.action === "Rename") {
+    if (event.detail.action === 'Rename') {
       const element = event.detail.element;
       if (element) {
         element.rename = true;
@@ -106,10 +105,12 @@ function ChatHistory() {
       <HistoryPanelItems>
         <HistoryPanelMenu expanded title="Search results">
           <Search slot="title-icon" />
-          <HistorySearchItem name="Here's the onboarding doc that includes all the information to get started." date="Monday, 12:04 PM">
-          </HistorySearchItem>
-          <HistorySearchItem name="Let's use this as the master invoice document." date="Monday, 12:04 PM">
-          </HistorySearchItem>
+          <HistorySearchItem
+            name="Here's the onboarding doc that includes all the information to get started."
+            date="Monday, 12:04 PM"></HistorySearchItem>
+          <HistorySearchItem
+            name="Let's use this as the master invoice document."
+            date="Monday, 12:04 PM"></HistorySearchItem>
         </HistoryPanelMenu>
       </HistoryPanelItems>
     </HistoryPanel>
@@ -123,31 +124,30 @@ function ChatHistory() {
 <HistoryShell>
   <HistoryHeader headerTitle="Chats" />
   <HistoryToolbar />
-  <HistoryContent>
-  </HistoryContent>
+  <HistoryContent></HistoryContent>
 </HistoryShell>
 ```
 
 ### Delete confirmation panel
 
-Render **`HistoryDeletePanel`** when the user chooses **Delete** from a chat item’s overflow menu. Pass **`itemId`** for the chat item being removed.
-Combined with **`HistoryShell`**, focus moves to the next chat item after delete, and **`history-item-selected`** fires on that chat item when the deleted chat item was the active one.
+Render **`HistoryDeletePanel`** when the user chooses **Delete** from a chat item’s overflow menu. Pass **`itemId`** for the chat item being removed. Combined with **`HistoryShell`**, focus moves to the next chat item after delete, and **`history-item-selected`** fires on that chat item when the deleted chat item was the active one.
 
 Use **`onCancel`** to dismiss the panel without deleting, and **`onConfirm`** to remove the chat from your state and hide the panel.
 
 ```jsx
-{showDeletePanel && (
-  <HistoryDeletePanel
-    itemId={itemToDelete ?? ""}
-    onCancel={handleDeleteCancel}
-    onConfirm={handleDeleteConfirm}
-  >
-    <div slot="title">Confirm Delete</div>
-    <div slot="description">
-      This conversation will be permanently deleted.
-    </div>
-  </HistoryDeletePanel>
-)}
+{
+  showDeletePanel && (
+    <HistoryDeletePanel
+      itemId={itemToDelete ?? ''}
+      onCancel={handleDeleteCancel}
+      onConfirm={handleDeleteConfirm}>
+      <div slot="title">Confirm Delete</div>
+      <div slot="description">
+        This conversation will be permanently deleted.
+      </div>
+    </HistoryDeletePanel>
+  );
+}
 ```
 
 ## Custom Events
@@ -156,7 +156,7 @@ The chat history React components emit several custom events that you can listen
 
 ### `<HistoryPanelItem>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Prop</th>
@@ -167,54 +167,88 @@ The chat history React components emit several custom events that you can listen
   </thead>
   <tbody>
     <tr>
-      <td><code>onSelected</code></td>
-      <td><code>history-item-selected</code></td>
-      <td>Fired when the history panel item is clicked (but not when clicking on interactive elements like the overflow menu).</td>
       <td>
-        • <code>itemId</code> (string) - The ID of the history item<br/>
-        • <code>itemName</code> (string) - The name of the history item<br/>
-        • <code>element</code> (HTMLElement) - Reference to the element
+        <code>onSelected</code>
+      </td>
+      <td>
+        <code>history-item-selected</code>
+      </td>
+      <td>
+        Fired when the history panel item is clicked (but not when clicking on
+        interactive elements like the overflow menu).
+      </td>
+      <td>
+        • <code>itemId</code> (string) - The ID of the history item
+        <br />• <code>itemName</code> (string) - The name of the history item
+        <br />• <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
     <tr>
-      <td><code>onMenuAction</code></td>
-      <td><code>history-item-menu-action</code></td>
+      <td>
+        <code>onMenuAction</code>
+      </td>
+      <td>
+        <code>history-item-menu-action</code>
+      </td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
-        • <code>action</code> (string) - The text of the action clicked<br/>
-        • <code>itemId</code> (string) - The ID of the history item<br/>
-        • <code>itemName</code> (string) - The name of the history item<br/>
-        • <code>element</code> (HTMLElement) - Reference to the element
+        • <code>action</code> (string) - The text of the action clicked
+        <br />• <code>itemId</code> (string) - The ID of the history item
+        <br />• <code>itemName</code> (string) - The name of the history item
+        <br />• <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
     <tr>
-      <td><code>onRenameChange</code></td>
-      <td><code>history-panel-item-input-change</code></td>
-      <td>Bubbles up from the inner input on every keystroke while rename mode is active. Use this to validate the value and pass the result back via <code>renameInvalid</code> and <code>renameInvalidMessage</code> props.</td>
       <td>
-        • <code>value</code> (string) - The current input value<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>onRenameChange</code>
       </td>
-    </tr>
-    <tr>
-      <td><code>onRenameSave</code></td>
-      <td><code>history-panel-item-input-save</code></td>
-      <td>Bubbles up from the inner input when the user saves the rename. The save button and Enter key are disabled while the input is invalid.</td>
       <td>
-        • <code>newName</code> (string) - The new name entered<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>history-panel-item-input-change</code>
+      </td>
+      <td>
+        Bubbles up from the inner input on every keystroke while rename mode is
+        active. Use this to validate the value and pass the result back via{' '}
+        <code>renameInvalid</code> and <code>renameInvalidMessage</code> props.
+      </td>
+      <td>
+        • <code>value</code> (string) - The current input value
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
     <tr>
-      <td><code>onRenameCancel</code></td>
-      <td><code>history-panel-item-input-cancel</code></td>
-      <td>Bubbles up from the inner input when the user cancels renaming (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>
+        <code>onRenameSave</code>
+      </td>
+      <td>
+        <code>history-panel-item-input-save</code>
+      </td>
+      <td>
+        Bubbles up from the inner input when the user saves the rename. The save
+        button and Enter key are disabled while the input is invalid.
+      </td>
+      <td>
+        • <code>newName</code> (string) - The new name entered
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>onRenameCancel</code>
+      </td>
+      <td>
+        <code>history-panel-item-input-cancel</code>
+      </td>
+      <td>
+        Bubbles up from the inner input when the user cancels renaming (cancel
+        button, Escape key, or focus-out with no valid change).
+      </td>
       <td>None</td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```jsx
 function ChatHistory() {
   const [items, setItems] = useState(chatItems);
@@ -229,7 +263,7 @@ function ChatHistory() {
   const handleItemAction = (event) => {
     const { action, itemId, itemName, element } = event.detail;
 
-    switch(action) {
+    switch (action) {
       case 'Rename':
         element.rename = true;
         break;
@@ -247,23 +281,33 @@ function ChatHistory() {
   const handleRenameChange = (event) => {
     const { value, itemId } = event.detail;
     const invalid = value.length > 75;
-    setItems(prev => prev.map(item =>
-      item.id === itemId
-        ? { ...item, renameInvalid: invalid, renameInvalidMessage: invalid ? 'Title cannot exceed 75 characters.' : '' }
-        : item
-    ));
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              renameInvalid: invalid,
+              renameInvalidMessage: invalid
+                ? 'Title cannot exceed 75 characters.'
+                : '',
+            }
+          : item
+      )
+    );
   };
 
   const handleRenameSave = (event) => {
     const { newName, itemId } = event.detail;
-    setItems(prev => prev.map(item =>
-      item.id === itemId ? { ...item, name: newName } : item
-    ));
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, name: newName } : item
+      )
+    );
   };
 
   return (
     <HistoryPanelItems>
-      {items.map(item => (
+      {items.map((item) => (
         <HistoryPanelItem
           key={item.id}
           id={item.id}
@@ -288,21 +332,22 @@ function ChatHistory() {
 When performing actions that reorder or move history items (such as pinning/unpinning), you may need to restore focus to the item after the DOM updates for accessibility reasons. Use the `focusElementAfterRepaint` utility to handle this:
 
 ```javascript
-import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
 ```
 
 **Example with Pin/Unpin:**
+
 ```jsx
-import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
 
 function ChatHistory() {
   const historyShellRef = useRef(null);
 
   const handlePin = (itemId) => {
     // Move item from regular to pinned list
-    const itemToPin = regularItems.find(chat => chat.id === itemId);
-    setPinnedItems(prev => [itemToPin, ...prev]);
-    setRegularItems(prev => prev.filter(chat => chat.id !== itemId));
+    const itemToPin = regularItems.find((chat) => chat.id === itemId);
+    setPinnedItems((prev) => [itemToPin, ...prev]);
+    setRegularItems((prev) => prev.filter((chat) => chat.id !== itemId));
 
     // Restore focus to the item after DOM updates
     focusElementAfterRepaint(
@@ -321,7 +366,7 @@ function ChatHistory() {
 
 ### `<HistorySearchItem>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Prop</th>
@@ -332,19 +377,24 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onSelected</code></td>
-      <td><code>history-search-item-selected</code></td>
+      <td>
+        <code>onSelected</code>
+      </td>
+      <td>
+        <code>history-search-item-selected</code>
+      </td>
       <td>Fired when a search result item is clicked.</td>
       <td>
-        • <code>itemId</code> (string) - The ID of the search item<br/>
-        • <code>itemName</code> (string) - The name of the search item<br/>
-        • <code>element</code> (HTMLElement) - Reference to the element
+        • <code>itemId</code> (string) - The ID of the search item
+        <br />• <code>itemName</code> (string) - The name of the search item
+        <br />• <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```jsx
 function SearchResults() {
   const handleSearchItemSelected = (event) => {
@@ -359,16 +409,14 @@ function SearchResults() {
       id="search-1"
       name="Search result text"
       date="Monday, 12:04 PM"
-      onSelected={handleSearchItemSelected}
-    >
-    </HistorySearchItem>
+      onSelected={handleSearchItemSelected}></HistorySearchItem>
   );
 }
 ```
 
 ### `<HistoryHeader>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Prop</th>
@@ -379,8 +427,12 @@ function SearchResults() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onClose</code></td>
-      <td><code>history-header-close-click</code></td>
+      <td>
+        <code>onClose</code>
+      </td>
+      <td>
+        <code>history-header-close-click</code>
+      </td>
       <td>Fired when the close button in the header is clicked.</td>
       <td>None</td>
     </tr>
@@ -388,6 +440,7 @@ function SearchResults() {
 </table>
 
 **Example:**
+
 ```jsx
 function ChatHistory() {
   const [isHistoryVisible, setIsHistoryVisible] = useState(true);
@@ -400,10 +453,7 @@ function ChatHistory() {
   return (
     isHistoryVisible && (
       <HistoryShell>
-        <HistoryHeader
-          headerTitle="Chats"
-          onClose={handleHeaderClose}
-        />
+        <HistoryHeader headerTitle="Chats" onClose={handleHeaderClose} />
         {/* ... rest of content */}
       </HistoryShell>
     )
@@ -413,7 +463,7 @@ function ChatHistory() {
 
 ### `<HistoryToolbar>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Prop</th>
@@ -424,14 +474,22 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onNewChatClick</code></td>
-      <td><code>chat-history-new-chat-click</code></td>
+      <td>
+        <code>onNewChatClick</code>
+      </td>
+      <td>
+        <code>chat-history-new-chat-click</code>
+      </td>
       <td>Fired when the new chat button is clicked.</td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onSearchInput</code></td>
-      <td><code>cds-search-input</code></td>
+      <td>
+        <code>onSearchInput</code>
+      </td>
+      <td>
+        <code>cds-search-input</code>
+      </td>
       <td>Fired when the user types in the search field.</td>
       <td>
         • <code>value</code> (string) - The current search input value
@@ -441,9 +499,10 @@ function ChatHistory() {
 </table>
 
 **Example:**
+
 ```jsx
 function ChatHistory() {
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState('');
 
   const handleNewChat = () => {
     console.log('New chat button clicked');
@@ -473,7 +532,7 @@ function ChatHistory() {
 
 ### `<HistoryPanelItemInput>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Prop</th>
@@ -484,33 +543,56 @@ function ChatHistory() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onChange</code></td>
-      <td><code>history-panel-item-input-change</code></td>
-      <td>Fired on every keystroke. Use this to validate the value and reflect the result back via <code>invalid</code> and <code>invalidMessage</code> props.</td>
       <td>
-        • <code>value</code> (string) - The current input value<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>onChange</code>
+      </td>
+      <td>
+        <code>history-panel-item-input-change</code>
+      </td>
+      <td>
+        Fired on every keystroke. Use this to validate the value and reflect the
+        result back via <code>invalid</code> and <code>invalidMessage</code>{' '}
+        props.
+      </td>
+      <td>
+        • <code>value</code> (string) - The current input value
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
     <tr>
-      <td><code>onSave</code></td>
-      <td><code>history-panel-item-input-save</code></td>
-      <td>Fired when the user saves a renamed history item. The save button and Enter key are disabled while the input is invalid.</td>
       <td>
-        • <code>newName</code> (string) - The new name entered<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>onSave</code>
+      </td>
+      <td>
+        <code>history-panel-item-input-save</code>
+      </td>
+      <td>
+        Fired when the user saves a renamed history item. The save button and
+        Enter key are disabled while the input is invalid.
+      </td>
+      <td>
+        • <code>newName</code> (string) - The new name entered
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
     <tr>
-      <td><code>onCancel</code></td>
-      <td><code>history-panel-item-input-cancel</code></td>
-      <td>Fired when the user cancels renaming a history item (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>
+        <code>onCancel</code>
+      </td>
+      <td>
+        <code>history-panel-item-input-cancel</code>
+      </td>
+      <td>
+        Fired when the user cancels renaming a history item (cancel button,
+        Escape key, or focus-out with no valid change).
+      </td>
       <td>None</td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```jsx
 function RenameInput() {
   const [invalid, setInvalid] = useState(false);
@@ -551,7 +633,7 @@ function RenameInput() {
 
 ### `<HistoryDeletePanel>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Prop</th>
@@ -562,23 +644,39 @@ function RenameInput() {
   </thead>
   <tbody>
     <tr>
-      <td><code>onCancel</code></td>
-      <td><code>history-delete-cancel</code></td>
-      <td>Fired when the cancel button is clicked or Enter is pressed on the cancel button.</td>
+      <td>
+        <code>onCancel</code>
+      </td>
+      <td>
+        <code>history-delete-cancel</code>
+      </td>
+      <td>
+        Fired when the cancel button is clicked or Enter is pressed on the
+        cancel button.
+      </td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>onConfirm</code></td>
-      <td><code>history-delete-confirm</code></td>
-      <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
       <td>
-        When <code>itemId</code> is set: <code>itemId</code>, optional <code>nextItemId</code>, and <code>deletedItemWasSelected</code>.
+        <code>onConfirm</code>
+      </td>
+      <td>
+        <code>history-delete-confirm</code>
+      </td>
+      <td>
+        Fired when the delete button is clicked or Enter is pressed on the
+        delete button.
+      </td>
+      <td>
+        When <code>itemId</code> is set: <code>itemId</code>, optional{' '}
+        <code>nextItemId</code>, and <code>deletedItemWasSelected</code>.
       </td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```jsx
 function ChatHistory() {
   const [showDeletePanel, setShowDeletePanel] = useState(false);
@@ -627,8 +725,7 @@ function ChatHistory() {
           <HistoryDeletePanel
             itemId={itemToDelete ?? ''}
             onCancel={handleDeleteCancel}
-            onConfirm={handleDeleteConfirm}
-          >
+            onConfirm={handleDeleteConfirm}>
             <div slot="title">Confirm Delete</div>
             <div slot="description">
               This conversation will be permanently deleted.

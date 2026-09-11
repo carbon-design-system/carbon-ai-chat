@@ -1,14 +1,14 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  */
 
 /* ./carbon-styles.min.css is copied from @carbon/styles/css/styles.min.css by carbonThemePlugin.js during build */
-@import url("./carbon-styles.min.css");
-@import url("https://1.www.s81c.com/common/carbon/plex/plex-full.css");
-@import url("https://1.www.s81c.com/common/carbon/web-components/tag/latest/themes.css");
+@import url('./carbon-styles.min.css');
+@import url('https://1.www.s81c.com/common/carbon/plex/plex-full.css');
+@import url('https://1.www.s81c.com/common/carbon/web-components/tag/latest/themes.css');
 
 /* Hide Carbon web components until they are defined to prevent FOUC */
 cds-header:not(:defined),
@@ -83,7 +83,7 @@ cds-side-nav:not(:defined) ~ .carbon-main-content {
 body {
   background-color: var(--cds-background, #ffffff);
   color: var(--cds-text-primary, #161616);
-  font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
   font-size: var(--cds-body-02, 1rem);
   line-height: 1.5;
   margin: 0;
@@ -170,7 +170,7 @@ a:hover {
 }
 
 .tsd-signature {
-  font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
   font-size: var(--cds-code-01-font-size, 0.875rem);
   font-weight: var(--cds-code-01-font-weight, 400);
   letter-spacing: var(--cds-code-01-letter-spacing, 0.16px);
@@ -322,7 +322,7 @@ details.tsd-accordion > summary > svg {
 
 /* Carbon accordion arrow using CSS */
 details.tsd-accordion > summary::before {
-  content: "";
+  content: '';
   block-size: 1rem;
   flex: 0 0 1rem;
   inline-size: 1rem;
@@ -382,7 +382,7 @@ code.tsd-tag {
   border-radius: 9999px;
   color: var(--cds-text-primary, #161616);
   display: inline-block;
-  font-family: var(--cds-label-01-font-family, "IBM Plex Sans", sans-serif);
+  font-family: var(--cds-label-01-font-family, 'IBM Plex Sans', sans-serif);
   font-size: var(--cds-label-01-font-size, 0.75rem);
   font-weight: var(--cds-label-01-font-weight, 400);
   line-height: var(--cds-label-01-line-height, 1.34);
@@ -395,44 +395,44 @@ code.tsd-tag {
 
 /* Tag variants for common TypeDoc tags */
 /* Blue for optional properties */
-.tsd-tag[title*="Optional" i],
-code.tsd-tag[title*="Optional" i] {
+.tsd-tag[title*='Optional' i],
+code.tsd-tag[title*='Optional' i] {
   background-color: var(--cds-tag-background-blue, #d0e2ff);
   color: var(--cds-tag-color-blue, #0043ce);
 }
 
 /* Purple for readonly */
-.tsd-tag[title*="Readonly" i],
-code.tsd-tag[title*="Readonly" i] {
+.tsd-tag[title*='Readonly' i],
+code.tsd-tag[title*='Readonly' i] {
   background-color: var(--cds-tag-background-purple, #e8daff);
   color: var(--cds-tag-color-purple, #6929c4);
 }
 
 /* Green for static */
-.tsd-tag[title*="Static" i],
-code.tsd-tag[title*="Static" i] {
+.tsd-tag[title*='Static' i],
+code.tsd-tag[title*='Static' i] {
   background-color: var(--cds-tag-background-green, #d9fbfb);
   color: var(--cds-tag-color-green, #198038);
 }
 
 /* Red for private */
-.tsd-tag[title*="Private" i],
-code.tsd-tag[title*="Private" i] {
+.tsd-tag[title*='Private' i],
+code.tsd-tag[title*='Private' i] {
   background-color: var(--cds-tag-background-red, #ffd7d9);
   color: var(--cds-tag-color-red, #da1e28);
 }
 
 /* Yellow for protected */
-.tsd-tag[title*="Protected" i],
-code.tsd-tag[title*="Protected" i] {
+.tsd-tag[title*='Protected' i],
+code.tsd-tag[title*='Protected' i] {
   background-color: var(--cds-tag-background-yellow, #fcf4d6);
   color: var(--cds-tag-color-yellow, #8e3a00);
 }
 
 /* Alternative approach using text content via CSS (for browsers that support :has) */
 @supports selector(:has(*)) {
-  .tsd-tag:has-text("Optional"),
-  code.tsd-tag:has-text("Optional") {
+  .tsd-tag:has-text('Optional'),
+  code.tsd-tag:has-text('Optional') {
     background-color: var(--cds-tag-background-blue, #d0e2ff);
     color: var(--cds-tag-color-blue, #0043ce);
   }
@@ -451,7 +451,7 @@ code.tsd-tag.tsd-tag--small {
 /* Deprecated tags styled with red Carbon tag variant */
 .tsd-tag-deprecated h4::before,
 code.tsd-tag-deprecated {
-  content: "Deprecated";
+  content: 'Deprecated';
   background-color: var(--cds-tag-background-red, #ffd7d9);
   border-radius: 9999px;
   color: var(--cds-tag-color-red, #da1e28);
@@ -460,12 +460,12 @@ code.tsd-tag-deprecated {
     --cds-font-family,
     -apple-system,
     BlinkMacSystemFont,
-    "Segoe UI",
+    'Segoe UI',
     roboto,
     oxygen-sans,
     ubuntu,
     cantarell,
-    "Helvetica Neue",
+    'Helvetica Neue',
     helvetica,
     arial,
     sans-serif
@@ -487,8 +487,8 @@ code.tsd-tag-deprecated {
 }
 
 /* Experimental tags styled as Preview (teal/cyan variant) */
-.tsd-tag[data-tag-type="experimental"],
-code.tsd-tag[data-tag-type="experimental"],
+.tsd-tag[data-tag-type='experimental'],
+code.tsd-tag[data-tag-type='experimental'],
 .tsd-tag.tsd-tag--experimental,
 code.tsd-tag.tsd-tag--experimental {
   background-color: var(--cds-tag-background-teal, #9ef0f0);
@@ -531,13 +531,13 @@ code.tsd-tag-since {
 
 .tsd-type {
   color: var(--cds-text-secondary, #525252);
-  font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
   font-size: var(--cds-code-01-font-size, 0.75rem);
 }
 
 .tsd-type-parameter {
   color: var(--cds-text-secondary, #525252);
-  font-family: var(--cds-code-01-font-family, "IBM Plex Mono", monospace);
+  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
   font-size: var(--cds-code-01-font-size, 0.75rem);
   font-style: italic;
 }
@@ -632,12 +632,12 @@ code.tsd-tag-since {
       --cds-font-family,
       -apple-system,
       BlinkMacSystemFont,
-      "Segoe UI",
+      'Segoe UI',
       roboto,
       oxygen-sans,
       ubuntu,
       cantarell,
-      "Helvetica Neue",
+      'Helvetica Neue',
       helvetica,
       arial,
       sans-serif

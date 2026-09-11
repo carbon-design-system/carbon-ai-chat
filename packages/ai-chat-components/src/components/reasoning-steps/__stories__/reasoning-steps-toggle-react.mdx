@@ -1,19 +1,22 @@
 import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
-import * as ReasoningStepsToggleReactStories from "./reasoning-steps-toggle-react.stories.jsx";
+import * as ReasoningStepsToggleReactStories from './reasoning-steps-toggle-react.stories.jsx';
 
-<Meta of={ReasoningStepsToggleReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ReasoningStepsToggleReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Reasoning steps toggle
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -22,9 +25,9 @@ import * as ReasoningStepsToggleReactStories from "./reasoning-steps-toggle-reac
 ### Getting started
 
 ```jsx
-import ReasoningStepsToggle from "@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js";
-import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
-import ReasoningStep from "@carbon/ai-chat-components/es/react/reasoning-step.js";
+import ReasoningStepsToggle from '@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js';
+import ReasoningSteps from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
+import ReasoningStep from '@carbon/ai-chat-components/es/react/reasoning-step.js';
 
 function ReasoningToggleExample() {
   const [open, setOpen] = React.useState(true);

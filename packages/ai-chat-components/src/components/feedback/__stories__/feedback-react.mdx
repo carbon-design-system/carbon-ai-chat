@@ -1,19 +1,22 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as FeedbackReactStories from "./feedback-react.stories.jsx";
+import * as FeedbackReactStories from './feedback-react.stories.jsx';
 
-<Meta of={FeedbackReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={FeedbackReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Feedback
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -28,7 +31,7 @@ Use `<Feedback>` to collect structured feedback on AI responses in React. It sup
 Here's a quick example to get you started.
 
 ```jsx
-import Feedback from "@carbon/ai-chat-components/es/react/feedback.js";
+import Feedback from '@carbon/ai-chat-components/es/react/feedback.js';
 
 function FeedbackExample() {
   return (
@@ -36,15 +39,15 @@ function FeedbackExample() {
       isOpen
       title="Additional feedback"
       body="Why did you choose this rating?"
-      categories={["Accurate", "Helpful", "Too verbose", "Inappropriate"]}
+      categories={['Accurate', 'Helpful', 'Too verbose', 'Inappropriate']}
       primaryLabel="Submit"
       showTextArea={true}
       showBody={true}
       onSubmit={(event) => {
         const { text, selectedCategories } = event.detail;
-        console.log("Feedback submitted:", { text, selectedCategories });
+        console.log('Feedback submitted:', { text, selectedCategories });
       }}
-      onClose={() => console.log("Feedback closed")}
+      onClose={() => console.log('Feedback closed')}
     />
   );
 }
@@ -64,14 +67,10 @@ function NegativeFeedbackPanel() {
     <Feedback
       isOpen
       title="What went wrong?"
-      categories={[
-        "Inaccurate",
-        "Unhelpful",
-        "Inappropriate",
-      ]}
+      categories={['Inaccurate', 'Unhelpful', 'Inappropriate']}
       onSubmit={(event) => {
         const details = event.detail;
-        console.log("Feedback:", details);
+        console.log('Feedback:', details);
         // { text: "...", selectedCategories: ["Inaccurate"] }
       }}
     />
@@ -87,13 +86,9 @@ function PositiveFeedbackPanel() {
     <Feedback
       isOpen
       title="What did you like?"
-      categories={[
-        "Accurate",
-        "Helpful",
-        "Well-formatted",
-      ]}
+      categories={['Accurate', 'Helpful', 'Well-formatted']}
       onSubmit={(event) => {
-        console.log("Feedback:", event.detail);
+        console.log('Feedback:', event.detail);
       }}
     />
   );
@@ -105,13 +100,13 @@ function PositiveFeedbackPanel() {
 ```jsx
 function ReadOnlyFeedbackPanel() {
   return (
-<Feedback
-  isOpen
-  isReadonly
-  title="Submitted feedback"
-  initialValues={{
-        text: "The response was very helpful!",
-        selectedCategories: ["Accurate", "Helpful"],
+    <Feedback
+      isOpen
+      isReadonly
+      title="Submitted feedback"
+      initialValues={{
+        text: 'The response was very helpful!',
+        selectedCategories: ['Accurate', 'Helpful'],
       }}
     />
   );
@@ -141,9 +136,7 @@ Control visibility of UI elements:
 Add a legal notice at the bottom of the panel using the `disclaimer` prop. The text supports markdown.
 
 ```jsx
-<Feedback
-  disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy)."
-/>
+<Feedback disclaimer="By submitting feedback, you agree to our [Privacy Policy](https://example.com/privacy)." />
 ```
 
 To require the user to explicitly acknowledge the disclaimer before submitting, pass a `disclaimerCheckbox` prop with the checkbox label. The submit button remains **disabled** until the checkbox is checked.

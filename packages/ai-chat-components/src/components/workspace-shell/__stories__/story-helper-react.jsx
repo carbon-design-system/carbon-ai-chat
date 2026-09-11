@@ -1,12 +1,12 @@
 /*
- *  Copyright IBM Corp. 2025
+ *  Copyright IBM Corp. 2025, 2026
  *
  *  This source code is licensed under the Apache-2.0 license found in the
  *  LICENSE file in the root directory of this source tree.
  *
  *  @license
  */
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Tag,
   Table,
@@ -20,17 +20,17 @@ import {
   TableToolbarContent,
   TableToolbarSearch,
   Button,
-} from "@carbon/react";
-import CodeSnippet from "../../../react/code-snippet";
-import { multilineCode } from "./story-data.js";
+} from '@carbon/react';
+import CodeSnippet from '../../../react/code-snippet';
+import { multilineCode } from './story-data.js';
 import {
   headers as tableHeaders,
   rows as tableRows,
-} from "../../table/__stories__/story-data.js";
+} from '../../table/__stories__/story-data.js';
 
 export function getHeaderDescription(type) {
   switch (type) {
-    case "basic":
+    case 'basic':
       return (
         <div slot="header-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -38,7 +38,7 @@ export function getHeaderDescription(type) {
           minim veniam, quis nostrud exercitation ullamco.
         </div>
       );
-    case "withTags":
+    case 'withTags':
       return (
         <>
           <div slot="header-description">
@@ -76,14 +76,14 @@ export function getHeaderDescription(type) {
 
 export function getBodyContent(type) {
   switch (type) {
-    case "short":
+    case 'short':
       return `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
         veniam, quis nostrud exercitation ullamco.
       `;
-    case "long": {
+    case 'long': {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const [searchValue, setSearchValue] = useState("");
+      const [searchValue, setSearchValue] = useState('');
 
       const filteredRows = tableRows.filter((row) => {
         if (!searchValue) {
@@ -91,7 +91,7 @@ export function getBodyContent(type) {
         }
         const searchLower = searchValue.toLowerCase();
         return row.cells.some((cell) =>
-          cell.text.toLowerCase().includes(searchLower),
+          cell.text.toLowerCase().includes(searchLower)
         );
       });
 
@@ -115,8 +115,7 @@ export function getBodyContent(type) {
           <br />
           <TableContainer
             title="Agent roster"
-            description="Operational view of AI chat team members."
-          >
+            description="Operational view of AI chat team members.">
             <TableToolbar>
               <TableToolbarContent>
                 <TableToolbarSearch
@@ -124,7 +123,7 @@ export function getBodyContent(type) {
                   persistent
                   placeholder="Filter table"
                   onChange={(e) => {
-                    if (typeof e !== "string" && e.target) {
+                    if (typeof e !== 'string' && e.target) {
                       setSearchValue(e.target.value);
                     }
                   }}

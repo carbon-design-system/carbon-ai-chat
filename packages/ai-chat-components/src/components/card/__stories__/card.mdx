@@ -1,7 +1,7 @@
-import { ArgTypes, Markdown, Meta, Canvas } from "@storybook/addon-docs/blocks";
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as CardStories from "./card.stories";
-import * as PreviewCardStories from "./preview-card.stories";
+import { ArgTypes, Markdown, Meta, Canvas } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as CardStories from './card.stories';
+import * as PreviewCardStories from './preview-card.stories';
 
 <Meta of={CardStories} />
 
@@ -42,10 +42,10 @@ By default, the card preserves the tile's default padding. Use `is-flush="true"`
 
 > **Note:** When `is-flush="true"`, tile padding is removed for all slots. Adding `data-flush` to slotted content in that case would apply a redundant negative margin and push content outside the card's bounds.
 
-| Value | Description |
-| --- | --- |
-| `data-flush=""` | Removes padding on all sides |
-| `data-flush="top"` | Removes top and horizontal padding |
+| Value                 | Description                           |
+| --------------------- | ------------------------------------- |
+| `data-flush=""`       | Removes padding on all sides          |
+| `data-flush="top"`    | Removes top and horizontal padding    |
 | `data-flush="bottom"` | Removes bottom and horizontal padding |
 
 ### Slotted Content Rounding
@@ -73,10 +73,10 @@ Here's a quick example to get you started.
 ### JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
+import '@carbon/ai-chat-components/es/components/card/index.js';
 ```
 
-<Markdown>{`${cdnJs(["card"])}`}</Markdown>
+<Markdown>{`${cdnJs(['card'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Examples
@@ -99,22 +99,22 @@ Add interactive buttons to your card using the `<cds-aichat-card-footer>` compon
 ```
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import { Launch16 } from "@carbon/icons";
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import { Launch16 } from '@carbon/icons';
 
-const footer = document.querySelector("#footer-1");
+const footer = document.querySelector('#footer-1');
 footer.actions = [
   {
-    id: "view-docs",
-    label: "View docs",
-    kind: "ghost",
+    id: 'view-docs',
+    label: 'View docs',
+    kind: 'ghost',
     icon: Launch16,
-    payload: { url: "https://carbondesignsystem.com" },
+    payload: { url: 'https://carbondesignsystem.com' },
   },
 ];
 
-footer.addEventListener("cds-aichat-card-footer-action", (event) => {
-  console.log("Action clicked:", event.detail);
+footer.addEventListener('cds-aichat-card-footer-action', (event) => {
+  console.log('Action clicked:', event.detail);
   // event.detail contains: { id, label, kind, payload }
 });
 ```
@@ -129,8 +129,7 @@ Display media content with proper corner rounding using the `media` slot and `da
     <img
       src="https://placehold.co/800x450"
       alt="Placeholder"
-      style="width: 100%; display: block;"
-    />
+      style="width: 100%; display: block;" />
   </div>
   <div slot="body" class="standard-card">
     <h4>Image Card Example</h4>
@@ -144,20 +143,20 @@ Display media content with proper corner rounding using the `media` slot and `da
 ```
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import { Launch16 } from "@carbon/icons";
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import { Launch16 } from '@carbon/icons';
 
-const footer = document.querySelector("#footer-2");
+const footer = document.querySelector('#footer-2');
 footer.actions = [
   {
-    id: "view-more",
-    label: "View more",
-    kind: "ghost",
+    id: 'view-more',
+    label: 'View more',
+    kind: 'ghost',
     icon: Launch16,
   },
 ];
 
-footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+footer.addEventListener('cds-aichat-card-footer-action', (event) => {
   console.log(event.detail);
 });
 ```
@@ -172,14 +171,13 @@ Remove the default tile padding using `is-flush="true"` for full-width content l
     <img
       src="https://placehold.co/800x450"
       alt="Full width image"
-      style="width: 100%; display: block;"
-    />
+      style="width: 100%; display: block;" />
   </div>
 </cds-aichat-card>
 ```
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
+import '@carbon/ai-chat-components/es/components/card/index.js';
 ```
 
 ### Card with Multiple Actions
@@ -190,32 +188,30 @@ Display multiple action buttons in the footer. Buttons are arranged horizontally
 <cds-aichat-card>
   <div slot="body" class="standard-card">
     <h4>Confirm Your Action</h4>
-    <p>
-      This operation will update your settings. Would you like to proceed?
-    </p>
+    <p>This operation will update your settings. Would you like to proceed?</p>
   </div>
   <cds-aichat-card-footer id="footer-3"></cds-aichat-card-footer>
 </cds-aichat-card>
 ```
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
+import '@carbon/ai-chat-components/es/components/card/index.js';
 
-const footer = document.querySelector("#footer-3");
+const footer = document.querySelector('#footer-3');
 footer.actions = [
   {
-    id: "cancel",
-    label: "Cancel",
-    kind: "secondary",
+    id: 'cancel',
+    label: 'Cancel',
+    kind: 'secondary',
   },
   {
-    id: "confirm",
-    label: "Confirm",
-    kind: "primary",
+    id: 'confirm',
+    label: 'Confirm',
+    kind: 'primary',
   },
 ];
 
-footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+footer.addEventListener('cds-aichat-card-footer-action', (event) => {
   const { id, label } = event.detail;
   console.log(`${label} button clicked (id: ${id})`);
 });
@@ -239,46 +235,47 @@ Use `<cds-aichat-card-steps>` to display multi-step processes with status indica
 ```
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
+import '@carbon/ai-chat-components/es/components/card/index.js';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/defs.js';
 
-const steps = document.querySelector("#steps-1");
+const steps = document.querySelector('#steps-1');
 steps.steps = [
   {
-    label: "Step 1",
+    label: 'Step 1',
     kind: ICON_INDICATOR_KIND.SUCCEEDED,
-    title: "Data collection",
-    description: "Completed successfully",
+    title: 'Data collection',
+    description: 'Completed successfully',
   },
   {
-    label: "Step 2",
-    kind: ICON_INDICATOR_KIND["IN-PROGRESS"],
-    title: "Analysis in progress",
-    description: "Processing data...",
+    label: 'Step 2',
+    kind: ICON_INDICATOR_KIND['IN-PROGRESS'],
+    title: 'Analysis in progress',
+    description: 'Processing data...',
   },
   {
-    label: "Step 3",
-    kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-    title: "Generate report",
-    description: "Not started",
+    label: 'Step 3',
+    kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+    title: 'Generate report',
+    description: 'Not started',
   },
 ];
 
-const footer = document.querySelector("#footer-4");
+const footer = document.querySelector('#footer-4');
 footer.actions = [
   {
-    id: "view-details",
-    label: "View details",
-    kind: "ghost",
+    id: 'view-details',
+    label: 'View details',
+    kind: 'ghost',
   },
 ];
 
-footer.addEventListener("cds-aichat-card-footer-action", (event) => {
+footer.addEventListener('cds-aichat-card-footer-action', (event) => {
   console.log(event.detail);
 });
 ```
 
 **Available step kinds:**
+
 - `ICON_INDICATOR_KIND.SUCCEEDED` - Completed step
 - `ICON_INDICATOR_KIND["IN-PROGRESS"]` - Currently active step
 - `ICON_INDICATOR_KIND["NOT-STARTED"]` - Pending step
@@ -292,14 +289,13 @@ footer.addEventListener("cds-aichat-card-footer-action", (event) => {
     <img
       src="https://placehold.co/400x300"
       alt="Gallery image"
-      style="width: 100%; display: block;"
-    />
+      style="width: 100%; display: block;" />
   </div>
 </cds-aichat-card>
 ```
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/card/index.js";
+import '@carbon/ai-chat-components/es/components/card/index.js';
 ```
 
 ## Component API

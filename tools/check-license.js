@@ -20,10 +20,11 @@ const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const execPromise = promisify(exec);
 const projectRoot = path.resolve(__dirname, '..');
-const sourceFilePattern = '**/*.{js,jsx,ts,tsx,scss,html}';
-const allFilesSourceFilePattern = '**/*.{js,ts,tsx,scss,html}';
+const sourceFilePattern = '**/*.{js,jsx,ts,tsx,css,scss,html}';
+const allFilesSourceFilePattern = '**/*.{js,jsx,ts,tsx,css,scss,html}';
 const ignoredFilePatterns = ['!**/*.snap.js', '!examples/**'];
 const sourceFileExtensions = new Set([
+  '.css',
   '.html',
   '.js',
   '.jsx',

@@ -1,9 +1,28 @@
-es
-lib
+# Build & output directories
+build
 dist
+es
+es-custom
+lib
+ts
 umd
+storybook-static
+storybook-react-static
+coverage
+.nyc_output
+.parcel-cache
+.next
+generated_docs
+
+# Dependencies
 node_modules
+
+# Generated or manifest files
 *.snap.js
+custom-elements.json
+telemetry.yml
+package-lock.json
+
 # Skill trees. .bob/skills/ is canonical and the other two are byte-identical
 # generated mirrors, so formatting any of them would drift them apart and fail
 # `npm run validate:skills`. A new mirror directory belongs here too.

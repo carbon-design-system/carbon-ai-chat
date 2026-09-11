@@ -1,16 +1,21 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as CodeSnippetStories from "./code-snippet.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as CodeSnippetStories from './code-snippet.stories';
 
-<Meta of={CodeSnippetStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={CodeSnippetStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Code snippet
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/code-snippet) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
+
 - [Overview](#overview)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
@@ -34,8 +39,7 @@ export async function summarizeReply(prompt) {
 }`;
 </script>
 
-<cds-aichat-code-snippet highlight code="${code}">
-</cds-aichat-code-snippet>
+<cds-aichat-code-snippet highlight code="${code}"> </cds-aichat-code-snippet>
 ```
 
 ### Using slotted content (alternative)
@@ -44,11 +48,9 @@ You can also provide code via slotted content, though the attribute-based approa
 
 ```html
 <cds-aichat-code-snippet highlight>
-  import { summarize } from "./summarizer";
-  export async function summarizeReply(prompt) {
-    const result = await summarize(prompt);
-    return result.text;
-  }
+  import { summarize } from "./summarizer"; export async function
+  summarizeReply(prompt) { const result = await summarize(prompt); return
+  result.text; }
 </cds-aichat-code-snippet>
 ```
 
@@ -61,11 +63,10 @@ You can also provide code via slotted content, though the attribute-based approa
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/code-snippet/index.js";
+import '@carbon/ai-chat-components/es/components/code-snippet/index.js';
 ```
 
-
-<Markdown>{`${cdnJs(["code-snippet"])}`}</Markdown>
+<Markdown>{`${cdnJs(['code-snippet'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

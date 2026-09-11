@@ -1,19 +1,22 @@
 import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
-import * as TableReactStories from "./table-react.stories.jsx";
+import * as TableReactStories from './table-react.stories.jsx';
 
-<Meta of={TableReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={TableReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Table
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/table) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -24,18 +27,18 @@ Use `Table` to render structured AI output with filtering, pagination, and loadi
 Here's a quick example to get you started.
 
 ```jsx
-import Table from "@carbon/ai-chat-components/es/react/table.js";
+import Table from '@carbon/ai-chat-components/es/react/table.js';
 
-const headers = [
-  { text: "Name" },
-  { text: "Role" },
-  { text: "Status" },
-];
+const headers = [{ text: 'Name' }, { text: 'Role' }, { text: 'Status' }];
 
 const rows = [
-  { cells: [{ text: "Jordan Smith" }, { text: "Designer" }, { text: "Active" }] },
-  { cells: [{ text: "Priya Patel" }, { text: "Engineer" }, { text: "Paused" }] },
-  { cells: [{ text: "Lee Chen" }, { text: "PM" }, { text: "Active" }] },
+  {
+    cells: [{ text: 'Jordan Smith' }, { text: 'Designer' }, { text: 'Active' }],
+  },
+  {
+    cells: [{ text: 'Priya Patel' }, { text: 'Engineer' }, { text: 'Paused' }],
+  },
+  { cells: [{ text: 'Lee Chen' }, { text: 'PM' }, { text: 'Active' }] },
 ];
 
 function TableExample() {

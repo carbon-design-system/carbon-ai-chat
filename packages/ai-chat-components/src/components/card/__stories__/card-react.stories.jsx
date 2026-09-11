@@ -1,6 +1,13 @@
+/**
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
-import React from "react";
-import { Card, CardFooter } from "../../../react/card";
+import React from 'react';
+import { Card, CardFooter } from '../../../react/card';
 import {
   Default as DefaultWC,
   WithActions as WithActionsWC,
@@ -9,10 +16,10 @@ import {
   WithAudio as WithAudioWC,
   OnlyVideo as OnlyVideoWC,
   CardFooter as CardFooterWC,
-} from "./card.stories";
-import "./story-styles.scss";
-import { action } from "storybook/actions";
-import { cardFooterPresets, previewCardFooterPresets } from "./story-data";
+} from './card.stories';
+import './story-styles.scss';
+import { action } from 'storybook/actions';
+import { cardFooterPresets, previewCardFooterPresets } from './story-data';
 
 const cardContent = (
   <div slot="body" className="standard-card">
@@ -26,7 +33,7 @@ const cardContent = (
 );
 
 const Wrapper = ({ width, children }) => {
-  return width === "unset" ? (
+  return width === 'unset' ? (
     children
   ) : (
     <div style={{ maxWidth: width }}>{children}</div>
@@ -34,7 +41,7 @@ const Wrapper = ({ width, children }) => {
 };
 
 export default {
-  title: "Components/Card",
+  title: 'Components/Card',
   decorators: [
     (Story, { args }) => (
       <Wrapper width={args.maxWidth}>
@@ -70,7 +77,7 @@ export const WithActions = {
       <CardFooter
         size={args.footerSize}
         actions={cardFooterPresets[args.footerActions]}
-        onFooterAction={(e) => action("action")(e.detail)}
+        onFooterAction={(e) => action('action')(e.detail)}
       />
     </Card>
   ),
@@ -92,7 +99,7 @@ export const WithImage = {
       <CardFooter
         size={args.footerSize}
         actions={cardFooterPresets[args.footerActions]}
-        onFooterAction={(e) => action("action")(e.detail)}
+        onFooterAction={(e) => action('action')(e.detail)}
       />
     </Card>
   ),
@@ -162,19 +169,19 @@ export const OnlyVideo = {
   ),
 };
 export const CardFooterStory = {
-  name: "Card Footer",
+  name: 'Card Footer',
   argTypes: {
     ...(() => {
-      const { "@cds-aichat-card-footer-action": _, ...rest } =
+      const { '@cds-aichat-card-footer-action': _, ...rest } =
         CardFooterWC.argTypes;
       return rest;
     })(),
     onFooterAction: {
-      action: "action",
+      action: 'action',
       description:
-        CardFooterWC.argTypes["@cds-aichat-card-footer-action"].description,
-      control: "none",
-      table: { category: "events" },
+        CardFooterWC.argTypes['@cds-aichat-card-footer-action'].description,
+      control: 'none',
+      table: { category: 'events' },
     },
   },
   args: {
@@ -183,8 +190,8 @@ export const CardFooterStory = {
   render: (args) => (
     <CardFooter
       style={
-        args["--cds-aichat-border-radius"]
-          ? { "--cds-aichat-border-radius": "8px" }
+        args['--cds-aichat-border-radius']
+          ? { '--cds-aichat-border-radius': '8px' }
           : undefined
       }
       size={args.footerSize}
@@ -193,7 +200,7 @@ export const CardFooterStory = {
           args.footerActions
         ]
       }
-      onFooterAction={(e) => action("action")(e.detail)}
+      onFooterAction={(e) => action('action')(e.detail)}
     />
   ),
 };

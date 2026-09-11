@@ -1,59 +1,55 @@
 {
-    "plugin": [
-        "./docs/typedoc/moduleNamePlugin.js",
-        "./docs/typedoc/demoteValidationWarningsPlugin.js",
-        "./docs/typedoc/apiIndexPlugin.js",
-        "./docs/typedoc/crossPackageLinksPlugin.js",
-        "@carbon/typedoc-theme"
-    ],
-    "theme": "carbon",
-    "versionsFile": "../../versions.js",
-    "entryPoints": [
-        "./src/aiChatEntry.tsx"
-    ],
-    "out": "./dist/docs/carbon-tsdocs",
-    "name": "Carbon AI Chat",
-    "readme": "none",
-    "projectDocuments": [
-        "./docs/Overview.md",
-        "./docs/React.md",
-        "./docs/WebComponent.md",
-        "./docs/Angular.md",
-        "./docs/Customization.md",
-        "./docs/CustomServer.md",
-        "./docs/CustomServiceDesks.md",
-        "./docs/Internationalization.md",
-        "./docs/DemoAndExamples.md",
-        "./docs/Migration-1.0.0.md"
-    ],
-    "sort": [
-        "alphabetical"
-    ],
-    "categoryOrder": [
-        "React",
-        "Web component",
-        "Config",
-        "Instance",
-        "Events",
-        "Service desk",
-        "Messaging",
-        "Testing",
-        "Utilities",
-        "*"
-    ],
-    "disableSources": true,
-    "navigation": {
-        "includeCategories": true,
-        "includeGroups": false,
-        "includeFolders": true,
-        "compactFolders": true,
-        "excludeReferences": true
-    },
-    "categorizeByGroup": false,
-    "hideGenerator": true,
-    "validation": {
-        "invalidLink": true,
-        "notExported": true
-    },
-    "treatValidationWarningsAsErrors": true
+  "plugin": [
+    "./docs/typedoc/moduleNamePlugin.js",
+    "./docs/typedoc/demoteValidationWarningsPlugin.js",
+    "./docs/typedoc/apiIndexPlugin.js",
+    "./docs/typedoc/crossPackageLinksPlugin.js",
+    "@carbon/typedoc-theme"
+  ],
+  "theme": "carbon",
+  "versionsFile": "../../versions.js",
+  "entryPoints": ["./src/aiChatEntry.tsx"],
+  "out": "./dist/docs/carbon-tsdocs",
+  "name": "Carbon AI Chat",
+  "readme": "none",
+  "projectDocuments": [
+    "./docs/Overview.md",
+    "./docs/React.md",
+    "./docs/WebComponent.md",
+    "./docs/Angular.md",
+    "./docs/Customization.md",
+    "./docs/CustomServer.md",
+    "./docs/CustomServiceDesks.md",
+    "./docs/Internationalization.md",
+    "./docs/DemoAndExamples.md",
+    "./docs/Migration-1.0.0.md"
+  ],
+  "sort": ["alphabetical"],
+  "categoryOrder": [
+    "React",
+    "Web component",
+    "Config",
+    "Instance",
+    "Events",
+    "Service desk",
+    "Messaging",
+    "Testing",
+    "Utilities",
+    "*"
+  ],
+  "disableSources": true,
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": false,
+    "includeFolders": true,
+    "compactFolders": true,
+    "excludeReferences": true
+  },
+  "categorizeByGroup": false,
+  "hideGenerator": true,
+  "validation": {
+    "invalidLink": true,
+    "notExported": true
+  },
+  "treatValidationWarningsAsErrors": true
 }

@@ -10,7 +10,7 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": true,
     "moduleResolution": "node",
-    "types": ["react", "react-dom", "node"],
+    "types": ["react", "react-dom", "node"]
   },
   "include": ["src/**/*"]
 }

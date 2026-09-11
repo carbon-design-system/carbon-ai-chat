@@ -1,19 +1,22 @@
-import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
-import * as CodeSnippetReactStories from "./code-snippet-react.stories";
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as CodeSnippetReactStories from './code-snippet-react.stories';
 
-<Meta of={CodeSnippetReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={CodeSnippetReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Code snippet
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/code-snippet) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -24,12 +27,10 @@ The `<CodeSnippet>` and `<CodeSnippetCard>` components wrap the `cds-aichat-code
 Here's a quick example to get you started using the `code` prop (recommended):
 
 ```jsx
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
+import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
 
 function ReadOnlySnippet({ code }) {
-  return (
-    <CodeSnippet highlight code={code} />
-  );
+  return <CodeSnippet highlight code={code} />;
 }
 ```
 
@@ -38,14 +39,10 @@ function ReadOnlySnippet({ code }) {
 You can also provide code via children, though the `code` prop is recommended for better performance, especially when streaming content:
 
 ```jsx
-import CodeSnippet from "@carbon/ai-chat-components/es/react/code-snippet.js";
+import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
 
 function ReadOnlySnippet({ code }) {
-  return (
-    <CodeSnippet highlight>
-      {code}
-    </CodeSnippet>
-  );
+  return <CodeSnippet highlight>{code}</CodeSnippet>;
 }
 ```
 
@@ -54,7 +51,6 @@ function ReadOnlySnippet({ code }) {
 ## Component API
 
 <ArgTypes of={CodeSnippetReactStories.Default} />
-
 
 ### Streaming Content
 
@@ -66,18 +62,16 @@ Use the streaming stories to see how the component responds to real-time content
 
 ```jsx
 function StreamingSnippet({ stream }) {
-  const [content, setContent] = React.useState("");
+  const [content, setContent] = React.useState('');
 
   React.useEffect(() => {
     const subscription = stream.subscribe((chunk) =>
-      setContent((previous) => previous + chunk),
+      setContent((previous) => previous + chunk)
     );
     return () => subscription.unsubscribe();
   }, [stream]);
 
-  return (
-    <CodeSnippet highlight code={content} />
-  );
+  return <CodeSnippet highlight code={content} />;
 }
 ```
 
@@ -85,7 +79,7 @@ function StreamingSnippet({ stream }) {
 
 ```jsx
 function EditableSnippet() {
-  const [content, setContent] = React.useState("// Start typing...");
+  const [content, setContent] = React.useState('// Start typing...');
 
   return (
     <CodeSnippet
