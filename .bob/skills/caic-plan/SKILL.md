@@ -112,7 +112,7 @@ When execution proves a criterion wrong, strike it in place and write the correc
 
 - **Read-first / depends-on header** — pointer to `PLAN.md` plus any earlier steps that must merge first.
 - **Scope** — one paragraph: what this step does and what it explicitly does not. Resist the urge to repeat `PLAN.md` context here.
-- **Files touched** — concrete paths the executor will create / edit / delete. Vague plans produce drift; specific paths force you to verify the codebase as you draft.
+- **Files touched** — concrete paths the executor will create / edit / delete. Vague plans produce drift; specific paths force you to verify the codebase as you draft. For a new code file, name its precedent: the file it most resembles, or its directory's median at `<base>`. Give the precedent's line count, the new file's expected count, and the part they share. Above 1.5×, say why in one line; above 2×, or more than a third shared, lift out the shared part or split the step first.
 - **Acceptance criteria** — what makes this step correct, settled **before** the implementation steps below and not derived from them. Written after them, they describe whatever got built. Each is one observable outcome plus the proof it holds, in the format [caic-issue](../caic-issue/SKILL.md#acceptance-criteria) already defines — don't invent a second one. Name the case that fails today, not the properties the proof will have — and the no-op and failure paths, which are where an executor under time pressure decides alone. Name which existing tests must pass **unchanged**; that is the half authors drop, and it is what makes a weakened proof visible later. For a change whose deliverable is prose, the outcome is what a reader can do after loading the file and where the text sits — not that the file contains a string.
 - **Implementation steps** — ordered list. Each step short enough that a reasonable executor can complete it without further design questions. Cite file paths and line numbers for any claim about existing code.
 - **Gate** — the commands that must exit 0 for the areas this step touches, from [definition-of-done.md](../../../references/definition-of-done.md), plus any manual check (browser smoke, type-check, build). Looked up rather than authored, which is why it is its own section and not the last acceptance box — buried in a checklist it becomes the item nobody reads.
@@ -122,7 +122,7 @@ When execution proves a criterion wrong, strike it in place and write the correc
 
 - **Cite file paths and line numbers** for every claim about the current codebase. The review phase verifies load-bearing claims — citations make that possible.
 - **Mark unverified assumptions.** "I believe X (not yet read)" is more useful than asserting X without checking. Flagging your own uncertainty saves the reviewer time and keeps the executor from inheriting a wrong premise.
-- **Terse.** Plans are read in the middle of work; long prose buries the action items. Bullets, short paragraphs, code snippets only when pinning a decision. [tone.md](../../../references/tone.md) applies here as much as to shipped docs — a plan is read under time pressure, so word economy matters more, not less.
+- **Terse.** Plans are read in the middle of work; long prose buries the action items. Bullets, short paragraphs, code snippets only when pinning a decision. [tone.md](../../../references/tone.md) applies here as much as to shipped docs, and so does [revision-pass.md](../caic-copy-writer/references/revision-pass.md) — a plan is read under time pressure, so it matters more, not less. A plan has no copy type of its own; that pass is the whole of what reaches it.
 - **Don't defer load-bearing decisions.** "We'll figure that out later" is acceptable for trivia but not for choices that block the executor (API shape, naming, deprecation behavior, error policy). Lock them now or list them as explicit open questions.
 
 ## Review before executing
@@ -153,7 +153,8 @@ Resolve what the review surfaces and bake the resolutions into the plan files be
 ## Related guidance
 
 - [plan-review.md](references/plan-review.md) — the review rubric this workflow closes with
-- [tone.md](../../../references/tone.md) — voice and word economy for the plan itself
+- [revision-pass.md](../caic-copy-writer/references/revision-pass.md) — the tightening pass a plan takes before hand-off
+- [tone.md](../../../references/tone.md) — voice and quick rules for the plan itself
 - [epic-authoring.md](../caic-issue/references/epic-authoring.md) — projecting a plan onto a GitHub epic
 - [Root AGENTS.md](../../../AGENTS.md) — repo overview and pointer index
 

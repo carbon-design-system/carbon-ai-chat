@@ -13,15 +13,7 @@ A `.github/pr-drafts/<branch-name>.md` file, populated from [.github/PULL_REQUES
 
 ## Style
 
-Brevity is the goal. The reviewer is busy and the diff is the source of truth — the description points at what's non-obvious, it does not narrate the diff. Default to the shortest version that still conveys the change; err on the side of cutting.
-
-Write it like the docs: follow [tone.md](../../../references/tone.md), kept terse. A description favors fragments, so its reading level lands low — that's fine. Just keep it at grade 11 or below; a description should read like a note to a busy teammate, not a technical manual.
-
-- Sentence fragments over full sentences. Cut filler: "this PR", "in order to", "as well as", "note that", restated context.
-- One idea per line. Don't stack parenthetical asides inside a bullet.
-- Say each thing once. Don't repeat a change across Short description, Changelog, and Testing.
-- Omit empty or trivial sections rather than padding them (no "None" placeholders).
-- Check the reading level before handing back: `npm run reading-level -- .github/pr-drafts/<branch-name>.md`. If it reads above grade 11, split long sentences and cut clauses.
+This skill owns the template's sections and what belongs in each. **How the words go is [pr-descriptions.md](../caic-copy-writer/references/pr-descriptions.md)** — type 9 — and it governs every section you draft below, down to the reading-level check you run before handing back.
 
 ## Branch check
 
@@ -66,6 +58,7 @@ Run this before anything else.
    - **`#### Changelog`** — populate **New** / **Changed** / **Removed** from the commits and diff. One short fragment per user-visible change. Drop any subsection with nothing in it. Split into `#### Major changes` / `#### Minor changes` (each keeping the New/Changed/Removed subheadings) whenever there's a real triage benefit — a mix of headline changes and incidental ones — so the reviewer can skim the majors and skip the rest. The split organizes bullets; it doesn't license more or longer ones.
      - **Trace it both ways before handing back**: every bullet comes from at least one commit in range, and every commit that changes what a consumer sees has a bullet. A commit that resists the trace usually changed nothing user-visible — proof, docs, internal cleanup — and needs no bullet. If it did change behavior, the changelog has a hole; write the bullet.
    - **`#### Testing / Reviewing`** — the fewest steps a reviewer needs to confirm it works, as terse imperatives. First ask: _can this be exercised from the demo site?_ Check [demo/AGENTS.md](../../../demo/AGENTS.md) for the query-param toggles, switchers, writeable elements, mock backend (`customSendMessage/`), and mock service desk. If reachable through any of those, give demo steps (commands, query params, what to click, expected result). Otherwise fall back to unit-test pointers or manual steps. Don't re-explain what the changelog already said. These are the acceptance criteria's proofs, in the order a reviewer would run them — not a second list.
+     - Finish with the measurement rows that name this change, from `npm run measure -- --changed <base>` — [definition-of-done.md](../../../references/definition-of-done.md) asks for those rows, not the whole block. They are evidence the gate ran, not a step a reviewer repeats, so they go after the steps; a clean run is one line saying so.
 
 5. **Hand back.** Tell the user the draft is ready, with its path, and stop.
 
@@ -111,7 +104,8 @@ The draft file goes inert once the PR exists — later edits need `gh pr edit <n
 
 ## Related guidance
 
-- [tone.md](../../../references/tone.md) — voice and word economy for developer-facing copy
+- [pr-descriptions.md](../caic-copy-writer/references/pr-descriptions.md) — how to word the description, and the gate it takes
+- [tone.md](../../../references/tone.md) — voice and quick rules for developer-facing copy
 - [conventions.md](../../../references/conventions.md) — commits, branches, PR titles
 - [Root AGENTS.md](../../../AGENTS.md) — repo overview and pointer index
 

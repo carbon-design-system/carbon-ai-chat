@@ -195,10 +195,28 @@ export function renderMarkdownTree(
 } {
   const batch: MarkdownRendererSlotDescriptor[] = [];
   let pluginSlotIndex = 0;
+  // Memoized per node, not just counted. `renderFallback` runs inside a
+  // lit-html `repeat()` callback, so it evaluates when lit-html commits the
+  // template — and one render result gets committed again on any later Lit
+  // update that leaves `renderedContent` alone. A bare counter would hand the
+  // same token a fresh index on each commit, minting a second slot the very
+  // next reconcile retires. First evaluation still assigns 0, 1, 2 in walk
+  // order, so a single-commit render is unchanged.
+  const pluginSlotIndexes = new WeakMap<TokenTree, number>();
   const template = renderTokenTree(node, {
     ...options,
     recordCustomRender: (descriptor) => batch.push(descriptor),
-    pluginSlotCounter: { next: () => pluginSlotIndex++ },
+    pluginSlotCounter: {
+      next: (forNode: TokenTree) => {
+        const existing = pluginSlotIndexes.get(forNode);
+        if (existing !== undefined) {
+          return existing;
+        }
+        const index = pluginSlotIndex++;
+        pluginSlotIndexes.set(forNode, index);
+        return index;
+      },
+    },
   });
   return { template, batch };
 }
@@ -257,6 +275,15 @@ export function renderTokenTree(
   // Handle plain text content
   if (token.type === 'text') {
     return html`${token.content}`;
+  }
+
+  // Hard and soft line breaks. Handled before the tag-based dispatch because
+  // hardbreak has tag="br", which `renderWithStaticTag` does not know and would
+  // route through the plugin-fallback slot machinery.
+  if (token.type === 'hardbreak' || token.type === 'softbreak') {
+    return token.type === 'softbreak' && options.md?.options.breaks === false
+      ? html`${'\n'}`
+      : html`<br />`;
   }
 
   // Handle inline code spans

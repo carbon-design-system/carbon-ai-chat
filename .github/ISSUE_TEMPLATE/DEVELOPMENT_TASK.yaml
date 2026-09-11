@@ -7,7 +7,7 @@ body:
     id: background
     attributes:
       label: Background
-      description: "Why this work matters. If this is a sub-issue, link the parent epic. If this implements a decision already recorded in an ADR, link that too — it is where a reviewer checks the diff against what was agreed."
+      description: "Why this work matters. Open with who is bitten and what goes wrong today. A reader without your context decides from that first sentence whether this issue concerns them, so keep file names, scripts, and type names for Goal. Then the links: the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision. The ADR is where a reviewer checks the diff against what was agreed."
     validations:
       required: true
   - type: textarea
@@ -37,7 +37,7 @@ body:
     id: out-of-scope
     attributes:
       label: Out of scope
-      description: "What this task deliberately does not cover."
+      description: "What this task deliberately does not cover. One line per excluded item, with the reason it is excluded. If an exclusion needs a paragraph, the reasoning belongs in an ADR or a sibling issue. Link to it from one line here."
   - type: textarea
     id: related
     attributes:

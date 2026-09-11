@@ -41,6 +41,6 @@ npm run build --workspace=@carbon/ai-chat
 npm run start --workspace=@carbon/ai-chat-examples-web-components-integrations-watsonx
 ```
 
-The `start` script launches the proxy server and the webpack dev server together via `concurrently`.
+The `start` script launches the proxy server and the Vite dev server together via `concurrently`.
 
 See [../README.md](../README.md) for the full setup walkthrough.

@@ -67,6 +67,14 @@ Here are some of the top-level tasks in the root of the project that you might w
 | `npm run lint` | Run eslint on files in the project |
 | `npm run lint:license`, `npm run lint:license:staged` | Run a license script on files across the project to ensure all files have the license at the top of the file |
 | `npm run lint:styles` | Run stylelint on the scss files in the project |
+| `npm run reading-level -- <file.md>` | Flesch-Kincaid grade for Markdown prose; `--max <n>` exits 1 above a grade |
+| `npm run complexity` | Cyclomatic and cognitive score per function, with a render-branch count and a per-file footer |
+| `npm run coupling` | Fan-in, fan-out, instability, and the type-only import count per file |
+| `npm run smells` | Seventeen code-smell rules, plus code copied from another file when run on a diff |
+| `npm run measure -- --changed <base>` | Runs those three over a diff, then adds what only a diff shows: each new file's size beside its neighbours, and what the added lines contain |
+| `npm run measure -- --changed <base> --source head` | Same, against the last commit instead of the working tree (`--source` also takes `index`) |
+
+The measurement commands above are opt-in. No CI job runs them. A score is not a finding. It picks what to read. See [measuring.md](../references/measuring.md) for the bands and the blind spots.
 
 ## Development workflow
 
@@ -94,7 +102,7 @@ npm run aiChat:start
 
 ### Running an example alongside the development environment
 
-Each example in `examples/react/` and `examples/web-components/` has its own webpack dev server. To develop against a live package build, run `aiChat:start` in one terminal and the example in a second:
+Each example in `examples/react/` and `examples/web-components/` has its own Vite dev server. To develop against a live package build, run `aiChat:start` in one terminal and the example in a second:
 
 ```bash
 # Terminal 1
@@ -104,7 +112,7 @@ npm run aiChat:start
 npm run start --workspace=@carbon/ai-chat-examples-react-basic-custom-element-fullscreen
 ```
 
-When `aiChat:start` rebuilds a package, the example's webpack dev server will detect the changed files in `dist/es/` and hot-reload the browser automatically.
+When `aiChat:start` rebuilds a package, the example's Vite dev server will detect the changed files in `dist/es/` and hot-reload the browser automatically. Each example's `vite.config.ts` lists `@carbon/ai-chat` and `@carbon/ai-chat-components` under `optimizeDeps.exclude` so those rebuilds are not frozen in Vite's pre-bundle.
 
 All examples default to port 3000. If you need to run more than one example at the same time, override the port with the `PORT` environment variable:
 
@@ -114,9 +122,9 @@ PORT=3001 npm run start --workspace=@carbon/ai-chat-examples-react-basic-float
 
 ## Agent skills
 
-This repo's recurring task workflows — shaping work into a plan or epic, filing an issue, drafting a PR description, reviewing a diff — are packaged as agent skills. Each skill holds the full procedure, so an assistant that invokes one gets the whole workflow rather than a pointer to a document it may not open.
+This repo's recurring task workflows are packaged as agent skills. They cover recording a decision, shaping work into a plan or epic, filing an issue, drafting a PR description, reviewing a diff, and writing the copy itself. Each skill holds the full procedure, so an assistant that invokes one gets the whole workflow rather than a pointer to a document it may not open.
 
-They are slash commands in both assistants used here: `/caic-plan`, `/caic-issue`, `/caic-pr`, and `/caic-review`. You can also just read them — they are ordinary markdown.
+They are slash commands in both assistants used here: `/caic-adr`, `/caic-plan`, `/caic-issue`, `/caic-pr`, `/caic-review`, and `/caic-copy-writer`. You can also just read them — they are ordinary markdown.
 
 Each assistant reads skills only from its own directory — IBM Bob from `.bob/skills/`, Claude Code from `.claude/skills/` — so the tree is stored twice. **`.bob/skills/` is the canonical copy**, and `.claude/skills/` is generated from it:
 

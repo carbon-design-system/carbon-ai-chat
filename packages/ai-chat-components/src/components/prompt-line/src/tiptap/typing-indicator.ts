@@ -26,9 +26,8 @@
 import { Extension } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
 
+import { TYPING_TIMEOUT_MS } from '../prompt-line-constants.js';
 import { isHostOrigin } from './origin-meta.js';
-
-const TYPING_TIMEOUT_MS = 5000;
 
 export interface TypingIndicatorStorage {
   reset(): void;

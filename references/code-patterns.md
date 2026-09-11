@@ -1,6 +1,6 @@
 # code-patterns.md — code-level patterns
 
-Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments). Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
+Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments). The measurements that put a number on it live in [measuring.md](measuring.md). Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
 
 ## Writing the least code (laziness ladder)
 
@@ -88,15 +88,21 @@ Beyond testability, this is directional: the React layer is meant to get thinner
 
 ## Comments
 
-Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden constraint, a subtle invariant, or a bug workaround. Delete comments that restate the code or reference the current task/PR/issue.
+Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden constraint, a subtle invariant, or a bug workaround. Delete comments that restate the code or reference the current task/PR/issue. How to word one that survives: [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — type 2.
 
 ## Accessibility code patterns
 
 The shared RTL / logical-property rule is canonicalized above. For everything else accessibility — the centralized announcer utilities, live-region politeness levels, ARIA pitfalls — see [accessibility.md](accessibility.md). Don't restate those patterns here.
+
+## Measuring it
+
+How to put a number on "simpler" lives in [measuring.md](measuring.md). Run `npm run measure -- --changed <base>` before you read a diff. It scores each function, counts what each file imports, and checks seventeen code smells. It also sizes each new file against the files next to it. A score is not a finding. It picks what to read.
 
 ## Related guidance
 
 - [Root AGENTS.md](../AGENTS.md) — repo overview and pointer index
 - [conventions.md](conventions.md) — commits, branches, license headers, hooks
 - [accessibility.md](accessibility.md) — announcer utilities and live-region patterns
+- [internal-comments.md](../.bob/skills/caic-copy-writer/references/internal-comments.md) — how to word a comment that survives the no-comment default (type 2)
+- [error-strings.md](../.bob/skills/caic-copy-writer/references/error-strings.md) — how to word a thrown error or a console message (type 12)
 - [definition-of-done.md](definition-of-done.md) — the gate to run before shipping a change

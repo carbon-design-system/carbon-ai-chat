@@ -11,10 +11,10 @@
  * watsonx.ai configuration loader.
  *
  * Demonstrates: reading watsonx.ai credentials and the target model id from
- * Vite-injected `process.env.*` values and failing fast with descriptive
+ * Vite-injected `import.meta.env.*` values and failing fast with descriptive
  * errors when required variables are missing.
  *
- * APIs exercised: `process.env` (Vite `define` replacement at build time).
+ * APIs exercised: `import.meta.env` (Vite inlines these at build time).
  *
  * Start reading at: `getWatsonxConfig`.
  */
@@ -22,13 +22,15 @@
 import { WatsonxConfig } from './types';
 
 export function getWatsonxConfig(): WatsonxConfig {
-  // Vite replaces `process.env.*` at build time, so these reads work in the browser bundle.
-  // Replace with a real production implementation.
-  const apiKey = process.env.WATSONX_API_KEY;
-  const projectId = process.env.WATSONX_PROJECT_ID;
-  const url = process.env.WATSONX_URL;
+  // Vite inlines `import.meta.env.*` at build time, so these reads work in the
+  // browser bundle. The WATSONX_ prefix is allow-listed via `envPrefix` in
+  // vite.config.ts. Replace with a real production implementation.
+  const apiKey = import.meta.env.WATSONX_API_KEY;
+  const projectId = import.meta.env.WATSONX_PROJECT_ID;
+  const url = import.meta.env.WATSONX_URL;
   // Fall back to a sensible default model so the demo runs even when the env var is omitted.
-  const modelId = process.env.WATSONX_MODEL_ID || 'ibm/granite-3-8b-instruct';
+  const modelId =
+    import.meta.env.WATSONX_MODEL_ID || 'ibm/granite-3-8b-instruct';
 
   // Throw early so the chat surfaces a clear configuration error instead of an opaque network failure.
   if (!apiKey) {
