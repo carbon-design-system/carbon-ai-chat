@@ -82,6 +82,11 @@ export enum BusEventType {
   CUSTOM_FOOTER_SLOT = 'customFooterSlot',
 
   /**
+   * Fired when a user message gets a custom footer slot, so you can attach your own content below it.
+   */
+  CUSTOM_REQUEST_FOOTER_SLOT = 'customRequestFooterSlot',
+
+  /**
    * Fired when history begins to load.
    */
   HISTORY_BEGIN = 'history:begin',
@@ -639,6 +644,33 @@ export interface BusEventCustomFooterSlot extends BusEvent {
      * Any additional data to be passed to the render function.
      */
     additionalData?: unknown;
+  };
+}
+
+/**
+ * Used to populate the custom footer slot below a user message.
+ *
+ * This fires once per user message each time it enters the store, which includes a history restore. Three kinds of message get no footer and
+ * so fire nothing: a silent message, which never renders; a message carrying only file attachments, which renders
+ * its chips without a bubble; and a message typed to a human agent, which the chat sends on a separate path.
+ *
+ * @category Events
+ */
+export interface BusEventCustomRequestFooterSlot extends BusEvent {
+  type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT;
+  data: {
+    /**
+     * The unique identifier for this footer slot. Treat it as opaque: it is a key for your render function, not a
+     * reference you can parse. It is also regenerated when the chat restores a message from history, so don't key
+     * durable state off it.
+     */
+    slotName: string;
+    /**
+     * The message as the user submitted it, which is what the bubble on screen shows. A
+     * {@link BusEventType.PRE_SEND} handler runs later and may rewrite the text the assistant receives, so this can
+     * differ from what was sent.
+     */
+    message: MessageRequest;
   };
 }
 

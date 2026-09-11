@@ -1,0 +1,23 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ */
+
+.custom-request-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* The status text is for screen readers only; the button shows its own
+   "Copied" feedback to sighted users. */
+.custom-request-footer-status {
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  block-size: 1px;
+  inline-size: 1px;
+  white-space: nowrap;
+}

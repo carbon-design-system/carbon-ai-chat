@@ -1,0 +1,27 @@
+{
+  "name": "@carbon/ai-chat-examples-web-components-messages-custom-request-footer",
+  "version": "1.20.0",
+  "private": true,
+  "type": "module",
+  "description": "Render your own content beneath a user message with renderCustomRequestFooter.",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "author": "IBM Corp",
+  "license": "Apache-2.0",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "dependencies": {
+    "@carbon/ai-chat": "^1.20.0",
+    "@carbon/react": "^1.97.0",
+    "@carbon/web-components": "^2.58.1",
+    "lit": "^3.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "ts-lit-plugin": "^2.0.2",
+    "typescript": "^5.6.3",
+    "vite": "^8.0.16"
+  }
+}

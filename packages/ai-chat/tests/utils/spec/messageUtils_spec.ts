@@ -19,6 +19,7 @@ import {
   createMessageResponseForText,
   getOptionType,
   hasRequestBubbleContent,
+  hasRequestFooter,
   hasServiceDesk,
   isTyping,
   isButtonResponseType,
@@ -46,6 +47,7 @@ import {
 } from '../../../src/chat/utils/messageUtils';
 import {
   ButtonItemType,
+  HumanAgentMessageType,
   MessageInputType,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
@@ -396,6 +398,78 @@ describe('System message utilities', () => {
       expect(
         hasRequestBubbleContent(localItem, requestWithDisplayContent())
       ).toBe(true);
+    });
+  });
+
+  describe('hasRequestFooter', () => {
+    const textLocalItem = {
+      item: { response_type: MessageResponseTypes.TEXT, text: 'hello' },
+      ui_state: { id: 'local-1', originalUserText: 'hello' },
+    } as any;
+
+    const textRequest = { input: { text: 'hello' } } as any;
+
+    it('is true for a message that renders a bubble', () => {
+      expect(hasRequestFooter(textLocalItem, textRequest)).toBe(true);
+    });
+
+    it('is false for a message typed to a human agent', () => {
+      // The gate MessageComponent reads. A human-agent send never reaches
+      // ChatActionsImpl.send — HumanAgentServiceImpl builds its own local item
+      // — so this is the only place the exclusion holds.
+      const agentLocalItem = {
+        ...textLocalItem,
+        item: {
+          ...textLocalItem.item,
+          agent_message_type: HumanAgentMessageType.FROM_USER,
+        },
+      } as any;
+
+      expect(hasRequestFooter(agentLocalItem, textRequest)).toBe(false);
+    });
+
+    it('is false for an attachment-only send whose display content is empty', () => {
+      // Reaches hasRenderableDisplayContent rather than short-circuiting on the
+      // text, which is the branch an attachment-only message actually takes.
+      const emptyLocalItem = {
+        item: { response_type: MessageResponseTypes.TEXT, text: '' },
+        ui_state: { id: 'local-2', originalUserText: '' },
+      } as any;
+      const attachmentOnlyRequest = {
+        input: {
+          text: '',
+          display_content: { type: 'doc', content: [{ type: 'paragraph' }] },
+        },
+      } as any;
+
+      expect(hasRequestFooter(emptyLocalItem, attachmentOnlyRequest)).toBe(
+        false
+      );
+    });
+
+    it('is true when only the display content carries the bubble', () => {
+      const emptyLocalItem = {
+        item: { response_type: MessageResponseTypes.TEXT, text: '' },
+        ui_state: { id: 'local-3', originalUserText: '' },
+      } as any;
+      const mentionRequest = {
+        input: {
+          text: '',
+          display_content: {
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  { type: 'carbon-mention', attrs: { id: 'a', label: 'Ada' } },
+                ],
+              },
+            ],
+          },
+        },
+      } as any;
+
+      expect(hasRequestFooter(emptyLocalItem, mentionRequest)).toBe(true);
     });
   });
 

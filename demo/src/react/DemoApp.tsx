@@ -28,6 +28,7 @@ import {
   PublicConfig,
   RenderUserDefinedState,
   RenderCustomMessageFooter,
+  RenderCustomRequestFooter,
   ServiceDesk,
   ServiceDeskFactoryParameters,
 } from '@carbon/ai-chat';
@@ -39,6 +40,7 @@ import { UserDefinedResponseExample } from './UserDefinedResponseExample';
 import { WriteableElementExample } from './WriteableElementExample';
 import { WorkspaceWriteableElementExample } from './WorkspaceWriteableElementExample';
 import { CustomFooterExample } from './CustomFooterExample';
+import { CustomRequestFooterExample } from './CustomRequestFooterExample';
 import { HistoryWriteableElementExample } from './HistoryWriteableElementExample';
 import {
   ExplainabilityPopoverActions,
@@ -162,6 +164,16 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
           additionalData={additionalData}
         />
       );
+    },
+    []
+  );
+
+  /**
+   * Handler for the footer slot below a user message.
+   */
+  const renderCustomRequestFooter: RenderCustomRequestFooter = useCallback(
+    (_slotName, message, _instance) => {
+      return <CustomRequestFooterExample message={message} />;
     },
     []
   );
@@ -451,6 +463,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
+      renderCustomRequestFooter={renderCustomRequestFooter}
       renderWriteableElements={renderWriteableElements}
       serviceDeskFactory={serviceDeskFactory}
     />
@@ -466,6 +479,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
         renderCustomMessageFooter={renderCustomMessageFooter}
+        renderCustomRequestFooter={renderCustomRequestFooter}
         renderWriteableElements={renderWriteableElements}
         serviceDeskFactory={serviceDeskFactory}
       />

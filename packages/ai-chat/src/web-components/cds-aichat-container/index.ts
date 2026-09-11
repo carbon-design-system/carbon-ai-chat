@@ -24,6 +24,7 @@ import { ChatInstance } from '../../types/instance/ChatInstance';
 import {
   BusEventChunkUserDefinedResponse,
   BusEventCustomFooterSlot,
+  BusEventCustomRequestFooterSlot,
   BusEventType,
   BusEventUserDefinedResponse,
   BusEventViewChange,
@@ -31,9 +32,11 @@ import {
 } from '../../types/events/eventBusTypes';
 import type {
   RenderCustomMessageFooterState,
+  RenderCustomRequestFooterState,
   RenderUserDefinedState,
   WCMarkdown,
   WCRenderCustomMessageFooter,
+  WCRenderCustomRequestFooter,
   WCRenderUserDefinedResponse,
   WCRenderUserDefinedInputNode,
   RenderUserDefinedInputNode,
@@ -122,6 +125,16 @@ class ChatContainer extends FlattenedConfigElement {
   @property({ attribute: false })
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
 
+  /**
+   * Optional callback to render a footer below each user message. When provided, the library manages all event
+   * listening, slot tracking, and element lifecycle. The callback receives the accumulated state and should
+   * return an HTMLElement or null.
+   *
+   * Passing this callback is how you opt in. Leave it off and user messages have no footer.
+   */
+  @property({ attribute: false })
+  renderCustomRequestFooter?: WCRenderCustomRequestFooter;
+
   // markdown is declared on the FlattenedConfigElement base; the attributes
   // interface narrows its type.
 
@@ -182,6 +195,17 @@ class ChatContainer extends FlattenedConfigElement {
   _customFooterStateBySlot: Record<string, RenderCustomMessageFooterState> = {};
 
   /**
+   * Accumulated state per slot for the footers below user messages when renderCustomRequestFooter is provided.
+   * Unlike the incoming twin there is no second array of slot names: nothing tracks a name without state, so the
+   * keys of this record are the slot names.
+   */
+  @state()
+  _customRequestFooterStateBySlot: Record<
+    string,
+    RenderCustomRequestFooterState
+  > = {};
+
+  /**
    * Tracks the wrapper elements created by the callback rendering path.
    */
   private _callbackElements = new Map<string, HTMLElement>();
@@ -190,6 +214,11 @@ class ChatContainer extends FlattenedConfigElement {
    * Tracks the wrapper elements created by the custom-footer callback rendering path.
    */
   private _callbackFooterElements = new Map<string, HTMLElement>();
+
+  /**
+   * Tracks the wrapper elements created by the request-footer callback rendering path.
+   */
+  private _callbackRequestFooterElements = new Map<string, HTMLElement>();
 
   /**
    * Cached adapter so each container update doesn't churn a new React
@@ -253,6 +282,28 @@ class ChatContainer extends FlattenedConfigElement {
         messageItem,
         additionalData: additionalData as Record<string, unknown> | undefined,
       },
+    };
+  };
+
+  /**
+   * Handler for CUSTOM_REQUEST_FOOTER_SLOT. Unlike the incoming footer there is no legacy passthrough path, so this
+   * always tracks full per-slot state.
+   *
+   * The event fires for every user message rather than only when a backend opts in, so the callback is checked on
+   * each one: without it nothing accumulates. Checking here rather than gating the subscription is what lets a host
+   * set the callback after the chat has booted.
+   */
+  private customRequestFooterHandler = (
+    event: BusEventCustomRequestFooterSlot
+  ) => {
+    if (!this.renderCustomRequestFooter) {
+      return;
+    }
+
+    const { slotName, message } = event.data;
+    this._customRequestFooterStateBySlot = {
+      ...this._customRequestFooterStateBySlot,
+      [slotName]: { slotName, message },
     };
   };
 
@@ -327,85 +378,59 @@ class ChatContainer extends FlattenedConfigElement {
       }
       this._callbackFooterElements.clear();
     }
+
+    this._customRequestFooterStateBySlot = {};
+    for (const el of this._callbackRequestFooterElements.values()) {
+      el.remove();
+    }
+    this._callbackRequestFooterElements.clear();
   };
 
   /**
-   * Synchronizes callback-rendered elements in the light DOM based on current state.
-   * Called from render() when renderUserDefinedResponse is provided.
+   * Synchronizes callback-rendered wrapper elements in the light DOM against the accumulated per-slot state.
+   *
+   * Each slot owns one wrapper div. A slot whose callback returns nothing loses its wrapper, and so does a slot
+   * that has left the state. Returning the same element as last time leaves the node alone: replaceChildren would
+   * detach and re-attach it, which restarts media and fires disconnectedCallback on a custom element.
    */
-  private syncCallbackRenderedElements() {
-    for (const [slot, slotState] of Object.entries(
-      this._userDefinedStateBySlot
-    )) {
-      const newContent =
-        this.renderUserDefinedResponse?.(slotState, this._instance) ?? null;
+  private syncCallbackRenderedWrappers<TState>(
+    stateBySlot: Record<string, TState>,
+    wrappersBySlot: Map<string, HTMLElement>,
+    render: (state: TState) => HTMLElement | null
+  ) {
+    for (const [slotName, slotState] of Object.entries(stateBySlot)) {
+      const newContent = render(slotState) ?? null;
 
       if (!newContent) {
-        const existing = this._callbackElements.get(slot);
+        const existing = wrappersBySlot.get(slotName);
         if (existing) {
           existing.remove();
-          this._callbackElements.delete(slot);
+          wrappersBySlot.delete(slotName);
         }
         continue;
       }
 
-      let wrapper = this._callbackElements.get(slot);
-      if (!wrapper) {
-        wrapper = document.createElement('div');
-        wrapper.setAttribute('slot', slot);
-        this._callbackElements.set(slot, wrapper);
-        this.appendChild(wrapper);
-      }
-
-      wrapper.replaceChildren(newContent);
-    }
-
-    // Clean up wrappers for slots that no longer exist in state
-    for (const [slot, el] of this._callbackElements.entries()) {
-      if (!(slot in this._userDefinedStateBySlot)) {
-        el.remove();
-        this._callbackElements.delete(slot);
-      }
-    }
-  }
-
-  /**
-   * Synchronizes custom-footer callback-rendered elements in the light DOM based on current state.
-   * Called from render() when renderCustomMessageFooter is provided. Direct analogue of
-   * syncCallbackRenderedElements().
-   */
-  private syncCallbackRenderedFooterElements() {
-    for (const [slotName, slotState] of Object.entries(
-      this._customFooterStateBySlot
-    )) {
-      const newContent =
-        this.renderCustomMessageFooter?.(slotState, this._instance) ?? null;
-
-      if (!newContent) {
-        const existing = this._callbackFooterElements.get(slotName);
-        if (existing) {
-          existing.remove();
-          this._callbackFooterElements.delete(slotName);
-        }
-        continue;
-      }
-
-      let wrapper = this._callbackFooterElements.get(slotName);
+      let wrapper = wrappersBySlot.get(slotName);
       if (!wrapper) {
         wrapper = document.createElement('div');
         wrapper.setAttribute('slot', slotName);
-        this._callbackFooterElements.set(slotName, wrapper);
+        wrappersBySlot.set(slotName, wrapper);
         this.appendChild(wrapper);
       }
 
-      wrapper.replaceChildren(newContent);
+      if (
+        wrapper.firstChild !== newContent ||
+        wrapper.childNodes.length !== 1
+      ) {
+        wrapper.replaceChildren(newContent);
+      }
     }
 
     // Clean up wrappers for slots that no longer exist in state
-    for (const [slotName, el] of this._callbackFooterElements.entries()) {
-      if (!(slotName in this._customFooterStateBySlot)) {
+    for (const [slotName, el] of wrappersBySlot.entries()) {
+      if (!(slotName in stateBySlot)) {
         el.remove();
-        this._callbackFooterElements.delete(slotName);
+        wrappersBySlot.delete(slotName);
       }
     }
   }
@@ -509,15 +534,19 @@ class ChatContainer extends FlattenedConfigElement {
         : this.customFooterHandler,
     });
 
+    this._instance.on({
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      handler: this.customRequestFooterHandler,
+    });
+
     // A single RESTART_CONVERSATION subscription clears whichever callback
     // paths are active. Registered once so the handler does not fire twice
-    // when both callbacks are provided.
-    if (this.renderUserDefinedResponse || this.renderCustomMessageFooter) {
-      this._instance.on({
-        type: BusEventType.RESTART_CONVERSATION,
-        handler: this.restartHandler,
-      });
-    }
+    // when both callbacks are provided, and unconditionally so a callback set
+    // after boot still gets its wrappers cleared.
+    this._instance.on({
+      type: BusEventType.RESTART_CONVERSATION,
+      handler: this.restartHandler,
+    });
 
     this.addWriteableElementSlots();
     this.attachWriteableElements();
@@ -558,10 +587,28 @@ class ChatContainer extends FlattenedConfigElement {
    */
   render() {
     if (this.renderUserDefinedResponse) {
-      this.syncCallbackRenderedElements();
+      this.syncCallbackRenderedWrappers(
+        this._userDefinedStateBySlot,
+        this._callbackElements,
+        (state) =>
+          this.renderUserDefinedResponse?.(state, this._instance) ?? null
+      );
     }
     if (this.renderCustomMessageFooter) {
-      this.syncCallbackRenderedFooterElements();
+      this.syncCallbackRenderedWrappers(
+        this._customFooterStateBySlot,
+        this._callbackFooterElements,
+        (state) =>
+          this.renderCustomMessageFooter?.(state, this._instance) ?? null
+      );
+    }
+    if (this.renderCustomRequestFooter) {
+      this.syncCallbackRenderedWrappers(
+        this._customRequestFooterStateBySlot,
+        this._callbackRequestFooterElements,
+        (state) =>
+          this.renderCustomRequestFooter?.(state, this._instance) ?? null
+      );
     }
 
     // Convert the WC-style renderer (returns HTMLElement) into the React-
@@ -594,6 +641,9 @@ class ChatContainer extends FlattenedConfigElement {
               (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
             )
       }
+      ${Object.keys(this._customRequestFooterStateBySlot).map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+      )}
       ${this._pluginSlotNames.map(
         (slot) => html`<slot name=${slot} slot=${slot}></slot>`
       )}
@@ -655,6 +705,11 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
    * slot tracking, and element lifecycle. When omitted, the legacy event + manual slot approach continues to work.
    */
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
+
+  /**
+   * Called when a footer below a user message should be rendered. Leave it off and user messages have no footer.
+   */
+  renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
    * Renderer for custom TipTap node types inside sent user message bubbles

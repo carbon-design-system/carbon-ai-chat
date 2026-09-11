@@ -466,6 +466,27 @@ Render your own content beneath an assistant message — here a copy button — 
 
 </details>
 
+### [Custom request footer](./messages-custom-request-footer/README.md)
+
+Render your own content beneath a user message — here a copy button — with the `renderCustomRequestFooter` callback.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-messages-custom-request-footer`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | custom element | Mounts the chat into a host element you style. |
+| `renderCustomRequestFooter` | property | Renders the footer under each user message. |
+| `RenderCustomRequestFooterState` | type | The per-slot state handed to the callback. |
+| `MessageRequest` | type | Carries `input.text`, the message as the user submitted it. |
+| `messaging` | property | Mock backend that replies with text. |
+| `layout` / `openChatByDefault` | properties | Full-screen baseline. |
+| `<cds-copy-button>` | custom element | Copies the text and shows a "Copied" confirmation. |
+
+</details>
+
 ### [Prompt line / Code snippet](./prompt-line-code-snippet/README.md)
 
 A custom Tiptap input rule converts triple backticks (` ``` `) in the chat input into an editable `cds-aichat-code-snippet` block. The closing fence is implicit — it's added at send time, never typed. The block grows with content; the prompt-line shell's existing scrollbar takes over when it gets tall. Pressing `Escape` exits the block.

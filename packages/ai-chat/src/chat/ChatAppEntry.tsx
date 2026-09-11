@@ -24,6 +24,7 @@ import { ServiceManager } from './services/ServiceManager';
 import {
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
+  attachCustomRequestFooterHandler,
   initServiceManagerAndInstance,
   mergePublicConfig,
   performInitialViewChange,
@@ -33,6 +34,10 @@ import {
   CustomFooterSlotState,
   CustomFooterPortalsContainer,
 } from './components/portals/CustomFooterPortalsContainer';
+import {
+  CustomRequestFooterSlotState,
+  CustomRequestFooterPortalsContainer,
+} from './components/portals/CustomRequestFooterPortalsContainer';
 import { WriteableElementsPortalsContainer } from './components/portals/WriteableElementsPortalsContainer';
 import { LightDomPortalsContainer } from './components/portals/LightDomPortalsContainer';
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
@@ -52,6 +57,7 @@ import {
   RenderUserDefinedResponse,
   RenderUserDefinedInputNode,
   RenderCustomMessageFooter,
+  RenderCustomRequestFooter,
   RenderWriteableElementResponse,
 } from '../types/component/ChatContainer';
 import { ChatInstance } from '../types/instance/ChatInstance';
@@ -78,6 +84,7 @@ interface AppProps {
   renderUserDefinedResponse?: RenderUserDefinedResponse;
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
   renderCustomMessageFooter?: RenderCustomMessageFooter;
+  renderCustomRequestFooter?: RenderCustomRequestFooter;
   renderWriteableElements?: RenderWriteableElementResponse;
   container: HTMLElement;
   element?: HTMLElement;
@@ -109,6 +116,7 @@ export function ChatAppEntry({
   renderUserDefinedResponse,
   renderUserDefinedInputNode,
   renderCustomMessageFooter,
+  renderCustomRequestFooter,
   renderWriteableElements,
   container,
   setParentInstance,
@@ -136,6 +144,15 @@ export function ChatAppEntry({
   const [customFooterSlotsByName, setCustomFooterSlotsByName] = useState<
     Record<string, CustomFooterSlotState>
   >({});
+
+  const [customRequestFooterSlotsByName, setCustomRequestFooterSlotsByName] =
+    useState<Record<string, CustomRequestFooterSlotState>>({});
+
+  // The bootstrap below runs once, but this prop can arrive later — behind a
+  // feature flag, or with async config. The handler reads the ref on each
+  // event so a late arrival still gets footers.
+  const renderCustomRequestFooterRef = useRef(renderCustomRequestFooter);
+  renderCustomRequestFooterRef.current = renderCustomRequestFooter;
 
   const previousConfigRef = useRef<PublicConfig | null>(null);
 
@@ -210,6 +227,12 @@ export function ChatAppEntry({
         );
 
         attachCustomFooterHandler(instance, setCustomFooterSlotsByName);
+
+        attachCustomRequestFooterHandler(
+          instance,
+          setCustomRequestFooterSlotsByName,
+          () => Boolean(renderCustomRequestFooterRef.current)
+        );
 
         setInstances(instance);
 
@@ -426,6 +449,17 @@ export function ChatAppEntry({
                   chatInstance={instance}
                   renderCustomMessageFooter={renderCustomMessageFooter}
                   customFooterEventsBySlot={customFooterSlotsByName}
+                  chatWrapper={chatWrapper}
+                />
+              )}
+
+              {renderCustomRequestFooter && (
+                <CustomRequestFooterPortalsContainer
+                  chatInstance={instance}
+                  renderCustomRequestFooter={renderCustomRequestFooter}
+                  customRequestFooterEventsBySlot={
+                    customRequestFooterSlotsByName
+                  }
                   chatWrapper={chatWrapper}
                 />
               )}

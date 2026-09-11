@@ -74,6 +74,7 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **text (stream)**
 - [ ] **text with feedback**
 - [ ] **text with feedback (stream)**
+- [ ] **text with custom footer** - Assistant footer: copy and share buttons beneath the reply
 - [ ] **text from watsonx agent**
 - [ ] **text from third party human**
 - [ ] **text from third party bot**
@@ -85,6 +86,15 @@ We should be looking for what here can can automate, and as we do, we can remove
 - [ ] **user_defined**
 - [ ] **user_defined (stream)**
 - [ ] **video**
+
+#### Message footers
+
+Run each in both frameworks (React and web component).
+
+- [ ] **Request footer:** send any message; a copy button appears beneath your own message and none beneath the reply. Click it and confirm the text reaches the clipboard, and that a screen reader announces the confirmation.
+- [ ] **Both directions at once:** send "text with custom footer"; your message and the reply each carry their own footer.
+- [ ] **Attachment-only message:** send a message with a file and no text; no footer appears beneath it.
+- [ ] **Restart:** restart the conversation and confirm no footer content is left behind.
 
 #### Markdown custom renderers
 

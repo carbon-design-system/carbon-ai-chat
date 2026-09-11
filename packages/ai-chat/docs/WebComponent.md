@@ -255,6 +255,22 @@ renderCustomMessageFooter = (state, instance) => {
 
 For the full footer element and the mock backend that attaches the slot, see the [custom message footer example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/messages-custom-footer). For fine-grained control, subscribe to the {@link BusEventType.CUSTOM_FOOTER_SLOT | CUSTOM_FOOTER_SLOT} event directly and manage slots yourself.
 
+## Custom request footer
+
+Render your own content beneath a **user** message. See [Custom request footer](./CustomRequestFooter.md) for the concept.
+
+Set the {@link CdsAiChatContainerAttributes.renderCustomRequestFooter | renderCustomRequestFooter} callback, also available on `cds-aichat-custom-element`. It receives the {@link RenderCustomRequestFooterState} and returns an `HTMLElement`:
+
+```typescript
+renderCustomRequestFooter = (state, instance) => {
+  const footer = document.createElement('copy-request-example');
+  footer.message = state.message;
+  return footer;
+};
+```
+
+There is no static-slot alternative here. The chat mints the slot name, so markup cannot name it, and the callback is the only way in. For the full element, see the [custom request footer example](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/messages-custom-request-footer).
+
 ## Related
 
 - [UI customization](./Customization.md) — theme the chat, control its layout, and inject your own content into slots, panels, responses, and footers.

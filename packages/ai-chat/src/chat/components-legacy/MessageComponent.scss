@@ -122,6 +122,23 @@ $message-bar-width: 3px;
   justify-content: flex-end;
 }
 
+/* Shrink-to-fit so its children measure against the bubble rather than the whole message column. */
+.cds-aichat--sent--bubble-group {
+  display: flex;
+  flex-direction: column;
+  align-self: end;
+  max-inline-size: 100%;
+}
+
+/* Spacing hangs off the slotted content, so a slot the host never filled costs no height. */
+.cds-aichat--request-footer-slot {
+  display: flex;
+
+  ::slotted(*) {
+    margin-block-start: layout.$spacing-03;
+  }
+}
+
 .cds-aichat--message .cds-aichat--received,
 .cds-aichat--message .cds-aichat--sent-container {
   flex-grow: 1;

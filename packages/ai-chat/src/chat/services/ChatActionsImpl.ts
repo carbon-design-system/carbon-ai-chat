@@ -51,7 +51,9 @@ import {
   createMessageRequestForText,
   createMessageResponseForText,
   createWelcomeRequest,
+  getRequestFooterSlotName,
   getSpeakerName,
+  hasRequestFooter,
   hasServiceDesk,
   isConnectToHumanAgent,
   isPause,
@@ -102,6 +104,7 @@ import {
 import {
   BusEventChunkUserDefinedResponse,
   BusEventCustomFooterSlot,
+  BusEventCustomRequestFooterSlot,
   BusEventPreReceive,
   BusEventType,
   BusEventUserDefinedResponse,
@@ -251,6 +254,19 @@ class ChatActionsImpl {
   private cachedInputContentSource: JSONContent | undefined = undefined;
   private cachedInputContentClone: JSONContent | undefined = undefined;
 
+  /**
+   * Serializes the outbound footer events. `EventBus.fire` refuses to start an event whose type is already running,
+   * and this one fires on every send, so a host that sends several messages without awaiting each one would
+   * otherwise make the second send throw.
+   */
+  private requestFooterFireChain: Promise<unknown> = Promise.resolve();
+
+  /**
+   * The same serialization for the assistant-side footer. A history replay fires one per restored message, and two
+   * overlapping `insertHistory` calls would otherwise collide on the event bus and drop the rest.
+   */
+  private footerFireChain: Promise<unknown> = Promise.resolve();
+
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
   }
@@ -371,6 +387,7 @@ class ChatActionsImpl {
         actions.setActiveResponseId(activeResponseId)
       );
       await this.createElementsForUserDefinedResponses(history.messageHistory);
+      await this.replayFooterSlots(history.messageHistory);
 
       // If the latest message is a panel response type, we should open it.
       if (history.latestPanelLocalMessageItem) {
@@ -973,6 +990,15 @@ class ChatActionsImpl {
     // that happens.
     deepFreeze(message);
 
+    // Fired after the dispatch above so the slot element exists by the time a host reacts, and after the freeze so
+    // the host gets a read-only object rather than a live store reference.
+    //
+    // Deliberately not awaited: the send does not depend on the footer's content, and awaiting would let a host
+    // handler that throws, never settles, or sends a message of its own take the send down with it.
+    this.handleCustomRequestFooterSlot(localMessage, message).catch((error) => {
+      consoleError('A customRequestFooterSlot handler failed.', error);
+    });
+
     await this.serviceManager.messageService.send(
       cloneDeep(message),
       source,
@@ -1155,6 +1181,7 @@ class ChatActionsImpl {
       actions.setActiveResponseId(activeResponseId)
     );
     await this.createElementsForUserDefinedResponses(history.messageHistory);
+    await this.replayFooterSlots(history.messageHistory);
 
     // Restore the scroll position.
     this.serviceManager.mainWindow?.doAutoScroll({
@@ -1748,7 +1775,10 @@ class ChatActionsImpl {
     const footerOptions =
       localMessage.item.message_item_options?.custom_footer_slot;
 
-    if (footerOptions && footerOptions.is_on === true) {
+    // `is_on` is documented as defaulting to true, so anything but an explicit false gets a footer. The renderer
+    // has always read it this way; the fire used to require an explicit true, which left a host that relied on the
+    // documented default with a slot nothing ever filled.
+    if (footerOptions && footerOptions.is_on !== false) {
       const customFooterSlotEvent: BusEventCustomFooterSlot = {
         type: BusEventType.CUSTOM_FOOTER_SLOT,
         data: {
@@ -1759,8 +1789,41 @@ class ChatActionsImpl {
         },
       };
 
-      await this.serviceManager.fire(customFooterSlotEvent);
+      const fire = () => this.serviceManager.fire(customFooterSlotEvent);
+      this.footerFireChain = this.footerFireChain.then(fire, fire);
+
+      await this.footerFireChain;
     }
+  }
+
+  /**
+   * Fires the {@link BusEventType.CUSTOM_REQUEST_FOOTER_SLOT} event for a user message so that listeners can attach
+   * whatever they want below it. Unlike the assistant side there are no options on the message to read, so the chat
+   * mints the slot name itself.
+   */
+  async handleCustomRequestFooterSlot(
+    localMessage: LocalMessageItem,
+    originalMessage: MessageRequest
+  ) {
+    if (
+      originalMessage.history?.silent ||
+      !hasRequestFooter(localMessage, originalMessage)
+    ) {
+      return;
+    }
+
+    const customRequestFooterSlotEvent: BusEventCustomRequestFooterSlot = {
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      data: {
+        slotName: getRequestFooterSlotName(localMessage),
+        message: originalMessage,
+      },
+    };
+
+    const fire = () => this.serviceManager.fire(customRequestFooterSlotEvent);
+    this.requestFooterFireChain = this.requestFooterFireChain.then(fire, fire);
+
+    await this.requestFooterFireChain;
   }
 
   /**
@@ -2339,6 +2402,43 @@ class ChatActionsImpl {
           localMessage,
           originalMessage,
           messageState
+        );
+      }
+    );
+  }
+
+  /**
+   * Fires the footer-slot events for messages restored from history, in both directions.
+   *
+   * The live events fire from `processMessageResponse` and `doSend`, neither of which runs during hydration, so
+   * without this a restored message renders its slot and nothing ever fills it.
+   *
+   * Outbound slot names are minted from the local item's id, and a restore always mints a fresh one — the merge in
+   * `insertHistory` keys on that id, so it never matches an existing entry. Replaying the same messages therefore
+   * fires them again under new slot names and leaves the previous wrappers in place until a restart.
+   */
+  async replayFooterSlots(messages: AppStateMessages) {
+    // Walk the ordered top-level items rather than `allMessageItemsByID`, which also holds the nested items of a
+    // grid or carousel. `MessageTypeComponent` renders no footer for a nested item, so firing for one would hand a
+    // host a slot name that never appears in the DOM and strand its wrapper in the light DOM.
+    await asyncForEach(
+      messages.assistantMessageState.localMessageIDs,
+      (localMessageID) => {
+        const localMessage = messages.allMessageItemsByID[localMessageID];
+        const originalMessage =
+          messages.allMessagesByID[localMessage?.fullMessageID];
+
+        if (!localMessage || !originalMessage) {
+          return undefined;
+        }
+
+        if (isResponse(originalMessage)) {
+          return this.handleCustomFooterSlot(localMessage, originalMessage);
+        }
+
+        return this.handleCustomRequestFooterSlot(
+          localMessage,
+          originalMessage as MessageRequest
         );
       }
     );

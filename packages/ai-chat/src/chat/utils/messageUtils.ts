@@ -229,6 +229,33 @@ function hasRequestBubbleContent(
   );
 }
 
+/**
+ * The name of the custom footer slot below a user message.
+ *
+ * The chat mints this rather than reading it off the message, so the send path and the renderer both derive it from
+ * the local item's id to be sure they agree.
+ */
+function getRequestFooterSlotName(localMessageItem: LocalMessageItem): string {
+  return `request-footer-${localMessageItem.ui_state.id}`;
+}
+
+/**
+ * Whether a request gets a custom footer slot below it.
+ *
+ * The send path asks this before firing its event and the renderer asks it before emitting the wrapper, so the event
+ * is not fired for a message the bubble will not render. Messages typed to a human agent are excluded because
+ * `HumanAgentServiceImpl` builds its local items on its own path and fires nothing.
+ */
+function hasRequestFooter(
+  localMessageItem: LocalMessageItem,
+  originalMessage: MessageRequest
+): boolean {
+  return (
+    !localMessageItem.item.agent_message_type &&
+    hasRequestBubbleContent(localMessageItem, originalMessage)
+  );
+}
+
 function isTyping(message: GenericItem) {
   // eslint-disable-next-line eqeqeq
   return (
@@ -744,6 +771,8 @@ export {
   getRequestBubbleText,
   hasRenderableDisplayContent,
   hasRequestBubbleContent,
+  getRequestFooterSlotName,
+  hasRequestFooter,
   isTextItem,
   isTyping,
   isPause,

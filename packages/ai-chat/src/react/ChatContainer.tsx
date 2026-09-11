@@ -89,6 +89,7 @@ function ChatContainer(
     renderUserDefinedResponse,
     renderUserDefinedInputNode,
     renderCustomMessageFooter,
+    renderCustomRequestFooter,
     renderWriteableElements,
     element,
     // Everything else is either a flattened PublicConfig field (folded into
@@ -283,6 +284,7 @@ function ChatContainer(
             renderUserDefinedResponse={renderUserDefinedResponse}
             renderUserDefinedInputNode={renderUserDefinedInputNode}
             renderCustomMessageFooter={renderCustomMessageFooter}
+            renderCustomRequestFooter={renderCustomRequestFooter}
             renderWriteableElements={renderWriteableElements}
             onBeforeRender={onBeforeRenderOverride}
             onAfterRender={onAfterRender}

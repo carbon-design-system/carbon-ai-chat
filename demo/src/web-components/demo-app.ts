@@ -8,6 +8,8 @@
  */
 
 import '@carbon/web-components/es/components/ai-skeleton/index.js';
+import './custom-request-footer-example';
+import type CustomRequestFooterExample from './custom-request-footer-example';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import './user-defined-response-example';
@@ -33,6 +35,7 @@ import {
   UserDefinedItem,
   ViewType,
   WCMarkdown,
+  RenderCustomRequestFooterState,
 } from '@carbon/ai-chat';
 // Raw CSS text of the shipped sidebar layout. demo-app keeps its shadow DOM, so
 // the compiled stylesheet is imported as a string (Vite `?raw`) and adopted
@@ -425,6 +428,30 @@ export class DemoApp extends LitElement {
   }
 
   /**
+   * One footer element per slot, so the callback below hands back the same node each time.
+   */
+  private requestFooters = new Map<string, CustomRequestFooterExample>();
+
+  /**
+   * Called on every render, once per user message that has a footer slot. The library tracks the slot and manages
+   * the element's lifecycle, so there is no event handler and no slot map on this side — the contrast with the
+   * incoming footer above is the point. Returning the same element leaves the DOM alone.
+   */
+  renderCustomRequestFooterCallback = (
+    state: RenderCustomRequestFooterState
+  ): HTMLElement | null => {
+    let footer = this.requestFooters.get(state.slotName);
+    if (!footer) {
+      footer = document.createElement(
+        'custom-request-footer-example'
+      ) as CustomRequestFooterExample;
+      this.requestFooters.set(state.slotName, footer);
+    }
+    footer.message = state.message;
+    return footer;
+  };
+
+  /**
    * You only need to provide the slots you want to use. In this demo, we fill them all with big
    * green boxes.
    *
@@ -557,6 +584,9 @@ export class DemoApp extends LitElement {
               .onBeforeRender=${this.onBeforeRender}
               .serviceDeskFactory=${serviceDeskFactory}
               .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .renderCustomRequestFooter=${
+                this.renderCustomRequestFooterCallback
+              }
               >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-container
             >`
           : html``
@@ -601,6 +631,9 @@ export class DemoApp extends LitElement {
               .onViewChange=${this.onViewChange}
               .serviceDeskFactory=${serviceDeskFactory}
               .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .renderCustomRequestFooter=${
+                this.renderCustomRequestFooterCallback
+              }
               >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
             >`
           : html``
@@ -640,6 +673,9 @@ export class DemoApp extends LitElement {
               .onBeforeRender=${this.onBeforeRender}
               .serviceDeskFactory=${serviceDeskFactory}
               .renderUserDefinedResponse=${this.renderUserDefinedCallback}
+              .renderCustomRequestFooter=${
+                this.renderCustomRequestFooterCallback
+              }
               .hideAvatar=${this.config.hideAvatar ?? undefined}
               >${this.renderWriteableElementSlots()}${this.renderCustomFooterSlots()}</cds-aichat-custom-element
             >`
