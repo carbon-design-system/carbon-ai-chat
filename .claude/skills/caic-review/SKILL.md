@@ -26,21 +26,25 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.
   - **Nit** — optional, and it still has to earn its place: a concrete one-edit fix a later reader benefits from. Everything else is noise — see [What isn't a finding](#what-isnt-a-finding).
 - Read enough to be sure before you call something a **Blocker**. A false Blocker costs the author as much as a missed one. If you have only read the happy path, file it as **Important** and say what you did not read.
-- When you can run commands, run the read-only gates for what changed before you write anything — `lint`, `lint:license`, `lint:styles`, `validate:*`, `format`. A failure you watched outranks one you inferred. Never start a build or a test run yourself: the rows in [definition-of-done.md](../../../references/definition-of-done.md) all build, and a build races the watcher a developer probably has running. Report an unrun build as a stated gap.
+- When you can run commands, run the read-only gates for what changed before you write anything — `lint`, `lint:license`, `lint:styles`, `validate:*`, `format`. A failure you watched outranks one you inferred. Never start a build or a test run yourself unless the user asks for one: the rows in [definition-of-done.md](../../../references/definition-of-done.md) all build, and a build races the watcher a developer probably has running. Testing a suggestion before you post it is the one case where the user may well ask, and [reviewing-a-pr.md](references/reviewing-a-pr.md) carries that ask. Report an unrun build as a stated gap.
 
 ## How to write a finding
 
-One shape, one order — severity, the defect, what it costs, the fix:
+One shape, one order — orientation, then severity, the defect, what it costs, the fix:
 
 ```
+**<Orientation label>:** <what the code under discussion does, and when it runs.>
+
 **<Severity>** — `path/to/file.ts:42` — <what is wrong>, so <what it costs>. <The fix.>
 ```
 
-Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. Never post the objection without the fix. When you genuinely can't name one, name the gap instead — "this drops the second update; whether that's a bug depends on whether the queue is ordered, and I didn't trace it." An objection with a stated gap is workable. An invented fix the author implements is not.
+**The orientation line is what makes a finding readable a day later**, in a notification, with none of the code open — which is how the author reads it. [review-comments.md](../caic-copy-writer/references/review-comments.md) owns its wording and lists the four labels that work.
+
+Cite a range when the defect spans lines, and show the fix as a snippet when words alone won't carry it. On a PR, a fix that replaces a line range ships as a `suggestion` block the author accepts in one click — [reviewing-a-pr.md](references/reviewing-a-pr.md). Never post the objection without the fix. When you genuinely can't name one, name the gap instead — "this drops the second update; whether that's a bug depends on whether the queue is ordered, and I didn't trace it." An objection with a stated gap is workable. An invented fix the author implements is not.
 
 The consequence names the input or path that reaches the defect — "on every close", "when the list is empty" — not the category. A defect you can't trigger is a guess: drop it, or say what you didn't check.
 
-Hold your own words to [tone.md](../../../references/tone.md) — the same standard you hold the diff's copy to. Three habits show up in reviews and all three go:
+Hold your own words to [review-comments.md](../caic-copy-writer/references/review-comments.md) and [tone.md](../../../references/tone.md) — the same standard you hold the diff's copy to. Three habits show up in reviews and all three go:
 
 - **Hedging** — "I think", "it looks like", "consider possibly", "might be worth". Uncertainty is fine; say what you checked instead. "Read the happy path only — 60% sure this leaks."
 - **Throat-clearing** — "just", "simply", "one small thing", "it is important to note". Delete the phrase; the sentence gets stronger.
@@ -49,14 +53,16 @@ Hold your own words to [tone.md](../../../references/tone.md) — the same stand
 **A leaked listener**
 
 - Before: "I might be missing something, but I wonder if it could possibly be worth considering whether this early return may want to clean up the listener it registered above, since otherwise it seems like it might leak? Nice refactor overall though!"
-- After: "**Blocker** — `packages/ai-chat/src/foo.ts:42` — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
+- After: "**Context:** this early return is the already-closed guard, and the listener it skips past was registered a few lines above.
 
-The other two severities, written the same way:
+  **Blocker** — `packages/ai-chat/src/foo.ts:42` — the early return skips teardown, so the listener leaks on every close. Call `dispose()` before returning."
+
+The other two severities, written the same way — orientation dropped here to show the diagnosis line alone:
 
 - **Important** — `packages/ai-chat/src/chat/store/fooReducer.ts:88` — the reducer rebuilds every item, so one changed message re-renders the whole list. Copy the array and replace the one index.
 - **Nit** — `packages/ai-chat/src/types/config/FooConfig.ts:12` — the JSDoc says "the timeout" with no unit, so a caller guesses seconds. Say "in milliseconds."
 
-Cap a finding at three sentences plus a snippet. A concern that outgrows that — a design direction, a pattern repeated across the diff — is not a line comment: give it one line in the summary and move on.
+Cap the diagnosis at three sentences plus a snippet; the orientation line is not one of the three. A concern that outgrows that — a design direction, a pattern repeated across the diff — is not a line comment: give it one line in the summary and move on.
 
 ### What isn't a finding
 
@@ -142,7 +148,7 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 ## Output expectations
 
 - **Open with the verdict on one line** — ship, fix blockers, or rework. Nothing precedes it: no greeting, no "great work on this", no recap of what the PR does. The author wrote the diff and does not need it read back.
-- **Then at most three lines**, carrying only what the verdict rests on: the blocking concerns, any design-level concern that outgrew a finding, and the dropped-finding count. A strength earns a line only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
+- **Then the defects, ahead of everything else** — at most three lines, carrying only what the verdict rests on, in this order: the blocking concerns, any design-level concern that outgrew a finding, then the dropped-finding count. What you checked and cleared, the gates you ran, and any strength all sit below them. A strength earns a line only when it was the risk and it landed — "the migration path handles the null case, which was the hard part." Generic praise is padding; cut it.
 - List findings grouped by severity (**Blocker**, **Important**, **Nit**), each written to the shape above.
 - **Never drop a Blocker.** List every one, however many there are. A Blocker reduced to a count in the summary blocks nothing, and merges.
 - **Cap Important and Nit at ten between them**, no more than three of those Nits, highest severity first. Drop Nits before Importants, and name the drop in one summary line: "12 further Nits (naming, comment wording) not listed." A review nobody finishes fixes nothing, and a silent cut reads as full coverage. When the Blockers alone run past ten, drop the Importants and Nits entirely — the verdict is rework, and a tail of taste under that many must-fixes is noise.
@@ -153,13 +159,14 @@ For each changed file, read every `AGENTS.md` on the path from its directory up 
 For context on conventions being enforced:
 
 - **Voice and tone**: [tone.md](../../../references/tone.md) — what to hold documentation and developer-facing copy to, and the comments you write about it
-- **Copy by type**: [caic-copy-writer](../caic-copy-writer/SKILL.md) — which of the thirteen rule sets applies to the copy in the diff, since JSDoc and internal comments carry opposite ones
+- **Copy by type**: [caic-copy-writer](../caic-copy-writer/SKILL.md) — which of the fourteen rule sets applies to the copy in the diff, since JSDoc and internal comments carry opposite ones
+- **Your own words**: [review-comments.md](../caic-copy-writer/references/review-comments.md) — type 14 of those rule sets, and the one you are writing: who reads a finding, what it opens with, and where the summary puts the defects
 - **Code-level patterns**: [code-patterns.md](../../../references/code-patterns.md) — the laziness ladder & simplicity principles, prefix discipline, SCSS, RTL, framework-agnostic logic, component placement, comments
 - **Measurements**: [measuring.md](../../../references/measuring.md) — `npm run measure`, the bands, and what each tool cannot see
 - **Process conventions**: [conventions.md](../../../references/conventions.md) — commits, branches, license headers, hooks
 - **General overview**: [AGENTS.md](../../../AGENTS.md) — monorepo pointer index
 - **Package-specific rules**: see `AGENTS.md` in each package directory
-- **Reviewing a PR**: [reviewing-a-pr.md](references/reviewing-a-pr.md) — base branch, the review payload, and the `gh` call
+- **Reviewing a PR**: [reviewing-a-pr.md](references/reviewing-a-pr.md) — base branch, fixes shipped as acceptable suggestions, the review payload, and the `gh` call
 - **Large diffs**: [large-diffs.md](references/large-diffs.md) — ranking files by risk when the diff is too big to read evenly
 - **PR workflow**: [caic-pr](../caic-pr/SKILL.md) — drafting PR descriptions
 - **Plan-phase analog**: [plan-review.md](../caic-plan/references/plan-review.md) — the same discipline applied before code exists
