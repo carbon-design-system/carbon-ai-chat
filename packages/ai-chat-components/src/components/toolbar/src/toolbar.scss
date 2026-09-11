@@ -109,14 +109,15 @@ $block-class: #{$prefix}-toolbar;
     min-inline-size: layout.$spacing-08;
   }
 
-  // Pressed / selected state for toggle actions
-  cds-icon-button[data-selected] {
+  // Pressed / selected state for toggle actions — targets the inner button via
+  // the part Carbon exposes so the fill does not stack under Carbon's own
+  // translucent background-selected layer.
+  cds-icon-button[data-selected]::part(button) {
     background-color: theme.$layer-selected;
   }
 
   // Pressed / selected state for overflow item
   cds-overflow-menu-item[data-selected] {
     background-color: theme.$layer-selected;
-    color: theme.$text-primary;
   }
 }

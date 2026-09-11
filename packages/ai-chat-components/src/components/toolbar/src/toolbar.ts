@@ -53,7 +53,10 @@ export interface Action extends BaseOverflowMenuItem {
   fixed?: boolean;
 
   /**
-   * Determines if a button has toggle functionality
+   * Renders this action as a two-state toggle and sets its current state.
+   * When `true` or `false`, the button exposes `aria-pressed` and a visible
+   * pressed treatment. Omit the field for a plain button with no toggle
+   * semantics — `undefined` is intentionally distinct from `false`.
    */
   isSelected?: boolean;
 }
@@ -125,6 +128,30 @@ class CDSAIChatToolbar extends LitElement {
     if (this.overflow) {
       this.setupResizeObserver();
     }
+  }
+
+  updated() {
+    // cds-icon-button's ?aria-pressed binding emits aria-pressed="" (boolean
+    // attribute) on the inner <button> for the on-state and removes the
+    // attribute entirely for the off-state, neither of which is valid for
+    // assistive tech. After the host finishes its own update cycle we await
+    // each cds-icon-button's updateComplete so Carbon has already written its
+    // own attributes, then overwrite with the correct string value.
+    void Promise.all(
+      Array.from(
+        this.shadowRoot?.querySelectorAll<LitElement & HTMLElement>(
+          'cds-icon-button[data-pressed]'
+        ) ?? []
+      ).map(async (el) => {
+        await el.updateComplete;
+        const value = el.getAttribute('data-pressed');
+        if (value !== null) {
+          el.shadowRoot
+            ?.querySelector('button')
+            ?.setAttribute('aria-pressed', value);
+        }
+      })
+    );
   }
 
   private sortActions() {
@@ -278,7 +305,7 @@ class CDSAIChatToolbar extends LitElement {
         enter-delay-ms="0"
         leave-delay-ms="0"
         ?isSelected=${isSelected === true}
-        aria-pressed=${isSelected === false ? 'false' : nothing}
+        data-pressed=${isSelected !== undefined ? String(isSelected) : nothing}
         ?disabled=${action.disabled}>
         ${iconLoader(action.icon, {
           slot: 'icon',
@@ -387,7 +414,6 @@ class CDSAIChatToolbar extends LitElement {
                           hiddenActions,
                           (item) => item.text,
                           (item) => {
-                            const { isSelected } = item;
                             return html`
                               <cds-overflow-menu-item
                                 @click=${item.onClick}
@@ -401,10 +427,15 @@ class CDSAIChatToolbar extends LitElement {
                                   item.dangerDescription || nothing
                                 }
                                 ?divider=${item.divider}
-                                ?data-selected=${isSelected === true}
-                                aria-pressed=${
-                                  isSelected !== undefined
-                                    ? String(isSelected)
+                                ?data-selected=${item.isSelected === true}
+                                role=${
+                                  item.isSelected !== undefined
+                                    ? 'menuitemcheckbox'
+                                    : nothing
+                                }
+                                aria-checked=${
+                                  item.isSelected !== undefined
+                                    ? String(item.isSelected)
                                     : nothing
                                 }
                                 data-testid=${item.testId || nothing}>

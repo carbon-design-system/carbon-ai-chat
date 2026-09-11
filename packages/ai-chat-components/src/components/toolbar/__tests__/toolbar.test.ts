@@ -7,7 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, waitUntil } from '@open-wc/testing';
+import { LitElement } from 'lit';
 import '@carbon/ai-chat-components/es/components/toolbar/index.js';
 import Toolbar, {
   Action,
@@ -80,10 +81,7 @@ describe('toolbar', function () {
       expect(btn!.hasAttribute('data-selected')).to.be.false;
     });
 
-    it('should set isSelected attribute and data-selected when isSelected is true', async () => {
-      // cds-icon-button (via carbon PR #23009) sets aria-pressed="true" on its
-      // inner <button> when isSelected is set. We verify the host attributes
-      // that drive that behaviour and the visual selected class.
+    it('should set aria-pressed="true" on inner button when isSelected is true', async () => {
       const actions: Action[] = [
         {
           text: 'Toggle',
@@ -96,19 +94,19 @@ describe('toolbar', function () {
       const el = await fixture<Toolbar>(
         html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
       );
-      const btn = el.shadowRoot!.querySelector('cds-icon-button');
+      const btn = el.shadowRoot!.querySelector<LitElement & HTMLElement>(
+        'cds-icon-button'
+      )!;
       expect(btn).to.exist;
-      // Carbon handles aria-pressed="true" inside its own shadow DOM;
-      // we set the isSelected property so it does so.
-      expect(btn!.hasAttribute('isselected')).to.be.true;
-      expect(btn!.hasAttribute('data-selected')).to.be.true;
-      // No host-level aria-pressed="false" fallback needed for the on-state
-      expect(btn!.getAttribute('aria-pressed')).to.not.equal('false');
+      expect(btn.hasAttribute('data-selected')).to.be.true;
+      // Wait for cds-icon-button to finish its own update so our updated()
+      // hook has run after Carbon's aria-pressed binding.
+      await btn.updateComplete;
+      const inner = btn.shadowRoot!.querySelector('button')!;
+      expect(inner.getAttribute('aria-pressed')).to.equal('true');
     });
 
-    it('should set aria-pressed="false" on host (fallback) when isSelected is false', async () => {
-      // cds-icon-button does not emit aria-pressed="false" for the off-state,
-      // so we set it on the host element as a fallback for assistive tech.
+    it('should set aria-pressed="false" on inner button when isSelected is false', async () => {
       const actions: Action[] = [
         {
           text: 'Toggle',
@@ -121,10 +119,14 @@ describe('toolbar', function () {
       const el = await fixture<Toolbar>(
         html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
       );
-      const btn = el.shadowRoot!.querySelector('cds-icon-button');
+      const btn = el.shadowRoot!.querySelector<LitElement & HTMLElement>(
+        'cds-icon-button'
+      )!;
       expect(btn).to.exist;
-      expect(btn!.getAttribute('aria-pressed')).to.equal('false');
-      expect(btn!.hasAttribute('data-selected')).to.be.false;
+      expect(btn.hasAttribute('data-selected')).to.be.false;
+      await btn.updateComplete;
+      const inner = btn.shadowRoot!.querySelector('button')!;
+      expect(inner.getAttribute('aria-pressed')).to.equal('false');
     });
 
     it('should reflect updated isSelected state when actions prop changes', async () => {
@@ -140,9 +142,12 @@ describe('toolbar', function () {
       const el = await fixture<Toolbar>(
         html`<cds-aichat-toolbar .actions=${actionsOff}></cds-aichat-toolbar>`
       );
-      let btn = el.shadowRoot!.querySelector('cds-icon-button');
-      // Toggle-off: host carries aria-pressed="false" fallback
-      expect(btn!.getAttribute('aria-pressed')).to.equal('false');
+      let btn = el.shadowRoot!.querySelector<LitElement & HTMLElement>(
+        'cds-icon-button'
+      )!;
+      await btn.updateComplete;
+      let inner = btn.shadowRoot!.querySelector('button')!;
+      expect(inner.getAttribute('aria-pressed')).to.equal('false');
 
       const actionsOn: Action[] = [
         {
@@ -156,11 +161,13 @@ describe('toolbar', function () {
       el.actions = actionsOn;
       await el.updateComplete;
 
-      btn = el.shadowRoot!.querySelector('cds-icon-button');
-      // Toggle-on: isSelected set so Carbon handles aria-pressed="true" internally
-      expect(btn!.hasAttribute('isselected')).to.be.true;
-      expect(btn!.hasAttribute('data-selected')).to.be.true;
-      expect(btn!.getAttribute('aria-pressed')).to.not.equal('false');
+      btn = el.shadowRoot!.querySelector<LitElement & HTMLElement>(
+        'cds-icon-button'
+      )!;
+      await btn.updateComplete;
+      inner = btn.shadowRoot!.querySelector('button')!;
+      expect(btn.hasAttribute('data-selected')).to.be.true;
+      expect(inner.getAttribute('aria-pressed')).to.equal('true');
     });
   });
 
@@ -198,40 +205,55 @@ describe('toolbar', function () {
       return el;
     }
 
-    it('should not set aria-pressed on overflow item when isSelected is absent', async () => {
+    it('should not set role="menuitemcheckbox" or aria-checked on overflow item when isSelected is absent', async () => {
       const el = await fixtureWithOverflow(undefined);
+      await waitUntil(
+        () =>
+          el.shadowRoot!.querySelectorAll('cds-overflow-menu-item').length > 0
+      );
       const items = el.shadowRoot!.querySelectorAll('cds-overflow-menu-item');
+      // Carbon sets role="menuitem" on all items via connectedCallback;
+      // we must not override that with "menuitemcheckbox" when isSelected is absent.
       items.forEach((item) => {
-        expect(item.hasAttribute('aria-pressed')).to.be.false;
+        expect(item.getAttribute('role')).to.not.equal('menuitemcheckbox');
+        expect(item.hasAttribute('aria-checked')).to.be.false;
       });
     });
 
-    it('should set aria-pressed="true" on overflow item when isSelected is true', async () => {
+    it('should set role="menuitemcheckbox" and aria-checked="true" on overflow item when isSelected is true', async () => {
       const el = await fixtureWithOverflow(true);
+      await waitUntil(
+        () =>
+          el.shadowRoot!.querySelectorAll('cds-overflow-menu-item').length > 0
+      );
       const items = Array.from(
         el.shadowRoot!.querySelectorAll('cds-overflow-menu-item')
       );
       const toggleItem = items.find(
         (item) => item.textContent?.trim() === 'Toggle'
       );
-      if (toggleItem) {
-        expect(toggleItem.getAttribute('aria-pressed')).to.equal('true');
-        expect(toggleItem.hasAttribute('data-selected')).to.be.true;
-      }
+      expect(toggleItem, 'overflow item not rendered').to.exist;
+      expect(toggleItem!.getAttribute('role')).to.equal('menuitemcheckbox');
+      expect(toggleItem!.getAttribute('aria-checked')).to.equal('true');
+      expect(toggleItem!.hasAttribute('data-selected')).to.be.true;
     });
 
-    it('should set aria-pressed="false" on overflow item when isSelected is false', async () => {
+    it('should set role="menuitemcheckbox" and aria-checked="false" on overflow item when isSelected is false', async () => {
       const el = await fixtureWithOverflow(false);
+      await waitUntil(
+        () =>
+          el.shadowRoot!.querySelectorAll('cds-overflow-menu-item').length > 0
+      );
       const items = Array.from(
         el.shadowRoot!.querySelectorAll('cds-overflow-menu-item')
       );
       const toggleItem = items.find(
         (item) => item.textContent?.trim() === 'Toggle'
       );
-      if (toggleItem) {
-        expect(toggleItem.getAttribute('aria-pressed')).to.equal('false');
-        expect(toggleItem.hasAttribute('data-selected')).to.be.false;
-      }
+      expect(toggleItem, 'overflow item not rendered').to.exist;
+      expect(toggleItem!.getAttribute('role')).to.equal('menuitemcheckbox');
+      expect(toggleItem!.getAttribute('aria-checked')).to.equal('false');
+      expect(toggleItem!.hasAttribute('data-selected')).to.be.false;
     });
   });
 });

@@ -14,7 +14,7 @@ import {
   Launch16,
   Maximize16,
   Close16,
-  StarFilled16,
+  Star16,
 } from '@carbon/icons';
 import { action } from 'storybook/actions';
 
@@ -91,8 +91,8 @@ export const actionLists = {
   None: [],
   'Toggle actions': [
     {
-      text: 'Favourite (off)',
-      icon: StarFilled16,
+      text: 'Favourite',
+      icon: Star16,
       size: 'md',
       isSelected: false,
       onClick: action('onClick'),

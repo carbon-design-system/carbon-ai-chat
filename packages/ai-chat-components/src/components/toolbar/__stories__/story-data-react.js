@@ -14,7 +14,7 @@ import Share from '@carbon/icons-react/es/Share';
 import Launch from '@carbon/icons-react/es/Launch';
 import Maximize from '@carbon/icons-react/es/Maximize';
 import Close from '@carbon/icons-react/es/Close';
-import StarFilled from '@carbon/icons-react/es/StarFilled';
+import Star from '@carbon/icons-react/es/Star';
 import { action } from 'storybook/actions';
 
 export const actionLists = {
@@ -80,8 +80,8 @@ export const actionLists = {
   None: [],
   'Toggle actions': [
     {
-      text: 'Favourite (off)',
-      icon: StarFilled,
+      text: 'Favourite',
+      icon: Star,
       isSelected: false,
       onClick: action('onClick'),
     },

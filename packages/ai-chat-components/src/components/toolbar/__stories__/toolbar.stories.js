@@ -18,6 +18,7 @@ import {
   Home16,
   ArrowLeft16,
   OverflowMenuVertical16,
+  Star16,
   StarFilled16,
   Download16,
   Close16,
@@ -249,16 +250,13 @@ export const Toggle = {
 
     const getActions = () => [
       {
-        text: isOn ? 'Favourite (on)' : 'Favourite (off)',
-        icon: StarFilled16,
+        text: 'Favourite',
+        icon: isOn ? StarFilled16 : Star16,
         size: 'md',
         isSelected: isOn,
         onClick: () => {
           isOn = !isOn;
-          // Re-render by dispatching a custom event the story can react to
-          document
-            .querySelector('cds-aichat-toolbar')
-            ?.dispatchEvent(new CustomEvent('_story-rerender'));
+          toolbar.actions = getActions();
         },
       },
       {
@@ -279,10 +277,6 @@ export const Toggle = {
     const toolbar = document.createElement('cds-aichat-toolbar');
     toolbar.setAttribute('overflow', '');
     toolbar.actions = getActions();
-
-    toolbar.addEventListener('_story-rerender', () => {
-      toolbar.actions = getActions();
-    });
 
     return toolbar;
   },

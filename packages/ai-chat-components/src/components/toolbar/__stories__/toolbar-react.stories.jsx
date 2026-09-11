@@ -24,6 +24,7 @@ import {
   Home,
   ArrowLeft,
   OverflowMenuVertical,
+  Star,
   StarFilled,
   Download,
   Close,
@@ -231,8 +232,8 @@ const ToggleDemo = () => {
 
   const actions = [
     {
-      text: isOn ? 'Favourite (on)' : 'Favourite (off)',
-      icon: StarFilled,
+      text: 'Favourite',
+      icon: isOn ? StarFilled : Star,
       isSelected: isOn,
       onClick: () => setIsOn((prev) => !prev),
     },
@@ -259,8 +260,8 @@ export const Toggle = {
       description: {
         story:
           'Demonstrates `isSelected` on a toolbar action. Click the star to toggle its pressed state. ' +
-          'When selected, `cds-icon-button` receives `isSelected` and emits `aria-pressed="true"` on its inner `<button>` (via `@carbon/web-components`). ' +
-          'When deselected, the host carries `aria-pressed="false"` as a fallback.',
+          'The icon switches between unfilled (off) and filled (on) to reinforce the state visually. ' +
+          '`aria-pressed` is set on the inner `<button>` in both states via a Lit `updated()` hook.',
       },
     },
   },
