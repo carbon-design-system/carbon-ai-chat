@@ -35,8 +35,8 @@ import {
   WCMarkdown,
 } from '@carbon/ai-chat';
 // Raw CSS text of the shipped sidebar layout. demo-app keeps its shadow DOM, so
-// the compiled stylesheet is imported as a string (webpack `?raw` loader) and
-// adopted into `static styles` below via `unsafeCSS`.
+// the compiled stylesheet is imported as a string (Vite `?raw`) and adopted
+// into `static styles` below via `unsafeCSS`.
 import sidebarLayoutCss from '@carbon/ai-chat/css/chat-sidebar-layout.css?raw';
 import { css, html, LitElement, PropertyValues, unsafeCSS } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';

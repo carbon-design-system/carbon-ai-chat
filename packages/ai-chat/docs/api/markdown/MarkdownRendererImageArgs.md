@@ -2,7 +2,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html
 
 Argument passed to an CustomMarkdownRenderers.image /
 WCCustomMarkdownRenderers.image callback — the parsed image data
@@ -22,7 +22,7 @@ interface MarkdownRendererImageArgs
 
 The image's `alt` text, when present.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#alt)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#alt)
 
 ### attributes
 
@@ -30,7 +30,7 @@ The image's `alt` text, when present.
 
 The image's parsed attributes (post-sanitize), as a plain object.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#attributes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#attributes)
 
 ### src
 
@@ -38,7 +38,7 @@ The image's parsed attributes (post-sanitize), as a plain object.
 
 Resolved `src` of the image.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#src)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#src)
 
 ### title
 
@@ -46,7 +46,7 @@ Resolved `src` of the image.
 
 The image's `title` attribute, when present.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#title)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#title)
 
 ### token
 
@@ -54,7 +54,7 @@ The image's `title` attribute, when present.
 
 The markdown-it `image` `Token`.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.20.0-rc.1/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#token)
+[Reference](https://chat.carbondesignsystem.com/version/v1.20.0/docs/interfaces/Type_reference.MarkdownRendererImageArgs.html#token)
 
 ## Related
 

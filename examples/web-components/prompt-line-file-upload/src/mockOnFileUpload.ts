@@ -47,8 +47,8 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
  * Mock `UploadConfig.onFileUpload` handler.
  *
  * Simulates a 1-second server-side upload, then returns a {@link StructuredData}
- * containing an {@link ExternalFileReference} with the file's metadata. Files
- * whose name starts with "a" are rejected instead, so the example can show the
+ * containing an {@link ExternalFileReference} with the file's metadata. A file
+ * whose name contains "fail" is rejected instead, so the example can show the
  * errored-attachment state.
  *
  * In a real integration this function would POST the file to a backend and
@@ -76,14 +76,14 @@ async function mockOnFileUpload(
     );
   });
 
-  // Reject names starting with "a" so this example has a reproducible way to
-  // show an upload failing: the chip moves from uploading to errored and the
-  // prompt line blocks sending until the attachment is removed. The check runs
-  // after the delay above, not before it, so that transition stays visible.
-  if (file.name.toLowerCase().startsWith('a')) {
-    throw new Error(
-      'Files whose name starts with "a" are blocked by this server\'s content policy.'
-    );
+  // The failure path. `onFileUpload` reports a rejected upload by throwing. The
+  // `Error`'s message becomes the reason the chat shows on the chip and above the input.
+  // The chat supplies the title and the "remove the attachment" step, so state only the
+  // reason here. Throwing after the delay mirrors a server that accepts the file, then
+  // refuses it. The chip moves from uploading to error, and the chat blocks sending
+  // until you remove it. Attach a file named `fail.txt` to see it.
+  if (file.name.toLowerCase().includes('fail')) {
+    throw new Error('The server rejected this file after a virus scan.');
   }
 
   // Shape required by the chat: `type: "reference"` + a stable `id` is

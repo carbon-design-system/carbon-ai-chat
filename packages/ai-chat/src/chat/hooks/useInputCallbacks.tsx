@@ -80,7 +80,11 @@ export function useInputCallbacks({
       const { files, pendingStructuredData } = selectInputState(currentState);
 
       if (isInputToHumanAgent) {
-        serviceManager.humanAgentService.sendMessageToAgent(text, files);
+        serviceManager.humanAgentService.sendMessageToAgent(
+          text,
+          files,
+          displayContent
+        );
       } else {
         const messageRequest = createMessageRequestForText(
           text,

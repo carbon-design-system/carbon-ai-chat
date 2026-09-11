@@ -38,7 +38,7 @@ any missing filenames. Common files to check for:
 - `renderUserDefinedResponse.tsx`
 - `customLoadHistory.ts`
 - `styles.css`
-- `webpack.config.js`
+- `vite.config.ts`
 - `tsconfig.json`
 - `index.html`
 - `package.json`
