@@ -239,9 +239,9 @@ export const Toggle = {
     docs: {
       description: {
         story:
-          'Demonstrates `isSelected` on a toolbar action. Click the star button to toggle its pressed state. ' +
-          'When selected, `cds-icon-button` receives `isSelected` and emits `aria-pressed="true"` on its inner `<button>` (via `@carbon/web-components`). ' +
-          'When deselected, the host carries `aria-pressed="false"` as a fallback.',
+          'Demonstrates `isSelected` on a toolbar action. Click the star to toggle its pressed state. ' +
+          'The icon switches between unfilled (off) and filled (on) to reinforce the state visually. ' +
+          '`aria-pressed` is set on the inner `<button>` in both states via a Lit `updated()` hook.',
       },
     },
   },
