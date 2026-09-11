@@ -58,16 +58,53 @@ const lint = makeLinter({
   'max-params': ['error', 0],
 });
 
-const BRANCHES = ['IfStatement', 'ConditionalExpression', 'SwitchCase', 'CatchClause', 'ForStatement', 'ForInStatement', 'ForOfStatement', 'WhileStatement', 'DoWhileStatement'];
-const FUNCTIONS = ['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'];
+const BRANCHES = [
+  'IfStatement',
+  'ConditionalExpression',
+  'SwitchCase',
+  'CatchClause',
+  'ForStatement',
+  'ForInStatement',
+  'ForOfStatement',
+  'WhileStatement',
+  'DoWhileStatement',
+];
+const FUNCTIONS = [
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+];
 const TOTALS = {
   lines: [/too many lines \((\d+)\)/, 'max-lines'],
   depth: [/nested too deeply \((\d+)\)/, 'max-depth'],
   params: [/too many parameters \((\d+)\)/, 'max-params'],
 };
 // A top-level statement runs on import; a declaration or an inert binding does not.
-const DECLARED = ['ImportDeclaration', 'ExportNamedDeclaration', 'ExportDefaultDeclaration', 'ExportAllDeclaration', 'FunctionDeclaration', 'ClassDeclaration', 'TSTypeAliasDeclaration', 'TSInterfaceDeclaration', 'TSEnumDeclaration', 'TSModuleDeclaration', 'TSDeclareFunction', 'TSImportEqualsDeclaration'];
-const INERT = ['Literal', 'TemplateLiteral', 'ArrowFunctionExpression', 'FunctionExpression', 'ClassExpression', 'ArrayExpression', 'ObjectExpression', 'Identifier', 'MemberExpression'];
+const DECLARED = [
+  'ImportDeclaration',
+  'ExportNamedDeclaration',
+  'ExportDefaultDeclaration',
+  'ExportAllDeclaration',
+  'FunctionDeclaration',
+  'ClassDeclaration',
+  'TSTypeAliasDeclaration',
+  'TSInterfaceDeclaration',
+  'TSEnumDeclaration',
+  'TSModuleDeclaration',
+  'TSDeclareFunction',
+  'TSImportEqualsDeclaration',
+];
+const INERT = [
+  'Literal',
+  'TemplateLiteral',
+  'ArrowFunctionExpression',
+  'FunctionExpression',
+  'ClassExpression',
+  'ArrayExpression',
+  'ObjectExpression',
+  'Identifier',
+  'MemberExpression',
+];
 
 // The regexes read these message shapes:
 //   complexity: "Function 'x' has a complexity of N", "Arrow function has a
@@ -98,24 +135,41 @@ function owner(functions, m) {
   const start = (fn) => fn.range.slice(0, 2);
   return functions
     .filter((fn) => contains(fn.range, m.endLine, m.endColumn))
-    .reduce((best, fn) => (!best || notAfter(...start(best), ...start(fn)) ? fn : best), null);
+    .reduce(
+      (best, fn) =>
+        !best || notAfter(...start(best), ...start(fn)) ? fn : best,
+      null
+    );
 }
 
 function isBranch(node) {
-  if (node.type === 'LogicalExpression') return ['&&', '||', '??'].includes(node.operator);
-  if (node.type === 'SwitchCase') return node.test !== null;
+  if (node.type === 'LogicalExpression') {
+    return ['&&', '||', '??'].includes(node.operator);
+  }
+  if (node.type === 'SwitchCase') {
+    return node.test !== null;
+  }
   return BRANCHES.includes(node.type);
 }
 
 function isMarkup(node) {
-  if (node.type === 'JSXElement' || node.type === 'JSXFragment') return true;
-  return node.type === 'TaggedTemplateExpression' && ['html', 'svg'].includes(node.tag.name);
+  if (node.type === 'JSXElement' || node.type === 'JSXFragment') {
+    return true;
+  }
+  return (
+    node.type === 'TaggedTemplateExpression' &&
+    ['html', 'svg'].includes(node.tag.name)
+  );
 }
 
 function* childNodes(node) {
   for (const value of Object.values(node)) {
     const items = Array.isArray(value) ? value : [value];
-    for (const item of items) if (item && typeof item.type === 'string') yield item;
+    for (const item of items) {
+      if (item && typeof item.type === 'string') {
+        yield item;
+      }
+    }
   }
 }
 
@@ -125,8 +179,12 @@ function* childNodes(node) {
 // enclosing function, so a callback's branches are the callback's, not the
 // component's.
 function yieldsMarkup(node) {
-  if (node.type === 'LogicalExpression') return isMarkup(node.right);
-  if (node.type !== 'ConditionalExpression') return false;
+  if (node.type === 'LogicalExpression') {
+    return isMarkup(node.right);
+  }
+  if (node.type !== 'ConditionalExpression') {
+    return false;
+  }
   return isMarkup(node.consequent) || isMarkup(node.alternate);
 }
 
@@ -137,15 +195,21 @@ function walkRender(node, fn, inMarkup, counts) {
     const key = `${owned.loc.start.line}:${owned.loc.start.column}`;
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
-  for (const child of childNodes(node)) walkRender(child, owned, under, counts);
+  for (const child of childNodes(node)) {
+    walkRender(child, owned, under, counts);
+  }
 }
 
 // One parse per file, shared with the top-level count. A parse miss prints
 // render 0 rather than a wrong number.
 function attachRender(functions, ast) {
   const counts = new Map();
-  if (ast !== null) walkRender(ast, null, false, counts);
-  for (const fn of functions) fn.render = counts.get(`${fn.range[0]}:${fn.range[1] - 1}`) ?? 0;
+  if (ast !== null) {
+    walkRender(ast, null, false, counts);
+  }
+  for (const fn of functions) {
+    fn.render = counts.get(`${fn.range[0]}:${fn.range[1] - 1}`) ?? 0;
+  }
 }
 
 function astOf(content, filePath) {
@@ -159,21 +223,30 @@ function astOf(content, filePath) {
 const EXPORTS = ['ExportNamedDeclaration', 'ExportDefaultDeclaration'];
 // `require('x')` is the CommonJS spelling of an import, so it binds rather than works.
 const isRequire = (n) =>
-  n.type === 'CallExpression' && n.callee.type === 'Identifier' && n.callee.name === 'require';
+  n.type === 'CallExpression' &&
+  n.callee.type === 'Identifier' &&
+  n.callee.name === 'require';
 
 function runsOnImport(node) {
-  const stmt = EXPORTS.includes(node.type) && node.declaration ? node.declaration : node;
-  if (DECLARED.includes(stmt.type)) return false;
-  if (stmt.type !== 'VariableDeclaration') return !INERT.includes(stmt.type);
+  const stmt =
+    EXPORTS.includes(node.type) && node.declaration ? node.declaration : node;
+  if (DECLARED.includes(stmt.type)) {
+    return false;
+  }
+  if (stmt.type !== 'VariableDeclaration') {
+    return !INERT.includes(stmt.type);
+  }
   return stmt.declarations.some(
-    (d) => d.init !== null && !INERT.includes(d.init.type) && !isRequire(d.init),
+    (d) => d.init !== null && !INERT.includes(d.init.type) && !isRequire(d.init)
   );
 }
 
 function fileTotals(messages, functions, ast) {
   const peak = (key) => {
     const [pattern, rule] = TOTALS[key];
-    const found = messages.filter((m) => m.ruleId === rule).map((m) => Number(m.message.match(pattern)[1]));
+    const found = messages
+      .filter((m) => m.ruleId === rule)
+      .map((m) => Number(m.message.match(pattern)[1]));
     return found.length === 0 ? 0 : Math.max(...found);
   };
   return {
@@ -188,15 +261,27 @@ function fileTotals(messages, functions, ast) {
 async function score(content, filePath) {
   const messages = await lint(content, filePath);
   const functions = messages
-    .filter((m) => m.ruleId === 'complexity' && !m.message.startsWith('Class field initializer'))
+    .filter(
+      (m) =>
+        m.ruleId === 'complexity' &&
+        !m.message.startsWith('Class field initializer')
+    )
     .map(toFunction);
-  for (const m of messages.filter((m) => m.ruleId === 'sonarjs/cognitive-complexity')) {
+  for (const m of messages.filter(
+    (m) => m.ruleId === 'sonarjs/cognitive-complexity'
+  )) {
     const fn = owner(functions, m);
-    if (fn) fn.cognitive = Number(m.message.match(/from (\d+) to/)[1]);
+    if (fn) {
+      fn.cognitive = Number(m.message.match(/from (\d+) to/)[1]);
+    }
   }
   const ast = astOf(content, filePath);
   attachRender(functions, ast);
-  return { functions: functions.sort((a, b) => a.line - b.line), messages, ast };
+  return {
+    functions: functions.sort((a, b) => a.line - b.line),
+    messages,
+    ast,
+  };
 }
 
 // Anonymous callbacks share a name, so ordinal matching alone shifts every
@@ -204,38 +289,57 @@ async function score(content, filePath) {
 // an untouched callback paired with itself; the ordinal pass covers the rest.
 function matchBase(afterFns, baseFns) {
   const pools = new Map();
-  for (const fn of baseFns) pools.set(fn.name, [...(pools.get(fn.name) ?? []), fn]);
+  for (const fn of baseFns) {
+    pools.set(fn.name, [...(pools.get(fn.name) ?? []), fn]);
+  }
   const pool = (fn) => pools.get(fn.name) ?? [];
   for (const fn of afterFns) {
     const i = pool(fn).findIndex(
-      (b) => b.cyclomatic === fn.cyclomatic && b.cognitive === fn.cognitive,
+      (b) => b.cyclomatic === fn.cyclomatic && b.cognitive === fn.cognitive
     );
-    if (i !== -1) fn.base = pool(fn).splice(i, 1)[0];
+    if (i !== -1) {
+      fn.base = pool(fn).splice(i, 1)[0];
+    }
   }
   for (const fn of afterFns) {
-    if (fn.base === undefined) fn.base = pool(fn).shift() ?? null;
+    if (fn.base === undefined) {
+      fn.base = pool(fn).shift() ?? null;
+    }
   }
 }
 
 function severity(fn, file) {
   const labels = labelsFor(file);
   const worse =
-    !fn.base || fn.cyclomatic > fn.base.cyclomatic || fn.cognitive > fn.base.cognitive;
-  if (!labels || !worse) return null;
+    !fn.base ||
+    fn.cyclomatic > fn.base.cyclomatic ||
+    fn.cognitive > fn.base.cognitive;
+  if (!labels || !worse) {
+    return null;
+  }
   const top = Math.max(fn.cyclomatic, fn.cognitive);
-  if (top > 25) return labels.blocker;
-  if (top > 15) return labels.important;
+  if (top > 25) {
+    return labels.blocker;
+  }
+  if (top > 15) {
+    return labels.important;
+  }
   return null;
 }
 
 async function scoreFile(file, base, source) {
   const content = contentOf(source, file);
-  if (content === null) return null;
+  if (content === null) {
+    return null;
+  }
   const { functions: afterFns, messages, ast } = await score(content, file);
   if (base !== null) {
     const baseContent = contentAt(base, file);
     const baseFns =
-      baseContent === null ? [] : (await score(baseContent, file).catch(() => ({ functions: [] }))).functions;
+      baseContent === null
+        ? []
+        : (await score(baseContent, file).catch(() => ({ functions: [] })))
+            .functions;
     matchBase(afterFns, baseFns);
   }
   return {
@@ -246,8 +350,12 @@ async function scoreFile(file, base, source) {
 
 function formatRow({ fn, file, severity: sev }, changed) {
   const cell = (key) => {
-    if (!changed) return String(fn[key]).padEnd(4);
-    return (fn.base ? `${fn.base[key]}→${fn[key]}` : `new→${fn[key]}`).padEnd(8);
+    if (!changed) {
+      return String(fn[key]).padEnd(4);
+    }
+    return (fn.base ? `${fn.base[key]}→${fn[key]}` : `new→${fn[key]}`).padEnd(
+      8
+    );
   };
   return [
     (sev ?? '').padEnd(10),
@@ -280,7 +388,9 @@ function printTable(shown, totals, changed) {
   // One footer per file scanned, after that file's rows. `--report` filters
   // rows; it never hides a footer.
   for (const [file, t] of totals) {
-    for (const row of shown.filter((r) => r.file === file)) console.log(formatRow(row, changed));
+    for (const row of shown.filter((r) => r.file === file)) {
+      console.log(formatRow(row, changed));
+    }
     console.log(footer(file, t));
   }
 }
@@ -289,11 +399,16 @@ function report(rows, totals, { max, report: floor, changed }, hadError) {
   const shown = rows
     .filter(({ fn }) => fn.cyclomatic >= floor || fn.cognitive >= floor)
     .sort((a, b) => a.file.localeCompare(b.file) || a.fn.line - b.fn.line);
-  if (shown.length === 0) console.log('Nothing to report.');
+  if (shown.length === 0) {
+    console.log('Nothing to report.');
+  }
   printTable(shown, totals, changed !== null);
-  const violators = max === null ? [] : rows.filter(({ fn }) => fn.cognitive > max);
+  const violators =
+    max === null ? [] : rows.filter(({ fn }) => fn.cognitive > max);
   if (violators.length > 0) {
-    console.error(`\n--max ${max} exceeded by ${violators.length} function(s):`);
+    console.error(
+      `\n--max ${max} exceeded by ${violators.length} function(s):`
+    );
     for (const { fn, file } of violators) {
       console.error(`  cog:${fn.cognitive}  ${fn.name}  ${file}:${fn.line}`);
     }
@@ -303,8 +418,13 @@ function report(rows, totals, { max, report: floor, changed }, hadError) {
 }
 
 async function main() {
-  const cli = parseCli({ ints: ['max', 'report'], defaults: { report: 10 }, usage: USAGE });
-  const files = cli.changed === null ? cli.files : changedFiles(cli.base, cli.source);
+  const cli = parseCli({
+    ints: ['max', 'report'],
+    defaults: { report: 10 },
+    usage: USAGE,
+  });
+  const files =
+    cli.changed === null ? cli.files : changedFiles(cli.base, cli.source);
   const rows = [];
   const totals = new Map();
   let hadError = false;

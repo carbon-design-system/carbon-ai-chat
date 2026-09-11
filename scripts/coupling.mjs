@@ -53,10 +53,13 @@ const EXCLUDE =
   /node_modules|dist\/|\/es\/|es-custom\/|storybook-static\/|__tests__|\.test\.|_spec\.|\.spec\.|__stories__|\.stories\.|storybook|\/tests\/|\.scss$/;
 const BARREL = /\/(aiChatEntry\.tsx|index\.(ts|tsx|js|jsx))$/;
 
-const inTree = (file) => ROOTS.some((r) => file.startsWith(`${r}/`)) && !EXCLUDE.test(file);
+const inTree = (file) =>
+  ROOTS.some((r) => file.startsWith(`${r}/`)) && !EXCLUDE.test(file);
 
 const CIRCULAR = {
-  forbidden: [{ name: 'no-circular', severity: 'info', from: {}, to: { circular: true } }],
+  forbidden: [
+    { name: 'no-circular', severity: 'info', from: {}, to: { circular: true } },
+  ],
 };
 
 // Ca is a graph property, so the whole tree is cruised and the requested
@@ -75,10 +78,16 @@ async function cruiseTree({ preCompilation = false, cycles = false } = {}) {
   const graph = new Map();
   for (const m of result.output.modules) {
     const local = m.dependencies.filter(
-      (d) => !d.couldNotResolve && d.dependencyTypes.includes('local'),
+      (d) => !d.couldNotResolve && d.dependencyTypes.includes('local')
     );
-    const partners = local.filter((d) => d.cycle?.length > 0).map((d) => d.resolved);
-    graph.set(m.source.replaceAll('\\', '/'), { ca: m.dependents.length, ce: local.length, partners });
+    const partners = local
+      .filter((d) => d.cycle?.length > 0)
+      .map((d) => d.resolved);
+    graph.set(m.source.replaceAll('\\', '/'), {
+      ca: m.dependents.length,
+      ce: local.length,
+      partners,
+    });
   }
   return graph;
 }
@@ -112,9 +121,15 @@ async function withArchive(ref, fn) {
 function severity(mod, file) {
   const labels = labelsFor(file);
   const worse = !mod.base || mod.ca > mod.base.ca || mod.ce > mod.base.ce;
-  if (!labels || !worse || BARREL.test(file)) return null;
-  if (mod.ce > 30 || mod.ca > 40) return labels.blocker;
-  if (mod.ce > 15 || mod.ca > 20) return labels.important;
+  if (!labels || !worse || BARREL.test(file)) {
+    return null;
+  }
+  if (mod.ce > 30 || mod.ca > 40) {
+    return labels.blocker;
+  }
+  if (mod.ce > 15 || mod.ca > 20) {
+    return labels.important;
+  }
   return null;
 }
 
@@ -122,22 +137,33 @@ function severity(mod, file) {
 function attachBase(mod, base) {
   mod.base = base;
   const wasCircular = (base?.partners ?? []).length > 0;
-  if (!wasCircular && mod.partners.length > 0) mod.joined = mod.partners[0];
+  if (!wasCircular && mod.partners.length > 0) {
+    mod.joined = mod.partners[0];
+  }
 }
 
 function notesFor(mod, file) {
   const notes = [];
-  if (BARREL.test(file)) notes.push('entry/barrel — structural, not judged');
-  if (mod.joined !== undefined) notes.push(`joined a cycle with ${mod.joined}`);
+  if (BARREL.test(file)) {
+    notes.push('entry/barrel — structural, not judged');
+  }
+  if (mod.joined !== undefined) {
+    notes.push(`joined a cycle with ${mod.joined}`);
+  }
   return notes.length === 0 ? '' : `  (${notes.join('; ')})`;
 }
 
 function formatRow({ mod, file, severity: sev }, changed) {
   const cell = (key) => {
-    if (!changed) return String(mod[key]).padEnd(4);
-    return (mod.base ? `${mod.base[key]}→${mod[key]}` : `new→${mod[key]}`).padEnd(8);
+    if (!changed) {
+      return String(mod[key]).padEnd(4);
+    }
+    return (
+      mod.base ? `${mod.base[key]}→${mod[key]}` : `new→${mod[key]}`
+    ).padEnd(8);
   };
-  const inst = mod.ca + mod.ce === 0 ? 'n/a' : (mod.ce / (mod.ca + mod.ce)).toFixed(2);
+  const inst =
+    mod.ca + mod.ce === 0 ? 'n/a' : (mod.ce / (mod.ca + mod.ce)).toFixed(2);
   return [
     (sev ?? '').padEnd(10),
     `fanin:${cell('ca')} (type ${String(mod.typeIn).padEnd(3)})`,
@@ -149,15 +175,24 @@ function formatRow({ mod, file, severity: sev }, changed) {
 
 function violators(rows, flag, key, max) {
   const over = max === null ? [] : rows.filter(({ mod }) => mod[key] > max);
-  if (over.length === 0) return false;
+  if (over.length === 0) {
+    return false;
+  }
   console.error(`\n${flag} ${max} exceeded by ${over.length} file(s):`);
   const label = key === 'ce' ? 'fanout' : 'fanin';
-  for (const { mod, file } of over) console.error(`  ${label}:${mod[key]}  ${file}`);
+  for (const { mod, file } of over) {
+    console.error(`  ${label}:${mod[key]}  ${file}`);
+  }
   return true;
 }
 
 function report(rows, cli, hadError) {
-  const { 'max-fanout': maxFanout, 'max-fanin': maxFanin, report: floor, changed } = cli;
+  const {
+    'max-fanout': maxFanout,
+    'max-fanin': maxFanin,
+    report: floor,
+    changed,
+  } = cli;
   const shown = rows
     .filter(({ mod }) => mod.ca >= floor || mod.ce >= floor)
     .sort((a, b) => b.mod.ce - a.mod.ce || a.file.localeCompare(b.file));
@@ -174,7 +209,9 @@ function report(rows, cli, hadError) {
     ].join('  ');
     console.log(header);
     console.log('-'.repeat(header.length));
-    for (const row of shown) console.log(formatRow(row, changed !== null));
+    for (const row of shown) {
+      console.log(formatRow(row, changed !== null));
+    }
   }
   const failed = violators(rows, '--max-fanout', 'ce', maxFanout);
   const failedIn = violators(rows, '--max-fanin', 'ca', maxFanin);
@@ -188,7 +225,9 @@ async function main() {
     usage: USAGE,
   });
   const changed = cli.changed !== null;
-  const files = changed ? changedFiles(cli.base, cli.source).filter(inTree) : cli.files;
+  const files = changed
+    ? changedFiles(cli.base, cli.source).filter(inTree)
+    : cli.files;
   // Both cruises of the after side share one archive when there is one.
   const cruiseBoth = async () => [
     await cruiseTree({ cycles: changed }),
@@ -199,7 +238,9 @@ async function main() {
     ? await cruiseBoth()
     : await withArchive(afterRef(cli.source), cruiseBoth);
   withTypeEdges(graph, preGraph);
-  const baseGraph = changed ? await withArchive(cli.base, () => cruiseTree({ cycles: true })) : null;
+  const baseGraph = changed
+    ? await withArchive(cli.base, () => cruiseTree({ cycles: true }))
+    : null;
   const rows = [];
   let hadError = false;
   for (const file of files) {
@@ -209,7 +250,9 @@ async function main() {
       hadError = true;
       continue;
     }
-    if (baseGraph) attachBase(mod, baseGraph.get(file) ?? null);
+    if (baseGraph) {
+      attachBase(mod, baseGraph.get(file) ?? null);
+    }
     rows.push({ mod, file, severity: severity(mod, file) });
   }
   report(rows, cli, hadError);

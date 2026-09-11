@@ -1,15 +1,24 @@
-/* eslint-disable */
-import React, { useMemo, useState } from "react";
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 
-import ReasoningStepsToggle from "../../../react/reasoning-steps-toggle";
-import ReasoningSteps from "../../../react/reasoning-steps";
-import ReasoningStep from "../../../react/reasoning-step";
-import Markdown from "../../../react/markdown";
+/* eslint-disable */
+import React, { useMemo, useState } from 'react';
+
+import ReasoningStepsToggle from '../../../react/reasoning-steps-toggle';
+import ReasoningSteps from '../../../react/reasoning-steps';
+import ReasoningStep from '../../../react/reasoning-step';
+import Markdown from '../../../react/markdown';
 
 const defaultSteps = [
   {
-    id: "context",
-    title: "Gather context",
+    id: 'context',
+    title: 'Gather context',
     open: true,
     body: (
       <Markdown
@@ -19,8 +28,8 @@ reasoning.`}
     ),
   },
   {
-    id: "outline",
-    title: "Plan answer",
+    id: 'outline',
+    title: 'Plan answer',
     body: (
       <Markdown
         markdown={`Drafted a response outline and verified coverage against the request.`}
@@ -28,8 +37,8 @@ reasoning.`}
     ),
   },
   {
-    id: "quality",
-    title: "Quality check",
+    id: 'quality',
+    title: 'Quality check',
     body: (
       <Markdown
         markdown={`Ensured tone, safety, and citations were in place before finalizing.`}
@@ -45,11 +54,10 @@ const Demo = ({ args }) => {
   return (
     <div
       style={{
-        display: "grid",
-        gap: "0.75rem",
-        maxWidth: "48rem",
-      }}
-    >
+        display: 'grid',
+        gap: '0.75rem',
+        maxWidth: '48rem',
+      }}>
       <ReasoningStepsToggle
         open={open}
         panelID={args.panelId}
@@ -71,35 +79,35 @@ const Demo = ({ args }) => {
 };
 
 export default {
-  title: "Components/Reasoning steps/Toggle",
+  title: 'Components/Reasoning steps/Toggle',
   args: {
-    openLabelText: "Hide reasoning steps",
-    closedLabelText: "Show reasoning steps",
-    panelId: "reasoning-steps-toggle-react",
+    openLabelText: 'Hide reasoning steps',
+    closedLabelText: 'Show reasoning steps',
+    panelId: 'reasoning-steps-toggle-react',
     open: true,
     steps: defaultSteps,
   },
   argTypes: {
     openLabelText: {
-      control: "text",
-      description: "Label shown when the wrapper is expanded.",
+      control: 'text',
+      description: 'Label shown when the wrapper is expanded.',
     },
     closedLabelText: {
-      control: "text",
-      description: "Label shown when the wrapper is collapsed.",
+      control: 'text',
+      description: 'Label shown when the wrapper is collapsed.',
     },
     panelId: {
-      control: "text",
-      description: "ID applied to the reasoning steps container.",
+      control: 'text',
+      description: 'ID applied to the reasoning steps container.',
     },
     open: {
-      control: "boolean",
-      description: "Whether the wrapper is expanded.",
+      control: 'boolean',
+      description: 'Whether the wrapper is expanded.',
     },
     steps: {
-      control: "object",
+      control: 'object',
       description:
-        "Reasoning steps rendered inside the wrapper (used by the demo composition).",
+        'Reasoning steps rendered inside the wrapper (used by the demo composition).',
     },
   },
 };

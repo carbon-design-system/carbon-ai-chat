@@ -66,7 +66,8 @@ const MEASURED = /^(packages|demo)\//;
 const COMMENT = /^\s*(\/\/|\/\*|\*)/;
 const BANNER = /^\s*\/\/ ?-{5,}/;
 const TASK_REF = /#\d{3,5}|PLAN|RESEARCH/;
-const EXPORTED = /^\s*export\s+(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)/;
+const EXPORTED =
+  /^\s*export\s+(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)/;
 
 function linesOn(source, file) {
   const content = contentOf(source, file);
@@ -80,17 +81,27 @@ function medianSizeAt(base, dir, ext, recursive = false) {
     encoding: 'utf8',
     maxBuffer: Infinity,
   });
-  if (result.status !== 0) return null;
+  if (result.status !== 0) {
+    return null;
+  }
   const sizes = result.stdout
     .split('\n')
     .map((line) => line.slice(base.length + 1))
-    .map((rest) => [rest.slice(0, rest.lastIndexOf(':')), Number(rest.slice(rest.lastIndexOf(':') + 1))])
+    .map((rest) => [
+      rest.slice(0, rest.lastIndexOf(':')),
+      Number(rest.slice(rest.lastIndexOf(':') + 1)),
+    ])
     .filter(([f]) => f.endsWith(ext) && (recursive || dirname(f) === dir))
     .map(([, n]) => n)
     .sort((a, b) => a - b);
-  if (sizes.length === 0) return null;
+  if (sizes.length === 0) {
+    return null;
+  }
   const mid = Math.floor(sizes.length / 2);
-  const median = sizes.length % 2 ? sizes[mid] : Math.round((sizes[mid - 1] + sizes[mid]) / 2);
+  const median =
+    sizes.length % 2
+      ? sizes[mid]
+      : Math.round((sizes[mid - 1] + sizes[mid]) / 2);
   return { median, n: sizes.length };
 }
 
@@ -103,9 +114,18 @@ function importersOf(source, name, declaredIn) {
 function runTools(base, cli) {
   let worst = 0;
   for (const [name, flags] of TOOLS) {
-    const extra = flags.flatMap((f) => (cli[f] === null ? [] : [`--${f}`, String(cli[f])]));
+    const extra = flags.flatMap((f) =>
+      cli[f] === null ? [] : [`--${f}`, String(cli[f])]
+    );
     console.log(`\n== ${name}`);
-    const args = [`scripts/${name}.mjs`, '--changed', base, '--source', cli.source, ...extra];
+    const args = [
+      `scripts/${name}.mjs`,
+      '--changed',
+      base,
+      '--source',
+      cli.source,
+      ...extra,
+    ];
     const { status } = spawnSync('node', args, {
       stdio: 'inherit',
     });
@@ -122,8 +142,12 @@ function sizeRow(base, source, file) {
   const area = file.split('/')[0];
   const here = medianSizeAt(base, dirname(file), ext);
   const precedent = here ?? medianSizeAt(base, area, ext, true);
-  if (precedent === null) return `${file}  ${lines} lines, no precedent`;
-  const scope = here ? `${dirname(file)}/*${ext}` : `${area}/**/*${ext} (fallback)`;
+  if (precedent === null) {
+    return `${file}  ${lines} lines, no precedent`;
+  }
+  const scope = here
+    ? `${dirname(file)}/*${ext}`
+    : `${area}/**/*${ext} (fallback)`;
   const ratio = (lines / precedent.median).toFixed(1);
   return `${file}  ${lines} lines, ${ratio}× the ${scope} median (${precedent.median}, n=${precedent.n})`;
 }
@@ -131,9 +155,13 @@ function sizeRow(base, source, file) {
 function commentRows(rows) {
   const comments = rows.filter((r) => COMMENT.test(r.text));
   const ratio = Math.round((comments.length / rows.length) * 100);
-  console.log(`added lines ${rows.length}, comments ${comments.length} (${ratio}%)`);
+  console.log(
+    `added lines ${rows.length}, comments ${comments.length} (${ratio}%)`
+  );
   console.log(`banners ${rows.filter((r) => BANNER.test(r.text)).length}`);
-  console.log(`task references ${comments.filter((r) => TASK_REF.test(r.text)).length}`);
+  console.log(
+    `task references ${comments.filter((r) => TASK_REF.test(r.text)).length}`
+  );
 }
 
 function dependencyRow(base, source) {
@@ -141,20 +169,26 @@ function dependencyRow(base, source) {
     const pkg = raw === null ? {} : JSON.parse(raw);
     return Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
   };
-  const manifests = changedPaths(base, source).filter((f) => f.split('/').pop() === 'package.json');
+  const manifests = changedPaths(base, source).filter(
+    (f) => f.split('/').pop() === 'package.json'
+  );
   const fresh = manifests.flatMap((file) => {
     const before = new Set(named(contentAt(base, file)));
     return named(contentOf(source, file)).filter((name) => !before.has(name));
   });
   const unique = [...new Set(fresh)];
-  console.log(`new dependencies ${unique.length === 0 ? 'none' : unique.join(', ')}`);
+  console.log(
+    `new dependencies ${unique.length === 0 ? 'none' : unique.join(', ')}`
+  );
 }
 
 // One importer in the same directory is the shape worth a second look: the
 // export could have stayed private to the file that uses it.
 function thinlyImported(source, name, file) {
   const importers = importersOf(source, name, file);
-  if (importers.length === 0) return `${name}: 0 importers  (${file})`;
+  if (importers.length === 0) {
+    return `${name}: 0 importers  (${file})`;
+  }
   if (importers.length === 1 && dirname(importers[0]) === dirname(file)) {
     return `${name}: 1 importer, same directory  (${file})`;
   }
@@ -165,13 +199,19 @@ function exportRows(source, rows) {
   const declared = new Map();
   for (const { file, text } of rows) {
     const name = text.match(EXPORTED)?.[1];
-    if (name) declared.set(name, file);
+    if (name) {
+      declared.set(name, file);
+    }
   }
   const thin = [...declared]
     .map(([name, file]) => thinlyImported(source, name, file))
     .filter(Boolean);
-  for (const row of thin.slice(0, EXPORT_ROWS)) console.log(row);
-  if (thin.length > EXPORT_ROWS) console.log(`… and ${thin.length - EXPORT_ROWS} more`);
+  for (const row of thin.slice(0, EXPORT_ROWS)) {
+    console.log(row);
+  }
+  if (thin.length > EXPORT_ROWS) {
+    console.log(`… and ${thin.length - EXPORT_ROWS} more`);
+  }
 }
 
 function tellRows(rows) {
@@ -191,14 +231,19 @@ function diffBlock(base, source) {
     console.log('Diff: no new code files, no added lines');
     return;
   }
-  for (const file of added) console.log(sizeRow(base, source, file));
+  for (const file of added) {
+    console.log(sizeRow(base, source, file));
+  }
   commentRows(rows);
   exportRows(source, rows);
   tellRows(rows);
 }
 
 function main() {
-  const cli = parseCli({ ints: ['max', 'report', 'max-fanout', 'max-fanin'], usage: USAGE });
+  const cli = parseCli({
+    ints: ['max', 'report', 'max-fanout', 'max-fanin'],
+    usage: USAGE,
+  });
   if (cli.files.length > 0) {
     console.error('error: measure runs on a diff; pass --changed <base>');
     console.error(USAGE);

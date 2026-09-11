@@ -5,26 +5,26 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { globby } from "globby";
+import { globby } from 'globby';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-export const REPO_ROOT = path.resolve(__dirname, "..");
+export const REPO_ROOT = path.resolve(__dirname, '..');
 
 export const REQUIRED_SECTIONS = [
-  "What this example shows",
-  "When to use this pattern",
-  "APIs and props demonstrated",
+  'What this example shows',
+  'When to use this pattern',
+  'APIs and props demonstrated',
 ];
 
-export const AGGREGATOR_INDEX_START = "<!-- verify:examples-index:start -->";
-export const AGGREGATOR_INDEX_END = "<!-- verify:examples-index:end -->";
+export const AGGREGATOR_INDEX_START = '<!-- verify:examples-index:start -->';
+export const AGGREGATOR_INDEX_END = '<!-- verify:examples-index:end -->';
 
-const TREES = ["react", "web-components"];
+const TREES = ['react', 'web-components'];
 
 /**
  * Walk both example trees and return descriptors for every example that has a
@@ -36,18 +36,18 @@ export async function discoverExamples(treeFilter) {
     : TREES.slice();
   const out = [];
   for (const tree of trees) {
-    const treeRoot = path.join(REPO_ROOT, "examples", tree);
-    const dirs = await globby(["*/README.md"], {
+    const treeRoot = path.join(REPO_ROOT, 'examples', tree);
+    const dirs = await globby(['*/README.md'], {
       cwd: treeRoot,
       onlyFiles: true,
     });
     for (const rel of dirs) {
       const dir = path.dirname(rel);
-      const readmePath = path.join(treeRoot, dir, "README.md");
-      const packageJsonPath = path.join(treeRoot, dir, "package.json");
+      const readmePath = path.join(treeRoot, dir, 'README.md');
+      const packageJsonPath = path.join(treeRoot, dir, 'package.json');
       let pkg;
       try {
-        pkg = JSON.parse(await readFile(packageJsonPath, "utf8"));
+        pkg = JSON.parse(await readFile(packageJsonPath, 'utf8'));
       } catch {
         // No package.json — not a real example, skip.
         continue;
@@ -55,7 +55,7 @@ export async function discoverExamples(treeFilter) {
       out.push({
         tree,
         dir,
-        relativePath: path.posix.join("examples", tree, dir),
+        relativePath: path.posix.join('examples', tree, dir),
         readmePath,
         packageJsonPath,
         packageName: pkg.name,
@@ -71,7 +71,7 @@ export async function discoverExamples(treeFilter) {
  * Hand-rolled splitter — we only need the H1 + the three required H2s.
  */
 export function parseExampleReadme(raw) {
-  const lines = raw.split("\n");
+  const lines = raw.split('\n');
   let title = null;
   let summary = null;
   const sections = new Map();
@@ -79,37 +79,39 @@ export function parseExampleReadme(raw) {
   let cursor = 0;
   while (cursor < lines.length && title === null) {
     const line = lines[cursor];
-    if (line.startsWith("# ")) {
+    if (line.startsWith('# ')) {
       title = line.slice(2).trim();
     }
     cursor++;
   }
 
   // First non-blank paragraph after the H1 is the summary.
-  while (cursor < lines.length && lines[cursor].trim() === "") cursor++;
+  while (cursor < lines.length && lines[cursor].trim() === '') {
+    cursor++;
+  }
   const summaryLines = [];
   while (
     cursor < lines.length &&
-    lines[cursor].trim() !== "" &&
-    !lines[cursor].startsWith("#")
+    lines[cursor].trim() !== '' &&
+    !lines[cursor].startsWith('#')
   ) {
     summaryLines.push(lines[cursor].trim());
     cursor++;
   }
-  summary = summaryLines.join(" ").trim() || null;
+  summary = summaryLines.join(' ').trim() || null;
 
   // Walk H2 sections.
   let currentName = null;
   let currentBody = [];
   for (; cursor < lines.length; cursor++) {
     const line = lines[cursor];
-    if (line.startsWith("## ")) {
+    if (line.startsWith('## ')) {
       if (currentName !== null) {
         sections.set(currentName, joinAndTrim(currentBody));
       }
       currentName = line.slice(3).trim();
       currentBody = [];
-    } else if (line.startsWith("# ")) {
+    } else if (line.startsWith('# ')) {
       // hit another H1 — stop
       if (currentName !== null) {
         sections.set(currentName, joinAndTrim(currentBody));
@@ -131,9 +133,13 @@ function joinAndTrim(lines) {
   // strip leading and trailing blank lines
   let start = 0;
   let end = lines.length;
-  while (start < end && lines[start].trim() === "") start++;
-  while (end > start && lines[end - 1].trim() === "") end--;
-  return lines.slice(start, end).join("\n");
+  while (start < end && lines[start].trim() === '') {
+    start++;
+  }
+  while (end > start && lines[end - 1].trim() === '') {
+    end--;
+  }
+  return lines.slice(start, end).join('\n');
 }
 
 /**
@@ -143,27 +149,31 @@ function joinAndTrim(lines) {
 export function validateExampleReadmeShape(parsed, descriptor) {
   const errors = [];
   if (!parsed.title) {
-    errors.push(`${descriptor.relativePath}/README.md: missing top-level "# Title" heading.`);
+    errors.push(
+      `${descriptor.relativePath}/README.md: missing top-level "# Title" heading.`
+    );
   }
   if (!parsed.summary) {
-    errors.push(`${descriptor.relativePath}/README.md: missing summary paragraph after the title.`);
+    errors.push(
+      `${descriptor.relativePath}/README.md: missing summary paragraph after the title.`
+    );
   }
   for (const heading of REQUIRED_SECTIONS) {
     if (!parsed.sections.has(heading)) {
       errors.push(
-        `${descriptor.relativePath}/README.md: missing required section "## ${heading}".`,
+        `${descriptor.relativePath}/README.md: missing required section "## ${heading}".`
       );
       continue;
     }
     const body = parsed.sections.get(heading).trim();
     if (!body) {
       errors.push(
-        `${descriptor.relativePath}/README.md: section "## ${heading}" is empty.`,
+        `${descriptor.relativePath}/README.md: section "## ${heading}" is empty.`
       );
     }
-    if (heading === "APIs and props demonstrated" && !body.includes("|")) {
+    if (heading === 'APIs and props demonstrated' && !body.includes('|')) {
       errors.push(
-        `${descriptor.relativePath}/README.md: section "## APIs and props demonstrated" must contain a markdown table (no "|" found).`,
+        `${descriptor.relativePath}/README.md: section "## APIs and props demonstrated" must contain a markdown table (no "|" found).`
       );
     }
   }
@@ -184,7 +194,7 @@ export function deriveStartCommand(descriptor) {
   if (scripts.test) {
     return `\`npm run test --workspace=${packageName}\``;
   }
-  return "n/a";
+  return 'n/a';
 }
 
 /**
@@ -195,15 +205,15 @@ export function deriveStartCommand(descriptor) {
  */
 export function renderAggregatorSections(examples) {
   const blocks = examples.map(({ descriptor, parsed }) =>
-    buildAggregatorSection(descriptor, parsed),
+    buildAggregatorSection(descriptor, parsed)
   );
   return [
     AGGREGATOR_INDEX_START,
-    "",
-    blocks.join("\n\n"),
-    "",
+    '',
+    blocks.join('\n\n'),
+    '',
     AGGREGATOR_INDEX_END,
-  ].join("\n");
+  ].join('\n');
 }
 
 /**
@@ -211,15 +221,15 @@ export function renderAggregatorSections(examples) {
  */
 export function buildAggregatorSection(descriptor, parsed) {
   const heading = `### [${parsed.title}](./${descriptor.dir}/README.md)`;
-  const summary = parsed.summary ?? "";
+  const summary = parsed.summary ?? '';
   const startCommand = `**Start command:** ${deriveStartCommand(descriptor)}`;
-  const apisBody = parsed.sections.get("APIs and props demonstrated")?.trim();
+  const apisBody = parsed.sections.get('APIs and props demonstrated')?.trim();
   // GitHub requires a blank line after <summary> for the inner markdown table
   // to render instead of being treated as inline HTML.
   const apisBlock = apisBody
     ? `<details>\n<summary>APIs and props demonstrated</summary>\n\n${apisBody}\n\n</details>`
-    : "_(APIs section missing — run `npm run verify:example-readmes`)_";
-  return [heading, "", summary, "", startCommand, "", apisBlock].join("\n");
+    : '_(APIs section missing — run `npm run verify:example-readmes`)_';
+  return [heading, '', summary, '', startCommand, '', apisBlock].join('\n');
 }
 
 /**
@@ -249,7 +259,7 @@ export function spliceAggregator(raw, renderedBlock) {
   const located = locateAggregatorMarkers(raw);
   if (!located) {
     throw new Error(
-      "Aggregator README is missing the verify:examples-index markers.",
+      'Aggregator README is missing the verify:examples-index markers.'
     );
   }
   return located.before + renderedBlock + located.after;
@@ -259,7 +269,7 @@ export function spliceAggregator(raw, renderedBlock) {
  * Read + parse one example. Returns the descriptor with `parsed`/`raw` populated.
  */
 export async function loadExample(descriptor) {
-  const raw = await readFile(descriptor.readmePath, "utf8");
+  const raw = await readFile(descriptor.readmePath, 'utf8');
   const parsed = parseExampleReadme(raw);
   return { descriptor, parsed, raw };
 }
@@ -280,8 +290,8 @@ export async function loadTree(tree) {
  * Read a aggregator README file (./examples/<tree>/README.md).
  */
 export async function readAggregator(tree) {
-  const aggregatorPath = path.join(REPO_ROOT, "examples", tree, "README.md");
-  const raw = await readFile(aggregatorPath, "utf8");
+  const aggregatorPath = path.join(REPO_ROOT, 'examples', tree, 'README.md');
+  const raw = await readFile(aggregatorPath, 'utf8');
   return { aggregatorPath, raw };
 }
 
@@ -292,9 +302,11 @@ export async function readAggregator(tree) {
  */
 export function sortExamples(entries) {
   return [...entries].sort((a, b) => {
-    const aBasic = a.descriptor.dir.startsWith("basic-");
-    const bBasic = b.descriptor.dir.startsWith("basic-");
-    if (aBasic !== bBasic) return aBasic ? -1 : 1;
+    const aBasic = a.descriptor.dir.startsWith('basic-');
+    const bBasic = b.descriptor.dir.startsWith('basic-');
+    if (aBasic !== bBasic) {
+      return aBasic ? -1 : 1;
+    }
     return a.descriptor.dir.localeCompare(b.descriptor.dir);
   });
 }

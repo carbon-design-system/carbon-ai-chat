@@ -1,9 +1,18 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
-import React from "react";
-import ChainOfThought from "../../../react/chain-of-thought";
-import ChainOfThoughtStep from "../../../react/chain-of-thought-step";
-import ToolCallData from "../../../react/tool-call-data";
-import Markdown from "../../../react/markdown";
+import React from 'react';
+import ChainOfThought from '../../../react/chain-of-thought';
+import ChainOfThoughtStep from '../../../react/chain-of-thought-step';
+import ToolCallData from '../../../react/tool-call-data';
+import Markdown from '../../../react/markdown';
 
 const request = `\`\`\`json
 { "query": "recent outages in eu-west", "limit": 3 }
@@ -19,80 +28,80 @@ const response = `\`\`\`json
 \`\`\``;
 
 export default {
-  title: "Components/Chain of thought/Step",
+  title: 'Components/Chain of thought/Step',
   component: ChainOfThoughtStep,
   parameters: {
     docs: {
       description: {
         component:
-          "Represents a single chain-of-thought entry. Supports controlled or uncontrolled open state when paired with `ChainOfThought`.",
+          'Represents a single chain-of-thought entry. Supports controlled or uncontrolled open state when paired with `ChainOfThought`.',
       },
     },
   },
   argTypes: {
     title: {
-      control: "text",
-      description: "Label displayed in the step header.",
+      control: 'text',
+      description: 'Label displayed in the step header.',
     },
     status: {
-      control: "select",
-      options: ["success", "failure", "processing"],
-      description: "Status indicator for the step.",
+      control: 'select',
+      options: ['success', 'failure', 'processing'],
+      description: 'Status indicator for the step.',
     },
     open: {
-      control: "boolean",
-      description: "Whether the step is expanded.",
+      control: 'boolean',
+      description: 'Whether the step is expanded.',
     },
     controlled: {
-      control: "boolean",
+      control: 'boolean',
       description:
-        "When true, the host application must update the open state in response to toggle events.",
+        'When true, the host application must update the open state in response to toggle events.',
     },
     statusSucceededLabelText: {
-      control: "text",
-      description: "Assistive text when a step has succeeded.",
+      control: 'text',
+      description: 'Assistive text when a step has succeeded.',
     },
     statusFailedLabelText: {
-      control: "text",
-      description: "Assistive text when a step failed.",
+      control: 'text',
+      description: 'Assistive text when a step failed.',
     },
     statusProcessingLabelText: {
-      control: "text",
-      description: "Assistive text when a step is processing.",
+      control: 'text',
+      description: 'Assistive text when a step is processing.',
     },
     onBeforeToggle: {
-      action: "onBeforeToggle",
-      table: { category: "events" },
+      action: 'onBeforeToggle',
+      table: { category: 'events' },
       description:
-        "Fires before a toggle; return false to prevent the open state from changing.",
+        'Fires before a toggle; return false to prevent the open state from changing.',
     },
     onToggle: {
-      action: "onToggle",
-      table: { category: "events" },
+      action: 'onToggle',
+      table: { category: 'events' },
       description:
-        "Emitted after a toggle request. Useful for syncing controlled state.",
+        'Emitted after a toggle request. Useful for syncing controlled state.',
     },
   },
   args: {
-    title: "Check recent incidents",
-    status: "success",
+    title: 'Check recent incidents',
+    status: 'success',
     open: true,
     controlled: false,
-    statusSucceededLabelText: "Succeeded",
-    statusFailedLabelText: "Failed",
-    statusProcessingLabelText: "Processing",
+    statusSucceededLabelText: 'Succeeded',
+    statusFailedLabelText: 'Failed',
+    statusProcessingLabelText: 'Processing',
     onBeforeToggle: (event) => {
-      console.log("onBeforeToggle", event?.detail);
+      console.log('onBeforeToggle', event?.detail);
     },
     onToggle: (event) => {
-      console.log("onToggle", event?.detail);
+      console.log('onToggle', event?.detail);
     },
   },
 };
 
 export const Default = {
   render: (args) => (
-    <div style={{ maxWidth: "32rem" }}>
+    <div style={{ maxWidth: '32rem' }}>
       <ChainOfThought open>
         <ChainOfThoughtStep
           title={args.title}
@@ -104,8 +113,7 @@ export const Default = {
           statusProcessingLabelText={args.statusProcessingLabelText}
           stepNumber={1}
           onBeforeToggle={args.onBeforeToggle}
-          onToggle={args.onToggle}
-        >
+          onToggle={args.onToggle}>
           <ToolCallData toolName="incident_lookup">
             <Markdown
               slot="description"
@@ -129,7 +137,7 @@ export const Default = {
 
 export const Static = {
   render: () => (
-    <div style={{ maxWidth: "32rem" }}>
+    <div style={{ maxWidth: '32rem' }}>
       <ChainOfThought open>
         <ChainOfThoughtStep
           title="Plan remediation"

@@ -27,8 +27,8 @@
  *   node scripts/reading-level.mjs packages/ai-chat/docs/*.md
  */
 
-import { readFileSync } from "node:fs";
-import rs from "text-readability";
+import { readFileSync } from 'node:fs';
+import rs from 'text-readability';
 
 /**
  * Turn Markdown into the plain prose a reader sees, so the score reflects
@@ -38,71 +38,75 @@ function markdownToProse(markdown) {
   let text = markdown;
 
   // Drop YAML frontmatter.
-  text = text.replace(/^---\n[\s\S]*?\n---\n/, "");
+  text = text.replace(/^---\n[\s\S]*?\n---\n/, '');
 
   // Drop fenced code blocks — code has no reading level.
-  text = text.replace(/```[\s\S]*?```/g, "");
+  text = text.replace(/```[\s\S]*?```/g, '');
 
   // Drop GFM table blocks — a header row, a `|---|` delimiter row, and body
   // rows. Removing the whole block (as with code fences) avoids merging cells
   // into a false run-on sentence. Detection anchors on the delimiter row, so
   // prose with a stray `|` is left alone.
   const isTableDelimiter = (line) => {
-    if (!line.includes("|")) return false;
-    const cells = line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|");
+    if (!line.includes('|')) {
+      return false;
+    }
+    const cells = line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|');
     return cells.length > 0 && cells.every((c) => /^\s*:?-+:?\s*$/.test(c));
   };
-  const srcLines = text.split("\n");
+  const srcLines = text.split('\n');
   const withoutTables = [];
   for (let i = 0; i < srcLines.length; i++) {
     if (
-      srcLines[i].includes("|") &&
+      srcLines[i].includes('|') &&
       i + 1 < srcLines.length &&
       isTableDelimiter(srcLines[i + 1])
     ) {
       let j = i + 2; // skip header + delimiter, then contiguous body rows
-      while (j < srcLines.length && srcLines[j].includes("|")) j++;
+      while (j < srcLines.length && srcLines[j].includes('|')) {
+        j++;
+      }
       i = j - 1; // for-loop `++` advances past the block
       continue;
     }
     withoutTables.push(srcLines[i]);
   }
-  text = withoutTables.join("\n");
+  text = withoutTables.join('\n');
 
   // Drop TypeDoc `{@link ...}` references entirely — both `{@link Target}` and
   // `{@link Target | display}`. They render as code-styled cross-reference
   // links, and scoring their dotted targets as one long word distorts the
   // grade. See references/tone.md.
-  text = text.replace(/\{@link\s+[^}]*\}/g, "");
+  text = text.replace(/\{@link\s+[^}]*\}/g, '');
 
   // `[text](url)` -> text.
-  text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1");
+  text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
 
   // Inline code, bold, italic — keep the words, drop the marks.
-  text = text.replace(/`([^`]+)`/g, "$1");
-  text = text.replace(/\*\*([^*]+)\*\*/g, "$1");
-  text = text.replace(/(^|[^*])\*([^*]+)\*/g, "$1$2");
+  text = text.replace(/`([^`]+)`/g, '$1');
+  text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
+  text = text.replace(/(^|[^*])\*([^*]+)\*/g, '$1$2');
 
   // Line-level markers: headings, list bullets, blockquotes.
-  const lines = text.split("\n").map((line) => {
-    let l = line.replace(/^\s{0,3}#{1,6}\s+/, ""); // headings
-    l = l.replace(/^\s*[-*+]\s+/, ""); // bullets
-    l = l.replace(/^\s*\d+\.\s+/, ""); // numbered list
-    l = l.replace(/^\s*>\s?/, ""); // blockquote
+  const lines = text.split('\n').map((line) => {
+    let l = line.replace(/^\s{0,3}#{1,6}\s+/, ''); // headings
+    l = l.replace(/^\s*[-*+]\s+/, ''); // bullets
+    l = l.replace(/^\s*\d+\.\s+/, ''); // numbered list
+    l = l.replace(/^\s*>\s?/, ''); // blockquote
     l = l.trim();
     // A heading or bullet is a unit of reading; give it a period so the
     // readability tokenizer counts it as one sentence, not a run-on.
     if (l && !/[.!?:]$/.test(l)) {
-      l += ".";
+      l += '.';
     }
     return l;
   });
 
-  return lines.filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+  return lines.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 }
 
 function score(file) {
-  const prose = markdownToProse(readFileSync(file, "utf8"));
+  const prose = markdownToProse(readFileSync(file, 'utf8'));
   return {
     file,
     grade: rs.fleschKincaidGrade(prose),
@@ -115,21 +119,23 @@ function score(file) {
 }
 
 const args = process.argv.slice(2);
-const maxIdx = args.indexOf("--max");
+const maxIdx = args.indexOf('--max');
 const max = maxIdx === -1 ? null : Number(args[maxIdx + 1]);
 const files = args.filter(
-  (a, i) => a !== "--max" && !(maxIdx !== -1 && i === maxIdx + 1),
+  (a, i) => a !== '--max' && !(maxIdx !== -1 && i === maxIdx + 1)
 );
 
 if (files.length === 0) {
-  console.error("usage: node scripts/reading-level.mjs <file.md> [...] [--max <grade>]");
+  console.error(
+    'usage: node scripts/reading-level.mjs <file.md> [...] [--max <grade>]'
+  );
   process.exit(2);
 }
 
 const rows = files.map(score);
 const pad = (s, n) => String(s).padEnd(n);
 console.log(
-  pad("grade", 7) + pad("ease", 7) + pad("w/sent", 8) + pad("words", 7) + "file",
+  pad('grade', 7) + pad('ease', 7) + pad('w/sent', 8) + pad('words', 7) + 'file'
 );
 for (const r of rows) {
   console.log(
@@ -137,7 +143,7 @@ for (const r of rows) {
       pad(r.ease.toFixed(0), 7) +
       pad(r.perSentence.toFixed(1), 8) +
       pad(r.words, 7) +
-      r.file,
+      r.file
   );
 }
 
@@ -146,7 +152,7 @@ if (max !== null) {
   if (over.length) {
     console.error(
       `\n${over.length} file(s) above grade ${max}: ` +
-        over.map((r) => `${r.file} (${r.grade.toFixed(1)})`).join(", "),
+        over.map((r) => `${r.file} (${r.grade.toFixed(1)})`).join(', ')
     );
     process.exit(1);
   }

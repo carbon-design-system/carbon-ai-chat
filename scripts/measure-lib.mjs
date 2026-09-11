@@ -46,7 +46,12 @@ const parser = requireFrom.resolve('@typescript-eslint/parser');
 // `filePath` is what decides JSX: without it the parser reads the source as
 // `.ts` and rejects the first `<`.
 export function parse(content, filePath) {
-  return requireFrom(parser).parse(content, { filePath, jsx: true, loc: true, range: true });
+  return requireFrom(parser).parse(content, {
+    filePath,
+    jsx: true,
+    loc: true,
+    range: true,
+  });
 }
 
 export function labelsFor(rel) {
@@ -67,7 +72,10 @@ function toRepoRelative(f) {
 // A real PR's `git diff -U0` runs to megabytes, and spawnSync's default 1 MB
 // buffer kills git with an empty stderr, which reads as a clean gate failure.
 function git(args) {
-  const result = spawnSync('git', args, { encoding: 'utf8', maxBuffer: Infinity });
+  const result = spawnSync('git', args, {
+    encoding: 'utf8',
+    maxBuffer: Infinity,
+  });
   if (result.status !== 0) {
     console.error(result.stderr.trim());
     process.exit(1);
@@ -80,19 +88,30 @@ function git(args) {
 // it once lets every diff and every `git show` below share one left side —
 // otherwise a base that moved ahead reads its own newer content as "before".
 function resolveBase(base) {
-  const result = spawnSync('git', ['merge-base', base, 'HEAD'], { encoding: 'utf8' });
+  const result = spawnSync('git', ['merge-base', base, 'HEAD'], {
+    encoding: 'utf8',
+  });
   return result.status === 0 ? result.stdout.trim() : base;
 }
 
 // Against the merge base: the disk, the index, or HEAD.
 function diffArgs(source, base) {
-  if (source === 'head') return [base, 'HEAD'];
-  if (source === 'index') return ['--cached', base];
+  if (source === 'head') {
+    return [base, 'HEAD'];
+  }
+  if (source === 'index') {
+    return ['--cached', base];
+  }
   return [base];
 }
 
 export function changedPaths(base, source) {
-  const out = git(['diff', '--name-only', '--diff-filter=d', ...diffArgs(source, base)]);
+  const out = git([
+    'diff',
+    '--name-only',
+    '--diff-filter=d',
+    ...diffArgs(source, base),
+  ]);
   return out.split('\n').filter(Boolean);
 }
 
@@ -101,7 +120,12 @@ export function changedFiles(base, source) {
 }
 
 export function newCodeFiles(base, source) {
-  const out = git(['diff', '--name-status', '--diff-filter=A', ...diffArgs(source, base)]);
+  const out = git([
+    'diff',
+    '--name-status',
+    '--diff-filter=A',
+    ...diffArgs(source, base),
+  ]);
   return out
     .split('\n')
     .map((l) => l.split('\t')[1])
@@ -116,7 +140,9 @@ export function addedLines(base, source) {
   const rows = [];
   let file = null;
   let line = 0;
-  for (const raw of git(['diff', '-U0', ...diffArgs(source, base)]).split('\n')) {
+  for (const raw of git(['diff', '-U0', ...diffArgs(source, base)]).split(
+    '\n'
+  )) {
     if (raw.startsWith('+++ ')) {
       file = raw.startsWith('+++ b/') ? raw.slice(6) : null;
     } else if (/^@@ -\d+(,\d+)? \+(\d+)/.test(raw)) {
@@ -145,8 +171,15 @@ export const WINDOW = 6;
 export function windows(rows) {
   const out = [];
   for (let i = 0; i + WINDOW <= rows.length; i++) {
-    const text = rows.slice(i, i + WINDOW).map((r) => r.text).join('\n');
-    out.push({ index: i, line: rows[i].line, key: createHash('md5').update(text).digest('hex') });
+    const text = rows
+      .slice(i, i + WINDOW)
+      .map((r) => r.text)
+      .join('\n');
+    out.push({
+      index: i,
+      line: rows[i].line,
+      key: createHash('md5').update(text).digest('hex'),
+    });
   }
   return out;
 }
@@ -183,10 +216,14 @@ export function afterRef(source) {
 // index and dependency-cruiser read the filesystem, and this tree runs to
 // ~1,400 source files: one archive beats that many `git show` calls by ~25s.
 export function materialise(ref) {
-  const roots = git(['ls-tree', '--name-only', ref]).split('\n').filter((d) => ROOTS.includes(d));
+  const roots = git(['ls-tree', '--name-only', ref])
+    .split('\n')
+    .filter((d) => ROOTS.includes(d));
   const dir = mkdtempSync(join(tmpdir(), 'measure-'));
   git(['archive', '-o', join(dir, 'tree.tar'), ref, ...roots]);
-  const untar = spawnSync('tar', ['-xf', join(dir, 'tree.tar'), '-C', dir], { encoding: 'utf8' });
+  const untar = spawnSync('tar', ['-xf', join(dir, 'tree.tar'), '-C', dir], {
+    encoding: 'utf8',
+  });
   if (untar.status !== 0) {
     rmSync(dir, { recursive: true, force: true });
     console.error(untar.stderr.trim());
@@ -202,11 +239,17 @@ export const discard = (dir) => rmSync(dir, { recursive: true, force: true });
 export function grepFiles(source, flags, pattern) {
   const before = source === 'index' ? ['--cached'] : [];
   const after = source === 'head' ? ['HEAD'] : [];
-  const result = spawnSync('git', ['grep', ...flags, ...before, pattern, ...after], {
-    encoding: 'utf8',
-    maxBuffer: Infinity,
-  });
-  if (result.status !== 0) return [];
+  const result = spawnSync(
+    'git',
+    ['grep', ...flags, ...before, pattern, ...after],
+    {
+      encoding: 'utf8',
+      maxBuffer: Infinity,
+    }
+  );
+  if (result.status !== 0) {
+    return [];
+  }
   return result.stdout
     .split('\n')
     .filter(Boolean)
@@ -214,7 +257,9 @@ export function grepFiles(source, flags, pattern) {
 }
 
 function firstFatal(messages) {
-  return messages.find((m) => m.fatal || (m.ruleId == null && m.severity === 2));
+  return messages.find(
+    (m) => m.fatal || (m.ruleId == null && m.severity === 2)
+  );
 }
 
 export function makeLinter(rules) {
@@ -225,7 +270,11 @@ export function makeLinter(rules) {
     baseConfig: {
       plugins: ['sonarjs'],
       parser,
-      parserOptions: { ecmaVersion: 'latest', sourceType: 'module', ecmaFeatures: { jsx: true } },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
+      },
       rules,
     },
   });
@@ -233,7 +282,9 @@ export function makeLinter(rules) {
     const [result] = await eslint.lintText(content, { filePath });
     const messages = result?.messages ?? [];
     const fatal = firstFatal(messages);
-    if (fatal) throw new Error(fatal.message);
+    if (fatal) {
+      throw new Error(fatal.message);
+    }
     return messages;
   };
 }
@@ -258,15 +309,26 @@ function parseInts(values, ints, defaults, usage) {
 
 // File mode reads the files it is handed, so there is no after side to pick.
 function parseSource(raw, changed, usage) {
-  if (raw === undefined) return 'worktree';
-  if (!SOURCES.includes(raw)) fail(`--source must be one of ${SOURCES.join(', ')}`, usage);
-  if (changed === null) fail('--source applies to --changed; file mode reads the files you name', usage);
+  if (raw === undefined) {
+    return 'worktree';
+  }
+  if (!SOURCES.includes(raw)) {
+    fail(`--source must be one of ${SOURCES.join(', ')}`, usage);
+  }
+  if (changed === null) {
+    fail(
+      '--source applies to --changed; file mode reads the files you name',
+      usage
+    );
+  }
   return raw;
 }
 
 export function parseCli({ ints, defaults = {}, usage }) {
   const options = { changed: { type: 'string' }, source: { type: 'string' } };
-  for (const name of ints) options[name] = { type: 'string' };
+  for (const name of ints) {
+    options[name] = { type: 'string' };
+  }
   let parsed;
   try {
     parsed = parseArgs({ options, allowPositionals: true });
@@ -285,5 +347,11 @@ export function parseCli({ ints, defaults = {}, usage }) {
   }
   const source = parseSource(values.source, changed, usage);
   const base = changed === null ? null : resolveBase(changed);
-  return { files, changed, base, source, ...parseInts(values, ints, defaults, usage) };
+  return {
+    files,
+    changed,
+    base,
+    source,
+    ...parseInts(values, ints, defaults, usage),
+  };
 }

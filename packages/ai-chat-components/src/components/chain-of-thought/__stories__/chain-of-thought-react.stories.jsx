@@ -1,16 +1,25 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2025, 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
-import React from "react";
-import ChainOfThought from "../../../react/chain-of-thought";
-import ChainOfThoughtStep from "../../../react/chain-of-thought-step";
-import ChainOfThoughtToggle from "../../../react/chain-of-thought-toggle";
-import ToolCallData from "../../../react/tool-call-data";
-import Markdown from "../../../react/markdown";
+import React from 'react';
+import ChainOfThought from '../../../react/chain-of-thought';
+import ChainOfThoughtStep from '../../../react/chain-of-thought-step';
+import ChainOfThoughtToggle from '../../../react/chain-of-thought-toggle';
+import ToolCallData from '../../../react/tool-call-data';
+import Markdown from '../../../react/markdown';
 
 const sampleSteps = [
   {
-    title: "Search Documentation",
-    description: "Searching the product documentation for relevant information",
-    tool_name: "documentation_search",
+    title: 'Search Documentation',
+    description: 'Searching the product documentation for relevant information',
+    tool_name: 'documentation_search',
     request: {
       args: `\`\`\`
 {
@@ -39,12 +48,12 @@ const sampleSteps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Query Database",
-    description: "Fetching user-specific configuration data",
-    tool_name: "database_query",
+    title: 'Query Database',
+    description: 'Fetching user-specific configuration data',
+    tool_name: 'database_query',
     request: {
       args: `\`\`\`
 {
@@ -64,12 +73,12 @@ const sampleSteps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Generate Response",
-    description: "Synthesizing the information into a final answer",
-    tool_name: "response_generator",
+    title: 'Generate Response',
+    description: 'Synthesizing the information into a final answer',
+    tool_name: 'response_generator',
     request: {
       args: `\`\`\`
 {
@@ -86,14 +95,14 @@ const sampleSteps = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
 ];
 
 const stepsWithDifferentStatuses = [
   {
-    title: "Validate Input",
-    tool_name: "input_validator",
+    title: 'Validate Input',
+    tool_name: 'input_validator',
     request: {
       args: `\`\`\`
 {
@@ -107,11 +116,11 @@ const stepsWithDifferentStatuses = [
 { "valid": true }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
   {
-    title: "Send Email",
-    tool_name: "email_sender",
+    title: 'Send Email',
+    tool_name: 'email_sender',
     request: {
       args: `\`\`\`
 {
@@ -125,11 +134,11 @@ const stepsWithDifferentStatuses = [
 { "error": "SMTP connection timeout" }
 \`\`\``,
     },
-    status: "failure",
+    status: 'failure',
   },
   {
-    title: "Retry Send Email",
-    tool_name: "email_sender",
+    title: 'Retry Send Email',
+    tool_name: 'email_sender',
     request: {
       args: `\`\`\`
 {
@@ -139,16 +148,16 @@ const stepsWithDifferentStatuses = [
 }
 \`\`\``,
     },
-    status: "processing",
+    status: 'processing',
   },
 ];
 
 const stepsWithComplexResponses = [
   {
-    title: "Analyze Data",
+    title: 'Analyze Data',
     description:
-      "Running statistical analysis on the provided dataset to identify trends and patterns.",
-    tool_name: "data_analyzer",
+      'Running statistical analysis on the provided dataset to identify trends and patterns.',
+    tool_name: 'data_analyzer',
     request: {
       args: `\`\`\`
 {
@@ -173,7 +182,7 @@ const stepsWithComplexResponses = [
 }
 \`\`\``,
     },
-    status: "success",
+    status: 'success',
   },
 ];
 
@@ -186,10 +195,9 @@ const renderSteps = (steps) =>
       <ChainOfThoughtStep
         key={step.title || step.tool_name || index}
         title={step.title}
-        status={step.status || "success"}
+        status={step.status || 'success'}
         open={Boolean(step.open)}
-        stepNumber={index + 1}
-      >
+        stepNumber={index + 1}>
         <ToolCallData toolName={step.tool_name}>
           {step.description ? (
             <Markdown slot="description" markdown={step.description} />
@@ -228,8 +236,7 @@ const renderChainOfThought = (args, steps) => {
         id={panelId}
         panelId={panelId}
         open={open}
-        onToggle={handleToggle}
-      >
+        onToggle={handleToggle}>
         {renderSteps(steps)}
       </ChainOfThought>
     </>
@@ -237,19 +244,19 @@ const renderChainOfThought = (args, steps) => {
 };
 
 export default {
-  title: "Components/Chain of thought",
+  title: 'Components/Chain of thought',
   argTypes: {
     open: {
-      control: "boolean",
-      description: "Whether the chain of thought panel is open",
+      control: 'boolean',
+      description: 'Whether the chain of thought panel is open',
     },
     openLabelText: {
-      control: "text",
-      description: "Text when the panel is expanded",
+      control: 'text',
+      description: 'Text when the panel is expanded',
     },
     closedLabelText: {
-      control: "text",
-      description: "Text for when the panel is collapsed",
+      control: 'text',
+      description: 'Text for when the panel is collapsed',
     },
   },
 };
@@ -257,8 +264,8 @@ export default {
 export const Default = {
   args: {
     open: false,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, sampleSteps),
 };
@@ -266,8 +273,8 @@ export const Default = {
 export const WithStepsOpen = {
   args: {
     open: true,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) =>
     renderChainOfThought(args, [{ ...sampleSteps[0], open: true }]),
@@ -276,8 +283,8 @@ export const WithStepsOpen = {
 export const WithDifferentStatuses = {
   args: {
     open: true,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, stepsWithDifferentStatuses),
 };
@@ -285,8 +292,8 @@ export const WithDifferentStatuses = {
 export const WithComplexResponses = {
   args: {
     open: true,
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
   },
   render: (args) => renderChainOfThought(args, stepsWithComplexResponses),
 };
