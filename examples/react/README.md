@@ -228,6 +228,26 @@ Code-split `ChatCustomElement` with a `ChatShell` overlay that covers both bundl
 
 </details>
 
+### [Custom header](./custom-header/README.md)
+
+Replaces the built-in chat header with a custom React element using `WriteableElementName.CUSTOM_HEADER`. The framework header is never mounted when this slot has content — there is no intermediate render where both are visible.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-custom-header`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `WriteableElementName.CUSTOM_HEADER` | `@carbon/ai-chat` enum value | Key for the header replacement slot. |
+| `renderWriteableElements` | component prop | Map of slot names to React elements; `CUSTOM_HEADER` entry replaces the built-in header. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `layout.showFrame` | config prop | Disables the built-in frame for the fullscreen surface. |
+| `openChatByDefault` | config prop | Opens the chat on mount. |
+
+</details>
+
 ### [Feedback](./feedback/README.md)
 
 React example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInteractionType.SUBMITTED` events to the host page.

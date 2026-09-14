@@ -26,7 +26,7 @@ import {
  */
 export function useWriteableElementPresence(
   name: WriteableElementName,
-  writeableElements: WriteableElements
+  writeableElements: Partial<WriteableElements>
 ): boolean {
   const node = writeableElements[name];
 
@@ -36,7 +36,7 @@ export function useWriteableElementPresence(
 
   useEffect(() => {
     if (!node) {
-      return;
+      return undefined;
     }
 
     // Re-check synchronously in case content arrived between the lazy-init and mount.

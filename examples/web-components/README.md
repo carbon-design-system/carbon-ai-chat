@@ -210,6 +210,27 @@ Dynamically imports the `cds-aichat-custom-element` bundle and uses `<cds-aichat
 
 </details>
 
+### [Custom header](./custom-header/README.md)
+
+Replaces the built-in chat header with a custom DOM element using `WriteableElementName.CUSTOM_HEADER`. The element is written to the host node in `onBeforeRender` — before the React tree paints — so the custom header appears on the very first render with no flash.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-web-components-custom-header`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `<cds-aichat-custom-element>` | `@carbon/ai-chat` custom element | Mounts the chat into a host element you style. |
+| `WriteableElementName.CUSTOM_HEADER` | `@carbon/ai-chat` enum value | Key for the header replacement slot. |
+| `onBeforeRender` | component prop | Called before first paint; write custom header DOM here to avoid a flash. |
+| `instance.writeableElements` | `ChatInstance` property | Map of writeable host nodes; `CUSTOM_HEADER` node receives your DOM element. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `layout.showFrame` | config prop | Disables the built-in frame for the fullscreen surface. |
+| `openChatByDefault` | config prop | Opens the chat on mount. |
+
+</details>
+
 ### [Feedback](./feedback/README.md)
 
 Lit example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInteractionType.SUBMITTED` events to the host page.
