@@ -291,19 +291,21 @@ function createMessageRequestForButtonItemOption(
   relatedResponseID: string
 ) {
   // The "value" of the choice contains the data that is to be sent to the server when this choice is selected.
+  const input: MessageInput = cloneDeep(buttonItem.value?.input) ?? {};
+  if (!input.text) {
+    input.text = buttonItem.label;
+  }
+
   const messageRequest: MessageRequest = {
     id: uuid(),
     thread_id: THREAD_ID_MAIN,
-    input: null,
+    input,
   };
 
-  if (buttonItem.value?.input?.text) {
-    messageRequest.input = cloneDeep(buttonItem.value.input);
-  } else {
-    messageRequest.input = { text: buttonItem.label };
-  }
-
   messageRequest.history = { related_message_id: relatedResponseID };
+  if (buttonItem.label) {
+    messageRequest.history.label = buttonItem.label;
+  }
   if (buttonItem.silent) {
     messageRequest.history.silent = true;
   }

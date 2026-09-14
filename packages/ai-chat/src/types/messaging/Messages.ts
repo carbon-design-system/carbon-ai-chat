@@ -1804,7 +1804,9 @@ interface ButtonItem<
   target?: string;
 
   /**
-   * The display text for the link.
+   * The text shown on the button. A `post_back` button also uses it for the user's message in the
+   * transcript, and sends `value.input.text` to the assistant. A `post_back` button with no
+   * `value.input.text` sends this text instead.
    */
   label?: string;
 

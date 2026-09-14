@@ -1,7 +1,16 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@carbon/ai-chat", "@carbon/ai-chat-components"],
+  transpilePackages: ['@carbon/ai-chat', '@carbon/ai-chat-components'],
 };
 
 export default nextConfig;

@@ -14,7 +14,7 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Storybook (React wrappers) | `npm run aiChat:start:storybook:react` |
 | Build everything | `npm run build` |
 | Build only the ai-chat stack (components + ai-chat + demo) | `npm run aiChat:build` |
-| Lint (eslint on `packages/`) | `npm run lint` |
+| Lint (eslint on `packages/`, `scripts/`, `tools/`) | `npm run lint` |
 | Stylelint | `npm run lint:styles` |
 | License header check | `npm run lint:license` |
 | Prettier check / write | `npm run format` / `npm run format:write` |
@@ -33,7 +33,7 @@ Which gate to run before shipping a change → [definition-of-done.md](definitio
 - **`tools/`** — enforcement. It runs on every commit. A gate calls it: `ci-check`, `lint-staged`, or CI. The license check lives here.
 - **`scripts/`** — opt-in. A developer runs it on purpose. So does a release workflow. The measurement tools live here, and so do the release steps. One exception: `ci-check` and the pre-commit hook run [`scripts/verify-example-readmes.mjs`](../scripts/verify-example-readmes.mjs).
 
-Name files in both plainly, with no underscore prefix. A shared module says so with a `-lib` suffix (`measure-lib.mjs`), not with a leading `_`.
+Name files in both plainly, with no underscore prefix. A shared module says so with a `-lib` suffix ([`scripts/measure-lib.mjs`](../scripts/measure-lib.mjs)), not with a leading `_`.
 
 ## Running a single example or test
 
