@@ -13,7 +13,9 @@ Workspace naming: `@carbon/ai-chat-examples-web-components-<slug>`.
 
 ## Smoke-test setup
 
-Reuse Jest wiring from [`../react/tests-jest-jsdom/`](../react/tests-jest-jsdom/) — nearest reference for workspace-dep resolution. A sufficient spec instantiates the custom element, asserts it upgrades without error, and does one round-trip behavior (e.g. send one message via `customSendMessage`).
+Playwright is the smoke-test mechanism. Copy [`./basic-custom-element-fullscreen/`](./basic-custom-element-fullscreen/) — it is the web-component golden. Conventions and steps: [playwright.md](../references/playwright.md).
+
+This tree has no Jest wiring and needs none. Jest and vitest integration are the subject of React examples, not a pattern to reproduce here.
 
 ## APIs-and-props table headers
 
