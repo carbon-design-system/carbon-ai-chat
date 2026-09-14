@@ -94,7 +94,7 @@ function InputActionsInline({
       return undefined;
     }
     setMeasuring(true);
-    const nonFixedCount = actions.filter((opt) => !opt.fixed).length;
+    const nonFixedCount = nonFixedActions.length;
     let handler: { disconnect: () => void } | undefined;
     let revealRaf = 0;
     const setupRaf = requestAnimationFrame(() => {
@@ -114,7 +114,12 @@ function InputActionsInline({
       cancelAnimationFrame(revealRaf);
       handler?.disconnect();
     };
-  }, [actions]);
+    // Re-run only when the number of buttons in the DOM changes — not on every
+    // new actions array reference. Text/icon/disabled updates patch in place and
+    // don't affect overflow geometry, so retriggering the handler for them would
+    // flash visibility: hidden and could drop focus on rapid toggling.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonFixedActions.length, fixedActions.length]);
 
   // A resize that makes everything fit again empties the overflow menu; close
   // it so a stale popover doesn't linger.
@@ -130,11 +135,11 @@ function InputActionsInline({
         ref={containerRef}
         className="cds-aichat-input-inline-actions"
         data-measuring={measuring ? '' : undefined}>
-        {nonFixedActions.map((opt) => {
+        {nonFixedActions.map((opt, index) => {
           const Icon = optionIconToReact(opt.icon);
           return (
             <IconButton
-              key={opt.testId ?? opt.text}
+              key={opt.id ?? index}
               kind={BUTTON_KIND.GHOST}
               size="sm"
               disabled={disabled || opt.disabled}
@@ -169,11 +174,11 @@ function InputActionsInline({
           <span slot="tooltip-content">{overflowMenuLabel}</span>
         </IconButton>
 
-        {fixedActions.map((opt) => {
+        {fixedActions.map((opt, index) => {
           const Icon = optionIconToReact(opt.icon);
           return (
             <IconButton
-              key={opt.testId ?? opt.text}
+              key={opt.id ?? index}
               data-fixed=""
               kind={BUTTON_KIND.GHOST}
               size="sm"
@@ -195,9 +200,9 @@ function InputActionsInline({
           open
           label={overflowMenuLabel}
           onCdsMenuClosed={() => setOpen(false)}>
-          {hiddenActions.map((opt) => (
+          {hiddenActions.map((opt, index) => (
             <MenuItem
-              key={opt.testId ?? opt.text}
+              key={opt.id ?? index}
               label={opt.text}
               disabled={opt.disabled}
               data-testid={opt.testId}
