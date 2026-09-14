@@ -5,8 +5,6 @@ Replaces the built-in chat header with a custom React element using `WriteableEl
 ## What this example shows
 
 - Replacing the built-in chat header by supplying a React element in `renderWriteableElements[WriteableElementName.CUSTOM_HEADER]`.
-- Supplying `role="banner"` and `aria-label` on the custom header for screen-reader accessibility.
-- How `header.isOn: false` hides the header area entirely, including custom content.
 
 ## When to use this pattern
 

@@ -50,9 +50,6 @@ const config: PublicConfig = {
   },
   // Auto-open so the chat is visible from first paint without a launcher click.
   openChatByDefault: true,
-  // header.isOn defaults to true. Set it to false to hide the header area
-  // entirely, including your custom header content:
-  //   header: { isOn: false },
 };
 
 function App() {
@@ -60,20 +57,8 @@ function App() {
   // The key is the enum value string; the value is any React subtree.
   const renderWriteableElements = {
     [WriteableElementName.CUSTOM_HEADER]: (
-      // role="banner" + aria-label give screen readers an accessible landmark —
-      // required when you replace the built-in header's landmark element.
-      <div
-        className="custom-header"
-        role="banner"
-        aria-label="Application header">
-        <span className="custom-header__title">My Application</span>
-        <button
-          type="button"
-          className="custom-header__close"
-          aria-label="Close chat"
-          onClick={() => window.history.back()}>
-          ✕
-        </button>
+      <div className="custom-header" aria-label="Custom chat header">
+        <span className="custom-header__title">Custom Header</span>
       </div>
     ),
   };
