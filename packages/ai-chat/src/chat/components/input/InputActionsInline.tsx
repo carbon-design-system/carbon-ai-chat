@@ -114,11 +114,7 @@ function InputActionsInline({
       cancelAnimationFrame(revealRaf);
       handler?.disconnect();
     };
-    // Re-run only when the number of buttons in the DOM changes — not on every
-    // new actions array reference. Text/icon/disabled updates patch in place and
-    // don't affect overflow geometry, so retriggering the handler for them would
-    // flash visibility: hidden and could drop focus on rapid toggling.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Re-run only when the number of buttons in the DOM changes
   }, [nonFixedActions.length, fixedActions.length]);
 
   // A resize that makes everything fit again empties the overflow menu; close
