@@ -34,6 +34,50 @@ if (footer) {
 
 `data-rounded="bottom"` inherits the bottom corner rounding, and `data-stacked` stacks the buttons vertically. See [Rounded corners](./Layout.md#rounded-corners).
 
+## Custom header (CUSTOM_HEADER)
+
+Use {@link WriteableElementName.CUSTOM_HEADER} to replace the built-in chat header with your own. When you supply content for this slot the chat mounts no header of its own and your content fills the header area directly.
+
+**React path** — pass a React element in `renderWriteableElements`:
+
+```ts
+import { ChatCustomElement, WriteableElementName } from '@carbon/ai-chat';
+
+<ChatCustomElement
+  {...config}
+  renderWriteableElements={{
+    [WriteableElementName.CUSTOM_HEADER]: <MyHeader />,
+  }}
+/>
+```
+
+**Web-component / WC path** — write to the host node in `onBeforeRender` (before the React tree renders, so there is no first-paint flash):
+
+```ts
+import { WriteableElementName } from '@carbon/ai-chat';
+
+element.onBeforeRender = (instance) => {
+  const node = instance.writeableElements[WriteableElementName.CUSTOM_HEADER];
+  const header = document.createElement('div');
+  header.setAttribute('role', 'banner');
+  header.setAttribute('aria-label', 'Application header');
+  header.textContent = 'My custom header';
+  node.appendChild(header);
+};
+```
+
+### What is ignored while a custom header is present
+
+All {@link HeaderConfig} fields (`title`, `name`, `menuOptions`, `actions`, `minimizeButtonIconType`, `hideMinimizeButton`, `showRestartButton`, `showAiLabel`, `hideDefaultAiLabelContent`, `hasContentMaxWidth`) are ignored while `CUSTOM_HEADER` has content.
+
+The one exception is {@link HeaderConfig.isOn}: setting `isOn: false` hides the header area **even when a custom header is present** — the host content disappears along with the framework header. Use this to remove the header area entirely in fully headless or embedded layouts.
+
+### Writeable elements inside the built-in header
+
+{@link WriteableElementName.HEADER_FIXED_ACTIONS_ELEMENT} lives inside the built-in header component and therefore does not render while a custom header is active.
+
+{@link WriteableElementName.HEADER_BOTTOM_ELEMENT} and {@link WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT} are unaffected — they are placed in `slot="header-after"`, below the header, not inside it.
+
 ## Related
 
 - [Custom panels](./CustomPanels.md) — render your own content in an overlay panel through {@link WriteableElementName.CUSTOM_PANEL_ELEMENT | the custom panel slot}.

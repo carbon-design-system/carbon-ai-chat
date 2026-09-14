@@ -51,6 +51,12 @@ function resolveValue<T>(value: T | ((flag: boolean) => T), flag: boolean): T {
  */
 const ELEMENT_CONFIGS: ElementConfig[] = [
   {
+    wrapperSlot: 'header',
+    slotName: WriteableElementName.CUSTOM_HEADER,
+    idSuffix: 'customHeaderElement',
+    className: 'cds-aichat--custom-header-element',
+  },
+  {
     wrapperSlot: 'header-after',
     slotName: (show) =>
       show
