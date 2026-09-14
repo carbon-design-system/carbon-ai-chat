@@ -110,6 +110,9 @@ export const AppShellWriteableElements = React.memo(
       (state: AppState) =>
         state.config.derived.header.hasContentMaxWidth ?? false
     );
+    const headerIsOn = useSelector(
+      (state: AppState) => state.config.derived.header.isOn ?? true
+    );
 
     // `null` => host omitted the map entirely (render all, back-compat). A Set
     // (possibly empty) => only render slots the host supplied content for.
@@ -144,6 +147,14 @@ export const AppShellWriteableElements = React.memo(
             className,
           };
         }).filter((element) => {
+          // Hide CUSTOM_HEADER when the header area is turned off entirely,
+          // matching the same gate that suppresses the default <Header>.
+          if (
+            element.slotName === WriteableElementName.CUSTOM_HEADER &&
+            !headerIsOn
+          ) {
+            return false;
+          }
           // Only render the element if the host supplied content for its slot.
           // `null` (host omitted the map) renders all elements (back-compat).
           if (presentKeySet === null) {
@@ -151,7 +162,7 @@ export const AppShellWriteableElements = React.memo(
           }
           return presentKeySet.has(element.slotName);
         }),
-      [showHomeScreen, suffix, presentKeySet, hasContentMaxWidth]
+      [showHomeScreen, suffix, presentKeySet, hasContentMaxWidth, headerIsOn]
     );
 
     return (

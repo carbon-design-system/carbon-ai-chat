@@ -5,8 +5,6 @@ Replaces the built-in chat header with a custom DOM element using `WriteableElem
 ## What this example shows
 
 - Replacing the built-in chat header by appending a DOM element to `instance.writeableElements[WriteableElementName.CUSTOM_HEADER]` in `onBeforeRender`.
-- Supplying `role="banner"` and `aria-label` on the custom header element for screen-reader accessibility.
-- How `header.isOn: false` hides the header area entirely, including custom content.
 
 ## When to use this pattern
 

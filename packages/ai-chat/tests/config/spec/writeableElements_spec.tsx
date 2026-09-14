@@ -24,13 +24,15 @@
  */
 
 import React from 'react';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, waitFor, act, cleanup } from '@testing-library/react';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
-import { createBaseTestProps } from '../../test_helpers';
+import { createBaseTestProps, makeConfigStore } from '../../test_helpers';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { setEnableDebugLog } from '../../../src/chat/utils/miscUtils';
+import { AppShellWriteableElements } from '../../../src/chat/AppShellWriteableElements';
+import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -489,5 +491,67 @@ describe('CUSTOM_HEADER — no first-paint flash', () => {
     await waitFor(() => {
       expect(hasMeaningfulContent(node)).toBe(true);
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Regression — header.isOn:false hides the CUSTOM_HEADER slot
+//
+// Rendered directly against AppShellWriteableElements + StoreProvider rather
+// than the full ChatContainer stack, because the Lit shadow root that
+// AppShell renders into is not queryable from document in jsdom.
+// AppShellWriteableElements renders WriteableElement which emits
+// `<slot name="customHeader">` — that JSX element IS visible in jsdom and
+// is the exact node the fix gates.
+// ---------------------------------------------------------------------------
+
+const stubServiceManager = { namespace: { suffix: '' } } as any;
+
+describe('CUSTOM_HEADER — header.isOn gate', () => {
+  afterEach(() => {
+    cleanup();
+    document.body.innerHTML = '';
+    jest.clearAllMocks();
+  });
+
+  function renderElements(headerIsOn: boolean | undefined) {
+    const config =
+      headerIsOn === undefined ? {} : { header: { isOn: headerIsOn } };
+    const store = makeConfigStore(config as any);
+    return render(
+      <StoreProvider store={store}>
+        <AppShellWriteableElements
+          serviceManager={stubServiceManager}
+          showHomeScreen={false}
+        />
+      </StoreProvider>
+    );
+  }
+
+  it('mounts the CUSTOM_HEADER slot when header.isOn is not set (default)', () => {
+    const { container } = renderElements(undefined);
+    expect(
+      container.querySelector(
+        `slot[name="${WriteableElementName.CUSTOM_HEADER}"]`
+      )
+    ).not.toBeNull();
+  });
+
+  it('mounts the CUSTOM_HEADER slot when header.isOn is true', () => {
+    const { container } = renderElements(true);
+    expect(
+      container.querySelector(
+        `slot[name="${WriteableElementName.CUSTOM_HEADER}"]`
+      )
+    ).not.toBeNull();
+  });
+
+  it('does not mount the CUSTOM_HEADER slot when header.isOn is false', () => {
+    const { container } = renderElements(false);
+    expect(
+      container.querySelector(
+        `slot[name="${WriteableElementName.CUSTOM_HEADER}"]`
+      )
+    ).toBeNull();
   });
 });

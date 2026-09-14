@@ -19,7 +19,6 @@
  *   - `<cds-aichat-custom-element>` (custom element)
  *   - `WriteableElementName.CUSTOM_HEADER`
  *   - `onBeforeRender` callback + `instance.writeableElements`
- *   - `PublicConfig.header.isOn` (set to `false` to hide the area entirely)
  *   - `PublicConfig.layout.showFrame`, `PublicConfig.openChatByDefault`
  *   - `PublicConfig.messaging.customSendMessage` (see `./customSendMessage.ts`)
  *
@@ -51,9 +50,6 @@ const config: PublicConfig = {
   },
   // skip the launcher/closed state — open from first paint.
   openChatByDefault: true,
-  // header.isOn defaults to true. Set it to false to hide the header area
-  // entirely, including your custom header content:
-  //   header: { isOn: false },
 };
 
 @customElement('my-app')
@@ -70,15 +66,12 @@ export class Demo extends LitElement {
   private onBeforeRender = (instance: ChatInstance) => {
     const node = instance.writeableElements[WriteableElementName.CUSTOM_HEADER];
 
-    // Build a simple header bar. role="banner" + aria-label give screen readers
-    // an accessible landmark — required when replacing the built-in header.
+    // Build a simple header bar
     const header = document.createElement('div');
-    header.setAttribute('role', 'banner');
-    header.setAttribute('aria-label', 'Application header');
+    header.setAttribute('aria-label', 'Custom chat header');
     header.style.cssText = [
       'display:flex',
       'align-items:center',
-      'justify-content:space-between',
       'padding:0 1rem',
       'height:3rem',
       'background:#0f62fe',
@@ -87,19 +80,10 @@ export class Demo extends LitElement {
 
     const title = document.createElement('span');
     title.style.cssText = 'font-weight:600;font-size:0.875rem';
-    title.textContent = 'My Application';
-
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label', 'Close chat');
-    closeBtn.style.cssText =
-      'background:transparent;border:none;color:#fff;cursor:pointer;font-size:1rem;padding:0.25rem 0.5rem';
-    closeBtn.textContent = '✕';
-    closeBtn.addEventListener('click', () => window.history.back());
+    title.textContent = 'Custom Header';
 
     header.appendChild(title);
-    header.appendChild(closeBtn);
-    node.appendChild(header);
+    node!.appendChild(header);
   };
 
   render() {
