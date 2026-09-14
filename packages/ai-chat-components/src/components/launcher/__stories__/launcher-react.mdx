@@ -1,7 +1,12 @@
-import { ArgTypes, Meta } from "@storybook/addon-docs/blocks";
-import * as LauncherReactStories from "./launcher-react.stories.jsx";
+import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
+import * as LauncherReactStories from './launcher-react.stories.jsx';
 
-<Meta of={LauncherReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={LauncherReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Launcher — React
 
@@ -14,7 +19,7 @@ The `<Launcher>` React wrapper renders the `cds-aichat-launcher` web component a
 ### Getting started
 
 ```jsx
-import Launcher from "@carbon/ai-chat-components/es/react/launcher.js";
+import Launcher from '@carbon/ai-chat-components/es/react/launcher.js';
 
 function LauncherExample() {
   return <Launcher closedLabel="Open chat" openLabel="Close chat" />;

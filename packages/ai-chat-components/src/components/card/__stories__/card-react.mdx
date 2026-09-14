@@ -1,7 +1,7 @@
-import { ArgTypes, Markdown, Meta } from "@storybook/addon-docs/blocks";
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as CardReactStories from "./card-react.stories";
-import * as PreviewCardReactStories from "./preview-card-react.stories";
+import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as CardReactStories from './card-react.stories';
+import * as PreviewCardReactStories from './preview-card-react.stories';
 
 <Meta of={CardReactStories} />
 
@@ -24,11 +24,15 @@ The `<Card>` component wraps the `cds-aichat-card` web component and exposes a R
 By default, the card preserves the tile's default padding. Use `isFlush={true}` to remove it:
 
 ```jsx
-{/* Default: tile padding preserved */}
-<Card />
+{
+  /* Default: tile padding preserved */
+}
+<Card />;
 
-{/* Remove tile padding */}
-<Card isFlush={true} />
+{
+  /* Remove tile padding */
+}
+<Card isFlush={true} />;
 ```
 
 **For mixed content**, keep the default padding (or explicitly set `isFlush={false}`), then use `data-flush` on individual slots that should extend to the card edges:
@@ -42,10 +46,10 @@ By default, the card preserves the tile's default padding. Use `isFlush={true}` 
 
 > **Note:** When `isFlush={true}`, tile padding is removed for all slots. Adding `data-flush` to slotted content in that case would apply a redundant negative margin and push content outside the card's bounds.
 
-| Value | Description |
-| --- | --- |
-| `data-flush=""` | Removes padding on all sides |
-| `data-flush="top"` | Removes top and horizontal padding |
+| Value                 | Description                           |
+| --------------------- | ------------------------------------- |
+| `data-flush=""`       | Removes padding on all sides          |
+| `data-flush="top"`    | Removes top and horizontal padding    |
 | `data-flush="bottom"` | Removes bottom and horizontal padding |
 
 ### Slotted Content Rounding
@@ -69,7 +73,7 @@ See [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) for co
 Here's a quick example to get you started.
 
 ```jsx
-import Card from "@carbon/ai-chat-components/es/react/card.js";
+import Card from '@carbon/ai-chat-components/es/react/card.js';
 
 function CardExample() {
   return (
@@ -95,12 +99,12 @@ function CardExample() {
 Add interactive buttons to your card using the `CardFooter` component. The footer supports various button kinds and handles click events through the `onFooterAction` callback.
 
 ```jsx
-import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import { Launch16 } from "@carbon/icons";
+import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+import { Launch16 } from '@carbon/icons';
 
 function CardWithFooter() {
   const handleAction = (event) => {
-    console.log("Action clicked:", event.detail);
+    console.log('Action clicked:', event.detail);
     // event.detail contains: { id, label, kind, payload }
   };
 
@@ -116,11 +120,11 @@ function CardWithFooter() {
       <CardFooter
         actions={[
           {
-            id: "view-docs",
-            label: "View docs",
-            kind: "ghost",
+            id: 'view-docs',
+            label: 'View docs',
+            kind: 'ghost',
             icon: Launch16,
-            payload: { url: "https://carbondesignsystem.com" },
+            payload: { url: 'https://carbondesignsystem.com' },
           },
         ]}
         onFooterAction={handleAction}
@@ -135,8 +139,8 @@ function CardWithFooter() {
 Display media content with proper corner rounding using the `media` slot and `data-rounded` attribute.
 
 ```jsx
-import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import { Launch16 } from "@carbon/icons";
+import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+import { Launch16 } from '@carbon/icons';
 
 function CardWithImage() {
   return (
@@ -145,7 +149,7 @@ function CardWithImage() {
         <img
           src="https://placehold.co/800x450"
           alt="Placeholder"
-          style={{ width: "100%", display: "block" }}
+          style={{ width: '100%', display: 'block' }}
         />
       </div>
       <div slot="body" className="standard-card">
@@ -158,9 +162,9 @@ function CardWithImage() {
       <CardFooter
         actions={[
           {
-            id: "view-more",
-            label: "View more",
-            kind: "ghost",
+            id: 'view-more',
+            label: 'View more',
+            kind: 'ghost',
             icon: Launch16,
           },
         ]}
@@ -176,7 +180,7 @@ function CardWithImage() {
 Remove the default tile padding using `isFlush={true}` for full-width content like images or custom layouts.
 
 ```jsx
-import { Card } from "@carbon/ai-chat-components/es/react/card.js";
+import { Card } from '@carbon/ai-chat-components/es/react/card.js';
 
 function FlushCard() {
   return (
@@ -185,7 +189,7 @@ function FlushCard() {
         <img
           src="https://placehold.co/800x450"
           alt="Full width image"
-          style={{ width: "100%", display: "block" }}
+          style={{ width: '100%', display: 'block' }}
         />
       </div>
     </Card>
@@ -198,7 +202,7 @@ function FlushCard() {
 Display multiple action buttons in the footer. Buttons are arranged horizontally and support different kinds (primary, secondary, ghost, danger).
 
 ```jsx
-import { Card, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
+import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
 
 function CardWithMultipleActions() {
   const handleAction = (event) => {
@@ -217,14 +221,14 @@ function CardWithMultipleActions() {
       <CardFooter
         actions={[
           {
-            id: "cancel",
-            label: "Cancel",
-            kind: "secondary",
+            id: 'cancel',
+            label: 'Cancel',
+            kind: 'secondary',
           },
           {
-            id: "confirm",
-            label: "Confirm",
-            kind: "primary",
+            id: 'confirm',
+            label: 'Confirm',
+            kind: 'primary',
           },
         ]}
         onFooterAction={handleAction}
@@ -239,28 +243,32 @@ function CardWithMultipleActions() {
 Use `CardSteps` to display multi-step processes with status indicators.
 
 ```jsx
-import { Card, CardSteps, CardFooter } from "@carbon/ai-chat-components/es/react/card.js";
-import { ICON_INDICATOR_KIND } from "@carbon/web-components/es/components/icon-indicator/defs.js";
+import {
+  Card,
+  CardSteps,
+  CardFooter,
+} from '@carbon/ai-chat-components/es/react/card.js';
+import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/defs.js';
 
 function CardWithSteps() {
   const steps = [
     {
-      label: "Step 1",
+      label: 'Step 1',
       kind: ICON_INDICATOR_KIND.SUCCEEDED,
-      title: "Data collection",
-      description: "Completed successfully",
+      title: 'Data collection',
+      description: 'Completed successfully',
     },
     {
-      label: "Step 2",
-      kind: ICON_INDICATOR_KIND["IN-PROGRESS"],
-      title: "Analysis in progress",
-      description: "Processing data...",
+      label: 'Step 2',
+      kind: ICON_INDICATOR_KIND['IN-PROGRESS'],
+      title: 'Analysis in progress',
+      description: 'Processing data...',
     },
     {
-      label: "Step 3",
-      kind: ICON_INDICATOR_KIND["NOT-STARTED"],
-      title: "Generate report",
-      description: "Not started",
+      label: 'Step 3',
+      kind: ICON_INDICATOR_KIND['NOT-STARTED'],
+      title: 'Generate report',
+      description: 'Not started',
     },
   ];
 
@@ -276,9 +284,9 @@ function CardWithSteps() {
       <CardFooter
         actions={[
           {
-            id: "view-details",
-            label: "View details",
-            kind: "ghost",
+            id: 'view-details',
+            label: 'View details',
+            kind: 'ghost',
           },
         ]}
         onFooterAction={(e) => console.log(e.detail)}
@@ -289,6 +297,7 @@ function CardWithSteps() {
 ```
 
 **Available step kinds:**
+
 - `ICON_INDICATOR_KIND.SUCCEEDED` - Completed step
 - `ICON_INDICATOR_KIND["IN-PROGRESS"]` - Currently active step
 - `ICON_INDICATOR_KIND["NOT-STARTED"]` - Pending step
@@ -297,7 +306,7 @@ function CardWithSteps() {
 ### Image-Only Card
 
 ```jsx
-import { Card } from "@carbon/ai-chat-components/es/react/card.js";
+import { Card } from '@carbon/ai-chat-components/es/react/card.js';
 
 function ImageOnlyCard() {
   return (
@@ -306,7 +315,7 @@ function ImageOnlyCard() {
         <img
           src="https://placehold.co/400x300"
           alt="Gallery image"
-          style={{ width: "100%", display: "block" }}
+          style={{ width: '100%', display: 'block' }}
         />
       </div>
     </Card>

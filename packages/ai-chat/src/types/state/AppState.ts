@@ -12,11 +12,7 @@
 // without any changes to those files.
 
 export type { AppStateMessages, ChatMessagesState } from './ChatMessagesState';
-export type {
-  InputState,
-  StopStreamingButtonState,
-  PendingUpload,
-} from './InputState';
+export type { InputState, PendingUpload } from './InputState';
 export { PendingUploadStatus } from './InputState'; // enum (runtime value)
 export type {
   HumanAgentState,
@@ -35,11 +31,8 @@ export type { MessagePanelState } from './panels/MessagePanelState';
 export type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState'; // public — @category Instance
 
 // Pass-throughs that real code imports via state/AppState — kept verbatim:
-export type { ViewState, CustomPanelConfigOptions } from '../instance/apiTypes';
-export {
-  ViewType,
-  DefaultCustomPanelConfigOptions,
-} from '../instance/apiTypes'; // enums (runtime values)
+export type { ViewState } from '../instance/apiTypes';
+export { ViewType } from '../instance/apiTypes'; // enum (runtime value)
 export type { FileUpload } from '../config/ServiceDeskConfig';
 
 // ─── Local imports (used only for the interfaces defined below) ──────────────
@@ -244,4 +237,4 @@ interface AppState
   persistedToBrowserStorage: PersistedState;
 }
 
-export { AppStatePanels, AppStateView, AppStateLifecycle, AppState };
+export { AppState };

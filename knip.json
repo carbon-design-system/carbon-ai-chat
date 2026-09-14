@@ -1,0 +1,39 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "rules": {
+    "dependencies": "off",
+    "devDependencies": "off",
+    "unlisted": "off",
+    "binaries": "off",
+    "unresolved": "off",
+    "exports": "error",
+    "types": "error",
+    "files": "error"
+  },
+  "workspaces": {
+    "packages/ai-chat": {
+      "entry": [
+        "src/aiChatEntry.tsx",
+        "src/serverEntry.ts",
+        "src/web-components/**/index.ts",
+        "tasks/rollup.aichat.js",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"]
+    },
+    "packages/ai-chat-components": {
+      "entry": [
+        "src/components/**/index.ts",
+        "src/react/**/*.{ts,tsx}",
+        "src/globals/**/*.ts",
+        "src/testing/**/*.ts",
+        "src/components/**/__stories__/*.{js,jsx,ts,tsx}",
+        "src/components/**/__tests__/*.test.ts"
+      ],
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreIssues": {
+        "src/**": ["exports", "types"]
+      }
+    }
+  }
+}

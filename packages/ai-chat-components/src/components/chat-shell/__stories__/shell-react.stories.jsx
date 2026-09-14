@@ -1,9 +1,18 @@
-/* eslint-disable */
-import React, { useState } from "react";
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 
-import ChatShell from "../../../react/chat-shell";
-import Toolbar from "../../../react/toolbar";
-import "./story-styles.scss";
+/* eslint-disable */
+import React, { useState } from 'react';
+
+import ChatShell from '../../../react/chat-shell';
+import Toolbar from '../../../react/toolbar';
+import './story-styles.scss';
 
 // Core slot content for stories
 const CoreSlotContent = () => (
@@ -29,62 +38,62 @@ const CoreSlotContent = () => (
 );
 
 export default {
-  title: "Preview/Chat shell",
+  title: 'Preview/Chat shell',
   argTypes: {
     aiEnabled: {
-      control: "boolean",
-      description: "Enable AI-specific theming",
+      control: 'boolean',
+      description: 'Enable AI-specific theming',
     },
     showFrame: {
-      control: "boolean",
-      description: "Show visual frame around content",
+      control: 'boolean',
+      description: 'Show visual frame around content',
     },
     cornerAll: {
-      control: { type: "radio" },
-      options: ["round", "square"],
-      description: "Sets all corners (individual corners override this)",
+      control: { type: 'radio' },
+      options: ['round', 'square'],
+      description: 'Sets all corners (individual corners override this)',
     },
     cornerStartStart: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Top-left corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Top-left corner in LTR (overrides cornerAll)',
     },
     cornerStartEnd: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Top-right corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Top-right corner in LTR (overrides cornerAll)',
     },
     cornerEndStart: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Bottom-left corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Bottom-left corner in LTR (overrides cornerAll)',
     },
     cornerEndEnd: {
-      control: { type: "radio" },
-      options: [undefined, "round", "square"],
-      description: "Bottom-right corner in LTR (overrides cornerAll)",
+      control: { type: 'radio' },
+      options: [undefined, 'round', 'square'],
+      description: 'Bottom-right corner in LTR (overrides cornerAll)',
     },
     showHistory: {
-      control: "boolean",
-      description: "Show history sidebar",
+      control: 'boolean',
+      description: 'Show history sidebar',
     },
     showWorkspace: {
-      control: "boolean",
-      description: "Show workspace sidebar",
+      control: 'boolean',
+      description: 'Show workspace sidebar',
     },
     contentMaxWidth: {
-      control: "boolean",
-      description: "Constrains content to a maximum width",
+      control: 'boolean',
+      description: 'Constrains content to a maximum width',
     },
     workspaceLocation: {
-      control: { type: "radio" },
-      options: ["start", "end"],
-      description: "Position of workspace sidebar",
+      control: { type: 'radio' },
+      options: ['start', 'end'],
+      description: 'Position of workspace sidebar',
     },
     historyLocation: {
-      control: { type: "radio" },
-      options: ["start", "end"],
-      description: "Position of history sidebar",
+      control: { type: 'radio' },
+      options: ['start', 'end'],
+      description: 'Position of history sidebar',
     },
   },
 };
@@ -93,15 +102,15 @@ export const Default = {
   args: {
     aiEnabled: false,
     showFrame: true,
-    cornerAll: "round",
+    cornerAll: 'round',
     cornerStartStart: undefined,
     cornerStartEnd: undefined,
     cornerEndStart: undefined,
     cornerEndEnd: undefined,
     showHistory: false,
     showWorkspace: false,
-    workspaceLocation: "start",
-    historyLocation: "start",
+    workspaceLocation: 'start',
+    historyLocation: 'start',
     contentMaxWidth: true,
   },
   render: (args) => {
@@ -133,8 +142,7 @@ export const Default = {
         showWorkspace={showWorkspace}
         workspaceLocation={workspaceLocation}
         historyLocation={historyLocation}
-        contentMaxWidth={contentMaxWidth}
-      >
+        contentMaxWidth={contentMaxWidth}>
         <CoreSlotContent />
       </ChatShell>
     );
@@ -143,71 +151,71 @@ export const Default = {
 
 // Slot configuration definitions
 const SLOT_CONFIGS = [
-  { name: "header", label: "Header", hasCheckbox: true },
-  { name: "header-after", label: "Header after", hasCheckbox: true },
-  { name: "messages", label: "Messages", hasCheckbox: true },
-  { name: "input-before", label: "Input before", hasCheckbox: true },
-  { name: "input", label: "Input", hasCheckbox: true },
-  { name: "input-after", label: "Input after", hasCheckbox: true },
-  { name: "footer", label: "Footer", hasCheckbox: true },
-  { name: "history", label: "History", hasCheckbox: false },
-  { name: "workspace", label: "Workspace", hasCheckbox: false },
+  { name: 'header', label: 'Header', hasCheckbox: true },
+  { name: 'header-after', label: 'Header after', hasCheckbox: true },
+  { name: 'messages', label: 'Messages', hasCheckbox: true },
+  { name: 'input-before', label: 'Input before', hasCheckbox: true },
+  { name: 'input', label: 'Input', hasCheckbox: true },
+  { name: 'input-after', label: 'Input after', hasCheckbox: true },
+  { name: 'footer', label: 'Footer', hasCheckbox: true },
+  { name: 'history', label: 'History', hasCheckbox: false },
+  { name: 'workspace', label: 'Workspace', hasCheckbox: false },
 ];
 
 export const Slots = {
   args: {
     aiEnabled: false,
     showFrame: true,
-    cornerAll: "round",
+    cornerAll: 'round',
     cornerStartStart: undefined,
     cornerStartEnd: undefined,
     cornerEndStart: undefined,
     cornerEndEnd: undefined,
     showHistory: false,
     showWorkspace: false,
-    workspaceLocation: "start",
-    historyLocation: "start",
+    workspaceLocation: 'start',
+    historyLocation: 'start',
     contentMaxWidth: true,
-    messagesMaxWidth: "672px",
-    messagesMinWidth: "320px",
-    workspaceMinWidth: "640px",
-    historyWidth: "320px",
+    messagesMaxWidth: '672px',
+    messagesMinWidth: '320px',
+    workspaceMinWidth: '640px',
+    historyWidth: '320px',
   },
   argTypes: {
     messagesMaxWidth: {
-      control: { type: "select" },
-      options: ["480px", "560px", "672px", "800px", "960px"],
-      description: "CSS custom property: --cds-aichat-messages-max-width",
+      control: { type: 'select' },
+      options: ['480px', '560px', '672px', '800px', '960px'],
+      description: 'CSS custom property: --cds-aichat-messages-max-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "672px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '672px' },
       },
     },
     messagesMinWidth: {
-      control: { type: "select" },
-      options: ["280px", "320px", "400px", "480px"],
-      description: "CSS custom property: --cds-aichat-messages-min-width",
+      control: { type: 'select' },
+      options: ['280px', '320px', '400px', '480px'],
+      description: 'CSS custom property: --cds-aichat-messages-min-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "320px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '320px' },
       },
     },
     workspaceMinWidth: {
-      control: { type: "select" },
-      options: ["480px", "560px", "640px", "800px", "960px"],
-      description: "CSS custom property: --cds-aichat-workspace-min-width",
+      control: { type: 'select' },
+      options: ['480px', '560px', '640px', '800px', '960px'],
+      description: 'CSS custom property: --cds-aichat-workspace-min-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "640px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '640px' },
       },
     },
     historyWidth: {
-      control: { type: "select" },
-      options: ["256px", "320px", "400px", "480px"],
-      description: "CSS custom property: --cds-aichat-history-width",
+      control: { type: 'select' },
+      options: ['256px', '320px', '400px', '480px'],
+      description: 'CSS custom property: --cds-aichat-history-width',
       table: {
-        category: "CSS Custom Properties",
-        defaultValue: { summary: "320px" },
+        category: 'CSS Custom Properties',
+        defaultValue: { summary: '320px' },
       },
     },
   },
@@ -236,7 +244,7 @@ export const Slots = {
       SLOT_CONFIGS.reduce((acc, slot) => {
         acc[slot.name] = true;
         return acc;
-      }, {}),
+      }, {})
     );
 
     const [cssVars, setCssVars] = useState({
@@ -286,22 +294,20 @@ export const Slots = {
           historyLocation={historyLocation}
           contentMaxWidth={contentMaxWidth}
           style={{
-            "--cds-aichat-messages-max-width": cssVars.messagesMaxWidth,
-            "--cds-aichat-messages-min-width": cssVars.messagesMinWidth,
-            "--cds-aichat-workspace-min-width": cssVars.workspaceMinWidth,
-            "--cds-aichat-history-width": cssVars.historyWidth,
-          }}
-        >
+            '--cds-aichat-messages-max-width': cssVars.messagesMaxWidth,
+            '--cds-aichat-messages-min-width': cssVars.messagesMinWidth,
+            '--cds-aichat-workspace-min-width': cssVars.workspaceMinWidth,
+            '--cds-aichat-history-width': cssVars.historyWidth,
+          }}>
           {SLOT_CONFIGS.map((slot) =>
             slotVisibility[slot.name] ? (
               <div
                 key={slot.name}
                 slot={slot.name}
-                className={`${slot.name} slot-sample`}
-              >
+                className={`${slot.name} slot-sample`}>
                 {slot.label}
               </div>
-            ) : null,
+            ) : null
           )}
         </ChatShell>
       </div>
@@ -313,12 +319,12 @@ export const SidebarWorkspace = {
   args: {
     aiEnabled: false,
     showFrame: true,
-    cornerAll: "round",
+    cornerAll: 'round',
     cornerStartStart: undefined,
     cornerStartEnd: undefined,
     cornerEndStart: undefined,
     cornerEndEnd: undefined,
-    workspaceLocation: "start",
+    workspaceLocation: 'start',
     contentMaxWidth: true,
   },
   argTypes: {
@@ -342,7 +348,7 @@ export const SidebarWorkspace = {
 
     return (
       <ChatShell
-        className={`sidebar-workspace-shell ${isWorkspaceOpen ? "expanded" : ""}`}
+        className={`sidebar-workspace-shell ${isWorkspaceOpen ? 'expanded' : ''}`}
         aiEnabled={aiEnabled}
         showFrame={showFrame}
         cornerAll={cornerAll}
@@ -352,8 +358,7 @@ export const SidebarWorkspace = {
         cornerEndEnd={cornerEndEnd}
         showWorkspace={isWorkspaceOpen}
         workspaceLocation={workspaceLocation}
-        contentMaxWidth={contentMaxWidth}
-      >
+        contentMaxWidth={contentMaxWidth}>
         <div slot="header" className="header slot-sample">
           Chat Header
         </div>
@@ -362,9 +367,8 @@ export const SidebarWorkspace = {
             <p>Messages area</p>
             <button
               className="workspace-toggle-btn"
-              onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
-            >
-              {isWorkspaceOpen ? "Close workspace" : "Open workspace"}
+              onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}>
+              {isWorkspaceOpen ? 'Close workspace' : 'Open workspace'}
             </button>
           </div>
         </div>
@@ -374,8 +378,7 @@ export const SidebarWorkspace = {
               <h3>Workspace</h3>
               <button
                 className="workspace-toggle-btn"
-                onClick={() => setIsWorkspaceOpen(false)}
-              >
+                onClick={() => setIsWorkspaceOpen(false)}>
                 Close
               </button>
             </div>

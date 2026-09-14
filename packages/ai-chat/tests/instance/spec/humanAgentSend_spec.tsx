@@ -34,7 +34,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
-import { HumanAgentServiceImpl } from '../../../src/chat/services/haa/HumanAgentServiceImpl';
+import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
 import { useInputCallbacks } from '../../../src/chat/hooks/useInputCallbacks';
 import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import {
@@ -140,7 +140,7 @@ async function setupHumanAgentChat() {
     serviceManager.eventBus.fire(busEvent, instance);
 
   const { serviceDesk, sendMessageToAgent } = makeStubServiceDesk();
-  const impl = new HumanAgentServiceImpl(serviceManager);
+  const impl = createHumanAgentService(serviceManager);
   (impl as any).serviceDesk = serviceDesk;
   (impl as any).chatStarted = true;
 

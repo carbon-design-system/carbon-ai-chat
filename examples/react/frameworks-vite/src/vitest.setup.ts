@@ -107,7 +107,6 @@ vi.mock(
 
     return {
       loadCodeMirrorRuntime: () => createRuntime(),
-      loadCodeSnippetDeps: () => createRuntime(),
     };
   }
 );

@@ -34,19 +34,19 @@ on:
   workflow_call:
     inputs:
       bump:
-        description: "Base bump off the current stable version (the alpha previews the next minor or patch). Ignored for a package with an explicit base below."
+        description: 'Base bump off the current stable version (the alpha previews the next minor or patch). Ignored for a package with an explicit base below.'
         type: string
         default: minor
       ai-chat-base:
-        description: "Exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Leave both base inputs blank to derive from `bump`; setting one requires the other."
+        description: 'Exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Leave both base inputs blank to derive from `bump`; setting one requires the other.'
         type: string
-        default: ""
+        default: ''
       components-base:
-        description: "Exact base version for @carbon/ai-chat-components, e.g. 1.9.0. The two packages version independently, so this must be set whenever `ai-chat-base` is."
+        description: 'Exact base version for @carbon/ai-chat-components, e.g. 1.9.0. The two packages version independently, so this must be set whenever `ai-chat-base` is.'
         type: string
-        default: ""
+        default: ''
       dry-run:
-        description: "Dry run? Computes versions and builds everything, but publishes nothing to npm or the CDN."
+        description: 'Dry run? Computes versions and builds everything, but publishes nothing to npm or the CDN.'
         type: boolean
         default: true
 
@@ -64,14 +64,14 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
 
       - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version-file: ".nvmrc"
+          node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
-          cache: "npm"
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci --prefer-offline
@@ -130,8 +130,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "demo/dist"
-          DEST_DIR: "tag/alpha/demo"
+          SOURCE_DIR: 'demo/dist'
+          DEST_DIR: 'tag/alpha/demo'
 
       - name: Upload typedoc to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
@@ -144,8 +144,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat/dist/docs/carbon-tsdocs"
-          DEST_DIR: "tag/alpha/docs"
+          SOURCE_DIR: 'packages/ai-chat/dist/docs/carbon-tsdocs'
+          DEST_DIR: 'tag/alpha/docs'
 
       - name: Upload components to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
@@ -158,8 +158,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/dist"
-          DEST_DIR: "components/tag/alpha"
+          SOURCE_DIR: 'packages/ai-chat-components/dist'
+          DEST_DIR: 'components/tag/alpha'
 
       - name: Upload ai-chat-components Storybook to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
@@ -172,8 +172,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-static"
-          DEST_DIR: "components/storybook/tag/alpha"
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-static'
+          DEST_DIR: 'components/storybook/tag/alpha'
 
       - name: Upload ai-chat-components React Storybook to COS under the `alpha` folder
         if: ${{ !inputs.dry-run }}
@@ -186,5 +186,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.COMMON_COS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.COMMON_COS_REGION }}
           AWS_S3_ENDPOINT: https://${{ secrets.COMMON_COS_ENDPOINT }}
-          SOURCE_DIR: "packages/ai-chat-components/storybook-react-static"
-          DEST_DIR: "components/storybook/react/tag/alpha"
+          SOURCE_DIR: 'packages/ai-chat-components/storybook-react-static'
+          DEST_DIR: 'components/storybook/react/tag/alpha'
