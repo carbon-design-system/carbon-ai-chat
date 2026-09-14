@@ -52,13 +52,14 @@ export type Reducer<
  * @param action - The action to dispatch.
  * @returns The dispatched action.
  */
-export type DispatchFunction<ActionType extends UnknownAction = UnknownAction> =
-  (action: Readonly<ActionType>) => ActionType;
+type DispatchFunction<ActionType extends UnknownAction = UnknownAction> = (
+  action: Readonly<ActionType>
+) => ActionType;
 
 /**
  * A subscription callback invoked when the store state changes.
  */
-export type StoreListener = () => void;
+type StoreListener = () => void;
 
 /**
  * A minimal, Redux-like store interface with synchronous reducers.

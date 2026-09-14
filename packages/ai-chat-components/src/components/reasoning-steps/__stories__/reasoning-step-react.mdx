@@ -1,19 +1,22 @@
 import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
-import * as ReasoningStepReactStories from "./reasoning-step-react.stories.jsx";
+import * as ReasoningStepReactStories from './reasoning-step-react.stories.jsx';
 
-<Meta of={ReasoningStepReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ReasoningStepReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Reasoning step
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -22,17 +25,15 @@ The `<ReasoningStep>` component wraps the `cds-aichat-reasoning-step` web compon
 ### Getting started
 
 ```jsx
-import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
-import ReasoningStep from "@carbon/ai-chat-components/es/react/reasoning-step.js";
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+import ReasoningSteps from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
+import ReasoningStep from '@carbon/ai-chat-components/es/react/reasoning-step.js';
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 
 function ReasoningStepExample() {
   return (
     <ReasoningSteps open>
       <ReasoningStep title="Review retrieved context" open>
-        <Markdown
-          markdown="Confirmed the retrieved snippets map to the user's request and captured any open questions before drafting a response."
-        />
+        <Markdown markdown="Confirmed the retrieved snippets map to the user's request and captured any open questions before drafting a response." />
       </ReasoningStep>
     </ReasoningSteps>
   );
@@ -51,8 +52,7 @@ function ControlledStep({ step }) {
         title={step.title}
         open={isOpen}
         controlled
-        onToggle={(event) => setIsOpen(event.detail.open)}
-      >
+        onToggle={(event) => setIsOpen(event.detail.open)}>
         {step.body}
       </ReasoningStep>
     </ReasoningSteps>

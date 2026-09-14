@@ -1,16 +1,21 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ReasoningStepStories from "./reasoning-step.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as ReasoningStepStories from './reasoning-step.stories';
 
-<Meta of={ReasoningStepStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ReasoningStepStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Reasoning step
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
+
 - [Overview](#overview)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
@@ -42,11 +47,10 @@ Here's a quick example to get you started.
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/reasoning-steps/index.js";
+import '@carbon/ai-chat-components/es/components/reasoning-steps/index.js';
 ```
 
-
-<Markdown>{`${cdnJs(["reasoning-steps", "reasoning-step"])}`}</Markdown>
+<Markdown>{`${cdnJs(['reasoning-steps', 'reasoning-step'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

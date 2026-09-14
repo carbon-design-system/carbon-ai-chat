@@ -25,17 +25,9 @@ if (isBrowser()) {
 
 const IS_IOS = isBrowser() && /iPad|iPhone|iPod/.test(navigator.userAgent);
 const IS_ANDROID = isBrowser() && /Android/.test(navigator.userAgent);
-const IS_MOBILE = IS_IOS || IS_ANDROID;
+export const IS_MOBILE = IS_IOS || IS_ANDROID;
 // The width and height checks here are how we differentiate between mobile android devices and tablets.
 const IS_PHONE = IS_MOBILE && (screenWidth < 500 || screenHeight < 500);
 // Assume the phone is in portrait mode if the width is small.
-const IS_PHONE_IN_PORTRAIT_MODE = IS_PHONE && screenWidth < 500;
-
-export {
-  isBrowser,
-  IS_IOS,
-  IS_ANDROID,
-  IS_MOBILE,
-  IS_PHONE,
-  IS_PHONE_IN_PORTRAIT_MODE,
-};
+export const IS_PHONE_IN_PORTRAIT_MODE = IS_PHONE && screenWidth < 500;
+export { isBrowser, IS_PHONE };

@@ -38,6 +38,7 @@ import './demo-chat-version-switcher';
 import './demo-keyboard-shortcut-switcher';
 import '@carbon/web-components/es/components/button/index.js';
 import './demo-chat-avatar-switcher';
+import './demo-markdown-custom-renderers-switcher';
 
 const { defaultConfig, defaultSettings } = getSettings();
 
@@ -86,6 +87,7 @@ export class DemoBody extends LitElement {
     demo-chat-theme-switcher,
     demo-homescreen-switcher,
     demo-writeable-elements-switcher,
+    demo-markdown-custom-renderers-switcher,
     demo-direction-switcher,
     demo-chat-version-switcher {
       display: block;
@@ -594,6 +596,16 @@ export class DemoBody extends LitElement {
                       </div>
                       <demo-writeable-elements-switcher
                         .settings=${this.settings}></demo-writeable-elements-switcher>
+                    </div>
+                    <div
+                      class="config-section"
+                      role="group"
+                      aria-labelledby="markdown-heading">
+                      <div class="config-section__title" id="markdown-heading">
+                        Markdown
+                      </div>
+                      <demo-markdown-custom-renderers-switcher
+                        .settings=${this.settings}></demo-markdown-custom-renderers-switcher>
                     </div>
                   </cds-accordion-item>
                   <cds-accordion-item title="Chat Configuration">

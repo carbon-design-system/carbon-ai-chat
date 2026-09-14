@@ -1,19 +1,22 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as ReasoningStepsReactStories from "./reasoning-steps-react.stories.jsx";
+import * as ReasoningStepsReactStories from './reasoning-steps-react.stories.jsx';
 
-<Meta of={ReasoningStepsReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ReasoningStepsReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Reasoning steps
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -22,8 +25,8 @@ The `<ReasoningSteps>` and `<ReasoningStep>` components wrap the underlying web 
 ### Getting started
 
 ```jsx
-import ReasoningSteps from "@carbon/ai-chat-components/es/react/reasoning-steps.js";
-import ReasoningStep from "@carbon/ai-chat-components/es/react/reasoning-step.js";
+import ReasoningSteps from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
+import ReasoningStep from '@carbon/ai-chat-components/es/react/reasoning-step.js';
 
 export function ReasoningExample({ steps }) {
   return (
@@ -67,8 +70,7 @@ function AuditTrail({ steps }) {
               }
               return next;
             });
-          }}
-        >
+          }}>
           {step.body}
         </ReasoningStep>
       ))}

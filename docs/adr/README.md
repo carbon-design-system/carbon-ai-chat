@@ -73,7 +73,7 @@ Write a new ADR, set its `supersedes` field, and on the old one set `superseded-
 
 Use the [caic-adr](../../.bob/skills/caic-adr/SKILL.md) skill. It carries the full workflow: the promotion test, how to fill each section, and the approval gate before anything reaches GitHub.
 
-Voice follows [tone.md](../../references/tone.md) — the same rules as every other developer-facing file here.
+Voice follows [tone.md](../../references/tone.md), and the wording of each section is [adr-prose.md](../../.bob/skills/caic-copy-writer/references/adr-prose.md) — type 11. An ADR is not worded like the rest of the docs: it is read years later by someone who was not in the room.
 
 ## The records
 

@@ -46,6 +46,10 @@ const NOT_OBJECT_SHAPED: Record<string, string> = {
     'enum — paired with `export const ChainOfThoughtStepStatus`',
   CHAT_BUTTON_KIND: 'enum — paired with `export const CHAT_BUTTON_KIND`',
   CHAT_BUTTON_SIZE: 'enum — paired with `export const CHAT_BUTTON_SIZE`',
+  MarkdownPluginHostMountDetail:
+    'union of the two plugin-host mount detail members, discriminated on `kind`',
+  MarkdownPluginHostMountDetailInput:
+    'union — the mount detail with `kind` optional, for details from an older build',
 };
 
 const TYPES_ROOT = resolve(__dirname, '../../../src/types');

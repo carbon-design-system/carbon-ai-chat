@@ -1,30 +1,30 @@
 /**
  * @license
  *
- * Copyright IBM Corp. 2025
+ * Copyright IBM Corp. 2025, 2026
  *
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
 
-import React from "react";
-import containerStyles from "../.storybook/_container.scss?inline";
-import { setCustomElementsManifest } from "@storybook/web-components-vite";
-import customElements from "../custom-elements.json";
-import prettier from "prettier/standalone";
-import prettierPluginBabel from "prettier/plugins/babel";
-import prettierPluginEstree from "prettier/plugins/estree";
+import React from 'react';
+import containerStyles from '../.storybook/_container.scss?inline';
+import { setCustomElementsManifest } from '@storybook/web-components-vite';
+import customElements from '../custom-elements.json';
+import prettier from 'prettier/standalone';
+import prettierPluginBabel from 'prettier/plugins/babel';
+import prettierPluginEstree from 'prettier/plugins/estree';
 
 // Import Carbon styles for React components
-import "@carbon/styles/css/styles.css";
+import '@carbon/styles/css/styles.css';
 
-if (typeof document !== "undefined") {
+if (typeof document !== 'undefined') {
   const existing = document.head.querySelector(
-    'style[data-storybook-container="true"]',
+    'style[data-storybook-container="true"]'
   );
   if (!existing) {
-    const style = document.createElement("style");
-    style.setAttribute("data-storybook-container", "true");
+    const style = document.createElement('style');
+    style.setAttribute('data-storybook-container', 'true');
     style.textContent = containerStyles;
     document.head.appendChild(style);
   }
@@ -41,7 +41,7 @@ function filterPrivateMembers(manifest) {
     (module.declarations || []).forEach((declaration) => {
       if (declaration.members) {
         declaration.members = declaration.members.filter(
-          (member) => member.privacy !== "private",
+          (member) => member.privacy !== 'private'
         );
       }
     });
@@ -55,36 +55,36 @@ setCustomElementsManifest(filteredManifest);
 
 export const globalTypes = {
   theme: {
-    name: "Theme",
-    description: "Set the global theme for displaying components",
-    defaultValue: "white",
+    name: 'Theme',
+    description: 'Set the global theme for displaying components',
+    defaultValue: 'white',
     toolbar: {
-      icon: "paintbrush",
-      items: ["white", "g10", "g90", "g100"],
+      icon: 'paintbrush',
+      items: ['white', 'g10', 'g90', 'g100'],
     },
   },
   dir: {
-    name: "Text direction",
-    description: "Set the text direction for the story",
-    defaultValue: "ltr",
+    name: 'Text direction',
+    description: 'Set the text direction for the story',
+    defaultValue: 'ltr',
     toolbar: {
-      icon: "transfer",
-      title: "Text direction",
+      icon: 'transfer',
+      title: 'Text direction',
       items: [
         {
-          right: "🔄",
-          title: "auto",
-          value: "auto",
+          right: '🔄',
+          title: 'auto',
+          value: 'auto',
         },
         {
-          right: "➡️",
-          title: "left-to-right (ltr)",
-          value: "ltr",
+          right: '➡️',
+          title: 'left-to-right (ltr)',
+          value: 'ltr',
         },
         {
-          right: "⬅️",
-          title: "right-to-left (rtl)",
-          value: "rtl",
+          right: '⬅️',
+          title: 'right-to-left (rtl)',
+          value: 'rtl',
         },
       ],
     },
@@ -100,17 +100,17 @@ export const parameters = {
     // presetColors: [],
 
     // https://storybook.js.org/docs/react/essentials/controls#sorting-controls
-    sort: "alpha",
+    sort: 'alpha',
 
     hideNoControlsWarning: true,
   },
   docs: {
     codePanel: true,
-    defaultName: "Overview",
+    defaultName: 'Overview',
     source: {
       transform: async (source) => {
         return prettier.format(source, {
-          parser: "babel",
+          parser: 'babel',
           plugins: [prettierPluginBabel, prettierPluginEstree],
         });
       },
@@ -119,33 +119,33 @@ export const parameters = {
 
   options: {
     storySort: {
-      method: "alphabetical",
+      method: 'alphabetical',
       order: [
-        "Introduction",
+        'Introduction',
         [
-          "Welcome",
-          "Custom styles",
-          "Carbon CDN style helpers",
-          "Form Participation",
+          'Welcome',
+          'Custom styles',
+          'Carbon CDN style helpers',
+          'Form Participation',
         ],
-        "Components",
+        'Components',
         [
-          "Card",
-          "Chat shell",
-          "Chain of thought",
-          "Chat button",
-          "Code snippet",
+          'Card',
+          'Chat shell',
+          'Chain of thought',
+          'Chat button',
+          'Code snippet',
           [
-            "Default",
-            "Highlight",
-            "Streaming With Language Set",
-            "Streaming With Language Detection",
-            "With No Tile Container",
-            "Editable",
-            "Editable Empty",
+            'Default',
+            'Highlight',
+            'Streaming With Language Set',
+            'Streaming With Language Detection',
+            'With No Tile Container',
+            'Editable',
+            'Editable Empty',
           ],
         ],
-        "Layout",
+        'Layout',
       ],
     },
   },
@@ -154,7 +154,7 @@ export const parameters = {
 export const decorators = [
   function decoratorContainer(story, context) {
     const { theme, dir } = context.globals;
-    document.documentElement.setAttribute("storybook-carbon-theme", theme);
+    document.documentElement.setAttribute('storybook-carbon-theme', theme);
     document.documentElement.dir = dir;
 
     return (
@@ -163,8 +163,7 @@ export const decorators = [
         name="main-content"
         data-floating-menu-container
         data-modal-container
-        role="main"
-      >
+        role="main">
         {story()}
       </div>
     );

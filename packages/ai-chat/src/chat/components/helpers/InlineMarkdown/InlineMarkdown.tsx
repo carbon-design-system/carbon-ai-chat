@@ -81,9 +81,6 @@ function renderInlineTokenList(tokens: Token[] | null): ReactNode {
         break;
 
       case 'softbreak':
-        pushChild(<Fragment key={nextKey()}> </Fragment>);
-        break;
-
       case 'hardbreak':
         pushChild(<br key={nextKey()} />);
         break;
@@ -97,7 +94,9 @@ function renderInlineTokenList(tokens: Token[] | null): ReactNode {
       case 's_open':
         stack.push({ type: 's', attrs: {}, children: [] });
         break;
-      case 'mark_open':
+      // Our ==highlight== plugin pushes `highlight_open` / `highlight_close`
+      // with tag `mark`; markdown-it itself has no `mark_*` token type.
+      case 'highlight_open':
         stack.push({ type: 'mark', attrs: {}, children: [] });
         break;
       case 'link_open': {
@@ -114,7 +113,7 @@ function renderInlineTokenList(tokens: Token[] | null): ReactNode {
       case 'strong_close':
       case 'em_close':
       case 's_close':
-      case 'mark_close':
+      case 'highlight_close':
       case 'link_close': {
         const frame = stack.pop();
         if (!frame) {

@@ -1,12 +1,11 @@
-import { ArgTypes, Canvas, Meta } from "@storybook/addon-docs/blocks";
-import * as ChatShellReactStories from "./shell-react.stories";
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as ChatShellReactStories from './shell-react.stories';
 
 <Meta of={ChatShellReactStories} />
 
 # Chat shell
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
@@ -15,12 +14,12 @@ import * as ChatShellReactStories from "./shell-react.stories";
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
-
 ## Overview
 
 The `<ChatShell>` component wraps the `cds-aichat-shell` web component to provide a flexible chat interface layout with support for headers, messages, input areas, workspaces, history panels, and overlay panels inside React applications.
 
 The shell includes support for:
+
 - **Header and footer slots** for custom branding and actions
 - **Messages and input areas** with before/after extension points
 - **Workspace and history sidebars** with configurable positioning
@@ -33,7 +32,7 @@ The shell includes support for:
 Here's a quick example to get you started.
 
 ```jsx
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
 
 function MyChatInterface() {
   return (
@@ -51,8 +50,8 @@ function MyChatInterface() {
 Panels can be added to create overlay experiences with different priorities and animations:
 
 ```jsx
-import ChatShell from "@carbon/ai-chat-components/es/react/chat-shell.js";
-import ChatPanel from "@carbon/ai-chat-components/es/react/panel.js";
+import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
 
 function ChatWithPanel() {
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);
@@ -62,11 +61,11 @@ function ChatWithPanel() {
       <div slot="header">Chat Header</div>
       <div slot="messages">Messages Area</div>
       <div slot="input">Input Area</div>
-      
+
       <div slot="panels">
-        <ChatPanel 
+        <ChatPanel
           open={isPanelOpen}
-          showChatHeader 
+          showChatHeader
           showFrame
           animationOnOpen="slide-in-from-bottom"
           animationOnClose="slide-out-to-bottom">
@@ -90,13 +89,12 @@ Use CSS custom properties to adjust layout sizing. Apply them to a wrapper aroun
 ```jsx
 <div
   style={{
-    "--cds-aichat-messages-max-width": "720px",
-    "--cds-aichat-messages-min-width": "320px",
-    "--cds-aichat-workspace-min-width": "520px",
-    "--cds-aichat-history-width": "360px",
-    "--cds-aichat-card-max-width": "460px",
-  }}
->
+    '--cds-aichat-messages-max-width': '720px',
+    '--cds-aichat-messages-min-width': '320px',
+    '--cds-aichat-workspace-min-width': '520px',
+    '--cds-aichat-history-width': '360px',
+    '--cds-aichat-card-max-width': '460px',
+  }}>
   <ChatShell contentMaxWidth showFrame roundedCorners>
     <div slot="header">Chat Header</div>
     <div slot="messages">Messages Area</div>
@@ -126,9 +124,9 @@ function ChatWithWorkspace() {
   const [showWorkspace, setShowWorkspace] = React.useState(false);
 
   return (
-    <ChatShell 
+    <ChatShell
       showFrame
-      contentMaxWidth 
+      contentMaxWidth
       showWorkspace={showWorkspace}
       workspaceLocation="end">
       <div slot="header">Chat Header</div>
@@ -151,8 +149,8 @@ function ChatWithHistory() {
   const [showHistory, setShowHistory] = React.useState(false);
 
   return (
-    <ChatShell 
-      showFrame 
+    <ChatShell
+      showFrame
       contentMaxWidth
       showHistory={showHistory}
       historyLocation="start">

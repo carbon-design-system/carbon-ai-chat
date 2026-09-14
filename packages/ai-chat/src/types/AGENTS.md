@@ -25,39 +25,19 @@ npm run docs --workspace=@carbon/ai-chat
 grep -c 'tsd-index-heading' packages/ai-chat/dist/docs/carbon-tsdocs/interfaces/Type_reference.YourType.html
 ```
 
-Don't reach for `npm run docs:api` to check this. It rewrites the committed [../../docs/api/](../../docs/api/), which is generated on a release or release candidate, not per PR.
+Don't reach for `npm run docs:api` to check this. It rewrites the committed [../../docs/api/](../../docs/api/), which is regenerated on a release or release candidate, not per PR.
 
 **Cross-package note**: many of these types are _declared_ in [@carbon/ai-chat-components](../../../ai-chat-components/) and surfaced here through a **local re-declaration**, not a transparent re-export. TypeDoc reads the JSDoc at the declaration site it sees — and the declaration site we want it to see is the local alias in this package, not the upstream source. The bar below therefore applies at the local declaration site you control. See [cross-package-types.md](references/cross-package-types.md).
 
-## Required tags
+## Topic-specific guidance
 
-### `@category` (required on every top-level export)
+Load only what you need:
 
-`@category` places the symbol in the docs navigation. Allowed values come from `categoryOrder` in [../../typedoc.json](../../typedoc.json):
-
-- `React`
-- `Web component`
-- `Config`
-- `Instance`
-- `Events`
-- `Service desk`
-- `Messaging`
-- `Testing`
-- `Utilities`
-
-Untagged symbols fall into the `*` bucket — a sign the author forgot.
-
-### `@experimental`
-
-Public API that may still change. Pair with a short note on why it's unstable. Renders with a visible badge on the docs site. Use on a property, enum member, or whole type.
-
-### `@internal`
-
-Symbols the build pipeline forces into the public types for mechanical reasons but that consumers must never rely on (example: [../chat/services/ChatActionsImpl.ts](../chat/services/ChatActionsImpl.ts)-adjacent plumbing reached via `ChatInstance.serviceManager`). `@internal` is stripped from TypeDoc output — if a reader should never see it, tag it.
-
-### `@deprecated`
-
-Symbols scheduled for removal. Include the replacement and target major: `@deprecated Use {@link NewThing} — removed in 2.0.0.`
+- Tagging a symbol (`@category`, `@experimental`, `@internal`, `@deprecated`) → [jsdoc-tags.md](references/jsdoc-tags.md)
+- Linking between public symbols or to third-party types → [cross-linking.md](references/cross-linking.md)
+- Documenting a prop whose referential identity matters → [prop-stability.md](references/prop-stability.md)
+- Re-declaring a type from `@carbon/ai-chat-components` → [cross-package-types.md](references/cross-package-types.md)
+- Worked good/bad examples of every rule → [jsdoc-examples.md](references/jsdoc-examples.md)
 
 ## Comment content bar
 
@@ -65,24 +45,6 @@ Symbols scheduled for removal. Include the replacement and target major: `@depre
 - **Document units and semantics of primitives.** `timeout: number` is useless without "milliseconds". `id: string` is useless without "must be unique across X".
 - **Complete sentences, ending in periods.** No note-form, no internal jargon, no ticket refs, no TODOs.
 - **Match the tone of existing types** ([messaging/Messages.ts](messaging/Messages.ts), [instance/ChatInstance.ts](instance/ChatInstance.ts)). JSDoc is product copy — follow [../../../../references/tone.md](../../../../references/tone.md) for voice and word economy.
-
-## Cross-linking
-
-Use `{@link SymbolName}` for references to other exported symbols. TypeDoc runs with `validation.invalidLink: true` (see [../../typedoc.json](../../typedoc.json)), so a broken `{@link}` fails the build.
-
-Prefer a `{@link}` over a plain backtick reference when the target is itself public — consumers get a clickable jump in the rendered docs and a resolvable symbol in the MCP index.
-
-**Link back to the consumer.** When you declare a type that is only reachable through another public symbol — a leaf config consumed by a parent config, an enum surfaced on a single property, a callback signature attached to one event — open the JSDoc with a sentence that `{@link}`s the consumer entry point. A reader who lands on the leaf in TypeDoc or the MCP index can then jump straight to where it's actually used. The existing `AutocompleteConfig` ("Live autocomplete config consumed by {@link InputConfig.autocomplete}") is the template.
-
-**External (third-party) types.** Symbols from `@tiptap/core` (`Editor`, `Extension`, `JSONContent`, `Node`, ...) are not exported from this package, so `{@link}` cannot resolve them and the build will fail. Reference them with plain backticks (e.g. `` `JSONContent` ``) and, where useful, link to tiptap's own docs by URL.
-
-## Cross-package re-exports
-
-Public types declared in [@carbon/ai-chat-components](../../../ai-chat-components/) are surfaced through a local re-declaration in this package, not a transparent re-export. JSDoc + `@category` live **here**, via that re-declaration.
-
-Read [cross-package-types.md](references/cross-package-types.md) when you add or change one: it carries the pattern, the `@interface` rule for object-shaped targets, where each re-declaration lives, and what the docs build does when one is missing.
-
-Third-party packages (`@tiptap/core`, etc.) are **never** re-declared or re-exported. Import them directly. See "External (third-party) types" in [Cross-linking](#cross-linking).
 
 ## Property-level JSDoc
 
@@ -95,19 +57,6 @@ Every public **instance method** ships at least one titled `@example`. Scope: [`
 This is a **review gate**, not a build gate — TypeDoc validates `invalidLink` / `notExported`, not a missing `@example`, so a method with no example still compiles. Catch it in review and against the Definition of done below.
 
 Write the block to the shared criteria in [code-examples.md](../../references/code-examples.md): self-contained, minimal, realistically-typed values, one titled `@example` per distinct case, show what comes back, model the production-safe pattern. `{@link}` targets inside an example _are_ build-validated, so they must resolve.
-
-## Prop stability
-
-The chat re-render hardening assumes most config/render props are referentially stable across host renders. When a prop's identity matters — because the chat compares it by reference, or rebuilds something from it — say so in its JSDoc so a consumer knows to memoize it. Two cases:
-
-- **Compared by reference** (a change of identity is treated as a real change): e.g. `serviceDeskFactory`. Document that the consumer must pass a stable reference (module-level function or `useCallback`) and what an unstable one costs.
-- **Rebuilt from on change** (a new identity reruns expensive work even with equal content): e.g. `markdownItPlugins`. Document that the value should be memoized.
-
-Props the framework already diffs by value (`config`, `strings`, `markdown`) tolerate inline objects, but a fresh identity every render still costs a no-op reconciliation pass; in `debug` mode the chat warns once per such prop. Object/array props that feed expensive work should still carry a "memoize this" note.
-
-## Examples
-
-Worked good and bad examples of every rule above — top-level types, properties, and cross-package re-declarations — are in [jsdoc-examples.md](references/jsdoc-examples.md). Read it when you want a model to copy rather than a rule to apply.
 
 ## Definition of done
 

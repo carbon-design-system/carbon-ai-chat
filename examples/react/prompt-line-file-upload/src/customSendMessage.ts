@@ -38,7 +38,7 @@ Attach a file using the paperclip button in the input area, then send a message.
 
 You can attach multiple files at once before sending.
 
-Files whose name starts with "a" are rejected by the mock server — attach one to see the upload error state.`;
+Files whose name contains "fail" are rejected by the mock server — attach one to see the upload error state.`;
 
 // Replace with a real production implementation.
 async function customSendMessage(

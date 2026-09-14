@@ -30,7 +30,7 @@ Each template carries the full section order with every section marked REQUIRED 
 
 **ArgTypes source differs by side**: Lit MDX passes the **tag string** (`<ArgTypes of="cds-aichat-<name>"/>`, reads `custom-elements.json`); React MDX passes the **module ref** (`<ArgTypes of={Stories.Default}/>`, documents the wrapper's camelCase props / `on*` handlers).
 
-Rules: the `## Overview` intro is 1–2 task-led sentences ([tone.md](../../../references/tone.md)); the reader sees the render next. Any real prose (extra usage, perf notes) goes **after** the hero Canvas under its own `##`. Multi-element families add a `<Canvas>` per meaningful variant and an `<ArgTypes>` per sub-element. Keep the Lit and React Overviews on the same headings and the same story names — they document one component from two sides.
+Rules: the `## Overview` intro is 1–2 task-led sentences ([storybook-mdx.md](../../../.bob/skills/caic-copy-writer/references/storybook-mdx.md), type 4); the reader sees the render next. Any real prose (extra usage, perf notes) goes **after** the hero Canvas under its own `##`. Multi-element families add a `<Canvas>` per meaningful variant and an `<ArgTypes>` per sub-element. Keep the Lit and React Overviews on the same headings and the same story names — they document one component from two sides.
 
 ## Story template (CSF3)
 
@@ -143,5 +143,6 @@ Variant stories compose, never copy: `args: { ...Default.args, … }`, `argTypes
 - [overview-lit.template.mdx](overview-lit.template.mdx) / [overview-react.template.mdx](overview-react.template.mdx) — copy-to-start Overview skeletons
 - [component-authoring.md](component-authoring.md) — directory shape, manifest, React-wrapper generation
 - [testing.md](testing.md) — WTR + Jest test setup
-- [../../../references/tone.md](../../../references/tone.md) — voice & word economy for MDX copy
+- [../../../references/tone.md](../../../references/tone.md) — voice & quick rules for MDX copy
+- [storybook-mdx.md](../../../.bob/skills/caic-copy-writer/references/storybook-mdx.md) — what the Overview and controls owe a reader (type 4)
 - [../../../references/accessibility.md](../../../references/accessibility.md) — a11y-addon expectations

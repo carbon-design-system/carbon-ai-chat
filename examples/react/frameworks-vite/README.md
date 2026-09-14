@@ -10,7 +10,6 @@ Vite-powered React example that mounts `ChatContainer` with a minimal mock backe
 
 ## When to use this pattern
 
-- You want a Vite-native React scaffold instead of webpack.
 - You want an example that also exercises Vitest for your component tests.
 
 ## APIs and props demonstrated

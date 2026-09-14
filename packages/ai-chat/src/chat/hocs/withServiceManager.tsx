@@ -52,4 +52,4 @@ function withServiceManager<P extends HasServiceManager>(
   return Wrapped;
 }
 
-export { withServiceManager, ServiceManagerContext, HasServiceManager };
+export { withServiceManager, HasServiceManager };

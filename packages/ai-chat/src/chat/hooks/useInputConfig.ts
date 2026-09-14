@@ -94,4 +94,3 @@ function useInputConfig(): InputConfigSlice {
 }
 
 export { useInputConfig };
-export type { InputConfigSlice };

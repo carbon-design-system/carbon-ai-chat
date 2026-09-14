@@ -8,17 +8,17 @@
  */
 
 /* eslint-disable */
-import React from "react";
+import React from 'react';
 
-import Processing from "../../../react/processing";
+import Processing from '../../../react/processing';
 
 export default {
-  title: "Components/Processing",
+  title: 'Components/Processing',
 };
 
 const argTypes = {
-  loop: { control: "boolean" },
-  quickLoad: { control: "boolean" },
+  loop: { control: 'boolean' },
+  quickLoad: { control: 'boolean' },
 };
 
 const renderProcessing = (args) => (

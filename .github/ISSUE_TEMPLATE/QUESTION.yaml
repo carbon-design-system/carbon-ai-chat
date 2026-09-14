@@ -8,14 +8,10 @@ body:
       value: '## Hi there! 👋'
   - type: markdown
     attributes:
-      value:
-        Hope everything is going okay using projects from the Carbon AI Chat. It looks like you might have a question about our work, so we
-        wanted to share a couple of resources that you could use if you haven't tried them yet 🙂
+      value: Hope everything is going okay using projects from the Carbon AI Chat. It looks like you might have a question about our work, so we wanted to share a couple of resources that you could use if you haven't tried them yet 🙂
   - type: markdown
     attributes:
-      value:
-        If you're an IBMer, we have a Slack channel, `#carbon-ai-chat`, available across
-        all IBM Workspaces.
+      value: If you're an IBMer, we have a Slack channel, `#carbon-ai-chat`, available across all IBM Workspaces.
   - type: textarea
     id: summary
     attributes:
@@ -29,7 +25,5 @@ body:
       label: Code of conduct
       description: Please confirm the following
       options:
-        - label:
-            I agree to follow this project's [code of
-            conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
+        - label: I agree to follow this project's [code of conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
           required: true

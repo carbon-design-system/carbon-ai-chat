@@ -1,16 +1,21 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as FeedbackStories from "./feedback.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as FeedbackStories from './feedback.stories';
 
-<Meta of={FeedbackStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={FeedbackStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Feedback
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/feedback) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
+
 - [Overview](#overview)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
@@ -31,14 +36,14 @@ Here's a quick example to get you started.
 
 ```html
 <script type="module">
-  const panel = document.querySelector("cds-aichat-feedback");
-  panel.categories = ["Accurate", "Helpful", "Too verbose", "Inappropriate"];
-  panel.showTextArea = true;  // Enable text area
-  panel.addEventListener("feedback-submit", (event) => {
-    console.log("Submitted feedback:", event.detail);
+  const panel = document.querySelector('cds-aichat-feedback');
+  panel.categories = ['Accurate', 'Helpful', 'Too verbose', 'Inappropriate'];
+  panel.showTextArea = true; // Enable text area
+  panel.addEventListener('feedback-submit', (event) => {
+    console.log('Submitted feedback:', event.detail);
   });
-  panel.addEventListener("feedback-close", () => {
-    console.log("Closed without submitting");
+  panel.addEventListener('feedback-close', () => {
+    console.log('Closed without submitting');
   });
 </script>
 
@@ -51,8 +56,7 @@ Here's a quick example to get you started.
   secondary-label="Cancel"
   primary-label="Submit"
   show-text-area
-  show-body
-></cds-aichat-feedback>
+  show-body></cds-aichat-feedback>
 ```
 
 ## Component API
@@ -65,8 +69,7 @@ Add a legal notice at the bottom of the panel using the `disclaimer` attribute. 
 
 ```html
 <cds-aichat-feedback
-  disclaimer="By submitting feedback, you agree to our Privacy Policy."
-></cds-aichat-feedback>
+  disclaimer="By submitting feedback, you agree to our Privacy Policy."></cds-aichat-feedback>
 ```
 
 To require the user to explicitly acknowledge the disclaimer before submitting, add a `disclaimer-checkbox` attribute with the checkbox label. The submit button remains **disabled** until the checkbox is checked.
@@ -74,18 +77,16 @@ To require the user to explicitly acknowledge the disclaimer before submitting, 
 ```html
 <cds-aichat-feedback
   disclaimer="By submitting feedback, you agree to our Privacy Policy"
-  disclaimer-checkbox="I have read and agree to the Privacy Policy."
-></cds-aichat-feedback>
+  disclaimer-checkbox="I have read and agree to the Privacy Policy."></cds-aichat-feedback>
 ```
 
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/feedback/index.js";
+import '@carbon/ai-chat-components/es/components/feedback/index.js';
 ```
 
-
-<Markdown>{`${cdnJs(["feedback"])}`}</Markdown>
+<Markdown>{`${cdnJs(['feedback'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

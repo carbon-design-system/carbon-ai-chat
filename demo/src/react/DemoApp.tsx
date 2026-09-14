@@ -24,6 +24,7 @@ import {
   ChatCustomElement,
   ChatInstance,
   FeedbackInteractionType,
+  MarkdownRendererTableArgs,
   PublicConfig,
   RenderUserDefinedState,
   RenderCustomMessageFooter,
@@ -50,6 +51,21 @@ const sleep = (milliseconds: number) =>
 
 const serviceDeskFactory = (parameters: ServiceDeskFactoryParameters) =>
   Promise.resolve(new MockServiceDesk(parameters) as ServiceDesk);
+
+/**
+ * Stand-in for a consumer's own table component. The class is the only hook a
+ * page stylesheet has: the chat's own CSS lives in a shadow root, so a page
+ * rule that lands on this node proves the chat put it in page light DOM.
+ */
+function renderCustomTable({ headers, rows }: MarkdownRendererTableArgs) {
+  return (
+    <div
+      className="demo-markdown-custom-table"
+      data-testid="demo_markdown_custom_table">
+      {`Custom table: ${headers.length} columns, ${rows.length} rows`}
+    </div>
+  );
+}
 
 interface AppProps {
   config: PublicConfig;
@@ -417,10 +433,21 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     hideDefaultAiLabelContent: true,
   };
 
+  // Memoized because `markdown` is compared by reference: a fresh literal each
+  // render would rebuild every custom-renderer host on every parent update.
+  const markdownConfig = useMemo(
+    () =>
+      settings.markdownCustomRenderers === 'true'
+        ? { ...config.markdown, customRenderers: { table: renderCustomTable } }
+        : config.markdown,
+    [config.markdown, settings.markdownCustomRenderers]
+  );
+
   return settings.layout === 'float' ? (
     <ChatContainer
       {...config}
       header={headerConfig}
+      markdown={markdownConfig}
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
@@ -432,6 +459,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       <ChatCustomElement
         {...config}
         header={headerConfig}
+        markdown={markdownConfig}
         className={className as string}
         onViewPreChange={onViewPreChange}
         onViewChange={onViewChange}

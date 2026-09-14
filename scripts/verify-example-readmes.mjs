@@ -17,7 +17,7 @@ import {
   sortExamples,
   AGGREGATOR_INDEX_START,
   AGGREGATOR_INDEX_END,
-} from './_example-readme-lib.mjs';
+} from './example-readme-lib.mjs';
 
 const TREES = ['react', 'web-components'];
 
