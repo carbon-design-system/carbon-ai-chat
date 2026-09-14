@@ -107,7 +107,6 @@ jest.mock(
 
     return {
       loadCodeMirrorRuntime: () => createRuntime(),
-      loadCodeSnippetDeps: () => createRuntime(),
     };
   }
 );

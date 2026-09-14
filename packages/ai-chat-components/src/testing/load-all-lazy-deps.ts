@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { loadCodeSnippetDeps } from '../components/code-snippet/src/codemirror/codemirror-loader.js';
+import { loadCodeMirrorRuntime } from '../components/code-snippet/src/codemirror/codemirror-loader.js';
 import { loadTableDeps } from '../components/table/src/table-loader.js';
 
 /**
@@ -17,7 +17,7 @@ import { loadTableDeps } from '../components/table/src/table-loader.js';
  * Consumers can call this once during their test setup files.
  */
 export async function loadAllLazyDeps(): Promise<void> {
-  await Promise.all([loadCodeSnippetDeps(), loadTableDeps()]);
+  await Promise.all([loadCodeMirrorRuntime(), loadTableDeps()]);
 }
 
-export { loadCodeSnippetDeps, loadTableDeps };
+export { loadTableDeps };

@@ -1,16 +1,21 @@
 import { ArgTypes, Canvas, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as MarkdownStories from "./markdown.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as MarkdownStories from './markdown.stories';
 
-<Meta of={MarkdownStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={MarkdownStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Markdown
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/markdown) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
+
 - [Overview](#overview)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
@@ -46,14 +51,9 @@ You can also provide markdown via slotted content, though the attribute-based ap
 
 ```html
 <cds-aichat-markdown>
-## Response
-
-Here is a **formatted** answer with a link to the [docs](https://carbondesignsystem.com){target=_blank rel=noopener}.
-
-> Remember to set your API key before calling the service.
-
-* Item one
-* Item two
+  ## Response Here is a **formatted** answer with a link to the
+  [docs](https://carbondesignsystem.com){target=_blank rel=noopener}. > Remember
+  to set your API key before calling the service. * Item one * Item two
 </cds-aichat-markdown>
 ```
 
@@ -66,11 +66,10 @@ Here is a **formatted** answer with a link to the [docs](https://carbondesignsys
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/markdown/index.js";
+import '@carbon/ai-chat-components/es/components/markdown/index.js';
 ```
 
-
-<Markdown>{`${cdnJs(["markdown"])}`}</Markdown>
+<Markdown>{`${cdnJs(['markdown'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

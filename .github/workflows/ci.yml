@@ -1,9 +1,9 @@
 name: ci-check
 on:
   push:
-    branches: [ main, release/v*, feat/prompt-line ]
+    branches: [main, release/v*, feat/prompt-line]
   pull_request:
-    branches: [ main, release/v*, feat/prompt-line ]
+    branches: [main, release/v*, feat/prompt-line]
   merge_group:
     types: [checks_requested]
 
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Run build
@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: |
           npm ci --prefer-offline
@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Check formatting of project files (staged)
@@ -77,7 +77,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Lint
@@ -91,7 +91,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: License check
@@ -105,7 +105,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Validate agents files
@@ -116,9 +116,7 @@ jobs:
         run: npm run verify:example-readmes
 
   chromatic-wc-storybook:
-    if:
-      ${{ github.repository == 'carbon-design-system/carbon-ai-chat' &&
-      github.event.pull_request.draft == false }}
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -134,7 +132,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         if: github.event_name != 'merge_group'
         id: cache
@@ -142,9 +140,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key:
-            ${{ runner.os }}-npm-${{ hashFiles('package-lock.json',
-            'packages/**/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
@@ -153,7 +149,7 @@ jobs:
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@2a0b63f30233c48591844a46d451b9cf68128186 # v18.7.2
+        uses: chromaui/action@259eda5f0e44c0c1eab38b672f1c4c967cc969b7 # v18.8.1
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -165,18 +161,14 @@ jobs:
           onlyChanged: true # 👈 Required option to enable TurboSnap
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
-          CHROMATIC_BRANCH:
-            ${{ github.event.pull_request.head.ref || github.ref_name }}
+          CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
           # 👇 Set to the PR head commit if it's a PR; otherwise to the ref (which typically resolves to the latest commit SHA)
           CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
           # 👇 Makes sure this is always set to the corect owner/repo
           CHROMATIC_SLUG: ${{ github.repository }}
 
-
   chromatic-react-wrapper-storybook:
-    if:
-      ${{ github.repository == 'carbon-design-system/carbon-ai-chat' &&
-      github.event.pull_request.draft == false }}
+    if: ${{ github.repository == 'carbon-design-system/carbon-ai-chat' && github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     outputs:
       buildUrl: ${{ steps.chromatic.outputs.buildUrl }}
@@ -192,7 +184,7 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
-          cache: "npm"
+          cache: 'npm'
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         if: github.event_name != 'merge_group'
         id: cache
@@ -200,9 +192,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key:
-            ${{ runner.os }}-npm-${{ hashFiles('package-lock.json',
-            'packages/**/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
       - name: Install dependencies
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
@@ -211,7 +201,7 @@ jobs:
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@2a0b63f30233c48591844a46d451b9cf68128186 # v18.7.2
+        uses: chromaui/action@259eda5f0e44c0c1eab38b672f1c4c967cc969b7 # v18.8.1
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -223,8 +213,7 @@ jobs:
           onlyChanged: true # 👈 Required option to enable TurboSnap
         env:
           # 👇 Set to the PR branch if it's a PR; otherwise, falls back to the pushed branch name
-          CHROMATIC_BRANCH:
-            ${{ github.event.pull_request.head.ref || github.ref_name }}
+          CHROMATIC_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
           # 👇 Set to the PR head commit if it's a PR; otherwise to the ref (which typically resolves to the latest commit SHA)
           CHROMATIC_SHA: ${{ github.event.pull_request.head.sha || github.ref }}
           # 👇 Makes sure this is always set to the corect owner/repo

@@ -31,7 +31,12 @@
  *   node scripts/smells.mjs --changed origin/main --max 5
  */
 
-import { changedFiles, contentOf, makeLinter, parseCli } from './measure-lib.mjs';
+import {
+  changedFiles,
+  contentOf,
+  makeLinter,
+  parseCli,
+} from './measure-lib.mjs';
 import { duplicates } from './duplication.mjs';
 
 const USAGE = [
@@ -40,7 +45,10 @@ const USAGE = [
 ].join('\n');
 
 const lint = makeLinter({
-  'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
+  'max-lines-per-function': [
+    'error',
+    { max: 80, skipBlankLines: true, skipComments: true },
+  ],
   'sonarjs/no-nested-functions': ['error', { threshold: 3 }],
   'sonarjs/no-identical-functions': 'error',
   'sonarjs/no-duplicated-branches': 'error',
@@ -62,11 +70,17 @@ const lint = makeLinter({
 
 async function scanFile(file, source) {
   const content = contentOf(source, file);
-  if (content === null) return null;
+  if (content === null) {
+    return null;
+  }
   const messages = await lint(content, file);
   return messages
     .filter((m) => m.ruleId != null)
-    .map((m) => ({ rule: m.ruleId.replace('sonarjs/', ''), file, line: m.line }));
+    .map((m) => ({
+      rule: m.ruleId.replace('sonarjs/', ''),
+      file,
+      line: m.line,
+    }));
 }
 
 const rowText = (f) =>
@@ -74,27 +88,41 @@ const rowText = (f) =>
 
 function report(findings, { max, report: floor }, hadError) {
   const byFile = Map.groupBy(findings, (f) => f.file);
-  const shown = [...byFile.values()].filter((rows) => rows.length >= floor).flat();
+  const shown = [...byFile.values()]
+    .filter((rows) => rows.length >= floor)
+    .flat();
   if (shown.length === 0) {
     console.log('Nothing to report.');
   } else {
     const header = `${'rule'.padEnd(28)}  location`;
     console.log(header);
     console.log('-'.repeat(60));
-    for (const f of shown) console.log(rowText(f));
+    for (const f of shown) {
+      console.log(rowText(f));
+    }
   }
-  const over = max === null ? [] : [...byFile.entries()].filter(([, rows]) => rows.length > max);
+  const over =
+    max === null
+      ? []
+      : [...byFile.entries()].filter(([, rows]) => rows.length > max);
   if (over.length > 0) {
     console.error(`\n--max ${max} exceeded by ${over.length} file(s):`);
-    for (const [file, rows] of over) console.error(`  ${rows.length} finding(s)  ${file}`);
+    for (const [file, rows] of over) {
+      console.error(`  ${rows.length} finding(s)  ${file}`);
+    }
     process.exit(1);
   }
   process.exit(hadError ? 1 : 0);
 }
 
 async function main() {
-  const cli = parseCli({ ints: ['max', 'report'], defaults: { report: 1 }, usage: USAGE });
-  const files = cli.changed === null ? cli.files : changedFiles(cli.base, cli.source);
+  const cli = parseCli({
+    ints: ['max', 'report'],
+    defaults: { report: 1 },
+    usage: USAGE,
+  });
+  const files =
+    cli.changed === null ? cli.files : changedFiles(cli.base, cli.source);
   const findings = [];
   let hadError = false;
   for (const file of files) {
@@ -111,7 +139,9 @@ async function main() {
       hadError = true;
     }
   }
-  if (cli.changed !== null) findings.push(...duplicates(cli.base, cli.source));
+  if (cli.changed !== null) {
+    findings.push(...duplicates(cli.base, cli.source));
+  }
   findings.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
   report(findings, cli, hadError);
 }

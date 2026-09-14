@@ -32,7 +32,7 @@ type StoreLike = {
   getState: () => any;
 };
 
-export interface ChunkContext {
+interface ChunkContext {
   messageID?: string;
   item?: DeepPartial<GenericItem>;
   isCompleteItem: boolean;

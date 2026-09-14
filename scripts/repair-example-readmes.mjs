@@ -6,8 +6,8 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { writeFile } from "node:fs/promises";
-import { parseArgs } from "node:util";
+import { writeFile } from 'node:fs/promises';
+import { parseArgs } from 'node:util';
 
 import {
   loadTree,
@@ -15,22 +15,22 @@ import {
   renderAggregatorSections,
   spliceAggregator,
   sortExamples,
-} from "./example-readme-lib.mjs";
+} from './example-readme-lib.mjs';
 
-const TREES = ["react", "web-components"];
+const TREES = ['react', 'web-components'];
 
 const { values } = parseArgs({
   options: {
-    from: { type: "string", default: "examples" },
-    tree: { type: "string" },
-    "dry-run": { type: "boolean", default: false },
-    yes: { type: "boolean", default: false },
+    from: { type: 'string', default: 'examples' },
+    tree: { type: 'string' },
+    'dry-run': { type: 'boolean', default: false },
+    yes: { type: 'boolean', default: false },
   },
 });
 
-if (values.from !== "examples") {
+if (values.from !== 'examples') {
   console.error(
-    `repair-example-readmes: --from=${values.from} not implemented yet (only --from=examples is supported).`,
+    `repair-example-readmes: --from=${values.from} not implemented yet (only --from=examples is supported).`
   );
   process.exit(2);
 }
@@ -49,13 +49,13 @@ for (const tree of trees) {
     continue;
   }
 
-  if (values["dry-run"]) {
+  if (values['dry-run']) {
     console.log(
-      `repair:example-readmes: ${aggregatorPath} would be rewritten (dry-run).`,
+      `repair:example-readmes: ${aggregatorPath} would be rewritten (dry-run).`
     );
     continue;
   }
 
-  await writeFile(aggregatorPath, next, "utf8");
+  await writeFile(aggregatorPath, next, 'utf8');
   console.log(`repair:example-readmes: regenerated ${aggregatorPath}`);
 }

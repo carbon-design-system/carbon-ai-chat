@@ -1757,18 +1757,11 @@ export class MessagesScrollController {
 // ============================================================================
 
 export {
-  adjustScrollTopForTallMessage,
   applySafariScrollAnchoringRestore,
-  calculateBaseScrollTop,
-  calculateSpacerDeficit,
-  cleanupMessageResizeObserver,
   computeGrowOnlySpacerHeight,
-  createMessageResizeObserver,
-  findLastPinnable,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
-  hasActiveStreaming,
   hasMessagesOutOfView,
   hasNewNonStreamingResponse,
   pinMessageAndScroll,
@@ -1777,8 +1770,6 @@ export {
   resolvePublicSpacerReconciliationAction,
   resolveStreamEndAction,
   resolveUserScrollAway,
-  updateObservedMessages,
   type AutoScrollAction,
   type MessageResizeObserverState,
-  type StreamEndAction,
 };

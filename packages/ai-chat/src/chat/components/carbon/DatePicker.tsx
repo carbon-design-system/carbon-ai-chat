@@ -30,5 +30,3 @@ const DatePickerInput = createComponent({
 });
 
 export { DatePicker, DatePickerInput };
-
-export default DatePicker;

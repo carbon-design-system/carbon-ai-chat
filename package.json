@@ -30,10 +30,11 @@
     "build": "lerna run build --stream",
     "ci-check": "npm run format:staged && npm run lint:license && npm run lint && npm run lint:styles && npm run validate:adrs && npm run validate:agents && npm run validate:skills && npm run verify:example-readmes && npm run test",
     "clean": "lerna run clean && lerna clean --yes && rimraf node_modules",
-    "format": "prettier --check '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
-    "format:write": "prettier --cache --write '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
-    "format:staged": "prettier --list-different '**/*.{js,md,scss,ts,tsx}' '!**/*.snap.js' '!**/{build,es,lib,.storybook,ts,umd,storybook-static}/**'",
-    "lint": "eslint packages --ext .js,.ts,.tsx",
+    "format": "prettier --cache --check '**/*.{js,jsx,cjs,mjs,ts,tsx,css,scss,md,mdx,json,yaml,yml,html}'",
+    "format:write": "prettier --cache --write '**/*.{js,jsx,cjs,mjs,ts,tsx,css,scss,md,mdx,json,yaml,yml,html}'",
+    "format:staged": "prettier --cache --list-different '**/*.{js,jsx,cjs,mjs,ts,tsx,css,scss,md,mdx,json,yaml,yml,html}'",
+    "lint": "eslint packages scripts tools --ext .js,.jsx,.cjs,.mjs,.ts,.tsx",
+    "lint:dead": "knip -W packages/ai-chat -W packages/ai-chat-components",
     "lint:license": "tools/check-license.js -a",
     "lint:license:staged": "tools/check-license.js -w",
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
@@ -78,6 +79,7 @@
     "gitignore-to-glob": "^0.3.0",
     "globby": "^16.0.0",
     "husky": "^9.1.7",
+    "knip": "^6.34.0",
     "lerna": "^9.0.0",
     "lint-staged": "^17.0.0",
     "patch-package": "^8.0.1",
@@ -128,7 +130,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
+    "**/*.{js,jsx,cjs,mjs,ts,tsx}": [
       "tools/check-license.js -w",
       "prettier --cache --write",
       "eslint"
@@ -138,11 +140,11 @@
       "prettier --cache --write",
       "stylelint --report-needless-disables --report-invalid-scope-disables --allow-empty-input"
     ],
-    "**/*.html": [
+    "**/*.{css,html}": [
       "tools/check-license.js -w",
       "prettier --cache --write"
     ],
-    "!(*sass).md": [
+    "**/*.{md,mdx,json,yaml,yml}": [
       "prettier --cache --write"
     ]
   },

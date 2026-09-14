@@ -1,15 +1,21 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ChatHistoryStories from "./chat-history.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as ChatHistoryStories from './chat-history.stories';
 
-<Meta of={ChatHistoryStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ChatHistoryStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Chat history
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/chat-history) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Usage Examples](#usage-examples)
 - [Component API](#component-api)
@@ -21,7 +27,7 @@ import * as ChatHistoryStories from "./chat-history.stories";
 
 The **`<cds-aichat-history-shell>`** component provides a structured layout for displaying and managing chat conversation history. It defines three dedicated slots that organize the chat history interface:
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Slot Name</th>
@@ -30,25 +36,32 @@ The **`<cds-aichat-history-shell>`** component provides a structured layout for 
   </thead>
   <tbody>
     <tr>
-      <td><code>header</code></td>
+      <td>
+        <code>header</code>
+      </td>
       <td>Represents the header section, containing title and actions.</td>
     </tr>
     <tr>
-      <td><code>toolbar</code></td>
-      <td>Represents the toolbar area of the chat history component (includes search, new chat button, etc).</td>
+      <td>
+        <code>toolbar</code>
+      </td>
+      <td>
+        Represents the toolbar area of the chat history component (includes
+        search, new chat button, etc).
+      </td>
     </tr>
     <tr>
-      <td><code>content</code></td>
+      <td>
+        <code>content</code>
+      </td>
       <td>List of the chat history items.</td>
     </tr>
   </tbody>
 </table>
 
+Each of these slots can accept **any element or component**, allowing users to freely construct and customize the chat history layout as needed. Alternatively, adopters can use the **provided subcomponents**, which are designed specifically for each section. These subcomponents offer consistent styling and default behaviors that align with the AI Chat design patterns.
 
-Each of these slots can accept **any element or component**, allowing users to freely construct and customize the chat history layout as needed.
-Alternatively, adopters can use the **provided subcomponents**, which are designed specifically for each section. These subcomponents offer consistent styling and default behaviors that align with the AI Chat design patterns.
-
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Section</th>
@@ -59,22 +72,30 @@ Alternatively, adopters can use the **provided subcomponents**, which are design
   <tbody>
     <tr>
       <td>Header</td>
-      <td><code>{'<cds-aichat-history-header>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-header>'}</code>
+      </td>
       <td>Displays the chat history title with close and expand actions.</td>
     </tr>
     <tr>
       <td>Toolbar</td>
-      <td><code>{'<cds-aichat-history-toolbar>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-toolbar>'}</code>
+      </td>
       <td>Contains search functionality and new chat button.</td>
     </tr>
     <tr>
       <td>Content</td>
-      <td><code>{'<cds-aichat-history-content>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-content>'}</code>
+      </td>
       <td>Container for chat history items with optional results count.</td>
     </tr>
     <tr>
       <td>Loading</td>
-      <td><code>{'<cds-aichat-history-loading>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-loading>'}</code>
+      </td>
       <td>Skeleton loading state for chat history.</td>
     </tr>
   </tbody>
@@ -84,7 +105,7 @@ Alternatively, adopters can use the **provided subcomponents**, which are design
 
 The chat history also includes specialized panel components for organizing and displaying conversation items:
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Component</th>
@@ -93,32 +114,50 @@ The chat history also includes specialized panel components for organizing and d
   </thead>
   <tbody>
     <tr>
-      <td><code>{'<cds-aichat-history-panel>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-panel>'}</code>
+      </td>
       <td>Main container for organizing chat history items.</td>
     </tr>
     <tr>
-      <td><code>{'<cds-aichat-history-panel-menu>'}</code></td>
-      <td>Collapsible menu section for grouping related chat items (e.g., "Pinned", "Today", "Yesterday").</td>
+      <td>
+        <code>{'<cds-aichat-history-panel-menu>'}</code>
+      </td>
+      <td>
+        Collapsible menu section for grouping related chat items (e.g.,
+        "Pinned", "Today", "Yesterday").
+      </td>
     </tr>
     <tr>
-      <td><code>{'<cds-aichat-history-panel-items>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-panel-items>'}</code>
+      </td>
       <td>Container for panel items within a menu.</td>
     </tr>
     <tr>
-      <td><code>{'<cds-aichat-history-panel-item>'}</code></td>
-      <td>Individual chat conversation item with title, selection state, and actions menu. Supports inline rename with optional validation via <code>rename-invalid</code> and <code>rename-invalid-message</code>.</td>
+      <td>
+        <code>{'<cds-aichat-history-panel-item>'}</code>
+      </td>
+      <td>
+        Individual chat conversation item with title, selection state, and
+        actions menu. Supports inline rename with optional validation via{' '}
+        <code>rename-invalid</code> and <code>rename-invalid-message</code>.
+      </td>
     </tr>
     <tr>
-      <td><code>{'<cds-aichat-history-search-item>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-search-item>'}</code>
+      </td>
       <td>Search result item displaying chat title and date.</td>
     </tr>
     <tr>
-      <td><code>{'<cds-aichat-history-delete-panel>'}</code></td>
+      <td>
+        <code>{'<cds-aichat-history-delete-panel>'}</code>
+      </td>
       <td>Delete confirmation overlay panel with cancel and delete actions.</td>
     </tr>
   </tbody>
 </table>
-
 
 Using these subcomponents ensures visual consistency and predictable structure while still giving you the flexibility to build a fully customized chat history experience.
 
@@ -137,18 +176,15 @@ Using these subcomponents ensures visual consistency and predictable structure w
           <cds-aichat-history-panel-item
             id="chat-1"
             name="Important conversation"
-            selected
-          ></cds-aichat-history-panel-item>
+            selected></cds-aichat-history-panel-item>
         </cds-aichat-history-panel-menu>
         <cds-aichat-history-panel-menu expanded title="Today">
           <cds-aichat-history-panel-item
             id="chat-2"
-            name="Recent chat"
-          ></cds-aichat-history-panel-item>
+            name="Recent chat"></cds-aichat-history-panel-item>
           <cds-aichat-history-panel-item
             id="chat-3"
-            name="Another chat"
-          ></cds-aichat-history-panel-item>
+            name="Another chat"></cds-aichat-history-panel-item>
         </cds-aichat-history-panel-menu>
       </cds-aichat-history-panel-items>
     </cds-aichat-history-panel>
@@ -166,13 +202,21 @@ Using these subcomponents ensures visual consistency and predictable structure w
     <cds-aichat-history-panel aria-label="Search results">
       <cds-aichat-history-panel-items>
         <cds-aichat-history-panel-menu expanded title="Search results">
-          <cds-aichat-history-search-item name="Here's the onboarding doc that includes all the information to get started." date="Monday, 12:04 PM">
+          <cds-aichat-history-search-item
+            name="Here's the onboarding doc that includes all the information to get started."
+            date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
-          <cds-aichat-history-search-item name="Let's use this as the master invoice document." date="Monday, 12:04 PM">
+          <cds-aichat-history-search-item
+            name="Let's use this as the master invoice document."
+            date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
-          <cds-aichat-history-search-item name="Noticed some discrepancies between these two files." date="Monday, 12:04 PM">
+          <cds-aichat-history-search-item
+            name="Noticed some discrepancies between these two files."
+            date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
-          <cds-aichat-history-search-item name="Do we need a PO number on every documentation here?" date="Monday, 12:04 PM">
+          <cds-aichat-history-search-item
+            name="Do we need a PO number on every documentation here?"
+            date="Monday, 12:04 PM">
           </cds-aichat-history-search-item>
         </cds-aichat-history-panel-menu>
       </cds-aichat-history-panel-items>
@@ -197,8 +241,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 <cds-aichat-history-shell>
   <cds-aichat-history-header header-title="Chats"></cds-aichat-history-header>
   <cds-aichat-history-toolbar></cds-aichat-history-toolbar>
-  <cds-aichat-history-content>
-  </cds-aichat-history-content>
+  <cds-aichat-history-content> </cds-aichat-history-content>
 </cds-aichat-history-shell>
 ```
 
@@ -214,8 +257,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
         <cds-aichat-history-panel-menu expanded title="Today">
           <cds-aichat-history-panel-item
             id="chat-1"
-            name="Chat with actions"
-          ></cds-aichat-history-panel-item>
+            name="Chat with actions"></cds-aichat-history-panel-item>
         </cds-aichat-history-panel-menu>
       </cds-aichat-history-panel-items>
     </cds-aichat-history-panel>
@@ -246,8 +288,7 @@ Using these subcomponents ensures visual consistency and predictable structure w
 
 ### Delete confirmation panel
 
-Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**)
-to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that item when the deleted chat item was the active/selected one.
+Render **`<cds-aichat-history-delete-panel>`** when the user chooses **Delete** from a chat item’s overflow menu. Set **`item-id`** to the id of the chat item being removed; **`cds-aichat-history-shell`** uses this (with **`history-delete-confirm`**) to move keyboard focus to the next or previous chat item after your handler deletes the item, and to fire **`history-item-selected`** on that item when the deleted chat item was the active/selected one.
 
 Listen for **`history-delete-cancel`** to dismiss the panel without changes, and **`history-delete-confirm`** to remove the chat from your data store and hide the panel.
 
@@ -275,7 +316,7 @@ The chat history components emit several custom events that you can listen for t
 
 #### `<cds-aichat-history-panel-item>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Name</th>
@@ -285,49 +326,74 @@ The chat history components emit several custom events that you can listen for t
   </thead>
   <tbody>
     <tr>
-      <td><code>history-item-selected</code></td>
-      <td>Fired when the history panel item is clicked (but not when clicking on interactive elements like the overflow menu).</td>
       <td>
-        • <code>itemId</code> (string) - The ID of the history item<br/>
-        • <code>itemName</code> (string) - The name of the history item<br/>
-        • <code>element</code> (HTMLElement) - Reference to the element
+        <code>history-item-selected</code>
+      </td>
+      <td>
+        Fired when the history panel item is clicked (but not when clicking on
+        interactive elements like the overflow menu).
+      </td>
+      <td>
+        • <code>itemId</code> (string) - The ID of the history item
+        <br />• <code>itemName</code> (string) - The name of the history item
+        <br />• <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
     <tr>
-      <td><code>history-item-menu-action</code></td>
+      <td>
+        <code>history-item-menu-action</code>
+      </td>
       <td>Fired when a user clicks on an action in the overflow menu.</td>
       <td>
-        • <code>action</code> (string) - The text of the action clicked<br/>
-        • <code>itemId</code> (string) - The ID of the history item<br/>
-        • <code>itemName</code> (string) - The name of the history item<br/>
-        • <code>element</code> (HTMLElement) - Reference to the element
+        • <code>action</code> (string) - The text of the action clicked
+        <br />• <code>itemId</code> (string) - The ID of the history item
+        <br />• <code>itemName</code> (string) - The name of the history item
+        <br />• <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
     <tr>
-      <td><code>history-panel-item-input-change</code></td>
-      <td>Bubbles up from the inner input on every keystroke while rename mode is active. Use this to validate the value and set <code>rename-invalid</code> / <code>rename-invalid-message</code> on the item.</td>
       <td>
-        • <code>value</code> (string) - The current input value<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>history-panel-item-input-change</code>
       </td>
-    </tr>
-    <tr>
-      <td><code>history-panel-item-input-save</code></td>
-      <td>Bubbles up from the inner input when the user saves the rename. The save button and Enter key are disabled while the input is invalid.</td>
       <td>
-        • <code>newName</code> (string) - The new name entered<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        Bubbles up from the inner input on every keystroke while rename mode is
+        active. Use this to validate the value and set{' '}
+        <code>rename-invalid</code> / <code>rename-invalid-message</code> on the
+        item.
+      </td>
+      <td>
+        • <code>value</code> (string) - The current input value
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
     <tr>
-      <td><code>history-panel-item-input-cancel</code></td>
-      <td>Bubbles up from the inner input when the user cancels renaming (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>
+        <code>history-panel-item-input-save</code>
+      </td>
+      <td>
+        Bubbles up from the inner input when the user saves the rename. The save
+        button and Enter key are disabled while the input is invalid.
+      </td>
+      <td>
+        • <code>newName</code> (string) - The new name entered
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <code>history-panel-item-input-cancel</code>
+      </td>
+      <td>
+        Bubbles up from the inner input when the user cancels renaming (cancel
+        button, Escape key, or focus-out with no valid change).
+      </td>
       <td>None</td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```javascript
 // Listen for item selection
 document.addEventListener('history-item-selected', (event) => {
@@ -340,7 +406,7 @@ document.addEventListener('history-item-selected', (event) => {
 document.addEventListener('history-item-menu-action', (event) => {
   const { action, itemId, itemName, element } = event.detail;
 
-  switch(action) {
+  switch (action) {
     case 'Rename':
       element.rename = true;
       break;
@@ -356,12 +422,17 @@ document.addEventListener('history-item-menu-action', (event) => {
 // Validate the rename input on each keystroke
 document.addEventListener('history-panel-item-input-change', (event) => {
   const { value, itemId } = event.detail;
-  const item = document.querySelector(`cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`);
+  const item = document.querySelector(
+    `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
+  );
   if (!item) return;
 
   const invalid = value.length > 75;
   item.setAttribute('rename-invalid', invalid ? '' : null);
-  item.setAttribute('rename-invalid-message', invalid ? 'Title cannot exceed 75 characters.' : '');
+  item.setAttribute(
+    'rename-invalid-message',
+    invalid ? 'Title cannot exceed 75 characters.' : ''
+  );
 });
 
 // Persist the new name on save
@@ -376,12 +447,13 @@ document.addEventListener('history-panel-item-input-save', (event) => {
 When performing actions that reorder or move history items (such as pinning/unpinning), you may need to restore focus to the item after the DOM updates for accessibility reasons. Use the `focusElementAfterRepaint` utility to handle this:
 
 ```javascript
-import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
 ```
 
 **Example with Pin/Unpin:**
+
 ```javascript
-import { focusElementAfterRepaint } from "@carbon/ai-chat-components/es/globals/utils/focus-utils";
+import { focusElementAfterRepaint } from '@carbon/ai-chat-components/es/globals/utils/focus-utils';
 
 // Listen for pin action
 document.addEventListener('history-item-menu-action', (event) => {
@@ -389,9 +461,9 @@ document.addEventListener('history-item-menu-action', (event) => {
 
   if (action === 'Pin') {
     // Move item from regular to pinned list in your data
-    const itemToPin = regularItems.find(chat => chat.id === itemId);
+    const itemToPin = regularItems.find((chat) => chat.id === itemId);
     pinnedItems.unshift(itemToPin);
-    regularItems = regularItems.filter(chat => chat.id !== itemId);
+    regularItems = regularItems.filter((chat) => chat.id !== itemId);
 
     focusElementAfterRepaint(
       this.renderRoot,
@@ -403,7 +475,7 @@ document.addEventListener('history-item-menu-action', (event) => {
 
 #### `<cds-aichat-history-search-item>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Name</th>
@@ -413,18 +485,21 @@ document.addEventListener('history-item-menu-action', (event) => {
   </thead>
   <tbody>
     <tr>
-      <td><code>history-search-item-selected</code></td>
+      <td>
+        <code>history-search-item-selected</code>
+      </td>
       <td>Fired when a search result item is clicked.</td>
       <td>
-        • <code>itemId</code> (string) - The ID of the search item<br/>
-        • <code>itemName</code> (string) - The name of the search item<br/>
-        • <code>element</code> (HTMLElement) - Reference to the element
+        • <code>itemId</code> (string) - The ID of the search item
+        <br />• <code>itemName</code> (string) - The name of the search item
+        <br />• <code>element</code> (HTMLElement) - Reference to the element
       </td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```javascript
 document.addEventListener('history-search-item-selected', (event) => {
   const { itemId, itemName } = event.detail;
@@ -436,7 +511,7 @@ document.addEventListener('history-search-item-selected', (event) => {
 
 #### `<cds-aichat-history-header>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Name</th>
@@ -446,7 +521,9 @@ document.addEventListener('history-search-item-selected', (event) => {
   </thead>
   <tbody>
     <tr>
-      <td><code>history-header-close-click</code></td>
+      <td>
+        <code>history-header-close-click</code>
+      </td>
       <td>Fired when the close button in the header is clicked.</td>
       <td>None</td>
     </tr>
@@ -454,6 +531,7 @@ document.addEventListener('history-search-item-selected', (event) => {
 </table>
 
 **Example:**
+
 ```javascript
 document.addEventListener('history-header-close-click', () => {
   console.log('Close button clicked');
@@ -464,7 +542,7 @@ document.addEventListener('history-header-close-click', () => {
 
 #### `<cds-aichat-history-toolbar>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Name</th>
@@ -474,12 +552,16 @@ document.addEventListener('history-header-close-click', () => {
   </thead>
   <tbody>
     <tr>
-      <td><code>chat-history-new-chat-click</code></td>
+      <td>
+        <code>chat-history-new-chat-click</code>
+      </td>
       <td>Fired when the new chat button is clicked.</td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>cds-search-input</code></td>
+      <td>
+        <code>cds-search-input</code>
+      </td>
       <td>Fired when the user types in the search field.</td>
       <td>
         • <code>value</code> (string) - The current search input value
@@ -489,6 +571,7 @@ document.addEventListener('history-header-close-click', () => {
 </table>
 
 **Example:**
+
 ```javascript
 // Listen for new chat button
 document.addEventListener('chat-history-new-chat-click', () => {
@@ -508,7 +591,7 @@ document.addEventListener('cds-search-input', (event) => {
 
 #### `<cds-aichat-history-panel-item-input>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Name</th>
@@ -518,40 +601,62 @@ document.addEventListener('cds-search-input', (event) => {
   </thead>
   <tbody>
     <tr>
-      <td><code>history-panel-item-input-change</code></td>
-      <td>Fired on every keystroke. Use this to validate the value and reflect the result back via the <code>rename-invalid</code> and <code>rename-invalid-message</code> attributes on the parent <code>{'<cds-aichat-history-panel-item>'}</code>.</td>
       <td>
-        • <code>value</code> (string) - The current input value<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>history-panel-item-input-change</code>
+      </td>
+      <td>
+        Fired on every keystroke. Use this to validate the value and reflect the
+        result back via the <code>rename-invalid</code> and{' '}
+        <code>rename-invalid-message</code> attributes on the parent{' '}
+        <code>{'<cds-aichat-history-panel-item>'}</code>.
+      </td>
+      <td>
+        • <code>value</code> (string) - The current input value
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
     <tr>
-      <td><code>history-panel-item-input-save</code></td>
-      <td>Fired when the user saves a renamed history item. The save button and Enter key are disabled while the input is invalid.</td>
       <td>
-        • <code>newName</code> (string) - The new name entered<br/>
-        • <code>itemId</code> (string) - The ID of the item being renamed
+        <code>history-panel-item-input-save</code>
+      </td>
+      <td>
+        Fired when the user saves a renamed history item. The save button and
+        Enter key are disabled while the input is invalid.
+      </td>
+      <td>
+        • <code>newName</code> (string) - The new name entered
+        <br />• <code>itemId</code> (string) - The ID of the item being renamed
       </td>
     </tr>
     <tr>
-      <td><code>history-panel-item-input-cancel</code></td>
-      <td>Fired when the user cancels renaming a history item (cancel button, Escape key, or focus-out with no valid change).</td>
+      <td>
+        <code>history-panel-item-input-cancel</code>
+      </td>
+      <td>
+        Fired when the user cancels renaming a history item (cancel button,
+        Escape key, or focus-out with no valid change).
+      </td>
       <td>None</td>
     </tr>
   </tbody>
 </table>
 
 **Example:**
+
 ```javascript
 // Validate on each keystroke and reflect state back to the item
 document.addEventListener('history-panel-item-input-change', (event) => {
   const { value, itemId } = event.detail;
-  const item = document.querySelector(`cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`);
+  const item = document.querySelector(
+    `cds-aichat-history-panel-item[id="${CSS.escape(itemId)}"]`
+  );
   if (!item) return;
 
   const invalid = value.length > 75;
   item.renameInvalid = invalid;
-  item.renameInvalidMessage = invalid ? 'Title cannot exceed 75 characters.' : '';
+  item.renameInvalidMessage = invalid
+    ? 'Title cannot exceed 75 characters.'
+    : '';
 });
 
 // Persist the new name on save
@@ -568,7 +673,7 @@ document.addEventListener('history-panel-item-input-cancel', () => {
 
 #### `<cds-aichat-history-delete-panel>` Events
 
-<table style={{width: '100%'}}>
+<table style={{ width: '100%' }}>
   <thead>
     <tr>
       <th>Event Name</th>
@@ -578,18 +683,30 @@ document.addEventListener('history-panel-item-input-cancel', () => {
   </thead>
   <tbody>
     <tr>
-      <td><code>history-delete-cancel</code></td>
-      <td>Fired when the cancel button is clicked or Enter is pressed on the cancel button.</td>
+      <td>
+        <code>history-delete-cancel</code>
+      </td>
+      <td>
+        Fired when the cancel button is clicked or Enter is pressed on the
+        cancel button.
+      </td>
       <td>None</td>
     </tr>
     <tr>
-      <td><code>history-delete-confirm</code></td>
-      <td>Fired when the delete button is clicked or Enter is pressed on the delete button.</td>
       <td>
-        When <code>item-id</code> is set, includes:<br/>
-        • <code>itemId</code> (string) - The chat item being removed<br/>
-        • <code>nextItemId</code> (string, optional) - Next chat item to move focus to after delete<br/>
-        • <code>deletedItemWasSelected</code> (boolean) - Whether that chat item was selected before removal
+        <code>history-delete-confirm</code>
+      </td>
+      <td>
+        Fired when the delete button is clicked or Enter is pressed on the
+        delete button.
+      </td>
+      <td>
+        When <code>item-id</code> is set, includes:
+        <br />• <code>itemId</code> (string) - The chat item being removed
+        <br />• <code>nextItemId</code> (string, optional) - Next chat item to
+        move focus to after delete
+        <br />• <code>deletedItemWasSelected</code> (boolean) - Whether that
+        chat item was selected before removal
       </td>
     </tr>
   </tbody>
@@ -598,6 +715,7 @@ document.addEventListener('history-panel-item-input-cancel', () => {
 Set the **`item-id`** attribute (or `itemId` property) whenever the delete panel is shown so **`cds-aichat-history-shell`** can restore focus (and fire **`history-item-selected`** when appropriate).
 
 **Example:**
+
 ```javascript
 // Listen for cancel
 document.addEventListener('history-delete-cancel', () => {
@@ -609,7 +727,11 @@ document.addEventListener('history-delete-cancel', () => {
 // Listen for delete confirmation
 document.addEventListener('history-delete-confirm', (event) => {
   const { itemId, nextItemId, deletedItemWasSelected } = event.detail ?? {};
-  console.log('Delete confirmed', { itemId, nextItemId, deletedItemWasSelected });
+  console.log('Delete confirmed', {
+    itemId,
+    nextItemId,
+    deletedItemWasSelected,
+  });
   // Remove the chat item from your data store; the shell handles focus if item-id was set
   deleteChatFromStore(itemId);
   document.querySelector('cds-aichat-history-delete-panel').remove();
@@ -617,6 +739,7 @@ document.addEventListener('history-delete-confirm', (event) => {
 ```
 
 **Usage Example:**
+
 ```html
 <cds-aichat-history-shell>
   <cds-aichat-history-header header-title="Chats"></cds-aichat-history-header>
@@ -629,7 +752,9 @@ document.addEventListener('history-delete-confirm', (event) => {
     <!-- Delete confirmation panel (shown when delete action is triggered) -->
     <cds-aichat-history-delete-panel item-id="chat-item-to-delete">
       <div slot="title">Confirm Delete</div>
-      <div slot="description">This conversation will be permanently deleted.</div>
+      <div slot="description">
+        This conversation will be permanently deleted.
+      </div>
     </cds-aichat-history-delete-panel>
   </cds-aichat-history-content>
 </cds-aichat-history-shell>
@@ -642,9 +767,8 @@ document.addEventListener('history-delete-confirm', (event) => {
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/chat-history/index.js";
+import '@carbon/ai-chat-components/es/components/chat-history/index.js';
 ```
-
 
 <Markdown>{`${cdnJs(['chat-history'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>

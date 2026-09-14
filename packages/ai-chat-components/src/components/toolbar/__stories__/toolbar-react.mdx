@@ -1,19 +1,22 @@
 import { ArgTypes, Meta } from '@storybook/addon-docs/blocks';
-import * as ToolbarStories from "./toolbar-react.stories.jsx";
+import * as ToolbarStories from './toolbar-react.stories.jsx';
 
-<Meta of={ToolbarStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ToolbarStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Toolbar
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/toolbar) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -38,22 +41,21 @@ Slotted content can use `data-rounded` to align with corner rounding:
 Here's a quick example to get you started.
 
 ```jsx
-import Toolbar from "@carbon/ai-chat-components/es/react/toolbar.js";
+import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
 
 function ToolbarExample() {
   return (
     <Toolbar
       actions={actions}
       overflow={overflow}
-      style={borderRadius ? { "--cds-aichat-border-radius": "8px" } : undefined}
-    >
+      style={
+        borderRadius ? { '--cds-aichat-border-radius': '8px' } : undefined
+      }>
       {/* Navigation slot */}
       {navigation}
 
       {/* Title slot */}
-      <div slot="title">
-        {title}
-      </div>
+      <div slot="title">{title}</div>
 
       {/* Fixed actions slot */}
       {fixedActions}

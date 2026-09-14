@@ -65,4 +65,4 @@ function buildRenderableMessageMetadata(
   return metadata;
 }
 
-export { buildRenderableMessageMetadata, type RenderableMessageMetadata };
+export { buildRenderableMessageMetadata };
