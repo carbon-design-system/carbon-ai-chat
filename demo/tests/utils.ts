@@ -19,8 +19,8 @@ import type {} from '../types/window';
  * a meta-tag allowlist for a GitHub Pages demo). Tests route-abort
  * ibm-common.js, so the third-party noise is isolated and we can hold the
  * demo's own code to this strict policy. `ws:`/`wss:` are allowed in
- * connect-src for webpack-dev-server HMR. `frame-ancestors` is omitted —
- * browsers ignore it when delivered via <meta>.
+ * connect-src for Vite HMR. `frame-ancestors` is omitted — browsers ignore
+ * it when delivered via <meta>.
  */
 const TEST_CSP =
   "default-src 'self'; " +
@@ -58,7 +58,7 @@ export const installTestCsp = async (page: Page) => {
       // than passing through to the network unconditionally.
       return route.fallback();
     }
-    // webpack-dev-server closes idle keep-alive sockets after ~5s. Playwright's
+    // Some Vite / proxy keep-alive sockets can close between tests. Playwright's
     // APIRequestContext can reuse a socket that the server has already closed,
     // surfacing as `read ECONNRESET` on the next request between tests. Force a
     // fresh connection per document fetch to avoid the stale-socket window, and

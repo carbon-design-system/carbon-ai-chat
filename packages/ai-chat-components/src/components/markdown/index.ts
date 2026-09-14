@@ -23,5 +23,11 @@ export type {
   MarkdownRendererTableArgs,
   MarkdownRendererTableData,
 } from './src/markdown-renderer-types.js';
+export type {
+  MarkdownCustomRendererMountDetail,
+  MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail,
+  MarkdownPluginHostMountDetailInput,
+} from './src/utils/plugin-host-container.js';
 export type { MarkdownItPlugin, TokenTree } from './src/markdown-token-tree.js';
 export { markdownToMarkdownItTokens } from './src/markdown-token-tree.js';

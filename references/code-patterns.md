@@ -1,6 +1,6 @@
 # code-patterns.md — code-level patterns
 
-Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments). Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
+Canonical home for repo-wide **code-authoring discipline** — how much code to write and how to shape it (the laziness ladder, simplicity principles), plus the concrete patterns (naming, SCSS, component placement, comments). The measurements that put a number on it live in [measuring.md](measuring.md). Read it before writing or changing any code. Other AGENTS files link here instead of restating. Process conventions (commits, branches, license headers, hooks) live in [conventions.md](conventions.md).
 
 ## Writing the least code (laziness ladder)
 
@@ -93,6 +93,10 @@ Repo default is **no comments**. Keep only the non-obvious _why_ — a hidden co
 ## Accessibility code patterns
 
 The shared RTL / logical-property rule is canonicalized above. For everything else accessibility — the centralized announcer utilities, live-region politeness levels, ARIA pitfalls — see [accessibility.md](accessibility.md). Don't restate those patterns here.
+
+## Measuring it
+
+How to put a number on "simpler" lives in [measuring.md](measuring.md). Run `npm run measure -- --changed <base>` before you read a diff. It scores each function, counts what each file imports, and checks seventeen code smells. It also sizes each new file against the files next to it. A score is not a finding. It picks what to read.
 
 ## Related guidance
 

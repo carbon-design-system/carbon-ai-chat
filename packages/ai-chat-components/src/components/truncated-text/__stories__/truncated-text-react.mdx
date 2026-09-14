@@ -1,0 +1,46 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './truncated-text-react.stories';
+
+<Meta of={Stories} />
+
+# Truncated text
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/truncated-text) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `<TruncatedText>` to clamp text to a limited number of lines and reveal overflow content.
+
+<Canvas of={Stories.Default} />
+
+## Customization
+
+### `type`
+
+Set `type` to `tooltip` to show overflowing text in a tooltip, or to `expand` to show an expand and collapse control.
+
+```jsx
+<TruncatedText
+  lines={2}
+  type="expand"
+  expandLabel="Show more"
+  collapseLabel="Show less"
+  value="Long text"
+/>
+```
+
+## Component API
+
+### `<TruncatedText>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import { TruncatedText } from '@carbon/ai-chat-components/es/react/truncated-text.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

@@ -334,7 +334,11 @@ export { CdsAiChatCustomElementAttributes } from './web-components/cds-aichat-cu
 export {
   ChatContainerPropsMarkdown,
   CustomMarkdownRenderers,
+  MarkdownCustomRendererMountDetail,
   MarkdownCustomRenderers,
+  MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail,
+  MarkdownPluginHostMountDetailInput,
   MarkdownRendererChecklist,
   MarkdownRendererChecklistItemArgs,
   MarkdownRendererChecklistToggleArgs,

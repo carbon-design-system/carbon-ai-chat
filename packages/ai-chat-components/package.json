@@ -1,7 +1,7 @@
 {
   "name": "@carbon/ai-chat-components",
   "description": "AI Chat Components",
-  "version": "1.10.0-rc.1",
+  "version": "1.10.0",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -52,7 +52,7 @@
     "@carbon/icon-helpers": "^10.47.0",
     "@carbon/icons": "^11.53.0",
     "@carbon/styles": "^1.106.0",
-    "@carbon/utilities": "^0.25.0",
+    "@carbon/utilities": "^0.24.0",
     "@carbon/web-components": "^2.58.1",
     "@codemirror/autocomplete": "^6.20.0",
     "@codemirror/commands": "^6.10.1",
@@ -156,7 +156,6 @@
     "storybook": "^10.2.8",
     "typescript": "^5.2.2",
     "vite": "^8.0.16",
-    "web-dev-server-plugin-lit-css": "^4.0.0",
-    "webpack-dev-server": "^5.2.5"
+    "web-dev-server-plugin-lit-css": "^4.0.0"
   }
 }

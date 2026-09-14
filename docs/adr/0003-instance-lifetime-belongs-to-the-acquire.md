@@ -15,60 +15,60 @@ superseded-by:
 
 ## Context and problem statement
 
-A chat is built by a mount effect and belongs to it. `ChatAppEntry`'s effect calls `initServiceManagerAndInstance` (`chat/ChatAppEntry.tsx:188-193`) with no condition and no registry lookup, so every mount constructs a fresh service manager, a fresh store, and a fresh instance.
+A chat belongs to the mount effect that built it. `ChatAppEntry`'s effect calls `initServiceManagerAndInstance` (`chat/ChatAppEntry.tsx:188-193`) with no condition and no registry lookup. So every mount builds a fresh service manager, a fresh store, and a fresh instance.
 
-The effect returns no cleanup, so the previous graph is not torn down — it is abandoned. Nothing in `packages/ai-chat/src` disposes a service manager at all; there is no `unloadServices` and no `destroy` on the instance. Each boot registers store subscriptions (`chat/services/loadServices.ts:59-78`) that nothing removes, so a remount leaves a live set behind on a store nobody releases. The consequence for the consumer is not a clean restart; it is amnesia plus a leak.
+The old graph is not torn down. It is dropped. The effect returns no cleanup, and nothing in `packages/ai-chat/src` disposes a service manager at all. There is no `unloadServices`, and no `destroy` on the instance. Each boot adds store subscriptions (`chat/services/loadServices.ts:59-79`) that nothing removes. A remount leaves those alive on a store nobody frees. The consumer does not get a clean restart. The chat forgets everything, and the old one leaks.
 
-The conversation does not come back on its own. `PersistedState` carries view state, unread and launcher flags, disclaimers, the home screen, and human-agent state — and no messages. Only a host-supplied history loader can restore a transcript.
+The conversation does not come back on its own. `PersistedState` carries view state, unread and launcher flags, disclaimers, the home screen, and human-agent state. It carries no messages. Only a history loader from the host can restore a transcript.
 
-The human-agent case is louder than a lost transcript. On the new boot, hydration reads the persisted connection flag and either forces a desk-level reconnect or ends the chat and writes "chat was ended" messages into the transcript (`chat/services/haa/HumanAgentServiceImpl.ts:793-850`). A remount the host did not think of as a lifecycle event can therefore tell a user their agent conversation is over.
+The human-agent case is worse than a lost transcript. On the new boot, hydration reads the saved connection flag. It then either forces a desk-level reconnect, or it ends the chat and writes "chat was ended" messages into the transcript (`chat/services/haa/HumanAgentServiceImpl.ts:793-850`). So a remount the host never saw as a lifecycle event can tell a user their agent conversation is over.
 
-Hosts hit this through ordinary React: a StrictMode double-mount, a changing `key`, or conditional rendering. `ChatContainer` pins `key="stable-chat-instance"` on its own child (`react/ChatContainer.tsx:378`), which guards remounts originating inside `ChatContainer` and nothing above it.
+Hosts hit this through plain React: a StrictMode double-mount, a changing `key`, or a conditional render. `ChatContainer` pins `key="stable-chat-instance"` on its own child (`react/ChatContainer.tsx:297`). That guards remounts that start inside `ChatContainer`, and nothing above it.
 
 ## Considered options
 
 **A. Acquisition is create-or-adopt, behind an opt-in flag — chosen.**
 
-A namespace-keyed registry holds live instances. An acquire either creates one or adopts the one already there, so a remount is handed the running conversation instead of a new one. It sits behind an opt-in `featureFlags.reuseInstance`, because changing lifecycle semantics under hosts that never asked is itself a break.
+A registry keyed by namespace holds live instances. An acquire either creates an instance or adopts the one already there. A remount is handed the running conversation instead of a new one. It sits behind an opt-in `featureFlags.reuseInstance`, because changing lifecycle rules under hosts that never asked is itself a break.
 
-Two teardown verbs follow from it. `release()` says "done with this handle, but something may come back": it drops this handle's claim, the grace window opens when the last claim drops, and an acquire inside that window adopts the same instance under a fresh handle. `destroy()` says "gone for good": evict and unload now, with no window and nothing able to re-adopt. One verb cannot express both, because the registry has to know whether to hold or drop.
+Two teardown verbs follow from it. `release()` says "done with this handle, but something may come back". It drops this handle's claim. The grace window opens when the last claim drops, and an acquire inside that window adopts the same instance under a fresh handle. `destroy()` says "gone for good": evict and unload now, with no window and nothing able to re-adopt. One verb cannot express both, because the registry has to know whether to hold or drop.
 
-**B. Cold-boot on every mount — rejected.** The status quo, and it costs nothing to keep. Rejected because it makes an ordinary React idiom destructive: the host cannot tell which of its own renders will discard a conversation, and the only mitigation available is documentation telling hosts to mount once and never move the component. That is a constraint the framework imposes and cannot enforce.
+**B. Cold-boot on every mount — rejected.** The status quo, and it costs nothing to keep. Rejected because it makes a plain React idiom destructive. The host cannot tell which of its own renders will throw away a conversation. The only fix on offer is a doc telling hosts to mount once and never move the component. That is a rule the framework imposes and cannot enforce.
 
-**C. An `adopted` boolean on the acquire return — rejected.** The obvious way to let a caller branch its boot-once work: the acquire says whether it created or adopted, and the host skips its own setup when told "adopted". It was built this way in the reuse prototype, and it lied: a mount that released while boot was still in flight left the next acquirer told "adopted" when none of the boot-once work had run, rendering a chat that never opened. The prototype then repaired it into this option's strongest form — "adopted" redefined as "adopted a completed boot", a per-call answer derived from a durable fact. That form works, and it is still rejected, for a smaller reason: the acquire already resolves only when boot is complete ([ADR-0025](0025-the-sdk-entry-point-shape.md)), so the framework fact the flag encoded is subsumed by the contract of the acquire itself. What remains is the host's own run-once seeding, and that is a question about the conversation — answerable at any time, with no flag to hand out.
+**C. An `adopted` boolean on the acquire return — rejected.** The obvious way to let a caller branch its boot-once work. The acquire says whether it created or adopted, and the host skips its own setup when told "adopted". The reuse prototype built it this way, and it lied. A mount that released while boot was still in flight left the next acquirer told "adopted" when none of the boot-once work had run. It rendered a chat that never opened. The prototype then repaired it into this option's strongest form: "adopted" redefined as "adopted a completed boot", a per-call answer drawn from a lasting fact. That form works. It is still rejected, for a smaller reason. The acquire already resolves only when boot is complete ([ADR-0025](0025-the-sdk-entry-point-shape.md)), so the contract of the acquire itself already carries the framework fact the flag encoded. What remains is the host's own run-once seeding. That is a question about the conversation, answerable at any time, with no flag to hand out.
 
-**D. Reuse always on, with no flag — rejected.** Simpler surface, no configuration, and it makes the good behavior the default. Rejected because it changes lifetime semantics under existing hosts silently. A host that today relies on a remount clearing state would keep its conversation instead, and nothing about the upgrade would tell it. The flag is the migration.
+**D. Reuse always on, with no flag — rejected.** Simpler surface, no config, and it makes the good behavior the default. Rejected because it quietly changes lifetime rules under hosts that already ship. A host that relies today on a remount clearing state would keep its conversation instead. Nothing in the upgrade would tell it. The flag is the migration.
 
-**E. One teardown verb, with the grace window as an internal detail — rejected.** Fewer names, and the caller never has to choose. Rejected because the two intents differ in a way only the caller knows: whether something may come back. A single verb has to guess, and either it holds instances a host meant to discard, or it discards instances a host meant to hold. The cost of the pair is real and is stated below.
+**E. One teardown verb, with the grace window as an internal detail — rejected.** Fewer names, and the caller never has to choose. Rejected because the two intents differ in a way only the caller knows: whether something may come back. A single verb has to guess. It then either holds instances a host meant to drop, or drops instances a host meant to hold. The cost of the pair is real, and it is stated below.
 
 ## Decision outcome
 
 Instance lifetime belongs to the acquire, not to the host mount.
 
 - Acquisition is **create-or-adopt** against a registry keyed by namespace. An acquire returns a running instance where one exists.
-- It is opt-in, behind `featureFlags.reuseInstance`. Reuse changes lifecycle semantics, so it does not arrive unrequested. The `featureFlags` key is itself new — this record adds it to the public config, with `reuseInstance` as its first member, which is how a shell host reaches it in 1.x.
-- Every acquire takes its own claim: each call returns its own handle over the shared instance, and the handle is the claim. **`release()`** drops this handle's claim — a second call on the same handle is a no-op. The grace window opens only when the last claim drops, and an acquire inside it adopts the instance under a fresh handle and cancels the unload.
-- The window defaults to 3000 ms, tunable via `featureFlags.reuseInstanceGraceMs`. When it elapses, the instance unloads exactly as `destroy()` would have — expiry is destruction at a delay, the human-agent connection included.
-- **`destroy()`** evicts and unloads immediately, regardless of other live claims. No window, and nothing can re-adopt.
-- Both live on `ChatSDKHandle`, beside `updateConfig`. That placement — and why lifecycle sits on the handle rather than on the instance — is [ADR-0025](0025-the-sdk-entry-point-shape.md)'s; this record decides only what the two verbs mean.
-- They are SDK surface, so they ship on [ADR-0002](0002-core-react-wrapper-headless-sdk-split.md)'s schedule: no earlier than 2.0.0, and not in 1.x. The shells reach the same registry without exposing a handle, so a 1.x host gets remount survival through the shell rather than through these verbs. A shell unmount is an implicit `release()`. There is no early-teardown verb in 1.x — a flag-on host that wants an instance gone waits out the window, a cost taken knowingly and bounded by the 3-second default.
-- The acquire return carries **no `adopted` flag**, and no equivalent per-call fact. A caller that needs to know whether to run boot-once work asks a durable question about the conversation instead.
-- The reuse prototype's surface conforms to this record before it merges: the public `instance.destroy` and the `onAttach` remount fact it carried do not ship. Lifecycle stays off the instance ([ADR-0025](0025-the-sdk-entry-point-shape.md)), and the per-call fact is rejected above.
-- `reuseInstance` stays opt-in through 1.x. Whether 2.0.0 flips the default is left open — named here so nobody reads the prototype's documentation as having decided it. A default flip is its own record with its own migration story.
+- It is opt-in, behind `featureFlags.reuseInstance`. Reuse changes lifecycle rules, so it never arrives unasked. The `featureFlags` key is itself new. This record adds it to the public config, with `reuseInstance` as its first member. That key is how a shell host reaches reuse in 1.x.
+- Every acquire takes its own claim. Each call returns its own handle over the shared instance, and the handle is the claim. **`release()`** drops this handle's claim. A second call on the same handle does nothing. The grace window opens only when the last claim drops. An acquire inside that window adopts the instance under a fresh handle and cancels the unload.
+- The window defaults to 3000 ms, and `featureFlags.reuseInstanceGraceMs` tunes it. When it runs out, the instance unloads just as `destroy()` would. Expiry is teardown at a delay, and it takes the human-agent connection with it.
+- **`destroy()`** evicts and unloads at once, whatever other claims are live. No window, and nothing can re-adopt.
+- Both live on `ChatSDKHandle`, beside `updateConfig`. [ADR-0025](0025-the-sdk-entry-point-shape.md) owns that placement, and owns why lifecycle sits on the handle rather than on the instance. This record decides only what the two verbs mean.
+- They are SDK surface, so they ship on [ADR-0002](0002-core-react-wrapper-headless-sdk-split.md)'s schedule: no earlier than 2.0.0, and not in 1.x. The shells reach the same registry without handing out a handle. So a 1.x host gets remount survival through the shell, not through these verbs. A shell unmount acts as an implicit `release()`. There is no early-teardown verb in 1.x. A flag-on host that wants an instance gone waits out the window. That cost is taken knowingly, and the 3-second default bounds it.
+- The acquire return carries **no `adopted` flag**, and no per-call fact like it. A caller that needs to know whether to run boot-once work asks a lasting question about the conversation instead.
+- The reuse prototype's surface matches this record before it merges. The public `instance.destroy` and the `onAttach` remount fact it carried do not ship. Lifecycle stays off the instance ([ADR-0025](0025-the-sdk-entry-point-shape.md)), and the per-call fact is rejected above.
+- `reuseInstance` stays opt-in through 1.x. Whether 2.0.0 flips the default is left open. It is named here so nobody reads the prototype's docs as having settled it. A flip of the default is its own record, with its own migration story.
 
 ### Consequences
 
-A remount stops being a lifecycle event. A host can move the component, render it conditionally, or run StrictMode without deciding whether that discards a conversation, and the human-agent reconnect-or-end path stops firing on renders the host did not think of as lifecycle at all.
+A remount stops being a lifecycle event. A host can move the component, render it by condition, or run StrictMode, and never has to ask whether that throws away a conversation. The human-agent reconnect-or-end path stops firing on renders the host never saw as lifecycle at all.
 
 The costs, taken knowingly:
 
-**With the flag off — the default — `release()` and `destroy()` do the same thing.** There is no registry entry to hold, so both unload immediately. A consumer developing without reuse cannot tell the verbs apart, may pick either, and gets different behavior the day the flag goes on. The names carry the whole distinction, so they have to say what they mean, and the documentation has to state this plainly rather than describing two verbs as though the difference were always observable.
+**With the flag off — the default — `release()` and `destroy()` do the same thing.** There is no registry entry to hold, so both unload at once. A consumer who builds without reuse cannot tell the verbs apart. They may pick either, then get new behavior the day the flag goes on. The names carry the whole difference, so they have to say what they mean. The docs have to state this plainly, rather than describe two verbs as though the gap always showed.
 
-**A released instance stays alive for the grace window.** A human-agent connection, a subscription, and any in-flight turn outlive the unmount by that long — three seconds by default. That is the point — it is what a remount adopts — but a host that released deliberately is paying for a reuse it does not want unless it calls `destroy()`.
+**A released instance stays alive for the grace window.** A human-agent connection, a subscription, and any in-flight turn outlive the unmount by that long — three seconds by default. That is the point, and it is what a remount adopts. But a host that released on purpose pays for a reuse it does not want, unless it calls `destroy()`.
 
-**Namespace is the identity.** Two mounts sharing a namespace adopt each other even when their configs differ. The adopting acquire reconfigures the running instance through the same replace-not-patch path as `updateConfig` ([ADR-0025](0025-the-sdk-entry-point-shape.md)), so anything the second config omits is removed rather than inherited — including a `serviceDeskFactory`, which severs a live human-agent conversation the first mount was holding. A host running two genuinely independent chats has to give them different namespaces. Development builds make the mistake loud: a second live acquire on an already-claimed namespace logs a console error naming the namespace and the fix.
+**Namespace is the identity.** Two mounts that share a namespace adopt each other, even when their configs differ. The adopting acquire reconfigures the running instance through the same replace-not-patch path as `updateConfig` ([ADR-0025](0025-the-sdk-entry-point-shape.md)). So anything the second config leaves out is dropped, not inherited. That includes a `serviceDeskFactory`, and dropping it cuts a live human-agent conversation the first mount was holding. A host that runs two truly separate chats has to give them different namespaces. Development builds make the mistake loud. A second live acquire on a namespace already claimed logs a console error, and it names both the namespace and the fix.
 
-**The registry is module-level state.** Two copies of the package on a page do not share it, so reuse silently does not happen across them.
+**The registry is module-level state.** Two copies of the package on one page do not share it. Reuse then fails across them, and nothing says so.
 
 ### For consumers
 
@@ -106,7 +106,7 @@ The verbs are 2.0.0 surface, but the reuse itself is not. In 1.x the flag rides 
 
 There is no early-teardown verb in 1.x. An unmounted chat waits out the window, three seconds by default.
 
-**Do not branch boot-once work on whether you adopted.** Ask a durable question about the conversation instead, because that answer is true whenever you ask it:
+**Do not branch boot-once work on whether you adopted.** Ask a lasting question about the conversation instead. That answer is true whenever you ask it:
 
 ```ts
 // Instead of: if (!adopted) { seedWelcome(); }
@@ -115,9 +115,9 @@ if (chat.state.messages.get().length === 0) {
 }
 ```
 
-The store that answers it — `state.messages` — is defined in [ADR-0025](0025-the-sdk-entry-point-shape.md). What matters is the shape of the question: ask something about the conversation, which is true whenever you ask, rather than something about this particular call.
+[ADR-0025](0025-the-sdk-entry-point-shape.md) defines the store that answers it, `state.messages`. What matters is the shape of the question. Ask something about the conversation, true whenever you ask, rather than something about this one call.
 
-If you are on `1.x` and not using reuse, the thing worth doing today is making sure a remount cannot happen unnoticed — a stable `key`, and no conditional render around the chat.
+If you are on `1.x` and not using reuse, do one thing today. Make sure a remount cannot happen unnoticed: a stable `key`, and no conditional render around the chat.
 
 ## More information
 

@@ -82,4 +82,25 @@ describe('MarkdownWithDefaults', () => {
     renderWithStore(<MarkdownWithDefaults text="# Hello" />);
     expect(capturedProps[0].customRenderers).toBeUndefined();
   });
+
+  it('re-renders when streaming flips with the text unchanged', () => {
+    // MarkdownWithErrorHandling swaps the text source from the joined chunks to
+    // the final message text at the same moment it flips `streaming` off. When
+    // those two strings match, the only changed prop is `streaming`, and the
+    // element needs it to leave its trailing-table loading mode.
+    const store = makeConfigStore({});
+    const tree = (streaming: boolean) => (
+      <StoreProvider store={store}>
+        <MarkdownWithDefaults text="| a |\n| - |" streaming={streaming} />
+      </StoreProvider>
+    );
+
+    const { rerender } = render(tree(true));
+    expect(capturedProps).toHaveLength(1);
+    expect(capturedProps[0].streaming).toBe(true);
+
+    rerender(tree(false));
+    expect(capturedProps).toHaveLength(2);
+    expect(capturedProps[1].streaming).toBe(false);
+  });
 });

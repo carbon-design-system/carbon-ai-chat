@@ -326,7 +326,11 @@ export {
 export {
   ChatContainerPropsMarkdown,
   CustomMarkdownRenderers,
+  MarkdownCustomRendererMountDetail,
   MarkdownCustomRenderers,
+  MarkdownPluginFallbackMountDetail,
+  MarkdownPluginHostMountDetail,
+  MarkdownPluginHostMountDetailInput,
   MarkdownRendererChecklist,
   MarkdownRendererChecklistItemArgs,
   MarkdownRendererChecklistToggleArgs,

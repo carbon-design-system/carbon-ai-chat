@@ -31,13 +31,16 @@
   .preview-card-small,
   .standard-card {
     h4 {
-      @include type-style('heading-01');
+      @include type-style('body-compact-01');
 
+      color: theme.$text-primary;
       margin-block-end: layout.$spacing-04;
     }
 
     p {
-      @include type-style('body-01');
+      @include type-style('helper-text-01');
+
+      color: theme.$text-secondary;
     }
   }
 

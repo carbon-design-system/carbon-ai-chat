@@ -16,6 +16,9 @@ Load this to pick the minimum verification gate for what you changed, before mar
 | `demo/` | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright) |
 | `examples/**` | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
 | SCSS only | `npm run lint:styles && npm run format` |
+| `scripts/` or `tools/` | `npm run measure -- --changed <base>`, plus the three tools on the files you changed — no new row at the default `--report` floor |
+
+Any code change also runs `npm run measure -- --changed <base>`, which reads your working tree — run it mid-change, not only after committing. Paste the rows that name your change into the PR's `Testing / Reviewing` section, not the whole block. A clean run proves shape, not correctness — see [measuring.md](measuring.md).
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file — husky's pre-commit only runs prettier/eslint/stylelint on staged files and does not check license headers.
 

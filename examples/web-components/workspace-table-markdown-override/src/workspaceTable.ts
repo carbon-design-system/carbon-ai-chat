@@ -43,8 +43,8 @@ class WorkspaceTableContent extends LitElement {
     }
   `;
 
-  // The 2023-05 decorator proposal requires `accessor` for field decorators
-  // (the webpack config in this example uses that decorator version).
+  // The 2023-05 decorator proposal requires `accessor` for field decorators,
+  // which is the decorator version Vite compiles this example with.
   @property({ attribute: false })
   accessor data: WorkspaceTableData = { title: '', headers: [], rows: [] };
 

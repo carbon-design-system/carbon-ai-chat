@@ -67,7 +67,12 @@ export interface TokenTree {
  * elements (cds-unordered-list, cds-list-item, cds-aichat-table) and break
  * streaming-friendly per-child diffing for the subtree. Link tokens are
  * excluded because the native `<a>` dispatch injects `target="_blank"` for
- * chat-link safety.
+ * chat-link safety. Break tokens (softbreak, hardbreak) are excluded because
+ * delegation is priced per token — a slot host and a mount/unmount event pair
+ * for every line break — and because `./utils/html-helpers.ts` folds breaks
+ * into merged inline-HTML runs and `./utils/table-helpers.ts` flattens them to
+ * text, so the override would be honored in some positions and silently
+ * dropped in others.
  *
  * @internal
  */
@@ -76,8 +81,6 @@ export const PLUGIN_DELEGABLE_TOKEN_TYPES: ReadonlySet<string> = new Set([
   'image',
   'code_inline',
   'html_block',
-  'softbreak',
-  'hardbreak',
 ]);
 
 /**

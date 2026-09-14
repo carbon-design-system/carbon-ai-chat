@@ -180,9 +180,7 @@ function renderParagraphInline(
       afterLeading.length - trailing.length
     );
     if (leading) {
-      out.push(
-        <React.Fragment key={`${key}-ws-pre`}>{leading}</React.Fragment>
-      );
+      out.push(...renderBoundaryWhitespace(leading, `${key}-ws-pre`));
     }
     if (trimmed) {
       out.push(
@@ -192,9 +190,7 @@ function renderParagraphInline(
       );
     }
     if (trailing) {
-      out.push(
-        <React.Fragment key={`${key}-ws-post`}>{trailing}</React.Fragment>
-      );
+      out.push(...renderBoundaryWhitespace(trailing, `${key}-ws-post`));
     }
     textRun = '';
   };
@@ -223,6 +219,62 @@ function renderParagraphInline(
 
   flushTextRun(`${messageId}::${blockIndex}.tail`);
 
+  // The block parser drops a break at the very start or end of a paragraph, so
+  // the chip path drops it too. Without this a chip-bearing paragraph renders a
+  // blank first or last line that the same text without a chip does not. The
+  // scan steps over whitespace because `renderBoundaryWhitespace` emits the
+  // spaces around a break as their own sibling, so the break is not always the
+  // edge node; that whitespace goes with it, matching what the block parser
+  // trims. Whitespace with no break beside it is left alone — it is the chip
+  // spacing the boundary capture exists for.
+  const isBreak = (node: React.ReactNode) =>
+    React.isValidElement(node) && node.type === 'br';
+  const isBlankText = (node: React.ReactNode) =>
+    React.isValidElement(node) &&
+    node.type === React.Fragment &&
+    !String((node.props as { children?: unknown }).children ?? '').trim();
+
+  let start = 0;
+  for (let index = 0; index < out.length; index++) {
+    if (isBreak(out[index])) {
+      start = index + 1;
+    } else if (!isBlankText(out[index])) {
+      break;
+    }
+  }
+  let end = out.length;
+  for (let index = out.length - 1; index >= start; index--) {
+    if (isBreak(out[index])) {
+      end = index;
+    } else if (!isBlankText(out[index])) {
+      break;
+    }
+  }
+
+  return out.slice(start, end);
+}
+
+/**
+ * A `hardBreak` contributes a `\n` to the run, so a break adjacent to a chip is
+ * captured as boundary whitespace and never reaches the inline token walker
+ * that turns breaks into `<br>`. Emit it here instead; the spaces around it
+ * stay plain text so the boundary-whitespace behavior is unchanged.
+ */
+function renderBoundaryWhitespace(
+  whitespace: string,
+  keyPrefix: string
+): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  whitespace.split('\n').forEach((segment, index) => {
+    if (index > 0) {
+      out.push(<br key={`${keyPrefix}-br-${index}`} />);
+    }
+    if (segment) {
+      out.push(
+        <React.Fragment key={`${keyPrefix}-${index}`}>{segment}</React.Fragment>
+      );
+    }
+  });
   return out;
 }
 

@@ -10,10 +10,10 @@
 /**
  * Example: Carbon AI Chat — Vite + Vitest
  *
- * Demonstrates: building Carbon AI Chat with a Vite dev server (instead of
- * webpack) and exercising it under Vitest with happy-dom. The "one thing"
- * demonstrated by this example is the Vite + Vitest integration, not a chat
- * feature.
+ * Demonstrates: exercising Carbon AI Chat under Vitest with happy-dom. The
+ * "one thing" demonstrated by this example is the Vitest integration, not a
+ * chat feature. The Vite scaffold is the same one every other React example
+ * uses.
  *
  * APIs exercised:
  *   - `ChatContainer` (the chat surface — kept minimal so the framework

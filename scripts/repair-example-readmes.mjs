@@ -15,7 +15,7 @@ import {
   renderAggregatorSections,
   spliceAggregator,
   sortExamples,
-} from "./_example-readme-lib.mjs";
+} from "./example-readme-lib.mjs";
 
 const TREES = ["react", "web-components"];
 

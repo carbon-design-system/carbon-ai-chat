@@ -21,7 +21,7 @@ Demanding file-and-line verification of a shaping plan is the common mistake. At
 
 ## Reviewing a shaping plan
 
-Six questions. None of them needs the codebase open for long.
+Seven questions. None of them needs the codebase open for long.
 
 1. **Does the plan have its sections, Done when first?** Check before anything else, because the questions below assume them. A plan with no Done when list cannot be reviewed for traceability at all — every step is an orphan, so question 2 returns a wall of findings that all share one cause. Name the missing section as the finding instead. The rubric already reaches this case transitively; the reviewer should not have to reason backwards from the orphans to get there.
 2. **Does every step trace up, and every outcome trace down?** Every Done when item has a step that delivers it; every step traces to one. An orphan on either side is a scope bug. See [the spine](../SKILL.md#the-spine).
@@ -29,10 +29,11 @@ Six questions. None of them needs the codebase open for long.
 4. **Is the boundary real?** Read Out of scope and ask whether a reviewer three weeks in could use it to reject a scope expansion. "Other improvements" is not a boundary.
 5. **Is the ordering forced, or invented?** For each dependency the plan asserts between steps, ask what actually breaks if they run in the other order. Invented sequencing is the most common reason a plan takes longer than it should.
 6. **Is a consumer-visible decision sitting in the Decisions list with no ADR?** That reasoning is deleted with the plan file. Flag it as a finding — see [caic-adr](../../caic-adr/SKILL.md).
+7. **Does every new code file have a precedent it fits?** A step that names none is a finding. So is one whose new file is above 2× its precedent, or shares more than a third of its lines with it. The fix is to extract the shared part, or to split. Both counts sit in a step's Files touched; check the precedent's with `wc -l`. No tool sees duplication across files, so read the shared part rather than measuring it.
 
-Verify only the claims that decide a boundary. If the plan says a step is separable because two modules do not import each other, check that — it changes the breakdown. Leave everything else for the implementation-level pass.
+Verify only the claims that decide a boundary. If the plan says a step is separable because two modules do not import each other, check that — it changes the breakdown. A precedent's line count is another, since it decides whether question 7 returns a finding. Leave everything else for the implementation-level pass.
 
-Write the findings up, then continue at [Phase 4](#phase-4--resolve-decisions). A shaping review that stops at six questions leaves the author with homework, which is the anti-pattern this file closes with.
+Write the findings up, then continue at [Phase 4](#phase-4--resolve-decisions). A shaping review that stops at seven questions leaves the author with homework, which is the anti-pattern this file closes with.
 
 ## The core principle
 
@@ -76,7 +77,7 @@ Output structure (use this; don't improvise):
 
 ≤ 6 bullets covering the design-judgment items from Phase 1. Naming, API shape, deprecation behavior, error policies, abstraction boundaries. Anything that would change the public surface or the mental model. Don't bury this under verification detail — the plan author reads this section first.
 
-Check the spine too — question 1 of [the shaping pass](#reviewing-a-shaping-plan) applies at this level as well.
+Check the spine too — questions 1 and 7 of [the shaping pass](#reviewing-a-shaping-plan) apply at this level as well.
 
 ### 2. Verified vs. contradicted claims
 

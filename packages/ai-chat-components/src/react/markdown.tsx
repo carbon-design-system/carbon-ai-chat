@@ -138,14 +138,6 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
   const hostsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const [portalEntries, setPortalEntries] = useState<PortalEntry[]>([]);
 
-  // Active plugin-fallback slot names that an outer chat container is hosting
-  // in page light DOM. When a chat-container ancestor catches the
-  // `cds-aichat-markdown-plugin-host-mount` event (and calls preventDefault),
-  // the markdown element skips its own local-host fallback and relies on
-  // these forwarders to project the page-level host element through every
-  // shadow boundary into its named slot. Storybook standalone usage stays on
-  // the local-host path — no listener consumes the event there.
-  const [pluginSlotNames, setPluginSlotNames] = useState<string[]>([]);
   const markdownRef = useRef<CDSAIChatMarkdown | null>(null);
   const setMarkdownRef = useCallback(
     (node: CDSAIChatMarkdown | null) => {
@@ -160,62 +152,6 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
     },
     [forwardedRef]
   );
-
-  useEffect(() => {
-    const node = markdownRef.current;
-    if (!node) {
-      return undefined;
-    }
-    const handleMount = (event: Event) => {
-      const detail = (
-        event as CustomEvent<{ slotName: string; element?: HTMLElement }>
-      ).detail;
-      if (!detail?.slotName) {
-        return;
-      }
-      // Consumer-renderer hosts (table/codeBlock) forward a live element that
-      // is adopted directly by the markdown element's own reconcile. They do
-      // not need a <slot> forwarder here — adding one would suppress the
-      // slot's fallback content if the callback later returns null.
-      if (detail.element) {
-        return;
-      }
-      setPluginSlotNames((prev) =>
-        prev.includes(detail.slotName) ? prev : [...prev, detail.slotName]
-      );
-    };
-    const handleUnmount = (event: Event) => {
-      const slotName = (event as CustomEvent<{ slotName: string }>).detail
-        ?.slotName;
-      if (!slotName) {
-        return;
-      }
-      setPluginSlotNames((prev) =>
-        prev.includes(slotName) ? prev.filter((n) => n !== slotName) : prev
-      );
-    };
-    // Optimistic: we render a `<slot>` forwarder for every slot the markdown
-    // element emits. If a chat container ancestor takes over hosting (by
-    // calling `preventDefault()` on the mount event), the forwarder projects
-    // the page-level host through the chain. If nothing intercepts
-    // (standalone storybook), the markdown element creates its own local host
-    // alongside, and the empty forwarder is harmless.
-    node.addEventListener('cds-aichat-markdown-plugin-host-mount', handleMount);
-    node.addEventListener(
-      'cds-aichat-markdown-plugin-host-unmount',
-      handleUnmount
-    );
-    return () => {
-      node.removeEventListener(
-        'cds-aichat-markdown-plugin-host-mount',
-        handleMount
-      );
-      node.removeEventListener(
-        'cds-aichat-markdown-plugin-host-unmount',
-        handleUnmount
-      );
-    };
-  }, []);
 
   const setPortalForSlot = useCallback(
     (slotName: string, host: HTMLDivElement, node: ReactNode) => {
@@ -331,11 +267,8 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
       <BaseMarkdown
         {...rest}
         ref={setMarkdownRef as React.Ref<HTMLElement>}
-        customRenderers={bridgedRenderers as never}>
-        {pluginSlotNames.map((slotName) => (
-          <slot key={slotName} name={slotName} slot={slotName} />
-        ))}
-      </BaseMarkdown>
+        customRenderers={bridgedRenderers as never}
+      />
       {portalEntries.map((entry) => (
         <React.Fragment key={entry.slotName}>
           {createPortal(entry.node, entry.host)}
