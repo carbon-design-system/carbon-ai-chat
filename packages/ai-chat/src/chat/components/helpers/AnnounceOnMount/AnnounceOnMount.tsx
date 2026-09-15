@@ -28,9 +28,8 @@ interface AnnounceOnMountProps extends HasAriaAnnouncer, HasChildren {
   announceOnce?: string;
 
   /**
-   * When false, renders the children without a live region and announces nothing.
-   * Lets a caller keep this component mounted while something else owns the
-   * announcement, rather than swapping it out and remounting it.
+   * When false, announces nothing and drops the live region, so a caller can keep
+   * this component mounted while something else owns the announcement.
    */
   live?: boolean;
 }
@@ -60,15 +59,25 @@ class AnnounceOnMount extends PureComponent<
 
   componentDidMount(): void {
     this.setState({ isMounted: true });
+    this.maybeAnnounce();
+  }
 
-    if (!this.onceAnnounced) {
-      if (this.props.announceOnce && this.props.live !== false) {
-        setTimeout(() => {
-          this.props.ariaAnnouncer(this.props.announceOnce);
-        });
-      }
-      this.onceAnnounced = true;
+  // A wrapper that mounted silent still owes its message once it goes live.
+  componentDidUpdate(): void {
+    this.maybeAnnounce();
+  }
+
+  private maybeAnnounce(): void {
+    const { announceOnce, live, ariaAnnouncer } = this.props;
+
+    if (this.onceAnnounced || !announceOnce || live === false) {
+      return;
     }
+
+    this.onceAnnounced = true;
+    setTimeout(() => {
+      ariaAnnouncer(announceOnce);
+    });
   }
 
   render() {
