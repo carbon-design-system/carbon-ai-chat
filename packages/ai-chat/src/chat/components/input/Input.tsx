@@ -299,7 +299,7 @@ function Input(props: InputProps, ref: Ref<InputFunctions>) {
       ({ name }: { name?: string }) =>
         name
           ? intl.formatMessage(
-              { id: 'fileSharing_removeNamedFile' },
+              { id: 'fileSharing_removeButtonTitleWithName' },
               { filename: name }
             )
           : languagePack.fileSharing_removeButtonTitle,
