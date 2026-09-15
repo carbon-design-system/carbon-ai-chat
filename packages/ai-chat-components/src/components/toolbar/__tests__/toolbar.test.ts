@@ -231,11 +231,17 @@ describe('toolbar', function () {
       );
       const toggleItem = items.find(
         (item) => item.textContent?.trim() === 'Toggle'
-      );
+      ) as (LitElement & HTMLElement) | undefined;
       expect(toggleItem, 'overflow item not rendered').to.exist;
       expect(toggleItem!.getAttribute('role')).to.equal('menuitemcheckbox');
       expect(toggleItem!.getAttribute('aria-checked')).to.equal('true');
       expect(toggleItem!.hasAttribute('data-selected')).to.be.true;
+      // Verify _patchShadowButtonAttrs mirrored the attributes onto the inner
+      // shadow <button> — the actual focus target with delegatesFocus.
+      await toggleItem!.updateComplete;
+      const innerBtn = toggleItem!.shadowRoot!.querySelector('button')!;
+      expect(innerBtn.getAttribute('role')).to.equal('menuitemcheckbox');
+      expect(innerBtn.getAttribute('aria-checked')).to.equal('true');
     });
 
     it('should set role="menuitemcheckbox" and aria-checked="false" on overflow item when isSelected is false', async () => {
@@ -249,11 +255,17 @@ describe('toolbar', function () {
       );
       const toggleItem = items.find(
         (item) => item.textContent?.trim() === 'Toggle'
-      );
+      ) as (LitElement & HTMLElement) | undefined;
       expect(toggleItem, 'overflow item not rendered').to.exist;
       expect(toggleItem!.getAttribute('role')).to.equal('menuitemcheckbox');
       expect(toggleItem!.getAttribute('aria-checked')).to.equal('false');
       expect(toggleItem!.hasAttribute('data-selected')).to.be.false;
+      // Verify _patchShadowButtonAttrs mirrored the attributes onto the inner
+      // shadow <button> — the actual focus target with delegatesFocus.
+      await toggleItem!.updateComplete;
+      const innerBtn = toggleItem!.shadowRoot!.querySelector('button')!;
+      expect(innerBtn.getAttribute('role')).to.equal('menuitemcheckbox');
+      expect(innerBtn.getAttribute('aria-checked')).to.equal('false');
     });
   });
 });
