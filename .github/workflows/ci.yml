@@ -45,6 +45,11 @@ jobs:
         run: cd packages/ai-chat-components && npm run build
       - name: Run test
         run: npm run test
+      # Playwright suites live under `test:e2e` so they never displace the unit
+      # runner an example already owns, which means `npm run test` does not
+      # reach them.
+      - name: Run example e2e tests
+        run: npm run test:e2e
 
   format:
     runs-on: ubuntu-latest
