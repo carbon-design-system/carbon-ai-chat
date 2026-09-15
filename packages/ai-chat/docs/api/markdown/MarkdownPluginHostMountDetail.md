@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0/docs/types/Type_reference.MarkdownPluginHostMountDetail.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.21.0-rc.0/docs/types/Type_reference.MarkdownPluginHostMountDetail.html
 
 The `cds-aichat-markdown-plugin-host-mount` detail, discriminated on `kind`.
 
