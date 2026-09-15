@@ -76,15 +76,23 @@ describe('upload failure announcement', () => {
 
     await serviceManager.actions.handleFileSelectedForUpload(makeFile());
 
-    await waitFor(() => {
-      const carrying = liveRegions().filter((region) =>
-        region.text.includes('5 MB limit')
-      );
-      // A blocking failure interrupts, and no second region repeats it — the
-      // defect was the same text landing in three regions, two of them polite.
-      expect(carrying).toHaveLength(1);
-      expect(carrying[0].live).toBe('assertive');
-    });
+    await waitFor(() =>
+      expect(
+        liveRegions().filter((region) => region.text.includes('5 MB limit'))
+      ).not.toHaveLength(0)
+    );
+
+    // Settle past the announcer's 250 ms debounce so a second write to a
+    // different region is observed rather than raced.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    // A blocking failure interrupts, and no second region repeats it — the
+    // defect was the same text landing in three regions, two of them polite.
+    const carrying = liveRegions().filter((region) =>
+      region.text.includes('5 MB limit')
+    );
+    expect(carrying).toHaveLength(1);
+    expect(carrying[0].live).toBe('assertive');
   });
 
   it('silences the AnnounceOnMount wrapper while an upload has failed', async () => {
