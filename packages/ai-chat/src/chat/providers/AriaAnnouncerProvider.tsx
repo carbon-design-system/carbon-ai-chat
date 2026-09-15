@@ -57,12 +57,47 @@ function queueRawValue(
   }
 }
 
-function flushPendingValues(
+/**
+ * Awaits `updateComplete` on every `cds-aichat-markdown` element found inside
+ * the given DOM node subtree. `cds-aichat-markdown` throttles its render to
+ * 100 ms, so the polite-flush microtask fires before shadow-DOM content is
+ * ready. Waiting here lets `nodeToText` see fully-rendered shadow trees.
+ */
+async function waitForMarkdownElements(node: Node): Promise<void> {
+  if (!(node instanceof Element)) {
+    return;
+  }
+  const markdownEls = Array.from(
+    node.querySelectorAll<Element & { updateComplete?: Promise<boolean> }>(
+      'cds-aichat-markdown'
+    )
+  );
+  if (node.tagName?.toLowerCase() === 'cds-aichat-markdown') {
+    markdownEls.unshift(
+      node as Element & { updateComplete?: Promise<boolean> }
+    );
+  }
+  await Promise.all(
+    markdownEls.map((el) => el.updateComplete ?? Promise.resolve())
+  );
+}
+
+async function flushPendingValues(
   pendingValues: MutableRefObject<(Node | string)[]>,
   handleRef: MutableRefObject<AriaAnnouncerHandle | null>
-): void {
+): Promise<void> {
   const queue = pendingValues.current;
   pendingValues.current = [];
+
+  // Wait for any Lit markdown elements inside queued nodes to finish their
+  // async rendering cycle before extracting text.
+  await Promise.all(
+    queue.map((entry) =>
+      typeof entry === 'string'
+        ? Promise.resolve()
+        : waitForMarkdownElements(entry)
+    )
+  );
 
   const parts: string[] = [];
   queue.forEach((entry) => {
