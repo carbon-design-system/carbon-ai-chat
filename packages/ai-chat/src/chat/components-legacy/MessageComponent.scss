@@ -122,6 +122,28 @@ $message-bar-width: 3px;
   justify-content: flex-end;
 }
 
+/* Shrink-to-fit so its children measure against the bubble rather than the whole message column. */
+.cds-aichat--sent--bubble-group {
+  display: flex;
+  flex-direction: column;
+  align-self: end;
+  max-inline-size: 100%;
+}
+
+// The spacing is a gap after an empty ::before, so it only opens once slotted content gives the gap a second flex item:
+// a slot the host never filled costs no height. A margin on the slotted content would do the same, but that node is in
+// the document tree, where a global reset such as Carbon's zeroes it and beats any ::slotted() rule.
+.cds-aichat--request-footer-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: layout.$spacing-03;
+
+  &::before {
+    content: '';
+  }
+}
+
 .cds-aichat--message .cds-aichat--received,
 .cds-aichat--message .cds-aichat--sent-container {
   flex-grow: 1;
