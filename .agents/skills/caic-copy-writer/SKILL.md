@@ -1,11 +1,11 @@
 ---
 name: caic-copy-writer
-description: Write the copy this repo ships, routed by which kind it is — public JSDoc, internal comments, docs-site pages, Storybook MDX, package and example READMEs, end-user UI strings, agent guidance, commit bodies, PR descriptions, issue bodies, ADR prose, and the errors thrown at a host developer — each with its own audience, rules file, and gate, plus the draft-measure-revise loop every one of them ends with. Use when the user asks to "write the README for X", "document this type", "word this error message", or "tighten this doc". Load it unprompted too, before writing copy that rides along with another task — JSDoc on a new public type, a comment above non-obvious code, a new string in en.json, the text of a thrown error, or the body of a commit, PR, issue, or ADR — since those carry different rules and none of them arrives worded as a copy request.
+description: Write the copy this repo ships, routed by which kind it is — public JSDoc, internal comments, docs-site pages, Storybook MDX, package and example READMEs, end-user UI strings, agent guidance, commit bodies, PR descriptions, issue bodies, ADR prose, the errors thrown at a host developer, and the comments left on a code review — each with its own audience, rules file, and gate, plus the draft-measure-revise loop every one of them ends with. Use when the user asks to "write the README for X", "document this type", "word this error message", or "tighten this doc". Load it unprompted too, before writing copy that rides along with another task — JSDoc on a new public type, a comment above non-obvious code, a new string in en.json, the text of a thrown error, the body of a commit, PR, issue, or ADR, or a review finding on a pull request or in a self-review — since those carry different rules and none of them arrives worded as a copy request.
 ---
 
 This skill owns how the words go, for every surface this repo writes. Find your type in the table, open its rules file, then write.
 
-**Each type has its own audience, rules, and gate**, and types 1 and 2 carry opposite instructions — so one set of rules applied to all thirteen is wrong in both directions at once. Routing first is the whole point of this skill.
+**Each type has its own audience, rules, and gate**, and types 1 and 2 carry opposite instructions — so one set of rules applied to all fourteen is wrong in both directions at once. Routing first is the whole point of this skill.
 
 Voice is the part that does not vary: read [tone.md](../../../references/tone.md) once for the mandate, the constant voice, and the quick rules.
 
@@ -26,8 +26,9 @@ Voice is the part that does not vary: read [tone.md](../../../references/tone.md
 | 11 | ADR prose | [adr-prose.md](references/adr-prose.md) | `docs/adr/` | A reader years later, who was not in the room | [adr-review.md](../caic-adr/references/adr-review.md) |
 | 12 | Error and console strings | [error-strings.md](references/error-strings.md) | thrown `Error`s and `consoleError` calls in `packages/*/src/**` | A host developer at runtime, in a console | Review |
 | 13 | Package and repo READMEs | [readme-copy.md](references/readme-copy.md) | `README.md`, `packages/*/README.md` | A developer sizing the package up on npm or GitHub | `reading-level` |
+| 14 | Review comments | [review-comments.md](references/review-comments.md) | PR review bodies, line comments, and self-review write-ups | **The author, a day later, with none of the code open** | Re-reading each finding cold |
 
-Each rules file names its **structural owner** — the document that decides which sections exist and what goes in them. Read that too for anything net-new. Types 8 through 11 split cleanly: the workflow skill owns the structure and the procedure, this skill owns the wording.
+Each rules file names its **structural owner** — the document that decides which sections exist and what goes in them. Read that too for anything net-new. Types 8 through 11 and type 14 split cleanly: the workflow skill owns the structure and the procedure, this skill owns the wording.
 
 | Type | Structure and procedure | Wording |
 | --- | --- | --- |
@@ -35,6 +36,7 @@ Each rules file names its **structural owner** — the document that decides whi
 | 9 | [caic-pr](../caic-pr/SKILL.md) | [pr-descriptions.md](references/pr-descriptions.md) |
 | 10 | [caic-issue](../caic-issue/SKILL.md) | [issue-bodies.md](references/issue-bodies.md) |
 | 11 | [caic-adr](../caic-adr/SKILL.md) | [adr-prose.md](references/adr-prose.md) |
+| 14 | [caic-review](../caic-review/SKILL.md) | [review-comments.md](references/review-comments.md) |
 
 Plan files have no row. They are git-ignored working drafts, so [caic-plan](../caic-plan/SKILL.md) keeps them whole, and only [revision-pass.md](references/revision-pass.md) reaches them.
 
@@ -48,13 +50,13 @@ Rules on their own produce a draft nobody measured. Run all five steps.
 4. **Revise.** [revision-pass.md](references/revision-pass.md), every time, including when step 3 came back green.
 5. **Gate.** The command in your row, plus whatever [definition-of-done.md](../../../references/definition-of-done.md) lists for the area you touched.
 
-**Types 3, 5, 7, 9, 10, 11, and 13 are where the number is trustworthy** — they are plain markdown. The scorer reads any file you hand it but strips only markdown, so a type-4 MDX file scores its JSX as prose and comes back inflated. Types 1, 2, 6, 8, and 12 are TypeScript, JSON, or not a file at all, so step 3 does not apply and step 4 does the whole job by hand.
+**Types 3, 5, 7, 9, 10, 11, and 13 are where the number is trustworthy** — they are plain markdown. The scorer reads any file you hand it but strips only markdown, so a type-4 MDX file scores its JSX as prose and comes back inflated. Types 1, 2, 6, 8, 12, and 14 are TypeScript, JSON, or not a file at all, so step 3 does not apply and step 4 does the whole job by hand.
 
 ## Related guidance
 
-- [revision-pass.md](references/revision-pass.md) — the tightening pass and word economy that bind all thirteen types
+- [revision-pass.md](references/revision-pass.md) — the tightening pass and word economy that bind all fourteen types
 - [tone.md](../../../references/tone.md) — the voice, quick rules, and grade ceiling that hold for every type
 - [definition-of-done.md](../../../references/definition-of-done.md) — the gates for the area a copy change lands in
-- [caic-review](../caic-review/SKILL.md) — holding a diff's copy to these rules
+- [caic-review](../caic-review/SKILL.md) — holding a diff's copy to these rules, and the structural owner of type 14
 
 Task input from the user, if any: $ARGUMENTS

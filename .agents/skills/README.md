@@ -15,7 +15,7 @@ Skills exist because always-on guidance and task guidance need different deliver
 | [caic-issue](caic-issue/SKILL.md)   | filing a GitHub issue or sub-issue                                                 | epic authoring, for umbrella work     |
 | [caic-pr](caic-pr/SKILL.md)         | drafting a PR description                                                          | —                                     |
 | [caic-review](caic-review/SKILL.md) | reviewing a diff, including self-review before marking a task done                 | PR posting, and large-diff triage     |
-| [caic-copy-writer](caic-copy-writer/SKILL.md) | writing any copy this repo ships — JSDoc, docs pages, READMEs, UI strings, thrown errors, and the bodies of commits, PRs, issues, and ADRs | a rules file per copy type, and the revision pass under all of them |
+| [caic-copy-writer](caic-copy-writer/SKILL.md) | writing any copy this repo ships — JSDoc, docs pages, READMEs, UI strings, thrown errors, review findings, and the bodies of commits, PRs, issues, and ADRs | a rules file per copy type, and the revision pass under all of them |
 
 `carbon-builder` also lives here. It is a vendored Carbon Design System skill from upstream, not a repo workflow — the sync and mirror rules below apply to it, but its content is not ours to edit.
 

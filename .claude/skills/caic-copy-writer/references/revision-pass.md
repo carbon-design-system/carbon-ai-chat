@@ -1,6 +1,6 @@
 # revision-pass.md — the revision pass and word economy (every type)
 
-Load this at step 4 of the loop, on every draft — including one whose reading-level score came back green. It is the only part of [caic-copy-writer](../SKILL.md) that binds all thirteen copy types, plus the git-ignored working docs that have no row of their own: plan files, review write-ups, and session notes.
+Load this at step 4 of the loop, on every draft — including one whose reading-level score came back green. It is the only part of [caic-copy-writer](../SKILL.md) that binds all fourteen copy types, plus the git-ignored working docs that have no row of their own: plan files and session notes.
 
 Seven rules, all checkable by reading. The first six tighten sentences; the seventh orders the document.
 
@@ -18,7 +18,7 @@ Seven rules, all checkable by reading. The first six tighten sentences; the seve
 
 ## Claim before scaffolding
 
-Put the claim ahead of the material supporting it: a JSDoc block opens with what the symbol is for, a docs page with the task, an issue with the problem it fixes, a commit body with the problem, an ADR with the decision. Then keep the section carrying the ask **larger than** Background, Out of scope, and Related. A 57-word Goal sitting under 200 words of Background, beside a 221-word Out of scope, is a document that buries what it wants.
+Put the claim ahead of the material supporting it: a JSDoc block opens with what the symbol is for, a docs page with the task, an issue with the problem it fixes, a commit body with the problem, an ADR with the decision. **Type 14 carves out its first sentence and nothing more.** A review finding opens with one line on what the code does, because its reader has none of the code open — [review-comments.md](review-comments.md) owns that opening. The defect follows immediately, the rest of the finding obeys this rule, and a review summary obeys it whole. Then keep the section carrying the ask **larger than** Background, Out of scope, and Related. A 57-word Goal sitting under 200 words of Background, beside a 221-word Out of scope, is a document that buries what it wants.
 
 **`reading-level` is blind to this rule.** It scores sentence length and syllables, and nothing else. A buried lede scores exactly like a front-loaded one, and a document four times longer than its subject warrants scores exactly like a tight one. **A grade under the ceiling is not evidence that the copy is tight.** Order and length are checked by reading, or not at all.
 
