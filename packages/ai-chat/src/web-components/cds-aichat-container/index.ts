@@ -540,6 +540,11 @@ class ChatContainer extends FlattenedConfigElement {
       return;
     }
 
+    // Prepend so these host nodes land before any Lit ChildPart comment
+    // markers a parent template may have stamped into this element's light
+    // DOM. Lit only manages nodes between its start/end markers; a node
+    // prepended before the start marker is outside that range and survives
+    // parent re-renders unchanged.
     Object.entries(writeableElements).forEach(([slot, element]) => {
       if (!element) {
         return;
@@ -548,7 +553,7 @@ class ChatContainer extends FlattenedConfigElement {
       element.setAttribute('slot', slot);
 
       if (!element.isConnected) {
-        this.appendChild(element);
+        this.prepend(element);
       }
     });
   }
