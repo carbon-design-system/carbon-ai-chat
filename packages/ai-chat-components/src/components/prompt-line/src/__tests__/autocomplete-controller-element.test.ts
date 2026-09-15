@@ -13,9 +13,9 @@
 
 import { expect, fixture, html, oneEvent } from '@open-wc/testing';
 
-import '../autocomplete-controller.js';
+import '../autocomplete-controller-element.js';
 import '../../autocomplete/index.js';
-import type AutocompleteControllerElement from '../autocomplete-controller.js';
+import type AutocompleteControllerElement from '../autocomplete-controller-element.js';
 import type { SuggestionItem, StartersConfig } from '../tiptap/types.js';
 
 const STARTERS: StartersConfig = {

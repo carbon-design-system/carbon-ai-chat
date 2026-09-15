@@ -108,16 +108,24 @@ export interface CustomListProps {
  */
 export interface BaseSuggestionConfig {
   /**
-   * Static item list or async function called with the current query string.
+   * Static item list, or an async function called with the current query
+   * string. Resolved by the autocomplete controller once per query change —
+   * the Tiptap extensions never call it.
    */
   items:
     | SuggestionItem[]
     | ((query: string) => Promise<SuggestionItem[]> | SuggestionItem[]);
 
-  /** Minimum query length before items() is called. Defaults to 0. */
+  /**
+   * Minimum query length before `items()` is called. Defaults to 0. Applied
+   * by the autocomplete controller, which owns resolution for every trigger.
+   */
   minQueryLength?: number;
 
-  /** Called after the user selects an item and insertion is complete. */
+  /**
+   * Called after the user selects an item and the controller has finished
+   * inserting it.
+   */
   onSelect?: (item: SuggestionItem) => void;
 
   /** Replace the built-in suggestion list UI. */
