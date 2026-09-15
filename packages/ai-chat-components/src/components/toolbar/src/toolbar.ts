@@ -131,24 +131,45 @@ class CDSAIChatToolbar extends LitElement {
   }
 
   updated() {
-    // cds-icon-button's ?aria-pressed binding emits aria-pressed="" (boolean
-    // attribute) on the inner <button> for the on-state and removes the
-    // attribute entirely for the off-state, neither of which is valid for
-    // assistive tech. After the host finishes its own update cycle we await
-    // each cds-icon-button's updateComplete so Carbon has already written its
-    // own attributes, then overwrite with the correct string value.
-    void Promise.all(
+    // Carbon's delegatesFocus moves focus to the inner shadow <button>, so
+    // ARIA attributes on the host are invisible to assistive tech. Mirror
+    // them onto the inner button after each element's update cycle completes.
+    void this._patchShadowButtonAttrs('cds-icon-button[data-pressed]', {
+      'aria-pressed': 'data-pressed',
+    });
+    void this._patchShadowButtonAttrs(
+      'cds-overflow-menu-item[role="menuitemcheckbox"]',
+      { role: 'role', 'aria-checked': 'aria-checked' }
+    );
+  }
+
+  /**
+   * Copies attributes from each host element matching `selector` onto its
+   * inner shadow `<button>`, after the element's own update cycle completes.
+   *
+   * @param selector - CSS selector scoped to this shadow root.
+   * @param attrMap  - `{ targetAttr: sourceAttr }` pairs to copy.
+   * @internal
+   */
+  private async _patchShadowButtonAttrs(
+    selector: string,
+    attrMap: Record<string, string>
+  ): Promise<void> {
+    await Promise.all(
       Array.from(
-        this.shadowRoot?.querySelectorAll<LitElement & HTMLElement>(
-          'cds-icon-button[data-pressed]'
-        ) ?? []
+        this.shadowRoot?.querySelectorAll<LitElement & HTMLElement>(selector) ??
+          []
       ).map(async (el) => {
         await el.updateComplete;
-        const value = el.getAttribute('data-pressed');
-        if (value !== null) {
-          el.shadowRoot
-            ?.querySelector('button')
-            ?.setAttribute('aria-pressed', value);
+        const btn = el.shadowRoot?.querySelector('button');
+        if (!btn) {
+          return;
+        }
+        for (const [target, source] of Object.entries(attrMap)) {
+          const value = el.getAttribute(source);
+          if (value !== null) {
+            btn.setAttribute(target, value);
+          }
         }
       })
     );
@@ -293,20 +314,20 @@ class CDSAIChatToolbar extends LitElement {
 
     return html`
       <cds-icon-button
+        align=${tooltipAlign}
+        @click=${action.onClick}
         ?data-fixed=${action.fixed}
+        data-pressed=${isSelected !== undefined ? String(isSelected) : nothing}
         ?data-selected=${isSelected === true}
         data-testid=${action.testId || nothing}
-        @click=${action.onClick}
-        href=${action.href || nothing}
-        target=${action.href ? action.target || '_self' : nothing}
-        size=${action.size || BUTTON_SIZE.MEDIUM}
-        align=${tooltipAlign}
-        kind="ghost"
+        ?disabled=${action.disabled}
         enter-delay-ms="0"
-        leave-delay-ms="0"
+        href=${action.href || nothing}
         ?isSelected=${isSelected === true}
-        data-pressed=${isSelected !== undefined ? String(isSelected) : nothing}
-        ?disabled=${action.disabled}>
+        kind="ghost"
+        leave-delay-ms="0"
+        size=${action.size || BUTTON_SIZE.MEDIUM}
+        target=${action.href ? action.target || '_self' : nothing}>
         ${iconLoader(action.icon, {
           slot: 'icon',
         })}
