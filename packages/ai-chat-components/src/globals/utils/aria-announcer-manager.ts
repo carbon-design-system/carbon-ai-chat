@@ -18,6 +18,53 @@
 type AnnouncerPoliteness = 'polite' | 'assertive';
 
 /**
+ * Options for {@link mountAriaAnnouncer}.
+ */
+export interface AriaAnnouncerOptions {
+  /**
+   * Number of polite `aria-live="polite"` regions to create and rotate through.
+   * Default `1`. The React `AriaAnnouncerProvider` passes `3` explicitly: in
+   * earlier testing FF + JAWS occasionally re-read entire region contents on
+   * append; a third region ensures there is always a fresh region for the next
+   * announcement.
+   */
+  politeCount?: number;
+  /**
+   * Number of `aria-live="assertive"` regions to create.
+   * Default 0 (polite-only).
+   */
+  assertiveCount?: number;
+  /**
+   * Sets `aria-atomic` on every created region. Default `false`.
+   *
+   * Note: `aria-atomic` is intentionally left off by default. With it, FF +
+   * JAWS read some messages cleanly but Chrome stops announcing buttons inside
+   * the region. Without it, FF + JAWS sometimes double-read parts but Chrome
+   * handles buttons. The default (off) is the lesser evil.
+   */
+  ariaAtomic?: boolean;
+}
+
+/**
+ * Handle returned by {@link mountAriaAnnouncer}. Call `disconnect` when the
+ * host element is removed from the DOM to cancel pending timers and clean up
+ * the created regions.
+ */
+export interface AriaAnnouncerHandle {
+  /**
+   * Queue a message for announcement on the next tick. Multiple same-tick calls
+   * for the same politeness are coalesced into a single write. Defaults to
+   * `"polite"`; falls back to polite if assertive regions were not created.
+   */
+  announce(message: string, politeness?: AnnouncerPoliteness): void;
+  /**
+   * Cancel pending announcements, disconnect the manager, and remove the
+   * created live regions from `container`.
+   */
+  disconnect(): void;
+}
+
+/**
  * One live-region channel: the regions it rotates through plus the pending-queue
  * and timer state used to coalesce same-tick announcements.
  */
@@ -154,4 +201,58 @@ export class AriaAnnouncerManager {
 
     channel.currentIndex = (channel.currentIndex + 1) % channel.regions.length;
   }
+}
+
+/**
+ * Create visually-hidden `aria-live` regions inside `container`, wire them to
+ * a new {@link AriaAnnouncerManager}, and return a handle. The caller is
+ * responsible for hiding the container (e.g. with a visually-hidden wrapper or
+ * CSS class); this function only creates the live regions themselves.
+ *
+ * @param container - The element to append the live regions into.
+ * @param options   - Region counts and aria-atomic setting. All fields have
+ *                    sensible defaults; pass `{}` for a single polite region.
+ */
+export function mountAriaAnnouncer(
+  container: HTMLElement,
+  options: AriaAnnouncerOptions = {}
+): AriaAnnouncerHandle {
+  const { politeCount = 1, assertiveCount = 0, ariaAtomic = false } = options;
+
+  function createRegion(politeness: AnnouncerPoliteness): HTMLDivElement {
+    const el = document.createElement('div');
+    el.setAttribute('aria-live', politeness);
+    if (ariaAtomic) {
+      el.setAttribute('aria-atomic', 'true');
+    }
+    container.appendChild(el);
+    return el;
+  }
+
+  const politeRegions: HTMLDivElement[] = [];
+  for (let i = 0; i < politeCount; i++) {
+    politeRegions.push(createRegion('polite'));
+  }
+
+  const assertiveRegions: HTMLDivElement[] = [];
+  for (let i = 0; i < assertiveCount; i++) {
+    assertiveRegions.push(createRegion('assertive'));
+  }
+
+  const manager = new AriaAnnouncerManager();
+  manager.connect(politeRegions, assertiveRegions);
+
+  return {
+    announce(message: string, politeness: AnnouncerPoliteness = 'polite') {
+      manager.announce(message, politeness);
+    },
+    disconnect() {
+      manager.disconnect();
+      [...politeRegions, ...assertiveRegions].forEach((el) => {
+        if (el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      });
+    },
+  };
 }
