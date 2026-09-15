@@ -91,6 +91,7 @@ The prerelease occurs on the first Monday of a sprint. During this stage, the re
 Once the first prerelease / release candidate has been published, it is available for testing. If there are any issues during the testing period, fixes can be pushed to the release branch. We can then publish subsequent prereleases from the release branch for further testing. To publish subsequent prereleases,
 
 - [ ] Ensure the new fixes that have been pushed to the `main` branch have also been cherry-picked into the release branch.
+  - Keep each cherry-pick's commit subject as is, including its `(#1234)` PR number. The release notes match on it to leave a fix out of the next release once this one has shipped it.
 - [ ] Run the [minor release workflow](https://github.com/carbon-design-system/carbon-ai-chat/actions/workflows/release-start.yml) to generate the prerelease versions for the packages ![Screenshot of minor release workflow with subsequent release selected](https://github.com/user-attachments/assets/a09a0edc-62dc-4122-9eec-95918e4021ad)
   - [ ] Ensure the release branch is selected
   - [ ] Specify the type of release - in this case we will select `subsequent rc`

@@ -41,6 +41,8 @@ const { tagFrom } = args;
  */
 const { tagTo } = args;
 
+const toTag = tagTo !== undefined ? tagTo : 'HEAD';
+
 /**
  * Uses a delimiter for splitting the comments into an array
  *
@@ -50,7 +52,41 @@ const delimiter = '----DELIMITER----';
 
 // We keep a list of commits that are process-oriented that we never want to
 // show up in generated changelogs
-const denyList = ['chore(release): publish [skip ci]', 'chore(release): v'];
+const denyList = [
+  'chore(release): publish [skip ci]',
+  'chore(release): v',
+  'chore(docs): update API symbol index',
+];
+
+/**
+ * Returns the key two copies of the same change share: the trailing PR number,
+ * or the whole subject when there is none
+ *
+ * @param {string} subject Commit subject
+ * @returns {string} Commit key
+ */
+function getCommitKey(subject) {
+  const match = subject.match(/\(#(\d+)\)$/);
+  return match ? match[1] : subject;
+}
+
+/**
+ * Returns the keys of commits the previous tag already shipped but the new tag
+ * cannot reach. Fixes are cherry-picked from `main` onto the release branch and
+ * the release PR is squash-merged back, so the `main` copy of a shipped fix is
+ * never an ancestor of the previous tag and `git log` alone lists it again.
+ *
+ * @returns {Set<string>} Shipped commit keys
+ */
+function getShippedKeys() {
+  const output = child
+    .execSync(`git log ${toTag}..${tagFrom} --pretty=format:"%s"`)
+    .toString('utf-8');
+
+  return new Set(output.split('\n').filter(Boolean).map(getCommitKey));
+}
+
+const shippedKeys = getShippedKeys();
 
 /**
  * Returns back the commits in an array
@@ -59,8 +95,6 @@ const denyList = ['chore(release): publish [skip ci]', 'chore(release): v'];
  * @returns {string[]} Commits array of objects
  */
 function getCommits(folder) {
-  const toTag = tagTo !== undefined ? tagTo : 'HEAD';
-
   // Gets the git output between the two tags
   const output = child
     .execSync(
@@ -101,7 +135,7 @@ function getChangelog(pkgName, folder) {
         return false;
       }
     }
-    return true;
+    return !shippedKeys.has(getCommitKey(commit.replace(delimiter, '')));
   });
 
   commitsArray.forEach((commit) => {
