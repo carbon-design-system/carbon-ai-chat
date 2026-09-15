@@ -139,7 +139,7 @@ describe('CUSTOM_HEADER — content predicate', () => {
 // Header replaced vs not replaced
 // ---------------------------------------------------------------------------
 
-describe('CUSTOM_HEADER — replaced vs not replaced', () => {
+describe('Header replaced vs not replaced', () => {
   afterEach(() => {
     document.body.innerHTML = '';
     jest.clearAllMocks();
@@ -236,17 +236,12 @@ describe('CUSTOM_HEADER — post-boot mutation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// isOn: false hides the header regardless of content
+// HeaderConfig.isOn
 // ---------------------------------------------------------------------------
-
-// Rendered directly against AppShellWriteableElements + StoreProvider because
-// the Lit shadow root AppShell renders into is not queryable in jsdom.
-// AppShellWriteableElements emits <slot name="customHeader"> into React-managed
-// DOM, which IS reachable here and is the exact node the isOn gate controls.
 
 const stubServiceManager = { namespace: { suffix: '' } } as any;
 
-describe('CUSTOM_HEADER — isOn: false hides the header slot', () => {
+describe('isOn: false hides the header slot', () => {
   afterEach(() => {
     cleanup();
     document.body.innerHTML = '';
@@ -295,29 +290,12 @@ describe('CUSTOM_HEADER — isOn: false hides the header slot', () => {
       )
     ).toBeNull();
   });
-});
 
-// ---------------------------------------------------------------------------
-// Mobile history override suppressed when custom header is present
-// ---------------------------------------------------------------------------
-
-describe('CUSTOM_HEADER — mobile history override', () => {
-  afterEach(() => {
-    document.body.innerHTML = '';
-    jest.clearAllMocks();
-    setEnableDebugLog(false);
-  });
-
-  it('mobile history menu is not injected when a custom header is present', async () => {
-    // The headerConfigOverride (which injects New chat / View chats menu options)
-    // returns undefined when customHeaderPresent is true, regardless of mobile state.
-    // We verify the guard indirectly: the host node has content (customHeaderPresent
-    // would be true) and the mobile history state is active. If the override were
-    // injected it would add menuOptions to the header config — but with a custom
-    // header present the built-in <Header> is never mounted, so those options
-    // would be unreachable. The override returning undefined is the correct path.
+  it('slot is absent when isOn: false, even in mobile history state', async () => {
+    // The isOn gate is evaluated before customHeaderPresent and the mobile-history
+    // override, so isMobile cannot reinstate the header area when isOn is false.
     const { instance } = await renderAndGetInstance({
-      header: { isOn: true },
+      header: { isOn: false },
       history: { isOn: true },
     });
 
@@ -325,28 +303,8 @@ describe('CUSTOM_HEADER — mobile history override', () => {
 
     await act(async () => {
       setHistoryMobile(instance);
-      const child = document.createElement('div');
-      child.textContent = 'Custom header';
-      node.appendChild(child);
     });
 
-    await waitFor(() => {
-      expect(hasMeaningfulContent(node)).toBe(true);
-    });
-    // customHeaderPresent is true → headerConfigOverride returns undefined →
-    // the host owns mobile history affordances.
-  });
-
-  it('showMobileMenu: false suppresses the override without a custom header', async () => {
-    // When showMobileMenu is false the override also returns undefined, meaning
-    // the developer has acknowledged they supply no mobile history controls.
-    const { instance } = await renderAndGetInstance({
-      header: { isOn: true },
-      history: { isOn: true, showMobileMenu: false },
-    });
-
-    const node = customHeaderNode(instance);
-    // Node stays empty — no custom header, but override is still suppressed.
     expect(hasMeaningfulContent(node)).toBe(false);
   });
 });
@@ -402,32 +360,6 @@ describe('CUSTOM_HEADER — debug warning', () => {
     const { instance } = await renderAndGetInstance({
       header: { isOn: true },
       history: { isOn: true },
-    });
-
-    const node = customHeaderNode(instance);
-
-    await act(async () => {
-      setHistoryMobile(instance);
-      const child = document.createElement('div');
-      child.textContent = 'Custom header';
-      node.appendChild(child);
-    });
-
-    await act(async () => {});
-
-    const warnCalls = (console.warn as jest.Mock).mock.calls.filter((c) =>
-      String(c[0]).includes('CUSTOM_HEADER')
-    );
-    expect(warnCalls.length).toBe(0);
-  });
-
-  it('does not fire when showMobileMenu: false acknowledges the swap', async () => {
-    setEnableDebugLog(true);
-
-    const { instance } = await renderAndGetInstance({
-      header: { isOn: true },
-      history: { isOn: true, showMobileMenu: false },
-      debug: true,
     });
 
     const node = customHeaderNode(instance);

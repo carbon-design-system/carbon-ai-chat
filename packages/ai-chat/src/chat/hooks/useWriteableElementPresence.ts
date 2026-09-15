@@ -15,7 +15,7 @@ import {
 
 /**
  * Returns `true` when the writeable-element host node for `name` contains
- * meaningful host content, `false` otherwise.v"Meaningful content" mirrors
+ * meaningful host content, `false` otherwise. "Meaningful content" mirrors
  * `SlotObserver.hasSlotContent`: an empty wrapper div, a whitespace-only text node,
  * and comments all read as no content. Reacts to content arriving or leaving
  * post-boot via a `MutationObserver`.
@@ -27,7 +27,7 @@ export function useWriteableElementPresence(
   const node = writeableElements[name];
 
   const [present, setPresent] = useState(
-    () => node != null && hasMeaningfulContent(node)
+    () => node !== undefined && hasMeaningfulContent(node)
   );
 
   useEffect(() => {
