@@ -254,14 +254,12 @@ const ToggleDemo = () => {
 };
 
 export const Toggle = {
-  name: 'Toggle action (isSelected)',
+  name: 'Toggleable actions',
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates `isSelected` on a toolbar action. Click the star to toggle its pressed state. ' +
-          'The icon switches between unfilled (off) and filled (on) to reinforce the state visually. ' +
-          '`aria-pressed` is set on the inner `<button>` in both states via a Lit `updated()` hook.',
+          'Demonstrates the usage of the `isSelected` prop on a toolbar action. Click star action to see the action selected state.',
       },
     },
   },
