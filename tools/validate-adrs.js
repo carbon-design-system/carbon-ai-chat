@@ -16,18 +16,22 @@
  * references/ folder. Without this script, a broken link or a stale index row
  * reaches main unnoticed. This checks:
  *
- * 1. Record shape — frontmatter parses, required keys are present, `status` is
- *    one of the four known values, and the filename number matches the heading.
- * 2. Lifecycle coherence — a `proposed` record names its comment window and
- *    tracking issue; a `superseded` one names its replacement. Status is not
+ * 1. Record shape — frontmatter parses, uses only known keys, `status` is one
+ *    of the four known values, and the filename number matches the heading.
+ * 2. Sections — every record, and the template, has exactly the template's
+ *    `##` sections in the template's order. Summary comes first because a
+ *    reader decides from it whether to read the rest, and a section that
+ *    drifts down the page stops doing that job.
+ * 3. Lifecycle coherence — a `proposed` record names the earliest date it can
+ *    be decided; a `superseded` one names its replacement. Status is not
  *    self-executing here (see ADR-0001), so a record that claims a state has to
  *    carry the fields that state implies.
- * 3. Supersede pairs — `supersedes` and `superseded-by` point at real records
+ * 4. Supersede pairs — `supersedes` and `superseded-by` point at real records
  *    and agree with each other. A one-sided link is invisible from the side
  *    readers arrive on.
- * 4. Links — every relative markdown link resolves, strictly relative to the
+ * 5. Links — every relative markdown link resolves, strictly relative to the
  *    file, with its anchor present in the target when one is given.
- * 5. The index — the table between the adr-index markers in README.md is
+ * 6. The index — the table between the adr-index markers in README.md is
  *    generated from the records, so it cannot drift. Status appears there and
  *    in frontmatter, but only one of the two is ever written by hand.
  *
@@ -43,6 +47,25 @@ const INDEX_FILE = `${ADR_DIR}/README.md`;
 const TEMPLATE_FILE = `${ADR_DIR}/template.md`;
 const RECORD_PATTERN = /^(\d{4})-[a-z0-9]+(-[a-z0-9]+)*\.md$/;
 const STATUSES = ['proposed', 'accepted', 'rejected', 'superseded'];
+const FRONTMATTER_KEYS = [
+  'status',
+  'date',
+  'feedback-by',
+  'discussion',
+  'epic',
+  'supersedes',
+  'superseded-by',
+];
+const SECTIONS = [
+  'Summary',
+  'Motivation',
+  'Proposal',
+  'Consumer impact',
+  'Drawbacks',
+  'Alternatives',
+  'Open questions',
+  'Decision',
+];
 
 const fix = process.argv.includes('--fix');
 
@@ -102,12 +125,64 @@ function slugify(heading) {
     .replace(/\s+/g, '-');
 }
 
+// Markdown headings as { level, text }, skipping fenced code — a `# comment`
+// inside a bash fence is not a heading.
+function headings(content) {
+  const found = [];
+  let fence = null;
+  for (const line of content.split('\n')) {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/);
+    if (marker) {
+      if (!fence) {
+        fence = marker[1][0];
+      } else if (marker[1][0] === fence) {
+        fence = null;
+      }
+      continue;
+    }
+    const match = !fence && line.match(/^(#{1,6})\s+(.*)$/);
+    if (match) {
+      found.push({ level: match[1].length, text: match[2].trim() });
+    }
+  }
+  return found;
+}
+
 function headingSlugs(content) {
-  return new Set(
-    content
-      .split('\n')
-      .filter((line) => /^#{1,6}\s/.test(line))
-      .map((line) => slugify(line.replace(/^#{1,6}\s+/, '').trim()))
+  return new Set(headings(content).map(({ text }) => slugify(text)));
+}
+
+function validateFrontmatterKeys(file, frontmatter) {
+  for (const key of Object.keys(frontmatter)) {
+    if (FRONTMATTER_KEYS.includes(key)) {
+      continue;
+    }
+    const hint =
+      key === 'comments-by' ? ' It was renamed to `feedback-by`.' : '';
+    error(
+      file,
+      `Unknown frontmatter key \`${key}\`.${hint} Use only: ${FRONTMATTER_KEYS.join(', ')}.`
+    );
+  }
+}
+
+function validateSections(file, content) {
+  const actual = headings(content)
+    .filter(({ level }) => level === 2)
+    .map(({ text }) => text);
+  if (actual.join('\n') === SECTIONS.join('\n')) {
+    return;
+  }
+  const missing = SECTIONS.filter((section) => !actual.includes(section));
+  const extra = actual.filter((section) => !SECTIONS.includes(section));
+  const problems = [
+    missing.length && `missing ${missing.map((s) => `\`## ${s}\``).join(', ')}`,
+    extra.length && `unexpected ${extra.map((s) => `\`## ${s}\``).join(', ')}`,
+    !missing.length && !extra.length && 'out of order',
+  ].filter(Boolean);
+  error(
+    file,
+    `Sections are ${problems.join('; ')}. A record has exactly these \`##\` sections, in this order: ${SECTIONS.join(' → ')}. Use \`###\` for anything inside them.`
   );
 }
 
@@ -129,6 +204,7 @@ function validateShape(name) {
     return null;
   }
 
+  validateFrontmatterKeys(file, frontmatter);
   for (const key of ['status', 'date']) {
     if (!frontmatter[key]) {
       error(file, `Frontmatter is missing a non-empty \`${key}\`.`);
@@ -154,18 +230,17 @@ function validateShape(name) {
     );
   }
 
-  // A record only claims a state it can back up. `proposed` without a window or
-  // a discussion venue is a decision nobody can weigh in on, which defeats the
-  // point of merging it early.
-  if (status === 'proposed') {
-    for (const key of ['comments-by', 'discussion']) {
-      if (!frontmatter[key]) {
-        error(
-          file,
-          `A \`proposed\` record needs \`${key}\` — see docs/adr/README.md.`
-        );
-      }
-    }
+  validateSections(file, content);
+
+  // A record only claims a state it can back up. `proposed` without a date is
+  // a request for feedback with no point at which it can be decided.
+  // `discussion` is not required: the RFC discussion opens after the record
+  // merges, because the category form only goes live from `main`.
+  if (status === 'proposed' && !frontmatter['feedback-by']) {
+    error(
+      file,
+      'A `proposed` record needs `feedback-by` — see docs/adr/README.md.'
+    );
   }
   if (status === 'superseded' && !frontmatter['superseded-by']) {
     error(file, 'A `superseded` record must name its replacement.');
@@ -336,6 +411,15 @@ function main() {
 
   validateSupersedes(records);
   validateIndex(records);
+
+  // The template is what every record is copied from, so it holds the same
+  // shape — otherwise the check above fails a record for following it.
+  const templatePath = path.join(REPO_ROOT, TEMPLATE_FILE);
+  if (fs.existsSync(templatePath)) {
+    const template = fs.readFileSync(templatePath, 'utf-8');
+    validateFrontmatterKeys(TEMPLATE_FILE, readFrontmatter(template) || {});
+    validateSections(TEMPLATE_FILE, template);
+  }
 
   // The template and the index are linked like any other page, and a broken
   // pointer in either is the one most readers hit first.

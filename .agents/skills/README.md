@@ -10,9 +10,9 @@ Skills exist because always-on guidance and task guidance need different deliver
 
 | Skill                               | Use it when                                                                        | Also carries                          |
 | ----------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------- |
-| [caic-adr](caic-adr/SKILL.md)       | recording why a decision went the way it did, and what it costs consumers          | the ADR-review rubric it closes with  |
-| [caic-plan](caic-plan/SKILL.md)     | shaping upcoming work at any size — a plan, an epic, or a single issue-sized slice | the plan-review rubric it closes with |
-| [caic-issue](caic-issue/SKILL.md)   | filing a GitHub issue or sub-issue                                                 | epic authoring, for umbrella work     |
+| [caic-adr](caic-adr/SKILL.md)       | proposing a decision consumers will feel, for feedback, and keeping it as the record | the ADR-review rubric it closes with  |
+| [caic-plan](caic-plan/SKILL.md)     | planning against an issue you've picked up, or shaping a big effort into an epic   | the plan-review rubric it closes with, and the API contract locks |
+| [caic-issue](caic-issue/SKILL.md)   | filing an issue that states a problem and the outcomes that close it               | epic authoring, for umbrella work     |
 | [caic-pr](caic-pr/SKILL.md)         | drafting a PR description                                                          | —                                     |
 | [caic-review](caic-review/SKILL.md) | reviewing a diff, including self-review before marking a task done                 | PR posting, and large-diff triage     |
 | [caic-copy-writer](caic-copy-writer/SKILL.md) | writing any copy this repo ships — JSDoc, docs pages, READMEs, UI strings, thrown errors, and the bodies of commits, PRs, issues, and ADRs | a rules file per copy type, and the revision pass under all of them |

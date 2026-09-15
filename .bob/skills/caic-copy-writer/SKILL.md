@@ -23,7 +23,7 @@ Voice is the part that does not vary: read [tone.md](../../../references/tone.md
 | 8 | Commit bodies | [commit-bodies.md](references/commit-bodies.md) | the commit message | The reviewer walking the branch | Review |
 | 9 | PR descriptions | [pr-descriptions.md](references/pr-descriptions.md) | `.github/pr-drafts/` | The reviewer, then anyone reading post-merge | `reading-level` on the draft |
 | 10 | Issue and epic bodies | [issue-bodies.md](references/issue-bodies.md) | `.github/issue-drafts/` | Anyone deciding whether it concerns them | `reading-level` on the draft |
-| 11 | ADR prose | [adr-prose.md](references/adr-prose.md) | `docs/adr/` | A reader years later, who was not in the room | [adr-review.md](../caic-adr/references/adr-review.md) |
+| 11 | ADR prose | [adr-prose.md](references/adr-prose.md) | `docs/adr/` | A host developer deciding whether a proposal concerns them, then a maintainer reading it later | `reading-level`, then [adr-review.md](../caic-adr/references/adr-review.md) |
 | 12 | Error and console strings | [error-strings.md](references/error-strings.md) | thrown `Error`s and `consoleError` calls in `packages/*/src/**` | A host developer at runtime, in a console | Review |
 | 13 | Package and repo READMEs | [readme-copy.md](references/readme-copy.md) | `README.md`, `packages/*/README.md` | A developer sizing the package up on npm or GitHub | `reading-level` |
 
