@@ -31,7 +31,15 @@
 import '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 import { type WCMarkdown } from '@carbon/ai-chat';
-import markdownItKatex from '@vscode/markdown-it-katex';
+import markdownItKatexModule from '@vscode/markdown-it-katex';
+
+// `@vscode/markdown-it-katex` ships CJS with no `exports` map
+const markdownItKatex =
+  (
+    markdownItKatexModule as unknown as {
+      default?: typeof markdownItKatexModule;
+    }
+  ).default ?? markdownItKatexModule;
 
 import { customSendMessage } from './customSendMessage';
 

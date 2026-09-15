@@ -42,7 +42,7 @@ import { ConversationalSearch } from './responseTypes/conversationalSearch/Conve
 import UserDefinedResponse from '../components/responseTypes/userDefined/UserDefinedResponse';
 import CustomFooterSlot from './responseTypes/custom/CustomFooterSlot';
 import { DatePickerComponent } from '../components/responseTypes/datePicker/DatePickerComponent';
-import InlineError from '../components/responseTypes/error/InlineError';
+import { InlineError } from '../components/responseTypes/error/InlineError';
 import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
 import { IFrameMessage } from './responseTypes/iframe/IFrameMessage';
 import { Image } from './responseTypes/image/Image';

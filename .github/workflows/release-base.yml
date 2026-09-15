@@ -19,11 +19,11 @@ on:
         default: first rc
       dry-run:
         required: true
-        description: "Run dry run?"
+        description: 'Run dry run?'
         type: boolean
         default: true
       force-publish:
-        description: "Force publish?"
+        description: 'Force publish?'
         type: boolean
         default: false
 
@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
           token: ${{ secrets.PAT }}
 
       # https://github.com/actions/checkout#push-a-commit-using-the-built-in-token
@@ -54,7 +54,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies and build
         run: |
           npm ci --prefer-offline

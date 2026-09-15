@@ -10,31 +10,31 @@
 
 /** @type { import('@storybook/web-components-vite').StorybookConfig } */
 
-import { createRequire } from "node:module";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { mergeConfig } from "vite";
-import { litStyleLoader, litTemplateLoader } from "@mordech/vite-lit-loader";
-import remarkGfm from "remark-gfm";
+import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { mergeConfig } from 'vite';
+import { litStyleLoader, litTemplateLoader } from '@mordech/vite-lit-loader';
+import remarkGfm from 'remark-gfm';
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sassLoadPaths = [
-  resolve(__dirname, "../node_modules"),
-  resolve(__dirname, "../../../node_modules"),
+  resolve(__dirname, '../node_modules'),
+  resolve(__dirname, '../../../node_modules'),
 ];
 
 const config = {
   stories: [
-    "./welcome/welcome.mdx",
-    "./welcome/styling-and-modifiers.mdx",
-    "../src/**/__stories__/!(*-react).mdx",
-    "../src/**/__stories__/*.stories.@(js|ts)",
+    './welcome/welcome.mdx',
+    './welcome/styling-and-modifiers.mdx',
+    '../src/**/__stories__/!(*-react).mdx',
+    '../src/**/__stories__/*.stories.@(js|ts)',
   ],
 
   addons: [
     {
-      name: getAbsolutePath("@storybook/addon-docs"),
+      name: getAbsolutePath('@storybook/addon-docs'),
       options: {
         mdxPluginOptions: {
           mdxCompileOptions: {
@@ -43,17 +43,17 @@ const config = {
         },
       },
     },
-    getAbsolutePath("@storybook/addon-links"),
-    getAbsolutePath("@storybook/addon-a11y"),
+    getAbsolutePath('@storybook/addon-links'),
+    getAbsolutePath('@storybook/addon-a11y'),
   ],
 
   framework: {
-    name: getAbsolutePath("@storybook/web-components-vite"),
+    name: getAbsolutePath('@storybook/web-components-vite'),
     options: {},
   },
 
   docs: {
-    defaultName: "Overview",
+    defaultName: 'Overview',
   },
 
   async viteFinal(config) {
@@ -61,8 +61,8 @@ const config = {
     return mergeConfig(config, {
       plugins: [litStyleLoader(), litTemplateLoader()],
       optimizeDeps: {
-        include: ["@storybook/web-components-vite"],
-        exclude: ["lit", "lit-html"],
+        include: ['@storybook/web-components-vite'],
+        exclude: ['lit', 'lit-html'],
       },
       resolve: {
         alias: {
@@ -72,18 +72,18 @@ const config = {
           // into U+FFFD when it transforms that CJS build, breaking tokenizing
           // of every `\command`. Forcing the ESM build (which rolldown leaves
           // intact) fixes the KaTeX markdown-it plugin story.
-          katex: require.resolve("katex/dist/katex.mjs"),
+          katex: require.resolve('katex/dist/katex.mjs'),
         },
       },
       define: {
-        "process.env": process.env,
+        'process.env': process.env,
       },
       sourcemap: true,
       // @carbon/web-components emits selectors like
       // `:host(cds-button) .cds--btn ::slotted([slot=icon]) path` that
       // lightningcss rejects (a pseudo-element followed by a descendant).
       // Use esbuild's more permissive minifier instead.
-      build: { cssMinify: "esbuild" },
+      build: { cssMinify: 'esbuild' },
       // Bare `@forward '@carbon/utilities'` chains from `@carbon/styles` need
       // explicit node_modules load paths; matches web-test-runner.config.js.
       css: {
@@ -97,5 +97,5 @@ const config = {
 export default config;
 
 function getAbsolutePath(value) {
-  return dirname(require.resolve(join(value, "package.json")));
+  return dirname(require.resolve(join(value, 'package.json')));
 }

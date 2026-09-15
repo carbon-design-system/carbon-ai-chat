@@ -1,22 +1,26 @@
 import { ArgTypes, Markdown, Meta } from '@storybook/addon-docs/blocks';
 
-import { cdnJs, cdnCss } from "../../../globals/internal/storybook-cdn";
-import * as ReasoningStepsToggleStories from "./reasoning-steps-toggle.stories";
+import { cdnJs, cdnCss } from '../../../globals/internal/storybook-cdn';
+import * as ReasoningStepsToggleStories from './reasoning-steps-toggle.stories';
 
-<Meta of={ReasoningStepsToggleStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={ReasoningStepsToggleStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Reasoning steps toggle
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/reasoning-steps) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
 
-
 ## Table of Contents
+
 - [Overview](#overview)
 - [Component API](#component-api)
 - [JS (via import)](#js-via-import)
 - [JS (via CDN)](#js-via-cdn)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -26,10 +30,10 @@ import * as ReasoningStepsToggleStories from "./reasoning-steps-toggle.stories";
 
 ```html
 <script type="module">
-  const toggle = document.querySelector("cds-aichat-reasoning-steps-toggle");
-  const wrapper = document.querySelector("cds-aichat-reasoning-steps");
+  const toggle = document.querySelector('cds-aichat-reasoning-steps-toggle');
+  const wrapper = document.querySelector('cds-aichat-reasoning-steps');
 
-  toggle.addEventListener("reasoning-steps-toggle", (event) => {
+  toggle.addEventListener('reasoning-steps-toggle', (event) => {
     wrapper.open = event.detail?.open;
   });
 </script>
@@ -37,8 +41,7 @@ import * as ReasoningStepsToggleStories from "./reasoning-steps-toggle.stories";
 <cds-aichat-reasoning-steps-toggle
   panel-id="reasoning-toggle-panel"
   open-label-text="Hide reasoning steps"
-  closed-label-text="Show reasoning steps"
-></cds-aichat-reasoning-steps-toggle>
+  closed-label-text="Show reasoning steps"></cds-aichat-reasoning-steps-toggle>
 
 <cds-aichat-reasoning-steps id="reasoning-toggle-panel" open>
   <cds-aichat-reasoning-step title="Collect context" open>
@@ -57,10 +60,10 @@ import * as ReasoningStepsToggleStories from "./reasoning-steps-toggle.stories";
 ## JS (via import)
 
 ```javascript
-import "@carbon/ai-chat-components/es/components/reasoning-steps/index.js";
+import '@carbon/ai-chat-components/es/components/reasoning-steps/index.js';
 ```
 
-<Markdown>{`${cdnJs(["reasoning-steps"])}`}</Markdown>
+<Markdown>{`${cdnJs(['reasoning-steps'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
 ## Feedback

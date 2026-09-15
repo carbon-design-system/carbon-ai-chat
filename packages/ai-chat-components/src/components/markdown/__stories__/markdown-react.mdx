@@ -1,19 +1,22 @@
 import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
-import * as MarkdownReactStories from "./markdown-react.stories.jsx";
+import * as MarkdownReactStories from './markdown-react.stories.jsx';
 
-<Meta of={MarkdownReactStories} parameters={{ previewTabs: { "storybook/docs/panel": { title: "Overview" } } }} />
+<Meta
+  of={MarkdownReactStories}
+  parameters={{
+    previewTabs: { 'storybook/docs/panel': { title: 'Overview' } },
+  }}
+/>
 
 # Markdown
 
 [Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/markdown) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
-
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Component API](#component-api)
 - [Feedback](#feedback)
-
 
 ## Overview
 
@@ -24,7 +27,7 @@ The `<Markdown>` component wraps `cds-aichat-markdown` to render rich markdown c
 Here's a quick example to get you started using the `markdown` prop (recommended):
 
 ```jsx
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 
 function MarkdownExample({ content }) {
   return <Markdown highlight markdown={content} />;
@@ -36,7 +39,7 @@ function MarkdownExample({ content }) {
 You can also provide markdown via children, though the `markdown` prop is recommended for better performance, especially when streaming content:
 
 ```jsx
-import Markdown from "@carbon/ai-chat-components/es/react/markdown.js";
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 
 function MarkdownExample({ content }) {
   return <Markdown highlight>{content}</Markdown>;
@@ -54,6 +57,7 @@ function MarkdownExample({ content }) {
 The component implements [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/) with additional custom extensions. It uses [markdown-it](https://github.com/markdown-it/markdown-it) with the CommonMark preset and includes:
 
 **GFM Features:**
+
 - Tables with column alignment
 - Strikethrough text (`~~text~~`)
 - Automatic URL linking
@@ -61,13 +65,14 @@ The component implements [GitHub Flavored Markdown (GFM)](https://github.github.
 - etc...
 
 **Custom Extensions:**
+
 - Highlight syntax (`==text==`) with nested formatting support
 - Attribute syntax (`{{attribute=value}}`) for HTML attributes
 
 #### Text Formatting
 
 - **Bold** text with `**bold**` or `__bold__`
-- *Italic* text with `*italic*` or `_italic_`
+- _Italic_ text with `*italic*` or `_italic_`
 - `Inline code` with backticks
 - ~~Strikethrough~~ with `~~text~~`
 - ==Highlighted text== with `==text==` (renders as `<mark>` element)
@@ -93,9 +98,7 @@ Standard markdown links `[text](url)` and images `![alt](src)`.
 
 Fenced code blocks with language specification:
 
-\`\`\`javascript
-console.log("Hello, world!");
-\`\`\`
+\`\`\`javascript console.log("Hello, world!"); \`\`\`
 
 #### Tables
 
@@ -103,7 +106,7 @@ Markdown tables with alignment support:
 
 ```markdown
 | Column 1 | Column 2 |
-|----------|----------|
+| -------- | -------- |
 | Value 1  | Value 2  |
 ```
 
@@ -142,7 +145,7 @@ Use streaming mode to gradually reveal markdown content. The `markdown` prop is 
 
 ```jsx
 function StreamingMarkdown({ generator }) {
-  const [content, setContent] = React.useState("");
+  const [content, setContent] = React.useState('');
   const [streaming, setStreaming] = React.useState(true);
 
   React.useEffect(() => {

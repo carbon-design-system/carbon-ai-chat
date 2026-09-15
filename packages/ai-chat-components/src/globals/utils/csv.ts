@@ -35,4 +35,3 @@ function stringifyCSV(rows: CSVValue[][]): string {
 }
 
 export { stringifyCSV };
-export type { CSVValue };

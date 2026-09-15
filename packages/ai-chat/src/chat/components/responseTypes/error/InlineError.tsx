@@ -46,5 +46,3 @@ export function InlineError({ text }: { text?: string }) {
     </div>
   );
 }
-
-export default InlineError;

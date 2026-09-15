@@ -8,9 +8,9 @@ on:
       tag:
         # Recently published version
         required: true
-        description: "release tag (ie. v1.1.0-rc.0)"
+        description: 'release tag (ie. v1.1.0-rc.0)'
         type: string
-        default: "v1.1.0-rc.0"
+        default: 'v1.1.0-rc.0'
       previous-tag:
         # Previous release tag to grab changelogs from
         # To pick the previous tag:
@@ -18,13 +18,13 @@ on:
         # - If published tag is a subsequent release candidate, choose the previous release candidate.
         # - If published tag is a full release, choose the previous full release tag.
         required: true
-        description: "previous release tag (ie. v1.0.0)"
+        description: 'previous release tag (ie. v1.0.0)'
         type: string
-        default: "v1.0.0"
+        default: 'v1.0.0'
       create-pr:
         # set to true to create PR to merge changes from release to `main` branch
         required: true
-        description: "Create PR?"
+        description: 'Create PR?'
         type: boolean
         default: true
 
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
 
       # https://github.com/actions/checkout#push-a-commit-using-the-built-in-token
       - run: |
@@ -66,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
 
       # https://github.com/actions/checkout#push-a-commit-using-the-built-in-token
       - run: |
@@ -101,13 +101,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: "0"
+          fetch-depth: '0'
       - name: Use Node.js version from .nvmrc
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
           registry-url: https://registry.npmjs.org
-          cache: "npm"
+          cache: 'npm'
       - name: Install dependencies
         run: npm ci --prefer-offline
 
@@ -120,10 +120,10 @@ jobs:
       # Creates the release with the generated changelog
       - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1
         with:
-          tag: "${{ github.event.inputs.tag }}"
-          name: "${{ github.event.inputs.tag }}"
+          tag: '${{ github.event.inputs.tag }}'
+          name: '${{ github.event.inputs.tag }}'
           prerelease: true
-          bodyFile: "./changelog.txt"
+          bodyFile: './changelog.txt'
 
   # This job dispatches workflow to push to staging / latest environments
   dispatch-storybook-workflow:

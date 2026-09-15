@@ -1,17 +1,26 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 /* eslint-disable */
-import React from "react";
-import ChainOfThoughtToggle from "../../../react/chain-of-thought-toggle";
-import ChainOfThought from "../../../react/chain-of-thought";
-import ChainOfThoughtStep from "../../../react/chain-of-thought-step";
-import ToolCallData from "../../../react/tool-call-data";
-import Markdown from "../../../react/markdown";
+import React from 'react';
+import ChainOfThoughtToggle from '../../../react/chain-of-thought-toggle';
+import ChainOfThought from '../../../react/chain-of-thought';
+import ChainOfThoughtStep from '../../../react/chain-of-thought-step';
+import ToolCallData from '../../../react/tool-call-data';
+import Markdown from '../../../react/markdown';
 
 const defaultSteps = [
   {
-    title: "Collect customer context",
+    title: 'Collect customer context',
     description:
       "Gathered the customer's prior interactions and relevant metadata for grounding.",
-    toolName: "context_collector",
+    toolName: 'context_collector',
     input: `\`\`\`
 { "customerId": "58429", "channels": ["email", "chat"] }
 \`\`\``,
@@ -20,9 +29,9 @@ const defaultSteps = [
 \`\`\``,
   },
   {
-    title: "Draft remediation plan",
-    description: "Outlined steps to correct the reported connectivity issue.",
-    toolName: "planner",
+    title: 'Draft remediation plan',
+    description: 'Outlined steps to correct the reported connectivity issue.',
+    toolName: 'planner',
     input: `\`\`\`
 { "issue": "vpn_disconnects", "priority": "standard" }
 \`\`\``,
@@ -33,10 +42,10 @@ const defaultSteps = [
 \`\`\``,
   },
   {
-    title: "Send confirmation",
-    description: "Confirming steps were sent to the customer.",
-    toolName: "messaging",
-    status: "processing",
+    title: 'Send confirmation',
+    description: 'Confirming steps were sent to the customer.',
+    toolName: 'messaging',
+    status: 'processing',
   },
 ];
 
@@ -45,10 +54,9 @@ const renderSteps = (steps) =>
     <ChainOfThoughtStep
       key={step.title || step.toolName || index}
       title={step.title}
-      status={step.status || "success"}
+      status={step.status || 'success'}
       stepNumber={index + 1}
-      open={Boolean(step.open)}
-    >
+      open={Boolean(step.open)}>
       <ToolCallData toolName={step.toolName}>
         {step.description ? (
           <Markdown slot="description" markdown={step.description} />
@@ -60,53 +68,53 @@ const renderSteps = (steps) =>
   ));
 
 export default {
-  title: "Components/Chain of thought/Toggle",
+  title: 'Components/Chain of thought/Toggle',
   component: ChainOfThoughtToggle,
   parameters: {
     docs: {
       description: {
         component:
-          "A dedicated toggle button for expanding or collapsing the chain-of-thought wrapper. Compose it with `ChainOfThought` when you manage open state externally.",
+          'A dedicated toggle button for expanding or collapsing the chain-of-thought wrapper. Compose it with `ChainOfThought` when you manage open state externally.',
       },
     },
   },
   argTypes: {
     openLabelText: {
-      control: "text",
-      description: "Label shown when the wrapper is open.",
+      control: 'text',
+      description: 'Label shown when the wrapper is open.',
     },
     closedLabelText: {
-      control: "text",
-      description: "Label shown when the wrapper is closed.",
+      control: 'text',
+      description: 'Label shown when the wrapper is closed.',
     },
     panelId: {
-      control: "text",
+      control: 'text',
       description:
-        "ID of the chain-of-thought wrapper used for accessibility bindings.",
+        'ID of the chain-of-thought wrapper used for accessibility bindings.',
     },
     open: {
-      control: "boolean",
-      description: "Whether the wrapper is expanded.",
+      control: 'boolean',
+      description: 'Whether the wrapper is expanded.',
     },
     steps: {
-      control: "object",
+      control: 'object',
       description:
-        "Chain-of-thought steps passed to the wrapper (used in the demo composition).",
+        'Chain-of-thought steps passed to the wrapper (used in the demo composition).',
     },
     onToggle: {
-      action: "onToggle",
-      table: { category: "events" },
+      action: 'onToggle',
+      table: { category: 'events' },
       description:
-        "Emitted when the toggle is activated. Use it to sync controlled state.",
+        'Emitted when the toggle is activated. Use it to sync controlled state.',
     },
   },
   args: {
-    openLabelText: "Hide chain of thought",
-    closedLabelText: "Show chain of thought",
+    openLabelText: 'Hide chain of thought',
+    closedLabelText: 'Show chain of thought',
     open: true,
     steps: defaultSteps,
     onToggle: (event) => {
-      console.log("onToggle", event?.detail);
+      console.log('onToggle', event?.detail);
     },
   },
 };
@@ -126,7 +134,7 @@ export const Default = {
     };
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <ChainOfThoughtToggle
           panelId={panelId}
           open={open}
@@ -138,8 +146,7 @@ export const Default = {
           id={panelId}
           panelId={panelId}
           open={open}
-          onToggle={handleToggle}
-        >
+          onToggle={handleToggle}>
           {renderSteps(args.steps)}
         </ChainOfThought>
       </div>

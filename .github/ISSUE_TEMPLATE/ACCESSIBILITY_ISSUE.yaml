@@ -8,11 +8,7 @@ body:
       value: '## Welcome!'
   - type: markdown
     attributes:
-      value:
-        Thanks for taking the time to fill out this accessibility report. IBM
-        firmly believes that web and software experiences should be accessible
-        for everyone. Carbon is committed to following and complying with
-        accessibility best practices.
+      value: Thanks for taking the time to fill out this accessibility report. IBM firmly believes that web and software experiences should be accessible for everyone. Carbon is committed to following and complying with accessibility best practices.
   - type: dropdown
     id: browser
     attributes:
@@ -53,8 +49,7 @@ body:
     attributes:
       label: Automated testing tool and ruleset
       description: 'Which tool and ruleset uncovered the issue?'
-      placeholder:
-        e.g. IBM Equal Access Accessibility Checker - Latest Deployment
+      placeholder: e.g. IBM Equal Access Accessibility Checker - Latest Deployment
     validations:
       required: true
   - type: input
@@ -67,8 +62,7 @@ body:
     id: description
     attributes:
       label: Description
-      description:
-        "Tell us more about the accessibility issue that you're experiencing"
+      description: "Tell us more about the accessibility issue that you're experiencing"
       placeholder: What did you expect to happen? What happened instead?
     validations:
       required: true
@@ -90,39 +84,25 @@ body:
     id: reproduce
     attributes:
       label: Steps to reproduce
-      description:
-        'How do we reproduce the accessibility violation you described using the
-        reproduction/example link above?'
+      description: 'How do we reproduce the accessibility violation you described using the reproduction/example link above?'
     validations:
       required: true
   - type: dropdown
     id: severity
     attributes:
       label: Suggested severity
-      description:
-        'Read more to understand our [severity
-        levels](https://github.com/carbon-design-system/carbon/blob/main/docs/guides/support.md#severity)'
+      description: 'Read more to understand our [severity levels](https://github.com/carbon-design-system/carbon/blob/main/docs/guides/support.md#severity)'
       options:
-        - 'Severity 1 = Must be fixed ASAP. The response must be swift. Someone
-          from the team must drop all current work and be immediately reassigned
-          to address the issue.'
-        - 'Severity 2 = User cannot complete task, and/or no workaround within
-          the user experience of a given component.'
-        - 'Severity 3 = User can complete task, and/or has a workaround within
-          the user experience of a given component.'
-        - 'Severity 4 = Unrelated to a user task, has a workaround or does not
-          need a workaround.'
+        - 'Severity 1 = Must be fixed ASAP. The response must be swift. Someone from the team must drop all current work and be immediately reassigned to address the issue.'
+        - 'Severity 2 = User cannot complete task, and/or no workaround within the user experience of a given component.'
+        - 'Severity 3 = User can complete task, and/or has a workaround within the user experience of a given component.'
+        - 'Severity 4 = Unrelated to a user task, has a workaround or does not need a workaround.'
   - type: checkboxes
     id: terms
     attributes:
       label: Code of conduct
       description: Please confirm the following
       options:
-        - label:
-            I agree to follow this project's [Code of
-            Conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
+        - label: I agree to follow this project's [Code of Conduct](https://github.com/carbon-design-system/carbon/blob/main/.github/CODE_OF_CONDUCT.md)
           required: true
-        - label:
-            I checked the [current
-            issues](https://github.com/carbon-design-system/carbon-ai-chat/issues) for
-            duplicate problems
+        - label: I checked the [current issues](https://github.com/carbon-design-system/carbon-ai-chat/issues) for duplicate problems

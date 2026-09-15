@@ -14,7 +14,7 @@ import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyH
 import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { getURLHostName } from '../../../utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
-import InlineError from '../../../components/responseTypes/error/InlineError';
+import { InlineError } from '../../../components/responseTypes/error/InlineError';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
 interface ClickableImageProps {
@@ -272,4 +272,4 @@ function ImageOnly({
 
 const ImageExport = React.memo(Image);
 
-export { ImageProps, ImageExport as Image };
+export { ImageExport as Image };

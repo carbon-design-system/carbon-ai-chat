@@ -16,8 +16,13 @@ Load this to pick the minimum verification gate for what you changed, before mar
 | `demo/` | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright) |
 | `examples/**` | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
 | SCSS only | `npm run lint:styles && npm run format` |
+| `scripts/` or `tools/` | `npm run measure -- --changed <base>`, plus the three tools on the files you changed — no new row at the default `--report` floor |
 
-Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file — husky's pre-commit only runs prettier/eslint/stylelint on staged files and does not check license headers.
+Any code change also runs `npm run measure -- --changed <base>`, which reads your working tree — run it mid-change, not only after committing. Paste the rows that name your change into the PR's `Testing / Reviewing` section, not the whole block. A clean run proves shape, not correctness — see [measuring.md](measuring.md).
+
+Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file — husky's pre-commit only covers staged files, and its license step (`check-license -w`) refreshes the year on an existing header but fails outright on a missing one rather than adding it.
+
+If you deleted a file, dropped an `export`, or removed the last caller of one, also run `npm run lint:dead` — knip fails on source files nothing imports and on exports nothing reads. Nothing runs it for you: it is deliberately outside `ci-check` and CI, so an orphan you leave behind lands quietly unless you run it here.
 
 Report a gate by showing it: the command you ran and what its output said. "Tests pass" is a claim about the gate, not the gate — and a gate that goes green because an assertion was loosened, a case was deleted, a case was skipped, or a snapshot was regenerated to match current output is not the gate passing either. If you had to change a proof to get green, say which one and why; that is a finding, not a step.
 

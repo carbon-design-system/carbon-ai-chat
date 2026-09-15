@@ -23,9 +23,9 @@ demo/
     mockServiceDesk/            # fake human-agent service desk
     fixtures/                   # canned messages used by the mock backend
     types/
-  tests/                        # Playwright specs + node polyfills + alias loader
+  tests/                        # Playwright specs + node polyfills
   playwright.config.ts
-  webpack.config.js
+  vite.config.ts
   TEST_PLAN.md                  # manual QA checklist
 ```
 
@@ -49,14 +49,15 @@ demo/
 
 ## Build, run, test
 
-See root [AGENTS.md](../AGENTS.md) for monorepo setup. The demo consumes the **built** artifacts of `@carbon/ai-chat` and `@carbon/ai-chat-components`, so the watcher (`npm run aiChat:start`) must be running in another terminal or webpack will resolve stale `dist/es/`.
+See root [AGENTS.md](../AGENTS.md) for monorepo setup. The demo consumes the **built** artifacts of `@carbon/ai-chat` and `@carbon/ai-chat-components`, so the watcher (`npm run aiChat:start`) must be running in another terminal or Vite will resolve stale `dist/es/`. `vite.config.ts` lists those packages under `optimizeDeps.exclude` so a package rebuild reaches the browser without a manual optimizer purge.
 
 Local shortcuts from this directory:
 
 ```bash
-npm start          # webpack dev-server
-npm run build      # production webpack build
-npm test           # playwright (uses node-polyfill.js)
+npm start          # Vite dev server (default port 3001)
+npm run build      # production Vite build
+npm run preview    # serve the production build
+npm test           # playwright against `build` + `preview` (uses node-polyfill.js)
 ```
 
 Single Playwright test:

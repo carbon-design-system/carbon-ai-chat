@@ -319,7 +319,7 @@ function validateSkillLinks(name) {
     }
 
     const fileRefRegex =
-      /`([a-zA-Z0-9_\-./]+\.(ts|tsx|js|jsx|md|json|yml|yaml|scss|css))`/g;
+      /`([a-zA-Z0-9_\-./]+\.(ts|tsx|js|jsx|cjs|mjs|md|json|yml|yaml|scss|css))`/g;
     while ((match = fileRefRegex.exec(content)) !== null) {
       checkTarget(
         file,

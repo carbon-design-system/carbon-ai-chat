@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       semver-type:
-        description: "Specify the type of semver release. For `alpha`, this is the bump the alpha previews off the current version."
+        description: 'Specify the type of semver release. For `alpha`, this is the bump the alpha previews off the current version.'
         required: true
         type: choice
         default: minor
@@ -22,7 +22,7 @@ on:
           - patch
       type:
         required: true
-        description: "Specify the type of release (stable, candidate, etc)"
+        description: 'Specify the type of release (stable, candidate, etc)'
         type: choice
         default: first rc
         # Full release (ie. v1.0.0 -> v1.1.0)
@@ -38,23 +38,23 @@ on:
       dry-run:
         # Check dry run to test run lerna and confirm package version bumps
         required: true
-        description: "Run dry run?"
+        description: 'Run dry run?'
         type: boolean
         default: true
       force-publish:
         # May need to force publish at times when lerna doesn't detect changes
-        description: "Force publish? Ignored for `alpha`."
+        description: 'Force publish? Ignored for `alpha`.'
         type: boolean
         default: false
       ai-chat-base:
         # Alpha only. See release-alpha.yml / scripts/compute-alpha-versions.js.
-        description: "Alpha only: exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Blank derives it from `semver-type`; setting one base requires the other."
+        description: 'Alpha only: exact base version for @carbon/ai-chat, e.g. 1.19.0 when the branch lands a release later than the next one. Blank derives it from `semver-type`; setting one base requires the other.'
         type: string
-        default: ""
+        default: ''
       components-base:
-        description: "Alpha only: exact base version for @carbon/ai-chat-components, e.g. 1.9.0. The two packages version independently, so this must be set whenever `ai-chat-base` is."
+        description: 'Alpha only: exact base version for @carbon/ai-chat-components, e.g. 1.9.0. The two packages version independently, so this must be set whenever `ai-chat-base` is.'
         type: string
-        default: ""
+        default: ''
 
 jobs:
   Release:
