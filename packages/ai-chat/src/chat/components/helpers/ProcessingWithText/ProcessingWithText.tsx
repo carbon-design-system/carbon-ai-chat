@@ -9,8 +9,8 @@
 
 import cx from 'classnames';
 import Processing from '@carbon/ai-chat-components/es/react/processing.js';
-import React from 'react';
-import { AriaLiveMessage } from '../../aria/AriaLiveMessage';
+import React, { useEffect } from 'react';
+import { useAriaAnnouncer } from '../../../hooks/useAriaAnnouncer';
 import { CarbonTheme } from '../../../../types/config/CarbonTheme';
 
 interface ProcessingWithTextProps {
@@ -30,6 +30,14 @@ function ProcessingWithText({
   processingLabel,
   statusMessage,
 }: ProcessingWithTextProps) {
+  const ariaAnnouncer = useAriaAnnouncer();
+
+  useEffect(() => {
+    if (ariaAnnouncer && isVisible && isTypingMessage) {
+      ariaAnnouncer(isTypingMessage);
+    }
+  }, [ariaAnnouncer, isVisible, isTypingMessage]);
+
   return (
     <div
       className={cx(
@@ -37,9 +45,6 @@ function ProcessingWithText({
         { 'cds-aichat--typing-indicator--hidden': !isVisible }
       )}>
       <div className="cds-aichat--message--padding">
-        {isVisible && isTypingMessage && (
-          <AriaLiveMessage message={isTypingMessage} />
-        )}
         <div className="cds-aichat--assistant-message">
           <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
             <div className="cds-aichat--received--inner">
