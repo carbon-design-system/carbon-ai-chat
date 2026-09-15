@@ -71,26 +71,15 @@ Setting {@link HeaderConfig.isOn | isOn} to `false` hides the header area entire
 
 ### Mobile history host responsibility
 
-When the history panel is in mobile mode (the chat is too narrow to show history alongside messages), the built-in header normally renders a menu that lets users open the history panel. With `CUSTOM_HEADER` active that menu is never rendered. If you use `history.isOn: true` in a layout narrow enough to trigger mobile mode, your custom header must supply its own controls:
+When the history panel is in mobile mode (the chat is too narrow to show history alongside messages), the built-in header normally renders a menu that lets users open the history panel. With `CUSTOM_HEADER` active that menu is never rendered. If you use `history.isOn: true` in a layout narrow enough to trigger mobile mode, **your custom header owns the mobile history affordances** — the framework provides none.
 
-```ts
-// Read the current mobile state
-const isMobile = instance.getState().historyPanelState.isMobile;
+Read `instance.getState().customPanels.history.isMobile` to know when to render them, and call `instance.customPanels.getPanel(PanelType.HISTORY)?.open()` to open the panel. See [Controlling the panel programmatically](./CustomHistory.md#controlling-the-panel-programmatically) in [CustomHistory.md](./CustomHistory.md) for the full API, including how to subscribe to breakpoint changes.
 
-// Open the history panel imperatively from your custom header
-import { PanelType } from '@carbon/ai-chat';
-instance.customPanels.getPanel(PanelType.HISTORY)?.open();
-```
-
-To suppress the built-in mobile menu (and the associated developer warning) without supplying your own, set `history.showMobileMenu: false`. See [CustomHistory.md](./CustomHistory.md) for the full mobile history API.
+To suppress the built-in mobile menu (and the associated developer warning) without supplying your own controls, set `history.showMobileMenu: false`.
 
 ### Accessibility
 
-Your custom header is rendered in place of the `<header>` landmark provided by the built-in component. Supply an accessible region name so screen readers announce the landmark correctly:
-
-```html
-<div role="banner" aria-label="Application header">…</div>
-```
+Your custom header owns its landmark role and accessible name. Supply appropriate roles and labels for any interactive controls you render.
 
 ## Related
 

@@ -15,14 +15,10 @@ import {
 
 /**
  * Returns `true` when the writeable-element host node for `name` contains
- * meaningful host content, `false` otherwise.
- *
- * "Meaningful content" mirrors `SlotObserver.hasElementContent`: an empty
- * wrapper div, a whitespace-only text node, and comments all read as no content.
- *
- * Reacts to content arriving or leaving post-boot via a `MutationObserver`.
- * Used by AppShell for CUSTOM_HEADER; #1957 imports it unchanged for
- * CUSTOM_PROMPT_LINE.
+ * meaningful host content, `false` otherwise.v"Meaningful content" mirrors
+ * `SlotObserver.hasSlotContent`: an empty wrapper div, a whitespace-only text node,
+ * and comments all read as no content. Reacts to content arriving or leaving
+ * post-boot via a `MutationObserver`.
  */
 export function useWriteableElementPresence(
   name: WriteableElementName,
@@ -59,7 +55,7 @@ export function useWriteableElementPresence(
 /**
  * Returns true when `node` contains at least one non-comment,
  * non-whitespace-only child — matching the rules in
- * `SlotObserver.hasElementContent`.
+ * `SlotObserver.hasSlotContent`.
  */
 function hasMeaningfulContent(node: HTMLElement): boolean {
   return Array.from(node.childNodes).some((child) => {
