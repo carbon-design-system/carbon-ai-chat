@@ -352,7 +352,6 @@ describe('file-upload-item', () => {
 
       const root = innerRoot(el);
       const button = root.querySelector('button.cds--file-close')!;
-      expect(button.getAttribute('aria-invalid')).to.equal('true');
 
       // The description must resolve to the node holding the reason — an
       // aria-describedby pointing at nothing is the bug this fixes.
@@ -384,7 +383,6 @@ describe('file-upload-item', () => {
       // button with silence.
       expect(el.getAttribute('aria-invalid')).to.equal('true');
       const button = innerRoot(el).querySelector('button.cds--file-close')!;
-      expect(button.getAttribute('aria-invalid')).to.equal('true');
       expect(button.hasAttribute('aria-describedby')).to.be.false;
     });
 

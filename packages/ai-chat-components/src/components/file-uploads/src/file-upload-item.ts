@@ -42,6 +42,26 @@ import styles from './file-upload-item.scss?lit';
  */
 const ERROR_MESSAGE_ID = 'cds-aichat-file-upload-item-error';
 
+interface SyncAttributeOptions {
+  /** The element to set the attribute on. */
+  element: Element;
+
+  /** The qualified attribute name. */
+  attribute: string;
+
+  /** The value to set, or nothing to remove the attribute. */
+  value?: string;
+}
+
+/** Sets `attribute` to `value`, or removes it when there is no value. */
+function syncAttribute({ element, attribute, value }: SyncAttributeOptions) {
+  if (value) {
+    element.setAttribute(attribute, value);
+  } else {
+    element.removeAttribute(attribute);
+  }
+}
+
 /**
  * The name, type, and (when available) `File` behind the chip, resolved from
  * whichever input was supplied.
@@ -247,21 +267,21 @@ class FileUploadItemElement extends LitElement {
     const { isError, message } = this._uploadError;
     const invalid = !this.readOnly && isError;
 
-    // Shadow DOM hides the chip's implicit semantics, and `aria-invalid` on a
-    // role-less host is dropped — so the host states a role and names itself.
-    this.setAttribute('role', 'group');
-    const name = this._resolved?.name;
-    if (name) {
-      this.setAttribute('aria-label', name);
-    } else {
-      this.removeAttribute('aria-label');
-    }
-
-    if (invalid) {
-      this.setAttribute('aria-invalid', 'true');
-    } else {
-      this.removeAttribute('aria-invalid');
-    }
+    // `aria-invalid` on a role-less host is dropped, so an input-area chip states
+    // a role and names itself. A read-only chip is already a list item in the
+    // message list.
+    const label = this.readOnly ? undefined : this._resolved?.name;
+    syncAttribute({
+      element: this,
+      attribute: 'role',
+      value: this.readOnly ? undefined : 'group',
+    });
+    syncAttribute({ element: this, attribute: 'aria-label', value: label });
+    syncAttribute({
+      element: this,
+      attribute: 'aria-invalid',
+      value: invalid ? 'true' : undefined,
+    });
 
     const inner = this.shadowRoot?.querySelector(
       'cds-file-uploader-item'
@@ -281,29 +301,20 @@ class FileUploadItemElement extends LitElement {
     this._syncedErrorState = true;
 
     // Carbon renders the requirement node even when it holds no message.
-    const describe = invalid && Boolean(message);
+    const describedBy = invalid && message ? ERROR_MESSAGE_ID : undefined;
 
     const title = innerRoot.querySelector('.cds--form-requirement__title');
     if (title) {
-      if (describe) {
-        title.id = ERROR_MESSAGE_ID;
-      } else {
-        title.removeAttribute('id');
-      }
+      syncAttribute({ element: title, attribute: 'id', value: describedBy });
     }
 
     const removeButton = innerRoot.querySelector('button.cds--file-close');
     if (removeButton) {
-      if (invalid) {
-        removeButton.setAttribute('aria-invalid', 'true');
-      } else {
-        removeButton.removeAttribute('aria-invalid');
-      }
-      if (describe) {
-        removeButton.setAttribute('aria-describedby', ERROR_MESSAGE_ID);
-      } else {
-        removeButton.removeAttribute('aria-describedby');
-      }
+      syncAttribute({
+        element: removeButton,
+        attribute: 'aria-describedby',
+        value: describedBy,
+      });
     }
   }
 
