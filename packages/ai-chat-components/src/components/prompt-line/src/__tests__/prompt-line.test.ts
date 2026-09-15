@@ -405,6 +405,60 @@ describe('<cds-aichat-prompt-line> accessible name', function () {
   });
 });
 
+describe('<cds-aichat-prompt-line> accessible placeholder', function () {
+  it('places native placeholder and NO aria-placeholder on the textarea in textarea mode', async () => {
+    const el = await makePromptLine({ placeholder: 'Ask a question' });
+    expect(getTextarea(el).placeholder).to.equal('Ask a question');
+    expect(getTextarea(el).hasAttribute('aria-placeholder')).to.equal(false);
+  });
+
+  it('places aria-placeholder on the ProseMirror contenteditable in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+  });
+
+  it('updates aria-placeholder dynamically in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+
+    el.placeholder = 'Search';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Search');
+  });
+
+  it('removes aria-placeholder in rich mode if placeholder is set to empty string', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+
+    el.placeholder = '';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(pm.hasAttribute('aria-placeholder')).to.equal(false);
+  });
+});
+
 // Regression: long unbroken text does not widen textarea past its declared width.
 describe('<cds-aichat-prompt-line> long unbroken text wraps', function () {
   const LONG_URL = `https://example.com/x/${'a'.repeat(200)}`;

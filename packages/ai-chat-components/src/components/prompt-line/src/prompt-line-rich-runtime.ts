@@ -352,6 +352,9 @@ class RichController
           if (this._ariaLabel) {
             attrs['aria-label'] = this._ariaLabel;
           }
+          if (this._placeholder) {
+            attrs['aria-placeholder'] = this._placeholder;
+          }
           return attrs;
         },
       },
