@@ -208,15 +208,19 @@ class FileUploadsElement extends LitElement {
    * Added and uploading transitions are coalesced: when several files are added
    * or start uploading in the same frame, a single counted announcement is made
    * (via {@link getFilesAddedText} / {@link getFilesUploadingText}) rather than
-   * one per file. Success and failure settle per file in their own frames, so
-   * they are announced inline — a failure assertively, since it blocks sending.
+   * one per file. Success settles per file in its own frame, so it is announced
+   * inline.
+   *
+   * Failures are diffed as a whole set rather than per edge: uploads resolve one
+   * at a time, so a per-edge diff repeats the title and recovery sentence for
+   * each failing file, and says nothing when removing one of two failed files
+   * leaves the other's reason on screen.
    */
   private _announceTransitions() {
     const previous = this._snapshots;
 
     let addedCount = 0;
     let uploadingCount = 0;
-    const failures: string[] = [];
 
     for (const upload of this.uploads) {
       const before = previous.get(upload.id);
@@ -226,17 +230,9 @@ class FileUploadsElement extends LitElement {
         // New item this frame.
         if (upload.status === 'uploading') {
           uploadingCount += 1;
-        } else if (isError) {
-          failures.push(upload.errorMessage ?? '');
-        } else {
+        } else if (!isError) {
           addedCount += 1;
         }
-      } else if (!before.isError && isError) {
-        failures.push(upload.errorMessage ?? '');
-      } else if (isError && before.errorMessage !== upload.errorMessage) {
-        // The host can revise why a file failed without it ever leaving the error
-        // state; nothing else would speak the new reason.
-        failures.push(upload.errorMessage ?? '');
       } else if (
         before.status === 'uploading' &&
         upload.status !== 'uploading' &&
@@ -255,10 +251,22 @@ class FileUploadsElement extends LitElement {
       }
     }
 
-    if (failures.length > 0) {
+    // Keyed by id as well as reason so a failure with no reason still announces.
+    const failed = this.uploads.filter((upload) => upload.isError);
+    const signature = failed
+      .map((upload) => `${upload.id}:${upload.errorMessage ?? ''}`)
+      .join('\n');
+    const previousSignature = [...previous.entries()]
+      .filter(([, snapshot]) => snapshot.isError)
+      .map(([id, snapshot]) => `${id}:${snapshot.errorMessage ?? ''}`)
+      .join('\n');
+
+    if (failed.length > 0 && signature !== previousSignature) {
       this._announcer.announce(
         this.getFileUploadFailureText({
-          messages: failures.filter(Boolean),
+          messages: failed
+            .map((upload) => upload.errorMessage ?? '')
+            .filter(Boolean),
         }),
         'assertive'
       );

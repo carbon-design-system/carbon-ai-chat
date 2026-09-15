@@ -259,6 +259,91 @@ describe('file-uploads', () => {
     expect(liveTextIn(el, 'assertive')).to.contain('Wrong type');
   });
 
+  it('speaks the remaining reason when one of two failed files is removed', async () => {
+    const el = await mount();
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Wrong type',
+      }),
+    ]);
+    clearRegions(el);
+
+    await setUploads(el, [
+      makeUpload('b', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Wrong type',
+      }),
+    ]);
+
+    // "b" crossed no edge of its own, so nothing else would speak its reason.
+    expect(liveTextIn(el, 'assertive')).to.contain('Wrong type');
+  });
+
+  it('states the title once when two uploads fail in separate frames', async () => {
+    const el = await mount();
+    el.getFileUploadFailureText = ({ messages }) =>
+      `failed: ${messages.join(' | ')}`;
+    await el.updateComplete;
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.UPLOADING),
+      makeUpload('b', FileStatusValue.UPLOADING),
+    ]);
+
+    // Uploads resolve one at a time, so two failures land in two frames.
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.UPLOADING),
+    ]);
+    clearRegions(el);
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      }),
+      makeUpload('b', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Wrong type',
+      }),
+    ]);
+
+    expect(liveTextIn(el, 'assertive')).to.equal(
+      'failed: Too big | Wrong type'
+    );
+  });
+
+  it('stays quiet when the same errored uploads are set again', async () => {
+    const el = await mount();
+    const failed = () =>
+      makeUpload('a', FileStatusValue.EDIT, {
+        isError: true,
+        errorMessage: 'Too big',
+      });
+    await setUploads(el, [failed()]);
+    clearRegions(el);
+
+    await setUploads(el, [failed()]);
+
+    expect(liveTextIn(el, 'assertive')).to.equal('');
+  });
+
+  it('announces a failure that carries no reason', async () => {
+    const el = await mount();
+    await setUploads(el, [
+      makeUpload('a', FileStatusValue.EDIT, { isError: true }),
+    ]);
+
+    // A host can throw a bare Error; sending is still blocked.
+    expect(liveTextIn(el, 'assertive')).to.contain('error uploading');
+  });
+
   it('announces a failure already present at mount', async () => {
     // The element remounts whenever the input is hidden and re-shown, and the
     // React side no longer announces upload errors — seeding a failure as
