@@ -11,14 +11,16 @@ The process — numbering, status, how the window closes — is in [docs/adr/REA
 
 Most decisions don't. A folder of records nobody reads is worse than no folder, so apply the test before writing anything.
 
-An ADR is warranted when **either** holds:
+An ADR is worth suggesting when **either** holds:
 
 - **A consumer can feel it.** It changes public API, changes behavior a host depends on, or changes what a migration costs.
 - **Someone will re-propose the option that lost.** Without the reasoning written down, the same debate reopens in a year and nobody remembers why it closed.
 
+Passing the test is a reason to suggest one, not an obligation. The developer doing the work decides; when they skip it, the reasoning goes in the PR description instead, or in the epic's Details when the plan shapes an epic.
+
 Everything else stays a numbered decision in the plan — see [caic-plan](../caic-plan/SKILL.md#what-goes-in-planmd). Mechanical choices (file layout, a helper's name, which of two equivalent spellings) are `D<n>` and nothing more.
 
-**The promotion case.** A plan decision often turns out to meet the test partway through. When it does, write the ADR and shrink `D<n>` to a pointer at it. Don't leave the reasoning in a file that gets deleted.
+**The promotion case.** A plan decision often turns out to meet the test partway through. When it does, consider an ADR, and shrink `D<n>` to a pointer at it if you write one. Either way, don't leave the reasoning only in a file that gets deleted — an ADR, the PR description, or the epic's Details has to carry it.
 
 ## How much do you plan first?
 
@@ -39,9 +41,9 @@ Stop investigating an option when you know what would kill it. If you are drafti
 
 ## Two ways in
 
-**Decision first.** Investigate → write the ADR → merge as `proposed` → plan the winner only. The plan's `Decisions` list cites the ADR rather than re-deriving it, and the epic and issues project from the plan as usual.
+**Decision first.** Investigate → write the ADR → merge as `proposed` → plan the winner only. The plan's `Decisions` list cites the ADR rather than re-deriving it. Issues still state only the problem, and each plan written against one cites the ADR the same way.
 
-**Promotion, which is more common.** The plan is already underway. `D3` turns out to be something a consumer can feel, so it graduates: write the ADR, shrink `D3` to a pointer, keep going. Most of the investigation is already done — that is why this path is cheaper, and why it is worth reaching for the promotion test during plan review rather than at the start.
+**Promotion, which is more common.** The plan is already underway. `D3` turns out to be something a consumer can feel, so it may graduate: if the developer judges a record worth it, the ADR gets written, `D3` shrinks to a pointer, and the plan keeps going. Most of the investigation is already done — that is why this path is cheaper, and why it is worth reaching for the promotion test during plan review rather than at the start.
 
 Either way, if the comment window changes the decision, the spine's propagation rule fires downward — Done when first, then whichever artifact the plan's fork produces. See [caic-plan](../caic-plan/SKILL.md#the-spine).
 
