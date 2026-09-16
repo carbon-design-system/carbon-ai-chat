@@ -2,7 +2,7 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.20.0/docs/types/Type_reference.MarkdownPluginHostMountDetailInput.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.21.0-rc.0/docs/types/Type_reference.MarkdownPluginHostMountDetailInput.html
 
 A mount detail as it arrives on the wire, `kind` included or not.
 

@@ -18,7 +18,7 @@ The split that matters: an epic tracks work, an ADR justifies it. When an epic a
 
 ## When to write one
 
-Write an ADR when either test passes:
+Whether to write one is the call of the developer doing the work. Consider an ADR when any of these holds:
 
 - **A consuming developer will be directly effected by.** A breaking change. A new feature.
 - **An author developer can feel it.** Architectural changes. Foundational technical choices. Adding new utilities, services or patterns.

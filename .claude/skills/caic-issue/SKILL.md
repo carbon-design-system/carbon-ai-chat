@@ -1,23 +1,19 @@
 ---
 name: caic-issue
-description: Write and file a GitHub issue in this repo — body structure, the up-front API contract, sub-issue linking via gh, and escalation to an epic when the work is an umbrella. Use when the user asks to "file an issue", "open a sub-issue", "write up a task", or when breaking an epic into children.
+description: Write and file a GitHub issue in this repo — a body that states the problem and the outcomes that close it while leaving the fix to whoever plans the work, sub-issue linking via gh, and escalation to an epic when the work is an umbrella. Use when the user asks to "file an issue", "open a sub-issue", "write up a task", or when breaking an epic into children.
 ---
 
 How to write a good issue in this repo and how to wire a sub-issue to its parent.
 
-If the work is an umbrella that splits into multiple children, author it as an epic instead — see [epic-authoring.md](references/epic-authoring.md).
+If the work is an umbrella that splits into multiple children, author it as an epic instead — see [epic-authoring.md](references/epic-authoring.md). An epic is shaped with [caic-plan](../caic-plan/SKILL.md) first, and its children are filed here.
 
-## Start from a plan
+## What an issue is
 
-An issue is a projection of a decision that has already been made. Filing one before the shape is settled produces an issue that gets rewritten twice, so for anything beyond a single obvious PR, plan first.
+An issue states a problem, the outcomes that close it, and anything already settled. It does not choose the fix. The developer who picks it up owns the design: they plan against the issue with [caic-plan](../caic-plan/SKILL.md), and that plan holds the acceptance criteria, their proofs, and any API contract.
 
-- **If you already know of a plan, ask which fork it is on** — see [caic-plan](../caic-plan/SKILL.md#pick-the-artifact-first). A plan that produces issues is consumed by filing this one: its Goal, acceptance criteria, and API contract come straight out of it, and an epic's children come from its per-step breakdown table. A plan that produces work keeps its criteria in its `PLAN-{N}` step files and is consumed by producing the PRs — don't lift them into an issue. Whichever artifact holds the criteria owns them; two copies drift.
-- **If you don't, ask.** Check `.github/plan-drafts/` for a folder covering this effort and ask the user whether a plan exists that you haven't seen — plans are git-ignored, so one may be sitting on their working copy or in a past session.
-- **If there is none and the work spans multiple PRs, draft one first** with the [caic-plan](../caic-plan/SKILL.md) skill. Come back and file only if that plan turns out to be issue-producing; if it produces the work directly, there is nothing to file.
+So a single issue needs no plan before it is filed. Write down what you know about the problem and stop there. A fix you have in mind can go under Possible approaches as one option, and the planner treats it as a hypothesis to check against the code, not an instruction.
 
-A one-PR change with an obvious approach needs no plan. Don't manufacture one.
-
-This skill owns the body's structure, its criteria, and the `gh` calls that file it. **How the words go is [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md)** — type 10 — including the title, the reading-level gate on the draft, and the claim-before-scaffolding rule that bites hardest here.
+This skill owns the body's structure and the `gh` calls that file it. **How the words go is [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md)** — type 10 — including the title, the reading-level gate on the draft, and the claim-before-scaffolding rule that bites hardest here.
 
 ## Title style
 
@@ -25,72 +21,45 @@ How to word one: [issue-bodies.md](../caic-copy-writer/references/issue-bodies.m
 
 ## Body structure
 
-Internal development work uses these sections — the same ones the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prompts, so a `gh`-filed issue and a form-filed one read identically. Read that form's `description:` text for what each section has to contain; it is the per-field instruction for both paths, and `gh` never renders it.
+Internal development work uses these sections, in this order — the same ones the [DEVELOPMENT_TASK.yaml](../../../.github/ISSUE_TEMPLATE/DEVELOPMENT_TASK.yaml) form prompts, so a `gh`-filed issue and a form-filed one read identically. Read that form's `description:` text for what each section has to contain; it is the per-field instruction for both paths, and `gh` never renders it.
 
-- **Background** — the _why_, opening with the problem in plain language: who is bitten and what goes wrong today, before any file, script, or type name. A reader meets the problem here and the proposed implementation later, so they can judge whether it fits — see [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md). Then the links: the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision — that is what [caic-review](../caic-review/SKILL.md) checks the diff against.
-- **Goal** — the change that exists when this is done.
-- **Acceptance criteria** — a `- [ ]` list of observable outcomes, each carrying its proof. See [Acceptance criteria](#acceptance-criteria).
-- **Public API / contract** — the up-front contract, shape and behavior (see below); omit only when nothing a consumer can observe changes.
+- **Background** — the _why_, opening with the problem in plain language: who is bitten and what goes wrong today, before any file, script, or type name — see [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md). Then the links: the parent epic if this is a sub-issue, and the ADR if this implements a recorded decision — [caic-review](../caic-review/SKILL.md) checks the diff against it.
+- **Goal** — the outcome this issue exists for, not the mechanism that delivers it.
+- **Done when** — a `- [ ]` list of observable outcomes. See [Done when](#done-when).
+- **Constraints** _(optional)_ — what is already settled and binds any fix: an accepted ADR, a compatibility promise, an accessibility requirement. A preference is not a constraint; it is a possible approach.
+- **Possible approaches** _(optional)_ and **Open questions** _(optional)_ — see [below](#possible-approaches-and-open-questions).
 - **Out of scope** — what this deliberately does not cover.
 - **Related** — parent epic, siblings, PRs, designs. A `Depends on: #N (reason)` line carries the _reason_ a blocker blocks; the relationship itself is a dependency link, not prose — see [Recording blockers](#recording-blockers).
 
-## Acceptance criteria
+## Done when
 
-Each box is one observable outcome plus the proof it holds. Write the outcome, then how anyone checks it: a command that exits 0, a named spec, or demo steps with the expected result. An outcome nobody can check is a wish.
+Each box is one outcome that has to hold before the issue closes. The developer's plan turns each into acceptance criteria with proofs — see [caic-plan](../caic-plan/SKILL.md#acceptance-criteria) — so the issue names the outcome and stops.
 
 - **One outcome per box.** If it needs an "and", split it — a half-true box can't be ticked.
-- **Observable from outside.** Say what the chat, the type surface, or the build does, not which function gets edited. "Route all three sites through the merged config" is a plan step; "a partial config still inherits the default field by field" is a criterion.
-- **No spec-dump box.** A single `Specs cover: a, b, c…` box is unfalsifiable, and in practice it restates criteria already written above it. Attach each case to the criterion it proves. The cases left over with nowhere to attach are the criteria you forgot to write — promote them.
-- **Name the proof.** A spec path, a command, or demo steps. Reuse the spec that already owns the area; for new surface, name the spec that will own it — see the package testing guides ([ai-chat](../../../packages/ai-chat/references/tests.md), [ai-chat-components](../../../packages/ai-chat-components/references/testing.md)). Name the case that fails today, not the properties the proof will have: "a symbol of kind `Interface` with no members and no allowlist entry fails the run" is a proof; "a guard that runs in milliseconds and catches the next one too" is a description of one, and it passes the day it is written.
-- **One box carries the gate.** The last criterion is the definition-of-done gate for every area this touches, as the commands that must exit 0. Link [definition-of-done.md](../../../references/definition-of-done.md) rather than restating it — the rows change, and its ordering rule and watcher precondition are load-bearing. Don't settle for "tests pass".
-- **Nothing new here.** Every criterion projects a parent one level up — an epic outcome, a plan's Done when item, or the Goal on a standalone issue. The rule is [the spine](../caic-plan/SKILL.md#the-spine).
+- **Observable from outside.** Say what a user, a host developer, the type surface, or the build sees — not which function changes. "A partial config still inherits the default field by field" is an outcome; "route all three sites through the merged config" is a fix.
+- **No proofs.** Leave out spec paths, test names, commands, and the definition-of-done gate. Choosing the proof is part of planning, and a named test is usually a named fix in disguise.
+- **Nothing new here.** Every outcome projects a parent one level up — an epic outcome, or the Goal on a standalone issue. The rule is [the spine](../caic-plan/SKILL.md#the-spine).
 
-When implementation proves a criterion wrong, say so in a **comment** on the issue — what the code does instead, and why the original was wrong. Never rewrite the criterion in the body; the original reasoning has to stay readable beside the correction. An amendment takes the same approval gate as filing.
+### Amending an outcome
 
-Changing a criterion and weakening its proof are different acts, and only the first has that route. Loosening an assertion, deleting a case, skipping a case, or regenerating a snapshot to match current output all turn the light green while the criterion still reads exactly as filed — which is what makes them worse than an unmet criterion, not better. None is an amendment. Catching one in a diff is [caic-review](../caic-review/SKILL.md)'s job.
+When a developer finds an outcome wrong, missing, or open to two readings, they say so in a **comment** on the issue — what should change, and why. The issue author or a lead agrees in the thread before the PR relies on the change. Never rewrite the body; the original has to stay readable beside the correction. An agent drafts the comment into `.github/issue-drafts/<N>-amendment.md` and posts it only under the gate in [Before anything is filed](#before-anything-is-filed).
+
+## Possible approaches and open questions
+
+Both are optional, and most small issues need neither.
+
+- **Possible approaches** — fixes you can see, each with its tradeoff. They are input to planning, not a decision: don't pick one, and don't restate one as the Goal. A single approach is fine; present it as an option anyway.
+- **Open questions** — what you don't know and the planner has to find out: a behavior you couldn't confirm, a consumer you're unsure depends on this.
+
+## Public API
+
+An issue doesn't lock an API shape. When the work changes what a consumer can observe, the developer proposes the contract while planning — see [api-contract.md](../caic-plan/references/api-contract.md). A compatibility requirement that is already settled goes under Constraints.
 
 ## Drafting the body
 
 Draft the body into `.github/issue-drafts/<kebab-case-slug>.md` and file it with `--body-file`. That directory is git-ignored, so drafts stay local. Rename to `<issue#>-<slug>.md` once filed, so the draft and the live issue are findable from either side. Use `###` headings: the form emits `### <label>` per field, so a form-filed issue is `###` by construction and a `gh`-filed one has to match.
 
 Keep the draft in sync with the live issue whenever you edit one — correcting only the GitHub copy means the next edit from the draft silently reverts it.
-
-## Define the contract up front
-
-State the contract **in the issue, before implementation starts** — not at the top of the body. It sits after the acceptance criteria, so the reader meets the problem and the outcome before the API shape. Write it whenever a task changes what a consumer can observe on the public surface — anything exported from [packages/ai-chat/src/aiChatEntry.tsx](../../../packages/ai-chat/src/aiChatEntry.tsx) or [packages/ai-chat/src/serverEntry.ts](../../../packages/ai-chat/src/serverEntry.ts). A change with no signature change still qualifies: behavior is public too.
-
-Start with the shape — the interfaces and type aliases added or altered, and the signature of every method put on the surface. Then the half the compiler can't hold.
-
-Work the locks below while drafting. They are a checklist, not a layout — what reaches the issue is the section described under **Writing it down**, not this grid. Which ones apply depends on the subject: a method takes them all, while a type-only change — a rename, a new optional field, a JSDoc fix — takes Defaults, Derivation, and Ownership, and answers the rest in the JSDoc you're proposing.
-
-| Lock          | The question it settles                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------- |
-| Preconditions | What state must hold to call this, and what happens when it doesn't?                                    |
-| No-op case    | Which inputs do nothing, and does the promise still resolve?                                            |
-| Failure       | What rejects, what throws, what resolves carrying an error state — and which is which?                  |
-| Events        | Which bus events fire, in what order, and which deliberately do not?                                    |
-| Timing        | When the promise settles: on send, on ack, or on completion?                                            |
-| Repeat calls  | Idempotent, coalesced, or queued? What does an overlapping caller get?                                  |
-| Defaults      | Every optional field's value when omitted, and which layer merges it.                                   |
-| Derivation    | For a state or enum a host can read: the rule producing **each** value, and which are unreachable today. |
-| Announcement  | What does a screen reader hear, and where does focus land? See [accessibility.md](../../../references/accessibility.md). |
-| Ownership     | Which side does the work — the framework, or the host's callback?                                       |
-
-Derivation is the lock that gets skipped, and it is the expensive one. A type can be right while every rule behind it is wrong.
-
-### Writing it down
-
-Answer in prose, and only where the answer bites. The reader lands on the issue without this skill open, so a bare row label — `Derivation | N/A` — asks them to decode a term whose definition lives in a file they can't see. Write the finding instead: the state that must hold, the input that does nothing, what a screen reader hears.
-
-Then close with a single line accounting for every lock you left out, naming them:
-
-> Everything else is unchanged: no new events, no failure path, no new defaults, nothing derived, no consumer action.
-
-That line is the point. It is what keeps silence from passing as an answer, and it is why a settled lock costs a clause rather than a table row. A lock you can't fit into that sentence is one you haven't settled — go settle it.
-
-Reach for a table only when four or more locks genuinely move, and then put the question in the left column rather than the keyword. Ten rows of "Unchanged" around one real answer bury it, which is the claim-before-scaffolding failure [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md) covers for the rest of the body.
-
-Locking shape _and_ behavior turns review into "does the code match the agreed contract?" instead of a design debate inside the PR. The semver and JSDoc rules for that surface are canonical in [packages/ai-chat/AGENTS.md](../../../packages/ai-chat/AGENTS.md) and [packages/ai-chat/src/types/AGENTS.md](../../../packages/ai-chat/src/types/AGENTS.md) — link to them, don't restate them here.
 
 ## Before anything is filed
 
@@ -164,6 +133,7 @@ Apply labels only when they drive a workflow (triage queue, release notes, a boa
 ## Related guidance
 
 - [epic-authoring.md](references/epic-authoring.md) — when to group sub-issues under an epic, and how to track them
+- [caic-plan](../caic-plan/SKILL.md) — planning against an issue once someone picks it up
 - [issue-bodies.md](../caic-copy-writer/references/issue-bodies.md) — how to word the body and the title, and the gate before filing
 - [tone.md](../../../references/tone.md) — voice and quick rules for the issue body
 - [caic-pr](../caic-pr/SKILL.md) — turning a completed issue into a PR description
