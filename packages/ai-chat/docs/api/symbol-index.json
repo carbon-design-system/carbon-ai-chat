@@ -1,6 +1,6 @@
 {
-  "version": "v1.20.0",
-  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.20.0/docs/",
+  "version": "v1.21.0-rc.0",
+  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.21.0-rc.0/docs/",
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
     "AdditionalDataToAgent": {
@@ -1459,6 +1459,82 @@
       "deprecatedMessage": "",
       "experimental": false,
       "url": "interfaces/Type_reference.BusEventHistoryEnd.html#type",
+      "anchor": "type"
+    },
+    "BusEventHistoryPanelNewChat": {
+      "name": "BusEventHistoryPanelNewChat",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Events",
+      "summary": "Fired when the user selects the new chat option in the chat header menu.",
+      "description": "",
+      "signature": "interface BusEventHistoryPanelNewChat",
+      "signatures": [],
+      "members": [
+        "BusEventHistoryPanelNewChat.type"
+      ],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BusEventHistoryPanelNewChat.html",
+      "anchor": null
+    },
+    "BusEventHistoryPanelNewChat.type": {
+      "name": "type",
+      "kind": "Property",
+      "parent": "BusEventHistoryPanelNewChat",
+      "category": "Events",
+      "summary": "The type of this event.",
+      "description": "",
+      "signature": "type: HISTORY_PANEL_NEW_CHAT",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BusEventHistoryPanelNewChat.html#type",
+      "anchor": "type"
+    },
+    "BusEventHistoryPanelPreOpen": {
+      "name": "BusEventHistoryPanelPreOpen",
+      "kind": "Interface",
+      "parent": null,
+      "category": "Events",
+      "summary": "Fired before the mobile chat history panel opens.",
+      "description": "",
+      "signature": "interface BusEventHistoryPanelPreOpen",
+      "signatures": [],
+      "members": [
+        "BusEventHistoryPanelPreOpen.type"
+      ],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BusEventHistoryPanelPreOpen.html",
+      "anchor": null
+    },
+    "BusEventHistoryPanelPreOpen.type": {
+      "name": "type",
+      "kind": "Property",
+      "parent": "BusEventHistoryPanelPreOpen",
+      "category": "Events",
+      "summary": "The type of this event.",
+      "description": "",
+      "signature": "type: HISTORY_PANEL_PRE_OPEN",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.BusEventHistoryPanelPreOpen.html#type",
       "anchor": "type"
     },
     "BusEventHumanAgentAreAnyAgentsOnline": {
@@ -4010,7 +4086,7 @@
       "kind": "Property",
       "parent": "ButtonItem",
       "category": "Messaging",
-      "summary": "The display text for the link.",
+      "summary": "The text shown on the button. A `post_back` button also uses it for the user's message in the\ntranscript, and sends `value.input.text` to the assistant. A `post_back` button with no\n`value.input.text` sends this text instead.",
       "description": "",
       "signature": "label?: string",
       "signatures": [],

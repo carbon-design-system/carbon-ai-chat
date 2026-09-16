@@ -12,6 +12,7 @@ A plan is two documents with different jobs, and reviewing one against the other
 | ----- | -------- | ----------------------------- |
 | Shaping | `PLAN.md`, or an epic draft | Boundaries, traceability, and whether the work is carved right |
 | Implementation | `PLAN-{N}-*.md` | Whether every claim about the codebase holds |
+| Both | A single-step `PLAN.md` | The shaping questions, then Phases 1–3 on its implementation sections |
 
 Phases 1–3 below are written at implementation depth. **For a shaping plan, swap them for the shorter pass in [Reviewing a shaping plan](#reviewing-a-shaping-plan)** — then come back for the per-step files once the shape is settled. Phases 4 and 5 apply at either level: the open questions still get asked one at a time, and the resolutions still get baked into the files.
 
@@ -21,19 +22,20 @@ Demanding file-and-line verification of a shaping plan is the common mistake. At
 
 ## Reviewing a shaping plan
 
-Seven questions. None of them needs the codebase open for long.
+Eight questions. None of them needs the codebase open for long.
 
 1. **Does the plan have its sections, Done when first?** Check before anything else, because the questions below assume them. A plan with no Done when list cannot be reviewed for traceability at all — every step is an orphan, so question 2 returns a wall of findings that all share one cause. Name the missing section as the finding instead. The rubric already reaches this case transitively; the reviewer should not have to reason backwards from the orphans to get there.
 2. **Does every step trace up, and every outcome trace down?** Every Done when item has a step that delivers it; every step traces to one. An orphan on either side is a scope bug. See [the spine](../SKILL.md#the-spine).
 3. **Is each step one PR's worth?** A step whose scope needs more than one line, or whose file list would sprawl, is two steps. Splitting is cheap now and expensive later.
 4. **Is the boundary real?** Read Out of scope and ask whether a reviewer three weeks in could use it to reject a scope expansion. "Other improvements" is not a boundary.
 5. **Is the ordering forced, or invented?** For each dependency the plan asserts between steps, ask what actually breaks if they run in the other order. Invented sequencing is the most common reason a plan takes longer than it should.
-6. **Is a consumer-visible decision sitting in the Decisions list with no ADR?** That reasoning is deleted with the plan file. Flag it as a finding — see [caic-adr](../../caic-adr/SKILL.md).
+6. **Is a consumer-visible decision sitting in the Decisions list with no ADR?** That reasoning is deleted with the plan file. Suggest an ADR as a note — see [caic-adr](../../caic-adr/SKILL.md). Whether to write one is the developer's call; what is a finding is reasoning with nowhere to land — no ADR, and no line in the PR description or, for a shaping plan, the epic's Details.
 7. **Does every new code file have a precedent it fits?** A step that names none is a finding. So is one whose new file is above 2× its precedent, or shares more than a third of its lines with it. The fix is to extract the shared part, or to split. Both counts sit in a step's Files touched; check the precedent's with `wc -l`. No tool sees duplication across files, so read the shared part rather than measuring it.
+8. **Does the plan answer its issue?** For a plan against an issue: every Done-when id has at least one acceptance criterion, no Constraint is broken, every Open question is closed or carried as a Risk, and any outcome the plan changed went through the issue's amendment route. Then the suggested fix, if the issue had one: did the plan check its premise against the code and weigh at least one alternative before adopting it? An adopted suggestion with no `D<n>` naming what lost is a finding — see [Planning against an issue](../SKILL.md#planning-against-an-issue).
 
-Verify only the claims that decide a boundary. If the plan says a step is separable because two modules do not import each other, check that — it changes the breakdown. A precedent's line count is another, since it decides whether question 7 returns a finding. Leave everything else for the implementation-level pass.
+Verify only the claims that decide a boundary. If the plan says a step is separable because two modules do not import each other, check that — it changes the breakdown. A precedent's line count is another, since it decides whether question 7 returns a finding. So is the premise of a fix the plan adopted from its issue, since question 8 turns on it. Leave everything else for the implementation-level pass.
 
-Write the findings up, then continue at [Phase 4](#phase-4--resolve-decisions). A shaping review that stops at seven questions leaves the author with homework, which is the anti-pattern this file closes with.
+Write the findings up, then continue at [Phase 4](#phase-4--resolve-decisions). A shaping review that stops at eight questions leaves the author with homework, which is the anti-pattern this file closes with.
 
 ## The core principle
 
@@ -52,10 +54,10 @@ The right posture: read the plan fully → identify its load-bearing claims → 
   - "The pattern in this area is Z, and we'll follow it."
   - "Component A integrates with B via mechanism C."
   - "File D is already structured the way we need."
-- Build a separate list of **design judgments** — choices the plan makes that don't depend on existing code (naming, API shape, deprecation policy, error-handling defaults). These need feedback but don't need verification. Mark the ones a **consumer can feel**: if such a judgment has no ADR behind it, that is a finding, not a note. The plan file is deleted when the work merges, and the reasoning goes with it — see [caic-adr](../../caic-adr/SKILL.md).
+- Build a separate list of **design judgments** — choices the plan makes that don't depend on existing code (naming, API shape, deprecation policy, error-handling defaults). These need feedback but don't need verification. Mark the ones a **consumer can feel**, and suggest an ADR for any with none behind it — a note, since whether to write one is the developer's call. The plan file is deleted when the work merges, so the reasoning has to reach an ADR, the PR description, or for a shaping plan the epic's Details — see [caic-adr](../../caic-adr/SKILL.md).
 - Build a third list of **behavior gaps** — places the plan states a shape but not a behavior. For every public value it introduces, ask what produces it; for every method, what it does on the no-op, failure, and repeat-call paths. An unanswered one is a design judgment the executor will make alone, in the PR, under time pressure. ("Behavior gap", not "spec gap": in this repo a spec is a test file.)
 
-  A gap closes by becoming a named case attached to the criterion it proves, not by a sentence of prose about it. Cases left with nothing to attach to are the criteria nobody wrote — promote them, per [caic-issue](../../caic-issue/SKILL.md#acceptance-criteria). Carry that through to [Phase 5](#phase-5--update-the-plan-files): a gap the review only described is a gap still open.
+  A gap closes by becoming a named case attached to the criterion it proves, not by a sentence of prose about it. Cases left with nothing to attach to are the criteria nobody wrote — promote them, per [caic-plan](../SKILL.md#acceptance-criteria). Carry that through to [Phase 5](#phase-5--update-the-plan-files): a gap the review only described is a gap still open.
 
 ## Phase 2 — Verify the load-bearing claims
 
@@ -121,7 +123,7 @@ The original critique document can stay as a record of what changed and why, but
 ## Anti-patterns
 
 - **Believing the plan.** Reviewing without verifying produces useless approval. Always check load-bearing claims.
-- **Passing a criterion that restates the implementation.** "Returns the merged config" is the code the plan already asked for, so it cannot fail independently of it; "a partial config inherits the default field by field" is a behavior, and can. Over-specified criteria are how a plan locks in the bug it was about to write — the same distinction [caic-issue](../../caic-issue/SKILL.md#acceptance-criteria) draws between a criterion and a plan step.
+- **Passing a criterion that restates the implementation.** "Returns the merged config" is the code the plan already asked for, so it cannot fail independently of it; "a partial config inherits the default field by field" is a behavior, and can. Over-specified criteria are how a plan locks in the bug it was about to write — the same distinction [caic-plan](../SKILL.md#acceptance-criteria) draws between a criterion and a plan step.
 - **Partial reads producing confident blockers.** If you'd recommend an architectural change based on a 100-line skim of a 900-line file, read the rest first. False blockers waste as much time as missed ones.
 - **Recommending changes to architecture you haven't verified exists.** If the plan says "we'll extend the existing X mechanism," verify X exists before commenting on the extension.
 - **Dumping everything into one section.** General feedback, verification, per-PR notes, and open questions each have their own section. Mixing them buries the action items.

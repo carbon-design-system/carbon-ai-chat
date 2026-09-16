@@ -12,14 +12,16 @@ Two jobs share this rubric. Settle which one you're doing before reading any cod
 - **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere.
   - **Name the range first.** `git diff` while the work is uncommitted, `git diff <base>...HEAD` once it is committed, where `<base>` is the branch you will merge into. An empty range means you picked the wrong one, not that the work is clean.
   - **Hand it to a sub-agent when you have one.** The context that wrote the diff already justified every choice in it, and re-reading it there replays those justifications instead of testing them.
-  - **Pass the requirement, withhold the defense.** The sub-agent gets the diff, this rubric, and what the work had to satisfy — the issue or the user's ask, plus any ADR it cites. It does not get your design notes, the options you ruled out, or the plan's commentary. The requirement is what the review scores against; your reasoning is the bias you're trying to escape. A concern you already resolved comes back cheap — answer it in a line, and if the answer was worth having, it belonged in a comment or an ADR.
+  - **Pass the requirement, withhold the defense.** The sub-agent gets the diff, this rubric, and what the work had to satisfy — the issue (its Done when, its Constraints, and any amendment or API proposal in its comments) or the user's ask, any ADR it cites, and your plan's acceptance criteria and contract. It does not get your design notes, the options you ruled out, or the plan's Decisions and commentary. The requirement is what the review scores against; your reasoning is the bias you're trying to escape. A concern you already resolved comes back cheap — answer it in a line, and if the answer was worth having, it belonged in a comment or an ADR.
 - **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict. Read [reviewing-a-pr.md](references/reviewing-a-pr.md) before you diff: it carries base-branch resolution and the posting payload.
 
 ## How to review
 
 - Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files — never a summary of what changed.
 - When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first — [large-diffs.md](references/large-diffs.md).
-- Open the issue the work closes and walk its acceptance criteria against the diff — for a self-review, the issue or ask the task came from. A criterion the diff contradicts is a **Blocker** until the issue carries an amendment saying so.
+- Open the issue the work closes — for a self-review, the issue or ask the task came from — and read its comments too. Walk its Done when and Constraints against the diff. An outcome the diff misses, or a constraint it breaks, is a **Blocker** until an agreed amendment on the issue says otherwise.
+- Walk the proofs next: the plan's acceptance criteria for a self-review, the PR's Testing / Reviewing steps for someone else's PR. A proof the diff doesn't satisfy is a **Blocker**.
+- If the issue carries an API proposal comment, compare the shipped shape against it. A difference with no follow-up in the thread is **Important**, and the fix may be a comment rather than a code change.
 - If the issue or its epic cites an ADR, read that ADR's Decision outcome and walk the diff against it too. A diff that contradicts an accepted ADR is a **Blocker** until a new ADR supersedes it — an implementation PR is not where a recorded decision gets reversed.
 - Tag every finding with a severity so real problems aren't buried under taste:
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
@@ -67,6 +69,7 @@ Some observations feel like findings and aren't. These stay unsaid at every seve
 - **An equivalent style alternative** — `for` versus `.map`, ternary versus `if`.
 - **"Add a comment here."** The repo's default is no comments ([comments](../../../references/code-patterns.md#comments)). You are here to flag the ones that restate the code, not to ask for more. One narrow exception: the diff encodes a _why_ the code cannot show — a workaround for a named bug, a constraint from outside the file, an ordering that looks arbitrary and isn't. Ask for that line, and say what it has to record.
 - **Speculative extraction** — "you might want to pull this out in case…". Scope creep counts from the reviewer's side too.
+- **A different approach from the one the issue suggested.** An issue's Possible approaches are options, and the developer owns the choice. Judge the diff on whether it meets the outcomes and constraints, not on whether it took the suggested route. A route that is defective is still a finding — on its own merits.
 - **Code the diff didn't touch.** A pre-existing problem is real and is not this PR's job — file an issue. Untouched code the diff _breaks_ is a different thing: a caller left on the old signature, a consumer of a changed default, a doc snippet that no longer runs. That is a regression, and a regression is a **Blocker** wherever it surfaces.
 
 A pass — or a whole review — that surfaces nothing is finished, not failed. Say so and stop. Manufacturing a Nit to look thorough costs the author more than the silence would.
@@ -82,7 +85,7 @@ One pass over every check spends its attention on the first dimension and skims 
 | `AGENTS.md`, `**/references/**`, `.bob/skills/**`, `.github/copilot-instructions.md` | spec conformance, tone & docs |
 | Any other `*.md`, or JSDoc on public types | tone & docs |
 | `package.json` | dependencies |
-| Always | acceptance criteria & ADRs |
+| Always | Done when, constraints, proofs & ADRs |
 
 Markdown that tells an agent what to do is a specification, not copy. The spec-conformance pass asks whether an agent following the changed text does the right thing, and holds it to [authoring-agents-md.md](../../../references/authoring-agents-md.md) — the line budget, one topic per file, a "read when" trigger on every reference link, and the Related guidance footer.
 
