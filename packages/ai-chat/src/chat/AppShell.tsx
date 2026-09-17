@@ -560,28 +560,25 @@ function AppShell({
 
   const customHeaderMobileWarningFired = useRef(false);
 
+  // True when the host is responsible for providing mobile history menu controls
+  // (open/close) because CUSTOM_HEADER suppresses the built-in menu.
+  const isHostControlledHistoryMenu =
+    customHeaderPresent &&
+    publicConfig.history?.isOn &&
+    historyPanelState.isMobile;
+
   useEffect(() => {
     if (
-      customHeaderPresent &&
-      publicConfig.history?.isOn &&
-      historyPanelState.isMobile &&
-      (publicConfig.history?.showMobileMenu ?? true) &&
+      isHostControlledHistoryMenu &&
       !customHeaderMobileWarningFired.current &&
       isEnableDebugLog()
     ) {
       customHeaderMobileWarningFired.current = true;
       consoleWarn(
-        'CUSTOM_HEADER is present while the history panel is in its mobile layout ' +
-          'and showMobileMenu is not false. The built-in mobile history menu no longer ' +
-          'renders; supply your own controls. See docs/CustomHistory.md.'
+        'CUSTOM_HEADER is present while the history panel is in its mobile layout. The built-in mobile history menu no longer renders; supply your own controls. See docs/CustomHistory.md.'
       );
     }
-  }, [
-    customHeaderPresent,
-    publicConfig.history?.isOn,
-    publicConfig.history?.showMobileMenu,
-    historyPanelState.isMobile,
-  ]);
+  }, [isHostControlledHistoryMenu]);
 
   // History mobile detection hook
   const updateHistoryMobileDetection = useHistoryMobileDetection({
