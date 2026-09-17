@@ -42,7 +42,7 @@ Customize Carbon AI Chat at three levels, from the quickest to the most involved
 
 - **Configure** — set behavior and appearance through {@link PublicConfig} props.
 - **Restyle** — apply a Carbon [theme](./Theming.md) and override CSS custom-property tokens for color, sizing, and placement.
-- **Inject your own content** — render your own markup into [slots](./WriteableElements.md), [custom panels](./CustomPanels.md), [responses](./Responses.md), and [message footers](./CustomMessageFooter.md).
+- **Inject your own content** — render your own markup into [slots](./WriteableElements.md), [custom panels](./CustomPanels.md), [responses](./Responses.md), and message footers beneath [assistant](./CustomMessageFooter.md) or [user](./CustomRequestFooter.md) messages.
 
 See [UI customization](./Customization.md).
 

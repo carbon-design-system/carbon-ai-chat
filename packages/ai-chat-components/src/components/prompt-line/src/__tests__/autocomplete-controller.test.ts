@@ -20,7 +20,12 @@ import DocumentNode from '@tiptap/extension-document';
 import ParagraphNode from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
 
-import { AutocompleteController } from '../autocomplete-controller.js';
+import {
+  AutocompleteController,
+  type AutocompleteControllerState,
+} from '../autocomplete-controller.js';
+import { carbonAutocomplete } from '../tiptap/carbon-autocomplete.js';
+import { carbonMention } from '../tiptap/carbon-mention.js';
 import { carbonStarterTrigger } from '../tiptap/carbon-starter-trigger.js';
 import {
   dispatchTriggerChange,
@@ -776,6 +781,78 @@ describe('AutocompleteController', () => {
     });
   });
 
+  describe('disableDirectSend derivation', () => {
+    async function emitFor(
+      options: ConstructorParameters<typeof AutocompleteController>[0],
+      type: string
+    ) {
+      let last: AutocompleteControllerState | null = null;
+      const controller = new AutocompleteController({
+        ...options,
+        onChange: (state) => {
+          last = state;
+        },
+      });
+      controller.handleTriggerChange({ type, query: '', triggerOffset: 0 });
+      await flush();
+      return last!;
+    }
+
+    it('is always true for mention and command, whatever the config says', async () => {
+      // TriggerSuggestionConfig omits the field: a chip insertion is never a
+      // send, so a host cannot opt out of it.
+      const mention = await emitFor(
+        { mention: { trigger: '@', items: USERS } },
+        'mention'
+      );
+      const command = await emitFor(
+        { command: { trigger: '/', items: USERS } },
+        'command'
+      );
+      expect(mention.disableDirectSend).to.equal(true);
+      expect(command.disableDirectSend).to.equal(true);
+    });
+
+    it("forwards the starters config's value for a starter trigger", async () => {
+      const on = await emitFor(
+        { starters: { ...STARTERS, disableDirectSend: true } },
+        'starter'
+      );
+      const off = await emitFor(
+        { starters: { ...STARTERS, disableDirectSend: false } },
+        'starter'
+      );
+      expect(on.disableDirectSend).to.equal(true);
+      expect(off.disableDirectSend).to.equal(false);
+    });
+
+    it("forwards the autocomplete config's value for an autocomplete trigger", async () => {
+      const on = await emitFor(
+        { autocomplete: { items: USERS, disableDirectSend: true } },
+        'autocomplete'
+      );
+      const off = await emitFor(
+        { autocomplete: { items: USERS, disableDirectSend: false } },
+        'autocomplete'
+      );
+      expect(on.disableDirectSend).to.equal(true);
+      expect(off.disableDirectSend).to.equal(false);
+    });
+
+    it("does not read one trigger type's config for another", async () => {
+      // The lookup is keyed on the active trigger type, so an autocomplete
+      // config cannot colour a starter trigger's answer.
+      const state = await emitFor(
+        {
+          starters: STARTERS,
+          autocomplete: { items: USERS, disableDirectSend: true },
+        },
+        'starter'
+      );
+      expect(state.disableDirectSend).to.equal(undefined);
+    });
+  });
+
   describe('starters renderCustomList', () => {
     it('emits the starters renderCustomList through state when trigger type is starter', async () => {
       let last: any = null;
@@ -962,5 +1039,322 @@ describe('AutocompleteController', () => {
       // The dispatch was called (no recreation side-effect).
       expect(storage.carbonStarterTrigger.isOn).to.equal(false);
     });
+  });
+
+  it('calls items() exactly once per query change, not twice', async () => {
+    let callCount = 0;
+    const controller = new AutocompleteController({
+      mention: {
+        trigger: '@',
+        items: async (query: string) => {
+          callCount++;
+          return USERS.filter((u) => u.label.toLowerCase().includes(query));
+        },
+      } as TriggerSuggestionConfig,
+      onChange: () => {},
+    });
+
+    controller.handleTriggerChange({
+      type: 'mention',
+      query: 'al',
+      triggerOffset: 0,
+    });
+    await flush();
+    // Pinned per query, not as a running total: a path that resolved zero
+    // times here and twice below still lands on 2.
+    expect(callCount).to.equal(1);
+
+    controller.handleTriggerChange({
+      type: 'mention',
+      query: 'ali',
+      triggerOffset: 0,
+    });
+    await flush();
+
+    expect(callCount).to.equal(2);
+  });
+
+  describe('minQueryLength gates every trigger type through one resolver', () => {
+    const CONFIGS = [
+      [
+        'mention',
+        { mention: { trigger: '@', items: USERS, minQueryLength: 3 } },
+      ],
+      [
+        'command',
+        { command: { trigger: '/', items: USERS, minQueryLength: 3 } },
+      ],
+      ['autocomplete', { autocomplete: { items: USERS, minQueryLength: 3 } }],
+    ] as const;
+
+    CONFIGS.forEach(([type, options]) => {
+      it(`gates ${type} below minQueryLength and releases it at the boundary`, async () => {
+        const states: AutocompleteControllerState[] = [];
+        const controller = new AutocompleteController({
+          ...(options as ConstructorParameters<
+            typeof AutocompleteController
+          >[0]),
+          onChange: (state) => {
+            states.push(state);
+          },
+        });
+
+        controller.handleTriggerChange({ type, query: 'al', triggerOffset: 0 });
+        await flush();
+        expect(states[states.length - 1].items).to.deep.equal([]);
+
+        controller.handleTriggerChange({
+          type,
+          query: 'ali',
+          triggerOffset: 0,
+        });
+        await flush();
+        expect(states[states.length - 1].items.length).to.be.greaterThan(0);
+      });
+    });
+  });
+
+  describe('onSelect fires for every trigger type', () => {
+    it('fires the mention config onSelect with the selected item', async () => {
+      const { promptLine } = makeEditorStub();
+      let selected: SuggestionItem | null = null;
+      const controller = new AutocompleteController({
+        mention: {
+          trigger: '@',
+          items: USERS,
+          onSelect: (item) => {
+            selected = item;
+          },
+        },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'mention',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.select(USERS[0]);
+      expect(selected).to.equal(USERS[0]);
+    });
+
+    it('fires the command config onSelect with the selected item', async () => {
+      const { promptLine } = makeEditorStub();
+      let selected: SuggestionItem | null = null;
+      const controller = new AutocompleteController({
+        command: {
+          trigger: '/',
+          items: COMMANDS,
+          onSelect: (item) => {
+            selected = item;
+          },
+        },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'command',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.select(COMMANDS[0]);
+      expect(selected).to.equal(COMMANDS[0]);
+    });
+
+    it('fires the autocomplete config onSelect and inserts plain text', async () => {
+      const { editor, promptLine } = makeEditorStub();
+      let selected: SuggestionItem | null = null;
+      const controller = new AutocompleteController({
+        autocomplete: {
+          items: USERS,
+          onSelect: (item) => {
+            selected = item;
+          },
+        },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'autocomplete',
+        query: 'al',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.select(USERS[0]);
+      // The autocomplete branch inserts the item's value as text, with no
+      // chip node — the range arithmetic @tiptap/suggestion used to supply.
+      expect(selected).to.equal(USERS[0]);
+      expect(editor.rawValue).to.equal('@alice');
+    });
+  });
+});
+
+describe('extension factories leave resolution to the controller', () => {
+  it('carbonMention never calls the host items() resolver on its own', async () => {
+    const mount = document.createElement('div');
+    document.body.appendChild(mount);
+
+    let editor: Editor | null = null;
+    try {
+      let callCount = 0;
+      const details: (TriggerChangeEventDetail | null)[] = [];
+
+      editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          carbonMention({
+            trigger: '@',
+            items: () => {
+              callCount += 1;
+              return USERS;
+            },
+          }),
+        ],
+        content: '',
+      });
+
+      editor.view.dom.addEventListener('cds-aichat-trigger-change', (event) => {
+        details.push((event as CustomEvent).detail);
+      });
+
+      editor.commands.insertContent('@al');
+      await flush();
+
+      // Without an active trigger, callCount === 0 would prove nothing.
+      expect(details.some((detail) => detail?.type === 'mention')).to.equal(
+        true
+      );
+      expect(callCount).to.equal(0);
+    } finally {
+      editor?.destroy();
+      mount.remove();
+    }
+  });
+
+  it('carbonAutocomplete reports the trigger and resolves nothing', async () => {
+    // The factory takes no config at all now, so it has no resolver to call —
+    // the type system carries that half. What it still owes the controller is
+    // the trigger-change event, which is what this pins.
+    const mount = document.createElement('div');
+    document.body.appendChild(mount);
+
+    let editor: Editor | null = null;
+    try {
+      const details: (TriggerChangeEventDetail | null)[] = [];
+
+      editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          carbonAutocomplete(),
+        ],
+        content: '',
+      });
+
+      editor.view.dom.addEventListener('cds-aichat-trigger-change', (event) => {
+        details.push((event as CustomEvent).detail);
+      });
+
+      // No trigger character — any non-empty text is an autocomplete query.
+      editor.commands.insertContent('al');
+      await flush();
+
+      const autocomplete = details.filter(
+        (detail) => detail?.type === 'autocomplete'
+      );
+      expect(autocomplete).to.have.length.greaterThan(0);
+      expect(autocomplete[autocomplete.length - 1]?.query).to.equal('al');
+    } finally {
+      editor?.destroy();
+      mount.remove();
+    }
+  });
+});
+
+describe('select() → onRemove custom-field round-trip', () => {
+  it('a chip inserted via controller.select() carries custom fields back through onRemove', async () => {
+    // Real Tiptap editor so the ProseMirror removal plugin fires.
+    const mount = document.createElement('div');
+    document.body.appendChild(mount);
+
+    let editor: Editor | null = null;
+    try {
+      const removed: SuggestionItem[] = [];
+      const itemWithCustomField = {
+        id: 'u1',
+        label: 'Alice',
+        value: '@alice',
+        team: 'design', // custom field — must survive the round-trip
+      } as SuggestionItem & { team: string };
+
+      editor = new Editor({
+        element: mount,
+        extensions: [
+          DocumentNode,
+          ParagraphNode,
+          TextNode,
+          carbonMention({
+            trigger: '@',
+            items: [itemWithCustomField],
+            onRemove: (item) => removed.push(item),
+          }),
+        ],
+        content: '',
+      });
+
+      const promptLine = { getEditor: () => editor };
+      const controller = new AutocompleteController({
+        mention: {
+          trigger: '@',
+          items: [itemWithCustomField],
+        },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine as any);
+
+      // triggerOffset: 1 — first valid inline position in an empty doc
+      controller.handleTriggerChange({
+        type: 'mention',
+        query: '',
+        triggerOffset: 1,
+      });
+      await flush();
+
+      // select() inserts the chip via the controller path (not the extension command).
+      controller.select(itemWithCustomField);
+
+      // Re-query the live state after select() — chain().focus().insertContentAt().run()
+      // is synchronous, so the state reflects the insertion immediately.
+      const positions: number[] = [];
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === 'mention') {
+          positions.push(pos);
+        }
+      });
+      expect(positions).to.have.lengthOf(1);
+      // deep.equal, not deep.include: include() would also hold if id, label,
+      // and value leaked into the attr alongside the custom field.
+      expect(editor.state.doc.nodeAt(positions[0])?.attrs.data).to.deep.equal({
+        team: 'design',
+      });
+
+      editor
+        .chain()
+        .deleteRange({ from: positions[0], to: positions[0] + 1 })
+        .run();
+
+      expect(removed).to.have.lengthOf(1);
+      expect((removed[0] as any).team).to.equal('design');
+    } finally {
+      editor?.destroy();
+      mount.remove();
+    }
   });
 });

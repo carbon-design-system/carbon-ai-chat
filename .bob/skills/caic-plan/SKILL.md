@@ -1,29 +1,50 @@
 ---
 name: caic-plan
-description: Shape upcoming work at any size — a local PLAN.md, a GitHub epic with sub-issues, or a single issue — following this repo's planning rubric, then close with a fresh-eyes plan review. Use when the user asks to "draft a plan", "lay out the PRs for X", "design how we'd build Y", "plan out a big effort", or "write up an approach".
+description: Plan work before building it — against a GitHub issue someone is picking up, or to shape a big effort into an epic with sub-issues — following this repo's planning rubric, then close with a fresh-eyes plan review. Use when the user asks to "plan issue 1234", "pick up this issue", "draft a plan", "lay out the PRs for X", "design how we'd build Y", "plan out a big effort", or "write up an approach".
 ---
 
 Follow this when the deliverable is a written plan rather than code. It tells you how to write a plan another agent (or human) can execute cold.
 
+## Planning against an issue
+
+Most plans start from an issue someone has picked up. The issue states the problem, the outcomes that close it, and what is settled; the plan decides how to get there. Before writing anything:
+
+- **Read the issue and every comment.** `gh issue view <N> --repo <owner>/<repo> --comments`. Comments carry amendments and any API proposal already posted. Fetch it rather than working from a summary in the task text.
+- **Its Done when is your Done when.** Cite it as a table of ids and short labels — `O1 | Partial config inherits defaults` — never the full outcome text, which drifts from the issue. Issues don't number their boxes, so the ids are positions in the issue's list. Every acceptance criterion in the plan traces to one id; a criterion that closes an open question traces to the outcome that question affects.
+- **Constraints bind.** When the plan can't satisfy one, stop and take it through the issue's [amendment route](../caic-issue/SKILL.md#amending-an-outcome), like a wrong outcome.
+- **Treat a suggested fix as a hypothesis.** A fix under Possible approaches, or one that slipped into Background or Goal, was written before anyone opened the code. Before adopting it:
+  - verify its premise — the function, pattern, or data flow it assumes — against the code;
+  - name at least one alternative the issue didn't list, such as the precedent the codebase already uses for the same problem, or a cheaper middle path;
+  - record the choice as a `D<n>`, with each loser, why it lost, and the code citation that decided it.
+
+  Adopting the suggestion is fine. Adopting it unexamined is the failure.
+
+- **Close every open question** as a `D<n>`, or carry it as a Risk the executor can route around.
+- **An outcome is wrong, missing, or open to two readings?** Don't absorb the change into the plan. Take it through the issue's [amendment route](../caic-issue/SKILL.md#amending-an-outcome).
+- **Name the folder `<N>-<slug>`**, so the plan and the issue find each other.
+
+If the approach is obvious once you've read the issue and the code, skip the plan and build — see [When to write a plan](#when-to-write-a-plan). A suggested fix that looks obvious still gets its premise checked and one alternative named before you build, even with no plan file. A change a consumer can observe is the exception: it still takes a `PLAN.md` holding at least the Public API surface, and the proposal posted from it.
+
 ## Pick the artifact first
 
-Plans, epics, and issues are the same act — shaping upcoming work — at three scales. Decide which you are producing before writing anything:
+Plans and epics shape upcoming work; an issue states the problem a plan answers. Decide what you are producing before writing anything:
 
 | The work                                                                      | Artifact                                                                                                                          |
 | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| One PR, one obvious approach                                                  | No plan. File an issue (`caic-issue`) or just do the work.                                                                        |
+| An issue you're picking up                                                    | A plan against it, per [Planning against an issue](#planning-against-an-issue) — or just build when the approach is obvious.       |
+| One PR, one obvious approach, no issue yet                                    | No plan. File an issue (`caic-issue`) or just do the work.                                                                        |
 | Multiple PRs, packages, or sessions; interlocking design decisions            | `PLAN.md` plus per-step files, per this rubric.                                                                                   |
 | A plan whose steps others will pick up, or work that needs tracking on GitHub | The plan, then project its per-step breakdown onto an epic — see [epic-authoring.md](../caic-issue/references/epic-authoring.md). |
-| A choice a consumer can feel, not yet settled — which shape, whether to remove it at all | An ADR, alongside the plan — see [caic-adr](../caic-adr/SKILL.md). |
+| A choice a consumer can feel, not yet settled — which shape, whether to remove it at all | Consider an ADR alongside the plan — see [caic-adr](../caic-adr/SKILL.md). The developer decides whether to write one. |
 
 Then settle the fork, before opening a single step file. A plan produces one of two things, and which one decides where the acceptance criteria live:
 
 | Fork          | Consumed by                          | Criteria live in                                                                | Step files    |
 | ------------- | ------------------------------------ | ------------------------------------------------------------------------------- | ------------- |
-| Plan → issues | Producing an epic and its sub-issues | The issues — see [caic-issue](../caic-issue/SKILL.md#acceptance-criteria)       | None          |
-| Plan → work   | Producing the PRs directly           | The `PLAN-{N}` step file, above its implementation steps                        | One per step  |
+| Plan → issues | Producing an epic and its sub-issues | Nowhere yet — each child carries Done when, and whoever picks it up plans its criteria | None |
+| Plan → work   | Producing the PRs directly, usually against an issue | `PLAN.md` for a single step, or each `PLAN-{N}` step file, above its implementation steps | One per step, when more than one |
 
-**Never both.** Two copies of one criteria list drift, and then neither is trusted. A plan on the issues fork that also writes per-step criteria has produced a stale second copy — the issue outlives the plan, so the issue owns them.
+**Outcomes in the issue, criteria in the plan.** An issue's Done when says what has to hold; a plan's acceptance criteria say how each is proven. Copy the outcomes into the plan, or the proofs into the issue, and the two lists drift until neither is trusted. A plan on the issues fork writes no criteria at all: its children have no owner yet, and criteria written now are design decisions made for someone else.
 
 This is not the single-step carve-out under File layout. That one is about _how many_ step files a plan needs; the fork is about whether step files are the deliverable at all.
 
@@ -31,7 +52,7 @@ A plan and an epic are not alternatives. Big work usually gets a plan file first
 
 Nor is an ADR an alternative to either. It answers a different question — _why this shape_ — and it is the only one of the three that survives the work.
 
-**It is not a phase before the plan, either.** The two interleave: you shape the work far enough to know the options are real and what each costs, and that shaping is what makes the ADR writable. Usually the ADR is a promotion — a `D<n>` in a plan already underway turns out to be something a consumer can feel, so it graduates. What an ADR needs from the plan is _feasibility_, not sequencing. If you are drafting per-step files to justify an option, stop: you are planning the losing option too.
+**It is not a phase before the plan, either.** The two interleave: you shape the work far enough to know the options are real and what each costs, and that shaping is what makes the ADR writable. Usually the ADR is a promotion — a `D<n>` in a plan already underway turns out to be something a consumer can feel, so it may graduate. What an ADR needs from the plan is _feasibility_, not sequencing. If you are drafting per-step files to justify an option, stop: you are planning the losing option too.
 
 ## The spine
 
@@ -39,14 +60,15 @@ One requirement, restated at each scale, never re-invented:
 
 | Level                       | Section             | Rule                                                                                                                                     |
 | --------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| ADR                         | Decision outcome    | The why: one decision, what lost, what it costs consumers.                                                                               |
-| Plan                        | Done when           | The observable outcomes. Written first; survives redesign.                                                                               |
+| ADR                         | Proposal            | The why: what changes, why now, and what it costs consumers.                                                                             |
+| Shaping plan                | Done when           | The observable outcomes of an effort. Written first; survives redesign.                                                                  |
 | Epic                        | Expected outcomes   | One per plan outcome, in the same words where they still fit.                                                                            |
-| Issue, or Step (`PLAN-{N}`) | Acceptance criteria | Each traces to one epic outcome — or, with no epic above it, to a Done when item — and carries its proof. The fork decides which of the two holds them; never both. |
+| Issue                       | Done when           | Outcomes only, no proofs. Each traces to one epic outcome, or to the issue's own Goal.                                                   |
+| Plan, or Step (`PLAN-{N}`)  | Acceptance criteria | Each traces to one issue Done-when item — or, with no issue, to the plan's own Done when — and carries its proof.                        |
 | PR                          | Testing / Reviewing | The steps that exercise the criteria that PR closes.                                                                                     |
-| Diff                        | Review              | The criteria walked against the code that shipped.                                                                                       |
+| Diff                        | Review              | The outcomes and criteria walked against the code that shipped.                                                                          |
 
-Two rules make it a spine rather than six lists. **Nothing appears at a lower level without a parent above it** — a criterion with no outcome is scope nobody agreed to. **A change propagates down from where it was made** — when a decision moves the goalposts, fix Done when, then the epic and its issues, or the step files, depending on the fork. Skip that and the artifacts describe different products.
+Two rules make it a spine rather than seven lists. **Nothing appears at a lower level without a parent above it** — a criterion with no outcome is scope nobody agreed to. **A change propagates down from where it was made** — when a decision moves the goalposts, fix the highest level it touches, then every level below it: the epic, its issues (amended by comment, never by editing the body), and the plans written against them. Skip that and the artifacts describe different products.
 
 The ADR row is the exception to the first rule: it is the only optional level, and most plans don't have one. Where a plan does sit under an ADR, the propagation rule still applies from the top — a superseding ADR reopens the Done when list below it.
 
@@ -55,12 +77,13 @@ The ADR row is the exception to the first rule: it is the only optional level, a
 - The work spans multiple PRs, packages, or sessions, and the executor needs to load context cold.
 - There are interlocking design decisions that should be locked before code is written (API shape, deprecation policy, naming, error semantics).
 - The user wants to see and approve the approach before any code lands.
+- An issue leaves the approach open, and the right one isn't obvious from the code.
 
 If the work is one PR with one obvious approach, skip the plan and just do it. Plans for trivial work are noise.
 
 ## File layout
 
-Plans live in `.github/plan-drafts/{name}/` and are git-ignored (see [.gitignore](../../../.gitignore)) — one folder per plan, `{name}` being a short kebab-case slug for the effort. Grouping the files under a named folder is what makes a plan easy to point at while it is in flight. Treat them as working notes, not documentation; they are never committed.
+Plans live in `.github/plan-drafts/{name}/` and are git-ignored (see [.gitignore](../../../.gitignore)) — one folder per plan, `{name}` being a short kebab-case slug for the effort, prefixed with the issue number (`<N>-<slug>`) when planning against an issue. Grouping the files under a named folder is what makes a plan easy to point at while it is in flight. Treat them as working notes, not documentation; they are never committed.
 
 - **`PLAN.md`** — the overarching design and decision document. One per plan folder.
 - **`PLAN-{N}-{kebab-case-title}.md`** — one file per discrete execution step (typically one PR per file). `N` is the step number starting at 1; the title is a short kebab-case slug.
@@ -86,7 +109,7 @@ Planning is two activities and the files split along the same seam. Doing them a
 | Shaping | What the work is, and where it ends | `PLAN.md` | Every step is one PR's worth and traces to a Done when item |
 | Implementation | How one step gets built | `PLAN-{N}-*.md` | An agent loading cold can execute it without a design question, and can tell whether it succeeded without asking |
 
-The fork decides how far you go. On the issues fork, shaping is the whole job: you stop at the end of the first row and file, and the issues carry what the second row would have held.
+The fork decides how far you go. On the issues fork, shaping is the whole job: you stop at the end of the first row and file the epic's children with Done when outcomes. Whoever picks up each child plans its second row.
 
 **Don't open a `PLAN-{N}` file while `PLAN.md` still has an open question that would move the step boundaries.** Finish shaping first. The tell is a step you can't state in one line — that is an undecided shape, not a long step.
 
@@ -97,26 +120,37 @@ Decision shaping sits above both, and is its own skill: [caic-adr](../caic-adr/S
 The overview, and the output of the shaping phase. Read once at the start of execution; referenced back to as needed.
 
 - **Context** — what problem this solves, why now, links to issues / PRs / discussions.
-- **Done when** — the observable outcomes that make this plan finished, as a `- [ ]` list. Written before the decisions, so a redesign can't quietly change what done means. An outcome is something the next thing you build with this observably does; if it reads "the file now says X", it is a step — move it to the breakdown, and see the prose carve-out under Acceptance criteria below. These become the epic's Expected outcomes, carried across per [the spine](#the-spine) rather than re-derived.
-- **Decisions** — numbered `D1`, `D2`, … and cited by that id everywhere else, per-step files included. Terse and settled: a sentence or two, rationale only when not obvious. When a real alternative was rejected, name it and why in one clause, or the next reader re-proposes it. Ids are stable — supersede a decision with a new one rather than renumbering. A decision that meets the promotion test in [caic-adr](../caic-adr/SKILL.md) outgrows this list: write the ADR and leave `D<n>` as a one-line pointer. Apply that test as written rather than from memory: it has two clauses and a set of sub-criteria, and abbreviating it is how a decision that needed a record stays a `D<n>` and gets deleted with the plan. This list is git-ignored and gets deleted; an ADR doesn't.
-- **Public API surface** — when the plan changes what a consumer can observe, lock it here: the TypeScript shape, plus the behavior the shape can't carry — preconditions, no-op and failure paths, events, timing, repeat calls, defaults, derivation, announcement, and ownership. The questions behind each are in [caic-issue](../caic-issue/SKILL.md#define-the-contract-up-front). Per-step files implement against the locked contract rather than re-deriving it. A change with no signature change still needs this section.
+- **Done when** — the observable outcomes that make this plan finished, as a `- [ ]` list. Written before the decisions, so a redesign can't quietly change what done means. An outcome is something the next thing you build with this observably does; if it reads "the file now says X", it is a step — move it to the breakdown, and see the prose carve-out under Acceptance criteria below. These become the epic's Expected outcomes, carried across per [the spine](#the-spine) rather than re-derived. When planning against an issue, this is the issue's list, cited by id — see [Planning against an issue](#planning-against-an-issue).
+- **Decisions** — numbered `D1`, `D2`, … and cited by that id everywhere else, per-step files included. Terse and settled: a sentence or two, rationale only when not obvious. When a real alternative was rejected, name it and why in one clause, or the next reader re-proposes it. Ids are stable — supersede a decision with a new one rather than renumbering. When a decision passes the test in [caic-adr](../caic-adr/SKILL.md) — a consumer can feel it, or someone will re-propose the option that lost — suggest an ADR, and shrink `D<n>` to a one-line pointer if one gets written. Whether to write it is the developer's call. When they skip it, the reasoning goes in the PR description — or, on the issues fork, the epic's Details — because this list is git-ignored and gets deleted.
+- **Public API surface** — when the plan changes what a consumer can observe, lock it here: the TypeScript shape, plus the behavior the shape can't carry — preconditions, no-op and failure paths, events, timing, repeat calls, defaults, derivation, announcement, and ownership. The questions behind each, and how to write the answers down, are in [api-contract.md](references/api-contract.md). Per-step files implement against the locked contract rather than re-deriving it. A change with no signature change still needs this section. Post the contract on the issue before building — see [Posting the proposal](references/api-contract.md#posting-the-proposal).
 - **Per-step breakdown** — a table: step → file → one-line scope, plus a status cell while the plan is in flight. The index, not the detail. One row is one PR's worth of work: if you can't state a step's scope in one line, or its Files touched sprawls, it's two steps.
 - **Cross-cutting concerns** — anything that affects multiple steps (telemetry, deprecation timeline, release notes, peer-dep constraints, migration path).
 - **Out of scope** — explicit list of things this plan does _not_ address, so reviewers and executors don't expand scope mid-flight.
+- **Scope, files touched, acceptance criteria, implementation steps, gate, and risk** — in a single-step plan only, which has no step file to hold them. Same rules as a step file below, criteria before implementation steps.
 
 ## What goes in `PLAN-{N}-{title}.md`
 
 The execution detail for one step, on the work fork only — a plan producing issues has none of these. Written so an agent loading cold can implement without re-deriving the design.
 
-When execution proves a criterion wrong, strike it in place and write the correction beneath it, so the original reasoning stays readable next to it. An amendment takes the same approval the plan took. A `Done when` change is shaping-level: strike it in `PLAN.md` instead, so the propagation rule can carry it down.
+When execution proves a criterion wrong, strike it in place and write the correction beneath it, so the original reasoning stays readable next to it. An amendment takes the same approval the plan took. A `Done when` change is shaping-level: strike it in `PLAN.md` instead, so the propagation rule can carry it down. When the Done when is an issue's, cited by id, don't strike it locally — take it through the issue's [amendment route](../caic-issue/SKILL.md#amending-an-outcome).
 
 - **Read-first / depends-on header** — pointer to `PLAN.md` plus any earlier steps that must merge first.
 - **Scope** — one paragraph: what this step does and what it explicitly does not. Resist the urge to repeat `PLAN.md` context here.
 - **Files touched** — concrete paths the executor will create / edit / delete. Vague plans produce drift; specific paths force you to verify the codebase as you draft. For a new code file, name its precedent: the file it most resembles, or its directory's median at `<base>`. Give the precedent's line count, the new file's expected count, and the part they share. Above 1.5×, say why in one line; above 2×, or more than a third shared, lift out the shared part or split the step first.
-- **Acceptance criteria** — what makes this step correct, settled **before** the implementation steps below and not derived from them. Written after them, they describe whatever got built. Each is one observable outcome plus the proof it holds, in the format [caic-issue](../caic-issue/SKILL.md#acceptance-criteria) already defines — don't invent a second one. Name the case that fails today, not the properties the proof will have — and the no-op and failure paths, which are where an executor under time pressure decides alone. Name which existing tests must pass **unchanged**; that is the half authors drop, and it is what makes a weakened proof visible later. For a change whose deliverable is prose, the outcome is what a reader can do after loading the file and where the text sits — not that the file contains a string.
+- **Acceptance criteria** — what makes this step correct, settled **before** the implementation steps below and not derived from them. Written after them, they describe whatever got built. Each is one observable outcome plus the proof it holds, in the format under [Acceptance criteria](#acceptance-criteria) — don't invent a second one. Name the case that fails today, not the properties the proof will have — and the no-op and failure paths, which are where an executor under time pressure decides alone. Name which existing tests must pass **unchanged**; that is the half authors drop, and it is what makes a weakened proof visible later. For a change whose deliverable is prose, the outcome is what a reader can do after loading the file and where the text sits — not that the file contains a string.
 - **Implementation steps** — ordered list. Each step short enough that a reasonable executor can complete it without further design questions. Cite file paths and line numbers for any claim about existing code.
 - **Gate** — the commands that must exit 0 for the areas this step touches, from [definition-of-done.md](../../../references/definition-of-done.md), plus any manual check (browser smoke, type-check, build). Looked up rather than authored, which is why it is its own section and not the last acceptance box — buried in a checklist it becomes the item nobody reads.
 - **Risk / open questions** — anything you're not sure about; flag uncertainty rather than burying it. A question that changes what the step builds has to close before the step is handed off. Carry forward only the ones the executor can hit and route around.
+
+## Acceptance criteria
+
+Each box is one observable outcome plus the proof it holds. Write the outcome, then how anyone checks it: a command that exits 0, a named spec, or demo steps with the expected result. An outcome nobody can check is a wish.
+
+- **One outcome per box.** If it needs an "and", split it — a half-true box can't be ticked.
+- **Observable from outside.** Say what the chat, the type surface, or the build does, not which function gets edited. "Route all three sites through the merged config" is a plan step; "a partial config still inherits the default field by field" is a criterion.
+- **No spec-dump box.** A single `Specs cover: a, b, c…` box is unfalsifiable, and in practice it restates criteria already written above it. Attach each case to the criterion it proves. The cases left over with nowhere to attach are the criteria you forgot to write — promote them.
+- **Name the proof.** A spec path, a command, or demo steps. Reuse the spec that already owns the area; for new surface, name the spec that will own it — see the package testing guides ([ai-chat](../../../packages/ai-chat/references/tests.md), [ai-chat-components](../../../packages/ai-chat-components/references/testing.md)). Name the case that fails today, not the properties the proof will have: "a symbol of kind `Interface` with no members and no allowlist entry fails the run" is a proof; "a guard that runs in milliseconds and catches the next one too" is a description of one, and it passes the day it is written.
+- **Nothing new here.** Every criterion projects a parent one level up — one of the issue's Done-when ids, or with no issue, a Done when item in `PLAN.md`. The rule is [the spine](#the-spine).
 
 ## Style
 
@@ -135,8 +169,8 @@ Resolve what the review surfaces and bake the resolutions into the plan files be
 
 - Plan files are git-ignored and **never committed** — they exist only on the working copy of whoever is driving the plan.
 - They are **not** the deliverable. The deliverable is the merged PRs and any docs / release notes those PRs include.
-- A plan's durable projection is the **epic and its sub-issues**, not the file. A shaping plan is consumed by producing the epic; an implementation plan is consumed by producing the PRs. Before deleting a plan, confirm its Done when list, its locked contract, and any decision an implementor still needs have landed on the epic or an issue — a plan good enough to share is evidence the epic needs more, not that the plan needs committing.
-- After all steps merge, delete the plan files. If there's institutional knowledge worth keeping, distill it into the codebase — not a stale plan file. Pick the destination by what it is: a **decision** and its rejected alternatives go to `docs/adr/` ([caic-adr](../caic-adr/SKILL.md)); a **constraint** goes in a comment beside the code it constrains; **anything a consumer needs** goes to the docs or the release notes. A decision that gets deleted with the plan is one the next person re-litigates.
+- What a plan settled has to land somewhere that lasts before the plan is deleted. A shaping plan lands in the **epic and its sub-issues**. A plan against an issue lands in the **PR description** — the proofs under Testing / Reviewing, a link to any API proposal, and the reasoning behind a decision that didn't get an ADR — and in the proposal comment itself. Don't rewrite the issue body with design detail; the proposal and amendment comments are the only design that lands on the issue.
+- After all steps merge, delete the plan files. If there's institutional knowledge worth keeping, distill it into the codebase — not a stale plan file. Pick the destination by what it is: a **decision** and its rejected alternatives go to `docs/adr/` when a record is worth writing ([caic-adr](../caic-adr/SKILL.md)), and to the PR description when it isn't; a **constraint** goes in a comment beside the code it constrains; **anything a consumer needs** goes to the docs or the release notes. A decision that gets deleted with the plan is one the next person re-litigates.
 
 ## Anti-patterns
 
@@ -146,13 +180,15 @@ Resolve what the review surfaces and bake the resolutions into the plan files be
 - **Missing the "out of scope" section.** Without it, every reviewer comment becomes a scope expansion request.
 - **Bare numeric filenames** (`PLAN-1.md`). A number alone doesn't survive grep or a glance at the file tree. Always include the kebab-case title slug.
 - **Narrating merged work.** A status cell (`DONE`, `blocked on #N`) in the step table is how a cold resume finds its place — keep it current, and let `DONE` mean merged. If you can't confirm that from `git log`, leave the cell blank; a wrong `DONE` is worse than an empty one. Prose about _how_ a merged step went does not belong; that is what the commit and the PR are for. When the last step merges the whole plan goes, status cells included.
-- **Criteria on both sides of the fork.** A plan that files issues _and_ writes per-step criteria has two lists that will disagree. Pick the fork, and let the artifact that outlives the plan hold them.
-- **Weakening a proof instead of amending a criterion.** Once a plan is approved its criteria are frozen — correct one through the amendment route above, never by making its proof weaker. Loosening an assertion, deleting a case, skipping a case, or regenerating a snapshot to match current output all turn the light green while leaving the criterion looking untouched, which is what makes this worse than missing the target outright. Same rule [caic-issue](../caic-issue/SKILL.md) states for a filed issue's criteria; catching it in a diff is [caic-review](../caic-review/SKILL.md)'s job.
+- **Criteria in the issue, or outcomes in the plan.** Proofs written into an issue make its author the designer; outcomes restated in a plan drift from the issue they came from. The issue holds outcomes, the plan holds criteria.
+- **Adopting a suggested fix unexamined.** The issue's author wrote it before anyone opened the code. Verify its premise and weigh an alternative first — see [Planning against an issue](#planning-against-an-issue).
+- **Weakening a proof instead of amending a criterion.** Once a plan is approved its criteria are frozen — correct one through the amendment route above, never by making its proof weaker. Loosening an assertion, deleting a case, skipping a case, or regenerating a snapshot to match current output all turn the light green while leaving the criterion looking untouched, which is what makes this worse than missing the target outright. None of them is an amendment. Catching one in a diff is [caic-review](../caic-review/SKILL.md)'s job.
 - **Skipping the review phase.** An unreviewed plan hands its unverified assumptions straight to the executor.
 
 ## Related guidance
 
 - [plan-review.md](references/plan-review.md) — the review rubric this workflow closes with
+- [api-contract.md](references/api-contract.md) — the locks behind Public API surface, and posting the proposal
 - [revision-pass.md](../caic-copy-writer/references/revision-pass.md) — the tightening pass a plan takes before hand-off
 - [tone.md](../../../references/tone.md) — voice and quick rules for the plan itself
 - [epic-authoring.md](../caic-issue/references/epic-authoring.md) — projecting a plan onto a GitHub epic

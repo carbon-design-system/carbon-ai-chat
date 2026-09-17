@@ -14,7 +14,9 @@ import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
 
 import {
   BusEvent,
+  BusEventHistoryBegin,
   BusEventMessageItemCustom,
+  BusEventPreReceive,
   BusEventType,
   BusEventViewChange,
   BusEventViewPreChange,
@@ -28,17 +30,24 @@ import {
   PublicConfig,
   RenderUserDefinedState,
   RenderCustomMessageFooter,
+  RenderCustomRequestFooter,
   ServiceDesk,
   ServiceDeskFactoryParameters,
 } from '@carbon/ai-chat';
 import { AISkeletonPlaceholder } from '@carbon/react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
+import { addCustomFooterSlots } from '../framework/custom-footer-slots';
 import { Settings } from '../framework/types';
 import { UserDefinedResponseExample } from './UserDefinedResponseExample';
 import { WriteableElementExample } from './WriteableElementExample';
 import { WorkspaceWriteableElementExample } from './WorkspaceWriteableElementExample';
-import { CustomFooterExample } from './CustomFooterExample';
 import { HistoryWriteableElementExample } from './HistoryWriteableElementExample';
 import {
   ExplainabilityPopoverActions,
@@ -149,21 +158,36 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   );
 
   /**
-   * Handler for custom footer slot.
+   * Both footer slots follow the same slot-visibility toggle as the writeable elements, and fill with the same
+   * green box. Returning null with the slots hidden leaves the chat's own footer wrapper empty, which costs the
+   * message no height.
    */
+  const showSlots = settings.writeableElements === 'true';
+
+  // The event handlers below are registered once in onBeforeRender, so they read the toggle through a ref.
+  const showSlotsRef = useRef(showSlots);
+  showSlotsRef.current = showSlots;
+
   const renderCustomMessageFooter: RenderCustomMessageFooter = useCallback(
-    (slotName, message, messageItem, instance, additionalData) => {
-      return (
-        <CustomFooterExample
-          slotName={slotName}
-          message={message}
-          messageItem={messageItem}
-          instance={instance}
-          additionalData={additionalData}
+    () =>
+      showSlots ? (
+        <WriteableElementExample
+          location="renderCustomMessageFooter"
+          parentStateText={stateText}
         />
-      );
-    },
-    []
+      ) : null,
+    [showSlots, stateText]
+  );
+
+  const renderCustomRequestFooter: RenderCustomRequestFooter = useCallback(
+    () =>
+      showSlots ? (
+        <WriteableElementExample
+          location="renderCustomRequestFooter"
+          parentStateText={stateText}
+        />
+      ) : null,
+    [showSlots, stateText]
   );
 
   /**
@@ -279,13 +303,11 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
    */
   const renderWriteableElements = useMemo(() => {
     const isCustomHomeScreen = config.homescreen?.customContentOnly === true;
-    const showAllWriteableElements = settings.writeableElements === 'true';
-    const showHomeScreenElements =
-      !showAllWriteableElements && isCustomHomeScreen;
+    const showHomeScreenElements = !showSlots && isCustomHomeScreen;
 
     let elements;
 
-    if (showAllWriteableElements) {
+    if (showSlots) {
       const {
         explainabilityPopoverContent: _explainabilityPopoverContent,
         explainabilityPopoverActions: _explainabilityPopoverActions,
@@ -312,7 +334,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       explainabilityPopoverActions:
         allWriteableElements.explainabilityPopoverActions,
     };
-  }, [allWriteableElements, settings.writeableElements, config.homescreen]);
+  }, [allWriteableElements, showSlots, config.homescreen]);
 
   const onBeforeRender = (instance: ChatInstance) => {
     setInstance(instance);
@@ -369,6 +391,27 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
     // Handle feedback event.
     instance.on({ type: BusEventType.FEEDBACK, handler: feedbackHandler });
+
+    // With the slots shown, replies get a footer slot before the chat reads them: live ones on pre:receive, restored
+    // ones on history:begin, which never passes through pre:receive.
+    instance.on({
+      type: BusEventType.PRE_RECEIVE,
+      handler: (event: BusEvent) => {
+        if (showSlotsRef.current) {
+          addCustomFooterSlots((event as BusEventPreReceive).data);
+        }
+      },
+    });
+    instance.on({
+      type: BusEventType.HISTORY_BEGIN,
+      handler: (event: BusEvent) => {
+        if (showSlotsRef.current) {
+          (event as BusEventHistoryBegin).messages.forEach(
+            addCustomFooterSlots
+          );
+        }
+      },
+    });
   };
 
   /**
@@ -451,6 +494,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
       onBeforeRender={onBeforeRender}
       renderUserDefinedResponse={renderUserDefinedResponse}
       renderCustomMessageFooter={renderCustomMessageFooter}
+      renderCustomRequestFooter={renderCustomRequestFooter}
       renderWriteableElements={renderWriteableElements}
       serviceDeskFactory={serviceDeskFactory}
     />
@@ -466,6 +510,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
         onBeforeRender={onBeforeRender}
         renderUserDefinedResponse={renderUserDefinedResponse}
         renderCustomMessageFooter={renderCustomMessageFooter}
+        renderCustomRequestFooter={renderCustomRequestFooter}
         renderWriteableElements={renderWriteableElements}
         serviceDeskFactory={serviceDeskFactory}
       />

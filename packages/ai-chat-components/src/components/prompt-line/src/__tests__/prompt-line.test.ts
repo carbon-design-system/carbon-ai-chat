@@ -64,7 +64,47 @@ async function waitForRich(el: PromptLineElement): Promise<void> {
     // eslint-disable-next-line no-await-in-loop
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
-  throw new Error('rich editor did not load');
+  throw new Error(`rich editor did not load - ${await describeUpgrade(el)}`);
+}
+
+/**
+ * Why the upgrade never finished. Every way it can stall ends at the same
+ * poll timeout, so without this a failure says only that the editor is
+ * absent: a bailed-out load, an upgrade parked on a `compositionend` that
+ * never arrives, and a mount that threw after `_mode` flipped to `rich` all
+ * look identical. Reads private state on purpose - it runs only once the
+ * test has already failed.
+ */
+async function describeUpgrade(el: PromptLineElement): Promise<string> {
+  const internals = el as unknown as {
+    _mode?: string;
+    _upgrading?: boolean;
+    _pendingUpgrade?: boolean;
+    _isComposing?: boolean;
+    _editorHost?: unknown;
+    _controller?: { getEditor?: () => unknown } | null;
+  };
+  // A parked upgrade leaves ensureEditor() pending forever, so cap the wait
+  // rather than trading a readable failure for a Mocha timeout.
+  const ensure = await Promise.race([
+    el.ensureEditor().then(
+      () => 'resolved',
+      (error: unknown) => `rejected(${String(error)})`
+    ),
+    new Promise<string>((resolve) => {
+      setTimeout(() => resolve('pending'), 250);
+    }),
+  ]);
+  return [
+    `mode=${internals._mode}`,
+    `upgrading=${internals._upgrading}`,
+    `pendingUpgrade=${internals._pendingUpgrade}`,
+    `composing=${internals._isComposing}`,
+    `hasHost=${Boolean(internals._editorHost)}`,
+    `controllerEditor=${Boolean(internals._controller?.getEditor?.())}`,
+    `connected=${el.isConnected}`,
+    `ensureEditor=${ensure}`,
+  ].join(' ');
 }
 
 describe('<cds-aichat-prompt-line> (textarea mode)', function () {
@@ -402,6 +442,60 @@ describe('<cds-aichat-prompt-line> accessible name', function () {
     ) as HTMLElement;
     expect(pm.getAttribute('aria-label')).to.equal('Ask a question');
     expect(pm.getAttribute('role')).to.equal('textbox');
+  });
+});
+
+describe('<cds-aichat-prompt-line> accessible placeholder', function () {
+  it('places native placeholder and NO aria-placeholder on the textarea in textarea mode', async () => {
+    const el = await makePromptLine({ placeholder: 'Ask a question' });
+    expect(getTextarea(el).placeholder).to.equal('Ask a question');
+    expect(getTextarea(el).hasAttribute('aria-placeholder')).to.equal(false);
+  });
+
+  it('places aria-placeholder on the ProseMirror contenteditable in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+  });
+
+  it('updates aria-placeholder dynamically in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+
+    el.placeholder = 'Search';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Search');
+  });
+
+  it('removes aria-placeholder in rich mode if placeholder is set to empty string', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+
+    el.placeholder = '';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(pm.hasAttribute('aria-placeholder')).to.equal(false);
   });
 });
 

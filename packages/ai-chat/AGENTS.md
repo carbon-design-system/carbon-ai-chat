@@ -74,7 +74,7 @@ See [definition-of-done.md](../../references/definition-of-done.md) for the gate
 
 - **Public API changes**: anything exported from `aiChatEntry.tsx`, `serverEntry.ts`, or `types/` is semver-visible. Coordinate with a `feat`/`fix!`/`BREAKING CHANGE` footer. JSDoc/TypeDoc rules: [src/types/AGENTS.md](src/types/AGENTS.md).
 - **Store**: see [src/chat/store/AGENTS.md](src/chat/store/AGENTS.md). Reducers stay pure; side effects go through services or `store/actions.ts` / `store/subscriptions.ts`. `humanAgentReducers.ts` is a separate slice on purpose.
-- **Services**: see [services.md](references/services.md). Wire through `ServiceManager` and `loadServices`; dispose in `ChatInstanceImpl.destroy()` and the matching `unloadServices()`.
+- **Services**: see [services.md](references/services.md). Wire through `ServiceManager` and `loadServices`. Nothing disposes a service on unmount yet, so a subscription or timer you add outlives the mount until teardown lands (#1681).
 - **i18n**: no user-visible strings in code. Route through `languages/`.
 - **Tests**: see [tests.md](references/tests.md). Colocate helpers in `tests/test_helpers.ts`. Store tests exercise reducers directly; service tests use the mocks in `tests/services/`.
 - **SCSS / RTL / prefix discipline**: see [code-patterns.md](../../references/code-patterns.md). Prefix discipline is build-breaking — never hardcode `cds--`; use `#{$prefix}--` in SCSS and the prefix helpers in TS.

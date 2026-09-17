@@ -153,6 +153,7 @@ function ChatCustomElement(
     renderUserDefinedResponse,
     renderUserDefinedInputNode,
     renderCustomMessageFooter,
+    renderCustomRequestFooter,
     renderWriteableElements,
     className,
     id,
@@ -235,6 +236,7 @@ function ChatCustomElement(
           renderUserDefinedResponse={renderUserDefinedResponse}
           renderUserDefinedInputNode={renderUserDefinedInputNode}
           renderCustomMessageFooter={renderCustomMessageFooter}
+          renderCustomRequestFooter={renderCustomRequestFooter}
           renderWriteableElements={renderWriteableElements}
           element={containerRef.current}
         />
