@@ -218,8 +218,7 @@ class ConfirmModal extends Component<
 
 /**
  * Thin functional helper that announces the modal's appearance to screen readers
- * on mount and whenever the message changes. Uses `useAriaAnnouncer` in place of
- * the removed `AriaLiveMessage` component so no separate aria directory is needed.
+ * on mount and whenever the message changes.
  */
 function ModalAnnounce({ message }: { message: string }): null {
   const ariaAnnouncer = useAriaAnnouncer();
