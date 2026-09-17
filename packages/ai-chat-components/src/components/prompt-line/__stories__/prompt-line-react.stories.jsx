@@ -239,6 +239,11 @@ export const Default = {
     errorDescription,
     errorCollapsible,
     errorFullscreen,
+    isStopStreamingButtonVisible,
+    disableSend,
+    isStopStreamingButtonDisabled,
+    buttonLabel,
+    stopResponseLabel,
   }) => {
     const [hasValidInput, setHasValidInput] = useState(false);
 
@@ -279,7 +284,13 @@ export const Default = {
             slot="send-control"
             disabled={disabled}
             hasValidInput={hasValidInput}
+            isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+            disableSend={disableSend}
+            isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+            buttonLabel={buttonLabel}
+            stopResponseLabel={stopResponseLabel}
             onSend={() => action('cds-aichat-input-send')()}
+            onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
           />
         </PromptLineShell>
       </Wrapper>
@@ -313,6 +324,11 @@ const CommandsAndMentionsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
   attached,
 }) => {
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -400,7 +416,13 @@ const CommandsAndMentionsStory = ({
             slot="send-control"
             disabled={disabled}
             hasValidInput={hasValidInput}
+            isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+            disableSend={disableSend}
+            isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+            buttonLabel={buttonLabel}
+            stopResponseLabel={stopResponseLabel}
             onSend={() => action('cds-aichat-input-send')()}
+            onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
           />
         </PromptLineShell>
       </div>
@@ -452,6 +474,11 @@ const ConversationStartersStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
   attached,
   disableDirectSend,
 }) => {
@@ -536,7 +563,13 @@ const ConversationStartersStory = ({
           slot="send-control"
           disabled={disabled}
           hasValidInput={hasValidInput}
+          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+          disableSend={disableSend}
+          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+          buttonLabel={buttonLabel}
+          stopResponseLabel={stopResponseLabel}
           onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
         />
       </PromptLineShell>
     </WrapperBottom>
@@ -561,6 +594,11 @@ const FileUploadsStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
 }) => {
   const [uploads, setUploads] = useState([]);
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -659,7 +697,13 @@ const FileUploadsStory = ({
           slot="send-control"
           disabled={disabled}
           hasValidInput={hasValidInputOrUploads}
+          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+          disableSend={disableSend}
+          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+          buttonLabel={buttonLabel}
+          stopResponseLabel={stopResponseLabel}
           onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
         />
       </PromptLineShell>
     </Wrapper>
@@ -688,6 +732,11 @@ const TypeaheadStory = ({
   errorDescription,
   errorCollapsible,
   errorFullscreen,
+  isStopStreamingButtonVisible,
+  disableSend,
+  isStopStreamingButtonDisabled,
+  buttonLabel,
+  stopResponseLabel,
   attached,
   disableDirectSend,
 }) => {
@@ -765,7 +814,13 @@ const TypeaheadStory = ({
           slot="send-control"
           disabled={disabled}
           hasValidInput={hasValidInput}
+          isStopStreamingButtonVisible={isStopStreamingButtonVisible}
+          disableSend={disableSend}
+          isStopStreamingButtonDisabled={isStopStreamingButtonDisabled}
+          buttonLabel={buttonLabel}
+          stopResponseLabel={stopResponseLabel}
           onSend={() => action('cds-aichat-input-send')()}
+          onStopStreaming={() => action('cds-aichat-input-stop-streaming')()}
         />
       </PromptLineShell>
     </WrapperBottom>
@@ -814,6 +869,16 @@ const PromptLineAPI = {
     autofocus: {
       control: 'boolean',
       description: 'Focus the surface on mount.',
+    },
+    extensions: {
+      control: false,
+      description:
+        'Array of Tiptap extensions built via `buildCarbonExtensions()`. Staged when provided — does not trigger the rich upgrade on its own; set `rich` or call `ensureEditor()` to activate. Extensions are compared by value; passing a stable reference (e.g. from `useMemo`) avoids unnecessary editor rebuilds.',
+    },
+    content: {
+      control: false,
+      description:
+        'Initial or controlled content. Accepts a plain string or a Tiptap `JSONContent` document. In textarea mode `JSONContent` is flattened to plain text.',
     },
   },
   args: {
@@ -903,11 +968,11 @@ const CDSAIChatInputSendControlAPI = {
       control: 'boolean',
       description: 'Disables only the send button (independent of `disabled`).',
     },
-    showStopStreaming: {
+    isStopStreamingButtonVisible: {
       control: 'boolean',
       description: 'Swaps the send button for the stop-streaming button.',
     },
-    disableStopStreaming: {
+    isStopStreamingButtonDisabled: {
       control: 'boolean',
       description: 'Disables the stop-streaming button.',
     },
@@ -924,8 +989,8 @@ const CDSAIChatInputSendControlAPI = {
     hasValidInput: false,
     disabled: false,
     disableSend: false,
-    showStopStreaming: false,
-    disableStopStreaming: false,
+    isStopStreamingButtonVisible: false,
+    isStopStreamingButtonDisabled: false,
     buttonLabel: 'Send',
     stopResponseLabel: 'Stop response',
   },
