@@ -13,9 +13,12 @@ Workspace naming: `@carbon/ai-chat-examples-react-<slug>`.
 
 ## Smoke-test setup
 
-Reference setups: [`./tests-jest-jsdom/`](./tests-jest-jsdom/) and [`./tests-jest-happydom/`](./tests-jest-happydom/) — `jest.config.js`, `babel.config.js`, plus a spec under `src/`. **Default to jsdom**; use happy-dom only when the example's APIs need it (layout measurement, certain form behaviors).
+Playwright is the smoke-test mechanism. Copy [`./basic-custom-element-fullscreen/`](./basic-custom-element-fullscreen/) — it is the React golden. Conventions and steps: [playwright.md](../references/playwright.md).
 
-A sufficient spec mounts root, asserts no error, and exercises the main claimed API (e.g. one message via `customSendMessage`).
+The other runners here are what their example demonstrates, not a pattern to copy:
+
+- [`./tests-jest-jsdom/`](./tests-jest-jsdom/) and [`./tests-jest-happydom/`](./tests-jest-happydom/) show Jest integration. Both keep `test` for Jest, and both are skipped for Playwright — they have no page to serve.
+- [`./frameworks-vite/`](./frameworks-vite/) shows Vite integration and keeps `test` for its vitest suite.
 
 ## APIs-and-props table headers
 

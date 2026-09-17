@@ -25,15 +25,18 @@ When `npm run aiChat:start` is running in another terminal, example Vite dev ser
 
 ## Smoke tests
 
-- Examples should have Playwright tests testing the functionality of the example.
+Playwright is the smoke-test mechanism for examples. The script is always `test:e2e`, never `test` — `frameworks-vite` and both `tests-jest-*` examples already use `test` for their own runner.
 
-See [Examples smoke tests](references/playwright.md) for instructions on creating those tests.
+Read [playwright.md](references/playwright.md) before adding or changing an example's tests. It carries the goldens to copy, how a port is allocated, the selector rules, and the four examples that are deliberately skipped.
 
 ## Definition of done
 
 - `npm run build --workspace=<example>` exits 0.
-- `npm run test --workspace=<example>` passes (if the example has tests).
+- `npm run test:e2e --workspace=<example>` passes, if the example has a Playwright suite.
+- `npm run test --workspace=<example>` passes, if the example owns a unit runner.
 - README follows the [Indexer Contract](references/indexer-contract.md).
+
+A Playwright suite is **not** required here yet: most examples have none, so the requirement would fail repo-wide today. Hardening this list to require one, with the four skips carved out, is the closing step of [issue #1424](https://github.com/carbon-design-system/carbon-ai-chat/issues/1424).
 
 ## Authoring rules
 
