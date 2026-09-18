@@ -32,8 +32,16 @@
  * ```
  */
 
-import React from 'react';
-import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils';
+import React, { FunctionComponent } from 'react';
+import {
+  CarbonIcon,
+  CarbonIconDescriptor,
+} from '@carbon/web-components/es/globals/internal/icon-loader-utils';
+
+type CarbonIconProps = React.SVGProps<SVGSVGElement> & {
+  slot?: string;
+  [key: string]: unknown;
+};
 
 // Global cache for transformed icons using WeakMap to key by component reference
 const iconCache = new WeakMap<
@@ -203,4 +211,34 @@ function isValidCarbonIcon(descriptor: any): descriptor is CarbonIcon {
 function extractIconName(props: any): string {
   // Try various properties that might contain the icon name
   return props['data-icon-name'] || props['aria-label'] || props.name || 'icon';
+}
+
+/**
+ * Creates a React component from a `CarbonIconDescriptor` (a raw `@carbon/icons` import).
+ *
+ * @example
+ * import Launch16 from '@carbon/icons/es/launch/16';
+ * const LaunchIcon = carbonIconToReact(Launch16);
+ * <LaunchIcon aria-label="Launch" className="icon" />
+ */
+export function carbonIconToReact(
+  icon: CarbonIconDescriptor
+): FunctionComponent<CarbonIconProps> {
+  return function IconComponent(props: CarbonIconProps = {}) {
+    return React.createElement(
+      'svg',
+      {
+        ...icon.attrs,
+        width: icon.attrs.width || 16,
+        height: icon.attrs.height || 16,
+        fill: icon.attrs.fill || 'currentColor',
+        focusable: 'false',
+        style: { pointerEvents: 'none' },
+        ...props,
+      },
+      icon.content.map((child, i) =>
+        React.createElement(child.elem, { key: i, ...(child.attrs || {}) })
+      )
+    );
+  };
 }
