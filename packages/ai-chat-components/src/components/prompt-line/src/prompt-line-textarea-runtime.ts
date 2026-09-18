@@ -390,11 +390,6 @@ export class TextareaController
         event.preventDefault();
         this._dispatch('cds-aichat-prompt-send-intent');
       }
-      return;
-    }
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this._textarea?.blur();
     }
   };
 

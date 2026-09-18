@@ -42,6 +42,15 @@ function getTextarea(el: PromptLineElement): HTMLTextAreaElement {
   return el.querySelector('[slot="editor"] textarea') as HTMLTextAreaElement;
 }
 
+/** Walk into nested shadow roots to find the actual focused element. */
+function getDeepActiveElement(): Element | null {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  return active;
+}
+
 /** Type text by setting the value and firing the native `input` event. */
 function typeInto(el: PromptLineElement, value: string): void {
   const ta = getTextarea(el);
@@ -496,6 +505,53 @@ describe('<cds-aichat-prompt-line> accessible placeholder', function () {
     await el.updateComplete;
     await Promise.resolve();
     expect(pm.hasAttribute('aria-placeholder')).to.equal(false);
+  });
+});
+
+describe('<cds-aichat-prompt-line> Escape key focus retention', function () {
+  it('keeps focus in the textarea on Escape', async () => {
+    const el = await makePromptLine();
+    const ta = getTextarea(el);
+    ta.focus();
+    ta.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+    expect(getDeepActiveElement()).to.equal(ta);
+  });
+
+  it('keeps focus in the ProseMirror contenteditable on Escape', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm).to.not.equal(null);
+    pm.focus();
+    pm.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+    expect(getDeepActiveElement()).to.equal(pm);
+  });
+
+  it('does not preventDefault on Escape so a host <dialog> can close', async () => {
+    const el = await makePromptLine();
+    const ta = getTextarea(el);
+    ta.focus();
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    ta.dispatchEvent(event);
+    expect(event.defaultPrevented).to.equal(false);
   });
 });
 
