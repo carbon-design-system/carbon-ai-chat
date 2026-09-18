@@ -31,6 +31,7 @@ import '@carbon/web-components/es/components/menu/index.js';
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
 import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
 import { createOverflowHandler } from '@carbon/utilities';
+import { carbonIconToReact } from '../../../globals/utils/iconTransform';
 
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
@@ -51,6 +52,9 @@ import {
   dummyActions,
   filterItems,
 } from './story-data.js';
+
+const OverflowIcon = carbonIconToReact(OverflowMenuVertical16);
+const AddLargeIcon = carbonIconToReact(AddLarge16);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,27 +77,6 @@ const Hint = ({ children }) => (
 );
 
 const InlineCode = ({ children }) => <code>{children}</code>;
-
-/**
- * Renders a CarbonIcon descriptor as a React <svg> element in a named slot.
- * Mirrors the carbonIconToReact() utility used in InputActionsInline.
- */
-const CarbonIconSlot = ({ icon, slot }) =>
-  React.createElement(
-    'svg',
-    {
-      slot,
-      ...icon.attrs,
-      width: icon.attrs.width || 16,
-      height: icon.attrs.height || 16,
-      fill: icon.attrs.fill || 'currentColor',
-      focusable: 'false',
-      style: { pointerEvents: 'none' },
-    },
-    icon.content.map((child, i) =>
-      React.createElement(child.elem, { key: i, ...(child.attrs || {}) })
-    )
-  );
 
 /**
  * Mirrors InputActionsInline from @carbon/ai-chat: renders each action as a
@@ -140,20 +123,23 @@ const InlineActions = ({ actions, disabled }) => {
         className="prompt-line-story-inline-actions"
         style={{ position: 'relative' }}
         data-measuring={measuring ? '' : undefined}>
-        {actions.map((a) => (
-          <cds-icon-button
-            key={a.text}
-            size="sm"
-            kind="ghost"
-            align="top-start"
-            enter-delay-ms="0"
-            leave-delay-ms="0"
-            disabled={disabled || a.disabled}
-            onClick={a.onClick}>
-            <CarbonIconSlot icon={a.icon} slot="icon" />
-            <span slot="tooltip-content">{a.text}</span>
-          </cds-icon-button>
-        ))}
+        {actions.map((a) => {
+          const Icon = carbonIconToReact(a.icon);
+          return (
+            <cds-icon-button
+              key={a.text}
+              size="sm"
+              kind="ghost"
+              align="top-start"
+              enter-delay-ms="0"
+              leave-delay-ms="0"
+              disabled={disabled || a.disabled}
+              onClick={a.onClick}>
+              <Icon slot="icon" />
+              <span slot="tooltip-content">{a.text}</span>
+            </cds-icon-button>
+          );
+        })}
 
         <div
           data-offset=""
@@ -167,7 +153,7 @@ const InlineActions = ({ actions, disabled }) => {
             leave-delay-ms="0"
             disabled={disabled || undefined}
             onClick={() => setMenuOpen((o) => !o)}>
-            <CarbonIconSlot icon={OverflowMenuVertical16} slot="icon" />
+            <OverflowIcon slot="icon" />
             <span slot="tooltip-content">More actions</span>
           </cds-icon-button>
 
@@ -514,7 +500,7 @@ const ConversationStartersStory = ({
     action('cds-aichat-prompt-change')(e.detail);
   }, []);
 
-  const toggleIcon = startersEnabled ? ChatOff16 : Chat16;
+  const ToggleIcon = carbonIconToReact(startersEnabled ? ChatOff16 : Chat16);
   const toggleLabel = startersEnabled
     ? 'Hide conversation starters'
     : 'Show conversation starters';
@@ -555,7 +541,7 @@ const ConversationStartersStory = ({
             leave-delay-ms="0"
             disabled={disabled || hasValidInput || undefined}
             onClick={() => setStartersEnabled((prev) => !prev)}>
-            <CarbonIconSlot icon={toggleIcon} slot="icon" />
+            <ToggleIcon slot="icon" />
             <span slot="tooltip-content">{toggleLabel}</span>
           </cds-icon-button>
         </div>
@@ -689,7 +675,7 @@ const FileUploadsStory = ({
             leave-delay-ms="0"
             disabled={disabled || undefined}
             onClick={onAttachClick}>
-            <CarbonIconSlot icon={AddLarge16} slot="icon" />
+            <AddLargeIcon slot="icon" />
             <span slot="tooltip-content">Attach file</span>
           </cds-icon-button>
         </div>
