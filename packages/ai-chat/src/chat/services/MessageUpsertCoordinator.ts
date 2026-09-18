@@ -304,13 +304,13 @@ class MessageUpsertCoordinator {
         // Reducer reused this item verbatim — nothing changed for slots to react to.
         continue;
       }
-      // eslint-disable-next-line no-await-in-loop
+
       await chatActions.handleUserDefinedResponseItems(
         localItem,
         result,
         nextState
       );
-      // eslint-disable-next-line no-await-in-loop
+
       await chatActions.handleCustomFooterSlot(localItem, result);
     }
   }

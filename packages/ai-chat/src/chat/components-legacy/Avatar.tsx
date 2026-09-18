@@ -7,8 +7,6 @@
  *  @license
  */
 
-/* eslint-disable react/forbid-dom-props */
-
 /**
  * Light and dark versions of the watsonx logo sourced from https://ibm.ent.box.com/s/ptn44fwqwbfu2i83poh4tk21a1lun3yn/folder/222574830530
  */

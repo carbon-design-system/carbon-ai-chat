@@ -48,7 +48,7 @@ function buildFlattenedProperties(): PropertyDeclarations {
  * without emitting any runtime class field (so nothing shadows the accessors
  * Lit installs from `static properties`).
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+
 interface FlattenedConfigElement extends Partial<PublicConfig> {}
 
 /**

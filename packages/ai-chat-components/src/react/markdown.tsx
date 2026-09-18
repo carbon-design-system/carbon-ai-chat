@@ -233,7 +233,7 @@ const Markdown = forwardRef<CDSAIChatMarkdown, MarkdownProps>(function Markdown(
   // flickering out as later content arrives). Reading `isConnected` a
   // microtask later lets Lit's adoption land first, so we only drop
   // genuinely-removed hosts.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     let cancelled = false;
     queueMicrotask(() => {

@@ -64,7 +64,6 @@ const fixHostPseudo = () => ({
               // suppress warning when `:host` has no args, and nothing to hoist
               // which is correct
               if (pseudo.nodes.length > 0) {
-                // eslint-disable-next-line no-console
                 console.warn(
                   'Found :host() with more than one child or with a non-selector child. Skipping...'
                 );

@@ -156,7 +156,7 @@ function findFileRecursive(dir, filename) {
         }
       }
     }
-  } catch (err) {
+  } catch (_err) {
     // Ignore permission errors, etc.
     return null;
   }

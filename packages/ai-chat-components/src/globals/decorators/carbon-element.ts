@@ -25,7 +25,7 @@ interface ClassElement {
   kind: 'field' | 'method';
   key: PropertyKey;
   placement: 'static' | 'prototype' | 'own';
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   initializer?: Function;
   extras?: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => void | Constructor<T>;
@@ -40,7 +40,7 @@ type CustomElementClass = Omit<typeof HTMLElement, 'new'>;
 const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
   try {
     customElements.define(tagName, clazz as CustomElementConstructor);
-  } catch (error) {
+  } catch (_error) {
     // console.warn(`Attempting to re-define ${tagName}`);
   }
   // Cast as any because TS doesn't recognize the return type as being a
@@ -48,7 +48,7 @@ const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
   // `Constructor<HTMLElement>` for some reason.
   // `Constructor<HTMLElement>` is helpful to make sure the decorator is
   // applied to elements however.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   return clazz as any;
 };
 
@@ -64,7 +64,7 @@ const standardCustomElement = (
     finisher(clazz: Constructor<HTMLElement>) {
       try {
         customElements.define(tagName, clazz);
-      } catch (error) {
+      } catch (_error) {
         // console.warn(`Attempting to re-define ${tagName}`);
       }
     },

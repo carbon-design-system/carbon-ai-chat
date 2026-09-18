@@ -35,7 +35,7 @@ function convertPossibleStringifiedArrayToFirstString(str: string): string {
   if (typeof str === 'string' && str.startsWith('["') && str.endsWith('"]')) {
     try {
       [str] = JSON.parse(str);
-    } catch (error) {
+    } catch (_error) {
       // Not an array of strings, so do nothing.
     }
   }

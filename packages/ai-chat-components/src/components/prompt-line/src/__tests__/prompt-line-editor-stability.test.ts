@@ -48,7 +48,7 @@ async function waitForRich(el: PromptLineElement): Promise<void> {
     if (el.getEditor()) {
       return;
     }
-    // eslint-disable-next-line no-await-in-loop
+
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
   throw new Error('rich editor did not load');

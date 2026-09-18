@@ -27,11 +27,11 @@ if (!registeredConstructor) {
   throw new Error('cds-aichat-markdown was not registered');
 }
 
-const MarkdownElementConstructor =
+const _MarkdownElementConstructor =
   (registeredConstructor as typeof CDSAIChatMarkdownElement) ??
   CDSAIChatMarkdownElement;
 
-type MarkdownElementInstance = InstanceType<typeof MarkdownElementConstructor>;
+type MarkdownElementInstance = InstanceType<typeof _MarkdownElementConstructor>;
 
 describe('cds-aichat-markdown smoke test', () => {
   it('renders markdown when markdown property is provided', async () => {

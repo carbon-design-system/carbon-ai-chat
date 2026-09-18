@@ -70,7 +70,6 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
   }
 
   return (
-    // eslint-disable-next-line react/forbid-dom-props
     <div className="cds-aichat--inline-i-frame" ref={iframeRef}>
       <IFrameComponent
         source={source}
