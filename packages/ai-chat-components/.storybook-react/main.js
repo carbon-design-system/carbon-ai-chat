@@ -46,6 +46,12 @@ export default {
     name: getAbsolutePath('@storybook/react-vite'),
     options: {},
   },
+  // react-docgen@8 uses Babel 7 APIs that are incompatible with @babel/core@8.
+  // Disable it here; prop tables in the docs tab will be absent but all visual
+  // stories still render correctly. Re-enable once react-docgen ships Babel 8 support.
+  typescript: {
+    reactDocgen: false,
+  },
   features: {
     storyStoreV7: true,
   },
