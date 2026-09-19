@@ -61,7 +61,7 @@ async function waitForRich(el: PromptLineElement): Promise<void> {
     if (el.getEditor()) {
       return;
     }
-    // eslint-disable-next-line no-await-in-loop
+
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
   throw new Error(`rich editor did not load - ${await describeUpgrade(el)}`);
@@ -281,7 +281,6 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
     // deferred — swapping the textarea out mid-composition would drop the
     // half-composed candidate.
     for (let i = 0; i < 10; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
     expect(el.getEditor()).to.equal(null);

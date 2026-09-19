@@ -172,7 +172,7 @@ export class VimeoProvider extends BaseProvider {
           new Error(this.config.errorMessage || 'Failed to load video')
         );
       });
-    } catch (error) {
+    } catch (_error) {
       if (this.iframe) {
         this.updateAriaAttributes(this.iframe, 'error');
       }

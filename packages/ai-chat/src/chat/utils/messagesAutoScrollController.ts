@@ -830,7 +830,6 @@ function applySafariScrollAnchoringRestore(
 
 function debugAutoScroll(message: string): void {
   if (DEBUG_AUTO_SCROLL) {
-    // eslint-disable-next-line no-console
     console.log(message);
   }
 }
@@ -1598,7 +1597,7 @@ export class MessagesScrollController {
       this.scheduleAutoScroll(options, false);
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
-      // eslint-disable-next-line no-console
+
       console.error('An error occurred while attempting to scroll.', error);
     }
   };
@@ -1613,7 +1612,7 @@ export class MessagesScrollController {
       this.scheduleAutoScroll(options, true);
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
-      // eslint-disable-next-line no-console
+
       console.error('An error occurred while attempting to scroll.', error);
     }
   };
@@ -1718,7 +1717,7 @@ export class MessagesScrollController {
       }
     } catch (error) {
       // Just ignore any errors. It's not the end of the world if scrolling doesn't work for any reason.
-      // eslint-disable-next-line no-console
+
       console.error('An error occurred while attempting to scroll.', error);
     }
   }

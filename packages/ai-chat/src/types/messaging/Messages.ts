@@ -170,7 +170,6 @@ type StructuredFieldType =
   | 'command'
   // `string & {}` widens to any string while keeping the three literals in
   // autocomplete — a plain `| string` would collapse the whole union to `string`.
-  // eslint-disable-next-line @typescript-eslint/ban-types
   | (string & {});
 
 /**
@@ -299,7 +298,7 @@ interface StructuredData {
   /**
    * Escape hatch: arbitrary key-value data for user-defined implementations.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   user_defined?: Record<string, any>;
 }
 

@@ -202,7 +202,7 @@ export interface TriggerSuggestionConfig extends Omit<
  * BaseSuggestionConfig page instead. An interface gives this type its own
  * symbol, which survives the lookup.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+
 export interface AutocompleteConfig extends BaseSuggestionConfig {}
 
 /**

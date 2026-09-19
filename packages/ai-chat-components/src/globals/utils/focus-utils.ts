@@ -185,7 +185,6 @@ function* walkComposedTree(
   }
 
   const children =
-    // eslint-disable-next-line no-nested-ternary
     node instanceof HTMLElement && node.shadowRoot
       ? node.shadowRoot.children
       : node instanceof HTMLSlotElement

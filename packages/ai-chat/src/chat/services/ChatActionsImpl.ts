@@ -1927,7 +1927,6 @@ class ChatActionsImpl {
             partialMessage.ui_state_internal.agent_no_service_desk = true;
           }
 
-          // eslint-disable-next-line no-await-in-loop
           const agentAvailability =
             await this.serviceManager.humanAgentService?.checkAreAnyHumanAgentsOnline(
               fullMessage
@@ -1982,7 +1981,7 @@ class ChatActionsImpl {
           // If this message is a pause, then just sleep for the pause duration before continuing. We don't actually
           // render anything for this message since it's really an instruction so we won't create a LocalMessage for
           // it and it won't be added to the redux store.
-          // eslint-disable-next-line no-await-in-loop
+
           await sleep((messageItem as PauseItem).time);
 
           if (
@@ -1994,13 +1993,13 @@ class ChatActionsImpl {
         } else {
           // In order to ensure that the addMessages get called in correct order, we need to add an `await` here to
           // pause further processing until this one is sent.
-          // eslint-disable-next-line no-await-in-loop
+
           await this.handleUserDefinedResponseItems(
             localMessageItem,
             fullMessage,
             MessageState.COMPLETE
           );
-          // eslint-disable-next-line no-await-in-loop
+
           await this.handleCustomFooterSlot(localMessageItem, fullMessage);
           if (
             !localMessageItem.item.user_defined?.silent &&

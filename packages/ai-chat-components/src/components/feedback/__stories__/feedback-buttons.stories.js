@@ -238,7 +238,6 @@ class FeedbackButtonsDetailsDemo extends LitElement {
       selectedCategories: details?.selectedCategories || [],
     };
 
-    // eslint-disable-next-line no-console
     console.log(
       `[Feedback Demo] ${
         isPositive ? 'Positive' : 'Negative'

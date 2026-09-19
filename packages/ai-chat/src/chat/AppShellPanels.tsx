@@ -353,8 +353,9 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                         serviceManager.store.dispatch(
                           actions.setCustomPanelOpen(false)
                         );
-                        'onClickBack' in customPanelState.options &&
+                        if ('onClickBack' in customPanelState.options) {
                           customPanelState.options.onClickBack?.();
+                        }
                       }}
                       showBackButton={
                         !(

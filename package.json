@@ -35,7 +35,7 @@
     "format": "prettier --cache --check '**/*.{js,jsx,cjs,mjs,ts,tsx,css,scss,md,mdx,json,yaml,yml,html}'",
     "format:write": "prettier --cache --write '**/*.{js,jsx,cjs,mjs,ts,tsx,css,scss,md,mdx,json,yaml,yml,html}'",
     "format:staged": "prettier --cache --list-different '**/*.{js,jsx,cjs,mjs,ts,tsx,css,scss,md,mdx,json,yaml,yml,html}'",
-    "lint": "eslint packages scripts tools --ext .js,.jsx,.cjs,.mjs,.ts,.tsx",
+    "lint": "eslint 'packages/**/*.{js,jsx,cjs,mjs,ts,tsx}' 'scripts/**/*.{js,jsx,cjs,mjs,ts,tsx}' 'tools/**/*.{js,jsx,cjs,mjs,ts,tsx}'",
     "lint:dead": "knip -W packages/ai-chat -W packages/ai-chat-components",
     "lint:license": "tools/check-license.js -a",
     "lint:license:staged": "tools/check-license.js -w",
@@ -54,28 +54,31 @@
     "coupling": "node scripts/coupling.mjs",
     "smells": "node scripts/smells.mjs",
     "measure": "node scripts/measure.mjs",
-    "postinstall": "husky"
+    "postinstall": "patch-package && husky"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.7",
-    "@babel/plugin-transform-private-methods": "^7.27.1",
-    "@babel/plugin-transform-runtime": "^7.28.0",
-    "@babel/preset-env": "^7.28.0",
-    "@babel/preset-react": "^7.27.1",
+    "@babel/core": "^8.0.0",
+    "@babel/plugin-transform-private-methods": "^8.0.0",
+    "@babel/plugin-transform-runtime": "^8.0.0",
+    "@babel/preset-env": "^8.0.0",
+    "@babel/preset-react": "^8.0.0",
+    "@babel/preset-typescript": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
     "@storybook/addons": "^7.6.17",
     "@types/prop-types": "^15.7.15",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
-    "babel-preset-carbon": "^0.8.0",
+    "babel-preset-carbon": "^0.9.0",
     "chromatic": "^17.0.0",
     "commander": "^15.0.0",
     "concurrently": "^10.0.0",
     "cross-env": "^10.0.0",
     "dependency-cruiser": "^18.2.0",
-    "eslint": "^8.53.0",
-    "eslint-config-carbon": "3.10.0",
+    "eslint": "^9.0.0",
+    "eslint-config-carbon": "3.27.0",
     "eslint-plugin-sonarjs": "^4.0.0",
     "gitignore-to-glob": "^0.3.0",
     "globby": "^16.0.0",
@@ -148,64 +151,6 @@
     "**/*.{md,mdx,json,yaml,yml}": [
       "prettier --cache --write"
     ]
-  },
-  "eslintConfig": {
-    "extends": [
-      "eslint-config-carbon"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "**/__tests__/**/*.ts",
-          "**/__tests__/**/*.tsx",
-          "**/*.test.ts",
-          "**/*.test.tsx",
-          "**/*.spec.ts",
-          "**/*.spec.tsx"
-        ],
-        "rules": {
-          "@typescript-eslint/no-non-null-assertion": "off"
-        }
-      }
-    ],
-    "rules": {
-      "no-warning-comments": [
-        "error",
-        {
-          "terms": [
-            "Made with Bob"
-          ],
-          "location": "anywhere"
-        }
-      ],
-      "jsdoc/check-tag-names": [
-        "error",
-        {
-          "definedTags": [
-            "category",
-            "element",
-            "experimental",
-            "element",
-            "typeParam",
-            "template",
-            "inheritDoc",
-            "hidden",
-            "ignore",
-            "internal",
-            "override",
-            "packageDocumentation",
-            "public",
-            "protected",
-            "private",
-            "readonly",
-            "sealed",
-            "showCategories",
-            "slot",
-            "virtual"
-          ]
-        }
-      ]
-    }
   },
   "stylelint": {
     "extends": [

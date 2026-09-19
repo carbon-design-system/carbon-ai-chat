@@ -257,7 +257,6 @@ function hasRequestFooter(
 }
 
 function isTyping(message: GenericItem) {
-  // eslint-disable-next-line eqeqeq
   return (
     message.response_type === MessageResponseTypes.PAUSE &&
     (message as PauseItem).typing == true

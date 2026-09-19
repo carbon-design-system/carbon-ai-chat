@@ -49,7 +49,7 @@ class UserSessionStorageService {
       }
       this.clearSession();
       return null;
-    } catch (error) {
+    } catch (_error) {
       this.clearSession();
       return null;
     }

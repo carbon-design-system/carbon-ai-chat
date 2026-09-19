@@ -559,7 +559,7 @@ class MessageService {
       if (!errorSame) {
         // Figure out what announcement we need to make. Note that we don't announce changes in to the WAITING state.
         let announceMessageID: keyof LanguagePack;
-        // eslint-disable-next-line default-case
+
         switch (errorState) {
           case MessageErrorState.FAILED: {
             announceMessageID = 'errors_ariaMessageFailed';
