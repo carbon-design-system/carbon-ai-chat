@@ -54,7 +54,7 @@
     "coupling": "node scripts/coupling.mjs",
     "smells": "node scripts/smells.mjs",
     "measure": "node scripts/measure.mjs",
-    "postinstall": "husky"
+    "postinstall": "patch-package && husky"
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",
