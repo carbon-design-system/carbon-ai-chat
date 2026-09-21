@@ -36,6 +36,7 @@ import {
   ViewType,
   WCMarkdown,
   RenderCustomRequestFooterState,
+  WriteableElementName,
 } from '@carbon/ai-chat';
 // Raw CSS text of the shipped sidebar layout. demo-app keeps its shadow DOM, so
 // the compiled stylesheet is imported as a string (Vite `?raw`) and adopted
@@ -292,6 +293,25 @@ export class DemoApp extends LitElement {
     // Notify parent component that instance is ready
     this.onChatInstanceReady?.(instance);
 
+    // Populate the explainability popover slots imperatively so that
+    // useWriteableElementPresence can detect them via the host node's children.
+    const popoverContentNode =
+      instance.writeableElements[
+        WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT
+      ];
+    if (popoverContentNode && !popoverContentNode.firstChild) {
+      const el = document.createElement('explainability-popover-content');
+      popoverContentNode.appendChild(el);
+    }
+    const popoverActionsNode =
+      instance.writeableElements[
+        WriteableElementName.EXPLAINABILITY_POPOVER_ACTIONS
+      ];
+    if (popoverActionsNode && !popoverActionsNode.firstChild) {
+      const el = document.createElement('explainability-popover-actions');
+      popoverActionsNode.appendChild(el);
+    }
+
     this.instance.on({
       type: BusEventType.MESSAGE_ITEM_CUSTOM,
       handler: this.customButtonHandler,
@@ -485,12 +505,7 @@ export class DemoApp extends LitElement {
    * Workspace panel element is now using the workspace-writeable-element-example component. and we render it with custom example for demo purpose. but remember its a custom slot.
    */
   renderWriteableElementSlots() {
-    const ALWAYS_RENDER_KEYS = [
-      'workspacePanelElement',
-      'historyPanelElement',
-      'explainabilityPopoverContent',
-      'explainabilityPopoverActions',
-    ];
+    const ALWAYS_RENDER_KEYS = ['workspacePanelElement', 'historyPanelElement'];
     const elements = this.instance?.writeableElements ?? {};
 
     const keys =
@@ -507,14 +522,6 @@ export class DemoApp extends LitElement {
 
     return finalKeys.map((key) => {
       switch (key) {
-        case 'explainabilityPopoverContent':
-          return html`<div slot=${key}>
-            <explainability-popover-content></explainability-popover-content>
-          </div>`;
-        case 'explainabilityPopoverActions':
-          return html`<div slot=${key}>
-            <explainability-popover-actions></explainability-popover-actions>
-          </div>`;
         case 'workspacePanelElement':
           return html`<div slot=${key}>
             <workspace-writeable-element-example
