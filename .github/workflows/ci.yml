@@ -181,7 +181,7 @@ jobs:
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@e10900ba92350acd7561744d2d86224c2a3fbb84 # v18.9.0
+        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -234,7 +234,7 @@ jobs:
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@e10900ba92350acd7561744d2d86224c2a3fbb84 # v18.9.0
+        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
