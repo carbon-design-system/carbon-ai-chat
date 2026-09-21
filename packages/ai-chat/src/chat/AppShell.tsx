@@ -709,15 +709,12 @@ function AppShell({
         const messagesContainer = containerRef.current?.querySelector(
           '.cds-aichat--messages'
         );
-        const inputContainer =
-          containerRef.current?.querySelector('.cds-aichat--input');
-
-        // Check if focus is in messages area but not in input
-        if (
+        if (inputRef.current?.hasFocus()) {
+          inputRef.current.requestFocus();
+        } else if (
           activeElement &&
           (messagesWrapper?.contains(activeElement) ||
-            messagesContainer?.contains(activeElement)) &&
-          !inputContainer?.contains(activeElement)
+            messagesContainer?.contains(activeElement))
         ) {
           event.preventDefault();
           inputRef.current?.requestFocus();
