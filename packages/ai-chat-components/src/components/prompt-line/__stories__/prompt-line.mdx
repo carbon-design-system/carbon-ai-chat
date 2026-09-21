@@ -395,6 +395,13 @@ Here's a minimal implementation.
 
 <ArgTypes of="cds-aichat-prompt-line" />
 
+The following properties have no HTML attribute equivalent and must be set via JavaScript:
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `extensions` | `Extension[]` | Tiptap extensions built via `buildCarbonExtensions()`. Staged when provided — does not trigger the rich upgrade on its own; set `rich` or call `ensureEditor()` to activate. Extensions are compared by value; pass a stable reference to avoid unnecessary editor rebuilds. |
+| `content` | `JSONContent \| string` | Initial or controlled content. Accepts a plain string or a Tiptap `JSONContent` document. In textarea mode `JSONContent` is flattened to plain text. |
+
 ### cds-aichat-input-send-control
 
 <ArgTypes of="cds-aichat-input-send-control" />
