@@ -5,64 +5,6 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-/**
- * Playwright setup for this example.
- *
- * The port is probed at config load rather than hardcoded. Every example falls
- * back to port 3000 when `PORT` is unset, so suites running concurrently would
- * collide; probing keeps them unique without a table anyone has to maintain.
- * Each example's suite is its own process tree, so the environment variable
- * below never leaks between examples running in parallel.
- */
+import defineBaseConfig from '../../shared/playwright/baseConfig';
 
-import { defineConfig, devices } from '@playwright/test';
-import { createServer } from 'node:net';
-import type { AddressInfo } from 'node:net';
-
-/** Ask the OS for an unused port by binding port 0 and reading it back. */
-async function probeFreePort(): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const probe = createServer();
-    probe.unref();
-    probe.on('error', reject);
-    probe.listen(0, '127.0.0.1', () => {
-      const { port } = probe.address() as AddressInfo;
-      probe.close(() => resolve(port));
-    });
-  });
-}
-
-// Playwright evaluates this config once in the runner and again in every
-// worker process. Probing per evaluation would hand each process a different
-// port, so the first probe is published to the environment the workers
-// inherit and every later evaluation reuses it.
-const PORT = Number(process.env.CAIC_EXAMPLE_PORT) || (await probeFreePort());
-process.env.CAIC_EXAMPLE_PORT = String(PORT);
-
-export default defineConfig({
-  testDir: './tests',
-  timeout: 60 * 1000,
-  // One or two specs per example, so a worker pool buys nothing here and would
-  // multiply against whatever concurrency runs the examples themselves.
-  workers: 1,
-  retries: process.env.CI ? 1 : 0,
-  webServer: {
-    // --strictPort so a port taken between the probe and the bind fails
-    // immediately, instead of Vite sliding to PORT+1 and Playwright waiting
-    // out its timeout against a port nothing is serving.
-    command: `PORT=${PORT} npm run start -- --strictPort`,
-    port: PORT,
-    // Generous: CI starts cold, so the dev server pre-bundles on first boot.
-    timeout: 3 * 60 * 1000,
-    reuseExistingServer: !process.env.CI,
-  },
-  use: {
-    baseURL: `http://localhost:${PORT}`,
-    headless: true,
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-  },
-  // Chromium only: webkit has shadow-DOM problems, documented in
-  // `demo/playwright.config.ts`.
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-});
+export default defineBaseConfig();
