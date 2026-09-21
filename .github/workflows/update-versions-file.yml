@@ -60,8 +60,8 @@ jobs:
             arr.unshift(versionWithPrefix);
           }
 
-          // Pretty-print array with correct indentation and trailing comma
-          let formattedArray = JSON.stringify(arr, null, 2).replace(/\n\]/, ",\n]");
+          // Match the repo's prettier style: single quotes, trailing comma
+          const formattedArray = `[\n${arr.map((v) => `  '${v}',`).join('\n')}\n]`;
 
           const newContent = content.replace(
             regex,
