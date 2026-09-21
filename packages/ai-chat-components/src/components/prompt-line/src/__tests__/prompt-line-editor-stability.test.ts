@@ -24,6 +24,7 @@ import {
   type StarterTriggerStorage,
 } from '../tiptap/carbon-starter-trigger.js';
 import type { SuggestionItem } from '../tiptap/types.js';
+import { waitForRich } from './wait-for-rich.js';
 
 const PEOPLE: SuggestionItem[] = [{ id: 'u1', label: 'Alice' }];
 const STARTERS: SuggestionItem[] = [{ id: 's1', label: 'Summarize this' }];
@@ -40,18 +41,6 @@ async function makeRichPromptLine(
   await el.updateComplete;
   await waitForRich(el);
   return el;
-}
-
-/** See prompt-line.test.ts — the rich runtime arrives via a lazy import(). */
-async function waitForRich(el: PromptLineElement): Promise<void> {
-  for (let i = 0; i < 500; i += 1) {
-    if (el.getEditor()) {
-      return;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 10));
-  }
-  throw new Error('rich editor did not load');
 }
 
 /** Type through ProseMirror so the edit lands in undo history like a keystroke. */

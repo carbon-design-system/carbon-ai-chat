@@ -34,8 +34,22 @@ function makeEditor() {
 }
 
 describe('tiptap/value-sync', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('emits cds-aichat-prompt-change with rawValue and content on doc change', () => {
-    const { editor, cleanup } = makeEditor();
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
     let received: { rawValue: string; content: unknown } | null = null;
     editor.view.dom.addEventListener('cds-aichat-prompt-change', (e) => {
       received = (e as CustomEvent).detail;
@@ -46,11 +60,11 @@ describe('tiptap/value-sync', function () {
     expect(received).to.not.equal(null);
     expect(received!.rawValue).to.equal('hi');
     expect(typeof received!.content).to.equal('object');
-    cleanup();
   });
 
   it('flips storage.lastTransactionIsHost when the dispatched tr carries host-origin meta', () => {
-    const { editor, cleanup } = makeEditor();
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
     const storage = editor.extensionStorage.carbonValueSync as ValueSyncStorage;
     expect(storage.lastTransactionIsHost).to.equal(false);
 
@@ -59,16 +73,15 @@ describe('tiptap/value-sync', function () {
     editor.view.dispatch(tr);
 
     expect(storage.lastTransactionIsHost).to.equal(true);
-    cleanup();
   });
 
   it('keeps lastTransactionIsHost false for plain user transactions', () => {
-    const { editor, cleanup } = makeEditor();
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
     const storage = editor.extensionStorage.carbonValueSync as ValueSyncStorage;
 
     editor.commands.insertContent('x');
 
     expect(storage.lastTransactionIsHost).to.equal(false);
-    cleanup();
   });
 });

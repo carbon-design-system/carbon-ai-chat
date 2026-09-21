@@ -42,29 +42,43 @@ function makeEditor() {
 }
 
 describe('tiptap/typing-indicator', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('emits isTyping=true on user-driven doc change', () => {
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
 
     editor.commands.insertContent('hi');
 
     expect(events.length).to.equal(1);
     expect(events[0].isTyping).to.equal(true);
-    cleanup();
   });
 
   it('does NOT emit isTyping=true when the tr carries host-origin meta', () => {
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
 
     const tr = editor.state.tr.insertText('hi');
     setHostOriginMeta(tr);
     editor.view.dispatch(tr);
 
     expect(events.length).to.equal(0);
-    cleanup();
   });
 
   it('keeps subsequent user input emitting after a host-origin batch', () => {
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
 
     const tr = editor.state.tr.insertText('hi');
     setHostOriginMeta(tr);
@@ -74,11 +88,11 @@ describe('tiptap/typing-indicator', function () {
     editor.commands.insertContent(' you');
     expect(events.length).to.equal(1);
     expect(events[0].isTyping).to.equal(true);
-    cleanup();
   });
 
   it('storage.reset() emits isTyping=false when currently typing', () => {
-    const { editor, events, cleanup } = makeEditor();
+    const { editor, events, cleanup: c } = makeEditor();
+    cleanup = c;
     const storage = editor.extensionStorage
       .carbonTypingIndicator as TypingIndicatorStorage;
 
@@ -88,6 +102,5 @@ describe('tiptap/typing-indicator', function () {
     storage.reset();
     expect(events.length).to.equal(2);
     expect(events[1].isTyping).to.equal(false);
-    cleanup();
   });
 });

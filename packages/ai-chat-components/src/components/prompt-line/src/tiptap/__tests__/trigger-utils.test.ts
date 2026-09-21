@@ -34,8 +34,22 @@ function makeEditor() {
 }
 
 describe('tiptap/trigger-utils', function () {
+  let cleanup: (() => void) | undefined;
+  let initialBodyChildCount: number;
+
+  beforeEach(() => {
+    initialBodyChildCount = document.body.childElementCount;
+  });
+
+  afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
+    expect(document.body.childElementCount).to.equal(initialBodyChildCount);
+  });
+
   it('dispatches cds-aichat-trigger-change on the editor DOM with the supplied detail', () => {
-    const { editor, cleanup } = makeEditor();
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
     let received: TriggerChangeEventDetail | null | undefined = undefined;
     editor.view.dom.addEventListener('cds-aichat-trigger-change', (event) => {
       received = (event as CustomEvent).detail;
@@ -52,11 +66,11 @@ describe('tiptap/trigger-utils', function () {
       query: 'alic',
       triggerOffset: 1,
     });
-    cleanup();
   });
 
   it('coalesces no-op transitions: identical detail does not re-emit', () => {
-    const { editor, cleanup } = makeEditor();
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
     let count = 0;
     editor.view.dom.addEventListener('cds-aichat-trigger-change', () => {
       count += 1;
@@ -73,11 +87,11 @@ describe('tiptap/trigger-utils', function () {
 
     dispatchTriggerChange(editor, { ...detail, query: 'search ' });
     expect(count).to.equal(2);
-    cleanup();
   });
 
   it('emits null after a non-null transition', () => {
-    const { editor, cleanup } = makeEditor();
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
     const events: (TriggerChangeEventDetail | null)[] = [];
     editor.view.dom.addEventListener('cds-aichat-trigger-change', (event) => {
       events.push((event as CustomEvent).detail);
@@ -94,6 +108,5 @@ describe('tiptap/trigger-utils', function () {
     expect(events).to.have.lengthOf(2);
     expect(events[0]).to.not.equal(null);
     expect(events[1]).to.equal(null);
-    cleanup();
   });
 });
