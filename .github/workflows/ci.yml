@@ -143,6 +143,8 @@ jobs:
         run: npm run validate:agents
       - name: Validate agent skills
         run: npm run validate:skills
+      - name: Test guidance validators
+        run: npm run test:guidance
       - name: Verify example READMEs
         run: npm run verify:example-readmes
 

@@ -15,37 +15,25 @@
  * - Inconsistent formatting
  * - Size budgets, per file and per chain (see MAX_FILE_BYTES below)
  *
- * Discovery crawls from the root AGENTS.md, following links to other bare
- * AGENTS.md entry points and to per-directory topic docs, which live as
- * kebab-case files under a `references/` subfolder (e.g.
- * `references/code-patterns.md`).
+ * Discovery starts at every AGENTS.md on disk and follows linked topic docs
+ * under references/. Generated output, skill mirrors, and drafts are excluded.
  */
 
 const fs = require('fs');
 const path = require('path');
+const {
+  checkLocalLink,
+  extractLinks,
+  withoutFencedCode,
+} = require('./guidance-links-lib');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const ROOT_AGENTS_FILE = 'AGENTS.md';
 
-// Budgets are in bytes, not lines. Markdown here is soft-wrapped, so a line is
-// a paragraph and its size varies ~3x — a 190-line file in this repo is lighter
-// than a 92-line one, which makes a line budget rank files backwards. Bytes are
-// what a harness actually spends.
-//
-// The chain budget exists because per-file limits cannot see cumulative cost.
-// Codex concatenates every AGENTS.md from the repo root down to the working
-// directory and silently stops at `project_doc_max_bytes` — dropping the
-// deepest file, which is the most specific guidance. This budget is set under
-// that cap so CI fails first, with a message, instead of a contributor
-// silently losing the tail of the chain.
-//
-// It is measured against Codex's 32 KiB default for `project_doc_max_bytes`,
-// not against the 64 KiB that .codex/config.toml sets. That override loads
-// only once a contributor marks the repo trusted, so anyone who has not still
-// gets the default — budget against the number every contributor has. The
-// 4 KiB between this budget and that default is room for a personal
-// ~/.codex/AGENTS.md, which stacks on top of the repo chain and which this
-// gate cannot see.
+// Soft wrapping makes line counts misleading; bytes are a stable size proxy.
+// The chain budget catches ancestor costs that per-file limits miss. These
+// repo limits exclude personal instructions and references loaded on demand;
+// they do not measure tokens or the active harness's total context allowance.
 const MAX_FILE_BYTES = 12 * 1024;
 const MAX_CHAIN_BYTES = 28 * 1024;
 
@@ -74,27 +62,6 @@ function validateFileExists(file) {
     return false;
   }
   return true;
-}
-
-// Extract markdown links from content
-function extractLinks(content) {
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  const links = [];
-  let match;
-  while ((match = linkRegex.exec(content)) !== null) {
-    links.push({
-      text: match[1],
-      url: match[2],
-      index: match.index,
-    });
-  }
-  return links;
-}
-
-// Normalize markdown link targets by stripping anchors and :line suffixes.
-function normalizeLinkTarget(url) {
-  const withoutAnchor = url.split('#')[0];
-  return withoutAnchor.replace(/:(\d+)(?=$)/, '');
 }
 
 // Extract package root from AGENTS.md file path for context-aware resolution
@@ -134,13 +101,8 @@ function findFileRecursive(dir, filename) {
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
 
-      // Skip node_modules, dist, and other build artifacts
       if (
-        entry.name === 'node_modules' ||
-        entry.name === 'dist' ||
-        entry.name === 'es' ||
-        entry.name === 'es-custom' ||
-        entry.name === '.git'
+        isExcluded(path.relative(REPO_ROOT, fullPath).split(path.sep).join('/'))
       ) {
         continue;
       }
@@ -277,52 +239,10 @@ function isAgentsDocTarget(target) {
 
 // Validate internal links
 function validateInternalLinks(file, content) {
-  const links = extractLinks(content);
-
-  for (const link of links) {
-    // Skip external links
-    if (link.url.startsWith('http://') || link.url.startsWith('https://')) {
-      continue;
-    }
-
-    // Skip anchor-only links
-    if (link.url.startsWith('#')) {
-      continue;
-    }
-
-    const normalizedTarget = normalizeLinkTarget(link.url);
-    if (!normalizedTarget) {
-      continue;
-    }
-
-    // Links between AGENTS docs must resolve STRICTLY relative to the linking
-    // file — exactly how GitHub renders them. resolveDocPath's repo-root and
-    // recursive-search fallbacks would otherwise mask a wrong relative path
-    // (e.g. `[x](AGENTS.md)` from a references/ subfolder silently "resolving"
-    // to the repo-root AGENTS.md). This is what keeps relocated topic docs and
-    // their cross-links honest.
-    if (isAgentsDocTarget(normalizedTarget)) {
-      const fileDir = path.dirname(path.join(REPO_ROOT, file));
-      const strictPath = path.resolve(fileDir, normalizedTarget);
-      if (!fs.existsSync(strictPath)) {
-        error(
-          file,
-          `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} does not resolve relative to ${path.dirname(file) || '.'}`
-        );
-      }
-      continue;
-    }
-
-    if (shouldSkipDocReference(normalizedTarget)) {
-      continue;
-    }
-
-    const targetPath = resolveDocPath(file, normalizedTarget);
-    if (!targetPath) {
-      error(
-        file,
-        `Broken link: [${link.text}](${link.url}) -> ${normalizedTarget} not found`
-      );
+  for (const link of extractLinks(content)) {
+    const { problem } = checkLocalLink(REPO_ROOT, file, link.url);
+    if (problem) {
+      error(file, `Broken link: [${link.text}](${link.url}) -> ${problem}`);
     }
   }
 }
@@ -345,7 +265,7 @@ function extractFileReferences(content) {
 
 // Validate file references
 function validateFileReferences(file, content) {
-  const refs = extractFileReferences(content);
+  const refs = extractFileReferences(withoutFencedCode(content));
 
   for (const ref of refs) {
     if (shouldSkipDocReference(ref.path) || ref.path.includes('example')) {
@@ -384,20 +304,45 @@ function formatBytes(bytes) {
   return `${(bytes / 1024).toFixed(1)} KiB`;
 }
 
-// Every AGENTS.md on disk, as repo-relative paths. The link crawl below follows
-// links and also picks up references/ topic docs; a budget has to follow
-// directories instead, because that is how a harness assembles a chain.
+const EXCLUDED_DIRECTORIES = new Set([
+  '.git',
+  'node_modules',
+  'dist',
+  'es',
+  'es-custom',
+  'lib',
+  'umd',
+  'build',
+  'coverage',
+  '.nyc_output',
+  '.parcel-cache',
+  '.next',
+  'generated_docs',
+  'storybook-static',
+  'storybook-react-static',
+]);
+const EXCLUDED_PATHS = [
+  '.agents/skills',
+  '.claude/skills',
+  '.bob/skills/carbon-builder',
+  '.github/plan-drafts',
+  '.github/pr-drafts',
+  '.github/issue-drafts',
+  '.github/adr-drafts',
+  'packages/ai-chat/docs/api/markdown',
+];
+
+function isExcluded(file) {
+  return (
+    file.split('/').some((part) => EXCLUDED_DIRECTORIES.has(part)) ||
+    EXCLUDED_PATHS.some(
+      (prefix) => file === prefix || file.startsWith(`${prefix}/`)
+    )
+  );
+}
+
+// Directory-based inventory matches how a harness assembles an AGENTS chain.
 function agentsFilesOnDisk() {
-  const skip = new Set([
-    'node_modules',
-    'dist',
-    'es',
-    'es-custom',
-    'lib',
-    'umd',
-    'build',
-    'storybook-static',
-  ]);
   const found = [];
 
   const walk = (dir) => {
@@ -407,10 +352,10 @@ function agentsFilesOnDisk() {
     for (const entry of entries) {
       const relative = dir ? `${dir}/${entry.name}` : entry.name;
       if (entry.isDirectory()) {
-        if (!skip.has(entry.name) && !entry.name.startsWith('.')) {
+        if (!isExcluded(relative)) {
           walk(relative);
         }
-      } else if (entry.name === 'AGENTS.md') {
+      } else if (entry.isFile() && entry.name === 'AGENTS.md') {
         found.push(relative);
       }
     }
@@ -422,8 +367,7 @@ function agentsFilesOnDisk() {
 
 // Two budgets: one file, and the chain a harness loads when work happens in
 // that file's directory (the root file plus every AGENTS.md on the path down).
-function validateBudgets() {
-  const files = agentsFilesOnDisk();
+function validateBudgets(files) {
   const sizes = new Map(
     files.map((file) => [file, fs.statSync(path.join(REPO_ROOT, file)).size])
   );
@@ -471,10 +415,10 @@ function validateBudgets() {
   );
 }
 
-// Discover AGENTS-related docs by crawling markdown links from the root AGENTS.md
-function discoverAgentsFiles() {
+// Topic links add conditional guidance to the directory-based AGENTS inventory.
+function discoverAgentsFiles(files) {
   const discovered = new Set();
-  const queue = [ROOT_AGENTS_FILE];
+  const queue = Array.from(new Set([ROOT_AGENTS_FILE, ...files]));
 
   while (queue.length > 0) {
     const file = queue.shift();
@@ -490,35 +434,19 @@ function discoverAgentsFiles() {
     const content = fs.readFileSync(fullPath, 'utf-8');
     discovered.add(file);
 
-    const links = extractLinks(content);
-    const fileDir = path.dirname(fullPath);
-
-    for (const link of links) {
-      if (
-        link.url.startsWith('http://') ||
-        link.url.startsWith('https://') ||
-        link.url.startsWith('#')
-      ) {
+    for (const link of extractLinks(content)) {
+      const { target } = checkLocalLink(REPO_ROOT, file, link.url);
+      if (!target) {
         continue;
       }
-
-      const urlWithoutAnchor = link.url.split('#')[0];
-      if (!urlWithoutAnchor) {
-        continue;
-      }
-
-      const targetPath = path.resolve(fileDir, urlWithoutAnchor);
-      const relativePath = path.relative(REPO_ROOT, targetPath);
-      const basename = path.basename(relativePath);
-
-      const parentDir = path.basename(path.dirname(targetPath));
+      const relativePath = path
+        .relative(REPO_ROOT, target)
+        .split(path.sep)
+        .join('/');
       if (
-        fs.existsSync(targetPath) &&
-        (basename === 'AGENTS.md' ||
-          // Legacy topic siblings (kept for resilience; superseded by references/).
-          (basename.startsWith('AGENTS_') && basename.endsWith('.md')) ||
-          // Topic docs now live as kebab-case files under a references/ subfolder.
-          (parentDir === 'references' && basename.endsWith('.md')))
+        !isExcluded(relativePath) &&
+        isAgentsDocTarget(relativePath) &&
+        fs.lstatSync(target).isFile()
       ) {
         queue.push(relativePath);
       }
@@ -547,16 +475,17 @@ function validateFile(file) {
 // Run validation
 console.log('🔍 Validating AGENTS.md files...\n');
 
-const agentsFiles = discoverAgentsFiles();
+const filesOnDisk = agentsFilesOnDisk();
+const agentsFiles = discoverAgentsFiles(filesOnDisk);
 info(
-  `Discovered ${agentsFiles.length} AGENTS documentation files from ${ROOT_AGENTS_FILE}.`
+  `Discovered ${agentsFiles.length} AGENTS documentation files from ${filesOnDisk.length} AGENTS.md entry points.`
 );
 
 for (const file of agentsFiles) {
   validateFile(file);
 }
 
-validateBudgets();
+validateBudgets(filesOnDisk);
 
 console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors, ${warnings} warnings`);

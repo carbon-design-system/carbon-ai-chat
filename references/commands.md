@@ -21,7 +21,8 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | License header check | `npm run lint:license` |
 | Dead-code check (knip) | `npm run lint:dead` |
 | Prettier check / write | `npm run format` / `npm run format:write` |
-| All tests | `npm run test` |
+| All package tests | `npm run test` |
+| Guidance validator regression tests (no build) | `npm run test:guidance` |
 | Lint + format + license + test gate (no build) | `npm run ci-check` |
 | Clean everything | `npm run clean` |
 

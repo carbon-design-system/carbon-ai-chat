@@ -34,20 +34,22 @@ For what makes a good example — self-contained, minimal, realistically typed, 
 
 ## Build + preview
 
-Run `npm run aiChat:build:docs` from the **monorepo root** to regenerate. This builds the ai-chat stack (components + ai-chat rollup + demo) and runs TypeDoc.
+For docs-only changes, run `npm run docs --workspace=@carbon/ai-chat` from the **monorepo root**. This runs TypeDoc without rollup.
 
-To build docs for only this package:
+From the package directory:
 
 ```bash
 cd packages/ai-chat
-npm run build:docs
+npm run docs
 ```
 
 Generated docs appear in `packages/ai-chat/dist/docs/`.
 
-From [../](../) (the package root): `npm run build:docs` runs rollup + typedoc (or `npm run docs` for TypeDoc only); `npm start` runs rollup (watch) + typedoc (watch) + serves `dist/docs/carbon-tsdocs` on `:5001`.
+When runtime code also changed, `npm run build:docs` from the package root runs rollup + TypeDoc. From the monorepo root, `npm run aiChat:build:docs` builds the ai-chat stack and runs TypeDoc. Coordinate builds and watch processes under the [root rule](../../../AGENTS.md#always-on-rules).
 
-**Run `npm run build:docs` before pushing.** TypeDoc's `validation.invalidLink` rejects broken `{@link …}` references.
+For a local preview, `npm start` from the package root watches rollup and TypeDoc, then serves `dist/docs/carbon-tsdocs` on `:5001`.
+
+**Run the docs gate for published docs changes.** `npm run docs` from the package root rejects broken `{@link …}` references. Agent-guidance edits use the [guidance gate](../../../references/definition-of-done.md#minimum-gate-by-area-edited) instead.
 
 ## Related guidance
 
