@@ -14,7 +14,7 @@
  * side of the file-upload demo without any backend.
  *
  * Demonstrates: routing inbound `MessageRequest` payloads based on whether
- * the user attached files (signalled by `request.input.structured_data`
+ * the user attached files (signaled by `request.input.structured_data`
  * fields of `type === "file"`) versus plain-text turns.
  *
  * APIs exercised:

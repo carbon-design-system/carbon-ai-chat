@@ -95,7 +95,7 @@ jobs:
           npm pkg set "dependencies.@carbon/ai-chat-components=$COMPONENTS_ALPHA" --workspace @carbon/ai-chat
 
       - name: Build packages, demo and docs
-        run: npm run build
+        run: npm run aiChat:build:docs
 
       - name: Build Storybooks
         run: |

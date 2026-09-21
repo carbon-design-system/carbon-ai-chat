@@ -290,7 +290,7 @@ describe('MessageService', () => {
   });
 
   describe('Message cancellation with system messages', () => {
-    it('creates system message when cancelling before streaming starts', async () => {
+    it('creates system message when canceling before streaming starts', async () => {
       const customSendMessage = jest.fn().mockImplementation(
         () => new Promise<void>(() => undefined) // Never resolves
       );
@@ -329,7 +329,7 @@ describe('MessageService', () => {
       expect(addMessageCalls.length).toBeGreaterThan(0);
     });
 
-    it('does not create duplicate system message when cancelling during streaming', async () => {
+    it('does not create duplicate system message when canceling during streaming', async () => {
       const customSendMessage = jest.fn().mockResolvedValue(undefined);
       const serviceManager = createServiceManagerStub(customSendMessage);
       const messageService = new MessageService(serviceManager, {
@@ -384,7 +384,7 @@ describe('MessageService', () => {
       expect(newDispatches).toBeLessThan(5);
     });
 
-    it('hides and re-enables the stop streaming button when cancelling a streaming message', async () => {
+    it('hides and re-enables the stop streaming button when canceling a streaming message', async () => {
       const serviceManager = createServiceManagerStub(jest.fn(), {
         isVisible: true,
         isDisabled: true,

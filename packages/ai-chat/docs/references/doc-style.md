@@ -136,7 +136,7 @@ title: <Sentence-case task title>
 - [ ] Every `Note`/`Tip` callout is a blockquote (`> **Note**: …`).
 - [ ] Single shell commands use inline backticks, not a fenced block.
 - [ ] Voice follows [tone.md](../../../../references/tone.md).
-- [ ] `npm run build` passes (catches broken `{@link}`).
+- [ ] `npm run build:docs` passes (catches broken `{@link}` via TypeDoc).
 
 ## Related guidance
 

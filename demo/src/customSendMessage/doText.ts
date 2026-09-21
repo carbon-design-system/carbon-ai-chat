@@ -29,7 +29,6 @@ import {
   CHAIN_OF_THOUGHT_TEXT_STREAM,
   HTML,
   MARKDOWN,
-  TEXT,
   WELCOME_TEXT,
   WORD_DELAY,
 } from './constants';
@@ -846,32 +845,6 @@ async function doTextWithFeedbackStreaming(
   );
 }
 
-function doTextWithCustomFooter(instance: ChatInstance) {
-  instance.messaging.addMessage({
-    output: {
-      generic: [
-        {
-          response_type: MessageResponseTypes.TEXT,
-          text: TEXT,
-          message_item_options: {
-            feedback: {
-              is_on: true,
-              id: 'feedback-1',
-            },
-            custom_footer_slot: {
-              is_on: true,
-              slot_name: `footer-msg-${uuid()}`,
-              additional_data: {
-                allow_copy: true,
-                custom_action_url: 'https://example.com/share',
-              },
-            },
-          },
-        },
-      ],
-    },
-  });
-}
 /**
  * Tests the edge case where customSendMessage resolves early but streaming continues.
  * This validates the fix for showStopButtonImmediately.
@@ -994,5 +967,4 @@ export {
   doHTMLStreaming,
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
-  doTextWithCustomFooter,
 };

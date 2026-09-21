@@ -41,6 +41,15 @@ const MIRROR_DIRS = ['.claude/skills', '.agents/skills'];
 // author, so they are not ours to lint.
 const OWNED_SKILL_PREFIX = 'caic-';
 
+// The same per-file budget AGENTS.md files carry. A skill body loads on
+// invocation rather than into an always-on chain, so it is not competing for
+// context the way an ancestor AGENTS.md is — but a body that has to be read
+// end-to-end before the first step still spends every one of its bytes on every
+// invocation. Anything a given run may not need belongs in references/, behind
+// a "read when…" trigger. Vendored skills are exempt: ownedSkills already
+// filters them out, and their length is their upstream author's call.
+const MAX_FILE_BYTES = 12 * 1024;
+
 const fix = process.argv.includes('--fix');
 
 let errors = 0;
@@ -158,6 +167,47 @@ function skillDirs() {
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
+}
+
+function formatBytes(bytes) {
+  return `${(bytes / 1024).toFixed(1)} KiB`;
+}
+
+// Budget the body and each of its supporting files separately. A skill that
+// moves half its body into one oversized reference has relocated the cost, not
+// removed it, so references/ is held to the same ceiling.
+function validateSkillBudget(name) {
+  const dir = path.join(REPO_ROOT, CANONICAL_DIR, name);
+  const targets = [`${CANONICAL_DIR}/${name}/SKILL.md`];
+  const refsDir = path.join(dir, 'references');
+  if (fs.existsSync(refsDir)) {
+    for (const entry of fs.readdirSync(refsDir).sort()) {
+      if (entry.endsWith('.md')) {
+        targets.push(`${CANONICAL_DIR}/${name}/references/${entry}`);
+      }
+    }
+  }
+
+  let checked = 0;
+  for (const file of targets) {
+    const fullPath = path.join(REPO_ROOT, file);
+    if (!fs.existsSync(fullPath)) {
+      continue;
+    }
+    checked += 1;
+    const bytes = fs.statSync(fullPath).size;
+    if (bytes > MAX_FILE_BYTES) {
+      error(
+        file,
+        `${formatBytes(bytes)} exceeds the ${formatBytes(
+          MAX_FILE_BYTES
+        )} per-file budget by ${formatBytes(
+          bytes - MAX_FILE_BYTES
+        )}. Move the rubrics, worked examples, and per-case rules a given run may not need into ${CANONICAL_DIR}/${name}/references/, and link them with a "read when…" trigger.`
+      );
+    }
+  }
+  return checked;
 }
 
 function validateSkillShape(name) {
@@ -415,10 +465,17 @@ const mirrorDrifted = errors > errorsBeforeMirror;
 for (const name of skills) {
   validateSkillShape(name);
 }
+let budgetedFiles = 0;
 for (const name of ownedSkills) {
   validateSkillLinks(name);
+  budgetedFiles += validateSkillBudget(name);
 }
 validateCollectionDocs();
+info(
+  `Checked ${budgetedFiles} owned skill files against the ${formatBytes(
+    MAX_FILE_BYTES
+  )} per-file budget.`
+);
 
 console.log('\n' + '='.repeat(60));
 console.log(`✅ Validation complete: ${errors} errors`);

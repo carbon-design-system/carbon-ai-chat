@@ -395,6 +395,29 @@ function printTable(shown, totals, changed) {
   }
 }
 
+// The severity column is the verdict, and an all-blank one is a result rather
+// than a skipped check — but silence reads the same as never having looked. Say
+// the negative out loud, including why a high score can still go unlabeled.
+function bandSummary(shown, changed) {
+  if (shown.length === 0) {
+    return;
+  }
+  const labeled = shown.filter((r) => r.severity !== null);
+  if (labeled.length === 0) {
+    const scope = changed ? ' this change made worse' : '';
+    console.log(
+      `\n${shown.length} shown, none labeled: no function${scope} crossed a band.`
+    );
+    return;
+  }
+  const counts = new Map();
+  for (const { severity: s } of labeled) {
+    counts.set(s, (counts.get(s) ?? 0) + 1);
+  }
+  const tally = [...counts].map(([label, n]) => `${n} ${label}`).join(', ');
+  console.log(`\n${shown.length} shown, ${labeled.length} labeled: ${tally}.`);
+}
+
 function report(rows, totals, { max, report: floor, changed }, hadError) {
   const shown = rows
     .filter(({ fn }) => fn.cyclomatic >= floor || fn.cognitive >= floor)
@@ -403,6 +426,7 @@ function report(rows, totals, { max, report: floor, changed }, hadError) {
     console.log('Nothing to report.');
   }
   printTable(shown, totals, changed !== null);
+  bandSummary(shown, changed !== null);
   const violators =
     max === null ? [] : rows.filter(({ fn }) => fn.cognitive > max);
   if (violators.length > 0) {

@@ -14,7 +14,7 @@
  * values are read through the selectInput* selectors and are NEVER mirrored into
  * `assistantInputState`. Guarantees:
  *  - an in-place `input.isDisabled` change is reflected by the selector without
- *    cancelling the in-flight request or clearing the session, and
+ *    canceling the in-flight request or clearing the session, and
  *  - an unrelated lightweight change does not replace `assistantInputState`.
  */
 

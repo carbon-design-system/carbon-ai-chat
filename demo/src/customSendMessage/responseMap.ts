@@ -38,7 +38,6 @@ import {
   doTextStreaming,
   doTextStreamingEarlyResolve,
   doTextStreamingWithNonWatsonAssistantProfile,
-  doTextWithCustomFooter,
   doTextWithFeedback,
   doTextWithFeedbackStreaming,
   doTextWithHumanProfile,
@@ -117,7 +116,6 @@ const RESPONSE_MAP: Record<
   'text with feedback': (instance) => doTextWithFeedback(instance),
   'text with feedback (stream)': (instance, requestOptions) =>
     doTextWithFeedbackStreaming(instance, requestOptions),
-  'text with custom footer': (instance) => doTextWithCustomFooter(instance),
   'text from watsonx agent': (instance) =>
     doTextWithWatsonAgentProfile(instance),
   'text from third party human': (instance) => doTextWithHumanProfile(instance),
@@ -155,7 +153,7 @@ const RESPONSE_MAP: Record<
 
     instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
-    // Return a Promise that resolves when the work is done or cancelled
+    // Return a Promise that resolves when the work is done or canceled
     return new Promise<void>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         // Double-check signal wasn't aborted during delay
@@ -188,7 +186,7 @@ const RESPONSE_MAP: Record<
 
     instance.updateIsMessageLoadingCounter('increase', 'Thinking...');
 
-    // Return a Promise that resolves when the work is done or cancelled
+    // Return a Promise that resolves when the work is done or canceled
     return new Promise<void>((resolve, reject) => {
       const timeoutId = setTimeout(async () => {
         // Double-check signal wasn't aborted during delay

@@ -58,6 +58,8 @@ import type { BuildCarbonExtensionsConfig as _BuildCarbonExtensionsConfig } from
  *
  * @function
  * @category Utilities
+ * @experimental The prompt-line extension surface is still settling; these
+ * factory signatures can change in a minor release.
  */
 export const carbonMention = _carbonMention;
 
@@ -69,27 +71,37 @@ export const carbonMention = _carbonMention;
  *
  * @function
  * @category Utilities
+ * @experimental The prompt-line extension surface is still settling; these
+ * factory signatures can change in a minor release.
  */
 export const carbonCommand = _carbonCommand;
 
 /**
  * Tiptap extension factory for live autocomplete. Wraps `@tiptap/suggestion`
- * directly (no Mention node) — the `command` callback inserts plain text
- * rather than a schema node. Activates whenever the input has any non-empty
- * trailing word.
+ * directly (no Mention node), and activates whenever the input has any
+ * non-empty trailing word.
+ *
+ * The extension reports the trigger and nothing else: it resolves no items
+ * and inserts no text. Configure autocomplete through
+ * {@link InputConfig.autocomplete}, which the chat's autocomplete controller
+ * reads.
  *
  * @function
  * @category Utilities
+ * @experimental The prompt-line extension surface is still settling; these
+ * factory signatures can change in a minor release.
  */
 export const carbonAutocomplete = _carbonAutocomplete;
 
 /**
  * A trigger character that {@link carbonAutocomplete} stands down for, passed
- * as its second argument. Use it when autocomplete runs alongside a mention
+ * as its only argument. Use it when autocomplete runs alongside a mention
  * or command picker, so the picker wins while its trigger is active.
  * {@link buildCarbonExtensions} assembles this list for you.
  *
  * @category Utilities
+ * @experimental The prompt-line extension surface is still settling; these
+ * factory signatures can change in a minor release.
  * @interface
  */
 export type ExcludedTrigger = _ExcludedTrigger;
@@ -103,6 +115,8 @@ export type ExcludedTrigger = _ExcludedTrigger;
  *
  * @function
  * @category Utilities
+ * @experimental The prompt-line extension surface is still settling; these
+ * factory signatures can change in a minor release.
  */
 export const carbonStarterTrigger = _carbonStarterTrigger;
 
@@ -114,6 +128,8 @@ export const carbonStarterTrigger = _carbonStarterTrigger;
  *
  * @function
  * @category Utilities
+ * @experimental The prompt-line extension surface is still settling; these
+ * factory signatures can change in a minor release.
  */
 export const buildCarbonExtensions = _buildCarbonExtensions;
 

@@ -63,7 +63,11 @@ function buildTriggerExtension(
         ...parent,
         mentionSuggestionChar: { default: config.trigger },
         value: { default: null },
-        data: { default: null },
+        // Host custom fields, held in editor state only: they survive the JSON
+        // round-trip, undo/redo, and moves within the document, and never
+        // reach HTML. Tiptap's default attribute rendering would stringify the
+        // object into the markup as "[object Object]".
+        data: { default: null, renderHTML: () => ({}) },
         trigger: { default: null },
       };
     },
@@ -123,37 +127,6 @@ function buildTriggerExtension(
       char: config.trigger,
       pluginKey,
       startOfLine: config.triggerPosition === 'start',
-      items: ({ query }) => resolveItems(config, query),
-      command: ({ editor, range, props }) => {
-        const item = props as SuggestionItem;
-        // Insert the mention/command node with our extended attrs.
-        editor
-          .chain()
-          .focus()
-          .insertContentAt(range, [
-            {
-              type: name,
-              attrs: {
-                id: item.id,
-                label: item.label,
-                value: item.value ?? item.label,
-                // Item overrides config overrides the command/mention
-                // default (see resolveShowTriggerInChip).
-                trigger: resolveShowTriggerInChip(
-                  item,
-                  config,
-                  build.defaultName === 'command'
-                )
-                  ? config.trigger
-                  : null,
-                data: stripPresentationFields(item),
-              },
-            },
-            { type: 'text', text: ' ' },
-          ])
-          .run();
-        config.onSelect?.(item);
-      },
       render: () => {
         let lastQuery: string | null = null;
         return {
@@ -227,7 +200,15 @@ function collectTokenAttrsById(
  * `label`, `value`, and any custom fields stashed in `data` survive.
  */
 function attrsToItem(attrs: Record<string, unknown>): SuggestionItem {
-  const data = (attrs.data ?? {}) as Record<string, unknown>;
+  // `data` holds whatever a caller put in the node's attrs, and
+  // `insertContent()` takes a raw node spec — so a host can land a string or
+  // an array here. Spreading either yields index keys ({...'abc'} → {0:'a'}),
+  // which would then reach onRemove as if the host had set them.
+  const raw = attrs.data;
+  const data =
+    raw && typeof raw === 'object' && !Array.isArray(raw)
+      ? (raw as Record<string, unknown>)
+      : {};
   return {
     ...data,
     id: String(attrs.id),
@@ -258,26 +239,6 @@ function diffRemovedTokens(
   return removed;
 }
 
-async function resolveItems(
-  config: TriggerSuggestionConfig,
-  query: string
-): Promise<SuggestionItem[]> {
-  const minQueryLength = config.minQueryLength ?? 0;
-  if (query.length < minQueryLength) {
-    return [];
-  }
-  if (typeof config.items === 'function') {
-    return Promise.resolve(config.items(query));
-  }
-  if (!query) {
-    return config.items;
-  }
-  const lower = query.toLowerCase();
-  return config.items.filter((item) =>
-    item.label.toLowerCase().includes(lower)
-  );
-}
-
 /**
  * Resolve whether a selected item's chip should be prefixed with the
  * trigger character: the item's own {@link SuggestionItem.showTriggerInChip}
@@ -291,29 +252,6 @@ export function resolveShowTriggerInChip(
   isCommand: boolean
 ): boolean {
   return item.showTriggerInChip ?? config.showTriggerInChip ?? isCommand;
-}
-
-function stripPresentationFields(
-  item: SuggestionItem
-): Record<string, unknown> {
-  const {
-    id: _id,
-    label: _label,
-    value: _value,
-    avatar: _avatar,
-    description: _description,
-    disabled: _disabled,
-    showTriggerInChip: _showTriggerInChip,
-    ...rest
-  } = item;
-  void _id;
-  void _label;
-  void _value;
-  void _avatar;
-  void _description;
-  void _disabled;
-  void _showTriggerInChip;
-  return rest;
 }
 
 export function carbonMention(config: TriggerSuggestionConfig) {

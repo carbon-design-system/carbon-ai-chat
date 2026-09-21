@@ -98,7 +98,7 @@ class MessageUpsertCoordinator {
 
   /**
    * Drops every entry from both maps. Called from `restartConversation` and from
-   * {@link ChatInstance#destroy} so a torn-down chat does not carry stale state into a
+   * {@link ChatInstance.destroySession} so a reset chat does not carry stale state into a
    * fresh session.
    */
   clearAll() {

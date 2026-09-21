@@ -21,10 +21,21 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Run build
-        run: npm run build
+        run: npm run aiChat:build
+      - name: Validate TypeDoc links
+        run: npm run docs --workspace=@carbon/ai-chat
 
   test:
     runs-on: ubuntu-latest
@@ -35,14 +46,21 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
-        run: |
-          npm ci --prefer-offline
-          npx playwright install --with-deps
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline
+      - name: Install Playwright dependencies
+        run: npx playwright install --with-deps
       - name: Build ai-chat
         run: npm run aiChat:build
-      - name: Build ai-chat-components
-        run: cd packages/ai-chat-components && npm run build
       - name: Run test
         run: npm run test
 
@@ -55,7 +73,16 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Check formatting of project files (staged)
         if: ${{ github.event_name == 'pull_request' }}
@@ -73,7 +100,16 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: github.event_name != 'merge_group'
+        id: cache
+        with:
+          path: |
+            node_modules
+            */**/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Lint
         run: npm run lint && npm run lint:styles
@@ -135,8 +171,9 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
         run: npm run build --workspace=@carbon/ai-chat-components
@@ -144,7 +181,7 @@ jobs:
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@259eda5f0e44c0c1eab38b672f1c4c967cc969b7 # v18.8.1
+        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects
@@ -187,8 +224,9 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'packages/**/package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
       - name: Build @carbon/ai-chat-components package
         run: npm run build --workspace=@carbon/ai-chat-components
@@ -196,7 +234,7 @@ jobs:
         run: npm run storybook:build --workspace=@carbon/ai-chat-components
       - id: chromatic
         name: Run Chromatic
-        uses: chromaui/action@259eda5f0e44c0c1eab38b672f1c4c967cc969b7 # v18.8.1
+        uses: chromaui/action@bb3b582719a93c1828c5e520e62992b2937d7889 # v18.9.4
         with:
           # 👇 Token is intentionally plaintext
           # https://www.chromatic.com/docs/github-actions/#run-chromatic-on-external-forks-of-open-source-projects

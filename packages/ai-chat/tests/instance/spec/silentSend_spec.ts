@@ -8,7 +8,7 @@
  */
 
 /**
- * Tests for the silent-send behaviour.
+ * Tests for the silent-send behavior.
  *
  * A send with nothing to show is marked silent so it does not render as an empty
  * bubble. An attachment-only send is not such a case: a file with no caption has

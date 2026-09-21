@@ -33,6 +33,7 @@ import {
 import type {
   WCMarkdown,
   WCRenderCustomMessageFooter,
+  WCRenderCustomRequestFooter,
   WCRenderUserDefinedResponse,
   WCRenderUserDefinedInputNode,
 } from '../../types/component/ChatContainer';
@@ -172,6 +173,13 @@ class ChatCustomElement extends FlattenedConfigElement {
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
 
   /**
+   * Optional callback to render a footer below each user message. When provided, the inner cds-aichat-container
+   * manages all event listening, slot tracking, and element lifecycle.
+   */
+  @property({ attribute: false })
+  renderCustomRequestFooter?: WCRenderCustomRequestFooter;
+
+  /**
    * Renderer for custom TipTap node types inside sent user message bubbles
    * (rich user message content). Forwarded to the inner cds-aichat-container.
    *
@@ -284,6 +292,10 @@ class ChatCustomElement extends FlattenedConfigElement {
         handler: this.customFooterHandler,
       });
     }
+
+    // No CUSTOM_REQUEST_FOOTER_SLOT subscription. Outbound has no legacy static-slot path to fall back on —
+    // the chat mints the slot name, so markup cannot name it — which leaves the inner cds-aichat-container as
+    // the only owner of that slot.
     this.addWriteableElementSlots();
     await this.onBeforeRender?.(instance);
   };
@@ -302,6 +314,7 @@ class ChatCustomElement extends FlattenedConfigElement {
         .element=${this}
         .renderUserDefinedResponse=${this.renderUserDefinedResponse}
         .renderCustomMessageFooter=${this.renderCustomMessageFooter}
+        .renderCustomRequestFooter=${this.renderCustomRequestFooter}
         .renderUserDefinedInputNode=${this.renderUserDefinedInputNode}>
         ${this._writeableElementSlots.map(
           (slot) => html`<slot name=${slot} slot=${slot}></slot>`
@@ -392,6 +405,11 @@ interface CdsAiChatCustomElementAttributes extends Omit<
    * manages all event listening, slot tracking, and element lifecycle.
    */
   renderCustomMessageFooter?: WCRenderCustomMessageFooter;
+
+  /**
+   * Called when a footer below a user message should be rendered. Leave it off and user messages have no footer.
+   */
+  renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
    * Renderer for custom TipTap node types inside sent user message bubbles

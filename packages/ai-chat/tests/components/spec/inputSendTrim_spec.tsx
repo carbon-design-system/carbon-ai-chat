@@ -9,7 +9,7 @@
 
 /**
  * Regression: the text handed to onSendInput must be trimmed, matching the
- * 1.18 behaviour.
+ * 1.18 behavior.
  *
  * sendCurrentValue() reads rawInputValueRef.current and passes it to
  * onSendInput. The fix adds a .trim() at that read so leading/trailing

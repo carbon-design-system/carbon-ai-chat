@@ -8,8 +8,12 @@
 # directory, then silently stops adding files once the total hits this cap —
 # dropping the deepest file, which is the most specific guidance.
 #
-# `npm run validate:agents` holds that chain to 24 KiB, so the repo's own gate
-# fails with a message long before Codex would truncate without one. This cap
-# is raised anyway to leave room for a personal ~/.codex/AGENTS.md stacked on
-# top of the repo chain, which the repo gate cannot see.
+# `npm run validate:agents` holds that chain to 28 KiB, under the 32 KiB
+# default, so the repo's own gate fails with a message long before Codex would
+# truncate without one. That budget is set against the default rather than the
+# cap below, because this file loads only once you trust the repo — a
+# contributor who has not still gets 32 KiB.
+#
+# The cap is raised here anyway to leave room for a personal ~/.codex/AGENTS.md
+# stacked on top of the repo chain, which the repo gate cannot see.
 project_doc_max_bytes = 65536

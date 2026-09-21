@@ -23,7 +23,7 @@
  *
  * Responsibilities:
  * - MessageService: queueing/orchestration, PRE_SEND/SEND events, loading/timeout setup, cancellation entrypoints.
- * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/cancelling).
+ * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
  * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
  */
 import inputItemToLocalItem from '../schema/inputItemToLocalItem';
@@ -283,7 +283,7 @@ class MessageService {
     }
 
     if (current.isProcessed) {
-      // If the response has already been processed (perhaps the message was cancelled) then stop processing.
+      // If the response has already been processed (perhaps the message was canceled) then stop processing.
       return;
     }
 
@@ -358,14 +358,14 @@ class MessageService {
       this.prepareCurrentRequest(current);
 
     if (current.isProcessed) {
-      // This message was cancelled.
+      // This message was canceled.
       return;
     }
 
     await this.firePreSendEvent(current);
 
     if (current.isProcessed) {
-      // This message was cancelled.
+      // This message was canceled.
       return;
     }
 
@@ -785,7 +785,7 @@ class MessageService {
           });
         }
       } else if (pendingRequest.isStreaming) {
-        // If we're cancelling during streaming, SystemMessage (responseStopped) will handle
+        // If we're canceling during streaming, SystemMessage (responseStopped) will handle
         // displaying the "Response stopped" message via the stream_stopped metadata flag.
         // We don't need to create a system message here.
         // Mark as processed and advance the queue
@@ -798,7 +798,7 @@ class MessageService {
           this.moveToNextQueueItem();
         }
       } else {
-        // Only create "Request cancelled" system message if we haven't started streaming yet
+        // Only create "Request canceled" system message if we haven't started streaming yet
         this.outboundCoordinator.resolveCancelledMessage(pendingRequest);
       }
     }
@@ -810,7 +810,7 @@ class MessageService {
   public async cancelMessageRequestByID(
     messageID: string,
     logError: boolean,
-    reason = 'Message was cancelled'
+    reason = 'Message was canceled'
   ) {
     // messageID may be an item_id or response_id; resolve to whichever streaming id we tracked.
     const responseId = this.inboundStreaming.resolveResponseId(messageID);

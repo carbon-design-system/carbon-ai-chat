@@ -1,202 +1,159 @@
 ---
 name: caic-adr
-description: Record an architecture decision as a numbered ADR in docs/adr/ — the promotion test, the trimmed-MADR sections, the comment window, and superseding. Use when the user asks to "write an ADR", "record this decision", "document why we picked X", or when a plan decision turns out to be something a consumer can feel.
+description: Propose an architecture decision as a numbered ADR in docs/adr/ — a request for feedback that leads with the problem and the proposal, drafted from the template, reviewed with fresh eyes, then opened as a PR and an RFC discussion. Use when the user asks to "write an ADR", "propose this decision", "record why we picked X", or when a plan decision turns out to be something a consumer can feel.
 ---
 
-An ADR records one decision: what you chose, what you turned down, and what it costs the people who ship on this library. It is committed and permanent, which is what separates it from a plan.
+An ADR is a proposal first and a record second. It asks the people who build on this library for feedback on a decision they will feel, then stays as the record of what was decided and why.
 
-The process — numbering, status, how the window closes — is in [docs/adr/README.md](../../../docs/adr/README.md). This skill is how you write one.
+The process rules (lifecycle, numbering, superseding, what happens to feedback) are in [docs/adr/README.md](../../../docs/adr/README.md). This skill is how you write one and get it in front of readers.
 
-## First: does this need an ADR at all?
+## First: does this need an ADR?
 
-Most decisions don't. A folder of records nobody reads is worse than no folder, so apply the test before writing anything.
+**Apply README's [When to write one](../../../docs/adr/README.md#when-to-write-one) test, then let the developer decide.** Passing the test is a reason to suggest an ADR, not an obligation.
 
-An ADR is warranted when **either** holds:
+- **When the developer skips it, put the reasoning in the PR description**, or in the epic's Details when a plan shapes an epic. It must not live only in a plan file, which gets deleted.
+- **When a plan decision turns out to pass the test partway through**, suggest promoting it. If an ADR gets written, shrink the plan's `D<n>` to a pointer at it — see [caic-plan](../caic-plan/SKILL.md#what-goes-in-planmd).
 
-- **A consumer can feel it.** It changes public API, changes behavior a host depends on, or changes what a migration costs.
-- **Someone will re-propose the option that lost.** Without the reasoning written down, the same debate reopens in a year and nobody remembers why it closed.
+## Investigate for feasibility, not sequencing
 
-Everything else stays a numbered decision in the plan — see [caic-plan](../caic-plan/SKILL.md#what-goes-in-planmd). Mechanical choices (file layout, a helper's name, which of two equivalent spellings) are `D<n>` and nothing more.
+**Answer three questions per option, then stop:** can it be built, what breaks for whom, and is it one PR or ten? If you are writing per-step files or a Files touched list to justify an option, you are planning, not proposing.
 
-**The promotion case.** A plan decision often turns out to meet the test partway through. When it does, write the ADR and shrink `D<n>` to a pointer at it. Don't leave the reasoning in a file that gets deleted.
+**Verify every claim against today's code**, not against an older ADR, issue, or plan. Keep file:line citations in your notes and the PR description. They never go in the ADR, where they go stale within a sprint.
 
-## How much do you plan first?
+**Look for the alternative nobody raised.** The middle path — deprecate now and remove later, ship the type and defer the runtime — and the option you dismissed in the first minute are the ones a reader will raise.
 
-Enough to know the options are real. You cannot write Considered options without having costed each one, and costing means reading code — so some of this looks like planning. The line:
+## Scope: one proposal a reader can accept or reject whole
 
-**An ADR needs feasibility, not sequencing.** Per option, answer three questions and stop:
+**Put a surface that only makes sense as a whole in one ADR.** A reader has to understand the proposal from one record. Records that cross-link to explain one shape fail that test, and a reader gives up before finding the why.
 
-- Can it be built, or is there something that kills it outright?
-- What breaks — who calls this today, what compiles now that won't after?
-- Is it one PR or ten? The order of magnitude, not the breakdown.
+**Split only when each half reads alone and could land while the other is argued.** Link related ADRs from Motivation or Open questions, and say in the clause what the other one proposes.
 
-Stop investigating an option when you know what would kill it. If you are drafting per-step files or a `Files touched` list to justify a choice, you have gone too far — you are now planning the option that is about to lose.
+## Draft it
 
-**Surfacing the options is the harder half.** Two usually present themselves: what exists today, and the thing someone already proposed. Look for the two that don't:
+1. **Draft into `.github/adr-drafts/<kebab-case-slug>.md`**, which is git-ignored. Copy [docs/adr/template.md](../../../docs/adr/template.md); its comments say what each section settles.
+2. **Claim the number** with `ls docs/adr/`: the next free four-digit number.
+3. **Write the words with [caic-copy-writer](../caic-copy-writer/SKILL.md)'s loop, type 11** — route, draft, measure, revise, gate. The rules are [adr-prose.md](../caic-copy-writer/references/adr-prose.md).
+4. **Keep the five required `##` sections, in template order.** Consumer impact, Drawbacks, and Alternatives are optional: add one when it carries an argument a reader needs, and delete the heading rather than writing "None." under it. `npm run validate:adrs` fails an unknown section, a missing required one, or the wrong order. Use `###` inside a section.
 
-- **The middle path.** Most decisions arrive framed as a binary. Ask what the cheap half looks like — deprecate now and remove later, fix the shape and leave the naming, ship the type and defer the runtime.
-- **The one you rejected before you started.** Whatever you dismissed in the first minute is usually the option a reader will raise. Write it down and say why, or spend the comment window saying it out loud.
+What each section has to settle:
 
-## Two ways in
+| Section | Settles | The test |
+| --- | --- | --- |
+| Summary | Problem, proposal, 2–3 feedback questions | A stranger reading only this can say what's proposed and whether it concerns them |
+| Motivation | Who hits the problem, and why now | Every cost is concrete and stated in consumer terms |
+| Proposal | What a host writes, then `### Reference` with exact types and behavior, explained in JSDoc on the types | Precise enough to review a diff against, and each block readable on its own |
+| Consumer impact _(optional)_ | Before and after code for every host that changes | Silent breaks (UI goes quiet, wrong data) come first. A deprecation isn't impact: the record that retires the thing owns that |
+| Drawbacks _(optional)_ | Costs the proposal accepts, that nothing else in the record already names | Each is a cost of this decision, not a restatement of Consumer impact or packaging |
+| Alternatives _(optional)_ | Only ones someone proposed or a reader would raise | Each names the specific cost that lost it |
+| Open questions | What stays undecided or deferred | Each is a real question, not a to-do |
+| Decision | "Not decided. Feedback by DATE in the RFC discussion linked above." | Filled in only when a maintainer decides |
 
-**Decision first.** Investigate → write the ADR → merge as `proposed` → plan the winner only. The plan's `Decisions` list cites the ADR rather than re-deriving it, and the epic and issues project from the plan as usual.
+## Write Reference sections as commented types
 
-**Promotion, which is more common.** The plan is already underway. `D3` turns out to be something a consumer can feel, so it graduates: write the ADR, shrink `D3` to a pointer, keep going. Most of the investigation is already done — that is why this path is cheaper, and why it is worth reaching for the promotion test during plan review rather than at the start.
+**Put the explanation in JSDoc on the type it describes.** A reader can then lift the block into an editor and still have everything. The alternative — a comment or two in the code, then bullets underneath repeating the rest — makes a reader hold two halves at once, and the halves drift as the proposal changes.
 
-Either way, if the comment window changes the decision, the spine's propagation rule fires downward — Done when first, then whichever artifact the plan's fork produces. See [caic-plan](../caic-plan/SKILL.md#the-spine).
+```ts
+// Don't: half in the code, half underneath.
+interface ChatStore<T> {
+  get: () => T; // current value
+  subscribe: (listener: (value: T) => void) => () => void;
+}
+```
 
-## One decision per ADR
+- **`subscribe` fires only on change**, never on subscribe.
+- **`get()` returns the same reference** until the next change.
 
-If the Decision outcome section needs an "and", you have two ADRs. Split them.
+```ts
+// Do: the block explains itself.
+/**
+ * One value a host can read and watch. `get` and `subscribe` are bound functions, so
+ * they can be passed as bare references.
+ */
+interface ChatStore<T> {
+  /** The current value. Returns the same frozen reference until the next change. */
+  get: () => T;
+  /**
+   * Runs the listener when the value changes, and never on subscribe. Returns the
+   * function that stops it.
+   */
+  subscribe: (listener: (value: T) => void) => () => void;
+}
+```
 
-The tell is the comment window: two decisions in one file means an objection to either half blocks both. Splitting lets one land while the other argues.
+- **Comment what the type can't say**: defaults, what a call rejects on, timing, repeat calls, what clears a value, and which release removes it.
+- **Keep prose after a block for what isn't a type**: packaging, timing, a table of who owns what, a verification note such as a `tsc --strict` check.
+- **`reading-level` strips fenced code**, so the gate cannot see a word of your JSDoc. Read it yourself, and hold it to the same plainness as the prose around it.
 
-Related decisions still get separate files, cross-linked through `More information`. A single ADR covering "the whole messaging contract" is a design doc wearing an ADR's frontmatter.
+## Set `feedback-by`
 
-## Drafting
+**Ask the user for the date.** It depends on who needs to weigh in. Recommend at least 10 working days. Argue for longer when the change reaches widely, when the people likely to object are outside the team, or when the window spans a holiday or a release freeze.
 
-Draft into `.github/adr-drafts/<kebab-case-slug>.md`, which is git-ignored — same convention as plan, issue, and PR drafts. Rename to the real `NNNN-<slug>.md` when you move it into `docs/adr/`.
+**A date passing decides nothing.** A maintainer decides on or after it.
 
-Claim the number with `ls docs/adr/` and take the next free one. Four digits, starting at `0001`. If two ADRs are in flight at once, whoever merges second rebases and renumbers.
+## Review before the PR
 
-Copy [docs/adr/template.md](../../../docs/adr/template.md) rather than writing the sections from memory — it carries the authoring comments for each one.
-
-## Filling in the sections
-
-The sections and what each has to settle are below. **How the words go is [adr-prose.md](../caic-copy-writer/references/adr-prose.md)** — type 11 — and it binds every one of them.
-
-**Context and problem statement.** Why this is on the table now, and what stays broken if nothing changes. Link the epic and issues; don't restate them. Two or three paragraphs. Cite real evidence from the codebase — a type that can't narrow, a field with zero read sites, a TODO naming an upstream package. A context section built from assertions produces a decision nobody can check.
-
-**Considered options.** The reason the file exists. One subsection per option, winner marked. Pros and cons live with the option, not in a second list.
-
-Write each rejected option well enough that a reader who has the same idea next year recognizes it and knows it was already weighed. "Rejected because it was worse" is not a record. Name the specific cost that killed it.
-
-Two rejected options is usually right. One means you didn't look; five means you're padding.
-
-**Decision outcome.** One decision, worded per [adr-prose.md](../caic-copy-writer/references/adr-prose.md) — this is the sentence people quote back at you in review.
-
-**Consequences.** What gets easier, what gets harder, what becomes impossible. Include the costs you took knowingly. An ADR listing only upsides is a pitch, not a record, and it reads as one.
-
-**For consumers.** Required, and the section most likely to be written badly. Before and after code, not prose about migration.
-
-State plainly how a consumer finds out they're affected. A compile error is cheap. A UI that silently goes quiet is expensive, and if that's the case it belongs in the first line of this section. When the honest answer is "nothing changes for consumers", write that — an ADR about internal structure is allowed to say so.
-
-**More information.** The epic, the issues, any ADR this supersedes, external references. The epic's Expected outcomes are how anyone confirms the decision shipped: link them, never copy them. Duplicated outcomes drift.
-
-## Setting the window
-
-`comments-by` is the earliest date the decision should be ratified. **Ask the user what it should be** — it is a judgment about who needs to weigh in and how long that takes, and it differs per ADR.
-
-Recommend **at least 10 working days**. Argue for longer when:
-
-- The blast radius is wide, or the migration is expensive.
-- The people who would object are outside the team, so they have to notice the tracking issue first.
-- The window would span a holiday or a release freeze.
-
-**Silence is not agreement.** The date does not accept the ADR; a person does. `comments-by` gates when that can happen, so a short window buys nothing except an earlier opportunity to decide.
-
-An ADR that merges already decided — a process ADR, or one ratifying something long since shipped — merges as `status: accepted` with `comments-by` empty. Say in the ADR why it skipped the window, so it doesn't read as precedent.
-
-## Review before opening the PR
-
-An ADR is not done when it is written. Close every ADR session by reviewing it with fresh eyes against [adr-review.md](references/adr-review.md) — spawn a sub-agent when sub-agents are available, since reviewing your own options against themselves produces a tautological thumbs-up.
-
-The review looks for different things than a plan review does: strawman alternatives, an option nobody listed, and a consumer-cost section that covers only the breakage a compiler catches. Resolve what it surfaces and bake the resolutions in before the PR.
-
-**The comment window is not the review.** It is for people who were not in the room. An ADR should be right before it merges.
+**Review the draft with fresh eyes against [adr-review.md](references/adr-review.md).** Spawn a sub-agent when sub-agents are available; reviewing your own proposal produces a thumbs-up. Fold what it finds into the draft before the PR.
 
 ## Before anything reaches GitHub
 
-Drafting ends at the file. **Never push a branch, open the PR, or file the tracking issue before the user has read the ADR and said go.** A public repo makes it visible immediately, and deleting it doesn't undo that.
+**Never push, open the PR, or post a discussion until the user has read the ADR and said go.** A public repo makes it visible at once, and deleting it doesn't undo that.
 
-Then, before the commands:
+- **Resolve the repo** with `git remote -v`. If there is more than one remote, ask which one.
+- **Add no agent attribution** to the ADR, the PR, or the discussion.
 
-- **Resolve the repo.** Run `git remote -v`. If more than one remote is configured, or any points somewhere other than where this ADR belongs, ask rather than letting `gh` pick a default.
-- **No agent attribution** in the ADR, the PR, or the issue.
+## Open the PR
 
-## Opening the PR and the tracking issue
+1. **Move the draft to `docs/adr/NNNN-<slug>.md`** and run `npm run sync:adrs` to add the index row.
+2. **Run `npm run validate:adrs`** and fix what it reports.
+3. **Draft the PR description with [caic-pr](../caic-pr/SKILL.md)**, titled `docs: ADR-NNNN <title>`. Put the claim citations from your investigation there.
+4. **Merge once it reads clearly, not once everyone agrees.** It stays `proposed`.
 
-The tracking issue is the comment venue, because GitHub Discussions is off for this repo and review comments on a merged PR stop being findable.
+## Open the RFC discussion, after merge
 
-Draft the PR description with [caic-pr](../caic-pr/SKILL.md) and open it from there — the repo's PR template is Changelog-and-Testing shaped, and an ADR PR needs that adapted, not filled in literally. Title it `docs: ADR-NNNN <title>`.
-
-Then the tracking issue, once the PR exists:
+**Post it once the ADR is on `main`**, so the record link works. Match the [RFC Discussions form](../../../.github/DISCUSSION_TEMPLATE/rfc-discussions.yml): title `[RFC]: <ADR title>`, and `###` headings for **Record**, **Feedback by**, and **Summary**, with the Summary pasted verbatim.
 
 ```bash
-gh issue create --repo <owner>/<repo> \
-  --title "Comment on ADR-NNNN: <title>" --body-file <file>
+gh api graphql -f query='{repository(owner:"carbon-design-system",name:"carbon-ai-chat"){id discussionCategories(first:25){nodes{id slug}}}}'
+gh api graphql -F repositoryId=<id> -F categoryId=<rfc-discussions id> \
+  -F title="[RFC]: <ADR title>" -F body=@<body-file> \
+  -f query='mutation($repositoryId:ID!,$categoryId:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repositoryId,categoryId:$categoryId,title:$title,body:$body}){discussion{url}}}'
 ```
 
-The body comes from the [ADR_COMMENT.yaml](../../../.github/ISSUE_TEMPLATE/ADR_COMMENT.yaml) form — **not** the development-task form, whose fields are all about work to be done and this issue builds nothing. Use `###` headings matching that form's labels, so a `gh`-filed issue and a form-filed one read identically:
+Then **set the ADR's `discussion` field to the URL in a follow-up PR.**
 
-- **Decision** — the ADR's Decision outcome in one sentence, then a link to the record.
-- **Comments by** — the `comments-by` date.
-- **The feedback that helps most** — the form's default prompts, edited if this ADR needs different ones.
-- **Outcome** — left empty until the decision is made.
+## Act on feedback
 
-**One sentence of the ADR, and no more.** Anything else you copy drifts, and people end up arguing with the stale version.
+**Amend a `proposed` ADR in place.** Nothing is ratified yet, so editing it is finishing the draft.
 
-The prompts under the third heading are the public half of [adr-review.md](references/adr-review.md). Asking them outright is what gets a useful comment from someone who has not followed the work; an open-ended "thoughts?" gets naming opinions.
+- **A change to the Proposal pushes `feedback-by` out**, because earlier readers agreed to something else. Rewording and added drawbacks don't.
+- **Edit the discussion's Summary when the ADR's Summary changes**, so readers aren't arguing with a stale copy.
+- **Reply to every substantive comment**, with a link to the amending PR if there is one. When a point doesn't win, say why, and add it to Alternatives if a later reader would raise it too.
+- **When the title no longer describes the proposal, stop amending.** Set `status: rejected`, say in Decision what replaced it, and write a new ADR.
 
-**No label.** The form pins the title prefix, so `is:issue is:open in:title "Comment on ADR"` is already the list of undecided ADRs — a label would be a second copy of what the title says. Keep the title exactly as the form writes it when filing with `gh`, because that search is the only thing holding the set together.
+## Decide
 
-When the ADR is decided, fill in Outcome and close the issue. A closed tracking issue with an empty Outcome tells the next reader nothing.
+**Nothing happens automatically.** On or after `feedback-by`, someone on `@carbon-design-system/carbon-ai-chat-developers` sets `status`, writes the Decision section (what was decided, when, and what feedback changed), and closes the discussion. A rejected ADR gets the same Decision write-up as an accepted one.
 
-Put the issue number in the ADR's `discussion` field and push that change before merge — an ADR on `main` pointing at nothing sends readers to the PR, which is where the comments go to die.
+**If asked whether a `proposed` ADR past its date is settled, the answer is no.** The fix is to decide it.
 
-Expect the PR to be red until you do. `validate:adrs` fails a `proposed` record with no `comments-by` or `discussion`, and the issue can only be filed after the PR exists. That ordering is deliberate: it is what stops an ADR reaching `main` with nowhere to comment.
-
-Add a row to the index table at the bottom of [docs/adr/README.md](../../../docs/adr/README.md) in the same PR. It carries titles only; status lives in frontmatter and nowhere else. `npm run validate:adrs` fails on a missing row.
-
-Merge once the ADR reads clearly, not once everyone agrees. Status stays `proposed`.
-
-## Closing the window
-
-On or after `comments-by`, someone on `@carbon-design-system/carbon-ai-chat-developers` sets `status` and closes the tracking issue.
-
-**Nothing happens automatically.** A window that has closed on a `proposed` ADR means the decision is ready to be made, not that it was made. If you are asked whether such an ADR is settled, the answer is no — and the fix is to go decide it, not to assume.
-
-An objection pushes `comments-by` out. It does not reject the ADR. **Rejection is its own outcome and takes the same write-up as acceptance** — set `status: rejected` and make sure Considered options explains what beat it, so the next person to have the idea learns something.
-
-## Acting on a comment
-
-**A `proposed` ADR is amended in place. An `accepted` one is superseded.** Nothing was ratified while it was `proposed`, so editing it is finishing the draft, not rewriting history.
-
-What a comment earns depends on what it is:
-
-| The comment | What changes | Window |
-| ----------- | ------------- | ------ |
-| The text is unclear | Reword it | Unchanged |
-| An option is missing, and it still loses | Add it to Considered options, with why it lost | Unchanged |
-| An option is missing, and it wins | Rewrite Decision outcome, Consequences, and For consumers | **Extend** |
-| A consumer case is missing from For consumers | Add it | Extend if the decision moves |
-| A constraint nobody knew about | Usually rewrites the decision | **Extend** |
-
-Extend by pushing `comments-by` out, because everyone who already read it agreed to something else. A change that leaves the Decision outcome standing does not need one.
-
-Amend in a normal PR against the ADR. **Then reply on the tracking issue** saying what changed and linking the PR — otherwise the thread reads as though the commenter was ignored, and the next reader cannot tell that a point was taken. Don't add a changelog section to the ADR: git history and the issue thread already carry it, and the record should read as the decision, not as an audit trail.
-
-**Answer every substantive comment, adopted or not.** A "considered this, here is why it still loses" is what gets that person to comment on the next one. Feedback that vanishes into a void does not come back.
-
-If the amendment turns it into a different decision — the title no longer describes it — stop amending. Set `status: rejected`, say in Considered options what replaced it, and write a new ADR.
-
-**After acceptance, supersede instead.** The old reasoning is the record; a reader needs to see what you believed then and what changed. Write a new ADR, set its `supersedes`, then on the old one set `superseded-by` and `status: superseded` — the only edit an accepted ADR takes, beyond a typo or a broken link. Reopening the closed tracking issue is fine for working out whether it is worth one.
+**Supersede an accepted ADR; never rewrite its decision.** The rules are in [README.md](../../../docs/adr/README.md#superseding).
 
 ## Anti-patterns
 
-- **Restating the epic.** If the ADR lists work items or acceptance criteria, it's drifting into the epic's job. The ADR justifies; the epic tracks. Link, don't copy.
-- **A strawman rejected option.** An option nobody seriously proposed makes the record look thorough and teaches nothing. Two real alternatives beat four with padding.
-- **Writing it after the code.** An ADR filed to document a merged PR is a changelog. The point is to be reviewable while the decision is still reversible.
-- **Skipping `For consumers` on a breaking change.** It's the section a reader opens first and the one most often left as a stub.
-- **An ADR per issue.** One decision can govern a whole epic. If a sub-issue needs its own ADR, check that it isn't just implementing the parent's.
+- **Burying the proposal.** If a reader must pass evidence or history to learn what's proposed, move the Summary's claim up and cut the scaffolding.
+- **Arguing from line numbers.** Say what a host experiences; keep citations in the PR.
+- **Padding the optional sections.** An option nobody would propose, or a drawback the record already states elsewhere, makes it look thorough and teaches nothing. Delete the heading instead.
+- **Splitting one surface across records that only make sense together.**
+- **Writing it after the code.** An ADR filed to document a merged PR is a changelog.
+- **A Consumer impact that lists only compile errors.** The silent break is the expensive one. A section that only reassures is one to delete.
+- **Restating the epic.** Work items and acceptance criteria belong to the epic; link it.
 
 ## Related guidance
 
-- [docs/adr/README.md](../../../docs/adr/README.md) — process, numbering, status, and the index
-- [adr-review.md](references/adr-review.md) — the review this skill closes with
-- [caic-plan](../caic-plan/SKILL.md) — where a decision starts life as `D<n>`, and the spine an ADR sits on top of
-- [caic-issue](../caic-issue/SKILL.md) — filing the tracking issue, and the same approval gate
-- [adr-prose.md](../caic-copy-writer/references/adr-prose.md) — how to word every section above
-- [tone.md](../../../references/tone.md) — voice and quick rules for developer-facing copy
+- [docs/adr/README.md](../../../docs/adr/README.md) — lifecycle, numbering, superseding, and the index
+- [adr-review.md](references/adr-review.md) — the fresh-eyes review before the PR
+- [adr-prose.md](../caic-copy-writer/references/adr-prose.md) — how every section is worded
+- [caic-plan](../caic-plan/SKILL.md) — where a decision starts as `D<n>`
+- [caic-pr](../caic-pr/SKILL.md) — the PR description
 
 Task input from the user, if any: $ARGUMENTS

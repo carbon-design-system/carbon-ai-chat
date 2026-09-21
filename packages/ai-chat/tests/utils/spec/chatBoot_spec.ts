@@ -13,6 +13,7 @@ import {
   performInitialViewChange,
   attachUserDefinedResponseHandlers,
   attachCustomFooterHandler,
+  attachCustomRequestFooterHandler,
 } from '../../../src/chat/utils/chatBoot';
 
 import { createBaseTestProps } from '../../test_helpers';
@@ -287,6 +288,106 @@ describe('chatBoot utils', () => {
         type: BusEventType.RESTART_CONVERSATION,
       });
       expect(bySlot).toEqual({});
+    });
+  });
+  describe('attachCustomRequestFooterHandler', () => {
+    it('accumulates one entry per slot and clears them on restart', () => {
+      const handlers: Record<
+        string,
+        (event: BusEvent & { data?: any }) => void
+      > = {};
+      const fakeInstance: any = {
+        on: ({ type, handler }: any) => {
+          handlers[type] = handler;
+        },
+      };
+
+      let bySlot: any = {};
+      const setBySlot = (updater: any) => {
+        bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
+      };
+
+      attachCustomRequestFooterHandler(
+        fakeInstance as unknown as ChatInstance,
+        setBySlot as any,
+        () => true
+      );
+
+      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
+        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+        data: {
+          slotName: 'request-footer-1',
+          message: { id: 'm1', input: { text: 'first' } },
+        },
+      });
+      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
+        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+        data: {
+          slotName: 'request-footer-2',
+          message: { id: 'm2', input: { text: 'second' } },
+        },
+      });
+
+      expect(Object.keys(bySlot)).toEqual([
+        'request-footer-1',
+        'request-footer-2',
+      ]);
+      expect(bySlot['request-footer-1'].message.input.text).toBe('first');
+      expect(bySlot['request-footer-2'].message.input.text).toBe('second');
+
+      handlers[BusEventType.RESTART_CONVERSATION]({
+        type: BusEventType.RESTART_CONVERSATION,
+      });
+      expect(bySlot).toEqual({});
+    });
+
+    it('accumulates nothing until the host has a render callback', () => {
+      const handlers: Record<
+        string,
+        (event: BusEvent & { data?: any }) => void
+      > = {};
+      const fakeInstance: any = {
+        on: ({ type, handler }: any) => {
+          handlers[type] = handler;
+        },
+      };
+
+      let bySlot: any = {};
+      const setBySlot = (updater: any) => {
+        bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
+      };
+
+      // The prop the host has not passed yet. The handler asks on every event,
+      // so it can arrive after the chat has booted.
+      const host: { renderCustomRequestFooter?: () => null } = {};
+
+      attachCustomRequestFooterHandler(
+        fakeInstance as unknown as ChatInstance,
+        setBySlot as any,
+        () => Boolean(host.renderCustomRequestFooter)
+      );
+
+      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
+        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+        data: {
+          slotName: 'request-footer-1',
+          message: { id: 'm1', input: { text: 'before' } },
+        },
+      });
+
+      expect(bySlot).toEqual({});
+
+      host.renderCustomRequestFooter = () => null;
+
+      handlers[BusEventType.CUSTOM_REQUEST_FOOTER_SLOT]({
+        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+        data: {
+          slotName: 'request-footer-2',
+          message: { id: 'm2', input: { text: 'after' } },
+        },
+      });
+
+      expect(Object.keys(bySlot)).toEqual(['request-footer-2']);
     });
   });
 });

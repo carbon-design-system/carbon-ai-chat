@@ -186,7 +186,7 @@ class OutboundMessageCoordinator {
 
     this.setMessageErrorState(pendingRequest, MessageErrorState.NONE);
 
-    // Create a system message to indicate the request was cancelled
+    // Create a system message to indicate the request was canceled
     this.createCancellationSystemMessage();
 
     if (

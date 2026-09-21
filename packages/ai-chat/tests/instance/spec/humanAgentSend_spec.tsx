@@ -11,7 +11,7 @@
  * Specs for the human-agent send path: display_content and structured_data
  * are populated on the MessageRequest handed to the service desk.
  *
- * Behaviours covered:
+ * Behaviors covered:
  *  1. Renderable display content (a mention chip, or text) reaches
  *     input.display_content; an empty doc is dropped rather than carried.
  *  2. Structured data staged on the human-agent slice reaches

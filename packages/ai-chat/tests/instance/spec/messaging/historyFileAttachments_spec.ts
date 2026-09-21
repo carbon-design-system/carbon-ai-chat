@@ -239,7 +239,7 @@ describe('restoring file attachments from history', () => {
 
   it('renders a restored inline file using the fallback label', async () => {
     // A raw File cannot serialize into a HistoryItem, so a restored inline file has
-    // no name to show. The chip still renders, labelled generically.
+    // no name to show. The chip still renders, labeled generically.
     const inlineItem = {
       message: {
         id: 'hist-1',

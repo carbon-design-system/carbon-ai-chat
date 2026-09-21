@@ -35,11 +35,19 @@ const ROOT_AGENTS_FILE = 'AGENTS.md';
 // The chain budget exists because per-file limits cannot see cumulative cost.
 // Codex concatenates every AGENTS.md from the repo root down to the working
 // directory and silently stops at `project_doc_max_bytes` — dropping the
-// deepest file, which is the most specific guidance. This budget is set well
-// under that cap so CI fails first, with a message, instead of a contributor
+// deepest file, which is the most specific guidance. This budget is set under
+// that cap so CI fails first, with a message, instead of a contributor
 // silently losing the tail of the chain.
-const MAX_FILE_BYTES = 8 * 1024;
-const MAX_CHAIN_BYTES = 24 * 1024;
+//
+// It is measured against Codex's 32 KiB default for `project_doc_max_bytes`,
+// not against the 64 KiB that .codex/config.toml sets. That override loads
+// only once a contributor marks the repo trusted, so anyone who has not still
+// gets the default — budget against the number every contributor has. The
+// 4 KiB between this budget and that default is room for a personal
+// ~/.codex/AGENTS.md, which stacks on top of the repo chain and which this
+// gate cannot see.
+const MAX_FILE_BYTES = 12 * 1024;
+const MAX_CHAIN_BYTES = 28 * 1024;
 
 let errors = 0;
 let warnings = 0;

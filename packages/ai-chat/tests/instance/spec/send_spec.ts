@@ -381,7 +381,7 @@ describe('ChatInstance.send', () => {
         // Give it a moment to start processing
         await new Promise((resolve) => setTimeout(resolve, 50));
 
-        // Simulate clicking stop button by cancelling via serviceManager
+        // Simulate clicking stop button by canceling via serviceManager
         await (
           instance as any
         ).serviceManager.messageService.cancelCurrentMessageRequest();
@@ -418,7 +418,7 @@ describe('ChatInstance.send', () => {
         config.messaging = {
           showStopButtonImmediately: true,
           customSendMessage: async (message, { signal }) => {
-            // Simulate delayed response that can be cancelled
+            // Simulate delayed response that can be canceled
             return new Promise<void>((resolve, reject) => {
               const timeoutId = setTimeout(() => {
                 if (signal.aborted) {

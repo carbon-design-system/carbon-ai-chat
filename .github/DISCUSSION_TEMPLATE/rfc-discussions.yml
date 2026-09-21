@@ -1,0 +1,35 @@
+title: '[RFC]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One discussion per architecture decision record, opened by its author after the record merges as `proposed`. Title it `[RFC]: ` followed by the ADR's title.
+
+        **To give feedback on a proposal, reply in its existing discussion.** Don't open a new one.
+  - type: input
+    id: record
+    attributes:
+      label: Record
+      description: 'Link to the ADR on main.'
+      placeholder: 'https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/NNNN-slug.md'
+    validations:
+      required: true
+  - type: input
+    id: feedback-by
+    attributes:
+      label: Feedback by
+      description: "The ADR's feedback-by date: the earliest it can be decided. Nothing is decided by the date passing."
+      placeholder: 'YYYY-MM-DD'
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: "Paste the ADR's Summary section: problem, proposal, and feedback wanted. If the Summary changes later, edit this to match."
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Feedback that changes the proposal gets folded into the record, and every substantive reply gets an answer. Silence isn't agreement: nothing is accepted until a maintainer sets the status.

@@ -4,9 +4,17 @@ Load this when you tag a public symbol, or when a symbol renders in the wrong pl
 
 ## `@category` — required on every top-level export
 
-`@category` places the symbol in the docs navigation. Allowed values are whatever `categoryOrder` lists in [../../../typedoc.json](../../../typedoc.json) — read them from there rather than from a copy that can drift. Today the vocabulary covers the React and Web-component entry points, `Config`, `Instance`, `Events`, `Service desk`, `Messaging`, `Testing`, and `Utilities`.
+`@category` places the symbol in the docs navigation. Allowed values are whatever `categoryOrder` lists in [../../../typedoc.json](../../../typedoc.json) — read them from there rather than from a copy that can drift. Today the vocabulary covers the React, Web-component, and SDK entry points, plus `Config`, `Instance`, `Events`, `Service desk`, `Messaging`, `Testing`, and `Utilities`.
 
 An untagged symbol falls into the `*` catchall. That bucket is not a valid destination — it is the sign that an author forgot.
+
+**A symbol can carry more than one `@category`.** TypeDoc collects every tag on a symbol into a set, so the symbol is listed under each one, with no second copy to drift.
+
+### `SDK`, and why a symbol lands in two categories
+
+**Anything reachable from the headless SDK surface is tagged `SDK`**, so that one page is the whole surface and a reader never leaves it to find out what a value holds. A type that belongs to the conversation alone carries `SDK` by itself. A type shared with the prebuilt chat — `Message`, `StructuredData`, `ResponseUserProfile` — carries `SDK` alongside the category it already has.
+
+**A type the SDK surface names is also named `ChatSDK…`**, and where that name already ships, today's name extends the SDK's rather than being renamed: `interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {}`. The extension runs outward only — the prebuilt chat's types extend the SDK's, never the reverse. ADR-0002 decides both rules.
 
 ## `@experimental`
 

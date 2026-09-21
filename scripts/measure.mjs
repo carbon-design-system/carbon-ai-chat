@@ -13,7 +13,7 @@
  *
  * The tools score what a parser sees inside a function, so a clean run proves
  * function-level shape and nothing else. This adds what only the diff shows:
- * each new file's size beside its neighbours, what the added comments are made
+ * each new file's size beside its neighbors, what the added comments are made
  * of, and the tells that mean "read this line".
  *
  * Usage:

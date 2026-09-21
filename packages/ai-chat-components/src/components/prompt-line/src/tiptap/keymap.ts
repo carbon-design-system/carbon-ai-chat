@@ -13,7 +13,7 @@
  * - `Mod-Enter` → emit `cds-aichat-prompt-send-intent`. The shell decides
  *   whether to honor (re-dispatch as `cds-aichat-input-send`) or gate
  *   (`isSendDisabled` per PLAN.md decision 19).
- * - `Escape` → blur the editor.
+ * - `Escape` → no-op (returns `false`; host `<dialog>`/`Modal` sees it).
  * - Plain `Enter` is not bound here. `<cds-aichat-prompt-line>` adds
  *   `carbonChatEnter` to its base bundle for "Enter sends, Shift-Enter
  *   newlines"; this extension stays Enter-agnostic so it can be reused on its
@@ -45,9 +45,8 @@ export const Keymap = Extension.create({
         );
         return true;
       },
-      Escape: ({ editor }) => {
-        (editor.view.dom as HTMLElement).blur();
-        return true;
+      Escape: () => {
+        return false;
       },
     };
   },

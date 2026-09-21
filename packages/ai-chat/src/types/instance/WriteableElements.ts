@@ -112,4 +112,20 @@ export enum WriteableElementName {
    * An element to be housed in the history panel.
    */
   HISTORY_PANEL_ELEMENT = 'historyPanelElement',
+
+  /**
+   * An element that replaces the out-of-the-box chat header. When the host
+   * supplies content for this slot, the chat renders no header of its own and
+   * the content fills the header area directly.
+   *
+   * Every {@link HeaderConfig} field is ignored while this element has content,
+   * except {@link HeaderConfig.isOn} — set it to `false` to hide the header
+   * area entirely, host content included. Writeable elements rendered inside
+   * the out-of-the-box header are replaced along with it, so
+   * {@link WriteableElementName.HEADER_FIXED_ACTIONS_ELEMENT} does not render.
+   * {@link WriteableElementName.HEADER_BOTTOM_ELEMENT} and
+   * {@link WriteableElementName.HOME_SCREEN_HEADER_BOTTOM_ELEMENT} are
+   * unaffected — they sit below the header, not inside it.
+   */
+  CUSTOM_HEADER = 'customHeader',
 }

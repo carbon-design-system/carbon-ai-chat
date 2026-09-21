@@ -103,6 +103,29 @@ type RenderCustomMessageFooter = (
 ) => ReactNode | null;
 
 /**
+ * The type of the render function that is used to render a custom footer below a user message. This function should
+ * return a component that renders the footer, or null to render nothing.
+ *
+ * Passing this function is how you opt in. Leave it off and user messages have no footer, which is why it is separate
+ * from {@link RenderCustomMessageFooter} rather than part of it.
+ *
+ * @param slotName The unique identifier for this footer slot. Treat it as opaque: it is a key for your render
+ * function, not a reference you can parse. It is also regenerated when the chat restores a message from history, so
+ * don't key durable state off it.
+ * @param message The message as the user submitted it, which is what the bubble on screen shows. A
+ * {@link BusEventType.PRE_SEND} handler runs later and may rewrite the text the assistant receives, so this can
+ * differ from what was sent.
+ * @param instance The current instance of the Carbon AI Chat.
+ *
+ * @category React
+ */
+type RenderCustomRequestFooter = (
+  slotName: string,
+  message: MessageRequest,
+  instance: ChatInstance
+) => ReactNode | null;
+
+/**
  * The type of the render function that is used to render user defined responses. This function should return a
  * component that renders the display for the message contained in the given event.
  *
@@ -172,6 +195,51 @@ interface RenderCustomMessageFooterState {
  */
 type WCRenderCustomMessageFooter = (
   state: RenderCustomMessageFooterState,
+  instance: ChatInstance
+) => HTMLElement | null;
+
+/**
+ * The accumulated state for one custom footer slot below a user message, passed to the web component
+ * {@link WCRenderCustomRequestFooter} callback.
+ *
+ * @category Web component
+ */
+interface RenderCustomRequestFooterState {
+  /**
+   * The unique identifier for this footer slot. Treat it as opaque: it is a key for your render function, not a
+   * reference you can parse. It is also regenerated when the chat restores a message from history, so don't key
+   * durable state off it.
+   */
+  slotName: string;
+
+  /**
+   * The message as the user submitted it, which is what the bubble on screen shows. A
+   * {@link BusEventType.PRE_SEND} handler runs later and may rewrite the text the assistant receives, so this can
+   * differ from what was sent.
+   */
+  message: MessageRequest;
+}
+
+/**
+ * The render function used to render a custom footer below a user message in web components. When provided, the
+ * library manages all event listening, slot tracking, and element lifecycle. The callback receives the accumulated
+ * state and should return an HTMLElement to display, or null to render nothing.
+ *
+ * Passing this function is how you opt in. Leave it off and user messages have no footer.
+ *
+ * This runs on every render, so return the same element for a given `slotName` each time. A fresh element replaces
+ * the node in the DOM, which re-mounts your footer and fires `disconnectedCallback` on a custom element. Cache the
+ * element per slot and update its properties instead.
+ *
+ * This is the web component analogue of {@link RenderCustomRequestFooter}.
+ *
+ * @param state The accumulated state for this footer slot.
+ * @param instance The current instance of Carbon AI Chat.
+ *
+ * @category Web component
+ */
+type WCRenderCustomRequestFooter = (
+  state: RenderCustomRequestFooterState,
   instance: ChatInstance
 ) => HTMLElement | null;
 
@@ -635,6 +703,12 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   renderCustomMessageFooter?: RenderCustomMessageFooter;
 
   /**
+   * This is the function that this component will call when a footer below a user message should be rendered.
+   * Leave it off and user messages have no footer.
+   */
+  renderCustomRequestFooter?: RenderCustomRequestFooter;
+
+  /**
    * This is the function that this component will call when a user defined response should be rendered.
    */
   renderUserDefinedResponse?: RenderUserDefinedResponse;
@@ -667,12 +741,15 @@ export {
   CustomMarkdownRenderers,
   RenderCustomMessageFooter,
   RenderCustomMessageFooterState,
+  RenderCustomRequestFooter,
+  RenderCustomRequestFooterState,
   RenderUserDefinedResponse,
   RenderWriteableElementResponse,
   RenderUserDefinedState,
   WCCustomMarkdownRenderers,
   WCMarkdown,
   WCRenderCustomMessageFooter,
+  WCRenderCustomRequestFooter,
   WCRenderUserDefinedResponse,
   RenderUserDefinedInputNode,
   RenderUserDefinedInputNodeState,

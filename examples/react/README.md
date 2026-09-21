@@ -228,6 +228,26 @@ Code-split `ChatCustomElement` with a `ChatShell` overlay that covers both bundl
 
 </details>
 
+### [Custom header](./custom-header/README.md)
+
+Replaces the built-in chat header with a custom React element using `WriteableElementName.CUSTOM_HEADER`. The framework header is never mounted when this slot has content — there is no intermediate render where both are visible.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-custom-header`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `WriteableElementName.CUSTOM_HEADER` | `@carbon/ai-chat` enum value | Key for the header replacement slot. |
+| `renderWriteableElements` | component prop | Map of slot names to React elements; `CUSTOM_HEADER` entry replaces the built-in header. |
+| `messaging.customSendMessage` | config prop | Mock backend. |
+| `layout.showFrame` | config prop | Disables the built-in frame for the fullscreen surface. |
+| `openChatByDefault` | config prop | Opens the chat on mount. |
+
+</details>
+
 ### [Feedback](./feedback/README.md)
 
 React example that subscribes to `BusEventType.FEEDBACK` and forwards `FeedbackInteractionType.SUBMITTED` events to the host page.
@@ -551,6 +571,27 @@ Render your own content beneath an assistant message — here a copy button — 
 | `messaging.customSendMessage` | `@carbon/ai-chat` config prop | Mock backend that attaches the footer slot. |
 | `message_item_options.custom_footer_slot` | `@carbon/ai-chat` message field | Enables the footer and carries `additional_data`. |
 | `layout.showFrame` / `openChatByDefault` | `@carbon/ai-chat` config props | Full-screen baseline. |
+
+</details>
+
+### [Custom request footer](./messages-custom-request-footer/README.md)
+
+Render your own content beneath a user message — here a copy button — with the `renderCustomRequestFooter` render prop.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-messages-custom-request-footer`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat into a host element you style. |
+| `renderCustomRequestFooter` | `@carbon/ai-chat` component prop | Renders the footer under each user message. |
+| `RenderCustomRequestFooter` | `@carbon/ai-chat` type | Types the footer render prop. |
+| `MessageRequest` | `@carbon/ai-chat` type | Carries `input.text`, the message as the user submitted it. |
+| `messaging.customSendMessage` | `@carbon/ai-chat` config prop | Mock backend that replies with text. |
+| `layout.showFrame` / `openChatByDefault` | `@carbon/ai-chat` config props | Full-screen baseline. |
+| `CopyButton` | `@carbon/react` component | Copies the text and shows a "Copied" confirmation. |
 
 </details>
 
