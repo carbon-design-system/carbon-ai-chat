@@ -149,27 +149,46 @@ import { CornersType, PerCornerConfig } from '@carbon/ai-chat';
 
 ### Corner CSS custom properties
 
-To round your own slotted content to match, read the per-corner radius tokens. Each is RTL-safe and defaults to `layout.$spacing-03` (`0.5rem` / `8px`):
+To round your own slotted content to match, read the radius tokens. The system uses a two-tier fallback: set `--cds-aichat-border-radius` (defaults to `0.5rem` / `8px`) to round all corners uniformly, or override individual RTL-safe corners:
 
+- `--cds-aichat-border-radius` (base token)
 - `--cds-aichat-border-radius-start-start`
 - `--cds-aichat-border-radius-start-end`
 - `--cds-aichat-border-radius-end-start`
 - `--cds-aichat-border-radius-end-end`
 
-Apply them with the matching logical `border-*-radius` properties so rounding follows text direction:
+Apply them with the matching logical `border-*-radius` properties using the fallback chain so rounding follows text direction:
 
 ```css
 .my-custom-surface {
-  border-start-start-radius: var(--cds-aichat-border-radius-start-start, 0);
-  border-start-end-radius: var(--cds-aichat-border-radius-start-end, 0);
-  border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
-  border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  border-start-start-radius: var(
+    --cds-aichat-border-radius-start-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-start-end-radius: var(
+    --cds-aichat-border-radius-start-end,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-start-radius: var(
+    --cds-aichat-border-radius-end-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-end-radius: var(
+    --cds-aichat-border-radius-end-end,
+    var(--cds-aichat-border-radius)
+  );
 }
 
 .my-custom-card {
   /* Round only the top corners */
-  border-start-start-radius: var(--cds-aichat-border-radius-start-start);
-  border-start-end-radius: var(--cds-aichat-border-radius-start-end);
+  border-start-start-radius: var(
+    --cds-aichat-border-radius-start-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-start-end-radius: var(
+    --cds-aichat-border-radius-start-end,
+    var(--cds-aichat-border-radius)
+  );
 }
 ```
 

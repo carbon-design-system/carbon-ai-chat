@@ -642,6 +642,28 @@ describe('cds-aichat-shell', function () {
           )
         ).to.equal('0.5rem');
       });
+
+      it('should inherit border-radius from --cds-aichat-border-radius when corner-specific property is undefined', async () => {
+        const el = await fixture<CDSAIChatShell>(
+          html`<cds-aichat-shell
+            style="--cds-aichat-border-radius: 12px;"></cds-aichat-shell>`
+        );
+        await el.updateComplete;
+        const shell = el.shadowRoot!.querySelector<HTMLElement>('.shell');
+        expect(shell).to.exist;
+        const header = document.createElement('cds-aichat-chat-header');
+        header.setAttribute('overflow', 'true');
+        shell!.appendChild(header);
+        await header.updateComplete;
+
+        const overflowMenu =
+          header.shadowRoot!.querySelector('cds-overflow-menu');
+        if (overflowMenu) {
+          const menuStyle = getComputedStyle(overflowMenu);
+          // calc(var(--cds-aichat-border-radius-start-start, var(--cds-aichat-border-radius)) - 1px) = 11px
+          expect(menuStyle.borderStartStartRadius).to.equal('11px');
+        }
+      });
     });
 
     describe('Slot Content Detection', () => {
