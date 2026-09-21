@@ -163,6 +163,11 @@ export interface HeaderConfig {
    * {@link WriteableElementName.AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT}
    * writeable element will be removed.
    *
+   * @deprecated The default popover body content is now hidden automatically
+   * when {@link WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT} contains
+   * meaningful content. Setting this property explicitly is no longer necessary
+   * and support for it will be removed in a future release.
+   *
    * @default false
    */
   hideDefaultAiLabelContent?: boolean;

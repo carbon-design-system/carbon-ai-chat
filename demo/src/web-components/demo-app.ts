@@ -593,10 +593,7 @@ export class DemoApp extends LitElement {
               }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-              .header=${{
-                ...this.config.header,
-                hideDefaultAiLabelContent: true,
-              }}
+              .header=${this.config.header}
               .layout=${this.config.layout}
               .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
@@ -636,10 +633,7 @@ export class DemoApp extends LitElement {
               }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-              .header=${{
-                ...this.config.header,
-                hideDefaultAiLabelContent: true,
-              }}
+              .header=${this.config.header}
               .layout=${this.config.layout}
               .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}
@@ -680,10 +674,7 @@ export class DemoApp extends LitElement {
               }
               .namespace=${this.config.namespace ?? undefined}
               .shouldSanitizeHTML=${this.config.shouldSanitizeHTML ?? undefined}
-              .header=${{
-                ...this.config.header,
-                hideDefaultAiLabelContent: true,
-              }}
+              .header=${this.config.header}
               .layout=${this.config.layout}
               .markdown=${this._markdownConfig}
               .messaging=${this.config.messaging}

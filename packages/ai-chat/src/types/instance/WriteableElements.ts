@@ -29,8 +29,8 @@ export enum WriteableElementName {
   AI_TOOLTIP_AFTER_DESCRIPTION_ELEMENT = 'aiTooltipAfterDescriptionElement',
 
   /**
-   * An element that appears in the header's AI label popover body. When content is provided to this slot,
-   * `HeaderConfig.hideDefaultAiLabelContent` should be set to true.
+   * An element that appears in the header's AI label popover body. When this slot contains meaningful
+   * content, the default popover body is hidden automatically.
    */
   EXPLAINABILITY_POPOVER_CONTENT = 'explainabilityPopoverContent',
 

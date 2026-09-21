@@ -33,6 +33,7 @@ import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
 import type { ToolbarAction } from '@carbon/ai-chat-components/es/react/toolbar.js';
 import { useSelector } from '../../hooks/useSelector';
 import { useServiceManager } from '../../hooks/useServiceManager';
+import { useWriteableElementPresence } from '../../hooks/useWriteableElementPresence';
 import { shallowEqual } from '../../store/appStore';
 import { selectHumanAgentDisplayState } from '../../store/selectors';
 import { WriteableElementName } from '../../utils/constants';
@@ -252,8 +253,13 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
     },
   }));
 
+  const explainabilityContentPresent = useWriteableElementPresence(
+    WriteableElementName.EXPLAINABILITY_POPOVER_CONTENT,
+    serviceManager.writeableElements
+  );
+
   const hideDefaultAiLabelContent =
-    headerConfig?.hideDefaultAiLabelContent ?? false;
+    explainabilityContentPresent || headerConfig?.hideDefaultAiLabelContent;
 
   const explainabilityPopoverContentElement = (
     <WriteableElement

@@ -471,10 +471,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
   }
 
-  const headerConfig = {
-    ...config.header,
-    hideDefaultAiLabelContent: true,
-  };
+  const headerConfig = config.header;
 
   // Memoized because `markdown` is compared by reference: a fresh literal each
   // render would rebuild every custom-renderer host on every parent update.
