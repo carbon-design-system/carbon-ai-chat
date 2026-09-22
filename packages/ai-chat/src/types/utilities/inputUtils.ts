@@ -35,7 +35,7 @@ import {
   textToDoc as _textToDoc,
   renderTokenChip as _renderTokenChip,
   renderInLightDom as _renderInLightDom,
-} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+} from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/index.js';
 import type {
   RenderInLightDomArgs as _RenderInLightDomArgs,
   RenderInLightDomResult as _RenderInLightDomResult,
