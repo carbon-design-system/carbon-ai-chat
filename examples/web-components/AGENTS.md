@@ -11,10 +11,6 @@ Workspace naming: `@carbon/ai-chat-examples-web-components-<slug>`.
 
 **Carbon flavor**: `@carbon/web-components`. No JSX and no `@carbon/react` — if a Carbon snippet arrives as React (the `carbon-builder` skill defaults to it), rewrite it as a custom element before saving. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area).
 
-## Smoke-test setup
-
-Reuse Jest wiring from [`../react/tests-jest-jsdom/`](../react/tests-jest-jsdom/) — nearest reference for workspace-dep resolution. A sufficient spec instantiates the custom element, asserts it upgrades without error, and does one round-trip behavior (e.g. send one message via `customSendMessage`).
-
 ## APIs-and-props table headers
 
 `Symbol | Kind | Role in this example` — entries are custom-element tags, attributes, properties, events, and slots. Example row: `\`<cds-aichat-container>\` | custom element | Mounts the chat UI.`

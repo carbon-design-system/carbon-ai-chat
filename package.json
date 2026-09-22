@@ -42,6 +42,7 @@
     "lint:styles": "stylelint '**/*.scss' --report-needless-disables --report-invalid-scope-disables",
     "telemetry:config": "lerna run telemetry:config",
     "test": "lerna run test --stream",
+    "test:e2e": "lerna run test:e2e --stream",
     "validate:adrs": "node tools/validate-adrs.js",
     "validate:agents": "node tools/validate-agents-docs.js",
     "validate:skills": "node tools/validate-skills.js",
