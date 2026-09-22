@@ -12,62 +12,80 @@
  * paint — plus the baseline every example carries: it mounts with no console
  * errors and completes one message round-trip.
  *
- * Selects only through `PageObjectId`, so the assertions hold wherever the
- * chat's markup changes.
+ * Also covers default hide-on-close: no `onViewChange` is supplied, so closing
+ * falls back to the built-in behavior of collapsing the host element.
  */
 
 import { PageObjectId } from '@carbon/ai-chat/server';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { watchForConsoleErrors } from '../../../shared/playwright/helpers';
 
-/** Collects console errors so a test can assert the page stayed clean. */
-function watchForConsoleErrors(page: Page) {
-  const errors: string[] = [];
-  page.on('console', (message) => {
-    if (message.type() === 'error') {
-      errors.push(message.text());
-    }
+test.describe('basic fullscreen', async () => {
+  let errors: string[] = [];
+
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+
+    await page.goto('/');
+
+    watchForConsoleErrors(page, errors);
   });
-  page.on('pageerror', (error) => errors.push(String(error)));
-  return errors;
-}
 
-test('mounts fullscreen and open, with no console errors', async ({ page }) => {
-  const errors = watchForConsoleErrors(page);
+  test.afterEach(async () => {
+    await expect.poll(() => errors).toEqual([]);
+  });
 
-  await page.goto('/');
+  test('mounts fullscreen and open, with no console errors', async ({
+    page,
+  }) => {
+    // `openChatByDefault` means the conversation is up without a launcher click.
+    await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible();
 
-  // `openChatByDefault` means the conversation is up without a launcher click.
-  await expect(page.getByTestId(PageObjectId.INPUT)).toBeVisible();
+    // `showFrame: false` leaves no 'show-frame' attribute on the shell host, so
+    // the chat fills its container rather than sitting in a framed window.
+    await expect(
+      page.getByTestId(PageObjectId.CHAT_WIDGET)
+    ).not.toHaveAttribute('show-frame');
+  });
 
-  // `showFrame: false` leaves no 'show-frame' attribute on the shell host, so
-  // the chat fills its container rather than sitting in a framed window.
-  await expect(page.getByTestId(PageObjectId.CHAT_WIDGET)).not.toHaveAttribute(
-    'show-frame'
-  );
+  test('completes one message round-trip', async ({ page }) => {
+    // The input is a contenteditable with no dependable accessible name, so use
+    // the library's maintained test-id contract rather than a role.
+    const input = page.getByTestId(PageObjectId.INPUT);
+    await expect(input).toBeVisible();
+    await input.fill('text');
 
-  // Poll rather than read once: a deferred chunk or a late import can raise
-  // after the assertions above settle.
-  await expect.poll(() => errors).toEqual([]);
-});
+    // The send button does expose a stable accessible name, so prefer the
+    // user-facing locator — it doubles as an accessibility check.
+    await page.getByRole('button', { name: /send/i }).click();
 
-test('completes one message round-trip', async ({ page }) => {
-  await page.goto('/');
+    await expect(
+      page
+        .getByTestId(PageObjectId.MAIN_PANEL)
+        .getByText('Lorem ipsum odor amet, consectetuer adipiscing elit.', {
+          exact: false,
+        })
+    ).toBeVisible();
+  });
 
-  // The input is a contenteditable with no dependable accessible name, so use
-  // the library's maintained test-id contract rather than a role.
-  const input = page.getByTestId(PageObjectId.INPUT);
-  await expect(input).toBeVisible();
-  await input.fill('text');
+  test('closing collapses the host, the default with no onViewChange', async ({
+    page,
+  }) => {
+    await expect(page.getByTestId(PageObjectId.CHAT_WIDGET)).toBeVisible();
 
-  // The send button does expose a stable accessible name, so prefer the
-  // user-facing locator — it doubles as an accessibility check.
-  await page.getByRole('button', { name: /send/i }).click();
+    // The example's own host element, sized by the className it passes to
+    // ChatCustomElement. Not a chat internal.
+    const host = page.locator('.chat-custom-element');
+    expect((await host.boundingBox())?.width).toBeGreaterThan(0);
 
-  await expect(
-    page
-      .getByTestId(PageObjectId.MAIN_PANEL)
-      .getByText('Lorem ipsum odor amet, consectetuer adipiscing elit.', {
-        exact: false,
-      })
-  ).toBeVisible();
+    await page.getByRole('button', { name: /close|minimi/i }).click();
+
+    // With no `onViewChange`, the chat collapses the host to 0x0. Supplying any
+    // callback hands sizing to the host and leaves it at full size, so asserting
+    // only that the chat is hidden would pass either way — the inner contents are
+    // hidden regardless, to avoid invisible tab stops.
+    await expect.poll(async () => (await host.boundingBox())?.width).toBe(0);
+
+    await expect(page.getByTestId(PageObjectId.LAUNCHER)).toBeVisible();
+  });
 });

@@ -5,6 +5,6 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import defineBaseConfig from '../../shared/playwright/baseConfig';
+import defineBaseConfig from '../../shared/playwright/baseConfig.mts';
 
 export default defineBaseConfig();

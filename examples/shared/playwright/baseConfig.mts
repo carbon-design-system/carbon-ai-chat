@@ -7,7 +7,7 @@
 import { defineConfig, devices, PlaywrightTestConfig } from 'playwright/test';
 import { createServer } from 'node:net';
 import type { AddressInfo } from 'node:net';
-import _ from 'lodash';
+import { mergeWith } from 'lodash';
 
 /** Ask the OS for an unused port by binding port 0 and reading it back. */
 async function probeFreePort(): Promise<number> {
@@ -60,13 +60,11 @@ function defineBaseConfig(
     projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   };
 
-  // Safely deep merge into a brand new object
-  const finalConfig = _.mergeWith(
+  const finalConfig = mergeWith(
     {},
     defaults,
     options,
     (objValue, srcValue) => {
-      // If the value being merged is an array, completely overwrite it with the user's array
       if (Array.isArray(objValue)) {
         return srcValue;
       }
