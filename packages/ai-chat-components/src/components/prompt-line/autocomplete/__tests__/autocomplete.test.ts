@@ -49,22 +49,48 @@ describe('cds-aichat-autocomplete', () => {
     },
   ];
 
+  async function defaultFixture(
+    overrides: Partial<{
+      items: SuggestionItem[];
+      groups: SuggestionItemGroup[];
+      disableDirectSend: boolean;
+      inputText: string;
+      attached: boolean;
+      headerConfig: { showHeader: boolean; title: string };
+      i18n: typeof defaultAutocompleteI18n;
+    }> = {}
+  ): Promise<AutocompleteElement> {
+    const {
+      items = mockItems,
+      groups,
+      disableDirectSend,
+      inputText,
+      attached,
+      headerConfig,
+      i18n,
+    } = overrides;
+    return fixture<AutocompleteElement>(html`
+      <cds-aichat-autocomplete
+        .items="${items}"
+        .groups="${groups ?? []}"
+        .disableDirectSend="${disableDirectSend ?? false}"
+        input-text="${inputText ?? ''}"
+        .attached="${attached ?? true}"
+        .headerConfig="${headerConfig}"
+        .i18n="${i18n ?? defaultAutocompleteI18n}"></cds-aichat-autocomplete>
+    `);
+  }
+
   describe('flat items', () => {
     it('should render flat items as list options', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       expect(options?.length).to.equal(2);
     });
 
     it('renders the send icon affordance on items when disableDirectSend is false (default)', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const sendIcons = el.shadowRoot?.querySelectorAll(
         'li[role="option"] .cds-aichat-autocomplete-item__send-icon'
@@ -73,11 +99,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('does not render send icon when disableDirectSend is true', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .disableDirectSend="${true}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ disableDirectSend: true });
 
       const sendIcons = el.shadowRoot?.querySelectorAll(
         'li[role="option"] .cds-aichat-autocomplete-item__send-icon'
@@ -86,10 +108,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('has role=option on flat list items', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       options?.forEach((li) => {
@@ -98,10 +117,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('has tabindex=-1 on items so focus stays in the editor', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       options?.forEach((li) => {
@@ -110,10 +126,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('sets aria-selected=false on all items (focus is tracked via aria-activedescendant)', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       options?.forEach((option) => {
@@ -124,10 +137,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('adds active class and updates aria-activedescendant when item is focused', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       // First item is auto-focused on render
       const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
@@ -142,11 +152,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('displays input text in bold when label starts with typed text', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          input-text="Hello"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ inputText: 'Hello' });
 
       const firstOption = el.shadowRoot?.querySelector('li[role="option"]');
       const typedSpan = firstOption?.querySelector(
@@ -248,11 +254,7 @@ describe('cds-aichat-autocomplete', () => {
 
   describe('mixed flat and grouped items', () => {
     it('should render both flat items and groups together', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .groups="${mockGroups}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ groups: mockGroups });
 
       // When groups are present the listbox is a div (not ul) to avoid ul > ul.
       // Flat items are wrapped in an implicit ul[role="group"].
@@ -284,11 +286,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should navigate across flat and grouped items with arrow keys', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .groups="${mockGroups}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ groups: mockGroups });
 
       // First item is already focused, navigate down 2 more times to reach first group item
       el.dispatchEvent(
@@ -319,14 +317,9 @@ describe('cds-aichat-autocomplete', () => {
 
   describe('header', () => {
     it('should render header when headerConfig.showHeader is true', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .headerConfig="${{
-            showHeader: true,
-            title: 'Test Header',
-          }}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({
+        headerConfig: { showHeader: true, title: 'Test Header' },
+      });
 
       const header = el.shadowRoot?.querySelector(
         '.cds-aichat-autocomplete__header'
@@ -339,14 +332,9 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should not render header when showHeader is false', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .headerConfig="${{
-            showHeader: false,
-            title: 'Test Header',
-          }}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({
+        headerConfig: { showHeader: false, title: 'Test Header' },
+      });
 
       const header = el.shadowRoot?.querySelector(
         '.cds-aichat-autocomplete__header'
@@ -357,10 +345,7 @@ describe('cds-aichat-autocomplete', () => {
 
   describe('events', () => {
     it('should emit send event when item is clicked (label falls back when no value)', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       let eventDetail: any = null;
       el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
@@ -384,10 +369,7 @@ describe('cds-aichat-autocomplete', () => {
         value: 'inserted-value',
         description: 'Item where label and value differ',
       };
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[itemWithValue]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [itemWithValue] });
 
       let eventDetail: any = null;
       el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
@@ -407,10 +389,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should not emit select event when item is clicked (disableDirectSend=false, default)', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       let selectEventFired = false;
 
@@ -427,11 +406,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should emit select event (not send) when item is clicked and disableDirectSend is true', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .disableDirectSend="${true}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ disableDirectSend: true });
 
       let selectDetail: any = null;
       let sendFired = false;
@@ -454,10 +429,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should emit dismiss event when Escape is pressed', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       let dismissEventFired = false;
       el.addEventListener('cds-aichat-autocomplete-dismiss', () => {
@@ -478,10 +450,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should not emit dismiss event when anchor element inside a shadow root is clicked', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const host = document.createElement('div');
       document.body.appendChild(host);
@@ -517,10 +486,7 @@ describe('cds-aichat-autocomplete', () => {
       // The autocomplete-controller dispatches a synthetic KeyboardEvent directly
       // on the registered list element. Verify the element handles it identically
       // to a user-initiated keydown so the custom-list code path works.
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
@@ -538,10 +504,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should move focus down with ArrowDown', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       // First item is auto-focused on render
@@ -568,10 +531,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should move focus up with ArrowUp', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       // Navigate to second item
       el.dispatchEvent(
@@ -600,11 +560,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should jump to first item with Home key', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .groups="${mockGroups}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ groups: mockGroups });
 
       // Navigate to last item
       el.dispatchEvent(
@@ -633,11 +589,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should jump to last item with End key', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .groups="${mockGroups}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ groups: mockGroups });
 
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
@@ -656,10 +608,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should send item with Enter key', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       let eventDetail: any = null;
       el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
@@ -683,10 +632,7 @@ describe('cds-aichat-autocomplete', () => {
 
   describe('hover navigation', () => {
     it('mouseenter on a non-active row makes it the active option', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       // First item is auto-focused on render
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
@@ -709,10 +655,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('aria-activedescendant follows the pointer', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
@@ -739,10 +682,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('Enter picks the hovered row, not the previously active row', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       let sentText: string | null = null;
       el.addEventListener('cds-aichat-autocomplete-send', (e: Event) => {
@@ -777,10 +717,7 @@ describe('cds-aichat-autocomplete', () => {
         disabled: true,
       };
       const enabledItem = { id: 'enabled-1', label: 'Enabled' };
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[enabledItem, disabledItem]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [enabledItem, disabledItem] });
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
 
@@ -800,10 +737,7 @@ describe('cds-aichat-autocomplete', () => {
 
   describe('aria', () => {
     it('should have aria-activedescendant pointing to focused item', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       // First item is auto-focused
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
@@ -812,11 +746,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should have aria-activedescendant for grouped items', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .groups="${mockGroups}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ groups: mockGroups });
 
       // First item is auto-focused (index 0), navigate down 2 times to reach group item at index 2
       el.dispatchEvent(
@@ -842,10 +772,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should have role=listbox on the main list', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       const listbox = el.shadowRoot?.querySelector('ul');
       expect(listbox?.getAttribute('role')).to.equal('listbox');
@@ -881,11 +808,7 @@ describe('cds-aichat-autocomplete', () => {
 
   describe('properties', () => {
     it('should pass inputText for label highlighting', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          input-text="Hello"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ inputText: 'Hello' });
 
       expect(el.inputText).to.equal('Hello');
       const typedSpan = el.shadowRoot?.querySelector(
@@ -894,33 +817,22 @@ describe('cds-aichat-autocomplete', () => {
       expect(typedSpan?.textContent).to.equal('Hello');
     });
 
-    it('should render with attached property', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .attached="${false}"></cds-aichat-autocomplete>
-      `);
+    it('attached=false removes border-radius on the bottom corners', async () => {
+      // :host([attached]) sets CSS custom properties that zero the bottom radii;
+      // :host([attached=false]) (the default true / reflected attribute absent)
+      // should leave them at whatever the theme supplies.
+      const el = await defaultFixture({ attached: false });
 
+      // When attached=false the reflected attribute is absent, so the
+      // CSS custom properties are not overridden.
       expect(el.attached).to.be.false;
+      expect(el.hasAttribute('attached')).to.be.false;
     });
 
     it('disableDirectSend defaults to false', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture();
 
       expect(el.disableDirectSend).to.be.false;
-    });
-
-    it('disableDirectSend can be set to true', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .disableDirectSend="${true}"></cds-aichat-autocomplete>
-      `);
-
-      expect(el.disableDirectSend).to.be.true;
     });
   });
 
@@ -936,10 +848,7 @@ describe('cds-aichat-autocomplete', () => {
     };
 
     it('should set aria-disabled correctly for disabled and enabled items', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [disabledItem, enabledItem] });
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
 
@@ -952,10 +861,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('should add the disabled class', async () => {
-      const el = await fixture<AutocompleteElement>(
-        html` <cds-aichat-autocomplete
-          .items="${[disabledItem]}"></cds-aichat-autocomplete>`
-      );
+      const el = await defaultFixture({ items: [disabledItem] });
 
       const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
       const disabledClass = `${prefix}-autocomplete-item--disabled`;
@@ -965,10 +871,7 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('click on disabled item does not fire cds-aichat-autocomplete-send (disableDirectSend=false)', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [disabledItem, enabledItem] });
 
       let sendFired = false;
       el.addEventListener('cds-aichat-autocomplete-send', () => {
@@ -985,11 +888,10 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('click on disabled item does not fire cds-aichat-autocomplete-select (disableDirectSend=true)', async () => {
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[disabledItem, enabledItem]}"
-          .disableDirectSend="${true}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({
+        items: [disabledItem, enabledItem],
+        disableDirectSend: true,
+      });
 
       let selectFired = false;
       el.addEventListener('cds-aichat-autocomplete-select', () => {
@@ -1008,10 +910,7 @@ describe('cds-aichat-autocomplete', () => {
     it('Enter on a disabled item does not fire send or select', async () => {
       // Place the only-disabled item alone so _focusedIndex stays at 0 (no
       // enabled item to skip to) and Enter has no valid target.
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[disabledItem]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [disabledItem] });
 
       let sendFired = false;
       let selectFired = false;
@@ -1042,10 +941,7 @@ describe('cds-aichat-autocomplete', () => {
         disabledItem,
         { id: 'enabled-2', label: 'Enabled Option 2' },
       ];
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${threeItems}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: threeItems });
 
       // Focus starts at index 0 (first enabled). One ArrowDown should skip
       // the disabled item at index 1 and land on index 2.
@@ -1067,10 +963,7 @@ describe('cds-aichat-autocomplete', () => {
 
     it('ArrowDown stays put when no enabled item exists beyond current', async () => {
       // Layout: enabled(0) → disabled(1). From 0, ArrowDown should not move.
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[enabledItem, disabledItem]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [enabledItem, disabledItem] });
 
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
@@ -1091,10 +984,7 @@ describe('cds-aichat-autocomplete', () => {
     it('initial focus skips a leading disabled item', async () => {
       // Render with disabled first — _focusedIndex should initialise to the
       // first enabled item, not index 0.
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${[disabledItem, enabledItem]}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({ items: [disabledItem, enabledItem] });
 
       const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
       // Initial focus should be on the first enabled item (index 1, id 'enabled-1')
@@ -1152,12 +1042,10 @@ describe('cds-aichat-autocomplete', () => {
         },
       };
 
-      const el = await fixture<AutocompleteElement>(html`
-        <cds-aichat-autocomplete
-          .items="${mockItems}"
-          .groups="${mockGroups}"
-          .i18n="${trackingI18n}"></cds-aichat-autocomplete>
-      `);
+      const el = await defaultFixture({
+        groups: mockGroups,
+        i18n: trackingI18n,
+      });
 
       el.dispatchEvent(
         new KeyboardEvent('keydown', {
