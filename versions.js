@@ -50,3 +50,5 @@ export const AI_CHAT_VERSIONS = [
   'v0.5.0',
   'v0.4.0',
 ];
+
+export const AI_CHAT_COMPONENTS_VERSIONS = ['v1.11.0'];

@@ -155,19 +155,3 @@ jobs:
             git commit -m "chore(docs): update API symbol index"
             git push origin
           fi
-
-  # This job dispatches workflow to update the versions.js file with the latest stable version
-  # and pushes the updated versions.js file up to COS.
-  # This versions.js file is used to populate the version dropdown in our demo and documentation websites.
-  update-versions-file:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    needs: release
-    steps:
-      # Triggers only if it is a full release
-      - name: Update versions.js file and upload to COS
-        if: github.event.inputs.type == 'full release' && github.event.inputs.dry-run == 'false'
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
-        with:
-          event-type: update-versions-file
-          client-payload: '{"branch": "${{ github.ref_name }}"}'
