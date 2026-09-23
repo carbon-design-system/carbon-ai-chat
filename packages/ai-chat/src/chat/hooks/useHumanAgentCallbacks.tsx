@@ -10,11 +10,9 @@
 import { useCallback, useState } from 'react';
 import type { ServiceManager } from '../services/ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
-import type { InputFunctions } from '../components/input/Input';
 
 interface UseHumanAgentCallbacksProps {
   serviceManager: ServiceManager;
-  inputRef: React.RefObject<InputFunctions | null>;
   isConnectingOrConnected: boolean;
   allowMultipleFileUploads: boolean;
   requestInputFocus: () => void;
@@ -34,7 +32,6 @@ interface UseHumanAgentCallbacksReturn {
  */
 export function useHumanAgentCallbacks({
   serviceManager,
-  inputRef,
   isConnectingOrConnected,
   allowMultipleFileUploads,
   requestInputFocus,
@@ -47,10 +44,7 @@ export function useHumanAgentCallbacks({
 
   const hideConfirmEndChat = useCallback(() => {
     setShowEndChatConfirmation(false);
-    setTimeout(() => {
-      inputRef.current?.requestFocus();
-    });
-  }, [inputRef]);
+  }, []);
 
   const confirmHumanAgentEndChat = useCallback(() => {
     hideConfirmEndChat();
