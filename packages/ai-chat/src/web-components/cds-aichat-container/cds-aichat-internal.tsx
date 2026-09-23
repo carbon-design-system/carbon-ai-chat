@@ -26,10 +26,10 @@ import type { RenderUserDefinedInputNode } from '../../types/component/ChatConta
 
 /**
  * Structural `hasChanged` for object properties: Lit defaults to identity, which
- * would re-render the React app whenever the host (or `cds-aichat-container`'s
- * `resolvedConfig` getter, which rebuilds a fresh object each render) hands us a
- * new reference with unchanged content. Comparing by value keeps the React
- * reconciliation pass for genuine changes only. Functions inside are compared by
+ * would re-render the React app whenever the host hands us a new reference with
+ * unchanged content, such as an inline config object rebuilt on each host
+ * render. `resolvedConfig` passes that new reference on. Comparing by value
+ * keeps the React reconciliation pass for genuine changes only. Functions inside are compared by
  * reference (lodash `isEqual` semantics), so a changed callback still counts.
  */
 const deepChanged = (value: unknown, previous: unknown): boolean =>

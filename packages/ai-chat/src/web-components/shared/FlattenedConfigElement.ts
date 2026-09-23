@@ -26,6 +26,17 @@ import {
   resolveFlattenedConfig,
 } from './flattenedPublicConfig';
 
+/** The field values a resolved config was built from, in table order. */
+function configInputs(source: FlattenedConfigElement): unknown[] {
+  return [
+    source.config,
+    source.aiDisabled,
+    ...FLATTENED_PUBLIC_CONFIG_FIELDS.map(
+      (field) => (source as unknown as Record<string, unknown>)[field.name]
+    ),
+  ];
+}
+
 /**
  * Builds the Lit `static properties` object from the shared field table plus
  * the synthetic `config` (base config object) and `aiDisabled` (opt-out)
@@ -67,12 +78,28 @@ abstract class FlattenedConfigElement extends LitElement {
    */
   aiDisabled?: boolean;
 
+  private resolvedConfigCache?: { inputs: unknown[]; config: PublicConfig };
+
   /**
    * The {@link PublicConfig} reconstructed from `config` plus every defined
    * flattened property.
+   *
+   * Cached against the fields it was built from, so a re-render that changed
+   * none of them hands back the same object. Downstream code compares configs
+   * by identity to tell a real change from render churn.
    */
   protected get resolvedConfig(): PublicConfig {
-    return resolveFlattenedConfig(this);
+    const inputs = configInputs(this);
+    const cached = this.resolvedConfigCache;
+    if (
+      cached &&
+      inputs.every((value, index) => value === cached.inputs[index])
+    ) {
+      return cached.config;
+    }
+    const config = resolveFlattenedConfig(this);
+    this.resolvedConfigCache = { inputs, config };
+    return config;
   }
 }
 
