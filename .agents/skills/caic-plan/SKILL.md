@@ -15,7 +15,9 @@ Use choices and authorization already supplied. Ask only about missing informati
 
 ## When to write a plan
 
-Write a plan when the user requests one, when work spans sessions or PRs, or when unresolved decisions need a shared record. For a routine fix with a settled approach, proceed within the user's implementation request. A consumer-visible change alone does not require a new plan or proposal.
+Write a plan when the user requests one, when work spans sessions or PRs, or when unresolved decisions need a shared record. For a routine fix with a settled approach, proceed within the user's implementation request. Routine wording fixes, approved contracts, and fixes that restore promised behavior need no new proposal.
+
+**Propose material public behavior that remains unsettled**, such as a new public method or a changed default. Read [api-contract.md](references/api-contract.md) for the proposal; it can stay local.
 
 ## Before starting a new plan
 

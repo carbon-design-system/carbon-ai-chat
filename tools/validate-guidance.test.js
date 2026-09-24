@@ -169,6 +169,24 @@ for (const { cli, source } of validators) {
   });
 }
 
+test('AGENTS file references ignore fenced paths but warn on prose paths', (context) => {
+  const root = fixture(context);
+  const examples =
+    '```md\n`missing.ts`\n```\n' + '~~~md\n`also-missing.ts`\n~~~\n';
+  write(root, 'AGENTS.md', examples);
+  const fencedOutput = run(root, 'validate-agents-docs.js', 0);
+  assert.doesNotMatch(fencedOutput, /File reference may be outdated/);
+
+  write(root, 'AGENTS.md', `${examples}\n\`missing.ts\`\n`);
+  const proseOutput = run(
+    root,
+    'validate-agents-docs.js',
+    0,
+    /File reference may be outdated: `missing\.ts`/
+  );
+  assert.match(proseOutput, /Validation complete: 0 errors, 1 warnings/);
+});
+
 test('AGENTS discovery checks unlinked and hidden entry points and their topics', (context) => {
   const root = fixture(context);
   write(root, 'nested/AGENTS.md', '[bad](missing.md)\n');

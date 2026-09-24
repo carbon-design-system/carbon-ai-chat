@@ -13,7 +13,7 @@ This rubric governs every code review in this repo — both user-requested revie
 - **Committed branch:** use `git diff <base>...<head>` from the intended merge base, unless the user supplied a specific range. Keep unrelated local changes outside that scope.
 - **Pull request:** read [reviewing-a-pr.md](references/reviewing-a-pr.md) for the actual base, head revision, and any authorized posting.
 
-**Return feedback for a review request.** It does not authorize edits to the user's checkout or publication on GitHub. Existing edit or publication authorization still applies. A self-review is part of the active implementation task: fix defects within that task's scope.
+**Return feedback for a review request. Publish on GitHub only when the user authorizes it.** A review request alone does not authorize edits to the user's checkout. Existing edit or publication authorization still applies. A self-review is part of the active implementation task: fix defects within that task's scope.
 
 **Use fresh eyes for self-review.** Brief a sub-agent on the requirement without defending the implementation. [review-passes.md](references/review-passes.md#hand-a-self-review-to-fresh-eyes) defines that brief.
 
