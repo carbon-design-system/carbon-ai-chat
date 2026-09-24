@@ -9,7 +9,7 @@ collect:
       allowedAttributeNames:
         # General
         - element
-        # cds-aichat-container / cds-aichat-custom-element
+        # cds-aichat-container
         - ai-disabled
         - ai-enabled
         - assistant-name
@@ -24,18 +24,20 @@ collect:
         - inject-carbon-theme
         - input
         - is-readonly
+        - keyboardshortcuts
         - launcher
         - layout
         - locale
         - messaging
         - namespace
-        - open-chat-by-default
         - onViewChange
         - onViewPreChange
+        - open-chat-by-default
         - persist-feedback
         - service-desk
         - should-sanitize-html
         - should-take-focus-if-opens-automatically
+        - strings
         # cds-aichat-internal
         - config
         - onAfterRender
