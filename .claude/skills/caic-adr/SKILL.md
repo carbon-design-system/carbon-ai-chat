@@ -1,11 +1,13 @@
 ---
 name: caic-adr
-description: Propose an architecture decision as a numbered ADR in docs/adr/ — a request for feedback that leads with the problem and the proposal, drafted from the template, reviewed with fresh eyes, then opened as a PR and an RFC discussion. Use when the user asks to "write an ADR", "propose this decision", "record why we picked X", or when a plan decision turns out to be something a consumer can feel.
+description: Draft or revise a proposal-first ADR for an unresolved architecture choice. Use when asked to write an ADR or propose a decision; suggest it when a public design choice merits a lasting record. Historical explanations use existing records or ordinary documentation.
 ---
 
 An ADR is a proposal first and a record second. It asks the people who build on this library for feedback on a decision they will feel, then stays as the record of what was decided and why.
 
 The process rules (lifecycle, numbering, superseding, what happens to feedback) are in [docs/adr/README.md](../../../docs/adr/README.md). This skill is how you write one and get it in front of readers.
+
+If the user asks why an existing decision was made, read its record and explain the evidence. If no record exists, write the requested historical explanation as ordinary documentation. Do not invent a new proposal or maintainer approval to fit this template.
 
 ## First: does this need an ADR?
 
@@ -86,7 +88,7 @@ interface ChatStore<T> {
 
 ## Set `feedback-by`
 
-**Ask the user for the date.** It depends on who needs to weigh in. Recommend at least 10 working days. Argue for longer when the change reaches widely, when the people likely to object are outside the team, or when the window spans a holiday or a release freeze.
+**Use the supplied feedback date.** If it is missing, draft the proposal first and ask before publication. Recommend at least 10 working days, with more time for a broad audience or a holiday period.
 
 **A date passing decides nothing.** A maintainer decides on or after it.
 
@@ -96,34 +98,21 @@ interface ChatStore<T> {
 
 ## Before anything reaches GitHub
 
-**Never push, open the PR, or post a discussion until the user has read the ADR and said go.** A public repo makes it visible at once, and deleting it doesn't undo that.
-
-- **Resolve the repo** with `git remote -v`. If there is more than one remote, ask which one.
-- **Add no agent attribution** to the ADR, the PR, or the discussion.
+Finish and review the draft before publication. Publish only the actions the user requested, using the selected destination and authorization already given. A request to draft an ADR does not authorize a PR, merge, or discussion.
 
 ## Open the PR
 
-1. **Move the draft to `docs/adr/NNNN-<slug>.md`** and run `npm run sync:adrs` to add the index row.
-2. **Run `npm run validate:adrs`** and fix what it reports.
-3. **Draft the PR description with [caic-pr](../caic-pr/SKILL.md)**, titled `docs: ADR-NNNN <title>`. Put the claim citations from your investigation there.
-4. **Merge once it reads clearly, not once everyone agrees.** It stays `proposed`.
+When the user requests a PR, read [publishing.md](references/publishing.md). It covers destination resolution, validation, and the PR. Opening a PR does not authorize merging it.
 
 ## Open the RFC discussion, after merge
 
-**Post it once the ADR is on `main`**, so the record link works. Match the [RFC Discussions form](../../../.github/DISCUSSION_TEMPLATE/rfc-discussions.yml): title `[RFC]: <ADR title>`, and `###` headings for **Record**, **Feedback by**, and **Summary**, with the Summary pasted verbatim.
-
-```bash
-gh api graphql -f query='{repository(owner:"carbon-design-system",name:"carbon-ai-chat"){id discussionCategories(first:25){nodes{id slug}}}}'
-gh api graphql -F repositoryId=<id> -F categoryId=<rfc-discussions id> \
-  -F title="[RFC]: <ADR title>" -F body=@<body-file> \
-  -f query='mutation($repositoryId:ID!,$categoryId:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repositoryId,categoryId:$categoryId,title:$title,body:$body}){discussion{url}}}'
-```
-
-Then **set the ADR's `discussion` field to the URL in a follow-up PR.**
+When posting is requested and the merged record link works, follow the discussion procedure in [publishing.md](references/publishing.md#open-the-rfc-discussion). The repository lookup and mutation must use the same selected destination.
 
 ## Act on feedback
 
 **Amend a `proposed` ADR in place.** Nothing is ratified yet, so editing it is finishing the draft.
+
+Prepare requested updates locally. Posting replies, editing discussions, and opening follow-up PRs each need authorization for that action; reuse authorization already given.
 
 - **A change to the Proposal pushes `feedback-by` out**, because earlier readers agreed to something else. Rewording and added drawbacks don't.
 - **Edit the discussion's Summary when the ADR's Summary changes**, so readers aren't arguing with a stale copy.

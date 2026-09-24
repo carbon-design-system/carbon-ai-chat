@@ -2,14 +2,17 @@
 
 Load this to pick the minimum verification gate for what you changed, before marking a task done or opening a PR.
 
-`npm run ci-check` does **not** run `build`, and workspace deps resolve through built artifacts (`es/`, `dist/es/`) rather than TS sources. **Always run `build` BEFORE `ci-check`** — running them the other way around (or running `ci-check` on its own after edits) makes tests resolve consumer imports against a stale `es/`, which surfaces as confusing "no exported member 'X'" errors even though the source clearly exports X.
+**Choose the gate by what changed.** Guidance-only edits use the first row below, even when the file lives inside a package. Package builds are not part of that row.
 
-> **Before running any `build` row below, ask the user whether `npm run aiChat:start` is already running** — a parallel build races the watcher (see [commands.md](commands.md) and the Always-on rules in the root [AGENTS.md](../AGENTS.md)). This applies to the `build` gates here, not to `ci-check`/`test`/`lint`, which write no artifacts.
+For executable changes, workspace deps resolve through built artifacts (`es/`, `dist/es/`) rather than TS sources. **Rebuild changed packages before testing their consumers.** `npm run ci-check` does not rebuild those dependencies; stale artifacts can cause false failures or hide changes.
+
+> **Before starting a build or watch process, ask whether `npm run aiChat:start` is already running** — parallel builds race the watcher. See [commands.md](commands.md) and the root [AGENTS.md](../AGENTS.md). This also applies when a test starts a build, such as the demo's Playwright server. Reuse the user's answer while it remains current.
 
 ## Minimum gate by area edited
 
 | Area edited | Minimum gate before shipping |
 | --- | --- |
+| Agent guidance only (`AGENTS.md`, agent `references/`, skills) | `npm run validate:agents` + `npm run validate:skills` + `npm run format`; check changed commands against their scripts and review the instructions. Sync skills first if canonical files changed. |
 | Cross-cutting / multiple packages | `npm run build && npm run ci-check` |
 | `packages/ai-chat/` | `npm run build:docs --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat` |
 | `packages/ai-chat-components/` | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites) |

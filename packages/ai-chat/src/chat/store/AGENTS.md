@@ -19,32 +19,34 @@ Editing rules for the store. See parent [packages/ai-chat/AGENTS.md](../../../AG
 
 ### Action Type Constants
 
-Action type strings are defined as **private module-level constants** in `SCREAMING_SNAKE_CASE`:
+Action type strings use **module-level constants** in `SCREAMING_SNAKE_CASE`, exported by name for reducers:
 
 ```typescript
 // In actions.ts
 const CHANGE_STATE = 'CHANGE_STATE';
 const SET_VIEW_STATE = 'SET_VIEW_STATE';
 const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
+
+export { CHANGE_STATE, SET_VIEW_STATE, UPDATE_THEME_STATE };
 ```
 
-These constants are **not exported**. They are implementation details of the action creators.
+Reducers import these names from `./actions`. Components and services dispatch through the action creators below.
 
 ### Action Creators
 
-Public dispatch helpers are **camelCase methods** on the exported `actions` object:
+Dispatch helpers are **camelCase methods** on the default-exported `actions` object:
 
 ```typescript
-export const actions = {
-  changeState(partialState: Partial<AppState>) {
-    return { type: CHANGE_STATE, partialState };
-  },
-
+const actions = {
   setViewState(viewState: ViewState) {
     return { type: SET_VIEW_STATE, viewState };
   },
 };
+
+export default actions;
 ```
+
+Import the object with `import actions from './actions'`; named imports select constants, not the actions object.
 
 ### Payload Fields
 
@@ -156,7 +158,7 @@ const messages = useSelector(
 
 ### Examples from Tests
 
-See [`reactReduxShim_spec.tsx`](../../tests/store/spec/reactReduxShim_spec.tsx:41) for:
+See [`reactReduxShim_spec.tsx`](../../../tests/store/spec/reactReduxShim_spec.tsx:41) for:
 
 - Primitive selection avoiding rerenders: line 90
 - Object selection with `shallowEqual`: line 128
@@ -168,7 +170,7 @@ See [`reactReduxShim_spec.tsx`](../../tests/store/spec/reactReduxShim_spec.tsx:4
 - `reducers.ts` — main reducer tree.
 - `humanAgentReducers.ts` — separate slice for human-agent (service desk) state.
 - `actions.ts` — action creators, including thunk-style async flows that dispatch multiple actions.
-- `selectors.ts` — memoized reads. All component reads go through here.
+- `selectors.ts` — plain functions that derive state. All component reads go through here.
 - `subscriptions.ts` — store-subscription side effects (replaces middleware).
 
 The `useSelector` hook lives one level up in `../hooks/` and is what components import.
@@ -187,4 +189,4 @@ The `useSelector` hook lives one level up in `../hooks/` and is what components 
 
 - **Parent guidance**: [packages/ai-chat/AGENTS.md](../../../AGENTS.md)
 - **Type conventions**: [../../types/AGENTS.md](../../types/AGENTS.md) - For action/state type definitions
-- **Testing**: [packages/ai-chat/AGENTS.md](../../../AGENTS.md#testing-strategy) - Store testing patterns
+- **Testing**: [tests.md](../../../references/tests.md#store--hook-example) - Store testing patterns

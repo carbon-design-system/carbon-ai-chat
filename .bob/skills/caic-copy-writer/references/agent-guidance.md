@@ -2,14 +2,14 @@
 
 Load this before writing an `AGENTS.md`, a file under any `references/`, or a skill. Structural owner: [authoring-agents-md.md](../../../../references/authoring-agents-md.md). It owns the file budget, one-topic-per-file, the "read when…" triggers, the Related-guidance footer, and the skill-versus-reference split. Read it for the shape, and this for the words.
 
-**An agent loads this copy top-down, and every token you spend is a token it spends.** Density is the standard.
+Give the agent the facts, choices, and constraints it needs for this task. Keep the reading path short without dropping a required check.
 
-- **Open each rule with a bolded imperative.** An agent skimming reads the first three words of a bullet, so put the instruction there and the qualification after it.
-- **Write a rule that can only be applied one way.** A hedge reads as nuance to a person and as a choice to an agent, and two agents will choose differently.
+- **Lead with the action.** Put the condition beside the instruction it limits.
+- **Make constraints precise.** Use exact commands for fragile operations. When judgment is intended, state the outcome and the factors that guide it.
 - **Say what to do, not only what to avoid.** A bare prohibition leaves the correct action unstated, so pair it with the positive form.
 - **Put the trigger in the link text.** "Read when adding a locale key" tells the reader whether to open the file; a topic name does not.
 
-This type is plain markdown, so the score in step 3 of the loop is trustworthy.
+Use the reading-level score to spot dense prose. Read the workflow too: a low score cannot prove that its instructions preserve the requested scope.
 
 ## Gate
 

@@ -1,25 +1,28 @@
 ---
 name: caic-review
-description: Review a working diff or a pull request against this repo's rubric — severity-tagged findings with file:line citations, repo-specific convention checks, test-coverage gaps, and optional line comments posted back to the PR. Use when the user asks to "review my diff", "review this branch", "review this PR", or "self-review before done", and for the self-review an agent runs on its own work before marking a task complete.
+description: Review a local diff, branch, or pull request with severity-tagged findings and verification gaps. Use for code-review requests and self-review before marking work complete. Publish feedback only when the user authorizes it; use caic-plan for plan reviews.
 ---
 
 This rubric governs every code review in this repo — both user-requested reviews and the self-review an agent runs against its own diff before marking a task done (see [AGENTS.md](../../../AGENTS.md)).
 
 ## Scope the review first
 
-Two jobs share this rubric. Settle which one you're doing before reading any code — ask the user when the request doesn't make it obvious:
+**Use the requested scope.** Honor supplied paths, ranges, and revisions. Infer them from the task when clear; ask only about gaps that change the review.
 
-- **Own work** — a self-review of the working diff before marking a task done. Findings come back as text; nothing is posted anywhere.
-  - **Name the range first.** `git diff` while the work is uncommitted, `git diff <base>...HEAD` once it is committed, where `<base>` is the branch you will merge into. An empty range means you picked the wrong one, not that the work is clean.
-  - **Hand it to a sub-agent when you have one, and brief it on the requirement without your defense of it.** [review-passes.md](references/review-passes.md#hand-a-self-review-to-fresh-eyes) says what the sub-agent gets, what you withhold, and why.
-- **A pull request** — someone else's branch, or your own PR up for review. Findings can be posted as line comments with a verdict. Read [reviewing-a-pr.md](references/reviewing-a-pr.md) before you diff: it carries base-branch resolution and the posting payload.
+- **Local changes:** start with `git status --short --untracked-files=all`. Read `git diff --cached` and `git diff` separately, scoped to the requested paths. Inspect relevant untracked files that status lists, while respecting generated-output exclusions. `git diff HEAD` alone can hide a staged change canceled by an unstaged edit. Report which index and working-tree states you reviewed. An empty requested scope is a valid no-changes result; do not widen it silently.
+- **Committed branch:** use `git diff <base>...<head>` from the intended merge base, unless the user supplied a specific range. Keep unrelated local changes outside that scope.
+- **Pull request:** read [reviewing-a-pr.md](references/reviewing-a-pr.md) for the actual base, head revision, and any authorized posting.
+
+**Return feedback for a review request. Publish on GitHub only when the user authorizes it.** A review request alone does not authorize edits to the user's checkout. Existing edit or publication authorization still applies. A self-review is part of the active implementation task: fix defects within that task's scope.
+
+**Use fresh eyes for self-review.** Brief a sub-agent on the requirement without defending the implementation. [review-passes.md](references/review-passes.md#hand-a-self-review-to-fresh-eyes) defines that brief.
 
 ## How to review
 
 - Read the actual diff (`git diff`, `gh pr diff`, etc.) and referenced files — never a summary of what changed.
 - When reading it all at one depth would mean reading all of it shallowly, rank the files by risk first — [large-diffs.md](references/large-diffs.md).
 - **Score the diff against what it had to satisfy** — the issue's Done when, Constraints, and comments, the proofs, any API proposal, any ADR it cites. That check runs on every review, and [review-passes.md](references/review-passes.md#the-check-that-runs-every-time) carries each one and the severity a miss earns.
-- **Run the read-only gates for what changed before you write anything, and start no build without asking** — [repo-checks.md](references/repo-checks.md) carries the gate list, when to ask about a build, and the conventions to flag by hand that no gate catches.
+- **Verify what changed and reuse current evidence.** [repo-checks.md](references/repo-checks.md) selects the gates, coordinates builds, and lists conventions no gate catches.
 - Tag every finding with a severity so real problems aren't buried under taste:
   - **Blocker** — must fix before merge: bug, regression, security issue, broken build/tests, violated repo convention, accidental edit to generated output.
   - **Important** — should fix: unclear naming, missing test for changed behavior, unhandled edge case, scope creep.

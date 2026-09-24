@@ -1,6 +1,6 @@
 ---
 name: caic-copy-writer
-description: Write the copy this repo ships, routed by which kind it is — public JSDoc, internal comments, docs-site pages, Storybook MDX, package and example READMEs, end-user UI strings, agent guidance, commit bodies, PR descriptions, issue bodies, ADR prose, the errors thrown at a host developer, and the comments left on a code review — each with its own audience, rules file, and gate, plus the draft-measure-revise loop every one of them ends with. Use when the user asks to "write the README for X", "document this type", "word this error message", or "tighten this doc". Load it unprompted too, before writing copy that rides along with another task — JSDoc on a new public type, a comment above non-obvious code, a new string in en.json, the text of a thrown error, the body of a commit, PR, issue, or ADR, or a review finding on a pull request or in a self-review — since those carry different rules and none of them arrives worded as a copy request.
+description: Write or revise this repo's documentation, comments, UI copy, and development artifacts using the rules for their audience. Use for explicit writing requests and for copy added during implementation or review; load only the applicable copy type.
 ---
 
 This skill owns how the words go, for every surface this repo writes. Find your type in the table, open its rules file, then write.
@@ -44,11 +44,11 @@ Plan files have no row. They are git-ignored working drafts, so [caic-plan](../c
 
 Rules on their own produce a draft nobody measured. Run all five steps.
 
-1. **Route.** Find your row above, open its rules file, and read the structural owner it names. Read [tone.md](../../../references/tone.md) for voice.
+1. **Route.** Open the rules file for the copy you are changing. Read its structural owner when creating a new artifact or changing its structure. Reuse guidance already in context. Related links are navigation, not a requirement to load every file.
 2. **Draft.** The fewest words that carry the idea.
 3. **Measure, where a number exists.** Run `npm run reading-level -- <file>`. [tone.md](../../../references/tone.md) owns the ceiling and what a score means. Over it, shorten sentences and swap long words for short ones. Never buy the grade by cutting a qualifier that carries the contract.
 4. **Revise.** [revision-pass.md](references/revision-pass.md), every time, including when step 3 came back green.
-5. **Gate.** The command in your row, plus whatever [definition-of-done.md](../../../references/definition-of-done.md) lists for the area you touched.
+5. **Gate.** Use your row and [definition-of-done.md](../../../references/definition-of-done.md) to select checks for what changed. A prose-only internal comment needs a clarity review; it does not require a package build. Preserve any required check for executable behavior or rendered documentation.
 
 **Types 3, 5, 7, 9, 10, 11, and 13 are where the number is trustworthy** — they are plain markdown. The scorer reads any file you hand it but strips only markdown, so a type-4 MDX file scores its JSX as prose and comes back inflated. Types 1, 2, 6, 8, 12, and 14 are TypeScript, JSON, or not a file at all, so step 3 does not apply and step 4 does the whole job by hand.
 

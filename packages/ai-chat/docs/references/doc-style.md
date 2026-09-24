@@ -49,7 +49,7 @@ children:
 ---
 ```
 
-See [Customization.md](./Customization.md) for the hub-and-children pattern. **Litmus test:** if your overview paragraph needs an "and also," you have two pages.
+See [Customization.md](../Customization.md) for the hub-and-children pattern. **Litmus test:** if your overview paragraph needs an "and also," you have two pages.
 
 ## Ground the reader first
 
@@ -136,7 +136,7 @@ title: <Sentence-case task title>
 - [ ] Every `Note`/`Tip` callout is a blockquote (`> **Note**: …`).
 - [ ] Single shell commands use inline backticks, not a fenced block.
 - [ ] Voice follows [tone.md](../../../../references/tone.md).
-- [ ] `npm run build:docs` passes (catches broken `{@link}` via TypeDoc).
+- [ ] `npm run docs --workspace=@carbon/ai-chat` passes from the repo root (catches broken `{@link}` via TypeDoc).
 
 ## Related guidance
 

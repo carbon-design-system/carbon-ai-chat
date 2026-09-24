@@ -1,6 +1,6 @@
 # Agent skills
 
-This repo's task workflows live here as skills. Each one holds a full procedure — how to record a decision, how to shape work into a plan or an epic, how to file an issue, how to draft a PR description, how to review a diff, how to write the copy itself — rather than pointing at a document that holds it.
+This repo's task workflows live here as skills. Each entry point carries its shared procedure and routes to details the task needs. Use them to propose a decision, plan work, draft or file an issue, write a PR description, review changes, or write copy.
 
 The one skill that is not a procedure is [caic-copy-writer](caic-copy-writer/SKILL.md). It owns the wording for every surface this repo writes. The others carry structure and procedure, and point there for the words.
 

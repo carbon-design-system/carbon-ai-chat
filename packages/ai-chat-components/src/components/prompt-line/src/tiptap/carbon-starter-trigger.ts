@@ -71,13 +71,11 @@ export function carbonStarterTrigger(
   return Extension.create<unknown, StarterTriggerStorage>({
     name: 'carbonStarterTrigger',
 
+    // Each editor gets fresh storage from here. Tiptap emits `create` a
+    // macrotask later, so resetting storage there would drop a write the host
+    // made in between.
     addStorage() {
       return { items: initialItems, isOn: initialIsOn };
-    },
-
-    onCreate() {
-      this.storage.items = initialItems;
-      this.storage.isOn = initialIsOn;
     },
 
     onUpdate() {

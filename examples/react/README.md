@@ -290,7 +290,7 @@ Embeds `ChatContainer` inside a Next.js 16 App Router page, loading the chat as 
 
 ### [Frameworks / React 17](./frameworks-react-17/README.md)
 
-Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, proving the library still works on the pre-concurrent API.
+Runs `ChatContainer` and `ChatCustomElement` on React 17 using the legacy `ReactDOM.render` root, proving the library still works on the pre-concurrent API.
 
 **Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-17`
 
@@ -299,10 +299,30 @@ Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, provin
 
 | Symbol | Package / kind | Role in this example |
 | --- | --- | --- |
-| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the floating chat UI. |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in a sized element. |
 | `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
 | `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
 | `ReactDOM.render` | `react-dom` | Legacy React 17 mount. |
+
+</details>
+
+### [Frameworks / React 18](./frameworks-react-18/README.md)
+
+Runs `ChatContainer` and `ChatCustomElement` on React 18, mounted from the app's own `createRoot`.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-18`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the floating chat UI. |
+| `ChatCustomElement` | `@carbon/ai-chat` component | Mounts the chat in a sized element. |
+| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
+| `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
+| `createRoot` | `react-dom/client` | React 18 mount. |
 
 </details>
 

@@ -1,6 +1,6 @@
 ---
 name: caic-issue
-description: Write and file a GitHub issue in this repo — a body that states the problem and the outcomes that close it while leaving the fix to whoever plans the work, sub-issue linking via gh, and escalation to an epic when the work is an umbrella. Use when the user asks to "file an issue", "open a sub-issue", "write up a task", or when breaking an epic into children.
+description: Draft or file a GitHub issue with a problem, outcomes, and settled constraints. Use when asked to write up a task, file an issue, or break an epic into sub-issues; implementation and proofs belong in the plan.
 ---
 
 How to write a good issue in this repo and how to wire a sub-issue to its parent.
@@ -53,7 +53,7 @@ Both are optional, and most small issues need neither.
 
 ## Public API
 
-An issue doesn't lock an API shape. When the work changes what a consumer can observe, the developer proposes the contract while planning — see [api-contract.md](../caic-plan/references/api-contract.md). A compatibility requirement that is already settled goes under Constraints.
+An issue doesn't lock an API shape. Material, unresolved public behavior takes a contract proposal during planning — see [api-contract.md](../caic-plan/references/api-contract.md). A settled compatibility requirement goes under Constraints. Routine wording fixes need no new proposal.
 
 ## Drafting the body
 
@@ -63,12 +63,12 @@ Keep the draft in sync with the live issue whenever you edit one — correcting 
 
 ## Before anything is filed
 
-Drafting ends at the file. Filing is a separate ask — **never run a `gh` command that writes to GitHub before the user has seen the body and said go.** An issue opened on a public repo is visible immediately, and closing it doesn't undo that. The same gate covers amending a filed issue.
+For a draft request, stop at the file. When filing is requested, finish the body and checks before posting. Use authorization already given for that action and destination; ask only about missing scope or a new external action. The same rule covers amendment comments.
 
 Then, before the command:
 
-- **Resolve the repo.** Every call below takes an explicit `<owner>/<repo>`, and nothing here fills it in for you. Run `git remote -v`; if more than one remote is configured, or any of them points somewhere other than where this issue belongs, ask which repo to file against rather than letting `gh` pick a default. Same check [caic-pr](../caic-pr/SKILL.md) runs before opening a PR.
-- **Carry it through.** The sub-issue and dependency calls take the same `<owner>/<repo>`. A child filed on one repo can't be linked under a parent on another.
+- **Resolve the repo.** Every call below takes an explicit `<owner>/<repo>`. Use the user's selection; otherwise inspect `git remote -v` and ask if the destination is ambiguous. Multiple remotes alone do not invalidate a supplied destination.
+- **Carry it through.** The examples below use one repository for the related issues. If the request spans repositories, resolve each issue's repository and database ID instead of silently changing its destination.
 - **No agent attribution** in the title or body.
 
 ## Filing a sub-issue via `gh`

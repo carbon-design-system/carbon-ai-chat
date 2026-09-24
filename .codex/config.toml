@@ -1,19 +1,9 @@
 # Project-scoped Codex configuration.
 #
-# Codex loads this only once you mark the repo trusted, and by design ignores
-# user-level keys here (provider, auth, profiles, telemetry) — those stay in
-# ~/.codex/config.toml. Keep this file to settings that belong to the repo.
+# Codex loads project settings for trusted projects. Keep personal provider
+# and authentication settings in your user configuration.
 
-# Codex concatenates every AGENTS.md from the repo root down to your working
-# directory, then silently stops adding files once the total hits this cap —
-# dropping the deepest file, which is the most specific guidance.
-#
-# `npm run validate:agents` holds that chain to 28 KiB, under the 32 KiB
-# default, so the repo's own gate fails with a message long before Codex would
-# truncate without one. That budget is set against the default rather than the
-# cap below, because this file loads only once you trust the repo — a
-# contributor who has not still gets 32 KiB.
-#
-# The cap is raised here anyway to leave room for a personal ~/.codex/AGENTS.md
-# stacked on top of the repo chain, which the repo gate cannot see.
+# Allow up to 64 KiB of project instructions. The repo's stricter 28 KiB
+# ancestor-chain budget is enforced by `npm run validate:agents`.
+# This cap is not a size target; keep task-specific detail in linked references.
 project_doc_max_bytes = 65536

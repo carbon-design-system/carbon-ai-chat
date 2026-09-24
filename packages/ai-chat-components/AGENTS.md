@@ -2,13 +2,13 @@
 
 Guidance for authoring inside [packages/ai-chat-components/](.). Read this before adding or editing components.
 
-A library of Lit-based custom elements plus auto-generated React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs, Storybook ports, and the `aiChat:start` watcher rule.
+A library of Lit-based custom elements plus hand-authored React wrappers. Consumed as a workspace dep by `@carbon/ai-chat` and published to npm (versioned via Lerna alongside `@carbon/ai-chat`). See root [AGENTS.md](../../AGENTS.md) for build outputs, Storybook ports, and the `aiChat:start` watcher rule.
 
 ## Topic-specific guidance
 
 Load only what you need:
 
-- Component file layout, the custom-elements manifest, React-wrapper generation, naming, public API & deprecation → [component-authoring.md](references/component-authoring.md)
+- Component file layout, the custom-elements manifest, React wrappers, naming, public API & deprecation → [component-authoring.md](references/component-authoring.md)
 - Authoring or editing a Storybook story or Overview MDX → [storybook.md](references/storybook.md)
 - Writing or running a test (WTR for Lit, Jest for React wrappers) → [testing.md](references/testing.md)
 - Shipping any UI change (WCAG 2.1 AA) → [root accessibility.md](../../references/accessibility.md), plus the package points below
@@ -40,7 +40,7 @@ npm test                        # both test suites (see testing.md)
 
 ## Gotchas
 
-- **`custom-elements.json` is generated, never committed** — it's gitignored and rebuilt by `npm run custom-elements` (and every `npm run build`). Don't expect it in git, and don't flag it as missing from a diff; regenerate it locally so Storybook `<ArgTypes>` and the React wrappers reflect prop/slot/event changes.
+- **`custom-elements.json` is generated, never committed** — it's gitignored and rebuilt by `npm run custom-elements` (and every `npm run build`). Regenerate it for Storybook `<ArgTypes>`, then inspect only the changed component's entries. Update its React wrapper by hand; the command does not generate wrappers.
 - **Carbon flavor**: Lit elements use `@carbon/web-components`. `@carbon/react` is a devDependency for the `-react.stories.jsx` / `-react.mdx` files **only** — never import it into `src/`. See [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area), which also overrides the `carbon-builder` skill's React default.
 - **ESM `.js` extensions** apply here: relative imports use `.js` even for `.ts` source.
 - The two test runners and the ESM-dep `transformIgnorePatterns` rule live in [testing.md](references/testing.md).
@@ -58,5 +58,7 @@ npm test                        # both test suites (see testing.md)
 
 ## Definition of done
 
+For guidance-only edits, use the [guidance gate](../../references/definition-of-done.md#minimum-gate-by-area-edited). For component changes:
+
 - `npm run test --workspace=@carbon/ai-chat-components` (runs both suites) + `npm run build --workspace=@carbon/ai-chat-components`.
-- If you changed JSDoc, props, slots, events, or CSS parts: rerun `npm run custom-elements`, inspect the regenerated `custom-elements.json` (it's gitignored — a local rebuild, not a committed diff), restart Storybook to verify the component docs, and hand-edit the matching wrapper in `src/react/` for new prop types.
+- If you changed JSDoc, props, slots, events, or CSS parts: rerun `npm run custom-elements` and inspect that component's manifest entries. Never hand-edit the manifest. Restart Storybook to verify the component docs, and update the matching wrapper in `src/react/` for new prop types.
