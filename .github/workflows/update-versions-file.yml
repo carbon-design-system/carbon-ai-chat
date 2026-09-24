@@ -61,6 +61,11 @@ jobs:
           git config user.name "$BOT_NAME"
           git pull --ff-only origin "$TARGET_BRANCH"
 
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: 'catalog-tools/.nvmrc'
+
       - name: Read published catalog directly from COS
         env:
           COS_BUCKET: ${{ secrets.COMMON_COS_BUCKET }}
@@ -79,13 +84,17 @@ jobs:
               --bucket "$COS_BUCKET" \
               --key "components/$flavor/version/v${COMPONENTS_VERSION}/index.html" > /dev/null
           done
-          if ! grep -q 'export const AI_CHAT_COMPONENTS_VERSIONS' published-versions.js; then
+          node --input-type=module - <<'EOF' > seed-versions.txt
+          import { AI_CHAT_COMPONENTS_VERSIONS } from './catalog-tools/versions.js';
+          console.log(AI_CHAT_COMPONENTS_VERSIONS.join('\n'));
+          EOF
+          while IFS= read -r version; do
             for flavor in storybook storybook/react; do
-              curl --fail --location --silent --show-error --retry 3 \
-                "https://chat.carbondesignsystem.com/components/$flavor/version/v1.11.0/index.html" \
-                --output /dev/null
+              aws --endpoint-url "https://$COS_ENDPOINT" s3api head-object \
+                --bucket "$COS_BUCKET" \
+                --key "components/$flavor/version/$version/index.html" > /dev/null
             done
-          fi
+          done < seed-versions.txt
           echo 'seed_verified=true' >> "$GITHUB_OUTPUT"
 
       - name: Merge published history with built versions

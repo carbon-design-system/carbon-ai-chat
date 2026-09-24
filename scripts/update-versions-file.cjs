@@ -8,10 +8,10 @@
  */
 
 const fs = require('node:fs');
+const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
 const stableVersion = /^v\d+\.\d+\.\d+$/;
-const componentsFloor = 'v1.11.0';
 const file = 'versions.js';
 
 function validVersion(version) {
@@ -58,27 +58,18 @@ function readVersions(content, name, optional = false) {
 }
 
 function orderVersions(versions) {
-  return [...new Set(versions)].sort((left, right) => {
-    const leftParts = left.slice(1).split('.').map(Number);
-    const rightParts = right.slice(1).split('.').map(Number);
-    for (let index = 0; index < 3; index += 1) {
-      if (leftParts[index] !== rightParts[index]) {
-        return leftParts[index] > rightParts[index] ? -1 : 1;
+  return [...new Set(versions)]
+    .filter((version) => Number.parseInt(version.slice(1), 10) >= 1)
+    .sort((left, right) => {
+      const leftParts = left.slice(1).split('.').map(Number);
+      const rightParts = right.slice(1).split('.').map(Number);
+      for (let index = 0; index < 3; index += 1) {
+        if (leftParts[index] !== rightParts[index]) {
+          return leftParts[index] > rightParts[index] ? -1 : 1;
+        }
       }
-    }
-    return 0;
-  });
-}
-
-function atOrAfterComponentsFloor(version) {
-  const parts = version.slice(1).split('.').map(Number);
-  const floor = componentsFloor.slice(1).split('.').map(Number);
-  for (let index = 0; index < 3; index += 1) {
-    if (parts[index] !== floor[index]) {
-      return parts[index] > floor[index];
-    }
-  }
-  return true;
+      return 0;
+    });
 }
 
 function writeVersions(content, name, versions) {
@@ -121,7 +112,14 @@ const publishedComponents = readVersions(
   'AI_CHAT_COMPONENTS_VERSIONS',
   true
 );
-if (!publishedComponents && SEED_VERIFIED !== 'true') {
+const seedComponents = readVersions(
+  fs.readFileSync(path.join(__dirname, '../versions.js'), 'utf8'),
+  'AI_CHAT_COMPONENTS_VERSIONS'
+);
+if (
+  seedComponents.some((version) => !publishedComponents?.includes(version)) &&
+  SEED_VERIFIED !== 'true'
+) {
   throw new Error(
     'Components seed URLs must be verified before upgrading the catalog'
   );
@@ -139,8 +137,9 @@ content = writeVersions(
   content,
   'AI_CHAT_COMPONENTS_VERSIONS',
   orderVersions([
-    ...(publishedComponents || [componentsFloor]),
+    ...(publishedComponents || []),
+    ...seedComponents,
     `v${COMPONENTS_VERSION}`,
-  ]).filter(atOrAfterComponentsFloor)
+  ])
 );
 fs.writeFileSync(file, content);
