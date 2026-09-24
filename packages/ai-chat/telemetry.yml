@@ -9,9 +9,33 @@ collect:
       allowedAttributeNames:
         # General
         - element
-        # cds-aichat-container
+        # cds-aichat-container / cds-aichat-custom-element
+        - ai-disabled
+        - ai-enabled
+        - assistant-name
+        - debug
+        - disable-custom-element-mobile-enhancements
+        - disclaimer
+        - expose-service-manager-for-testing
+        - header
+        - hide-avatar
+        - history
+        - homescreen
+        - inject-carbon-theme
+        - input
+        - is-readonly
+        - launcher
+        - layout
+        - locale
+        - messaging
+        - namespace
+        - open-chat-by-default
         - onViewChange
         - onViewPreChange
+        - persist-feedback
+        - service-desk
+        - should-sanitize-html
+        - should-take-focus-if-opens-automatically
         # cds-aichat-internal
         - config
         - onAfterRender
@@ -20,6 +44,20 @@ collect:
         # General - boolean attributes
         - "true"
         - "false"
+      allowedAttributeObjectKeys:
+        # input (InputConfig keys)
+        - actions
+        - autocomplete
+        - command
+        - error
+        - expanded
+        - isSendDisabled
+        - isDisabled
+        - isVisible
+        - maxInputCharacters
+        - mention
+        - starters
+        - tiptap
   npm:
     dependencies: null
   js:
