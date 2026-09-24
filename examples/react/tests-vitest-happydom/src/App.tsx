@@ -8,20 +8,11 @@
  */
 
 /**
- * Example: Carbon AI Chat — Vite + Vitest
+ * ChatContainer fixture for Vitest with happy-dom.
  *
- * Demonstrates: exercising Carbon AI Chat under Vitest with happy-dom. The
- * "one thing" demonstrated by this example is the Vitest integration, not a
- * chat feature. The Vite scaffold is the same one every other React example
- * uses.
- *
- * APIs exercised:
- *   - `ChatContainer` (the chat surface — kept minimal so the framework
- *     glue is the focus)
- *   - Vitest harness (see `./__tests__/`)
- *
- * Start reading at: `./main.tsx` for the bootstrap, then `./__tests__/`
- * for the suite.
+ * Mounts the chat with PublicConfig and a mock customSendMessage handler.
+ * Start with __tests__/ChatContainer.test.tsx for the test cases and
+ * vitest.setup.ts for the DOM shims and snapshot serializer.
  */
 
 import { ChatContainer, PublicConfig } from '@carbon/ai-chat';
