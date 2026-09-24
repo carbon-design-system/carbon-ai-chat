@@ -111,13 +111,21 @@ describe('Storybook version navigation', () => {
     );
   });
 
-  test('marks local Storybook without inventing a deployed version', () => {
-    const { options, selected } = getOptions(
-      locationAt('/', 'localhost'),
-      'react',
-      versions
-    );
-    expect(selected).toBe('preview');
-    expect(options[0].label).toBe('Local');
-  });
+  test.each(['localhost', '127.0.0.1', '0.0.0.0'])(
+    'marks %s as local Storybook without inventing a deployed version',
+    (hostname) => {
+      const { options, selected } = getOptions(
+        locationAt('/', hostname),
+        'react',
+        versions
+      );
+      expect(selected).toBe('preview');
+      expect(options[0].label).toBe('Local');
+      expect(
+        currentVersion(
+          locationAt('/components/storybook/tag/next/index.html', hostname)
+        )
+      ).toEqual({ type: 'tag', value: 'next' });
+    }
+  );
 });

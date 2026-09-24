@@ -8,6 +8,8 @@
  */
 
 const SITE_ORIGIN = 'https://chat.carbondesignsystem.com';
+const SITE_HOSTNAME = new URL(SITE_ORIGIN).hostname;
+const LOCAL_HOSTNAMES = ['localhost', '127.0.0.1', '0.0.0.0'];
 const STABLE_VERSION = /^v\d+\.\d+\.\d+$/;
 const DIRECT_VERSION = /^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
@@ -35,12 +37,8 @@ export function parseVersions(source) {
 
 export function currentVersion(location) {
   if (
-    ![
-      'chat.carbondesignsystem.com',
-      'localhost',
-      '127.0.0.1',
-      '0.0.0.0',
-    ].includes(location.hostname)
+    location.hostname !== SITE_HOSTNAME &&
+    !LOCAL_HOSTNAMES.includes(location.hostname)
   ) {
     return { type: 'preview', value: 'Preview' };
   }
@@ -58,9 +56,7 @@ export function currentVersion(location) {
 
   return {
     type: 'preview',
-    value: ['localhost', '127.0.0.1', '0.0.0.0'].includes(location.hostname)
-      ? 'Local'
-      : 'Preview',
+    value: LOCAL_HOSTNAMES.includes(location.hostname) ? 'Local' : 'Preview',
   };
 }
 
