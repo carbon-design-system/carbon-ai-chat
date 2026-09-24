@@ -7,6 +7,11 @@
  *  @license
  */
 
+const { createRequire } = require('node:module');
+
+// Tests use the root Babel 8 tools while Rollup still requires Babel 7.
+const requireFromRoot = createRequire(`${__dirname}/../../package.json`);
+
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
@@ -28,19 +33,19 @@ module.exports = {
       },
     ],
     '^.+\\.(js|jsx|mjs)$': [
-      'babel-jest',
+      requireFromRoot.resolve('babel-jest'),
       {
         babelrc: false,
         configFile: false,
         presets: [
           [
-            '@babel/preset-env',
+            requireFromRoot.resolve('@babel/preset-env'),
             {
               targets: { node: 'current' },
               modules: 'commonjs',
             },
           ],
-          '@babel/preset-react',
+          requireFromRoot.resolve('@babel/preset-react'),
         ],
       },
     ],

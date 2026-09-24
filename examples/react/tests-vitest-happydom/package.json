@@ -1,9 +1,9 @@
 {
-  "name": "@carbon/ai-chat-examples-react-frameworks-vite",
+  "name": "@carbon/ai-chat-examples-react-tests-vitest-happydom",
   "private": true,
   "version": "1.21.0",
   "type": "module",
-  "description": "A Vite-based React example for @carbon/ai-chat.",
+  "description": "Vitest and happy-dom tests for @carbon/ai-chat React components.",
   "scripts": {
     "start": "cross-env PORT=3016 vite",
     "dev": "cross-env PORT=3016 vite",

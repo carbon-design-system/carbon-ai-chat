@@ -37,7 +37,7 @@ See [Examples smoke tests](references/playwright.md) for instructions on creatin
 
 ## Authoring rules
 
-**Single-purpose rule**: each example demonstrates exactly one concern. If a change would add a second concern, create a new example instead. Framework-variant examples (`frameworks-next`, `frameworks-vite`, `tests-jest-happydom`, `tests-jest-jsdom`, `frameworks-react-17`) count the framework / test-runner integration as their "one thing" — keep their chat configuration as thin as possible.
+**Single-purpose rule**: each example demonstrates exactly one concern. If a change would add a second concern, create a new example instead. Framework-variant examples (`frameworks-next`, `tests-vitest-happydom`, `tests-jest-happydom`, `tests-jest-jsdom`, `frameworks-react-17`) count the framework / test-runner integration as their "one thing" — keep their chat configuration as thin as possible.
 
 **Base-template rule**: non-float examples derive from the `basic-custom-element-fullscreen` baseline — `ChatCustomElement` (or `<cds-aichat-custom-element>`) + `layout.showFrame: false` + `openChatByDefault: true`. The float-pattern examples (`basic-float`, `custom-element-as-float`, `custom-element-as-float-lazy-load`, `history-float`, `watch-state`, `watch-state-redux`) are the documented exceptions — they demonstrate the launcher chat shape with host UI alongside it.
 

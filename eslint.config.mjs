@@ -50,6 +50,19 @@ const config = [
   // TS overrides are handled separately below using @typescript-eslint v8
   ...compat.extends('eslint-config-carbon'),
 
+  {
+    languageOptions: {
+      parserOptions: {
+        // Linting needs JSX syntax, not Carbon's Babel 7 development transforms.
+        babelOptions: {
+          babelrc: false,
+          configFile: false,
+          presets: ['@babel/preset-react'],
+        },
+      },
+    },
+  },
+
   // TypeScript files: use @typescript-eslint v8 (ESLint 9 compatible)
   // This replaces the legacy TS override that eslint-config-carbon carries.
   {

@@ -8,7 +8,7 @@
  */
 
 /**
- * Vitest global setup for the Vite example.
+ * Vitest global setup for the happy-dom tests.
  *
  * Verifies: the toolchain glue needed to run `@carbon/ai-chat` under
  * Vitest with happy-dom — a snapshot serializer that strips dynamic Lit

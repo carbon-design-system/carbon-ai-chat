@@ -306,23 +306,6 @@ Runs `ChatContainer` on React 17 using the legacy `ReactDOM.render` root, provin
 
 </details>
 
-### [Frameworks / Vite](./frameworks-vite/README.md)
-
-Vite-powered React example that mounts `ChatContainer` with a minimal mock backend and adds a Vitest + happy-dom test suite.
-
-**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-frameworks-vite`
-
-<details>
-<summary>APIs and props demonstrated</summary>
-
-| Symbol | Package / kind | Role in this example |
-| --- | --- | --- |
-| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat UI. |
-| `PublicConfig` | `@carbon/ai-chat` type | Config shape. |
-| `customSendMessage` | `messaging` prop | Minimal echo mock backend. |
-
-</details>
-
 ### [History / File attachments](./history-file-attachments/README.md)
 
 A restored conversation whose user message carries an uploaded file. The chat renders the attachment as a chip in the message bubble, so a file the user attached is still visible after a reload.
@@ -960,6 +943,33 @@ Baseline Jest + `jest-environment-jsdom` setup that verifies `ChatContainer` mou
 | `@testing-library/react` | test util | `render`, `act`, `waitFor`. |
 | `@testing-library/jest-dom` | test util | DOM matchers. |
 | `jest-environment-jsdom` | jest env | Default Jest DOM environment (no shadow-DOM support). |
+
+</details>
+
+### [Tests / Vitest (happy-dom)](./tests-vitest-happydom/README.md)
+
+Tests `ChatContainer` with Vitest and happy-dom, covering chat mounting, launcher clicks, shadow DOM queries, and slotted React content.
+
+**Start command:** `npm run start --workspace=@carbon/ai-chat-examples-react-tests-vitest-happydom`
+
+<details>
+<summary>APIs and props demonstrated</summary>
+
+| Symbol | Package / kind | Role in this example |
+| --- | --- | --- |
+| `ChatContainer` | `@carbon/ai-chat` component | Mounts the chat under test. |
+| `PublicConfig` | `@carbon/ai-chat` type | Types the app's chat config. |
+| `messaging.customSendMessage` | Config prop | Supplies mock responses without a backend. |
+| `ChatInstance.messaging.addMessage` | Instance method | Adds text responses to the chat. |
+| `MessageResponseTypes.TEXT` | Response type | Marks a mock response as text. |
+| `renderWriteableElements.headerBottomElement` | Component prop | Inserts React content into the header slot. |
+| `data-testid` | Component prop | Gives the mounted chat a test selector. |
+| `PageObjectId` | `@carbon/ai-chat` enum | Identifies the launcher, main panel, input, and send button. |
+| `deepQuerySelector` | `@carbon/ai-chat-components` utility | Finds controls across nested shadow roots. |
+| `loadAllLazyDeps` | `@carbon/ai-chat/server` utility | Loads deferred modules before tests run. |
+| `render`, `act`, `waitFor`, `cleanup` | `@testing-library/react` utilities | Mount components, wait for updates, and clean up each test. |
+| `vi.mock`, `expect.addSnapshotSerializer` | Vitest utilities | Stub browser dependencies and normalize snapshots. |
+| `happy-dom` | Test environment | Provides DOM APIs for the Vitest suite. |
 
 </details>
 
