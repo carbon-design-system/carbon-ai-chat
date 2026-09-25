@@ -52,6 +52,11 @@ import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
 export interface PortableMessage {
   /** Stable per-row id (the local message item's `ui_state.id`). */
   id: string;
+  /**
+   * The id of the full message this row belongs to. Unlike `id`, it survives a message's
+   * items being rebuilt (e.g. when a stream finalizes).
+   */
+  messageId: string;
   /** The rendered root element for this row, or null if not yet mounted. */
   element: HTMLElement | null;
   /**
@@ -393,6 +398,26 @@ function getMessageArrayChangeFlags({
     countChanged: newItems.length !== oldItems.length,
     itemsChanged: newItems !== oldItems,
   };
+}
+
+/**
+ * True when every previously rendered message is gone — a restart or other full clear. A
+ * replacement list (e.g. a welcome message added in the same frame) still counts, so this does
+ * not depend on the host ever committing an empty list. Compares full-message ids, since row
+ * ids can be regenerated for a message that is still present.
+ */
+function didClearAllMessages({
+  oldItems,
+  newItems,
+}: {
+  oldItems: PortableMessage[];
+  newItems: PortableMessage[];
+}): boolean {
+  if (!oldItems.length) {
+    return false;
+  }
+  const oldIds = new Set(oldItems.map((message) => message.messageId));
+  return !newItems.some((message) => oldIds.has(message.messageId));
 }
 
 function getStreamingTransition({
@@ -1061,6 +1086,12 @@ export class MessagesScrollController {
       return;
     }
 
+    // A cleared conversation must drop the old pin before anything below reads it; otherwise the
+    // stale pin keeps its spacer and scroll position under the new messages.
+    if (didClearAllMessages({ oldItems, newItems })) {
+      this.resetForClearedConversation();
+    }
+
     this.host.onScrollGeometryChanged();
 
     // Update observed messages when the message array changes
@@ -1139,6 +1170,24 @@ export class MessagesScrollController {
   // --------------------------------------------------------------------------
   // Pin / spacer execution
   // --------------------------------------------------------------------------
+
+  /**
+   * Clears pin state and the spacer, then returns to the top. Only for a full clear — removing
+   * some messages keeps the user's scroll position.
+   */
+  private resetForClearedConversation(): void {
+    this.pinnedMessageId = null;
+    this.pinnedScrollTop = 0;
+    this.userScrolledAwayFromPin = false;
+    this.domSpacerHeight = 0;
+    if (this.host.getSpacer()) {
+      this.host.setSpacerHeight(0);
+    }
+    const scrollElement = this.host.getScrollContainer();
+    if (scrollElement) {
+      scrollElement.scrollTop = 0;
+    }
+  }
 
   private getPinnedElement(): HTMLElement | null {
     if (!this.pinnedMessageId) {
@@ -1403,7 +1452,13 @@ export class MessagesScrollController {
         return;
       case 'pin_message':
         await this.waitForMessageComponentLayout(action.message);
-        if (!scrollElement.isConnected) {
+        // A clear during the wait removes the target; pinning it would restore a stale pin.
+        if (
+          !scrollElement.isConnected ||
+          !this.host
+            .getMessages()
+            .some((message) => message.id === action.message.id)
+        ) {
           return;
         }
         this.executePinAndScroll(action.message, scrollElement);
@@ -1758,6 +1813,7 @@ export class MessagesScrollController {
 export {
   applySafariScrollAnchoringRestore,
   computeGrowOnlySpacerHeight,
+  didClearAllMessages,
   getAnchoringRestoreTarget,
   getMessageArrayChangeFlags,
   getStreamingTransition,
