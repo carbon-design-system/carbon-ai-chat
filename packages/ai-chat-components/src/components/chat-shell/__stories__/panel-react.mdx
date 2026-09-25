@@ -10,6 +10,7 @@ import * as PanelReactStories from './panel-react.stories';
 ## Table of Contents
 
 - [Overview](#overview)
+- [Panel focus](#panel-focus)
 - [Component API](#component-api)
 - [Feedback](#feedback)
 
@@ -59,6 +60,14 @@ function ChatWithPanel() {
   );
 }
 ```
+
+## Panel focus
+
+When the active panel closes or is removed, the shell restores its trigger if focus stayed within the panel. If focus moved outside, it stays there. A panel covered by another panel keeps its trigger for later restoration.
+
+If the trigger cannot receive focus, the shell focuses the first available control in the remaining panel. If that panel has no available controls, the dialog receives focus. If no panel remains active, the shell requests a fallback. Handle `onPanelFocusFallback` on `ChatShell` to focus a suitable control, such as the chat input.
+
+Panels do not trap Tab. Your application sets initial focus and handles Escape. Apply initial focus once per opening, including when a panel first mounts open. If `onOpenEnd` has `detail.isReactivation` set to `true`, skip initial focus: the panel is becoming visible after another panel covered it. Leave close-time restoration to the shell.
 
 ## Component API
 

@@ -14,7 +14,7 @@ import Logout16 from '@carbon/icons/es/logout/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import Button from '../../../components/carbon/Button';
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useContext, useEffect, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { HumanAgentsOnlineStatus } from '../../../services/haa/HumanAgentService';
@@ -33,7 +33,7 @@ import {
   ConnectToHumanAgentItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import { EndHumanAgentChatModal } from '../../../components/modals/EndHumanAgentChatModal';
+import { HumanAgentConfirmationContext } from '../../../contexts/HumanAgentConfirmationContext';
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);
@@ -117,6 +117,38 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const { isSuspended } = persistedHumanAgentState;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
+  const setConfirmation = useContext(HumanAgentConfirmationContext);
+
+  useEffect(() => {
+    if (!showConfirmSuspended || !isSuspended) {
+      return undefined;
+    }
+    const confirmation = {
+      title: languagePack.agent_confirmSuspendedEndChatTitle,
+      message: languagePack.agent_confirmSuspendedEndChatMessage,
+      onConfirm: () => {
+        setShowConfirmSuspended(false);
+        serviceManager.humanAgentService.startChat(
+          localMessage,
+          originalMessage
+        );
+        setTimeout(requestFocus);
+      },
+      onCancel: () => setShowConfirmSuspended(false),
+    };
+    setConfirmation(confirmation);
+    return () =>
+      setConfirmation((current) => (current === confirmation ? null : current));
+  }, [
+    showConfirmSuspended,
+    isSuspended,
+    languagePack,
+    serviceManager,
+    localMessage,
+    originalMessage,
+    requestFocus,
+    setConfirmation,
+  ]);
 
   if (!isSuspended && showConfirmSuspended) {
     // This can happen if the user is disconnected while waiting for the confirmation.
@@ -125,8 +157,6 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
 
   function doStartChat() {
     if (isSuspended && !showConfirmSuspended) {
-      // If there is already a suspended chat and we're not showing the confirmation modal, then we need to confirm
-      // first.
       setShowConfirmSuspended(true);
     } else {
       setShowConfirmSuspended(false);
@@ -208,14 +238,6 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
           <div className="cds-aichat--connect-to-human-agent__suspended-warning">
             {languagePack.agent_suspendedWarning}
           </div>
-        )}
-        {showConfirmSuspended && (
-          <EndHumanAgentChatModal
-            title={languagePack.agent_confirmSuspendedEndChatTitle}
-            message={languagePack.agent_confirmSuspendedEndChatMessage}
-            onConfirm={doStartChat}
-            onCancel={() => setShowConfirmSuspended(false)}
-          />
         )}
       </div>
       <div slot="footer" className="cds-aichat--footer-button-components">

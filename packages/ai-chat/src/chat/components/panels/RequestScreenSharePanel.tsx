@@ -11,16 +11,12 @@ import React from 'react';
 
 import { useSelector } from '../../hooks/useSelector';
 import { useServiceManager } from '../../hooks/useServiceManager';
-import { ConfirmModal } from './ConfirmModal';
+import { ConfirmPanel } from './ConfirmPanel';
 import { ScreenShareState } from '../../../types/config/ServiceDeskConfig';
 import { shallowEqual } from '../../store/appStore';
 import { AppState } from '../../../types/state/AppState';
 
-/**
- * Displays a modal asking if the user wants to end a chat with an agent. This also covers the case where the user
- * cancels a request for an agent before an agent has joined.
- */
-function RequestScreenShareModal() {
+function RequestScreenSharePanel({ open }: { open: boolean }) {
   const serviceManager = useServiceManager();
   const languagePack = useSelector(
     (state: AppState) => ({
@@ -51,17 +47,18 @@ function RequestScreenShareModal() {
   const confirmButtonLabel = languagePack.agent_sharingAcceptButton;
 
   return (
-    <ConfirmModal
+    <ConfirmPanel
+      open={open}
+      priority={75}
       title={title}
       message={message}
       onConfirm={onConfirm}
       onCancel={onCancel}
       cancelButtonLabel={cancelButtonLabel}
       confirmButtonLabel={confirmButtonLabel}
-      modalAnnounceMessage={message}
-      serviceManager={serviceManager}
+      announceMessage={message}
     />
   );
 }
 
-export { RequestScreenShareModal };
+export { RequestScreenSharePanel };

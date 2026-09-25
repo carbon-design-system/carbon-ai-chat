@@ -20,6 +20,9 @@ const MESSAGES_MAX_WIDTH_FALLBACK = 672; // Fallback if CSS custom property is n
 
 type AnimationState = 'closed' | 'closing' | 'opening' | 'open';
 
+/**
+ * @fires openend - Opening has finished. detail.isReactivation is true when an open panel becomes visible again after another panel covered it.
+ */
 @carbonElement(`${prefix}-panel`)
 class CDSAIChatPanel extends LitElement {
   static styles = [commonStyles, styles];
@@ -132,6 +135,9 @@ class CDSAIChatPanel extends LitElement {
    */
   private animationState: AnimationState = 'closed';
 
+  private hasOpened = false;
+  private isReactivation = false;
+
   /**
    * @internal
    */
@@ -188,6 +194,7 @@ class CDSAIChatPanel extends LitElement {
     super.firstUpdated(changedProps);
     if (this.open && !this.inert) {
       this.animationState = 'open';
+      this.hasOpened = true;
     } else {
       this.animationState = 'closed';
     }
@@ -208,6 +215,9 @@ class CDSAIChatPanel extends LitElement {
   }
 
   protected updated(changedProperties: PropertyValues) {
+    if (changedProperties.has('open') && !this.open) {
+      this.hasOpened = false;
+    }
     if (changedProperties.has('open') || changedProperties.has('inert')) {
       this.updateVisibilityState();
     }
@@ -261,6 +271,8 @@ class CDSAIChatPanel extends LitElement {
   }
 
   private openPanel() {
+    this.isReactivation = this.hasOpened;
+    this.hasOpened = true;
     this.dispatchEvent(
       new CustomEvent('openstart', { bubbles: true, composed: true })
     );
@@ -344,7 +356,11 @@ class CDSAIChatPanel extends LitElement {
     this.animationState = 'open';
     this.updateHostClasses();
     this.dispatchEvent(
-      new CustomEvent('openend', { bubbles: true, composed: true })
+      new CustomEvent('openend', {
+        bubbles: true,
+        composed: true,
+        detail: { isReactivation: this.isReactivation },
+      })
     );
   }
 
@@ -613,7 +629,6 @@ class CDSAIChatPanel extends LitElement {
       <div
         class="panel-content"
         role="dialog"
-        aria-modal="${this.fullWidth}"
         aria-hidden="${!this.open}"
         aria-label=${this.panelAriaLabel || nothing}
         aria-labelledby=${this.panelAriaLabelledby || nothing}>

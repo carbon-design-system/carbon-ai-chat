@@ -8,8 +8,7 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
-import CDSAIChatPanel from '@carbon/ai-chat-components/es/components/chat-shell/src/panel.js';
+import CDSAIChatPanel from '../src/panel.js';
 
 /**
  * This repository uses the @web/test-runner library for testing
@@ -57,6 +56,21 @@ describe('cds-aichat-panel', function () {
       );
       const panelContent = el.shadowRoot!.querySelector('.panel-content');
       expect(panelContent).to.exist;
+    });
+
+    it('keeps full-width panels nonmodal', async () => {
+      const el = await fixture<CDSAIChatPanel>(
+        html`<cds-aichat-panel
+          open
+          full-width
+          panel-aria-label="Confirm action"></cds-aichat-panel>`
+      );
+      const dialog = el.shadowRoot!.querySelector('[role="dialog"]')!;
+      expect(dialog.getAttribute('aria-label')).to.equal('Confirm action');
+      expect(dialog.hasAttribute('aria-modal')).to.be.false;
+      el.fullWidth = false;
+      await el.updateComplete;
+      expect(dialog.hasAttribute('aria-modal')).to.be.false;
     });
   });
 
@@ -363,6 +377,52 @@ describe('cds-aichat-panel', function () {
 
   // ========== Event Emission Tests ==========
   describe('Event Emission', () => {
+    it('distinguishes first opening, resurfacing, and reopening after a covered close', async () => {
+      const el = await fixture<CDSAIChatPanel>(
+        html`<cds-aichat-panel></cds-aichat-panel>`
+      );
+      const reactivations: boolean[] = [];
+      el.addEventListener(
+        'openend',
+        (event: CustomEvent<{ isReactivation: boolean }>) => {
+          reactivations.push(event.detail.isReactivation);
+        }
+      );
+      el.open = true;
+      await el.updateComplete;
+      el.inert = true;
+      await el.updateComplete;
+      el.inert = false;
+      await el.updateComplete;
+      el.inert = true;
+      await el.updateComplete;
+      el.open = false;
+      await el.updateComplete;
+      el.open = true;
+      await el.updateComplete;
+      el.inert = false;
+      await el.updateComplete;
+      expect(reactivations).to.deep.equal([false, true, false]);
+    });
+
+    it('recognizes resurfacing for panels initially mounted open', async () => {
+      const el = await fixture<CDSAIChatPanel>(
+        html`<cds-aichat-panel open></cds-aichat-panel>`
+      );
+      let isReactivation: boolean | undefined;
+      el.addEventListener(
+        'openend',
+        (event: CustomEvent<{ isReactivation: boolean }>) => {
+          isReactivation = event.detail.isReactivation;
+        }
+      );
+      el.inert = true;
+      await el.updateComplete;
+      el.inert = false;
+      await el.updateComplete;
+      expect(isReactivation).to.be.true;
+    });
+
     it('should emit openstart event when opening', async () => {
       const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel></cds-aichat-panel>`

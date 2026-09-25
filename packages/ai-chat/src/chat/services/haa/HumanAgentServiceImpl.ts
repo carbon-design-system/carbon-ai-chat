@@ -428,7 +428,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     const wasSuspended = this.isSuspended();
 
     this.cancelHumanAgentJoinedTimer();
-    this.closeScreenShareRequestModal(ScreenShareState.CANCELLED);
+    this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
 
     try {
       await resolveOrTimeout(
@@ -764,8 +764,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       return;
     }
 
-    // Close the modal.
-    this.closeScreenShareRequestModal(state);
+    this.closeScreenShareRequestPanel(state);
 
     let agentMessageType: HumanAgentMessageType;
     switch (state) {
@@ -861,10 +860,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Closes the screen share request modal and completes the promise waiting on it.
+   * Closes the screen share request panel and completes the promise waiting on it.
    */
-  closeScreenShareRequestModal(state: ScreenShareState) {
-    // Close the modal if it was open.
+  closeScreenShareRequestPanel(state: ScreenShareState) {
     this.serviceManager.store.dispatch(setShowScreenShareRequest(false));
 
     // If someone is waiting on the Promise, then resolve it.
@@ -1342,7 +1340,7 @@ class ServiceDeskCallbackImpl<
   }
 
   /**
-   * Requests that the user share their screen with the agent. This will present a modal dialog to the user who must
+   * Requests that the user share their screen with the agent. This opens a panel where the user must
    * respond before continuing the conversation. This method returns a Promise that resolves when the user has
    * responded to the request or the request times out.
    *
@@ -1374,7 +1372,7 @@ class ServiceDeskCallbackImpl<
     const wasScreenSharing =
       this.serviceManager.store.getState().humanAgentState.isScreenSharing;
     const requestPending = this.service.screenShareRequestPromise;
-    this.service.closeScreenShareRequestModal(ScreenShareState.CANCELLED);
+    this.service.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
     if (wasScreenSharing) {
       this.serviceManager.store.dispatch(setIsScreenSharing(false));
       await this.service.addHumanAgentLocalMessage(SHARING_ENDED);

@@ -142,7 +142,6 @@
     "classnames": "^2.5.0",
     "compute-scroll-into-view": "^3.1.0",
     "dayjs": "^1.11.10",
-    "focus-trap-react": "^12.0.0",
     "intl-messageformat": "^11.0.0",
     "lit": "^3.1.0",
     "lodash-es": "^4.18.1",

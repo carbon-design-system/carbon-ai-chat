@@ -15,8 +15,8 @@ interface UsePanelCallbacksProps {
 
 interface UsePanelCallbacksReturn {
   onPanelOpenStart: () => void;
-  onPanelOpenEnd: () => void;
-  onPanelCloseStart: () => void;
+  onPanelOpenEnd: (event: CustomEvent) => void;
+  onPanelCloseStart: (event: CustomEvent) => void;
   onPanelCloseEnd: () => void;
 }
 
@@ -30,20 +30,19 @@ export function usePanelCallbacks({
     // Don't request focus here - panel content not yet rendered
   }, []);
 
-  const onPanelOpenEnd = useCallback(() => {
-    // Request focus after panel is fully open and content is rendered
-    requestFocus();
-  }, [requestFocus]);
+  const onPanelOpenEnd = useCallback(
+    (event: CustomEvent) => {
+      if (event.detail?.isReactivation) {
+        return;
+      }
+      requestFocus();
+    },
+    [requestFocus]
+  );
 
-  const onPanelCloseStart = useCallback(() => {
-    // Don't request focus here - panel is closing
-  }, []);
+  const onPanelCloseStart = useCallback(() => {}, []);
 
-  const onPanelCloseEnd = useCallback(() => {
-    // Explicitly request focus to ensure it returns to input field
-    // useFocusManager will determine the correct focus target based on panel state
-    requestFocus();
-  }, [requestFocus]);
+  const onPanelCloseEnd = useCallback(() => {}, []);
 
   return {
     onPanelOpenStart,

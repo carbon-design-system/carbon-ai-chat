@@ -1,0 +1,46 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '@carbon/layout';
+@use '@carbon/styles/scss/type';
+
+.cds-aichat--confirm-panel__content {
+  padding: layout.$spacing-07;
+}
+
+.cds-aichat--confirm-panel__title {
+  @include type.type-style('heading-04');
+
+  margin-block: 0 layout.$spacing-05;
+}
+
+.cds-aichat--confirm-panel__message {
+  @include type.type-style('body-01');
+
+  margin: 0;
+}
+
+.cds-aichat--confirm-panel__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1px;
+}
+
+.cds-aichat--confirm-panel__button {
+  flex: 1;
+  max-inline-size: 18rem;
+
+  &:first-child::part(button) {
+    border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  }
+
+  &:last-child::part(button) {
+    border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  }
+}
