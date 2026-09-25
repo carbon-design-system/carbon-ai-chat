@@ -117,6 +117,10 @@ export interface AutocompleteSendEventDetail {
   text: string;
 }
 
+export interface AutocompleteNavigatedEventDetail {
+  navigated: boolean;
+}
+
 /**
  * Autocomplete component for AI Chat input suggestions.
  *
@@ -191,7 +195,22 @@ class AutocompleteElement extends LitElement {
    * @internal
    */
   @state()
-  private _focusedIndex = 0;
+  private _focusedIndex = -1;
+
+  private _userHasNavigated = false;
+
+  private _setUserHasNavigated(value: boolean): void {
+    if (this._userHasNavigated === value) {
+      return;
+    }
+    this._userHasNavigated = value;
+    this.dispatchEvent(
+      new CustomEvent<AutocompleteNavigatedEventDetail>(
+        'cds-aichat-autocomplete-navigated',
+        { detail: { navigated: value }, bubbles: true, composed: true }
+      )
+    );
+  }
 
   private _announcer = new AriaAnnouncerManager();
   private _listboxEl: HTMLElement | null = null;
@@ -223,6 +242,10 @@ class AutocompleteElement extends LitElement {
     }
   }
 
+  public hasNavigated(): boolean {
+    return this._userHasNavigated;
+  }
+
   firstUpdated() {
     const regions = this.renderRoot.querySelectorAll<HTMLDivElement>(
       `.${blockClass}__live-region`
@@ -247,15 +270,8 @@ class AutocompleteElement extends LitElement {
         this._openAnnounced = false;
         return;
       }
-      // Reset to first enabled item and announce list opened (once per show).
-      let firstEnabled = 0;
-      while (
-        firstEnabled < totalItems &&
-        this._getItemAtIndex(firstEnabled)?.disabled
-      ) {
-        firstEnabled++;
-      }
-      this._focusedIndex = firstEnabled < totalItems ? firstEnabled : 0;
+      this._focusedIndex = -1;
+      this._setUserHasNavigated(false);
       if (!this._openAnnounced) {
         this._openAnnounced = true;
         this._announcer.announce(this.i18n.suggestionsAvailable(totalItems));
@@ -302,14 +318,16 @@ class AutocompleteElement extends LitElement {
    */
   private _navigateTo(from: number, direction: 1 | -1): number {
     const totalItems = this._getTotalItemCount();
-    let next = from + direction;
+    // When no item is selected yet (-1), ArrowUp wraps to the last item.
+    const start = from === -1 && direction === -1 ? totalItems : from;
+    let next = start + direction;
     while (next >= 0 && next < totalItems) {
       if (!this._getItemAtIndex(next)?.disabled) {
         return next;
       }
       next += direction;
     }
-    // No enabled item found in that direction — stay put.
+    // No enabled item found in that direction — stay put (keep -1 if unnavigated).
     return from;
   }
 
@@ -323,6 +341,7 @@ class AutocompleteElement extends LitElement {
       case 'ArrowDown':
         event.preventDefault();
         this._focusedIndex = this._navigateTo(this._focusedIndex, 1);
+        this._setUserHasNavigated(true);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
@@ -330,6 +349,7 @@ class AutocompleteElement extends LitElement {
       case 'ArrowUp':
         event.preventDefault();
         this._focusedIndex = this._navigateTo(this._focusedIndex, -1);
+        this._setUserHasNavigated(true);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
@@ -342,11 +362,11 @@ class AutocompleteElement extends LitElement {
           first++;
         }
         this._focusedIndex = first < totalItems ? first : this._focusedIndex;
+        this._setUserHasNavigated(true);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
       }
-
       case 'End': {
         event.preventDefault();
         // Find last enabled item from the bottom.
@@ -355,6 +375,7 @@ class AutocompleteElement extends LitElement {
           last--;
         }
         this._focusedIndex = last >= 0 ? last : this._focusedIndex;
+        this._setUserHasNavigated(true);
         this._scheduleMoveAnnouncement(this._focusedIndex, totalItems);
         this._scrollActiveItemIntoView();
         break;
@@ -366,6 +387,9 @@ class AutocompleteElement extends LitElement {
         break;
 
       case 'Enter':
+        if (!this._userHasNavigated) {
+          return;
+        }
         event.preventDefault();
         this._handleItemClick(this._focusedIndex);
         break;
@@ -479,6 +503,7 @@ class AutocompleteElement extends LitElement {
 
   private _dismiss() {
     this._openAnnounced = false;
+    this._setUserHasNavigated(false);
     this._announcer.announce(this.i18n.suggestionsClosed);
     this.dispatchEvent(
       new CustomEvent('cds-aichat-autocomplete-dismiss', {
@@ -503,6 +528,9 @@ class AutocompleteElement extends LitElement {
   }
 
   private _getActiveOptionId(): string | undefined {
+    if (!this._userHasNavigated) {
+      return undefined;
+    }
     const item = this._getItemAtIndex(this._focusedIndex);
     return item ? `${item.id}--option` : undefined;
   }
@@ -574,7 +602,7 @@ class AutocompleteElement extends LitElement {
     opts: { firstItem?: boolean; lastItem?: boolean } = {}
   ) {
     const { typed, remainder } = this._getLabelParts(item);
-    const isActive = index === this._focusedIndex;
+    const isActive = this._userHasNavigated && index === this._focusedIndex;
     const isDisabled = !!item.disabled;
     const id = `${item.id}--option`;
 
