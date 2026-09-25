@@ -15,11 +15,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StoreProvider } from './providers/StoreProvider';
-import { WindowSizeProvider } from './providers/WindowSizeProvider';
-import { ServiceManagerProvider } from './providers/ServiceManagerProvider';
-import { IntlProvider } from './providers/IntlProvider';
-import { AriaAnnouncerProvider } from './providers/AriaAnnouncerProvider';
+import { AppProviders } from './AppProviders';
 import { ServiceManager } from './services/ServiceManager';
 import {
   attachUserDefinedResponseHandlers,
@@ -423,67 +419,55 @@ export function ChatAppEntry({
   }
 
   return (
-    <StoreProvider store={serviceManager.store}>
-      <WindowSizeProvider windowSize={windowSize}>
-        <ServiceManagerProvider serviceManager={serviceManager}>
-          <IntlProvider intl={serviceManager.intl}>
-            <AriaAnnouncerProvider>
-              <AppShell
-                serviceManager={serviceManager}
-                hostElement={serviceManager.customHostElement}
-                writeableElementsPresentKeys={writeableElementsPresentKeys}
-              />
-              {renderUserDefinedResponse && (
-                <UserDefinedResponsePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedResponse={renderUserDefinedResponse}
-                  userDefinedResponseEventsBySlot={
-                    userDefinedResponseEventsBySlot
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+    <AppProviders serviceManager={serviceManager} windowSize={windowSize}>
+      <AppShell
+        serviceManager={serviceManager}
+        hostElement={serviceManager.customHostElement}
+        writeableElementsPresentKeys={writeableElementsPresentKeys}
+      />
+      {renderUserDefinedResponse && (
+        <UserDefinedResponsePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedResponse={renderUserDefinedResponse}
+          userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomMessageFooter && (
-                <CustomFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomMessageFooter={renderCustomMessageFooter}
-                  customFooterEventsBySlot={customFooterSlotsByName}
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomMessageFooter && (
+        <CustomFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomMessageFooter={renderCustomMessageFooter}
+          customFooterEventsBySlot={customFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderCustomRequestFooter && (
-                <CustomRequestFooterPortalsContainer
-                  chatInstance={instance}
-                  renderCustomRequestFooter={renderCustomRequestFooter}
-                  customRequestFooterEventsBySlot={
-                    customRequestFooterSlotsByName
-                  }
-                  chatWrapper={chatWrapper}
-                />
-              )}
+      {renderCustomRequestFooter && (
+        <CustomRequestFooterPortalsContainer
+          chatInstance={instance}
+          renderCustomRequestFooter={renderCustomRequestFooter}
+          customRequestFooterEventsBySlot={customRequestFooterSlotsByName}
+          chatWrapper={chatWrapper}
+        />
+      )}
 
-              {renderWriteableElements && (
-                <WriteableElementsPortalsContainer
-                  chatInstance={instance}
-                  renderResponseMap={renderWriteableElements}
-                />
-              )}
+      {renderWriteableElements && (
+        <WriteableElementsPortalsContainer
+          chatInstance={instance}
+          renderResponseMap={renderWriteableElements}
+        />
+      )}
 
-              <LightDomPortalsContainer chatWrapper={chatWrapper} />
+      <LightDomPortalsContainer chatWrapper={chatWrapper} />
 
-              {renderUserDefinedInputNode && (
-                <InputNodePortalsContainer
-                  chatInstance={instance}
-                  renderUserDefinedInputNode={renderUserDefinedInputNode}
-                  chatWrapper={chatWrapper}
-                />
-              )}
-            </AriaAnnouncerProvider>
-          </IntlProvider>
-        </ServiceManagerProvider>
-      </WindowSizeProvider>
-    </StoreProvider>
+      {renderUserDefinedInputNode && (
+        <InputNodePortalsContainer
+          chatInstance={instance}
+          renderUserDefinedInputNode={renderUserDefinedInputNode}
+          chatWrapper={chatWrapper}
+        />
+      )}
+    </AppProviders>
   );
 }

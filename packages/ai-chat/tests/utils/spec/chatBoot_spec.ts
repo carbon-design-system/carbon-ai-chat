@@ -192,8 +192,15 @@ describe('chatBoot utils', () => {
         (event: BusEvent & { data?: any }) => void
       > = {};
       const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
+        on: (subscriptions: any) => {
+          for (const { type, handler } of [subscriptions].flat()) {
+            handlers[type] = handler;
+          }
+        },
+        off: (subscriptions: any) => {
+          for (const { type } of [subscriptions].flat()) {
+            delete handlers[type];
+          }
         },
       };
 
@@ -244,8 +251,15 @@ describe('chatBoot utils', () => {
         (event: BusEvent & { data?: any }) => void
       > = {};
       const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
+        on: (subscriptions: any) => {
+          for (const { type, handler } of [subscriptions].flat()) {
+            handlers[type] = handler;
+          }
+        },
+        off: (subscriptions: any) => {
+          for (const { type } of [subscriptions].flat()) {
+            delete handlers[type];
+          }
         },
       };
 
@@ -297,8 +311,15 @@ describe('chatBoot utils', () => {
         (event: BusEvent & { data?: any }) => void
       > = {};
       const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
+        on: (subscriptions: any) => {
+          for (const { type, handler } of [subscriptions].flat()) {
+            handlers[type] = handler;
+          }
+        },
+        off: (subscriptions: any) => {
+          for (const { type } of [subscriptions].flat()) {
+            delete handlers[type];
+          }
         },
       };
 
@@ -347,8 +368,15 @@ describe('chatBoot utils', () => {
         (event: BusEvent & { data?: any }) => void
       > = {};
       const fakeInstance: any = {
-        on: ({ type, handler }: any) => {
-          handlers[type] = handler;
+        on: (subscriptions: any) => {
+          for (const { type, handler } of [subscriptions].flat()) {
+            handlers[type] = handler;
+          }
+        },
+        off: (subscriptions: any) => {
+          for (const { type } of [subscriptions].flat()) {
+            delete handlers[type];
+          }
         },
       };
 

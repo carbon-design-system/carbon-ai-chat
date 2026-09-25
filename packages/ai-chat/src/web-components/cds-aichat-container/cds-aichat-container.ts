@@ -1,0 +1,729 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * This is the exposed web component for a basic floating chat.
+ */
+
+import './cds-aichat-internal';
+
+import { html } from 'lit';
+import { property, state } from 'lit/decorators.js';
+
+import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
+import { ChatInstance } from '../../types/instance/ChatInstance';
+import {
+  BusEventChunkUserDefinedResponse,
+  BusEventCustomFooterSlot,
+  BusEventCustomRequestFooterSlot,
+  BusEventType,
+  BusEventUserDefinedResponse,
+  BusEventViewChange,
+  BusEventViewPreChange,
+} from '../../types/events/eventBusTypes';
+import type {
+  RenderCustomMessageFooterState,
+  RenderCustomRequestFooterState,
+  RenderUserDefinedState,
+  WCMarkdown,
+  WCRenderCustomMessageFooter,
+  WCRenderCustomRequestFooter,
+  WCRenderUserDefinedResponse,
+  WCRenderUserDefinedInputNode,
+  RenderUserDefinedInputNode,
+} from '../../types/component/ChatContainer';
+import { adaptWCRenderUserDefinedInputNode } from './adapt-wc-input-node-renderer';
+
+/**
+ * The cds-aichat-container managing creating slotted elements for user_defined responses, custom message footers, and writable elements.
+ * It then passes that slotted content into cds-aichat-internal. That component will boot up the full chat application
+ * and pass the slotted elements into their slots.
+ */
+@carbonElement('cds-aichat-container')
+class ChatContainer extends FlattenedConfigElement {
+  /**
+   * The element to render to instead of the default float element.
+   *
+   * @internal
+   */
+  @property({ type: HTMLElement })
+  element?: HTMLElement;
+
+  /**
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
+   *
+   * Use it to capture the {@link ChatInstance} so you can call instance methods later.
+   *
+   * @example
+   * ```ts
+   * const onBeforeRender = (instance: ChatInstance) => {
+   *   this.instance = instance;
+   * };
+   * // <cds-aichat-container .onBeforeRender=${onBeforeRender}></cds-aichat-container>
+   * ```
+   */
+  @property({ attribute: false })
+  onBeforeRender: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * This function is called after the render function of Carbon AI Chat is called.
+   *
+   * Like `onBeforeRender`, it receives the {@link ChatInstance}; use it when you need the instance only after the
+   * first render has completed.
+   */
+  @property({ attribute: false })
+  onAfterRender: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * Called before a view change (the chat opening or closing). Async — return a
+   * Promise to defer the view change until it resolves.
+   *
+   * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
+   * container has no wrapping element to size, so no default visibility
+   * behavior runs when this property is omitted.
+   */
+  @property()
+  onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
+
+  /**
+   * Called when a view change (the chat opening or closing) is complete.
+   *
+   * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
+   * container has no wrapping element to size, so no default visibility
+   * behavior runs when this property is omitted.
+   */
+  @property()
+  onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
+
+  /**
+   * Optional callback to render user defined responses. When provided, the library manages all event listening,
+   * slot tracking, streaming state, and element lifecycle. The callback receives the accumulated state and should
+   * return an HTMLElement or null.
+   *
+   * When this property is not set, the existing event + manual slot approach continues to work.
+   */
+  @property({ attribute: false })
+  renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
+   * Optional callback to render custom message footers. When provided, the library manages all event listening,
+   * slot tracking, and element lifecycle. The callback receives the accumulated state and should
+   * return an HTMLElement or null.
+   *
+   * When this property is not set, the existing event + manual slot approach continues to work.
+   */
+  @property({ attribute: false })
+  renderCustomMessageFooter?: WCRenderCustomMessageFooter;
+
+  /**
+   * Optional callback to render a footer below each user message. When provided, the library manages all event
+   * listening, slot tracking, and element lifecycle. The callback receives the accumulated state and should
+   * return an HTMLElement or null.
+   *
+   * Passing this callback is how you opt in. Leave it off and user messages have no footer.
+   */
+  @property({ attribute: false })
+  renderCustomRequestFooter?: WCRenderCustomRequestFooter;
+
+  // markdown is declared on the FlattenedConfigElement base; the attributes
+  // interface narrows its type.
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content). Called with `{ node, message }` plus the
+   * chat instance and should return an `HTMLElement` (or `null`). The
+   * library mounts the element inside the bubble via a slot.
+   *
+   * @experimental
+   */
+  @property({ attribute: false })
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
+
+  /**
+   * The existing array of slot names for all user_defined components.
+   */
+  @state()
+  _userDefinedSlotNames: string[] = [];
+
+  /**
+   * The existing array of slot names for all custom footers.
+   */
+  @state()
+  _customFooterSlotNames: string[] = [];
+
+  /**
+   * The existing array of slot names for all writeable elements.
+   */
+  @state()
+  _writeableElementSlots: string[] = [];
+
+  /**
+   * Active slot names for markdown-plugin output hosted at this element.
+   * Populated when this element takes over from the markdown element by
+   * accepting the host-mount event; drained when the matching unmount
+   * event fires.
+   */
+  @state()
+  _pluginSlotNames: string[] = [];
+
+  /**
+   * The chat instance.
+   */
+  @state()
+  _instance: ChatInstance;
+
+  /**
+   * Accumulated state per slot for user_defined responses when renderUserDefinedResponse is provided.
+   */
+  @state()
+  _userDefinedStateBySlot: Record<string, RenderUserDefinedState> = {};
+
+  /**
+   * Accumulated state per slot for custom message footers when renderCustomMessageFooter is provided.
+   */
+  @state()
+  _customFooterStateBySlot: Record<string, RenderCustomMessageFooterState> = {};
+
+  /**
+   * Accumulated state per slot for the footers below user messages when renderCustomRequestFooter is provided.
+   * Unlike the incoming twin there is no second array of slot names: nothing tracks a name without state, so the
+   * keys of this record are the slot names.
+   */
+  @state()
+  _customRequestFooterStateBySlot: Record<
+    string,
+    RenderCustomRequestFooterState
+  > = {};
+
+  /**
+   * Tracks the wrapper elements created by the callback rendering path.
+   */
+  private _callbackElements = new Map<string, HTMLElement>();
+
+  /**
+   * Tracks the wrapper elements created by the custom-footer callback rendering path.
+   */
+  private _callbackFooterElements = new Map<string, HTMLElement>();
+
+  /**
+   * Tracks the wrapper elements created by the request-footer callback rendering path.
+   */
+  private _callbackRequestFooterElements = new Map<string, HTMLElement>();
+
+  /**
+   * Cached adapter so each container update doesn't churn a new React
+   * function down into ChatAppEntry. Keyed on the WC function identity.
+   */
+  private _inputNodeRendererCache:
+    | { wc: WCRenderUserDefinedInputNode; react: RenderUserDefinedInputNode }
+    | undefined;
+
+  private _inputNodeReactRendererFor(
+    wc: WCRenderUserDefinedInputNode
+  ): RenderUserDefinedInputNode {
+    if (this._inputNodeRendererCache?.wc === wc) {
+      return this._inputNodeRendererCache.react;
+    }
+    const react = adaptWCRenderUserDefinedInputNode(wc);
+    this._inputNodeRendererCache = { wc, react };
+    return react;
+  }
+
+  /**
+   * Adds the slot attribute to the element for the user_defined response type and then injects it into the component by
+   * updating this._userDefinedSlotNames;
+   */
+  userDefinedHandler = (
+    event: BusEventUserDefinedResponse | BusEventChunkUserDefinedResponse
+  ) => {
+    // This element already has `slot` as an attribute.
+    const { slot } = event.data;
+    if (!this._userDefinedSlotNames.includes(slot)) {
+      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+  };
+
+  /**
+   * Adds the slot attribute to the element for the custom_footer_slot type and then injects it into the component by
+   * updating this._customFooterSlotNames;
+   */
+  customFooterHandler = (event: BusEventCustomFooterSlot) => {
+    // This element already has `slotName` as an attribute.
+    const { slotName } = event.data;
+    if (!this._customFooterSlotNames.includes(slotName)) {
+      this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
+    }
+  };
+
+  /**
+   * Enhanced handler for CUSTOM_FOOTER_SLOT when the renderCustomMessageFooter callback is provided.
+   * Tracks both slot names and the full per-slot state used by the callback rendering path.
+   */
+  private enhancedCustomFooterHandler = (event: BusEventCustomFooterSlot) => {
+    const { slotName, message, messageItem, additionalData } = event.data;
+    if (!this._customFooterSlotNames.includes(slotName)) {
+      this._customFooterSlotNames = [...this._customFooterSlotNames, slotName];
+    }
+    this._customFooterStateBySlot = {
+      ...this._customFooterStateBySlot,
+      [slotName]: {
+        slotName,
+        message,
+        messageItem,
+        additionalData: additionalData as Record<string, unknown> | undefined,
+      },
+    };
+  };
+
+  /**
+   * Handler for CUSTOM_REQUEST_FOOTER_SLOT. Unlike the incoming footer there is no legacy passthrough path, so this
+   * always tracks full per-slot state.
+   *
+   * The event fires for every user message rather than only when a backend opts in, so the callback is checked on
+   * each one: without it nothing accumulates. Checking here rather than gating the subscription is what lets a host
+   * set the callback after the chat has booted.
+   */
+  private customRequestFooterHandler = (
+    event: BusEventCustomRequestFooterSlot
+  ) => {
+    if (!this.renderCustomRequestFooter) {
+      return;
+    }
+
+    const { slotName, message } = event.data;
+    this._customRequestFooterStateBySlot = {
+      ...this._customRequestFooterStateBySlot,
+      [slotName]: { slotName, message },
+    };
+  };
+
+  /**
+   * Enhanced handler for USER_DEFINED_RESPONSE when renderUserDefinedResponse callback is provided.
+   * Tracks both slot names and full message state per slot.
+   */
+  private enhancedUserDefinedHandler = (event: BusEventUserDefinedResponse) => {
+    const { slot } = event.data;
+    if (!this._userDefinedSlotNames.includes(slot)) {
+      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+    this._userDefinedStateBySlot = {
+      ...this._userDefinedStateBySlot,
+      [slot]: {
+        fullMessage: event.data.fullMessage,
+        messageItem: event.data.message,
+        state: event.data.state,
+      },
+    };
+  };
+
+  /**
+   * Enhanced handler for CHUNK_USER_DEFINED_RESPONSE when renderUserDefinedResponse callback is provided.
+   * Handles both complete_item and partial_item chunks, accumulating state per slot.
+   */
+  private enhancedUserDefinedChunkHandler = (
+    event: BusEventChunkUserDefinedResponse
+  ) => {
+    const { slot, chunk } = event.data;
+    if (!this._userDefinedSlotNames.includes(slot)) {
+      this._userDefinedSlotNames = [...this._userDefinedSlotNames, slot];
+    }
+
+    if ('complete_item' in chunk) {
+      this._userDefinedStateBySlot = {
+        ...this._userDefinedStateBySlot,
+        [slot]: { messageItem: chunk.complete_item },
+      };
+    } else if ('partial_item' in chunk) {
+      const existing = this._userDefinedStateBySlot[slot];
+      this._userDefinedStateBySlot = {
+        ...this._userDefinedStateBySlot,
+        [slot]: {
+          ...existing,
+          partialItems: [...(existing?.partialItems ?? []), chunk.partial_item],
+        },
+      };
+    }
+  };
+
+  /**
+   * Handles RESTART_CONVERSATION when the renderUserDefinedResponse and/or renderCustomMessageFooter
+   * callback is provided. Clears all accumulated state and removes callback-rendered elements from the DOM.
+   *
+   * The custom-footer cleanup is guarded by renderCustomMessageFooter so the legacy footer passthrough
+   * path (which the host clears itself) is left untouched.
+   */
+  private restartHandler = () => {
+    this._userDefinedStateBySlot = {};
+    this._userDefinedSlotNames = [];
+    for (const el of this._callbackElements.values()) {
+      el.remove();
+    }
+    this._callbackElements.clear();
+
+    if (this.renderCustomMessageFooter) {
+      this._customFooterStateBySlot = {};
+      this._customFooterSlotNames = [];
+      for (const el of this._callbackFooterElements.values()) {
+        el.remove();
+      }
+      this._callbackFooterElements.clear();
+    }
+
+    this._customRequestFooterStateBySlot = {};
+    for (const el of this._callbackRequestFooterElements.values()) {
+      el.remove();
+    }
+    this._callbackRequestFooterElements.clear();
+  };
+
+  /**
+   * Synchronizes callback-rendered wrapper elements in the light DOM against the accumulated per-slot state.
+   *
+   * Each slot owns one wrapper div. A slot whose callback returns nothing loses its wrapper, and so does a slot
+   * that has left the state. Returning the same element as last time leaves the node alone: replaceChildren would
+   * detach and re-attach it, which restarts media and fires disconnectedCallback on a custom element.
+   */
+  private syncCallbackRenderedWrappers<TState>(
+    stateBySlot: Record<string, TState>,
+    wrappersBySlot: Map<string, HTMLElement>,
+    render: (state: TState) => HTMLElement | null
+  ) {
+    for (const [slotName, slotState] of Object.entries(stateBySlot)) {
+      const newContent = render(slotState) ?? null;
+
+      if (!newContent) {
+        const existing = wrappersBySlot.get(slotName);
+        if (existing) {
+          existing.remove();
+          wrappersBySlot.delete(slotName);
+        }
+        continue;
+      }
+
+      let wrapper = wrappersBySlot.get(slotName);
+      if (!wrapper) {
+        wrapper = document.createElement('div');
+        wrapper.setAttribute('slot', slotName);
+        wrappersBySlot.set(slotName, wrapper);
+        this.appendChild(wrapper);
+      }
+
+      if (
+        wrapper.firstChild !== newContent ||
+        wrapper.childNodes.length !== 1
+      ) {
+        wrapper.replaceChildren(newContent);
+      }
+    }
+
+    // Clean up wrappers for slots that no longer exist in state
+    for (const [slotName, el] of wrappersBySlot.entries()) {
+      if (!(slotName in stateBySlot)) {
+        el.remove();
+        wrappersBySlot.delete(slotName);
+      }
+    }
+  }
+
+  /**
+   * True when an outer chat element (cds-aichat-custom-element) further up
+   * the composed path will catch the host-mount event. When true, this
+   * element only forwards the slot through its render template and lets the
+   * outer element create the page-level host. When false, this element is
+   * outermost and must create the host itself.
+   */
+  private hasOuterChatHandler(event: Event): boolean {
+    const path = event.composedPath();
+    const myIndex = path.indexOf(this);
+    if (myIndex < 0) {
+      return false;
+    }
+    for (let i = myIndex + 1; i < path.length; i++) {
+      const node = path[i] as Element;
+      if (
+        node?.tagName === 'CDS-AICHAT-CUSTOM-ELEMENT' ||
+        node?.tagName === 'CDS-AICHAT-REACT'
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The container half of the plugin-host protocol. Hosts land in this
+   * element's own light DOM — page DOM when this element is outermost — so a
+   * consumer-loaded stylesheet reaches the plugin output; the markdown
+   * element's own light DOM sits inside the chat's shadow root, where it
+   * cannot.
+   */
+  private pluginHostController = createMarkdownPluginHostController(this, {
+    onSlotNamesChange: (slotNames) => {
+      this._pluginSlotNames = slotNames;
+    },
+    shouldDefer: (event) => this.hasOuterChatHandler(event),
+  });
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.pluginHostController.connect();
+  }
+
+  disconnectedCallback() {
+    this.pluginHostController.disconnect();
+    super.disconnectedCallback();
+  }
+
+  onBeforeRenderOverride = async (instance: ChatInstance) => {
+    this._instance = instance;
+
+    // Opt-in view-change observation hooks. The float container manages its own
+    // visibility, so there is no default handler — a prop is only subscribed
+    // when the consumer provides it.
+    if (this.onViewPreChange) {
+      this._instance.on({
+        type: BusEventType.VIEW_PRE_CHANGE,
+        handler: this.onViewPreChange,
+      });
+    }
+    if (this.onViewChange) {
+      this._instance.on({
+        type: BusEventType.VIEW_CHANGE,
+        handler: this.onViewChange,
+      });
+    }
+
+    if (this.renderUserDefinedResponse) {
+      // Enhanced path: library manages full state for callback rendering
+      this._instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: this.enhancedUserDefinedHandler,
+      });
+      this._instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: this.enhancedUserDefinedChunkHandler,
+      });
+    } else {
+      // Legacy path: container only tracks slot names
+      this._instance.on({
+        type: BusEventType.USER_DEFINED_RESPONSE,
+        handler: this.userDefinedHandler,
+      });
+      this._instance.on({
+        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+        handler: this.userDefinedHandler,
+      });
+    }
+
+    // Enhanced path manages full per-slot state for callback rendering; the
+    // legacy path only tracks slot names for manual slotting.
+    this._instance.on({
+      type: BusEventType.CUSTOM_FOOTER_SLOT,
+      handler: this.renderCustomMessageFooter
+        ? this.enhancedCustomFooterHandler
+        : this.customFooterHandler,
+    });
+
+    this._instance.on({
+      type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+      handler: this.customRequestFooterHandler,
+    });
+
+    // A single RESTART_CONVERSATION subscription clears whichever callback
+    // paths are active. Registered once so the handler does not fire twice
+    // when both callbacks are provided, and unconditionally so a callback set
+    // after boot still gets its wrappers cleared.
+    this._instance.on({
+      type: BusEventType.RESTART_CONVERSATION,
+      handler: this.restartHandler,
+    });
+
+    this.addWriteableElementSlots();
+    this.attachWriteableElements();
+    await this.onBeforeRender?.(instance);
+  };
+
+  addWriteableElementSlots() {
+    const writeableElementSlots: string[] = [];
+    Object.keys(this._instance.writeableElements).forEach(
+      (writeableElementKey) => {
+        writeableElementSlots.push(writeableElementKey);
+      }
+    );
+    this._writeableElementSlots = writeableElementSlots;
+  }
+
+  private attachWriteableElements() {
+    const writeableElements = this._instance?.writeableElements;
+    if (!writeableElements) {
+      return;
+    }
+
+    // Prepend so these host nodes land before any Lit ChildPart comment
+    // markers a parent template may have stamped into this element's light
+    // DOM. Lit only manages nodes between its start/end markers; a node
+    // prepended before the start marker is outside that range and survives
+    // parent re-renders unchanged.
+    Object.entries(writeableElements).forEach(([slot, element]) => {
+      if (!element) {
+        return;
+      }
+
+      element.setAttribute('slot', slot);
+
+      if (!element.isConnected) {
+        this.prepend(element);
+      }
+    });
+  }
+
+  /**
+   * Renders the template while passing in class functionality
+   */
+  render() {
+    if (this.renderUserDefinedResponse) {
+      this.syncCallbackRenderedWrappers(
+        this._userDefinedStateBySlot,
+        this._callbackElements,
+        (state) =>
+          this.renderUserDefinedResponse?.(state, this._instance) ?? null
+      );
+    }
+    if (this.renderCustomMessageFooter) {
+      this.syncCallbackRenderedWrappers(
+        this._customFooterStateBySlot,
+        this._callbackFooterElements,
+        (state) =>
+          this.renderCustomMessageFooter?.(state, this._instance) ?? null
+      );
+    }
+    if (this.renderCustomRequestFooter) {
+      this.syncCallbackRenderedWrappers(
+        this._customRequestFooterStateBySlot,
+        this._callbackRequestFooterElements,
+        (state) =>
+          this.renderCustomRequestFooter?.(state, this._instance) ?? null
+      );
+    }
+
+    // Convert the WC-style renderer (returns HTMLElement) into the React-
+    // style renderer (returns ReactNode) the React infrastructure expects.
+    // Memoization is by reference: as long as the consumer hands us the
+    // same function we hand the same adapter down to the React tree, so
+    // ChatAppEntry doesn't re-render on every container update.
+    const inputNodeReactRenderer = this.renderUserDefinedInputNode
+      ? this._inputNodeReactRendererFor(this.renderUserDefinedInputNode)
+      : undefined;
+
+    return html`<cds-aichat-internal
+      .config=${this.resolvedConfig}
+      .onAfterRender=${this.onAfterRender}
+      .onBeforeRender=${this.onBeforeRenderOverride}
+      .element=${this.element}
+      .renderUserDefinedInputNode=${inputNodeReactRenderer}>
+      ${this._writeableElementSlots.map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+      )}
+      ${this._userDefinedSlotNames.map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+      )}
+      ${
+        this.renderCustomMessageFooter
+          ? this._customFooterSlotNames.map(
+              (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+            )
+          : this._customFooterSlotNames.map(
+              (slot) => html`<div slot=${slot}><slot name=${slot}></slot></div>`
+            )
+      }
+      ${Object.keys(this._customRequestFooterStateBySlot).map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+      )}
+      ${this._pluginSlotNames.map(
+        (slot) => html`<slot name=${slot} slot=${slot}></slot>`
+      )}
+    </cds-aichat-internal>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'cds-aichat-container': ChatContainer;
+  }
+}
+
+/**
+ * Attributes interface for the cds-aichat-container web component.
+ * This interface extends {@link PublicConfig} with additional component-specific props,
+ * flattening all config properties as top-level properties for better TypeScript IntelliSense.
+ *
+ * @category Web component
+ */
+interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
+  /**
+   * Markdown rendering customization. Extends the framework-neutral
+   * `PublicConfig.markdown` with web-component `customRenderers`.
+   */
+  markdown?: WCMarkdown;
+
+  /**
+   * This function is called before the render function of Carbon AI Chat is called. This function can return a Promise
+   * which will cause Carbon AI Chat to wait for it before rendering.
+   */
+  onBeforeRender?: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * This function is called after the render function of Carbon AI Chat is called.
+   */
+  onAfterRender?: (instance: ChatInstance) => Promise<void> | void;
+
+  /**
+   * Called before a view change (the chat opening or closing). Async — return a Promise to defer the view
+   * change until it resolves. This is an opt-in observation hook with no default visibility behavior.
+   */
+  onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
+
+  /**
+   * Called when a view change (the chat opening or closing) is complete. This is an opt-in observation hook
+   * with no default visibility behavior.
+   */
+  onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
+
+  /**
+   * Optional callback to render user defined responses. When provided, the library manages all event listening,
+   * slot tracking, streaming state, and element lifecycle.
+   */
+  renderUserDefinedResponse?: WCRenderUserDefinedResponse;
+
+  /**
+   * Optional callback to render custom message footers. When provided, the library manages all event listening,
+   * slot tracking, and element lifecycle. When omitted, the legacy event + manual slot approach continues to work.
+   */
+  renderCustomMessageFooter?: WCRenderCustomMessageFooter;
+
+  /**
+   * Called when a footer below a user message should be rendered. Leave it off and user messages have no footer.
+   */
+  renderCustomRequestFooter?: WCRenderCustomRequestFooter;
+
+  /**
+   * Renderer for custom TipTap node types inside sent user message bubbles
+   * (rich user message content).
+   *
+   * @experimental
+   */
+  renderUserDefinedInputNode?: WCRenderUserDefinedInputNode;
+}
+
+export { CdsAiChatContainerAttributes };
+export default ChatContainer;
