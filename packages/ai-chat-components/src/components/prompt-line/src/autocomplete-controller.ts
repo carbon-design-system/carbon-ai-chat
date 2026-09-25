@@ -64,6 +64,17 @@ export interface AutocompleteControllerState {
   disableDirectSend?: boolean;
 }
 
+/** Structural contract for a list element that tracks explicit keyboard navigation. */
+interface NavigableListElement {
+  hasNavigated(): boolean;
+}
+
+function isNavigableListElement(
+  el: HTMLElement
+): el is HTMLElement & NavigableListElement {
+  return typeof (el as any).hasNavigated === 'function';
+}
+
 export class AutocompleteController {
   private _mention?: TriggerSuggestionConfig;
   private _command?: TriggerSuggestionConfig;
@@ -424,6 +435,17 @@ export class AutocompleteController {
     if (!listEl || !this._trigger) {
       return;
     }
+
+    if (event.key === 'Enter') {
+      const navigated = isNavigableListElement(listEl)
+        ? listEl.hasNavigated()
+        : true;
+      if (!navigated) {
+        this.dismiss();
+        return; // let carbonChatEnter send the typed text
+      }
+    }
+
     // Stop Tiptap and the editor from acting on the same key. `capture: true`
     // (when listening) plus stopPropagation here gets us in ahead of
     // ProseMirror's own keydown handler.

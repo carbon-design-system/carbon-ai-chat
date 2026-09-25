@@ -32,6 +32,7 @@ import {
   itemsToGroups,
   type AutocompleteControllerState,
 } from '../../components/prompt-line/src/autocomplete-controller.js';
+import type { AutocompleteNavigatedEventDetail } from '../../components/prompt-line/autocomplete/src/autocomplete.js';
 import type {
   AutocompleteConfig,
   StartersConfig,
@@ -76,6 +77,11 @@ export interface UseChatAutocompleteResult {
    * `null` while no trigger is active.
    */
   autocompleteContent: ReactNode;
+  /**
+   * `true` while the user has navigated into the autocomplete list with arrow
+   * keys. Use to disable the prompt send button while a list item is active.
+   */
+  isListNavigated: boolean;
 }
 
 export function useChatAutocomplete(
@@ -99,6 +105,8 @@ export function useChatAutocomplete(
     trigger: null,
     items: [],
   });
+
+  const [isListNavigated, setIsListNavigated] = React.useState(false);
 
   // Keep the controller stable for the hook's lifetime — set in a layout
   // effect so it's wired before any event handler can fire.
@@ -180,8 +188,22 @@ export function useChatAutocomplete(
   // Register / unregister the rendered list element with the controller so
   // arrow / Enter / Escape on the editor DOM get forwarded to it.
   // Also set the max-height CSS variable if provided.
+  const navigatedListenerRef = React.useRef<{
+    el: HTMLElement;
+    handler: (e: Event) => void;
+  } | null>(null);
+
   const setListElement = React.useCallback(
     (el: HTMLElement | null) => {
+      // Remove the previous navigation listener before swapping elements.
+      if (navigatedListenerRef.current) {
+        navigatedListenerRef.current.el.removeEventListener(
+          'cds-aichat-autocomplete-navigated',
+          navigatedListenerRef.current.handler
+        );
+        navigatedListenerRef.current = null;
+      }
+
       controllerRef.current?.setListElement(el);
       // Pass the editor DOM as anchorElement so outside-click detection on the
       // autocomplete element doesn't dismiss the list when the user clicks the
@@ -192,6 +214,18 @@ export function useChatAutocomplete(
       }
       if (el && maxHeight) {
         el.style.setProperty('--cds-aichat-autocomplete-max-height', maxHeight);
+      }
+      if (el) {
+        const handler = (e: Event) => {
+          setIsListNavigated(
+            (e as CustomEvent<AutocompleteNavigatedEventDetail>).detail
+              .navigated
+          );
+        };
+        el.addEventListener('cds-aichat-autocomplete-navigated', handler);
+        navigatedListenerRef.current = { el, handler };
+      } else {
+        setIsListNavigated(false);
       }
     },
     [maxHeight, promptLineRef]
@@ -268,7 +302,7 @@ export function useChatAutocomplete(
     handleContainerMousedown,
   ]);
 
-  return { onTriggerChange, autocompleteContent };
+  return { onTriggerChange, autocompleteContent, isListNavigated };
 }
 
 interface CustomElementHostProps {
